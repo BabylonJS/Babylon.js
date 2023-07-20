@@ -115,19 +115,19 @@ export class RuntimeAnimation {
     private _weight = 1.0;
 
     /**
-     * The ratio offset of the runtime animation
+     * The absolute frame offset of the runtime animation
      */
-    private _ratioOffset = 0;
+    private _absoluteFrameOffset = 0;
 
     /**
-     * The previous delay of the runtime animation
+     * The previous elapsed time (since start of animation) of the runtime animation
      */
-    private _previousDelay: number = 0;
+    private _previousElapsedTime: number = 0;
 
     /**
-     * The previous ratio of the runtime animation
+     * The previous absolute frame of the runtime animation (meaning, without taking into account the from/to values, only the elapsed time and the fps)
      */
-    private _previousRatio: number = 0;
+    private _previousAbsoluteFrame: number = 0;
 
     private _enableBlending: boolean;
 
@@ -469,22 +469,22 @@ export class RuntimeAnimation {
      * @internal Internal use only
      */
     public _prepareForSpeedRatioChange(newSpeedRatio: number): void {
-        const newRatio = (this._previousDelay * (this._animation.framePerSecond * newSpeedRatio)) / 1000.0;
+        const newAbsoluteFrame = (this._previousElapsedTime * (this._animation.framePerSecond * newSpeedRatio)) / 1000.0;
 
-        this._ratioOffset = this._previousRatio - newRatio;
+        this._absoluteFrameOffset = this._previousAbsoluteFrame - newAbsoluteFrame;
     }
 
     /**
      * Execute the current animation
-     * @param delay defines the delay to add to the current frame
-     * @param from defines the lower bound of the animation range
-     * @param to defines the upper bound of the animation range
+     * @param elapsedTimeSinceAnimationStart defines the elapsed time (in milliseconds) since the animation was started
+     * @param from defines the lower frame of the animation range
+     * @param to defines the upper frame of the animation range
      * @param loop defines if the current animation must loop
      * @param speedRatio defines the current speed ratio
      * @param weight defines the weight of the animation (default is -1 so no weight)
      * @returns a boolean indicating if the animation is running
      */
-    public animate(delay: number, from: number, to: number, loop: boolean, speedRatio: number, weight = -1.0): boolean {
+    public animate(elapsedTimeSinceAnimationStart: number, from: number, to: number, loop: boolean, speedRatio: number, weight = -1.0): boolean {
         const animation = this._animation;
         const targetPropertyPath = animation.targetPropertyPath;
         if (!targetPropertyPath || targetPropertyPath.length < 1) {
@@ -502,39 +502,39 @@ export class RuntimeAnimation {
             to = this._maxFrame;
         }
 
-        const range = to - from;
+        const frameRange = to - from;
         let offsetValue: any;
 
-        // Compute ratio which represents the frame delta between from and to
-        let ratio = (delay * (animation.framePerSecond * speedRatio)) / 1000.0 + this._ratioOffset;
+        // Compute the frame according to the elapsed time and the fps of the animation ("from" and "to" are not factored in!)
+        let absoluteFrame = (elapsedTimeSinceAnimationStart * (animation.framePerSecond * speedRatio)) / 1000.0 + this._absoluteFrameOffset;
         let highLimitValue = 0;
 
         // Apply the yoyo function if required
         if (loop && this._animationState.loopMode === Animation.ANIMATIONLOOPMODE_YOYO) {
-            const position = (ratio - from) / range;
+            const position = (absoluteFrame - from) / frameRange;
 
             // Apply the yoyo curve
             const yoyoPosition = Math.abs(Math.sin(position * Math.PI));
 
             // Map the yoyo position back to the range
-            ratio = yoyoPosition * range + from;
+            absoluteFrame = yoyoPosition * frameRange + from;
         }
 
-        this._previousDelay = delay;
-        this._previousRatio = ratio;
+        this._previousElapsedTime = elapsedTimeSinceAnimationStart;
+        this._previousAbsoluteFrame = absoluteFrame;
 
-        if (!loop && to >= from && ratio >= range) {
+        if (!loop && to >= from && absoluteFrame >= frameRange) {
             // If we are out of range and not looping get back to caller
             returnValue = false;
             highLimitValue = animation._getKeyValue(this._maxValue);
-        } else if (!loop && from >= to && ratio <= range) {
+        } else if (!loop && from >= to && absoluteFrame <= frameRange) {
             returnValue = false;
             highLimitValue = animation._getKeyValue(this._minValue);
         } else if (this._animationState.loopMode !== Animation.ANIMATIONLOOPMODE_CYCLE) {
             const keyOffset = to.toString() + from.toString();
             if (!this._offsetsCache[keyOffset]) {
                 this._animationState.repeatCount = 0;
-                this._animationState.loopMode = Animation.ANIMATIONLOOPMODE_CYCLE;
+                this._animationState.loopMode = Animation.ANIMATIONLOOPMODE_CYCLE; // force a specific codepath in animation._interpolate()!
                 const fromValue = animation._interpolate(from, this._animationState);
                 const toValue = animation._interpolate(to, this._animationState);
 
@@ -607,14 +607,15 @@ export class RuntimeAnimation {
         let currentFrame: number;
 
         if (this._host && this._host.syncRoot) {
+            // If we must sync with an animatable, calculate the current frame based on the frame of the root animatable
             const syncRoot = this._host.syncRoot;
             const hostNormalizedFrame = (syncRoot.masterFrame - syncRoot.fromFrame) / (syncRoot.toFrame - syncRoot.fromFrame);
-            currentFrame = from + (to - from) * hostNormalizedFrame;
+            currentFrame = from + frameRange * hostNormalizedFrame;
         } else {
-            if ((ratio > 0 && from > to) || (ratio < 0 && from < to)) {
-                currentFrame = returnValue && range !== 0 ? to + (ratio % range) : from;
+            if ((absoluteFrame > 0 && from > to) || (absoluteFrame < 0 && from < to)) {
+                currentFrame = returnValue && frameRange !== 0 ? to + (absoluteFrame % frameRange) : from;
             } else {
-                currentFrame = returnValue && range !== 0 ? from + (ratio % range) : to;
+                currentFrame = returnValue && frameRange !== 0 ? from + (absoluteFrame % frameRange) : to;
             }
         }
 
@@ -635,7 +636,7 @@ export class RuntimeAnimation {
             this._animationState.key = speedRatio > 0 ? 0 : animation.getKeys().length - 1;
         }
         this._currentFrame = currentFrame;
-        this._animationState.repeatCount = range === 0 ? 0 : (ratio / range) >> 0;
+        this._animationState.repeatCount = frameRange === 0 ? 0 : (absoluteFrame / frameRange) >> 0;
         this._animationState.highLimitValue = highLimitValue;
         this._animationState.offsetValue = offsetValue;
 
@@ -650,8 +651,8 @@ export class RuntimeAnimation {
                 // Make sure current frame has passed event frame and that event frame is within the current range
                 // Also, handle both forward and reverse animations
                 if (
-                    (range > 0 && currentFrame >= events[index].frame && events[index].frame >= from) ||
-                    (range < 0 && currentFrame <= events[index].frame && events[index].frame <= from)
+                    (frameRange > 0 && currentFrame >= events[index].frame && events[index].frame >= from) ||
+                    (frameRange < 0 && currentFrame <= events[index].frame && events[index].frame <= from)
                 ) {
                     const event = events[index];
                     if (!event.isDone) {
@@ -662,7 +663,7 @@ export class RuntimeAnimation {
                         }
                         event.isDone = true;
                         event.action(currentFrame);
-                    } // Don't do anything if the event has already be done.
+                    } // Don't do anything if the event has already been done.
                 }
             }
         }
