@@ -583,6 +583,21 @@ export class PrePassRenderer {
         return cfg;
     }
 
+    /**
+     * Retrieves an effect configuration by name
+     * @param name
+     * @returns
+     */
+    public getEffectConfiguration(name: string): PrePassEffectConfiguration | null {
+        for (let i = 0; i < this._effectConfigurations.length; i++) {
+            if (this._effectConfigurations[i].name === name) {
+                return this._effectConfigurations[i];
+            }
+        }
+
+        return null;
+    }
+
     private _enable() {
         const previousMrtCount = this.mrtCount;
 
