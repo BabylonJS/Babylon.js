@@ -207,7 +207,6 @@ export class RenderTargetWrapper {
         }
 
         this._textures[index] = texture;
-        texture.incrementReferences();
     }
 
     /**
