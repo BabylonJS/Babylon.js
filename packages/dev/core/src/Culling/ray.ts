@@ -620,10 +620,11 @@ export class Ray {
         matrix.multiplyToRef(projection, matrix);
         matrix.invert();
 
+        const engine = EngineStore.LastCreatedEngine;
         const nearScreenSource = TmpVectors.Vector3[0];
         nearScreenSource.x = (sourceX / viewportWidth) * 2 - 1;
         nearScreenSource.y = -((sourceY / viewportHeight) * 2 - 1);
-        nearScreenSource.z = EngineStore.LastCreatedEngine?.isNDCHalfZRange ? 0 : -1;
+        nearScreenSource.z = engine?.useReverseDepthBuffer ? 1 : engine?.isNDCHalfZRange ? 0 : -1;
 
         // far Z need to be close but < to 1 or camera projection matrix with maxZ = 0 will NaN
         const farScreenSource = TmpVectors.Vector3[1].copyFromFloats(nearScreenSource.x, nearScreenSource.y, 1.0 - 1e-8);

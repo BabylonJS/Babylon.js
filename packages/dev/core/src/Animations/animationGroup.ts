@@ -59,6 +59,8 @@ export class AnimationGroup implements IDisposable {
     private _speedRatio = 1;
     private _loopAnimation = false;
     private _isAdditive = false;
+    private _weight = -1;
+    private _playOrder = 0;
 
     /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
@@ -195,6 +197,22 @@ export class AnimationGroup implements IDisposable {
     }
 
     /**
+     * Gets or sets the weight to apply to all animations of the group
+     */
+    public get weight(): number {
+        return this._weight;
+    }
+
+    public set weight(value: number) {
+        if (this._weight === value) {
+            return;
+        }
+
+        this._weight = value;
+        this.setWeightForAllAnimatables(this._weight);
+    }
+
+    /**
      * Gets the targeted animations for this animation group
      */
     public get targetedAnimations(): Array<TargetedAnimation> {
@@ -216,18 +234,96 @@ export class AnimationGroup implements IDisposable {
     }
 
     /**
+     * Gets or sets the order of play of the animation group (default: 0)
+     */
+    public get playOrder() {
+        return this._playOrder;
+    }
+
+    public set playOrder(value: number) {
+        if (this._playOrder === value) {
+            return;
+        }
+
+        this._playOrder = value;
+
+        if (this._animatables.length > 0) {
+            for (let i = 0; i < this._animatables.length; i++) {
+                this._animatables[i].playOrder = this._playOrder;
+            }
+
+            this._scene.sortActiveAnimatables();
+        }
+    }
+
+    /**
+     * Merge the array of animation groups into a new animation group
+     * @param animationGroups List of animation groups to merge
+     * @param disposeSource If true, animation groups will be disposed after being merged (default: true)
+     * @param normalize If true, animation groups will be normalized before being merged, so that all animations have the same "from" and "to" frame (default: false)
+     * @param weight Weight for the new animation group. If not provided, it will inherit the weight from the first animation group of the array
+     * @returns The new animation group or null if no animation groups were passed
+     */
+    public static MergeAnimationGroups(animationGroups: Array<AnimationGroup>, disposeSource = true, normalize = false, weight?: number): Nullable<AnimationGroup> {
+        if (animationGroups.length === 0) {
+            return null;
+        }
+
+        weight = weight ?? animationGroups[0].weight;
+
+        let beginFrame = Number.MAX_VALUE;
+        let endFrame = Number.MIN_VALUE;
+
+        if (normalize) {
+            for (const animationGroup of animationGroups) {
+                if (animationGroup.from < beginFrame) {
+                    beginFrame = animationGroup.from;
+                }
+
+                if (animationGroup.to > endFrame) {
+                    endFrame = animationGroup.to;
+                }
+            }
+        }
+
+        const mergedAnimationGroup = new AnimationGroup(animationGroups[0].name + "_merged", animationGroups[0]._scene, weight);
+
+        for (const animationGroup of animationGroups) {
+            if (normalize) {
+                animationGroup.normalize(beginFrame, endFrame);
+            }
+
+            for (const targetedAnimation of animationGroup.targetedAnimations) {
+                mergedAnimationGroup.addTargetedAnimation(targetedAnimation.animation, targetedAnimation.target);
+            }
+
+            if (disposeSource) {
+                animationGroup.dispose();
+            }
+        }
+
+        return mergedAnimationGroup;
+    }
+
+    /**
      * Instantiates a new Animation Group.
      * This helps managing several animations at once.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/groupAnimations
      * @param name Defines the name of the group
      * @param scene Defines the scene the group belongs to
+     * @param weight Defines the weight to use for animations in the group (-1.0 by default, meaning "no weight")
+     * @param playOrder Defines the order of play of the animation group (default is 0)
      */
     public constructor(
         /** The name of the animation group */
         public name: string,
-        scene: Nullable<Scene> = null
+        scene: Nullable<Scene> = null,
+        weight = -1,
+        playOrder = 0
     ) {
         this._scene = scene || EngineStore.LastCreatedScene!;
+        this._weight = weight;
+        this._playOrder = playOrder;
         this.uniqueId = this._scene.getUniqueId();
 
         this._scene.addAnimationGroup(this);
@@ -375,6 +471,8 @@ export class AnimationGroup implements IDisposable {
                 undefined,
                 isAdditive !== undefined ? isAdditive : this._isAdditive
             );
+            animatable.weight = this._weight;
+            animatable.playOrder = this._playOrder;
             animatable.onAnimationEnd = () => {
                 this.onAnimationEndObservable.notifyObservers(targetedAnimation);
                 this._checkAnimationGroupEnded(animatable);
@@ -383,6 +481,8 @@ export class AnimationGroup implements IDisposable {
             this._processLoop(animatable, targetedAnimation, index);
             this._animatables.push(animatable);
         }
+
+        this._scene.sortActiveAnimatables();
 
         this._speedRatio = speedRatio;
 
@@ -508,6 +608,10 @@ export class AnimationGroup implements IDisposable {
 
     /**
      * Set animation weight for all animatables
+     *
+     * @since 6.12.4
+     *  You can pass the weight to the AnimationGroup constructor, or use the weight property to set it after the group has been created,
+     *  making it easier to define the overall animation weight than calling setWeightForAllAnimatables() after the animation group has been started
      * @param weight defines the weight to use
      * @returns the animationGroup
      * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#animation-weights

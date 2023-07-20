@@ -1,5 +1,5 @@
 {
-    "declarationLibs": ["@lts/gui"],
+    "declarationLibs": ["@dev/gui", "@lts/gui"],
     "devPackageName": "gui",
     "filename": "babylon.gui.module.d.ts",
     "outputDirectory": "./",

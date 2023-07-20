@@ -380,6 +380,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                 });
             }
 
+            const sameParticleArray = particles === this._particles;
+
             for (let index = 0; index < particles.length; index++) {
                 const particle = particles[index];
 
@@ -582,7 +584,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                         particle._attachedSubEmitters = null;
                     }
                     this.recycleParticle(particle);
-                    index--;
+                    if (sameParticleArray) {
+                        index--;
+                    }
                     continue;
                 }
             }

@@ -145,7 +145,7 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
     // Feature configuration is syncronized - this is passed to all handlers (reduce GC pressure).
     private _featureContext: WebXRControllerMovementFeatureContext;
     // forward direction for movement, which may differ from viewer pose.
-    private _movementDirection: Nullable<Quaternion> = null;
+    private _movementDirection: Quaternion = new Quaternion();
     private _movementState: WebXRControllerMovementState;
     private _xrInput: WebXRInput;
 
@@ -153,6 +153,7 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
     private _tmpRotationMatrix: Matrix = Matrix.Identity();
     private _tmpTranslationDirection: Vector3 = new Vector3();
     private _tmpMovementTranslation: Vector3 = new Vector3();
+    private _tempCacheQuaternion: Quaternion = new Quaternion();
 
     /**
      * The module's name
@@ -193,7 +194,7 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
     /**
      * Current movement direction.  Will be null before XR Frames have been processed.
      */
-    public get movementDirection(): Nullable<Quaternion> {
+    public get movementDirection(): Quaternion {
         return this._movementDirection;
     }
 
@@ -375,12 +376,8 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
      * @param _xrFrame
      */
     protected _onXRFrame(_xrFrame: XRFrame) {
-        if (!this.attach) {
+        if (!this.attached) {
             return;
-        }
-
-        if (this._movementDirection === null) {
-            this._movementDirection = this._xrInput.xrCamera.rotationQuaternion.clone();
         }
 
         if (this._movementState.rotateX !== 0 && this._featureContext.rotationEnabled) {
@@ -388,19 +385,22 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
             const deltaMillis = this._xrSessionManager.scene.getEngine().getDeltaTime();
             const rotationY = deltaMillis * 0.001 * this._featureContext.rotationSpeed * this._movementState.rotateX * (this._xrSessionManager.scene.useRightHandedSystem ? -1 : 1);
 
-            if (this._featureContext.movementOrientationFollowsViewerPose === true) {
+            if (this._featureContext.movementOrientationFollowsViewerPose) {
                 this._xrInput.xrCamera.cameraRotation.y += rotationY;
-                this._movementDirection = this._xrInput.xrCamera.rotationQuaternion.multiply(Quaternion.RotationYawPitchRoll(rotationY, 0, 0));
+                Quaternion.RotationYawPitchRollToRef(rotationY, 0, 0, this._tempCacheQuaternion);
+                this._xrInput.xrCamera.rotationQuaternion.multiplyToRef(this._tempCacheQuaternion, this._movementDirection);
             } else {
                 // movement orientation direction does not affect camera.  We use rotation speed multiplier
                 // otherwise need to implement inertia and constraints for same feel as TargetCamera.
-                this._movementDirection.multiplyInPlace(Quaternion.RotationYawPitchRoll(rotationY * 3.0, 0, 0));
+
+                Quaternion.RotationYawPitchRollToRef(rotationY * 3.0, 0, 0, this._tempCacheQuaternion);
+                this._movementDirection.multiplyInPlace(this._tempCacheQuaternion);
             }
-        } else if (this._featureContext.movementOrientationFollowsViewerPose === true) {
+        } else if (this._featureContext.movementOrientationFollowsViewerPose) {
             this._movementDirection.copyFrom(this._xrInput.xrCamera.rotationQuaternion);
         }
 
-        if ((this._movementState.moveX !== 0 || this._movementState.moveY !== 0) && this._featureContext.movementEnabled) {
+        if ((this._movementState.moveX || this._movementState.moveY) && this._featureContext.movementEnabled) {
             Matrix.FromQuaternionToRef(this._movementDirection, this._tmpRotationMatrix);
             this._tmpTranslationDirection.set(this._movementState.moveX, 0, this._movementState.moveY * (this._xrSessionManager.scene.useRightHandedSystem ? 1.0 : -1.0));
             // move according to forward direction based on camera speed

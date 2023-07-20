@@ -19,6 +19,10 @@ module.exports = (env) => {
             starfield: "./src/starfield.ts",
             wood: "./src/wood.ts",
         },
+        alias: {
+            "procedural-textures": path.resolve(__dirname, "../../../dev/proceduralTextures/src"),
+            "@lts/procedural-textures": path.resolve(__dirname, "../../../lts/proceduralTextures/src"),
+        },
         overrideFilename: (pathData) => {
             return pathData.chunk.name === "proceduralTextures" ? `babylonjs.[name]${env.production ? ".min" : ""}.js` : `babylon.[name]ProceduralTexture${env.production ? ".min" : ""}.js`;
         },

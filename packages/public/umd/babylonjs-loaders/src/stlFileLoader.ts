@@ -1,3 +1,3 @@
-import * as loaders from "loaders/legacy/legacy-stlFileLoader";
+import * as loaders from "@lts/loaders/legacy/legacy-stlFileLoader";
 export { loaders };
 export default loaders;

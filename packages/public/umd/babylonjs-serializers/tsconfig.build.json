@@ -3,11 +3,15 @@
 
     "compilerOptions": {
         "outDir": "./dist",
-        "rootDir": "./src",
+        "rootDir": "../../../",
+        "target": "ES5",
         "declaration": false,
+        "importHelpers": true,
         "paths": {
-            "serializers/*": ["lts/serializers/dist/*"],
+            "core/*": ["dev/core/dist/*"],
+            "serializers/*": ["dev/serializers/src/*"],
+            "@lts/serializers/*": ["lts/serializers/src/*"],
         }
     },
-    "include": ["./src/**/*"]
+    "include": ["./src/**/*", "../../../dev/serializers/src/**/*", "../../../lts/serializers/src/**/*"]
 }

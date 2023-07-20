@@ -2,23 +2,47 @@ import { Curve3 } from "../Maths/math.path";
 import { VertexBuffer } from "../Buffers/buffer";
 import { TmpVectors, Vector3 } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { IFontData } from "core/Meshes/Builders/textBuilder";
-import { CreateTextShapePaths } from "core/Meshes/Builders/textBuilder";
+import type { IFontData } from "../Meshes/Builders/textBuilder";
+import { CreateTextShapePaths } from "../Meshes/Builders/textBuilder";
+import type { FloatArray, IndicesArray } from "../types";
 
 /**
  * Tool functions for GreasedLine
  */
 export class GreasedLineTools {
     /**
+     * Omit zero length lines predicate for the MeshesToLines function
+     * @param p1 point1 position of the face
+     * @param p2 point2 position of the face
+     * @param p3 point3 position of the face
+     * @returns
+     */
+    public static OmitZeroLengthPredicate(p1: Vector3, p2: Vector3, p3: Vector3) {
+        return p1.lengthSquared() === 0 && p2.lengthSquared() === 0 && p3.lengthSquared() === 0;
+    }
+    /**
      * Gets mesh triangles as line positions
      * @param meshes array of meshes
      * @param omitZeroLengthLines do not generate a line when the distance if the vertices in the triangle equals to zero
      * @returns array of arrays of points
      */
-    public static MeshesToLines(meshes: AbstractMesh[], omitZeroLengthLines = true) {
+    public static MeshesToLines(
+        meshes: AbstractMesh[],
+        predicate?: (
+            p1: Vector3,
+            p2: Vector3,
+            p3: Vector3,
+            indiceIndex: number,
+            vertexIndex: number,
+            mesh: AbstractMesh,
+            meshIndex: number,
+            vertices: FloatArray,
+            indices: IndicesArray
+        ) => Vector3[]
+    ) {
         const points: Vector3[][] = [];
 
-        meshes.forEach((m) => {
+        meshes.forEach((m, meshIndex) => {
             const vertices = m.getVerticesData(VertexBuffer.PositionKind);
             const indices = m.getIndices();
             if (vertices && indices) {
@@ -31,10 +55,12 @@ export class GreasedLineTools {
                     const p2 = new Vector3(vertices[vi2], vertices[vi2 + 1], vertices[vi2 + 2]);
                     const p3 = new Vector3(vertices[vi3], vertices[vi3 + 1], vertices[vi3 + 2]);
 
-                    if (omitZeroLengthLines && p1.lengthSquared() + p2.lengthSquared() + p3.lengthSquared() === 0) {
-                        continue;
+                    if (predicate) {
+                        const pointsFromPredicate = predicate(p1, p2, p3, i, vi1, m, meshIndex, vertices, indices);
+                        pointsFromPredicate && points.push(pointsFromPredicate);
+                    } else {
+                        points.push([p1, p2, p3, p1]);
                     }
-                    points.push([p1, p2, p3, p1]);
                 }
             }
         });

@@ -9,9 +9,6 @@
         "paths": {
         }
     },
-    // "references": [
-    //     { "path": "../../../lts/core/tsconfig.build.json" }
-    // ],
 
     "include": ["./src/**/*"]
 }
