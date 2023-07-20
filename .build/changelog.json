@@ -1,6 +1,41 @@
 {
-    "fromTag": "6.12.4",
+    "fromTag": "6.12.5",
     "changelog": {
+        "6.13.0": [
+            {
+                "pr": "14065",
+                "title": "FreeCameraMouseInput: Reset Active pointerId when detaching controls",
+                "description": "A user in the forum found an issue where the camera controls stopped working after an animation started.  It was determined the issue was caused by the controls being detached before the `pointerup` event was handled.  A line was added to make sure the the tracked active pointerid was being reset when the controls were no longer active so that input could begin to be received again.\r\n\r\nA test has also been added to check for this scenario\r\n\r\nForum Link: https://forum.babylonjs.com/t/mesh-actionmanager-camera-control-bug/42292",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraMouseInput.ts",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.inputManager.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "14062",
+                "title": "AnimationGroup: Add MergeAnimationGroups method",
+                "description": "Closes #12895",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animationGroup.ts"
+                ],
+                "tags": [
+                    "animations",
+                    "new feature"
+                ]
+            }
+        ],
         "6.12.5": [
             {
                 "pr": "14055",
