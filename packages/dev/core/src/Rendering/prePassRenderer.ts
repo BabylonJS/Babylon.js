@@ -276,8 +276,7 @@ export class PrePassRenderer {
         }
 
         PrePassRenderer._SceneComponentInitialization(this._scene);
-        this.defaultRT = this._createRenderTarget("scenePrePassRT", null);
-
+        this.defaultRT = this._createRenderTarget("sceneprePassRT", null);
         this._currentTarget = this.defaultRT;
     }
 
@@ -327,15 +326,8 @@ export class PrePassRenderer {
 
         if (this.enabled && this._currentTarget.enabled) {
             if (effect._multiTarget && isPrePassCapable && !excluded) {
-                // Drawing to several textures
-                if (this.currentRTisSceneRT && this._currentTarget !== this.defaultRT) {
-                    this._setRenderTarget(this.defaultRT);
-                    this._bindFrameBuffer();
-                }
                 this._engine.bindAttachments(this._multiRenderAttachments);
             } else {
-                // We are only drawing to 1 texture
-
                 if (this._engine._currentRenderTarget) {
                     this._engine.bindAttachments(this._defaultAttachments);
                 } else {
@@ -591,21 +583,6 @@ export class PrePassRenderer {
         return cfg;
     }
 
-    /**
-     * Retrieves an effect configuration by name
-     * @param name
-     * @returns
-     */
-    public getEffectConfiguration(name: string): PrePassEffectConfiguration | null {
-        for (let i = 0; i < this._effectConfigurations.length; i++) {
-            if (this._effectConfigurations[i].name === name) {
-                return this._effectConfigurations[i];
-            }
-        }
-
-        return null;
-    }
-
     private _enable() {
         const previousMrtCount = this.mrtCount;
 
@@ -696,10 +673,6 @@ export class PrePassRenderer {
         // Create composition effect if needed
         if (this._needsCompositionForThisPass && !prePassRenderTarget.imageProcessingPostProcess) {
             prePassRenderTarget._createCompositionEffect();
-        }
-
-        if (prePassRenderTarget.imageProcessingPostProcess) {
-            prePassRenderTarget.imageProcessingPostProcess.fromLinearSpace = !this.disableGammaTransform;
         }
 
         // Setting the prePassRenderTarget as input texture of the first PP
