@@ -142,7 +142,6 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
             state.sharedData.variableNames.prepassNormalSampler = 0;
 
             // Declarations
-            state.sharedData.blockingBlocks.push(this);
             state.sharedData.textureBlocks.push(this);
             state.sharedData.bindableBlocks.push(this);
         }

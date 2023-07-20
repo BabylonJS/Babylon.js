@@ -9,7 +9,6 @@ import { Effect } from "../effect";
 export class NodeMaterialBuildState {
     /** Gets or sets a boolean indicating if the current state can emit uniform buffers */
     public supportUniformBuffers = false;
-
     /**
      * Gets the list of emitted attributes
      */
@@ -127,12 +126,11 @@ export class NodeMaterialBuildState {
         this.compilationString = "precision highp float;\r\n" + this.compilationString;
         this.compilationString = "#if defined(WEBGL2) || defines(WEBGPU)\r\nprecision highp sampler2DArray;\r\n#endif\r\n" + this.compilationString;
 
-        let prePassDeclaration = "#if defined(PREPASS)\r\n";
-        prePassDeclaration += "#extension GL_EXT_draw_buffers : require\r\n";
-        prePassDeclaration += "layout(location = 0) out highp vec4 glFragData[SCENE_MRT_COUNT];\r\nhighp vec4 gl_FragColor;\r\n";
-        prePassDeclaration += "#endif\r\n";
-
-        this.compilationString = prePassDeclaration + this.compilationString;
+        if (isFragmentMode) {
+            this.compilationString =
+                "#if defined(PREPASS)\r\n#extension GL_EXT_draw_buffers : require\r\nlayout(location = 0) out highp vec4 glFragData[SCENE_MRT_COUNT];\r\nhighp vec4 gl_FragColor;\r\n#endif\r\n" +
+                this.compilationString;
+        }
 
         for (const extensionName in this.extensions) {
             const extension = this.extensions[extensionName];
@@ -245,21 +243,6 @@ export class NodeMaterialBuildState {
             extension = `#if ${define}\r\n${extension}\r\n#endif`;
         }
         this.extensions[name] = extension;
-    }
-
-    /**
-     * @internal
-     */
-    public _emitPrePassOutput(name: string, declaration: string, define: string = "") {
-        if (this.prePassOutput[name]) {
-            return;
-        }
-
-        if (define) {
-            declaration = `#if ${define}\r\n${declaration}\r\n#endif`;
-        }
-
-        this.prePassOutput[name] = declaration;
     }
 
     /**
