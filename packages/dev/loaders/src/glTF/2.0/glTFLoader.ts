@@ -2689,7 +2689,7 @@ export class GLTFLoader implements IGLTFLoader {
         }
     }
 
-    private _applyExtensions<T>(property: IProperty, functionName: string, actionAsync: (extension: IGLTFLoaderExtension) => Nullable<T> | undefined): Nullable<T> {
+    private _applyExtensionsAsync<T>(property: IProperty, functionName: string, actionAsync: (extension: IGLTFLoaderExtension) => Nullable<Promise<T>>): Nullable<Promise<T>> {
         for (const extension of this._extensions) {
             if (extension.enabled) {
                 const id = `${extension.name}.${functionName}`;
@@ -2702,8 +2702,32 @@ export class GLTFLoader implements IGLTFLoader {
                     try {
                         const result = actionAsync(extension);
                         if (result) {
-                            return result;
+                            return result.finally(() => {
+                                delete activeLoaderExtensionFunctions[id];
+                            });
                         }
+                    } catch {
+                        delete activeLoaderExtensionFunctions[id];
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private _applyExtensions<T>(property: IProperty, functionName: string, action: (extension: IGLTFLoaderExtension) => Nullable<T>): Nullable<T> {
+        for (const extension of this._extensions) {
+            if (extension.enabled) {
+                const id = `${extension.name}.${functionName}`;
+                const loaderProperty = property as ILoaderProperty;
+                loaderProperty._activeLoaderExtensionFunctions = loaderProperty._activeLoaderExtensionFunctions || {};
+                const activeLoaderExtensionFunctions = loaderProperty._activeLoaderExtensionFunctions;
+                if (!activeLoaderExtensionFunctions[id]) {
+                    activeLoaderExtensionFunctions[id] = true;
+
+                    try {
+                        return action(extension);
                     } finally {
                         delete activeLoaderExtensionFunctions[id];
                     }
@@ -2723,19 +2747,21 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _extensionsLoadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
-        return this._applyExtensions(scene, "loadScene", (extension) => extension.loadSceneAsync && extension.loadSceneAsync(context, scene));
+        return this._applyExtensionsAsync(scene, "loadScene", (extension) => (extension.loadSceneAsync ? extension.loadSceneAsync(context, scene) : null));
     }
 
     private _extensionsLoadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
-        return this._applyExtensions(node, "loadNode", (extension) => extension.loadNodeAsync && extension.loadNodeAsync(context, node, assign));
+        return this._applyExtensionsAsync(node, "loadNode", (extension) => (extension.loadNodeAsync ? extension.loadNodeAsync(context, node, assign) : null));
     }
 
     private _extensionsLoadCameraAsync(context: string, camera: ICamera, assign: (babylonCamera: Camera) => void): Nullable<Promise<Camera>> {
-        return this._applyExtensions(camera, "loadCamera", (extension) => extension.loadCameraAsync && extension.loadCameraAsync(context, camera, assign));
+        return this._applyExtensionsAsync(camera, "loadCamera", (extension) => (extension.loadCameraAsync ? extension.loadCameraAsync(context, camera, assign) : null));
     }
 
     private _extensionsLoadVertexDataAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>> {
-        return this._applyExtensions(primitive, "loadVertexData", (extension) => extension._loadVertexDataAsync && extension._loadVertexDataAsync(context, primitive, babylonMesh));
+        return this._applyExtensionsAsync(primitive, "loadVertexData", (extension) =>
+            extension._loadVertexDataAsync ? extension._loadVertexDataAsync(context, primitive, babylonMesh) : null
+        );
     }
 
     private _extensionsLoadMeshPrimitiveAsync(
@@ -2746,10 +2772,8 @@ export class GLTFLoader implements IGLTFLoader {
         primitive: IMeshPrimitive,
         assign: (babylonMesh: AbstractMesh) => void
     ): Nullable<Promise<AbstractMesh>> {
-        return this._applyExtensions(
-            primitive,
-            "loadMeshPrimitive",
-            (extension) => extension._loadMeshPrimitiveAsync && extension._loadMeshPrimitiveAsync(context, name, node, mesh, primitive, assign)
+        return this._applyExtensionsAsync(primitive, "loadMeshPrimitive", (extension) =>
+            extension._loadMeshPrimitiveAsync ? extension._loadMeshPrimitiveAsync(context, name, node, mesh, primitive, assign) : null
         );
     }
 
@@ -2760,35 +2784,33 @@ export class GLTFLoader implements IGLTFLoader {
         babylonDrawMode: number,
         assign: (babylonMaterial: Material) => void
     ): Nullable<Promise<Material>> {
-        return this._applyExtensions(
-            material,
-            "loadMaterial",
-            (extension) => extension._loadMaterialAsync && extension._loadMaterialAsync(context, material, babylonMesh, babylonDrawMode, assign)
+        return this._applyExtensionsAsync(material, "loadMaterial", (extension) =>
+            extension._loadMaterialAsync ? extension._loadMaterialAsync(context, material, babylonMesh, babylonDrawMode, assign) : null
         );
     }
 
     private _extensionsCreateMaterial(context: string, material: IMaterial, babylonDrawMode: number): Nullable<Material> {
-        return this._applyExtensions(material, "createMaterial", (extension) => extension.createMaterial && extension.createMaterial(context, material, babylonDrawMode));
+        return this._applyExtensions(material, "createMaterial", (extension) => (extension.createMaterial ? extension.createMaterial(context, material, babylonDrawMode) : null));
     }
 
     private _extensionsLoadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-        return this._applyExtensions(
-            material,
-            "loadMaterialProperties",
-            (extension) => extension.loadMaterialPropertiesAsync && extension.loadMaterialPropertiesAsync(context, material, babylonMaterial)
+        return this._applyExtensionsAsync(material, "loadMaterialProperties", (extension) =>
+            extension.loadMaterialPropertiesAsync ? extension.loadMaterialPropertiesAsync(context, material, babylonMaterial) : null
         );
     }
 
     private _extensionsLoadTextureInfoAsync(context: string, textureInfo: ITextureInfo, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>> {
-        return this._applyExtensions(textureInfo, "loadTextureInfo", (extension) => extension.loadTextureInfoAsync && extension.loadTextureInfoAsync(context, textureInfo, assign));
+        return this._applyExtensionsAsync(textureInfo, "loadTextureInfo", (extension) =>
+            extension.loadTextureInfoAsync ? extension.loadTextureInfoAsync(context, textureInfo, assign) : null
+        );
     }
 
     private _extensionsLoadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>> {
-        return this._applyExtensions(texture, "loadTexture", (extension) => extension._loadTextureAsync && extension._loadTextureAsync(context, texture, assign));
+        return this._applyExtensionsAsync(texture, "loadTexture", (extension) => (extension._loadTextureAsync ? extension._loadTextureAsync(context, texture, assign) : null));
     }
 
     private _extensionsLoadAnimationAsync(context: string, animation: IAnimation): Nullable<Promise<AnimationGroup>> {
-        return this._applyExtensions(animation, "loadAnimation", (extension) => extension.loadAnimationAsync && extension.loadAnimationAsync(context, animation));
+        return this._applyExtensionsAsync(animation, "loadAnimation", (extension) => (extension.loadAnimationAsync ? extension.loadAnimationAsync(context, animation) : null));
     }
 
     private _extensionsLoadAnimationChannelAsync(
@@ -2798,27 +2820,27 @@ export class GLTFLoader implements IGLTFLoader {
         channel: IAnimationChannel,
         onLoad: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void
     ): Nullable<Promise<void>> {
-        return this._applyExtensions(
+        return this._applyExtensionsAsync(
             animation,
             "loadAnimationChannel",
-            (extension) => extension._loadAnimationChannelAsync && extension._loadAnimationChannelAsync(context, animationContext, animation, channel, onLoad)
+            (extension) => extension._loadAnimationChannelAsync ? extension._loadAnimationChannelAsync(context, animationContext, animation, channel, onLoad) : null
         );
     }
 
     private _extensionsLoadSkinAsync(context: string, node: INode, skin: ISkin): Nullable<Promise<void>> {
-        return this._applyExtensions(skin, "loadSkin", (extension) => extension._loadSkinAsync && extension._loadSkinAsync(context, node, skin));
+        return this._applyExtensionsAsync(skin, "loadSkin", (extension) => extension._loadSkinAsync ? extension._loadSkinAsync(context, node, skin) : null);
     }
 
     private _extensionsLoadUriAsync(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>> {
-        return this._applyExtensions(property, "loadUri", (extension) => extension._loadUriAsync && extension._loadUriAsync(context, property, uri));
+        return this._applyExtensionsAsync(property, "loadUri", (extension) => extension._loadUriAsync ? extension._loadUriAsync(context, property, uri) : null);
     }
 
     private _extensionsLoadBufferViewAsync(context: string, bufferView: IBufferView): Nullable<Promise<ArrayBufferView>> {
-        return this._applyExtensions(bufferView, "loadBufferView", (extension) => extension.loadBufferViewAsync && extension.loadBufferViewAsync(context, bufferView));
+        return this._applyExtensionsAsync(bufferView, "loadBufferView", (extension) => extension.loadBufferViewAsync ? extension.loadBufferViewAsync(context, bufferView) : null);
     }
 
     private _extensionsLoadBufferAsync(context: string, buffer: IBuffer, byteOffset: number, byteLength: number): Nullable<Promise<ArrayBufferView>> {
-        return this._applyExtensions(buffer, "loadBuffer", (extension) => extension.loadBufferAsync && extension.loadBufferAsync(context, buffer, byteOffset, byteLength));
+        return this._applyExtensionsAsync(buffer, "loadBuffer", (extension) => extension.loadBufferAsync ? extension.loadBufferAsync(context, buffer, byteOffset, byteLength) : null);
     }
 
     /**
