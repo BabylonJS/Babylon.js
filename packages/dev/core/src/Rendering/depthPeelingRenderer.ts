@@ -41,11 +41,6 @@ class DepthPeelingEffectConfiguration implements PrePassEffectConfiguration {
      * Textures that should be present in the MRT for this effect to work
      */
     public readonly texturesRequired: number[] = [Constants.PREPASS_COLOR_TEXTURE_TYPE];
-
-    /**
-     * Depth peeling has its own composition pass
-     */
-    public effectAlreadyComposes = true;
 }
 
 /**

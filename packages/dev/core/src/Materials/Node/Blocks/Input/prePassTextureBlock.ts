@@ -33,10 +33,10 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
     /**
      * Creates a new PrePassTextureBlock
      * @param name defines the block name
-     * @param target defines the target of that block (Vertex by default)
+     * @param target defines the target of that block (Fragment by default)
      * @param type defines the type of the input (can be set to NodeMaterialBlockConnectionPointTypes.AutoDetect)
      */
-    public constructor(name: string, target = NodeMaterialBlockTargets.VertexAndFragment) {
+    public constructor(name: string, target = NodeMaterialBlockTargets.Fragment) {
         super(name, target, false, true);
 
         this.registerOutput(

@@ -106,7 +106,7 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
             return;
         }
 
-        const mSAARenderBuffer = (texture._hardwareTexture as WebGLHardwareTexture).mSAARenderBuffer;
+        const mSAARenderBuffer = (texture._hardwareTexture as WebGLHardwareTexture).getMSAARenderBuffer(0);
         const msaa = !!this._MSAAFramebuffer && mSAARenderBuffer;
         const framebuffer = msaa ? this._MSAAFramebuffer : this._framebuffer;
 
