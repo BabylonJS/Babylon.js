@@ -2820,27 +2820,27 @@ export class GLTFLoader implements IGLTFLoader {
         channel: IAnimationChannel,
         onLoad: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void
     ): Nullable<Promise<void>> {
-        return this._applyExtensionsAsync(
-            animation,
-            "loadAnimationChannel",
-            (extension) => extension._loadAnimationChannelAsync ? extension._loadAnimationChannelAsync(context, animationContext, animation, channel, onLoad) : null
+        return this._applyExtensionsAsync(animation, "loadAnimationChannel", (extension) =>
+            extension._loadAnimationChannelAsync ? extension._loadAnimationChannelAsync(context, animationContext, animation, channel, onLoad) : null
         );
     }
 
     private _extensionsLoadSkinAsync(context: string, node: INode, skin: ISkin): Nullable<Promise<void>> {
-        return this._applyExtensionsAsync(skin, "loadSkin", (extension) => extension._loadSkinAsync ? extension._loadSkinAsync(context, node, skin) : null);
+        return this._applyExtensionsAsync(skin, "loadSkin", (extension) => (extension._loadSkinAsync ? extension._loadSkinAsync(context, node, skin) : null));
     }
 
     private _extensionsLoadUriAsync(context: string, property: IProperty, uri: string): Nullable<Promise<ArrayBufferView>> {
-        return this._applyExtensionsAsync(property, "loadUri", (extension) => extension._loadUriAsync ? extension._loadUriAsync(context, property, uri) : null);
+        return this._applyExtensionsAsync(property, "loadUri", (extension) => (extension._loadUriAsync ? extension._loadUriAsync(context, property, uri) : null));
     }
 
     private _extensionsLoadBufferViewAsync(context: string, bufferView: IBufferView): Nullable<Promise<ArrayBufferView>> {
-        return this._applyExtensionsAsync(bufferView, "loadBufferView", (extension) => extension.loadBufferViewAsync ? extension.loadBufferViewAsync(context, bufferView) : null);
+        return this._applyExtensionsAsync(bufferView, "loadBufferView", (extension) => (extension.loadBufferViewAsync ? extension.loadBufferViewAsync(context, bufferView) : null));
     }
 
     private _extensionsLoadBufferAsync(context: string, buffer: IBuffer, byteOffset: number, byteLength: number): Nullable<Promise<ArrayBufferView>> {
-        return this._applyExtensionsAsync(buffer, "loadBuffer", (extension) => extension.loadBufferAsync ? extension.loadBufferAsync(context, buffer, byteOffset, byteLength) : null);
+        return this._applyExtensionsAsync(buffer, "loadBuffer", (extension) =>
+            extension.loadBufferAsync ? extension.loadBufferAsync(context, buffer, byteOffset, byteLength) : null
+        );
     }
 
     /**
