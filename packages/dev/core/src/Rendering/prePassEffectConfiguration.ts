@@ -25,10 +25,6 @@ export interface PrePassEffectConfiguration {
      */
     needsImageProcessing?: boolean;
     /**
-     * Does this effect already perform composition to the canvas frame buffer
-     */
-    effectAlreadyComposes?: boolean;
-    /**
      * Disposes the effect configuration
      */
     dispose?: () => void;

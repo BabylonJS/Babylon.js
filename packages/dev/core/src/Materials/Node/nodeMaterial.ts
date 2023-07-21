@@ -718,11 +718,9 @@ export class NodeMaterial extends PushMaterial {
         // Compilation state
         this._vertexCompilationState = new NodeMaterialBuildState();
         this._vertexCompilationState.supportUniformBuffers = engine.supportsUniformBuffers;
-        this._vertexCompilationState.prePassCapable = this.isPrePassCapable;
         this._vertexCompilationState.target = NodeMaterialBlockTargets.Vertex;
         this._fragmentCompilationState = new NodeMaterialBuildState();
         this._fragmentCompilationState.supportUniformBuffers = engine.supportsUniformBuffers;
-        this._fragmentCompilationState.prePassCapable = this.isPrePassCapable;
         this._fragmentCompilationState.target = NodeMaterialBlockTargets.Fragment;
 
         // Shared data
@@ -849,7 +847,7 @@ export class NodeMaterial extends PushMaterial {
 
         // PrePass
         const oit = this.needAlphaBlendingForMesh(mesh) && this.getScene().useOrderIndependentTransparency;
-        MaterialHelper.PrepareDefinesForPrePass(this.getScene(), defines, this.isPrePassCapable && !oit && !this.prePassTextureInputs.length);
+        MaterialHelper.PrepareDefinesForPrePass(this.getScene(), defines, !oit && !this.prePassTextureInputs.length);
 
         if (oldNormal !== defines["NORMAL"] || oldTangent !== defines["TANGENT"] || oldColor !== defines["VERTEXCOLOR_NME"] || uvChanged) {
             defines.markAsAttributesDirty();
@@ -860,7 +858,7 @@ export class NodeMaterial extends PushMaterial {
      * Can this material render to prepass
      */
     public get isPrePassCapable(): boolean {
-        return (this.getBlockByPredicate((block) => block.getClassName() === "FragmentOutputBlock") as FragmentOutputBlock)?.prePassCapable;
+        return true;
     }
 
     public get prePassTextureOutputs(): number[] {
@@ -874,20 +872,18 @@ export class NodeMaterial extends PushMaterial {
             return result;
         }
 
-        if (fragmentOutputBlock.prePassCapable) {
-            result.push(Constants.PREPASS_COLOR_TEXTURE_TYPE);
+        result.push(Constants.PREPASS_COLOR_TEXTURE_TYPE);
 
-            if (fragmentOutputBlock.depth.isConnected) {
-                result.push(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
-            }
+        if (fragmentOutputBlock.depth.isConnected) {
+            result.push(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
+        }
 
-            if (fragmentOutputBlock.worldNormal.isConnected) {
-                result.push(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
-            }
+        if (fragmentOutputBlock.worldNormal.isConnected) {
+            result.push(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
+        }
 
-            if (fragmentOutputBlock.worldPosition.isConnected) {
-                result.push(Constants.PREPASS_POSITION_TEXTURE_TYPE);
-            }
+        if (fragmentOutputBlock.worldPosition.isConnected) {
+            result.push(Constants.PREPASS_POSITION_TEXTURE_TYPE);
         }
 
         return result;

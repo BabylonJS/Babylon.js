@@ -52,10 +52,6 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
     @editableInPropertyPage("Use logarithmic depth", PropertyTypeForEdition.Boolean, "PROPERTIES")
     public useLogarithmicDepth = false;
 
-    /** Gets or sets a boolean indicating if the additional prepass outputs should be used */
-    @editableInPropertyPage("Turn on prepass outputs", PropertyTypeForEdition.Boolean, "PROPERTIES")
-    public prePassCapable = false;
-
     /**
      * Gets the current class name
      * @returns the class name
@@ -121,7 +117,6 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         defines.setValue(this._linearDefineName, this.convertToLinearSpace, true);
         defines.setValue(this._gammaDefineName, this.convertToGammaSpace, true);
-        defines.markAsPrePassDirty();
     }
 
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
@@ -149,10 +144,6 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         }
         this._linearDefineName = state._getFreeDefineName("CONVERTTOLINEAR");
         this._gammaDefineName = state._getFreeDefineName("CONVERTTOGAMMA");
-        if (state.prePassCapable) {
-            state._emitPrePassOutput("extension", "#extension GL_EXT_draw_buffers : require\r\n");
-            state._emitPrePassOutput("declaration", "layout(location = 0) out highp vec4 glFragData[SCENE_MRT_COUNT];\r\nhighp vec4 gl_FragColor;\r\n");
-        }
 
         const comments = `//${this.name}`;
         state._emitFunctionFromInclude("helperFunctions", comments);
@@ -191,35 +182,33 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
             state.compilationString += `gl_FragDepthEXT = log2(vFragmentDepth) * logarithmicDepthConstant * 0.5;\r\n`;
         }
 
-        if (state.prePassCapable) {
-            state.compilationString += `#if defined(PREPASS)\r\n`;
-            state.compilationString += `gl_FragData[0] = gl_FragColor;\r\n`;
-            state.compilationString += `#ifdef PREPASS_DEPTH\r\n`;
-            if (depth.connectedPoint) {
-                state.compilationString += ` gl_FragData[PREPASS_DEPTH_INDEX] = vec4(${depth.associatedVariableName}, 0.0, 0.0, 1.0);\r\n`;
-            } else {
-                // We have to write something on the depth output or it will raise a gl error
-                state.compilationString += ` gl_FragData[PREPASS_DEPTH_INDEX] = vec4(0.0, 0.0, 0.0, 0.0);\r\n`;
-            }
-            state.compilationString += `#endif\r\n`;
-            state.compilationString += `#ifdef PREPASS_POSITION\r\n`;
-            if (worldPosition.connectedPoint) {
-                state.compilationString += ` gl_FragData[PREPASS_POSITION_INDEX] = vec4(${worldPosition.associatedVariableName}, 1.0);\r\n`;
-            } else {
-                // We have to write something on the position output or it will raise a gl error
-                state.compilationString += ` gl_FragData[PREPASS_POSITION_INDEX] = vec4(0.0, 0.0, 0.0, 0.0);\r\n`;
-            }
-            state.compilationString += `#endif\r\n`;
-            state.compilationString += `#ifdef PREPASS_NORMAL\r\n`;
-            if (worldNormal.connectedPoint) {
-                state.compilationString += ` gl_FragData[PREPASS_NORMAL_INDEX] = vec4(${worldNormal.associatedVariableName}, 1.0);\r\n`;
-            } else {
-                // We have to write something on the normal output or it will raise a gl error
-                state.compilationString += ` gl_FragData[PREPASS_NORMAL_INDEX] = vec4(0.0, 0.0, 0.0, 0.0);\r\n`;
-            }
-            state.compilationString += `#endif\r\n`;
-            state.compilationString += `#endif\r\n`;
+        state.compilationString += `#if defined(PREPASS)\r\n`;
+        state.compilationString += `gl_FragData[0] = gl_FragColor;\r\n`;
+        state.compilationString += `#ifdef PREPASS_DEPTH\r\n`;
+        if (depth.connectedPoint) {
+            state.compilationString += ` gl_FragData[PREPASS_DEPTH_INDEX] = vec4(${depth.associatedVariableName}, 0.0, 0.0, 1.0);\r\n`;
+        } else {
+            // We have to write something on the depth output or it will raise a gl error
+            state.compilationString += ` gl_FragData[PREPASS_DEPTH_INDEX] = vec4(0.0, 0.0, 0.0, 0.0);\r\n`;
         }
+        state.compilationString += `#endif\r\n`;
+        state.compilationString += `#ifdef PREPASS_POSITION\r\n`;
+        if (worldPosition.connectedPoint) {
+            state.compilationString += ` gl_FragData[PREPASS_POSITION_INDEX] = vec4(${worldPosition.associatedVariableName}, 1.0);\r\n`;
+        } else {
+            // We have to write something on the position output or it will raise a gl error
+            state.compilationString += ` gl_FragData[PREPASS_POSITION_INDEX] = vec4(0.0, 0.0, 0.0, 0.0);\r\n`;
+        }
+        state.compilationString += `#endif\r\n`;
+        state.compilationString += `#ifdef PREPASS_NORMAL\r\n`;
+        if (worldNormal.connectedPoint) {
+            state.compilationString += ` gl_FragData[PREPASS_NORMAL_INDEX] = vec4(${worldNormal.associatedVariableName}, 1.0);\r\n`;
+        } else {
+            // We have to write something on the normal output or it will raise a gl error
+            state.compilationString += ` gl_FragData[PREPASS_NORMAL_INDEX] = vec4(0.0, 0.0, 0.0, 0.0);\r\n`;
+        }
+        state.compilationString += `#endif\r\n`;
+        state.compilationString += `#endif\r\n`;
 
         return this;
     }
@@ -229,7 +218,6 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         codeString += `${this._codeVariableName}.convertToGammaSpace = ${this.convertToGammaSpace};\r\n`;
         codeString += `${this._codeVariableName}.convertToLinearSpace = ${this.convertToLinearSpace};\r\n`;
         codeString += `${this._codeVariableName}.useLogarithmicDepth = ${this.useLogarithmicDepth};\r\n`;
-        codeString += `${this._codeVariableName}.prePassCapable = ${this.prePassCapable};\r\n`;
 
         return codeString;
     }
@@ -240,7 +228,6 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         serializationObject.convertToGammaSpace = this.convertToGammaSpace;
         serializationObject.convertToLinearSpace = this.convertToLinearSpace;
         serializationObject.useLogarithmicDepth = this.useLogarithmicDepth;
-        serializationObject.prePassCapable = this.prePassCapable;
 
         return serializationObject;
     }
@@ -251,7 +238,6 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         this.convertToGammaSpace = serializationObject.convertToGammaSpace;
         this.convertToLinearSpace = serializationObject.convertToLinearSpace;
         this.useLogarithmicDepth = serializationObject.useLogarithmicDepth ?? false;
-        this.prePassCapable = serializationObject.prePassCapable ?? false;
     }
 }
 
