@@ -155,7 +155,7 @@ export class SceneSerializer {
         serializationObject.useRightHandedSystem = scene.useRightHandedSystem;
 
         // Fog
-        if (scene.fogMode && scene.fogMode !== 0) {
+        if (scene.fogMode !== 0) {
             serializationObject.fogMode = scene.fogMode;
             serializationObject.fogColor = scene.fogColor.asArray();
             serializationObject.fogStart = scene.fogStart;

@@ -137,19 +137,30 @@ export enum ScenePerformancePriority {
     Aggressive,
 }
 
+export const enum FogMode {
+    /** The fog is deactivated */
+    None = 0,
+    /** The fog density is following an exponential function */
+    Exp = 1,
+    /** The fog density is following an exponential function faster than FogMode.Exp */
+    Exp2 = 2,
+    /** The fog density is following a linear function. */
+    Linear = 3,
+}
+
 /**
  * Represents a scene to be rendered by the engine.
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene
  */
 export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHolder {
     /** The fog is deactivated */
-    public static readonly FOGMODE_NONE = 0;
+    public static readonly FOGMODE_NONE = FogMode.None;
     /** The fog density is following an exponential function */
-    public static readonly FOGMODE_EXP = 1;
+    public static readonly FOGMODE_EXP = FogMode.Exp;
     /** The fog density is following an exponential function faster than FOGMODE_EXP */
-    public static readonly FOGMODE_EXP2 = 2;
+    public static readonly FOGMODE_EXP2 = FogMode.Exp2;
     /** The fog density is following a linear function. */
-    public static readonly FOGMODE_LINEAR = 3;
+    public static readonly FOGMODE_LINEAR = FogMode.Linear;
 
     /**
      * Gets or sets the minimum deltatime when deterministic lock step is enabled
@@ -1063,14 +1074,14 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * | FOGMODE_EXP2 | 2 |
      * | FOGMODE_LINEAR | 3 |
      */
-    public set fogMode(value: number) {
+    public set fogMode(value: FogMode) {
         if (this._fogMode === value) {
             return;
         }
         this._fogMode = value;
         this.markAllMaterialsAsDirty(Constants.MATERIAL_MiscDirtyFlag);
     }
-    public get fogMode(): number {
+    public get fogMode(): FogMode {
         return this._fogMode;
     }
 
