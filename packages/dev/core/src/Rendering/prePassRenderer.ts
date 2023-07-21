@@ -586,9 +586,9 @@ export class PrePassRenderer {
     /**
      * Retrieves an effect configuration by name
      * @param name
-     * @returns
+     * @returns the effect configuration, or null if not present
      */
-    public getEffectConfiguration(name: string): PrePassEffectConfiguration | null {
+    public getEffectConfiguration(name: string): Nullable<PrePassEffectConfiguration> {
         for (let i = 0; i < this._effectConfigurations.length; i++) {
             if (this._effectConfigurations[i].name === name) {
                 return this._effectConfigurations[i];

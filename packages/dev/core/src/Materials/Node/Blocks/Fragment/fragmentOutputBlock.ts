@@ -6,11 +6,9 @@ import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnect
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Scene } from "../../../../scene";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import type { NodeMaterialDefines } from "../../nodeMaterial";
+import type { NodeMaterialDefines, NodeMaterial } from "../../nodeMaterial";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
 import { MaterialHelper } from "../../../materialHelper";
-
-import type { NodeMaterial } from "../../nodeMaterial";
 import type { Effect } from "../../../effect";
 import type { Mesh } from "../../../../Meshes/mesh";
 
@@ -31,10 +29,6 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         this.registerInput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, true);
         this.registerInput("rgb", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
         this.registerInput("a", NodeMaterialBlockConnectionPointTypes.Float, true);
-        this.registerInput("depth", NodeMaterialBlockConnectionPointTypes.Float, true);
-        this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.Vector3, true);
-        this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.Vector3, true);
-
         this.rgb.addExcludedConnectionPointFromAllowedTypes(
             NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Float
         );
@@ -90,30 +84,6 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         return this._inputs[2];
     }
 
-    /**
-     * Gets the depth input component - only available if prepass outputs
-     * are turned on
-     */
-    public get depth(): NodeMaterialConnectionPoint {
-        return this._inputs[3];
-    }
-
-    /**
-     * Gets the depth input component - only available if prepass outputs
-     * are turned on
-     */
-    public get worldPosition(): NodeMaterialConnectionPoint {
-        return this._inputs[4];
-    }
-
-    /**
-     * Gets the depth input component - only available if prepass outputs
-     * are turned on
-     */
-    public get worldNormal(): NodeMaterialConnectionPoint {
-        return this._inputs[5];
-    }
-
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         defines.setValue(this._linearDefineName, this.convertToLinearSpace, true);
         defines.setValue(this._gammaDefineName, this.convertToGammaSpace, true);
@@ -131,9 +101,6 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         const rgba = this.rgba;
         const rgb = this.rgb;
         const a = this.a;
-        const worldPosition = this.worldPosition;
-        const worldNormal = this.worldNormal;
-        const depth = this.depth;
 
         state.sharedData.hints.needAlphaBlending = rgba.isConnected || a.isConnected;
         state.sharedData.blocksWithDefines.push(this);
@@ -184,30 +151,6 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
 
         state.compilationString += `#if defined(PREPASS)\r\n`;
         state.compilationString += `gl_FragData[0] = gl_FragColor;\r\n`;
-        state.compilationString += `#ifdef PREPASS_DEPTH\r\n`;
-        if (depth.connectedPoint) {
-            state.compilationString += ` gl_FragData[PREPASS_DEPTH_INDEX] = vec4(${depth.associatedVariableName}, 0.0, 0.0, 1.0);\r\n`;
-        } else {
-            // We have to write something on the depth output or it will raise a gl error
-            state.compilationString += ` gl_FragData[PREPASS_DEPTH_INDEX] = vec4(0.0, 0.0, 0.0, 0.0);\r\n`;
-        }
-        state.compilationString += `#endif\r\n`;
-        state.compilationString += `#ifdef PREPASS_POSITION\r\n`;
-        if (worldPosition.connectedPoint) {
-            state.compilationString += ` gl_FragData[PREPASS_POSITION_INDEX] = vec4(${worldPosition.associatedVariableName}, 1.0);\r\n`;
-        } else {
-            // We have to write something on the position output or it will raise a gl error
-            state.compilationString += ` gl_FragData[PREPASS_POSITION_INDEX] = vec4(0.0, 0.0, 0.0, 0.0);\r\n`;
-        }
-        state.compilationString += `#endif\r\n`;
-        state.compilationString += `#ifdef PREPASS_NORMAL\r\n`;
-        if (worldNormal.connectedPoint) {
-            state.compilationString += ` gl_FragData[PREPASS_NORMAL_INDEX] = vec4(${worldNormal.associatedVariableName}, 1.0);\r\n`;
-        } else {
-            // We have to write something on the normal output or it will raise a gl error
-            state.compilationString += ` gl_FragData[PREPASS_NORMAL_INDEX] = vec4(0.0, 0.0, 0.0, 0.0);\r\n`;
-        }
-        state.compilationString += `#endif\r\n`;
         state.compilationString += `#endif\r\n`;
 
         return this;

@@ -71,8 +71,12 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
+    private static _IsPrePassTextureBlock(block: Nullable<ImageSourceBlock | PrePassTextureBlock>): block is PrePassTextureBlock {
+        return block?.getClassName() === "PrePassTextureBlock";
+    }
+
     private get _isSourcePrePass() {
-        return this._imageSource && !(this._imageSource as ImageSourceBlock).samplerName;
+        return TextureBlock._IsPrePassTextureBlock(this._imageSource);
     }
 
     /**
@@ -80,11 +84,11 @@ export class TextureBlock extends NodeMaterialBlock {
      */
     public get samplerName(): string {
         if (this._imageSource) {
-            if ((this._imageSource as ImageSourceBlock).samplerName) {
-                return (this._imageSource as ImageSourceBlock).samplerName;
+            if (!TextureBlock._IsPrePassTextureBlock(this._imageSource)) {
+                return this._imageSource.samplerName;
             }
             if (this.source.connectedPoint) {
-                return (this._imageSource as PrePassTextureBlock).getSamplerName(this.source.connectedPoint);
+                return this._imageSource.getSamplerName(this.source.connectedPoint);
             }
         }
         return this._samplerName;

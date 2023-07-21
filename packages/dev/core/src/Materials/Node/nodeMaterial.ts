@@ -847,7 +847,7 @@ export class NodeMaterial extends PushMaterial {
 
         // PrePass
         const oit = this.needAlphaBlendingForMesh(mesh) && this.getScene().useOrderIndependentTransparency;
-        MaterialHelper.PrepareDefinesForPrePass(this.getScene(), defines, !oit && !this.prePassTextureInputs.length);
+        MaterialHelper.PrepareDefinesForPrePass(this.getScene(), defines, !oit);
 
         if (oldNormal !== defines["NORMAL"] || oldTangent !== defines["TANGENT"] || oldColor !== defines["VERTEXCOLOR_NME"] || uvChanged) {
             defines.markAsAttributesDirty();
