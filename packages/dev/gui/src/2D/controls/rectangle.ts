@@ -109,21 +109,29 @@ export class Rectangle extends Container {
     }
 
     /** @internal */
-    protected _computeAdditionnalOffsetX() {
+    protected _computeAdditionalOffsetX() {
+        let additionalWidth = 0;
         if (this._cornerRadius[0] !== 0 || this._cornerRadius[1] !== 0 || this._cornerRadius[2] !== 0 || this._cornerRadius[3] !== 0) {
             // Take in account the aliasing
-            return 1;
+            additionalWidth += 1;
         }
-        return 0;
+        if (this.thickness) {
+            additionalWidth += this.thickness / 2;
+        }
+        return additionalWidth;
     }
 
     /** @internal */
-    protected _computeAdditionnalOffsetY() {
+    protected _computeAdditionalOffsetY() {
+        let additionalHeight = 0;
         if (this._cornerRadius[0] !== 0 || this._cornerRadius[1] !== 0 || this._cornerRadius[2] !== 0 || this._cornerRadius[3] !== 0) {
             // Take in account the aliasing
-            return 1;
+            additionalHeight += 1;
         }
-        return 0;
+        if (this.thickness) {
+            additionalHeight += this.thickness / 2;
+        }
+        return additionalHeight;
     }
 
     protected _getRectangleFill(context: ICanvasRenderingContext) {

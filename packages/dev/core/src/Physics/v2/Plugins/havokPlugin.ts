@@ -1419,6 +1419,12 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                         this._hknp.HP_Constraint_SetAxisMaxLimit(jointId, axId, l.maxLimit);
                     }
                 }
+                if (l.stiffness) {
+                    this._hknp.HP_Constraint_SetAxisStiffness(jointId, axId, l.stiffness);
+                }
+                if (l.damping) {
+                    this._hknp.HP_Constraint_SetAxisDamping(jointId, axId, l.damping);
+                }
             }
         } else {
             throw new Error("Unsupported Constraint Type.");

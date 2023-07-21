@@ -1,13 +1,7 @@
 import type { Scene } from "../../scene";
 import type { Vector3 } from "../../Maths/math.vector";
-import type {
-    IPhysicsEnginePluginV2,
-    PhysicsConstraintAxis,
-    PhysicsConstraintParameters,
-    PhysicsConstraintAxisLimitMode,
-    PhysicsConstraintMotorType,
-} from "./IPhysicsEnginePlugin";
-import { PhysicsConstraintType } from "./IPhysicsEnginePlugin";
+import type { IPhysicsEnginePluginV2, PhysicsConstraintParameters, PhysicsConstraintAxisLimitMode, PhysicsConstraintMotorType } from "./IPhysicsEnginePlugin";
+import { PhysicsConstraintAxis, PhysicsConstraintType } from "./IPhysicsEnginePlugin";
 
 /**
  * This is a holder class for the physics constraint created by the physics plugin
@@ -140,6 +134,14 @@ export class Physics6DoFLimit {
      * Corresponds to a distance in meters for linear axes, an angle in radians for angular axes.
      */
     maxLimit?: number;
+    /**
+     * The stiffness of the constraint.
+     */
+    stiffness?: number;
+    /**
+     * A constraint parameter that specifies damping.
+     */
+    damping?: number;
 }
 
 /**
@@ -418,5 +420,26 @@ export class LockConstraint extends PhysicsConstraint {
 export class PrismaticConstraint extends PhysicsConstraint {
     constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, scene: Scene) {
         super(PhysicsConstraintType.PRISMATIC, { pivotA: pivotA, pivotB: pivotB, axisA: axisA, axisB: axisB }, scene);
+    }
+}
+
+/**
+ * Creates a SpringConstraint, which is a type of Physics6DoFConstraint. This constraint applies a force at the ends which is proportional
+ * to the distance between ends, and a stiffness and damping factor. The force is calculated as (stiffness * positionError) - (damping * velocity)
+ *
+ * @param pivotA - The first pivot of the constraint in local space.
+ * @param pivotB - The second pivot of the constraint in local space.
+ * @param axisA - The first axis of the constraint in local space.
+ * @param axisB - The second axis of the constraint in local space.
+ * @param minDistance - The minimum distance between the two pivots.
+ * @param maxDistance - The maximum distance between the two pivots.
+ * @param stiffness - The stiffness of the spring.
+ * @param damping - The damping of the spring.
+ * @param scene - The scene the constraint belongs to.
+ * @returns The created SpringConstraint.
+ */
+export class SpringConstraint extends Physics6DoFConstraint {
+    constructor(pivotA: Vector3, pivotB: Vector3, axisA: Vector3, axisB: Vector3, minDistance: number, maxDistance: number, stiffness: number, damping: number, scene: Scene) {
+        super({ pivotA, pivotB, axisA, axisB }, [{ axis: PhysicsConstraintAxis.LINEAR_DISTANCE, minLimit: minDistance, maxLimit: maxDistance, stiffness, damping }], scene);
     }
 }

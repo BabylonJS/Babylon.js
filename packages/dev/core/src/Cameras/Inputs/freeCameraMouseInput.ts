@@ -242,6 +242,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
             this._previousPosition = null;
         }
 
+        this._activePointerId = -1;
         this._currentActiveButton = -1;
     }
 
