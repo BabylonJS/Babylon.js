@@ -2202,7 +2202,8 @@ export class NativeEngine extends Engine {
     }
 
     public updateRenderTargetTextureSampleCount(rtWrapper: RenderTargetWrapper, samples: number): number {
-        throw new Error("Updating render target sample count is not currently supported");
+        Logger.Warn("Updating render target sample count is not currently supported");
+        return rtWrapper.samples;
     }
 
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
