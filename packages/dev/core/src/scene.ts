@@ -137,6 +137,9 @@ export enum ScenePerformancePriority {
     Aggressive,
 }
 
+/**
+ * Define how the scene should display fog
+ */
 export const enum FogMode {
     /** The fog is deactivated */
     None = 0,
@@ -1069,10 +1072,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/environment_introduction#fog
      * | mode | value |
      * | --- | --- |
-     * | FOGMODE_NONE | 0 |
-     * | FOGMODE_EXP | 1 |
-     * | FOGMODE_EXP2 | 2 |
-     * | FOGMODE_LINEAR | 3 |
+     * | FogMode.None | 0 |
+     * | FogMode.Exp | 1 |
+     * | FogMode.Exp2 | 2 |
+     * | FogMode.Linear | 3 |
      */
     public set fogMode(value: FogMode) {
         if (this._fogMode === value) {
