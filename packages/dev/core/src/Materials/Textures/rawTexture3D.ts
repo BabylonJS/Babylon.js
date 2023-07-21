@@ -2,6 +2,7 @@ import type { Scene } from "../../scene";
 import { Texture } from "./texture";
 import { Constants } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.rawTexture";
+import type { Nullable } from "../../types";
 /**
  * Class used to store 3D textures containing user data
  */
@@ -21,7 +22,7 @@ export class RawTexture3D extends Texture {
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      */
     constructor(
-        data: ArrayBufferView,
+        data: Nullable<ArrayBufferView>,
         width: number,
         height: number,
         depth: number,
@@ -50,5 +51,44 @@ export class RawTexture3D extends Texture {
             return;
         }
         this._getEngine()!.updateRawTexture3D(this._texture, data, this._texture.format, this._texture!.invertY, null, this._texture.type);
+    }
+
+    /**
+     * Creates a RGBA storage texture from some data.
+     * @param data define the texture data
+     * @param width define the width of the texture
+     * @param height define the height of the texture
+     * @param depth define the depth of the texture
+     * @param scene defines the hosting scene
+     * @param generateMipMaps define whether or not to create mip maps for the texture
+     * @param invertY define if the data should be flipped on Y when uploaded to the GPU
+     * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
+     * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
+     * @returns the RGBA texture
+     */
+    public static CreateRGBAStorageTexture(
+        data: Nullable<ArrayBufferView>,
+        width: number,
+        height: number,
+        depth: number,
+        scene: Scene,
+        generateMipMaps: boolean = true,
+        invertY: boolean = false,
+        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+        type: number = Constants.TEXTURETYPE_UNSIGNED_INT
+    ): RawTexture3D {
+        return new RawTexture3D(
+            data,
+            width,
+            height,
+            depth,
+            Constants.TEXTUREFORMAT_RGBA,
+            scene,
+            generateMipMaps,
+            invertY,
+            samplingMode,
+            type,
+            Constants.TEXTURE_CREATIONFLAG_STORAGE
+        );
     }
 }
