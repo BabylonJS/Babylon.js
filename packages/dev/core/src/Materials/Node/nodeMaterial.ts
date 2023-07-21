@@ -932,8 +932,11 @@ export class NodeMaterial extends PushMaterial {
                     texturesRequired: [],
                 });
             }
-
-            cfg.texturesRequired = prePassTexturesRequired;
+            for (const prePassTexture of prePassTexturesRequired) {
+                if (!cfg.texturesRequired.includes(prePassTexture)) {
+                    cfg.texturesRequired.push(prePassTexture);
+                }
+            }
             cfg.enabled = true;
         }
 
