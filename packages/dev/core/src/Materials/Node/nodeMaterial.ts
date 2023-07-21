@@ -63,6 +63,7 @@ import type { TriPlanarBlock } from "./Blocks/triPlanarBlock";
 import type { BiPlanarBlock } from "./Blocks/biPlanarBlock";
 import type { PrePassRenderer } from "../../Rendering/prePassRenderer";
 import type { PrePassTextureBlock } from "./Blocks/Input/prePassTextureBlock";
+import type { PrePassOutputBlock } from "./Blocks/Fragment/prePassOutputBlock";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -860,11 +861,14 @@ export class NodeMaterial extends PushMaterial {
     public get isPrePassCapable(): boolean {
         return true;
     }
-
+    
+    /**
+     * Outputs written to the prepass
+     */
     public get prePassTextureOutputs(): number[] {
-        const fragmentOutputBlock = this.getBlockByPredicate((block) => block.getClassName() === "FragmentOutputBlock") as FragmentOutputBlock;
+        const prePassOutputBlock = this.getBlockByPredicate((block) => block.getClassName() === "PrePassOutputBlock") as PrePassOutputBlock;
         const result = [] as number[];
-        if (!fragmentOutputBlock) {
+        if (!prePassOutputBlock) {
             return result;
         }
         // Cannot write to prepass if we alread read from prepass
@@ -874,15 +878,15 @@ export class NodeMaterial extends PushMaterial {
 
         result.push(Constants.PREPASS_COLOR_TEXTURE_TYPE);
 
-        if (fragmentOutputBlock.depth.isConnected) {
+        if (prePassOutputBlock.viewDepth.isConnected) {
             result.push(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
         }
 
-        if (fragmentOutputBlock.worldNormal.isConnected) {
+        if (prePassOutputBlock.viewNormal.isConnected) {
             result.push(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
         }
 
-        if (fragmentOutputBlock.worldPosition.isConnected) {
+        if (prePassOutputBlock.worldPosition.isConnected) {
             result.push(Constants.PREPASS_POSITION_TEXTURE_TYPE);
         }
 

@@ -14,6 +14,7 @@ import { LightBlock } from "core/Materials/Node/Blocks/Dual/lightBlock";
 import { FogBlock } from "core/Materials/Node/Blocks/Dual/fogBlock";
 import { VertexOutputBlock } from "core/Materials/Node/Blocks/Vertex/vertexOutputBlock";
 import { FragmentOutputBlock } from "core/Materials/Node/Blocks/Fragment/fragmentOutputBlock";
+import { PrePassOutputBlock } from "core/Materials/Node/Blocks/Fragment/prePassOutputBlock";
 import { NormalizeBlock } from "core/Materials/Node/Blocks/normalizeBlock";
 import { AddBlock } from "core/Materials/Node/Blocks/addBlock";
 import { ModBlock } from "core/Materials/Node/Blocks/modBlock";
@@ -164,6 +165,8 @@ export class BlockTools {
                 return new VertexOutputBlock("VertexOutput");
             case "FragmentOutputBlock":
                 return new FragmentOutputBlock("FragmentOutput");
+            case "PrePassOutputBlock":
+                return new PrePassOutputBlock("PrePassOutput");
             case "AddBlock":
                 return new AddBlock("Add");
             case "ClampBlock":
