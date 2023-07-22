@@ -922,7 +922,7 @@ export class NodeMaterial extends PushMaterial {
         const prePassRenderer = this.getScene().prePassRenderer;
         const prePassTexturesRequired = this.prePassTextureInputs.concat(this.prePassTextureOutputs);
 
-        if (prePassRenderer && prePassTexturesRequired.length) {
+        if (prePassRenderer && prePassTexturesRequired.length > 1) {
             let cfg = prePassRenderer.getEffectConfiguration("nodeMaterial");
             if (!cfg) {
                 cfg = prePassRenderer.addEffectConfiguration({
@@ -940,7 +940,9 @@ export class NodeMaterial extends PushMaterial {
             cfg.enabled = true;
         }
 
-        return !!prePassTexturesRequired.length;
+        // COLOR_TEXTURE is always required for prepass, length > 1 means
+        // we actually need to write to special prepass textures
+        return prePassTexturesRequired.length > 1;
     }
 
     /**
