@@ -149,7 +149,7 @@ module.exports = (env) => {
                 "Access-Control-Allow-Origin": "*",
             },
             client: {
-                overlay: {
+                overlay: process.env.DISABLE_DEV_OVERLAY ? false : {
                     warnings: false,
                     errors: true,
                 },

@@ -18,7 +18,7 @@ import { TextBlock } from "../../2D/controls/textBlock";
 import { AdvancedDynamicTexture } from "../../2D/advancedDynamicTexture";
 import type { Control3D } from "./control3D";
 import { Color3 } from "core/Maths/math.color";
-import { DomManagement } from "core/Misc/domManagement";
+import { IsDocumentAvailable } from "core/Misc/domManagement";
 
 /**
  * Class used to create a holographic button in 3D
@@ -229,7 +229,7 @@ export class HolographicButton extends Button3D {
         const panel = new StackPanel();
         panel.isVertical = true;
 
-        if (DomManagement.IsDocumentAvailable() && !!document.createElement) {
+        if (IsDocumentAvailable() && !!document.createElement) {
             if (this._imageUrl) {
                 const image = new Image();
                 image.source = this._imageUrl;

@@ -1,6 +1,6 @@
 import type { Engine } from "../Engines/engine";
 import type { IPointerEvent, IUIEvent } from "../Events/deviceInputEvents";
-import { DomManagement, IsNavigatorAvailable } from "../Misc/domManagement";
+import { IsNavigatorAvailable } from "../Misc/domManagement";
 import type { Observer } from "../Misc/observable";
 import { Tools } from "../Misc/tools";
 import type { Nullable } from "../types";
@@ -55,7 +55,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _eventsAttached: boolean = false;
 
     private _mouseId = -1;
-    private readonly _isUsingFirefox = DomManagement.IsNavigatorAvailable() && navigator.userAgent && navigator.userAgent.indexOf("Firefox") !== -1;
+    private readonly _isUsingFirefox = IsNavigatorAvailable() && navigator.userAgent && navigator.userAgent.indexOf("Firefox") !== -1;
 
     // Array to store active Pointer ID values; prevents issues with negative pointerIds
     private _activeTouchIds: Array<number>;
@@ -400,7 +400,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
      */
     private _handlePointerActions(): void {
         // If maxTouchPoints is defined, use that value.  Otherwise, allow for a minimum for supported gestures like pinch
-        this._maxTouchPoints = (DomManagement.IsNavigatorAvailable() && navigator.maxTouchPoints) || 2;
+        this._maxTouchPoints = (IsNavigatorAvailable() && navigator.maxTouchPoints) || 2;
         if (!this._activeTouchIds) {
             this._activeTouchIds = new Array<number>(this._maxTouchPoints);
         }
