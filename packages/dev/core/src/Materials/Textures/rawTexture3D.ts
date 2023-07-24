@@ -2,6 +2,7 @@ import type { Scene } from "../../scene";
 import { Texture } from "./texture";
 import { Constants } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.rawTexture";
+import type { Nullable } from "../../types";
 /**
  * Class used to store 3D textures containing user data
  */
@@ -21,7 +22,7 @@ export class RawTexture3D extends Texture {
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      */
     constructor(
-        data: ArrayBufferView,
+        data: Nullable<ArrayBufferView>,
         width: number,
         height: number,
         depth: number,
