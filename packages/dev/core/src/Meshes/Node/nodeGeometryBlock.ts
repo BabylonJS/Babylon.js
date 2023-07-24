@@ -1,5 +1,6 @@
 import { UniqueIdGenerator } from "../../Misc/uniqueIdGenerator";
-import type { NodeGeometryConnectionPoint } from "./nodeGeometryBlockConnectionPoint";
+import type{ NodeGeometryBlockConnectionPointTypes } from "./Enums/nodeMaterialGeometryConnectionPointTypes";
+import { NodeGeometryConnectionPoint, NodeGeometryConnectionPointDirection } from "./nodeGeometryBlockConnectionPoint";
 
 /**
  * Defines a block that can be used inside a node based geometry
@@ -37,6 +38,14 @@ export class NodeGeometryBlock {
     }
 
     /**
+     * Gets the current class name e.g. "NodeGeometryBlock"
+     * @returns the class name
+     */
+    public getClassName() {
+        return "NodeGeometryBlock";
+    }    
+
+    /**
      * Checks if the current block is an ancestor of a given block
      * @param block defines the potential descendant block to check
      * @returns true if block is a descendant
@@ -68,4 +77,66 @@ export class NodeGeometryBlock {
         this._name = name;
         this.uniqueId = UniqueIdGenerator.UniqueId;
     }
+
+    /**
+     * Register a new input. Must be called inside a block constructor
+     * @param name defines the connection point name
+     * @param type defines the connection point type
+     * @param isOptional defines a boolean indicating that this input can be omitted
+     * @param point an already created connection point. If not provided, create a new one
+     * @returns the current block
+     */
+    public registerInput(
+        name: string,
+        type: NodeGeometryBlockConnectionPointTypes,
+        isOptional: boolean = false,
+        point?: NodeGeometryConnectionPoint
+    ) {
+        point = point ?? new NodeGeometryConnectionPoint(name, this, NodeGeometryConnectionPointDirection.Input);
+        point.type = type;
+        point.isOptional = isOptional;
+
+        this._inputs.push(point);
+
+        return this;
+    } 
+    
+    /**
+     * Register a new output. Must be called inside a block constructor
+     * @param name defines the connection point name
+     * @param type defines the connection point type
+     * @param point an already created connection point. If not provided, create a new one
+     * @returns the current block
+     */
+    public registerOutput(name: string, type: NodeGeometryBlockConnectionPointTypes, point?: NodeGeometryConnectionPoint) {
+        point = point ?? new NodeGeometryConnectionPoint(name, this, NodeGeometryConnectionPointDirection.Output);
+
+        this._outputs.push(point);
+
+        return this;
+    }    
+
+    /**
+     * Serializes this block in a JSON representation
+     * @returns the serialized block object
+     */
+    public serialize(): any {
+        const serializationObject: any = {};
+        serializationObject.customType = "BABYLON." + this.getClassName();
+        serializationObject.id = this.uniqueId;
+        serializationObject.name = this.name;
+
+        serializationObject.inputs = [];
+        serializationObject.outputs = [];
+
+        for (const input of this.inputs) {
+            serializationObject.inputs.push(input.serialize());
+        }
+
+        for (const output of this.outputs) {
+            serializationObject.outputs.push(output.serialize(false));
+        }
+
+        return serializationObject;
+    }    
 }
