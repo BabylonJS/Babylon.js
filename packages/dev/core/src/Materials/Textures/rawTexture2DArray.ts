@@ -91,43 +91,4 @@ export class RawTexture2DArray extends Texture {
     ): RawTexture2DArray {
         return new RawTexture2DArray(data, width, height, depth, Constants.TEXTUREFORMAT_RGBA, scene, generateMipMaps, invertY, samplingMode, type);
     }
-
-    /**
-     * Creates a RGBA storage texture from some data.
-     * @param data define the texture data
-     * @param width define the width of the texture
-     * @param height define the height of the texture
-     * @param depth define the depth of the texture
-     * @param scene defines the hosting scene
-     * @param generateMipMaps define whether or not to create mip maps for the texture
-     * @param invertY define if the data should be flipped on Y when uploaded to the GPU
-     * @param samplingMode define the texture sampling mode (Texture.xxx_SAMPLINGMODE)
-     * @param type define the format of the data (int, float... Engine.TEXTURETYPE_xxx)
-     * @returns the RGBA texture
-     */
-    public static CreateRGBAStorageTexture(
-        data: Nullable<ArrayBufferView>,
-        width: number,
-        height: number,
-        depth: number,
-        scene: Scene,
-        generateMipMaps: boolean = true,
-        invertY: boolean = false,
-        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT
-    ): RawTexture2DArray {
-        return new RawTexture2DArray(
-            data,
-            width,
-            height,
-            depth,
-            Constants.TEXTUREFORMAT_RGBA,
-            scene,
-            generateMipMaps,
-            invertY,
-            samplingMode,
-            type,
-            Constants.TEXTURE_CREATIONFLAG_STORAGE
-        );
-    }
 }
