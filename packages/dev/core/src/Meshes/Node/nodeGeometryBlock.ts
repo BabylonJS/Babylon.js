@@ -1,6 +1,7 @@
 import { UniqueIdGenerator } from "../../Misc/uniqueIdGenerator";
 import type{ NodeGeometryBlockConnectionPointTypes } from "./Enums/nodeMaterialGeometryConnectionPointTypes";
 import { NodeGeometryConnectionPoint, NodeGeometryConnectionPointDirection } from "./nodeGeometryBlockConnectionPoint";
+import type { NodeGeometryBuildState } from "./nodeGeometryBuildState";
 
 /**
  * Defines a block that can be used inside a node based geometry
@@ -120,10 +121,11 @@ export class NodeGeometryBlock {
 
     /**
      * Compile the current node and generate the shader code
+     * @param state defines the current generation state
      * @param activeBlocks defines the list of active blocks (i.e. blocks to compile)
      * @returns true if already built
      */
-    public build(activeBlocks: NodeGeometryBlock[]): boolean {
+    public build(state: NodeGeometryBuildState, activeBlocks: NodeGeometryBlock[]): boolean {
         return true;
     }
 

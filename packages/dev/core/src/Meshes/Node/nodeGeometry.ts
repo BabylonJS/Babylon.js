@@ -5,6 +5,7 @@ import type { VertexData } from "../mesh.vertexData";
 import type { Scene } from "../../scene";
 import type { MeshOutputBlock } from "./Blocks/meshOutputBlock";
 import type { NodeGeometryBlock } from "./nodeGeometryBlock";
+import { NodeGeometryBuildState } from "./nodeGeometryBuildState";
 
 /**
  * Defines a node based geometry
@@ -28,11 +29,10 @@ export class NodeGeometry {
 
     /**
      * Build the material and generates the inner effect
-     * @param verbose defines if the build should log activity
      * @param updateBuildId defines if the internal build Id should be updated (default is true)
      * @param autoConfigure defines if the autoConfigure method should be called when initializing blocks (default is true)
      */    
-    public build(verbose: boolean = false, updateBuildId = true, autoConfigure = true) {
+    public build(updateBuildId = true, autoConfigure = true) {
         this._buildWasSuccessful = false;
 
         if (!this._meshOutputBlock) {
@@ -44,21 +44,15 @@ export class NodeGeometry {
 
         // Build
         const blocks: NodeGeometryBlock[] = [];
-        this._meshOutputBlock.build(blocks);
+        const state = new NodeGeometryBuildState();
+        this._meshOutputBlock.build(state, blocks);
 
         if (updateBuildId) {
             this._buildId = NodeGeometry._BuildIdGenerator++;
         }
 
         // Errors
-        // this._sharedData.emitErrors();
-
-        // if (verbose) {
-        //     console.log("Vertex shader:");
-        //     console.log(this._vertexCompilationState.compilationString);
-        //     console.log("Fragment shader:");
-        //     console.log(this._fragmentCompilationState.compilationString);
-        // }
+        state.emitErrors();
 
         this._buildWasSuccessful = true;
         this.onBuildObservable.notifyObservers(this);

@@ -7,7 +7,6 @@ import { RegisterClass } from "../../../Misc/typeStore";
  */
 export class MeshOutputBlock extends NodeGeometryBlock {
 
-
     /**
      * Gets the rgba input component
      */
