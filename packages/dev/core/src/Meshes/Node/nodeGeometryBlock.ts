@@ -12,6 +12,8 @@ export class NodeGeometryBlock {
     public _inputs = new Array<NodeGeometryConnectionPoint>();
     /** @internal */
     public _outputs = new Array<NodeGeometryConnectionPoint>();
+    /** @internal */
+    public _preparationId: number;    
 
     /**
      * Gets the list of input points
@@ -114,6 +116,29 @@ export class NodeGeometryBlock {
         this._outputs.push(point);
 
         return this;
+    }    
+
+    /**
+     * Compile the current node and generate the shader code
+     * @param activeBlocks defines the list of active blocks (i.e. blocks to compile)
+     * @returns true if already built
+     */
+    public build(activeBlocks: NodeGeometryBlock[]): boolean {
+        return true;
+    }
+
+    /**
+     * Initialize the block and prepare the context for build
+     */
+    public initialize() {
+        // Do nothing
+    }    
+
+    /**
+     * Lets the block try to connect some inputs automatically
+     */
+    public autoConfigure() {
+        // Do nothing
     }    
 
     /**
