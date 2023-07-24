@@ -1,4 +1,3 @@
-import { CreatePlaneVertexData } from "../../../../Meshes/Builders/planeBuilder";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeMaterialGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
@@ -6,14 +5,16 @@ import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { GeometryInputBlock } from "../geometryInputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Vector4 } from "../../../../Maths/math.vector";
+import type { Color4 } from "../../../../Maths/math.color";
+import { CreateBoxVertexData } from "core/Meshes/Builders";
 
 /**
- * Defines a block used to generate plane geometry data
+ * Defines a block used to generate box geometry data
  */
-export class PlaneBlock extends NodeGeometryBlock {
+export class BoxBlock extends NodeGeometryBlock {
 
     /**
-     * Create a new PlaneBlock
+     * Create a new BoxBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
@@ -22,6 +23,7 @@ export class PlaneBlock extends NodeGeometryBlock {
         this.registerInput("size", NodeGeometryBlockConnectionPointTypes.Float, true);
         this.registerInput("width", NodeGeometryBlockConnectionPointTypes.Float, true);
         this.registerInput("height", NodeGeometryBlockConnectionPointTypes.Float, true);
+        this.registerInput("depth", NodeGeometryBlockConnectionPointTypes.Float, true);
 
         this.registerOutput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);
     }
@@ -31,7 +33,7 @@ export class PlaneBlock extends NodeGeometryBlock {
      * @returns the class name
      */
     public getClassName() {
-        return "PlaneBlock";
+        return "BoxBlock";
     }
 
     /**
@@ -53,7 +55,14 @@ export class PlaneBlock extends NodeGeometryBlock {
      */
     public get height(): NodeGeometryConnectionPoint {
         return this._inputs[2];
-    }    
+    }     
+
+    /**
+     * Gets the depth input component
+     */
+    public get depth(): NodeGeometryConnectionPoint {
+        return this._inputs[3];
+    }  
 
     /**
      * Gets the geometry output component
@@ -67,7 +76,7 @@ export class PlaneBlock extends NodeGeometryBlock {
             return;
         }
 
-        if (!this.width.isConnected && !this.height.isConnected) {
+        if (!this.width.isConnected && !this.height.isConnected && !this.depth.isConnected) {
             const sizeInput = new GeometryInputBlock("size");
             sizeInput.value = 1;
             sizeInput.output.connectTo(this.size);
@@ -84,11 +93,30 @@ export class PlaneBlock extends NodeGeometryBlock {
             const heightInput = new GeometryInputBlock("height");
             heightInput.value = 1;
             heightInput.output.connectTo(this.height);
-        }        
+        }       
+        
+        if (!this.depth.isConnected) {
+            const depthInput = new GeometryInputBlock("depth");
+            depthInput.value = 1;
+            depthInput.output.connectTo(this.depth);
+        }  
     }    
 
     protected _buildBlock(state: NodeGeometryBuildState) {
-        const options: { size?: number; width?: number; height?: number; sideOrientation?: number; frontUVs?: Vector4; backUVs?: Vector4 } = {};
+        const options: {
+            size?: number;
+            width?: number;
+            height?: number;
+            depth?: number;
+            faceUV?: Vector4[];
+            faceColors?: Color4[];
+            sideOrientation?: number;
+            frontUVs?: Vector4;
+            backUVs?: Vector4;
+            wrap?: boolean;
+            topBaseAt?: number;
+            bottomBaseAt?: number;
+        } = {};
 
         if (this.size.isConnected) {
             options.size = this.size.connectedValue;
@@ -102,10 +130,14 @@ export class PlaneBlock extends NodeGeometryBlock {
             options.height = this.height.connectedValue;
         }
 
+        if (this.depth.isConnected) {
+            options.depth = this.depth.connectedValue;
+        }        
+
         // Append vertex data from the plane builder
-        this.geometry._storedValue = CreatePlaneVertexData(options);
+        this.geometry._storedValue = CreateBoxVertexData(options);
     }
 }
 
 
-RegisterClass("BABYLON.PlaneBlock", PlaneBlock);
+RegisterClass("BABYLON.BoxBlock", BoxBlock);

@@ -2,7 +2,7 @@ import type { Nullable } from "../../types";
 import type { NodeGeometryBlock } from "./nodeGeometryBlock";
 import { Observable } from "../../Misc/observable";
 import { NodeGeometryBlockConnectionPointTypes } from "./Enums/nodeMaterialGeometryConnectionPointTypes";
-import type { GeometryInputBlock } from "./Blocks/Sources/geometryInputBlock";
+import type { GeometryInputBlock } from "./Blocks/geometryInputBlock";
 
 /**
  * Enum used to define the compatibility state between two connection points

@@ -1,10 +1,10 @@
-import { Observable } from "../../../../Misc/observable";
-import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeMaterialGeometryConnectionPointTypes";
-import { NodeGeometryBlock } from "../../nodeGeometryBlock";
-import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
-import { RegisterClass } from "../../../../Misc/typeStore";
-import { Vector2, Vector3, Vector4 } from "../../../../Maths/math.vector";
-import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
+import { Observable } from "../../../Misc/observable";
+import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeMaterialGeometryConnectionPointTypes";
+import { NodeGeometryBlock } from "../nodeGeometryBlock";
+import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
+import { RegisterClass } from "../../../Misc/typeStore";
+import { Vector2, Vector3, Vector4 } from "../../../Maths/math.vector";
+import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 
 /**
  * Block used to expose an input value

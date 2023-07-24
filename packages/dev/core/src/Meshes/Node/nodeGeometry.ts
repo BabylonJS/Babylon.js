@@ -72,9 +72,13 @@ export class NodeGeometry {
      * @param scene The scene the mesh is scoped to
      * @returns The new mesh
      */
-    public createMesh(name: string, scene: Nullable<Scene> = null): Mesh {
+    public createMesh(name: string, scene: Nullable<Scene> = null): Nullable<Mesh> {
         if (!this._buildWasSuccessful) {
             this.build();
+        }
+
+        if (!this._vertexData) {
+            return null;
         }
 
         const mesh = new Mesh(name, scene);
