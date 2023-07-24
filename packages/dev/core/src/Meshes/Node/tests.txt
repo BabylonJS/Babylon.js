@@ -30,3 +30,9 @@ var createScene = function () {
 
     return scene;
 };
+
+Block ideas:
+- Sphere
+- Merge
+- position transform
+- need to rebuild normal in output
