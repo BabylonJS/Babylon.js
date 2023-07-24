@@ -1,4 +1,4 @@
-import type { IPhysicsEnabledObject } from "..//physicsImpostor";
+import type { IPhysicsEnabledObject } from "../physicsImpostor";
 import { PhysicsImpostor } from "../physicsImpostor";
 import type { IMotorEnabledJoint, DistanceJointData, SpringJointData } from "../physicsJoint";
 import { PhysicsJoint } from "../physicsJoint";
