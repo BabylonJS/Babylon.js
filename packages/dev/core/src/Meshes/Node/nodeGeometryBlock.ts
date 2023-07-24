@@ -9,6 +9,7 @@ import type { NodeGeometryBuildState } from "./nodeGeometryBuildState";
 export class NodeGeometryBlock {
     private _name = "";
     private _buildId: number;
+    private _isInput = false;
 
     /** @internal */
     public _inputs = new Array<NodeGeometryConnectionPoint>();
@@ -40,6 +41,13 @@ export class NodeGeometryBlock {
     public get name(): string {
         return this._name;
     }
+
+    /**
+     * Gets a boolean indicating that this block is an input (e.g. it sends data to the shader)
+     */
+    public get isInput(): boolean {
+        return this._isInput;
+    }    
 
     /**
      * Gets the current class name e.g. "NodeGeometryBlock"
@@ -74,11 +82,13 @@ export class NodeGeometryBlock {
     }
 
     /**
-     * Creates a new NodeMaterialBlock
+     * Creates a new NodeGeometryBlock
      * @param name defines the block name
+     * @param isInput defines a boolean indicating that this block is an input (e.g. it is a data source). Default is false
      */
-    public constructor(name: string) {
+    public constructor(name: string, isInput = false) {
         this._name = name;
+        this._isInput = isInput;
         this.uniqueId = UniqueIdGenerator.UniqueId;
     }
 
@@ -114,6 +124,7 @@ export class NodeGeometryBlock {
      */
     public registerOutput(name: string, type: NodeGeometryBlockConnectionPointTypes, point?: NodeGeometryConnectionPoint) {
         point = point ?? new NodeGeometryConnectionPoint(name, this, NodeGeometryConnectionPointDirection.Output);
+        point.type = type;
 
         this._outputs.push(point);
 
@@ -214,5 +225,18 @@ export class NodeGeometryBlock {
         }
 
         return serializationObject;
+    }  
+    
+    /**
+     * Release resources
+     */
+    public dispose() {
+        for (const input of this.inputs) {
+            input.dispose();
+        }
+
+        for (const output of this.outputs) {
+            output.dispose();
+        }
     }    
 }

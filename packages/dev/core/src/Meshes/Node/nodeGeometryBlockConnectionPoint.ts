@@ -2,6 +2,7 @@ import type { Nullable } from "../../types";
 import type { NodeGeometryBlock } from "./nodeGeometryBlock";
 import { Observable } from "../../Misc/observable";
 import { NodeGeometryBlockConnectionPointTypes } from "./Enums/nodeMaterialGeometryConnectionPointTypes";
+import type { GeometryInputBlock } from "./Blocks/Sources/geometryInputBlock";
 
 /**
  * Enum used to define the compatibility state between two connection points
@@ -33,6 +34,8 @@ export class NodeGeometryConnectionPoint {
     public _ownerBlock: NodeGeometryBlock;
     /** @internal */
     public _connectedPoint: Nullable<NodeGeometryConnectionPoint> = null;
+    /** @internal */
+    public _storedValue: any = null;
 
     private _endpoints = new Array<NodeGeometryConnectionPoint>();
     private _direction: NodeGeometryConnectionPointDirection;
@@ -72,6 +75,10 @@ export class NodeGeometryConnectionPoint {
      */
     public get type(): NodeGeometryBlockConnectionPointTypes {
         if (this._type === NodeGeometryBlockConnectionPointTypes.AutoDetect) {
+            if (this._ownerBlock.isInput) {
+                return (this._ownerBlock as GeometryInputBlock).type;
+            }
+
             if (this._connectedPoint) {
                 return this._connectedPoint.type;
             }
@@ -165,6 +172,13 @@ export class NodeGeometryConnectionPoint {
             return this.type;
         }
         return this._type;
+    }
+
+    public get connectedValue() {
+        if (this.isConnected) {
+            return this._connectedPoint?._storedValue;
+        }
+        return null;
     }
 
     /**

@@ -1,0 +1,41 @@
+import { NodeGeometryBlock } from "../nodeGeometryBlock";
+import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
+import { RegisterClass } from "../../../Misc/typeStore";
+import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeMaterialGeometryConnectionPointTypes";
+import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
+
+/**
+ * Block used to generate the final geometry
+ */
+export class GeometryOutputBlock extends NodeGeometryBlock {
+    /**
+     * Create a new GeometryOutputBlock
+     * @param name defines the block name
+     */
+    public constructor(name: string) {
+        super(name);
+
+        this.registerInput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);
+    }
+
+    /**
+     * Gets the current class name
+     * @returns the class name
+     */
+    public getClassName() {
+        return "GeometryOutputBlock";
+    }    
+    /**
+     * Gets the geometry input component
+     */
+    public get geometry(): NodeGeometryConnectionPoint {
+        return this._inputs[0];
+    }
+
+    protected _buildBlock(state: NodeGeometryBuildState) {
+        state.vertexData = this.geometry.connectedValue;
+    }
+
+}
+
+RegisterClass("BABYLON.GeometryOutputBlock", GeometryOutputBlock);

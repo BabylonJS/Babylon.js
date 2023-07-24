@@ -1,3 +1,5 @@
+import type { Nullable } from "../../types";
+import type { VertexData } from "../mesh.vertexData";
 import type{ NodeGeometryConnectionPoint } from "./nodeGeometryBlockConnectionPoint";
 
 /**
@@ -7,6 +9,7 @@ export class NodeGeometryBuildState {
     public notConnectedNonOptionalInputs: NodeGeometryConnectionPoint[] = [];
     public buildId: number;
     public verbose: boolean;
+    public vertexData: Nullable<VertexData> = null;
 
     /**
      * Emits console errors and exceptions if there is a failing check
