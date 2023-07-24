@@ -8,6 +8,7 @@ import type { NodeGeometryBuildState } from "./nodeGeometryBuildState";
  */
 export class NodeGeometryBlock {
     private _name = "";
+    private _buildId: number;
 
     /** @internal */
     public _inputs = new Array<NodeGeometryConnectionPoint>();
@@ -119,14 +120,62 @@ export class NodeGeometryBlock {
         return this;
     }    
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    protected _buildBlock(state: NodeGeometryBuildState) {
+        // Empty. Must be defined by child nodes
+    }    
+
     /**
-     * Compile the current node and generate the shader code
+     * Build the current node and generate the vertex data
      * @param state defines the current generation state
      * @param activeBlocks defines the list of active blocks (i.e. blocks to compile)
      * @returns true if already built
      */
     public build(state: NodeGeometryBuildState, activeBlocks: NodeGeometryBlock[]): boolean {
-        return true;
+        if (this._buildId === state.buildId) {
+            return true;
+        }
+
+        // Check if "parent" blocks are compiled
+        for (const input of this._inputs) {
+            if (!input.connectedPoint) {
+                if (!input.isOptional) {
+                    // Emit a warning
+                    state.notConnectedNonOptionalInputs.push(input);
+                }
+                continue;
+            }
+
+            const block = input.connectedPoint.ownerBlock;
+            if (block && block !== this) {
+                block.build(state, activeBlocks);
+            }
+        }
+
+        if (this._buildId === state.buildId) {
+            return true; // Need to check again as inputs can be connected multiple time to this endpoint
+        }
+
+        // Logs
+        if (state.verbose) {
+            console.log(`Building ${this.name} [${this.getClassName()}]`);
+        }
+
+        this._buildBlock(state);
+
+        this._buildId = state.buildId;
+
+        // Compile connected blocks
+        for (const output of this._outputs) {
+            for (const endpoint of output.endpoints) {
+                const block = endpoint.ownerBlock;
+
+                if (block && activeBlocks.indexOf(block) !== -1) {
+                    block.build(state, activeBlocks);
+                }
+            }
+        }
+        return false;
     }
 
     /**

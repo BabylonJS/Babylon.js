@@ -5,6 +5,8 @@ import type{ NodeGeometryConnectionPoint } from "./nodeGeometryBlockConnectionPo
  */
 export class NodeGeometryBuildState {
     public notConnectedNonOptionalInputs: NodeGeometryConnectionPoint[] = [];
+    public buildId: number;
+    public verbose: boolean;
 
     /**
      * Emits console errors and exceptions if there is a failing check

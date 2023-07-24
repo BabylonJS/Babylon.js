@@ -29,10 +29,11 @@ export class NodeGeometry {
 
     /**
      * Build the material and generates the inner effect
+     * @param verbose defines if the build should log activity
      * @param updateBuildId defines if the internal build Id should be updated (default is true)
      * @param autoConfigure defines if the autoConfigure method should be called when initializing blocks (default is true)
      */    
-    public build(updateBuildId = true, autoConfigure = true) {
+    public build(verbose: boolean = false, updateBuildId = true, autoConfigure = true) {
         this._buildWasSuccessful = false;
 
         if (!this._meshOutputBlock) {
@@ -45,6 +46,10 @@ export class NodeGeometry {
         // Build
         const blocks: NodeGeometryBlock[] = [];
         const state = new NodeGeometryBuildState();
+
+        state.buildId = this._buildId;
+        state.verbose = verbose;
+
         this._meshOutputBlock.build(state, blocks);
 
         if (updateBuildId) {

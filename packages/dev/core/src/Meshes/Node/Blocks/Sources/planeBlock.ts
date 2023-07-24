@@ -1,5 +1,6 @@
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeMaterialGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
+import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 
 /**
  * Defines a block used to generate plane geometry data
@@ -21,5 +22,8 @@ export class PlaneBlock extends NodeGeometryBlock {
      */
     public getClassName() {
         return "PlaneBlock";
+    }
+
+    protected _buildBlock(state: NodeGeometryBuildState) {
     }
 }
