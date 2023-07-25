@@ -77,6 +77,16 @@ export class NodeGeometryConnectionPoint {
     public onConnectionObservable = new Observable<NodeGeometryConnectionPoint>();
 
     /**
+     * Gets or sets a boolean indicating that this connection point is exposed on a frame
+     */
+    public isExposedOnFrame: boolean = false;
+
+    /**
+     * Gets or sets number indicating the position that the port is exposed to on a frame
+     */
+    public exposedPortPosition: number = -1;    
+
+    /**
      * Gets or sets the connection point type (default is float)
      */
     public get type(): NodeGeometryBlockConnectionPointTypes {

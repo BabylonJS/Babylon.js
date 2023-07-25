@@ -225,6 +225,22 @@
             "preLaunchTask": "Node Editor Serve (Dev)"
         },
         {
+            "type": "pwa-msedge",
+            "request": "launch",
+            "name": "Node Geometry Editor development (Edge)",
+            "url": "http://localhost:1340",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "Node Geometry Editor Serve (Dev)"
+        },
+        {
+            "type": "pwa-chrome",
+            "request": "launch",
+            "name": "Node Geometry Editor development (Chrome)",
+            "url": "http://localhost:1340",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "Node Geometry Editor Serve (Dev)"
+        },        
+        {
             /*
             Launch the playground to be use to test changes in dev packages
             */
@@ -246,6 +262,28 @@
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Node Editor Serve for core (Dev)"
         },
+        {
+            /*
+            Launch the playground to be use to test changes in dev packages
+            */
+            "type": "pwa-msedge",
+            "request": "launch",
+            "name": "Launch Geometry Node Editor (Edge)",
+            "url": "http://localhost:1340",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "Node Geometry Editor Serve for core (Dev)"
+        },
+        {
+            /*
+            Launch the playground to be use to test changes in dev packages
+            */
+            "type": "pwa-chrome",
+            "request": "launch",
+            "name": "Launch Node Geometry Editor (Chrome)",
+            "url": "http://localhost:1340",
+            "webRoot": "${workspaceFolder}",
+            "preLaunchTask": "Node Geometry Editor Serve for core (Dev)"
+        },        
         {
             "type": "pwa-msedge",
             "request": "launch",

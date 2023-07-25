@@ -1,3 +1,5 @@
+import { GetClass } from "../../Misc/typeStore";
+import { serialize } from "../../Misc/decorators";
 import { UniqueIdGenerator } from "../../Misc/uniqueIdGenerator";
 import type{ NodeGeometryBlockConnectionPointTypes } from "./Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryConnectionPoint, NodeGeometryConnectionPointDirection } from "./nodeGeometryBlockConnectionPoint";
@@ -10,13 +12,16 @@ export class NodeGeometryBlock {
     private _name = "";
     private _buildId: number;
     private _isInput = false;
+    protected _isUnique = false;
 
     /** @internal */
     public _inputs = new Array<NodeGeometryConnectionPoint>();
     /** @internal */
     public _outputs = new Array<NodeGeometryConnectionPoint>();
     /** @internal */
-    public _preparationId: number;    
+    public _preparationId: number;   
+    /** @internal */
+    public _codeVariableName = "";     
 
     /**
      * Gets the list of input points
@@ -47,7 +52,26 @@ export class NodeGeometryBlock {
      */
     public get isInput(): boolean {
         return this._isInput;
+    }  
+
+    /**
+     * Gets a boolean indicating that this block can only be used once per NodeGeometry
+     */
+    public get isUnique() {
+        return this._isUnique;
     }    
+    
+    /**
+     * A free comment about the material
+     */
+    @serialize("comment")
+    public comments: string;       
+
+    /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
+    public visibleInInspector = false;
+
+    /** Gets or sets a boolean indicating that this input can be edited from a collapsed frame */
+    public visibleOnFrame = false;    
 
     /**
      * Gets the current class name e.g. "NodeGeometryBlock"
@@ -55,6 +79,14 @@ export class NodeGeometryBlock {
      */
     public getClassName() {
         return "NodeGeometryBlock";
+    }    
+
+    protected _inputRename(name: string) {
+        return name;
+    }
+
+    protected _outputRename(name: string) {
+        return name;
     }    
 
     /**
@@ -213,6 +245,36 @@ export class NodeGeometryBlock {
     }    
 
     /**
+     * Find an input by its name
+     * @param name defines the name of the input to look for
+     * @returns the input or null if not found
+     */
+    public getInputByName(name: string) {
+        const filter = this._inputs.filter((e) => e.name === name);
+
+        if (filter.length) {
+            return filter[0];
+        }
+
+        return null;
+    }
+
+    /**
+     * Find an output by its name
+     * @param name defines the name of the output to look for
+     * @returns the output or null if not found
+     */
+    public getOutputByName(name: string) {
+        const filter = this._outputs.filter((e) => e.name === name);
+
+        if (filter.length) {
+            return filter[0];
+        }
+
+        return null;
+    }    
+
+    /**
      * Serializes this block in a JSON representation
      * @returns the serialized block object
      */
@@ -235,6 +297,161 @@ export class NodeGeometryBlock {
 
         return serializationObject;
     }  
+
+    /**
+     * @internal
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public _deserialize(serializationObject: any, rootUrl: string) {
+        this._name = serializationObject.name;
+        this.comments = serializationObject.comments;
+        this.visibleInInspector = !!serializationObject.visibleInInspector;
+        this.visibleOnFrame = !!serializationObject.visibleOnFrame;
+        this._deserializePortDisplayNamesAndExposedOnFrame(serializationObject);
+    }
+
+    private _deserializePortDisplayNamesAndExposedOnFrame(serializationObject: any) {
+        const serializedInputs = serializationObject.inputs;
+        const serializedOutputs = serializationObject.outputs;
+        if (serializedInputs) {
+            serializedInputs.forEach((port: any, i: number) => {
+                if (port.displayName) {
+                    this.inputs[i].displayName = port.displayName;
+                }
+                if (port.isExposedOnFrame) {
+                    this.inputs[i].isExposedOnFrame = port.isExposedOnFrame;
+                    this.inputs[i].exposedPortPosition = port.exposedPortPosition;
+                }
+            });
+        }
+        if (serializedOutputs) {
+            serializedOutputs.forEach((port: any, i: number) => {
+                if (port.displayName) {
+                    this.outputs[i].displayName = port.displayName;
+                }
+                if (port.isExposedOnFrame) {
+                    this.outputs[i].isExposedOnFrame = port.isExposedOnFrame;
+                    this.outputs[i].exposedPortPosition = port.exposedPortPosition;
+                }
+            });
+        }
+    }    
+
+    protected _dumpPropertiesCode() {
+        const variableName = this._codeVariableName;
+        return `${variableName}.visibleInInspector = ${this.visibleInInspector};\r\n${variableName}.visibleOnFrame = ${this.visibleOnFrame};\r\n`;
+    }   
+    
+    /**
+     * @internal
+     */
+    public _dumpCodeForOutputConnections(alreadyDumped: NodeGeometryBlock[]) {
+        let codeString = "";
+
+        if (alreadyDumped.indexOf(this) !== -1) {
+            return codeString;
+        }
+
+        alreadyDumped.push(this);
+
+        for (const input of this.inputs) {
+            if (!input.isConnected) {
+                continue;
+            }
+
+            const connectedOutput = input.connectedPoint!;
+            const connectedBlock = connectedOutput.ownerBlock;
+
+            codeString += connectedBlock._dumpCodeForOutputConnections(alreadyDumped);
+            codeString += `${connectedBlock._codeVariableName}.${connectedBlock._outputRename(connectedOutput.name)}.connectTo(${this._codeVariableName}.${this._inputRename(
+                input.name
+            )});\r\n`;
+        }
+
+        return codeString;
+    }    
+
+    /**
+     * @internal
+     */
+    public _dumpCode(uniqueNames: string[], alreadyDumped: NodeGeometryBlock[]) {
+        alreadyDumped.push(this);
+
+        let codeString: string;
+
+        // Get unique name
+        const nameAsVariableName = this.name.replace(/[^A-Za-z_]+/g, "");
+        this._codeVariableName = nameAsVariableName || `${this.getClassName()}_${this.uniqueId}`;
+
+        if (uniqueNames.indexOf(this._codeVariableName) !== -1) {
+            let index = 0;
+            do {
+                index++;
+                this._codeVariableName = nameAsVariableName + index;
+            } while (uniqueNames.indexOf(this._codeVariableName) !== -1);
+        }
+
+        uniqueNames.push(this._codeVariableName);
+
+        // Declaration
+        codeString = `\r\n// ${this.getClassName()}\r\n`;
+        if (this.comments) {
+            codeString += `// ${this.comments}\r\n`;
+        }
+        codeString += `var ${this._codeVariableName} = new BABYLON.${this.getClassName()}("${this.name}");\r\n`;
+
+        // Properties
+        codeString += this._dumpPropertiesCode();
+
+        // Inputs
+        for (const input of this.inputs) {
+            if (!input.isConnected) {
+                continue;
+            }
+
+            const connectedOutput = input.connectedPoint!;
+            const connectedBlock = connectedOutput.ownerBlock;
+
+            if (alreadyDumped.indexOf(connectedBlock) === -1) {
+                codeString += connectedBlock._dumpCode(uniqueNames, alreadyDumped);
+            }
+        }
+
+        // Outputs
+        for (const output of this.outputs) {
+            if (!output.hasEndpoints) {
+                continue;
+            }
+
+            for (const endpoint of output.endpoints) {
+                const connectedBlock = endpoint.ownerBlock;
+                if (connectedBlock && alreadyDumped.indexOf(connectedBlock) === -1) {
+                    codeString += connectedBlock._dumpCode(uniqueNames, alreadyDumped);
+                }
+            }
+        }
+
+        return codeString;
+    }    
+
+    /**
+     * Clone the current block to a new identical block
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a copy of the current block
+     */
+    public clone(rootUrl: string = "") {
+        const serializationObject = this.serialize();
+
+        const blockType = GetClass(serializationObject.customType);
+        if (blockType) {
+            const block: NodeGeometryBlock = new blockType();
+            block._deserialize(serializationObject, rootUrl);
+
+            return block;
+        }
+
+        return null;
+    }    
     
     /**
      * Release resources
