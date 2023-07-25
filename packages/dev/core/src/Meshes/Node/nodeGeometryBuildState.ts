@@ -1,6 +1,7 @@
 import type { Nullable } from "../../types";
 import type { VertexData } from "../mesh.vertexData";
-import type{ NodeGeometryConnectionPoint } from "./nodeGeometryBlockConnectionPoint";
+import type { NodeGeometryConnectionPoint } from "./nodeGeometryBlockConnectionPoint";
+import type { INodeGeometryExecutionContext } from "./Interfaces/nodeGeometryExecutionContext";
 
 /**
  * Class used to store node based geometry build state
@@ -10,6 +11,7 @@ export class NodeGeometryBuildState {
     public buildId: number;
     public verbose: boolean;
     public vertexData: Nullable<VertexData> = null;
+    public context: Nullable<INodeGeometryExecutionContext> = null;
 
     /**
      * Emits console errors and exceptions if there is a failing check

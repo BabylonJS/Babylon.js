@@ -1,5 +1,5 @@
 import { UniqueIdGenerator } from "../../Misc/uniqueIdGenerator";
-import type{ NodeGeometryBlockConnectionPointTypes } from "./Enums/nodeMaterialGeometryConnectionPointTypes";
+import type{ NodeGeometryBlockConnectionPointTypes } from "./Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryConnectionPoint, NodeGeometryConnectionPointDirection } from "./nodeGeometryBlockConnectionPoint";
 import type { NodeGeometryBuildState } from "./nodeGeometryBuildState";
 
@@ -188,6 +188,15 @@ export class NodeGeometryBlock {
         }
         return false;
     }
+
+    protected _linkConnectionTypes(inputIndex0: number, inputIndex1: number, looseCoupling = false) {
+        if (looseCoupling) {
+            this._inputs[inputIndex1]._acceptedConnectionPointType = this._inputs[inputIndex0];
+        } else {
+            this._inputs[inputIndex0]._linkedConnectionSource = this._inputs[inputIndex1];
+        }
+        this._inputs[inputIndex1]._linkedConnectionSource = this._inputs[inputIndex0];
+    }    
 
     /**
      * Initialize the block and prepare the context for build

@@ -1,4 +1,4 @@
-import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeMaterialGeometryConnectionPointTypes";
+import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
 import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
@@ -119,19 +119,19 @@ export class BoxBlock extends NodeGeometryBlock {
         } = {};
 
         if (this.size.isConnected) {
-            options.size = this.size.connectedValue;
+            options.size = this.size.getConnectedValue(state);
         }
 
         if (this.width.isConnected) {
-            options.width = this.width.connectedValue;
+            options.width = this.width.getConnectedValue(state);
         }
 
         if (this.height.isConnected) {
-            options.height = this.height.connectedValue;
+            options.height = this.height.getConnectedValue(state);
         }
 
         if (this.depth.isConnected) {
-            options.depth = this.depth.connectedValue;
+            options.depth = this.depth.getConnectedValue(state);
         }        
 
         // Append vertex data from the plane builder

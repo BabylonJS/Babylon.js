@@ -1,10 +1,11 @@
 import { Observable } from "../../../Misc/observable";
-import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeMaterialGeometryConnectionPointTypes";
+import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { Vector2, Vector3, Vector4 } from "../../../Maths/math.vector";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
+import { NodeGeometryContextualSources } from "../Enums/nodeGeometryContextualSources";
 
 /**
  * Block used to expose an input value
@@ -13,6 +14,7 @@ export class GeometryInputBlock extends NodeGeometryBlock {
     private _storedValue: any;
     private _valueCallback: () => any;
     private _type: NodeGeometryBlockConnectionPointTypes = NodeGeometryBlockConnectionPointTypes.Undefined;
+    private _contextualSource = NodeGeometryContextualSources.None;
 
     /** Gets or set a value used to limit the range of float values */
     public min: number = 0;
@@ -68,6 +70,31 @@ export class GeometryInputBlock extends NodeGeometryBlock {
 
         return this._type;
     }
+
+    /**
+     * Gets a boolean indicating that the current connection point is a contextual value
+     */
+    public get isContextual(): boolean {
+        return this._contextualSource !== NodeGeometryContextualSources.None;
+    }
+
+    /**
+     * Gets or sets the current contextual value
+     */
+    public get contextualValue(): NodeGeometryContextualSources {
+        return this._contextualSource;
+    }
+
+    public set contextualValue(value: NodeGeometryContextualSources) {
+        this._contextualSource = value;
+
+        switch (value) {
+            case NodeGeometryContextualSources.Positions:
+            case NodeGeometryContextualSources.Normals:
+                this._type = NodeGeometryBlockConnectionPointTypes.Vector3;
+                break;
+        }
+    }    
 
     /**
      * Creates a new InputBlock
@@ -157,7 +184,15 @@ export class GeometryInputBlock extends NodeGeometryBlock {
     protected _buildBlock(state: NodeGeometryBuildState) {
         super._buildBlock(state);
 
-        this.output._storedValue = this.value;
+        if (this.isContextual) {
+            this.output._storedValue = null;
+            this.output._storedFunction = (state) => {
+                return state.context?.getContextualValue(this._contextualSource);
+            }
+        } else {
+            this.output._storedFunction = null;
+            this.output._storedValue = this.value;
+        }
     }
 
     public dispose() {

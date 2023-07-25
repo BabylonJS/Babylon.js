@@ -1,5 +1,5 @@
 /**
- * Defines the kind of connection point for node based material
+ * Defines the kind of connection point for node geometry
  */
 export enum NodeGeometryBlockConnectionPointTypes {
     /** Float */

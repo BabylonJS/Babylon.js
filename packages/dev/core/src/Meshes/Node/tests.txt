@@ -19,10 +19,43 @@ var createScene = function () {
 
     var nodeGeometry = new BABYLON.NodeGeometry();
 
+    // Source
     var dataBlock = new BABYLON.BoxBlock("box");
-    var output = new BABYLON.GeometryOutputBlock("Final");
 
-    dataBlock.geometry.connectTo(output.geometry);
+    // Transformation
+    var setPositionsBlock = new BABYLON.SetPositionsBlock("set positions");
+    dataBlock.geometry.connectTo(setPositionsBlock.geometry);
+
+    var addBlock = new BABYLON.MathBlock("add");
+    addBlock.operation = BABYLON.MathBlockOperations.Add;
+
+    var positions = new BABYLON.GeometryInputBlock("Positions");
+    positions.contextualValue = BABYLON.NodeGeometryContextualSources.Positions;
+    
+    positions.output.connectTo(addBlock.left);
+
+    var random = new BABYLON.RandomBlock("random");
+    var min = new BABYLON.GeometryInputBlock("Min");
+    min.value = new BABYLON.Vector3(-1, -1, -1);
+    var max = new BABYLON.GeometryInputBlock("Max");
+    max.value = new BABYLON.Vector3(1, 1, 1);
+
+    min.output.connectTo(random.min);
+    max.output.connectTo(random.max);
+    
+    random.output.connectTo(addBlock.right);   
+
+    addBlock.output.connectTo(setPositionsBlock.positions);
+
+    // Additional source
+    var dataBlock2 = new BABYLON.BoxBlock("box");
+    var mergeBlock = new BABYLON.MergeGeometryBlock("Merge");
+    setPositionsBlock.output.connectTo(mergeBlock.geometry0);
+    dataBlock2.geometry.connectTo(mergeBlock.geometry1);
+
+    // Final output
+    var output = new BABYLON.GeometryOutputBlock("Final");
+    mergeBlock.output.connectTo(output.geometry);
 
     nodeGeometry.outputBlock = output;
 
@@ -31,8 +64,11 @@ var createScene = function () {
     return scene;
 };
 
+
 Block ideas:
 - Sphere
 - Merge
-- position transform
+- Mesh source
 - need to rebuild normal in output
+- subdivide
+- compute normals
