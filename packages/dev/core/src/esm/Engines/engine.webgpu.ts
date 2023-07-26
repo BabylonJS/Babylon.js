@@ -25,6 +25,7 @@ export function initWebGPUEngineState(): WebGPUEngineState {
         description: "Babylon.js WebGPU Engine",
         isNDCHalfZRange: true,
         hasOriginBottomLeft: false,
+        needPOTTextures: false,
     });
     // public and protected
     const fes = baseEngineState as WebGPUEngineState;

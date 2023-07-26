@@ -1,5 +1,6 @@
 import { Effect } from "core/Materials/effect";
-import type { ShaderLanguage } from "core/Materials";
+import type { ShaderLanguage } from "core/Materials/shaderLanguage";
+import type { InternalTexture } from "core/Materials/Textures/internalTexture";
 import type { Nullable } from "core/types";
 import type { IShaderProcessor } from "core/Engines/Processors/iShaderProcessor";
 import type { UniformBuffer } from "core/Materials/uniformBuffer";
@@ -8,21 +9,64 @@ import { GEQUAL, LEQUAL } from "./engine.constants";
 import { PrecisionDate } from "core/Misc";
 import type { StorageBuffer } from "core/Buffers";
 import type { EngineOptions } from "core/Engines/thinEngine";
+import type { EngineCapabilities } from "core/Engines/engineCapabilities";
+import type { EngineFeatures } from "core/Engines/engineFeatures";
+import type { DepthCullingState } from "core/States/depthCullingState";
+import type { StencilStateComposer } from "core/States/stencilStateComposer";
+import type { StencilState } from "core/States/stencilState";
+import type { AlphaState } from "core/States/alphaCullingState";
+import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
+import type { IDrawContext } from "core/Engines/IDrawContext";
+import type { IMaterialContext } from "core/Engines/IMaterialContext";
+import type { IViewportLike } from "core/Maths/math.like";
+import type { ICanvas, ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { IFileRequest } from "core/Misc/fileRequest";
+
+const activeRequests: WeakMap<any, IFileRequest> = new WeakMap();
 
 interface IBaseEnginePrivate {
     _useReverseDepthBuffer: boolean;
     _frameId: number;
+    _onContextLost: (evt: Event) => void;
+    _onContextRestored: (evt: Event) => void;
+    _currentTextureChannel: number;
+    _vertexAttribArraysEnabled: boolean[];
+
+    // _vaoRecordInProgress // moved to webgl
+
+    _emptyTexture: Nullable<InternalTexture>;
+    _emptyCubeTexture: Nullable<InternalTexture>;
+    _emptyTexture3D: Nullable<InternalTexture>;
+    _emptyTexture2DArray: Nullable<InternalTexture>;
+    // _activeRequests - moved to the scope of this file, privately. Maps object to IFileRequest.
 }
 
 export interface IBaseEngineProtected {
     _isDisposed: boolean;
     _shaderProcessor: Nullable<IShaderProcessor>;
-
     _renderingCanvas: Nullable<HTMLCanvasElement>;
     _windowIsBackground: boolean;
-    _creationOptions: EngineOptions; // TODO? 
+    _creationOptions: EngineOptions; // TODO?
     _audioContext: Nullable<AudioContext>;
     _audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>;
+    _highPrecisionShadersAllowed: boolean;
+    _isStencilEnable: boolean;
+    _renderingQueueLaunched: boolean;
+    _activeRenderLoops: Array<() => void>;
+    _contextWasLost: boolean;
+    _colorWrite: boolean;
+    _colorWriteChanged: boolean;
+    _depthCullingState: DepthCullingState;
+    _stencilStateComposer: StencilStateComposer;
+    _stencilState: StencilState;
+    _activeChannel: number;
+    _boundTexturesCache: { [key: string]: Nullable<InternalTexture> };
+    _currentEffect: Nullable<Effect>;
+    _compiledEffects: { [key: string]: Effect };
+    _cachedViewport: Nullable<IViewportLike>;
+    _workingCanvas: Nullable<ICanvas>;
+    _workingContext: Nullable<ICanvasRenderingContext>;
+    _lastDevicePixelRatio: number;
 }
 
 export interface IBaseEngineInternals {
@@ -32,6 +76,23 @@ export interface IBaseEngineInternals {
     _uniformBuffers: Array<UniformBuffer>;
     _storageBuffers: Array<StorageBuffer>;
     _uniqueId: number;
+    _shouldUseHighPrecisionShader: boolean;
+    _badOS: boolean;
+    _badDesktopOS: boolean;
+    _hardwareScalingLevel: number;
+    _caps: EngineCapabilities; // TODO
+    _features: EngineFeatures;
+    _videoTextureSupported: boolean;
+    _alphaState: AlphaState;
+    _alphaMode: number;
+    _alphaEquation: number;
+    _internalTexturesCache: Array<InternalTexture>;
+    _renderTargetWrapperCache: Array<RenderTargetWrapper>;
+    _currentDrawContext: IDrawContext;
+    _currentMaterialContext: IMaterialContext;
+    _currentRenderTarget: Nullable<RenderTargetWrapper>;
+    _boundRenderFunction: Function;
+    _frameHandler: number;
 }
 
 /**
@@ -124,6 +185,43 @@ export interface IBaseEnginePublic {
      * @see https://doc.babylonjs.com/setup/support/webGL2#uniform-buffer-objets
      */
     readonly supportsUniformBuffers: boolean;
+
+    /**
+     * Gets a boolean indicating that only power of 2 textures are supported
+     * Please note that you can still use non power of 2 textures but in this case the engine will forcefully convert them
+     */
+    readonly needPOTTextures: boolean;
+
+    /**
+     * Gets the list of current active render loop functions
+     */
+    readonly activeRenderLoops: Array<() => void>;
+
+    /**
+     * Observable signaled when a context lost event is raised
+     */
+    onContextLostObservable: Observable<IBaseEnginePublic>;
+
+    /**
+     * Observable signaled when a context restored event is raised
+     */
+    onContextRestoredObservable: Observable<IBaseEnginePublic>;
+
+    /**
+     * Gets or sets a boolean indicating if resources should be retained to be able to handle context lost events
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimize_your_scene#handling-webgl-context-lost
+     */
+    doNotHandleContextLost: boolean;
+
+    /**
+     * Gets or sets a boolean indicating that vertex array object must be disabled even if they are supported
+     */
+    disableVertexArrayObjects: boolean;
+
+    /**
+     * If set to true zooming in and out in the browser will rescale the hardware-scaling correctly.
+     */
+    adaptToDeviceRatio: boolean;
 }
 
 export type BaseEngineState = IBaseEnginePublic & IBaseEngineInternals & IBaseEngineProtected;
@@ -159,12 +257,12 @@ export function initBaseEngineState(overrides?: Partial<BaseEngineState>): BaseE
                 return;
             }
 
-            this._useReverseDepthBuffer = useReverse;
+            engineState._useReverseDepthBuffer = useReverse;
 
             if (useReverse) {
-                this._depthCullingState.depthFunc = GEQUAL;
+                engineState._depthCullingState.depthFunc = GEQUAL;
             } else {
-                this._depthCullingState.depthFunc = LEQUAL;
+                engineState._depthCullingState.depthFunc = LEQUAL;
             }
         },
         isNDCHalfZRange: false,
@@ -176,12 +274,38 @@ export function initBaseEngineState(overrides?: Partial<BaseEngineState>): BaseE
             return engineState._frameId;
         },
         startTime: PrecisionDate.Now,
+        get needPOTTextures(): boolean {
+            return engineState.forcePOTTextures;
+        },
+        _renderingQueueLaunched: false,
+        _activeRenderLoops: new Array<() => void>(),
+        get activeRenderLoops(): Array<() => void> {
+            return engineState._activeRenderLoops;
+        },
+        onContextLostObservable: new Observable<IBaseEnginePublic>(),
+        onContextRestoredObservable: new Observable<IBaseEnginePublic>(),
+        doNotHandleContextLost: false,
+        disableVertexArrayObjects: false,
+        adaptToDeviceRatio: false,
 
         // internals
         _uniformBuffers: [],
         _storageBuffers: [],
         _windowIsBackground: false,
-
+        get _shouldUseHighPrecisionShader(): boolean {
+            return !!(engineState._caps.highPrecisionShaderSupported && engineState._highPrecisionShadersAllowed);
+        },
+        _badOS: false,
+        _badDesktopOS: false,
+        _contextWasLost: false,
+        _internalTexturesCache: [],
+        _renderTargetWrapperCache: [],
+        _activeChannel: 0,
+        _currentTextureChannel: -1,
+        _boundTexturesCache: {},
+        _compiledEffects: {},
+        _vertexAttribArraysEnabled: [],
+        _lastDevicePixelRatio: 1,
         ...overrides,
     };
 
@@ -193,7 +317,7 @@ export function initBaseEngineState(overrides?: Partial<BaseEngineState>): BaseE
 
 function _rebuildInternalTextures(engineState: IBaseEnginePublic): void {
     const fes = engineState as BaseEngineState;
-    const currentState = _internalTexturesCache.slice(); // Do a copy because the rebuild will add proxies
+    const currentState = fes._internalTexturesCache.slice(); // Do a copy because the rebuild will add proxies
 
     for (const internalTexture of currentState) {
         internalTexture._rebuild();
