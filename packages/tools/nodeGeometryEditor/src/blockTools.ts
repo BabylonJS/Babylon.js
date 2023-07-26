@@ -19,6 +19,7 @@ import { TranslationBlock } from "core/Meshes/Node/Blocks/Matrices/translationBl
 import { TorusBlock } from "core/Meshes/Node/Blocks/Sources/torusBlock";
 import { DiscBlock } from "core/Meshes/Node/Blocks/Sources/discBlock";
 import { MergeGeometryBlock } from "core/Meshes/Node/Blocks/mergeGeometryBlock";
+import { VectorCreatorBlock } from "core/Meshes/Node/Blocks/vectorCreatorBlock";
 import { GeometryTransformBlock } from "core/Meshes/Node/Blocks/geometryTransformBlock";
 import { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
 import { MathBlock, MathBlockOperations } from "core/Meshes/Node/Blocks/mathBlock";
@@ -29,6 +30,8 @@ import { GeometryElbowBlock } from "core/Meshes/Node/Blocks/geometryElbowBlock";
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "VectorCreatorBlock":
+                return new VectorCreatorBlock("Vector Creator");               
             case "TranslationBlock":
                 return new TranslationBlock("Translation");                  
             case "ScalingBlock":

@@ -67,6 +67,8 @@ var createScene = function () {
 
 Block ideas:
 - vector merger / dispatcher
+- UVs as contextual data
+- Color as contextual data
 - Mesh source
 - subdivide
 - set Material

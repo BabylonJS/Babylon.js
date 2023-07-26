@@ -149,6 +149,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             ],               
             Math__Vector: [
                 "TransformBlock",
+                "VectorCreatorBlock",
             ],                   
             Matrices: [
                 "RotationXBlock",

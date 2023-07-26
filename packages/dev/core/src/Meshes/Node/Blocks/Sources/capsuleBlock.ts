@@ -4,7 +4,7 @@ import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnect
 import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { GeometryInputBlock } from "../geometryInputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { Vector3, Vector4 } from "../../../../Maths/math.vector";
+import type { Vector3 } from "../../../../Maths/math.vector";
 import { CreateCapsuleVertexData } from "core/Meshes/Builders";
 
 /**

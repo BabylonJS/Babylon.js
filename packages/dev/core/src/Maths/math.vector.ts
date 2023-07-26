@@ -3487,6 +3487,7 @@ export class Vector4 {
     public toVector3(): Vector3 {
         return new Vector3(this.x, this.y, this.z);
     }
+
     /**
      * Returns a new Vector4 copied from the current one.
      * @returns the new cloned vector
