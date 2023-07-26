@@ -1,5 +1,19 @@
 # Changelog
 
+## 6.13.0
+
+### Core
+
+- FreeCameraMouseInput: Reset Active pointerId when detaching controls - [_Bug Fix_] by [PolygonalSun](https://github.com/PolygonalSun) ([#14065](https://github.com/BabylonJS/Babylon.js/pull/14065))
+- AnimationGroup: Add MergeAnimationGroups method - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#14062](https://github.com/BabylonJS/Babylon.js/pull/14062))
+
+## 6.12.5
+
+### Core
+
+- Basic native support of MSAA for render targets - by [bghgary](https://github.com/bghgary) ([#14055](https://github.com/BabylonJS/Babylon.js/pull/14055))
+- Animations: Add support for animatable and animation group ordering - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#14052](https://github.com/BabylonJS/Babylon.js/pull/14052))
+
 ## 6.12.4
 
 ### Core
