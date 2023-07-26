@@ -29,7 +29,8 @@ export class NodeGeometryBuildState {
         switch(source) {
             case NodeGeometryContextualSources.Positions:
                 return Vector3.FromArray(this.geometryContext.positions as ArrayLike<number>, this.executionContext.getExecutionIndex() * 3);
-                break;
+            case NodeGeometryContextualSources.Normals:
+                return Vector3.FromArray(this.geometryContext.normals as ArrayLike<number>, this.executionContext.getExecutionIndex() * 3);    
         }
 
         return null;
