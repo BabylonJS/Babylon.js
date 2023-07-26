@@ -1,6 +1,5 @@
 
 import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
-import type { NodeGeometry } from "core/Meshes/Node/nodeGeometry";
 import { SetPositionsBlock } from "core/Meshes/Node/Blocks/setPositionsBlock";
 import { SetNormalsBlock } from "core/Meshes/Node/Blocks/setNormalsBlock";
 import { ComputeNormalsBlock } from "core/Meshes/Node/Blocks/computeNormalsBlock";
@@ -9,7 +8,17 @@ import { GeometryOutputBlock } from "core/Meshes/Node/Blocks/geometryOutputBlock
 import { BoxBlock } from "core/Meshes/Node/Blocks/Sources/boxBlock";
 import { PlaneBlock } from "core/Meshes/Node/Blocks/Sources/planeBlock";
 import { SphereBlock } from "core/Meshes/Node/Blocks/Sources/sphereBlock";
+import { CylinderBlock } from "core/Meshes/Node/Blocks/Sources/cylinderBlock";
+import { CapsuleBlock } from "core/Meshes/Node/Blocks/Sources/capsuleBlock";
+import { RotationXBlock } from "core/Meshes/Node/Blocks/Matrices/rotationXBlock";
+import { RotationYBlock } from "core/Meshes/Node/Blocks/Matrices/rotationYBlock";
+import { RotationZBlock } from "core/Meshes/Node/Blocks/Matrices/rotationZBlock";
+import { ScalingBlock } from "core/Meshes/Node/Blocks/Matrices/scalingBlock";
+import { TranslationBlock } from "core/Meshes/Node/Blocks/Matrices/translationBlock";
+import { TorusBlock } from "core/Meshes/Node/Blocks/Sources/torusBlock";
+import { DiscBlock } from "core/Meshes/Node/Blocks/Sources/discBlock";
 import { MergeGeometryBlock } from "core/Meshes/Node/Blocks/mergeGeometryBlock";
+import { GeometryTransformBlock } from "core/Meshes/Node/Blocks/geometryTransformBlock";
 import { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
 import { MathBlock, MathBlockOperations } from "core/Meshes/Node/Blocks/mathBlock";
 import { NodeGeometryContextualSources } from "core/Meshes/Node/Enums/nodeGeometryContextualSources";
@@ -17,8 +26,18 @@ import { GeometryTrigonometryBlock, GeometryTrigonometryBlockOperations } from "
 import { GeometryElbowBlock } from "core/Meshes/Node/Blocks/geometryElbowBlock";
 
 export class BlockTools {
-    public static GetBlockFromString(data: string, nodeGeometry: NodeGeometry) {
+    public static GetBlockFromString(data: string) {
         switch (data) {
+            case "TranslationBlock":
+                return new TranslationBlock("Translation");                  
+            case "ScalingBlock":
+                return new ScalingBlock("Scaling");             
+            case "RotationXBlock":
+                return new RotationXBlock("Rotation X");            
+            case "RotationYBlock":
+                return new RotationYBlock("Rotation Y");            
+            case "RotationZBlock":
+                return new RotationZBlock("Rotation Z");                    
             case "ComputeNormalsBlock":
                 return new ComputeNormalsBlock("Compute normals");
             case "SetPositionsBlock":
@@ -29,16 +48,26 @@ export class BlockTools {
                 return new RandomBlock("Random");    
             case "GeometryOutputBlock":
                 return new GeometryOutputBlock("Output"); 
+            case "DiscBlock":
+                return new DiscBlock("Disc");                  
             case "BoxBlock":
                 return new BoxBlock("Box");   
+            case "TorusBlock":
+                return new TorusBlock("Torus");                   
             case "SphereBlock":
                 return new SphereBlock("Sphere");                   
+            case "CylinderBlock":
+                return new CylinderBlock("Cylinder");                     
+            case "CapsuleBlock":
+                return new CapsuleBlock("Capsule");             
             case "PlaneBlock":
                 return new PlaneBlock("Plane");                   
             case "ElbowBlock":
                 return new GeometryElbowBlock("");    
-            case "MergeGeometryBlock":
+            case "MergeBlock":
                 return new MergeGeometryBlock("Merge");    
+            case "TransformBlock":
+                return new GeometryTransformBlock("Transform");    
             case "PositionsBlock": {
                 const block = new GeometryInputBlock("Positions");
                 block.contextualValue = NodeGeometryContextualSources.Positions;
@@ -123,7 +152,32 @@ export class BlockTools {
                 const block = new GeometryTrigonometryBlock("Sqrt");
                 block.operation = GeometryTrigonometryBlockOperations.Sqrt;
                 return block;
-            }       
+            }            
+            case "NegateBlock": {
+                const block = new GeometryTrigonometryBlock("Negate");
+                block.operation = GeometryTrigonometryBlockOperations.Negate;
+                return block;
+            }   
+            case "OneMinusBlock": {
+                const block = new GeometryTrigonometryBlock("OneMinus");
+                block.operation = GeometryTrigonometryBlockOperations.OneMinus;
+                return block;
+            }   
+            case "ReciprocalBlock": {
+                const block = new GeometryTrigonometryBlock("Reciprocal");
+                block.operation = GeometryTrigonometryBlockOperations.Reciprocal;
+                return block;
+            }    
+            case "MinBlock": {
+                const block = new MathBlock("Min");
+                block.operation = MathBlockOperations.Min;
+                return block;
+            }   
+            case "MaxBlock": {
+                const block = new MathBlock("Max");
+                block.operation = MathBlockOperations.Max;
+                return block;
+            }                                     
         }
 
         return null;
@@ -144,6 +198,9 @@ export class BlockTools {
             case NodeGeometryBlockConnectionPointTypes.Vector4:
                 color = "#be5126";
                 break;
+            case NodeGeometryBlockConnectionPointTypes.Matrix:
+                color = "#591990";
+                break;             
             case NodeGeometryBlockConnectionPointTypes.Geometry:
                 color = "#6174FA";
                 break;
@@ -162,6 +219,8 @@ export class BlockTools {
                 return NodeGeometryBlockConnectionPointTypes.Vector3;
             case "Vector4":
                 return NodeGeometryBlockConnectionPointTypes.Vector4;
+            case "Matrix":
+                return NodeGeometryBlockConnectionPointTypes.Matrix;                
         }
 
         return NodeGeometryBlockConnectionPointTypes.AutoDetect;
@@ -177,6 +236,8 @@ export class BlockTools {
                 return "Vector3";
             case NodeGeometryBlockConnectionPointTypes.Vector4:
                 return "Vector4";
+            case NodeGeometryBlockConnectionPointTypes.Matrix:
+                return "Matrix";                
         }
 
         return "";

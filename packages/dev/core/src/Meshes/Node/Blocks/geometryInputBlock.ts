@@ -3,7 +3,7 @@ import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConn
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { GetClass, RegisterClass } from "../../../Misc/typeStore";
-import { Vector2, Vector3, Vector4 } from "../../../Maths/math.vector";
+import { Matrix, Vector2, Vector3, Vector4 } from "../../../Maths/math.vector";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { NodeGeometryContextualSources } from "../Enums/nodeGeometryContextualSources";
 
@@ -52,6 +52,9 @@ export class GeometryInputBlock extends NodeGeometryBlock {
                     case "Vector4":
                         this._type = NodeGeometryBlockConnectionPointTypes.Vector4;
                         return this._type;
+                    case "Matrix":
+                        this._type = NodeGeometryBlockConnectionPointTypes.Matrix;
+                        return this._type;                        
                 }
             }
         }
@@ -166,6 +169,9 @@ export class GeometryInputBlock extends NodeGeometryBlock {
             case NodeGeometryBlockConnectionPointTypes.Vector4:
                 this.value = Vector4.Zero();
                 break;
+            case NodeGeometryBlockConnectionPointTypes.Matrix:
+                this.value = Matrix.Identity();
+                break;                
         }
     }
 

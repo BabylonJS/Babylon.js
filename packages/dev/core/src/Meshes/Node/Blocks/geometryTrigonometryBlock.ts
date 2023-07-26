@@ -38,6 +38,12 @@ export enum GeometryTrigonometryBlockOperations {
     ArcSin,
     /** Sign */
     Sign,
+    /** Negate */
+    Negate,
+    /** OneMinus */
+    OneMinus,
+    /** Reciprocal */
+    Reciprocal
 }
 
 /**
@@ -146,6 +152,18 @@ export class GeometryTrigonometryBlock extends NodeGeometryBlock {
                 func = (value: number) => Math.sign(value);
                 break;
             }
+            case GeometryTrigonometryBlockOperations.Negate: {
+                func = (value: number) => -value;
+                break;
+            }         
+            case GeometryTrigonometryBlockOperations.OneMinus: {
+                func = (value: number) => 1 - value;
+                break;
+            }     
+            case GeometryTrigonometryBlockOperations.Reciprocal: {
+                func = (value: number) => 1 / value;
+                break;
+            }                          
         }
         if (!func) {
             this.input._storedFunction = null;

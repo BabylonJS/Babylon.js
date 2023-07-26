@@ -413,7 +413,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         if (blockType.indexOf("Block") === -1) {
             newNode = this.addValueNode(blockType);
         } else {
-            const block = BlockTools.GetBlockFromString(blockType, this.props.globalState.nodeGeometry)!;
+            const block = BlockTools.GetBlockFromString(blockType)!;
 
             if (block.isUnique) {
                 const className = block.getClassName();

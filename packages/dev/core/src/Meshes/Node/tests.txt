@@ -66,13 +66,12 @@ var createScene = function () {
 
 
 Block ideas:
-- cylinder
-- torus
+- disc
+- icosphere
+
 - Mesh source
-- need to rebuild normal in output
 - subdivide
 - set Material
 - Instance on vertex
 - Instance on face
-- Missing Trigo + max/min
 

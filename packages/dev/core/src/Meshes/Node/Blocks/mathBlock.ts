@@ -3,6 +3,7 @@ import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnection
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
+import { Vector2, Vector3, Vector4 } from "core/Maths";
 
 /**
  * Operations supported by the Math block
@@ -15,7 +16,11 @@ export enum MathBlockOperations {
     /** Multiply */
     Multiply,
     /** Divide */
-    Divide
+    Divide,
+    /** Max */
+    Max,
+    /** Min */
+    Min
 }
 
 /**
@@ -73,7 +78,7 @@ export class MathBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }    
 
-    protected _buildBlock(state: NodeGeometryBuildState) {
+    protected _buildBlock() {
         let func:(state: NodeGeometryBuildState) => any;
         const left = this.left;
         const right = this.right;
@@ -134,7 +139,65 @@ export class MathBlock extends NodeGeometryBlock {
                     }
                 }
                 break;
-            }                           
+            }      
+            case MathBlockOperations.Min: {
+                if (isFloat) {
+                    func = (state) => {                    
+                        return Math.min(left.getConnectedValue(state), right.getConnectedValue(state));
+                    }
+                } else {
+                    switch (left.type) {
+                        case NodeGeometryBlockConnectionPointTypes.Vector2: {
+                            func = (state) => {                    
+                                return Vector2.Minimize(left.getConnectedValue(state), state.adapt(right, left));
+                            }
+                            break;
+                        }
+                        case NodeGeometryBlockConnectionPointTypes.Vector3: {
+                            func = (state) => {                    
+                                return Vector3.Minimize(left.getConnectedValue(state), state.adapt(right, left));
+                            }
+                            break;
+                        }
+                        case NodeGeometryBlockConnectionPointTypes.Vector4: {
+                            func = (state) => {                    
+                                return Vector4.Minimize(left.getConnectedValue(state), state.adapt(right, left));
+                            }
+                            break;
+                        }
+                    }                                                
+                }
+                break;
+            }      
+            case MathBlockOperations.Max: {
+                if (isFloat) {
+                    func = (state) => {                    
+                        return Math.max(left.getConnectedValue(state), right.getConnectedValue(state));
+                    }
+                } else {
+                    switch (left.type) {
+                        case NodeGeometryBlockConnectionPointTypes.Vector2: {
+                            func = (state) => {                    
+                                return Vector2.Maximize(left.getConnectedValue(state), state.adapt(right, left));
+                            }
+                            break;
+                        }
+                        case NodeGeometryBlockConnectionPointTypes.Vector3: {
+                            func = (state) => {                    
+                                return Vector3.Maximize(left.getConnectedValue(state), state.adapt(right, left));
+                            }
+                            break;
+                        }
+                        case NodeGeometryBlockConnectionPointTypes.Vector4: {
+                            func = (state) => {                    
+                                return Vector4.Maximize(left.getConnectedValue(state), state.adapt(right, left));
+                            }
+                            break;
+                        }                                                
+                    }
+                break;
+                } 
+            }                                                 
         }
 
         this.output._storedFunction = (state) => {
@@ -148,6 +211,10 @@ export class MathBlock extends NodeGeometryBlock {
         return codeString;
     }    
 
+    /**
+     * Serializes this block in a JSON representation
+     * @returns the serialized block object
+     */
     public serialize(): any {
         const serializationObject = super.serialize();
 
