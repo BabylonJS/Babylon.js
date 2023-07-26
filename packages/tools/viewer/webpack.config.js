@@ -43,9 +43,11 @@ module.exports = (env) => {
         },
         ignoreWarnings: [/Failed to parse source map/],
         devServer: {
-            overlay: process.env.DISABLE_DEV_OVERLAY ? false : {
-                warnings: false,
-                errors: true,
+            client: {
+                overlay: process.env.DISABLE_DEV_OVERLAY ? false : {
+                    warnings: false,
+                    errors: true,
+                },
             },
             static: {
                 directory: path.join(__dirname, "public"),
