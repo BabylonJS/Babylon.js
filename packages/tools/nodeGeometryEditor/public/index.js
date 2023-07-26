@@ -107,7 +107,7 @@ checkBabylonVersionAsync().then(() => {
                             if (xmlHttp.readyState == 4) {
                                 if (xmlHttp.status == 200) {
                                     let snippet = JSON.parse(JSON.parse(xmlHttp.responseText).jsonPayload);
-                                    let serializationObject = JSON.parse(snippet.nodeMaterial);
+                                    let serializationObject = JSON.parse(snippet.nodeGeometry);
 
                                     if (editorDisplayed) {
                                         customLoadObservable.notifyObservers(serializationObject);

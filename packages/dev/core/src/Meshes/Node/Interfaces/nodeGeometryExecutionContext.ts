@@ -1,5 +1,3 @@
-import type { NodeGeometryContextualSources } from "../Enums/nodeGeometryContextualSources";
-
 /**
  * Interface used to convey context through execution nodes
  */

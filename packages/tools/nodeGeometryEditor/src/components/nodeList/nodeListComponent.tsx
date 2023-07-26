@@ -103,14 +103,21 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         // Block types used to create the menu from
         const allBlocks: any = {
             Custom_Frames: customFrameNames,
+            Sources: [
+                "BoxBlock",
+                "PlaneBlock",
+                "SphereBlock",
+            ],
             Inputs: [
                 "Float",
                 "Vector2",
                 "Vector3",
                 "Vector4",
+            ],
+            Contextual: [
                 "PositionsBlock",
                 "NormalsBlock"
-            ],
+            ],            
             Math__Vector: [
                 "AddBlock",
                 "SubtractBlock",
@@ -118,13 +125,11 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "DivideBlock",
             ],
             Misc: ["ElbowBlock"],
-            Sources: [
-                "BoxBlock",
-                "PlaneBlock",
-            ],
             Updates: [
+                "SetNormalsBlock",
                 "SetPositionsBlock",
-                "MergeGeometryBlock"
+                "MergeGeometryBlock",
+                "ComputeNormalsBlock",
             ],
             Noises: ["RandomBlock"],
             Output_Nodes: ["GeometryOutputBlock"],

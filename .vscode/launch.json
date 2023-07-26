@@ -268,7 +268,7 @@
             */
             "type": "pwa-msedge",
             "request": "launch",
-            "name": "Launch Geometry Node Editor (Edge)",
+            "name": "Launch Node Geometry Editor (Edge)",
             "url": "http://localhost:1340",
             "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Node Geometry Editor Serve for core (Dev)"

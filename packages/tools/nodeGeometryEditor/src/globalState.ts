@@ -25,11 +25,11 @@ export class GlobalState {
     onResetRequiredObservable = new Observable<boolean>();
     onZoomToFitRequiredObservable = new Observable<void>();
     onReOrganizedRequiredObservable = new Observable<void>();
+    onWireframeChanged = new Observable<void>();
     onLogRequiredObservable = new Observable<LogEntry>();
     onIsLoadingChanged = new Observable<boolean>();
     onLightUpdated = new Observable<void>();
     onPreviewBackgroundChanged = new Observable<void>();
-    onBackFaceCullingChanged = new Observable<void>();
     onAnimationCommandActivated = new Observable<void>();
     onImportFrameObservable = new Observable<any>();
     onPopupClosedObservable = new Observable<void>();
@@ -40,8 +40,8 @@ export class GlobalState {
     rotatePreview: boolean;
     backgroundColor: Color4;
     lockObject = new LockObject();
-    hemisphericLight: boolean;
     controlCamera: boolean;
+    wireframe: boolean = false;
     pointerOverCanvas: boolean = false;
     onRefreshPreviewMeshControlComponentRequiredObservable = new Observable<void>();
 
@@ -49,7 +49,7 @@ export class GlobalState {
 
     public constructor() {
         this.previewType = DataStorage.ReadNumber("PreviewType", PreviewType.Box);
-        this.hemisphericLight = DataStorage.ReadBoolean("HemisphericLight", true);
+        this.wireframe = DataStorage.ReadBoolean("Wireframe", false);
         this.controlCamera = DataStorage.ReadBoolean("ControlCamera", true);
         this.stateManager = new StateManager();
         this.stateManager.data = this;

@@ -175,7 +175,7 @@ export class GeometryInputBlock extends NodeGeometryBlock {
         if (this.isContextual) {
             this.output._storedValue = null;
             this.output._storedFunction = (state) => {
-                return state.context?.getContextualValue(this._contextualSource);
+                return state.getContextualValue(this._contextualSource);
             }
         } else {
             this.output._storedFunction = null;

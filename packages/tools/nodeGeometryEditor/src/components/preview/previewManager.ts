@@ -16,6 +16,8 @@ import { Color3 } from "core/Maths/math.color";
 import "core/Rendering/depthRendererSceneComponent";
 import { NodeGeometry } from "core/Meshes/Node/nodeGeometry";
 import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { Texture } from "core/Materials/Textures/texture";
 
 export class PreviewManager {
     private _nodeGeometry: NodeGeometry;
@@ -24,6 +26,7 @@ export class PreviewManager {
     private _onAnimationCommandActivatedObserver: Nullable<Observer<void>>;
     private _onUpdateRequiredObserver: Nullable<Observer<Nullable<NodeGeometryBlock>>>;
     private _onPreviewBackgroundChangedObserver: Nullable<Observer<void>>;
+    private _onWireframeChangedObserver: Nullable<Observer<void>>;
     private _onLightUpdatedObserver: Nullable<Observer<void>>;
     private _engine: Engine;
     private _scene: Scene;
@@ -31,6 +34,7 @@ export class PreviewManager {
     private _camera: ArcRotateCamera;
     private _globalState: GlobalState;
     private _lightParent: TransformNode;
+    private _matCap: StandardMaterial;
 
     private _serializeGeometry(): any {
         const nodeGeometry = this._nodeGeometry; 
@@ -44,7 +48,7 @@ export class PreviewManager {
         this._globalState = globalState;
 
         this._onBuildObserver = this._nodeGeometry.onBuildObservable.add(() => {
-            this._refreshPreviewMesh();
+            this._refreshPreviewMesh(false);
         });
 
         this._onLightUpdatedObserver = globalState.onLightUpdated.add(() => {
@@ -52,7 +56,7 @@ export class PreviewManager {
         });
 
         this._onUpdateRequiredObserver = globalState.stateManager.onUpdateRequiredObservable.add(() => {
-            this._refreshPreviewMesh();
+            this._refreshPreviewMesh(false);
         });
 
         this._onPreviewBackgroundChangedObserver = globalState.onPreviewBackgroundChanged.add(() => {
@@ -62,6 +66,10 @@ export class PreviewManager {
         this._onAnimationCommandActivatedObserver = globalState.onAnimationCommandActivated.add(() => {
             this._handleAnimations();
         });
+
+        this._onWireframeChangedObserver = globalState.onWireframeChanged.add(() => {
+            this._matCap.wireframe = this._globalState.wireframe;
+        });        
 
         this._engine = new Engine(targetCanvas, true);
         this._scene = new Scene(this._engine);
@@ -76,8 +84,15 @@ export class PreviewManager {
         this._camera.attachControl(false);
 
         this._lightParent = new TransformNode("LightParent", this._scene);
+        this._matCap = new StandardMaterial("", this._scene);
+        this._matCap.disableLighting = true;
+        this._matCap.backFaceCulling = false;
+    
+        const matCapTexture = new Texture("https://assets.babylonjs.com/skyboxes/matcap.jpg", this._scene);
+        matCapTexture.coordinatesMode = Texture.SPHERICAL_MODE;    
+        this._matCap.reflectionTexture = matCapTexture;
 
-        this._refreshPreviewMesh();
+        this._refreshPreviewMesh(true);
 
         this._engine.runRenderLoop(() => {
             this._engine.resize();
@@ -138,36 +153,36 @@ export class PreviewManager {
         }
 
         // Create new lights based on settings
-        if (this._globalState.hemisphericLight) {
-            new HemisphericLight("Hemispheric light", new Vector3(0, 1, 0), this._scene);
-        }
+        new HemisphericLight("Hemispheric light", new Vector3(0, 1, 0), this._scene);
     }
 
-    private _prepareScene() {
-        this._camera.useFramingBehavior = true;
+    private _prepareScene(first: boolean) {
+        if (first) {
+            this._camera.useFramingBehavior = true;
 
-        this._prepareLights();
+            this._prepareLights();
 
-        const framingBehavior = this._camera.getBehaviorByName("Framing") as FramingBehavior;
+            const framingBehavior = this._camera.getBehaviorByName("Framing") as FramingBehavior;
 
-        setTimeout(() => {
-            // Let the behavior activate first
-            framingBehavior.framingTime = 0;
-            framingBehavior.elevationReturnTime = -1;
+            setTimeout(() => {
+                // Let the behavior activate first
+                framingBehavior.framingTime = 0;
+                framingBehavior.elevationReturnTime = -1;
 
-            if (this._scene.meshes.length) {
-                const worldExtends = this._scene.getWorldExtends();
-                this._camera.lowerRadiusLimit = null;
-                this._camera.upperRadiusLimit = null;
-                framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
-            }
+                if (this._scene.meshes.length) {
+                    const worldExtends = this._scene.getWorldExtends();
+                    this._camera.lowerRadiusLimit = null;
+                    this._camera.upperRadiusLimit = null;
+                    framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
+                }
 
-            this._camera.pinchPrecision = 200 / this._camera.radius;
-            this._camera.upperRadiusLimit = 5 * this._camera.radius;
-        });
+                this._camera.pinchPrecision = 200 / this._camera.radius;
+                this._camera.upperRadiusLimit = 5 * this._camera.radius;
+            });
 
-        this._camera.wheelDeltaPercentage = 0.01;
-        this._camera.pinchDeltaPercentage = 0.01;
+            this._camera.wheelDeltaPercentage = 0.01;
+            this._camera.pinchDeltaPercentage = 0.01;
+        }
 
         // Update
         this._updatePreview();
@@ -176,23 +191,19 @@ export class PreviewManager {
         this._handleAnimations();
     }
 
-    private _refreshPreviewMesh() {
+    private _refreshPreviewMesh(first: boolean) {
         if (this._mesh) {
-            this._mesh.dispose();
+            const toDelete = this._mesh;
+            setTimeout(() => {
+                toDelete.dispose();
+            });
         }
-
-        const lights = this._scene.lights.slice(0);
-        for (const light of lights) {
-            light.dispose();
-        }
-
-        this._engine.releaseEffects();
 
         SceneLoader.ShowLoadingScreen = false;
 
         this._globalState.onIsLoadingChanged.notifyObservers(true);
 
-        this._prepareScene();
+        this._prepareScene(first);
     }
 
     private _updatePreview() {
@@ -201,6 +212,9 @@ export class PreviewManager {
 
             const nodeGeometry = NodeGeometry.Parse(serializationObject);
             this._mesh = nodeGeometry.createMesh("temp", this._scene);
+            if (this._mesh) {
+                this._mesh.material = this._matCap;
+            }
             nodeGeometry.dispose();
 
             this._globalState.onIsLoadingChanged.notifyObservers(false);
@@ -213,6 +227,7 @@ export class PreviewManager {
     public dispose() {
         this._nodeGeometry.onBuildObservable.remove(this._onBuildObserver);        
         this._globalState.stateManager.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
+        this._globalState.onWireframeChanged.remove(this._onWireframeChangedObserver);
         this._globalState.onAnimationCommandActivated.remove(this._onAnimationCommandActivatedObserver);
         this._globalState.onPreviewBackgroundChanged.remove(this._onPreviewBackgroundChangedObserver);
         this._globalState.onLightUpdated.remove(this._onLightUpdatedObserver);

@@ -4,25 +4,25 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import type { INodeGeometryExecutionContext } from "../Interfaces/nodeGeometryExecutionContext";
-import type { VertexData } from "../../../Meshes/mesh.vertexData";
+import type { VertexData } from "../../mesh.vertexData";
 import type { Vector3 } from "../../../Maths/math.vector";
 
 /**
- * Block used to set positions for a geometry
+* Block used to set positions for a geometry
  */
-export class SetPositionsBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext{
+export class SetNormalsBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext{
     private _vertexData: VertexData;
     private _currentIndex: number;
 
     /**
-     * Create a new SetPositionsBlock
+     * Create a new SetNormalsBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
         super(name);
 
         this.registerInput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);
-        this.registerInput("positions", NodeGeometryBlockConnectionPointTypes.Vector3);
+        this.registerInput("normals", NodeGeometryBlockConnectionPointTypes.Vector3);
 
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Geometry);
     }
@@ -40,7 +40,7 @@ export class SetPositionsBlock extends NodeGeometryBlock implements INodeGeometr
      * @returns the class name
      */
     public getClassName() {
-        return "SetPositionsBlock";
+        return "SetNormalsBlock";
     }    
 
     /**
@@ -53,7 +53,7 @@ export class SetPositionsBlock extends NodeGeometryBlock implements INodeGeometr
     /**
      * Gets the positions input component
      */
-    public get positions(): NodeGeometryConnectionPoint {
+    public get normals(): NodeGeometryConnectionPoint {
         return this._inputs[1];
     }    
 
@@ -70,7 +70,7 @@ export class SetPositionsBlock extends NodeGeometryBlock implements INodeGeometr
         this._vertexData = this.geometry.getConnectedValue(state);
         state.geometryContext = this._vertexData;
         
-        if (!this._vertexData || !this._vertexData.positions || !this.positions.isConnected) {
+        if (!this._vertexData || !this._vertexData.normals || !this.normals.isConnected) {
             state.executionContext = null;
             state.geometryContext = null;
             this.output._storedValue = null;
@@ -78,11 +78,11 @@ export class SetPositionsBlock extends NodeGeometryBlock implements INodeGeometr
         }
 
         // Processing
-        const vertexCount = this._vertexData.positions.length / 3;
+        const vertexCount = this._vertexData.normals.length / 3;
         for (this._currentIndex = 0; this._currentIndex < vertexCount; this._currentIndex++) {
-            const tempVector3 = this.positions.getConnectedValue(state) as Vector3;
+            const tempVector3 = this.normals.getConnectedValue(state) as Vector3;
             if (tempVector3) {
-                tempVector3.toArray(this._vertexData.positions, this._currentIndex * 3);
+                tempVector3.toArray(this._vertexData.normals, this._currentIndex * 3);
             }
         }
 
@@ -94,4 +94,4 @@ export class SetPositionsBlock extends NodeGeometryBlock implements INodeGeometr
 
 }
 
-RegisterClass("BABYLON.SetPositionsBlock", SetPositionsBlock);
+RegisterClass("BABYLON.SetNormalsBlock", SetNormalsBlock);

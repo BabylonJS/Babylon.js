@@ -2,7 +2,8 @@ import * as React from "react";
 import type { GlobalState } from "../../globalState";
 import type { Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
-
+import wireframe from "./svgs/wireframe.svg";
+import { DataStorage } from "core/Misc/dataStorage";
 
 interface IPreviewAreaComponentProps {
     globalState: GlobalState;
@@ -37,6 +38,13 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         this.props.globalState.pointerOverCanvas = false;
     };
 
+    changeWireframe(value: boolean) {
+        this.props.globalState.wireframe = value;
+        DataStorage.WriteBoolean("Wireframe", value);
+        this.props.globalState.onWireframeChanged.notifyObservers();
+        this.forceUpdate();
+    }    
+
     render() {
         return (
             <>
@@ -44,6 +52,17 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
                     <canvas onPointerOver={this._onPointerOverCanvas} onPointerOut={this._onPointerOutCanvas} id="preview-canvas" />
                     {<div className={"waitPanel" + (this.state.isLoading ? "" : " hidden")}>Please wait, loading...</div>}
                 </div>
+                <>
+                    <div id="preview-config-bar">
+                        <div
+                            title="Render with wireframe"
+                            onClick={() => this.changeWireframe(!this.props.globalState.wireframe)}
+                            className={"button back-face" + (this.props.globalState.wireframe ? " selected" : "")}
+                        >
+                            <img src={wireframe} alt="" />
+                        </div>                       
+                    </div>
+                </>
             </>
         );
     }

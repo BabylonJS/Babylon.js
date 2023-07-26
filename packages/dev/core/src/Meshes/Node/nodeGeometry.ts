@@ -420,6 +420,9 @@ export class NodeGeometry {
         }
 
         if (!selectedBlocks) {
+            if (!this.attachedBlocks.length) {
+                this,this.build();
+            }
             for (const block of this.attachedBlocks) {
                 if (blocks.indexOf(block) !== -1) {
                     continue;

@@ -2,28 +2,40 @@
 import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
 import type { NodeGeometry } from "core/Meshes/Node/nodeGeometry";
 import { SetPositionsBlock } from "core/Meshes/Node/Blocks/setPositionsBlock";
+import { SetNormalsBlock } from "core/Meshes/Node/Blocks/setNormalsBlock";
+import { ComputeNormalsBlock } from "core/Meshes/Node/Blocks/computeNormalsBlock";
 import { RandomBlock } from "core/Meshes/Node/Blocks/randomBlock";
 import { GeometryOutputBlock } from "core/Meshes/Node/Blocks/geometryOutputBlock";
 import { BoxBlock } from "core/Meshes/Node/Blocks/Sources/boxBlock";
 import { PlaneBlock } from "core/Meshes/Node/Blocks/Sources/planeBlock";
+import { SphereBlock } from "core/Meshes/Node/Blocks/Sources/sphereBlock";
 import { MergeGeometryBlock } from "core/Meshes/Node/Blocks/mergeGeometryBlock";
 import { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
 import { MathBlock, MathBlockOperations } from "core/Meshes/Node/Blocks/mathBlock";
 import { NodeGeometryContextualSources } from "core/Meshes/Node/Enums/nodeGeometryContextualSources";
+import { GeometryElbowBlock } from "core/Meshes/Node/Blocks/geometryElbowBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string, nodeGeometry: NodeGeometry) {
         switch (data) {
+            case "ComputeNormalsBlock":
+                return new ComputeNormalsBlock("Compute normals");
             case "SetPositionsBlock":
                 return new SetPositionsBlock("Set positions");
+            case "SetNormalsBlock":
+                return new SetNormalsBlock("Set normals");
             case "RandomBlock":
                 return new RandomBlock("Random");    
             case "GeometryOutputBlock":
                 return new GeometryOutputBlock("Output"); 
             case "BoxBlock":
                 return new BoxBlock("Box");   
+            case "SphereBlock":
+                return new SphereBlock("Sphere");                   
             case "PlaneBlock":
-                return new PlaneBlock("Plane");     
+                return new PlaneBlock("Plane");                   
+            case "ElbowBlock":
+                return new GeometryElbowBlock("");    
             case "MergeGeometryBlock":
                 return new MergeGeometryBlock("Merge");    
             case "PositionsBlock": {

@@ -66,11 +66,9 @@ var createScene = function () {
 
 
 Block ideas:
-- Sphere
+- cylinder
+- torus
 - Mesh source
 - need to rebuild normal in output
 - subdivide
-- compute normals
-- clay material
-- preview option: wireframe
 

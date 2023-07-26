@@ -94,7 +94,7 @@ export class MathBlock extends NodeGeometryBlock {
                     }
                 } else {
                     func = (state) => {                    
-                        return left.getConnectedValue(state).add(right.getConnectedValue(state));
+                        return left.getConnectedValue(state).add(state.adapt(right, left));
                     }
                 }
                 break;
@@ -106,7 +106,7 @@ export class MathBlock extends NodeGeometryBlock {
                     }
                 } else {
                     func = (state) => {                    
-                        return left.getConnectedValue(state).subtract(right.getConnectedValue(state));
+                        return left.getConnectedValue(state).subtract(state.adapt(right, left));
                     }
                 }
                 break;
@@ -118,7 +118,7 @@ export class MathBlock extends NodeGeometryBlock {
                     }
                 } else {
                     func = (state) => {                    
-                        return left.getConnectedValue(state).multiply(right.getConnectedValue(state));
+                        return left.getConnectedValue(state).multiply(state.adapt(right, left));
                     }
                 }
                 break;
@@ -130,7 +130,7 @@ export class MathBlock extends NodeGeometryBlock {
                     }
                 } else {
                     func = (state) => {                    
-                        return left.getConnectedValue(state).divide(right.getConnectedValue(state));
+                        return left.getConnectedValue(state).divide(state.adapt(right, left));
                     }
                 }
                 break;
@@ -142,6 +142,19 @@ export class MathBlock extends NodeGeometryBlock {
         }
     }
 
+    public serialize(): any {
+        const serializationObject = super.serialize();
+
+        serializationObject.operation = this.operation;
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any, rootUrl: string) {
+        super._deserialize(serializationObject, rootUrl);
+
+        this.operation = serializationObject.operation;
+    }    
 }
 
 RegisterClass("BABYLON.MathBlock", MathBlock);

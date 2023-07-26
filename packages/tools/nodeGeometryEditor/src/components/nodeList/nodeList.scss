@@ -31,8 +31,8 @@
                     display: block;
                     border: none;
                     padding: 0;
-                    border-bottom: solid 1px rgb(51, 122, 183);
-                    background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, rgb(51, 122, 183) 4%);
+                    border-bottom: solid 1px rgb(51, 183, 102);
+                    background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 96%, rgb(51, 183, 102) 4%);
                     background-position: -1000px 0;
                     background-size: 1000px 100%;
                     background-repeat: no-repeat;
@@ -71,7 +71,7 @@
                     box-sizing: border-box;
 
                     &:hover {
-                        background: rgb(51, 122, 183);
+                        background: rgb(51, 183, 102);
                         color: white;
                     }
                 }

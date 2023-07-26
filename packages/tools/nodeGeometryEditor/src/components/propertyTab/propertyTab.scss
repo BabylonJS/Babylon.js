@@ -59,7 +59,7 @@
             width: 14px;
             height: 14px;
             border-radius: 50%;
-            background: rgb(51, 122, 183);
+            background: rgb(51, 183, 102);
             cursor: pointer;
         }
 
@@ -67,7 +67,7 @@
             width: 14px;
             height: 14px;
             border-radius: 50%;
-            background: rgb(51, 122, 183);
+            background: rgb(51, 183, 102);
             cursor: pointer;
         }
 
@@ -201,13 +201,13 @@
 
             &:hover {
                 .paneList {
-                    border-left: 3px solid rgba(51, 122, 183, 0.8);
+                    border-left: 3px solid rgba(51, 183, 102, 0.8);
                 }
 
                 .paneContainer-content {
                     .header {
                         .title {
-                            border-left: 3px solid rgb(51, 122, 183);
+                            border-left: 3px solid rgb(51, 183, 102);
                         }
                     }
                 }
@@ -448,7 +448,7 @@
             .secondLine {
                 display: grid;
                 padding-right: 5px;
-                border-left: 1px solid rgb(51, 122, 183);
+                border-left: 1px solid rgb(51, 183, 102);
 
                 .no-right-margin {
                     margin-right: 0;
@@ -473,7 +473,7 @@
                     grid-column: 2;
                     display: flex;
                     align-items: center;
-                    border: 1px solid rgb(51, 122, 183);
+                    border: 1px solid rgb(51, 183, 102);
                 }
             }
         }
@@ -495,7 +495,7 @@
 
             .file-upload {
                 background: #222222;
-                border: 1px solid rgb(51, 122, 183);
+                border: 1px solid rgb(51, 183, 102);
                 margin: 5px 10px;
                 color: white;
                 padding: 4px 5px;
@@ -516,7 +516,7 @@
 
             button {
                 background: #222222;
-                border: 1px solid rgb(51, 122, 183);
+                border: 1px solid rgb(51, 183, 102);
                 margin: 5px 10px 5px 10px;
                 color: white;
                 padding: 4px 5px;
@@ -532,7 +532,7 @@
             }
 
             button:focus {
-                border: 1px solid rgb(51, 122, 183);
+                border: 1px solid rgb(51, 183, 102);
                 outline: 0px;
             }
         }
@@ -586,16 +586,16 @@
                 }
 
                 .cbx:checked ~ label {
-                    background: rgb(51, 122, 183);
+                    background: rgb(51, 183, 102);
                 }
 
                 .cbx:checked ~ label:after {
                     left: 20px;
-                    background: rgb(22, 73, 117);
+                    background: rgb(24, 117, 22);
                 }
 
                 .cbx:checked ~ label.disabled {
-                    background: rgb(22, 73, 117);
+                    background: rgb(22, 117, 36);
                     cursor: pointer;
                 }
 
@@ -702,7 +702,7 @@
             .secondLine {
                 display: grid;
                 padding-right: 5px;
-                border-left: 1px solid rgb(51, 122, 183);
+                border-left: 1px solid rgb(51, 183, 102);
 
                 .numeric {
                     display: grid;
@@ -723,7 +723,7 @@
                     grid-column: 2;
                     display: flex;
                     align-items: center;
-                    border: 1px solid rgb(51, 122, 183);
+                    border: 1px solid rgb(51, 183, 102);
                 }
             }
         }
