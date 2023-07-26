@@ -66,9 +66,7 @@ var createScene = function () {
 
 
 Block ideas:
-- disc
 - icosphere
-
 - Mesh source
 - subdivide
 - set Material

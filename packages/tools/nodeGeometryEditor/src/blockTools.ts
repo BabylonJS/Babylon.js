@@ -10,6 +10,7 @@ import { PlaneBlock } from "core/Meshes/Node/Blocks/Sources/planeBlock";
 import { SphereBlock } from "core/Meshes/Node/Blocks/Sources/sphereBlock";
 import { CylinderBlock } from "core/Meshes/Node/Blocks/Sources/cylinderBlock";
 import { CapsuleBlock } from "core/Meshes/Node/Blocks/Sources/capsuleBlock";
+import { IcoSphereBlock } from "core/Meshes/Node/Blocks/Sources/icoSphereBlock";
 import { RotationXBlock } from "core/Meshes/Node/Blocks/Matrices/rotationXBlock";
 import { RotationYBlock } from "core/Meshes/Node/Blocks/Matrices/rotationYBlock";
 import { RotationZBlock } from "core/Meshes/Node/Blocks/Matrices/rotationZBlock";
@@ -50,6 +51,8 @@ export class BlockTools {
                 return new GeometryOutputBlock("Output"); 
             case "DiscBlock":
                 return new DiscBlock("Disc");                  
+            case "IcoSphereBlock":
+                return new IcoSphereBlock("IcoSphere");               
             case "BoxBlock":
                 return new BoxBlock("Box");   
             case "TorusBlock":

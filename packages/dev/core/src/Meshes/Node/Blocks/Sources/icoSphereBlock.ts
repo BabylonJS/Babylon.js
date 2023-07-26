@@ -5,23 +5,25 @@ import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { GeometryInputBlock } from "../geometryInputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Vector4 } from "../../../../Maths/math.vector";
-import { CreateDiscVertexData } from "core/Meshes/Builders";
+import { CreateIcoSphereVertexData } from "core/Meshes/Builders";
 
 /**
- * Defines a block used to generate disc geometry data
+ * Defines a block used to generate icosphere geometry data
  */
-export class DiscBlock extends NodeGeometryBlock {
+export class IcoSphereBlock extends NodeGeometryBlock {
 
     /**
-     * Create a new DiscBlock
+     * Create a new IcoSphereBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
         super(name);
 
         this.registerInput("radius", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("tessellation", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("arc", NodeGeometryBlockConnectionPointTypes.Float, true);
+        this.registerInput("radiusX", NodeGeometryBlockConnectionPointTypes.Float, true);
+        this.registerInput("radiusY", NodeGeometryBlockConnectionPointTypes.Float, true);
+        this.registerInput("radiusZ", NodeGeometryBlockConnectionPointTypes.Float, true);
+        this.registerInput("subdivisions", NodeGeometryBlockConnectionPointTypes.Float, true);
 
         this.registerOutput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);
     }
@@ -31,7 +33,7 @@ export class DiscBlock extends NodeGeometryBlock {
      * @returns the class name
      */
     public getClassName() {
-        return "DiscBlock";
+        return "IcoSphereBlock";
     }
 
     /**
@@ -40,20 +42,34 @@ export class DiscBlock extends NodeGeometryBlock {
     public get radius(): NodeGeometryConnectionPoint {
         return this._inputs[0];
     }
-    
+
     /**
-     * Gets the tessellation input component
+     * Gets the radius input component
      */
-    public get tessellation(): NodeGeometryConnectionPoint {
+    public get radiusX(): NodeGeometryConnectionPoint {
         return this._inputs[1];
-    }        
+    }
+
+    /**
+     * Gets the radius input component
+     */
+    public get radiusY(): NodeGeometryConnectionPoint {
+        return this._inputs[2];
+    }
+
+    /**
+     * Gets the radius input component
+     */
+    public get radiusZ(): NodeGeometryConnectionPoint {
+        return this._inputs[3];
+    }            
     
     /**
      * Gets the subdivisions input component
      */
-    public get arc(): NodeGeometryConnectionPoint {
-        return this._inputs[2];
-    }        
+    public get subdivisions(): NodeGeometryConnectionPoint {
+        return this._inputs[4];
+    }             
 
     /**
      * Gets the geometry output component
@@ -73,8 +89,11 @@ export class DiscBlock extends NodeGeometryBlock {
     protected _buildBlock(state: NodeGeometryBuildState) {
         const options: {
             radius?: number;
-            tessellation?: number;
-            arc?: number;
+            radiusX?: number;
+            radiusY?: number;
+            radiusZ?: number;
+            flat?: boolean;
+            subdivisions?: number;
             sideOrientation?: number;
             frontUVs?: Vector4;
             backUVs?: Vector4;
@@ -84,18 +103,30 @@ export class DiscBlock extends NodeGeometryBlock {
             options.radius = this.radius.getConnectedValue(state);
         }
 
-        if (this.tessellation.isConnected) {
-            options.tessellation = this.tessellation.getConnectedValue(state);
+        if (this.subdivisions.isConnected) {
+            options.subdivisions = this.subdivisions.getConnectedValue(state);
         }   
 
-        if (this.arc.isConnected) {
-            options.arc = this.arc.getConnectedValue(state);
+        if (this.radiusX.isConnected) {
+            options.radiusX = this.radiusX.getConnectedValue(state);
+        }  
+
+        if (this.radiusX.isConnected) {
+            options.radiusX = this.radiusX.getConnectedValue(state);
+        }  
+
+        if (this.radiusY.isConnected) {
+            options.radiusX = this.radiusX.getConnectedValue(state);
+        }  
+
+        if (this.radiusZ.isConnected) {
+            options.radiusX = this.radiusX.getConnectedValue(state);
         }  
 
         // Append vertex data from the plane builder
-        this.geometry._storedValue = CreateDiscVertexData(options);
+        this.geometry._storedValue = CreateIcoSphereVertexData(options);
     }
 }
 
 
-RegisterClass("BABYLON.DiscBlock", DiscBlock);
+RegisterClass("BABYLON.IcoSphereBlock", IcoSphereBlock);

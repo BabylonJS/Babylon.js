@@ -9,6 +9,7 @@ export * from "./Blocks/geometryOutputBlock";
 export * from "./Blocks/geometryInputBlock";
 export * from "./Blocks/Sources/planeBlock";
 export * from "./Blocks/Sources/boxBlock";
+export * from "./Blocks/Sources/icoSphereBlock";
 export * from "./Blocks/Sources/sphereBlock";
 export * from "./Blocks/Sources/torusBlock";
 export * from "./Blocks/Sources/cylinderBlock";
