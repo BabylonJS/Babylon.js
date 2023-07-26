@@ -2,7 +2,7 @@ struct ambientOcclusionOutParams
 {
     vec3 ambientOcclusionColor;
 #if DEBUGMODE > 0 && defined(AMBIENT)
-        vec3 ambientOcclusionColorMap;
+    vec3 ambientOcclusionColorMap;
 #endif
 };
 
