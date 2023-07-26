@@ -17,3 +17,4 @@ export * from "./Blocks/randomBlock";
 export * from "./Blocks/mergeGeometryBlock";
 export * from "./Blocks/geometryElbowBlock";
 export * from "./Blocks/computeNormalsBlock";
+export * from "./Blocks/geometryTrigonometryBlock";

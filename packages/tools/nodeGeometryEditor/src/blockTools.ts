@@ -13,6 +13,7 @@ import { MergeGeometryBlock } from "core/Meshes/Node/Blocks/mergeGeometryBlock";
 import { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
 import { MathBlock, MathBlockOperations } from "core/Meshes/Node/Blocks/mathBlock";
 import { NodeGeometryContextualSources } from "core/Meshes/Node/Enums/nodeGeometryContextualSources";
+import { GeometryTrigonometryBlock, GeometryTrigonometryBlockOperations } from "core/Meshes/Node/Blocks/geometryTrigonometryBlock";
 import { GeometryElbowBlock } from "core/Meshes/Node/Blocks/geometryElbowBlock";
 
 export class BlockTools {
@@ -67,7 +68,62 @@ export class BlockTools {
                 const block = new MathBlock("Divide");
                 block.operation = MathBlockOperations.Divide;
                 return block;
-            }                                       
+            }      
+            case "AbsBlock": {
+                const block = new GeometryTrigonometryBlock("Abs");
+                block.operation = GeometryTrigonometryBlockOperations.Abs;
+                return block;
+            }     
+            case "ArcCosBlock": {
+                const block = new GeometryTrigonometryBlock("ArcCos");
+                block.operation = GeometryTrigonometryBlockOperations.ArcCos;
+                return block;
+            }      
+            case "ArcSinBlock": {
+                const block = new GeometryTrigonometryBlock("ArcSin");
+                block.operation = GeometryTrigonometryBlockOperations.ArcSin;
+                return block;
+            }     
+            case "ArcTanBlock": {
+                const block = new GeometryTrigonometryBlock("ArcTan");
+                block.operation = GeometryTrigonometryBlockOperations.ArcTan;
+                return block;
+            }           
+            case "CosBlock": {
+                const block = new GeometryTrigonometryBlock("Cos");
+                block.operation = GeometryTrigonometryBlockOperations.Cos;
+                return block;
+            }      
+            case "ExpBlock": {
+                const block = new GeometryTrigonometryBlock("Exp");
+                block.operation = GeometryTrigonometryBlockOperations.Exp;
+                return block;
+            }  
+            case "LogBlock": {
+                const block = new GeometryTrigonometryBlock("Log");
+                block.operation = GeometryTrigonometryBlockOperations.Log;
+                return block;
+            }        
+            case "SinBlock": {
+                const block = new GeometryTrigonometryBlock("Sin");
+                block.operation = GeometryTrigonometryBlockOperations.Sin;
+                return block;
+            }          
+            case "SignBlock": {
+                const block = new GeometryTrigonometryBlock("Sign");
+                block.operation = GeometryTrigonometryBlockOperations.Sign;
+                return block;
+            }       
+            case "TanBlock": {
+                const block = new GeometryTrigonometryBlock("Tan");
+                block.operation = GeometryTrigonometryBlockOperations.Tan;
+                return block;
+            }       
+            case "SqrtBlock": {
+                const block = new GeometryTrigonometryBlock("Sqrt");
+                block.operation = GeometryTrigonometryBlockOperations.Sqrt;
+                return block;
+            }       
         }
 
         return null;

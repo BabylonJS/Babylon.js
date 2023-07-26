@@ -142,6 +142,12 @@ export class MathBlock extends NodeGeometryBlock {
         }
     }
 
+    protected _dumpPropertiesCode() {
+        const codeString =
+            super._dumpPropertiesCode() + `${this._codeVariableName}.operation = BABYLON.MathBlockOperations.${MathBlockOperations[this.operation]};\r\n`;
+        return codeString;
+    }    
+
     public serialize(): any {
         const serializationObject = super.serialize();
 
