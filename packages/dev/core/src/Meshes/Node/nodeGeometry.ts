@@ -9,9 +9,9 @@ import { NodeGeometryBuildState } from "./nodeGeometryBuildState";
 import { GetClass } from "../../Misc/typeStore";
 import { SerializationHelper, serialize } from "../../Misc/decorators";
 import { Constants } from "../../Engines/constants";
-import { WebRequest } from "core/Misc/webRequest";
+import { WebRequest } from "../../Misc/webRequest";
 import { BoxBlock } from "./Blocks/Sources/boxBlock";
-import { GeometryInputBlock } from "./Blocks/geometryInputBlock";
+import type { GeometryInputBlock } from "./Blocks/geometryInputBlock";
 
 /**
  * Defines a node based geometry
@@ -70,6 +70,14 @@ export class NodeGeometry {
     }
 
     /**
+     * Gets the current class name of the geometry e.g. "NodeGeometry"
+     * @returns the class name
+     */
+    public getClassName(): string {
+        return "NodeGeometry";
+    }    
+
+    /**
      * Gets the list of input blocks attached to this material
      * @returns an array of InputBlocks
      */
@@ -98,16 +106,16 @@ export class NodeGeometry {
         }
 
         // Initialize blocks
+        this.attachedBlocks = [];
         this._initializeBlock(this.outputBlock, autoConfigure);
 
         // Build
-        const blocks: NodeGeometryBlock[] = [];
         const state = new NodeGeometryBuildState();
 
         state.buildId = this._buildId;
         state.verbose = verbose;
 
-        this.outputBlock.build(state, blocks);
+        this.outputBlock.build(state);
 
         if (updateBuildId) {
             this._buildId = NodeGeometry._BuildIdGenerator++;
@@ -358,10 +366,10 @@ export class NodeGeometry {
         this.editorData = null;
 
         // Source
-        const dataBlock = new BoxBlock("box");
+        const dataBlock = new BoxBlock("Box");
 
         // Final output
-        const output = new GeometryOutputBlock("final");
+        const output = new GeometryOutputBlock("Geometry Output");
         dataBlock.geometry.connectTo(output.geometry);
 
         this.outputBlock = output;
@@ -444,6 +452,21 @@ export class NodeGeometry {
         const nodeGeometry = new NodeGeometry(name);
 
         nodeGeometry.setToDefault();
+        nodeGeometry.build();
+
+        return nodeGeometry;
+    }    
+
+    /**
+     * Creates a node geometry from parsed geometry data
+     * @param source defines the JSON representation of the geometry
+     * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @returns a new node geometry
+     */
+    public static Parse(source: any, rootUrl: string = ""): NodeGeometry {
+        const nodeGeometry = SerializationHelper.Parse(() => new NodeGeometry(source.name), source, null, rootUrl);
+
+        nodeGeometry.parseSerializedObject(source, rootUrl);
         nodeGeometry.build();
 
         return nodeGeometry;

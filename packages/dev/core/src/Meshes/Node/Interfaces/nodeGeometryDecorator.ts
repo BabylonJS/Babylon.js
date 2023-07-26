@@ -40,8 +40,6 @@ export interface IEditablePropertyOption {
         rebuild?: boolean;
         /** the preview should be updated */
         update?: boolean;
-        /** the onPreviewCommandActivated observer of the preview manager should be triggered */
-        activatePreviewCommand?: boolean;
         /** a callback to trigger */
         callback?: (block: NodeGeometryBlock) => boolean | undefined | void;
         /** a callback to validate the property. Returns true if the property is ok, else false. If false, the rebuild/update/callback events won't be called */

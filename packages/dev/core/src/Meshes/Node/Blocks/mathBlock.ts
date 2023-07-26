@@ -39,7 +39,8 @@ export class MathBlock extends NodeGeometryBlock {
 
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.BasedOnInput);
 
-        this._outputs[0]._typeConnectionSource = this._inputs[0];
+        this._outputs[0]._typeConnectionSource = this._inputs[0];        
+        this._inputs[1].acceptedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Float);
         this._linkConnectionTypes(0, 1);        
     }
 
@@ -76,6 +77,13 @@ export class MathBlock extends NodeGeometryBlock {
         let func:(state: NodeGeometryBuildState) => any;
         const left = this.left;
         const right = this.right;
+
+        if (!left.isConnected || !right.isConnected) {
+            this.output._storedFunction = null;
+            this.output._storedValue = null;
+            return;
+        }
+
         const isFloat = left.type === NodeGeometryBlockConnectionPointTypes.Float;
 
         switch (this.operation) {

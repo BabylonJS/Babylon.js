@@ -5,9 +5,8 @@ import type { NodeGeometryContextualSources } from "../Enums/nodeGeometryContext
  */
 export interface INodeGeometryExecutionContext {
     /**
-     * Gets the value associated with a contextual source
-     * @param source Source of the contextual value
-     * @returns the value associated with the source
+     * Gets the current index in the current flow
+     * @returns the current index
      */
-    getContextualValue(source: NodeGeometryContextualSources): any;
+    getExecutionIndex(): number;
 }

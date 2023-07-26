@@ -83,6 +83,7 @@ module.exports = (env) => {
             "postProcessesLibrary/babylonjs.postProcess.min": `./src/postProcesses/index-${source}.ts`,
             "proceduralTexturesLibrary/babylonjs.proceduralTextures.min": `./src/proceduralTextures/index-${source}.ts`,
             "nodeEditor/babylon.nodeEditor.min": `./src/nodeEditor/index.ts`,
+            "nodeEditor/babylon.nodeGeometryEditor.min": `./src/nodeGeometryEditor/index.ts`,
             "guiEditor/babylon.guiEditor.min": `./src/guiEditor/index.ts`,
             "accessibility/babylon.accessibility.min": `./src/accessibility/index.ts`,
             "babylon.ktx2Decoder": `./src/ktx2Decoder/index.ts`,
@@ -106,6 +107,7 @@ module.exports = (env) => {
                 "post-processes": path.resolve(basePathForSources, "postProcesses", outputDirectoryForAliases),
                 "procedural-textures": path.resolve(basePathForSources, "proceduralTextures", outputDirectoryForAliases),
                 "node-editor": path.resolve(basePathForTools, "nodeEditor", outputDirectoryForAliases),
+                "node-geometry-editor": path.resolve(basePathForTools, "nodeGeometryEditor", outputDirectoryForAliases),
                 "gui-editor": path.resolve(basePathForTools, "guiEditor", outputDirectoryForAliases),
                 "accesibility": path.resolve(basePathForTools, "accessibility", outputDirectoryForAliases),
             },
@@ -213,6 +215,14 @@ module.exports = (env) => {
             from: "/nodeEditor/babylon.nodeEditor.d.ts",
             to: "/node-editor.d.ts",
         },
+        {
+            from: "/nodeGeometryEditor/babylon.nodeGeometryEditor.js",
+            to: "/nodeGeometryEditor/babylon.nodeGeometryEditor.min.js",
+        },
+        {
+            from: "/nodeGeometryEditor/babylon.nodeGeometryEditor.d.ts",
+            to: "/node-geometry-editor.d.ts",
+        },        
         {
             from: "/guiEditor/babylon.guiEditor.js",
             to: "/guiEditor/babylon.guiEditor.min.js",

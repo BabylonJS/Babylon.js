@@ -159,20 +159,20 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         this.props.globalState.stateManager.onRebuildRequiredObservable.add((autoConfigure) => {
             if (this.props.globalState.nodeGeometry) {
-                this.buildMaterial(autoConfigure);
+                this.buildGeometry(autoConfigure);
             }
         });
 
         this.props.globalState.onResetRequiredObservable.add((isDefault) => {
             if (isDefault) {
                 if (this.props.globalState.nodeGeometry) {
-                    this.buildMaterial();
+                    this.buildGeometry();
                 }
                 this.build(true);
             } else {
                 this.build();
                 if (this.props.globalState.nodeGeometry) {
-                    this.buildMaterial();
+                    this.buildGeometry();
                 }
             }
         });
@@ -231,14 +231,14 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this._graphCanvas.zoomToFit();
     }
 
-    buildMaterial(autoConfigure = true) {
+    buildGeometry(autoConfigure = true) {
         if (!this.props.globalState.nodeGeometry) {
             return;
         }
 
         try {
             this.props.globalState.nodeGeometry.build(true, undefined, autoConfigure);
-            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Node material build successful", false));
+            this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Node geometry build successful", false));
         } catch (err) {
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));
         }
@@ -261,7 +261,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         // setup the diagram model
         this._graphCanvas.reset();
 
-        // Load graph of nodes from the material
+        // Load graph of nodes from the geometry
         if (this.props.globalState.nodeGeometry) {
             this.loadGraph();
         }
@@ -347,7 +347,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         }
 
         const deltaX = evt.clientX - this._startX;
-        const rootElement = evt.currentTarget.ownerDocument!.getElementById("node-editor-graph-root") as HTMLDivElement;
+        const rootElement = evt.currentTarget.ownerDocument!.getElementById("node-geometry-editor-graph-root") as HTMLDivElement;
 
         if (forLeft) {
             this._leftWidth += deltaX;
@@ -403,7 +403,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     location.y += newY - oldY;
                 }
 
-                SerializationTools.AddFrameToMaterial(frameData, this.props.globalState, this.props.globalState.nodeGeometry);
+                SerializationTools.AddFrameToGeometry(frameData, this.props.globalState, this.props.globalState.nodeGeometry);
                 this._graphCanvas.frames[this._graphCanvas.frames.length - 1].cleanAccumulation();
                 this.forceUpdate();
                 return;
@@ -448,7 +448,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
     }
 
     dropNewBlock(event: React.DragEvent<HTMLDivElement>) {
-        const data = event.dataTransfer.getData("babylonjs-material-node") as string;
+        const data = event.dataTransfer.getData("babylonjs-geometry-node") as string;
 
         this.emitNewBlock(data, event.clientX - this._diagramContainer.offsetLeft, event.clientY - this._diagramContainer.offsetTop);
     }
@@ -495,7 +495,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         const popUpWindow = this.createPopupWindow("PREVIEW AREA", "_PreviewHostWindow");
         if (popUpWindow) {
             popUpWindow.addEventListener("beforeunload", this.handleClosingPopUp);
-            const parentControl = popUpWindow.document.getElementById("node-editor-graph-root");
+            const parentControl = popUpWindow.document.getElementById("node-geometry-editor-graph-root");
             this.createPreviewMeshControlHost(options, parentControl);
             this.createPreviewHost(options, parentControl);
             if (parentControl) {
@@ -537,7 +537,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         parentControl.style.padding = "0";
         parentControl.style.display = "grid";
         parentControl.style.gridTemplateRows = "40px auto";
-        parentControl.id = "node-editor-graph-root";
+        parentControl.id = "node-geometry-editor-graph-root";
         parentControl.className = "right-panel popup";
 
         popupWindow.document.body.appendChild(parentControl);
@@ -624,7 +624,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         return (
             <Portal globalState={this.props.globalState}>
                 <div
-                    id="node-editor-graph-root"
+                    id="node-geometry-editor-graph-root"
                     style={{
                         gridTemplateColumns: this.buildColumnLayout(),
                     }}
@@ -686,7 +686,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     <LogComponent globalState={this.props.globalState} />
                 </div>
                 <MessageDialog message={this.state.message} isError={this.state.isError} onClose={() => this.setState({ message: "" })} />
-                <div className="blocker">Node Material Editor runs only on desktop</div>
+                <div className="blocker">Node Geometry Editor runs only on desktop</div>
                 <div className="wait-screen hidden">Processing...please wait</div>
             </Portal>
         );

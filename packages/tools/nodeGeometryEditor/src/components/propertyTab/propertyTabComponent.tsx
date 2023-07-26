@@ -83,10 +83,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
     processInputBlockUpdate(ib: GeometryInputBlock) {
         this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(ib);
-
-        if (ib.isConstant) {
-            this.props.globalState.stateManager.onRebuildRequiredObservable.notifyObservers(true);
-        }
     }
 
     renderInputBlock(block: GeometryInputBlock) {
@@ -176,6 +172,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 const decoder = new TextDecoder("utf-8");
                 SerializationTools.Deserialize(JSON.parse(decoder.decode(data)), this.props.globalState);
 
+                this.props.globalState.onResetRequiredObservable.notifyObservers(false);
                 this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
             },
             undefined,
@@ -199,7 +196,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
     save() {
         const json = SerializationTools.Serialize(this.props.globalState.nodeGeometry, this.props.globalState);
-        StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "nodeMaterial.json");
+        StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "nodeGeometry.json");
     }
 
     customSave() {
@@ -208,7 +205,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.props.globalState
             .customSave!.action(SerializationTools.Serialize(this.props.globalState.nodeGeometry, this.props.globalState))
             .then(() => {
-                this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Material saved successfully", false));
+                this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Geometry saved successfully", false));
                 this.setState({ uploadInProgress: false });
             })
             .catch((err) => {
@@ -376,13 +373,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         />
                     </LineContainerComponent>
                     <LineContainerComponent title="OPTIONS">
-                        <CheckBoxLineComponent
-                            label="Embed textures when saving"
-                            isSelected={() => DataStorage.ReadBoolean("EmbedTextures", true)}
-                            onSelect={(value: boolean) => {
-                                DataStorage.WriteBoolean("EmbedTextures", value);
-                            }}
-                        />
                         <SliderLineComponent
                             lockObject={this.props.lockObject}
                             label="Grid size"

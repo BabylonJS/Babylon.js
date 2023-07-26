@@ -68,20 +68,20 @@ export class PlaneBlock extends NodeGeometryBlock {
         }
 
         if (!this.width.isConnected && !this.height.isConnected) {
-            const sizeInput = new GeometryInputBlock("size");
+            const sizeInput = new GeometryInputBlock("Size");
             sizeInput.value = 1;
             sizeInput.output.connectTo(this.size);
             return;
         }
 
         if (!this.width.isConnected) {
-            const widthInput = new GeometryInputBlock("width");
+            const widthInput = new GeometryInputBlock("Width");
             widthInput.value = 1;
             widthInput.output.connectTo(this.width);
         }
         
         if (!this.height.isConnected) {
-            const heightInput = new GeometryInputBlock("height");
+            const heightInput = new GeometryInputBlock("Height");
             heightInput.value = 1;
             heightInput.output.connectTo(this.height);
         }        

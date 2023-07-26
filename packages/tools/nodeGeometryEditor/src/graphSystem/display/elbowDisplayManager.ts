@@ -1,9 +1,9 @@
-import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
-import type { ElbowBlock } from "core/Materials/Node/Blocks/elbowBlock";
 import { BlockTools } from "../../blockTools";
 import type { IDisplayManager, VisualContentDescription } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import styles from "./elbowDisplayManager.modules.scss";
+import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
+import type { GeometryElbowBlock } from "core/Meshes/Node/Blocks/geometryElbowBlock";
 
 export class ElbowDisplayManager implements IDisplayManager {
     public getHeaderClass() {
@@ -15,11 +15,11 @@ export class ElbowDisplayManager implements IDisplayManager {
     }
 
     public getHeaderText(nodeData: INodeData): string {
-        return (nodeData.data as NodeMaterialBlock).name;
+        return (nodeData.data as NodeGeometryBlock).name;
     }
 
     public getBackgroundColor(nodeData: INodeData): string {
-        const elbowBlock = nodeData.data as ElbowBlock;
+        const elbowBlock = nodeData.data as GeometryElbowBlock;
 
         return BlockTools.GetColorFromConnectionNodeType(elbowBlock.input.type);
     }

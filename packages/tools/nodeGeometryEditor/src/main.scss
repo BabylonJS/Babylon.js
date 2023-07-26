@@ -1,4 +1,4 @@
-#node-editor-graph-root {
+#node-geometry-editor-graph-root {
     display: grid;
     grid-template-rows: calc(100% - 120px) 120px;
     height: 100%;
@@ -50,7 +50,7 @@
     .diagram-container {
         grid-row: 1;
         grid-column: 3;
-        background: #5f5b60;
+        background: #5f655b;
         width: 100%;
         height: 100%;
 
@@ -65,7 +65,7 @@
         grid-row: 1 / span 2;
         grid-column: 5;
         display: grid;
-        grid-template-rows: 1fr 40px auto 40px;
+        grid-template-rows: 1fr 40px auto;
         grid-template-columns: 100%;
         height: 100%;
         overflow-y: auto;

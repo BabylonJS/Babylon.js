@@ -2,7 +2,7 @@ import { Observable } from "../../../Misc/observable";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
-import { RegisterClass } from "../../../Misc/typeStore";
+import { GetClass, RegisterClass } from "../../../Misc/typeStore";
 import { Vector2, Vector3, Vector4 } from "../../../Maths/math.vector";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { NodeGeometryContextualSources } from "../Enums/nodeGeometryContextualSources";
@@ -25,23 +25,11 @@ export class GeometryInputBlock extends NodeGeometryBlock {
     /** Gets or set a value indicating that this input can only get 0 and 1 values */
     public isBoolean: boolean = false;
 
-    /** Gets or sets a value used by the Node Geometry editor to determine how to configure the current value if it is a matrix */
-    public matrixMode: number = 0;
-
-    /** Gets or sets a boolean indicating that the value of this input will not change after a build */
-    public isConstant = false;
-
     /** Gets or sets the group to use to display this block in the Inspector */
     public groupInInspector = "";
 
     /** Gets an observable raised when the value is changed */
     public onValueChangedObservable = new Observable<GeometryInputBlock>();
-
-    /** Gets or sets a boolean indicating if content needs to be converted to gamma space (for color3/4 only) */
-    public convertToGammaSpace = false;
-
-    /** Gets or sets a boolean indicating if content needs to be converted to linear space (for color3/4 only) */
-    public convertToLinearSpace = false;
 
     /**
      * Gets or sets the connection point type (default is float)
@@ -200,6 +188,55 @@ export class GeometryInputBlock extends NodeGeometryBlock {
 
         super.dispose();
     }
+
+    public serialize(): any {
+        const serializationObject = super.serialize();
+
+        serializationObject.type = this.type;
+        serializationObject.contextualValue = this.contextualValue;
+        serializationObject.min = this.min;
+        serializationObject.max = this.max;
+        serializationObject.isBoolean = this.isBoolean;
+        serializationObject.groupInInspector = this.groupInInspector;
+
+        if (this._storedValue != null && !this.isContextual) {
+            if (this._storedValue.asArray) {
+                serializationObject.valueType = "BABYLON." + this._storedValue.getClassName();
+                serializationObject.value = this._storedValue.asArray();
+            } else {
+                serializationObject.valueType = "number";
+                serializationObject.value = this._storedValue;
+            }
+        }
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any, rootUrl: string) {
+        super._deserialize(serializationObject, rootUrl);
+
+        this._type = serializationObject.type;
+
+        this.contextualValue = serializationObject.contextualValue;
+        this.min = serializationObject.min || 0;
+        this.max = serializationObject.max || 0;
+        this.isBoolean = !!serializationObject.isBoolean;
+        this.groupInInspector = serializationObject.groupInInspector || "";
+
+        if (!serializationObject.valueType) {
+            return;
+        }
+
+        if (serializationObject.valueType === "number") {
+            this._storedValue = serializationObject.value;
+        } else {
+            const valueType = GetClass(serializationObject.valueType);
+
+            if (valueType) {
+                this._storedValue = valueType.FromArray(serializationObject.value);
+            }
+        }
+    }    
 }
 
 RegisterClass("BABYLON.GeometryInputBlock", GeometryInputBlock);

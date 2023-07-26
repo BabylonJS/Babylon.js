@@ -13,7 +13,6 @@ import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import { RegisterDefaultInput } from "./graphSystem/registerDefaultInput";
 import { RegisterExportData } from "./graphSystem/registerExportData";
-import type { FilesInput } from "core/Misc/filesInput";
 import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 
 export class GlobalState {
@@ -28,34 +27,28 @@ export class GlobalState {
     onReOrganizedRequiredObservable = new Observable<void>();
     onLogRequiredObservable = new Observable<LogEntry>();
     onIsLoadingChanged = new Observable<boolean>();
-    onPreviewCommandActivated = new Observable<boolean>();
     onLightUpdated = new Observable<void>();
     onPreviewBackgroundChanged = new Observable<void>();
     onBackFaceCullingChanged = new Observable<void>();
-    onDepthPrePassChanged = new Observable<void>();
     onAnimationCommandActivated = new Observable<void>();
     onImportFrameObservable = new Observable<any>();
     onPopupClosedObservable = new Observable<void>();
-    onDropEventReceivedObservable = new Observable<DragEvent>();
     onGetNodeFromBlock: (block: NodeGeometryBlock) => GraphNode;
     previewType: PreviewType;
     previewFile: File;
     listOfCustomPreviewFiles: File[] = [];
     rotatePreview: boolean;
     backgroundColor: Color4;
-    backFaceCulling: boolean;
     lockObject = new LockObject();
     hemisphericLight: boolean;
     controlCamera: boolean;
     pointerOverCanvas: boolean = false;
-    filesInput: FilesInput;
     onRefreshPreviewMeshControlComponentRequiredObservable = new Observable<void>();
 
     customSave?: { label: string; action: (data: string) => Promise<void> };
 
     public constructor() {
         this.previewType = DataStorage.ReadNumber("PreviewType", PreviewType.Box);
-        this.backFaceCulling = DataStorage.ReadBoolean("BackFaceCulling", true);
         this.hemisphericLight = DataStorage.ReadBoolean("HemisphericLight", true);
         this.controlCamera = DataStorage.ReadBoolean("ControlCamera", true);
         this.stateManager = new StateManager();

@@ -9,7 +9,7 @@
             "core/*": ["dev/core/dist/*"],
             "gui/*": ["dev/gui/dist/*"],
             "shared-ui-components/*": ["dev/sharedUiComponents/dist/*"],
-            "node-editor/*": ["tools/nodeGeometryEditor/src/*"]
+            "node-geometry-editor/*": ["tools/nodeGeometryEditor/src/*"]
         }
     },
 

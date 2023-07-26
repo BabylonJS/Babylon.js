@@ -6,6 +6,10 @@ import { RandomBlock } from "core/Meshes/Node/Blocks/randomBlock";
 import { GeometryOutputBlock } from "core/Meshes/Node/Blocks/geometryOutputBlock";
 import { BoxBlock } from "core/Meshes/Node/Blocks/Sources/boxBlock";
 import { PlaneBlock } from "core/Meshes/Node/Blocks/Sources/planeBlock";
+import { MergeGeometryBlock } from "core/Meshes/Node/Blocks/mergeGeometryBlock";
+import { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
+import { MathBlock, MathBlockOperations } from "core/Meshes/Node/Blocks/mathBlock";
+import { NodeGeometryContextualSources } from "core/Meshes/Node/Enums/nodeGeometryContextualSources";
 
 export class BlockTools {
     public static GetBlockFromString(data: string, nodeGeometry: NodeGeometry) {
@@ -19,7 +23,39 @@ export class BlockTools {
             case "BoxBlock":
                 return new BoxBlock("Box");   
             case "PlaneBlock":
-                return new PlaneBlock("Plane");                                              
+                return new PlaneBlock("Plane");     
+            case "MergeGeometryBlock":
+                return new MergeGeometryBlock("Merge");    
+            case "PositionsBlock": {
+                const block = new GeometryInputBlock("Positions");
+                block.contextualValue = NodeGeometryContextualSources.Positions;
+                return block;
+            }
+            case "NormalsBlock": {
+                const block = new GeometryInputBlock("Normals");
+                block.contextualValue = NodeGeometryContextualSources.Normals;
+                return block;
+            }
+            case "AddBlock": {
+                const block = new MathBlock("Add");
+                block.operation = MathBlockOperations.Add;
+                return block;
+            }       
+            case "SubtractBlock": {
+                const block = new MathBlock("Subtract");
+                block.operation = MathBlockOperations.Subtract;
+                return block;
+            }       
+            case "MultiplyBlock": {
+                const block = new MathBlock("Multiply");
+                block.operation = MathBlockOperations.Multiply;
+                return block;
+            }    
+            case "DivideBlock": {
+                const block = new MathBlock("Divide");
+                block.operation = MathBlockOperations.Divide;
+                return block;
+            }                                       
         }
 
         return null;

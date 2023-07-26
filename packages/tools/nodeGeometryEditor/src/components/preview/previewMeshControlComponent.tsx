@@ -5,13 +5,11 @@ import { PreviewType } from "./previewType";
 import { DataStorage } from "core/Misc/dataStorage";
 import type { Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
-import { NodeMaterialModes } from "core/Materials/Node/Enums/nodeMaterialModes";
 
 import popUpIcon from "./svgs/popOut.svg";
 import colorPicker from "./svgs/colorPicker.svg";
 import pauseIcon from "./svgs/pauseIcon.svg";
 import playIcon from "./svgs/playIcon.svg";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 
 interface IPreviewMeshControlComponent {
     globalState: GlobalState;
@@ -20,22 +18,15 @@ interface IPreviewMeshControlComponent {
 
 export class PreviewMeshControlComponent extends React.Component<IPreviewMeshControlComponent> {
     private _colorInputRef: React.RefObject<HTMLInputElement>;
-    private _filePickerRef: React.RefObject<HTMLInputElement>;
     private _onResetRequiredObserver: Nullable<Observer<boolean>>;
-    private _onDropEventObserver: Nullable<Observer<DragEvent>>;
     private _onRefreshPreviewMeshControlComponentRequiredObserver: Nullable<Observer<void>>;
 
     constructor(props: IPreviewMeshControlComponent) {
         super(props);
         this._colorInputRef = React.createRef();
-        this._filePickerRef = React.createRef();
 
         this._onResetRequiredObserver = this.props.globalState.onResetRequiredObservable.add(() => {
             this.forceUpdate();
-        });
-
-        this._onDropEventObserver = this.props.globalState.onDropEventReceivedObservable.add((event) => {
-            this.useCustomMesh(event);
         });
 
         this._onRefreshPreviewMeshControlComponentRequiredObserver = this.props.globalState.onRefreshPreviewMeshControlComponentRequiredObservable.add(() => {
@@ -45,37 +36,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
 
     componentWillUnmount() {
         this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
-        this.props.globalState.onDropEventReceivedObservable.remove(this._onDropEventObserver);
         this.props.globalState.onRefreshPreviewMeshControlComponentRequiredObservable.remove(this._onRefreshPreviewMeshControlComponentRequiredObserver);
-    }
-
-    changeMeshType(newOne: PreviewType) {
-        if (this.props.globalState.previewType === newOne) {
-            return;
-        }
-
-        this.props.globalState.previewType = newOne;
-        this.props.globalState.onPreviewCommandActivated.notifyObservers(false);
-
-        DataStorage.WriteNumber("PreviewType", newOne);
-
-        this.forceUpdate();
-    }
-
-    useCustomMesh(evt: any) {
-        const files: File[] = evt.target?.files || evt.dataTransfer?.files;
-        if (files && files.length) {
-            const file = files[0];
-
-            this.props.globalState.previewFile = file;
-            this.props.globalState.previewType = PreviewType.Custom;
-            this.props.globalState.listOfCustomPreviewFiles = [...files];
-            this.props.globalState.onPreviewCommandActivated.notifyObservers(false);
-            this.forceUpdate();
-        }
-        if (this._filePickerRef.current) {
-            this._filePickerRef.current.value = "";
-        }
     }
 
     onPopUp() {
@@ -136,54 +97,23 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
             });
         }
 
-        const options = this.props.globalState.mode === NodeMaterialModes.Particle ? particleTypeOptions : meshTypeOptions;
-        const accept = this.props.globalState.mode === NodeMaterialModes.Particle ? ".json" : ".*";
-
         return (
             <div id="preview-mesh-bar">
-                {(this.props.globalState.mode === NodeMaterialModes.Material || this.props.globalState.mode === NodeMaterialModes.Particle) && (
-                    <>
-                        <OptionsLineComponent
-                            label=""
-                            options={options}
-                            target={this.props.globalState}
-                            propertyName="previewType"
-                            noDirectUpdate={true}
-                            onSelect={(value: any) => {
-                                if (value !== PreviewType.Custom + 1) {
-                                    this.changeMeshType(value);
-                                } else {
-                                    this._filePickerRef.current?.click();
-                                }
-                            }}
+                <>
+                    <div title="Turn-table animation" onClick={() => this.changeAnimation()} className="button" id="play-button">
+                        {this.props.globalState.rotatePreview ? <img src={pauseIcon} alt="" /> : <img src={playIcon} alt="" />}
+                    </div>
+                    <div id="color-picker-button" title="Background color" className={"button align"} onClick={(_) => this.changeBackgroundClick()}>
+                        <img src={colorPicker} alt="" id="color-picker-image" />
+                        <input
+                            ref={this._colorInputRef}
+                            id="color-picker"
+                            type="color"
+                            value={this.props.globalState.backgroundColor.toHexString().slice(0, 7)}
+                            onChange={(evt) => this.changeBackground(evt.target.value)}
                         />
-                        <div
-                            style={{
-                                display: "none",
-                            }}
-                            title="Preview with a custom mesh"
-                        >
-                            <input ref={this._filePickerRef} multiple id="file-picker" type="file" onChange={(evt) => this.useCustomMesh(evt)} accept={accept} />
-                        </div>
-                    </>
-                )}
-                {this.props.globalState.mode === NodeMaterialModes.Material && (
-                    <>
-                        <div title="Turn-table animation" onClick={() => this.changeAnimation()} className="button" id="play-button">
-                            {this.props.globalState.rotatePreview ? <img src={pauseIcon} alt="" /> : <img src={playIcon} alt="" />}
-                        </div>
-                        <div id="color-picker-button" title="Background color" className={"button align"} onClick={(_) => this.changeBackgroundClick()}>
-                            <img src={colorPicker} alt="" id="color-picker-image" />
-                            <input
-                                ref={this._colorInputRef}
-                                id="color-picker"
-                                type="color"
-                                value={this.props.globalState.backgroundColor.toHexString().slice(0, 7)}
-                                onChange={(evt) => this.changeBackground(evt.target.value)}
-                            />
-                        </div>
-                    </>
-                )}
+                    </div>
+                </>
                 <div title="Open preview in new window" id="preview-new-window" onClick={() => this.onPopUp()} className="button">
                     <img src={popUpIcon} alt="" />
                 </div>

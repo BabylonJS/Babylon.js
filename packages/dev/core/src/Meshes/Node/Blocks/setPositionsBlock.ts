@@ -4,9 +4,8 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import type { INodeGeometryExecutionContext } from "../Interfaces/nodeGeometryExecutionContext";
-import { NodeGeometryContextualSources } from "../Enums/nodeGeometryContextualSources";
 import type { VertexData } from "../../../Meshes/mesh.vertexData";
-import { Vector3 } from "../../../Maths/math.vector";
+import type { Vector3 } from "../../../Maths/math.vector";
 
 /**
  * Block used to generate the final geometry
@@ -28,14 +27,12 @@ export class SetPositionsBlock extends NodeGeometryBlock implements INodeGeometr
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Geometry);
     }
 
-    getContextualValue(source: NodeGeometryContextualSources) {
-        switch(source) {
-            case NodeGeometryContextualSources.Positions:
-                return Vector3.FromArray(this._vertexData.positions as ArrayLike<number>, this._currentIndex * 3);
-                break;
-        }
-
-        return null;
+    /**
+     * Gets the current index in the current flow
+     * @returns the current index
+     */
+    public getExecutionIndex(): number {
+        return this._currentIndex;
     }
 
     /**
@@ -68,12 +65,14 @@ export class SetPositionsBlock extends NodeGeometryBlock implements INodeGeometr
     }    
 
     protected _buildBlock(state: NodeGeometryBuildState) {
-        state.context = this;
+        state.executionContext = this;
 
         this._vertexData = this.geometry.getConnectedValue(state);
+        state.geometryContext = this._vertexData;
         
-        if (!this._vertexData || !this._vertexData.positions) {
-            state.context = null;
+        if (!this._vertexData || !this._vertexData.positions || !this.positions.isConnected) {
+            state.executionContext = null;
+            state.geometryContext = null;
             this.output._storedValue = null;
             return;
         }
@@ -82,12 +81,15 @@ export class SetPositionsBlock extends NodeGeometryBlock implements INodeGeometr
         const vertexCount = this._vertexData.positions.length / 3;
         for (this._currentIndex = 0; this._currentIndex < vertexCount; this._currentIndex++) {
             const tempVector3 = this.positions.getConnectedValue(state) as Vector3;
-            tempVector3.toArray(this._vertexData.positions, this._currentIndex * 3);
+            if (tempVector3) {
+                tempVector3.toArray(this._vertexData.positions, this._currentIndex * 3);
+            }
         }
 
         // Storage
         this.output._storedValue = this._vertexData;
-        state.context = null;
+        state.executionContext = null;
+        state.geometryContext = null;
     }
 
 }

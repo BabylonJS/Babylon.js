@@ -4,7 +4,6 @@ import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineCompon
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
-import type { GlobalState } from "../../globalState";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
@@ -83,10 +82,6 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
 
         if (!notifiers || notifiers.rebuild) {
             this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
-        }
-
-        if (notifiers?.activatePreviewCommand) {
-            (this.props.stateManager.data as GlobalState).onPreviewCommandActivated.notifyObservers(true);
         }
 
         const rebuild = notifiers?.callback?.(this.props.nodeData.data as NodeGeometryBlock) ?? false;

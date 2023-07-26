@@ -21,7 +21,7 @@ export class DraggableLineWithButtonComponent extends React.Component<IDraggable
                 title={this.props.tooltip}
                 draggable={true}
                 onDragStart={(event) => {
-                    event.dataTransfer.setData("babylonjs-material-node", this.props.data);
+                    event.dataTransfer.setData("babylonjs-geometry-node", this.props.data);
                 }}
             >
                 {this.props.data.substr(0, this.props.data.length - (this.props.lenSuffixToRemove ?? 6))}

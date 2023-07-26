@@ -9,7 +9,7 @@ module.exports = (env) => {
         devtool: production ? "source-map" : "eval-cheap-module-source-map",
         output: {
             path: path.resolve(__dirname, "dist"),
-            filename: "babylon.nodeEditor.js",
+            filename: "babylon.nodeGeometryEditor.js",
             devtoolModuleFilenameTemplate: production ? "webpack://[namespace]/[resource-path]?[loaders]" : "file:///[absolute-resource-path]",
         },
         resolve: {

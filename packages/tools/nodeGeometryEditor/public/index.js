@@ -196,6 +196,8 @@ checkBabylonVersionAsync().then(() => {
             new BABYLON.HemisphericLight("light #0", new BABYLON.Vector3(0, 1, 0), scene);
 
             nodeGeometry = new BABYLON.NodeGeometry("node");
+            nodeGeometry.setToDefault();
+            nodeGeometry.build();
 
             showEditor();
         } else {

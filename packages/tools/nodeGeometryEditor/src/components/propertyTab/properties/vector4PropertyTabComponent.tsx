@@ -1,12 +1,12 @@
 import * as React from "react";
 import type { GlobalState } from "../../../globalState";
-import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
 import { Vector4LineComponent } from "shared-ui-components/lines/vector4LineComponent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import type { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
 
 interface IVector4PropertyTabComponentProps {
     globalState: GlobalState;
-    inputBlock: InputBlock;
+    inputBlock: GeometryInputBlock;
     lockObject: LockObject;
 }
 

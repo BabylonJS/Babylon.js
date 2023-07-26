@@ -171,13 +171,14 @@ export class NodeGeometryBlock {
     /**
      * Build the current node and generate the vertex data
      * @param state defines the current generation state
-     * @param activeBlocks defines the list of active blocks (i.e. blocks to compile)
      * @returns true if already built
      */
-    public build(state: NodeGeometryBuildState, activeBlocks: NodeGeometryBlock[]): boolean {
+    public build(state: NodeGeometryBuildState): boolean {
         if (this._buildId === state.buildId) {
             return true;
         }
+
+        this._buildId = state.buildId;
 
         // Check if "parent" blocks are compiled
         for (const input of this._inputs) {
@@ -191,12 +192,8 @@ export class NodeGeometryBlock {
 
             const block = input.connectedPoint.ownerBlock;
             if (block && block !== this) {
-                block.build(state, activeBlocks);
+                block.build(state);
             }
-        }
-
-        if (this._buildId === state.buildId) {
-            return true; // Need to check again as inputs can be connected multiple time to this endpoint
         }
 
         // Logs
@@ -206,15 +203,13 @@ export class NodeGeometryBlock {
 
         this._buildBlock(state);
 
-        this._buildId = state.buildId;
-
         // Compile connected blocks
         for (const output of this._outputs) {
             for (const endpoint of output.endpoints) {
                 const block = endpoint.ownerBlock;
 
-                if (block && activeBlocks.indexOf(block) !== -1) {
-                    block.build(state, activeBlocks);
+                if (block) {
+                    block.build(state);
                 }
             }
         }

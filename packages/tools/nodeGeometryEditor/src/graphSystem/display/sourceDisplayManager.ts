@@ -1,9 +1,10 @@
 import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import styles from "./sourceDisplayManager.modules.scss";
 
-export class OutputDisplayManager implements IDisplayManager {
+export class SourceDisplayManager implements IDisplayManager {
     public getHeaderClass() {
-        return "";
+        return styles["source-block"];
     }
 
     public shouldDisplayPortLabels(): boolean {
@@ -15,7 +16,7 @@ export class OutputDisplayManager implements IDisplayManager {
     }
 
     public getBackgroundColor(): string {
-        return "rgb(106, 44, 131)";
+        return "gray";
     }
 
     public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {

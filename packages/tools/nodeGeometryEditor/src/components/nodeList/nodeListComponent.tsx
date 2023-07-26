@@ -108,6 +108,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "Vector2",
                 "Vector3",
                 "Vector4",
+                "PositionsBlock",
+                "NormalsBlock"
             ],
             Math__Vector: [
                 "AddBlock",
@@ -121,7 +123,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "PlaneBlock",
             ],
             Updates: [
-                "SetPositionsBlock"
+                "SetPositionsBlock",
+                "MergeGeometryBlock"
             ],
             Noises: ["RandomBlock"],
             Output_Nodes: ["GeometryOutputBlock"],

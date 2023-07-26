@@ -8,28 +8,12 @@ import type { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBl
 import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryContextualSources } from "core/Meshes/Node/Enums/nodeGeometryContextualSources";
 
-const inputNameToAttributeValue: { [name: string]: string } = {
-    position2d: "position",
-    particle_uv: "uv",
-    particle_color: "color",
-    particle_texturemask: "textureMask",
-    particle_positionw: "positionW",
-};
-
-const inputNameToAttributeName: { [name: string]: string } = {
-    position2d: "screen",
-    particle_uv: "particle",
-    particle_color: "particle",
-    particle_texturemask: "particle",
-    particle_positionw: "particle",
-};
-
 export class InputDisplayManager implements IDisplayManager {
     public getHeaderClass(nodeData: INodeData) {
         const inputBlock = nodeData.data as GeometryInputBlock;
 
-        if (inputBlock.isConstant) {
-            return styles["constant"];
+        if (inputBlock.isContextual) {
+            return styles["contextual"];
         }
 
         if (inputBlock.visibleInInspector) {

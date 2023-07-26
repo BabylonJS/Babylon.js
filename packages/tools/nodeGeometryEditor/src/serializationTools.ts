@@ -1,6 +1,4 @@
 import type { GlobalState } from "./globalState";
-import { Texture } from "core/Materials/Textures/texture";
-import { DataStorage } from "core/Misc/dataStorage";
 import type { Nullable } from "core/types";
 import type { GraphFrame } from "shared-ui-components/nodeGraphSystem/graphFrame";
 import type { NodeGeometry } from "core/Meshes/Node/nodeGeometry";
@@ -29,16 +27,11 @@ export class SerializationTools {
     }
 
     public static Serialize(geometry: NodeGeometry, globalState: GlobalState, frame?: Nullable<GraphFrame>) {
-        const bufferSerializationState = Texture.SerializeBuffers;
-        Texture.SerializeBuffers = DataStorage.ReadBoolean("EmbedTextures", true);
-
         this.UpdateLocations(geometry, globalState, frame);
 
         const selectedBlocks = frame ? frame.nodes.map((n) => n.content.data) : undefined;
 
         const serializationObject = geometry.serialize(selectedBlocks);
-
-        Texture.SerializeBuffers = bufferSerializationState;
 
         return JSON.stringify(serializationObject, undefined, 2);
     }
