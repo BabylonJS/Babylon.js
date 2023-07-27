@@ -112,6 +112,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "CapsuleBlock",     
                 "DiscBlock",   
                 "IcoSphereBlock",
+                "MeshBlock",
             ],
             Inputs: [
                 "Float",
@@ -150,6 +151,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Math__Vector: [
                 "TransformBlock",
                 "VectorCreatorBlock",
+                "NormalizeBlock",
             ],                   
             Matrices: [
                 "RotationXBlock",

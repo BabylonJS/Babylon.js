@@ -23,6 +23,7 @@ export class PreviewManager {
     private _nodeGeometry: NodeGeometry;
     private _onBuildObserver: Nullable<Observer<NodeGeometry>>;
 
+    private _onRefocusObserver: Nullable<Observer<void>>;
     private _onAnimationCommandActivatedObserver: Nullable<Observer<void>>;
     private _onUpdateRequiredObserver: Nullable<Observer<Nullable<NodeGeometryBlock>>>;
     private _onPreviewBackgroundChangedObserver: Nullable<Observer<void>>;
@@ -46,6 +47,10 @@ export class PreviewManager {
     public constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState) {
         this._nodeGeometry = globalState.nodeGeometry;
         this._globalState = globalState;
+
+        this._onRefocusObserver = this._globalState.onRefocus.add(() => {
+            this._refocusCamera();
+        });
 
         this._onBuildObserver = this._nodeGeometry.onBuildObservable.add(() => {
             this._refreshPreviewMesh(false);
@@ -80,7 +85,7 @@ export class PreviewManager {
         this._camera.lowerRadiusLimit = 3;
         this._camera.upperRadiusLimit = 10;
         this._camera.wheelPrecision = 20;
-        this._camera.minZ = 0.1;
+        this._camera.minZ = 0.001;
         this._camera.attachControl(false);
 
         this._lightParent = new TransformNode("LightParent", this._scene);
@@ -156,62 +161,64 @@ export class PreviewManager {
         new HemisphericLight("Hemispheric light", new Vector3(0, 1, 0), this._scene);
     }
 
+    private _refocusCamera() {
+        const framingBehavior = this._camera.getBehaviorByName("Framing") as FramingBehavior;
+
+        framingBehavior.framingTime = 0;
+        framingBehavior.elevationReturnTime = -1;
+
+        if (this._scene.meshes.length) {
+            const worldExtends = this._scene.getWorldExtends((m) => m.name === "main");
+            this._camera.lowerRadiusLimit = null;
+            this._camera.upperRadiusLimit = null;
+            if (!framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max)) {
+                setTimeout(() => {
+                    this._refocusCamera();
+                })
+                return;
+            }
+        }
+
+        this._camera.pinchPrecision = 200 / this._camera.radius;
+        this._camera.upperRadiusLimit = 5 * this._camera.radius;
+    }
+
     private _prepareScene(first: boolean) {
         if (first) {
             this._camera.useFramingBehavior = true;
 
             this._prepareLights();
 
-            const framingBehavior = this._camera.getBehaviorByName("Framing") as FramingBehavior;
-
-            setTimeout(() => {
-                // Let the behavior activate first
-                framingBehavior.framingTime = 0;
-                framingBehavior.elevationReturnTime = -1;
-
-                if (this._scene.meshes.length) {
-                    const worldExtends = this._scene.getWorldExtends();
-                    this._camera.lowerRadiusLimit = null;
-                    this._camera.upperRadiusLimit = null;
-                    framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
-                }
-
-                this._camera.pinchPrecision = 200 / this._camera.radius;
-                this._camera.upperRadiusLimit = 5 * this._camera.radius;
-            });
-
             this._camera.wheelDeltaPercentage = 0.01;
             this._camera.pinchDeltaPercentage = 0.01;
         }
 
-        // Update
+        // Update        
+        const toDelete = this._mesh;
         this._updatePreview();
-
+        toDelete?.dispose();
+        
         // Animations
-        this._handleAnimations();
+        this._handleAnimations();        
     }
 
     private _refreshPreviewMesh(first: boolean) {
-        if (this._mesh) {
-            const toDelete = this._mesh;
-            setTimeout(() => {
-                toDelete.dispose();
-            });
-        }
-
         SceneLoader.ShowLoadingScreen = false;
 
         this._globalState.onIsLoadingChanged.notifyObservers(true);
 
         this._prepareScene(first);
+
+        if (first) {            
+            this._refocusCamera();
+        }
     }
 
     private _updatePreview() {
         try {
             const serializationObject = this._serializeGeometry();
-
             const nodeGeometry = NodeGeometry.Parse(serializationObject);
-            this._mesh = nodeGeometry.createMesh("temp", this._scene);
+            this._mesh = nodeGeometry.createMesh("main", this._scene);
             if (this._mesh) {
                 this._mesh.material = this._matCap;
             }
@@ -225,6 +232,7 @@ export class PreviewManager {
     }
 
     public dispose() {
+        this._globalState.onRefocus.remove(this._onRefocusObserver);
         this._nodeGeometry.onBuildObservable.remove(this._onBuildObserver);        
         this._globalState.stateManager.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
         this._globalState.onWireframeChanged.remove(this._onWireframeChangedObserver);

@@ -174,6 +174,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
                 this.props.globalState.onResetRequiredObservable.notifyObservers(false);
                 this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
+                this.props.globalState.onRefocus.notifyObservers();
             },
             undefined,
             true
@@ -286,6 +287,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         NodeGeometry.ParseFromSnippetAsync(snippedId, "", geometry)
             .then(() => {
                 geometry.build();
+                this.props.globalState.onRefocus.notifyObservers();
             })
             .catch((err) => {
                 this.props.globalState.hostDocument.defaultView!.alert("Unable to load your node geometry: " + err);
@@ -355,6 +357,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             onClick={() => {
                                 this.props.globalState.nodeGeometry!.setToDefault();
                                 this.props.globalState.onResetRequiredObservable.notifyObservers(true);
+                                this.props.globalState.onRefocus.notifyObservers();
                             }}
                         />
                     </LineContainerComponent>

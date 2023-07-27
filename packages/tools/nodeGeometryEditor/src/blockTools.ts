@@ -16,10 +16,12 @@ import { RotationYBlock } from "core/Meshes/Node/Blocks/Matrices/rotationYBlock"
 import { RotationZBlock } from "core/Meshes/Node/Blocks/Matrices/rotationZBlock";
 import { ScalingBlock } from "core/Meshes/Node/Blocks/Matrices/scalingBlock";
 import { TranslationBlock } from "core/Meshes/Node/Blocks/Matrices/translationBlock";
+import { MeshBlock } from "core/Meshes/Node/Blocks/Sources/meshBlock";
 import { TorusBlock } from "core/Meshes/Node/Blocks/Sources/torusBlock";
 import { DiscBlock } from "core/Meshes/Node/Blocks/Sources/discBlock";
 import { MergeGeometryBlock } from "core/Meshes/Node/Blocks/mergeGeometryBlock";
 import { VectorCreatorBlock } from "core/Meshes/Node/Blocks/vectorCreatorBlock";
+import { NormalizeVectorBlock } from "core/Meshes/Node/Blocks/normalizeVectorBlock";
 import { GeometryTransformBlock } from "core/Meshes/Node/Blocks/geometryTransformBlock";
 import { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
 import { MathBlock, MathBlockOperations } from "core/Meshes/Node/Blocks/mathBlock";
@@ -30,6 +32,10 @@ import { GeometryElbowBlock } from "core/Meshes/Node/Blocks/geometryElbowBlock";
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "NormalizeBlock":
+                return new NormalizeVectorBlock("Normalize");              
+            case "MeshBlock":
+                return new MeshBlock("Mesh");  
             case "VectorCreatorBlock":
                 return new VectorCreatorBlock("Vector Creator");               
             case "TranslationBlock":

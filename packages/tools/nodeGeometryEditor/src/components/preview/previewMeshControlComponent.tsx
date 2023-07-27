@@ -1,7 +1,6 @@
 import * as React from "react";
 import type { GlobalState } from "../../globalState";
 import { Color3, Color4 } from "core/Maths/math.color";
-import { PreviewType } from "./previewType";
 import { DataStorage } from "core/Misc/dataStorage";
 import type { Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
@@ -10,6 +9,7 @@ import popUpIcon from "./svgs/popOut.svg";
 import colorPicker from "./svgs/colorPicker.svg";
 import pauseIcon from "./svgs/pauseIcon.svg";
 import playIcon from "./svgs/playIcon.svg";
+import frameIcon from "./svgs/frameIcon.svg";
 
 interface IPreviewMeshControlComponent {
     globalState: GlobalState;
@@ -65,41 +65,17 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
         this._colorInputRef.current?.click();
     }
 
-    render() {
-        const meshTypeOptions = [
-            { label: "Cube", value: PreviewType.Box },
-            { label: "Cylinder", value: PreviewType.Cylinder },
-            { label: "Plane", value: PreviewType.Plane },
-            { label: "Shader ball", value: PreviewType.ShaderBall },
-            { label: "Sphere", value: PreviewType.Sphere },
-            { label: "Load...", value: PreviewType.Custom + 1 },
-        ];
+    refocus() {        
+        this.props.globalState.onRefocus.notifyObservers();
+    }
 
-        const particleTypeOptions = [
-            { label: "Default", value: PreviewType.DefaultParticleSystem },
-            { label: "Bubbles", value: PreviewType.Bubbles },
-            { label: "Explosion", value: PreviewType.Explosion },
-            { label: "Fire", value: PreviewType.Fire },
-            { label: "Rain", value: PreviewType.Rain },
-            { label: "Smoke", value: PreviewType.Smoke },
-            { label: "Load...", value: PreviewType.Custom + 1 },
-        ];
-
-        if (this.props.globalState.listOfCustomPreviewFiles.length > 0) {
-            meshTypeOptions.splice(0, 0, {
-                label: "Custom",
-                value: PreviewType.Custom,
-            });
-
-            particleTypeOptions.splice(0, 0, {
-                label: "Custom",
-                value: PreviewType.Custom,
-            });
-        }
-
+    render() {       
         return (
             <div id="preview-mesh-bar">
                 <>
+                    <div title="Refocus camera" onClick={() => this.refocus()} className="button" id="refocus-button">
+                        <img src={frameIcon} alt="" />
+                    </div>                
                     <div title="Turn-table animation" onClick={() => this.changeAnimation()} className="button" id="play-button">
                         {this.props.globalState.rotatePreview ? <img src={pauseIcon} alt="" /> : <img src={playIcon} alt="" />}
                     </div>

@@ -41,10 +41,14 @@ export class NodeGeometryBlock {
     public uniqueId: number;
 
     /**
-     * Gets the name of the block
+     * Gets or set the name of the block
      */
     public get name(): string {
         return this._name;
+    }
+
+    public set name(value : string) {
+        this._name = value;
     }
 
     /**

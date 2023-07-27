@@ -881,6 +881,15 @@ export class VertexData {
     }
 
     /**
+     * Clone the current vertex data
+     * @returns a copy of the current data
+     */
+    public clone() {
+        const serializationObject = this.serialize();
+        return VertexData.Parse(serializationObject);
+    }
+
+    /**
      * Serializes the VertexData
      * @returns a serialized object
      */
@@ -888,64 +897,64 @@ export class VertexData {
         const serializationObject: any = {};
 
         if (this.positions) {
-            serializationObject.positions = this.positions;
+            serializationObject.positions = Array.from(this.positions);
         }
 
         if (this.normals) {
-            serializationObject.normals = this.normals;
+            serializationObject.normals = Array.from(this.normals);
         }
 
         if (this.tangents) {
-            serializationObject.tangents = this.tangents;
+            serializationObject.tangents = Array.from(this.tangents);
         }
 
         if (this.uvs) {
-            serializationObject.uvs = this.uvs;
+            serializationObject.uvs = Array.from(this.uvs);
         }
 
         if (this.uvs2) {
-            serializationObject.uvs2 = this.uvs2;
+            serializationObject.uvs2 = Array.from(this.uvs2);
         }
 
         if (this.uvs3) {
-            serializationObject.uvs3 = this.uvs3;
+            serializationObject.uvs3 = Array.from(this.uvs3);
         }
 
         if (this.uvs4) {
-            serializationObject.uvs4 = this.uvs4;
+            serializationObject.uvs4 = Array.from(this.uvs4);
         }
 
         if (this.uvs5) {
-            serializationObject.uvs5 = this.uvs5;
+            serializationObject.uvs5 = Array.from(this.uvs5);
         }
 
         if (this.uvs6) {
-            serializationObject.uvs6 = this.uvs6;
+            serializationObject.uvs6 = Array.from(this.uvs6);
         }
 
         if (this.colors) {
-            serializationObject.colors = this.colors;
+            serializationObject.colors = Array.from(this.colors);
         }
 
         if (this.matricesIndices) {
-            serializationObject.matricesIndices = this.matricesIndices;
+            serializationObject.matricesIndices = Array.from(this.matricesIndices);
             serializationObject.matricesIndices._isExpanded = true;
         }
 
         if (this.matricesWeights) {
-            serializationObject.matricesWeights = this.matricesWeights;
+            serializationObject.matricesWeights = Array.from(this.matricesWeights);
         }
 
         if (this.matricesIndicesExtra) {
-            serializationObject.matricesIndicesExtra = this.matricesIndicesExtra;
+            serializationObject.matricesIndicesExtra = Array.from(this.matricesIndicesExtra);
             serializationObject.matricesIndicesExtra._isExpanded = true;
         }
 
         if (this.matricesWeightsExtra) {
-            serializationObject.matricesWeightsExtra = this.matricesWeightsExtra;
+            serializationObject.matricesWeightsExtra = Array.from(this.matricesWeightsExtra);
         }
 
-        serializationObject.indices = this.indices;
+        serializationObject.indices = Array.from(this.indices as number[]);
 
         return serializationObject;
     }
@@ -1960,11 +1969,11 @@ export class VertexData {
     }
 
     /**
-     * Applies VertexData created from the imported parameters to the geometry
+     * Creates a VertexData from serialized data
      * @param parsedVertexData the parsed data from an imported file
-     * @param geometry the geometry to apply the VertexData to
+     * @returns a VertexData
      */
-    public static ImportVertexData(parsedVertexData: any, geometry: Geometry) {
+    public static Parse(parsedVertexData: any) {
         const vertexData = new VertexData();
 
         // positions
@@ -2044,6 +2053,17 @@ export class VertexData {
         if (indices) {
             vertexData.indices = indices;
         }
+
+        return vertexData;
+    }    
+
+    /**
+     * Applies VertexData created from the imported parameters to the geometry
+     * @param parsedVertexData the parsed data from an imported file
+     * @param geometry the geometry to apply the VertexData to
+     */
+    public static ImportVertexData(parsedVertexData: any, geometry: Geometry) {
+        const vertexData = VertexData.Parse(parsedVertexData);
 
         geometry.setAllVerticesData(vertexData, parsedVertexData.updatable);
     }

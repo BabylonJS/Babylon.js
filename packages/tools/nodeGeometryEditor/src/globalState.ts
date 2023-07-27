@@ -1,7 +1,6 @@
 import type { NodeGeometry } from "core/Meshes/Node/nodeGeometry";
 import { Observable } from "core/Misc/observable";
 import type { LogEntry } from "./components/log/logComponent";
-import { PreviewType } from "./components/preview/previewType";
 import { DataStorage } from "core/Misc/dataStorage";
 import { Color4 } from "core/Maths/math.color";
 import { RegisterElbowSupport } from "./graphSystem/registerElbowSupport";
@@ -30,11 +29,11 @@ export class GlobalState {
     onIsLoadingChanged = new Observable<boolean>();
     onLightUpdated = new Observable<void>();
     onPreviewBackgroundChanged = new Observable<void>();
+    onRefocus = new Observable<void>();
     onAnimationCommandActivated = new Observable<void>();
     onImportFrameObservable = new Observable<any>();
     onPopupClosedObservable = new Observable<void>();
     onGetNodeFromBlock: (block: NodeGeometryBlock) => GraphNode;
-    previewType: PreviewType;
     previewFile: File;
     listOfCustomPreviewFiles: File[] = [];
     rotatePreview: boolean;
@@ -48,7 +47,6 @@ export class GlobalState {
     customSave?: { label: string; action: (data: string) => Promise<void> };
 
     public constructor() {
-        this.previewType = DataStorage.ReadNumber("PreviewType", PreviewType.Box);
         this.wireframe = DataStorage.ReadBoolean("Wireframe", false);
         this.controlCamera = DataStorage.ReadBoolean("ControlCamera", true);
         this.stateManager = new StateManager();
