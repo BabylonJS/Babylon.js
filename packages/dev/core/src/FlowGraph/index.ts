@@ -3,4 +3,5 @@ export * from "./flowGraphBlock";
 export * from "./flowGraphConnectionPoint";
 export * from "./flowGraphExecutionBlock";
 export * from "./flowGraphEventBlock";
-export * from "./Blocks";
+// eslint-disable-next-line import/no-internal-modules
+export * from "./Blocks/index";
