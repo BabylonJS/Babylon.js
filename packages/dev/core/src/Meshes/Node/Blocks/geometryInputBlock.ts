@@ -54,7 +54,7 @@ export class GeometryInputBlock extends NodeGeometryBlock {
                         return this._type;
                     case "Matrix":
                         this._type = NodeGeometryBlockConnectionPointTypes.Matrix;
-                        return this._type;                        
+                        return this._type;
                 }
             }
         }
@@ -85,14 +85,14 @@ export class GeometryInputBlock extends NodeGeometryBlock {
                 this._type = NodeGeometryBlockConnectionPointTypes.Vector3;
                 break;
         }
-    }    
+    }
 
     /**
      * Creates a new InputBlock
      * @param name defines the block name
      * @param type defines the type of the input (can be set to NodeGeometryBlockConnectionPointTypes.AutoDetect)
      */
-    public constructor(name: string,type: NodeGeometryBlockConnectionPointTypes = NodeGeometryBlockConnectionPointTypes.AutoDetect) {
+    public constructor(name: string, type: NodeGeometryBlockConnectionPointTypes = NodeGeometryBlockConnectionPointTypes.AutoDetect) {
         super(name, true);
 
         this._type = type;
@@ -150,7 +150,7 @@ export class GeometryInputBlock extends NodeGeometryBlock {
      */
     public get output(): NodeGeometryConnectionPoint {
         return this._outputs[0];
-    }       
+    }
 
     /**
      * Set the input block to its default value (based on its type)
@@ -171,7 +171,7 @@ export class GeometryInputBlock extends NodeGeometryBlock {
                 break;
             case NodeGeometryBlockConnectionPointTypes.Matrix:
                 this.value = Matrix.Identity();
-                break;                
+                break;
         }
     }
 
@@ -182,7 +182,7 @@ export class GeometryInputBlock extends NodeGeometryBlock {
             this.output._storedValue = null;
             this.output._storedFunction = (state) => {
                 return state.getContextualValue(this._contextualSource);
-            }
+            };
         } else {
             this.output._storedFunction = null;
             this.output._storedValue = this.value;
@@ -242,7 +242,7 @@ export class GeometryInputBlock extends NodeGeometryBlock {
                 this._storedValue = valueType.FromArray(serializationObject.value);
             }
         }
-    }    
+    }
 }
 
 RegisterClass("BABYLON.GeometryInputBlock", GeometryInputBlock);

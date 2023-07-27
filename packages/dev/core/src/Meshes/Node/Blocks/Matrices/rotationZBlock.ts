@@ -27,7 +27,7 @@ export class RotationZBlock extends NodeGeometryBlock {
      */
     public getClassName() {
         return "RotationZBlock";
-    }    
+    }
 
     /**
      * Gets the angle input component
@@ -41,24 +41,23 @@ export class RotationZBlock extends NodeGeometryBlock {
      */
     public get matrix(): NodeGeometryConnectionPoint {
         return this._outputs[0];
-    }    
+    }
 
     public autoConfigure() {
         if (!this.angle.isConnected) {
             const angleInput = new GeometryInputBlock("Angle");
             angleInput.value = 0;
             angleInput.output.connectTo(this.angle);
-        }     
-    }        
+        }
+    }
 
-    protected _buildBlock(state: NodeGeometryBuildState) {    
+    protected _buildBlock(state: NodeGeometryBuildState) {
         super._buildBlock(state);
 
         this.matrix._storedFunction = (state) => {
             return Matrix.RotationZ(this.angle.getConnectedValue(state));
-        }
+        };
     }
-
 }
 
 RegisterClass("BABYLON.RotationZBlock", RotationZBlock);

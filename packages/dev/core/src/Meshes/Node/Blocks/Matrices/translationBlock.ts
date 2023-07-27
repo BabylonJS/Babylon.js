@@ -27,7 +27,7 @@ export class TranslationBlock extends NodeGeometryBlock {
      */
     public getClassName() {
         return "TranslationBlock";
-    }    
+    }
 
     /**
      * Gets the translation input component
@@ -41,25 +41,24 @@ export class TranslationBlock extends NodeGeometryBlock {
      */
     public get matrix(): NodeGeometryConnectionPoint {
         return this._outputs[0];
-    }    
+    }
 
     public autoConfigure() {
         if (!this.translation.isConnected) {
             const translationInput = new GeometryInputBlock("Translation");
             translationInput.value = new Vector3(0, 0, 0);
             translationInput.output.connectTo(this.translation);
-        }     
-    }        
+        }
+    }
 
-    protected _buildBlock(state: NodeGeometryBuildState) {    
+    protected _buildBlock(state: NodeGeometryBuildState) {
         super._buildBlock(state);
 
         this.matrix._storedFunction = (state) => {
             const value = this.translation.getConnectedValue(state) as Vector3;
             return Matrix.Translation(value.x, value.y, value.z);
-        }
+        };
     }
-
 }
 
 RegisterClass("BABYLON.TranslationBlock", TranslationBlock);

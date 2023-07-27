@@ -38,7 +38,7 @@ export class PreviewManager {
     private _matCap: StandardMaterial;
 
     private _serializeGeometry(): any {
-        const nodeGeometry = this._nodeGeometry; 
+        const nodeGeometry = this._nodeGeometry;
         const serializationObject = nodeGeometry.serialize();
 
         return serializationObject;
@@ -74,7 +74,7 @@ export class PreviewManager {
 
         this._onWireframeChangedObserver = globalState.onWireframeChanged.add(() => {
             this._matCap.wireframe = this._globalState.wireframe;
-        });        
+        });
 
         this._engine = new Engine(targetCanvas, true);
         this._scene = new Scene(this._engine);
@@ -92,9 +92,9 @@ export class PreviewManager {
         this._matCap = new StandardMaterial("", this._scene);
         this._matCap.disableLighting = true;
         this._matCap.backFaceCulling = false;
-    
+
         const matCapTexture = new Texture("https://assets.babylonjs.com/skyboxes/matcap.jpg", this._scene);
-        matCapTexture.coordinatesMode = Texture.SPHERICAL_MODE;    
+        matCapTexture.coordinatesMode = Texture.SPHERICAL_MODE;
         this._matCap.reflectionTexture = matCapTexture;
 
         this._refreshPreviewMesh(true);
@@ -174,7 +174,7 @@ export class PreviewManager {
             if (!framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max)) {
                 setTimeout(() => {
                     this._refocusCamera();
-                })
+                });
                 return;
             }
         }
@@ -193,13 +193,13 @@ export class PreviewManager {
             this._camera.pinchDeltaPercentage = 0.01;
         }
 
-        // Update        
+        // Update
         const toDelete = this._mesh;
         this._updatePreview();
         toDelete?.dispose();
-        
+
         // Animations
-        this._handleAnimations();        
+        this._handleAnimations();
     }
 
     private _refreshPreviewMesh(first: boolean) {
@@ -209,7 +209,7 @@ export class PreviewManager {
 
         this._prepareScene(first);
 
-        if (first) {            
+        if (first) {
             this._refocusCamera();
         }
     }
@@ -233,13 +233,13 @@ export class PreviewManager {
 
     public dispose() {
         this._globalState.onRefocus.remove(this._onRefocusObserver);
-        this._nodeGeometry.onBuildObservable.remove(this._onBuildObserver);        
+        this._nodeGeometry.onBuildObservable.remove(this._onBuildObserver);
         this._globalState.stateManager.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
         this._globalState.onWireframeChanged.remove(this._onWireframeChangedObserver);
         this._globalState.onAnimationCommandActivated.remove(this._onAnimationCommandActivatedObserver);
         this._globalState.onPreviewBackgroundChanged.remove(this._onPreviewBackgroundChangedObserver);
         this._globalState.onLightUpdated.remove(this._onLightUpdatedObserver);
-        
+
         if (this._nodeGeometry) {
             this._nodeGeometry.dispose();
         }

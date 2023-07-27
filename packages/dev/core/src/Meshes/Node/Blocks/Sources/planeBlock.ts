@@ -11,7 +11,6 @@ import type { Vector4 } from "../../../../Maths/math.vector";
  * Defines a block used to generate plane geometry data
  */
 export class PlaneBlock extends NodeGeometryBlock {
-
     /**
      * Create a new PlaneBlock
      * @param name defines the block name
@@ -47,20 +46,20 @@ export class PlaneBlock extends NodeGeometryBlock {
     public get width(): NodeGeometryConnectionPoint {
         return this._inputs[1];
     }
-    
+
     /**
      * Gets the height input component
      */
     public get height(): NodeGeometryConnectionPoint {
         return this._inputs[2];
-    }    
+    }
 
     /**
      * Gets the geometry output component
      */
     public get geometry(): NodeGeometryConnectionPoint {
         return this._outputs[0];
-    }   
+    }
 
     public autoConfigure() {
         if (this.size.isConnected) {
@@ -79,13 +78,13 @@ export class PlaneBlock extends NodeGeometryBlock {
             widthInput.value = 1;
             widthInput.output.connectTo(this.width);
         }
-        
+
         if (!this.height.isConnected) {
             const heightInput = new GeometryInputBlock("Height");
             heightInput.value = 1;
             heightInput.output.connectTo(this.height);
-        }        
-    }    
+        }
+    }
 
     protected _buildBlock(state: NodeGeometryBuildState) {
         const options: { size?: number; width?: number; height?: number; sideOrientation?: number; frontUVs?: Vector4; backUVs?: Vector4 } = {};
@@ -106,6 +105,5 @@ export class PlaneBlock extends NodeGeometryBlock {
         this.geometry._storedValue = CreatePlaneVertexData(options);
     }
 }
-
 
 RegisterClass("BABYLON.PlaneBlock", PlaneBlock);

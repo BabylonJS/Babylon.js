@@ -2055,7 +2055,7 @@ export class VertexData {
         }
 
         return vertexData;
-    }    
+    }
 
     /**
      * Applies VertexData created from the imported parameters to the geometry

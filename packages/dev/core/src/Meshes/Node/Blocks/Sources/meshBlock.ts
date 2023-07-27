@@ -47,7 +47,7 @@ export class MeshBlock extends NodeGeometryBlock {
      */
     public get geometry(): NodeGeometryConnectionPoint {
         return this._outputs[0];
-    }   
+    }
 
     protected _buildBlock() {
         if (!this._mesh) {
@@ -85,8 +85,7 @@ export class MeshBlock extends NodeGeometryBlock {
         if (serializationObject.cachedVertexData) {
             this._cachedVertexData = VertexData.Parse(serializationObject.cachedVertexData);
         }
-    }     
+    }
 }
-
 
 RegisterClass("BABYLON.MeshBlock", MeshBlock);

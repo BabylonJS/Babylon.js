@@ -21,9 +21,7 @@ interface INodeListComponentProps {
 export class NodeListComponent extends React.Component<INodeListComponentProps, { filter: string }> {
     private _onResetRequiredObserver: Nullable<Observer<boolean>>;
 
-    private static _Tooltips: { [key: string]: string } = {
-        
-    };
+    private static _Tooltips: { [key: string]: string } = {};
 
     private _customFrameList: { [key: string]: string };
 
@@ -103,27 +101,9 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         // Block types used to create the menu from
         const allBlocks: any = {
             Custom_Frames: customFrameNames,
-            Sources: [
-                "BoxBlock",
-                "PlaneBlock",
-                "SphereBlock",                
-                "TorusBlock",               
-                "CylinderBlock",      
-                "CapsuleBlock",     
-                "DiscBlock",   
-                "IcoSphereBlock",
-                "MeshBlock",
-            ],
-            Inputs: [
-                "Float",
-                "Vector2",
-                "Vector3",
-                "Vector4",
-            ],
-            Contextual: [
-                "PositionsBlock",
-                "NormalsBlock"
-            ],            
+            Sources: ["BoxBlock", "PlaneBlock", "SphereBlock", "TorusBlock", "CylinderBlock", "CapsuleBlock", "DiscBlock", "IcoSphereBlock", "MeshBlock"],
+            Inputs: ["Float", "Vector2", "Vector3", "Vector4"],
+            Contextual: ["PositionsBlock", "NormalsBlock"],
             Math__Standard: [
                 "AddBlock",
                 "DivideBlock",
@@ -137,36 +117,11 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "SqrtBlock",
                 "SubtractBlock",
             ],
-            Math__Scientific: [
-                "AbsBlock",
-                "ArcCosBlock",
-                "ArcSinBlock",
-                "ArcTanBlock",
-                "CosBlock",
-                "ExpBlock",
-                "LogBlock",
-                "SinBlock",
-                "TanBlock",
-            ],               
-            Math__Vector: [
-                "TransformBlock",
-                "VectorCreatorBlock",
-                "NormalizeBlock",
-            ],                   
-            Matrices: [
-                "RotationXBlock",
-                "RotationYBlock",
-                "RotationZBlock",
-                "ScalingBlock",
-                "TranslationBlock",
-            ],
+            Math__Scientific: ["AbsBlock", "ArcCosBlock", "ArcSinBlock", "ArcTanBlock", "CosBlock", "ExpBlock", "LogBlock", "SinBlock", "TanBlock"],
+            Math__Vector: ["TransformBlock", "VectorCreatorBlock", "NormalizeBlock"],
+            Matrices: ["RotationXBlock", "RotationYBlock", "RotationZBlock", "ScalingBlock", "TranslationBlock"],
             Misc: ["ElbowBlock"],
-            Updates: [
-                "SetNormalsBlock",
-                "SetPositionsBlock",
-                "MergeBlock",
-                "ComputeNormalsBlock",
-            ],
+            Updates: ["SetNormalsBlock", "SetPositionsBlock", "MergeBlock", "ComputeNormalsBlock"],
             Noises: ["RandomBlock"],
             Output_Nodes: ["GeometryOutputBlock"],
         };

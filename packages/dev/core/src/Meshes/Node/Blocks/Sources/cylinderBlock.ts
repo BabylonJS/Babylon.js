@@ -12,7 +12,6 @@ import type { Color4 } from "../../../../Maths/math.color";
  * Defines a block used to generate cylinder geometry data
  */
 export class CylinderBlock extends NodeGeometryBlock {
-
     /**
      * Create a new SphereBlock
      * @param name defines the block name
@@ -20,7 +19,6 @@ export class CylinderBlock extends NodeGeometryBlock {
     public constructor(name: string) {
         super(name);
 
-        
         this.registerInput("height", NodeGeometryBlockConnectionPointTypes.Float, true);
         this.registerInput("diameter", NodeGeometryBlockConnectionPointTypes.Float, true);
         this.registerInput("diameterTop", NodeGeometryBlockConnectionPointTypes.Float, true);
@@ -45,7 +43,7 @@ export class CylinderBlock extends NodeGeometryBlock {
      */
     public get height(): NodeGeometryConnectionPoint {
         return this._inputs[0];
-    }    
+    }
 
     /**
      * Gets the diameter input component
@@ -66,49 +64,49 @@ export class CylinderBlock extends NodeGeometryBlock {
      */
     public get diameterBottom(): NodeGeometryConnectionPoint {
         return this._inputs[3];
-    }    
+    }
 
     /**
      * Gets the subdivisions input component
      */
     public get subdivisions(): NodeGeometryConnectionPoint {
         return this._inputs[4];
-    }        
-    
+    }
+
     /**
      * Gets the tessellation input component
      */
     public get tessellation(): NodeGeometryConnectionPoint {
         return this._inputs[5];
-    }    
+    }
 
     /**
      * Gets the arc input component
      */
     public get arc(): NodeGeometryConnectionPoint {
         return this._inputs[6];
-    }      
+    }
 
     /**
      * Gets the geometry output component
      */
     public get geometry(): NodeGeometryConnectionPoint {
         return this._outputs[0];
-    }   
+    }
 
     public autoConfigure() {
         if (!this.diameter.isConnected) {
             const diameterInput = new GeometryInputBlock("Diameter");
             diameterInput.value = 1;
             diameterInput.output.connectTo(this.diameter);
-        }  
+        }
 
         if (!this.height.isConnected) {
             const heightInput = new GeometryInputBlock("Height");
             heightInput.value = 1;
             heightInput.output.connectTo(this.height);
-        }          
-    }    
+        }
+    }
 
     protected _buildBlock(state: NodeGeometryBuildState) {
         const options: {
@@ -140,27 +138,26 @@ export class CylinderBlock extends NodeGeometryBlock {
         if (this.diameterTop.isConnected) {
             options.diameterTop = this.diameterTop.getConnectedValue(state);
         }
-        
+
         if (this.diameterBottom.isConnected) {
             options.diameterBottom = this.diameterBottom.getConnectedValue(state);
-        }        
+        }
 
         if (this.tessellation.isConnected) {
             options.tessellation = this.tessellation.getConnectedValue(state);
-        }   
+        }
 
         if (this.subdivisions.isConnected) {
             options.subdivisions = this.subdivisions.getConnectedValue(state);
-        }  
+        }
 
         if (this.arc.isConnected) {
             options.arc = this.arc.getConnectedValue(state);
-        }  
+        }
 
         // Append vertex data from the plane builder
         this.geometry._storedValue = CreateCylinderVertexData(options);
     }
 }
-
 
 RegisterClass("BABYLON.CylinderBlock", CylinderBlock);

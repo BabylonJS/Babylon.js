@@ -50,7 +50,7 @@ export class GeometryElbowBlock extends NodeGeometryBlock {
 
         output._storedFunction = (state) => {
             return input.getConnectedValue(state);
-        }
+        };
     }
 }
 

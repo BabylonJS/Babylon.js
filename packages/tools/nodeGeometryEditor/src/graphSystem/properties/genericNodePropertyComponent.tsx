@@ -38,7 +38,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
         return (
             <>
                 <LineContainerComponent title="GENERAL">
-                    {(!block.isInput) && (
+                    {!block.isInput && (
                         <TextInputLineComponent
                             label="Name"
                             propertyName="name"

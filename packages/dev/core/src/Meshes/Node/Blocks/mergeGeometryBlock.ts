@@ -25,7 +25,7 @@ export class MergeGeometryBlock extends NodeGeometryBlock {
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Geometry);
 
         this._outputs[0]._typeConnectionSource = this._inputs[0];
-        this._linkConnectionTypes(0, 1);        
+        this._linkConnectionTypes(0, 1);
     }
 
     /**
@@ -34,7 +34,7 @@ export class MergeGeometryBlock extends NodeGeometryBlock {
      */
     public getClassName() {
         return "MergeGeometryBlock";
-    }    
+    }
 
     /**
      * Gets the geometry0 input component
@@ -48,37 +48,37 @@ export class MergeGeometryBlock extends NodeGeometryBlock {
      */
     public get geometry1(): NodeGeometryConnectionPoint {
         return this._inputs[1];
-    }    
+    }
 
     /**
      * Gets the geometry2 input component
      */
     public get geometry2(): NodeGeometryConnectionPoint {
         return this._inputs[2];
-    }  
-    
+    }
+
     /**
      * Gets the geometry3 input component
      */
     public get geometry3(): NodeGeometryConnectionPoint {
         return this._inputs[3];
-    }  
-    
+    }
+
     /**
      * Gets the geometry4 input component
      */
     public get geometry4(): NodeGeometryConnectionPoint {
         return this._inputs[4];
-    }      
+    }
 
     /**
      * Gets the geometry output component
      */
     public get output(): NodeGeometryConnectionPoint {
         return this._outputs[0];
-    }        
+    }
 
-    protected _buildBlock(state: NodeGeometryBuildState) {    
+    protected _buildBlock(state: NodeGeometryBuildState) {
         let vertexData = this.geometry0.getConnectedValue(state) as VertexData;
         const additionalVertexData: VertexData[] = [];
 
@@ -101,7 +101,6 @@ export class MergeGeometryBlock extends NodeGeometryBlock {
 
         this.output._storedValue = vertexData;
     }
-
 }
 
 RegisterClass("BABYLON.MergeGeometryBlock", MergeGeometryBlock);

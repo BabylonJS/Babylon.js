@@ -11,7 +11,6 @@ import { CreateIcoSphereVertexData } from "core/Meshes/Builders";
  * Defines a block used to generate icosphere geometry data
  */
 export class IcoSphereBlock extends NodeGeometryBlock {
-
     /**
      * Create a new IcoSphereBlock
      * @param name defines the block name
@@ -62,29 +61,29 @@ export class IcoSphereBlock extends NodeGeometryBlock {
      */
     public get radiusZ(): NodeGeometryConnectionPoint {
         return this._inputs[3];
-    }            
-    
+    }
+
     /**
      * Gets the subdivisions input component
      */
     public get subdivisions(): NodeGeometryConnectionPoint {
         return this._inputs[4];
-    }             
+    }
 
     /**
      * Gets the geometry output component
      */
     public get geometry(): NodeGeometryConnectionPoint {
         return this._outputs[0];
-    }   
+    }
 
     public autoConfigure() {
         if (!this.radius.isConnected) {
             const radiusInput = new GeometryInputBlock("Radius");
             radiusInput.value = 0.2;
             radiusInput.output.connectTo(this.radius);
-        }         
-    }    
+        }
+    }
 
     protected _buildBlock(state: NodeGeometryBuildState) {
         const options: {
@@ -105,28 +104,27 @@ export class IcoSphereBlock extends NodeGeometryBlock {
 
         if (this.subdivisions.isConnected) {
             options.subdivisions = this.subdivisions.getConnectedValue(state);
-        }   
+        }
 
         if (this.radiusX.isConnected) {
             options.radiusX = this.radiusX.getConnectedValue(state);
-        }  
+        }
 
         if (this.radiusX.isConnected) {
             options.radiusX = this.radiusX.getConnectedValue(state);
-        }  
+        }
 
         if (this.radiusY.isConnected) {
             options.radiusX = this.radiusX.getConnectedValue(state);
-        }  
+        }
 
         if (this.radiusZ.isConnected) {
             options.radiusX = this.radiusX.getConnectedValue(state);
-        }  
+        }
 
         // Append vertex data from the plane builder
         this.geometry._storedValue = CreateIcoSphereVertexData(options);
     }
 }
-
 
 RegisterClass("BABYLON.IcoSphereBlock", IcoSphereBlock);

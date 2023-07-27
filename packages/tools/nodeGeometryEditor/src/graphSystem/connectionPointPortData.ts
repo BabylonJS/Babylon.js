@@ -1,5 +1,9 @@
 import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
-import { NodeGeometryConnectionPointDirection, type NodeGeometryConnectionPoint, NodeGeometryConnectionPointCompatibilityStates } from "core/Meshes/Node/nodeGeometryBlockConnectionPoint";
+import {
+    NodeGeometryConnectionPointDirection,
+    type NodeGeometryConnectionPoint,
+    NodeGeometryConnectionPointCompatibilityStates,
+} from "core/Meshes/Node/nodeGeometryBlockConnectionPoint";
 import type { Nullable } from "core/types";
 import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";

@@ -12,7 +12,6 @@ import { CreateBoxVertexData } from "core/Meshes/Builders";
  * Defines a block used to generate box geometry data
  */
 export class BoxBlock extends NodeGeometryBlock {
-
     /**
      * Create a new BoxBlock
      * @param name defines the block name
@@ -49,27 +48,27 @@ export class BoxBlock extends NodeGeometryBlock {
     public get width(): NodeGeometryConnectionPoint {
         return this._inputs[1];
     }
-    
+
     /**
      * Gets the height input component
      */
     public get height(): NodeGeometryConnectionPoint {
         return this._inputs[2];
-    }     
+    }
 
     /**
      * Gets the depth input component
      */
     public get depth(): NodeGeometryConnectionPoint {
         return this._inputs[3];
-    }  
+    }
 
     /**
      * Gets the geometry output component
      */
     public get geometry(): NodeGeometryConnectionPoint {
         return this._outputs[0];
-    }   
+    }
 
     public autoConfigure() {
         if (this.size.isConnected) {
@@ -88,19 +87,19 @@ export class BoxBlock extends NodeGeometryBlock {
             widthInput.value = 1;
             widthInput.output.connectTo(this.width);
         }
-        
+
         if (!this.height.isConnected) {
             const heightInput = new GeometryInputBlock("Height");
             heightInput.value = 1;
             heightInput.output.connectTo(this.height);
-        }       
-        
+        }
+
         if (!this.depth.isConnected) {
             const depthInput = new GeometryInputBlock("Depth");
             depthInput.value = 1;
             depthInput.output.connectTo(this.depth);
-        }  
-    }    
+        }
+    }
 
     protected _buildBlock(state: NodeGeometryBuildState) {
         const options: {
@@ -132,12 +131,11 @@ export class BoxBlock extends NodeGeometryBlock {
 
         if (this.depth.isConnected) {
             options.depth = this.depth.getConnectedValue(state);
-        }        
+        }
 
         // Append vertex data from the plane builder
         this.geometry._storedValue = CreateBoxVertexData(options);
     }
 }
-
 
 RegisterClass("BABYLON.BoxBlock", BoxBlock);

@@ -25,7 +25,7 @@ export class InputDisplayManager implements IDisplayManager {
 
     public getHeaderText(nodeData: INodeData): string {
         return nodeData.data.name;
-    }    
+    }
 
     public shouldDisplayPortLabels(): boolean {
         return false;
@@ -59,7 +59,7 @@ export class InputDisplayManager implements IDisplayManager {
                     break;
                 case NodeGeometryContextualSources.Normals:
                     value = "Normals";
-                    break;                                  
+                    break;
             }
         } else {
             switch (inputBlock.type) {

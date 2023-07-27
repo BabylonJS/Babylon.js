@@ -27,7 +27,7 @@ export class ScalingBlock extends NodeGeometryBlock {
      */
     public getClassName() {
         return "ScalingBlock";
-    }    
+    }
 
     /**
      * Gets the scale input component
@@ -41,25 +41,24 @@ export class ScalingBlock extends NodeGeometryBlock {
      */
     public get matrix(): NodeGeometryConnectionPoint {
         return this._outputs[0];
-    }    
+    }
 
     public autoConfigure() {
         if (!this.scale.isConnected) {
             const scaleInput = new GeometryInputBlock("Scale");
             scaleInput.value = new Vector3(1, 1, 1);
             scaleInput.output.connectTo(this.scale);
-        }     
-    }        
+        }
+    }
 
-    protected _buildBlock(state: NodeGeometryBuildState) {    
+    protected _buildBlock(state: NodeGeometryBuildState) {
         super._buildBlock(state);
 
         this.matrix._storedFunction = (state) => {
             const value = this.scale.getConnectedValue(state) as Vector3;
             return Matrix.Scaling(value.x, value.y, value.z);
-        }
+        };
     }
-
 }
 
 RegisterClass("BABYLON.ScalingBlock", ScalingBlock);

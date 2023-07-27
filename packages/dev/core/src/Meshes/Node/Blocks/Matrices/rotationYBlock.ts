@@ -4,7 +4,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { GeometryInputBlock } from "../geometryInputBlock";
-import { Matrix} from "../../../../Maths";
+import { Matrix } from "../../../../Maths";
 
 /**
  * Block used to get a rotation matrix on Y Axis
@@ -27,7 +27,7 @@ export class RotationYBlock extends NodeGeometryBlock {
      */
     public getClassName() {
         return "RotationYBlock";
-    }    
+    }
 
     /**
      * Gets the angle input component
@@ -41,24 +41,23 @@ export class RotationYBlock extends NodeGeometryBlock {
      */
     public get matrix(): NodeGeometryConnectionPoint {
         return this._outputs[0];
-    }    
+    }
 
     public autoConfigure() {
         if (!this.angle.isConnected) {
             const angleInput = new GeometryInputBlock("Angle");
             angleInput.value = 0;
             angleInput.output.connectTo(this.angle);
-        }     
-    }        
+        }
+    }
 
-    protected _buildBlock(state: NodeGeometryBuildState) {    
+    protected _buildBlock(state: NodeGeometryBuildState) {
         super._buildBlock(state);
 
         this.matrix._storedFunction = (state) => {
             return Matrix.RotationY(this.angle.getConnectedValue(state));
-        }
+        };
     }
-
 }
 
 RegisterClass("BABYLON.RotationYBlock", RotationYBlock);

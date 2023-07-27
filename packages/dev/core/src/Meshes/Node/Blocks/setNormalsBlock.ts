@@ -8,9 +8,9 @@ import type { VertexData } from "../../mesh.vertexData";
 import type { Vector3 } from "../../../Maths/math.vector";
 
 /**
-* Block used to set positions for a geometry
+ * Block used to set positions for a geometry
  */
-export class SetNormalsBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext{
+export class SetNormalsBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext {
     private _vertexData: VertexData;
     private _currentIndex: number;
 
@@ -41,7 +41,7 @@ export class SetNormalsBlock extends NodeGeometryBlock implements INodeGeometryE
      */
     public getClassName() {
         return "SetNormalsBlock";
-    }    
+    }
 
     /**
      * Gets the geometry input component
@@ -55,21 +55,21 @@ export class SetNormalsBlock extends NodeGeometryBlock implements INodeGeometryE
      */
     public get normals(): NodeGeometryConnectionPoint {
         return this._inputs[1];
-    }    
+    }
 
     /**
      * Gets the geometry output component
      */
     public get output(): NodeGeometryConnectionPoint {
         return this._outputs[0];
-    }    
+    }
 
     protected _buildBlock(state: NodeGeometryBuildState) {
         state.executionContext = this;
 
         this._vertexData = this.geometry.getConnectedValue(state);
         state.geometryContext = this._vertexData;
-        
+
         if (!this._vertexData || !this._vertexData.normals || !this.normals.isConnected) {
             state.executionContext = null;
             state.geometryContext = null;
@@ -91,7 +91,6 @@ export class SetNormalsBlock extends NodeGeometryBlock implements INodeGeometryE
         state.executionContext = null;
         state.geometryContext = null;
     }
-
 }
 
 RegisterClass("BABYLON.SetNormalsBlock", SetNormalsBlock);

@@ -35,7 +35,7 @@ export class NodeGeometryBuildState {
 
         const index = this.executionContext.getExecutionIndex() * 3;
 
-        switch(source) {
+        switch (source) {
             case NodeGeometryContextualSources.Positions:
                 if (!this.geometryContext.positions) {
                     return Vector3.Zero();
@@ -45,7 +45,7 @@ export class NodeGeometryBuildState {
                 if (!this.geometryContext.normals) {
                     return Vector3.Zero();
                 }
-                return Vector3.FromArray(this.geometryContext.normals as ArrayLike<number>, index);    
+                return Vector3.FromArray(this.geometryContext.normals as ArrayLike<number>, index);
         }
 
         return null;
@@ -58,14 +58,14 @@ export class NodeGeometryBuildState {
             return value;
         }
 
-        switch(target.type) {
+        switch (target.type) {
             case NodeGeometryBlockConnectionPointTypes.Vector2:
                 return new Vector2(value, value);
             case NodeGeometryBlockConnectionPointTypes.Vector3:
                 return new Vector3(value, value, value);
             case NodeGeometryBlockConnectionPointTypes.Vector4:
                 return new Vector4(value, value, value, value);
-            }
+        }
 
         return null;
     }

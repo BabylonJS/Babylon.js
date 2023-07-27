@@ -66,7 +66,7 @@ export type ES6PackageName =
     | "@babylonjs/serializers"
     | "@babylonjs/procedural-textures"
     | "@babylonjs/inspector"
-    | "@babylonjs/node-editor"    
+    | "@babylonjs/node-editor"
     | "@babylonjs/node-geometry-editor"
     | "@babylonjs/gui-editor"
     | "@babylonjs/accessibility"
@@ -113,7 +113,7 @@ export const umdPackageMapping: { [key in UMDPackageName]: { baseDir: string; ba
     "babylonjs-node-geometry-editor": {
         baseDir: "nodeGeometryEditor",
         baseFilename: "babylon.nodeGeometryEditor",
-    },    
+    },
     "babylonjs-gui-editor": {
         baseDir: "guiEditor",
         baseFilename: "babylon.guiEditor",
@@ -174,7 +174,7 @@ const packageMapping: {
             //     return "babylonjs-shared-ui-components";
             // }
             return "babylonjs-node-geometry-editor";
-        },        
+        },
         "gui-editor": (_filePath?: string) => {
             // if (filePath && filePath.indexOf("sharedUiComponents") !== -1) {
             //     return "babylonjs-shared-ui-components";
@@ -295,7 +295,7 @@ const packageMapping: {
                 }
             }
             return "BABYLON.NodeGeometryEditor";
-        },        
+        },
         "gui-editor": (filePath?: string) => {
             if (filePath) {
                 if (filePath.includes("shared-ui-components/") || filePath.includes("/sharedUiComponents/")) {

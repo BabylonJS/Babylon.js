@@ -11,7 +11,6 @@ import { CreateCapsuleVertexData } from "core/Meshes/Builders";
  * Defines a block used to generate capsule geometry data
  */
 export class CapsuleBlock extends NodeGeometryBlock {
-
     /**
      * Create a new CapsuleBlock
      * @param name defines the block name
@@ -48,40 +47,40 @@ export class CapsuleBlock extends NodeGeometryBlock {
     public get radius(): NodeGeometryConnectionPoint {
         return this._inputs[1];
     }
-    
+
     /**
      * Gets the tessellation input component
      */
     public get tessellation(): NodeGeometryConnectionPoint {
         return this._inputs[2];
-    }        
-    
+    }
+
     /**
      * Gets the subdivisions input component
      */
     public get subdivisions(): NodeGeometryConnectionPoint {
         return this._inputs[3];
-    }        
+    }
 
     /**
      * Gets the geometry output component
      */
     public get geometry(): NodeGeometryConnectionPoint {
         return this._outputs[0];
-    }   
+    }
 
     public autoConfigure() {
         if (!this.height.isConnected) {
             const heightInput = new GeometryInputBlock("Height");
             heightInput.value = 1;
             heightInput.output.connectTo(this.height);
-        }  
+        }
         if (!this.radius.isConnected) {
             const radiusInput = new GeometryInputBlock("Radius");
             radiusInput.value = 0.2;
             radiusInput.output.connectTo(this.radius);
-        }         
-    }    
+        }
+    }
 
     protected _buildBlock(state: NodeGeometryBuildState) {
         const options: {
@@ -108,16 +107,15 @@ export class CapsuleBlock extends NodeGeometryBlock {
 
         if (this.tessellation.isConnected) {
             options.tessellation = this.tessellation.getConnectedValue(state);
-        }   
+        }
 
         if (this.subdivisions.isConnected) {
             options.subdivisions = this.subdivisions.getConnectedValue(state);
-        }  
+        }
 
         // Append vertex data from the plane builder
         this.geometry._storedValue = CreateCapsuleVertexData(options);
     }
 }
-
 
 RegisterClass("BABYLON.CapsuleBlock", CapsuleBlock);

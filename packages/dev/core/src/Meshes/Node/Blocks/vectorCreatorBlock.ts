@@ -153,7 +153,7 @@ export class VectorCreatorBlock extends NodeGeometryBlock {
      */
     public get wOut(): NodeGeometryConnectionPoint {
         return this._outputs[7];
-    }    
+    }
 
     protected _inputRename(name: string) {
         if (name === "xyzw ") {
@@ -179,7 +179,7 @@ export class VectorCreatorBlock extends NodeGeometryBlock {
         }
         if (name === "w ") {
             return "wIn";
-        }        
+        }
         return name;
     }
 
@@ -202,11 +202,11 @@ export class VectorCreatorBlock extends NodeGeometryBlock {
         const xOutput = this.xOut;
         const yOutput = this.yOut;
         const zOutput = this.zOut;
-        const wOutput = this.wOut;        
+        const wOutput = this.wOut;
 
         const getData = (state: NodeGeometryBuildState): Vector4 => {
             if (xyzwInput.isConnected) {
-                return  xyzwInput.getConnectedValue(state);
+                return xyzwInput.getConnectedValue(state);
             }
 
             let x: number = 0;
@@ -245,21 +245,21 @@ export class VectorCreatorBlock extends NodeGeometryBlock {
             }
 
             return new Vector4(x, y, z, w);
-        }
+        };
 
         xyzwOutput._storedFunction = (state) => getData(state);
         xyzOutput._storedFunction = (state) => {
             const data = getData(state);
             return new Vector3(data.x, data.y, data.z);
-        }
+        };
         xyOutput._storedFunction = (state) => {
             const data = getData(state);
             return new Vector2(data.x, data.y);
-        }
+        };
         zwOutput._storedFunction = (state) => {
             const data = getData(state);
             return new Vector2(data.z, data.w);
-        }
+        };
         xOutput._storedFunction = (state) => getData(state).x;
         yOutput._storedFunction = (state) => getData(state).y;
         zOutput._storedFunction = (state) => getData(state).z;

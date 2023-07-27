@@ -20,7 +20,7 @@ export enum MathBlockOperations {
     /** Max */
     Max,
     /** Min */
-    Min
+    Min,
 }
 
 /**
@@ -44,9 +44,9 @@ export class MathBlock extends NodeGeometryBlock {
 
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.BasedOnInput);
 
-        this._outputs[0]._typeConnectionSource = this._inputs[0];        
+        this._outputs[0]._typeConnectionSource = this._inputs[0];
         this._inputs[1].acceptedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Float);
-        this._linkConnectionTypes(0, 1);        
+        this._linkConnectionTypes(0, 1);
     }
 
     /**
@@ -55,7 +55,7 @@ export class MathBlock extends NodeGeometryBlock {
      */
     public getClassName() {
         return "MathBlock";
-    }    
+    }
 
     /**
      * Gets the left input component
@@ -69,17 +69,17 @@ export class MathBlock extends NodeGeometryBlock {
      */
     public get right(): NodeGeometryConnectionPoint {
         return this._inputs[1];
-    }    
+    }
 
     /**
      * Gets the geometry output component
      */
     public get output(): NodeGeometryConnectionPoint {
         return this._outputs[0];
-    }    
+    }
 
     protected _buildBlock() {
-        let func:(state: NodeGeometryBuildState) => any;
+        let func: (state: NodeGeometryBuildState) => any;
         const left = this.left;
         const right = this.right;
 
@@ -94,122 +94,121 @@ export class MathBlock extends NodeGeometryBlock {
         switch (this.operation) {
             case MathBlockOperations.Add: {
                 if (isFloat) {
-                    func = (state) => {                    
+                    func = (state) => {
                         return left.getConnectedValue(state) + right.getConnectedValue(state);
-                    }
+                    };
                 } else {
-                    func = (state) => {                    
+                    func = (state) => {
                         return left.getConnectedValue(state).add(state.adapt(right, left));
-                    }
+                    };
                 }
                 break;
             }
             case MathBlockOperations.Subtract: {
                 if (isFloat) {
-                    func = (state) => {                    
+                    func = (state) => {
                         return left.getConnectedValue(state) - right.getConnectedValue(state);
-                    }
+                    };
                 } else {
-                    func = (state) => {                    
+                    func = (state) => {
                         return left.getConnectedValue(state).subtract(state.adapt(right, left));
-                    }
+                    };
                 }
                 break;
-            }     
+            }
             case MathBlockOperations.Multiply: {
                 if (isFloat) {
-                    func = (state) => {                    
+                    func = (state) => {
                         return left.getConnectedValue(state) * right.getConnectedValue(state);
-                    }
+                    };
                 } else {
-                    func = (state) => {                    
+                    func = (state) => {
                         return left.getConnectedValue(state).multiply(state.adapt(right, left));
-                    }
+                    };
                 }
                 break;
-            }    
+            }
             case MathBlockOperations.Divide: {
                 if (isFloat) {
-                    func = (state) => {                    
+                    func = (state) => {
                         return left.getConnectedValue(state) / right.getConnectedValue(state);
-                    }
+                    };
                 } else {
-                    func = (state) => {                    
+                    func = (state) => {
                         return left.getConnectedValue(state).divide(state.adapt(right, left));
-                    }
+                    };
                 }
                 break;
-            }      
+            }
             case MathBlockOperations.Min: {
                 if (isFloat) {
-                    func = (state) => {                    
+                    func = (state) => {
                         return Math.min(left.getConnectedValue(state), right.getConnectedValue(state));
-                    }
+                    };
                 } else {
                     switch (left.type) {
                         case NodeGeometryBlockConnectionPointTypes.Vector2: {
-                            func = (state) => {                    
+                            func = (state) => {
                                 return Vector2.Minimize(left.getConnectedValue(state), state.adapt(right, left));
-                            }
+                            };
                             break;
                         }
                         case NodeGeometryBlockConnectionPointTypes.Vector3: {
-                            func = (state) => {                    
+                            func = (state) => {
                                 return Vector3.Minimize(left.getConnectedValue(state), state.adapt(right, left));
-                            }
+                            };
                             break;
                         }
                         case NodeGeometryBlockConnectionPointTypes.Vector4: {
-                            func = (state) => {                    
+                            func = (state) => {
                                 return Vector4.Minimize(left.getConnectedValue(state), state.adapt(right, left));
-                            }
+                            };
                             break;
                         }
-                    }                                                
+                    }
                 }
                 break;
-            }      
+            }
             case MathBlockOperations.Max: {
                 if (isFloat) {
-                    func = (state) => {                    
+                    func = (state) => {
                         return Math.max(left.getConnectedValue(state), right.getConnectedValue(state));
-                    }
+                    };
                 } else {
                     switch (left.type) {
                         case NodeGeometryBlockConnectionPointTypes.Vector2: {
-                            func = (state) => {                    
+                            func = (state) => {
                                 return Vector2.Maximize(left.getConnectedValue(state), state.adapt(right, left));
-                            }
+                            };
                             break;
                         }
                         case NodeGeometryBlockConnectionPointTypes.Vector3: {
-                            func = (state) => {                    
+                            func = (state) => {
                                 return Vector3.Maximize(left.getConnectedValue(state), state.adapt(right, left));
-                            }
+                            };
                             break;
                         }
                         case NodeGeometryBlockConnectionPointTypes.Vector4: {
-                            func = (state) => {                    
+                            func = (state) => {
                                 return Vector4.Maximize(left.getConnectedValue(state), state.adapt(right, left));
-                            }
+                            };
                             break;
-                        }                                                
+                        }
                     }
-                break;
-                } 
-            }                                                 
+                    break;
+                }
+            }
         }
 
         this.output._storedFunction = (state) => {
             return func(state);
-        }
+        };
     }
 
     protected _dumpPropertiesCode() {
-        const codeString =
-            super._dumpPropertiesCode() + `${this._codeVariableName}.operation = BABYLON.MathBlockOperations.${MathBlockOperations[this.operation]};\r\n`;
+        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.operation = BABYLON.MathBlockOperations.${MathBlockOperations[this.operation]};\r\n`;
         return codeString;
-    }    
+    }
 
     /**
      * Serializes this block in a JSON representation
@@ -227,7 +226,7 @@ export class MathBlock extends NodeGeometryBlock {
         super._deserialize(serializationObject, rootUrl);
 
         this.operation = serializationObject.operation;
-    }    
+    }
 }
 
 RegisterClass("BABYLON.MathBlock", MathBlock);

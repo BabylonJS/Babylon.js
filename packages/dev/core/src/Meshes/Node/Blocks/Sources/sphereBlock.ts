@@ -11,7 +11,6 @@ import { CreateSphereVertexData } from "core/Meshes/Builders";
  * Defines a block used to generate sphere geometry data
  */
 export class SphereBlock extends NodeGeometryBlock {
-
     /**
      * Create a new SphereBlock
      * @param name defines the block name
@@ -51,56 +50,56 @@ export class SphereBlock extends NodeGeometryBlock {
     public get diameter(): NodeGeometryConnectionPoint {
         return this._inputs[1];
     }
-    
+
     /**
      * Gets the diameterX input component
      */
     public get diameterX(): NodeGeometryConnectionPoint {
         return this._inputs[2];
-    }     
+    }
 
     /**
      * Gets the diameterY input component
      */
     public get diameterY(): NodeGeometryConnectionPoint {
         return this._inputs[3];
-    }  
+    }
 
     /**
      * Gets the diameterZ input component
      */
     public get diameterZ(): NodeGeometryConnectionPoint {
         return this._inputs[4];
-    }      
+    }
 
     /**
      * Gets the arc input component
      */
     public get arc(): NodeGeometryConnectionPoint {
         return this._inputs[5];
-    }      
-    
+    }
+
     /**
      * Gets the slice input component
      */
     public get slice(): NodeGeometryConnectionPoint {
         return this._inputs[6];
-    }          
+    }
 
     /**
      * Gets the geometry output component
      */
     public get geometry(): NodeGeometryConnectionPoint {
         return this._outputs[0];
-    }   
+    }
 
     public autoConfigure() {
         if (!this.diameter.isConnected) {
             const diameterInput = new GeometryInputBlock("Diameter");
             diameterInput.value = 1;
             diameterInput.output.connectTo(this.diameter);
-        }  
-    }    
+        }
+    }
 
     protected _buildBlock(state: NodeGeometryBuildState) {
         const options: {
@@ -131,7 +130,7 @@ export class SphereBlock extends NodeGeometryBlock {
 
         if (this.diameterY.isConnected) {
             options.diameterY = this.diameterY.getConnectedValue(state);
-        }        
+        }
 
         if (this.diameterZ.isConnected) {
             options.diameterZ = this.diameterZ.getConnectedValue(state);
@@ -143,12 +142,11 @@ export class SphereBlock extends NodeGeometryBlock {
 
         if (this.slice.isConnected) {
             options.slice = this.slice.getConnectedValue(state);
-        }             
+        }
 
         // Append vertex data from the plane builder
         this.geometry._storedValue = CreateSphereVertexData(options);
     }
 }
-
 
 RegisterClass("BABYLON.SphereBlock", SphereBlock);

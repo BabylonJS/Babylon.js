@@ -1,4 +1,3 @@
-
 import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
 import { SetPositionsBlock } from "core/Meshes/Node/Blocks/setPositionsBlock";
 import { SetNormalsBlock } from "core/Meshes/Node/Blocks/setNormalsBlock";
@@ -33,21 +32,21 @@ export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
             case "NormalizeBlock":
-                return new NormalizeVectorBlock("Normalize");              
+                return new NormalizeVectorBlock("Normalize");
             case "MeshBlock":
-                return new MeshBlock("Mesh");  
+                return new MeshBlock("Mesh");
             case "VectorCreatorBlock":
-                return new VectorCreatorBlock("Vector Creator");               
+                return new VectorCreatorBlock("Vector Creator");
             case "TranslationBlock":
-                return new TranslationBlock("Translation");                  
+                return new TranslationBlock("Translation");
             case "ScalingBlock":
-                return new ScalingBlock("Scaling");             
+                return new ScalingBlock("Scaling");
             case "RotationXBlock":
-                return new RotationXBlock("Rotation X");            
+                return new RotationXBlock("Rotation X");
             case "RotationYBlock":
-                return new RotationYBlock("Rotation Y");            
+                return new RotationYBlock("Rotation Y");
             case "RotationZBlock":
-                return new RotationZBlock("Rotation Z");                    
+                return new RotationZBlock("Rotation Z");
             case "ComputeNormalsBlock":
                 return new ComputeNormalsBlock("Compute normals");
             case "SetPositionsBlock":
@@ -55,31 +54,31 @@ export class BlockTools {
             case "SetNormalsBlock":
                 return new SetNormalsBlock("Set normals");
             case "RandomBlock":
-                return new RandomBlock("Random");    
+                return new RandomBlock("Random");
             case "GeometryOutputBlock":
-                return new GeometryOutputBlock("Output"); 
+                return new GeometryOutputBlock("Output");
             case "DiscBlock":
-                return new DiscBlock("Disc");                  
+                return new DiscBlock("Disc");
             case "IcoSphereBlock":
-                return new IcoSphereBlock("IcoSphere");               
+                return new IcoSphereBlock("IcoSphere");
             case "BoxBlock":
-                return new BoxBlock("Box");   
+                return new BoxBlock("Box");
             case "TorusBlock":
-                return new TorusBlock("Torus");                   
+                return new TorusBlock("Torus");
             case "SphereBlock":
-                return new SphereBlock("Sphere");                   
+                return new SphereBlock("Sphere");
             case "CylinderBlock":
-                return new CylinderBlock("Cylinder");                     
+                return new CylinderBlock("Cylinder");
             case "CapsuleBlock":
-                return new CapsuleBlock("Capsule");             
+                return new CapsuleBlock("Capsule");
             case "PlaneBlock":
-                return new PlaneBlock("Plane");                   
+                return new PlaneBlock("Plane");
             case "ElbowBlock":
-                return new GeometryElbowBlock("");    
+                return new GeometryElbowBlock("");
             case "MergeBlock":
-                return new MergeGeometryBlock("Merge");    
+                return new MergeGeometryBlock("Merge");
             case "TransformBlock":
-                return new GeometryTransformBlock("Transform");    
+                return new GeometryTransformBlock("Transform");
             case "PositionsBlock": {
                 const block = new GeometryInputBlock("Positions");
                 block.contextualValue = NodeGeometryContextualSources.Positions;
@@ -94,102 +93,102 @@ export class BlockTools {
                 const block = new MathBlock("Add");
                 block.operation = MathBlockOperations.Add;
                 return block;
-            }       
+            }
             case "SubtractBlock": {
                 const block = new MathBlock("Subtract");
                 block.operation = MathBlockOperations.Subtract;
                 return block;
-            }       
+            }
             case "MultiplyBlock": {
                 const block = new MathBlock("Multiply");
                 block.operation = MathBlockOperations.Multiply;
                 return block;
-            }    
+            }
             case "DivideBlock": {
                 const block = new MathBlock("Divide");
                 block.operation = MathBlockOperations.Divide;
                 return block;
-            }      
+            }
             case "AbsBlock": {
                 const block = new GeometryTrigonometryBlock("Abs");
                 block.operation = GeometryTrigonometryBlockOperations.Abs;
                 return block;
-            }     
+            }
             case "ArcCosBlock": {
                 const block = new GeometryTrigonometryBlock("ArcCos");
                 block.operation = GeometryTrigonometryBlockOperations.ArcCos;
                 return block;
-            }      
+            }
             case "ArcSinBlock": {
                 const block = new GeometryTrigonometryBlock("ArcSin");
                 block.operation = GeometryTrigonometryBlockOperations.ArcSin;
                 return block;
-            }     
+            }
             case "ArcTanBlock": {
                 const block = new GeometryTrigonometryBlock("ArcTan");
                 block.operation = GeometryTrigonometryBlockOperations.ArcTan;
                 return block;
-            }           
+            }
             case "CosBlock": {
                 const block = new GeometryTrigonometryBlock("Cos");
                 block.operation = GeometryTrigonometryBlockOperations.Cos;
                 return block;
-            }      
+            }
             case "ExpBlock": {
                 const block = new GeometryTrigonometryBlock("Exp");
                 block.operation = GeometryTrigonometryBlockOperations.Exp;
                 return block;
-            }  
+            }
             case "LogBlock": {
                 const block = new GeometryTrigonometryBlock("Log");
                 block.operation = GeometryTrigonometryBlockOperations.Log;
                 return block;
-            }        
+            }
             case "SinBlock": {
                 const block = new GeometryTrigonometryBlock("Sin");
                 block.operation = GeometryTrigonometryBlockOperations.Sin;
                 return block;
-            }          
+            }
             case "SignBlock": {
                 const block = new GeometryTrigonometryBlock("Sign");
                 block.operation = GeometryTrigonometryBlockOperations.Sign;
                 return block;
-            }       
+            }
             case "TanBlock": {
                 const block = new GeometryTrigonometryBlock("Tan");
                 block.operation = GeometryTrigonometryBlockOperations.Tan;
                 return block;
-            }       
+            }
             case "SqrtBlock": {
                 const block = new GeometryTrigonometryBlock("Sqrt");
                 block.operation = GeometryTrigonometryBlockOperations.Sqrt;
                 return block;
-            }            
+            }
             case "NegateBlock": {
                 const block = new GeometryTrigonometryBlock("Negate");
                 block.operation = GeometryTrigonometryBlockOperations.Negate;
                 return block;
-            }   
+            }
             case "OneMinusBlock": {
                 const block = new GeometryTrigonometryBlock("OneMinus");
                 block.operation = GeometryTrigonometryBlockOperations.OneMinus;
                 return block;
-            }   
+            }
             case "ReciprocalBlock": {
                 const block = new GeometryTrigonometryBlock("Reciprocal");
                 block.operation = GeometryTrigonometryBlockOperations.Reciprocal;
                 return block;
-            }    
+            }
             case "MinBlock": {
                 const block = new MathBlock("Min");
                 block.operation = MathBlockOperations.Min;
                 return block;
-            }   
+            }
             case "MaxBlock": {
                 const block = new MathBlock("Max");
                 block.operation = MathBlockOperations.Max;
                 return block;
-            }                                     
+            }
         }
 
         return null;
@@ -212,7 +211,7 @@ export class BlockTools {
                 break;
             case NodeGeometryBlockConnectionPointTypes.Matrix:
                 color = "#591990";
-                break;             
+                break;
             case NodeGeometryBlockConnectionPointTypes.Geometry:
                 color = "#6174FA";
                 break;
@@ -232,7 +231,7 @@ export class BlockTools {
             case "Vector4":
                 return NodeGeometryBlockConnectionPointTypes.Vector4;
             case "Matrix":
-                return NodeGeometryBlockConnectionPointTypes.Matrix;                
+                return NodeGeometryBlockConnectionPointTypes.Matrix;
         }
 
         return NodeGeometryBlockConnectionPointTypes.AutoDetect;
@@ -249,7 +248,7 @@ export class BlockTools {
             case NodeGeometryBlockConnectionPointTypes.Vector4:
                 return "Vector4";
             case NodeGeometryBlockConnectionPointTypes.Matrix:
-                return "Matrix";                
+                return "Matrix";
         }
 
         return "";

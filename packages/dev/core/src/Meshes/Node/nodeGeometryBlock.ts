@@ -1,7 +1,7 @@
 import { GetClass } from "../../Misc/typeStore";
 import { serialize } from "../../Misc/decorators";
 import { UniqueIdGenerator } from "../../Misc/uniqueIdGenerator";
-import type{ NodeGeometryBlockConnectionPointTypes } from "./Enums/nodeGeometryConnectionPointTypes";
+import type { NodeGeometryBlockConnectionPointTypes } from "./Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryConnectionPoint, NodeGeometryConnectionPointDirection } from "./nodeGeometryBlockConnectionPoint";
 import type { NodeGeometryBuildState } from "./nodeGeometryBuildState";
 
@@ -19,9 +19,9 @@ export class NodeGeometryBlock {
     /** @internal */
     public _outputs = new Array<NodeGeometryConnectionPoint>();
     /** @internal */
-    public _preparationId: number;   
+    public _preparationId: number;
     /** @internal */
-    public _codeVariableName = "";     
+    public _codeVariableName = "";
 
     /**
      * Gets the list of input points
@@ -47,7 +47,7 @@ export class NodeGeometryBlock {
         return this._name;
     }
 
-    public set name(value : string) {
+    public set name(value: string) {
         this._name = value;
     }
 
@@ -56,26 +56,26 @@ export class NodeGeometryBlock {
      */
     public get isInput(): boolean {
         return this._isInput;
-    }  
+    }
 
     /**
      * Gets a boolean indicating that this block can only be used once per NodeGeometry
      */
     public get isUnique() {
         return this._isUnique;
-    }    
-    
+    }
+
     /**
      * A free comment about the material
      */
     @serialize("comment")
-    public comments: string;       
+    public comments: string;
 
     /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
     public visibleInInspector = false;
 
     /** Gets or sets a boolean indicating that this input can be edited from a collapsed frame */
-    public visibleOnFrame = false;    
+    public visibleOnFrame = false;
 
     /**
      * Gets the current class name e.g. "NodeGeometryBlock"
@@ -83,7 +83,7 @@ export class NodeGeometryBlock {
      */
     public getClassName() {
         return "NodeGeometryBlock";
-    }    
+    }
 
     protected _inputRename(name: string) {
         return name;
@@ -91,7 +91,7 @@ export class NodeGeometryBlock {
 
     protected _outputRename(name: string) {
         return name;
-    }    
+    }
 
     /**
      * Checks if the current block is an ancestor of a given block
@@ -136,12 +136,7 @@ export class NodeGeometryBlock {
      * @param point an already created connection point. If not provided, create a new one
      * @returns the current block
      */
-    public registerInput(
-        name: string,
-        type: NodeGeometryBlockConnectionPointTypes,
-        isOptional: boolean = false,
-        point?: NodeGeometryConnectionPoint
-    ) {
+    public registerInput(name: string, type: NodeGeometryBlockConnectionPointTypes, isOptional: boolean = false, point?: NodeGeometryConnectionPoint) {
         point = point ?? new NodeGeometryConnectionPoint(name, this, NodeGeometryConnectionPointDirection.Input);
         point.type = type;
         point.isOptional = isOptional;
@@ -149,8 +144,8 @@ export class NodeGeometryBlock {
         this._inputs.push(point);
 
         return this;
-    } 
-    
+    }
+
     /**
      * Register a new output. Must be called inside a block constructor
      * @param name defines the connection point name
@@ -165,12 +160,12 @@ export class NodeGeometryBlock {
         this._outputs.push(point);
 
         return this;
-    }    
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _buildBlock(state: NodeGeometryBuildState) {
         // Empty. Must be defined by child nodes
-    }    
+    }
 
     /**
      * Build the current node and generate the vertex data
@@ -227,21 +222,21 @@ export class NodeGeometryBlock {
             this._inputs[inputIndex0]._linkedConnectionSource = this._inputs[inputIndex1];
         }
         this._inputs[inputIndex1]._linkedConnectionSource = this._inputs[inputIndex0];
-    }    
+    }
 
     /**
      * Initialize the block and prepare the context for build
      */
     public initialize() {
         // Do nothing
-    }    
+    }
 
     /**
      * Lets the block try to connect some inputs automatically
      */
     public autoConfigure() {
         // Do nothing
-    }    
+    }
 
     /**
      * Find an input by its name
@@ -271,7 +266,7 @@ export class NodeGeometryBlock {
         }
 
         return null;
-    }    
+    }
 
     /**
      * Serializes this block in a JSON representation
@@ -295,7 +290,7 @@ export class NodeGeometryBlock {
         }
 
         return serializationObject;
-    }  
+    }
 
     /**
      * @internal
@@ -334,13 +329,13 @@ export class NodeGeometryBlock {
                 }
             });
         }
-    }    
+    }
 
     protected _dumpPropertiesCode() {
         const variableName = this._codeVariableName;
         return `${variableName}.visibleInInspector = ${this.visibleInInspector};\r\n${variableName}.visibleOnFrame = ${this.visibleOnFrame};\r\n`;
-    }   
-    
+    }
+
     /**
      * @internal
      */
@@ -368,7 +363,7 @@ export class NodeGeometryBlock {
         }
 
         return codeString;
-    }    
+    }
 
     /**
      * @internal
@@ -431,7 +426,7 @@ export class NodeGeometryBlock {
         }
 
         return codeString;
-    }    
+    }
 
     /**
      * Clone the current block to a new identical block
@@ -450,8 +445,8 @@ export class NodeGeometryBlock {
         }
 
         return null;
-    }    
-    
+    }
+
     /**
      * Release resources
      */
@@ -463,5 +458,5 @@ export class NodeGeometryBlock {
         for (const output of this.outputs) {
             output.dispose();
         }
-    }    
+    }
 }

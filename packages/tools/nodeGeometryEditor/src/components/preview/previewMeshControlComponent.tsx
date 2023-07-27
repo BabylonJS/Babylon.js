@@ -65,17 +65,17 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
         this._colorInputRef.current?.click();
     }
 
-    refocus() {        
+    refocus() {
         this.props.globalState.onRefocus.notifyObservers();
     }
 
-    render() {       
+    render() {
         return (
             <div id="preview-mesh-bar">
                 <>
                     <div title="Refocus camera" onClick={() => this.refocus()} className="button" id="refocus-button">
                         <img src={frameIcon} alt="" />
-                    </div>                
+                    </div>
                     <div title="Turn-table animation" onClick={() => this.changeAnimation()} className="button" id="play-button">
                         {this.props.globalState.rotatePreview ? <img src={pauseIcon} alt="" /> : <img src={playIcon} alt="" />}
                     </div>

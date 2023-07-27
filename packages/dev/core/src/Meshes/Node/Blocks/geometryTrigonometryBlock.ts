@@ -43,7 +43,7 @@ export enum GeometryTrigonometryBlockOperations {
     /** OneMinus */
     OneMinus,
     /** Reciprocal */
-    Reciprocal
+    Reciprocal,
 }
 
 /**
@@ -93,7 +93,6 @@ export class GeometryTrigonometryBlock extends NodeGeometryBlock {
     protected _buildBlock(state: NodeGeometryBuildState) {
         super._buildBlock(state);
         let func: Nullable<(value: number) => number> = null;
-
 
         switch (this.operation) {
             case GeometryTrigonometryBlockOperations.Cos: {
@@ -155,15 +154,15 @@ export class GeometryTrigonometryBlock extends NodeGeometryBlock {
             case GeometryTrigonometryBlockOperations.Negate: {
                 func = (value: number) => -value;
                 break;
-            }         
+            }
             case GeometryTrigonometryBlockOperations.OneMinus: {
                 func = (value: number) => 1 - value;
                 break;
-            }     
+            }
             case GeometryTrigonometryBlockOperations.Reciprocal: {
                 func = (value: number) => 1 / value;
                 break;
-            }                          
+            }
         }
         if (!func) {
             this.input._storedFunction = null;
@@ -176,30 +175,30 @@ export class GeometryTrigonometryBlock extends NodeGeometryBlock {
                 this.output._storedFunction = (state) => {
                     const source = this.input.getConnectedValue(state);
                     return func!(source);
-                }
+                };
                 break;
             }
             case NodeGeometryBlockConnectionPointTypes.Vector2: {
                 this.output._storedFunction = (state) => {
                     const source = this.input.getConnectedValue(state);
                     return new Vector2(func!(source.x), func!(source.y));
-                }
+                };
                 break;
             }
             case NodeGeometryBlockConnectionPointTypes.Vector3: {
                 this.output._storedFunction = (state) => {
                     const source = this.input.getConnectedValue(state);
                     return new Vector3(func!(source.x), func!(source.y), func!(source.z));
-                }
+                };
                 break;
             }
             case NodeGeometryBlockConnectionPointTypes.Vector4: {
                 this.output._storedFunction = (state) => {
                     const source = this.input.getConnectedValue(state);
                     return new Vector4(func!(source.x), func!(source.y), func!(source.z), func!(source.w));
-                }
+                };
                 break;
-            }            
+            }
         }
 
         return this;
@@ -221,7 +220,8 @@ export class GeometryTrigonometryBlock extends NodeGeometryBlock {
 
     protected _dumpPropertiesCode() {
         const codeString =
-            super._dumpPropertiesCode() + `${this._codeVariableName}.operation = BABYLON.GeometryTrigonometryBlockOperations.${GeometryTrigonometryBlockOperations[this.operation]};\r\n`;
+            super._dumpPropertiesCode() +
+            `${this._codeVariableName}.operation = BABYLON.GeometryTrigonometryBlockOperations.${GeometryTrigonometryBlockOperations[this.operation]};\r\n`;
         return codeString;
     }
 }

@@ -18,6 +18,5 @@ export class OutputDisplayManager implements IDisplayManager {
         return "rgb(106, 44, 131)";
     }
 
-    public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {
-    }
+    public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {}
 }

@@ -43,7 +43,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         DataStorage.WriteBoolean("Wireframe", value);
         this.props.globalState.onWireframeChanged.notifyObservers();
         this.forceUpdate();
-    }    
+    }
 
     render() {
         return (
@@ -60,7 +60,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
                             className={"button back-face" + (this.props.globalState.wireframe ? " selected" : "")}
                         >
                             <img src={wireframe} alt="" />
-                        </div>                       
+                        </div>
                     </div>
                 </>
             </>

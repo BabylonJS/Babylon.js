@@ -5,13 +5,13 @@ export enum NodeGeometryBlockConnectionPointTypes {
     /** Float */
     Float = 0x0001,
     /** Vector2 */
-    Vector2= 0x0002,    
+    Vector2 = 0x0002,
     /** Vector3 */
-    Vector3 = 0x0003,    
+    Vector3 = 0x0003,
     /** Vector4 */
-    Vector4 = 0x0004,    
+    Vector4 = 0x0004,
     /** Matrix */
-    Matrix = 0x0005,  
+    Matrix = 0x0005,
     /** Geometry */
     Geometry = 0x0006,
     /** Detect type based on connection */
@@ -19,7 +19,7 @@ export enum NodeGeometryBlockConnectionPointTypes {
     /** Output type that will be defined by input type */
     BasedOnInput = 0x0800,
     /** Undefined */
-    Undefined = 0x1000,    
+    Undefined = 0x1000,
     /** Bitmask of all types */
     All = 0x0fff,
 }

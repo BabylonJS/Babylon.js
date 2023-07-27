@@ -19,6 +19,5 @@ export class SourceDisplayManager implements IDisplayManager {
         return "gray";
     }
 
-    public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {
-    }
+    public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {}
 }

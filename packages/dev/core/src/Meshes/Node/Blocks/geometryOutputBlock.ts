@@ -24,7 +24,7 @@ export class GeometryOutputBlock extends NodeGeometryBlock {
      */
     public getClassName() {
         return "GeometryOutputBlock";
-    }    
+    }
     /**
      * Gets the geometry input component
      */
@@ -35,7 +35,6 @@ export class GeometryOutputBlock extends NodeGeometryBlock {
     protected _buildBlock(state: NodeGeometryBuildState) {
         state.vertexData = this.geometry.getConnectedValue(state);
     }
-
 }
 
 RegisterClass("BABYLON.GeometryOutputBlock", GeometryOutputBlock);

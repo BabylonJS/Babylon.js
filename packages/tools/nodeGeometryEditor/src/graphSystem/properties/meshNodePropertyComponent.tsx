@@ -13,22 +13,22 @@ import type { MeshBlock } from "core/Meshes/Node/Blocks/Sources/meshBlock";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { Mesh } from "core/Meshes/mesh";
 
-export class MeshPropertyTabComponent extends React.Component<IPropertyComponentProps, {isLoading: boolean}> {
+export class MeshPropertyTabComponent extends React.Component<IPropertyComponentProps, { isLoading: boolean }> {
     constructor(props: IPropertyComponentProps) {
         super(props);
 
-        this.state = {isLoading: false};
+        this.state = { isLoading: false };
     }
 
     async loadMesh(file: File) {
-        this.setState({isLoading: true});
+        this.setState({ isLoading: true });
         const scene = await SceneLoader.LoadAsync("file:", file, EngineStore.LastCreatedEngine);
 
         if (!scene) {
             return;
         }
 
-        this.setState({isLoading: false});
+        this.setState({ isLoading: false });
 
         const nodeData = this.props.nodeData as any;
 
@@ -49,7 +49,6 @@ export class MeshPropertyTabComponent extends React.Component<IPropertyComponent
             meshes = scene.meshes.filter((m) => !!m.name && m.getTotalVertices() > 0);
             meshes.sort((a, b) => a.name.localeCompare(b.name));
 
-
             meshes.sort((a, b) => a.name.localeCompare(b.name));
 
             meshOptions.push(
@@ -64,13 +63,11 @@ export class MeshPropertyTabComponent extends React.Component<IPropertyComponent
             <div>
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="SOURCE">
-                    {this.state.isLoading && (
-                        <TextLineComponent value="Loading..." />
-                    )}
+                    {this.state.isLoading && <TextLineComponent value="Loading..." />}
                     {!this.state.isLoading && (
-                    <FileButtonLineComponent label="Load" uploadName={"load-mesh"} onClick={(file) => this.loadMesh(file)} accept=".glb, .gltf, .babylon" />
+                        <FileButtonLineComponent label="Load" uploadName={"load-mesh"} onClick={(file) => this.loadMesh(file)} accept=".glb, .gltf, .babylon" />
                     )}
-                    { scene && (
+                    {scene && (
                         <OptionsLineComponent
                             label="Mesh"
                             options={meshOptions}

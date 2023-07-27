@@ -294,7 +294,6 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             });
     }
 
-
     render() {
         if (this.state.currentNode) {
             return (

@@ -21,7 +21,7 @@ export class GeometryTransformBlock extends NodeGeometryBlock {
 
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.BasedOnInput);
 
-        this._outputs[0]._typeConnectionSource = this._inputs[0];        
+        this._outputs[0]._typeConnectionSource = this._inputs[0];
         this._inputs[0].acceptedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Vector4);
     }
 
@@ -31,7 +31,7 @@ export class GeometryTransformBlock extends NodeGeometryBlock {
      */
     public getClassName() {
         return "GeometryTransformBlock";
-    }    
+    }
 
     /**
      * Gets the value input component
@@ -45,14 +45,14 @@ export class GeometryTransformBlock extends NodeGeometryBlock {
      */
     public get matrix(): NodeGeometryConnectionPoint {
         return this._inputs[1];
-    }    
+    }
 
     /**
      * Gets the output component
      */
     public get output(): NodeGeometryConnectionPoint {
         return this._outputs[0];
-    }    
+    }
 
     protected _buildBlock(state: NodeGeometryBuildState) {
         if (!this.value.isConnected || !this.matrix.isConnected) {
@@ -69,10 +69,10 @@ export class GeometryTransformBlock extends NodeGeometryBlock {
                     return Vector3.TransformCoordinates(value, this.matrix.getConnectedValue(state));
                 case NodeGeometryBlockConnectionPointTypes.Vector4:
                     return Vector4.TransformCoordinates(value, this.matrix.getConnectedValue(state));
-                }
+            }
 
             return null;
-        }
+        };
     }
 }
 

@@ -41,7 +41,7 @@ export class NodeGeometryConnectionPoint {
     public _storedFunction: Nullable<(state: NodeGeometryBuildState) => any> = null;
 
     /** @internal */
-    public _acceptedConnectionPointType: Nullable<NodeGeometryConnectionPoint> = null;        
+    public _acceptedConnectionPointType: Nullable<NodeGeometryConnectionPoint> = null;
 
     private _endpoints = new Array<NodeGeometryConnectionPoint>();
     private _direction: NodeGeometryConnectionPointDirection;
@@ -84,7 +84,7 @@ export class NodeGeometryConnectionPoint {
     /**
      * Gets or sets number indicating the position that the port is exposed to on a frame
      */
-    public exposedPortPosition: number = -1;    
+    public exposedPortPosition: number = -1;
 
     /**
      * Gets or sets the connection point type (default is float)
@@ -194,7 +194,7 @@ export class NodeGeometryConnectionPoint {
         if (this.isConnected) {
             if (this._connectedPoint?._storedFunction) {
                 return this._connectedPoint?._storedFunction(state);
-            } 
+            }
             return this._connectedPoint?._storedValue;
         }
         return null;

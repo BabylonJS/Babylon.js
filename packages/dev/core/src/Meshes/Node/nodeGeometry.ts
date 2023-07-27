@@ -1,5 +1,5 @@
 import { Observable } from "../../Misc/observable";
-import type { Nullable} from "../../types";
+import type { Nullable } from "../../types";
 import { Mesh } from "../mesh";
 import type { VertexData } from "../mesh.vertexData";
 import type { Scene } from "../../scene";
@@ -23,19 +23,19 @@ export class NodeGeometry {
     private _vertexData: Nullable<VertexData> = null;
 
     /** Define the Url to load snippets */
-    public static SnippetUrl = Constants.SnippetUrl;    
+    public static SnippetUrl = Constants.SnippetUrl;
 
     /**
      * Gets or sets data used by visual editor
      * @see https://nge.babylonjs.com
      */
-    public editorData: any = null;    
+    public editorData: any = null;
 
     /**
      * Gets an array of blocks that needs to be serialized even if they are not yet connected
      */
     public attachedBlocks = new Array<NodeGeometryBlock>();
-    
+
     /**
      * Observable raised when the geometry is built
      */
@@ -47,19 +47,19 @@ export class NodeGeometry {
     /**
      * Snippet ID if the material was created from the snippet server
      */
-    public snippetId: string;    
+    public snippetId: string;
 
     /**
      * The name of the geometry
      */
     @serialize()
-    public name: string;    
+    public name: string;
 
     /**
      * A free comment about the geometry
      */
     @serialize("comment")
-    public comment: string;    
+    public comment: string;
 
     /**
      * Creates a new geometry
@@ -75,7 +75,7 @@ export class NodeGeometry {
      */
     public getClassName(): string {
         return "NodeGeometry";
-    }    
+    }
 
     /**
      * Gets the list of input blocks attached to this material
@@ -90,14 +90,14 @@ export class NodeGeometry {
         }
 
         return blocks;
-    }    
+    }
 
     /**
      * Build the material and generates the inner effect
      * @param verbose defines if the build should log activity
      * @param updateBuildId defines if the internal build Id should be updated (default is true)
      * @param autoConfigure defines if the autoConfigure method should be called when initializing blocks (default is true)
-     */    
+     */
     public build(verbose: boolean = false, updateBuildId = true, autoConfigure = true) {
         this._buildWasSuccessful = false;
 
@@ -169,7 +169,7 @@ export class NodeGeometry {
                 }
             }
         }
-    }    
+    }
 
     /**
      * Clear the current geometry
@@ -177,7 +177,7 @@ export class NodeGeometry {
     public clear() {
         this.outputBlock = null;
         this.attachedBlocks.length = 0;
-    }    
+    }
 
     /**
      * Remove a block from the current geometry
@@ -192,8 +192,8 @@ export class NodeGeometry {
         if (block === this.outputBlock) {
             this.outputBlock = null;
         }
-    }    
-    
+    }
+
     /**
      * Clear the current graph and load a new one from a serialization object
      * @param source defines the JSON representation of the geometry
@@ -301,8 +301,8 @@ export class NodeGeometry {
                 }
             }
         }
-    }  
-    
+    }
+
     /**
      * Generate a string containing the code declaration required to create an equivalent of this geometry
      * @returns a string
@@ -315,7 +315,6 @@ export class NodeGeometry {
         if (this.outputBlock) {
             this._gatherBlocks(this.outputBlock, blocks);
         }
-
 
         // Generate
         let codeString = `var nodeGeometry = new BABYLON.NodeGeometry("${this.name || "node geometry"}");\r\n`;
@@ -338,7 +337,7 @@ export class NodeGeometry {
         }
 
         return codeString;
-    }    
+    }
 
     private _gatherBlocks(rootNode: NodeGeometryBlock, list: NodeGeometryBlock[]) {
         if (list.indexOf(rootNode) !== -1) {
@@ -355,7 +354,7 @@ export class NodeGeometry {
                 }
             }
         }
-    }    
+    }
 
     /**
      * Clear the current geometry and set it to a default state
@@ -373,7 +372,7 @@ export class NodeGeometry {
         dataBlock.geometry.connectTo(output.geometry);
 
         this.outputBlock = output;
-    }    
+    }
 
     /**
      * Makes a duplicate of the current geometry.
@@ -390,7 +389,7 @@ export class NodeGeometry {
         clone.build(false);
 
         return clone;
-    }    
+    }
 
     /**
      * Serializes this geometry in a JSON representation
@@ -421,7 +420,7 @@ export class NodeGeometry {
 
         if (!selectedBlocks) {
             if (!this.attachedBlocks.length) {
-                this,this.build();
+                this, this.build();
             }
             for (const block of this.attachedBlocks) {
                 if (blocks.indexOf(block) !== -1) {
@@ -432,7 +431,7 @@ export class NodeGeometry {
         }
 
         return serializationObject;
-    }      
+    }
 
     /**
      * Disposes the ressources
@@ -444,7 +443,7 @@ export class NodeGeometry {
 
         this.attachedBlocks.length = 0;
         this.onBuildObservable.clear();
-    }    
+    }
 
     /**
      * Creates a new node geometry set to default basic configuration
@@ -458,7 +457,7 @@ export class NodeGeometry {
         nodeGeometry.build();
 
         return nodeGeometry;
-    }    
+    }
 
     /**
      * Creates a node geometry from parsed geometry data
@@ -473,7 +472,7 @@ export class NodeGeometry {
         nodeGeometry.build();
 
         return nodeGeometry;
-    }    
+    }
 
     /**
      * Creates a node geometry from a snippet saved by the node geometry editor
@@ -483,12 +482,7 @@ export class NodeGeometry {
      * @param skipBuild defines whether to build the node geometry
      * @returns a promise that will resolve to the new node geometry
      */
-    public static ParseFromSnippetAsync(
-        snippetId: string,
-        rootUrl: string = "",
-        nodeGeometry?: NodeGeometry,
-        skipBuild: boolean = false
-    ): Promise<NodeGeometry> {
+    public static ParseFromSnippetAsync(snippetId: string, rootUrl: string = "", nodeGeometry?: NodeGeometry, skipBuild: boolean = false): Promise<NodeGeometry> {
         if (snippetId === "_BLANK") {
             return Promise.resolve(NodeGeometry.CreateDefault("blank"));
         }
@@ -525,5 +519,5 @@ export class NodeGeometry {
             request.open("GET", this.SnippetUrl + "/" + snippetId.replace(/#/g, "/"));
             request.send();
         });
-    }    
+    }
 }

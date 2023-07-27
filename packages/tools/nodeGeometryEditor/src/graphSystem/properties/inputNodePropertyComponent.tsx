@@ -126,9 +126,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
     render() {
         const inputBlock = this.props.nodeData.data as GeometryInputBlock;
 
-        let contextualSourcesOptions: { label: string; value: NodeGeometryContextualSources }[] = [
-            { label: "None", value: NodeGeometryContextualSources.None }
-        ];
+        let contextualSourcesOptions: { label: string; value: NodeGeometryContextualSources }[] = [{ label: "None", value: NodeGeometryContextualSources.None }];
 
         switch (inputBlock.type) {
             case NodeGeometryBlockConnectionPointTypes.Float:
@@ -138,7 +136,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
             case NodeGeometryBlockConnectionPointTypes.Vector3:
                 contextualSourcesOptions = [
                     { label: "Positions", value: NodeGeometryContextualSources.Positions },
-                    { label: "Normals", value: NodeGeometryContextualSources.Normals }
+                    { label: "Normals", value: NodeGeometryContextualSources.Normals },
                 ];
                 break;
             case NodeGeometryBlockConnectionPointTypes.Vector4:
@@ -153,7 +151,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
 
         const typeOptions = [
             { label: "None", value: 0 },
-            { label: "Visible in the inspector", value: 1 }
+            { label: "Visible in the inspector", value: 1 },
         ];
 
         return (
@@ -212,7 +210,6 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         target={inputBlock}
                         noDirectUpdate={true}
                         extractValue={() => {
-
                             if (inputBlock.isContextual) {
                                 return 1;
                             }
@@ -233,9 +230,8 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                             this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
                         }}
                         propertyName={""}
-                    />                    
-                    {!inputBlock.isContextual &&
-                        this.renderValue(this.props.stateManager.data as GlobalState)}
+                    />
+                    {!inputBlock.isContextual && this.renderValue(this.props.stateManager.data as GlobalState)}
                     {inputBlock.isContextual && (
                         <OptionsLineComponent
                             label="System value"
@@ -251,9 +247,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                             }}
                         />
                     )}
-                    {!inputBlock.isContextual && (
-                        <CheckBoxLineComponent label="Visible on frame" target={inputBlock} propertyName={"visibleOnFrame"}></CheckBoxLineComponent>
-                    )}
+                    {!inputBlock.isContextual && <CheckBoxLineComponent label="Visible on frame" target={inputBlock} propertyName={"visibleOnFrame"}></CheckBoxLineComponent>}
                 </LineContainerComponent>
             </div>
         );

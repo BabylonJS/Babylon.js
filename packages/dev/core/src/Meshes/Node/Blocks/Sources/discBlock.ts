@@ -11,7 +11,6 @@ import { CreateDiscVertexData } from "core/Meshes/Builders";
  * Defines a block used to generate disc geometry data
  */
 export class DiscBlock extends NodeGeometryBlock {
-
     /**
      * Create a new DiscBlock
      * @param name defines the block name
@@ -40,35 +39,35 @@ export class DiscBlock extends NodeGeometryBlock {
     public get radius(): NodeGeometryConnectionPoint {
         return this._inputs[0];
     }
-    
+
     /**
      * Gets the tessellation input component
      */
     public get tessellation(): NodeGeometryConnectionPoint {
         return this._inputs[1];
-    }        
-    
+    }
+
     /**
      * Gets the subdivisions input component
      */
     public get arc(): NodeGeometryConnectionPoint {
         return this._inputs[2];
-    }        
+    }
 
     /**
      * Gets the geometry output component
      */
     public get geometry(): NodeGeometryConnectionPoint {
         return this._outputs[0];
-    }   
+    }
 
     public autoConfigure() {
         if (!this.radius.isConnected) {
             const radiusInput = new GeometryInputBlock("Radius");
             radiusInput.value = 0.2;
             radiusInput.output.connectTo(this.radius);
-        }         
-    }    
+        }
+    }
 
     protected _buildBlock(state: NodeGeometryBuildState) {
         const options: {
@@ -86,16 +85,15 @@ export class DiscBlock extends NodeGeometryBlock {
 
         if (this.tessellation.isConnected) {
             options.tessellation = this.tessellation.getConnectedValue(state);
-        }   
+        }
 
         if (this.arc.isConnected) {
             options.arc = this.arc.getConnectedValue(state);
-        }  
+        }
 
         // Append vertex data from the plane builder
         this.geometry._storedValue = CreateDiscVertexData(options);
     }
 }
-
 
 RegisterClass("BABYLON.DiscBlock", DiscBlock);

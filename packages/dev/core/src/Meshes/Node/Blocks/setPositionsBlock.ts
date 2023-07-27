@@ -10,7 +10,7 @@ import type { Vector3 } from "../../../Maths/math.vector";
 /**
  * Block used to set positions for a geometry
  */
-export class SetPositionsBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext{
+export class SetPositionsBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext {
     private _vertexData: VertexData;
     private _currentIndex: number;
 
@@ -41,7 +41,7 @@ export class SetPositionsBlock extends NodeGeometryBlock implements INodeGeometr
      */
     public getClassName() {
         return "SetPositionsBlock";
-    }    
+    }
 
     /**
      * Gets the geometry input component
@@ -55,21 +55,21 @@ export class SetPositionsBlock extends NodeGeometryBlock implements INodeGeometr
      */
     public get positions(): NodeGeometryConnectionPoint {
         return this._inputs[1];
-    }    
+    }
 
     /**
      * Gets the geometry output component
      */
     public get output(): NodeGeometryConnectionPoint {
         return this._outputs[0];
-    }    
+    }
 
     protected _buildBlock(state: NodeGeometryBuildState) {
         state.executionContext = this;
 
         this._vertexData = this.geometry.getConnectedValue(state);
         state.geometryContext = this._vertexData;
-        
+
         if (!this._vertexData || !this._vertexData.positions || !this.positions.isConnected) {
             state.executionContext = null;
             state.geometryContext = null;
@@ -91,7 +91,6 @@ export class SetPositionsBlock extends NodeGeometryBlock implements INodeGeometr
         state.executionContext = null;
         state.geometryContext = null;
     }
-
 }
 
 RegisterClass("BABYLON.SetPositionsBlock", SetPositionsBlock);
