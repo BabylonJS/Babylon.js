@@ -6,7 +6,7 @@ import { FlowGraphExecutionBlock } from "../../flowGraphExecutionBlock";
  * @experimental
  * Block that executes a loop.
  */
-export class ForLoopExecutionBlock extends FlowGraphExecutionBlock {
+export class FlowGraphForLoopBlock extends FlowGraphExecutionBlock {
     /**
      * @experimental
      * The start index of the loop.

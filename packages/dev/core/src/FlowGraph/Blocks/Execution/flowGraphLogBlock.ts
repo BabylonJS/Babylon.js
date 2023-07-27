@@ -6,7 +6,7 @@ import { FlowGraphExecutionBlock } from "../../flowGraphExecutionBlock";
  * @experimental
  * Block that logs a message to the console.
  */
-export class LogBlock extends FlowGraphExecutionBlock {
+export class FlowGraphLogBlock extends FlowGraphExecutionBlock {
     public message: FlowGraphDataConnectionPoint<any>;
     public onDone: FlowGraphSignalConnectionPoint;
 

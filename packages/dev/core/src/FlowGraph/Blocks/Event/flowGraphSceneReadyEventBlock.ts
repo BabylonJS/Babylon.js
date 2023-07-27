@@ -7,7 +7,7 @@ import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
  * @experimental
  * Block that triggers when a scene is ready.
  */
-export class SceneReadyEventBlock extends FlowGraphEventBlock {
+export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
     private _scene: Scene;
 
     constructor(graph: FlowGraph, scene: Scene) {
