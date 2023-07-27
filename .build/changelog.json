@@ -1,5 +1,5 @@
 {
-    "fromTag": "6.12.5",
+    "fromTag": "6.13.0",
     "changelog": {
         "6.13.0": [
             {
@@ -33,6 +33,280 @@
                 "tags": [
                     "animations",
                     "new feature"
+                ]
+            }
+        ],
+        "6.14.0": [
+            {
+                "pr": "14088",
+                "title": "Add extra conditions for outParams declarations in PBR block shaders",
+                "description": "When using PBR debug modes in Babylon Native, these structs will be marked \"not fully initialized\" and error. These extra checks should ensure that any declared debug parameter will also be initialized.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockAmbientOcclusion.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockAnisotropic.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockClearcoat.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflectivity.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockSheen.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockSubSurface.fx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14087",
+                "title": "overlay needs to be a part of the client object",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/public/babylonjs-viewer-assets/webpack.config.js",
+                    "packages/tools/devHost/webpack.config.js",
+                    "packages/tools/guiEditor/webpack.config.js",
+                    "packages/tools/nodeEditor/webpack.config.js",
+                    "packages/tools/playground/webpack.config.js",
+                    "packages/tools/sandbox/webpack.config.js",
+                    "packages/tools/viewer/webpack.config.js",
+                    "packages/tools/vsm/webpack.config.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14085",
+                "title": "Delete what's new.md",
+                "description": "What's new on the docs maintains a copy of that. Changes since 5.0.0 can be found at the CHANGELOG file.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "what's new.md"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14072",
+                "title": "Making data Nullable for RawTexture3D and RawTexture2DArray",
+                "description": "This change will make creating RawTexture3D and RawTexture2DArray storage textures less tedious when setting the data in a compute shader. This also brings it more in line with the RawTexture constructor.\r\nhttps://doc.babylonjs.com/typedoc/classes/BABYLON.RawTexture#constructor\r\n\r\nRelated to this change that allows RawTexture3D and RawTexture2DArray to be flagged as storage textures.\r\nhttps://github.com/BabylonJS/Babylon.js/pull/14070",
+                "author": {
+                    "name": "christianphalv",
+                    "url": "https://github.com/christianphalv"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/rawTexture2DArray.ts",
+                    "packages/dev/core/src/Materials/Textures/rawTexture3D.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14073",
+                "title": "preparation for NOTICE changes in public packages",
+                "description": "Adding NOTICE.md for when OS code will be added directly into the core code.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/public/@babylonjs/core/NOTICE.md",
+                    "packages/public/@babylonjs/core/package.json",
+                    "packages/public/umd/babylonjs/NOTICE.md"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14075",
+                "title": "Improved quaternion application",
+                "description": "I am the author of Quaternion.js ( https://github.com/infusion/Quaternion.js ) and thought it might be useful for a wider audience to benefit from an improvement to rotate vectors using quaternions I've derived here https://raw.org/proof/vector-rotation-using-quaternions/\r\n\r\nI discussed this already with the fine folks from Three.js where I also proposed to add this improvement https://github.com/mrdoob/three.js/pull/26456",
+                "author": {
+                    "name": "infusion",
+                    "url": "https://github.com/infusion"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": [
+                    "optimizations",
+                    "math"
+                ]
+            },
+            {
+                "pr": "14081",
+                "title": "DomManagement avoid unneeded object imports",
+                "description": "discovered here - https://forum.babylonjs.com/t/iswindowobjectexist-is-not-a-function-es6-support-with-tree-shaking-bug/42583\n\nStill working on understanding why parcel totally tree-shake the entire object, but the module export itself exists.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/DeviceInput/webDeviceInputSystem.ts",
+                    "packages/dev/core/src/Misc/precisionDate.ts",
+                    "packages/dev/gui/src/3D/controls/MRTK3/touchHolographicButton.ts",
+                    "packages/dev/gui/src/3D/controls/holographicButton.ts",
+                    "packages/dev/gui/src/3D/controls/touchHolographicButton.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14080",
+                "title": "SpotLight: Fix projection texture matrix not computed in world space",
+                "description": "See https://forum.babylonjs.com/t/setdirectiontotarget/42648/13",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/spotLight.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14079",
+                "title": "NME: Generate code for \"mode\" property",
+                "description": "See https://forum.babylonjs.com/t/procedural-texture-generated-by-export/42639",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "14077",
+                "title": "introduce DISABLE_DEV_OVERLAY flag",
+                "description": "Add this flag to your .env file to disable dev server overlay during development",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/public/babylonjs-viewer-assets/webpack.config.js",
+                    "packages/tools/babylonServer/webpack.config.js",
+                    "packages/tools/devHost/webpack.config.js",
+                    "packages/tools/guiEditor/webpack.config.js",
+                    "packages/tools/nodeEditor/webpack.config.js",
+                    "packages/tools/playground/webpack.config.js",
+                    "packages/tools/sandbox/webpack.config.js",
+                    "packages/tools/viewer/webpack.config.js",
+                    "packages/tools/vsm/webpack.config.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14078",
+                "title": "fix imports",
+                "description": "As reported here - https://forum.babylonjs.com/t/double-slash-in-cannonjsplugin-js-may-lead-to-404-not-found/42637?u=raananw",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v1/Plugins/ammoJSPlugin.ts",
+                    "packages/dev/core/src/Physics/v1/Plugins/cannonJSPlugin.ts",
+                    "packages/dev/core/src/Physics/v1/Plugins/oimoJSPlugin.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14071",
+                "title": "Change throw to log for native update RTT samples",
+                "description": null,
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14070",
+                "title": "Raw textures: Add creationFlags parameter for 3D and 2DArray texture creation",
+                "description": "See https://forum.babylonjs.com/t/does-babylon-support-3d-storage-textures-webgpu/42592",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/rawTexture2DArray.ts",
+                    "packages/dev/core/src/Materials/Textures/rawTexture3D.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "14068",
+                "title": "AnimationGroup: add enableBlending method",
+                "description": "Currently, it's not possible to easily enable blending for all animations in an animation group.\r\n\r\nThere's `Animatable.enableBlending`, but it actually only changes the blending speed and not the blending on/off state (because this state is stored in the `RuntimeAnimation` constructor and can't be changed afterwards).\r\n\r\nI've also updated some internal variable names + comments in `RuntimeAnimation`, in an effort to make the code more readable (at least for me!).\r\n\r\nHere's a PG that uses the new method to enable blending for the walk/run transitions:\r\n\r\nhttps://playground.babylonjs.com/#6I67BL#440",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animationGroup.ts",
+                    "packages/dev/core/src/Animations/runtimeAnimation.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "14061",
+                "title": "Physics spring constraint",
+                "description": "Adds `stiffness` and `damping` parameters to the Physics6DoFConstraint, and a SpringConstraint class that extends the former.\r\n\r\nAn example playground showcasing the parameters can be seen in: #V558CC#1",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsConstraint.ts",
+                    "packages/dev/core/src/Physics/v2/physicsShape.ts",
+                    "packages/tools/babylonServer/public/havok/HavokPhysics.wasm",
+                    "packages/tools/babylonServer/public/havok/HavokPhysics_umd.js"
+                ],
+                "tags": [
+                    "physics",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14067",
+                "title": "PBR: Fix doc for the metallicReflectanceColor property",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrMaterial.ts"
+                ],
+                "tags": [
+                    "skip changelog"
                 ]
             }
         ],

@@ -5,7 +5,7 @@
         vec3 anisotropicTangent;
         vec3 anisotropicBitangent;
         vec3 anisotropicNormal;
-    #if DEBUGMODE > 0
+    #if DEBUGMODE > 0 && defined(ANISOTROPIC_TEXTURE)
         vec3 anisotropyMapData;
     #endif
     };

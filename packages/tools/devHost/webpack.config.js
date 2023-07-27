@@ -54,12 +54,10 @@ module.exports = (env) => {
         },
         devServer: {
             client: {
-                overlay: process.env.DISABLE_DEV_OVERLAY
-                    ? false
-                    : {
-                          warnings: false,
-                          errors: true,
-                      },
+                overlay: process.env.DISABLE_DEV_OVERLAY ? false : {
+                    warnings: false,
+                    errors: true,
+                },
             },
             static: ["public"],
             port: process.env.TOOLS_PORT || 1338,

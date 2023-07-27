@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/core",
-    "version": "6.13.0",
+    "version": "6.14.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -43,4 +43,3 @@
         "url": "https://github.com/BabylonJS/Babylon.js/issues"
     }
 }
-
