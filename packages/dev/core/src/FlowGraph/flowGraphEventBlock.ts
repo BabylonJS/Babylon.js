@@ -4,13 +4,13 @@ import type { FlowGraphSignalConnectionPoint } from "./flowGraphConnectionPoint"
 import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 
 export abstract class FlowGraphEventBlock extends FlowGraphExecutionBlock {
-    public readonly flowOut: FlowGraphSignalConnectionPoint;
+    public readonly onTriggered: FlowGraphSignalConnectionPoint;
     private _eventObservable: Observable<any>;
 
     constructor(graph: FlowGraph) {
         super(graph);
 
-        this.flowOut = this._registerSignalOutput("flowOut");
+        this.onTriggered = this._registerSignalOutput("flowOut");
     }
 
     public init() {
@@ -20,7 +20,7 @@ export abstract class FlowGraphEventBlock extends FlowGraphExecutionBlock {
     abstract createEventObservable(): Observable<any>;
 
     public execute(): void {
-        this.flowOut.activateSignal();
+        this.onTriggered.activateSignal();
     }
 
     public start(): void {

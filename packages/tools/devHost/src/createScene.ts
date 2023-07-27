@@ -22,10 +22,10 @@ export const createScene = async function () {
 
     const forBlock = new ForLoopExecutionBlock(flowGraph);
     forBlock.endIndex.value = 10;
-    eventBlock.flowOut.connectTo(forBlock.flowIn);
+    eventBlock.onTriggered.connectTo(forBlock.onStart);
 
     const logBlock = new LogBlock(flowGraph);
-    forBlock.loopBody.connectTo(logBlock.flowIn);
+    forBlock.onLoop.connectTo(logBlock.onStart);
 
     const addOneBlock = new AddOneBlock(flowGraph);
     forBlock.index.connectTo(addOneBlock.input);

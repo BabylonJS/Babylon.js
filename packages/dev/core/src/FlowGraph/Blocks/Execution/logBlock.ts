@@ -8,18 +8,18 @@ import { FlowGraphExecutionBlock } from "../../flowGraphExecutionBlock";
  */
 export class LogBlock extends FlowGraphExecutionBlock {
     public message: FlowGraphDataConnectionPoint<any>;
-    public flowOut: FlowGraphSignalConnectionPoint;
+    public onDone: FlowGraphSignalConnectionPoint;
 
     constructor(graph: FlowGraph) {
         super(graph);
         this.message = this._registerDataInput("message", "Hello world");
 
-        this.flowOut = this._registerSignalOutput("flowOut");
+        this.onDone = this._registerSignalOutput("flowOut");
     }
     public execute(): void {
         const messageValue = this.message.value;
         console.log(messageValue);
         // activate the output flow block
-        this.flowOut.activateSignal();
+        this.onDone.activateSignal();
     }
 }

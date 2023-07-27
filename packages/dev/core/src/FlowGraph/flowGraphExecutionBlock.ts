@@ -3,7 +3,7 @@ import { FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphConnectionPointDirection, FlowGraphSignalConnectionPoint } from "./flowGraphConnectionPoint";
 
 export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
-    public readonly flowIn: FlowGraphSignalConnectionPoint;
+    public readonly onStart: FlowGraphSignalConnectionPoint;
 
     private readonly _signalInputs: FlowGraphSignalConnectionPoint[] = [];
     private readonly _signalOutputs: FlowGraphSignalConnectionPoint[] = [];
@@ -11,7 +11,7 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
     constructor(graph: FlowGraph) {
         super(graph);
 
-        this.flowIn = this._registerSignalInput("flowIn");
+        this.onStart = this._registerSignalInput("flowIn");
     }
     /**
      * Executes the flow graph execution block.

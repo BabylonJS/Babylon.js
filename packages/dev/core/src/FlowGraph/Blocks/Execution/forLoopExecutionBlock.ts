@@ -23,9 +23,23 @@ export class ForLoopExecutionBlock extends FlowGraphExecutionBlock {
      */
     public step: FlowGraphDataConnectionPoint<number>;
 
+    /**
+     * @experimental
+     * The current index of the loop.
+     */
     public index: FlowGraphDataConnectionPoint<number>;
-    public loopBody: FlowGraphSignalConnectionPoint;
-    public loopDone: FlowGraphSignalConnectionPoint;
+
+    /**
+     * @experimental
+     * The signal that is activated when the loop body is executed.
+     */
+    public onLoop: FlowGraphSignalConnectionPoint;
+
+    /**
+     * @experimental
+     * The signal that is activated when the loop is done.
+     */
+    public onDone: FlowGraphSignalConnectionPoint;
 
     private _currentIndex: number = 0;
     private _cachedEndIndex: number = 0;
@@ -39,19 +53,19 @@ export class ForLoopExecutionBlock extends FlowGraphExecutionBlock {
         this.step = this._registerDataInput("step", 1);
 
         this.index = this._registerDataOutput("index", 0);
-        this.loopBody = this._registerSignalOutput("loopBody");
-        this.loopDone = this._registerSignalOutput("loopDone");
+        this.onLoop = this._registerSignalOutput("loopBody");
+        this.onDone = this._registerSignalOutput("loopDone");
     }
 
     public _executeLoop() {
         if (this._currentIndex < this._cachedEndIndex) {
             this.index.value = this._currentIndex;
-            this.loopBody.activateSignal();
+            this.onLoop.activateSignal();
             this._currentIndex += this._cachedStep;
             this.index.value = this._currentIndex;
             this._executeLoop();
         } else {
-            this.loopDone.activateSignal();
+            this.onDone.activateSignal();
         }
     }
 
