@@ -242,7 +242,9 @@ export class RenderingGroup {
             for (; subIndex < subMeshes.length; subIndex++) {
                 subMesh = subMeshes.data[subIndex];
                 subMesh._alphaIndex = subMesh.getMesh().alphaIndex;
-                subMesh._distanceToCamera = Vector3.Distance(subMesh.getBoundingInfo().boundingSphere.centerWorld, cameraPosition);
+                if(subMesh.getBoundingInfo()){
+                    subMesh._distanceToCamera = Vector3.Distance(subMesh.getBoundingInfo().boundingSphere.centerWorld, cameraPosition);
+                }
             }
         }
 
