@@ -24,6 +24,9 @@ export class FlowGraph {
     }
 
     public start() {
-        this._eventBlocks.forEach((block) => block.start());
+        this._eventBlocks.forEach((block) => {
+            block.init();
+            block.start();
+        });
     }
 }

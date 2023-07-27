@@ -1,38 +1,38 @@
 /* eslint-disable-next-line import/no-internal-modules */
-import { engine } from "./index";
+import { canvas, engine } from "./index";
 import "@dev/loaders";
 import "@tools/node-editor";
 import * as GUIEditor from "@tools/gui-editor";
 import { Inspector, InjectGUIEditor } from "@dev/inspector";
-import { FlowGraph, FlowGraphForLoopBlock, FlowGraphLogBlock, MeshBuilder, FlowGraphMeshPickEventBlock, Scene, StandardMaterial, FlowGraphAddNumberBlock } from "@dev/core";
+import type { ArcRotateCamera } from "@dev/core";
+import { CubeTexture, Scene, SceneLoader } from "@dev/core";
+import { AdvancedDynamicTexture, Button } from "@dev/gui";
 
 export const createScene = async function () {
     const scene = new Scene(engine);
+    scene.createDefaultCameraOrLight(true);
+    const hdrTexture = new CubeTexture("https://playground.babylonjs.com/textures/SpecularHDR.dds", scene);
+    scene.createDefaultSkybox(hdrTexture, true, 10000);
 
-    const box = MeshBuilder.CreateBox("box", { size: 2 }, scene);
-    box.material = new StandardMaterial("boxMat", scene);
+    // The first parameter can be used to specify which mesh to import. Here we import all meshes
+    SceneLoader.AppendAsync("https://assets.babylonjs.com/meshes/webp/", "webp.gltf", scene, function (_newMeshes) {
+        scene.activeCamera!.attachControl(canvas, false);
+        // scene.activeCamera!.alpha += Math.PI; // camera +180°
+        (scene.activeCamera as ArcRotateCamera).radius = 80;
+    });
 
-    const flowGraph = new FlowGraph();
+    const advancedTexture = AdvancedDynamicTexture.CreateFullscreenUI("UI");
 
-    const eventBlock = new FlowGraphMeshPickEventBlock(flowGraph, box);
-    eventBlock.init();
-
-    const forBlock = new FlowGraphForLoopBlock(flowGraph);
-    forBlock.endIndex.value = 10;
-    eventBlock.onTriggered.connectTo(forBlock.onStart);
-
-    const logBlock = new FlowGraphLogBlock(flowGraph);
-    forBlock.onLoop.connectTo(logBlock.onStart);
-
-    const addOneBlock = new FlowGraphAddNumberBlock(flowGraph);
-    forBlock.index.connectTo(addOneBlock.left);
-    addOneBlock.right.value = 1;
-    addOneBlock.output.connectTo(logBlock.message);
-
-    flowGraph.start();
-
-    scene.createDefaultCameraOrLight(true, true, true);
-    
+    const button1 = Button.CreateSimpleButton("but1", "Click Me");
+    button1.width = "150px";
+    button1.height = "40px";
+    button1.color = "white";
+    button1.cornerRadius = 20;
+    button1.background = "green";
+    button1.onPointerUpObservable.add(function () {
+        console.log("you did it!");
+    });
+    advancedTexture.addControl(button1);
     InjectGUIEditor(GUIEditor);
     Inspector.Show(scene, {});
 
