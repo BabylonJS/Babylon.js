@@ -1,8 +1,12 @@
-import { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
+import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraph } from "../../flowGraph";
 import type { FlowGraphDataConnectionPoint } from "../../flowGraphConnectionPoint";
 import type { DataUpdater } from "../../iDataUpdater";
 
+/**
+ * @experimental
+ * Block that converts an input type to another type.
+ */
 export class ConvertDataBlock<T, E> extends FlowGraphBlock implements DataUpdater {
     public input: FlowGraphDataConnectionPoint<T>;
     public output: FlowGraphDataConnectionPoint<E>;

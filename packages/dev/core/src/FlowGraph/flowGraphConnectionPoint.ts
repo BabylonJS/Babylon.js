@@ -8,6 +8,10 @@ export enum FlowGraphConnectionPointDirection {
     Output,
 }
 
+/**
+ * @experimental
+ * Represents a connection point for a signal.
+ */
 export class FlowGraphSignalConnectionPoint {
     name: string;
     direction: FlowGraphConnectionPointDirection;
@@ -31,6 +35,10 @@ export class FlowGraphSignalConnectionPoint {
     }
 }
 
+/**
+ * @experimental
+ * Represents a connection point for data.
+ */
 export class FlowGraphDataConnectionPoint<T> {
     name: string;
     direction: FlowGraphConnectionPointDirection;

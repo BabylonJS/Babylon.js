@@ -2,9 +2,25 @@ import type { FlowGraph } from "../../flowGraph";
 import type { FlowGraphDataConnectionPoint, FlowGraphSignalConnectionPoint } from "../../flowGraphConnectionPoint";
 import { FlowGraphExecutionBlock } from "../../flowGraphExecutionBlock";
 
+/**
+ * @experimental
+ * Block that executes a loop.
+ */
 export class ForLoopExecutionBlock extends FlowGraphExecutionBlock {
+    /**
+     * @experimental
+     * The start index of the loop.
+     */
     public startIndex: FlowGraphDataConnectionPoint<number>;
+    /**
+     * @experimental
+     * The end index of the loop.
+     */
     public endIndex: FlowGraphDataConnectionPoint<number>;
+    /**
+     * @experimental
+     * The step of the loop.
+     */
     public step: FlowGraphDataConnectionPoint<number>;
 
     public index: FlowGraphDataConnectionPoint<number>;

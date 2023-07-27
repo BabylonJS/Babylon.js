@@ -3,6 +3,10 @@ import type { Scene } from "../../../scene";
 import type { FlowGraph } from "../../flowGraph";
 import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
 
+/**
+ * @experimental
+ * Block that triggers when a scene is ready.
+ */
 export class SceneReadyEventBlock extends FlowGraphEventBlock {
     private _scene: Scene;
 

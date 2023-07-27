@@ -2,6 +2,10 @@ import { PointerEventTypes } from "../../../Events/pointerEvents";
 import { Observable } from "../../../Misc/observable";
 import type { Scene } from "../../../scene";
 
+/**
+ * @experimental
+ * Class that generates events when a mesh is picked.
+ */
 export class MeshPickEventGenerator {
     private _scene: Scene;
     private _listeningMesheUidsToObservables: Map<number, Observable<void>> = new Map();

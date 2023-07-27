@@ -3,6 +3,10 @@ import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphDataConnectionPoint } from "../../flowGraphConnectionPoint";
 import type { DataUpdater } from "../../iDataUpdater";
 
+/**
+ * @experimental
+ * Block that adds one to the input value.
+ */
 export class AddOneBlock extends FlowGraphBlock implements DataUpdater {
     public input: FlowGraphDataConnectionPoint<number>;
     public output: FlowGraphDataConnectionPoint<number>;

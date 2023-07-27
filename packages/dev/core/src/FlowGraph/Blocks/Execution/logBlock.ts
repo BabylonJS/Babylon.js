@@ -2,6 +2,10 @@ import type { FlowGraph } from "../../flowGraph";
 import type { FlowGraphDataConnectionPoint, FlowGraphSignalConnectionPoint } from "../../flowGraphConnectionPoint";
 import { FlowGraphExecutionBlock } from "../../flowGraphExecutionBlock";
 
+/**
+ * @experimental
+ * Block that logs a message to the console.
+ */
 export class LogBlock extends FlowGraphExecutionBlock {
     public message: FlowGraphDataConnectionPoint<any>;
     public flowOut: FlowGraphSignalConnectionPoint;
