@@ -29,10 +29,13 @@ import { MathBlock, MathBlockOperations } from "core/Meshes/Node/Blocks/mathBloc
 import { NodeGeometryContextualSources } from "core/Meshes/Node/Enums/nodeGeometryContextualSources";
 import { GeometryTrigonometryBlock, GeometryTrigonometryBlockOperations } from "core/Meshes/Node/Blocks/geometryTrigonometryBlock";
 import { GeometryElbowBlock } from "core/Meshes/Node/Blocks/geometryElbowBlock";
+import { InstantiateOnVerticesBlock } from "core/Meshes/Node/Blocks/instantiateOnVerticesBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "InstantiateOnVerticesBlock":
+                return new InstantiateOnVerticesBlock("Instantiate on vertices");
             case "NormalizeBlock":
                 return new NormalizeVectorBlock("Normalize");
             case "MeshBlock":

@@ -19,6 +19,8 @@ import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Texture } from "core/Materials/Textures/texture";
 import { PreviewMode } from "./previewMode";
+import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
+import { DataStorage } from "core/Misc/dataStorage";
 
 export class PreviewManager {
     private _nodeGeometry: NodeGeometry;
@@ -37,6 +39,7 @@ export class PreviewManager {
     private _globalState: GlobalState;
     private _lightParent: TransformNode;
     private _matCap: StandardMaterial;
+    private _matNME: NodeMaterial;
     private _matVertexColor: StandardMaterial;
 
     private _serializeGeometry(): any {
@@ -226,13 +229,33 @@ export class PreviewManager {
             return;                
         }
 
+        const nmeID = DataStorage.ReadString("NMEID", "");
+
+        if (nmeID) {
+            if (!this._matNME) {
+                this._matNME = new NodeMaterial("nme", this._scene);
+                this._matNME.backFaceCulling = false;
+            }
+            if (this._matNME.snippetId !== nmeID) {
+                NodeMaterial.ParseFromSnippetAsync(nmeID, this._scene, "", this._matNME)
+                .then(() => {
+                    this._matNME.build();
+                })
+                .catch((err) => {
+                    this._globalState.hostDocument.defaultView!.alert("Unable to load your node material: " + err);
+                });
+            }
+        }
+
+        const useNM = DataStorage.ReadBoolean("UseNM", false) && this._matNME;
+
         switch (this._globalState.previewMode) {            
             case PreviewMode.Normal:
-                this._mesh.material = this._matCap;
+                this._mesh.material = useNM ? this._matNME : this._matCap;
                 this._matCap.wireframe = false;
                 break;
             case PreviewMode.Wireframe:
-                this._mesh.material = this._matCap;
+                this._mesh.material = useNM ? this._matNME : this._matCap;
                 this._matCap.wireframe = true;
                 break;
     

@@ -13,6 +13,7 @@ export class NodeGeometryBlock {
     private _buildId: number;
     private _isInput = false;
     protected _isUnique = false;
+    private _buildExecutionTime: number = 0;
 
     /** @internal */
     public _inputs = new Array<NodeGeometryConnectionPoint>();
@@ -22,6 +23,13 @@ export class NodeGeometryBlock {
     public _preparationId: number;
     /** @internal */
     public _codeVariableName = "";
+
+    /**
+     * Gets the time spent to build this block (in ms)
+     */
+    public get buildExecutionTime() {
+        return this._buildExecutionTime;
+    }
 
     /**
      * Gets the list of input points
@@ -206,7 +214,9 @@ export class NodeGeometryBlock {
             console.log(`Building ${this.name} [${this.getClassName()}]`);
         }
 
+        const now = Date.now();
         this._buildBlock(state);
+        this._buildExecutionTime = Date.now() - now;
 
         // Compile connected blocks
         for (const output of this._outputs) {

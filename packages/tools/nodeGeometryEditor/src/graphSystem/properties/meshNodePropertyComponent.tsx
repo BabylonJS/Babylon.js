@@ -37,6 +37,15 @@ export class MeshPropertyTabComponent extends React.Component<IPropertyComponent
         }
         nodeData.__scene = scene;
 
+        const meshes = scene.meshes.filter((m) => !!m.name && m.getTotalVertices() > 0);
+
+        if (meshes.length) {
+            const block = this.props.nodeData.data as MeshBlock;
+            block.mesh = meshes[0] as Mesh;
+            
+            this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
+        }
+
         this.forceUpdate();
     }
 
@@ -63,9 +72,9 @@ export class MeshPropertyTabComponent extends React.Component<IPropertyComponent
             <div>
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="SOURCE">
-                    {this.state.isLoading && <TextLineComponent value="Loading..." />}
+                    {this.state.isLoading && <TextLineComponent ignoreValue={true} label="Loading..." />}
                     {!this.state.isLoading && (
-                        <FileButtonLineComponent label="Load" uploadName={"load-mesh"} onClick={(file) => this.loadMesh(file)} accept=".glb, .gltf, .babylon" />
+                        <FileButtonLineComponent label="Load" uploadName={"load-mesh"} onClick={(file) => this.loadMesh(file)} accept=".glb, .babylon" />
                     )}
                     {scene && (
                         <OptionsLineComponent

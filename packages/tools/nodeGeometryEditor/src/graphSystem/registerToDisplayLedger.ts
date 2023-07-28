@@ -11,4 +11,10 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["BoxBlock"] = SourceDisplayManager;
     DisplayLedger.RegisteredControls["PlaneBlock"] = SourceDisplayManager;
     DisplayLedger.RegisteredControls["SphereBlock"] = SourceDisplayManager;
+    DisplayLedger.RegisteredControls["CapsuleBlock"] = SourceDisplayManager;
+    DisplayLedger.RegisteredControls["TorusBlock"] = SourceDisplayManager;
+    DisplayLedger.RegisteredControls["MeshBlock"] = SourceDisplayManager;
+    DisplayLedger.RegisteredControls["CylinderBlock"] = SourceDisplayManager;
+    DisplayLedger.RegisteredControls["DiscBlock"] = SourceDisplayManager;
+    DisplayLedger.RegisteredControls["IcoSphereBlock"] = SourceDisplayManager;
 };

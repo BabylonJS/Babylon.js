@@ -99,7 +99,7 @@ export class MathBlock extends NodeGeometryBlock {
                     };
                 } else {
                     func = (state) => {
-                        return left.getConnectedValue(state).add(state.adapt(right, left));
+                        return left.getConnectedValue(state).add(state.adapt(right, left.type));
                     };
                 }
                 break;
@@ -111,7 +111,7 @@ export class MathBlock extends NodeGeometryBlock {
                     };
                 } else {
                     func = (state) => {
-                        return left.getConnectedValue(state).subtract(state.adapt(right, left));
+                        return left.getConnectedValue(state).subtract(state.adapt(right, left.type));
                     };
                 }
                 break;
@@ -123,7 +123,7 @@ export class MathBlock extends NodeGeometryBlock {
                     };
                 } else {
                     func = (state) => {
-                        return left.getConnectedValue(state).multiply(state.adapt(right, left));
+                        return left.getConnectedValue(state).multiply(state.adapt(right, left.type));
                     };
                 }
                 break;
@@ -135,7 +135,7 @@ export class MathBlock extends NodeGeometryBlock {
                     };
                 } else {
                     func = (state) => {
-                        return left.getConnectedValue(state).divide(state.adapt(right, left));
+                        return left.getConnectedValue(state).divide(state.adapt(right, left.type));
                     };
                 }
                 break;
@@ -149,19 +149,19 @@ export class MathBlock extends NodeGeometryBlock {
                     switch (left.type) {
                         case NodeGeometryBlockConnectionPointTypes.Vector2: {
                             func = (state) => {
-                                return Vector2.Minimize(left.getConnectedValue(state), state.adapt(right, left));
+                                return Vector2.Minimize(left.getConnectedValue(state), state.adapt(right, left.type));
                             };
                             break;
                         }
                         case NodeGeometryBlockConnectionPointTypes.Vector3: {
                             func = (state) => {
-                                return Vector3.Minimize(left.getConnectedValue(state), state.adapt(right, left));
+                                return Vector3.Minimize(left.getConnectedValue(state), state.adapt(right, left.type));
                             };
                             break;
                         }
                         case NodeGeometryBlockConnectionPointTypes.Vector4: {
                             func = (state) => {
-                                return Vector4.Minimize(left.getConnectedValue(state), state.adapt(right, left));
+                                return Vector4.Minimize(left.getConnectedValue(state), state.adapt(right, left.type));
                             };
                             break;
                         }
@@ -178,19 +178,19 @@ export class MathBlock extends NodeGeometryBlock {
                     switch (left.type) {
                         case NodeGeometryBlockConnectionPointTypes.Vector2: {
                             func = (state) => {
-                                return Vector2.Maximize(left.getConnectedValue(state), state.adapt(right, left));
+                                return Vector2.Maximize(left.getConnectedValue(state), state.adapt(right, left.type));
                             };
                             break;
                         }
                         case NodeGeometryBlockConnectionPointTypes.Vector3: {
                             func = (state) => {
-                                return Vector3.Maximize(left.getConnectedValue(state), state.adapt(right, left));
+                                return Vector3.Maximize(left.getConnectedValue(state), state.adapt(right, left.type));
                             };
                             break;
                         }
                         case NodeGeometryBlockConnectionPointTypes.Vector4: {
                             func = (state) => {
-                                return Vector4.Maximize(left.getConnectedValue(state), state.adapt(right, left));
+                                return Vector4.Maximize(left.getConnectedValue(state), state.adapt(right, left.type));
                             };
                             break;
                         }

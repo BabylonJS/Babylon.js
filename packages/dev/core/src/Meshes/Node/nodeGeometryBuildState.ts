@@ -61,14 +61,37 @@ export class NodeGeometryBuildState {
         return null;
     }
 
-    adapt(source: NodeGeometryConnectionPoint, target: NodeGeometryConnectionPoint) {
+    adapt(source: NodeGeometryConnectionPoint, targetType: NodeGeometryBlockConnectionPointTypes) {
         const value = source.getConnectedValue(this);
 
-        if (source.type === target.type) {
+        if (source.type === targetType) {
             return value;
         }
 
-        switch (target.type) {
+        switch (targetType) {
+            case NodeGeometryBlockConnectionPointTypes.Vector2:
+                return new Vector2(value, value);
+            case NodeGeometryBlockConnectionPointTypes.Vector3:
+                return new Vector3(value, value, value);
+            case NodeGeometryBlockConnectionPointTypes.Vector4:
+                return new Vector4(value, value, value, value);
+        }
+
+        return null;
+    }
+
+    adaptInput(source: NodeGeometryConnectionPoint, targetType: NodeGeometryBlockConnectionPointTypes, defaultValue: any) {
+        if (!source.isConnected) {
+            return defaultValue;
+        }
+
+        const value = source.getConnectedValue(this);
+
+        if (source._connectedPoint?.type === targetType) {
+            return value;
+        }
+
+        switch (targetType) {
             case NodeGeometryBlockConnectionPointTypes.Vector2:
                 return new Vector2(value, value);
             case NodeGeometryBlockConnectionPointTypes.Vector3:

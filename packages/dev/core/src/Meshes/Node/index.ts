@@ -34,3 +34,4 @@ export * from "./Blocks/Matrices/rotationYBlock";
 export * from "./Blocks/Matrices/rotationZBlock";
 export * from "./Blocks/Matrices/scalingBlock";
 export * from "./Blocks/Matrices/translationBlock";
+export * from "./Blocks/instantiateOnVerticesBlock";
