@@ -1003,4 +1003,33 @@ export class AssetContainer extends AbstractScene {
 
         return newAnimationGroups;
     }
+
+    /**
+     * @since
+     * This method checks for any asset that has no parent
+     * and is not on the rootNodes array, and adds the asset
+     * there, if so.
+     */
+    public populateRootNodes() {
+        this.meshes.forEach((m) => {
+            if (!m.parent && this.rootNodes.indexOf(m) === -1) {
+                this.rootNodes.push(m);
+            }
+        });
+        this.transformNodes.forEach((t) => {
+            if (!t.parent && this.rootNodes.indexOf(t) === -1) {
+                this.rootNodes.push(t);
+            }
+        });
+        this.lights.forEach((l) => {
+            if (!l.parent && this.rootNodes.indexOf(l) === -1) {
+                this.rootNodes.push(l);
+            }
+        });
+        this.cameras.forEach((c) => {
+            if (!c.parent && this.rootNodes.indexOf(c) === -1) {
+                this.rootNodes.push(c);
+            }
+        });
+    }
 }
