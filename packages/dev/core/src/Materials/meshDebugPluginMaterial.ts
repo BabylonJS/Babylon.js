@@ -132,7 +132,7 @@ vec3 dbg_color = vec3(1.);
         gl_FragColor *= vec4(dbg_color, 1.);
     #else
         gl_FragColor = vec4(dbg_color, 1.);
-    #endif     
+    #endif
 #endif
 #endif`;
 
