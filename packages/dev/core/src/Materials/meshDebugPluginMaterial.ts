@@ -104,15 +104,15 @@ flat varying float dbg_vPass;
 #endif`;
 
 const fragmentMainEnd = `#if defined(DBG_ENABLED)
-vec3 dbg_color = dbg_shadedDiffuseColor;
+vec3 dbg_color = vec3(1);
 #if DBG_MODE == 1
-    dbg_color = mix(dbg_wireframeTrianglesColor, dbg_color, dbg_edgeFactor());
+    dbg_color = mix(dbg_wireframeTrianglesColor, vec3(1), dbg_edgeFactor());
 #elif DBG_MODE == 2 || DBG_MODE == 3
     float dbg_cornerFactor = dbg_cornerFactor();
     if (dbg_vPass == 0. && dbg_cornerFactor == 1.) discard;
-    dbg_color = mix(dbg_vertexColor, dbg_color, dbg_cornerFactor);
+    dbg_color = mix(dbg_vertexColor, vec3(1), dbg_cornerFactor);
     #if DBG_MODE == 3
-        dbg_color *= mix(dbg_wireframeVerticesColor, dbg_color, dbg_edgeFactor());
+        dbg_color *= mix(dbg_wireframeVerticesColor, vec3(1), dbg_edgeFactor());
     #endif
 #elif DBG_MODE == 4 && defined(UV1)
     dbg_color = mix(dbg_uvPrimaryColor, dbg_uvSecondaryColor, dbg_checkerboardFactor(vMainUV1));
@@ -128,10 +128,11 @@ vec3 dbg_color = dbg_shadedDiffuseColor;
     gl_FragColor *= vec4(dbg_color, 1.);
 #else
     #if DBG_MODE != 6
-        gl_FragColor = vec4(dbg_applyShading(dbg_color), 1.);
+        gl_FragColor = vec4(dbg_applyShading(dbg_shadedDiffuseColor), 1.);
+        gl_FragColor *= vec4(dbg_color, 1.);
     #else
-        gl_FragColor = vec4(dbg_color, 1.);
-    #endif                
+        gl_FragColor = vec4(dbg_color, 1.); 
+    #endif     
 #endif
 #endif`;
 
