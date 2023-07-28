@@ -69,7 +69,7 @@ Block ideas:
 - UVs as contextual data
 - subdivide
 - set Material
-- Instance on vertex
-- Instance on face
+- Instance on vertex (density?)
+- Instance on face (density?)
 
 

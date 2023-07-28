@@ -79,7 +79,7 @@ export class PreviewManager {
 
         this._onPreviewChangedObserver = globalState.onPreviewModeChanged.add(() => {
             this._setMaterial();
-        });       
+        });
 
         this._engine = new Engine(targetCanvas, true);
         this._scene = new Scene(this._engine);
@@ -105,7 +105,7 @@ export class PreviewManager {
         this._matVertexColor = new StandardMaterial("VertexColor", this._scene);
         this._matVertexColor.disableLighting = true;
         this._matVertexColor.backFaceCulling = false;
-        this._matVertexColor.emissiveColor = Color3.White();        
+        this._matVertexColor.emissiveColor = Color3.White();
 
         this._refreshPreviewMesh(true);
 
@@ -226,7 +226,7 @@ export class PreviewManager {
 
     private _setMaterial() {
         if (!this._mesh) {
-            return;                
+            return;
         }
 
         const nmeID = DataStorage.ReadString("NMEID", "");
@@ -238,18 +238,18 @@ export class PreviewManager {
             }
             if (this._matNME.snippetId !== nmeID) {
                 NodeMaterial.ParseFromSnippetAsync(nmeID, this._scene, "", this._matNME)
-                .then(() => {
-                    this._matNME.build();
-                })
-                .catch((err) => {
-                    this._globalState.hostDocument.defaultView!.alert("Unable to load your node material: " + err);
-                });
+                    .then(() => {
+                        this._matNME.build();
+                    })
+                    .catch((err) => {
+                        this._globalState.hostDocument.defaultView!.alert("Unable to load your node material: " + err);
+                    });
             }
         }
 
         const useNM = DataStorage.ReadBoolean("UseNM", false) && this._matNME;
 
-        switch (this._globalState.previewMode) {            
+        switch (this._globalState.previewMode) {
             case PreviewMode.Normal:
                 this._mesh.material = useNM ? this._matNME : this._matCap;
                 this._matCap.wireframe = false;
@@ -258,7 +258,7 @@ export class PreviewManager {
                 this._mesh.material = useNM ? this._matNME : this._matCap;
                 this._matCap.wireframe = true;
                 break;
-    
+
             case PreviewMode.VertexColor:
                 this._mesh.material = this._matVertexColor;
                 break;

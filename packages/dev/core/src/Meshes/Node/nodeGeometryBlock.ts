@@ -4,6 +4,7 @@ import { UniqueIdGenerator } from "../../Misc/uniqueIdGenerator";
 import type { NodeGeometryBlockConnectionPointTypes } from "./Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryConnectionPoint, NodeGeometryConnectionPointDirection } from "./nodeGeometryBlockConnectionPoint";
 import type { NodeGeometryBuildState } from "./nodeGeometryBuildState";
+import { Observable } from "../../Misc/observable";
 
 /**
  * Defines a block that can be used inside a node based geometry
@@ -14,6 +15,11 @@ export class NodeGeometryBlock {
     private _isInput = false;
     protected _isUnique = false;
     private _buildExecutionTime: number = 0;
+
+    /**
+     * Gets an observable raised when the block is built
+     */
+    public onBuildObservable = new Observable<NodeGeometryBlock>();
 
     /** @internal */
     public _inputs = new Array<NodeGeometryConnectionPoint>();
@@ -186,7 +192,7 @@ export class NodeGeometryBlock {
         }
 
         if (this._outputs.length > 0) {
-            if (!this._outputs.some(o => o.hasEndpoints)) {
+            if (!this._outputs.some((o) => o.hasEndpoints)) {
                 return false;
             }
         }
@@ -228,6 +234,9 @@ export class NodeGeometryBlock {
                 }
             }
         }
+
+        this.onBuildObservable.notifyObservers(this);
+
         return false;
     }
 
@@ -474,5 +483,7 @@ export class NodeGeometryBlock {
         for (const output of this.outputs) {
             output.dispose();
         }
+
+        this.onBuildObservable.clear();
     }
 }

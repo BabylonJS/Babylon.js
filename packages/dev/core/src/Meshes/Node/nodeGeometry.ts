@@ -228,7 +228,7 @@ export class NodeGeometry {
                 continue;
             }
 
-            if (block.inputs.length && !merge) {
+            if (block.inputs.length && parsedBlock.inputs.some((i: any) => i.targetConnectionName) && !merge) {
                 continue;
             }
             this._restoreConnections(block, source, map);

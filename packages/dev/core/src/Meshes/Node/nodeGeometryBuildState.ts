@@ -50,12 +50,12 @@ export class NodeGeometryBuildState {
                 if (!this.geometryContext.colors) {
                     return Vector4.Zero();
                 }
-                return Vector4.FromArray(this.geometryContext.colors as ArrayLike<number>, index * 4);       
+                return Vector4.FromArray(this.geometryContext.colors as ArrayLike<number>, index * 4);
             case NodeGeometryContextualSources.Tangents:
-                    if (!this.geometryContext.tangents) {
-                        return Vector4.Zero();
-                    }
-                    return Vector4.FromArray(this.geometryContext.tangents as ArrayLike<number>, index * 4);                             
+                if (!this.geometryContext.tangents) {
+                    return Vector4.Zero();
+                }
+                return Vector4.FromArray(this.geometryContext.tangents as ArrayLike<number>, index * 4);
         }
 
         return null;

@@ -87,7 +87,7 @@ export class GeometryInputBlock extends NodeGeometryBlock {
             case NodeGeometryContextualSources.Colors:
             case NodeGeometryContextualSources.Tangents:
                 this._type = NodeGeometryBlockConnectionPointTypes.Vector4;
-                break;                
+                break;
         }
     }
 

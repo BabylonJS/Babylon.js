@@ -82,8 +82,8 @@ export class SetTangentsBlock extends NodeGeometryBlock implements INodeGeometry
             state.geometryContext = null;
             this.output._storedValue = this._vertexData;
             return;
-        }       
-        
+        }
+
         if (!this._vertexData.tangents) {
             this._vertexData.tangents = [];
         }

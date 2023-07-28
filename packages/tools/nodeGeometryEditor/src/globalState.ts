@@ -41,7 +41,7 @@ export class GlobalState {
     rotatePreview: boolean;
     backgroundColor: Color4;
     lockObject = new LockObject();
-    controlCamera: boolean;    
+    controlCamera: boolean;
     pointerOverCanvas: boolean = false;
     onRefreshPreviewMeshControlComponentRequiredObservable = new Observable<void>();
 
@@ -54,7 +54,7 @@ export class GlobalState {
     public set previewMode(value: PreviewMode) {
         this._previewMode = value;
         DataStorage.WriteNumber("PreviewMode", value);
-        this.onPreviewModeChanged.notifyObservers();        
+        this.onPreviewModeChanged.notifyObservers();
     }
 
     public constructor() {

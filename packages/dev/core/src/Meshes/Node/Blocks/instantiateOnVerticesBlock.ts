@@ -66,13 +66,13 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
     public get rotation(): NodeGeometryConnectionPoint {
         return this._inputs[2];
     }
-    
+
     /**
      * Gets the scaling input component
      */
     public get scaling(): NodeGeometryConnectionPoint {
         return this._inputs[3];
-    }    
+    }
 
     /**
      * Gets the geometry output component
@@ -99,7 +99,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
             state.geometryContext = null;
             this.output._storedValue = this._vertexData;
             return;
-        }        
+        }
 
         // Processing
         const vertexCount = this._vertexData.positions.length / 3;
@@ -123,9 +123,14 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
             const scaling = state.adaptInput(this.scaling, NodeGeometryBlockConnectionPointTypes.Vector3, Vector3.OneReadOnly);
             const rotation = this.rotation.getConnectedValue(state) || Vector3.ZeroReadOnly;
             Matrix.ScalingToRef(scaling.x, scaling.y, scaling.z, scalingMatrix);
-            Matrix.RotationYawPitchRollToRef(rotation.y, rotation.x, rotation.z, rotationMatrix);            
-            Matrix.TranslationToRef(this._vertexData.positions[this._currentIndex * 3], this._vertexData.positions[this._currentIndex * 3 + 1], this._vertexData.positions[this._currentIndex * 3 + 2], positionMatrix)
-           
+            Matrix.RotationYawPitchRollToRef(rotation.y, rotation.x, rotation.z, rotationMatrix);
+            Matrix.TranslationToRef(
+                this._vertexData.positions[this._currentIndex * 3],
+                this._vertexData.positions[this._currentIndex * 3 + 1],
+                this._vertexData.positions[this._currentIndex * 3 + 2],
+                positionMatrix
+            );
+
             scalingMatrix.multiplyToRef(rotationMatrix, scalingRotationMatrix);
             scalingRotationMatrix.multiplyToRef(positionMatrix, transformMatrix);
             for (let clonePositionIndex = 0; clonePositionIndex < clone.positions.length; clonePositionIndex += 3) {
@@ -146,7 +151,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
         // Merge
         if (additionalVertexData.length) {
             this._vertexData = this._vertexData.merge(additionalVertexData, true);
-        }        
+        }
 
         // Storage
         this.output._storedValue = this._vertexData;

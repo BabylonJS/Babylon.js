@@ -5,6 +5,7 @@ import { SetColorsBlock } from "core/Meshes/Node/Blocks/setColorsBlock";
 import { SetTangentsBlock } from "core/Meshes/Node/Blocks/setTangentsBlock";
 import { ComputeNormalsBlock } from "core/Meshes/Node/Blocks/computeNormalsBlock";
 import { RandomBlock } from "core/Meshes/Node/Blocks/randomBlock";
+import { NoiseBlock } from "core/Meshes/Node/Blocks/noiseBlock";
 import { GeometryOutputBlock } from "core/Meshes/Node/Blocks/geometryOutputBlock";
 import { BoxBlock } from "core/Meshes/Node/Blocks/Sources/boxBlock";
 import { PlaneBlock } from "core/Meshes/Node/Blocks/Sources/planeBlock";
@@ -18,6 +19,7 @@ import { RotationZBlock } from "core/Meshes/Node/Blocks/Matrices/rotationZBlock"
 import { ScalingBlock } from "core/Meshes/Node/Blocks/Matrices/scalingBlock";
 import { TranslationBlock } from "core/Meshes/Node/Blocks/Matrices/translationBlock";
 import { MeshBlock } from "core/Meshes/Node/Blocks/Sources/meshBlock";
+import { GroundBlock } from "core/Meshes/Node/Blocks/Sources/groundBlock";
 import { TorusBlock } from "core/Meshes/Node/Blocks/Sources/torusBlock";
 import { DiscBlock } from "core/Meshes/Node/Blocks/Sources/discBlock";
 import { MergeGeometryBlock } from "core/Meshes/Node/Blocks/mergeGeometryBlock";
@@ -62,10 +64,14 @@ export class BlockTools {
                 return new SetColorsBlock("Set colors");
             case "SetTangentsBlock":
                 return new SetTangentsBlock("Set tangents");
+            case "NoiseBlock":
+                return new NoiseBlock("Noise");
             case "RandomBlock":
                 return new RandomBlock("Random");
             case "GeometryOutputBlock":
                 return new GeometryOutputBlock("Output");
+            case "GroundBlock":
+                return new GroundBlock("Ground");
             case "DiscBlock":
                 return new DiscBlock("Disc");
             case "IcoSphereBlock":
@@ -102,12 +108,12 @@ export class BlockTools {
                 const block = new GeometryInputBlock("Colors");
                 block.contextualValue = NodeGeometryContextualSources.Colors;
                 return block;
-            }      
+            }
             case "TangentsBlock": {
                 const block = new GeometryInputBlock("Tangents");
                 block.contextualValue = NodeGeometryContextualSources.Tangents;
                 return block;
-            }                   
+            }
             case "AddBlock": {
                 const block = new MathBlock("Add");
                 block.operation = MathBlockOperations.Add;

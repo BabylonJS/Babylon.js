@@ -26,6 +26,7 @@ export class GraphNode {
     private _outputsContainer: HTMLDivElement;
     private _content: HTMLDivElement;
     private _comments: HTMLDivElement;
+    private _executionTime: HTMLDivElement;
     private _selectionBorder: HTMLDivElement;
     private _inputPorts: NodePort[] = [];
     private _outputPorts: NodePort[] = [];
@@ -363,6 +364,8 @@ export class GraphNode {
         this._comments.innerHTML = this.content.comments || "";
         this._comments.title = this.content.comments || "";
 
+        this._executionTime.innerHTML = this.content.executionTime ? `${this.content.executionTime} ms` : "";
+
         this.content.prepareHeaderIcon(this._headerIcon, this._headerIconImg);
     }
 
@@ -559,6 +562,12 @@ export class GraphNode {
 
         this._visual.appendChild(this._comments);
 
+        // Comments
+        this._executionTime = root.ownerDocument!.createElement("div");
+        this._executionTime.classList.add(localStyles.executionTime);
+
+        this._visual.appendChild(this._executionTime);
+
         // Connections
         for (const input of this.content.inputs) {
             this._inputPorts.push(NodePort.CreatePortElement(input, this, this._inputsContainer, this._displayManager, this._stateManager));
@@ -569,6 +578,10 @@ export class GraphNode {
         }
 
         this.refresh();
+
+        this.content.refreshCallback = () => {
+            this.refresh();
+        };
     }
 
     public dispose() {

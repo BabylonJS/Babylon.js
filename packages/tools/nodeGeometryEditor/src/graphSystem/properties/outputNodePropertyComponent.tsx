@@ -22,7 +22,7 @@ export class OutputPropertyTabComponent extends React.Component<IPropertyCompone
 
     componentWillUnmount() {
         this.props.stateManager.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
-    }    
+    }
 
     render() {
         const outputBlock = this.props.nodeData.data as GeometryOutputBlock;
@@ -31,10 +31,10 @@ export class OutputPropertyTabComponent extends React.Component<IPropertyCompone
         return (
             <div>
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
-                { vertexData && (
+                {vertexData && (
                     <LineContainerComponent title="INFO">
-                        { vertexData.positions && (<TextLineComponent label="Vertices" value={(vertexData.positions?.length / 3).toString()} />)}
-                        { vertexData.indices && (<TextLineComponent label="Faces" value={(vertexData.indices.length / 3).toString()} />)}
+                        {vertexData.positions && <TextLineComponent label="Vertices" value={(vertexData.positions?.length / 3).toString()} />}
+                        {vertexData.indices && <TextLineComponent label="Faces" value={(vertexData.indices.length / 3).toString()} />}
                         <TextLineComponent label="Has normals" value={vertexData.normals ? "Yes" : "No"} />
                         <TextLineComponent label="Has colors" value={vertexData.colors ? "Yes" : "No"} />
                         <TextLineComponent label="Has UV set 0" value={vertexData.uvs ? "Yes" : "No"} />

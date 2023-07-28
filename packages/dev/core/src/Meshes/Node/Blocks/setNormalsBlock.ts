@@ -82,8 +82,8 @@ export class SetNormalsBlock extends NodeGeometryBlock implements INodeGeometryE
             state.geometryContext = null;
             this.output._storedValue = this._vertexData;
             return;
-        }       
-        
+        }
+
         if (!this._vertexData.normals) {
             this._vertexData.normals = [];
         }

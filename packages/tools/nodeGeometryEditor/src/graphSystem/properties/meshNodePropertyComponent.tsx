@@ -42,7 +42,7 @@ export class MeshPropertyTabComponent extends React.Component<IPropertyComponent
         if (meshes.length) {
             const block = this.props.nodeData.data as MeshBlock;
             block.mesh = meshes[0] as Mesh;
-            
+
             this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
         }
 
@@ -73,9 +73,7 @@ export class MeshPropertyTabComponent extends React.Component<IPropertyComponent
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="SOURCE">
                     {this.state.isLoading && <TextLineComponent ignoreValue={true} label="Loading..." />}
-                    {!this.state.isLoading && (
-                        <FileButtonLineComponent label="Load" uploadName={"load-mesh"} onClick={(file) => this.loadMesh(file)} accept=".glb, .babylon" />
-                    )}
+                    {!this.state.isLoading && <FileButtonLineComponent label="Load" uploadName={"load-mesh"} onClick={(file) => this.loadMesh(file)} accept=".glb, .babylon" />}
                     {scene && (
                         <OptionsLineComponent
                             label="Mesh"

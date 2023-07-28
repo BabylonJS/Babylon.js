@@ -4,10 +4,18 @@ import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/
 import { ConnectionPointPortData } from "./connectionPointPortData";
 import styles from "./blockNodeData.modules.scss";
 import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
+import type { Nullable } from "core/types";
+import type { Observer } from "core/Misc/observable";
 
 export class BlockNodeData implements INodeData {
     private _inputs: IPortData[] = [];
     private _outputs: IPortData[] = [];
+    private _onBuildObserver: Nullable<Observer<NodeGeometryBlock>> = null;
+
+    /**
+     * Gets or sets a callback used to call node visual refresh
+     */
+    public refreshCallback?: () => void;
 
     public get uniqueId(): number {
         return this.data.uniqueId;
@@ -41,6 +49,10 @@ export class BlockNodeData implements INodeData {
         this.data.comments = value;
     }
 
+    public get executionTime() {
+        return this.data.buildExecutionTime;
+    }
+
     public getPortByName(name: string) {
         for (const input of this.inputs) {
             if (input.internalName === name) {
@@ -58,6 +70,7 @@ export class BlockNodeData implements INodeData {
 
     public dispose() {
         this.data.dispose();
+        this.data.onBuildObservable.remove(this._onBuildObserver);
     }
 
     public prepareHeaderIcon(iconDiv: HTMLDivElement, img: HTMLImageElement) {
@@ -81,5 +94,11 @@ export class BlockNodeData implements INodeData {
                 this._outputs.push(new ConnectionPointPortData(output, nodeContainer));
             });
         }
+
+        this._onBuildObserver = data.onBuildObservable.add(() => {
+            if (this.refreshCallback) {
+                this.refreshCallback();
+            }
+        });
     }
 }

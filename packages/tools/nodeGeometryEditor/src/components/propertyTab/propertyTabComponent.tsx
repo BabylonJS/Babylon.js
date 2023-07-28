@@ -398,27 +398,35 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 this.props.globalState.stateManager.onGridSizeChanged.notifyObservers();
                             }}
                         />
-                        <TextInputLineComponent label="NOde Material ID" value={DataStorage.ReadString("NMEID", "")} onChange={(value) => {
-                            DataStorage.WriteString("NMEID", value);
-                            this.forceUpdate();                            
-                        }}/>
-                        {
-                            !useNM &&
-                            <ButtonLineComponent label={"Use Node Material for preview"} onClick={() => {
-                                DataStorage.WriteBoolean("UseNM", true);
-                                this.props.globalState.onPreviewModeChanged.notifyObservers();
-                                this.forceUpdate();   
-                            }}/>     
-                        }               
-                        {
-                            useNM &&
-                            <ButtonLineComponent label={"Use Standard Material for preview"} onClick={() => {
-                                DataStorage.WriteBoolean("UseNM", false);
-                                this.props.globalState.onPreviewModeChanged.notifyObservers();
+                        <TextInputLineComponent
+                            label="NOde Material ID"
+                            value={DataStorage.ReadString("NMEID", "")}
+                            onChange={(value) => {
+                                DataStorage.WriteString("NMEID", value);
                                 this.forceUpdate();
-                            }}/>                    
-                        }
-                        </LineContainerComponent>
+                            }}
+                        />
+                        {!useNM && (
+                            <ButtonLineComponent
+                                label={"Use Node Material for preview"}
+                                onClick={() => {
+                                    DataStorage.WriteBoolean("UseNM", true);
+                                    this.props.globalState.onPreviewModeChanged.notifyObservers();
+                                    this.forceUpdate();
+                                }}
+                            />
+                        )}
+                        {useNM && (
+                            <ButtonLineComponent
+                                label={"Use Standard Material for preview"}
+                                onClick={() => {
+                                    DataStorage.WriteBoolean("UseNM", false);
+                                    this.props.globalState.onPreviewModeChanged.notifyObservers();
+                                    this.forceUpdate();
+                                }}
+                            />
+                        )}
+                    </LineContainerComponent>
                     <LineContainerComponent title="FILE">
                         <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
                         <ButtonLineComponent

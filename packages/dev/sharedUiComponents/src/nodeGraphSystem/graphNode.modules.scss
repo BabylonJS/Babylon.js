@@ -81,6 +81,20 @@
     pointer-events: none;
 }
 
+.executionTime {
+    position: absolute;
+    bottom: 1px;
+    width: 195px;
+    height: 20px;
+    overflow: hidden;
+    font-size: 11px;
+    opacity: 0.5;
+    display: grid;
+    align-items: flex-end;
+    justify-content: end;
+    pointer-events: none;
+}
+
 .selected {
     border-color: white !important;
 }

@@ -13,17 +13,17 @@ export enum NodeGeometryContextualSources {
     /** UV */
     UV = 0x0004,
     /** UV2 */
-    UV2 = 0x0005,   
+    UV2 = 0x0005,
     /** UV3 */
-    UV3 = 0x0006,    
+    UV3 = 0x0006,
     /** UV4 */
-    UV4 = 0x0007,    
+    UV4 = 0x0007,
     /** UV5 */
-    UV5 = 0x0008,    
+    UV5 = 0x0008,
     /** UV6 */
-    UV6 = 0x0009,    
+    UV6 = 0x0009,
     /** Colors */
-    Colors = 0x000A,
+    Colors = 0x000a,
     /** Bitmask of all types */
     All = 0x0fff,
 }

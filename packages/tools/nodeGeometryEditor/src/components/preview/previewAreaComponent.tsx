@@ -55,7 +55,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
             this.props.globalState.previewMode = PreviewMode.VertexColor;
         }
         this.forceUpdate();
-    }    
+    }
 
     render() {
         return (
@@ -79,7 +79,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
                             className={"button wireframe" + (this.props.globalState.previewMode === PreviewMode.Wireframe ? " selected" : "")}
                         >
                             <img src={wireframe} alt="" />
-                        </div>                        
+                        </div>
                     </div>
                 </>
             </>
