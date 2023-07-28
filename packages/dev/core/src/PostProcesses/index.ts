@@ -19,7 +19,7 @@ export * from "./grainPostProcess";
 export * from "./highlightsPostProcess";
 export * from "./imageProcessingPostProcess";
 export * from "./motionBlurPostProcess";
-export * from "./passPostProcess";
+export { PassCubePostProcess, PassPostProcess } from "./passPostProcess";
 export * from "./postProcess";
 export * from "./postProcessManager";
 export * from "./refractionPostProcess";

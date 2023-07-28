@@ -173,6 +173,11 @@ export class PassCubePostProcess extends PostProcess {
     }
 }
 
-Engine._RescalePostProcessFactory = (engine: Engine) => {
-    return new PassPostProcess("rescale", 1, null, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, engine, false, Constants.TEXTURETYPE_UNSIGNED_INT);
+export const registerRescalePostProcessFactory = (/*engine: Engine*/) => {
+    /*engine*/ Engine._RescalePostProcessFactory = (engine: Engine) => {
+        return new PassPostProcess("rescale", 1, null, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, engine, false, Constants.TEXTURETYPE_UNSIGNED_INT);
+    };
 };
+
+// side effects, ignored in esm
+registerRescalePostProcessFactory();

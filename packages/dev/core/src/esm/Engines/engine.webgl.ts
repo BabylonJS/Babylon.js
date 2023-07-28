@@ -34,6 +34,7 @@ interface IWebGLEnginePrivate {
     _nextFreeTextureSlots: Array<number>;
     _maxSimultaneousTextures: number;
     _maxMSAASamplesOverride: Nullable<number>;
+    _supportsHardwareTextureRescaling: boolean; // can probably be taken out of here!
 }
 
 export interface IWebGLEngineProtected extends IBaseEngineProtected {
@@ -41,7 +42,7 @@ export interface IWebGLEngineProtected extends IBaseEngineProtected {
     _cachedVertexBuffers: any; // TODO find type and should it be protected?
     _cachedIndexBuffer: Nullable<DataBuffer>;
     _cachedEffectForVertexBuffers: Nullable<Effect>;
-    _currentBoundBuffer: Array<Nullable<DataBuffer>>
+    _currentBoundBuffer: Array<Nullable<DataBuffer>>;
 }
 
 export interface IWebGLEngineInternals extends IBaseEngineInternals {
@@ -98,5 +99,6 @@ export function initWebGLEngineState(): WebGLEngineState {
     ps._nextFreeTextureSlots = [];
     ps._maxSimultaneousTextures = 0;
     ps._maxMSAASamplesOverride = null;
+    ps._supportsHardwareTextureRescaling = false;
     return fes;
 }

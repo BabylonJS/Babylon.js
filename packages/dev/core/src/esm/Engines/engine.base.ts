@@ -5,7 +5,7 @@ import type { Nullable } from "core/types";
 import type { IShaderProcessor } from "core/Engines/Processors/iShaderProcessor";
 import type { UniformBuffer } from "core/Materials/uniformBuffer";
 import { Observable } from "core/Misc/observable";
-import { GEQUAL, LEQUAL } from "./engine.constants";
+import { GEQUAL, LEQUAL, TEXTUREFORMAT_RGBA, TEXTURETYPE_UNSIGNED_INT, TEXTURE_NEAREST_SAMPLINGMODE } from "./engine.constants";
 import { PrecisionDate } from "core/Misc";
 import type { StorageBuffer } from "core/Buffers";
 import type { EngineOptions } from "core/Engines/thinEngine";
@@ -21,8 +21,20 @@ import type { IMaterialContext } from "core/Engines/IMaterialContext";
 import type { IViewportLike } from "core/Maths/math.like";
 import type { ICanvas, ICanvasRenderingContext } from "core/Engines/ICanvas";
 import type { IFileRequest } from "core/Misc/fileRequest";
+import type { IRawTextureEngineExtension } from "./Extensions/engine.rawTexture";
+import type { Texture } from "core/Materials/Textures/texture";
 
 const activeRequests: WeakMap<any, IFileRequest> = new WeakMap();
+
+/**
+ * Information about the current host
+ */
+export interface HostInformation {
+    /**
+     * Defines if the current host is a mobile
+     */
+    isMobile: boolean;
+}
 
 interface IBaseEnginePrivate {
     _useReverseDepthBuffer: boolean;
@@ -67,6 +79,7 @@ export interface IBaseEngineProtected {
     _workingCanvas: Nullable<ICanvas>;
     _workingContext: Nullable<ICanvasRenderingContext>;
     _lastDevicePixelRatio: number;
+    _shaderPlatformName: string; // feels redundant
 }
 
 export interface IBaseEngineInternals {
@@ -93,6 +106,9 @@ export interface IBaseEngineInternals {
     _currentRenderTarget: Nullable<RenderTargetWrapper>;
     _boundRenderFunction: Function;
     _frameHandler: number;
+    _transformTextureUrl: Nullable<(url: string) => string>; // can move out?
+    // replacing _framebufferDimensionsObject
+    _renderWidthOverride: Nullable<{ width: number; height: number }>;
 }
 
 /**
@@ -222,6 +238,35 @@ export interface IBaseEnginePublic {
      * If set to true zooming in and out in the browser will rescale the hardware-scaling correctly.
      */
     adaptToDeviceRatio: boolean;
+
+    /**
+     * Gets information about the current host
+     */
+    hostInformation: HostInformation; // REDUNDANT!! can move to top level
+    /**
+     * Gets the current viewport
+     */
+    readonly currentViewport: Nullable<IViewportLike>;
+
+    /**
+     * Defines whether the engine has been created with the premultipliedAlpha option on or not.
+     */
+    premultipliedAlpha: boolean;
+
+    /**
+     * Observable event triggered before each texture is initialized
+     */
+    onBeforeTextureInitObservable: Observable<Texture>;
+
+    /**
+     * Gets a boolean indicating if the engine runs in WebGPU or not.
+     */
+    readonly isWebGPU: boolean;
+
+    /**
+     * Gets the shader platform name used by the effects.
+     */
+    readonly shaderPlatformName: string;
 }
 
 export type BaseEngineState = IBaseEnginePublic & IBaseEngineInternals & IBaseEngineProtected;
@@ -287,6 +332,20 @@ export function initBaseEngineState(overrides?: Partial<BaseEngineState>): BaseE
         doNotHandleContextLost: false,
         disableVertexArrayObjects: false,
         adaptToDeviceRatio: false,
+        hostInformation: {
+            isMobile: false,
+        },
+        get currentViewport() {
+            return engineState._cachedViewport;
+        },
+        premultipliedAlpha: true,
+        onBeforeTextureInitObservable: new Observable<Texture>(),
+        get isWebGPU(): boolean {
+            return false;
+        },
+        get shaderPlatformName(): string {
+            return engineState._shaderPlatformName;
+        },
 
         // internals
         _uniformBuffers: [],
@@ -306,6 +365,8 @@ export function initBaseEngineState(overrides?: Partial<BaseEngineState>): BaseE
         _compiledEffects: {},
         _vertexAttribArraysEnabled: [],
         _lastDevicePixelRatio: 1,
+        _transformTextureUrl: null, // can be moved out, probably
+        _renderWidthOverride: null,
         ...overrides,
     };
 
@@ -349,6 +410,92 @@ function _rebuildEffects(engineState: IBaseEnginePublic): void {
 function _getShaderProcessor(engineState: IBaseEnginePublic, _shaderLanguage: ShaderLanguage): Nullable<IShaderProcessor> {
     const fes = engineState as BaseEngineState;
     return fes._shaderProcessor;
+}
+
+/**
+ * Gets the default empty texture
+ * @param engineState defines the engine state
+ * @param createRawTexture defines a function used to create the raw texture from the rawTexture extension
+ * @returns the default empty texture
+ */
+export function getEmptyTexture(engineState: IBaseEnginePublic, { createRawTexture }: Pick<IRawTextureEngineExtension, "createRawTexture">): Nullable<InternalTexture> {
+    if (!(engineState as BaseEngineStateFull)._emptyTexture) {
+        (engineState as BaseEngineStateFull)._emptyTexture = createRawTexture(engineState, new Uint8Array(4), 1, 1, TEXTUREFORMAT_RGBA, false, false, TEXTURE_NEAREST_SAMPLINGMODE);
+    }
+    return (engineState as BaseEngineStateFull)._emptyTexture;
+}
+
+/**
+ * Gets the default empty 3D texture
+ * @param engineState defines the engine state
+ * @param createRawTexture3D defines a function used to create the raw texture from the rawTexture extension
+ * @returns the default empty 3D texture
+ */
+export function getEmptyTexture3D(engineState: IBaseEnginePublic, { createRawTexture3D }: Pick<IRawTextureEngineExtension, "createRawTexture3D">): Nullable<InternalTexture> {
+    if (!(engineState as BaseEngineStateFull)._emptyTexture3D) {
+        (engineState as BaseEngineStateFull)._emptyTexture3D = createRawTexture3D(
+            engineState,
+            new Uint8Array(4),
+            1,
+            1,
+            1,
+            TEXTUREFORMAT_RGBA,
+            false,
+            false,
+            TEXTURE_NEAREST_SAMPLINGMODE
+        );
+    }
+    return (engineState as BaseEngineStateFull)._emptyTexture3D;
+}
+
+/**
+ * Gets the default empty texture 2D
+ * @param engineState defines the engine state
+ * @param createRawCubeTexture defines a function used to create the raw texture 2D from the rawTexture extension
+ * @returns the default empty texture 2D
+ */
+export function getEmptyTexture2DArray(
+    engineState: IBaseEnginePublic,
+    { createRawTexture2DArray }: Pick<IRawTextureEngineExtension, "createRawTexture2DArray">
+): Nullable<InternalTexture> {
+    if (!(engineState as BaseEngineStateFull)._emptyTexture2DArray) {
+        (engineState as BaseEngineStateFull)._emptyTexture2DArray = createRawTexture2DArray(
+            engineState,
+            new Uint8Array(4),
+            1,
+            1,
+            1,
+            TEXTUREFORMAT_RGBA,
+            false,
+            false,
+            TEXTURE_NEAREST_SAMPLINGMODE
+        );
+    }
+    return (engineState as BaseEngineStateFull)._emptyTexture2DArray;
+}
+
+/**
+ * Gets the default empty cube texture
+ * @param engineState defines the engine state
+ * @param createRawCubeTexture defines a function used to create the raw cube texture from the rawTexture extension
+ * @returns the default empty cube texture
+ */
+export function getEmptyCubeTexture(engineState: IBaseEnginePublic, { createRawCubeTexture }: Pick<IRawTextureEngineExtension, "createRawCubeTexture">): Nullable<InternalTexture> {
+    if (!(engineState as BaseEngineStateFull)._emptyCubeTexture) {
+        const faceData = new Uint8Array(4);
+        const cubeData = [faceData, faceData, faceData, faceData, faceData, faceData];
+        (engineState as BaseEngineStateFull)._emptyCubeTexture = createRawCubeTexture(
+            engineState,
+            cubeData,
+            1,
+            TEXTUREFORMAT_RGBA,
+            TEXTURETYPE_UNSIGNED_INT,
+            false,
+            false,
+            TEXTURE_NEAREST_SAMPLINGMODE
+        );
+    }
+    return (engineState as BaseEngineStateFull)._emptyCubeTexture;
 }
 
 export function getCreationOptions(engineState: IBaseEnginePublic): EngineOptions {

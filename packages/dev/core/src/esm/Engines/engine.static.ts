@@ -2,21 +2,24 @@
 import { Effect } from "core/Materials/effect";
 import type { IInternalTextureLoader } from "core/Materials/Textures/internalTextureLoader";
 
-export const ExceptionList = [
-    { key: "Chrome/63.0", capture: "63\\.0\\.3239\\.(\\d+)", captureConstraint: 108, targets: ["uniformBuffer"] },
-    { key: "Firefox/58", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
-    { key: "Firefox/59", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
-    { key: "Chrome/72.+?Mobile", capture: null, captureConstraint: null, targets: ["vao"] },
-    { key: "Chrome/73.+?Mobile", capture: null, captureConstraint: null, targets: ["vao"] },
-    { key: "Chrome/74.+?Mobile", capture: null, captureConstraint: null, targets: ["vao"] },
-    { key: "Mac OS.+Chrome/71", capture: null, captureConstraint: null, targets: ["vao"] },
-    { key: "Mac OS.+Chrome/72", capture: null, captureConstraint: null, targets: ["vao"] },
-    { key: "Mac OS.+Chrome", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
-    // desktop osx safari 15.4
-    { key: ".*AppleWebKit.*(15.4).*Safari", capture: null, captureConstraint: null, targets: ["antialias", "maxMSAASamples"] },
-    // mobile browsers using safari 15.4 on ios
-    { key: ".*(15.4).*AppleWebKit.*Safari", capture: null, captureConstraint: null, targets: ["antialias", "maxMSAASamples"] },
-];
+// used to be WebGL only, a single array
+export const ExceptionList = {
+    webgl: [
+        { key: "Chrome/63.0", capture: "63\\.0\\.3239\\.(\\d+)", captureConstraint: 108, targets: ["uniformBuffer"] },
+        { key: "Firefox/58", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
+        { key: "Firefox/59", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
+        { key: "Chrome/72.+?Mobile", capture: null, captureConstraint: null, targets: ["vao"] },
+        { key: "Chrome/73.+?Mobile", capture: null, captureConstraint: null, targets: ["vao"] },
+        { key: "Chrome/74.+?Mobile", capture: null, captureConstraint: null, targets: ["vao"] },
+        { key: "Mac OS.+Chrome/71", capture: null, captureConstraint: null, targets: ["vao"] },
+        { key: "Mac OS.+Chrome/72", capture: null, captureConstraint: null, targets: ["vao"] },
+        { key: "Mac OS.+Chrome", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
+        // desktop osx safari 15.4
+        { key: ".*AppleWebKit.*(15.4).*Safari", capture: null, captureConstraint: null, targets: ["antialias", "maxMSAASamples"] },
+        // mobile browsers using safari 15.4 on ios
+        { key: ".*(15.4).*AppleWebKit.*Safari", capture: null, captureConstraint: null, targets: ["antialias", "maxMSAASamples"] },
+    ],
+};
 
 // elements added to this array will persist between imports
 export const _TextureLoaders: IInternalTextureLoader[] = [];
