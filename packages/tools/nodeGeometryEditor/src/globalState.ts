@@ -13,8 +13,11 @@ import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager"
 import { RegisterDefaultInput } from "./graphSystem/registerDefaultInput";
 import { RegisterExportData } from "./graphSystem/registerExportData";
 import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
+import { PreviewMode } from "./components/preview/previewMode";
 
 export class GlobalState {
+    private _previewMode = PreviewMode.Normal;
+
     nodeGeometry: NodeGeometry;
     hostElement: HTMLElement;
     hostDocument: Document;
@@ -24,30 +27,38 @@ export class GlobalState {
     onResetRequiredObservable = new Observable<boolean>();
     onZoomToFitRequiredObservable = new Observable<void>();
     onReOrganizedRequiredObservable = new Observable<void>();
-    onWireframeChanged = new Observable<void>();
+    onPreviewModeChanged = new Observable<void>();
     onLogRequiredObservable = new Observable<LogEntry>();
     onIsLoadingChanged = new Observable<boolean>();
     onLightUpdated = new Observable<void>();
     onPreviewBackgroundChanged = new Observable<void>();
-    onRefocus = new Observable<void>();
+    onFrame = new Observable<void>();
     onAnimationCommandActivated = new Observable<void>();
     onImportFrameObservable = new Observable<any>();
     onPopupClosedObservable = new Observable<void>();
     onGetNodeFromBlock: (block: NodeGeometryBlock) => GraphNode;
-    previewFile: File;
     listOfCustomPreviewFiles: File[] = [];
     rotatePreview: boolean;
     backgroundColor: Color4;
     lockObject = new LockObject();
-    controlCamera: boolean;
-    wireframe: boolean = false;
+    controlCamera: boolean;    
     pointerOverCanvas: boolean = false;
     onRefreshPreviewMeshControlComponentRequiredObservable = new Observable<void>();
 
     customSave?: { label: string; action: (data: string) => Promise<void> };
 
+    public get previewMode() {
+        return this._previewMode;
+    }
+
+    public set previewMode(value: PreviewMode) {
+        this._previewMode = value;
+        DataStorage.WriteNumber("PreviewMode", value);
+        this.onPreviewModeChanged.notifyObservers();        
+    }
+
     public constructor() {
-        this.wireframe = DataStorage.ReadBoolean("Wireframe", false);
+        this._previewMode = DataStorage.ReadNumber("PreviewMode", PreviewMode.Normal);
         this.controlCamera = DataStorage.ReadBoolean("ControlCamera", true);
         this.stateManager = new StateManager();
         this.stateManager.data = this;

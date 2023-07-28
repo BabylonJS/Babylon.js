@@ -268,22 +268,12 @@
                 width: 100%;
             }
 
-            &.back-face {
+            &.vertex-color {
+                grid-column: 5;
+            }
+
+            &.wireframe {
                 grid-column: 6;
-            }
-
-            &.depth-pass {
-                grid-column: 5 / 6;
-            }
-
-            &.hemispheric-light {
-                grid-column: 3 / 4;
-            }
-            &.direction-light-1 {
-                grid-column: 2 / 3;
-            }
-            &.direction-light-0 {
-                grid-column: 1 / 2;
             }
         }
     }

@@ -5,24 +5,24 @@ import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConn
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import type { INodeGeometryExecutionContext } from "../Interfaces/nodeGeometryExecutionContext";
 import type { VertexData } from "../../mesh.vertexData";
-import type { Vector3 } from "../../../Maths/math.vector";
+import type { Vector4 } from "../../../Maths/math.vector";
 
 /**
- * Block used to set positions for a geometry
+ * Block used to set colors for a geometry
  */
-export class SetNormalsBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext {
+export class SetColorsBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext {
     private _vertexData: VertexData;
     private _currentIndex: number;
 
     /**
-     * Create a new SetNormalsBlock
+     * Create a new SetColorsBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
         super(name);
 
         this.registerInput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);
-        this.registerInput("normals", NodeGeometryBlockConnectionPointTypes.Vector3);
+        this.registerInput("colors", NodeGeometryBlockConnectionPointTypes.Vector4);
 
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Geometry);
     }
@@ -40,7 +40,7 @@ export class SetNormalsBlock extends NodeGeometryBlock implements INodeGeometryE
      * @returns the class name
      */
     public getClassName() {
-        return "SetNormalsBlock";
+        return "SetColorsBlock";
     }
 
     /**
@@ -51,9 +51,9 @@ export class SetNormalsBlock extends NodeGeometryBlock implements INodeGeometryE
     }
 
     /**
-     * Gets the normals input component
+     * Gets the colors input component
      */
-    public get normals(): NodeGeometryConnectionPoint {
+    public get colors(): NodeGeometryConnectionPoint {
         return this._inputs[1];
     }
 
@@ -77,23 +77,23 @@ export class SetNormalsBlock extends NodeGeometryBlock implements INodeGeometryE
             return;
         }
 
-        if (!this.normals.isConnected) {
+        if (!this.colors.isConnected) {
             state.executionContext = null;
             state.geometryContext = null;
             this.output._storedValue = this._vertexData;
             return;
-        }       
-        
-        if (!this._vertexData.normals) {
-            this._vertexData.normals = [];
+        }
+
+        if (!this._vertexData.colors) {
+            this._vertexData.colors = [];
         }
 
         // Processing
         const vertexCount = this._vertexData.positions.length / 3;
         for (this._currentIndex = 0; this._currentIndex < vertexCount; this._currentIndex++) {
-            const tempVector3 = this.normals.getConnectedValue(state) as Vector3;
-            if (tempVector3) {
-                tempVector3.toArray(this._vertexData.normals, this._currentIndex * 3);
+            const tempVector4 = this.colors.getConnectedValue(state) as Vector4;
+            if (tempVector4) {
+                tempVector4.toArray(this._vertexData.colors, this._currentIndex * 4);
             }
         }
 
@@ -104,4 +104,4 @@ export class SetNormalsBlock extends NodeGeometryBlock implements INodeGeometryE
     }
 }
 
-RegisterClass("BABYLON.SetNormalsBlock", SetNormalsBlock);
+RegisterClass("BABYLON.SetColorsBlock", SetColorsBlock);

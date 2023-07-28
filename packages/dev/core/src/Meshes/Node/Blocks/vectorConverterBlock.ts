@@ -8,9 +8,9 @@ import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 /**
  * Block used to create a Vector2/3/4 out of individual or partial inputs
  */
-export class VectorCreatorBlock extends NodeGeometryBlock {
+export class VectorConverterBlock extends NodeGeometryBlock {
     /**
-     * Create a new VectorCreatorBlock
+     * Create a new VectorConverterBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
@@ -40,7 +40,7 @@ export class VectorCreatorBlock extends NodeGeometryBlock {
      * @returns the class name
      */
     public getClassName() {
-        return "VectorCreatorBlock";
+        return "VectorConverterBlock";
     }
 
     /**
@@ -267,4 +267,4 @@ export class VectorCreatorBlock extends NodeGeometryBlock {
     }
 }
 
-RegisterClass("BABYLON.VectorCreatorBlock", VectorCreatorBlock);
+RegisterClass("BABYLON.VectorConverterBlock", VectorConverterBlock);

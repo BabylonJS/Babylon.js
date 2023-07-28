@@ -3,11 +3,22 @@ import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnection
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
+import type { VertexData } from "core/Meshes/mesh.vertexData";
+import type { Nullable } from "../../../types";
 
 /**
  * Block used to generate the final geometry
  */
 export class GeometryOutputBlock extends NodeGeometryBlock {
+    private _vertexData: Nullable<VertexData> = null;
+
+    /**
+     * Gets the current vertex data if the graph was successfully built
+     */
+    public get currentVertexData() {
+        return this._vertexData;
+    }
+
     /**
      * Create a new GeometryOutputBlock
      * @param name defines the block name
@@ -34,6 +45,7 @@ export class GeometryOutputBlock extends NodeGeometryBlock {
 
     protected _buildBlock(state: NodeGeometryBuildState) {
         state.vertexData = this.geometry.getConnectedValue(state);
+        this._vertexData = state.vertexData;
     }
 }
 

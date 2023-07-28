@@ -1,6 +1,8 @@
 import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
 import { SetPositionsBlock } from "core/Meshes/Node/Blocks/setPositionsBlock";
 import { SetNormalsBlock } from "core/Meshes/Node/Blocks/setNormalsBlock";
+import { SetColorsBlock } from "core/Meshes/Node/Blocks/setColorsBlock";
+import { SetTangentsBlock } from "core/Meshes/Node/Blocks/setTangentsBlock";
 import { ComputeNormalsBlock } from "core/Meshes/Node/Blocks/computeNormalsBlock";
 import { RandomBlock } from "core/Meshes/Node/Blocks/randomBlock";
 import { GeometryOutputBlock } from "core/Meshes/Node/Blocks/geometryOutputBlock";
@@ -19,7 +21,7 @@ import { MeshBlock } from "core/Meshes/Node/Blocks/Sources/meshBlock";
 import { TorusBlock } from "core/Meshes/Node/Blocks/Sources/torusBlock";
 import { DiscBlock } from "core/Meshes/Node/Blocks/Sources/discBlock";
 import { MergeGeometryBlock } from "core/Meshes/Node/Blocks/mergeGeometryBlock";
-import { VectorCreatorBlock } from "core/Meshes/Node/Blocks/vectorCreatorBlock";
+import { VectorConverterBlock } from "core/Meshes/Node/Blocks/vectorConverterBlock";
 import { NormalizeVectorBlock } from "core/Meshes/Node/Blocks/normalizeVectorBlock";
 import { GeometryTransformBlock } from "core/Meshes/Node/Blocks/geometryTransformBlock";
 import { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
@@ -35,8 +37,8 @@ export class BlockTools {
                 return new NormalizeVectorBlock("Normalize");
             case "MeshBlock":
                 return new MeshBlock("Mesh");
-            case "VectorCreatorBlock":
-                return new VectorCreatorBlock("Vector Creator");
+            case "VectorConverterBlock":
+                return new VectorConverterBlock("Converter");
             case "TranslationBlock":
                 return new TranslationBlock("Translation");
             case "ScalingBlock":
@@ -53,6 +55,10 @@ export class BlockTools {
                 return new SetPositionsBlock("Set positions");
             case "SetNormalsBlock":
                 return new SetNormalsBlock("Set normals");
+            case "SetColorsBlock":
+                return new SetColorsBlock("Set colors");
+            case "SetTangentsBlock":
+                return new SetTangentsBlock("Set tangents");
             case "RandomBlock":
                 return new RandomBlock("Random");
             case "GeometryOutputBlock":
@@ -89,6 +95,16 @@ export class BlockTools {
                 block.contextualValue = NodeGeometryContextualSources.Normals;
                 return block;
             }
+            case "ColorsBlock": {
+                const block = new GeometryInputBlock("Colors");
+                block.contextualValue = NodeGeometryContextualSources.Colors;
+                return block;
+            }      
+            case "TangentsBlock": {
+                const block = new GeometryInputBlock("Tangents");
+                block.contextualValue = NodeGeometryContextualSources.Tangents;
+                return block;
+            }                   
             case "AddBlock": {
                 const block = new MathBlock("Add");
                 block.operation = MathBlockOperations.Add;

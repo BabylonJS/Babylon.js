@@ -177,6 +177,12 @@ export class NodeGeometryBlock {
             return true;
         }
 
+        if (this._outputs.length > 0) {
+            if (!this._outputs.some(o => o.hasEndpoints)) {
+                return false;
+            }
+        }
+
         this._buildId = state.buildId;
 
         // Check if "parent" blocks are compiled

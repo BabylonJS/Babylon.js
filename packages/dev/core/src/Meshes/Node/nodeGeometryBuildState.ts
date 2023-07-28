@@ -33,19 +33,29 @@ export class NodeGeometryBuildState {
             return null;
         }
 
-        const index = this.executionContext.getExecutionIndex() * 3;
+        const index = this.executionContext.getExecutionIndex();
 
         switch (source) {
             case NodeGeometryContextualSources.Positions:
                 if (!this.geometryContext.positions) {
                     return Vector3.Zero();
                 }
-                return Vector3.FromArray(this.geometryContext.positions as ArrayLike<number>, index);
+                return Vector3.FromArray(this.geometryContext.positions as ArrayLike<number>, index * 3);
             case NodeGeometryContextualSources.Normals:
                 if (!this.geometryContext.normals) {
                     return Vector3.Zero();
                 }
-                return Vector3.FromArray(this.geometryContext.normals as ArrayLike<number>, index);
+                return Vector3.FromArray(this.geometryContext.normals as ArrayLike<number>, index * 3);
+            case NodeGeometryContextualSources.Colors:
+                if (!this.geometryContext.colors) {
+                    return Vector4.Zero();
+                }
+                return Vector4.FromArray(this.geometryContext.colors as ArrayLike<number>, index * 4);       
+            case NodeGeometryContextualSources.Tangents:
+                    if (!this.geometryContext.tangents) {
+                        return Vector4.Zero();
+                    }
+                    return Vector4.FromArray(this.geometryContext.tangents as ArrayLike<number>, index * 4);                             
         }
 
         return null;

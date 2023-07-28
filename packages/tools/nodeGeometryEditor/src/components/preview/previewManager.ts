@@ -18,16 +18,17 @@ import { NodeGeometry } from "core/Meshes/Node/nodeGeometry";
 import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Texture } from "core/Materials/Textures/texture";
+import { PreviewMode } from "./previewMode";
 
 export class PreviewManager {
     private _nodeGeometry: NodeGeometry;
     private _onBuildObserver: Nullable<Observer<NodeGeometry>>;
 
-    private _onRefocusObserver: Nullable<Observer<void>>;
+    private _onFrameObserver: Nullable<Observer<void>>;
     private _onAnimationCommandActivatedObserver: Nullable<Observer<void>>;
     private _onUpdateRequiredObserver: Nullable<Observer<Nullable<NodeGeometryBlock>>>;
     private _onPreviewBackgroundChangedObserver: Nullable<Observer<void>>;
-    private _onWireframeChangedObserver: Nullable<Observer<void>>;
+    private _onPreviewChangedObserver: Nullable<Observer<void>>;
     private _onLightUpdatedObserver: Nullable<Observer<void>>;
     private _engine: Engine;
     private _scene: Scene;
@@ -36,6 +37,7 @@ export class PreviewManager {
     private _globalState: GlobalState;
     private _lightParent: TransformNode;
     private _matCap: StandardMaterial;
+    private _matVertexColor: StandardMaterial;
 
     private _serializeGeometry(): any {
         const nodeGeometry = this._nodeGeometry;
@@ -48,8 +50,8 @@ export class PreviewManager {
         this._nodeGeometry = globalState.nodeGeometry;
         this._globalState = globalState;
 
-        this._onRefocusObserver = this._globalState.onRefocus.add(() => {
-            this._refocusCamera();
+        this._onFrameObserver = this._globalState.onFrame.add(() => {
+            this._frameCamera();
         });
 
         this._onBuildObserver = this._nodeGeometry.onBuildObservable.add(() => {
@@ -72,9 +74,9 @@ export class PreviewManager {
             this._handleAnimations();
         });
 
-        this._onWireframeChangedObserver = globalState.onWireframeChanged.add(() => {
-            this._matCap.wireframe = this._globalState.wireframe;
-        });
+        this._onPreviewChangedObserver = globalState.onPreviewModeChanged.add(() => {
+            this._setMaterial();
+        });       
 
         this._engine = new Engine(targetCanvas, true);
         this._scene = new Scene(this._engine);
@@ -89,13 +91,18 @@ export class PreviewManager {
         this._camera.attachControl(false);
 
         this._lightParent = new TransformNode("LightParent", this._scene);
-        this._matCap = new StandardMaterial("", this._scene);
+        this._matCap = new StandardMaterial("MatCap", this._scene);
         this._matCap.disableLighting = true;
         this._matCap.backFaceCulling = false;
 
         const matCapTexture = new Texture("https://assets.babylonjs.com/skyboxes/matcap.jpg", this._scene);
         matCapTexture.coordinatesMode = Texture.SPHERICAL_MODE;
         this._matCap.reflectionTexture = matCapTexture;
+
+        this._matVertexColor = new StandardMaterial("VertexColor", this._scene);
+        this._matVertexColor.disableLighting = true;
+        this._matVertexColor.backFaceCulling = false;
+        this._matVertexColor.emissiveColor = Color3.White();        
 
         this._refreshPreviewMesh(true);
 
@@ -161,7 +168,7 @@ export class PreviewManager {
         new HemisphericLight("Hemispheric light", new Vector3(0, 1, 0), this._scene);
     }
 
-    private _refocusCamera() {
+    private _frameCamera() {
         const framingBehavior = this._camera.getBehaviorByName("Framing") as FramingBehavior;
 
         framingBehavior.framingTime = 0;
@@ -173,7 +180,7 @@ export class PreviewManager {
             this._camera.upperRadiusLimit = null;
             if (!framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max)) {
                 setTimeout(() => {
-                    this._refocusCamera();
+                    this._frameCamera();
                 });
                 return;
             }
@@ -210,7 +217,28 @@ export class PreviewManager {
         this._prepareScene(first);
 
         if (first) {
-            this._refocusCamera();
+            this._frameCamera();
+        }
+    }
+
+    private _setMaterial() {
+        if (!this._mesh) {
+            return;                
+        }
+
+        switch (this._globalState.previewMode) {            
+            case PreviewMode.Normal:
+                this._mesh.material = this._matCap;
+                this._matCap.wireframe = false;
+                break;
+            case PreviewMode.Wireframe:
+                this._mesh.material = this._matCap;
+                this._matCap.wireframe = true;
+                break;
+    
+            case PreviewMode.VertexColor:
+                this._mesh.material = this._matVertexColor;
+                break;
         }
     }
 
@@ -220,7 +248,8 @@ export class PreviewManager {
             const nodeGeometry = NodeGeometry.Parse(serializationObject);
             this._mesh = nodeGeometry.createMesh("main", this._scene);
             if (this._mesh) {
-                this._mesh.material = this._matCap;
+                this._setMaterial();
+                this._mesh.useVertexColors = true;
             }
             nodeGeometry.dispose();
 
@@ -232,10 +261,10 @@ export class PreviewManager {
     }
 
     public dispose() {
-        this._globalState.onRefocus.remove(this._onRefocusObserver);
+        this._globalState.onFrame.remove(this._onFrameObserver);
         this._nodeGeometry.onBuildObservable.remove(this._onBuildObserver);
         this._globalState.stateManager.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
-        this._globalState.onWireframeChanged.remove(this._onWireframeChangedObserver);
+        this._globalState.onPreviewModeChanged.remove(this._onPreviewChangedObserver);
         this._globalState.onAnimationCommandActivated.remove(this._onAnimationCommandActivatedObserver);
         this._globalState.onPreviewBackgroundChanged.remove(this._onPreviewBackgroundChangedObserver);
         this._globalState.onLightUpdated.remove(this._onLightUpdatedObserver);

@@ -67,7 +67,6 @@ var createScene = function () {
 
 Block ideas:
 - UVs as contextual data
-- Color as contextual data
 - subdivide
 - set Material
 - Instance on vertex
