@@ -389,9 +389,10 @@ export const checkPerformanceOfScene = async (
     }
     const url = type === "dev" ? "/empty.html" : `/empty-${type}.html`;
     await page.goto(baseUrl + url, {
-        waitUntil: "load", // for chrome should be "networkidle0"
+        // waitUntil: "load", // for chrome should be "networkidle0"
         timeout: 0,
     });
+    await page.waitForSelector("#babylon-canvas", { timeout: 20000 });
 
     const time = [];
     for (let i = 0; i < numberOfPasses; i++) {
