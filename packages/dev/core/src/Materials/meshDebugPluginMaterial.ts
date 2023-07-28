@@ -128,8 +128,7 @@ vec3 dbg_color = vec3(1.);
     gl_FragColor *= vec4(dbg_color, 1.);
 #else
     #if DBG_MODE != 6
-        gl_FragColor = vec4(dbg_applyShading(dbg_shadedDiffuseColor), 1.);
-        gl_FragColor *= vec4(dbg_color, 1.);
+        gl_FragColor = vec4(dbg_applyShading(dbg_shadedDiffuseColor) * dbg_color, 1.);
     #else
         gl_FragColor = vec4(dbg_color, 1.);
     #endif
