@@ -8,10 +8,8 @@ import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { Animation } from "core/Animations/animation";
 import { SceneLoader } from "core/Loading/sceneLoader";
-import { TransformNode } from "core/Meshes/transformNode";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
-import { PointerEventTypes } from "core/Events/pointerEvents";
 import { Color3 } from "core/Maths/math.color";
 import "core/Rendering/depthRendererSceneComponent";
 import { NodeGeometry } from "core/Meshes/Node/nodeGeometry";
@@ -21,6 +19,7 @@ import { Texture } from "core/Materials/Textures/texture";
 import { PreviewMode } from "./previewMode";
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { DataStorage } from "core/Misc/dataStorage";
+import type { TransformNode } from "core/Meshes/transformNode";
 
 export class PreviewManager {
     private _nodeGeometry: NodeGeometry;
@@ -31,14 +30,14 @@ export class PreviewManager {
     private _onUpdateRequiredObserver: Nullable<Observer<Nullable<NodeGeometryBlock>>>;
     private _onPreviewBackgroundChangedObserver: Nullable<Observer<void>>;
     private _onPreviewChangedObserver: Nullable<Observer<void>>;
-    private _onLightUpdatedObserver: Nullable<Observer<void>>;
     private _engine: Engine;
     private _scene: Scene;
     private _mesh: Nullable<AbstractMesh>;
     private _camera: ArcRotateCamera;
+    private _light: HemisphericLight;
     private _globalState: GlobalState;
-    private _lightParent: TransformNode;
     private _matCap: StandardMaterial;
+    private _matStd: StandardMaterial;
     private _matNME: NodeMaterial;
     private _matVertexColor: StandardMaterial;
 
@@ -60,11 +59,6 @@ export class PreviewManager {
         this._onBuildObserver = this._nodeGeometry.onBuildObservable.add(() => {
             this._refreshPreviewMesh(false);
         });
-
-        this._onLightUpdatedObserver = globalState.onLightUpdated.add(() => {
-            this._prepareLights();
-        });
-
         this._onUpdateRequiredObserver = globalState.stateManager.onUpdateRequiredObservable.add(() => {
             this._refreshPreviewMesh(false);
         });
@@ -92,8 +86,10 @@ export class PreviewManager {
         this._camera.wheelPrecision = 20;
         this._camera.minZ = 0.001;
         this._camera.attachControl(false);
+        this._camera.useFramingBehavior = true;
+        this._camera.wheelDeltaPercentage = 0.01;
+        this._camera.pinchDeltaPercentage = 0.01;
 
-        this._lightParent = new TransformNode("LightParent", this._scene);
         this._matCap = new StandardMaterial("MatCap", this._scene);
         this._matCap.disableLighting = true;
         this._matCap.backFaceCulling = false;
@@ -102,42 +98,22 @@ export class PreviewManager {
         matCapTexture.coordinatesMode = Texture.SPHERICAL_MODE;
         this._matCap.reflectionTexture = matCapTexture;
 
+        this._matStd = new StandardMaterial("MatStd", this._scene);
+        this._matStd.backFaceCulling = false;
+        this._matStd.specularColor = Color3.Black();
+
         this._matVertexColor = new StandardMaterial("VertexColor", this._scene);
         this._matVertexColor.disableLighting = true;
         this._matVertexColor.backFaceCulling = false;
         this._matVertexColor.emissiveColor = Color3.White();
+
+        this._light = new HemisphericLight("Hemispheric light", new Vector3(0, 1, 0), this._scene);        
 
         this._refreshPreviewMesh(true);
 
         this._engine.runRenderLoop(() => {
             this._engine.resize();
             this._scene.render();
-        });
-
-        let lastOffsetX: number | undefined = undefined;
-        const lightRotationSpeed = 0.01;
-
-        this._scene.onPointerObservable.add((evt) => {
-            if (this._globalState.controlCamera) {
-                return;
-            }
-
-            if (evt.type === PointerEventTypes.POINTERUP) {
-                lastOffsetX = undefined;
-                return;
-            }
-
-            if (evt.event.buttons !== 1) {
-                return;
-            }
-
-            if (lastOffsetX === undefined) {
-                lastOffsetX = evt.event.offsetX;
-            }
-
-            const rotateLighting = (lastOffsetX - evt.event.offsetX) * lightRotationSpeed;
-            this._lightParent.rotation.y += rotateLighting;
-            lastOffsetX = evt.event.offsetX;
         });
     }
 
@@ -158,19 +134,6 @@ export class PreviewManager {
             }
         }
     }
-
-    private _prepareLights() {
-        // Remove current lights
-        const currentLights = this._scene.lights.slice(0);
-
-        for (const light of currentLights) {
-            light.dispose();
-        }
-
-        // Create new lights based on settings
-        new HemisphericLight("Hemispheric light", new Vector3(0, 1, 0), this._scene);
-    }
-
     private _frameCamera() {
         const framingBehavior = this._camera.getBehaviorByName("Framing") as FramingBehavior;
 
@@ -193,16 +156,7 @@ export class PreviewManager {
         this._camera.upperRadiusLimit = 5 * this._camera.radius;
     }
 
-    private _prepareScene(first: boolean) {
-        if (first) {
-            this._camera.useFramingBehavior = true;
-
-            this._prepareLights();
-
-            this._camera.wheelDeltaPercentage = 0.01;
-            this._camera.pinchDeltaPercentage = 0.01;
-        }
-
+    private _prepareScene() {
         // Update
         const toDelete = this._mesh;
         this._updatePreview();
@@ -217,7 +171,7 @@ export class PreviewManager {
 
         this._globalState.onIsLoadingChanged.notifyObservers(true);
 
-        this._prepareScene(first);
+        this._prepareScene();
 
         if (first) {
             this._frameCamera();
@@ -251,12 +205,16 @@ export class PreviewManager {
 
         switch (this._globalState.previewMode) {
             case PreviewMode.Normal:
-                this._mesh.material = useNM ? this._matNME : this._matCap;
-                this._matCap.wireframe = false;
+                this._mesh.material = useNM ? this._matNME : this._matStd;
+                this._matStd.wireframe = false;
                 break;
+            case PreviewMode.MatCap:
+                this._mesh.material = this._matCap;
+                this._matCap.wireframe = false;
+                break;                
             case PreviewMode.Wireframe:
-                this._mesh.material = useNM ? this._matNME : this._matCap;
-                this._matCap.wireframe = true;
+                this._mesh.material = useNM ? this._matNME : this._matStd;
+                this._matStd.wireframe = true;
                 break;
 
             case PreviewMode.VertexColor:
@@ -290,7 +248,6 @@ export class PreviewManager {
         this._globalState.onPreviewModeChanged.remove(this._onPreviewChangedObserver);
         this._globalState.onAnimationCommandActivated.remove(this._onAnimationCommandActivatedObserver);
         this._globalState.onPreviewBackgroundChanged.remove(this._onPreviewBackgroundChangedObserver);
-        this._globalState.onLightUpdated.remove(this._onLightUpdatedObserver);
 
         if (this._nodeGeometry) {
             this._nodeGeometry.dispose();
@@ -300,6 +257,7 @@ export class PreviewManager {
             this._mesh.dispose(false, true);
         }
 
+        this._light.dispose();
         this._camera.dispose();
 
         this._scene.dispose();

@@ -5,6 +5,7 @@ import type { NodeGeometryBlockConnectionPointTypes } from "./Enums/nodeGeometry
 import { NodeGeometryConnectionPoint, NodeGeometryConnectionPointDirection } from "./nodeGeometryBlockConnectionPoint";
 import type { NodeGeometryBuildState } from "./nodeGeometryBuildState";
 import { Observable } from "../../Misc/observable";
+import { PrecisionDate } from "core/Misc";
 
 /**
  * Defines a block that can be used inside a node based geometry
@@ -220,9 +221,9 @@ export class NodeGeometryBlock {
             console.log(`Building ${this.name} [${this.getClassName()}]`);
         }
 
-        const now = Date.now();
+        const now = PrecisionDate.Now;
         this._buildBlock(state);
-        this._buildExecutionTime = Date.now() - now;
+        this._buildExecutionTime = PrecisionDate.Now - now;
 
         // Compile connected blocks
         for (const output of this._outputs) {

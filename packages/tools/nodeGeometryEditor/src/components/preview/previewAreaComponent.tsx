@@ -3,6 +3,7 @@ import type { GlobalState } from "../../globalState";
 import type { Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
 import wireframe from "./svgs/wireframe.svg";
+import matCap from "./svgs/matCap.svg";
 import vertexColor from "./svgs/vertexColor.svg";
 import { PreviewMode } from "./previewMode";
 
@@ -57,6 +58,15 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         this.forceUpdate();
     }
 
+    changeMatCap() {
+        if (this.props.globalState.previewMode === PreviewMode.MatCap) {
+            this.props.globalState.previewMode = PreviewMode.Normal;
+        } else {
+            this.props.globalState.previewMode = PreviewMode.MatCap;
+        }
+        this.forceUpdate();
+    }    
+
     render() {
         return (
             <>
@@ -66,6 +76,13 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
                 </div>
                 <>
                     <div id="preview-config-bar">
+                        <div
+                            title="Render with mat cap"
+                            onClick={() => this.changeMatCap()}
+                            className={"button mat-cap" + (this.props.globalState.previewMode === PreviewMode.MatCap ? " selected" : "")}
+                        >
+                            <img src={matCap} alt="" />
+                        </div>                        
                         <div
                             title="Render with vertex color"
                             onClick={() => this.changeVertexColor()}

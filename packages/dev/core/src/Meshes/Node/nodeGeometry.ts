@@ -12,6 +12,7 @@ import { Constants } from "../../Engines/constants";
 import { WebRequest } from "../../Misc/webRequest";
 import { BoxBlock } from "./Blocks/Sources/boxBlock";
 import type { GeometryInputBlock } from "./Blocks/geometryInputBlock";
+import { PrecisionDate } from "../../Misc/precisionDate";
 
 /**
  * Defines a node based geometry
@@ -21,9 +22,17 @@ export class NodeGeometry {
     private _buildId: number = NodeGeometry._BuildIdGenerator++;
     private _buildWasSuccessful = false;
     private _vertexData: Nullable<VertexData> = null;
+    private _buildExecutionTime: number = 0;
 
     /** Define the Url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
+
+    /**
+     * Gets the time spent to build this block (in ms)
+     */
+    public get buildExecutionTime() {
+        return this._buildExecutionTime;
+    }    
 
     /**
      * Gets or sets data used by visual editor
@@ -104,7 +113,7 @@ export class NodeGeometry {
         if (!this.outputBlock) {
             throw "You must define the outputBlock property before building the geometry";
         }
-
+        const now = PrecisionDate.Now;
         // Initialize blocks
         this.attachedBlocks = [];
         this._initializeBlock(this.outputBlock, autoConfigure);
@@ -120,6 +129,8 @@ export class NodeGeometry {
         if (updateBuildId) {
             this._buildId = NodeGeometry._BuildIdGenerator++;
         }
+
+        this._buildExecutionTime = PrecisionDate.Now - now;
 
         // Errors
         state.emitErrors();

@@ -6,6 +6,7 @@ import type { GeometryOutputBlock } from "core/Meshes/Node/Blocks/geometryOutput
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import type { Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
+import type { GlobalState } from "node-geometry-editor/globalState";
 
 export class OutputPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onUpdateRequiredObserver: Nullable<Observer<any>>;
@@ -35,6 +36,7 @@ export class OutputPropertyTabComponent extends React.Component<IPropertyCompone
                     <LineContainerComponent title="INFO">
                         {vertexData.positions && <TextLineComponent label="Vertices" value={(vertexData.positions?.length / 3).toString()} />}
                         {vertexData.indices && <TextLineComponent label="Faces" value={(vertexData.indices.length / 3).toString()} />}
+                        {vertexData.positions && <TextLineComponent label="Build time" value={(this.props.stateManager.data as GlobalState).nodeGeometry.buildExecutionTime.toFixed(2) + " ms"} />}
                         <TextLineComponent label="Has normals" value={vertexData.normals ? "Yes" : "No"} />
                         <TextLineComponent label="Has colors" value={vertexData.colors ? "Yes" : "No"} />
                         <TextLineComponent label="Has UV set 0" value={vertexData.uvs ? "Yes" : "No"} />

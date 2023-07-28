@@ -60,7 +60,9 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                         onChange={() => this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block)}
                         throttlePropertyChangedNotification={true}
                     />
-                    <TextLineComponent label="Build execution time" value={`${block.buildExecutionTime} ms`} />
+                    { block.buildExecutionTime !== 0 &&
+                        <TextLineComponent label="Build execution time" value={`${block.buildExecutionTime} ms`} />
+                    }
                 </LineContainerComponent>
             </>
         );

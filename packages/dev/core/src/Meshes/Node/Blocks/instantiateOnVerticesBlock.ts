@@ -150,7 +150,13 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
 
         // Merge
         if (additionalVertexData.length) {
-            this._vertexData = this._vertexData.merge(additionalVertexData, true);
+            if (additionalVertexData.length === 1) {
+                this._vertexData = additionalVertexData[0];
+            } else {
+            // We do not merge the main one as user can use a merge node if wanted
+                const main = additionalVertexData.splice(0, 1)[0];
+                this._vertexData = main.merge(additionalVertexData, true);
+            }
         }
 
         // Storage

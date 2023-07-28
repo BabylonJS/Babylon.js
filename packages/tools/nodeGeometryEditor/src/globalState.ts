@@ -30,7 +30,6 @@ export class GlobalState {
     onPreviewModeChanged = new Observable<void>();
     onLogRequiredObservable = new Observable<LogEntry>();
     onIsLoadingChanged = new Observable<boolean>();
-    onLightUpdated = new Observable<void>();
     onPreviewBackgroundChanged = new Observable<void>();
     onFrame = new Observable<void>();
     onAnimationCommandActivated = new Observable<void>();
@@ -41,7 +40,6 @@ export class GlobalState {
     rotatePreview: boolean;
     backgroundColor: Color4;
     lockObject = new LockObject();
-    controlCamera: boolean;
     pointerOverCanvas: boolean = false;
     onRefreshPreviewMeshControlComponentRequiredObservable = new Observable<void>();
 
@@ -59,7 +57,6 @@ export class GlobalState {
 
     public constructor() {
         this._previewMode = DataStorage.ReadNumber("PreviewMode", PreviewMode.Normal);
-        this.controlCamera = DataStorage.ReadBoolean("ControlCamera", true);
         this.stateManager = new StateManager();
         this.stateManager.data = this;
         this.stateManager.lockObject = this.lockObject;
