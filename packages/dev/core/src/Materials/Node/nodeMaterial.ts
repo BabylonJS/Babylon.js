@@ -686,9 +686,9 @@ export class NodeMaterial extends PushMaterial {
      * Build the material and generates the inner effect
      * @param verbose defines if the build should log activity
      * @param updateBuildId defines if the internal build Id should be updated (default is true)
-     * @param autoConfigure defines if the autoConfigure method should be called when initializing blocks (default is true)
+     * @param autoConfigure defines if the autoConfigure method should be called when initializing blocks (default is false)
      */
-    public build(verbose: boolean = false, updateBuildId = true, autoConfigure = true) {
+    public build(verbose: boolean = false, updateBuildId = true, autoConfigure = false) {
         this._buildWasSuccessful = false;
         const engine = this.getScene().getEngine();
 

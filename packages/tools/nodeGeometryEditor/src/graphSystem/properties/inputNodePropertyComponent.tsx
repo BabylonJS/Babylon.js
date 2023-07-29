@@ -185,7 +185,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                 }
                                 this.forceUpdate();
                                 this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
-                                this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
+                                this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
                             }}
                             propertyName={""}
                         />
@@ -199,7 +199,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                             onChange={() => {
                                 this.forceUpdate();
                                 this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
-                                this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
+                                this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
                             }}
                             throttlePropertyChangedNotification={true}
                         />
@@ -227,7 +227,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                             }
                             this.forceUpdate();
                             this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
-                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
+                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
                         }}
                         propertyName={""}
                     />
@@ -243,7 +243,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                 this.forceUpdate();
 
                                 this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
-                                this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
+                                this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
                             }}
                         />
                     )}

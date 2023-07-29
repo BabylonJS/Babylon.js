@@ -105,9 +105,9 @@ export class NodeGeometry {
      * Build the material and generates the inner effect
      * @param verbose defines if the build should log activity
      * @param updateBuildId defines if the internal build Id should be updated (default is true)
-     * @param autoConfigure defines if the autoConfigure method should be called when initializing blocks (default is true)
+     * @param autoConfigure defines if the autoConfigure method should be called when initializing blocks (default is false)
      */
-    public build(verbose: boolean = false, updateBuildId = true, autoConfigure = true) {
+    public build(verbose: boolean = false, updateBuildId = true, autoConfigure = false) {
         this._buildWasSuccessful = false;
 
         if (!this.outputBlock) {
@@ -115,7 +115,6 @@ export class NodeGeometry {
         }
         const now = PrecisionDate.Now;
         // Initialize blocks
-        this.attachedBlocks = [];
         this._initializeBlock(this.outputBlock, autoConfigure);
 
         // Build
@@ -377,6 +376,7 @@ export class NodeGeometry {
 
         // Source
         const dataBlock = new BoxBlock("Box");
+        dataBlock.autoConfigure();
 
         // Final output
         const output = new GeometryOutputBlock("Geometry Output");
@@ -430,9 +430,6 @@ export class NodeGeometry {
         }
 
         if (!selectedBlocks) {
-            if (!this.attachedBlocks.length) {
-                this, this.build();
-            }
             for (const block of this.attachedBlocks) {
                 if (blocks.indexOf(block) !== -1) {
                     continue;

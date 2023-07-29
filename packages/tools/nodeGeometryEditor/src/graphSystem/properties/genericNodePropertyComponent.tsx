@@ -35,6 +35,10 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
     render() {
         const block = this.props.nodeData.data as NodeGeometryBlock;
 
+        const nonConnectedInputs = block.inputs.filter((input) => {
+            return !input.isConnected && input.notConnectedValue !== null;
+        });
+
         return (
             <>
                 <LineContainerComponent title="GENERAL">
@@ -64,6 +68,16 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                         <TextLineComponent label="Build execution time" value={`${block.buildExecutionTime} ms`} />
                     }
                 </LineContainerComponent>
+                {
+                    nonConnectedInputs.length > 0 &&
+                    <LineContainerComponent title="PROPERTIES">
+                        {
+                            nonConnectedInputs.map((input) => {
+                                return <TextLineComponent key={input.name} label={input.name} value={input.notConnectedValue} />;
+                            })
+                        }
+                    </LineContainerComponent>
+                }
             </>
         );
     }
@@ -84,13 +98,13 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
         }
 
         if (!notifiers || notifiers.rebuild) {
-            this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
+            this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
         }
 
         const rebuild = notifiers?.callback?.(this.props.nodeData.data as NodeGeometryBlock) ?? false;
 
         if (rebuild) {
-            this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
+            this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
         }
     }
 

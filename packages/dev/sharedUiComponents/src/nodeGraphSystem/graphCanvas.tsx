@@ -366,7 +366,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         // Reconnect
         this.automaticRewire(inputs, availableNodeInputs, true);
         this.automaticRewire(availableNodeOutputs, outputs, true);
-        this.props.stateManager.onRebuildRequiredObservable.notifyObservers(false);
+        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
     }
 
     smartAddOverNode(node: GraphNode, source: GraphNode) {
@@ -381,7 +381,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
         // Reconnect
         this.automaticRewire(inputs, availableNodeInputs, true);
-        this.props.stateManager.onRebuildRequiredObservable.notifyObservers(false);
+        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
     }
 
     deleteSelection(onRemove: (nodeData: INodeData) => void, autoReconnect = false) {
@@ -437,7 +437,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this.automaticRewire(inputs, outputs);
 
         this.props.stateManager.onSelectionChangedObservable.notifyObservers(null);
-        this.props.stateManager.onRebuildRequiredObservable.notifyObservers(false);
+        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
     }
 
     handleKeyDown(
@@ -802,7 +802,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         const newNode = new GraphNode(nodeData, this.props.stateManager);
 
         newNode.appendVisual(this._graphCanvas, this);
-        newNode.addClassToVisual(nodeData.getClassName());
+        newNode.addClassToVisual(nodeData.getClassName()); 
 
         this._nodes.push(newNode);
         this._nodeDataContentList.push(nodeData.data);
@@ -1364,7 +1364,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             link.onDisposedObservable.clear();
         });
 
-        this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
+        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
     }
 
     connectNodes(nodeA: GraphNode, pointA: IPortData, nodeB: GraphNode, pointB: IPortData) {

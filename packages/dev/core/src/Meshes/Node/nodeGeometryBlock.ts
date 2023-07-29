@@ -148,13 +148,14 @@ export class NodeGeometryBlock {
      * @param name defines the connection point name
      * @param type defines the connection point type
      * @param isOptional defines a boolean indicating that this input can be omitted
-     * @param point an already created connection point. If not provided, create a new one
+     * @param notConnectedValue value to return if there is no connection
      * @returns the current block
      */
-    public registerInput(name: string, type: NodeGeometryBlockConnectionPointTypes, isOptional: boolean = false, point?: NodeGeometryConnectionPoint) {
-        point = point ?? new NodeGeometryConnectionPoint(name, this, NodeGeometryConnectionPointDirection.Input);
+    public registerInput(name: string, type: NodeGeometryBlockConnectionPointTypes, isOptional: boolean = false, notConnectedValue?: any) {
+        const point = new NodeGeometryConnectionPoint(name, this, NodeGeometryConnectionPointDirection.Input);
         point.type = type;
         point.isOptional = isOptional;
+        point.notConnectedValue = notConnectedValue;
 
         this._inputs.push(point);
 

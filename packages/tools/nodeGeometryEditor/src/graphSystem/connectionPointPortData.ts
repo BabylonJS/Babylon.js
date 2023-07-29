@@ -5,6 +5,8 @@ import {
     NodeGeometryConnectionPointCompatibilityStates,
 } from "core/Meshes/Node/nodeGeometryBlockConnectionPoint";
 import type { Nullable } from "core/types";
+import type { GlobalState } from "node-geometry-editor/globalState";
+import type { GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";
 import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
 import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
@@ -61,6 +63,11 @@ export class ConnectionPointPortData implements IPortData {
 
             if (!otherNode) {
                 otherNode = this._nodeContainer.appendNode(TypeLedger.NodeDataBuilder(otherBlock, this._nodeContainer));
+
+                const globalState = (this._nodeContainer as GraphCanvasComponent).stateManager.data as GlobalState;
+                if (globalState.nodeGeometry!.attachedBlocks.indexOf(otherBlock) === -1) {
+                    globalState.nodeGeometry!.attachedBlocks.push(otherBlock);
+                }
             }
 
             this._connectedPort = otherNode.getPortDataForPortDataContent(this.data.connectedPoint!);

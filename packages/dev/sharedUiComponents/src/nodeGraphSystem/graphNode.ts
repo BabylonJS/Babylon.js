@@ -439,7 +439,7 @@ export class GraphNode {
         this._ownerCanvas.automaticRewire(inputs, availableNodeInputs, true);
         this._ownerCanvas.automaticRewire(availableNodeOutputs, outputs, true);
 
-        this._stateManager.onRebuildRequiredObservable.notifyObservers(false);
+        this._stateManager.onRebuildRequiredObservable.notifyObservers();
     }
 
     private _onMove(evt: PointerEvent) {

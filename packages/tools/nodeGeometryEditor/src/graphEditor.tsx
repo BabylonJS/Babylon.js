@@ -157,9 +157,9 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             }
         });
 
-        this.props.globalState.stateManager.onRebuildRequiredObservable.add((autoConfigure) => {
+        this.props.globalState.stateManager.onRebuildRequiredObservable.add(() => {
             if (this.props.globalState.nodeGeometry) {
-                this.buildGeometry(autoConfigure);
+                this.buildGeometry();
             }
         });
 
@@ -231,13 +231,13 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this._graphCanvas.zoomToFit();
     }
 
-    buildGeometry(autoConfigure = true) {
+    buildGeometry() {
         if (!this.props.globalState.nodeGeometry) {
             return;
         }
 
         try {
-            this.props.globalState.nodeGeometry.build(true, undefined, autoConfigure);
+            this.props.globalState.nodeGeometry.build(true, undefined);
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Node geometry build successful", false));
         } catch (err) {
             this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry(err, true));

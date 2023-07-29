@@ -87,6 +87,11 @@ export class NodeGeometryConnectionPoint {
     public exposedPortPosition: number = -1;
 
     /**
+     * Gets or sets the default value used for this point if nothing is connected
+     */
+    public notConnectedValue: Nullable<any> = null;
+
+    /**
      * Gets or sets the connection point type (default is float)
      */
     public get type(): NodeGeometryBlockConnectionPointTypes {
@@ -190,6 +195,11 @@ export class NodeGeometryConnectionPoint {
         return this._type;
     }
 
+    /**
+     * Gets the value represented by this connection point
+     * @param state current evaluation state
+     * @returns the connected value or the notConnectedValue if nothing is connected
+     */
     public getConnectedValue(state: NodeGeometryBuildState) {
         if (this.isConnected) {
             if (this._connectedPoint?._storedFunction) {
@@ -197,7 +207,7 @@ export class NodeGeometryConnectionPoint {
             }
             return this._connectedPoint?._storedValue;
         }
-        return null;
+        return this.notConnectedValue;
     }
 
     /**
