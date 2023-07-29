@@ -149,13 +149,17 @@ export class NodeGeometryBlock {
      * @param type defines the connection point type
      * @param isOptional defines a boolean indicating that this input can be omitted
      * @param notConnectedValue value to return if there is no connection
+     * @param notConnectedValueMin min value accepted for notConnectedValue
+     * @param notConnectedValueMax max value accepted for notConnectedValue
      * @returns the current block
      */
-    public registerInput(name: string, type: NodeGeometryBlockConnectionPointTypes, isOptional: boolean = false, notConnectedValue?: any) {
+    public registerInput(name: string, type: NodeGeometryBlockConnectionPointTypes, isOptional: boolean = false, notConnectedValue?: any, notConnectedValueMin?: any, notConnectedValueMax?: any) {
         const point = new NodeGeometryConnectionPoint(name, this, NodeGeometryConnectionPointDirection.Input);
         point.type = type;
         point.isOptional = isOptional;
         point.notConnectedValue = notConnectedValue;
+        point.notConnectedValueMin = notConnectedValueMin;
+        point.notConnectedValueMax = notConnectedValueMax;
 
         this._inputs.push(point);
 

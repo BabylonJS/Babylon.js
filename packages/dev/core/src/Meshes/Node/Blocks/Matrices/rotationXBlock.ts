@@ -17,7 +17,7 @@ export class RotationXBlock extends NodeGeometryBlock {
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("angle", NodeGeometryBlockConnectionPointTypes.Float);
+        this.registerInput("angle", NodeGeometryBlockConnectionPointTypes.Float, false, 0);
         this.registerOutput("matrix", NodeGeometryBlockConnectionPointTypes.Matrix);
     }
 

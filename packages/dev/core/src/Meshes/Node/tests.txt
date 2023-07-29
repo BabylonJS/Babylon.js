@@ -69,9 +69,10 @@ Block ideas:
 - UVs as contextual data
 - subdivide
 - set Material
-- Instance on vertex (density?)
 - Instance on face (density?)
 - range node
-- mat cap option (UI)
+- mat cap option (Icon)
+- remove duplicate InstantiateOnVerticesBlock
+
 
 

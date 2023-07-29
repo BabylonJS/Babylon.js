@@ -21,8 +21,8 @@ export class CylinderBlock extends NodeGeometryBlock {
 
         this.registerInput("height", NodeGeometryBlockConnectionPointTypes.Float, true, 25);
         this.registerInput("diameter", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
-        this.registerInput("diameterTop", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
-        this.registerInput("diameterBottom", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
+        this.registerInput("diameterTop", NodeGeometryBlockConnectionPointTypes.Float, true, 0);
+        this.registerInput("diameterBottom", NodeGeometryBlockConnectionPointTypes.Float, true, 0);
         this.registerInput("subdivisions", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
         this.registerInput("tessellation", NodeGeometryBlockConnectionPointTypes.Float, true, 24);
         this.registerInput("arc", NodeGeometryBlockConnectionPointTypes.Float, true, 1.0);

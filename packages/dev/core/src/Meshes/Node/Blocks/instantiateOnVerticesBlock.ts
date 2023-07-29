@@ -23,8 +23,9 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
 
         this.registerInput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);
         this.registerInput("instance", NodeGeometryBlockConnectionPointTypes.Geometry, true);
-        this.registerInput("rotation", NodeGeometryBlockConnectionPointTypes.Vector3, true);
-        this.registerInput("scaling", NodeGeometryBlockConnectionPointTypes.Vector3, true);
+        this.registerInput("rotation", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.Zero());
+        this.registerInput("scaling", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.One());
+        this.registerInput("density", NodeGeometryBlockConnectionPointTypes.Float, true, 1, 0, 1);
 
         this.scaling.acceptedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Float);
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Geometry);
@@ -75,6 +76,13 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
     }
 
     /**
+     * Gets the density input component
+     */
+    public get density(): NodeGeometryConnectionPoint {
+        return this._inputs[4];
+    }    
+
+    /**
      * Gets the geometry output component
      */
     public get output(): NodeGeometryConnectionPoint {
@@ -111,8 +119,19 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
         const scalingRotationMatrix = new Matrix();
         const transformMatrix = new Matrix();
         const tempVector3 = new Vector3();
+        const currentPosition = new Vector3();
 
         for (this._currentIndex = 0; this._currentIndex < vertexCount; this._currentIndex++) {
+            currentPosition.fromArray(this._vertexData.positions, this._currentIndex * 3);
+            const density = this.density.getConnectedValue(state);
+
+            if (density < 1) {
+                if (Math.random() > density) {
+                    continue;
+                }
+            }
+            
+            // Clone the instance
             const clone = instanceGeometry.clone();
 
             if (!clone.positions || clone.positions.length === 0) {
@@ -125,9 +144,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
             Matrix.ScalingToRef(scaling.x, scaling.y, scaling.z, scalingMatrix);
             Matrix.RotationYawPitchRollToRef(rotation.y, rotation.x, rotation.z, rotationMatrix);
             Matrix.TranslationToRef(
-                this._vertexData.positions[this._currentIndex * 3],
-                this._vertexData.positions[this._currentIndex * 3 + 1],
-                this._vertexData.positions[this._currentIndex * 3 + 2],
+                currentPosition.x, currentPosition.y, currentPosition.z,
                 positionMatrix
             );
 

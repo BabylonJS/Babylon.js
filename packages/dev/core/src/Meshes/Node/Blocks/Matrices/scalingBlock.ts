@@ -17,7 +17,7 @@ export class ScalingBlock extends NodeGeometryBlock {
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("scale", NodeGeometryBlockConnectionPointTypes.Vector3);
+        this.registerInput("scale", NodeGeometryBlockConnectionPointTypes.Vector3, false, Vector3.One());
         this.registerOutput("matrix", NodeGeometryBlockConnectionPointTypes.Matrix);
     }
 

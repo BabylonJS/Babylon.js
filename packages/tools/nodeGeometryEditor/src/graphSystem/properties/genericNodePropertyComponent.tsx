@@ -43,6 +43,22 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
     renderConnectionPoint(point: NodeGeometryConnectionPoint) {
         switch (point.type) {
             case NodeGeometryBlockConnectionPointTypes.Float: {
+                if (point.notConnectedValueMax !== undefined && point.notConnectedValueMin !== undefined) {
+                    return (
+                        <SliderLineComponent
+                        lockObject={this.props.stateManager.lockObject}
+                        key={point.name}
+                        label={point.name}
+                        target={point}
+                        propertyName="notConnectedValue"
+                        decimalCount={2}
+                        step={(point.notConnectedValueMax - point.notConnectedValueMin) / 100.0}
+                        minimum={point.notConnectedValueMin}
+                        maximum={point.notConnectedValueMax}
+                        onChange={() => this.processUpdate()}
+                    />
+                    )
+                }
                 return (
                     <FloatLineComponent
                         lockObject={this.props.stateManager.lockObject}
@@ -95,7 +111,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
         const block = this.props.nodeData.data as NodeGeometryBlock;
 
         const nonConnectedInputs = block.inputs.filter((input) => {
-            return !input.isConnected && input.notConnectedValue !== null;
+            return !input.isConnected && input.notConnectedValue !== null && input.notConnectedValue !== undefined;
         });
 
         return (
@@ -124,7 +140,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                         throttlePropertyChangedNotification={true}
                     />
                     { block.buildExecutionTime !== 0 &&
-                        <TextLineComponent label="Build execution time" value={`${block.buildExecutionTime} ms`} />
+                        <TextLineComponent label="Build execution time" value={`${block.buildExecutionTime.toFixed(2)} ms`} />
                     }
                 </LineContainerComponent>
                 {

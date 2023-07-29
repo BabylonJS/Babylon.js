@@ -17,7 +17,7 @@ export class TranslationBlock extends NodeGeometryBlock {
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("translation", NodeGeometryBlockConnectionPointTypes.Vector3);
+        this.registerInput("translation", NodeGeometryBlockConnectionPointTypes.Vector3, false, Vector3.Zero());
         this.registerOutput("matrix", NodeGeometryBlockConnectionPointTypes.Matrix);
     }
 

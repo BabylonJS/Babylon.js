@@ -20,9 +20,9 @@ export class SphereBlock extends NodeGeometryBlock {
 
         this.registerInput("segments", NodeGeometryBlockConnectionPointTypes.Float, true, 32);
         this.registerInput("diameter", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
-        this.registerInput("diameterX", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
-        this.registerInput("diameterY", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
-        this.registerInput("diameterZ", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
+        this.registerInput("diameterX", NodeGeometryBlockConnectionPointTypes.Float, true, 0);
+        this.registerInput("diameterY", NodeGeometryBlockConnectionPointTypes.Float, true, 0);
+        this.registerInput("diameterZ", NodeGeometryBlockConnectionPointTypes.Float, true, 0);
         this.registerInput("arc", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
         this.registerInput("slice", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
 

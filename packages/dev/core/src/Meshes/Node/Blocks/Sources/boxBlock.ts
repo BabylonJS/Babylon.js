@@ -20,9 +20,9 @@ export class BoxBlock extends NodeGeometryBlock {
         super(name);
 
         this.registerInput("size", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
-        this.registerInput("width", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
-        this.registerInput("height", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
-        this.registerInput("depth", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
+        this.registerInput("width", NodeGeometryBlockConnectionPointTypes.Float, true, 0);
+        this.registerInput("height", NodeGeometryBlockConnectionPointTypes.Float, true, 0);
+        this.registerInput("depth", NodeGeometryBlockConnectionPointTypes.Float, true, 0);
 
         this.registerOutput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);
     }

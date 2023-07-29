@@ -381,13 +381,37 @@
             }
 
             .value {
+                align-self: center;
                 grid-column: 2;
-
                 display: flex;
                 align-items: center;
+                border: 1px solid #ced4da;
+                padding: 5px 2px;
+                border-radius: 3px;
+                background: white;
+                width: 110px;
+                height: 10px;
+                
+                &:focus {
+                    color: #212529;
+                    background-color: #fff;
+                    border-color: #86b7fe;
+                    outline: 0;
+                    box-shadow: 0 0 0 0.25rem rgb(13, 110, 253);
+                }
 
                 input {
-                    width: 110px;
+                    display: inline-block;
+                    width: 100%;
+                    border: none;
+                    background: none;
+
+                    &:focus {                        
+                        color: #203b35;
+                        outline: none;
+                        border: 0px;
+                        box-shadow: none;
+                    }
                 }
             }
 
@@ -469,11 +493,38 @@
                 }
 
                 .numeric-value {
-                    width: 120px;
+                    align-self: center;
                     grid-column: 2;
                     display: flex;
                     align-items: center;
-                    border: 1px solid rgb(51, 183, 102);
+                    border: 1px solid #ced4da;
+                    padding: 5px 2px;
+                    border-radius: 3px;
+                    background: white;
+                    width: 120px;
+                    height: 10px;
+                    
+                    &:focus {
+                        color: #212529;
+                        background-color: #fff;
+                        border-color: #86b7fe;
+                        outline: 0;
+                        box-shadow: 0 0 0 0.25rem rgb(13, 110, 253);
+                    }
+    
+                    input {
+                        display: inline-block;
+                        width: 100%;
+                        border: none;
+                        background: none;
+    
+                        &:focus {                        
+                            color: #203b35;
+                            outline: none;
+                            border: 0px;
+                            box-shadow: none;
+                        }
+                    }
                 }
             }
         }
