@@ -6,6 +6,7 @@ import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import type { INodeGeometryExecutionContext } from "../Interfaces/nodeGeometryExecutionContext";
 import type { VertexData } from "../../mesh.vertexData";
 import { Matrix, Vector3 } from "../../../Maths/math.vector";
+import { PropertyTypeForEdition, editableInPropertyPage } from "../Interfaces/nodeGeometryDecorator";
 
 /**
  * Block used to instance geometry on every vertex of a geometry
@@ -13,6 +14,12 @@ import { Matrix, Vector3 } from "../../../Maths/math.vector";
 export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext {
     private _vertexData: VertexData;
     private _currentIndex: number;
+
+    /**
+     * Gets or sets a boolean indicating if the block should remove duplicated positions
+     */
+    @editableInPropertyPage("Remove duplicated positions", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })    
+    public removeDuplicatedPositions = false;
 
     /**
      * Create a new InstantiateOnVerticesBlock
@@ -120,6 +127,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
         const transformMatrix = new Matrix();
         const tempVector3 = new Vector3();
         const currentPosition = new Vector3();
+        const alreadyDone = new Array<Vector3>();
 
         for (this._currentIndex = 0; this._currentIndex < vertexCount; this._currentIndex++) {
             currentPosition.fromArray(this._vertexData.positions, this._currentIndex * 3);
@@ -129,6 +137,22 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
                 if (Math.random() > density) {
                     continue;
                 }
+            }
+
+            if (this.removeDuplicatedPositions) {
+                let found = false;
+                for (let index = 0; index < alreadyDone.length; index++) {
+                    const element = alreadyDone[index];
+                    if (element.equals(currentPosition)) {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (found) {
+                    continue;
+                }
+                alreadyDone.push(currentPosition.clone());
             }
             
             // Clone the instance
@@ -181,6 +205,29 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
         state.executionContext = null;
         state.geometryContext = null;
     }
+
+    protected _dumpPropertiesCode() {
+        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.removeDuplicatedPositions = ${this.removeDuplicatedPositions ? "true" : "false"};\r\n`;
+        return codeString;
+    }
+
+    /**
+     * Serializes this block in a JSON representation
+     * @returns the serialized block object
+     */
+    public serialize(): any {
+        const serializationObject = super.serialize();
+
+        serializationObject.removeDuplicatedPositions = this.removeDuplicatedPositions;
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any, rootUrl: string) {
+        super._deserialize(serializationObject, rootUrl);
+
+        this.removeDuplicatedPositions = serializationObject.removeDuplicatedPositions;
+    }    
 }
 
 RegisterClass("BABYLON.InstantiateOnVerticesBlock", InstantiateOnVerticesBlock);

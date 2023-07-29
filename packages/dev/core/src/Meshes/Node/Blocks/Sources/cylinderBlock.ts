@@ -129,8 +129,10 @@ export class CylinderBlock extends NodeGeometryBlock {
 
         options.height = this.height.getConnectedValue(state);
         options.diameter = this.diameter.getConnectedValue(state);
-        options.diameterTop = this.diameterTop.getConnectedValue(state);
-        options.diameterBottom = this.diameterBottom.getConnectedValue(state);
+        if (!options.diameter) {
+            options.diameterTop = this.diameterTop.getConnectedValue(state);
+            options.diameterBottom = this.diameterBottom.getConnectedValue(state);
+        }
         options.tessellation = this.tessellation.getConnectedValue(state);
         options.subdivisions = this.subdivisions.getConnectedValue(state);
         options.arc = this.arc.getConnectedValue(state);
