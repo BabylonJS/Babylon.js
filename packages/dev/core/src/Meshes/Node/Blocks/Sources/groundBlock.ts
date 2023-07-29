@@ -17,11 +17,11 @@ export class GroundBlock extends NodeGeometryBlock {
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("width", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("height", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("subdivisions", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("subdivisionsX", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("subdivisionsY", NodeGeometryBlockConnectionPointTypes.Float, true);
+        this.registerInput("width", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
+        this.registerInput("height", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
+        this.registerInput("subdivisions", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
+        this.registerInput("subdivisionsX", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
+        this.registerInput("subdivisionsY", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
 
         this.registerOutput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);
     }
@@ -92,25 +92,11 @@ export class GroundBlock extends NodeGeometryBlock {
     protected _buildBlock(state: NodeGeometryBuildState) {
         const options: { width?: number; height?: number; subdivisions?: number; subdivisionsX?: number; subdivisionsY?: number } = {};
 
-        if (this.width.isConnected) {
-            options.width = this.width.getConnectedValue(state);
-        }
-
-        if (this.height.isConnected) {
-            options.height = this.height.getConnectedValue(state);
-        }
-
-        if (this.subdivisions.isConnected) {
-            options.subdivisions = this.subdivisions.getConnectedValue(state);
-        }
-
-        if (this.subdivisionsX.isConnected) {
-            options.subdivisionsX = this.subdivisionsX.getConnectedValue(state);
-        }
-
-        if (this.subdivisionsY.isConnected) {
-            options.subdivisionsY = this.subdivisionsY.getConnectedValue(state);
-        }
+        options.width = this.width.getConnectedValue(state);
+        options.height = this.height.getConnectedValue(state);
+        options.subdivisions = this.subdivisions.getConnectedValue(state);
+        options.subdivisionsX = this.subdivisionsX.getConnectedValue(state);
+        options.subdivisionsY = this.subdivisionsY.getConnectedValue(state);
 
         // Append vertex data from the plane builder
         this.geometry._storedValue = CreateGroundVertexData(options);

@@ -117,21 +117,10 @@ export class BoxBlock extends NodeGeometryBlock {
             bottomBaseAt?: number;
         } = {};
 
-        if (this.size.isConnected) {
-            options.size = this.size.getConnectedValue(state);
-        }
-
-        if (this.width.isConnected) {
-            options.width = this.width.getConnectedValue(state);
-        }
-
-        if (this.height.isConnected) {
-            options.height = this.height.getConnectedValue(state);
-        }
-
-        if (this.depth.isConnected) {
-            options.depth = this.depth.getConnectedValue(state);
-        }
+        options.size = this.size.getConnectedValue(state);
+        options.width = this.width.getConnectedValue(state);
+        options.height = this.height.getConnectedValue(state);
+        options.depth = this.depth.getConnectedValue(state);
 
         // Append vertex data from the plane builder
         this.geometry._storedValue = CreateBoxVertexData(options);

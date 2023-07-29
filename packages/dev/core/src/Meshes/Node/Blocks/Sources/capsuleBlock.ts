@@ -18,10 +18,10 @@ export class CapsuleBlock extends NodeGeometryBlock {
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("height", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("radius", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("tessellation", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("subdivisions", NodeGeometryBlockConnectionPointTypes.Float, true);
+        this.registerInput("height", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
+        this.registerInput("radius", NodeGeometryBlockConnectionPointTypes.Float, true, 0.25);
+        this.registerInput("tessellation", NodeGeometryBlockConnectionPointTypes.Float, true, 16);
+        this.registerInput("subdivisions", NodeGeometryBlockConnectionPointTypes.Float, true, 2);
 
         this.registerOutput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);
     }
@@ -97,21 +97,10 @@ export class CapsuleBlock extends NodeGeometryBlock {
             updatable?: boolean;
         } = {};
 
-        if (this.height.isConnected) {
-            options.height = this.height.getConnectedValue(state);
-        }
-
-        if (this.radius.isConnected) {
-            options.radius = this.radius.getConnectedValue(state);
-        }
-
-        if (this.tessellation.isConnected) {
-            options.tessellation = this.tessellation.getConnectedValue(state);
-        }
-
-        if (this.subdivisions.isConnected) {
-            options.subdivisions = this.subdivisions.getConnectedValue(state);
-        }
+        options.height = this.height.getConnectedValue(state);
+        options.radius = this.radius.getConnectedValue(state);
+        options.tessellation = this.tessellation.getConnectedValue(state);
+        options.subdivisions = this.subdivisions.getConnectedValue(state);
 
         // Append vertex data from the plane builder
         this.geometry._storedValue = CreateCapsuleVertexData(options);

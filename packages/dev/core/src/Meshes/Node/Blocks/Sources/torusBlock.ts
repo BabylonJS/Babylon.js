@@ -18,9 +18,9 @@ export class TorusBlock extends NodeGeometryBlock {
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("diameter", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("thickness", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("tessellation", NodeGeometryBlockConnectionPointTypes.Float, true);
+        this.registerInput("diameter", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
+        this.registerInput("thickness", NodeGeometryBlockConnectionPointTypes.Float, true, 0.5);
+        this.registerInput("tessellation", NodeGeometryBlockConnectionPointTypes.Float, true, 16);
 
         this.registerOutput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);
     }
@@ -79,17 +79,9 @@ export class TorusBlock extends NodeGeometryBlock {
             backUVs?: Vector4;
         } = {};
 
-        if (this.thickness.isConnected) {
-            options.thickness = this.thickness.getConnectedValue(state);
-        }
-
-        if (this.diameter.isConnected) {
-            options.diameter = this.diameter.getConnectedValue(state);
-        }
-
-        if (this.tessellation.isConnected) {
-            options.tessellation = this.tessellation.getConnectedValue(state);
-        }
+        options.thickness = this.thickness.getConnectedValue(state);
+        options.diameter = this.diameter.getConnectedValue(state);
+        options.tessellation = this.tessellation.getConnectedValue(state);
 
         // Append vertex data from the plane builder
         this.geometry._storedValue = CreateTorusVertexData(options);

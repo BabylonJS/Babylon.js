@@ -18,9 +18,9 @@ export class DiscBlock extends NodeGeometryBlock {
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("radius", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("tessellation", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("arc", NodeGeometryBlockConnectionPointTypes.Float, true);
+        this.registerInput("radius", NodeGeometryBlockConnectionPointTypes.Float, true, 0.5);
+        this.registerInput("tessellation", NodeGeometryBlockConnectionPointTypes.Float, true, 64);
+        this.registerInput("arc", NodeGeometryBlockConnectionPointTypes.Float, true, 1.0);
 
         this.registerOutput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);
     }
@@ -79,17 +79,9 @@ export class DiscBlock extends NodeGeometryBlock {
             backUVs?: Vector4;
         } = {};
 
-        if (this.radius.isConnected) {
-            options.radius = this.radius.getConnectedValue(state);
-        }
-
-        if (this.tessellation.isConnected) {
-            options.tessellation = this.tessellation.getConnectedValue(state);
-        }
-
-        if (this.arc.isConnected) {
-            options.arc = this.arc.getConnectedValue(state);
-        }
+        options.radius = this.radius.getConnectedValue(state);
+        options.tessellation = this.tessellation.getConnectedValue(state);
+        options.arc = this.arc.getConnectedValue(state);
 
         // Append vertex data from the plane builder
         this.geometry._storedValue = CreateDiscVertexData(options);

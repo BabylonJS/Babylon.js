@@ -11,6 +11,10 @@ import { SliderLineComponent } from "shared-ui-components/lines/sliderLineCompon
 import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 import { PropertyTypeForEdition } from "core/Meshes/Node/Interfaces/nodeGeometryDecorator";
 import type { IEditablePropertyOption, IPropertyDescriptionForEdition, IEditablePropertyListOption } from "core/Meshes/Node/Interfaces/nodeGeometryDecorator";
+import type { NodeGeometryConnectionPoint } from "core/Meshes/Node/nodeGeometryBlockConnectionPoint";
+import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
+import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
+import { Vector4LineComponent } from "shared-ui-components/lines/vector4LineComponent";
 
 export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -30,6 +34,61 @@ export class GenericPropertyComponent extends React.Component<IPropertyComponent
 export class GeneralPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
         super(props);
+    }
+
+    processUpdate() {
+        this.props.stateManager.onUpdateRequiredObservable.notifyObservers(null);
+    }
+    
+    renderConnectionPoint(point: NodeGeometryConnectionPoint) {
+        switch (point.type) {
+            case NodeGeometryBlockConnectionPointTypes.Float: {
+                return (
+                    <FloatLineComponent
+                        lockObject={this.props.stateManager.lockObject}
+                        key={point.name}
+                        label={point.name}
+                        target={point}
+                        propertyName="notConnectedValue"
+                        onChange={() => this.processUpdate()}
+                    />
+                );
+            }
+            case NodeGeometryBlockConnectionPointTypes.Vector2:
+                return (
+                    <Vector2LineComponent
+                        lockObject={this.props.stateManager.lockObject}
+                        key={point.name}
+                        label={point.name}
+                        target={point}
+                        propertyName="notConnectedValue"
+                        onChange={() => this.processUpdate()}
+                    />
+                );
+            case NodeGeometryBlockConnectionPointTypes.Vector3:
+                return (
+                    <Vector3LineComponent
+                        lockObject={this.props.stateManager.lockObject}
+                        key={point.name}
+                        label={point.name}
+                        target={point}
+                        propertyName="notConnectedValue"
+                        onChange={() => this.processUpdate()}
+                    />
+                );
+            case NodeGeometryBlockConnectionPointTypes.Vector4:
+                return (
+                    <Vector4LineComponent
+                        lockObject={this.props.stateManager.lockObject}
+                        key={point.name}
+                        label={point.name}
+                        target={point}
+                        propertyName="notConnectedValue"
+                        onChange={() => this.processUpdate()}
+                    />
+                );
+        }
+        return null;
     }
 
     render() {
@@ -73,7 +132,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                     <LineContainerComponent title="PROPERTIES">
                         {
                             nonConnectedInputs.map((input) => {
-                                return <TextLineComponent key={input.name} label={input.name} value={input.notConnectedValue} />;
+                                return this.renderConnectionPoint(input);
                             })
                         }
                     </LineContainerComponent>

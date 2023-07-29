@@ -18,13 +18,13 @@ export class SphereBlock extends NodeGeometryBlock {
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("segments", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("diameter", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("diameterX", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("diameterY", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("diameterZ", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("arc", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("slice", NodeGeometryBlockConnectionPointTypes.Float, true);
+        this.registerInput("segments", NodeGeometryBlockConnectionPointTypes.Float, true, 32);
+        this.registerInput("diameter", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
+        this.registerInput("diameterX", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
+        this.registerInput("diameterY", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
+        this.registerInput("diameterZ", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
+        this.registerInput("arc", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
+        this.registerInput("slice", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
 
         this.registerOutput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);
     }
@@ -116,33 +116,13 @@ export class SphereBlock extends NodeGeometryBlock {
             dedupTopBottomIndices?: boolean;
         } = {};
 
-        if (this.segments.isConnected) {
-            options.segments = this.segments.getConnectedValue(state);
-        }
-
-        if (this.diameter.isConnected) {
-            options.diameter = this.diameter.getConnectedValue(state);
-        }
-
-        if (this.diameterX.isConnected) {
-            options.diameterX = this.diameterX.getConnectedValue(state);
-        }
-
-        if (this.diameterY.isConnected) {
-            options.diameterY = this.diameterY.getConnectedValue(state);
-        }
-
-        if (this.diameterZ.isConnected) {
-            options.diameterZ = this.diameterZ.getConnectedValue(state);
-        }
-
-        if (this.arc.isConnected) {
-            options.arc = this.arc.getConnectedValue(state);
-        }
-
-        if (this.slice.isConnected) {
-            options.slice = this.slice.getConnectedValue(state);
-        }
+        options.segments = this.segments.getConnectedValue(state);
+        options.diameter = this.diameter.getConnectedValue(state);
+        options.diameterX = this.diameterX.getConnectedValue(state);
+        options.diameterY = this.diameterY.getConnectedValue(state);
+        options.diameterZ = this.diameterZ.getConnectedValue(state);
+        options.arc = this.arc.getConnectedValue(state);
+        options.slice = this.slice.getConnectedValue(state);
 
         // Append vertex data from the plane builder
         this.geometry._storedValue = CreateSphereVertexData(options);

@@ -18,9 +18,9 @@ export class PlaneBlock extends NodeGeometryBlock {
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("size", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("width", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("height", NodeGeometryBlockConnectionPointTypes.Float, true);
+        this.registerInput("size", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
+        this.registerInput("width", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
+        this.registerInput("height", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
 
         this.registerOutput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);
     }
@@ -89,17 +89,9 @@ export class PlaneBlock extends NodeGeometryBlock {
     protected _buildBlock(state: NodeGeometryBuildState) {
         const options: { size?: number; width?: number; height?: number; sideOrientation?: number; frontUVs?: Vector4; backUVs?: Vector4 } = {};
 
-        if (this.size.isConnected) {
-            options.size = this.size.getConnectedValue(state);
-        }
-
-        if (this.width.isConnected) {
-            options.width = this.width.getConnectedValue(state);
-        }
-
-        if (this.height.isConnected) {
-            options.height = this.height.getConnectedValue(state);
-        }
+        options.size = this.size.getConnectedValue(state);
+        options.width = this.width.getConnectedValue(state);
+        options.height = this.height.getConnectedValue(state);
 
         // Append vertex data from the plane builder
         this.geometry._storedValue = CreatePlaneVertexData(options);

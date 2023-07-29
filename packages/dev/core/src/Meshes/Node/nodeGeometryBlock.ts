@@ -343,6 +343,9 @@ export class NodeGeometryBlock {
                     this.inputs[i].isExposedOnFrame = port.isExposedOnFrame;
                     this.inputs[i].exposedPortPosition = port.exposedPortPosition;
                 }
+                if (port.notConnectedValue) {
+                    this.inputs[i].notConnectedValue = port.notConnectedValue;
+                }
             });
         }
         if (serializedOutputs) {

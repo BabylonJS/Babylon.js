@@ -19,13 +19,13 @@ export class CylinderBlock extends NodeGeometryBlock {
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("height", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("diameter", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("diameterTop", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("diameterBottom", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("subdivisions", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("tessellation", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("arc", NodeGeometryBlockConnectionPointTypes.Float, true);
+        this.registerInput("height", NodeGeometryBlockConnectionPointTypes.Float, true, 25);
+        this.registerInput("diameter", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
+        this.registerInput("diameterTop", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
+        this.registerInput("diameterBottom", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
+        this.registerInput("subdivisions", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
+        this.registerInput("tessellation", NodeGeometryBlockConnectionPointTypes.Float, true, 24);
+        this.registerInput("arc", NodeGeometryBlockConnectionPointTypes.Float, true, 1.0);
 
         this.registerOutput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);
     }
@@ -127,33 +127,13 @@ export class CylinderBlock extends NodeGeometryBlock {
             backUVs?: Vector4;
         } = {};
 
-        if (this.height.isConnected) {
-            options.height = this.height.getConnectedValue(state);
-        }
-
-        if (this.diameter.isConnected) {
-            options.diameter = this.diameter.getConnectedValue(state);
-        }
-
-        if (this.diameterTop.isConnected) {
-            options.diameterTop = this.diameterTop.getConnectedValue(state);
-        }
-
-        if (this.diameterBottom.isConnected) {
-            options.diameterBottom = this.diameterBottom.getConnectedValue(state);
-        }
-
-        if (this.tessellation.isConnected) {
-            options.tessellation = this.tessellation.getConnectedValue(state);
-        }
-
-        if (this.subdivisions.isConnected) {
-            options.subdivisions = this.subdivisions.getConnectedValue(state);
-        }
-
-        if (this.arc.isConnected) {
-            options.arc = this.arc.getConnectedValue(state);
-        }
+        options.height = this.height.getConnectedValue(state);
+        options.diameter = this.diameter.getConnectedValue(state);
+        options.diameterTop = this.diameterTop.getConnectedValue(state);
+        options.diameterBottom = this.diameterBottom.getConnectedValue(state);
+        options.tessellation = this.tessellation.getConnectedValue(state);
+        options.subdivisions = this.subdivisions.getConnectedValue(state);
+        options.arc = this.arc.getConnectedValue(state);
 
         // Append vertex data from the plane builder
         this.geometry._storedValue = CreateCylinderVertexData(options);

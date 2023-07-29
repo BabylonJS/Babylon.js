@@ -18,11 +18,11 @@ export class IcoSphereBlock extends NodeGeometryBlock {
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("radius", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("radiusX", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("radiusY", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("radiusZ", NodeGeometryBlockConnectionPointTypes.Float, true);
-        this.registerInput("subdivisions", NodeGeometryBlockConnectionPointTypes.Float, true);
+        this.registerInput("radius", NodeGeometryBlockConnectionPointTypes.Float, true, 1) ;
+        this.registerInput("radiusX", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
+        this.registerInput("radiusY", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
+        this.registerInput("radiusZ", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
+        this.registerInput("subdivisions", NodeGeometryBlockConnectionPointTypes.Float, true, 4);
 
         this.registerOutput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);
     }
@@ -98,29 +98,12 @@ export class IcoSphereBlock extends NodeGeometryBlock {
             backUVs?: Vector4;
         } = {};
 
-        if (this.radius.isConnected) {
-            options.radius = this.radius.getConnectedValue(state);
-        }
-
-        if (this.subdivisions.isConnected) {
-            options.subdivisions = this.subdivisions.getConnectedValue(state);
-        }
-
-        if (this.radiusX.isConnected) {
-            options.radiusX = this.radiusX.getConnectedValue(state);
-        }
-
-        if (this.radiusX.isConnected) {
-            options.radiusX = this.radiusX.getConnectedValue(state);
-        }
-
-        if (this.radiusY.isConnected) {
-            options.radiusX = this.radiusX.getConnectedValue(state);
-        }
-
-        if (this.radiusZ.isConnected) {
-            options.radiusX = this.radiusX.getConnectedValue(state);
-        }
+        options.radius = this.radius.getConnectedValue(state);
+        options.subdivisions = this.subdivisions.getConnectedValue(state);
+        options.radiusX = this.radiusX.getConnectedValue(state);
+        options.radiusX = this.radiusX.getConnectedValue(state);
+        options.radiusX = this.radiusX.getConnectedValue(state);
+        options.radiusX = this.radiusX.getConnectedValue(state);
 
         // Append vertex data from the plane builder
         this.geometry._storedValue = CreateIcoSphereVertexData(options);
