@@ -20,8 +20,8 @@ export class CapsuleBlock extends NodeGeometryBlock {
 
         this.registerInput("height", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
         this.registerInput("radius", NodeGeometryBlockConnectionPointTypes.Float, true, 0.25);
-        this.registerInput("tessellation", NodeGeometryBlockConnectionPointTypes.Float, true, 16);
-        this.registerInput("subdivisions", NodeGeometryBlockConnectionPointTypes.Float, true, 2);
+        this.registerInput("tessellation", NodeGeometryBlockConnectionPointTypes.Int, true, 16);
+        this.registerInput("subdivisions", NodeGeometryBlockConnectionPointTypes.Int, true, 2);
 
         this.registerOutput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);
     }

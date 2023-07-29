@@ -20,7 +20,7 @@ export class TorusBlock extends NodeGeometryBlock {
 
         this.registerInput("diameter", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
         this.registerInput("thickness", NodeGeometryBlockConnectionPointTypes.Float, true, 0.5);
-        this.registerInput("tessellation", NodeGeometryBlockConnectionPointTypes.Float, true, 16);
+        this.registerInput("tessellation", NodeGeometryBlockConnectionPointTypes.Int, true, 16);
 
         this.registerOutput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);
     }

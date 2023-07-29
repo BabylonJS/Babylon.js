@@ -32,12 +32,15 @@ import { NodeGeometryContextualSources } from "core/Meshes/Node/Enums/nodeGeomet
 import { GeometryTrigonometryBlock, GeometryTrigonometryBlockOperations } from "core/Meshes/Node/Blocks/geometryTrigonometryBlock";
 import { GeometryElbowBlock } from "core/Meshes/Node/Blocks/geometryElbowBlock";
 import { InstantiateOnVerticesBlock } from "core/Meshes/Node/Blocks/instantiateOnVerticesBlock";
+import { MapRangeBlock } from "core/Meshes/Node/Blocks/mapRangeBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
             case "InstantiateOnVerticesBlock":
                 return new InstantiateOnVerticesBlock("Instantiate on vertices");
+            case "MapRangeBlock":
+                return new MapRangeBlock("Map Range");
             case "NormalizeBlock":
                 return new NormalizeVectorBlock("Normalize");
             case "MeshBlock":
@@ -222,6 +225,9 @@ export class BlockTools {
     public static GetColorFromConnectionNodeType(type: NodeGeometryBlockConnectionPointTypes) {
         let color = "#880000";
         switch (type) {
+            case NodeGeometryBlockConnectionPointTypes.Int:
+                color = "#2756CB";
+                break;
             case NodeGeometryBlockConnectionPointTypes.Float:
                 color = "#cb9e27";
                 break;
@@ -247,6 +253,8 @@ export class BlockTools {
 
     public static GetConnectionNodeTypeFromString(type: string) {
         switch (type) {
+            case "Int":
+                return NodeGeometryBlockConnectionPointTypes.Int;
             case "Float":
                 return NodeGeometryBlockConnectionPointTypes.Float;
             case "Vector2":
@@ -264,6 +272,8 @@ export class BlockTools {
 
     public static GetStringFromConnectionNodeType(type: NodeGeometryBlockConnectionPointTypes) {
         switch (type) {
+            case NodeGeometryBlockConnectionPointTypes.Int:
+                return "Int";
             case NodeGeometryBlockConnectionPointTypes.Float:
                 return "Float";
             case NodeGeometryBlockConnectionPointTypes.Vector2:

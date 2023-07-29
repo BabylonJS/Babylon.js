@@ -22,6 +22,7 @@ export * from "./Blocks/setNormalsBlock";
 export * from "./Blocks/setColorsBlock";
 export * from "./Blocks/setTangentsBlock";
 export * from "./Blocks/mathBlock";
+export * from "./Blocks/mapRangeBlock";
 export * from "./Blocks/randomBlock";
 export * from "./Blocks/noiseBlock";
 export * from "./Blocks/mergeGeometryBlock";

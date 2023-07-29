@@ -19,9 +19,9 @@ export class GroundBlock extends NodeGeometryBlock {
 
         this.registerInput("width", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
         this.registerInput("height", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
-        this.registerInput("subdivisions", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
-        this.registerInput("subdivisionsX", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
-        this.registerInput("subdivisionsY", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
+        this.registerInput("subdivisions", NodeGeometryBlockConnectionPointTypes.Int, true, 1);
+        this.registerInput("subdivisionsX", NodeGeometryBlockConnectionPointTypes.Int, true, 0);
+        this.registerInput("subdivisionsY", NodeGeometryBlockConnectionPointTypes.Int, true, 0);
 
         this.registerOutput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);
     }

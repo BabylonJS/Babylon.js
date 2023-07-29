@@ -63,6 +63,9 @@ export class InputDisplayManager implements IDisplayManager {
             }
         } else {
             switch (inputBlock.type) {
+                case NodeGeometryBlockConnectionPointTypes.Int:
+                    value = inputBlock.value.toFixed(0);
+                    break;                
                 case NodeGeometryBlockConnectionPointTypes.Float:
                     value = inputBlock.value.toFixed(4);
                     break;

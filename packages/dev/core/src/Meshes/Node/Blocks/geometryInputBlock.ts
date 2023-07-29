@@ -22,9 +22,6 @@ export class GeometryInputBlock extends NodeGeometryBlock {
     /** Gets or set a value used to limit the range of float values */
     public max: number = 0;
 
-    /** Gets or set a value indicating that this input can only get 0 and 1 values */
-    public isBoolean: boolean = false;
-
     /** Gets or sets the group to use to display this block in the Inspector */
     public groupInInspector = "";
 
@@ -116,9 +113,7 @@ export class GeometryInputBlock extends NodeGeometryBlock {
 
     public set value(value: any) {
         if (this.type === NodeGeometryBlockConnectionPointTypes.Float) {
-            if (this.isBoolean) {
-                value = value ? 1 : 0;
-            } else if (this.min !== this.max) {
+            if (this.min !== this.max) {
                 value = Math.max(this.min, value);
                 value = Math.min(this.max, value);
             }
@@ -161,7 +156,8 @@ export class GeometryInputBlock extends NodeGeometryBlock {
      */
     public setDefaultValue() {
         switch (this.type) {
-            case NodeGeometryBlockConnectionPointTypes.Float:
+            case NodeGeometryBlockConnectionPointTypes.Int:
+            case NodeGeometryBlockConnectionPointTypes.Float:                
                 this.value = 0;
                 break;
             case NodeGeometryBlockConnectionPointTypes.Vector2:
@@ -206,7 +202,6 @@ export class GeometryInputBlock extends NodeGeometryBlock {
         serializationObject.contextualValue = this.contextualValue;
         serializationObject.min = this.min;
         serializationObject.max = this.max;
-        serializationObject.isBoolean = this.isBoolean;
         serializationObject.groupInInspector = this.groupInInspector;
 
         if (this._storedValue != null && !this.isContextual) {
@@ -230,7 +225,6 @@ export class GeometryInputBlock extends NodeGeometryBlock {
         this.contextualValue = serializationObject.contextualValue;
         this.min = serializationObject.min || 0;
         this.max = serializationObject.max || 0;
-        this.isBoolean = !!serializationObject.isBoolean;
         this.groupInInspector = serializationObject.groupInInspector || "";
 
         if (!serializationObject.valueType) {

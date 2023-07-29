@@ -70,9 +70,7 @@ Block ideas:
 - subdivide
 - set Material
 - Instance on face (density?)
-- range node
 - mat cap option (Icon)
-- remove duplicate InstantiateOnVerticesBlock
 
 
 

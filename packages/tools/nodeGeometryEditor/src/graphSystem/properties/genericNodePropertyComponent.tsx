@@ -42,6 +42,37 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
     
     renderConnectionPoint(point: NodeGeometryConnectionPoint) {
         switch (point.type) {
+            case NodeGeometryBlockConnectionPointTypes.Int:{
+                if (point.notConnectedValueMax !== undefined && point.notConnectedValueMin !== undefined) {
+                    return (
+                        <SliderLineComponent
+                            lockObject={this.props.stateManager.lockObject}
+                            key={point.name}
+                            label={point.name}
+                            target={point}
+                            propertyName="notConnectedValue"
+                            decimalCount={0}
+                            step={1}
+                            minimum={point.notConnectedValueMin}
+                            maximum={point.notConnectedValueMax}
+                            onChange={() => this.processUpdate()}
+                        />
+                    )
+                }
+                return (
+                    <FloatLineComponent
+                        lockObject={this.props.stateManager.lockObject}
+                        key={point.name}
+                        label={point.name}
+                        isInteger={true}
+                        step="1"
+                        digits={0}
+                        target={point}
+                        propertyName="notConnectedValue"
+                        onChange={() => this.processUpdate()}
+                    />
+                );
+            }
             case NodeGeometryBlockConnectionPointTypes.Float: {
                 if (point.notConnectedValueMax !== undefined && point.notConnectedValueMin !== undefined) {
                     return (

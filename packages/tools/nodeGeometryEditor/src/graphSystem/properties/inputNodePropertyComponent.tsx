@@ -44,59 +44,51 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
     renderValue(globalState: GlobalState) {
         const inputBlock = this.props.nodeData.data as GeometryInputBlock;
         switch (inputBlock.type) {
+            case NodeGeometryBlockConnectionPointTypes.Int:
             case NodeGeometryBlockConnectionPointTypes.Float: {
                 const cantDisplaySlider = isNaN(inputBlock.min) || isNaN(inputBlock.max) || inputBlock.min === inputBlock.max;
+                const isIntger = inputBlock.type === NodeGeometryBlockConnectionPointTypes.Int;
                 return (
                     <>
-                        <CheckBoxLineComponent label="Is boolean" target={inputBlock} propertyName="isBoolean" />
-                        {inputBlock.isBoolean && (
-                            <CheckBoxLineComponent
-                                label="Value"
-                                isSelected={() => {
-                                    return inputBlock.value === 1;
-                                }}
-                                onSelect={(value) => {
-                                    inputBlock.value = value ? 1 : 0;
-                                    this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
-                                }}
-                            />
-                        )}
-                        {!inputBlock.isBoolean && (
-                            <FloatLineComponent
-                                lockObject={this.props.stateManager.lockObject}
-                                label="Min"
-                                target={inputBlock}
-                                propertyName="min"
-                                onChange={() => {
-                                    if (inputBlock.value < inputBlock.min) {
-                                        inputBlock.value = inputBlock.min;
-                                    }
-                                    this.forceUpdate();
-                                }}
-                            ></FloatLineComponent>
-                        )}
-                        {!inputBlock.isBoolean && (
-                            <FloatLineComponent
-                                lockObject={this.props.stateManager.lockObject}
-                                label="Max"
-                                target={inputBlock}
-                                propertyName="max"
-                                onChange={() => {
-                                    if (inputBlock.value > inputBlock.max) {
-                                        inputBlock.value = inputBlock.max;
-                                    }
-                                    this.forceUpdate();
-                                }}
-                            ></FloatLineComponent>
-                        )}
-                        {!inputBlock.isBoolean && cantDisplaySlider && <FloatPropertyTabComponent globalState={globalState} inputBlock={inputBlock} />}
-                        {!inputBlock.isBoolean && !cantDisplaySlider && (
+                        <FloatLineComponent
+                            lockObject={this.props.stateManager.lockObject}
+                            label="Min"
+                            target={inputBlock}
+                            isInteger={isIntger}
+                            propertyName="min"
+                            onChange={() => {
+                                if (inputBlock.value < inputBlock.min) {
+                                    inputBlock.value = inputBlock.min;
+                                }
+                                this.forceUpdate();
+                            }}
+                        ></FloatLineComponent>
+                        <FloatLineComponent
+                            lockObject={this.props.stateManager.lockObject}
+                            label="Max"
+                            target={inputBlock}
+                            isInteger={isIntger}
+                            propertyName="max"
+                            onChange={() => {
+                                if (inputBlock.value > inputBlock.max) {
+                                    inputBlock.value = inputBlock.max;
+                                }
+                                this.forceUpdate();
+                            }}
+                        ></FloatLineComponent>
+                        {cantDisplaySlider && 
+                            <FloatPropertyTabComponent 
+                                globalState={globalState} inputBlock={inputBlock}
+
+                            />}
+                        {!cantDisplaySlider && (
                             <SliderLineComponent
                                 lockObject={this.props.stateManager.lockObject}
                                 label="Value"
                                 target={inputBlock}
                                 propertyName="value"
-                                step={Math.abs(inputBlock.max - inputBlock.min) / 100.0}
+                                step={isIntger ? 1 : Math.abs(inputBlock.max - inputBlock.min) / 100.0}
+                                decimalCount={isIntger ? 0 : 2}
                                 minimum={Math.min(inputBlock.min, inputBlock.max)}
                                 maximum={inputBlock.max}
                                 onChange={() => {

@@ -19,7 +19,7 @@ export class DiscBlock extends NodeGeometryBlock {
         super(name);
 
         this.registerInput("radius", NodeGeometryBlockConnectionPointTypes.Float, true, 0.5);
-        this.registerInput("tessellation", NodeGeometryBlockConnectionPointTypes.Float, true, 64);
+        this.registerInput("tessellation", NodeGeometryBlockConnectionPointTypes.Int, true, 64);
         this.registerInput("arc", NodeGeometryBlockConnectionPointTypes.Float, true, 1.0);
 
         this.registerOutput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);

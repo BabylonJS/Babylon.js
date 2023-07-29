@@ -18,7 +18,7 @@ export class SphereBlock extends NodeGeometryBlock {
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("segments", NodeGeometryBlockConnectionPointTypes.Float, true, 32);
+        this.registerInput("segments", NodeGeometryBlockConnectionPointTypes.Int, true, 32);
         this.registerInput("diameter", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
         this.registerInput("diameterX", NodeGeometryBlockConnectionPointTypes.Float, true, 0);
         this.registerInput("diameterY", NodeGeometryBlockConnectionPointTypes.Float, true, 0);
