@@ -20,6 +20,7 @@ import { PreviewMode } from "./previewMode";
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { DataStorage } from "core/Misc/dataStorage";
 import type { TransformNode } from "core/Meshes/transformNode";
+import { MultiMaterial } from "core/Materials/multiMaterial";
 
 export class PreviewManager {
     private _nodeGeometry: NodeGeometry;
@@ -38,7 +39,7 @@ export class PreviewManager {
     private _globalState: GlobalState;
     private _matTexture: StandardMaterial;
     private _matCap: StandardMaterial;
-    private _matStd: StandardMaterial;
+    private _matStd: MultiMaterial;
     private _matNME: NodeMaterial;
     private _matVertexColor: StandardMaterial;
 
@@ -99,9 +100,7 @@ export class PreviewManager {
         matCapTexture.coordinatesMode = Texture.SPHERICAL_MODE;
         this._matCap.reflectionTexture = matCapTexture;
 
-        this._matStd = new StandardMaterial("MatStd", this._scene);
-        this._matStd.backFaceCulling = false;
-        this._matStd.specularColor = Color3.Black();
+        this._matStd = new MultiMaterial("MatStd", this._scene);
 
         this._matTexture = new StandardMaterial("MatTexture", this._scene);
         this._matTexture.backFaceCulling = false;
@@ -121,6 +120,25 @@ export class PreviewManager {
             this._engine.resize();
             this._scene.render();
         });
+    }
+
+    private _updateStandardMaterial() {
+        if (!this._mesh) {
+            return;
+        }
+
+        if (this._mesh.subMeshes.length <= this._matStd.subMaterials.length) {
+            return;
+        }
+
+        for (let i = this._matStd.subMaterials.length; i < this._mesh.subMeshes.length; i++) {
+            const newMat = new StandardMaterial("ChildStdMat", this._scene);
+            newMat.backFaceCulling = false;
+            newMat.specularColor = Color3.Black();
+            newMat.diffuseColor = new Color3(Math.random(), Math.random(), Math.random());
+
+            this._matStd.subMaterials.push(newMat);
+        }
     }
 
     private _handleAnimations() {
@@ -212,7 +230,7 @@ export class PreviewManager {
         switch (this._globalState.previewMode) {
             case PreviewMode.Normal:
                 this._mesh.material = useNM ? this._matNME : this._matStd;
-                this._matStd.wireframe = false;
+                this._matStd.subMaterials.forEach(m => m!.wireframe = false);
                 break;
             case PreviewMode.MatCap:
                 this._mesh.material = this._matCap;
@@ -221,8 +239,8 @@ export class PreviewManager {
                 this._mesh.material = this._matTexture;
                 break;                
             case PreviewMode.Wireframe:
-            this._mesh.material = useNM ? this._matNME : this._matStd;
-            this._matStd.wireframe = true;
+                this._mesh.material = useNM ? this._matNME : this._matStd;                
+                this._matStd.subMaterials.forEach(m => m!.wireframe = true);
             break;
             case PreviewMode.VertexColor:
                 this._mesh.material = this._matVertexColor;
@@ -236,6 +254,7 @@ export class PreviewManager {
             const nodeGeometry = NodeGeometry.Parse(serializationObject);
             this._mesh = nodeGeometry.createMesh("main", this._scene);
             if (this._mesh) {
+                this._updateStandardMaterial();
                 this._setMaterial();
                 this._mesh.useVertexColors = true;
             }

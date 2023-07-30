@@ -20,7 +20,7 @@ import { RotationZBlock } from "core/Meshes/Node/Blocks/Matrices/rotationZBlock"
 import { ScalingBlock } from "core/Meshes/Node/Blocks/Matrices/scalingBlock";
 import { TranslationBlock } from "core/Meshes/Node/Blocks/Matrices/translationBlock";
 import { MeshBlock } from "core/Meshes/Node/Blocks/Sources/meshBlock";
-import { GroundBlock } from "core/Meshes/Node/Blocks/Sources/groundBlock";
+import { GridBlock } from "core/Meshes/Node/Blocks/Sources/gridBlock";
 import { TorusBlock } from "core/Meshes/Node/Blocks/Sources/torusBlock";
 import { DiscBlock } from "core/Meshes/Node/Blocks/Sources/discBlock";
 import { MergeGeometryBlock } from "core/Meshes/Node/Blocks/mergeGeometryBlock";
@@ -32,6 +32,7 @@ import { MathBlock, MathBlockOperations } from "core/Meshes/Node/Blocks/mathBloc
 import { NodeGeometryContextualSources } from "core/Meshes/Node/Enums/nodeGeometryContextualSources";
 import { GeometryTrigonometryBlock, GeometryTrigonometryBlockOperations } from "core/Meshes/Node/Blocks/geometryTrigonometryBlock";
 import { GeometryElbowBlock } from "core/Meshes/Node/Blocks/geometryElbowBlock";
+import { SetMaterialIDBlock } from "core/Meshes/Node/Blocks/setMaterialIDBlock";
 import { InstantiateOnVerticesBlock } from "core/Meshes/Node/Blocks/instances/instantiateOnVerticesBlock";
 import { InstantiateOnFacesBlock } from "core/Meshes/Node/Blocks/instances/instantiateOnFacesBlock";
 import { MapRangeBlock } from "core/Meshes/Node/Blocks/mapRangeBlock";
@@ -39,6 +40,8 @@ import { MapRangeBlock } from "core/Meshes/Node/Blocks/mapRangeBlock";
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "SetMaterialIDBlock":
+                return new SetMaterialIDBlock("Set material ID");            
             case "InstantiateOnFacesBlock":
                 return new InstantiateOnFacesBlock("Instantiate on faces");
             case "InstantiateOnVerticesBlock":
@@ -79,8 +82,8 @@ export class BlockTools {
                 return new RandomBlock("Random");
             case "GeometryOutputBlock":
                 return new GeometryOutputBlock("Output");
-            case "GroundBlock":
-                return new GroundBlock("Ground");
+            case "GridBlock":
+                return new GridBlock("Grid");
             case "DiscBlock":
                 return new DiscBlock("Disc");
             case "IcoSphereBlock":

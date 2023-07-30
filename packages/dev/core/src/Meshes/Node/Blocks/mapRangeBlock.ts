@@ -22,8 +22,8 @@ export class MapRangeBlock extends NodeGeometryBlock {
 
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.BasedOnInput);
 
-        this._inputs[0].addExcludedConnectionPointFromAllowedTypes(NodeGeometryBlockConnectionPointTypes.Matrix);
-        this._inputs[0].addExcludedConnectionPointFromAllowedTypes(NodeGeometryBlockConnectionPointTypes.Geometry);
+        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Matrix);
+        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Geometry);
         this._outputs[0]._typeConnectionSource = this._inputs[0];
     }
 

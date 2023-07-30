@@ -78,28 +78,30 @@ export class MergeGeometryBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock(state: NodeGeometryBuildState) {
-        let vertexData = this.geometry0.getConnectedValue(state) as VertexData;
-        const additionalVertexData: VertexData[] = [];
+    protected _buildBlock() {
+        this.output._storedFunction = (state) => {
+            let vertexData = this.geometry0.getConnectedValue(state) as VertexData;
+            const additionalVertexData: VertexData[] = [];
+    
+            if (this.geometry1.isConnected) {
+                additionalVertexData.push(this.geometry1.getConnectedValue(state));
+            }
+            if (this.geometry2.isConnected) {
+                additionalVertexData.push(this.geometry2.getConnectedValue(state));
+            }
+            if (this.geometry3.isConnected) {
+                additionalVertexData.push(this.geometry3.getConnectedValue(state));
+            }
+            if (this.geometry4.isConnected) {
+                additionalVertexData.push(this.geometry4.getConnectedValue(state));
+            }
+    
+            if (additionalVertexData.length) {
+                vertexData = vertexData.merge(additionalVertexData, true);
+            }
 
-        if (this.geometry1.isConnected) {
-            additionalVertexData.push(this.geometry1.getConnectedValue(state));
-        }
-        if (this.geometry2.isConnected) {
-            additionalVertexData.push(this.geometry2.getConnectedValue(state));
-        }
-        if (this.geometry3.isConnected) {
-            additionalVertexData.push(this.geometry3.getConnectedValue(state));
-        }
-        if (this.geometry4.isConnected) {
-            additionalVertexData.push(this.geometry4.getConnectedValue(state));
-        }
-
-        if (additionalVertexData.length) {
-            vertexData = vertexData.merge(additionalVertexData, true);
-        }
-
-        this.output._storedValue = vertexData;
+            return vertexData;
+        };
     }
 }
 

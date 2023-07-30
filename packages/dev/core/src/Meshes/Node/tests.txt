@@ -66,11 +66,8 @@ var createScene = function () {
 
 
 Block ideas:
-- UVs as contextual data
 - subdivide
-- set Material
 - mat cap option (Icon)
-- ground to grid
 
 
 

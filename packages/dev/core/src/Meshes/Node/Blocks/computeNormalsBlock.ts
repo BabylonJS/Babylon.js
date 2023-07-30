@@ -41,20 +41,19 @@ export class ComputeNormalsBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock(state: NodeGeometryBuildState) {
-        super._buildBlock(state);
-        this.output._storedFunction = null;
+    protected _buildBlock() {
+        this.output._storedFunction = (state) => {
 
-        if (!this.geometry.isConnected) {
-            this.output._storedValue = null;
-            return;
+            if (!this.geometry.isConnected) {
+                return null;
+            }
+
+            const vertexData = this.geometry.getConnectedValue(state);
+
+            VertexData.ComputeNormals(vertexData.positions, vertexData.indices, vertexData.normals);
+
+            return vertexData;
         }
-
-        const vertexData = this.geometry.getConnectedValue(state);
-
-        VertexData.ComputeNormals(vertexData.positions, vertexData.indices, vertexData.normals);
-
-        this.output._storedValue = vertexData;
     }
 }
 

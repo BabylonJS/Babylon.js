@@ -4,14 +4,14 @@ import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnect
 import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { GeometryInputBlock } from "../geometryInputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { CreateGroundVertexData } from "../../../../Meshes/Builders";
+import { CreateGroundVertexData } from "../../../Builders";
 
 /**
- * Defines a block used to generate ground geometry data
+ * Defines a block used to generate grid geometry data
  */
-export class GroundBlock extends NodeGeometryBlock {
+export class GridBlock extends NodeGeometryBlock {
     /**
-     * Create a new GroundBlock
+     * Create a new GridBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
@@ -31,7 +31,7 @@ export class GroundBlock extends NodeGeometryBlock {
      * @returns the class name
      */
     public getClassName() {
-        return "GroundBlock";
+        return "GridBlock";
     }
 
     /**
@@ -103,4 +103,4 @@ export class GroundBlock extends NodeGeometryBlock {
     }
 }
 
-RegisterClass("BABYLON.GroundBlock", GroundBlock);
+RegisterClass("BABYLON.GridBlock", GridBlock);

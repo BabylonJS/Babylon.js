@@ -15,6 +15,7 @@ import { RuntimeError, ErrorCodes } from "../Misc/error";
 
 import type { Geometry } from "../Meshes/geometry";
 import type { Mesh } from "../Meshes/mesh";
+import { SubMesh } from "./subMesh";
 
 /**
  * Define an interface for all classes that will get and set the data on vertices
@@ -76,6 +77,20 @@ export interface IGetSetVerticesData {
      * @param updatable defines if the index buffer must be flagged as updatable (false by default)
      */
     setIndices(indices: IndicesArray, totalVertices: Nullable<number>, updatable?: boolean): void;
+}
+
+/** Class used to attach material info to sub section of a vertex data class */
+export class VertexDataMaterialInfo {
+    /** Defines the material index to use */
+    public materialIndex: number;
+    /** Defines vertex index start*/
+    public verticesStart: number;
+    /** Defines vertices count */
+    public verticesCount: number;
+    /** Defines index start */
+    public indexStart: number;
+    /** Defines indices count */
+    public indexCount: number;
 }
 
 /**
@@ -173,6 +188,11 @@ export class VertexData {
      * An array of i, j, k the three vertex indices required for each triangular facet  [...., i, j, k .....]
      */
     public indices: Nullable<IndicesArray>;
+
+    /**
+     * An array defining material association for sub sections of the vertex data
+     */
+    public materialInfos: Nullable<Array<VertexDataMaterialInfo>>;
 
     /**
      * Uses the passed data array to set the set the values for the specified kind of data
@@ -387,6 +407,20 @@ export class VertexData {
             meshOrGeometry.setIndices([], null);
         }
 
+        if ((meshOrGeometry as Mesh).subMeshes && this.materialInfos && this.materialInfos.length > 1) {
+            const mesh = meshOrGeometry as Mesh;
+            mesh.subMeshes = [];
+            for (const matInfo of this.materialInfos) {
+                mesh.subMeshes.push(new SubMesh(
+                    matInfo.materialIndex,
+                    matInfo.verticesStart,
+                    matInfo.verticesCount, 
+                    matInfo.indexStart,
+                    matInfo.indexCount,
+                    mesh));
+            }
+        }
+
         return this;
     }
 
@@ -579,7 +613,57 @@ export class VertexData {
                 throw new Error("Cannot merge vertex data that do not have the same set of attributes");
             }
         }
+        
+        // Merge material infos
+        let materialIndex = 0;
+        let indexOffset = 0;
+        let vertexOffset = 0;
+        const materialInfos: VertexDataMaterialInfo[] = [];
+        let currentMaterialInfo: Nullable<VertexDataMaterialInfo> = null;
+        const vertexDataList: VertexData[] = [this];
+        for (const vertexData of vertexDatas) {
+            vertexDataList.push(vertexData.vertexData);
+        }
 
+        for (const vertexData of vertexDataList) {
+            if (vertexData.materialInfos) {
+                if (vertexData.materialInfos.length === 1) {
+                    materialIndex = vertexData.materialInfos[0].materialIndex;
+                } else {
+                    for (const materialInfo of vertexData.materialInfos) {
+                        const materialInfoCopy = new VertexDataMaterialInfo();
+                        materialInfoCopy.materialIndex = materialInfo.materialIndex;
+                        materialInfoCopy.indexStart = materialInfo.indexStart + indexOffset;
+                        materialInfoCopy.indexCount = materialInfo.indexCount;
+                        materialInfoCopy.verticesStart = materialInfo.verticesStart + vertexOffset;
+                        materialInfoCopy.verticesCount = materialInfo.verticesCount;
+                        materialInfos.push(materialInfoCopy);
+                        currentMaterialInfo = materialInfoCopy;
+                    }
+                }
+            } else {
+                materialIndex = 0;
+            }
+            if (currentMaterialInfo && currentMaterialInfo.materialIndex === materialIndex) {
+                currentMaterialInfo.indexCount += vertexData.indices!.length;
+                currentMaterialInfo.verticesCount += vertexData.positions!.length / 3;
+            } else {
+                const materialInfo = new VertexDataMaterialInfo();
+                materialInfo.materialIndex = materialIndex;
+                materialInfo.indexStart = indexOffset;
+                materialInfo.indexCount = vertexData.indices!.length;
+                materialInfo.verticesStart = vertexOffset;
+                materialInfo.verticesCount = vertexData.positions!.length / 3;
+
+                materialInfos.push(materialInfo);
+                currentMaterialInfo = materialInfo;
+            }
+            indexOffset += vertexData.indices!.length;
+            vertexOffset += vertexData.positions!.length / 3;
+        }   
+        this.materialInfos = materialInfos;             
+
+        // Merge geometries
         const totalIndices = others.reduce((indexSum, vertexData) => indexSum + (vertexData.indices?.length ?? 0), this.indices?.length ?? 0);
         const sliceIndices = forceCloneIndices || others.some((vertexData) => vertexData.indices === this.indices);
         let indices = sliceIndices ? this.indices?.slice() : this.indices;
@@ -750,7 +834,7 @@ export class VertexData {
             this.matricesWeightsExtra,
             transform,
             vertexDatas.map((other) => [other.vertexData.matricesWeightsExtra, other.transform])
-        );
+        );        
 
         return this;
     }

@@ -101,7 +101,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         // Block types used to create the menu from
         const allBlocks: any = {
             Custom_Frames: customFrameNames,
-            Sources: ["BoxBlock", "PlaneBlock", "SphereBlock", "TorusBlock", "CylinderBlock", "CapsuleBlock", "DiscBlock", "IcoSphereBlock", "MeshBlock", "GroundBlock"],
+            Sources: ["BoxBlock", "PlaneBlock", "SphereBlock", "TorusBlock", "CylinderBlock", "CapsuleBlock", "DiscBlock", "IcoSphereBlock", "MeshBlock", "GridBlock"],
             Inputs: ["Float", "Vector2", "Vector3", "Vector4"],
             Contextual: ["PositionsBlock", "NormalsBlock", "ColorsBlock", "TangentsBlock", "UV1sBlock", "UV2sBlock", "UV3sBlock", "UV4sBlock", "UV5sBlock", "UV6sBlock"],
             Math__Standard: [
@@ -123,7 +123,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Matrices: ["RotationXBlock", "RotationYBlock", "RotationZBlock", "ScalingBlock", "TranslationBlock"],
             Instances: ["InstantiateOnVerticesBlock", "InstantiateOnFacesBlock"],
             Misc: ["ElbowBlock"],
-            Updates: ["SetColorsBlock", "SetNormalsBlock", "SetPositionsBlock", "SetTangentsBlock", "SetUVsBlock", "MergeBlock", "ComputeNormalsBlock"],
+            Updates: ["SetColorsBlock", "SetNormalsBlock", "SetPositionsBlock", "SetTangentsBlock", "SetUVsBlock", "SetMaterialIDBlock", "MergeBlock", "ComputeNormalsBlock"],
             Noises: ["RandomBlock", "NoiseBlock"],
             Output_Nodes: ["GeometryOutputBlock"],
         };

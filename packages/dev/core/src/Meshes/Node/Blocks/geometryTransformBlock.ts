@@ -2,13 +2,20 @@ import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
-import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
-import { Vector3, Vector4 } from "../../../Maths";
+import { Matrix} from "../../../Maths/math.vector";
+import { Vector2, Vector3, Vector4 } from "../../../Maths/math.vector";
+import type { VertexData } from "../../../Meshes/mesh.vertexData";
 
 /**
  * Block used to apply a transform to vector
  */
 export class GeometryTransformBlock extends NodeGeometryBlock {
+    private _rotationMatrix = new Matrix();
+    private _scalingMatrix = new Matrix();
+    private _translationMatrix = new Matrix();
+    private _scalingRotationMatrix = new Matrix();
+    private _transformMatrix = new Matrix();
+    
     /**
      * Create a new GeometryTransformBlock
      * @param name defines the block name
@@ -16,13 +23,17 @@ export class GeometryTransformBlock extends NodeGeometryBlock {
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("value", NodeGeometryBlockConnectionPointTypes.Vector3);
-        this.registerInput("matrix", NodeGeometryBlockConnectionPointTypes.Matrix);
+        this.registerInput("value", NodeGeometryBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("matrix", NodeGeometryBlockConnectionPointTypes.Matrix, true);
+        this.registerInput("translation", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.Zero());
+        this.registerInput("rotation", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.Zero());
+        this.registerInput("scaling", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.One());
 
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.BasedOnInput);
 
         this._outputs[0]._typeConnectionSource = this._inputs[0];
-        this._inputs[0].acceptedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Vector4);
+        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Float);
+        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Matrix);
     }
 
     /**
@@ -48,14 +59,35 @@ export class GeometryTransformBlock extends NodeGeometryBlock {
     }
 
     /**
+     * Gets the translation input component
+     */
+    public get translation(): NodeGeometryConnectionPoint {
+        return this._inputs[2];
+    }
+    
+    /**
+     * Gets the rotation input component
+     */
+    public get rotation(): NodeGeometryConnectionPoint {
+        return this._inputs[3];
+    }
+    
+    /**
+     * Gets the scaling input component
+     */
+    public get scaling(): NodeGeometryConnectionPoint {
+        return this._inputs[4];
+    }    
+
+    /**
      * Gets the output component
      */
     public get output(): NodeGeometryConnectionPoint {
         return this._outputs[0];
     }
 
-    protected _buildBlock(state: NodeGeometryBuildState) {
-        if (!this.value.isConnected || !this.matrix.isConnected) {
+    protected _buildBlock() {
+        if (!this.value.isConnected) {
             this.output._storedFunction = null;
             this.output._storedValue = null;
             return;
@@ -63,12 +95,40 @@ export class GeometryTransformBlock extends NodeGeometryBlock {
 
         this.output._storedFunction = (state) => {
             const value = this.value.getConnectedValue(state);
+            let matrix: Matrix;
+            
+            if (this.matrix.isConnected) {
+                matrix = this.matrix.getConnectedValue(state);
+            } else {
+                const scaling = this.scaling.getConnectedValue(state);
+                const rotation = this.rotation.getConnectedValue(state);
+                const translation = this.translation.getConnectedValue(state);
+
+                // Transform
+                Matrix.ScalingToRef(scaling.x, scaling.y, scaling.z, this._scalingMatrix);
+                Matrix.RotationYawPitchRollToRef(rotation.y, rotation.x, rotation.z, this._rotationMatrix);
+                Matrix.TranslationToRef(
+                    translation.x, translation.y, translation.z,
+                    this._translationMatrix
+                );
+
+                this._scalingMatrix.multiplyToRef(this._rotationMatrix, this._scalingRotationMatrix);
+                this._scalingRotationMatrix.multiplyToRef(this._translationMatrix, this._transformMatrix);
+                matrix = this._transformMatrix;
+            }
 
             switch (this.value.type) {
+                case NodeGeometryBlockConnectionPointTypes.Geometry: {
+                    const geometry = value as VertexData;
+                    geometry.transform(matrix);
+                    return geometry;
+                }
+                case NodeGeometryBlockConnectionPointTypes.Vector2:
+                    return Vector2.Transform(value, matrix);
                 case NodeGeometryBlockConnectionPointTypes.Vector3:
-                    return Vector3.TransformCoordinates(value, this.matrix.getConnectedValue(state));
+                    return Vector3.TransformCoordinates(value, matrix);
                 case NodeGeometryBlockConnectionPointTypes.Vector4:
-                    return Vector4.TransformCoordinates(value, this.matrix.getConnectedValue(state));
+                    return Vector4.TransformCoordinates(value, matrix);
             }
 
             return null;
