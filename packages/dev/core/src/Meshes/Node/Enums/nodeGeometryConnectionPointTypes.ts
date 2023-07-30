@@ -3,7 +3,7 @@
  */
 export enum NodeGeometryBlockConnectionPointTypes {
     /** Int */
-    Int = 0x0001,    
+    Int = 0x0001,
     /** Float */
     Float = 0x0002,
     /** Vector2 */

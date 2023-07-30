@@ -101,18 +101,22 @@ export class PreviewManager {
         this._matCap.reflectionTexture = matCapTexture;
 
         this._matStd = new MultiMaterial("MatStd", this._scene);
+        const subMat = new StandardMaterial("ChildStdMat", this._scene);
+        subMat.backFaceCulling = false;
+        subMat.specularColor = Color3.Black();
+        this._matStd.subMaterials.push(subMat);
 
         this._matTexture = new StandardMaterial("MatTexture", this._scene);
         this._matTexture.backFaceCulling = false;
         this._matTexture.emissiveTexture = new Texture("https://assets.babylonjs.com/textures/amiga.jpg", this._scene);
-        this._matTexture.disableLighting = true;       
+        this._matTexture.disableLighting = true;
 
         this._matVertexColor = new StandardMaterial("VertexColor", this._scene);
         this._matVertexColor.disableLighting = true;
         this._matVertexColor.backFaceCulling = false;
         this._matVertexColor.emissiveColor = Color3.White();
 
-        this._light = new HemisphericLight("Hemispheric light", new Vector3(0, 1, 0), this._scene);        
+        this._light = new HemisphericLight("Hemispheric light", new Vector3(0, 1, 0), this._scene);
 
         this._refreshPreviewMesh(true);
 
@@ -230,18 +234,18 @@ export class PreviewManager {
         switch (this._globalState.previewMode) {
             case PreviewMode.Normal:
                 this._mesh.material = useNM ? this._matNME : this._matStd;
-                this._matStd.subMaterials.forEach(m => m!.wireframe = false);
+                this._matStd.subMaterials.forEach((m) => (m!.wireframe = false));
                 break;
             case PreviewMode.MatCap:
                 this._mesh.material = this._matCap;
-                break;                
+                break;
             case PreviewMode.Textured:
                 this._mesh.material = this._matTexture;
-                break;                
+                break;
             case PreviewMode.Wireframe:
-                this._mesh.material = useNM ? this._matNME : this._matStd;                
-                this._matStd.subMaterials.forEach(m => m!.wireframe = true);
-            break;
+                this._mesh.material = useNM ? this._matNME : this._matStd;
+                this._matStd.subMaterials.forEach((m) => (m!.wireframe = true));
+                break;
             case PreviewMode.VertexColor:
                 this._mesh.material = this._matVertexColor;
                 break;

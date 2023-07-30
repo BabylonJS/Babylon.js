@@ -68,7 +68,7 @@ export class MapRangeBlock extends NodeGeometryBlock {
      */
     public get toMax(): NodeGeometryConnectionPoint {
         return this._inputs[4];
-    }    
+    }
 
     /**
      * Gets the output component
@@ -89,7 +89,7 @@ export class MapRangeBlock extends NodeGeometryBlock {
             const fromMin = this.fromMin.getConnectedValue(state);
             const fromMax = this.fromMax.getConnectedValue(state);
             const toMin = this.toMin.getConnectedValue(state);
-            const toMax = this.toMax.getConnectedValue(state);            
+            const toMax = this.toMax.getConnectedValue(state);
 
             return ((value - fromMin) / (fromMax - fromMin)) * (toMax - toMin) + toMin;
         };

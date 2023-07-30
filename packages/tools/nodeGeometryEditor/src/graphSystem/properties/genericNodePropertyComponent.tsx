@@ -39,10 +39,10 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
     processUpdate() {
         this.props.stateManager.onUpdateRequiredObservable.notifyObservers(null);
     }
-    
+
     renderConnectionPoint(point: NodeGeometryConnectionPoint) {
         switch (point.type) {
-            case NodeGeometryBlockConnectionPointTypes.Int:{
+            case NodeGeometryBlockConnectionPointTypes.Int: {
                 if (point.notConnectedValueMax !== undefined && point.notConnectedValueMin !== undefined) {
                     return (
                         <SliderLineComponent
@@ -57,7 +57,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                             maximum={point.notConnectedValueMax}
                             onChange={() => this.processUpdate()}
                         />
-                    )
+                    );
                 }
                 return (
                     <FloatLineComponent
@@ -77,18 +77,18 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                 if (point.notConnectedValueMax !== undefined && point.notConnectedValueMin !== undefined) {
                     return (
                         <SliderLineComponent
-                        lockObject={this.props.stateManager.lockObject}
-                        key={point.name}
-                        label={point.name}
-                        target={point}
-                        propertyName="notConnectedValue"
-                        decimalCount={2}
-                        step={(point.notConnectedValueMax - point.notConnectedValueMin) / 100.0}
-                        minimum={point.notConnectedValueMin}
-                        maximum={point.notConnectedValueMax}
-                        onChange={() => this.processUpdate()}
-                    />
-                    )
+                            lockObject={this.props.stateManager.lockObject}
+                            key={point.name}
+                            label={point.name}
+                            target={point}
+                            propertyName="notConnectedValue"
+                            decimalCount={2}
+                            step={(point.notConnectedValueMax - point.notConnectedValueMin) / 100.0}
+                            minimum={point.notConnectedValueMin}
+                            maximum={point.notConnectedValueMax}
+                            onChange={() => this.processUpdate()}
+                        />
+                    );
                 }
                 return (
                     <FloatLineComponent
@@ -170,20 +170,15 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                         onChange={() => this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block)}
                         throttlePropertyChangedNotification={true}
                     />
-                    { block.buildExecutionTime !== 0 &&
-                        <TextLineComponent label="Build execution time" value={`${block.buildExecutionTime.toFixed(2)} ms`} />
-                    }
+                    {block.buildExecutionTime !== 0 && <TextLineComponent label="Build execution time" value={`${block.buildExecutionTime.toFixed(2)} ms`} />}
                 </LineContainerComponent>
-                {
-                    nonConnectedInputs.length > 0 &&
+                {nonConnectedInputs.length > 0 && (
                     <LineContainerComponent title="PROPERTIES">
-                        {
-                            nonConnectedInputs.map((input) => {
-                                return this.renderConnectionPoint(input);
-                            })
-                        }
+                        {nonConnectedInputs.map((input) => {
+                            return this.renderConnectionPoint(input);
+                        })}
                     </LineContainerComponent>
-                }
+                )}
             </>
         );
     }

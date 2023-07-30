@@ -18,7 +18,7 @@ export class IcoSphereBlock extends NodeGeometryBlock {
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("radius", NodeGeometryBlockConnectionPointTypes.Float, true, 1) ;
+        this.registerInput("radius", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
         this.registerInput("radiusX", NodeGeometryBlockConnectionPointTypes.Float, true, 0);
         this.registerInput("radiusY", NodeGeometryBlockConnectionPointTypes.Float, true, 0);
         this.registerInput("radiusZ", NodeGeometryBlockConnectionPointTypes.Float, true, 0);

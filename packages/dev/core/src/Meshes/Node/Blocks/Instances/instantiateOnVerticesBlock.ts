@@ -18,7 +18,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
     /**
      * Gets or sets a boolean indicating if the block should remove duplicated positions
      */
-    @editableInPropertyPage("Remove duplicated positions", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })    
+    @editableInPropertyPage("Remove duplicated positions", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
     public removeDuplicatedPositions = false;
 
     /**
@@ -87,7 +87,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
      */
     public get density(): NodeGeometryConnectionPoint {
         return this._inputs[4];
-    }    
+    }
 
     /**
      * Gets the geometry output component
@@ -116,7 +116,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
         if (!instanceGeometry || !instanceGeometry.positions || instanceGeometry.positions.length === 0) {
             state.executionContext = null;
             state.geometryContext = null;
-            this.output._storedValue = null;            
+            this.output._storedValue = null;
             return;
         }
 
@@ -149,7 +149,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
                 }
                 alreadyDone.push(currentPosition.clone());
             }
-            
+
             // Clone the instance
             const clone = instanceGeometry.clone();
 
@@ -164,7 +164,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
             if (additionalVertexData.length === 1) {
                 this._vertexData = additionalVertexData[0];
             } else {
-            // We do not merge the main one as user can use a merge node if wanted
+                // We do not merge the main one as user can use a merge node if wanted
                 const main = additionalVertexData.splice(0, 1)[0];
                 this._vertexData = main.merge(additionalVertexData, true);
             }
@@ -197,7 +197,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
         super._deserialize(serializationObject, rootUrl);
 
         this.removeDuplicatedPositions = serializationObject.removeDuplicatedPositions;
-    }    
+    }
 }
 
 RegisterClass("BABYLON.InstantiateOnVerticesBlock", InstantiateOnVerticesBlock);

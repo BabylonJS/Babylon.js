@@ -65,7 +65,7 @@ export class ConnectionPointPortData implements IPortData {
                 const globalState = (this._nodeContainer as GraphCanvasComponent).stateManager.data as GlobalState;
                 if (globalState.nodeMaterial!.attachedBlocks.indexOf(otherBlock) === -1) {
                     globalState.nodeMaterial!.attachedBlocks.push(otherBlock);
-                }                
+                }
             }
 
             this._connectedPort = otherNode.getPortDataForPortDataContent(this.data.connectedPoint!);

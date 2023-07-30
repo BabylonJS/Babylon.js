@@ -67,33 +67,33 @@ export class NodeGeometryBuildState {
                 if (!this.geometryContext.uvs) {
                     return Vector2.Zero();
                 }
-                return Vector2.FromArray(this.geometryContext.uvs as ArrayLike<number>, index * 2);     
+                return Vector2.FromArray(this.geometryContext.uvs as ArrayLike<number>, index * 2);
             case NodeGeometryContextualSources.UV2:
                 if (!this.geometryContext.uvs2) {
                     return Vector2.Zero();
                 }
-                return Vector2.FromArray(this.geometryContext.uvs2 as ArrayLike<number>, index * 2);   
+                return Vector2.FromArray(this.geometryContext.uvs2 as ArrayLike<number>, index * 2);
             case NodeGeometryContextualSources.UV3:
                 if (!this.geometryContext.uvs3) {
                     return Vector2.Zero();
                 }
-                return Vector2.FromArray(this.geometryContext.uvs3 as ArrayLike<number>, index * 2);   
+                return Vector2.FromArray(this.geometryContext.uvs3 as ArrayLike<number>, index * 2);
             case NodeGeometryContextualSources.UV4:
                 if (!this.geometryContext.uvs4) {
                     return Vector2.Zero();
                 }
-                return Vector2.FromArray(this.geometryContext.uvs4 as ArrayLike<number>, index * 2);   
+                return Vector2.FromArray(this.geometryContext.uvs4 as ArrayLike<number>, index * 2);
             case NodeGeometryContextualSources.UV5:
                 if (!this.geometryContext.uvs5) {
                     return Vector2.Zero();
                 }
-                return Vector2.FromArray(this.geometryContext.uvs5 as ArrayLike<number>, index * 2);                                                                                                                                      
+                return Vector2.FromArray(this.geometryContext.uvs5 as ArrayLike<number>, index * 2);
             case NodeGeometryContextualSources.UV6:
                 if (!this.geometryContext.uvs6) {
                     return Vector2.Zero();
                 }
-                return Vector2.FromArray(this.geometryContext.uvs6 as ArrayLike<number>, index * 2);   
-            }
+                return Vector2.FromArray(this.geometryContext.uvs6 as ArrayLike<number>, index * 2);
+        }
 
         return null;
     }
@@ -171,29 +171,26 @@ export class NodeGeometryBuildState {
     }
 
     /** @hidden */
-    public _instantiate(clone:VertexData, currentPosition: Vector3, rotation: Vector3, scaling: Vector3, additionalVertexData: VertexData[]) {
-            // Transform
-            Matrix.ScalingToRef(scaling.x, scaling.y, scaling.z, this._scalingMatrix);
-            Matrix.RotationYawPitchRollToRef(rotation.y, rotation.x, rotation.z, this._rotationMatrix);
-            Matrix.TranslationToRef(
-                currentPosition.x, currentPosition.y, currentPosition.z,
-                this._positionMatrix
-            );
+    public _instantiate(clone: VertexData, currentPosition: Vector3, rotation: Vector3, scaling: Vector3, additionalVertexData: VertexData[]) {
+        // Transform
+        Matrix.ScalingToRef(scaling.x, scaling.y, scaling.z, this._scalingMatrix);
+        Matrix.RotationYawPitchRollToRef(rotation.y, rotation.x, rotation.z, this._rotationMatrix);
+        Matrix.TranslationToRef(currentPosition.x, currentPosition.y, currentPosition.z, this._positionMatrix);
 
-            this._scalingMatrix.multiplyToRef(this._rotationMatrix, this._scalingRotationMatrix);
-            this._scalingRotationMatrix.multiplyToRef(this._positionMatrix, this._transformMatrix);
-            for (let clonePositionIndex = 0; clonePositionIndex < clone.positions!.length; clonePositionIndex += 3) {
-                this._tempVector3.fromArray(clone.positions!, clonePositionIndex);
-                Vector3.TransformCoordinatesToRef(this._tempVector3, this._transformMatrix, this._tempVector3);
-                this._tempVector3.toArray(clone.positions!, clonePositionIndex);
+        this._scalingMatrix.multiplyToRef(this._rotationMatrix, this._scalingRotationMatrix);
+        this._scalingRotationMatrix.multiplyToRef(this._positionMatrix, this._transformMatrix);
+        for (let clonePositionIndex = 0; clonePositionIndex < clone.positions!.length; clonePositionIndex += 3) {
+            this._tempVector3.fromArray(clone.positions!, clonePositionIndex);
+            Vector3.TransformCoordinatesToRef(this._tempVector3, this._transformMatrix, this._tempVector3);
+            this._tempVector3.toArray(clone.positions!, clonePositionIndex);
 
-                if (clone.normals) {
-                    this._tempVector3.fromArray(clone.normals, clonePositionIndex);
-                    Vector3.TransformNormalToRef(this._tempVector3, this._scalingRotationMatrix, this._tempVector3);
-                    this._tempVector3.toArray(clone.normals, clonePositionIndex);
-                }
+            if (clone.normals) {
+                this._tempVector3.fromArray(clone.normals, clonePositionIndex);
+                Vector3.TransformNormalToRef(this._tempVector3, this._scalingRotationMatrix, this._tempVector3);
+                this._tempVector3.toArray(clone.normals, clonePositionIndex);
             }
+        }
 
-            additionalVertexData.push(clone);
+        additionalVertexData.push(clone);
     }
 }

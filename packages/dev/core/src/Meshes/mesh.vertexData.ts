@@ -411,13 +411,7 @@ export class VertexData {
             const mesh = meshOrGeometry as Mesh;
             mesh.subMeshes = [];
             for (const matInfo of this.materialInfos) {
-                mesh.subMeshes.push(new SubMesh(
-                    matInfo.materialIndex,
-                    matInfo.verticesStart,
-                    matInfo.verticesCount, 
-                    matInfo.indexStart,
-                    matInfo.indexCount,
-                    mesh));
+                mesh.subMeshes.push(new SubMesh(matInfo.materialIndex, matInfo.verticesStart, matInfo.verticesCount, matInfo.indexStart, matInfo.indexCount, mesh));
             }
         }
 
@@ -613,7 +607,7 @@ export class VertexData {
                 throw new Error("Cannot merge vertex data that do not have the same set of attributes");
             }
         }
-        
+
         // Merge material infos
         let materialIndex = 0;
         let indexOffset = 0;
@@ -640,6 +634,10 @@ export class VertexData {
                         materialInfos.push(materialInfoCopy);
                         currentMaterialInfo = materialInfoCopy;
                     }
+
+                    indexOffset += vertexData.indices!.length;
+                    vertexOffset += vertexData.positions!.length / 3;
+                    continue;
                 }
             } else {
                 materialIndex = 0;
@@ -660,8 +658,8 @@ export class VertexData {
             }
             indexOffset += vertexData.indices!.length;
             vertexOffset += vertexData.positions!.length / 3;
-        }   
-        this.materialInfos = materialInfos;             
+        }
+        this.materialInfos = materialInfos;
 
         // Merge geometries
         const totalIndices = others.reduce((indexSum, vertexData) => indexSum + (vertexData.indices?.length ?? 0), this.indices?.length ?? 0);
@@ -834,7 +832,7 @@ export class VertexData {
             this.matricesWeightsExtra,
             transform,
             vertexDatas.map((other) => [other.vertexData.matricesWeightsExtra, other.transform])
-        );        
+        );
 
         return this;
     }

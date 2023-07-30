@@ -57,7 +57,7 @@ export class SetMaterialIDBlock extends NodeGeometryBlock {
             return;
         }
 
-        this.output._storedFunction = (state) => { 
+        this.output._storedFunction = (state) => {
             const vertexData = this.geometry.getConnectedValue(state) as VertexData;
             if (!vertexData.indices || !vertexData.positions) {
                 return vertexData;
@@ -68,14 +68,12 @@ export class SetMaterialIDBlock extends NodeGeometryBlock {
             materialInfo.indexStart = 0;
             materialInfo.indexCount = vertexData.indices.length;
             materialInfo.verticesStart = 0;
-            materialInfo.verticesCount = vertexData.positions.length / 3;            
+            materialInfo.verticesCount = vertexData.positions.length / 3;
 
-            vertexData.materialInfos = [
-                materialInfo
-            ];
+            vertexData.materialInfos = [materialInfo];
 
             return vertexData;
-        }
+        };
     }
 }
 

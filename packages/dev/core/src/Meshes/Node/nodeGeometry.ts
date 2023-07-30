@@ -32,7 +32,7 @@ export class NodeGeometry {
      */
     public get buildExecutionTime() {
         return this._buildExecutionTime;
-    }    
+    }
 
     /**
      * Gets or sets data used by visual editor

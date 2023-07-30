@@ -95,11 +95,11 @@ export class NodeGeometryConnectionPoint {
      * Gets or sets the min value accepted for this point if nothing is connected
      */
     public notConnectedValueMin: Nullable<any> = null;
-    
+
     /**
      * Gets or sets the max value accepted for this point if nothing is connected
      */
-    public notConnectedValueMax: Nullable<any> = null;    
+    public notConnectedValueMax: Nullable<any> = null;
 
     /**
      * Gets or sets the connection point type (default is float)

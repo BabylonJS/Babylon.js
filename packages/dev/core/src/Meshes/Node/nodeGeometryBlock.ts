@@ -153,7 +153,14 @@ export class NodeGeometryBlock {
      * @param notConnectedValueMax max value accepted for notConnectedValue
      * @returns the current block
      */
-    public registerInput(name: string, type: NodeGeometryBlockConnectionPointTypes, isOptional: boolean = false, notConnectedValue?: any, notConnectedValueMin?: any, notConnectedValueMax?: any) {
+    public registerInput(
+        name: string,
+        type: NodeGeometryBlockConnectionPointTypes,
+        isOptional: boolean = false,
+        notConnectedValue?: any,
+        notConnectedValueMin?: any,
+        notConnectedValueMax?: any
+    ) {
         const point = new NodeGeometryConnectionPoint(name, this, NodeGeometryConnectionPointDirection.Input);
         point.type = type;
         point.isOptional = isOptional;
@@ -352,7 +359,7 @@ export class NodeGeometryBlock {
                         this.inputs[i].notConnectedValue = port.notConnectedValue;
                     } else {
                         const valueType = GetClass(port.notConnectedValueType);
-            
+
                         if (valueType) {
                             this.inputs[i].notConnectedValue = valueType.FromArray(port.notConnectedValue);
                         }

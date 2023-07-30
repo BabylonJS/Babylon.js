@@ -66,7 +66,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
             this.props.globalState.previewMode = PreviewMode.MatCap;
         }
         this.forceUpdate();
-    }    
+    }
 
     changeTexture() {
         if (this.props.globalState.previewMode === PreviewMode.Textured) {
@@ -75,7 +75,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
             this.props.globalState.previewMode = PreviewMode.Textured;
         }
         this.forceUpdate();
-    }    
+    }
 
     render() {
         return (
@@ -92,14 +92,14 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
                             className={"button mat-texture" + (this.props.globalState.previewMode === PreviewMode.Textured ? " selected" : "")}
                         >
                             <img src={texture} alt="" />
-                        </div>                          
+                        </div>
                         <div
                             title="Render with mat cap"
                             onClick={() => this.changeMatCap()}
                             className={"button mat-cap" + (this.props.globalState.previewMode === PreviewMode.MatCap ? " selected" : "")}
                         >
                             <img src={matCap} alt="" />
-                        </div>                        
+                        </div>
                         <div
                             title="Render with vertex color"
                             onClick={() => this.changeVertexColor()}

@@ -41,7 +41,7 @@ export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
             case "SetMaterialIDBlock":
-                return new SetMaterialIDBlock("Set material ID");            
+                return new SetMaterialIDBlock("Set material ID");
             case "InstantiateOnFacesBlock":
                 return new InstantiateOnFacesBlock("Instantiate on faces");
             case "InstantiateOnVerticesBlock":
@@ -130,32 +130,32 @@ export class BlockTools {
                 const block = new GeometryInputBlock("UV1s");
                 block.contextualValue = NodeGeometryContextualSources.UV;
                 return block;
-            }        
+            }
             case "UV2sBlock": {
                 const block = new GeometryInputBlock("UV2s");
                 block.contextualValue = NodeGeometryContextualSources.UV2;
                 return block;
-            }                  
+            }
             case "UV3sBlock": {
                 const block = new GeometryInputBlock("UV3s");
                 block.contextualValue = NodeGeometryContextualSources.UV3;
                 return block;
-            }          
+            }
             case "UV4sBlock": {
                 const block = new GeometryInputBlock("UV4s");
                 block.contextualValue = NodeGeometryContextualSources.UV4;
                 return block;
-            }          
+            }
             case "UV5sBlock": {
                 const block = new GeometryInputBlock("UV5s");
                 block.contextualValue = NodeGeometryContextualSources.UV5;
                 return block;
-            }          
+            }
             case "UV6sBlock": {
                 const block = new GeometryInputBlock("UV6s");
                 block.contextualValue = NodeGeometryContextualSources.UV6;
                 return block;
-            }                                                             
+            }
             case "AddBlock": {
                 const block = new MathBlock("Add");
                 block.operation = MathBlockOperations.Add;

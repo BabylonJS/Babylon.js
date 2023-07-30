@@ -76,11 +76,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                 this.forceUpdate();
                             }}
                         ></FloatLineComponent>
-                        {cantDisplaySlider && 
-                            <FloatPropertyTabComponent 
-                                globalState={globalState} inputBlock={inputBlock}
-
-                            />}
+                        {cantDisplaySlider && <FloatPropertyTabComponent globalState={globalState} inputBlock={inputBlock} />}
                         {!cantDisplaySlider && (
                             <SliderLineComponent
                                 lockObject={this.props.stateManager.lockObject}

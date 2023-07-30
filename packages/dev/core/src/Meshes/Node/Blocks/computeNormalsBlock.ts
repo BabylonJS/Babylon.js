@@ -3,7 +3,6 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
-import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 /**
  * Block used to recompute normals for a geometry
  */
@@ -43,7 +42,6 @@ export class ComputeNormalsBlock extends NodeGeometryBlock {
 
     protected _buildBlock() {
         this.output._storedFunction = (state) => {
-
             if (!this.geometry.isConnected) {
                 return null;
             }
@@ -53,7 +51,7 @@ export class ComputeNormalsBlock extends NodeGeometryBlock {
             VertexData.ComputeNormals(vertexData.positions, vertexData.indices, vertexData.normals);
 
             return vertexData;
-        }
+        };
     }
 }
 

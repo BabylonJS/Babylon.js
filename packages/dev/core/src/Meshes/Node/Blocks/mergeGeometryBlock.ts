@@ -2,7 +2,6 @@ import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
-import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import type { VertexData } from "../../../Meshes/mesh.vertexData";
 
 /**
@@ -82,7 +81,7 @@ export class MergeGeometryBlock extends NodeGeometryBlock {
         this.output._storedFunction = (state) => {
             let vertexData = this.geometry0.getConnectedValue(state) as VertexData;
             const additionalVertexData: VertexData[] = [];
-    
+
             if (this.geometry1.isConnected) {
                 additionalVertexData.push(this.geometry1.getConnectedValue(state));
             }
@@ -95,7 +94,7 @@ export class MergeGeometryBlock extends NodeGeometryBlock {
             if (this.geometry4.isConnected) {
                 additionalVertexData.push(this.geometry4.getConnectedValue(state));
             }
-    
+
             if (additionalVertexData.length) {
                 vertexData = vertexData.merge(additionalVertexData, true);
             }

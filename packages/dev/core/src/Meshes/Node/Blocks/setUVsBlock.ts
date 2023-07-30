@@ -18,7 +18,7 @@ export class SetUVsBlock extends NodeGeometryBlock implements INodeGeometryExecu
     /**
      * Gets or sets a value indicating which UV to set
      */
-    @editableInPropertyPage("Texture coordinates index", PropertyTypeForEdition.List, "ADVANCED", { 
+    @editableInPropertyPage("Texture coordinates index", PropertyTypeForEdition.List, "ADVANCED", {
         notifiers: { update: true },
         options: [
             { label: "UV1", value: 0 },
@@ -28,8 +28,8 @@ export class SetUVsBlock extends NodeGeometryBlock implements INodeGeometryExecu
             { label: "UV5", value: 4 },
             { label: "UV6", value: 5 },
         ],
-    })    
-    public textureCoordinateIndex = 0;    
+    })
+    public textureCoordinateIndex = 0;
 
     /**
      * Create a new SetUVsBlock
@@ -118,19 +118,19 @@ export class SetUVsBlock extends NodeGeometryBlock implements INodeGeometryExecu
                 break;
             case 1:
                 this._vertexData.uvs2 = uvs;
-                break;                
+                break;
             case 2:
                 this._vertexData.uvs3 = uvs;
-                break;                
+                break;
             case 3:
                 this._vertexData.uvs4 = uvs;
-                break;       
+                break;
             case 4:
                 this._vertexData.uvs5 = uvs;
-                break;                
+                break;
             case 5:
                 this._vertexData.uvs6 = uvs;
-                break;                            
+                break;
         }
 
         // Storage
@@ -160,7 +160,7 @@ export class SetUVsBlock extends NodeGeometryBlock implements INodeGeometryExecu
         super._deserialize(serializationObject, rootUrl);
 
         this.textureCoordinateIndex = serializationObject.textureCoordinateIndex;
-    }      
+    }
 }
 
 RegisterClass("BABYLON.SetUVsBlock", SetUVsBlock);

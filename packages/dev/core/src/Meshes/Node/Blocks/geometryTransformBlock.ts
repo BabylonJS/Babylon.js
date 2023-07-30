@@ -2,8 +2,7 @@ import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
-import { Matrix} from "../../../Maths/math.vector";
-import { Vector2, Vector3, Vector4 } from "../../../Maths/math.vector";
+import { Matrix, Vector2, Vector3, Vector4 } from "../../../Maths/math.vector";
 import type { VertexData } from "../../../Meshes/mesh.vertexData";
 
 /**
@@ -15,7 +14,7 @@ export class GeometryTransformBlock extends NodeGeometryBlock {
     private _translationMatrix = new Matrix();
     private _scalingRotationMatrix = new Matrix();
     private _transformMatrix = new Matrix();
-    
+
     /**
      * Create a new GeometryTransformBlock
      * @param name defines the block name
@@ -64,20 +63,20 @@ export class GeometryTransformBlock extends NodeGeometryBlock {
     public get translation(): NodeGeometryConnectionPoint {
         return this._inputs[2];
     }
-    
+
     /**
      * Gets the rotation input component
      */
     public get rotation(): NodeGeometryConnectionPoint {
         return this._inputs[3];
     }
-    
+
     /**
      * Gets the scaling input component
      */
     public get scaling(): NodeGeometryConnectionPoint {
         return this._inputs[4];
-    }    
+    }
 
     /**
      * Gets the output component
@@ -96,7 +95,7 @@ export class GeometryTransformBlock extends NodeGeometryBlock {
         this.output._storedFunction = (state) => {
             const value = this.value.getConnectedValue(state);
             let matrix: Matrix;
-            
+
             if (this.matrix.isConnected) {
                 matrix = this.matrix.getConnectedValue(state);
             } else {
@@ -107,10 +106,7 @@ export class GeometryTransformBlock extends NodeGeometryBlock {
                 // Transform
                 Matrix.ScalingToRef(scaling.x, scaling.y, scaling.z, this._scalingMatrix);
                 Matrix.RotationYawPitchRollToRef(rotation.y, rotation.x, rotation.z, this._rotationMatrix);
-                Matrix.TranslationToRef(
-                    translation.x, translation.y, translation.z,
-                    this._translationMatrix
-                );
+                Matrix.TranslationToRef(translation.x, translation.y, translation.z, this._translationMatrix);
 
                 this._scalingMatrix.multiplyToRef(this._rotationMatrix, this._scalingRotationMatrix);
                 this._scalingRotationMatrix.multiplyToRef(this._translationMatrix, this._transformMatrix);

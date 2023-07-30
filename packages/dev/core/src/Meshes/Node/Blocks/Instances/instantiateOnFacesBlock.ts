@@ -80,7 +80,7 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
      */
     public get count(): NodeGeometryConnectionPoint {
         return this._inputs[4];
-    }    
+    }
 
     /**
      * Gets the geometry output component
@@ -111,7 +111,7 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
         if (!instanceGeometry || !instanceGeometry.positions || instanceGeometry.positions.length === 0) {
             state.executionContext = null;
             state.geometryContext = null;
-            this.output._storedValue = null;            
+            this.output._storedValue = null;
             return;
         }
 
@@ -122,7 +122,6 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
         const vertex2 = new Vector3();
 
         for (this._currentIndex = 0; this._currentIndex < faceCount; this._currentIndex++) {
-
             // Extract face vertices
             vertex0.fromArray(this._vertexData.positions, this._vertexData.indices[this._currentIndex * 3] * 3);
             vertex1.fromArray(this._vertexData.positions, this._vertexData.indices[this._currentIndex * 3 + 1] * 3);
@@ -141,11 +140,8 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
                 const s = x;
                 const t = y - x;
                 const u = 1 - s - t;
-                
-                currentPosition.set(
-                    s * vertex0.x + t * vertex1.x + u * vertex2.x,
-                    s * vertex0.y + t * vertex1.y + u * vertex2.y,
-                    s * vertex0.z + t * vertex1.z + u * vertex2.z);
+
+                currentPosition.set(s * vertex0.x + t * vertex1.x + u * vertex2.x, s * vertex0.y + t * vertex1.y + u * vertex2.y, s * vertex0.z + t * vertex1.z + u * vertex2.z);
 
                 // Clone the instance
                 const clone = instanceGeometry.clone();
@@ -161,7 +157,7 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
             if (additionalVertexData.length === 1) {
                 this._vertexData = additionalVertexData[0];
             } else {
-            // We do not merge the main one as user can use a merge node if wanted
+                // We do not merge the main one as user can use a merge node if wanted
                 const main = additionalVertexData.splice(0, 1)[0];
                 this._vertexData = main.merge(additionalVertexData, true);
             }
@@ -171,7 +167,7 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
         this.output._storedValue = this._vertexData;
         state.executionContext = null;
         state.geometryContext = null;
-    }  
+    }
 }
 
 RegisterClass("BABYLON.InstantiateOnFacesBlock", InstantiateOnFacesBlock);
