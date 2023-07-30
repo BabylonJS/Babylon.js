@@ -4,6 +4,7 @@ import type { Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
 import wireframe from "./svgs/wireframe.svg";
 import matCap from "./svgs/matCap.svg";
+import texture from "./svgs/textureIcon.svg";
 import vertexColor from "./svgs/vertexColor.svg";
 import { PreviewMode } from "./previewMode";
 
@@ -67,6 +68,15 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         this.forceUpdate();
     }    
 
+    changeTexture() {
+        if (this.props.globalState.previewMode === PreviewMode.Textured) {
+            this.props.globalState.previewMode = PreviewMode.Normal;
+        } else {
+            this.props.globalState.previewMode = PreviewMode.Textured;
+        }
+        this.forceUpdate();
+    }    
+
     render() {
         return (
             <>
@@ -76,6 +86,13 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
                 </div>
                 <>
                     <div id="preview-config-bar">
+                        <div
+                            title="Render with texture"
+                            onClick={() => this.changeTexture()}
+                            className={"button mat-texture" + (this.props.globalState.previewMode === PreviewMode.Textured ? " selected" : "")}
+                        >
+                            <img src={texture} alt="" />
+                        </div>                          
                         <div
                             title="Render with mat cap"
                             onClick={() => this.changeMatCap()}

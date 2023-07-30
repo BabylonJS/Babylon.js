@@ -19,6 +19,7 @@ export * from "./Blocks/Sources/capsuleBlock";
 export * from "./Blocks/Sources/discBlock";
 export * from "./Blocks/setPositionsBlock";
 export * from "./Blocks/setNormalsBlock";
+export * from "./Blocks/setUVsBlock";
 export * from "./Blocks/setColorsBlock";
 export * from "./Blocks/setTangentsBlock";
 export * from "./Blocks/mathBlock";

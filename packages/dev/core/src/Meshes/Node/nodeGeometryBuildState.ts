@@ -63,7 +63,37 @@ export class NodeGeometryBuildState {
                     return Vector4.Zero();
                 }
                 return Vector4.FromArray(this.geometryContext.tangents as ArrayLike<number>, index * 4);
-        }
+            case NodeGeometryContextualSources.UV:
+                if (!this.geometryContext.uvs) {
+                    return Vector2.Zero();
+                }
+                return Vector2.FromArray(this.geometryContext.uvs as ArrayLike<number>, index * 2);     
+            case NodeGeometryContextualSources.UV2:
+                if (!this.geometryContext.uvs2) {
+                    return Vector2.Zero();
+                }
+                return Vector2.FromArray(this.geometryContext.uvs2 as ArrayLike<number>, index * 2);   
+            case NodeGeometryContextualSources.UV3:
+                if (!this.geometryContext.uvs3) {
+                    return Vector2.Zero();
+                }
+                return Vector2.FromArray(this.geometryContext.uvs3 as ArrayLike<number>, index * 2);   
+            case NodeGeometryContextualSources.UV4:
+                if (!this.geometryContext.uvs4) {
+                    return Vector2.Zero();
+                }
+                return Vector2.FromArray(this.geometryContext.uvs4 as ArrayLike<number>, index * 2);   
+            case NodeGeometryContextualSources.UV5:
+                if (!this.geometryContext.uvs5) {
+                    return Vector2.Zero();
+                }
+                return Vector2.FromArray(this.geometryContext.uvs5 as ArrayLike<number>, index * 2);                                                                                                                                      
+            case NodeGeometryContextualSources.UV6:
+                if (!this.geometryContext.uvs6) {
+                    return Vector2.Zero();
+                }
+                return Vector2.FromArray(this.geometryContext.uvs6 as ArrayLike<number>, index * 2);   
+            }
 
         return null;
     }

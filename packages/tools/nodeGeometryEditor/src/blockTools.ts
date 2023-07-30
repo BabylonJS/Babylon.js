@@ -3,6 +3,7 @@ import { SetPositionsBlock } from "core/Meshes/Node/Blocks/setPositionsBlock";
 import { SetNormalsBlock } from "core/Meshes/Node/Blocks/setNormalsBlock";
 import { SetColorsBlock } from "core/Meshes/Node/Blocks/setColorsBlock";
 import { SetTangentsBlock } from "core/Meshes/Node/Blocks/setTangentsBlock";
+import { SetUVsBlock } from "core/Meshes/Node/Blocks/setUVsBlock";
 import { ComputeNormalsBlock } from "core/Meshes/Node/Blocks/computeNormalsBlock";
 import { RandomBlock } from "core/Meshes/Node/Blocks/randomBlock";
 import { NoiseBlock } from "core/Meshes/Node/Blocks/noiseBlock";
@@ -70,6 +71,8 @@ export class BlockTools {
                 return new SetColorsBlock("Set colors");
             case "SetTangentsBlock":
                 return new SetTangentsBlock("Set tangents");
+            case "SetUVsBlock":
+                return new SetUVsBlock("Set UVs");
             case "NoiseBlock":
                 return new NoiseBlock("Noise");
             case "RandomBlock":
@@ -120,6 +123,36 @@ export class BlockTools {
                 block.contextualValue = NodeGeometryContextualSources.Tangents;
                 return block;
             }
+            case "UV1sBlock": {
+                const block = new GeometryInputBlock("UV1s");
+                block.contextualValue = NodeGeometryContextualSources.UV;
+                return block;
+            }        
+            case "UV2sBlock": {
+                const block = new GeometryInputBlock("UV2s");
+                block.contextualValue = NodeGeometryContextualSources.UV2;
+                return block;
+            }                  
+            case "UV3sBlock": {
+                const block = new GeometryInputBlock("UV3s");
+                block.contextualValue = NodeGeometryContextualSources.UV3;
+                return block;
+            }          
+            case "UV4sBlock": {
+                const block = new GeometryInputBlock("UV4s");
+                block.contextualValue = NodeGeometryContextualSources.UV4;
+                return block;
+            }          
+            case "UV5sBlock": {
+                const block = new GeometryInputBlock("UV5s");
+                block.contextualValue = NodeGeometryContextualSources.UV5;
+                return block;
+            }          
+            case "UV6sBlock": {
+                const block = new GeometryInputBlock("UV6s");
+                block.contextualValue = NodeGeometryContextualSources.UV6;
+                return block;
+            }                                                             
             case "AddBlock": {
                 const block = new MathBlock("Add");
                 block.operation = MathBlockOperations.Add;

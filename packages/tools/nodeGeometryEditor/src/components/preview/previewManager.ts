@@ -36,6 +36,7 @@ export class PreviewManager {
     private _camera: ArcRotateCamera;
     private _light: HemisphericLight;
     private _globalState: GlobalState;
+    private _matTexture: StandardMaterial;
     private _matCap: StandardMaterial;
     private _matStd: StandardMaterial;
     private _matNME: NodeMaterial;
@@ -101,6 +102,11 @@ export class PreviewManager {
         this._matStd = new StandardMaterial("MatStd", this._scene);
         this._matStd.backFaceCulling = false;
         this._matStd.specularColor = Color3.Black();
+
+        this._matTexture = new StandardMaterial("MatTexture", this._scene);
+        this._matTexture.backFaceCulling = false;
+        this._matTexture.emissiveTexture = new Texture("https://assets.babylonjs.com/textures/amiga.jpg", this._scene);
+        this._matTexture.disableLighting = true;       
 
         this._matVertexColor = new StandardMaterial("VertexColor", this._scene);
         this._matVertexColor.disableLighting = true;
@@ -210,13 +216,14 @@ export class PreviewManager {
                 break;
             case PreviewMode.MatCap:
                 this._mesh.material = this._matCap;
-                this._matCap.wireframe = false;
+                break;                
+            case PreviewMode.Textured:
+                this._mesh.material = this._matTexture;
                 break;                
             case PreviewMode.Wireframe:
-                this._mesh.material = useNM ? this._matNME : this._matStd;
-                this._matStd.wireframe = true;
-                break;
-
+            this._mesh.material = useNM ? this._matNME : this._matStd;
+            this._matStd.wireframe = true;
+            break;
             case PreviewMode.VertexColor:
                 this._mesh.material = this._matVertexColor;
                 break;

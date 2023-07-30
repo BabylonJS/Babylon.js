@@ -268,6 +268,10 @@
                 width: 100%;
             }
 
+            &.mat-texture {
+                grid-column: 3;
+            }
+
             &.mat-cap {
                 grid-column: 4;
             }

@@ -69,8 +69,8 @@ Block ideas:
 - UVs as contextual data
 - subdivide
 - set Material
-- Instance on face (density?)
 - mat cap option (Icon)
+- ground to grid
 
 
 
