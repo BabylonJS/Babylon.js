@@ -347,8 +347,16 @@ export class NodeGeometryBlock {
                     this.inputs[i].isExposedOnFrame = port.isExposedOnFrame;
                     this.inputs[i].exposedPortPosition = port.exposedPortPosition;
                 }
-                if (port.notConnectedValue) {
-                    this.inputs[i].notConnectedValue = port.notConnectedValue;
+                if (port.notConnectedValue !== undefined && port.notConnectedValue !== null) {
+                    if (port.notConnectedValueType === "number") {
+                        this.inputs[i].notConnectedValue = port.notConnectedValue;
+                    } else {
+                        const valueType = GetClass(port.notConnectedValueType);
+            
+                        if (valueType) {
+                            this.inputs[i].notConnectedValue = valueType.FromArray(port.notConnectedValue);
+                        }
+                    }
                 }
             });
         }

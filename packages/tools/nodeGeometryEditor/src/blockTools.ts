@@ -31,12 +31,15 @@ import { MathBlock, MathBlockOperations } from "core/Meshes/Node/Blocks/mathBloc
 import { NodeGeometryContextualSources } from "core/Meshes/Node/Enums/nodeGeometryContextualSources";
 import { GeometryTrigonometryBlock, GeometryTrigonometryBlockOperations } from "core/Meshes/Node/Blocks/geometryTrigonometryBlock";
 import { GeometryElbowBlock } from "core/Meshes/Node/Blocks/geometryElbowBlock";
-import { InstantiateOnVerticesBlock } from "core/Meshes/Node/Blocks/instantiateOnVerticesBlock";
+import { InstantiateOnVerticesBlock } from "core/Meshes/Node/Blocks/instances/instantiateOnVerticesBlock";
+import { InstantiateOnFacesBlock } from "core/Meshes/Node/Blocks/instances/instantiateOnFacesBlock";
 import { MapRangeBlock } from "core/Meshes/Node/Blocks/mapRangeBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "InstantiateOnFacesBlock":
+                return new InstantiateOnFacesBlock("Instantiate on faces");
             case "InstantiateOnVerticesBlock":
                 return new InstantiateOnVerticesBlock("Instantiate on vertices");
             case "MapRangeBlock":

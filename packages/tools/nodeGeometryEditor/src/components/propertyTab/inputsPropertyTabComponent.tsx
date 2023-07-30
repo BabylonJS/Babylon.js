@@ -1,7 +1,6 @@
 import * as React from "react";
 import type { GlobalState } from "../../globalState";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 
 import "./propertyTab.scss";
 import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
@@ -30,39 +29,32 @@ export class InputsPropertyTabComponent extends React.Component<IInputsPropertyT
 
     renderInputBlock(block: GeometryInputBlock) {
         switch (block.type) {
+            case NodeGeometryBlockConnectionPointTypes.Int:
             case NodeGeometryBlockConnectionPointTypes.Float: {
                 const cantDisplaySlider = isNaN(block.min) || isNaN(block.max) || block.min === block.max;
+                const isInteger = block.type === NodeGeometryBlockConnectionPointTypes.Int;
                 return (
                     <div key={block.uniqueId}>
-                        {block.isBoolean && (
-                            <CheckBoxLineComponent
-                                key={block.uniqueId}
-                                label={block.name}
-                                target={block}
-                                propertyName="value"
-                                onValueChanged={() => {
-                                    this.processInputBlockUpdate(block);
-                                }}
-                            />
-                        )}
-                        {!block.isBoolean && cantDisplaySlider && (
+                        {cantDisplaySlider && (
                             <FloatLineComponent
                                 lockObject={this.props.lockObject}
                                 key={block.uniqueId}
                                 label={block.name}
                                 target={block}
+                                isInteger={isInteger}
                                 propertyName="value"
                                 onChange={() => this.processInputBlockUpdate(block)}
                             />
                         )}
-                        {!block.isBoolean && !cantDisplaySlider && (
+                        {!cantDisplaySlider && (
                             <SliderLineComponent
                                 lockObject={this.props.lockObject}
                                 key={block.uniqueId}
                                 label={block.name}
                                 target={block}
                                 propertyName="value"
-                                step={(block.max - block.min) / 100.0}
+                                step={(isInteger ? 1 : block.max - block.min) / 100.0}
+                                decimalCount={isInteger ? 0 : 2}
                                 minimum={block.min}
                                 maximum={block.max}
                                 onChange={() => this.processInputBlockUpdate(block)}

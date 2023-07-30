@@ -1,12 +1,12 @@
-import { NodeGeometryBlock } from "../nodeGeometryBlock";
-import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
-import { RegisterClass } from "../../../Misc/typeStore";
-import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
-import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
-import type { INodeGeometryExecutionContext } from "../Interfaces/nodeGeometryExecutionContext";
-import type { VertexData } from "../../mesh.vertexData";
-import { Matrix, Vector3 } from "../../../Maths/math.vector";
-import { PropertyTypeForEdition, editableInPropertyPage } from "../Interfaces/nodeGeometryDecorator";
+import { NodeGeometryBlock } from "../../nodeGeometryBlock";
+import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
+import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
+import type { INodeGeometryExecutionContext } from "../../Interfaces/nodeGeometryExecutionContext";
+import type { VertexData } from "../../../mesh.vertexData";
+import { Matrix, Vector3 } from "../../../../Maths/math.vector";
+import { PropertyTypeForEdition, editableInPropertyPage } from "../../Interfaces/nodeGeometryDecorator";
 
 /**
  * Block used to instance geometry on every vertex of a geometry
@@ -102,35 +102,29 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
         this._vertexData = this.geometry.getConnectedValue(state);
         state.geometryContext = this._vertexData;
 
-        if (!this._vertexData || !this._vertexData.positions) {
+        if (!this._vertexData || !this._vertexData.positions || !this.instance.isConnected) {
             state.executionContext = null;
             state.geometryContext = null;
             this.output._storedValue = null;
             return;
         }
 
-        if (!this.instance.isConnected) {
-            state.executionContext = null;
-            state.geometryContext = null;
-            this.output._storedValue = this._vertexData;
-            return;
-        }
-
         // Processing
         const vertexCount = this._vertexData.positions.length / 3;
         const instanceGeometry = this.instance.getConnectedValue(state) as VertexData;
+
+        if (!instanceGeometry || !instanceGeometry.positions || instanceGeometry.positions.length === 0) {
+            state.executionContext = null;
+            state.geometryContext = null;
+            this.output._storedValue = null;            
+            return;
+        }
+
         const additionalVertexData: VertexData[] = [];
-        const rotationMatrix = new Matrix();
-        const scalingMatrix = new Matrix();
-        const positionMatrix = new Matrix();
-        const scalingRotationMatrix = new Matrix();
-        const transformMatrix = new Matrix();
-        const tempVector3 = new Vector3();
         const currentPosition = new Vector3();
         const alreadyDone = new Array<Vector3>();
 
         for (this._currentIndex = 0; this._currentIndex < vertexCount; this._currentIndex++) {
-            currentPosition.fromArray(this._vertexData.positions, this._currentIndex * 3);
             const density = this.density.getConnectedValue(state);
 
             if (density < 1) {
@@ -139,6 +133,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
                 }
             }
 
+            currentPosition.fromArray(this._vertexData.positions, this._currentIndex * 3);
             if (this.removeDuplicatedPositions) {
                 let found = false;
                 for (let index = 0; index < alreadyDone.length; index++) {
@@ -158,35 +153,10 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
             // Clone the instance
             const clone = instanceGeometry.clone();
 
-            if (!clone.positions || clone.positions.length === 0) {
-                continue;
-            }
-
             // Transform
             const scaling = state.adaptInput(this.scaling, NodeGeometryBlockConnectionPointTypes.Vector3, Vector3.OneReadOnly);
             const rotation = this.rotation.getConnectedValue(state) || Vector3.ZeroReadOnly;
-            Matrix.ScalingToRef(scaling.x, scaling.y, scaling.z, scalingMatrix);
-            Matrix.RotationYawPitchRollToRef(rotation.y, rotation.x, rotation.z, rotationMatrix);
-            Matrix.TranslationToRef(
-                currentPosition.x, currentPosition.y, currentPosition.z,
-                positionMatrix
-            );
-
-            scalingMatrix.multiplyToRef(rotationMatrix, scalingRotationMatrix);
-            scalingRotationMatrix.multiplyToRef(positionMatrix, transformMatrix);
-            for (let clonePositionIndex = 0; clonePositionIndex < clone.positions.length; clonePositionIndex += 3) {
-                tempVector3.fromArray(clone.positions, clonePositionIndex);
-                Vector3.TransformCoordinatesToRef(tempVector3, transformMatrix, tempVector3);
-                tempVector3.toArray(clone.positions, clonePositionIndex);
-
-                if (clone.normals) {
-                    tempVector3.fromArray(clone.normals, clonePositionIndex);
-                    Vector3.TransformNormalToRef(tempVector3, scalingRotationMatrix, tempVector3);
-                    tempVector3.toArray(clone.normals, clonePositionIndex);
-                }
-            }
-
-            additionalVertexData.push(clone);
+            state._instantiate(clone, currentPosition, rotation, scaling, additionalVertexData);
         }
 
         // Merge

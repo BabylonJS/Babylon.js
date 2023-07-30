@@ -348,7 +348,15 @@ export class NodeGeometryConnectionPoint {
 
         serializationObject.name = this.name;
         serializationObject.displayName = this.displayName;
-        serializationObject.notConnectedValue = this.notConnectedValue;
+        if (this.notConnectedValue !== undefined && this.notConnectedValue !== null) {
+            if (this.notConnectedValue.asArray) {
+                serializationObject.notConnectedValueType = "BABYLON." + this.notConnectedValue.getClassName();
+                serializationObject.notConnectedValue = this.notConnectedValue.asArray();
+            } else {
+                serializationObject.notConnectedValueType = "number";
+                serializationObject.notConnectedValue = this.notConnectedValue;
+            }
+        }
 
         if (isInput && this.connectedPoint) {
             serializationObject.inputName = this.name;

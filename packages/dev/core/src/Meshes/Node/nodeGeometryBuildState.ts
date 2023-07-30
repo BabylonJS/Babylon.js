@@ -2,7 +2,7 @@ import type { Nullable } from "../../types";
 import type { VertexData } from "../mesh.vertexData";
 import type { NodeGeometryConnectionPoint } from "./nodeGeometryBlockConnectionPoint";
 import { NodeGeometryContextualSources } from "./Enums/nodeGeometryContextualSources";
-import { Vector2, Vector3, Vector4 } from "../../Maths/math.vector";
+import { Matrix, Vector2, Vector3, Vector4 } from "../../Maths/math.vector";
 import type { INodeGeometryExecutionContext } from "./Interfaces/nodeGeometryExecutionContext";
 import { NodeGeometryBlockConnectionPointTypes } from "./Enums/nodeGeometryConnectionPointTypes";
 
@@ -10,6 +10,13 @@ import { NodeGeometryBlockConnectionPointTypes } from "./Enums/nodeGeometryConne
  * Class used to store node based geometry build state
  */
 export class NodeGeometryBuildState {
+    private _rotationMatrix = new Matrix();
+    private _scalingMatrix = new Matrix();
+    private _positionMatrix = new Matrix();
+    private _scalingRotationMatrix = new Matrix();
+    private _transformMatrix = new Matrix();
+    private _tempVector3 = new Vector3();
+
     /** Gets or sets the list of non connected mandatory inputs */
     public notConnectedNonOptionalInputs: NodeGeometryConnectionPoint[] = [];
     /** Gets or sets the build identifier */
@@ -61,6 +68,12 @@ export class NodeGeometryBuildState {
         return null;
     }
 
+    /**
+     * Adapt a value to a target type
+     * @param source defines the value to adapt
+     * @param targetType defines the target type
+     * @returns the adapted value
+     */
     adapt(source: NodeGeometryConnectionPoint, targetType: NodeGeometryBlockConnectionPointTypes) {
         const value = source.getConnectedValue(this);
 
@@ -80,6 +93,13 @@ export class NodeGeometryBuildState {
         return null;
     }
 
+    /**
+     * Adapt an input value to a target type
+     * @param source defines the value to adapt
+     * @param targetType defines the target type
+     * @param defaultValue defines the default value to use if not connected
+     * @returns the adapted value
+     */
     adaptInput(source: NodeGeometryConnectionPoint, targetType: NodeGeometryBlockConnectionPointTypes, defaultValue: any) {
         if (!source.isConnected) {
             return source.notConnectedValue || defaultValue;
@@ -118,5 +138,32 @@ export class NodeGeometryBuildState {
         if (errorMessage) {
             throw "Build of NodeGeometry failed:\r\n" + errorMessage;
         }
+    }
+
+    /** @hidden */
+    public _instantiate(clone:VertexData, currentPosition: Vector3, rotation: Vector3, scaling: Vector3, additionalVertexData: VertexData[]) {
+            // Transform
+            Matrix.ScalingToRef(scaling.x, scaling.y, scaling.z, this._scalingMatrix);
+            Matrix.RotationYawPitchRollToRef(rotation.y, rotation.x, rotation.z, this._rotationMatrix);
+            Matrix.TranslationToRef(
+                currentPosition.x, currentPosition.y, currentPosition.z,
+                this._positionMatrix
+            );
+
+            this._scalingMatrix.multiplyToRef(this._rotationMatrix, this._scalingRotationMatrix);
+            this._scalingRotationMatrix.multiplyToRef(this._positionMatrix, this._transformMatrix);
+            for (let clonePositionIndex = 0; clonePositionIndex < clone.positions!.length; clonePositionIndex += 3) {
+                this._tempVector3.fromArray(clone.positions!, clonePositionIndex);
+                Vector3.TransformCoordinatesToRef(this._tempVector3, this._transformMatrix, this._tempVector3);
+                this._tempVector3.toArray(clone.positions!, clonePositionIndex);
+
+                if (clone.normals) {
+                    this._tempVector3.fromArray(clone.normals, clonePositionIndex);
+                    Vector3.TransformNormalToRef(this._tempVector3, this._scalingRotationMatrix, this._tempVector3);
+                    this._tempVector3.toArray(clone.normals, clonePositionIndex);
+                }
+            }
+
+            additionalVertexData.push(clone);
     }
 }
