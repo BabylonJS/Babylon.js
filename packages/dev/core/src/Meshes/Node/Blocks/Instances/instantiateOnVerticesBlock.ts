@@ -7,6 +7,8 @@ import type { INodeGeometryExecutionContext } from "../../Interfaces/nodeGeometr
 import type { VertexData } from "../../../mesh.vertexData";
 import { Vector3 } from "../../../../Maths/math.vector";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../Interfaces/nodeGeometryDecorator";
+import { Epsilon } from "../../../../Maths";
+import type { Nullable } from "../../../../types";
 
 /**
  * Block used to instance geometry on every vertex of a geometry
@@ -14,6 +16,7 @@ import { PropertyTypeForEdition, editableInPropertyPage } from "../../Interfaces
 export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext {
     private _vertexData: VertexData;
     private _currentIndex: number;
+    private _indexTranslation: Nullable<{[key: number]: number}> = null;
 
     /**
      * Gets or sets a boolean indicating if the block should remove duplicated positions
@@ -43,7 +46,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
      * @returns the current index
      */
     public getExecutionIndex(): number {
-        return this._currentIndex;
+        return this._indexTranslation ? this._indexTranslation[this._currentIndex] : this._currentIndex;
     }
 
     /**
@@ -118,10 +121,42 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
         }
 
         // Processing
-        const vertexCount = this._vertexData.positions.length / 3;
+        let vertexCount = this._vertexData.positions.length / 3;
         const additionalVertexData: VertexData[] = [];
         const currentPosition = new Vector3();
-        const alreadyDone = new Array<Vector3>();
+        const alreadyDone = new Array<number>();
+        let vertices = this._vertexData.positions;
+
+        if (this.removeDuplicatedPositions) {
+            this._indexTranslation = {};
+            for (this._currentIndex = 0; this._currentIndex < vertexCount; this._currentIndex++) {
+                const x = vertices[this._currentIndex * 3];
+                const y = vertices[this._currentIndex * 3 + 1];
+                const z = vertices[this._currentIndex * 3 + 2];
+                let found = false;
+                for (let index = 0; index < alreadyDone.length; index += 3) {
+                    if ( 
+                        Math.abs(alreadyDone[index] - x) < Epsilon && 
+                        Math.abs(alreadyDone[index + 1] - y) < Epsilon && 
+                        Math.abs(alreadyDone[index + 2] - z) < Epsilon
+                        ) { 
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (found) {
+                    continue;
+                }
+                this._indexTranslation[alreadyDone.length / 3] = this._currentIndex;
+                alreadyDone.push(x, y, z);
+            }
+
+            vertices = alreadyDone;
+            vertexCount = vertices.length / 3;
+        } else {
+            this._indexTranslation = null;
+        }
 
         for (this._currentIndex = 0; this._currentIndex < vertexCount; this._currentIndex++) {
             const instanceGeometry = this.instance.getConnectedValue(state) as VertexData;
@@ -138,22 +173,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
                 }
             }
 
-            currentPosition.fromArray(this._vertexData.positions, this._currentIndex * 3);
-            if (this.removeDuplicatedPositions) {
-                let found = false;
-                for (let index = 0; index < alreadyDone.length; index++) {
-                    const element = alreadyDone[index];
-                    if (element.equals(currentPosition)) {
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (found) {
-                    continue;
-                }
-                alreadyDone.push(currentPosition.clone());
-            }
+            currentPosition.fromArray(vertices, this._currentIndex * 3);
 
             // Clone the instance
             const clone = instanceGeometry.clone();

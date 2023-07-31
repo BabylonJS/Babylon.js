@@ -19,7 +19,7 @@ export class FloatPropertyTabComponent extends React.Component<IFloatPropertyTab
                 propertyName="value"
                 isInteger={this.props.inputBlock.type === NodeGeometryBlockConnectionPointTypes.Int}
                 onChange={() => {
-                    this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(this.props.inputBlock);
+                    this.props.globalState.stateManager.onRebuildRequiredObservable.notifyObservers();
                 }}
             ></FloatLineComponent>
         );

@@ -38,21 +38,23 @@ export class NodeGeometryBuildState {
     getContextualValue(source: NodeGeometryContextualSources) {
         if (!this.executionContext || !this.geometryContext) {
             return null;
-        }
-
-        if (this.executionContext.getOverrideContextualValue) {
-            return this.executionContext.getOverrideContextualValue(source);
-        }
+        }        
 
         const index = this.executionContext.getExecutionIndex();
 
         switch (source) {
             case NodeGeometryContextualSources.Positions:
+                if (this.executionContext.getOverridePositionsContextualValue) {
+                    return this.executionContext.getOverridePositionsContextualValue();
+                }
                 if (!this.geometryContext.positions) {
                     return Vector3.Zero();
                 }
                 return Vector3.FromArray(this.geometryContext.positions as ArrayLike<number>, index * 3);
             case NodeGeometryContextualSources.Normals:
+                if (this.executionContext.getOverrideNormalsContextualValue) {
+                    return this.executionContext.getOverrideNormalsContextualValue();
+                }                
                 if (!this.geometryContext.normals) {
                     return Vector3.Zero();
                 }

@@ -1,5 +1,3 @@
-import type { NodeGeometryContextualSources } from "../Enums/nodeGeometryContextualSources";
-
 /**
  * Interface used to convey context through execution nodes
  */
@@ -16,9 +14,14 @@ export interface INodeGeometryExecutionContext {
     getExecutionFaceIndex(): number;
 
     /**
-     * Gets the value associated with a contextual source
-     * @param source Source of the contextual value
+     * Gets the value associated with a contextual positions
      * @returns the value associated with the source
      */
-    getOverrideContextualValue?(source: NodeGeometryContextualSources): any;
+    getOverridePositionsContextualValue?(): any;
+
+    /**
+     * Gets the value associated with a contextual normals
+     * @returns the value associated with the source
+     */
+    getOverrideNormalsContextualValue?(): any;
 }

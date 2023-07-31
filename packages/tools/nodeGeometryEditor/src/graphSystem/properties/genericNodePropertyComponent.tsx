@@ -37,7 +37,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
     }
 
     processUpdate() {
-        this.props.stateManager.onUpdateRequiredObservable.notifyObservers(null);
+        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
     }
 
     renderConnectionPoint(point: NodeGeometryConnectionPoint) {

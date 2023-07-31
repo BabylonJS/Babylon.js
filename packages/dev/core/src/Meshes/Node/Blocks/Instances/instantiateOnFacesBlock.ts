@@ -27,7 +27,7 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
      * Gets or sets a boolean indicating that this block can evaluate context
      * Build performance is improved when this value is set to false as the system will cache values instead of reevaluating everything per context change
      */
-    @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
+    @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { rebuild: true } })
     public evaluateContext = true;
 
     /**
@@ -64,38 +64,23 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
     }
 
     /**
-     * Gets the value associated with a contextual source
-     * @param source Source of the contextual value
+     * Gets the value associated with a contextual positions
      * @returns the value associated with the source
      */
-    public getOverrideContextualValue(source: NodeGeometryContextualSources) {
-        switch (source) {
-            case NodeGeometryContextualSources.Positions:
-                return this._currentPosition;
-            case NodeGeometryContextualSources.Normals:
-                this._vertex1.subtractToRef(this._vertex0, this._tempVector0);
-                this._vertex2.subtractToRef(this._vertex1, this._tempVector1);
-                this._tempVector0.normalize();
-                this._tempVector1.normalize();
-                return Vector3.Cross(this._tempVector1, this._tempVector0);
-            case NodeGeometryContextualSources.Colors:
-                return Vector4.Zero();
-            case NodeGeometryContextualSources.Tangents:
-                return Vector4.Zero();
-            case NodeGeometryContextualSources.UV:
-            case NodeGeometryContextualSources.UV2:
-            case NodeGeometryContextualSources.UV3:
-            case NodeGeometryContextualSources.UV4:
-            case NodeGeometryContextualSources.UV5:
-            case NodeGeometryContextualSources.UV6:
-                return Vector2.Zero();
-            case NodeGeometryContextualSources.VertexID:
-                return this.getExecutionIndex();
-            case NodeGeometryContextualSources.FaceID:
-                return this.getExecutionFaceIndex();
-        }
+    getOverridePositionsContextualValue?() {
+        return this._currentPosition;
+    }
 
-        return null;
+    /**
+     * Gets the value associated with a contextual normals
+     * @returns the value associated with the source
+     */
+    getOverrideNormalsContextualValue?() {
+        this._vertex1.subtractToRef(this._vertex0, this._tempVector0);
+        this._vertex2.subtractToRef(this._vertex1, this._tempVector1);
+        this._tempVector0.normalize();
+        this._tempVector1.normalize();
+        return Vector3.Cross(this._tempVector1, this._tempVector0);
     }
 
     /**

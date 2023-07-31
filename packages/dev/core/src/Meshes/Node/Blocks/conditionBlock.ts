@@ -36,7 +36,7 @@ export class ConditionBlock extends NodeGeometryBlock {
      * Gets or sets the test used by the block
      */
     @editableInPropertyPage("Test", PropertyTypeForEdition.List, "ADVANCED", {
-        notifiers: { update: true },
+        notifiers: { rebuild: true },
         options: [
             { label: "Equal", value: ConditionBlockTests.Equal },
             { label: "NotEqual", value: ConditionBlockTests.NotEqual },

@@ -12,7 +12,7 @@ import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { FramingBehavior } from "core/Behaviors/Cameras/framingBehavior";
 import { Color3 } from "core/Maths/math.color";
 import "core/Rendering/depthRendererSceneComponent";
-import { NodeGeometry } from "core/Meshes/Node/nodeGeometry";
+import type { NodeGeometry } from "core/Meshes/Node/nodeGeometry";
 import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Texture } from "core/Materials/Textures/texture";
@@ -42,13 +42,6 @@ export class PreviewManager {
     private _matStd: MultiMaterial;
     private _matNME: NodeMaterial;
     private _matVertexColor: StandardMaterial;
-
-    private _serializeGeometry(): any {
-        const nodeGeometry = this._nodeGeometry;
-        const serializationObject = nodeGeometry.serialize();
-
-        return serializationObject;
-    }
 
     public constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState) {
         this._nodeGeometry = globalState.nodeGeometry;
@@ -254,15 +247,12 @@ export class PreviewManager {
 
     private _updatePreview() {
         try {
-            const serializationObject = this._serializeGeometry();
-            const nodeGeometry = NodeGeometry.Parse(serializationObject);
-            this._mesh = nodeGeometry.createMesh("main", this._scene);
+            this._mesh = this._nodeGeometry.createMesh("main", this._scene);
             if (this._mesh) {
                 this._updateStandardMaterial();
                 this._setMaterial();
                 this._mesh.useVertexColors = true;
             }
-            nodeGeometry.dispose();
 
             this._globalState.onIsLoadingChanged.notifyObservers(false);
         } catch (err) {

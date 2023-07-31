@@ -88,7 +88,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                 minimum={Math.min(inputBlock.min, inputBlock.max)}
                                 maximum={inputBlock.max}
                                 onChange={() => {
-                                    this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
+                                    this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
                                 }}
                             />
                         )}

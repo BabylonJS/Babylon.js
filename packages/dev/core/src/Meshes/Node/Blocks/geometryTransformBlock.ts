@@ -94,6 +94,11 @@ export class GeometryTransformBlock extends NodeGeometryBlock {
 
         this.output._storedFunction = (state) => {
             const value = this.value.getConnectedValue(state);
+
+            if (!value) {
+                return null;
+            }
+
             let matrix: Matrix;
 
             if (this.matrix.isConnected) {
