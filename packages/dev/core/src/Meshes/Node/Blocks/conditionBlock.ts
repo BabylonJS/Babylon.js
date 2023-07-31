@@ -3,6 +3,7 @@ import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnection
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../Interfaces/nodeGeometryDecorator";
+import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 
 /**
  * Conditions supported by the condition block
@@ -60,10 +61,11 @@ export class ConditionBlock extends NodeGeometryBlock {
 
         this.registerInput("left", NodeGeometryBlockConnectionPointTypes.Float);
         this.registerInput("right", NodeGeometryBlockConnectionPointTypes.Float, true, 0);
-        this.registerInput("ifTrue", NodeGeometryBlockConnectionPointTypes.AutoDetect);
-        this.registerInput("ifFalse", NodeGeometryBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("ifTrue", NodeGeometryBlockConnectionPointTypes.AutoDetect, true);
+        this.registerInput("ifFalse", NodeGeometryBlockConnectionPointTypes.AutoDetect, true);
 
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.BasedOnInput);
+        this.registerOutput("outputAsFloat", NodeGeometryBlockConnectionPointTypes.Float);
 
         this._outputs[0]._typeConnectionSource = this._inputs[2];
         this._inputs[0].acceptedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Int);
@@ -114,6 +116,13 @@ export class ConditionBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
+    /**
+     * Gets the output as float component
+     */
+    public get outputAsFloat(): NodeGeometryConnectionPoint {
+        return this._outputs[1];
+    }    
+
     protected _buildBlock() {
         if (!this.left.isConnected || !this.ifTrue.isConnected || !this.ifFalse.isConnected) {
             this.output._storedFunction = null;
@@ -121,7 +130,7 @@ export class ConditionBlock extends NodeGeometryBlock {
             return;
         }
 
-        this.output._storedFunction = (state) => {
+        const func = (state: NodeGeometryBuildState) => {
             const left = this.left.getConnectedValue(state) as number;
             const right = this.right.getConnectedValue(state) as number;
             let condition = false;
@@ -155,12 +164,23 @@ export class ConditionBlock extends NodeGeometryBlock {
                     condition = !!left && !!right;
                     break;
             }
+            return condition;
+        }
 
-            if (condition) {
+        this.output._storedFunction = (state) => {           
+            if (func(state)) {
                 return this.ifTrue.getConnectedValue(state);
             }
 
             return this.ifFalse.getConnectedValue(state);
+        };
+
+        this.outputAsFloat._storedFunction = (state) => {           
+            if (func(state)) {
+                return 1.0;
+            }
+
+            return 0;
         };
     }
 

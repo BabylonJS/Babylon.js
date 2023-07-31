@@ -21,6 +21,13 @@ export class GeometryElbowBlock extends NodeGeometryBlock {
     }
 
     /**
+     * Gets the time spent to build this block (in ms)
+     */
+    public get buildExecutionTime() {
+        return 0;
+    }    
+
+    /**
      * Gets the current class name
      * @returns the class name
      */

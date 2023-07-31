@@ -45,6 +45,10 @@ export enum GeometryTrigonometryBlockOperations {
     OneMinus,
     /** Reciprocal */
     Reciprocal,
+    /** ToDegrees */
+    ToDegrees,
+    /** ToRadians */
+    ToRadians,
 }
 
 /**
@@ -74,6 +78,8 @@ export class GeometryTrigonometryBlock extends NodeGeometryBlock {
             { label: "Negate", value: GeometryTrigonometryBlockOperations.Negate },
             { label: "OneMinus", value: GeometryTrigonometryBlockOperations.OneMinus },
             { label: "Reciprocal", value: GeometryTrigonometryBlockOperations.Reciprocal },
+            { label: "ToDegrees", value: GeometryTrigonometryBlockOperations.ToDegrees },
+            { label: "ToRadians", value: GeometryTrigonometryBlockOperations.ToRadians },
         ],
     })
     public operation = GeometryTrigonometryBlockOperations.Cos;
@@ -184,6 +190,14 @@ export class GeometryTrigonometryBlock extends NodeGeometryBlock {
             }
             case GeometryTrigonometryBlockOperations.Reciprocal: {
                 func = (value: number) => 1 / value;
+                break;
+            }
+            case GeometryTrigonometryBlockOperations.ToRadians: {
+                func = (value: number) => value * Math.PI / 180;
+                break;
+            }
+            case GeometryTrigonometryBlockOperations.ToDegrees: {
+                func = (value: number) => value * 180 / Math.PI;
                 break;
             }
         }

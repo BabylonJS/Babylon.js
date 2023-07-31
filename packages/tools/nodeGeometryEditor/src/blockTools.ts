@@ -37,11 +37,14 @@ import { SetMaterialIDBlock } from "core/Meshes/Node/Blocks/Set/setMaterialIDBlo
 import { InstantiateOnVerticesBlock } from "core/Meshes/Node/Blocks/instances/instantiateOnVerticesBlock";
 import { InstantiateOnFacesBlock } from "core/Meshes/Node/Blocks/instances/instantiateOnFacesBlock";
 import { MapRangeBlock } from "core/Meshes/Node/Blocks/mapRangeBlock";
+import { IntFloatConverterBlock } from "core/Meshes/Node/Blocks/intFloatConverterBlock";
 import { ConditionBlock, ConditionBlockTests } from "core/Meshes/Node/Blocks/conditionBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "IntFloatConverterBlock":
+                return new IntFloatConverterBlock("Int/Float converter");
             case "EqualBlock": {
                 const block = new ConditionBlock("Equal");
                 block.test = ConditionBlockTests.Equal;
@@ -235,6 +238,16 @@ export class BlockTools {
                 block.operation = MathBlockOperations.Divide;
                 return block;
             }
+            case "ToDegreesBlock": {
+                const block = new GeometryTrigonometryBlock("To degrees");
+                block.operation = GeometryTrigonometryBlockOperations.ToDegrees;
+                return block;
+            }
+            case "ToRadiansBlock": {
+                const block = new GeometryTrigonometryBlock("To radians");
+                block.operation = GeometryTrigonometryBlockOperations.ToRadians;
+                return block;
+            }            
             case "AbsBlock": {
                 const block = new GeometryTrigonometryBlock("Abs");
                 block.operation = GeometryTrigonometryBlockOperations.Abs;

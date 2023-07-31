@@ -19,7 +19,7 @@ export class Vector4PropertyTabComponent extends React.Component<IVector4Propert
                 target={this.props.inputBlock}
                 propertyName="value"
                 onChange={() => {
-                    this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(this.props.inputBlock);
+                    this.props.globalState.stateManager.onRebuildRequiredObservable.notifyObservers();
                 }}
             ></Vector4LineComponent>
         );

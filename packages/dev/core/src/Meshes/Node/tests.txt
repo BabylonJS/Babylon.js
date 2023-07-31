@@ -69,8 +69,9 @@ Block ideas:
 - scene loader (file?)
 - mat cap option (Icon)
 - do not attach mesh data when using snippet server
-- IntFloatConverter
-- Do not rebuild on each changes
+- Defrag matids
+
+
 
 
 

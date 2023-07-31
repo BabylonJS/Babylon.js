@@ -96,7 +96,7 @@ export class BlockNodeData implements INodeData {
         }
 
         this._onBuildObserver = data.onBuildObservable.add(() => {
-            if (this.refreshCallback && data.getClassName() !== "ElbowBlock") {
+            if (this.refreshCallback) {
                 this.refreshCallback();
             }
         });

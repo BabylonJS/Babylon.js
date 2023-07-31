@@ -101,7 +101,7 @@ export class MathBlock extends NodeGeometryBlock {
             return;
         }
 
-        const isFloat = left.type === NodeGeometryBlockConnectionPointTypes.Float;
+        const isFloat = left.type === NodeGeometryBlockConnectionPointTypes.Float || right.type === NodeGeometryBlockConnectionPointTypes.Int;
 
         switch (this.operation) {
             case MathBlockOperations.Add: {
