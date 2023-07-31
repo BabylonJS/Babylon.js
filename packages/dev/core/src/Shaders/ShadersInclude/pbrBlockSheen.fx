@@ -14,8 +14,12 @@
         vec3 finalSheenRadianceScaled;
     #endif
     #if DEBUGMODE > 0
-        vec4 sheenMapData;
-        vec3 sheenEnvironmentReflectance;
+        #ifdef SHEEN_TEXTURE
+            vec4 sheenMapData;
+        #endif
+        #if defined(REFLECTION) && defined(ENVIRONMENTBRDF)
+            vec3 sheenEnvironmentReflectance;
+        #endif
     #endif
     };
 
