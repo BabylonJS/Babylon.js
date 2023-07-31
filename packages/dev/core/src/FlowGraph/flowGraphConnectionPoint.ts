@@ -11,6 +11,8 @@ export enum FlowGraphConnectionPointDirection {
 /**
  * @experimental
  * Represents a connection point for a signal.
+ * When an output point is activated, it will activate the connected input point.
+ * When an input point is activated, it will execute the block it belongs to.
  */
 export class FlowGraphSignalConnectionPoint {
     name: string;
@@ -38,6 +40,9 @@ export class FlowGraphSignalConnectionPoint {
 /**
  * @experimental
  * Represents a connection point for data.
+ * An unconnected input point can have a default value.
+ * An output point will only have a value if it is connected to an input point. Furthermore,
+ * if the point belongs to a "function" node, the node will run its function to update the value.
  */
 export class FlowGraphDataConnectionPoint<T> {
     name: string;

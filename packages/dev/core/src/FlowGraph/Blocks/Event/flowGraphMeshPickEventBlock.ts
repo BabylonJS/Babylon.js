@@ -4,6 +4,10 @@ import type { FlowGraph } from "../../flowGraph";
 import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
 import { PointerEventTypes } from "../../../Events/pointerEvents";
 
+/**
+ * @experimental
+ * A block that activates when a mesh is picked.
+ */
 export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
     private _meshToPick: AbstractMesh;
     private _meshPickObservable: Observable<void>;

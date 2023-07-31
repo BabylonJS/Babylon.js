@@ -1,6 +1,12 @@
 import type { FlowGraph } from "./flowGraph";
 import { FlowGraphDataConnectionPoint, FlowGraphConnectionPointDirection } from "./flowGraphConnectionPoint";
 
+/**
+ * @experimental
+ * A block in a flow graph. The most basic form
+ * of a block has inputs and outputs that contain
+ * data.
+ */
 export abstract class FlowGraphBlock {
     public name: string;
     public dataInputs: FlowGraphDataConnectionPoint<any>[] = [];
