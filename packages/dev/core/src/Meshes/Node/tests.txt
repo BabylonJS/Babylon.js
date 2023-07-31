@@ -69,6 +69,7 @@ Block ideas:
 - scene loader (file?)
 - mat cap option (Icon)
 - option to opt out block for contextual evaluation
+- do not use serialization or 2 build with preview
 
 
 
