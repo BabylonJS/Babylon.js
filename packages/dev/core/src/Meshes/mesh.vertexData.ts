@@ -411,7 +411,7 @@ export class VertexData {
             const mesh = meshOrGeometry as Mesh;
             mesh.subMeshes = [];
             for (const matInfo of this.materialInfos) {
-                mesh.subMeshes.push(new SubMesh(matInfo.materialIndex, matInfo.verticesStart, matInfo.verticesCount, matInfo.indexStart, matInfo.indexCount, mesh));
+                new SubMesh(matInfo.materialIndex, matInfo.verticesStart, matInfo.verticesCount, matInfo.indexStart, matInfo.indexCount, mesh);
             }
         }
 
@@ -625,14 +625,19 @@ export class VertexData {
                     materialIndex = vertexData.materialInfos[0].materialIndex;
                 } else {
                     for (const materialInfo of vertexData.materialInfos) {
-                        const materialInfoCopy = new VertexDataMaterialInfo();
-                        materialInfoCopy.materialIndex = materialInfo.materialIndex;
-                        materialInfoCopy.indexStart = materialInfo.indexStart + indexOffset;
-                        materialInfoCopy.indexCount = materialInfo.indexCount;
-                        materialInfoCopy.verticesStart = materialInfo.verticesStart + vertexOffset;
-                        materialInfoCopy.verticesCount = materialInfo.verticesCount;
-                        materialInfos.push(materialInfoCopy);
-                        currentMaterialInfo = materialInfoCopy;
+                        if (currentMaterialInfo && currentMaterialInfo.materialIndex === materialInfo.materialIndex) {
+                            currentMaterialInfo.indexCount += materialInfo.indexCount;
+                            currentMaterialInfo.verticesCount += materialInfo.verticesCount;
+                        } else {
+                            const materialInfoCopy = new VertexDataMaterialInfo();
+                            materialInfoCopy.materialIndex = materialInfo.materialIndex;
+                            materialInfoCopy.indexStart = materialInfo.indexStart + indexOffset;
+                            materialInfoCopy.indexCount = materialInfo.indexCount;
+                            materialInfoCopy.verticesStart = materialInfo.verticesStart + vertexOffset;
+                            materialInfoCopy.verticesCount = materialInfo.verticesCount;
+                            materialInfos.push(materialInfoCopy);
+                            currentMaterialInfo = materialInfoCopy;
+                        }
                     }
 
                     indexOffset += vertexData.indices!.length;
@@ -1037,6 +1042,20 @@ export class VertexData {
         }
 
         serializationObject.indices = Array.from(this.indices as number[]);
+
+        if (this.materialInfos) {
+            serializationObject.materialInfos = [];
+            for (const materialInfo of this.materialInfos) {
+                const materialInfoSerializationObject = {
+                    indexStart: materialInfo.indexStart,
+                    indexCount: materialInfo.indexCount,
+                    materialIndex: materialInfo.materialIndex,
+                    verticesStart: materialInfo.verticesStart,
+                    verticesCount: materialInfo.verticesCount,
+                };
+                serializationObject.materialInfos.push(materialInfoSerializationObject);
+            }
+        }
 
         return serializationObject;
     }
@@ -2134,6 +2153,21 @@ export class VertexData {
         const indices = parsedVertexData.indices;
         if (indices) {
             vertexData.indices = indices;
+        }
+
+        // MaterialInfos
+        const materialInfos = parsedVertexData.materialInfos;
+        if (materialInfos) {
+            vertexData.materialInfos = [];
+            for (const materialInfoFromJSON of materialInfos) {
+                const materialInfo = new VertexDataMaterialInfo();
+                materialInfo.indexCount = materialInfoFromJSON.indexCount;
+                materialInfo.indexStart = materialInfoFromJSON.indexStart;
+                materialInfo.verticesCount = materialInfoFromJSON.verticesCount;
+                materialInfo.verticesStart = materialInfoFromJSON.verticesStart;
+                materialInfo.materialIndex = materialInfoFromJSON.materialIndex;
+                vertexData.materialInfos.push(materialInfo);
+            }
         }
 
         return vertexData;

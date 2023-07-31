@@ -115,7 +115,7 @@ export class GeometryTransformBlock extends NodeGeometryBlock {
 
             switch (this.value.type) {
                 case NodeGeometryBlockConnectionPointTypes.Geometry: {
-                    const geometry = value as VertexData;
+                    const geometry = (value as VertexData).clone();
                     geometry.transform(matrix);
                     return geometry;
                 }

@@ -148,19 +148,17 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
         return (
             <>
                 <LineContainerComponent title="GENERAL">
-                    {!block.isInput && (
-                        <TextInputLineComponent
-                            label="Name"
-                            propertyName="name"
-                            target={block}
-                            lockObject={this.props.stateManager.lockObject}
-                            onChange={() => this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block)}
-                            throttlePropertyChangedNotification={true}
-                            validator={() => {
-                                return true;
-                            }}
-                        />
-                    )}
+                    <TextInputLineComponent
+                        label="Name"
+                        propertyName="name"
+                        target={block}
+                        lockObject={this.props.stateManager.lockObject}
+                        onChange={() => this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block)}
+                        throttlePropertyChangedNotification={true}
+                        validator={() => {
+                            return true;
+                        }}
+                    />
                     <TextLineComponent label="Type" value={block.getClassName()} />
                     <TextInputLineComponent
                         label="Comments"

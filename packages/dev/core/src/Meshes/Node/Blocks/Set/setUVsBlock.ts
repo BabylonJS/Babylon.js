@@ -1,12 +1,12 @@
-import { NodeGeometryBlock } from "../nodeGeometryBlock";
-import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
-import { RegisterClass } from "../../../Misc/typeStore";
-import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
-import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
-import type { INodeGeometryExecutionContext } from "../Interfaces/nodeGeometryExecutionContext";
-import type { VertexData } from "../../mesh.vertexData";
-import type { Vector2 } from "../../../Maths/math.vector";
-import { PropertyTypeForEdition, editableInPropertyPage } from "../Interfaces/nodeGeometryDecorator";
+import { NodeGeometryBlock } from "../../nodeGeometryBlock";
+import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
+import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
+import type { INodeGeometryExecutionContext } from "../../Interfaces/nodeGeometryExecutionContext";
+import type { VertexData } from "../../../mesh.vertexData";
+import type { Vector2 } from "../../../../Maths/math.vector";
+import { PropertyTypeForEdition, editableInPropertyPage } from "../../Interfaces/nodeGeometryDecorator";
 
 /**
  * Block used to set texture coordinates for a geometry
@@ -50,6 +50,14 @@ export class SetUVsBlock extends NodeGeometryBlock implements INodeGeometryExecu
      */
     public getExecutionIndex(): number {
         return this._currentIndex;
+    }
+
+    /**
+     * Gets the current face index in the current flow
+     * @returns the current face index
+     */
+    public getExecutionFaceIndex(): number {
+        return 0;
     }
 
     /**

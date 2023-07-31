@@ -6,11 +6,19 @@ import { GeometryInputBlock } from "../geometryInputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Vector4 } from "../../../../Maths/math.vector";
 import { CreateSphereVertexData } from "core/Meshes/Builders";
+import { PropertyTypeForEdition, editableInPropertyPage } from "core/Materials";
 
 /**
  * Defines a block used to generate sphere geometry data
  */
 export class SphereBlock extends NodeGeometryBlock {
+    /**
+     * Gets or sets a boolean indicating that this block can evaluate context
+     * Build performance is improved when this value is set to false as the system will cache values instead of reevaluating everything per context change
+     */
+    @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
+    public evaluateContext = false;
+
     /**
      * Create a new SphereBlock
      * @param name defines the block name
@@ -115,17 +123,47 @@ export class SphereBlock extends NodeGeometryBlock {
             backUVs?: Vector4;
             dedupTopBottomIndices?: boolean;
         } = {};
+        const func = (state: NodeGeometryBuildState) => {
+            options.segments = this.segments.getConnectedValue(state);
+            options.diameter = this.diameter.getConnectedValue(state);
+            options.diameterX = this.diameterX.getConnectedValue(state);
+            options.diameterY = this.diameterY.getConnectedValue(state);
+            options.diameterZ = this.diameterZ.getConnectedValue(state);
+            options.arc = this.arc.getConnectedValue(state);
+            options.slice = this.slice.getConnectedValue(state);
 
-        options.segments = this.segments.getConnectedValue(state);
-        options.diameter = this.diameter.getConnectedValue(state);
-        options.diameterX = this.diameterX.getConnectedValue(state);
-        options.diameterY = this.diameterY.getConnectedValue(state);
-        options.diameterZ = this.diameterZ.getConnectedValue(state);
-        options.arc = this.arc.getConnectedValue(state);
-        options.slice = this.slice.getConnectedValue(state);
+            // Append vertex data from the plane builder
+            return CreateSphereVertexData(options);
+        };
 
-        // Append vertex data from the plane builder
-        this.geometry._storedValue = CreateSphereVertexData(options);
+        if (this.evaluateContext) {
+            this.geometry._storedFunction = func;
+        } else {
+            this.geometry._storedValue = func(state);
+        }
+    }
+
+    protected _dumpPropertiesCode() {
+        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.evaluateContext = ${this.evaluateContext ? "true" : "false"};\r\n`;
+        return codeString;
+    }
+
+    /**
+     * Serializes this block in a JSON representation
+     * @returns the serialized block object
+     */
+    public serialize(): any {
+        const serializationObject = super.serialize();
+
+        serializationObject.evaluateContext = this.evaluateContext;
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any, rootUrl: string) {
+        super._deserialize(serializationObject, rootUrl);
+
+        this.evaluateContext = serializationObject.evaluateContext;
     }
 }
 

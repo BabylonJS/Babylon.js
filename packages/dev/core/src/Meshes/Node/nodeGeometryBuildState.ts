@@ -40,6 +40,10 @@ export class NodeGeometryBuildState {
             return null;
         }
 
+        if (this.executionContext.getOverrideContextualValue) {
+            return this.executionContext.getOverrideContextualValue(source);
+        }
+
         const index = this.executionContext.getExecutionIndex();
 
         switch (source) {
@@ -93,6 +97,10 @@ export class NodeGeometryBuildState {
                     return Vector2.Zero();
                 }
                 return Vector2.FromArray(this.geometryContext.uvs6 as ArrayLike<number>, index * 2);
+            case NodeGeometryContextualSources.VertexID:
+                return index;
+            case NodeGeometryContextualSources.FaceID:
+                return this.executionContext.getExecutionFaceIndex();
         }
 
         return null;

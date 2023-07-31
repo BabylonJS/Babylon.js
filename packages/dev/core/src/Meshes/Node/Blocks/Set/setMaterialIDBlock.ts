@@ -1,8 +1,8 @@
-import { NodeGeometryBlock } from "../nodeGeometryBlock";
-import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
-import { RegisterClass } from "../../../Misc/typeStore";
-import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
-import { VertexDataMaterialInfo, type VertexData } from "../../../Meshes/mesh.vertexData";
+import { NodeGeometryBlock } from "../../nodeGeometryBlock";
+import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
+import { VertexDataMaterialInfo, type VertexData } from "../../../../Meshes/mesh.vertexData";
 
 /**
  * Block used to affect a material ID to a geometry
@@ -19,6 +19,7 @@ export class SetMaterialIDBlock extends NodeGeometryBlock {
         this.registerInput("id", NodeGeometryBlockConnectionPointTypes.Int, true, 0);
 
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Geometry);
+        this.id.acceptedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Float);
     }
 
     /**
@@ -64,7 +65,7 @@ export class SetMaterialIDBlock extends NodeGeometryBlock {
             }
 
             const materialInfo = new VertexDataMaterialInfo();
-            materialInfo.materialIndex = this.id.getConnectedValue(state);
+            materialInfo.materialIndex = this.id.getConnectedValue(state) | 0;
             materialInfo.indexStart = 0;
             materialInfo.indexCount = vertexData.indices.length;
             materialInfo.verticesStart = 0;

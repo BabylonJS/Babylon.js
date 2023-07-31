@@ -66,8 +66,11 @@ var createScene = function () {
 
 
 Block ideas:
-- subdivide
+- scene loader (file?)
 - mat cap option (Icon)
+- option to opt out block for contextual evaluation
+
+
 
 
 

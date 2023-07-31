@@ -3,11 +3,20 @@ import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnection
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import type { VertexData } from "../../../Meshes/mesh.vertexData";
+import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
+import { PropertyTypeForEdition, editableInPropertyPage } from "../Interfaces/nodeGeometryDecorator";
 
 /**
  * Block used to merge several geometries
  */
 export class MergeGeometryBlock extends NodeGeometryBlock {
+    /**
+     * Gets or sets a boolean indicating that this block can evaluate context
+     * Build performance is improved when this value is set to false as the system will cache values instead of reevaluating everything per context change
+     */
+    @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
+    public evaluateContext = false;
+
     /**
      * Create a new MergeGeometryBlock
      * @param name defines the block name
@@ -77,8 +86,8 @@ export class MergeGeometryBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock() {
-        this.output._storedFunction = (state) => {
+    protected _buildBlock(state: NodeGeometryBuildState) {
+        const func = (state: NodeGeometryBuildState) => {
             let vertexData = this.geometry0.getConnectedValue(state) as VertexData;
             const additionalVertexData: VertexData[] = [];
 
@@ -98,9 +107,37 @@ export class MergeGeometryBlock extends NodeGeometryBlock {
             if (additionalVertexData.length) {
                 vertexData = vertexData.merge(additionalVertexData, true);
             }
-
             return vertexData;
         };
+
+        if (this.evaluateContext) {
+            this.output._storedFunction = func;
+        } else {
+            this.output._storedValue = func(state);
+        }
+    }
+
+    protected _dumpPropertiesCode() {
+        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.evaluateContext = ${this.evaluateContext ? "true" : "false"};\r\n`;
+        return codeString;
+    }
+
+    /**
+     * Serializes this block in a JSON representation
+     * @returns the serialized block object
+     */
+    public serialize(): any {
+        const serializationObject = super.serialize();
+
+        serializationObject.evaluateContext = this.evaluateContext;
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any, rootUrl: string) {
+        super._deserialize(serializationObject, rootUrl);
+
+        this.evaluateContext = serializationObject.evaluateContext;
     }
 }
 

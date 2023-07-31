@@ -4,6 +4,7 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { Vector2, Vector3, Vector4 } from "core/Maths";
+import { PropertyTypeForEdition, editableInPropertyPage } from "../Interfaces/nodeGeometryDecorator";
 
 /**
  * Operations supported by the Math block
@@ -30,6 +31,17 @@ export class MathBlock extends NodeGeometryBlock {
     /**
      * Gets or sets the operation applied by the block
      */
+    @editableInPropertyPage("Operation", PropertyTypeForEdition.List, "ADVANCED", {
+        notifiers: { update: true },
+        options: [
+            { label: "Add", value: MathBlockOperations.Add },
+            { label: "Subtract", value: MathBlockOperations.Subtract },
+            { label: "Multiply", value: MathBlockOperations.Multiply },
+            { label: "Divide", value: MathBlockOperations.Divide },
+            { label: "Max", value: MathBlockOperations.Max },
+            { label: "Min", value: MathBlockOperations.Min },
+        ],
+    })
     public operation = MathBlockOperations.Add;
 
     /**

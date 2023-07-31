@@ -24,6 +24,10 @@ export enum NodeGeometryContextualSources {
     UV6 = 0x0009,
     /** Colors */
     Colors = 0x000a,
+    /** VertexID */
+    VertexID = 0x000b,
+    /** FaceID */
+    FaceID = 0x000c,
     /** Bitmask of all types */
     All = 0x0fff,
 }

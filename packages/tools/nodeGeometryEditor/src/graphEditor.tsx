@@ -163,6 +163,12 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             }
         });
 
+        this.props.globalState.stateManager.onUpdateRequiredObservable.add(() => {
+            if (this.props.globalState.nodeGeometry) {
+                this.buildGeometry();
+            }
+        });
+
         this.props.globalState.onResetRequiredObservable.add((isDefault) => {
             if (isDefault) {
                 if (this.props.globalState.nodeGeometry) {

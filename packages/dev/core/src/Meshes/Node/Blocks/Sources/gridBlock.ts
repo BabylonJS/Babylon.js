@@ -5,11 +5,19 @@ import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { GeometryInputBlock } from "../geometryInputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { CreateGroundVertexData } from "../../../Builders";
+import { PropertyTypeForEdition, editableInPropertyPage } from "../../Interfaces/nodeGeometryDecorator";
 
 /**
  * Defines a block used to generate grid geometry data
  */
 export class GridBlock extends NodeGeometryBlock {
+    /**
+     * Gets or sets a boolean indicating that this block can evaluate context
+     * Build performance is improved when this value is set to false as the system will cache values instead of reevaluating everything per context change
+     */
+    @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
+    public evaluateContext = false;
+
     /**
      * Create a new GridBlock
      * @param name defines the block name
@@ -49,25 +57,26 @@ export class GridBlock extends NodeGeometryBlock {
     }
 
     /**
-     * Gets the height input component
+     * Gets the subdivisions input component
      */
     public get subdivisions(): NodeGeometryConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the height input component
+     * Gets the subdivisionsX input component
      */
     public get subdivisionsX(): NodeGeometryConnectionPoint {
         return this._inputs[3];
     }
 
     /**
-     * Gets the height input component
+     * Gets the subdivisionsY input component
      */
     public get subdivisionsY(): NodeGeometryConnectionPoint {
         return this._inputs[4];
     }
+
     /**
      * Gets the geometry output component
      */
@@ -91,15 +100,45 @@ export class GridBlock extends NodeGeometryBlock {
 
     protected _buildBlock(state: NodeGeometryBuildState) {
         const options: { width?: number; height?: number; subdivisions?: number; subdivisionsX?: number; subdivisionsY?: number } = {};
+        const func = (state: NodeGeometryBuildState) => {
+            options.width = this.width.getConnectedValue(state);
+            options.height = this.height.getConnectedValue(state);
+            options.subdivisions = this.subdivisions.getConnectedValue(state);
+            options.subdivisionsX = this.subdivisionsX.getConnectedValue(state);
+            options.subdivisionsY = this.subdivisionsY.getConnectedValue(state);
 
-        options.width = this.width.getConnectedValue(state);
-        options.height = this.height.getConnectedValue(state);
-        options.subdivisions = this.subdivisions.getConnectedValue(state);
-        options.subdivisionsX = this.subdivisionsX.getConnectedValue(state);
-        options.subdivisionsY = this.subdivisionsY.getConnectedValue(state);
+            // Append vertex data from the plane builder
+            return CreateGroundVertexData(options);
+        };
 
-        // Append vertex data from the plane builder
-        this.geometry._storedValue = CreateGroundVertexData(options);
+        if (this.evaluateContext) {
+            this.geometry._storedFunction = func;
+        } else {
+            this.geometry._storedValue = func(state);
+        }
+    }
+
+    protected _dumpPropertiesCode() {
+        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.evaluateContext = ${this.evaluateContext ? "true" : "false"};\r\n`;
+        return codeString;
+    }
+
+    /**
+     * Serializes this block in a JSON representation
+     * @returns the serialized block object
+     */
+    public serialize(): any {
+        const serializationObject = super.serialize();
+
+        serializationObject.evaluateContext = this.evaluateContext;
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any, rootUrl: string) {
+        super._deserialize(serializationObject, rootUrl);
+
+        this.evaluateContext = serializationObject.evaluateContext;
     }
 }
 

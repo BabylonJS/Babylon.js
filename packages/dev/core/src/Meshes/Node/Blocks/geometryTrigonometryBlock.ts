@@ -5,6 +5,7 @@ import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { Vector2, Vector3, Vector4 } from "../../../Maths/math.vector";
+import { PropertyTypeForEdition, editableInPropertyPage } from "../Interfaces/nodeGeometryDecorator";
 
 /**
  * Operations supported by the Trigonometry block
@@ -53,6 +54,28 @@ export class GeometryTrigonometryBlock extends NodeGeometryBlock {
     /**
      * Gets or sets the operation applied by the block
      */
+    @editableInPropertyPage("Operation", PropertyTypeForEdition.List, "ADVANCED", {
+        notifiers: { update: true },
+        options: [
+            { label: "Cos", value: GeometryTrigonometryBlockOperations.Cos },
+            { label: "Sin", value: GeometryTrigonometryBlockOperations.Sin },
+            { label: "Abs", value: GeometryTrigonometryBlockOperations.Abs },
+            { label: "Exp", value: GeometryTrigonometryBlockOperations.Exp },
+            { label: "Round", value: GeometryTrigonometryBlockOperations.Round },
+            { label: "Floor", value: GeometryTrigonometryBlockOperations.Floor },
+            { label: "Ceiling", value: GeometryTrigonometryBlockOperations.Ceiling },
+            { label: "Sqrt", value: GeometryTrigonometryBlockOperations.Sqrt },
+            { label: "Log", value: GeometryTrigonometryBlockOperations.Log },
+            { label: "Tan", value: GeometryTrigonometryBlockOperations.Tan },
+            { label: "ArcTan", value: GeometryTrigonometryBlockOperations.ArcTan },
+            { label: "ArcCos", value: GeometryTrigonometryBlockOperations.ArcCos },
+            { label: "ArcSin", value: GeometryTrigonometryBlockOperations.ArcSin },
+            { label: "Sign", value: GeometryTrigonometryBlockOperations.Sign },
+            { label: "Negate", value: GeometryTrigonometryBlockOperations.Negate },
+            { label: "OneMinus", value: GeometryTrigonometryBlockOperations.OneMinus },
+            { label: "Reciprocal", value: GeometryTrigonometryBlockOperations.Reciprocal },
+        ],
+    })
     public operation = GeometryTrigonometryBlockOperations.Cos;
 
     /**

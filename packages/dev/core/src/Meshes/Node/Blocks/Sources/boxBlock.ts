@@ -6,12 +6,20 @@ import { GeometryInputBlock } from "../geometryInputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Vector4 } from "../../../../Maths/math.vector";
 import type { Color4 } from "../../../../Maths/math.color";
-import { CreateBoxVertexData } from "core/Meshes/Builders";
+import { CreateTiledBoxVertexData } from "core/Meshes/Builders";
+import { PropertyTypeForEdition, editableInPropertyPage } from "../../Interfaces/nodeGeometryDecorator";
 
 /**
  * Defines a block used to generate box geometry data
  */
 export class BoxBlock extends NodeGeometryBlock {
+    /**
+     * Gets or sets a boolean indicating that this block can evaluate context
+     * Build performance is improved when this value is set to false as the system will cache values instead of reevaluating everything per context change
+     */
+    @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
+    public evaluateContext = false;
+
     /**
      * Create a new BoxBlock
      * @param name defines the block name
@@ -23,6 +31,9 @@ export class BoxBlock extends NodeGeometryBlock {
         this.registerInput("width", NodeGeometryBlockConnectionPointTypes.Float, true, 0);
         this.registerInput("height", NodeGeometryBlockConnectionPointTypes.Float, true, 0);
         this.registerInput("depth", NodeGeometryBlockConnectionPointTypes.Float, true, 0);
+        this.registerInput("subdivisions", NodeGeometryBlockConnectionPointTypes.Int, true, 1);
+        this.registerInput("subdivisionsX", NodeGeometryBlockConnectionPointTypes.Int, true, 0);
+        this.registerInput("subdivisionsY", NodeGeometryBlockConnectionPointTypes.Int, true, 0);
 
         this.registerOutput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);
     }
@@ -61,6 +72,27 @@ export class BoxBlock extends NodeGeometryBlock {
      */
     public get depth(): NodeGeometryConnectionPoint {
         return this._inputs[3];
+    }
+
+    /**
+     * Gets the subdivisions input component
+     */
+    public get subdivisions(): NodeGeometryConnectionPoint {
+        return this._inputs[4];
+    }
+
+    /**
+     * Gets the subdivisionsX input component
+     */
+    public get subdivisionsX(): NodeGeometryConnectionPoint {
+        return this._inputs[5];
+    }
+
+    /**
+     * Gets the subdivisionsY input component
+     */
+    public get subdivisionsY(): NodeGeometryConnectionPoint {
+        return this._inputs[6];
     }
 
     /**
@@ -103,27 +135,76 @@ export class BoxBlock extends NodeGeometryBlock {
 
     protected _buildBlock(state: NodeGeometryBuildState) {
         const options: {
+            pattern?: number;
             size?: number;
             width?: number;
             height?: number;
             depth?: number;
+            tileSize?: number;
+            tileWidth?: number;
+            tileHeight?: number;
             faceUV?: Vector4[];
             faceColors?: Color4[];
+            alignHorizontal?: number;
+            alignVertical?: number;
             sideOrientation?: number;
-            frontUVs?: Vector4;
-            backUVs?: Vector4;
-            wrap?: boolean;
-            topBaseAt?: number;
-            bottomBaseAt?: number;
         } = {};
+        const func = (state: NodeGeometryBuildState) => {
+            options.size = this.size.getConnectedValue(state);
+            options.width = this.width.getConnectedValue(state);
+            options.height = this.height.getConnectedValue(state);
+            options.depth = this.depth.getConnectedValue(state);
 
-        options.size = this.size.getConnectedValue(state);
-        options.width = this.width.getConnectedValue(state);
-        options.height = this.height.getConnectedValue(state);
-        options.depth = this.depth.getConnectedValue(state);
+            const subdivisions = this.subdivisions.getConnectedValue(state);
+            const subdivisionsX = this.subdivisionsX.getConnectedValue(state);
+            const subdivisionsY = this.subdivisionsY.getConnectedValue(state);
 
-        // Append vertex data from the plane builder
-        this.geometry._storedValue = CreateBoxVertexData(options);
+            if (subdivisions && options.size) {
+                options.tileSize = options.size / subdivisions;
+            }
+
+            const width = options.width || options.size;
+            if (subdivisionsX && width) {
+                options.tileWidth = width / subdivisionsX;
+            }
+
+            const height = options.height || options.size;
+            if (subdivisionsY && height) {
+                options.tileHeight = height / subdivisionsY;
+            }
+
+            // Append vertex data from the plane builder
+            return CreateTiledBoxVertexData(options);
+        };
+
+        if (this.evaluateContext) {
+            this.geometry._storedFunction = func;
+        } else {
+            this.geometry._storedValue = func(state);
+        }
+    }
+
+    protected _dumpPropertiesCode() {
+        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.evaluateContext = ${this.evaluateContext ? "true" : "false"};\r\n`;
+        return codeString;
+    }
+
+    /**
+     * Serializes this block in a JSON representation
+     * @returns the serialized block object
+     */
+    public serialize(): any {
+        const serializationObject = super.serialize();
+
+        serializationObject.evaluateContext = this.evaluateContext;
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any, rootUrl: string) {
+        super._deserialize(serializationObject, rootUrl);
+
+        this.evaluateContext = serializationObject.evaluateContext;
     }
 }
 

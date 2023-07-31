@@ -1,9 +1,9 @@
 import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
-import { SetPositionsBlock } from "core/Meshes/Node/Blocks/setPositionsBlock";
-import { SetNormalsBlock } from "core/Meshes/Node/Blocks/setNormalsBlock";
-import { SetColorsBlock } from "core/Meshes/Node/Blocks/setColorsBlock";
-import { SetTangentsBlock } from "core/Meshes/Node/Blocks/setTangentsBlock";
-import { SetUVsBlock } from "core/Meshes/Node/Blocks/setUVsBlock";
+import { SetPositionsBlock } from "core/Meshes/Node/Blocks/Set/setPositionsBlock";
+import { SetNormalsBlock } from "core/Meshes/Node/Blocks/Set/setNormalsBlock";
+import { SetColorsBlock } from "core/Meshes/Node/Blocks/Set/setColorsBlock";
+import { SetTangentsBlock } from "core/Meshes/Node/Blocks/Set/setTangentsBlock";
+import { SetUVsBlock } from "core/Meshes/Node/Blocks/Set/setUVsBlock";
 import { ComputeNormalsBlock } from "core/Meshes/Node/Blocks/computeNormalsBlock";
 import { RandomBlock } from "core/Meshes/Node/Blocks/randomBlock";
 import { NoiseBlock } from "core/Meshes/Node/Blocks/noiseBlock";
@@ -18,6 +18,7 @@ import { RotationXBlock } from "core/Meshes/Node/Blocks/Matrices/rotationXBlock"
 import { RotationYBlock } from "core/Meshes/Node/Blocks/Matrices/rotationYBlock";
 import { RotationZBlock } from "core/Meshes/Node/Blocks/Matrices/rotationZBlock";
 import { ScalingBlock } from "core/Meshes/Node/Blocks/Matrices/scalingBlock";
+import { AlignBlock } from "core/Meshes/Node/Blocks/Matrices/alignBlock";
 import { TranslationBlock } from "core/Meshes/Node/Blocks/Matrices/translationBlock";
 import { MeshBlock } from "core/Meshes/Node/Blocks/Sources/meshBlock";
 import { GridBlock } from "core/Meshes/Node/Blocks/Sources/gridBlock";
@@ -32,14 +33,60 @@ import { MathBlock, MathBlockOperations } from "core/Meshes/Node/Blocks/mathBloc
 import { NodeGeometryContextualSources } from "core/Meshes/Node/Enums/nodeGeometryContextualSources";
 import { GeometryTrigonometryBlock, GeometryTrigonometryBlockOperations } from "core/Meshes/Node/Blocks/geometryTrigonometryBlock";
 import { GeometryElbowBlock } from "core/Meshes/Node/Blocks/geometryElbowBlock";
-import { SetMaterialIDBlock } from "core/Meshes/Node/Blocks/setMaterialIDBlock";
+import { SetMaterialIDBlock } from "core/Meshes/Node/Blocks/Set/setMaterialIDBlock";
 import { InstantiateOnVerticesBlock } from "core/Meshes/Node/Blocks/instances/instantiateOnVerticesBlock";
 import { InstantiateOnFacesBlock } from "core/Meshes/Node/Blocks/instances/instantiateOnFacesBlock";
 import { MapRangeBlock } from "core/Meshes/Node/Blocks/mapRangeBlock";
+import { ConditionBlock, ConditionBlockTests } from "core/Meshes/Node/Blocks/conditionBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "EqualBlock": {
+                const block = new ConditionBlock("Equal");
+                block.test = ConditionBlockTests.Equal;
+                return block;
+            }
+            case "NotEqualBlock": {
+                const block = new ConditionBlock("Not equal");
+                block.test = ConditionBlockTests.NotEqual;
+                return block;
+            }
+            case "LessThanBlock": {
+                const block = new ConditionBlock("Less than");
+                block.test = ConditionBlockTests.LessThan;
+                return block;
+            }
+            case "LessOrEqualBlock": {
+                const block = new ConditionBlock("Less or equal");
+                block.test = ConditionBlockTests.LessOrEqual;
+                return block;
+            }
+            case "GreaterThanBlock": {
+                const block = new ConditionBlock("Greater than");
+                block.test = ConditionBlockTests.GreaterThan;
+                return block;
+            }
+            case "GreaterOrEqualBlock": {
+                const block = new ConditionBlock("Greater or equal");
+                block.test = ConditionBlockTests.GreaterOrEqual;
+                return block;
+            }
+            case "XorBlock": {
+                const block = new ConditionBlock("Xor");
+                block.test = ConditionBlockTests.Xor;
+                return block;
+            }
+            case "OrBlock": {
+                const block = new ConditionBlock("Or");
+                block.test = ConditionBlockTests.Or;
+                return block;
+            }
+            case "AndBlock": {
+                const block = new ConditionBlock("And");
+                block.test = ConditionBlockTests.And;
+                return block;
+            }
             case "SetMaterialIDBlock":
                 return new SetMaterialIDBlock("Set material ID");
             case "InstantiateOnFacesBlock":
@@ -58,6 +105,8 @@ export class BlockTools {
                 return new TranslationBlock("Translation");
             case "ScalingBlock":
                 return new ScalingBlock("Scaling");
+            case "AlignBlock":
+                return new AlignBlock("Align");
             case "RotationXBlock":
                 return new RotationXBlock("Rotation X");
             case "RotationYBlock":
@@ -156,6 +205,16 @@ export class BlockTools {
                 block.contextualValue = NodeGeometryContextualSources.UV6;
                 return block;
             }
+            case "VertexIDBlock": {
+                const block = new GeometryInputBlock("Vertex ID");
+                block.contextualValue = NodeGeometryContextualSources.VertexID;
+                return block;
+            }
+            case "FaceIDBlock": {
+                const block = new GeometryInputBlock("Face ID");
+                block.contextualValue = NodeGeometryContextualSources.FaceID;
+                return block;
+            }
             case "AddBlock": {
                 const block = new MathBlock("Add");
                 block.operation = MathBlockOperations.Add;
@@ -244,6 +303,21 @@ export class BlockTools {
             case "ReciprocalBlock": {
                 const block = new GeometryTrigonometryBlock("Reciprocal");
                 block.operation = GeometryTrigonometryBlockOperations.Reciprocal;
+                return block;
+            }
+            case "RoundBlock": {
+                const block = new GeometryTrigonometryBlock("Round");
+                block.operation = GeometryTrigonometryBlockOperations.Round;
+                return block;
+            }
+            case "FloorBlock": {
+                const block = new GeometryTrigonometryBlock("Floor");
+                block.operation = GeometryTrigonometryBlockOperations.Floor;
+                return block;
+            }
+            case "CeilingBlock": {
+                const block = new GeometryTrigonometryBlock("Ceiling");
+                block.operation = GeometryTrigonometryBlockOperations.Ceiling;
                 return block;
             }
             case "MinBlock": {

@@ -70,7 +70,7 @@ export class RandomBlock extends NodeGeometryBlock {
         }
     }
 
-    protected _buildBlock(state: NodeGeometryBuildState) {
+    protected _buildBlock() {
         let func: Nullable<(state: NodeGeometryBuildState) => any> = null;
 
         switch (this.min.type) {

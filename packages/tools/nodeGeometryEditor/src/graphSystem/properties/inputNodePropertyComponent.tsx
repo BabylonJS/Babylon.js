@@ -118,8 +118,21 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
 
         switch (inputBlock.type) {
             case NodeGeometryBlockConnectionPointTypes.Float:
+            case NodeGeometryBlockConnectionPointTypes.Int:
+                contextualSourcesOptions = [
+                    { label: "Vertex ID", value: NodeGeometryContextualSources.VertexID },
+                    { label: "Face ID", value: NodeGeometryContextualSources.FaceID },
+                ];
                 break;
             case NodeGeometryBlockConnectionPointTypes.Vector2:
+                contextualSourcesOptions = [
+                    { label: "UV1s", value: NodeGeometryContextualSources.UV },
+                    { label: "UV2s", value: NodeGeometryContextualSources.UV2 },
+                    { label: "UV3s", value: NodeGeometryContextualSources.UV3 },
+                    { label: "UV4s", value: NodeGeometryContextualSources.UV4 },
+                    { label: "UV5s", value: NodeGeometryContextualSources.UV5 },
+                    { label: "UV6s", value: NodeGeometryContextualSources.UV6 },
+                ];
                 break;
             case NodeGeometryBlockConnectionPointTypes.Vector3:
                 contextualSourcesOptions = [
@@ -128,6 +141,10 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 ];
                 break;
             case NodeGeometryBlockConnectionPointTypes.Vector4:
+                contextualSourcesOptions = [
+                    { label: "Tangents", value: NodeGeometryContextualSources.Tangents },
+                    { label: "Colors", value: NodeGeometryContextualSources.Colors },
+                ];
                 break;
         }
 
@@ -222,7 +239,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                     {!inputBlock.isContextual && this.renderValue(this.props.stateManager.data as GlobalState)}
                     {inputBlock.isContextual && (
                         <OptionsLineComponent
-                            label="System value"
+                            label="Contextual value"
                             options={contextualSourcesOptions}
                             target={inputBlock}
                             propertyName="contextualValue"

@@ -6,11 +6,19 @@ import { GeometryInputBlock } from "../geometryInputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Vector4 } from "../../../../Maths/math.vector";
 import { CreateIcoSphereVertexData } from "core/Meshes/Builders";
+import { PropertyTypeForEdition, editableInPropertyPage } from "../../Interfaces/nodeGeometryDecorator";
 
 /**
  * Defines a block used to generate icosphere geometry data
  */
 export class IcoSphereBlock extends NodeGeometryBlock {
+    /**
+     * Gets or sets a boolean indicating that this block can evaluate context
+     * Build performance is improved when this value is set to false as the system will cache values instead of reevaluating everything per context change
+     */
+    @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
+    public evaluateContext = false;
+
     /**
      * Create a new IcoSphereBlock
      * @param name defines the block name
@@ -98,15 +106,46 @@ export class IcoSphereBlock extends NodeGeometryBlock {
             backUVs?: Vector4;
         } = {};
 
-        options.radius = this.radius.getConnectedValue(state);
-        options.subdivisions = this.subdivisions.getConnectedValue(state);
-        options.radiusX = this.radiusX.getConnectedValue(state);
-        options.radiusX = this.radiusX.getConnectedValue(state);
-        options.radiusX = this.radiusX.getConnectedValue(state);
-        options.radiusX = this.radiusX.getConnectedValue(state);
+        const func = (state: NodeGeometryBuildState) => {
+            options.radius = this.radius.getConnectedValue(state);
+            options.subdivisions = this.subdivisions.getConnectedValue(state);
+            options.radiusX = this.radiusX.getConnectedValue(state);
+            options.radiusX = this.radiusX.getConnectedValue(state);
+            options.radiusX = this.radiusX.getConnectedValue(state);
+            options.radiusX = this.radiusX.getConnectedValue(state);
 
-        // Append vertex data from the plane builder
-        this.geometry._storedValue = CreateIcoSphereVertexData(options);
+            // Append vertex data from the plane builder
+            return CreateIcoSphereVertexData(options);
+        };
+
+        if (this.evaluateContext) {
+            this.geometry._storedFunction = func;
+        } else {
+            this.geometry._storedValue = func(state);
+        }
+    }
+
+    protected _dumpPropertiesCode() {
+        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.evaluateContext = ${this.evaluateContext ? "true" : "false"};\r\n`;
+        return codeString;
+    }
+
+    /**
+     * Serializes this block in a JSON representation
+     * @returns the serialized block object
+     */
+    public serialize(): any {
+        const serializationObject = super.serialize();
+
+        serializationObject.evaluateContext = this.evaluateContext;
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any, rootUrl: string) {
+        super._deserialize(serializationObject, rootUrl);
+
+        this.evaluateContext = serializationObject.evaluateContext;
     }
 }
 

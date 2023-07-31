@@ -39,6 +39,7 @@ export class OutputPropertyTabComponent extends React.Component<IPropertyCompone
                         {vertexData.positions && (
                             <TextLineComponent label="Build time" value={(this.props.stateManager.data as GlobalState).nodeGeometry.buildExecutionTime.toFixed(2) + " ms"} />
                         )}
+                        <TextLineComponent label="Sub-meshes" value={vertexData.materialInfos?.length.toString()} />
                         <TextLineComponent label="Has normals" value={vertexData.normals ? "Yes" : "No"} />
                         <TextLineComponent label="Has colors" value={vertexData.colors ? "Yes" : "No"} />
                         <TextLineComponent label="Has UV set 0" value={vertexData.uvs ? "Yes" : "No"} />

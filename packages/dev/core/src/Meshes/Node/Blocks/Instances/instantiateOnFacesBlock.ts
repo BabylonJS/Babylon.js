@@ -5,14 +5,30 @@ import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryC
 import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import type { INodeGeometryExecutionContext } from "../../Interfaces/nodeGeometryExecutionContext";
 import type { VertexData } from "../../../mesh.vertexData";
-import { Vector3 } from "../../../../Maths/math.vector";
+import { Vector2, Vector3, Vector4 } from "../../../../Maths/math.vector";
+import { NodeGeometryContextualSources } from "../../Enums/nodeGeometryContextualSources";
+import { PropertyTypeForEdition, editableInPropertyPage } from "../../Interfaces/nodeGeometryDecorator";
+import type { Nullable } from "../../../../types";
 
 /**
  * Block used to instance geometry on every face of a geometry
  */
 export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext {
     private _vertexData: VertexData;
-    private _currentIndex: number;
+    private _currentFaceIndex: number;
+    private _currentPosition = new Vector3();
+    private _vertex0 = new Vector3();
+    private _vertex1 = new Vector3();
+    private _vertex2 = new Vector3();
+    private _tempVector0 = new Vector3();
+    private _tempVector1 = new Vector3();
+
+    /**
+     * Gets or sets a boolean indicating that this block can evaluate context
+     * Build performance is improved when this value is set to false as the system will cache values instead of reevaluating everything per context change
+     */
+    @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
+    public evaluateContext = true;
 
     /**
      * Create a new InstantiateOnFacesBlock
@@ -36,7 +52,50 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
      * @returns the current index
      */
     public getExecutionIndex(): number {
-        return this._currentIndex;
+        return 0;
+    }
+
+    /**
+     * Gets the current face index in the current flow
+     * @returns the current face index
+     */
+    public getExecutionFaceIndex(): number {
+        return this._currentFaceIndex;
+    }
+
+    /**
+     * Gets the value associated with a contextual source
+     * @param source Source of the contextual value
+     * @returns the value associated with the source
+     */
+    public getOverrideContextualValue(source: NodeGeometryContextualSources) {
+        switch (source) {
+            case NodeGeometryContextualSources.Positions:
+                return this._currentPosition;
+            case NodeGeometryContextualSources.Normals:
+                this._vertex1.subtractToRef(this._vertex0, this._tempVector0);
+                this._vertex2.subtractToRef(this._vertex1, this._tempVector1);
+                this._tempVector0.normalize();
+                this._tempVector1.normalize();
+                return Vector3.Cross(this._tempVector1, this._tempVector0);
+            case NodeGeometryContextualSources.Colors:
+                return Vector4.Zero();
+            case NodeGeometryContextualSources.Tangents:
+                return Vector4.Zero();
+            case NodeGeometryContextualSources.UV:
+            case NodeGeometryContextualSources.UV2:
+            case NodeGeometryContextualSources.UV3:
+            case NodeGeometryContextualSources.UV4:
+            case NodeGeometryContextualSources.UV5:
+            case NodeGeometryContextualSources.UV6:
+                return Vector2.Zero();
+            case NodeGeometryContextualSources.VertexID:
+                return this.getExecutionIndex();
+            case NodeGeometryContextualSources.FaceID:
+                return this.getExecutionFaceIndex();
+        }
+
+        return null;
     }
 
     /**
@@ -103,31 +162,35 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
         }
 
         // Processing
-        const instanceCount = this.count.getConnectedValue(state);
-        const faceCount = this._vertexData.indices.length / 3;
-        const instancePerFace = Math.floor(instanceCount / faceCount);
-        const instanceGeometry = this.instance.getConnectedValue(state) as VertexData;
+        let instanceGeometry: Nullable<VertexData> = null;
+        if (!this.evaluateContext) {
+            instanceGeometry = this.instance.getConnectedValue(state) as VertexData;
 
-        if (!instanceGeometry || !instanceGeometry.positions || instanceGeometry.positions.length === 0) {
-            state.executionContext = null;
-            state.geometryContext = null;
-            this.output._storedValue = null;
-            return;
+            if (!instanceGeometry || !instanceGeometry.positions || instanceGeometry.positions.length === 0) {
+                state.executionContext = null;
+                state.geometryContext = null;
+                this.output._storedValue = null;
+                return;
+            }
         }
 
+        const instanceCount = this.count.getConnectedValue(state);
+        const faceCount = this._vertexData.indices.length / 3;
+        const instancePerFace = Math.max(1, Math.floor(instanceCount / faceCount));
         const additionalVertexData: VertexData[] = [];
-        const currentPosition = new Vector3();
-        const vertex0 = new Vector3();
-        const vertex1 = new Vector3();
-        const vertex2 = new Vector3();
+        let totalDone = 0;
 
-        for (this._currentIndex = 0; this._currentIndex < faceCount; this._currentIndex++) {
+        for (this._currentFaceIndex = 0; this._currentFaceIndex < faceCount; this._currentFaceIndex++) {
             // Extract face vertices
-            vertex0.fromArray(this._vertexData.positions, this._vertexData.indices[this._currentIndex * 3] * 3);
-            vertex1.fromArray(this._vertexData.positions, this._vertexData.indices[this._currentIndex * 3 + 1] * 3);
-            vertex2.fromArray(this._vertexData.positions, this._vertexData.indices[this._currentIndex * 3 + 2] * 3);
+            this._vertex0.fromArray(this._vertexData.positions, this._vertexData.indices[this._currentFaceIndex * 3] * 3);
+            this._vertex1.fromArray(this._vertexData.positions, this._vertexData.indices[this._currentFaceIndex * 3 + 1] * 3);
+            this._vertex2.fromArray(this._vertexData.positions, this._vertexData.indices[this._currentFaceIndex * 3 + 2] * 3);
 
             for (let faceDispatchCount = 0; faceDispatchCount < instancePerFace; faceDispatchCount++) {
+                if (totalDone >= instanceCount) {
+                    break;
+                }
+
                 // Get random point on face
                 let x = Math.random();
                 let y = Math.random();
@@ -141,14 +204,26 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
                 const t = y - x;
                 const u = 1 - s - t;
 
-                currentPosition.set(s * vertex0.x + t * vertex1.x + u * vertex2.x, s * vertex0.y + t * vertex1.y + u * vertex2.y, s * vertex0.z + t * vertex1.z + u * vertex2.z);
+                this._currentPosition.set(
+                    s * this._vertex0.x + t * this._vertex1.x + u * this._vertex2.x,
+                    s * this._vertex0.y + t * this._vertex1.y + u * this._vertex2.y,
+                    s * this._vertex0.z + t * this._vertex1.z + u * this._vertex2.z
+                );
 
                 // Clone the instance
-                const clone = instanceGeometry.clone();
+                if (this.evaluateContext) {
+                    instanceGeometry = this.instance.getConnectedValue(state) as VertexData;
+
+                    if (!instanceGeometry || !instanceGeometry.positions || instanceGeometry.positions.length === 0) {
+                        continue;
+                    }
+                }
+                const clone = instanceGeometry!.clone();
 
                 const scaling = state.adaptInput(this.scaling, NodeGeometryBlockConnectionPointTypes.Vector3, Vector3.OneReadOnly);
                 const rotation = this.rotation.getConnectedValue(state) || Vector3.ZeroReadOnly;
-                state._instantiate(clone, currentPosition, rotation, scaling, additionalVertexData);
+                state._instantiate(clone, this._currentPosition, rotation, scaling, additionalVertexData);
+                totalDone++;
             }
         }
 
@@ -167,6 +242,29 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
         this.output._storedValue = this._vertexData;
         state.executionContext = null;
         state.geometryContext = null;
+    }
+
+    protected _dumpPropertiesCode() {
+        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.evaluateContext = ${this.evaluateContext ? "true" : "false"};\r\n`;
+        return codeString;
+    }
+
+    /**
+     * Serializes this block in a JSON representation
+     * @returns the serialized block object
+     */
+    public serialize(): any {
+        const serializationObject = super.serialize();
+
+        serializationObject.evaluateContext = this.evaluateContext;
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any, rootUrl: string) {
+        super._deserialize(serializationObject, rootUrl);
+
+        this.evaluateContext = serializationObject.evaluateContext;
     }
 }
 

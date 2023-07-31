@@ -1,28 +1,28 @@
-import { NodeGeometryBlock } from "../nodeGeometryBlock";
-import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
-import { RegisterClass } from "../../../Misc/typeStore";
-import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
-import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
-import type { INodeGeometryExecutionContext } from "../Interfaces/nodeGeometryExecutionContext";
-import type { VertexData } from "../../mesh.vertexData";
-import type { Vector4 } from "../../../Maths/math.vector";
+import { NodeGeometryBlock } from "../../nodeGeometryBlock";
+import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
+import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
+import type { INodeGeometryExecutionContext } from "../../Interfaces/nodeGeometryExecutionContext";
+import type { VertexData } from "../../../mesh.vertexData";
+import type { Vector4 } from "../../../../Maths/math.vector";
 
 /**
- * Block used to set colors for a geometry
+ * Block used to set tangents for a geometry
  */
-export class SetColorsBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext {
+export class SetTangentsBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext {
     private _vertexData: VertexData;
     private _currentIndex: number;
 
     /**
-     * Create a new SetColorsBlock
+     * Create a new SetTangentsBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
         super(name);
 
         this.registerInput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);
-        this.registerInput("colors", NodeGeometryBlockConnectionPointTypes.Vector4);
+        this.registerInput("tangents", NodeGeometryBlockConnectionPointTypes.Vector4);
 
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Geometry);
     }
@@ -36,11 +36,19 @@ export class SetColorsBlock extends NodeGeometryBlock implements INodeGeometryEx
     }
 
     /**
+     * Gets the current face index in the current flow
+     * @returns the current face index
+     */
+    public getExecutionFaceIndex(): number {
+        return 0;
+    }
+
+    /**
      * Gets the current class name
      * @returns the class name
      */
     public getClassName() {
-        return "SetColorsBlock";
+        return "SetTangentsBlock";
     }
 
     /**
@@ -51,9 +59,9 @@ export class SetColorsBlock extends NodeGeometryBlock implements INodeGeometryEx
     }
 
     /**
-     * Gets the colors input component
+     * Gets the tangents input component
      */
-    public get colors(): NodeGeometryConnectionPoint {
+    public get tangents(): NodeGeometryConnectionPoint {
         return this._inputs[1];
     }
 
@@ -77,23 +85,23 @@ export class SetColorsBlock extends NodeGeometryBlock implements INodeGeometryEx
             return;
         }
 
-        if (!this.colors.isConnected) {
+        if (!this.tangents.isConnected) {
             state.executionContext = null;
             state.geometryContext = null;
             this.output._storedValue = this._vertexData;
             return;
         }
 
-        if (!this._vertexData.colors) {
-            this._vertexData.colors = [];
+        if (!this._vertexData.tangents) {
+            this._vertexData.tangents = [];
         }
 
         // Processing
         const vertexCount = this._vertexData.positions.length / 3;
         for (this._currentIndex = 0; this._currentIndex < vertexCount; this._currentIndex++) {
-            const tempVector4 = this.colors.getConnectedValue(state) as Vector4;
-            if (tempVector4) {
-                tempVector4.toArray(this._vertexData.colors, this._currentIndex * 4);
+            const tempVector3 = this.tangents.getConnectedValue(state) as Vector4;
+            if (tempVector3) {
+                tempVector3.toArray(this._vertexData.tangents, this._currentIndex * 4);
             }
         }
 
@@ -104,4 +112,4 @@ export class SetColorsBlock extends NodeGeometryBlock implements INodeGeometryEx
     }
 }
 
-RegisterClass("BABYLON.SetColorsBlock", SetColorsBlock);
+RegisterClass("BABYLON.SetTangentsBlock", SetTangentsBlock);

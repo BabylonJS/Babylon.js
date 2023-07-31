@@ -47,6 +47,14 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
     }
 
     /**
+     * Gets the current face index in the current flow
+     * @returns the current face index
+     */
+    public getExecutionFaceIndex(): number {
+        return 0;
+    }
+
+    /**
      * Gets the current class name
      * @returns the class name
      */
@@ -111,20 +119,17 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
 
         // Processing
         const vertexCount = this._vertexData.positions.length / 3;
-        const instanceGeometry = this.instance.getConnectedValue(state) as VertexData;
-
-        if (!instanceGeometry || !instanceGeometry.positions || instanceGeometry.positions.length === 0) {
-            state.executionContext = null;
-            state.geometryContext = null;
-            this.output._storedValue = null;
-            return;
-        }
-
         const additionalVertexData: VertexData[] = [];
         const currentPosition = new Vector3();
         const alreadyDone = new Array<Vector3>();
 
         for (this._currentIndex = 0; this._currentIndex < vertexCount; this._currentIndex++) {
+            const instanceGeometry = this.instance.getConnectedValue(state) as VertexData;
+
+            if (!instanceGeometry || !instanceGeometry.positions || instanceGeometry.positions.length === 0) {
+                continue;
+            }
+
             const density = this.density.getConnectedValue(state);
 
             if (density < 1) {
