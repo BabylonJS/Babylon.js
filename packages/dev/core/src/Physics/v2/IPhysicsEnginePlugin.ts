@@ -133,9 +133,9 @@ export enum PhysicsCollisionEventType {
 }
 
 /**
- * Collision object that is the parameter when notification for collision fires.
+ * Base collision object
  */
-export interface IPhysicsCollisionEvent {
+export interface IBasePhysicsCollisionEvent {
     /**
      * 1st physics body that collided
      */
@@ -153,6 +153,16 @@ export interface IPhysicsCollisionEvent {
      */
     collidedAgainstIndex: number;
     /**
+     * Event type
+     */
+    type: PhysicsCollisionEventType;
+}
+
+/**
+ * Collision object that is the parameter when notification for collision fires.
+ */
+export interface IPhysicsCollisionEvent extends IBasePhysicsCollisionEvent {
+    /**
      * World position where the collision occured
      */
     point: Nullable<Vector3>;
@@ -168,10 +178,6 @@ export interface IPhysicsCollisionEvent {
      * Collision world normal direction
      */
     normal: Nullable<Vector3>;
-    /**
-     * Event type
-     */
-    type: PhysicsCollisionEventType;
 }
 
 /**

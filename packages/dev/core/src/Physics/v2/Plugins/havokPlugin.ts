@@ -6,8 +6,9 @@ import {
     PhysicsConstraintMotorType,
     PhysicsConstraintAxis,
     PhysicsConstraintAxisLimitMode,
+    PhysicsCollisionEventType,
 } from "../IPhysicsEnginePlugin";
-import { PhysicsShapeParameters, IPhysicsEnginePluginV2, PhysicsMassProperties, IPhysicsCollisionEvent, PhysicsCollisionEventType } from "../IPhysicsEnginePlugin";
+import type { PhysicsShapeParameters, IPhysicsEnginePluginV2, PhysicsMassProperties, IPhysicsCollisionEvent, IBasePhysicsCollisionEvent } from "../IPhysicsEnginePlugin";
 import type { IRaycastQuery, PhysicsRaycastResult } from "../../physicsRaycastResult";
 import { Logger } from "../../../Misc/logger";
 import type { PhysicsBody } from "../physicsBody";
@@ -195,7 +196,6 @@ class CollisionEvent {
         eventOut.contactOnB.normal.set(floatBuf[offB + 11], floatBuf[offB + 12], floatBuf[offB + 13]);
         eventOut.impulseApplied = floatBuf[offB + 13 + 3];
         eventOut.type = intBuf[0];
-        console.log("event type", eventOut.type);
     }
 }
 
@@ -226,9 +226,13 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     private _bodyBuffer: number;
     private _bodyCollisionObservable = new Map<bigint, Observable<IPhysicsCollisionEvent>>();
     /**
-     *
+     * Observable for collision started and collision continued events
      */
     public onCollisionObservable = new Observable<IPhysicsCollisionEvent>();
+    /**
+     * Observable for collision ended events
+     */
+    public onCollisionEndedObservable = new Observable<IBasePhysicsCollisionEvent>();
 
     public constructor(private _useDeltaForWorldStep: boolean = true, hpInjection: any = HK) {
         if (typeof hpInjection === "function") {
@@ -1695,24 +1699,28 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         const worldAddr = Number(this.world);
         while (eventAddress) {
             CollisionEvent.readToRef(this._hknp.HEAPU8.buffer, eventAddress, event);
-            event.contactOnB.position.subtractToRef(event.contactOnA.position, this._tmpVec3[0]);
-            const distance = Vector3.Dot(this._tmpVec3[0], event.contactOnA.normal);
             const bodyInfoA = this._bodies.get(event.contactOnA.bodyId)!;
             const bodyInfoB = this._bodies.get(event.contactOnB.bodyId)!;
-            const collisionInfo = {
+            const collisionInfo: any = {
                 collider: bodyInfoA.body,
                 colliderIndex: bodyInfoA.index,
                 collidedAgainst: bodyInfoB.body,
                 collidedAgainstIndex: bodyInfoB.index,
-                point: event.contactOnA.position,
-                distance: distance,
-                impulse: event.impulseApplied,
-                normal: event.contactOnA.normal,
                 type: this._nativeCollisionValueToCollisionType(event.type),
             };
-            this.onCollisionObservable.notifyObservers(collisionInfo);
+            if (collisionInfo.type === PhysicsCollisionEventType.COLLISION_FINISHED) {
+                this.onCollisionEndedObservable.notifyObservers(collisionInfo);
+            } else {
+                event.contactOnB.position.subtractToRef(event.contactOnA.position, this._tmpVec3[0]);
+                const distance = Vector3.Dot(this._tmpVec3[0], event.contactOnA.normal);
+                collisionInfo.point = event.contactOnA.position;
+                collisionInfo.distance = distance;
+                collisionInfo.impulse = event.impulseApplied;
+                collisionInfo.normal = event.contactOnA.normal;
+                this.onCollisionObservable.notifyObservers(collisionInfo);
+            }
 
-            if (this._bodyCollisionObservable.size) {
+            if (this._bodyCollisionObservable.size && collisionInfo.type !== PhysicsCollisionEventType.COLLISION_FINISHED) {
                 const observableA = this._bodyCollisionObservable.get(event.contactOnA.bodyId);
                 const observableB = this._bodyCollisionObservable.get(event.contactOnB.bodyId);
 
