@@ -52,7 +52,11 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
 
         // Find all a11y entities in the scene, assemble the a11y forest (a11yTreeItems), and update React state to let React update DOM.
         const updateA11yTree = () => {
-            this._updateHTMLTwinItems();
+            // Delay the call to _updateHTMLTwinItems because during its execution, _isMeshGUI will be called and may access node.sourceMesh
+            // if node is an instanced mesh, but at this stage, the InstancedMesh constructor has not yet been executed and sourceMesh is undefined.
+            setTimeout(() => {
+                this._updateHTMLTwinItems();
+            });
         };
 
         const addGUIObservers = (control: Control) => {
@@ -109,12 +113,16 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
             }
 
             // If the node has GUI, add observer to the controls
-            if (this._isMeshGUI(node)) {
-                const curMesh = node as AbstractMesh;
-                const adt = curMesh.material?.getActiveTextures()[0] as AdvancedDynamicTexture;
-                const guiRoot = adt.getChildren();
-                guiRoot.forEach((control) => addGUIObservers(control));
-            }
+            // Delays the call to _isMeshGUI because it can access node.sourceMesh if node is an instanced mesh, but at this stage
+            // the InstancedMesh constructor has not yet been executed and sourceMesh is undefined.
+            setTimeout(() => {
+                if (this._isMeshGUI(node)) {
+                    const curMesh = node as AbstractMesh;
+                    const adt = curMesh.material?.getActiveTextures()[0] as AdvancedDynamicTexture;
+                    const guiRoot = adt.getChildren();
+                    guiRoot.forEach((control) => addGUIObservers(control));
+                }
+            });
         };
 
         const _updateAndAddNode = (node: Node) => {
