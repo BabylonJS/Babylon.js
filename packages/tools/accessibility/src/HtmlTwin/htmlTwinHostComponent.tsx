@@ -54,6 +54,7 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
         const updateA11yTree = () => {
             // Delay the call to _updateHTMLTwinItems because during its execution, _isMeshGUI will be called and may access node.sourceMesh
             // if node is an instanced mesh, but at this stage, the InstancedMesh constructor has not yet been executed and sourceMesh is undefined.
+            // The delay will give time for the InstancedMesh constructor to be executed.
             setTimeout(() => {
                 this._updateHTMLTwinItems();
             });
@@ -115,6 +116,7 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
             // If the node has GUI, add observer to the controls
             // Delays the call to _isMeshGUI because it can access node.sourceMesh if node is an instanced mesh, but at this stage
             // the InstancedMesh constructor has not yet been executed and sourceMesh is undefined.
+            // The delay will give time for the InstancedMesh constructor to be executed.
             setTimeout(() => {
                 if (this._isMeshGUI(node)) {
                     const curMesh = node as AbstractMesh;
