@@ -246,7 +246,7 @@ export class NativeEngine extends Engine {
             textureFloatLinearFiltering: false,
             textureFloatRender: true,
             textureHalfFloat: true,
-            textureHalfFloatLinearFiltering: true,
+            textureHalfFloatLinearFiltering: false,
             textureHalfFloatRender: true,
             textureLOD: true,
             texelFetch: false,
