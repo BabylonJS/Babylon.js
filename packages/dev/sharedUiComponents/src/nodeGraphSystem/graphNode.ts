@@ -364,6 +364,9 @@ export class GraphNode {
         this._comments.title = this.content.comments || "";
 
         this.content.prepareHeaderIcon(this._headerIcon, this._headerIconImg);
+        if (this._headerIconImg.src) {
+            this._header.classList.add(localStyles["headerWithIcon"]);
+        }
     }
 
     private _onDown(evt: PointerEvent) {

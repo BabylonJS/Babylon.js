@@ -1392,7 +1392,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this.props.stateManager.onSelectionChangedObservable.notifyObservers(null);
         this.props.stateManager.onSelectionChangedObservable.notifyObservers({ selection: newNode });
 
-        x -= GraphCanvasComponent.NodeWidth + 150;
+        x -= GraphCanvasComponent.NodeWidth + 200;
 
         newNode.content.inputs.forEach((portData) => {
             if (portData.connectedPort) {

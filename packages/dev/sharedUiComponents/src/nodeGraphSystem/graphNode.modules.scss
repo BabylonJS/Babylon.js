@@ -30,18 +30,17 @@
     grid-template-rows: 100%;
 }
 
+$iconSize: 20px;
+$iconMargin: 6px;
+
 .headerIcon {
-    position: absolute;
-    right: 0px;
-    top: 2px;
     z-index: 10;
-    justify-self: end;
     align-self: center;
     user-select: none;
     pointer-events: none;
-    width: 20px;
+    width: $iconSize;
     display: grid;
-    margin-left: 6px;
+    margin-left: $iconMargin;
 }
 
 .header {
@@ -50,7 +49,10 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-    max-width: 190px;
+}
+
+.headerWithIcon {
+    margin-left: calc(#{$iconSize} + #{$iconMargin});
 }
 
 .connections {

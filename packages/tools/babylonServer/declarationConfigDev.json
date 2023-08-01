@@ -37,7 +37,7 @@
     },
     {
         "declarationLibs": ["@tools/accessibility"],
-        "devPackageName": "gui-editor",
+        "devPackageName": "accessibility",
         "filename": "accessibility.d.ts",
         "outputDirectory": "./declarations"
     },
