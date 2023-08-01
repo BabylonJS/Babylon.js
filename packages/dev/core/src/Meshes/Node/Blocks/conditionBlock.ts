@@ -61,11 +61,10 @@ export class ConditionBlock extends NodeGeometryBlock {
 
         this.registerInput("left", NodeGeometryBlockConnectionPointTypes.Float);
         this.registerInput("right", NodeGeometryBlockConnectionPointTypes.Float, true, 0);
-        this.registerInput("ifTrue", NodeGeometryBlockConnectionPointTypes.AutoDetect, true);
-        this.registerInput("ifFalse", NodeGeometryBlockConnectionPointTypes.AutoDetect, true);
+        this.registerInput("ifTrue", NodeGeometryBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("ifFalse", NodeGeometryBlockConnectionPointTypes.AutoDetect);
 
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.BasedOnInput);
-        this.registerOutput("outputAsFloat", NodeGeometryBlockConnectionPointTypes.Float);
 
         this._outputs[0]._typeConnectionSource = this._inputs[2];
         this._inputs[0].acceptedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Int);
@@ -115,13 +114,6 @@ export class ConditionBlock extends NodeGeometryBlock {
     public get output(): NodeGeometryConnectionPoint {
         return this._outputs[0];
     }
-
-    /**
-     * Gets the output as float component
-     */
-    public get outputAsFloat(): NodeGeometryConnectionPoint {
-        return this._outputs[1];
-    }    
 
     protected _buildBlock() {
         if (!this.left.isConnected || !this.ifTrue.isConnected || !this.ifFalse.isConnected) {
@@ -173,14 +165,6 @@ export class ConditionBlock extends NodeGeometryBlock {
             }
 
             return this.ifFalse.getConnectedValue(state);
-        };
-
-        this.outputAsFloat._storedFunction = (state) => {           
-            if (func(state)) {
-                return 1.0;
-            }
-
-            return 0;
         };
     }
 

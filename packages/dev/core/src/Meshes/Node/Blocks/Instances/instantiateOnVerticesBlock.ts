@@ -22,7 +22,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
      * Gets or sets a boolean indicating if the block should remove duplicated positions
      */
     @editableInPropertyPage("Remove duplicated positions", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
-    public removeDuplicatedPositions = false;
+    public removeDuplicatedPositions = true;
 
     /**
      * Create a new InstantiateOnVerticesBlock
@@ -191,7 +191,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
             } else {
                 // We do not merge the main one as user can use a merge node if wanted
                 const main = additionalVertexData.splice(0, 1)[0];
-                this._vertexData = main.merge(additionalVertexData, true);
+                this._vertexData = main.merge(additionalVertexData, true, false, true);
             }
         }
 

@@ -27,7 +27,6 @@ export * from "./Blocks/mapRangeBlock";
 export * from "./Blocks/conditionBlock";
 export * from "./Blocks/randomBlock";
 export * from "./Blocks/noiseBlock";
-export * from "./Blocks/defragBlock";
 export * from "./Blocks/mergeGeometryBlock";
 export * from "./Blocks/geometryElbowBlock";
 export * from "./Blocks/computeNormalsBlock";

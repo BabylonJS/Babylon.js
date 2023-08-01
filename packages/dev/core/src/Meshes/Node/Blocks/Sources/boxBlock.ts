@@ -4,9 +4,7 @@ import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnect
 import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { GeometryInputBlock } from "../geometryInputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import type { Vector4 } from "../../../../Maths/math.vector";
-import type { Color4 } from "../../../../Maths/math.color";
-import { CreateTiledBoxVertexData } from "core/Meshes/Builders";
+import { CreateSegmentedBoxVertexData } from "core/Meshes/Builders";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../Interfaces/nodeGeometryDecorator";
 
 /**
@@ -34,6 +32,7 @@ export class BoxBlock extends NodeGeometryBlock {
         this.registerInput("subdivisions", NodeGeometryBlockConnectionPointTypes.Int, true, 1);
         this.registerInput("subdivisionsX", NodeGeometryBlockConnectionPointTypes.Int, true, 0);
         this.registerInput("subdivisionsY", NodeGeometryBlockConnectionPointTypes.Int, true, 0);
+        this.registerInput("subdivisionsZ", NodeGeometryBlockConnectionPointTypes.Int, true, 0);
 
         this.registerOutput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);
     }
@@ -96,6 +95,13 @@ export class BoxBlock extends NodeGeometryBlock {
     }
 
     /**
+     * Gets the subdivisionsZ input component
+     */
+    public get subdivisionsZ(): NodeGeometryConnectionPoint {
+        return this._inputs[7];
+    }
+
+    /**
      * Gets the geometry output component
      */
     public get geometry(): NodeGeometryConnectionPoint {
@@ -135,19 +141,14 @@ export class BoxBlock extends NodeGeometryBlock {
 
     protected _buildBlock(state: NodeGeometryBuildState) {
         const options: {
-            pattern?: number;
             size?: number;
             width?: number;
             height?: number;
             depth?: number;
-            tileSize?: number;
-            tileWidth?: number;
-            tileHeight?: number;
-            faceUV?: Vector4[];
-            faceColors?: Color4[];
-            alignHorizontal?: number;
-            alignVertical?: number;
-            sideOrientation?: number;
+            segments?: number;
+            widthSegments?: number;
+            heightSegments?: number;
+            depthSegments?: number;
         } = {};
         const func = (state: NodeGeometryBuildState) => {
             options.size = this.size.getConnectedValue(state);
@@ -158,23 +159,26 @@ export class BoxBlock extends NodeGeometryBlock {
             const subdivisions = this.subdivisions.getConnectedValue(state);
             const subdivisionsX = this.subdivisionsX.getConnectedValue(state);
             const subdivisionsY = this.subdivisionsY.getConnectedValue(state);
+            const subdivisionsZ = this.subdivisionsZ.getConnectedValue(state);
 
-            if (subdivisions && options.size) {
-                options.tileSize = options.size / subdivisions;
+            if (subdivisions) {
+                options.segments = subdivisions;
             }
 
-            const width = options.width || options.size;
-            if (subdivisionsX && width) {
-                options.tileWidth = width / subdivisionsX;
+            if (subdivisionsX) {
+                options.widthSegments = subdivisionsX;
             }
 
-            const height = options.height || options.size;
-            if (subdivisionsY && height) {
-                options.tileHeight = height / subdivisionsY;
+            if (subdivisionsY) {
+                options.heightSegments = subdivisionsY;
             }
+
+            if (subdivisionsZ) {
+                options.depthSegments = subdivisionsZ;
+            }            
 
             // Append vertex data from the plane builder
-            return CreateTiledBoxVertexData(options);
+            return CreateSegmentedBoxVertexData(options);
         };
 
         if (this.evaluateContext) {

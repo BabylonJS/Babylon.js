@@ -105,7 +105,7 @@ export class MergeGeometryBlock extends NodeGeometryBlock {
             }
 
             if (additionalVertexData.length) {
-                vertexData = vertexData.merge(additionalVertexData, true);
+                vertexData = vertexData.merge(additionalVertexData, true, false, true);
             }
             return vertexData;
         };

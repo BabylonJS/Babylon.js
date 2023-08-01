@@ -557,19 +557,112 @@ export class VertexData {
     }
 
     /**
+     * Generates an array of vertex data where each vertex data only has one material info
+     * @returns An array of VertexData
+     */
+    public splitBasedOnMaterialID() {
+        if (!this.materialInfos || this.materialInfos.length < 2) {
+            return [this];
+        }
+
+        const result = new Array<VertexData>();
+        for (const materialInfo of this.materialInfos) {
+            const vertexData = new VertexData();
+
+            if (this.positions) {
+                vertexData.positions = this.positions.slice(materialInfo.verticesStart * 3, (materialInfo.verticesCount + materialInfo.verticesStart) * 3);
+            }
+
+            if (this.normals) {
+                vertexData.normals = this.normals.slice(materialInfo.verticesStart * 3, (materialInfo.verticesCount + materialInfo.verticesStart) * 3);
+            }
+
+            if (this.tangents) {
+                vertexData.tangents = this.tangents.slice(materialInfo.verticesStart * 4, (materialInfo.verticesCount + materialInfo.verticesStart) * 4);
+            }            
+
+            if (this.colors) {
+                vertexData.colors = this.colors.slice(materialInfo.verticesStart * 4, (materialInfo.verticesCount + materialInfo.verticesStart) * 4);
+            }            
+
+            if (this.uvs) {
+                vertexData.uvs = this.uvs.slice(materialInfo.verticesStart * 2, (materialInfo.verticesCount + materialInfo.verticesStart) * 2);
+            }
+
+            if (this.uvs2) {
+                vertexData.uvs2 = this.uvs2.slice(materialInfo.verticesStart * 2, (materialInfo.verticesCount + materialInfo.verticesStart) * 2);
+            }    
+            
+            if (this.uvs3) {
+                vertexData.uvs3 = this.uvs3.slice(materialInfo.verticesStart * 2, (materialInfo.verticesCount + materialInfo.verticesStart) * 2);
+            }        
+
+            if (this.uvs4) {
+                vertexData.uvs4 = this.uvs4.slice(materialInfo.verticesStart * 2, (materialInfo.verticesCount + materialInfo.verticesStart) * 2);
+            }         
+            
+            if (this.uvs5) {
+                vertexData.uvs5 = this.uvs5.slice(materialInfo.verticesStart * 2, (materialInfo.verticesCount + materialInfo.verticesStart) * 2);
+            }      
+            
+            if (this.uvs6) {
+                vertexData.uvs6 = this.uvs6.slice(materialInfo.verticesStart * 2, (materialInfo.verticesCount + materialInfo.verticesStart) * 2);
+            }      
+
+            if (this.matricesIndices) {
+                vertexData.matricesIndices = this.matricesIndices.slice(materialInfo.verticesStart * 4, (materialInfo.verticesCount + materialInfo.verticesStart) * 4);
+            }                    
+
+            if (this.matricesIndicesExtra) {
+                vertexData.matricesIndicesExtra = this.matricesIndicesExtra.slice(materialInfo.verticesStart * 4, (materialInfo.verticesCount + materialInfo.verticesStart) * 4);
+            }                     
+
+            if (this.matricesWeights) {
+                vertexData.matricesWeights = this.matricesWeights.slice(materialInfo.verticesStart * 4, (materialInfo.verticesCount + materialInfo.verticesStart) * 4);
+            }                    
+
+            if (this.matricesWeightsExtra) {
+                vertexData.matricesWeightsExtra = this.matricesWeightsExtra.slice(materialInfo.verticesStart * 4, (materialInfo.verticesCount + materialInfo.verticesStart) * 4);
+            }               
+
+            if (this.indices) {
+                vertexData.indices = [];
+                for (let index = materialInfo.indexStart; index < materialInfo.indexStart + materialInfo.indexCount; index++ ) {
+                    vertexData.indices.push(this.indices[index] - materialInfo.indexStart);
+                }
+            }
+
+            const newMaterialInfo = new VertexDataMaterialInfo();
+            newMaterialInfo.indexStart = 0;
+            newMaterialInfo.indexCount = vertexData.indices ? vertexData.indices.length : 0;
+            newMaterialInfo.materialIndex = materialInfo.materialIndex;
+            newMaterialInfo.verticesStart = 0;
+            newMaterialInfo.verticesCount = vertexData.positions ? vertexData.positions.length : 0;
+            vertexData.materialInfos = [
+                newMaterialInfo
+            ]
+
+            result.push(vertexData);
+        }
+
+        return result;
+    }
+
+    /**
      * Merges the passed VertexData into the current one
      * @param others the VertexData to be merged into the current one
      * @param use32BitsIndices defines a boolean indicating if indices must be store in a 32 bits array
      * @param forceCloneIndices defines a boolean indicating if indices are forced to be cloned
+     * @param mergeMaterialIds defines a boolean indicating if we need to merge the material infos
      * @returns the modified VertexData
      */
-    public merge(others: VertexData | VertexData[], use32BitsIndices = false, forceCloneIndices = false) {
+    public merge(others: VertexData | VertexData[], use32BitsIndices = false, forceCloneIndices = false, mergeMaterialIds = false) {
         const vertexDatas: { vertexData: VertexData; transform?: Matrix }[] = Array.isArray(others)
             ? others.map((other) => {
                   return { vertexData: other };
               })
             : [{ vertexData: others }];
-        return runCoroutineSync(this._mergeCoroutine(undefined, vertexDatas, use32BitsIndices, false, forceCloneIndices));
+        return runCoroutineSync(this._mergeCoroutine(undefined, vertexDatas, use32BitsIndices, false, forceCloneIndices, mergeMaterialIds));
     }
 
     /**
@@ -580,11 +673,14 @@ export class VertexData {
         vertexDatas: { vertexData: VertexData; transform?: Matrix }[],
         use32BitsIndices = false,
         isAsync: boolean,
-        forceCloneIndices: boolean
+        forceCloneIndices: boolean,
+        mergeMaterialIds = false
     ): Coroutine<VertexData> {
         this._validate();
 
-        const others = vertexDatas.map((vertexData) => vertexData.vertexData);
+        let others = vertexDatas.map((vertexData) => vertexData.vertexData);
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        let root: VertexData = this;
 
         for (const other of others) {
             other._validate();
@@ -608,68 +704,81 @@ export class VertexData {
             }
         }
 
-        // Merge material infos
-        let materialIndex = 0;
-        let indexOffset = 0;
-        let vertexOffset = 0;
-        const materialInfos: VertexDataMaterialInfo[] = [];
-        let currentMaterialInfo: Nullable<VertexDataMaterialInfo> = null;
-        const vertexDataList: VertexData[] = [this];
-        for (const vertexData of vertexDatas) {
-            vertexDataList.push(vertexData.vertexData);
-        }
+        if (mergeMaterialIds) {
+            // Merge material infos
+            let materialIndex = 0;
+            let indexOffset = 0;
+            let vertexOffset = 0;
+            const materialInfos: VertexDataMaterialInfo[] = [];
+            let currentMaterialInfo: Nullable<VertexDataMaterialInfo> = null;
+            const vertexDataList: { vertexData: VertexData; transform?: Matrix }[] = [];
+            
+            // We need to split vertexData with more than one materialInfo
+            for (const split of this.splitBasedOnMaterialID()) {
+                vertexDataList.push({vertexData: split, transform: transform});
+            }
+            
+            for (const vertexData of vertexDatas) {
+                for (const split of vertexData.vertexData.splitBasedOnMaterialID()) {
+                    vertexDataList.push({vertexData: split, transform: vertexData.transform});
+                }
+            }
 
-        for (const vertexData of vertexDataList) {
-            if (vertexData.materialInfos) {
-                if (vertexData.materialInfos.length === 1) {
+            // Sort by material IDs
+            vertexDataList.sort((a, b) => {
+                const matInfoA = a.vertexData.materialInfos ? a.vertexData.materialInfos[0].materialIndex : 0;
+                const matInfoB = b.vertexData.materialInfos ? b.vertexData.materialInfos[0].materialIndex : 0;
+
+                if (matInfoA > matInfoB) {
+                    return 1;
+                }
+
+                if (matInfoA === matInfoB) {
+                    return 0;
+                }
+
+                return -1
+            });
+            
+            // Build the new material info
+            for (const vertexDataSource of vertexDataList) {
+                const vertexData = vertexDataSource.vertexData;
+                if (vertexData.materialInfos) {
                     materialIndex = vertexData.materialInfos[0].materialIndex;
                 } else {
-                    for (const materialInfo of vertexData.materialInfos) {
-                        if (currentMaterialInfo && currentMaterialInfo.materialIndex === materialInfo.materialIndex) {
-                            currentMaterialInfo.indexCount += materialInfo.indexCount;
-                            currentMaterialInfo.verticesCount += materialInfo.verticesCount;
-                        } else {
-                            const materialInfoCopy = new VertexDataMaterialInfo();
-                            materialInfoCopy.materialIndex = materialInfo.materialIndex;
-                            materialInfoCopy.indexStart = materialInfo.indexStart + indexOffset;
-                            materialInfoCopy.indexCount = materialInfo.indexCount;
-                            materialInfoCopy.verticesStart = materialInfo.verticesStart + vertexOffset;
-                            materialInfoCopy.verticesCount = materialInfo.verticesCount;
-                            materialInfos.push(materialInfoCopy);
-                            currentMaterialInfo = materialInfoCopy;
-                        }
-                    }
-
-                    indexOffset += vertexData.indices!.length;
-                    vertexOffset += vertexData.positions!.length / 3;
-                    continue;
+                    materialIndex = 0;
                 }
-            } else {
-                materialIndex = 0;
-            }
-            if (currentMaterialInfo && currentMaterialInfo.materialIndex === materialIndex) {
-                currentMaterialInfo.indexCount += vertexData.indices!.length;
-                currentMaterialInfo.verticesCount += vertexData.positions!.length / 3;
-            } else {
-                const materialInfo = new VertexDataMaterialInfo();
-                materialInfo.materialIndex = materialIndex;
-                materialInfo.indexStart = indexOffset;
-                materialInfo.indexCount = vertexData.indices!.length;
-                materialInfo.verticesStart = vertexOffset;
-                materialInfo.verticesCount = vertexData.positions!.length / 3;
+                if (currentMaterialInfo && currentMaterialInfo.materialIndex === materialIndex) {
+                    currentMaterialInfo.indexCount += vertexData.indices!.length;
+                    currentMaterialInfo.verticesCount += vertexData.positions!.length / 3;
+                } else {
+                    const materialInfo = new VertexDataMaterialInfo();
+                    materialInfo.materialIndex = materialIndex;
+                    materialInfo.indexStart = indexOffset;
+                    materialInfo.indexCount = vertexData.indices!.length;
+                    materialInfo.verticesStart = vertexOffset;
+                    materialInfo.verticesCount = vertexData.positions!.length / 3;
 
-                materialInfos.push(materialInfo);
-                currentMaterialInfo = materialInfo;
+                    materialInfos.push(materialInfo);
+                    currentMaterialInfo = materialInfo;
+                }
+                indexOffset += vertexData.indices!.length;
+                vertexOffset += vertexData.positions!.length / 3;
             }
-            indexOffset += vertexData.indices!.length;
-            vertexOffset += vertexData.positions!.length / 3;
+            this.materialInfos = materialInfos;
+
+            // Extract sorted values
+            const first = vertexDataList.splice(0, 1)[0];
+            root = first.vertexData;
+            transform = first.transform;
+            others = vertexDataList.map(v => v.vertexData);
+            vertexDatas = vertexDataList;
         }
-        this.materialInfos = materialInfos;
 
         // Merge geometries
-        const totalIndices = others.reduce((indexSum, vertexData) => indexSum + (vertexData.indices?.length ?? 0), this.indices?.length ?? 0);
-        const sliceIndices = forceCloneIndices || others.some((vertexData) => vertexData.indices === this.indices);
-        let indices = sliceIndices ? this.indices?.slice() : this.indices;
+        const totalIndices = others.reduce((indexSum, vertexData) => indexSum + (vertexData.indices?.length ?? 0), root.indices?.length ?? 0);
+        const sliceIndices = forceCloneIndices || others.some((vertexData) => vertexData.indices === root.indices);
+        let indices = sliceIndices ? root.indices?.slice() : root.indices;
         if (totalIndices > 0) {
             let indicesOffset = indices?.length ?? 0;
 
@@ -691,7 +800,7 @@ export class VertexData {
                 }
             }
 
-            let positionsOffset = this.positions ? this.positions.length / 3 : 0;
+            let positionsOffset = root.positions ? root.positions.length / 3 : 0;
             for (const { vertexData: other, transform } of vertexDatas) {
                 if (other.indices) {
                     for (let index = 0; index < other.indices.length; index++) {
@@ -713,128 +822,128 @@ export class VertexData {
             }
         }
 
-        this.indices = indices!;
+        root.indices = indices!;
 
-        this.positions = VertexData._MergeElement(
+        root.positions = VertexData._MergeElement(
             VertexBuffer.PositionKind,
-            this.positions,
+            root.positions,
             transform,
             vertexDatas.map((other) => [other.vertexData.positions, other.transform])
         );
         if (isAsync) {
             yield;
         }
-        this.normals = VertexData._MergeElement(
+        root.normals = VertexData._MergeElement(
             VertexBuffer.NormalKind,
-            this.normals,
+            root.normals,
             transform,
             vertexDatas.map((other) => [other.vertexData.normals, other.transform])
         );
         if (isAsync) {
             yield;
         }
-        this.tangents = VertexData._MergeElement(
+        root.tangents = VertexData._MergeElement(
             VertexBuffer.TangentKind,
-            this.tangents,
+            root.tangents,
             transform,
             vertexDatas.map((other) => [other.vertexData.tangents, other.transform])
         );
         if (isAsync) {
             yield;
         }
-        this.uvs = VertexData._MergeElement(
+        root.uvs = VertexData._MergeElement(
             VertexBuffer.UVKind,
-            this.uvs,
+            root.uvs,
             transform,
             vertexDatas.map((other) => [other.vertexData.uvs, other.transform])
         );
         if (isAsync) {
             yield;
         }
-        this.uvs2 = VertexData._MergeElement(
+        root.uvs2 = VertexData._MergeElement(
             VertexBuffer.UV2Kind,
-            this.uvs2,
+            root.uvs2,
             transform,
             vertexDatas.map((other) => [other.vertexData.uvs2, other.transform])
         );
         if (isAsync) {
             yield;
         }
-        this.uvs3 = VertexData._MergeElement(
+        root.uvs3 = VertexData._MergeElement(
             VertexBuffer.UV3Kind,
-            this.uvs3,
+            root.uvs3,
             transform,
             vertexDatas.map((other) => [other.vertexData.uvs3, other.transform])
         );
         if (isAsync) {
             yield;
         }
-        this.uvs4 = VertexData._MergeElement(
+        root.uvs4 = VertexData._MergeElement(
             VertexBuffer.UV4Kind,
-            this.uvs4,
+            root.uvs4,
             transform,
             vertexDatas.map((other) => [other.vertexData.uvs4, other.transform])
         );
         if (isAsync) {
             yield;
         }
-        this.uvs5 = VertexData._MergeElement(
+        root.uvs5 = VertexData._MergeElement(
             VertexBuffer.UV5Kind,
-            this.uvs5,
+            root.uvs5,
             transform,
             vertexDatas.map((other) => [other.vertexData.uvs5, other.transform])
         );
         if (isAsync) {
             yield;
         }
-        this.uvs6 = VertexData._MergeElement(
+        root.uvs6 = VertexData._MergeElement(
             VertexBuffer.UV6Kind,
-            this.uvs6,
+            root.uvs6,
             transform,
             vertexDatas.map((other) => [other.vertexData.uvs6, other.transform])
         );
         if (isAsync) {
             yield;
         }
-        this.colors = VertexData._MergeElement(
+        root.colors = VertexData._MergeElement(
             VertexBuffer.ColorKind,
-            this.colors,
+            root.colors,
             transform,
             vertexDatas.map((other) => [other.vertexData.colors, other.transform])
         );
         if (isAsync) {
             yield;
         }
-        this.matricesIndices = VertexData._MergeElement(
+        root.matricesIndices = VertexData._MergeElement(
             VertexBuffer.MatricesIndicesKind,
-            this.matricesIndices,
+            root.matricesIndices,
             transform,
             vertexDatas.map((other) => [other.vertexData.matricesIndices, other.transform])
         );
         if (isAsync) {
             yield;
         }
-        this.matricesWeights = VertexData._MergeElement(
+        root.matricesWeights = VertexData._MergeElement(
             VertexBuffer.MatricesWeightsKind,
-            this.matricesWeights,
+            root.matricesWeights,
             transform,
             vertexDatas.map((other) => [other.vertexData.matricesWeights, other.transform])
         );
         if (isAsync) {
             yield;
         }
-        this.matricesIndicesExtra = VertexData._MergeElement(
+        root.matricesIndicesExtra = VertexData._MergeElement(
             VertexBuffer.MatricesIndicesExtraKind,
-            this.matricesIndicesExtra,
+            root.matricesIndicesExtra,
             transform,
             vertexDatas.map((other) => [other.vertexData.matricesIndicesExtra, other.transform])
         );
         if (isAsync) {
             yield;
         }
-        this.matricesWeightsExtra = VertexData._MergeElement(
+        root.matricesWeightsExtra = VertexData._MergeElement(
             VertexBuffer.MatricesWeightsExtraKind,
-            this.matricesWeightsExtra,
+            root.matricesWeightsExtra,
             transform,
             vertexDatas.map((other) => [other.vertexData.matricesWeightsExtra, other.transform])
         );

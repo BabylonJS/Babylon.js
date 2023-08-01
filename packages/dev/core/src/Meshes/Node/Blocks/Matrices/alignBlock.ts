@@ -54,8 +54,8 @@ export class AlignBlock extends NodeGeometryBlock {
         super._buildBlock(state);
 
         this.matrix._storedFunction = (state) => {
-            const source = this.source.getConnectedValue(state) as Vector3;
-            const target = this.target.getConnectedValue(state) as Vector3;
+            const source = (this.source.getConnectedValue(state) as Vector3).clone();
+            const target = (this.target.getConnectedValue(state) as Vector3).clone();
             const result = new Matrix();
 
             source.normalize();

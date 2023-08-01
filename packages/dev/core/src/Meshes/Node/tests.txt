@@ -67,9 +67,8 @@ var createScene = function () {
 
 Block ideas:
 - scene loader (file?)
-- mat cap option (Icon)
 - do not attach mesh data when using snippet server
-- Defrag matids
+- debug block (to see current values)
 
 
 
