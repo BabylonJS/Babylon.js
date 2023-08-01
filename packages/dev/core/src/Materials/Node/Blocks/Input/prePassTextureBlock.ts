@@ -8,7 +8,6 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import type { NodeMaterial } from "../../nodeMaterial";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { Constants } from "../../../../Engines/constants";
-import type { Mesh } from "../../../../Meshes/mesh";
 import { ImageSourceBlock } from "../Dual/imageSourceBlock";
 
 /**
@@ -33,9 +32,9 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
     /**
      * Creates a new PrePassTextureBlock
      * @param name defines the block name
-     * @param target defines the target of that block (Fragment by default)
+     * @param target defines the target of that block (VertexAndFragment by default)
      */
-    public constructor(name: string, target = NodeMaterialBlockTargets.Fragment) {
+    public constructor(name: string, target = NodeMaterialBlockTargets.VertexAndFragment) {
         super(name, target, false, true);
 
         this.registerOutput(
@@ -131,19 +130,21 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
         super._buildBlock(state);
 
         if (state.target === NodeMaterialBlockTargets.Vertex) {
-            this._positionSamplerName = "prepassPositionSampler";
-            this._depthSamplerName = "prepassDepthSampler";
-            this._normalSamplerName = "prepassNormalSampler";
-
-            // Unique sampler names for every prepasstexture block
-            state.sharedData.variableNames.prepassPositionSampler = 0;
-            state.sharedData.variableNames.prepassDepthSampler = 0;
-            state.sharedData.variableNames.prepassNormalSampler = 0;
-
-            // Declarations
-            state.sharedData.textureBlocks.push(this);
-            state.sharedData.bindableBlocks.push(this);
+            return;
         }
+
+        this._positionSamplerName = "prepassPositionSampler";
+        this._depthSamplerName = "prepassDepthSampler";
+        this._normalSamplerName = "prepassNormalSampler";
+
+        // Unique sampler names for every prepasstexture block
+        state.sharedData.variableNames.prepassPositionSampler = 0;
+        state.sharedData.variableNames.prepassDepthSampler = 0;
+        state.sharedData.variableNames.prepassNormalSampler = 0;
+
+        // Declarations
+        state.sharedData.textureBlocks.push(this);
+        state.sharedData.bindableBlocks.push(this);
 
         state._emit2DSampler(this._positionSamplerName);
         state._emit2DSampler(this._depthSamplerName);
@@ -152,12 +153,8 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
         return this;
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
-        if (!mesh) {
-            return;
-        }
-
-        const scene = mesh.getScene();
+    public bind(effect: Effect, nodeMaterial: NodeMaterial) {
+        const scene = nodeMaterial.getScene();
         const prePassRenderer = scene.enablePrePassRenderer();
         if (!prePassRenderer) {
             return;

@@ -813,6 +813,9 @@ export class NodeMaterial extends PushMaterial {
             }
         }
 
+        if (this.prePassTextureInputs.length) {
+            this.getScene().enablePrePassRenderer();
+        }
         const prePassRenderer = this.getScene().prePassRenderer;
         if (prePassRenderer) {
             prePassRenderer.markAsDirty();
@@ -861,13 +864,13 @@ export class NodeMaterial extends PushMaterial {
     public get isPrePassCapable(): boolean {
         return true;
     }
-    
+
     /**
      * Outputs written to the prepass
      */
     public get prePassTextureOutputs(): number[] {
         const prePassOutputBlock = this.getBlockByPredicate((block) => block.getClassName() === "PrePassOutputBlock") as PrePassOutputBlock;
-        const result = [] as number[];
+        const result = [Constants.PREPASS_COLOR_TEXTURE_TYPE] as number[];
         if (!prePassOutputBlock) {
             return result;
         }
@@ -875,8 +878,6 @@ export class NodeMaterial extends PushMaterial {
         if (this.prePassTextureInputs.length) {
             return result;
         }
-
-        result.push(Constants.PREPASS_COLOR_TEXTURE_TYPE);
 
         if (prePassOutputBlock.viewDepth.isConnected) {
             result.push(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
