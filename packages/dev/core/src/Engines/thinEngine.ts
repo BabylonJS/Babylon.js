@@ -1706,8 +1706,30 @@ export class ThinEngine {
 
         let mode = 0;
         if (backBuffer && color) {
-            this._gl.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
-            mode |= this._gl.COLOR_BUFFER_BIT;
+            let setBackBufferColor = true;
+            if (this._currentRenderTarget) {
+                const textureFormat = this._currentRenderTarget.texture?.format;
+                if (
+                    textureFormat === Constants.TEXTUREFORMAT_RED_INTEGER ||
+                    textureFormat === Constants.TEXTUREFORMAT_RG_INTEGER ||
+                    textureFormat === Constants.TEXTUREFORMAT_RGB_INTEGER ||
+                    textureFormat === Constants.TEXTUREFORMAT_RGBA_INTEGER
+                ) {
+                    const textureType = this._currentRenderTarget.texture?.type;
+                    if (textureType === Constants.TEXTURETYPE_UNSIGNED_INTEGER || textureType === Constants.TEXTURETYPE_UNSIGNED_SHORT) {
+                        this._gl.clearBufferuiv(this._gl.COLOR, 0, new Uint32Array([color.r * 255, color.g * 255, color.b * 255, color.a * 255]));
+                        setBackBufferColor = false;
+                    } else {
+                        this._gl.clearBufferiv(this._gl.COLOR, 0, new Int32Array([color.r * 255, color.g * 255, color.b * 255, color.a * 255]));
+                        setBackBufferColor = false;
+                    }
+                }
+            }
+
+            if (setBackBufferColor) {
+                this._gl.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
+                mode |= this._gl.COLOR_BUFFER_BIT;
+            }
         }
 
         if (depth) {
