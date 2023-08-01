@@ -72,9 +72,6 @@ export function initWebGLEngineState(): WebGLEngineState {
     const baseEngineState = initBaseEngineState({
         name: "WebGL",
         description: "Babylon.js WebGL Engine",
-        get version() {
-            return (baseEngineState as WebGLEngineStateFull)._webGLVersion;
-        },
         isNDCHalfZRange: true,
         hasOriginBottomLeft: false,
         get supportsUniformBuffers() {
@@ -87,7 +84,7 @@ export function initWebGLEngineState(): WebGLEngineState {
     // public and protected
     const fes = baseEngineState as WebGLEngineState;
     fes._shaderProcessor = new WebGLShaderProcessor();
-
+    
     // private
     const ps = fes as WebGLEngineStateFull;
     ps._uintIndicesCurrentlySet = false;
@@ -100,5 +97,6 @@ export function initWebGLEngineState(): WebGLEngineState {
     ps._maxSimultaneousTextures = 0;
     ps._maxMSAASamplesOverride = null;
     ps._supportsHardwareTextureRescaling = false;
+    ps._version = ps._webGLVersion;
     return fes;
 }

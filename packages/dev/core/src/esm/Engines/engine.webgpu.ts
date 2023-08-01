@@ -26,9 +26,6 @@ export function initWebGPUEngineState(): WebGPUEngineState {
         isNDCHalfZRange: true,
         hasOriginBottomLeft: false,
         needPOTTextures: false,
-        get isWebGPU(): boolean {
-            return true;
-        },
     });
     // public and protected
     const fes = baseEngineState as WebGPUEngineState;

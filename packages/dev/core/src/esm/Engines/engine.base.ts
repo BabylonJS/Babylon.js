@@ -23,6 +23,7 @@ import type { ICanvas, ICanvasRenderingContext } from "core/Engines/ICanvas";
 import type { IFileRequest } from "core/Misc/fileRequest";
 import type { IRawTextureEngineExtension } from "./Extensions/engine.rawTexture";
 import type { Texture } from "core/Materials/Textures/texture";
+import { EngineType } from "./engine.interfaces";
 
 const activeRequests: WeakMap<any, IFileRequest> = new WeakMap();
 
@@ -54,6 +55,7 @@ interface IBaseEnginePrivate {
 }
 
 export interface IBaseEngineProtected {
+    _type: EngineType;
     _isDisposed: boolean;
     _shaderProcessor: Nullable<IShaderProcessor>;
     _renderingCanvas: Nullable<HTMLCanvasElement>;
@@ -84,14 +86,14 @@ export interface IBaseEngineProtected {
 
 export interface IBaseEngineInternals {
     // description: string;
-    // version: number;
+    _version: number;
     _frameId: number;
     _uniformBuffers: Array<UniformBuffer>;
     _storageBuffers: Array<StorageBuffer>;
     _uniqueId: number;
     _shouldUseHighPrecisionShader: boolean;
-    _badOS: boolean;
-    _badDesktopOS: boolean;
+    _badOS?: boolean;
+    _badDesktopOS?: boolean;
     _hardwareScalingLevel: number;
     _caps: EngineCapabilities; // TODO
     _features: EngineFeatures;
@@ -130,7 +132,7 @@ export interface IBaseEnginePublic {
     /**
      * Returns the version of the engine, depending on its type
      */
-    readonly version: number;
+    // readonly version: number; // No real need for that in the public API
     /**
      * Returns a boolean whether this engine is disposed
      */
@@ -283,6 +285,7 @@ export function initBaseEngineState(overrides?: Partial<BaseEngineState>): BaseE
         _uniqueId: engineCounter++,
         description: "Babylon.js Base Engine",
         name: "Base",
+        _version: 1,
         _isDisposed: false,
         get isDisposed(): boolean {
             return engineState._isDisposed;
@@ -341,10 +344,13 @@ export function initBaseEngineState(overrides?: Partial<BaseEngineState>): BaseE
         premultipliedAlpha: true,
         onBeforeTextureInitObservable: new Observable<Texture>(),
         get isWebGPU(): boolean {
-            return false;
+            return engineState._type === EngineType.WEBGPU;
         },
         get shaderPlatformName(): string {
             return engineState._shaderPlatformName;
+        },
+        get supportsUniformBuffers(): boolean {
+            return false;
         },
 
         // internals
@@ -367,8 +373,11 @@ export function initBaseEngineState(overrides?: Partial<BaseEngineState>): BaseE
         _lastDevicePixelRatio: 1,
         _transformTextureUrl: null, // can be moved out, probably
         _renderWidthOverride: null,
-        ...overrides,
     };
+
+    // TODO is getOwnPropertyDescriptors supported in native? if it doesn't we will need to use getOwnPropertyNames
+    // Extend the engine state with the overrides
+    Object.defineProperties(engineState, Object.getOwnPropertyDescriptors(overrides));
 
     // TODO - this actually prevents tree shaking. Should be done by the dev, apart from the most basic functions.
     // populateBaseModule(engineState);
@@ -539,7 +548,7 @@ export function _rebuildBuffers(engineState: IBaseEnginePublic): void {
  * Reset the texture cache to empty state
  */
 export function resetTextureCache(engineState: IBaseEnginePublic): void {
-    const fes = engineState as BaseEngineState;
+    const fes = engineState as BaseEngineStateFull;
     for (const key in fes._boundTexturesCache) {
         if (!Object.prototype.hasOwnProperty.call(fes._boundTexturesCache, key)) {
             continue;
