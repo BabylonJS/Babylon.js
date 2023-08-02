@@ -22,12 +22,14 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
     }
 
     public _start(): void {
-        this._meshPickObserver = this._meshToPick.getScene().onPointerObservable.add((pointerInfo) => {
-            if (pointerInfo.type === PointerEventTypes.POINTERPICK && pointerInfo.pickInfo?.pickedMesh === this._meshToPick) {
-                this._execute();
-            }
-        });
-        this._meshDisposeObserver = this._meshToPick.onDisposeObservable.add(this._stop.bind(this));
+        if (!this._meshPickObserver) {
+            this._meshPickObserver = this._meshToPick.getScene().onPointerObservable.add((pointerInfo) => {
+                if (pointerInfo.type === PointerEventTypes.POINTERPICK && pointerInfo.pickInfo?.pickedMesh === this._meshToPick) {
+                    this._execute();
+                }
+            });
+            this._meshDisposeObserver = this._meshToPick.onDisposeObservable.add(this._stop.bind(this));
+        }
     }
 
     public _stop(): void {

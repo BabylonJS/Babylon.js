@@ -18,9 +18,11 @@ export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
     }
 
     public _start(): void {
-        this._sceneReadyObserver = this._scene.onReadyObservable.add(() => {
-            this._execute();
-        });
+        if (!this._sceneReadyObserver) {
+            this._sceneReadyObserver = this._scene.onReadyObservable.add(() => {
+                this._execute();
+            });
+        }
     }
 
     public _stop() {

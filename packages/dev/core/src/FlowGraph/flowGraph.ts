@@ -9,7 +9,7 @@ import { FlowGraphEventBlock } from "./flowGraphEventBlock";
  * Class used to represent a flow graph.
  * A flow graph is a graph of blocks that can be used to create complex logic.
  * Blocks can be added to the graph and connected to each other.
- * The graph can then be started, which will init and start any of its event blocks.
+ * The graph can then be started, which will init and start all of its event blocks.
  */
 export class FlowGraph {
     private _blocks: FlowGraphBlock[] = [];
