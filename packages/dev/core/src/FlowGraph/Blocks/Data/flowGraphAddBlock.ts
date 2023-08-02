@@ -1,12 +1,12 @@
 import type { FlowGraph } from "../../flowGraph";
 import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphDataConnectionPoint } from "../../flowGraphConnectionPoint";
-import type { iDataUpdater } from "../../dataUpdater";
+import type { IDataUpdater } from "../../dataUpdater";
 
 /**
  * @experimental
  */
-class FlowGraphBinaryOpBaseBlock<LeftType, RightType, OutputType> extends FlowGraphBlock implements iDataUpdater {
+class FlowGraphBinaryOpBaseBlock<LeftType, RightType, OutputType> extends FlowGraphBlock implements IDataUpdater {
     /**
      * The left input of the binary operation.
      */

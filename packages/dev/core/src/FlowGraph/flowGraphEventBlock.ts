@@ -1,4 +1,5 @@
-import type { Observable } from "../Misc/observable";
+import type { Nullable } from "../types";
+import type { Observable, Observer } from "../Misc/observable";
 import type { FlowGraph } from "./flowGraph";
 import type { FlowGraphSignalConnectionPoint } from "./flowGraphConnectionPoint";
 import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
@@ -13,7 +14,6 @@ export abstract class FlowGraphEventBlock extends FlowGraphExecutionBlock {
      * The output signal of the block that is activated whenever this block's event is triggered.
      */
     public readonly onTriggered: FlowGraphSignalConnectionPoint;
-    private _eventObservable: Observable<any>;
 
     constructor(graph: FlowGraph) {
         super(graph);
@@ -21,7 +21,8 @@ export abstract class FlowGraphEventBlock extends FlowGraphExecutionBlock {
         this.onTriggered = this._registerSignalOutput("flowOut");
     }
 
-    protected abstract _getEventObservable(): Observable<any>;
+    protected abstract _startListening(resolve: () => void): void;
+    protected abstract _stopListening(): void;
 
     /**
      * @internal
@@ -34,9 +35,15 @@ export abstract class FlowGraphEventBlock extends FlowGraphExecutionBlock {
      * @internal
      */
     public _start(): void {
-        this._eventObservable = this._getEventObservable();
-        this._eventObservable.add(() => {
+        this._startListening(() => {
             this._execute();
         });
+    }
+
+    /**
+     * @internal
+     */
+    public _stop(): void {
+        this._stopListening();
     }
 }

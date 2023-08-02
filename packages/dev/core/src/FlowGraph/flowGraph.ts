@@ -23,13 +23,30 @@ export class FlowGraph {
         }
     }
 
+    /**
+     * Finds a block by its name.
+     * @param name
+     * @returns
+     */
     public findBlockByName(name: string): FlowGraphBlock | undefined {
         return this._blocks.find((block) => block.name === name);
     }
 
+    /**
+     * Starts the flow graph.
+     */
     public start() {
         for (const block of this._eventBlocks) {
             block._start();
+        }
+    }
+
+    /**
+     * Disposes of the flow graph.
+     */
+    public dispose() {
+        for (const block of this._eventBlocks) {
+            block._stop();
         }
     }
 }

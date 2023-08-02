@@ -1,4 +1,5 @@
-import type { Observable } from "../../../Misc/observable";
+import type { Nullable } from "../../../types";
+import type { Observer } from "../../../Misc/observable";
 import type { Scene } from "../../../scene";
 import type { FlowGraph } from "../../flowGraph";
 import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
@@ -9,13 +10,20 @@ import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
  */
 export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
     private _scene: Scene;
+    private _sceneReadyObserver: Nullable<Observer<Scene>>;
 
     constructor(graph: FlowGraph, scene: Scene) {
         super(graph);
         this._scene = scene;
     }
 
-    _getEventObservable(): Observable<any> {
-        return this._scene.onReadyObservable;
+    protected _startListening(resolveCallback: () => void): void {
+        this._sceneReadyObserver = this._scene.onReadyObservable.add(resolveCallback);
+    }
+
+    protected _stopListening() {
+        if (this._sceneReadyObserver) {
+            this._scene.onReadyObservable.remove(this._sceneReadyObserver);
+        }
     }
 }
