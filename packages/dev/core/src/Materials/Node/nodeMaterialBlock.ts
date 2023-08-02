@@ -13,6 +13,8 @@ import { UniqueIdGenerator } from "../../Misc/uniqueIdGenerator";
 import type { Scene } from "../../scene";
 import { GetClass } from "../../Misc/typeStore";
 import type { EffectFallbacks } from "../effectFallbacks";
+import type { NodeMaterialTeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
+import type { NodeMaterialTeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
 
 /**
  * Defines a block that can be used inside a node based material
@@ -23,6 +25,8 @@ export class NodeMaterialBlock {
     protected _target: NodeMaterialBlockTargets;
     private _isFinalMerger = false;
     private _isInput = false;
+    private _isTeleportOut = false;
+    private _isTeleportIn = false;
     private _name = "";
     protected _isUnique = false;
 
@@ -90,6 +94,20 @@ export class NodeMaterialBlock {
      */
     public get isInput(): boolean {
         return this._isInput;
+    }
+
+    /**
+     * Gets a boolean indicating if this block is a teleport out
+     */
+    public get isTeleportOut(): boolean {
+        return this._isTeleportOut;
+    }
+
+    /**
+     * Gets a boolean indicating if this block is a teleport in
+     */
+    public get isTeleportIn(): boolean {
+        return this._isTeleportIn;
     }
 
     /**
@@ -170,13 +188,14 @@ export class NodeMaterialBlock {
      * @param name defines the block name
      * @param target defines the target of that block (Vertex by default)
      * @param isFinalMerger defines a boolean indicating that this block is an end block (e.g. it is generating a system value). Default is false
-     * @param isInput defines a boolean indicating that this block is an input (e.g. it sends data to the shader). Default is false
      */
-    public constructor(name: string, target = NodeMaterialBlockTargets.Vertex, isFinalMerger = false, isInput = false) {
+    public constructor(name: string, target = NodeMaterialBlockTargets.Vertex, isFinalMerger = false) {
         this._target = target;
         this._originalTargetIsNeutral = target === NodeMaterialBlockTargets.Neutral;
         this._isFinalMerger = isFinalMerger;
-        this._isInput = isInput;
+        this._isInput = this.getClassName() === "InputBlock";
+        this._isTeleportOut = this.getClassName() === "NodeMaterialTeleportOutBlock";
+        this._isTeleportIn = this.getClassName() === "NodeMaterialTeleportInBlock";
         this._name = name;
         this.uniqueId = UniqueIdGenerator.UniqueId;
     }
@@ -623,6 +642,14 @@ export class NodeMaterialBlock {
             }
         }
 
+        // If this is a teleport out, we need to build the connected block
+        if (this._isTeleportOut) {
+            const teleportOut = this as any as NodeMaterialTeleportOutBlock;
+            if (teleportOut.entryPoint) {
+                teleportOut.entryPoint.build(state, activeBlocks);
+            }
+        }
+
         if (this._buildId === state.sharedData.buildId) {
             return true; // Need to check again as inputs can be connected multiple time to this endpoint
         }
@@ -689,7 +716,17 @@ export class NodeMaterialBlock {
     public _dumpCode(uniqueNames: string[], alreadyDumped: NodeMaterialBlock[]) {
         alreadyDumped.push(this);
 
-        let codeString: string;
+        let codeString: string = "";
+
+        // Teleportation
+        if (this.isTeleportOut) {
+            const teleportOut = this as any as NodeMaterialTeleportOutBlock;
+            if (teleportOut.entryPoint) {
+                if (alreadyDumped.indexOf(teleportOut.entryPoint) === -1) {
+                    codeString += teleportOut.entryPoint._dumpCode(uniqueNames, alreadyDumped);
+                }
+            }
+        }
 
         // Get unique name
         const nameAsVariableName = this.name.replace(/[^A-Za-z_]+/g, "");
@@ -706,7 +743,7 @@ export class NodeMaterialBlock {
         uniqueNames.push(this._codeVariableName);
 
         // Declaration
-        codeString = `\r\n// ${this.getClassName()}\r\n`;
+        codeString += `\r\n// ${this.getClassName()}\r\n`;
         if (this.comments) {
             codeString += `// ${this.comments}\r\n`;
         }
@@ -743,6 +780,16 @@ export class NodeMaterialBlock {
             }
         }
 
+        // Teleportation
+        if (this.isTeleportIn) {
+            const teleportIn = this as any as NodeMaterialTeleportInBlock;
+            for (const endpoint of teleportIn.endpoints) {
+                if (alreadyDumped.indexOf(endpoint) === -1) {
+                    codeString += endpoint._dumpCode(uniqueNames, alreadyDumped);
+                }
+            }
+        }
+
         return codeString;
     }
 
@@ -770,6 +817,14 @@ export class NodeMaterialBlock {
             codeString += `${connectedBlock._codeVariableName}.${connectedBlock._outputRename(connectedOutput.name)}.connectTo(${this._codeVariableName}.${this._inputRename(
                 input.name
             )});\r\n`;
+        }
+
+        // Teleportation
+        if (this.isTeleportOut) {
+            const teleportOut = this as any as NodeMaterialTeleportOutBlock;
+            if (teleportOut.entryPoint) {
+                codeString += teleportOut.entryPoint._dumpCodeForOutputConnections(alreadyDumped);
+            }
         }
 
         return codeString;
