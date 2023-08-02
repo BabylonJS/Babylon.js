@@ -1,27 +1,36 @@
 import type { FlowGraph } from "../../flowGraph";
 import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphDataConnectionPoint } from "../../flowGraphConnectionPoint";
-import type { DataUpdater } from "../../iDataUpdater";
+import type { iDataUpdater } from "../../dataUpdater";
 
 /**
  * @experimental
  */
-class FlowGraphBinaryOpBaseBlock<T, E, R> extends FlowGraphBlock implements DataUpdater {
-    public left: FlowGraphDataConnectionPoint<T>;
-    public right: FlowGraphDataConnectionPoint<E>;
-    public output: FlowGraphDataConnectionPoint<R>;
-    private _binOp: (left: T, right: E) => R;
+class FlowGraphBinaryOpBaseBlock<LeftType, RightType, OutputType> extends FlowGraphBlock implements iDataUpdater {
+    /**
+     * The left input of the binary operation.
+     */
+    public readonly left: FlowGraphDataConnectionPoint<LeftType>;
+    /**
+     * The right input of the binary operation.
+     */
+    public readonly right: FlowGraphDataConnectionPoint<RightType>;
+    /**
+     * The output of the binary operation.
+     */
+    public readonly output: FlowGraphDataConnectionPoint<OutputType>;
+    private _binOp: (left: LeftType, right: RightType) => OutputType;
 
-    constructor(graph: FlowGraph, defaultT: T, defaultE: E, defaultR: R, binOp: (left: T, right: E) => R) {
+    constructor(graph: FlowGraph, defaultLeftValue: LeftType, defaultRightValue: RightType, defaultOutValue: OutputType, binOp: (left: LeftType, right: RightType) => OutputType) {
         super(graph);
 
-        this.left = this._registerDataInput("left", defaultT);
-        this.right = this._registerDataInput("right", defaultE);
-        this.output = this._registerDataOutput("output", defaultR);
+        this.left = this._registerDataInput("left", defaultLeftValue);
+        this.right = this._registerDataInput("right", defaultRightValue);
+        this.output = this._registerDataOutput("output", defaultOutValue);
         this._binOp = binOp;
     }
 
-    public updateOutputs(): void {
+    public _updateOutputs(): void {
         this.output.value = this._binOp(this.left.value, this.right.value);
     }
 }

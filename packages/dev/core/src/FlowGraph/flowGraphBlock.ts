@@ -8,32 +8,36 @@ import { FlowGraphDataConnectionPoint, FlowGraphConnectionPointDirection } from 
  * data.
  */
 export abstract class FlowGraphBlock {
+    /**
+     * The name of the block.
+     */
     public name: string;
-    public dataInputs: FlowGraphDataConnectionPoint<any>[] = [];
-    public dataOutputs: FlowGraphDataConnectionPoint<any>[] = [];
+    /**
+     * The data inputs of the block.
+     */
+    public readonly dataInputs: FlowGraphDataConnectionPoint<any>[] = [];
+    /**
+     * The data outputs of the block.
+     */
+    public readonly dataOutputs: FlowGraphDataConnectionPoint<any>[] = [];
+    /**
+     * The graph that this block belongs to.
+     */
     private _graph: FlowGraph;
 
     constructor(graph: FlowGraph) {
         this._graph = graph;
-        this._graph.addBlock(this);
+        this._graph._addBlock(this);
     }
 
     protected _registerDataInput<T>(name: string, defaultValue: T): FlowGraphDataConnectionPoint<T> {
-        const input = new FlowGraphDataConnectionPoint<T>();
-        input.name = name;
-        input.direction = FlowGraphConnectionPointDirection.Input;
-        input.value = defaultValue;
-        input.ownerBlock = this;
+        const input = new FlowGraphDataConnectionPoint<T>(name, FlowGraphConnectionPointDirection.Input, this, defaultValue);
         this.dataInputs.push(input);
         return input;
     }
 
     protected _registerDataOutput<T>(name: string, defaultValue: T): FlowGraphDataConnectionPoint<T> {
-        const output = new FlowGraphDataConnectionPoint<T>();
-        output.name = name;
-        output.direction = FlowGraphConnectionPointDirection.Output;
-        output.value = defaultValue;
-        output.ownerBlock = this;
+        const output = new FlowGraphDataConnectionPoint<T>(name, FlowGraphConnectionPointDirection.Output, this, defaultValue);
         this.dataOutputs.push(output);
         return output;
     }

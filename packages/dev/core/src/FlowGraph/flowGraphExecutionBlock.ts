@@ -8,6 +8,9 @@ import { FlowGraphConnectionPointDirection, FlowGraphSignalConnectionPoint } fro
  * Can have one or more output signals.
  */
 export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
+    /**
+     * The input signal of the block.
+     */
     public readonly onStart: FlowGraphSignalConnectionPoint;
 
     private readonly _signalInputs: FlowGraphSignalConnectionPoint[] = [];
@@ -19,24 +22,19 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
         this.onStart = this._registerSignalInput("onStart");
     }
     /**
+     * @internal
      * Executes the flow graph execution block.
      */
-    abstract execute(): void;
+    public abstract _execute(): void;
 
     protected _registerSignalInput(name: string): FlowGraphSignalConnectionPoint {
-        const input = new FlowGraphSignalConnectionPoint();
-        input.name = name;
-        input.direction = FlowGraphConnectionPointDirection.Input;
-        input.ownerBlock = this;
+        const input = new FlowGraphSignalConnectionPoint(name, FlowGraphConnectionPointDirection.Input, this);
         this._signalInputs.push(input);
         return input;
     }
 
     protected _registerSignalOutput(name: string): FlowGraphSignalConnectionPoint {
-        const output = new FlowGraphSignalConnectionPoint();
-        output.name = name;
-        output.direction = FlowGraphConnectionPointDirection.Output;
-        output.ownerBlock = this;
+        const output = new FlowGraphSignalConnectionPoint(name, FlowGraphConnectionPointDirection.Output, this);
         this._signalOutputs.push(output);
         return output;
     }

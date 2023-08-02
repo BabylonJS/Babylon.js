@@ -17,7 +17,7 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
         this._meshToPick = meshToPick;
     }
 
-    createEventObservable(): Observable<any> {
+    _getEventObservable(): Observable<any> {
         this._meshPickObservable = new Observable<void>();
         this._meshToPick.getScene().onPointerObservable.add((pointerInfo) => {
             if (pointerInfo.type === PointerEventTypes.POINTERPICK && pointerInfo.pickInfo?.hit && pointerInfo.pickInfo.pickedMesh === this._meshToPick) {

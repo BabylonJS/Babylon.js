@@ -7,8 +7,14 @@ import { FlowGraphExecutionBlock } from "../../flowGraphExecutionBlock";
  * Block that logs a message to the console.
  */
 export class FlowGraphLogBlock extends FlowGraphExecutionBlock {
-    public message: FlowGraphDataConnectionPoint<any>;
-    public onDone: FlowGraphSignalConnectionPoint;
+    /**
+     * The message to log.
+     */
+    public readonly message: FlowGraphDataConnectionPoint<any>;
+    /**
+     * Block to execute after the message has been logged.
+     */
+    public readonly onDone: FlowGraphSignalConnectionPoint;
 
     constructor(graph: FlowGraph) {
         super(graph);
@@ -16,10 +22,13 @@ export class FlowGraphLogBlock extends FlowGraphExecutionBlock {
 
         this.onDone = this._registerSignalOutput("flowOut");
     }
-    public execute(): void {
+    /**
+     * @internal
+     */
+    public _execute(): void {
         const messageValue = this.message.value;
         console.log(messageValue);
         // activate the output flow block
-        this.onDone.activateSignal();
+        this.onDone._activateSignal();
     }
 }

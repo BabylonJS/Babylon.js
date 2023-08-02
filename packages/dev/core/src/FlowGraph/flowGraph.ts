@@ -12,7 +12,11 @@ export class FlowGraph {
     private _blocks: FlowGraphBlock[] = [];
     private _eventBlocks: FlowGraphEventBlock[] = [];
 
-    public addBlock(block: FlowGraphBlock): void {
+    /**
+     * @internal
+     * @param block
+     */
+    public _addBlock(block: FlowGraphBlock): void {
         this._blocks.push(block);
         if (block instanceof FlowGraphEventBlock) {
             this._eventBlocks.push(block);
@@ -24,9 +28,8 @@ export class FlowGraph {
     }
 
     public start() {
-        this._eventBlocks.forEach((block) => {
-            block.init();
-            block.start();
-        });
+        for (const block of this._eventBlocks) {
+            block._start();
+        }
     }
 }

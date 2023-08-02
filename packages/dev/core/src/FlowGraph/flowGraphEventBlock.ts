@@ -9,6 +9,9 @@ import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
  * its output signal ("onTriggered"), when the event is triggered.
  */
 export abstract class FlowGraphEventBlock extends FlowGraphExecutionBlock {
+    /**
+     * The output signal of the block that is activated whenever this block's event is triggered.
+     */
     public readonly onTriggered: FlowGraphSignalConnectionPoint;
     private _eventObservable: Observable<any>;
 
@@ -18,19 +21,22 @@ export abstract class FlowGraphEventBlock extends FlowGraphExecutionBlock {
         this.onTriggered = this._registerSignalOutput("flowOut");
     }
 
-    public init() {
-        this._eventObservable = this.createEventObservable();
+    protected abstract _getEventObservable(): Observable<any>;
+
+    /**
+     * @internal
+     */
+    public _execute(): void {
+        this.onTriggered._activateSignal();
     }
 
-    abstract createEventObservable(): Observable<any>;
-
-    public execute(): void {
-        this.onTriggered.activateSignal();
-    }
-
-    public start(): void {
+    /**
+     * @internal
+     */
+    public _start(): void {
+        this._eventObservable = this._getEventObservable();
         this._eventObservable.add(() => {
-            this.execute();
+            this._execute();
         });
     }
 }

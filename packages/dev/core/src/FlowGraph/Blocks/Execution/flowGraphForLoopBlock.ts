@@ -11,35 +11,35 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlock {
      * @experimental
      * The start index of the loop.
      */
-    public startIndex: FlowGraphDataConnectionPoint<number>;
+    public readonly startIndex: FlowGraphDataConnectionPoint<number>;
     /**
      * @experimental
      * The end index of the loop.
      */
-    public endIndex: FlowGraphDataConnectionPoint<number>;
+    public readonly endIndex: FlowGraphDataConnectionPoint<number>;
     /**
      * @experimental
      * The step of the loop.
      */
-    public step: FlowGraphDataConnectionPoint<number>;
+    public readonly step: FlowGraphDataConnectionPoint<number>;
 
     /**
      * @experimental
      * The current index of the loop.
      */
-    public index: FlowGraphDataConnectionPoint<number>;
+    public readonly index: FlowGraphDataConnectionPoint<number>;
 
     /**
      * @experimental
      * The signal that is activated when the loop body is executed.
      */
-    public onLoop: FlowGraphSignalConnectionPoint;
+    public readonly onLoop: FlowGraphSignalConnectionPoint;
 
     /**
      * @experimental
      * The signal that is activated when the loop is done.
      */
-    public onDone: FlowGraphSignalConnectionPoint;
+    public readonly onDone: FlowGraphSignalConnectionPoint;
 
     private _currentIndex: number = 0;
     private _cachedEndIndex: number = 0;
@@ -57,19 +57,18 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlock {
         this.onDone = this._registerSignalOutput("loopDone");
     }
 
-    public _executeLoop() {
+    private _executeLoop() {
         if (this._currentIndex < this._cachedEndIndex) {
             this.index.value = this._currentIndex;
-            this.onLoop.activateSignal();
+            this.onLoop._activateSignal();
             this._currentIndex += this._cachedStep;
-            this.index.value = this._currentIndex;
             this._executeLoop();
         } else {
-            this.onDone.activateSignal();
+            this.onDone._activateSignal();
         }
     }
 
-    public execute(): void {
+    public _execute(): void {
         this._currentIndex = this.startIndex.value;
         this._cachedEndIndex = this.endIndex.value;
         this._cachedStep = this.step.value;

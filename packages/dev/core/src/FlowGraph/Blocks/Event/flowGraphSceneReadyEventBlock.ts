@@ -15,7 +15,7 @@ export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
         this._scene = scene;
     }
 
-    createEventObservable(): Observable<any> {
+    _getEventObservable(): Observable<any> {
         return this._scene.onReadyObservable;
     }
 }
