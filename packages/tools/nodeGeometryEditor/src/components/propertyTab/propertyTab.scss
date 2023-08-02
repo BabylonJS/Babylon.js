@@ -791,6 +791,10 @@
                 align-items: center;
             }
 
+            &.label-center {
+                justify-items: center;
+            }
+
             .link-value {
                 grid-column: 2;
                 white-space: nowrap;

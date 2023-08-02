@@ -26,12 +26,12 @@ export class SerializationTools {
         globalState.storeEditorData(geometry.editorData, frame);
     }
 
-    public static Serialize(geometry: NodeGeometry, globalState: GlobalState, frame?: Nullable<GraphFrame>) {
+    public static Serialize(geometry: NodeGeometry, saveMeshData: boolean, globalState: GlobalState, frame?: Nullable<GraphFrame>) {
         this.UpdateLocations(geometry, globalState, frame);
 
         const selectedBlocks = frame ? frame.nodes.map((n) => n.content.data) : undefined;
 
-        const serializationObject = geometry.serialize(selectedBlocks);
+        const serializationObject = geometry.serialize(saveMeshData, selectedBlocks);
 
         return JSON.stringify(serializationObject, undefined, 2);
     }

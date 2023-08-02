@@ -189,7 +189,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     save() {
-        const json = SerializationTools.Serialize(this.props.globalState.nodeGeometry, this.props.globalState);
+        const json = SerializationTools.Serialize(this.props.globalState.nodeGeometry, true, this.props.globalState);
         StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "nodeGeometry.json");
     }
 
@@ -197,7 +197,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.setState({ uploadInProgress: true });
         this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Saving your geometry to Babylon.js snippet server...", false));
         this.props.globalState
-            .customSave!.action(SerializationTools.Serialize(this.props.globalState.nodeGeometry, this.props.globalState))
+            .customSave!.action(SerializationTools.Serialize(this.props.globalState.nodeGeometry, false, this.props.globalState))
             .then(() => {
                 this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Geometry saved successfully", false));
                 this.setState({ uploadInProgress: false });
@@ -212,7 +212,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         const geometry = this.props.globalState.nodeGeometry;
         const xmlHttp = new XMLHttpRequest();
 
-        const json = SerializationTools.Serialize(geometry, this.props.globalState);
+        const json = SerializationTools.Serialize(geometry, false, this.props.globalState);
 
         xmlHttp.onreadystatechange = () => {
             if (xmlHttp.readyState == 4) {
@@ -335,7 +335,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             label="Help"
                             value="doc.babylonjs.com"
                             underline={true}
-                            onLink={() => this.props.globalState.hostDocument.defaultView!.open("https://doc.babylonjs.com/how_to/node_material", "_blank")}
+                            onLink={() => this.props.globalState.hostDocument.defaultView!.open("https://doc.babylonjs.com/how_to/node_Geometry", "_blank")}
                         />
                         <TextInputLineComponent
                             label="Comment"
@@ -392,7 +392,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             }}
                         />
                         <TextInputLineComponent
-                            label="NOde Material ID"
+                            label="Node Material ID"
                             value={DataStorage.ReadString("NMEID", "")}
                             onChange={(value) => {
                                 DataStorage.WriteString("NMEID", value);
@@ -442,7 +442,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                     this.customSave();
                                 }}
                             />
-                        )}
+                        )}                        
+                        <TextLineComponent label="(*) Mesh data will NOT be serialized to the snippet server" ignoreValue={true} additionalClass="label-center"/>
                         <FileButtonLineComponent label="Load Frame" uploadName={"frame-upload"} onClick={(file) => this.loadFrame(file)} accept=".json" />
                     </LineContainerComponent>
                     {!this.props.globalState.customSave && (

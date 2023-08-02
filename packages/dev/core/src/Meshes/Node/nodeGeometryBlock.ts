@@ -7,6 +7,7 @@ import type { NodeGeometryBuildState } from "./nodeGeometryBuildState";
 import { Observable } from "../../Misc/observable";
 import { PrecisionDate } from "core/Misc";
 import type { TeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
+import type { TeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
 
 /**
  * Defines a block that can be used inside a node based geometry
@@ -16,6 +17,7 @@ export class NodeGeometryBlock {
     private _buildId: number;
     private _isInput = false;
     private _isTeleportOut = false;
+    private _isTeleportIn = false;
     protected _isUnique = false;
     private _buildExecutionTime: number = 0;
 
@@ -76,11 +78,18 @@ export class NodeGeometryBlock {
     }
 
     /**
-     * Gets a boolean indicating if this block is an teleport out
+     * Gets a boolean indicating if this block is a teleport out
      */
     public get isTeleportOut(): boolean {
         return this._isTeleportOut;
     }    
+
+    /**
+     * Gets a boolean indicating if this block is a teleport in
+     */
+    public get isTeleportIn(): boolean {
+        return this._isTeleportIn;
+    }        
 
     /**
      * Gets a boolean indicating that this block can only be used once per NodeGeometry
@@ -149,6 +158,7 @@ export class NodeGeometryBlock {
         this._name = name;
         this._isInput = this.getClassName() === "GeometryInputBlock";
         this._isTeleportOut = this.getClassName() === "TeleportOutBlock";
+        this._isTeleportIn = this.getClassName() === "TeleportInBlock";
         this.uniqueId = UniqueIdGenerator.UniqueId;
     }
 
@@ -325,9 +335,10 @@ export class NodeGeometryBlock {
 
     /**
      * Serializes this block in a JSON representation
+     * @param saveMeshData defines a boolean indicating that mesh data must be saved as well
      * @returns the serialized block object
      */
-    public serialize(): any {
+    public serialize(saveMeshData?: boolean): any {
         const serializationObject: any = {};
         serializationObject.customType = "BABYLON." + this.getClassName();
         serializationObject.id = this.uniqueId;
@@ -428,6 +439,14 @@ export class NodeGeometryBlock {
             )});\r\n`;
         }
 
+        // Teleportation
+        if (this.isTeleportOut) {
+            const teleportOut = this as any as TeleportOutBlock;
+            if (teleportOut.entryPoint) {
+                codeString += teleportOut.entryPoint._dumpCodeForOutputConnections(alreadyDumped);            
+            }
+        }        
+
         return codeString;
     }
 
@@ -500,6 +519,16 @@ export class NodeGeometryBlock {
                 }
             }
         }
+
+        // Teleportation
+        if (this.isTeleportIn) {
+            const teleportIn = this as any as TeleportInBlock;
+            for (const endpoint of teleportIn.endpoints) {
+                if (alreadyDumped.indexOf(endpoint) === -1) {
+                    codeString += endpoint._dumpCode(uniqueNames, alreadyDumped);
+                }
+            }
+        }            
 
         return codeString;
     }

@@ -4,7 +4,7 @@ import { InputPropertyTabComponent } from "./properties/inputNodePropertyCompone
 import { MeshPropertyTabComponent } from "./properties/meshNodePropertyComponent";
 import { OutputPropertyTabComponent } from "./properties/outputNodePropertyComponent";
 import { DebugPropertyTabComponent } from "./properties/debugNodePropertyComponent";
-import { TeleportOutPropertyTabComponent } from "./properties/TeleportOutNodePropertyComponent";
+import { TeleportOutPropertyTabComponent } from "./properties/teleportOutNodePropertyComponent";
 
 export const RegisterToPropertyTabManagers = () => {
     PropertyLedger.DefaultControl = GenericPropertyComponent;

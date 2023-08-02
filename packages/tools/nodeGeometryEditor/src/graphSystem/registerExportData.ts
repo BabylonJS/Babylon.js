@@ -5,7 +5,7 @@ import { SerializationTools } from "../serializationTools";
 export const RegisterExportData = (stateManager: StateManager) => {
     stateManager.exportData = (data, frame) => {
         const nodeGeometry = (data as GlobalState).nodeGeometry;
-        return SerializationTools.Serialize(nodeGeometry, stateManager.data as GlobalState, frame);
+        return SerializationTools.Serialize(nodeGeometry, true, stateManager.data as GlobalState, frame);
     };
 
     stateManager.getEditorDataMap = () => {

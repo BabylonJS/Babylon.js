@@ -144,7 +144,7 @@ checkBabylonVersionAsync().then(() => {
                 hostElement: hostElement,
                 customLoadObservable: customLoadObservable,
                 customSave: {
-                    label: "Save as unique URL",
+                    label: "Save as unique URL (*)",
                     action: (data) => {
                         return new Promise((resolve, reject) => {
                             let xmlHttp = new XMLHttpRequest();

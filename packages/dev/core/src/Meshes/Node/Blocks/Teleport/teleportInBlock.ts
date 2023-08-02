@@ -8,7 +8,12 @@ import type { TeleportOutBlock } from "./teleportOutBlock";
  * Defines a block used to teleport a value to an endpoint
  */
 export class TeleportInBlock extends NodeGeometryBlock {
-    private _attachedEndpoints: TeleportOutBlock[] = [];
+    private _endpoints: TeleportOutBlock[] = [];
+
+    /** Gets the list of attached endpoints */
+    public get endpoints() {
+        return this._endpoints;
+    }
 
     /**
      * Create a new TeleportInBlock
@@ -42,7 +47,7 @@ export class TeleportInBlock extends NodeGeometryBlock {
     public attachToEndpoint(endpoint: TeleportOutBlock) {
         endpoint.detach();
 
-        this._attachedEndpoints.push(endpoint);
+        this._endpoints.push(endpoint);
         endpoint._entryPoint = this;
         endpoint._outputs[0]._typeConnectionSource = this._inputs[0];
         endpoint._tempEntryPointUniqueId = null;
@@ -53,17 +58,17 @@ export class TeleportInBlock extends NodeGeometryBlock {
      * @param endpoint define the endpoint to remove
      */
     public detachFromEndpoint(endpoint: TeleportOutBlock) {
-        const index = this._attachedEndpoints.indexOf(endpoint);
+        const index = this._endpoints.indexOf(endpoint);
 
         if (index !== -1) {
-            this._attachedEndpoints.splice(index, 1);
+            this._endpoints.splice(index, 1);
             endpoint._outputs[0]._typeConnectionSource = null;
             endpoint._entryPoint = null;
         }
     }
 
     protected _buildBlock() {
-        for (const endpoint of this._attachedEndpoints) {
+        for (const endpoint of this._endpoints) {
             endpoint.output._storedFunction = (state) => {
                 return this.input.getConnectedValue(state);
             }

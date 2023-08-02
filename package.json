@@ -107,6 +107,7 @@
         "feature": "New Feature"
     },
     "dependencies": {
-        "lerna": "^7.0.2"
+        "lerna": "^7.0.2",
+        "npm": "^9.8.1"
     }
 }
