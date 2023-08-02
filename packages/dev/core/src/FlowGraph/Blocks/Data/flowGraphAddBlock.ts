@@ -1,7 +1,8 @@
 import type { FlowGraph } from "../../flowGraph";
 import { FlowGraphBlock } from "../../flowGraphBlock";
-import type { FlowGraphDataConnectionPoint } from "../../flowGraphConnectionPoint";
 import type { IDataUpdater } from "../../dataUpdater";
+import type { FlowGraphDataConnectionPoint } from "../../flowGraphDataConnectionPoint";
+import type { ValueSetter } from "../../valueContainer";
 
 /**
  * @experimental
@@ -21,17 +22,36 @@ class FlowGraphBinaryOpBaseBlock<LeftType, RightType, OutputType> extends FlowGr
     public readonly output: FlowGraphDataConnectionPoint<OutputType>;
     private _binOp: (left: LeftType, right: RightType) => OutputType;
 
+    /**
+     * Set the value of the left input
+     */
+    public setLeft: ValueSetter<LeftType>;
+    /**
+     * Set the value of the right input
+     */
+    public setRight: ValueSetter<RightType>;
+    private _setOutput: ValueSetter<OutputType>;
+
     constructor(graph: FlowGraph, defaultLeftValue: LeftType, defaultRightValue: RightType, defaultOutValue: OutputType, binOp: (left: LeftType, right: RightType) => OutputType) {
         super(graph);
 
-        this.left = this._registerDataInput("left", defaultLeftValue);
-        this.right = this._registerDataInput("right", defaultRightValue);
-        this.output = this._registerDataOutput("output", defaultOutValue);
+        const leftRegister = this._registerDataInput("left", defaultLeftValue);
+        this.left = leftRegister.connectionPoint;
+        this.setLeft = leftRegister.valueSetter;
+
+        const rightRegister = this._registerDataInput("right", defaultRightValue);
+        this.right = rightRegister.connectionPoint;
+        this.setRight = rightRegister.valueSetter;
+
+        const outRegister = this._registerDataOutput("output", defaultOutValue);
+        this.output = outRegister.connectionPoint;
+        this._setOutput = outRegister.valueSetter;
+
         this._binOp = binOp;
     }
 
     public _updateOutputs(): void {
-        this.output.value = this._binOp(this.left.value, this.right.value);
+        this._setOutput(this._binOp(this.left.value, this.right.value));
     }
 }
 

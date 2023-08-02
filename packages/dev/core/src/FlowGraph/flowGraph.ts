@@ -1,3 +1,6 @@
+import type { Observer } from "../Misc/observable";
+import type { Nullable } from "../types";
+import type { Scene } from "../scene";
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphEventBlock } from "./flowGraphEventBlock";
 
@@ -11,6 +14,11 @@ import { FlowGraphEventBlock } from "./flowGraphEventBlock";
 export class FlowGraph {
     private _blocks: FlowGraphBlock[] = [];
     private _eventBlocks: FlowGraphEventBlock[] = [];
+    private _sceneDisposeObserver: Nullable<Observer<Scene>>;
+
+    constructor(private _scene: Scene) {
+        this._sceneDisposeObserver = this._scene.onDisposeObservable.add(this.dispose.bind(this));
+    }
 
     /**
      * @internal
@@ -47,6 +55,9 @@ export class FlowGraph {
     public dispose() {
         for (const block of this._eventBlocks) {
             block._stop();
+        }
+        if (this._sceneDisposeObserver) {
+            this._scene.onDisposeObservable.remove(this._sceneDisposeObserver);
         }
     }
 }

@@ -1,26 +1,21 @@
 import type { FlowGraph } from "../../flowGraph";
-import type { FlowGraphDataConnectionPoint, FlowGraphSignalConnectionPoint } from "../../flowGraphConnectionPoint";
-import { FlowGraphExecutionBlock } from "../../flowGraphExecutionBlock";
+import type { FlowGraphDataConnectionPoint } from "../../flowGraphDataConnectionPoint";
+import type { AnyType } from "../../types";
+import { FlowGraphWithOnDoneExecutionBlock } from "core/FlowGraph/flowGraphWithOnDoneExecutionBlock";
 
 /**
  * @experimental
  * Block that logs a message to the console.
  */
-export class FlowGraphLogBlock extends FlowGraphExecutionBlock {
+export class FlowGraphLogBlock extends FlowGraphWithOnDoneExecutionBlock {
     /**
      * The message to log.
      */
-    public readonly message: FlowGraphDataConnectionPoint<any>;
-    /**
-     * Block to execute after the message has been logged.
-     */
-    public readonly onDone: FlowGraphSignalConnectionPoint;
+    public readonly message: FlowGraphDataConnectionPoint<AnyType>;
 
     constructor(graph: FlowGraph) {
         super(graph);
-        this.message = this._registerDataInput("message", "Hello world");
-
-        this.onDone = this._registerSignalOutput("flowOut");
+        this.message = this._registerDataInput("message", "Hello world").connectionPoint;
     }
     /**
      * @internal

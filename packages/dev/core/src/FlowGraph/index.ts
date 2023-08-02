@@ -1,6 +1,6 @@
 export * from "./flowGraph";
 export * from "./flowGraphBlock";
-export * from "./flowGraphConnectionPoint";
+export * from "./flowGraphSignalConnectionPoint";
 export * from "./flowGraphExecutionBlock";
 export * from "./flowGraphEventBlock";
 // eslint-disable-next-line import/no-internal-modules

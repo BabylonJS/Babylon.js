@@ -1,5 +1,8 @@
 import type { FlowGraph } from "./flowGraph";
-import { FlowGraphDataConnectionPoint, FlowGraphConnectionPointDirection } from "./flowGraphConnectionPoint";
+import { FlowGraphConnectionPointRole } from "./flowGraphConnectionPointRole";
+import { FlowGraphDataConnectionPoint } from "./flowGraphDataConnectionPoint";
+import type { ValueSetter } from "./valueContainer";
+import { makeValueContainer } from "./valueContainer";
 
 /**
  * @experimental
@@ -30,15 +33,17 @@ export abstract class FlowGraphBlock {
         this._graph._addBlock(this);
     }
 
-    protected _registerDataInput<T>(name: string, defaultValue: T): FlowGraphDataConnectionPoint<T> {
-        const input = new FlowGraphDataConnectionPoint<T>(name, FlowGraphConnectionPointDirection.Input, this, defaultValue);
+    protected _registerDataInput<T>(name: string, defaultValue: T): { connectionPoint: FlowGraphDataConnectionPoint<T>; valueSetter: ValueSetter<T> } {
+        const inputValueContainer = makeValueContainer(defaultValue);
+        const input = new FlowGraphDataConnectionPoint<T>(name, FlowGraphConnectionPointRole.Input, this, inputValueContainer);
         this.dataInputs.push(input);
-        return input;
+        return { connectionPoint: input, valueSetter: inputValueContainer.setValue };
     }
 
-    protected _registerDataOutput<T>(name: string, defaultValue: T): FlowGraphDataConnectionPoint<T> {
-        const output = new FlowGraphDataConnectionPoint<T>(name, FlowGraphConnectionPointDirection.Output, this, defaultValue);
+    protected _registerDataOutput<T>(name: string, defaultValue: T): { connectionPoint: FlowGraphDataConnectionPoint<T>; valueSetter: ValueSetter<T> } {
+        const outputValueContainer = makeValueContainer(defaultValue);
+        const output = new FlowGraphDataConnectionPoint<T>(name, FlowGraphConnectionPointRole.Output, this, outputValueContainer);
         this.dataOutputs.push(output);
-        return output;
+        return { connectionPoint: output, valueSetter: outputValueContainer.setValue };
     }
 }

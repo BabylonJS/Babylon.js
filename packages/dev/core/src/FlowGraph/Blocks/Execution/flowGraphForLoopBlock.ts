@@ -1,24 +1,25 @@
 import type { FlowGraph } from "../../flowGraph";
-import type { FlowGraphDataConnectionPoint, FlowGraphSignalConnectionPoint } from "../../flowGraphConnectionPoint";
-import { FlowGraphExecutionBlock } from "../../flowGraphExecutionBlock";
+import type { FlowGraphSignalConnectionPoint } from "../../flowGraphSignalConnectionPoint";
+import type { FlowGraphDataConnectionPoint } from "../../flowGraphDataConnectionPoint";
+import type { ValueSetter } from "../../valueContainer";
+import { FlowGraphWithOnDoneExecutionBlock } from "core/FlowGraph/flowGraphWithOnDoneExecutionBlock";
 
 /**
  * @experimental
  * Block that executes a loop.
  */
-export class FlowGraphForLoopBlock extends FlowGraphExecutionBlock {
+export class FlowGraphForLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
     /**
-     * @experimental
      * The start index of the loop.
      */
     public readonly startIndex: FlowGraphDataConnectionPoint<number>;
+
     /**
-     * @experimental
      * The end index of the loop.
      */
     public readonly endIndex: FlowGraphDataConnectionPoint<number>;
+
     /**
-     * @experimental
      * The step of the loop.
      */
     public readonly step: FlowGraphDataConnectionPoint<number>;
@@ -30,13 +31,11 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlock {
     public readonly index: FlowGraphDataConnectionPoint<number>;
 
     /**
-     * @experimental
      * The signal that is activated when the loop body is executed.
      */
     public readonly onLoop: FlowGraphSignalConnectionPoint;
 
     /**
-     * @experimental
      * The signal that is activated when the loop is done.
      */
     public readonly onDone: FlowGraphSignalConnectionPoint;
@@ -45,21 +44,37 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlock {
     private _cachedEndIndex: number = 0;
     private _cachedStep: number = 0;
 
+    public setStartIndex: ValueSetter<number>;
+    public setEndIndex: ValueSetter<number>;
+    public setStep: ValueSetter<number>;
+
+    private _setIndex: ValueSetter<number>;
+
     constructor(graph: FlowGraph) {
         super(graph);
 
-        this.startIndex = this._registerDataInput("startIndex", 0);
-        this.endIndex = this._registerDataInput("endIndex", 0);
-        this.step = this._registerDataInput("step", 1);
+        const startRegister = this._registerDataInput("startIndex", 0);
+        this.startIndex = startRegister.connectionPoint;
+        this.setStartIndex = startRegister.valueSetter;
 
-        this.index = this._registerDataOutput("index", 0);
+        const endRegister = this._registerDataInput("endIndex", 0);
+        this.endIndex = endRegister.connectionPoint;
+        this.setEndIndex = endRegister.valueSetter;
+
+        const stepRegister = this._registerDataInput("step", 1);
+        this.step = stepRegister.connectionPoint;
+        this.setStep = stepRegister.valueSetter;
+
+        const indexOut = this._registerDataOutput("index", 0);
+        this.index = indexOut.connectionPoint;
+        this._setIndex = indexOut.valueSetter;
+
         this.onLoop = this._registerSignalOutput("loopBody");
-        this.onDone = this._registerSignalOutput("loopDone");
     }
 
     private _executeLoop() {
         if (this._currentIndex < this._cachedEndIndex) {
-            this.index.value = this._currentIndex;
+            this._setIndex(this._currentIndex);
             this.onLoop._activateSignal();
             this._currentIndex += this._cachedStep;
             this._executeLoop();

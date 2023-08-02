@@ -1,6 +1,7 @@
 import type { FlowGraph } from "./flowGraph";
 import { FlowGraphBlock } from "./flowGraphBlock";
-import { FlowGraphConnectionPointDirection, FlowGraphSignalConnectionPoint } from "./flowGraphConnectionPoint";
+import { FlowGraphConnectionPointRole } from "./flowGraphConnectionPointRole";
+import { FlowGraphSignalConnectionPoint } from "./flowGraphSignalConnectionPoint";
 
 /**
  * @experimental
@@ -28,13 +29,13 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
     public abstract _execute(): void;
 
     protected _registerSignalInput(name: string): FlowGraphSignalConnectionPoint {
-        const input = new FlowGraphSignalConnectionPoint(name, FlowGraphConnectionPointDirection.Input, this);
+        const input = new FlowGraphSignalConnectionPoint(name, FlowGraphConnectionPointRole.Input, this);
         this._signalInputs.push(input);
         return input;
     }
 
     protected _registerSignalOutput(name: string): FlowGraphSignalConnectionPoint {
-        const output = new FlowGraphSignalConnectionPoint(name, FlowGraphConnectionPointDirection.Output, this);
+        const output = new FlowGraphSignalConnectionPoint(name, FlowGraphConnectionPointRole.Output, this);
         this._signalOutputs.push(output);
         return output;
     }
