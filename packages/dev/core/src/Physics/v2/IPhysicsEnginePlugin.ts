@@ -364,6 +364,7 @@ export interface IPhysicsEnginePluginV2 {
     getCollisionObservable(body: PhysicsBody, instanceIndex?: number): Observable<IPhysicsCollisionEvent>;
     setGravityFactor(body: PhysicsBody, factor: number, instanceIndex?: number): void;
     getGravityFactor(body: PhysicsBody, instanceIndex?: number): number;
+    setTargetTransform(body: PhysicsBody, position: Vector3, rotation: Quaternion, instanceIndex?: number): void;
 
     // shape
     initShape(shape: PhysicsShape, type: PhysicsShapeType, options: PhysicsShapeParameters): void;
