@@ -1,5 +1,3 @@
-import type { Nullable } from "../types";
-import type { Observable, Observer } from "../Misc/observable";
 import type { FlowGraph } from "./flowGraph";
 import type { FlowGraphSignalConnectionPoint } from "./flowGraphConnectionPoint";
 import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
@@ -21,29 +19,19 @@ export abstract class FlowGraphEventBlock extends FlowGraphExecutionBlock {
         this.onTriggered = this._registerSignalOutput("flowOut");
     }
 
-    protected abstract _startListening(resolve: () => void): void;
-    protected abstract _stopListening(): void;
+    /**
+     * @internal
+     */
+    public abstract _start(): void;
+    /**
+     * @internal
+     */
+    public abstract _stop(): void;
 
     /**
      * @internal
      */
     public _execute(): void {
         this.onTriggered._activateSignal();
-    }
-
-    /**
-     * @internal
-     */
-    public _start(): void {
-        this._startListening(() => {
-            this._execute();
-        });
-    }
-
-    /**
-     * @internal
-     */
-    public _stop(): void {
-        this._stopListening();
     }
 }

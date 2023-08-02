@@ -17,11 +17,13 @@ export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
         this._scene = scene;
     }
 
-    protected _startListening(resolveCallback: () => void): void {
-        this._sceneReadyObserver = this._scene.onReadyObservable.add(resolveCallback);
+    public _start(): void {
+        this._sceneReadyObserver = this._scene.onReadyObservable.add(() => {
+            this._execute();
+        });
     }
 
-    protected _stopListening() {
+    public _stop() {
         if (this._sceneReadyObserver) {
             this._scene.onReadyObservable.remove(this._sceneReadyObserver);
         }
