@@ -283,6 +283,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
             `;
 
             const injectCode = hasFragCoord ? "vec4 glFragCoord_;\n" : "";
+            const hasOutput = code.search(/layout *\(location *= *0\) *out/g) !== -1;
 
             code = code.replace(/texture2DLodEXT\s*\(/g, "textureLod(");
             code = code.replace(/textureCubeLodEXT\s*\(/g, "textureLod(");
@@ -292,7 +293,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
             code = code.replace(/gl_FragData/g, "glFragData");
             code = code.replace(/gl_FragCoord/g, "glFragCoord_");
             if (!this._fragmentIsGLES3) {
-                code = code.replace(/void\s+?main\s*\(/g, (hasDrawBuffersExtension ? "" : "layout(location = 0) out vec4 glFragColor;\n") + "void main(");
+                code = code.replace(/void\s+?main\s*\(/g, (hasDrawBuffersExtension || hasOutput ? "" : "layout(location = 0) out vec4 glFragColor;\n") + "void main(");
             } else {
                 const match = /^\s*out\s+\S+\s+\S+\s*;/gm.exec(code);
                 if (match !== null) {
