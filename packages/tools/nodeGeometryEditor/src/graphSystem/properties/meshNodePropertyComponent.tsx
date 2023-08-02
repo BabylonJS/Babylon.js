@@ -90,7 +90,7 @@ export class MeshPropertyTabComponent extends React.Component<IPropertyComponent
                                         block.mesh = meshes[value as number] as Mesh;
                                 }
 
-                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
+                                this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
                                 this.forceUpdate();
                             }}
                             extractValue={() => {

@@ -765,14 +765,14 @@ export class VertexData {
                 indexOffset += vertexData.indices!.length;
                 vertexOffset += vertexData.positions!.length / 3;
             }
-            this.materialInfos = materialInfos;
-
             // Extract sorted values
             const first = vertexDataList.splice(0, 1)[0];
             root = first.vertexData;
             transform = first.transform;
             others = vertexDataList.map(v => v.vertexData);
             vertexDatas = vertexDataList;
+
+            this.materialInfos = materialInfos;
         }
 
         // Merge geometries
@@ -822,9 +822,9 @@ export class VertexData {
             }
         }
 
-        root.indices = indices!;
+        this.indices = indices!;
 
-        root.positions = VertexData._MergeElement(
+        this.positions = VertexData._MergeElement(
             VertexBuffer.PositionKind,
             root.positions,
             transform,
@@ -833,7 +833,7 @@ export class VertexData {
         if (isAsync) {
             yield;
         }
-        root.normals = VertexData._MergeElement(
+        this.normals = VertexData._MergeElement(
             VertexBuffer.NormalKind,
             root.normals,
             transform,
@@ -842,7 +842,7 @@ export class VertexData {
         if (isAsync) {
             yield;
         }
-        root.tangents = VertexData._MergeElement(
+        this.tangents = VertexData._MergeElement(
             VertexBuffer.TangentKind,
             root.tangents,
             transform,
@@ -851,7 +851,7 @@ export class VertexData {
         if (isAsync) {
             yield;
         }
-        root.uvs = VertexData._MergeElement(
+        this.uvs = VertexData._MergeElement(
             VertexBuffer.UVKind,
             root.uvs,
             transform,
@@ -860,7 +860,7 @@ export class VertexData {
         if (isAsync) {
             yield;
         }
-        root.uvs2 = VertexData._MergeElement(
+        this.uvs2 = VertexData._MergeElement(
             VertexBuffer.UV2Kind,
             root.uvs2,
             transform,
@@ -869,7 +869,7 @@ export class VertexData {
         if (isAsync) {
             yield;
         }
-        root.uvs3 = VertexData._MergeElement(
+        this.uvs3 = VertexData._MergeElement(
             VertexBuffer.UV3Kind,
             root.uvs3,
             transform,
@@ -878,7 +878,7 @@ export class VertexData {
         if (isAsync) {
             yield;
         }
-        root.uvs4 = VertexData._MergeElement(
+        this.uvs4 = VertexData._MergeElement(
             VertexBuffer.UV4Kind,
             root.uvs4,
             transform,
@@ -887,7 +887,7 @@ export class VertexData {
         if (isAsync) {
             yield;
         }
-        root.uvs5 = VertexData._MergeElement(
+        this.uvs5 = VertexData._MergeElement(
             VertexBuffer.UV5Kind,
             root.uvs5,
             transform,
@@ -896,7 +896,7 @@ export class VertexData {
         if (isAsync) {
             yield;
         }
-        root.uvs6 = VertexData._MergeElement(
+        this.uvs6 = VertexData._MergeElement(
             VertexBuffer.UV6Kind,
             root.uvs6,
             transform,
@@ -905,7 +905,7 @@ export class VertexData {
         if (isAsync) {
             yield;
         }
-        root.colors = VertexData._MergeElement(
+        this.colors = VertexData._MergeElement(
             VertexBuffer.ColorKind,
             root.colors,
             transform,
@@ -914,7 +914,7 @@ export class VertexData {
         if (isAsync) {
             yield;
         }
-        root.matricesIndices = VertexData._MergeElement(
+        this.matricesIndices = VertexData._MergeElement(
             VertexBuffer.MatricesIndicesKind,
             root.matricesIndices,
             transform,
@@ -923,7 +923,7 @@ export class VertexData {
         if (isAsync) {
             yield;
         }
-        root.matricesWeights = VertexData._MergeElement(
+        this.matricesWeights = VertexData._MergeElement(
             VertexBuffer.MatricesWeightsKind,
             root.matricesWeights,
             transform,
@@ -932,7 +932,7 @@ export class VertexData {
         if (isAsync) {
             yield;
         }
-        root.matricesIndicesExtra = VertexData._MergeElement(
+        this.matricesIndicesExtra = VertexData._MergeElement(
             VertexBuffer.MatricesIndicesExtraKind,
             root.matricesIndicesExtra,
             transform,
@@ -941,7 +941,7 @@ export class VertexData {
         if (isAsync) {
             yield;
         }
-        root.matricesWeightsExtra = VertexData._MergeElement(
+        this.matricesWeightsExtra = VertexData._MergeElement(
             VertexBuffer.MatricesWeightsExtraKind,
             root.matricesWeightsExtra,
             transform,

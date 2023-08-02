@@ -1,6 +1,5 @@
 import * as React from "react";
 import type { GlobalState } from "../../globalState";
-import * as ReactDOM from "react-dom";
 
 import "./log.scss";
 
@@ -15,10 +14,12 @@ export class LogEntry {
 }
 
 export class LogComponent extends React.Component<ILogComponentProps, { logs: LogEntry[] }> {
+    private _logConsoleRef: React.RefObject<HTMLDivElement>;
     constructor(props: ILogComponentProps) {
         super(props);
 
         this.state = { logs: [] };
+        this._logConsoleRef = React.createRef();
     }
 
     componentDidMount() {
@@ -31,17 +32,16 @@ export class LogComponent extends React.Component<ILogComponentProps, { logs: Lo
     }
 
     componentDidUpdate() {
-        const logConsole = ReactDOM.findDOMNode(this.refs["nge-log-console"]) as HTMLElement;
-        if (!logConsole) {
+        if (!this._logConsoleRef.current) {
             return;
         }
 
-        logConsole.scrollTop = logConsole.scrollHeight;
+        this._logConsoleRef.current.scrollTop = this._logConsoleRef.current.scrollHeight;
     }
 
     render() {
         return (
-            <div id="nge-log-console" ref={"log-console"}>
+            <div id="nge-log-console" ref={this._logConsoleRef}>
                 {this.state.logs.map((l, i) => {
                     return (
                         <div key={i} className={"log" + (l.isError ? " error" : "")}>

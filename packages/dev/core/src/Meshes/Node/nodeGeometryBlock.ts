@@ -6,6 +6,7 @@ import { NodeGeometryConnectionPoint, NodeGeometryConnectionPointDirection } fro
 import type { NodeGeometryBuildState } from "./nodeGeometryBuildState";
 import { Observable } from "../../Misc/observable";
 import { PrecisionDate } from "core/Misc";
+import type { TeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
 
 /**
  * Defines a block that can be used inside a node based geometry
@@ -14,6 +15,7 @@ export class NodeGeometryBlock {
     private _name = "";
     private _buildId: number;
     private _isInput = false;
+    private _isTeleportOut = false;
     protected _isUnique = false;
     private _buildExecutionTime: number = 0;
 
@@ -67,11 +69,18 @@ export class NodeGeometryBlock {
     }
 
     /**
-     * Gets a boolean indicating that this block is an input (e.g. it sends data to the shader)
+     * Gets a boolean indicating if this block is an input
      */
     public get isInput(): boolean {
         return this._isInput;
     }
+
+    /**
+     * Gets a boolean indicating if this block is an teleport out
+     */
+    public get isTeleportOut(): boolean {
+        return this._isTeleportOut;
+    }    
 
     /**
      * Gets a boolean indicating that this block can only be used once per NodeGeometry
@@ -135,11 +144,11 @@ export class NodeGeometryBlock {
     /**
      * Creates a new NodeGeometryBlock
      * @param name defines the block name
-     * @param isInput defines a boolean indicating that this block is an input (e.g. it is a data source). Default is false
      */
-    public constructor(name: string, isInput = false) {
+    public constructor(name: string) {
         this._name = name;
-        this._isInput = isInput;
+        this._isInput = this.getClassName() === "GeometryInputBlock";
+        this._isTeleportOut = this.getClassName() === "TeleportOutBlock";
         this.uniqueId = UniqueIdGenerator.UniqueId;
     }
 
@@ -226,6 +235,14 @@ export class NodeGeometryBlock {
             if (block && block !== this) {
                 block.build(state);
             }
+        }
+
+        // If this is a teleport out, we need to build the connected block
+        if (this._isTeleportOut) {
+            const teleportOut = this as any as TeleportOutBlock;
+            if (teleportOut.entryPoint) {
+                teleportOut.entryPoint.build(state);
+            }            
         }
 
         // Logs

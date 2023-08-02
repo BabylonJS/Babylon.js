@@ -106,7 +106,7 @@ export class GeometryInputBlock extends NodeGeometryBlock {
      * @param type defines the type of the input (can be set to NodeGeometryBlockConnectionPointTypes.AutoDetect)
      */
     public constructor(name: string, type: NodeGeometryBlockConnectionPointTypes = NodeGeometryBlockConnectionPointTypes.AutoDetect) {
-        super(name, true);
+        super(name);
 
         this._type = type;
 

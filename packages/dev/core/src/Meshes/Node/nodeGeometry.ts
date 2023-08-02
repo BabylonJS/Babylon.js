@@ -13,6 +13,8 @@ import { WebRequest } from "../../Misc/webRequest";
 import { BoxBlock } from "./Blocks/Sources/boxBlock";
 import type { GeometryInputBlock } from "./Blocks/geometryInputBlock";
 import { PrecisionDate } from "../../Misc/precisionDate";
+import type { TeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
+import type { TeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
 
 /**
  * Defines a node based geometry
@@ -226,6 +228,18 @@ export class NodeGeometry {
                 map[parsedBlock.id] = block;
 
                 this.attachedBlocks.push(block);
+            }
+        }
+
+        // Reconnect teleportation
+        for (const block of this.attachedBlocks) {
+            if (block.isTeleportOut) {
+                const teleportOut = block as TeleportOutBlock;
+                const id = teleportOut._tempEntryPointUniqueId;
+                if (id) {
+                    const source = map[id] as TeleportInBlock;
+                    source.attachToEndpoint(teleportOut);
+                }
             }
         }
 

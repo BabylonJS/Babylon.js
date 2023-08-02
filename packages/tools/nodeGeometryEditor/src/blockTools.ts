@@ -36,6 +36,9 @@ import { GeometryElbowBlock } from "core/Meshes/Node/Blocks/geometryElbowBlock";
 import { SetMaterialIDBlock } from "core/Meshes/Node/Blocks/Set/setMaterialIDBlock";
 import { InstantiateOnVerticesBlock } from "core/Meshes/Node/Blocks/instances/instantiateOnVerticesBlock";
 import { InstantiateOnFacesBlock } from "core/Meshes/Node/Blocks/instances/instantiateOnFacesBlock";
+import { DebugBlock } from "core/Meshes/Node/Blocks/debugBlock";
+import { TeleportInBlock } from "core/Meshes/Node/Blocks/Teleport/teleportInBlock";
+import { TeleportOutBlock } from "core/Meshes/Node/Blocks/Teleport/teleportOutBlock";
 import { MapRangeBlock } from "core/Meshes/Node/Blocks/mapRangeBlock";
 import { IntFloatConverterBlock } from "core/Meshes/Node/Blocks/intFloatConverterBlock";
 import { ConditionBlock, ConditionBlockTests } from "core/Meshes/Node/Blocks/conditionBlock";
@@ -43,6 +46,12 @@ import { ConditionBlock, ConditionBlockTests } from "core/Meshes/Node/Blocks/con
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "TeleportInBlock":
+                return new TeleportInBlock("Teleport In");         
+            case "TeleportOutBlock":
+                return new TeleportOutBlock("Teleport Out");                                     
+            case "DebugBlock":
+                return new DebugBlock("Debug");            
             case "IntFloatConverterBlock":
                 return new IntFloatConverterBlock("Int/Float converter");
             case "EqualBlock": {

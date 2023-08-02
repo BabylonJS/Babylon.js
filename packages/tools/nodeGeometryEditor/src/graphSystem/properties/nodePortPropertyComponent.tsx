@@ -39,7 +39,7 @@ export class NodePortPropertyTabComponent extends React.Component<IFrameNodePort
                 )}
             </>
         ) : (
-            <TextLineComponent label="This node is a constant input node and cannot be exposed to the frame." value=" "></TextLineComponent>
+            <TextLineComponent label="This node cannot be exposed to the frame." value=" "></TextLineComponent>
         );
 
         return (

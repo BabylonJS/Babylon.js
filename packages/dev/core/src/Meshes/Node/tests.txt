@@ -68,7 +68,8 @@ var createScene = function () {
 Block ideas:
 - scene loader (file?)
 - do not attach mesh data when using snippet server
-- debug block (to see current values)
+- drag drop d'un teleport: mauvaise accroche sur in et cut sur output
+
 
 
 

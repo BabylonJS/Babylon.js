@@ -44,3 +44,6 @@ export * from "./Blocks/Matrices/translationBlock";
 export * from "./Blocks/Instances/instantiateOnVerticesBlock";
 export * from "./Blocks/Instances/instantiateOnFacesBlock";
 export * from "./Blocks/IntFloatConverterBlock";
+export * from "./Blocks/debugBlock";
+export * from "./Blocks/Teleport/teleportInBlock";
+export * from "./Blocks/Teleport/teleportOutBlock";
