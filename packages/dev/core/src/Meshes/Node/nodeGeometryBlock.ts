@@ -437,7 +437,17 @@ export class NodeGeometryBlock {
     public _dumpCode(uniqueNames: string[], alreadyDumped: NodeGeometryBlock[]) {
         alreadyDumped.push(this);
 
-        let codeString: string;
+        let codeString: string = "";
+
+        // Teleportation
+        if (this.isTeleportOut) {
+            const teleportOut = this as any as TeleportOutBlock;
+            if (teleportOut.entryPoint) {
+                if (alreadyDumped.indexOf(teleportOut.entryPoint) === -1) {
+                    codeString += teleportOut.entryPoint._dumpCode(uniqueNames, alreadyDumped);
+                }
+            }
+        }
 
         // Get unique name
         const nameAsVariableName = this.name.replace(/[^A-Za-z_]+/g, "");
@@ -454,7 +464,7 @@ export class NodeGeometryBlock {
         uniqueNames.push(this._codeVariableName);
 
         // Declaration
-        codeString = `\r\n// ${this.getClassName()}\r\n`;
+        codeString += `\r\n// ${this.getClassName()}\r\n`;
         if (this.comments) {
             codeString += `// ${this.comments}\r\n`;
         }

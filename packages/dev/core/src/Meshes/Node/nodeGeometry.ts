@@ -15,6 +15,7 @@ import type { GeometryInputBlock } from "./Blocks/geometryInputBlock";
 import { PrecisionDate } from "../../Misc/precisionDate";
 import type { TeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
 import type { TeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
+import { Tools } from "../../Misc/tools";
 
 /**
  * Defines a node based geometry
@@ -86,6 +87,42 @@ export class NodeGeometry {
      */
     public getClassName(): string {
         return "NodeGeometry";
+    }
+
+    /**
+     * Get a block by its name
+     * @param name defines the name of the block to retrieve
+     * @returns the required block or null if not found
+     */
+    public getBlockByName(name: string) {
+        let result = null;
+        for (const block of this.attachedBlocks) {
+            if (block.name === name) {
+                if (!result) {
+                    result = block;
+                } else {
+                    Tools.Warn("More than one block was found with the name `" + name + "`");
+                    return result;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Get a block by its name
+     * @param predicate defines the predicate used to find the good candidate
+     * @returns the required block or null if not found
+     */
+    public getBlockByPredicate(predicate: (block: NodeGeometryBlock) => boolean) {
+        for (const block of this.attachedBlocks) {
+            if (predicate(block)) {
+                return block;
+            }
+        }
+
+        return null;
     }
 
     /**

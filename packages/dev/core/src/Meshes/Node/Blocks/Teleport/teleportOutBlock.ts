@@ -75,7 +75,6 @@ export class TeleportOutBlock extends NodeGeometryBlock {
         return clone;
     }
 
-
     protected _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
         
