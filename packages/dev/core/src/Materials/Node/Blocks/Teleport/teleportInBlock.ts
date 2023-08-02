@@ -3,7 +3,6 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import type { NodeMaterialTeleportOutBlock } from "./teleportOutBlock";
 
 /**
