@@ -1,38 +1,36 @@
 import type { FlowGraph } from "../../flowGraph";
 import { FlowGraphBlock } from "../../flowGraphBlock";
-import type { IDataUpdater } from "../../dataUpdater";
-import type { FlowGraphDataConnectionPoint } from "../../flowGraphDataConnectionPoint";
-import type { ValueSetter } from "../../valueContainer";
+import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 
 /**
  * @experimental
  */
-class FlowGraphBinaryOpBaseBlock<LeftType, RightType, OutputType> extends FlowGraphBlock implements IDataUpdater {
+class FlowGraphBinaryOpBaseBlock<LeftT, RightT, OutputT> extends FlowGraphBlock {
     /**
      * The left input of the binary operation.
      */
-    public readonly left: FlowGraphDataConnectionPoint<LeftType>;
+    public readonly left: FlowGraphDataConnection<LeftT>;
     /**
      * The right input of the binary operation.
      */
-    public readonly right: FlowGraphDataConnectionPoint<RightType>;
+    public readonly right: FlowGraphDataConnection<RightT>;
     /**
      * The output of the binary operation.
      */
-    public readonly output: FlowGraphDataConnectionPoint<OutputType>;
-    private _binOp: (left: LeftType, right: RightType) => OutputType;
-
+    public readonly output: FlowGraphDataConnection<OutputT>;
     /**
      * Set the value of the left input
      */
-    public setLeft: ValueSetter<LeftType>;
+    public readonly setLeft: (value: LeftT) => void;
     /**
      * Set the value of the right input
      */
-    public setRight: ValueSetter<RightType>;
-    private _setOutput: ValueSetter<OutputType>;
+    public readonly setRight: (value: RightT) => void;
 
-    constructor(graph: FlowGraph, defaultLeftValue: LeftType, defaultRightValue: RightType, defaultOutValue: OutputType, binOp: (left: LeftType, right: RightType) => OutputType) {
+    private _binOp: (left: LeftT, right: RightT) => OutputT;
+    private _setOutput: (value: OutputT) => void;
+
+    public constructor(graph: FlowGraph, defaultLeftValue: LeftT, defaultRightValue: RightT, defaultOutValue: OutputT, binOp: (left: LeftT, right: RightT) => OutputT) {
         super(graph);
 
         const leftRegister = this._registerDataInput("left", defaultLeftValue);
@@ -60,7 +58,7 @@ class FlowGraphBinaryOpBaseBlock<LeftType, RightType, OutputType> extends FlowGr
  * Block that adds two numbers.
  */
 export class FlowGraphAddNumberBlock extends FlowGraphBinaryOpBaseBlock<number, number, number> {
-    constructor(graph: FlowGraph) {
+    public constructor(graph: FlowGraph) {
         super(graph, 0, 0, 0, (left, right) => left + right);
     }
 }

@@ -1,12 +1,12 @@
-/** @experimental */
-export type ValueSetter<T> = (value: T) => void;
-
 /**
+ * This interface represents a container for a value.
+ * the intention is that only the setValue function should
+ * be used to change the value.
  * @experimental
  */
 export interface ValueContainer<T> {
     value: T;
-    setValue: ValueSetter<T>;
+    setValue: (value: T) => void;
 }
 
 /**
@@ -15,6 +15,7 @@ export interface ValueContainer<T> {
  * @returns
  */
 export function makeValueContainer<T>(value: T): ValueContainer<T> {
+    // question: Should we wrap this in a Proxy so it's not possible to change the value directly?
     const container = {
         value,
         setValue: (newValue: T) => (container.value = newValue),

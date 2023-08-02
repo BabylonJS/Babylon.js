@@ -12,7 +12,7 @@ export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
     private _scene: Scene;
     private _sceneReadyObserver: Nullable<Observer<Scene>>;
 
-    constructor(graph: FlowGraph, scene: Scene) {
+    public constructor(graph: FlowGraph, scene: Scene) {
         super(graph);
         this._scene = scene;
     }

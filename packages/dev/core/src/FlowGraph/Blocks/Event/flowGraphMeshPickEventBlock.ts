@@ -16,7 +16,7 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
     private _meshPickObserver: Nullable<Observer<PointerInfo>>;
     private _meshDisposeObserver: Nullable<Observer<Node>>;
 
-    constructor(graph: FlowGraph, meshToPick: AbstractMesh) {
+    public constructor(graph: FlowGraph, meshToPick: AbstractMesh) {
         super(graph);
         this._meshToPick = meshToPick;
     }

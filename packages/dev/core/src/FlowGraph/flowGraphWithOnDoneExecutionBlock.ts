@@ -1,9 +1,9 @@
 import type { FlowGraph } from "./flowGraph";
 import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
-import type { FlowGraphSignalConnectionPoint } from "./flowGraphSignalConnectionPoint";
+import type { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
 
 export abstract class FlowGraphWithOnDoneExecutionBlock extends FlowGraphExecutionBlock {
-    public readonly onDone: FlowGraphSignalConnectionPoint;
+    public readonly onDone: FlowGraphSignalConnection;
 
     constructor(graph: FlowGraph) {
         super(graph);

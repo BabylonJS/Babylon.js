@@ -1,7 +1,7 @@
 import type { FlowGraph } from "./flowGraph";
 import { FlowGraphBlock } from "./flowGraphBlock";
-import { FlowGraphConnectionPointRole } from "./flowGraphConnectionPointRole";
-import { FlowGraphSignalConnectionPoint } from "./flowGraphSignalConnectionPoint";
+import { FlowGraphConnectionType } from "./flowGraphConnectionType";
+import { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
 
 /**
  * @experimental
@@ -12,10 +12,10 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
     /**
      * The input signal of the block.
      */
-    public readonly onStart: FlowGraphSignalConnectionPoint;
+    public readonly onStart: FlowGraphSignalConnection;
 
-    private readonly _signalInputs: FlowGraphSignalConnectionPoint[] = [];
-    private readonly _signalOutputs: FlowGraphSignalConnectionPoint[] = [];
+    private readonly _signalInputs: FlowGraphSignalConnection[] = [];
+    private readonly _signalOutputs: FlowGraphSignalConnection[] = [];
 
     constructor(graph: FlowGraph) {
         super(graph);
@@ -28,14 +28,14 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
      */
     public abstract _execute(): void;
 
-    protected _registerSignalInput(name: string): FlowGraphSignalConnectionPoint {
-        const input = new FlowGraphSignalConnectionPoint(name, FlowGraphConnectionPointRole.Input, this);
+    protected _registerSignalInput(name: string): FlowGraphSignalConnection {
+        const input = new FlowGraphSignalConnection(name, FlowGraphConnectionType.Input, this);
         this._signalInputs.push(input);
         return input;
     }
 
-    protected _registerSignalOutput(name: string): FlowGraphSignalConnectionPoint {
-        const output = new FlowGraphSignalConnectionPoint(name, FlowGraphConnectionPointRole.Output, this);
+    protected _registerSignalOutput(name: string): FlowGraphSignalConnection {
+        const output = new FlowGraphSignalConnection(name, FlowGraphConnectionType.Output, this);
         this._signalOutputs.push(output);
         return output;
     }
