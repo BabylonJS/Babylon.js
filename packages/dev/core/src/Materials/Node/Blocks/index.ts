@@ -3,6 +3,7 @@ export * from "./Vertex/index";
 export * from "./Fragment/index";
 export * from "./Dual/index";
 export * from "./Input/index";
+export * from "./Teleport/index";
 export * from "./multiplyBlock";
 export * from "./addBlock";
 export * from "./scaleBlock";

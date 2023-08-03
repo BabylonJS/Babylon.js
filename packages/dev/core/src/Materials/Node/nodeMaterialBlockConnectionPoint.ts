@@ -4,6 +4,7 @@ import type { Nullable } from "../../types";
 import type { InputBlock } from "./Blocks/Input/inputBlock";
 import { Observable } from "../../Misc/observable";
 import type { NodeMaterialBlock } from "./nodeMaterialBlock";
+import type { NodeMaterialTeleportInBlock } from "./Blocks";
 
 /**
  * Enum used to define the compatibility state between two connection points
@@ -367,6 +368,10 @@ export class NodeMaterialConnectionPoint {
             }
 
             if (endpoint.ownerBlock.target === NodeMaterialBlockTargets.Neutral || endpoint.ownerBlock.target === NodeMaterialBlockTargets.VertexAndFragment) {
+                if (endpoint.ownerBlock.isTeleportIn) {
+                    const teleport = endpoint.ownerBlock as NodeMaterialTeleportInBlock;
+                    return teleport.endpoints.some((e) => e.output.isConnectedInFragmentShader);
+                }
                 if (endpoint.ownerBlock.outputs.some((o) => o.isConnectedInFragmentShader)) {
                     return true;
                 }
