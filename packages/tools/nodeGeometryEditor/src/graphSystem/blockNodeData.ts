@@ -6,6 +6,7 @@ import styles from "./blockNodeData.modules.scss";
 import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
+import type { TeleportInBlock } from "core/Meshes/Node/Blocks/Teleport/teleportInBlock";
 
 export class BlockNodeData implements INodeData {
     private _inputs: IPortData[] = [];
@@ -81,6 +82,16 @@ export class BlockNodeData implements INodeData {
 
         iconDiv.classList.add(styles.hidden);
     }
+
+
+    public get invisibleEndpoints() {
+        if (this.data.isTeleportIn) {
+            const teleportIn = this.data as TeleportInBlock;
+            return teleportIn.endpoints;
+        }
+
+        return null;
+    }    
 
     public constructor(public data: NodeGeometryBlock, nodeContainer: INodeContainer) {
         if (data.inputs) {
