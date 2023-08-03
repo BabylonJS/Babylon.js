@@ -67,7 +67,6 @@ export class NodeMaterialTeleportInBlock extends NodeMaterialBlock {
             endpoint._entryPoint = null;
         }
     }
-<<<<<<< HEAD
 
     /**
      * Release resources
@@ -81,8 +80,6 @@ export class NodeMaterialTeleportInBlock extends NodeMaterialBlock {
 
         this._endpoints = [];
     }
-=======
->>>>>>> remotes/origin/master
 }
 
 RegisterClass("BABYLON.NodeMaterialTeleportInBlock", NodeMaterialTeleportInBlock);

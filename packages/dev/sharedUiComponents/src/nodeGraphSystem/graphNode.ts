@@ -202,19 +202,10 @@ export class GraphNode {
                     this._displayManager.onSelectionChanged(this.content, true, this._stateManager);
                 }
             } else {
-<<<<<<< HEAD
                 if (this._ownerCanvas.selectedNodes.indexOf(this) === -1) {
                     this._visual.classList.remove(localStyles["selected"]);
                     if (this._displayManager && this._displayManager.onSelectionChanged) {
                         this._displayManager.onSelectionChanged(this.content, false, this._stateManager);
-=======
-                setTimeout(() => {
-                    if (this._ownerCanvas.selectedNodes.indexOf(this) === -1) {
-                        this._visual.classList.remove(localStyles["selected"]);
-                        if (this._displayManager && this._displayManager.onSelectionChanged) {
-                            this._displayManager.onSelectionChanged(this.content, false, this._stateManager);
-                        }
->>>>>>> remotes/origin/master
                     }
                 }
             }
