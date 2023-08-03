@@ -19,7 +19,7 @@ const createProject = (type: string) => {
             name: type,
             color: "yellow",
         },
-        testRegex: [`(/test/${type}/.*(test|spec))\\.[tj]sx?$`],
+        testRegex: [`/test/${type}/.*test\\.[tj]sx?$`],
         moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, { prefix: "<rootDir>/packages/" }) as any,
         roots: [path.resolve(".")],
         globals: {

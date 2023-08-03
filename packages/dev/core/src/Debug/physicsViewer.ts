@@ -174,6 +174,10 @@ export class PhysicsViewer {
             this._getMeshDebugInertiaMatrixToRef(props, inertiaMatrixRef);
             body.transformNode.rotationQuaternion?.toRotationMatrix(transformMatrixRef);
             transformMatrixRef.setTranslation(body.transformNode.position);
+            if (body.transformNode.parent) {
+                const parentTransform = body.transformNode.parent.computeWorldMatrix(true);
+                transformMatrixRef.multiplyToRef(parentTransform, transformMatrixRef);
+            }
             inertiaMatrixRef.multiplyToRef(transformMatrixRef, inertiaMatrixRef);
             inertiaMatrixRef.decomposeToTransformNode(inertiaMesh);
         }

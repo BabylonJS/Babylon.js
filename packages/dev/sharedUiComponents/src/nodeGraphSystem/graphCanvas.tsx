@@ -1377,7 +1377,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         const visitedNodes = new Set<GraphNode>([nodeA]);
         const visitedLinks = new Set<NodeLink>([nodeB.links[nodeB.links.length - 1]]);
 
-        RefreshNode(nodeB, visitedNodes, visitedLinks);
+        RefreshNode(nodeB, visitedNodes, visitedLinks, this);
     }
 
     drop(newNode: GraphNode, targetX: number, targetY: number, offsetX: number, offsetY: number) {
@@ -1392,7 +1392,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this.props.stateManager.onSelectionChangedObservable.notifyObservers(null);
         this.props.stateManager.onSelectionChangedObservable.notifyObservers({ selection: newNode });
 
-        x -= GraphCanvasComponent.NodeWidth + 150;
+        x -= GraphCanvasComponent.NodeWidth + 200;
 
         newNode.content.inputs.forEach((portData) => {
             if (portData.connectedPort) {

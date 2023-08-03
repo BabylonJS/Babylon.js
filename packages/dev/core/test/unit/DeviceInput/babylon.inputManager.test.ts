@@ -364,7 +364,7 @@ describe("InputManager", () => {
                 eventData.skipOnPointerObservable = true;
             }, PointerEventTypes.POINTERDOWN);
 
-            // Expect to get just an UP
+            // Expect nothing because we skipped the DOWN and no capture was made
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
 
@@ -419,10 +419,10 @@ describe("InputManager", () => {
         }
 
         expect(downCt).toBe(12);
-        expect(upCt).toBe(11);
+        expect(upCt).toBe(10);
         expect(moveCt).toBe(5);
         expect(pickCt).toBe(1);
-        expect(tapCt).toBe(4);
+        expect(tapCt).toBe(3);
         expect(dblTapCt).toBe(3);
     });
 
@@ -814,5 +814,59 @@ describe("InputManager", () => {
         }
 
         expect(pickedTestMesh).not.toBe(null);
+    });
+
+    it("can reset touch inputs on detachControl", () => {
+        let deltaX1 = 0;
+        let deltaY1 = 0;
+        let deltaX2 = 0;
+        let deltaY2 = 0;
+
+        if (deviceInputSystem && camera && scene) {
+            camera.attachControl();
+
+            // Connect the first touch and move down and right
+            deviceInputSystem.connectDevice(DeviceType.Touch, 1, TestDeviceInputSystem.MAX_POINTER_INPUTS);
+            deviceInputSystem.changeInput(DeviceType.Touch, 1, PointerInput.Horizontal, 0, false);
+            deviceInputSystem.changeInput(DeviceType.Touch, 1, PointerInput.Vertical, 0, false);
+            deviceInputSystem.changeInput(DeviceType.Touch, 1, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Touch, 1, PointerInput.Horizontal, 64, false);
+            deviceInputSystem.changeInput(DeviceType.Touch, 1, PointerInput.Vertical, 64, false);
+            deviceInputSystem.changeInput(DeviceType.Touch, 1, PointerInput.Move, 1);
+
+            // Both should be positive values based on movement
+            deltaX1 = camera.cameraRotation.x;
+            deltaY1 = camera.cameraRotation.y;
+
+            // Detach and reattach the camera
+            // Note: Detaching the controls will zero out the camera rotation
+            camera.detachControl();
+
+            // We need to trigger the up after the controls are detached
+            // This enables us to check if the inputs are reset properly on detach
+            // because the up code normally will reset things when controls are attached
+            deviceInputSystem.changeInput(DeviceType.Touch, 1, PointerInput.LeftClick, 0);
+
+            camera.attachControl();
+
+            // Connect the second touch and move down and right
+            deviceInputSystem.connectDevice(DeviceType.Touch, 2, TestDeviceInputSystem.MAX_POINTER_INPUTS);
+            deviceInputSystem.changeInput(DeviceType.Touch, 2, PointerInput.Horizontal, 0, false);
+            deviceInputSystem.changeInput(DeviceType.Touch, 2, PointerInput.Vertical, 0, false);
+            deviceInputSystem.changeInput(DeviceType.Touch, 2, PointerInput.LeftClick, 1);
+            deviceInputSystem.changeInput(DeviceType.Touch, 2, PointerInput.Horizontal, 64, false);
+            deviceInputSystem.changeInput(DeviceType.Touch, 2, PointerInput.Vertical, 64, false);
+            deviceInputSystem.changeInput(DeviceType.Touch, 2, PointerInput.Move, 1);
+            deviceInputSystem.changeInput(DeviceType.Touch, 2, PointerInput.LeftClick, 0);
+
+            // Both should be positive values based on movement
+            deltaX2 = camera.cameraRotation.x;
+            deltaY2 = camera.cameraRotation.y;
+        }
+
+        expect(deltaX1).toBeGreaterThan(0);
+        expect(deltaY1).toBeGreaterThan(0);
+        expect(deltaX2).toBeGreaterThan(0);
+        expect(deltaY2).toBeGreaterThan(0);
     });
 });

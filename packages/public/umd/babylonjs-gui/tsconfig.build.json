@@ -3,12 +3,15 @@
 
     "compilerOptions": {
         "outDir": "./dist",
-        "rootDir": "./src",
+        "rootDir": "../../../",
+        "target": "ES5",
         "declaration": false,
+        "importHelpers": true,
         "paths": {
-            "gui/*": ["dev/gui/dist/*"],
-            "@lts/gui/*": ["lts/gui/dist/*"],
+            "core/*": ["dev/core/dist/*"],
+            "gui/*": ["dev/gui/src/*"],
+            "@lts/gui/*": ["lts/gui/src/*"]
         }
     },
-    "include": ["./src/**/*"]
+    "include": ["./src/**/*", "../../../dev/gui/src/**/*", "../../../lts/gui/src/**/*"]
 }

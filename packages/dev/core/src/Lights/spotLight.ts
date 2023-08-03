@@ -314,8 +314,8 @@ export class SpotLight extends ShadowLight {
         this._projectionTextureViewLightDirty = false;
         this._projectionTextureDirty = true;
 
-        this.position.addToRef(this.direction, this._projectionTextureViewTargetVector);
-        Matrix.LookAtLHToRef(this.position, this._projectionTextureViewTargetVector, this._projectionTextureUpDirection, this._projectionTextureViewLightMatrix);
+        this.getAbsolutePosition().addToRef(this.direction, this._projectionTextureViewTargetVector);
+        Matrix.LookAtLHToRef(this.getAbsolutePosition(), this._projectionTextureViewTargetVector, this._projectionTextureUpDirection, this._projectionTextureViewLightMatrix);
     }
 
     protected _computeProjectionTextureProjectionLightMatrix(): void {

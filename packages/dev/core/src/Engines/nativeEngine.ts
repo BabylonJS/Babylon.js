@@ -244,10 +244,10 @@ export class NativeEngine extends Engine {
             colorBufferFloat: false,
             textureFloat: true,
             textureFloatLinearFiltering: false,
-            textureFloatRender: false,
-            textureHalfFloat: false,
+            textureFloatRender: true,
+            textureHalfFloat: true,
             textureHalfFloatLinearFiltering: false,
-            textureHalfFloatRender: false,
+            textureHalfFloatRender: true,
             textureLOD: true,
             texelFetch: false,
             drawBuffersExtension: false,
@@ -257,7 +257,7 @@ export class NativeEngine extends Engine {
             supportOcclusionQuery: false,
             canUseTimestampForTimerQuery: false,
             blendMinMax: false,
-            maxMSAASamples: 1,
+            maxMSAASamples: 16,
             canUseGLInstanceID: true,
             canUseGLVertexID: true,
             supportComputeShaders: false,
@@ -1856,15 +1856,17 @@ export class NativeEngine extends Engine {
     }
 
     public _createDepthStencilTexture(size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
-        // TODO: options?
+        // TODO: handle other options?
+        const generateStencil = options.generateStencil || false;
+        const samples = options.samples || 1;
 
         const nativeRTWrapper = rtWrapper as NativeRenderTargetWrapper;
         const texture = new InternalTexture(this, InternalTextureSource.DepthStencil);
 
-        const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
-        const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
+        const width = (<{ width: number; height: number; layers?: number }>size).width ?? <number>size;
+        const height = (<{ width: number; height: number; layers?: number }>size).height ?? <number>size;
 
-        const framebuffer = this._engine.createFrameBuffer(texture._hardwareTexture!.underlyingResource, width, height, true, true);
+        const framebuffer = this._engine.createFrameBuffer(texture._hardwareTexture!.underlyingResource, width, height, generateStencil, true, samples);
         nativeRTWrapper._framebufferDepthStencil = framebuffer;
         return texture;
     }
@@ -2127,8 +2129,8 @@ export class NativeEngine extends Engine {
         }
 
         const texture = new InternalTexture(this, source);
-        const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
-        const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
+        const width = (<{ width: number; height: number; layers?: number }>size).width ?? <number>size;
+        const height = (<{ width: number; height: number; layers?: number }>size).height ?? <number>size;
 
         const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
         if (layers !== 0) {
@@ -2138,7 +2140,7 @@ export class NativeEngine extends Engine {
         const nativeTexture = texture._hardwareTexture!.underlyingResource;
         const nativeTextureFormat = this._getNativeTextureFormat(format, type);
         // REVIEW: We are always setting the renderTarget flag as we don't know whether the texture will be used as a render target.
-        this._engine.initializeTexture(nativeTexture, width, height, generateMipMaps, nativeTextureFormat, true, useSRGBBuffer);
+        this._engine.initializeTexture(nativeTexture, width, height, generateMipMaps, nativeTextureFormat, true, useSRGBBuffer, samples);
         this._setTextureSampling(nativeTexture, this._getNativeSamplingMode(samplingMode));
 
         texture._useSRGBBuffer = useSRGBBuffer;
@@ -2177,36 +2179,31 @@ export class NativeEngine extends Engine {
         }
 
         const texture = colorAttachment || (noColorAttachment ? null : this._createInternalTexture(size, options, true, InternalTextureSource.RenderTarget));
-        const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
-        const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
+        const width = (<{ width: number; height: number; layers?: number }>size).width ?? <number>size;
+        const height = (<{ width: number; height: number; layers?: number }>size).height ?? <number>size;
 
         const framebuffer = this._engine.createFrameBuffer(
             texture ? texture._hardwareTexture!.underlyingResource : null,
             width,
             height,
             generateStencilBuffer,
-            generateDepthBuffer
+            generateDepthBuffer,
+            samples
         );
 
         rtWrapper._framebuffer = framebuffer;
         rtWrapper._generateDepthBuffer = generateDepthBuffer;
         rtWrapper._generateStencilBuffer = generateStencilBuffer;
+        rtWrapper._samples = samples;
 
         rtWrapper.setTextures(texture);
-
-        this.updateRenderTargetTextureSampleCount(rtWrapper, samples);
 
         return rtWrapper;
     }
 
-    // This function is being added for the sole purpose of overriding the ThinEngine version.  The reason
-    // for this is that the ThinEngine version of this function uses a WebGL2RenderingContext, which is not
-    // available in Babylon Native.  The return value is just a hard-coded value that is not used anywhere
-    // in Babylon Native's code.  This is effectively a hack/workaround so that Babylon Native doesn't crash
-    // This function should be updated once the maxMSAASamples is updated as well.
     public updateRenderTargetTextureSampleCount(rtWrapper: RenderTargetWrapper, samples: number): number {
-        // TODO: Implement this function once the maxMSAASamples is updated.
-        return 1;
+        Logger.Warn("Updating render target sample count is not currently supported");
+        return rtWrapper.samples;
     }
 
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {

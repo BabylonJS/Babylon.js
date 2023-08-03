@@ -10,10 +10,19 @@ struct reflectivityOutParams
     vec3 ambientOcclusionColor;
 #endif
 #if DEBUGMODE > 0
-    vec4 surfaceMetallicColorMap;
-    vec4 surfaceReflectivityColorMap;
-    vec2 metallicRoughness;
-    vec3 metallicF0;
+    #ifdef METALLICWORKFLOW
+        vec2 metallicRoughness;
+        #ifdef REFLECTIVITY
+            vec4 surfaceMetallicColorMap;
+        #endif
+        #ifndef FROSTBITE_REFLECTANCE
+            vec3 metallicF0;
+        #endif
+    #else
+        #ifdef REFLECTIVITY
+            vec4 surfaceReflectivityColorMap;
+        #endif
+    #endif
 #endif
 };
 

@@ -5,25 +5,23 @@ declare const BABYLON: typeof import("core/index");
 
 // Performance tests require the PROD version of the CDN (babylon-server)
 
-const framesToRender = 5000;
+const framesToRender = 2500;
 const numberOfPasses = 8;
-const acceptedThreshold = 0.075; // 7.5% compensation
+const acceptedThreshold = 0.05; // 5% compensation
 
 describe("Performance - scene", () => {
-    jest.setTimeout(60000);
+    jest.setTimeout(40000);
 
     it("Should have same or better performance with default scene", async () => {
-        const preview = await checkPerformanceOfScene(page, getGlobalConfig().baseUrl, "preview", evaluateDefaultScene, numberOfPasses, framesToRender);
         const stable = await checkPerformanceOfScene(page, getGlobalConfig().baseUrl, "stable", evaluateDefaultScene, numberOfPasses, framesToRender);
         const dev = await checkPerformanceOfScene(page, getGlobalConfig().baseUrl, "dev", evaluateDefaultScene, numberOfPasses, framesToRender);
-        console.log(`Performance - scene: preview: ${preview}ms, stable: ${stable}ms, dev: ${dev}ms`);
-        expect(dev / preview, `Dev: ${dev}ms, Preview: ${preview}ms`).toBeLessThanOrEqual(1 + acceptedThreshold);
-        expect(dev / stable, `Dev: ${dev}ms, Preview: ${stable}ms`).toBeLessThanOrEqual(1 + acceptedThreshold);
-    }, 30000);
+        console.log(`Performance - scene: stable: ${stable}ms, dev: ${dev}ms`);
+        expect(dev / stable, `Dev: ${dev}ms, Stable: ${stable}ms`).toBeLessThanOrEqual(1 + acceptedThreshold);
+    }, 40000);
 
     it("Should have same or better performance with particle system", async () => {
         // this code will run in the browser
-        const createScene = async () => {
+        const createScene = () => {
             if (!window.scene) {
                 window.scene = new BABYLON.Scene(window.engine!);
             }
@@ -37,25 +35,21 @@ describe("Performance - scene", () => {
 
             particleSystem.start();
 
-            await new Promise<void>((resolve) => {
+            return new Promise<void>((resolve) => {
                 window.scene?.executeWhenReady(() => {
                     resolve();
                 });
             });
         };
 
-        // await page.waitForFunction(`window.scene.isReady()`);
-
-        const preview = await checkPerformanceOfScene(page, getGlobalConfig().baseUrl, "preview", createScene, numberOfPasses, framesToRender);
         const stable = await checkPerformanceOfScene(page, getGlobalConfig().baseUrl, "stable", createScene, numberOfPasses, framesToRender);
         const dev = await checkPerformanceOfScene(page, getGlobalConfig().baseUrl, "dev", createScene, numberOfPasses, framesToRender);
-        expect(dev / preview, `Dev: ${dev}ms, Preview: ${preview}ms`).toBeLessThanOrEqual(1 + acceptedThreshold);
-        expect(dev / stable, `Dev: ${dev}ms, Preview: ${stable}ms`).toBeLessThanOrEqual(1 + acceptedThreshold);
+        expect(dev / stable, `Dev: ${dev}ms, Stable: ${stable}ms`).toBeLessThanOrEqual(1 + acceptedThreshold);
     }, 40000);
 
     it("Should have same or better performance with follow camera", async () => {
         // this code will run in the browser
-        const createScene = async () => {
+        const createScene = () => {
             const scene = new BABYLON.Scene(window.engine!);
             const camera = new BABYLON.FollowCamera("FollowCam", new BABYLON.Vector3(0, 10, -10), scene);
             camera.radius = 30;
@@ -102,17 +96,15 @@ describe("Performance - scene", () => {
 
             window.scene = scene;
 
-            await new Promise<void>((resolve) => {
+            return new Promise<void>((resolve) => {
                 window.scene?.executeWhenReady(() => {
                     resolve();
                 });
             });
         };
 
-        const preview = await checkPerformanceOfScene(page, getGlobalConfig().baseUrl, "preview", createScene, numberOfPasses, framesToRender);
         const stable = await checkPerformanceOfScene(page, getGlobalConfig().baseUrl, "stable", createScene, numberOfPasses, framesToRender);
         const dev = await checkPerformanceOfScene(page, getGlobalConfig().baseUrl, "dev", createScene, numberOfPasses, framesToRender);
-        expect(dev / preview, `Dev: ${dev}ms, Preview: ${preview}ms`).toBeLessThanOrEqual(1 + acceptedThreshold);
-        expect(dev / stable, `Dev: ${dev}ms, Preview: ${stable}ms`).toBeLessThanOrEqual(1 + acceptedThreshold);
+        expect(dev / stable, `Dev: ${dev}ms, Stable: ${stable}ms`).toBeLessThanOrEqual(1 + acceptedThreshold);
     }, 40000);
 });

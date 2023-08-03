@@ -82,6 +82,8 @@ const viewDescriptorSwapChain: GPUTextureViewDescriptor = {
 
 const disableUniformityAnalysisMarker = "/* disable_uniformity_analysis */";
 
+const tempColor4 = new Color4();
+
 /**
  * Options to load the associated Glslang library
  */
@@ -2693,6 +2695,14 @@ export class WebGPUEngine extends Engine {
             this.setDepthFunctionToGreaterOrEqual();
         }
 
+        const clearColorForIntegerRT = tempColor4;
+        if (clearColor) {
+            clearColorForIntegerRT.r = clearColor.r * 255;
+            clearColorForIntegerRT.g = clearColor.g * 255;
+            clearColorForIntegerRT.b = clearColor.b * 255;
+            clearColorForIntegerRT.a = clearColor.a * 255;
+        }
+
         const mustClearColor = setClearStates && clearColor;
         const mustClearDepth = setClearStates && clearDepth;
         const mustClearStencil = setClearStates && clearStencil;
@@ -2722,6 +2732,7 @@ export class WebGPUEngine extends Engine {
                         format: gpuMRTWrapper.format,
                         baseArrayLayer: 0,
                     };
+                    const isRTInteger = mrtTexture.type === Constants.TEXTURETYPE_UNSIGNED_INTEGER || mrtTexture.type === Constants.TEXTURETYPE_UNSIGNED_SHORT;
 
                     const colorTextureView = gpuMRTTexture.createView(viewDescriptor);
                     const colorMSAATextureView = gpuMSAATexture?.createView(msaaViewDescriptor);
@@ -2729,7 +2740,7 @@ export class WebGPUEngine extends Engine {
                     colorAttachments.push({
                         view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                         resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
-                        clearValue: index !== 0 && mustClearColor ? clearColor : undefined,
+                        clearValue: index !== 0 && mustClearColor ? (isRTInteger ? clearColorForIntegerRT : clearColor) : undefined,
                         loadOp: index !== 0 && mustClearColor ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
                         storeOp: WebGPUConstants.StoreOp.Store,
                     });
@@ -2747,11 +2758,12 @@ export class WebGPUEngine extends Engine {
                 const gpuMSAATexture = gpuWrapper.getMSAATexture();
                 const colorTextureView = gpuTexture.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
                 const colorMSAATextureView = gpuMSAATexture?.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
+                const isRTInteger = internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_INTEGER || internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_SHORT;
 
                 colorAttachments.push({
                     view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                     resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
-                    clearValue: mustClearColor ? clearColor : undefined,
+                    clearValue: mustClearColor ? (isRTInteger ? clearColorForIntegerRT : clearColor) : undefined,
                     loadOp: mustClearColor ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
                     storeOp: WebGPUConstants.StoreOp.Store,
                 });

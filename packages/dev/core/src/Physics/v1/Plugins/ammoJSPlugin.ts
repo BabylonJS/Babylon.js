@@ -3,7 +3,7 @@ import type { IPhysicsEnginePlugin, PhysicsImpostorJoint } from "../IPhysicsEngi
 import { Logger } from "../../../Misc/logger";
 import type { IPhysicsEnabledObject } from "../physicsImpostor";
 import { PhysicsImpostor } from "../physicsImpostor";
-import type { IMotorEnabledJoint, DistanceJointData } from "..//physicsJoint";
+import type { IMotorEnabledJoint, DistanceJointData } from "../physicsJoint";
 import { PhysicsJoint } from "../physicsJoint";
 import { VertexBuffer } from "../../../Buffers/buffer";
 import { VertexData } from "../../../Meshes/mesh.vertexData";

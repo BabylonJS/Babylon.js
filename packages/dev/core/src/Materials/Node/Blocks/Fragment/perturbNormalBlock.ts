@@ -263,7 +263,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         state._emitExtension("derivatives", "#extension GL_OES_standard_derivatives : enable");
 
         const tangentReplaceString = { search: /defined\(TANGENT\)/g, replace: worldTangent.isConnected ? "defined(TANGENT)" : "defined(IGNORE)" };
-        const tbnVarying = { search: /varying mat3 vTBN/g, replace: "" };
+        const tbnVarying = { search: /varying mat3 vTBN;/g, replace: "" };
         const normalMatrixReplaceString = { search: /uniform mat4 normalMatrix;/g, replace: "" };
 
         const TBN = this.TBN;

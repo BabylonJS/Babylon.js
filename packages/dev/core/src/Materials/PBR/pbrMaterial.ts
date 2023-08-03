@@ -179,13 +179,13 @@ export class PBRMaterial extends PBRBaseMaterial {
     public metallicF0Factor = 1;
 
     /**
-     * In metallic workflow, specifies an F90 color to help configuring the material F90.
+     * In metallic workflow, specifies an F0 color.
      * By default the F90 is always 1;
      *
      * Please note that this factor is also used as a factor against the default reflectance at normal incidence.
      *
-     * F0 = defaultF0 * metallicF0Factor * metallicReflectanceColor
-     * F90 = metallicReflectanceColor;
+     * F0 = defaultF0_from_IOR * metallicF0Factor * metallicReflectanceColor
+     * F90 = metallicF0Factor;
      */
     @serializeAsColor3()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -619,6 +619,13 @@ export class PBRMaterial extends PBRBaseMaterial {
     @serialize()
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
     public unlit = false;
+
+    /**
+     * If sets to true, the decal map will be applied after the detail map. Else, it is applied before (default: false)
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsMiscDirty")
+    public applyDecalMapAfterDetailMap = false;
 
     /**
      * Gets the image processing configuration used either in this material.

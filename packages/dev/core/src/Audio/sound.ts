@@ -10,6 +10,8 @@ import { Logger } from "../Misc/logger";
 import { _WarnImport } from "../Misc/devTools";
 import type { ISoundOptions } from "./Interfaces/ISoundOptions";
 import { EngineStore } from "../Engines/engineStore";
+import type { IAudioEngine } from "./Interfaces/IAudioEngine";
+import type { Observer } from "../Misc/observable";
 
 /**
  * Defines a sound that can be played in the application.
@@ -121,16 +123,31 @@ export class Sound {
     public get spatialSound(): boolean {
         return this._spatialSound;
     }
+
     /**
      * Does this sound enables spatial sound.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#creating-a-spatial-3d-sound
      */
     public set spatialSound(newValue: boolean) {
-        this._spatialSound = newValue;
-        if (this._spatialSound && Engine.audioEngine?.canUseWebAudio && Engine.audioEngine.audioContext) {
-            this._createSpatialParameters();
+        if (newValue == this._spatialSound) {
+            return;
+        }
+
+        const wasPlaying = this.isPlaying;
+        this.pause();
+
+        if (newValue) {
+            this._spatialSound = newValue;
+            this._updateSpatialParameters();
+        } else {
+            this._disableSpatialSound();
+        }
+
+        if (wasPlaying) {
+            this.play();
         }
     }
+
     private _spatialSound: boolean = false;
     private _panningModel: string = "equalpower";
     private _playbackRate: number = 1;
@@ -164,6 +181,8 @@ export class Sound {
     private _urlType: "Unknown" | "String" | "Array" | "ArrayBuffer" | "MediaStream" | "AudioBuffer" | "MediaElement" = "Unknown";
     private _length?: number;
     private _offset?: number;
+    private _tryToPlayTimeout: Nullable<NodeJS.Timeout>;
+    private _audioUnlockedObserver?: Nullable<Observer<IAudioEngine>>;
 
     /**
      * @internal
@@ -431,6 +450,8 @@ export class Sound {
                 this._connectedTransformNode.unregisterAfterWorldMatrixUpdate(this._registerFunc);
                 this._connectedTransformNode = null;
             }
+
+            this._clearTimeoutsAndObservers();
         }
     }
 
@@ -504,6 +525,7 @@ export class Sound {
             this.distanceModel = options.distanceModel ?? this.distanceModel;
             this._playbackRate = options.playbackRate ?? this._playbackRate;
             this._length = options.length ?? undefined;
+            this.spatialSound = options.spatialSound ?? this._spatialSound;
             this._setOffset(options.offset ?? undefined);
             this.setVolume(options.volume ?? this._volume);
             this._updateSpatialParameters();
@@ -545,8 +567,21 @@ export class Sound {
         }
     }
 
+    private _disableSpatialSound() {
+        if (!this._spatialSound) {
+            return;
+        }
+        this._inputAudioNode = this._soundGain;
+        this._soundPanner?.disconnect();
+        this._soundPanner = null;
+        this._spatialSound = false;
+    }
+
     private _updateSpatialParameters() {
-        if (this._spatialSound && this._soundPanner) {
+        if (!this._spatialSound) {
+            return;
+        }
+        if (this._soundPanner) {
             if (this.useCustomAttenuation) {
                 // Tricks to disable in a way embedded Web Audio attenuation
                 this._soundPanner.distanceModel = "linear";
@@ -561,6 +596,8 @@ export class Sound {
                 this._soundPanner.rolloffFactor = this.rolloffFactor;
                 this._soundPanner.panningModel = this._panningModel as any;
             }
+        } else {
+            this._createSpatialParameters();
         }
     }
 
@@ -744,6 +781,8 @@ export class Sound {
     public play(time?: number, offset?: number, length?: number): void {
         if (this._isReadyToPlay && this._scene.audioEnabled && Engine.audioEngine?.audioContext) {
             try {
+                this._clearTimeoutsAndObservers();
+
                 let startTime = time ? Engine.audioEngine?.audioContext.currentTime + time : Engine.audioEngine?.audioContext.currentTime;
                 if (!this._soundSource || !this._streamingSource) {
                     if (this._spatialSound && this._soundPanner) {
@@ -793,7 +832,7 @@ export class Sound {
                                         // Waiting for the audio engine to be unlocked by user click on unmute
                                         Engine.audioEngine?.lock();
                                         if (this.loop || this.autoplay) {
-                                            Engine.audioEngine?.onAudioUnlockedObservable.addOnce(() => {
+                                            this._audioUnlockedObserver = Engine.audioEngine?.onAudioUnlockedObservable.addOnce(() => {
                                                 tryToPlay();
                                             });
                                         }
@@ -801,7 +840,7 @@ export class Sound {
                                 }
                             } else {
                                 if (this.loop || this.autoplay) {
-                                    Engine.audioEngine?.onAudioUnlockedObservable.addOnce(() => {
+                                    this._audioUnlockedObserver = Engine.audioEngine?.onAudioUnlockedObservable.addOnce(() => {
                                         tryToPlay();
                                     });
                                 }
@@ -848,13 +887,13 @@ export class Sound {
 
                     if (Engine.audioEngine?.audioContext.state === "suspended") {
                         // Wait a bit for FF as context seems late to be ready.
-                        setTimeout(() => {
+                        this._tryToPlayTimeout = setTimeout(() => {
                             if (Engine.audioEngine?.audioContext!.state === "suspended") {
                                 // Automatic playback failed.
                                 // Waiting for the audio engine to be unlocked by user click on unmute
                                 Engine.audioEngine.lock();
                                 if (this.loop || this.autoplay) {
-                                    Engine.audioEngine.onAudioUnlockedObservable.addOnce(() => {
+                                    this._audioUnlockedObserver = Engine.audioEngine.onAudioUnlockedObservable.addOnce(() => {
                                         tryToPlay();
                                     });
                                 }
@@ -891,6 +930,7 @@ export class Sound {
      */
     public stop(time?: number): void {
         if (this.isPlaying) {
+            this._clearTimeoutsAndObservers();
             if (this._streaming) {
                 if (this._htmlAudioElement) {
                     this._htmlAudioElement.pause();
@@ -915,6 +955,8 @@ export class Sound {
                     this._onended();
                 };
                 this._soundSource.stop(stopTime);
+            } else {
+                this.isPlaying = false;
             }
         } else if (this.isPaused) {
             this.isPaused = false;
@@ -928,6 +970,7 @@ export class Sound {
      */
     public pause(): void {
         if (this.isPlaying) {
+            this._clearTimeoutsAndObservers();
             if (this._streaming) {
                 if (this._htmlAudioElement) {
                     this._htmlAudioElement.pause();
@@ -1249,5 +1292,16 @@ export class Sound {
             this.isPaused = false;
         }
         this._offset = value;
+    }
+
+    private _clearTimeoutsAndObservers() {
+        if (this._tryToPlayTimeout) {
+            clearTimeout(this._tryToPlayTimeout);
+            this._tryToPlayTimeout = null;
+        }
+        if (this._audioUnlockedObserver) {
+            Engine.audioEngine?.onAudioUnlockedObservable.remove(this._audioUnlockedObserver);
+            this._audioUnlockedObserver = null;
+        }
     }
 }
