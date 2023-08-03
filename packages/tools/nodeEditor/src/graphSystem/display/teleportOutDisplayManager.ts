@@ -39,6 +39,7 @@ export class TeleportOutDisplayManager implements IDisplayManager {
             this._hasHighlights = true;
         }
     }
+<<<<<<< HEAD
 
     public onDispose(nodeData: INodeData, manager: StateManager) {
         const block = nodeData.data as NodeMaterialTeleportOutBlock;
@@ -46,4 +47,6 @@ export class TeleportOutDisplayManager implements IDisplayManager {
             manager.onHighlightNodeObservable.notifyObservers({ data: block.entryPoint, active: false });
         }
     }
+=======
+>>>>>>> remotes/origin/master
 }
