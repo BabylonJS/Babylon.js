@@ -222,17 +222,6 @@ export class GraphNode {
             }
         });
 
-        this._onHighlightNodeObserver = this._stateManager.onHighlightNodeObservable.add((data) => {
-            if (data.data !== this.content.data) {
-                return;
-            }
-            if (data.active) {
-                this._visual.classList.add(localStyles["highlighted"]);
-            } else {
-                this._visual.classList.remove(localStyles["highlighted"]);
-            }
-        });
-
         this._onUpdateRequiredObserver = this._stateManager.onUpdateRequiredObservable.add((data) => {
             if (data !== this.content.data) {
                 return;
