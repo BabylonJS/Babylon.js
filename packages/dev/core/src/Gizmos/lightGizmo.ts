@@ -138,7 +138,7 @@ export class LightGizmo extends Gizmo implements ILightGizmo {
             if ((light as any).direction) {
                 this.attachedMesh!.setDirection((light as any).direction);
                 this.attachedMesh!.computeWorldMatrix(true);
-                this._cachedForward.copyFrom(this.attachedMesh!.forward);
+                this._cachedForward.copyFrom(this.attachedMesh!.getScene().useRightHandedSystem ? this.attachedMesh!.forward.negate() : this.attachedMesh!.forward);
             }
 
             this._update();
@@ -188,16 +188,20 @@ export class LightGizmo extends Gizmo implements ILightGizmo {
         }
         if ((this._light as any).direction) {
             // If the gizmo is moved update the light otherwise update the gizmo to match the light
-            if (Vector3.DistanceSquared(this.attachedMesh!.forward, this._cachedForward) > 0.0001) {
+            let forward = this.attachedMesh!.forward;
+            if (this.attachedMesh!.getScene().useRightHandedSystem) {
+                forward.negateInPlace();
+            }
+            if (Vector3.DistanceSquared(forward, this._cachedForward) > 0.0001) {
                 // update light to match gizmo
-                const direction = this.attachedMesh!.forward;
+                const direction = forward;
                 (this._light as any).direction = new Vector3(direction.x, direction.y, direction.z);
-                this._cachedForward.copyFrom(this.attachedMesh!.forward);
-            } else if (Vector3.DistanceSquared(this.attachedMesh!.forward, (this._light as any).direction) > 0.0001) {
+                this._cachedForward.copyFrom(forward);
+            } else if (Vector3.DistanceSquared(forward, (this._light as any).direction) > 0.0001) {
                 // update gizmo to match light
                 this.attachedMesh!.setDirection((this._light as any).direction);
                 this.attachedMesh!.computeWorldMatrix(true);
-                this._cachedForward.copyFrom(this.attachedMesh!.forward);
+                this._cachedForward.copyFrom(forward);
             }
         }
     }
