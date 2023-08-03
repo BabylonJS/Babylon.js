@@ -2,8 +2,8 @@ import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
-import type { Vector3 } from "../../../Maths";
-import { Scalar } from "../../../Maths";
+import type { Vector3 } from "../../../Maths/math.vector";
+import { Scalar } from "../../../Maths/math.scalar";
 import { NodeGeometryContextualSources } from "../Enums/nodeGeometryContextualSources";
 
 /**

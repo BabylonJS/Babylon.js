@@ -164,8 +164,8 @@ export class SetUVsBlock extends NodeGeometryBlock implements INodeGeometryExecu
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, rootUrl: string) {
-        super._deserialize(serializationObject, rootUrl);
+    public _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
 
         this.textureCoordinateIndex = serializationObject.textureCoordinateIndex;
     }

@@ -3,7 +3,7 @@ import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnection
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
-import { Vector2, Vector3, Vector4 } from "core/Maths";
+import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../Interfaces/nodeGeometryDecorator";
 
 /**
@@ -236,8 +236,8 @@ export class MathBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, rootUrl: string) {
-        super._deserialize(serializationObject, rootUrl);
+    public _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
 
         this.operation = serializationObject.operation;
     }

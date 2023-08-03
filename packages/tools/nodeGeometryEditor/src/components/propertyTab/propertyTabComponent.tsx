@@ -277,7 +277,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
         this.props.globalState.stateManager.onSelectionChangedObservable.notifyObservers(null);
 
-        NodeGeometry.ParseFromSnippetAsync(snippedId, "", geometry)
+        NodeGeometry.ParseFromSnippetAsync(snippedId, geometry)
             .then(() => {
                 geometry.build();
                 this.props.globalState.onFrame.notifyObservers();

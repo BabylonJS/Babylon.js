@@ -4,7 +4,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { GeometryInputBlock } from "../geometryInputBlock";
-import { Matrix, Vector3 } from "../../../../Maths";
+import { Matrix, Vector3 } from "../../../../Maths/math.vector";
 
 /**
  * Block used to get a scaling matrix

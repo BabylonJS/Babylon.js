@@ -5,7 +5,7 @@ import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { GeometryInputBlock } from "../geometryInputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Vector3 } from "../../../../Maths/math.vector";
-import { CreateCapsuleVertexData } from "core/Meshes/Builders";
+import { CreateCapsuleVertexData } from "core/Meshes/Builders/capsuleBuilder";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../Interfaces/nodeGeometryDecorator";
 
 /**
@@ -139,8 +139,8 @@ export class CapsuleBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, rootUrl: string) {
-        super._deserialize(serializationObject, rootUrl);
+    public _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
 
         this.evaluateContext = serializationObject.evaluateContext;
     }

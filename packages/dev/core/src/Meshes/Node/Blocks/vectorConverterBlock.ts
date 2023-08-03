@@ -1,4 +1,4 @@
-import { Vector2, Vector3, Vector4 } from "../../../Maths";
+import { Vector2, Vector3, Vector4 } from "../../../Maths/math.vector";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";

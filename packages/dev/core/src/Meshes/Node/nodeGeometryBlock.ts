@@ -5,7 +5,7 @@ import type { NodeGeometryBlockConnectionPointTypes } from "./Enums/nodeGeometry
 import { NodeGeometryConnectionPoint, NodeGeometryConnectionPointDirection } from "./nodeGeometryBlockConnectionPoint";
 import type { NodeGeometryBuildState } from "./nodeGeometryBuildState";
 import { Observable } from "../../Misc/observable";
-import { PrecisionDate } from "core/Misc";
+import { PrecisionDate } from "../../Misc/precisionDate";
 
 /**
  * Defines a block that can be used inside a node based geometry
@@ -359,7 +359,7 @@ export class NodeGeometryBlock {
      * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public _deserialize(serializationObject: any, rootUrl: string) {
+    public _deserialize(serializationObject: any) {
         this._name = serializationObject.name;
         this.comments = serializationObject.comments;
         this.visibleInInspector = !!serializationObject.visibleInInspector;
@@ -502,16 +502,15 @@ export class NodeGeometryBlock {
 
     /**
      * Clone the current block to a new identical block
-     * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a copy of the current block
      */
-    public clone(rootUrl: string = "") {
+    public clone() {
         const serializationObject = this.serialize();
 
         const blockType = GetClass(serializationObject.customType);
         if (blockType) {
             const block: NodeGeometryBlock = new blockType();
-            block._deserialize(serializationObject, rootUrl);
+            block._deserialize(serializationObject);
 
             return block;
         }

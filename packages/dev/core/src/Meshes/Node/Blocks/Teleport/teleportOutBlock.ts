@@ -90,11 +90,10 @@ export class TeleportOutBlock extends NodeGeometryBlock {
 
     /**
      * Clone the current block to a new identical block
-     * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a copy of the current block
      */
-    public clone(rootUrl: string = "") {
-        const clone = super.clone(rootUrl);
+    public clone() {
+        const clone = super.clone();
 
         if (this.entryPoint) {
             this.entryPoint.attachToEndpoint(clone as TeleportOutBlock);
@@ -124,8 +123,8 @@ export class TeleportOutBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, rootUrl: string) {
-        super._deserialize(serializationObject, rootUrl);
+    public _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
 
         this._tempEntryPointUniqueId = serializationObject.entryPoint;
     }    

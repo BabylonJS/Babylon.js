@@ -82,8 +82,8 @@ export class MeshBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, rootUrl: string) {
-        super._deserialize(serializationObject, rootUrl);
+    public _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
 
         if (serializationObject.cachedVertexData) {
             this._cachedVertexData = VertexData.Parse(serializationObject.cachedVertexData);

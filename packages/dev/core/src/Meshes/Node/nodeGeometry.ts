@@ -246,10 +246,9 @@ export class NodeGeometry {
     /**
      * Clear the current graph and load a new one from a serialization object
      * @param source defines the JSON representation of the geometry
-     * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @param merge defines whether or not the source must be merged or replace the current content
      */
-    public parseSerializedObject(source: any, rootUrl: string = "", merge = false) {
+    public parseSerializedObject(source: any, merge = false) {
         if (!merge) {
             this.clear();
         }
@@ -261,7 +260,7 @@ export class NodeGeometry {
             const blockType = GetClass(parsedBlock.customType);
             if (blockType) {
                 const block: NodeGeometryBlock = new blockType();
-                block._deserialize(parsedBlock, rootUrl);
+                block._deserialize(parsedBlock);
                 map[parsedBlock.id] = block;
 
                 this.attachedBlocks.push(block);
@@ -530,13 +529,12 @@ export class NodeGeometry {
     /**
      * Creates a node geometry from parsed geometry data
      * @param source defines the JSON representation of the geometry
-     * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a new node geometry
      */
-    public static Parse(source: any, rootUrl: string = ""): NodeGeometry {
-        const nodeGeometry = SerializationHelper.Parse(() => new NodeGeometry(source.name), source, null, rootUrl);
+    public static Parse(source: any): NodeGeometry {
+        const nodeGeometry = SerializationHelper.Parse(() => new NodeGeometry(source.name), source, null);
 
-        nodeGeometry.parseSerializedObject(source, rootUrl);
+        nodeGeometry.parseSerializedObject(source);
         nodeGeometry.build();
 
         return nodeGeometry;
@@ -545,12 +543,11 @@ export class NodeGeometry {
     /**
      * Creates a node geometry from a snippet saved by the node geometry editor
      * @param snippetId defines the snippet to load
-     * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @param nodeGeometry defines a node geometry to update (instead of creating a new one)
      * @param skipBuild defines whether to build the node geometry
      * @returns a promise that will resolve to the new node geometry
      */
-    public static ParseFromSnippetAsync(snippetId: string, rootUrl: string = "", nodeGeometry?: NodeGeometry, skipBuild: boolean = false): Promise<NodeGeometry> {
+    public static ParseFromSnippetAsync(snippetId: string, nodeGeometry?: NodeGeometry, skipBuild: boolean = false): Promise<NodeGeometry> {
         if (snippetId === "_BLANK") {
             return Promise.resolve(NodeGeometry.CreateDefault("blank"));
         }
@@ -564,7 +561,7 @@ export class NodeGeometry {
                         const serializationObject = JSON.parse(snippet.nodeGeometry);
 
                         if (!nodeGeometry) {
-                            nodeGeometry = SerializationHelper.Parse(() => new NodeGeometry(snippetId), serializationObject, null, rootUrl);
+                            nodeGeometry = SerializationHelper.Parse(() => new NodeGeometry(snippetId), serializationObject, null);
                         }
 
                         nodeGeometry.parseSerializedObject(serializationObject);

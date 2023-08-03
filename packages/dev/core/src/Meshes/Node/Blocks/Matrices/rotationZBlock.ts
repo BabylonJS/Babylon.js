@@ -4,7 +4,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { GeometryInputBlock } from "../geometryInputBlock";
-import { Matrix } from "../../../../Maths";
+import { Matrix } from "../../../../Maths/math.vector";
 
 /**
  * Block used to get a rotation matrix on Z Axis

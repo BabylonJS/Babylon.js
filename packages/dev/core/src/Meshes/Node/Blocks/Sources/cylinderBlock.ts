@@ -5,7 +5,7 @@ import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { GeometryInputBlock } from "../geometryInputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Vector4 } from "../../../../Maths/math.vector";
-import { CreateCylinderVertexData } from "core/Meshes/Builders";
+import { CreateCylinderVertexData } from "core/Meshes/Builders/cylinderBuilder";
 import type { Color4 } from "../../../../Maths/math.color";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../Interfaces/nodeGeometryDecorator";
 
@@ -174,8 +174,8 @@ export class CylinderBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, rootUrl: string) {
-        super._deserialize(serializationObject, rootUrl);
+    public _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
 
         this.evaluateContext = serializationObject.evaluateContext;
     }

@@ -5,7 +5,7 @@ import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { GeometryInputBlock } from "../geometryInputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Vector4 } from "../../../../Maths/math.vector";
-import { CreateIcoSphereVertexData } from "core/Meshes/Builders";
+import { CreateIcoSphereVertexData } from "core/Meshes/Builders/icoSphereBuilder";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../Interfaces/nodeGeometryDecorator";
 
 /**
@@ -142,8 +142,8 @@ export class IcoSphereBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, rootUrl: string) {
-        super._deserialize(serializationObject, rootUrl);
+    public _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
 
         this.evaluateContext = serializationObject.evaluateContext;
     }

@@ -5,8 +5,8 @@ import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import { GeometryInputBlock } from "../geometryInputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Vector4 } from "../../../../Maths/math.vector";
-import { CreateSphereVertexData } from "core/Meshes/Builders";
-import { PropertyTypeForEdition, editableInPropertyPage } from "core/Materials";
+import { CreateSphereVertexData } from "core/Meshes/Builders/sphereBuilder";
+import { PropertyTypeForEdition, editableInPropertyPage } from "../../Interfaces/nodeGeometryDecorator";
 
 /**
  * Defines a block used to generate sphere geometry data
@@ -160,8 +160,8 @@ export class SphereBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, rootUrl: string) {
-        super._deserialize(serializationObject, rootUrl);
+    public _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
 
         this.evaluateContext = serializationObject.evaluateContext;
     }

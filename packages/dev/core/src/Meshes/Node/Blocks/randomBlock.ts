@@ -4,7 +4,7 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { GeometryInputBlock } from "./geometryInputBlock";
-import { Vector2, Vector3, Vector4 } from "../../../Maths";
+import { Vector2, Vector3, Vector4 } from "../../../Maths/math.vector";
 import type { Nullable } from "../../../types";
 
 /**

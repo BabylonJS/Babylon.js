@@ -7,7 +7,7 @@ import type { INodeGeometryExecutionContext } from "../../Interfaces/nodeGeometr
 import type { VertexData } from "../../../mesh.vertexData";
 import { Vector3 } from "../../../../Maths/math.vector";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../Interfaces/nodeGeometryDecorator";
-import { Epsilon } from "../../../../Maths";
+import { Epsilon } from "../../../../Maths/math.constants";
 import type { Nullable } from "../../../../types";
 
 /**
@@ -218,8 +218,8 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, rootUrl: string) {
-        super._deserialize(serializationObject, rootUrl);
+    public _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
 
         this.removeDuplicatedPositions = serializationObject.removeDuplicatedPositions;
     }
