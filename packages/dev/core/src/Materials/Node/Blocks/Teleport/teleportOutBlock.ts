@@ -9,12 +9,12 @@ import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 
 /**
- * Defines a block used to receive a value from an teleport entry point
+ * Defines a block used to receive a value from a teleport entry point
  */
 export class NodeMaterialTeleportOutBlock extends NodeMaterialBlock {
-    /** @hidden */
+    /** @internal */
     public _entryPoint: Nullable<NodeMaterialTeleportInBlock> = null;
-    /** @hidden */
+    /** @internal */
     public _tempEntryPointUniqueId: Nullable<number> = null;
 
     /**
@@ -73,8 +73,6 @@ export class NodeMaterialTeleportOutBlock extends NodeMaterialBlock {
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
-        // Do nothing
-        // All work done by the emitter
         super._buildBlock(state);
 
         if (this.entryPoint) {
@@ -92,10 +90,37 @@ export class NodeMaterialTeleportOutBlock extends NodeMaterialBlock {
         const clone = super.clone(scene, rootUrl);
 
         if (this.entryPoint) {
-            this.entryPoint.attachToEndpoint(clone as any as NodeMaterialTeleportOutBlock);
+            this.entryPoint.attachToEndpoint(clone as NodeMaterialTeleportOutBlock);
         }
 
         return clone;
+    }
+
+    protected _customBuildStep(state: NodeMaterialBuildState, activeBlocks: NodeMaterialBlock[]): void {
+        if (this.entryPoint) {
+            this.entryPoint.build(state, activeBlocks);
+        }
+    }
+
+    public _dumpCode(uniqueNames: string[], alreadyDumped: NodeMaterialBlock[]) {
+        let codeString: string = "";
+        if (this.entryPoint) {
+            if (alreadyDumped.indexOf(this.entryPoint) === -1) {
+                codeString += this.entryPoint._dumpCode(uniqueNames, alreadyDumped);
+            }
+        }
+
+        return codeString + super._dumpCode(uniqueNames, alreadyDumped);
+    }
+
+    public _dumpCodeForOutputConnections(alreadyDumped: NodeMaterialBlock[]) {
+        let codeString = super._dumpCodeForOutputConnections(alreadyDumped);
+
+        if (this.entryPoint) {
+            codeString += this.entryPoint._dumpCodeForOutputConnections(alreadyDumped);
+        }
+
+        return codeString;
     }
 
     protected _dumpPropertiesCode() {
