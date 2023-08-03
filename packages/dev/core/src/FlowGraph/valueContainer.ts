@@ -5,8 +5,8 @@
  * @experimental
  */
 export interface ValueContainer<T> {
-    value: T;
-    setValue: (value: T) => void;
+    readonly value: T;
+    readonly setValue: (value: T) => void;
 }
 
 /**
@@ -15,7 +15,6 @@ export interface ValueContainer<T> {
  * @returns
  */
 export function makeValueContainer<T>(value: T): ValueContainer<T> {
-    // question: Should we wrap this in a Proxy so it's not possible to change the value directly?
     const container = {
         value,
         setValue: (newValue: T) => (container.value = newValue),

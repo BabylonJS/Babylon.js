@@ -11,14 +11,14 @@ import { FlowGraphConnectionType } from "./flowGraphConnectionType";
 export class FlowGraphSignalConnection {
     private _connectedPoint: Nullable<FlowGraphSignalConnection>;
 
-    constructor(public name: string, public role: FlowGraphConnectionType, private _ownerBlock: FlowGraphExecutionBlock) {}
+    public constructor(public name: string, public type: FlowGraphConnectionType, private _ownerBlock: FlowGraphExecutionBlock) {}
 
     /**
      * Connects this point to another point.
      * @param point the point to connect to.
      */
     public connectTo(point: FlowGraphSignalConnection): void {
-        if (this.role === point.role) {
+        if (this.type === point.type) {
             throw new Error("Cannot connect two points of the same direction");
         }
         this._connectedPoint = point;
@@ -29,7 +29,7 @@ export class FlowGraphSignalConnection {
      * @internal
      */
     public _activateSignal(): void {
-        if (this.role === FlowGraphConnectionType.Input) {
+        if (this.type === FlowGraphConnectionType.Input) {
             this._ownerBlock._execute();
         } else {
             this._connectedPoint?._activateSignal();

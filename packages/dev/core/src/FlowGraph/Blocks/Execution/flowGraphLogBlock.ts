@@ -12,11 +12,18 @@ export class FlowGraphLogBlock extends FlowGraphWithOnDoneExecutionBlock {
      * The message to log.
      */
     public readonly message: FlowGraphDataConnection<AnyType>;
+    /**
+     * Sets the message to log.
+     */
+    public readonly setMessage: (value: AnyType) => void;
 
     public constructor(graph: FlowGraph) {
         super(graph);
-        this.message = this._registerDataInput("message", "Hello world").connectionPoint;
+        const messageRegister = this._registerDataInput("message", "Hello world");
+        this.message = messageRegister.connectionPoint;
+        this.setMessage = messageRegister.valueSetter;
     }
+
     /**
      * @internal
      */

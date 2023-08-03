@@ -16,7 +16,7 @@ export class FlowGraph {
     private _eventBlocks: FlowGraphEventBlock[] = [];
     private _sceneDisposeObserver: Nullable<Observer<Scene>>;
 
-    constructor(private _scene: Scene) {
+    public constructor(private _scene: Scene) {
         this._sceneDisposeObserver = this._scene.onDisposeObservable.add(this.dispose.bind(this));
     }
 

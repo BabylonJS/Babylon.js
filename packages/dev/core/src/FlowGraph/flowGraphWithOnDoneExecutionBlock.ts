@@ -5,7 +5,7 @@ import type { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
 export abstract class FlowGraphWithOnDoneExecutionBlock extends FlowGraphExecutionBlock {
     public readonly onDone: FlowGraphSignalConnection;
 
-    constructor(graph: FlowGraph) {
+    protected constructor(graph: FlowGraph) {
         super(graph);
         this.onDone = this._registerSignalOutput("onDone");
     }

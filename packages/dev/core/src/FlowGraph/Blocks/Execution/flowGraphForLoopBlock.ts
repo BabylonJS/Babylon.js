@@ -40,7 +40,7 @@ export class FlowGraphForLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
     private _currentIndex: number = 0;
     private _cachedEndIndex: number = 0;
     private _cachedStep: number = 0;
-    private _setIndex: (value: number) => void;
+    private readonly _setIndex: (value: number) => void;
 
     public constructor(graph: FlowGraph) {
         super(graph);
@@ -61,7 +61,7 @@ export class FlowGraphForLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
         this.index = indexOut.connectionPoint;
         this._setIndex = indexOut.valueSetter;
 
-        this.onLoop = this._registerSignalOutput("loopBody");
+        this.onLoop = this._registerSignalOutput("onLoop");
     }
 
     private _executeLoop() {
@@ -75,6 +75,9 @@ export class FlowGraphForLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
         }
     }
 
+    /**
+     * @internal
+     */
     public _execute(): void {
         this._currentIndex = this.startIndex.value;
         this._cachedEndIndex = this.endIndex.value;

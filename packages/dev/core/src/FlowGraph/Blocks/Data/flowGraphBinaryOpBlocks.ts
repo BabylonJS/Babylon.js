@@ -27,8 +27,8 @@ class FlowGraphBinaryOpBaseBlock<LeftT, RightT, OutputT> extends FlowGraphBlock 
      */
     public readonly setRight: (value: RightT) => void;
 
-    private _binOp: (left: LeftT, right: RightT) => OutputT;
-    private _setOutput: (value: OutputT) => void;
+    private readonly _binOp: (left: LeftT, right: RightT) => OutputT;
+    private readonly _setOutput: (value: OutputT) => void;
 
     public constructor(graph: FlowGraph, defaultLeftValue: LeftT, defaultRightValue: RightT, defaultOutValue: OutputT, binOp: (left: LeftT, right: RightT) => OutputT) {
         super(graph);

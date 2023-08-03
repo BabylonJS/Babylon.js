@@ -13,10 +13,10 @@ import type { ValueContainer } from "./valueContainer";
 export class FlowGraphDataConnection<T> {
     private _connectedPoint: Nullable<FlowGraphDataConnection<T>>;
 
-    constructor(public name: string, public role: FlowGraphConnectionType, private _ownerBlock: FlowGraphBlock, private _valueContainer: ValueContainer<T>) {}
+    public constructor(public name: string, public type: FlowGraphConnectionType, private _ownerBlock: FlowGraphBlock, private _valueContainer: ValueContainer<T>) {}
 
     connectTo(point: FlowGraphDataConnection<T>): void {
-        if (this.role === point.role) {
+        if (this.type === point.type) {
             throw new Error("Cannot connect two points of the same direction");
         }
         this._connectedPoint = point;
@@ -24,7 +24,7 @@ export class FlowGraphDataConnection<T> {
     }
 
     get value(): T {
-        if (this.role === FlowGraphConnectionType.Output) {
+        if (this.type === FlowGraphConnectionType.Output) {
             this._ownerBlock._updateOutputs();
             return this._valueContainer.value;
         }

@@ -21,6 +21,9 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
         this._meshToPick = meshToPick;
     }
 
+    /**
+     * @internal
+     */
     public _start(): void {
         if (!this._meshPickObserver) {
             this._meshPickObserver = this._meshToPick.getScene().onPointerObservable.add((pointerInfo) => {
@@ -32,6 +35,9 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
         }
     }
 
+    /**
+     * @internal
+     */
     public _stop(): void {
         if (this._meshPickObserver) {
             this._meshToPick.getScene().onPointerObservable.remove(this._meshPickObserver);
