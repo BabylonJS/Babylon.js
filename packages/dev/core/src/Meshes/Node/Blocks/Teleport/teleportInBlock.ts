@@ -40,6 +40,18 @@ export class TeleportInBlock extends NodeGeometryBlock {
         return this._inputs[0];
     }
 
+    public _dumpCode(uniqueNames: string[], alreadyDumped: NodeGeometryBlock[]) {
+        let codeString = super._dumpCode(uniqueNames, alreadyDumped);
+
+        for (const endpoint of this.endpoints) {
+            if (alreadyDumped.indexOf(endpoint) === -1) {
+                codeString += endpoint._dumpCode(uniqueNames, alreadyDumped);
+            }
+        }
+
+        return codeString;
+    }    
+
     /**
      * Add an enpoint to this block
      * @param endpoint define the endpoint to attach to

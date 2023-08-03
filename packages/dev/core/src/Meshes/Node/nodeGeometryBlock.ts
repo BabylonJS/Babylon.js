@@ -6,8 +6,6 @@ import { NodeGeometryConnectionPoint, NodeGeometryConnectionPointDirection } fro
 import type { NodeGeometryBuildState } from "./nodeGeometryBuildState";
 import { Observable } from "../../Misc/observable";
 import { PrecisionDate } from "core/Misc";
-import type { TeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
-import type { TeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
 
 /**
  * Defines a block that can be used inside a node based geometry
@@ -213,6 +211,11 @@ export class NodeGeometryBlock {
         // Empty. Must be defined by child nodes
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    protected _customBuildStep(state: NodeGeometryBuildState): void {
+        // Must be implemented by children
+    }    
+
     /**
      * Build the current node and generate the vertex data
      * @param state defines the current generation state
@@ -247,13 +250,7 @@ export class NodeGeometryBlock {
             }
         }
 
-        // If this is a teleport out, we need to build the connected block
-        if (this._isTeleportOut) {
-            const teleportOut = this as any as TeleportOutBlock;
-            if (teleportOut.entryPoint) {
-                teleportOut.entryPoint.build(state);
-            }            
-        }
+        this._customBuildStep(state);
 
         // Logs
         if (state.verbose) {
@@ -437,15 +434,7 @@ export class NodeGeometryBlock {
             codeString += `${connectedBlock._codeVariableName}.${connectedBlock._outputRename(connectedOutput.name)}.connectTo(${this._codeVariableName}.${this._inputRename(
                 input.name
             )});\r\n`;
-        }
-
-        // Teleportation
-        if (this.isTeleportOut) {
-            const teleportOut = this as any as TeleportOutBlock;
-            if (teleportOut.entryPoint) {
-                codeString += teleportOut.entryPoint._dumpCodeForOutputConnections(alreadyDumped);            
-            }
-        }        
+        }   
 
         return codeString;
     }
@@ -455,18 +444,6 @@ export class NodeGeometryBlock {
      */
     public _dumpCode(uniqueNames: string[], alreadyDumped: NodeGeometryBlock[]) {
         alreadyDumped.push(this);
-
-        let codeString: string = "";
-
-        // Teleportation
-        if (this.isTeleportOut) {
-            const teleportOut = this as any as TeleportOutBlock;
-            if (teleportOut.entryPoint) {
-                if (alreadyDumped.indexOf(teleportOut.entryPoint) === -1) {
-                    codeString += teleportOut.entryPoint._dumpCode(uniqueNames, alreadyDumped);
-                }
-            }
-        }
 
         // Get unique name
         const nameAsVariableName = this.name.replace(/[^A-Za-z_]+/g, "");
@@ -483,7 +460,7 @@ export class NodeGeometryBlock {
         uniqueNames.push(this._codeVariableName);
 
         // Declaration
-        codeString += `\r\n// ${this.getClassName()}\r\n`;
+        let codeString = `\r\n// ${this.getClassName()}\r\n`;
         if (this.comments) {
             codeString += `// ${this.comments}\r\n`;
         }
@@ -518,17 +495,7 @@ export class NodeGeometryBlock {
                     codeString += connectedBlock._dumpCode(uniqueNames, alreadyDumped);
                 }
             }
-        }
-
-        // Teleportation
-        if (this.isTeleportIn) {
-            const teleportIn = this as any as TeleportInBlock;
-            for (const endpoint of teleportIn.endpoints) {
-                if (alreadyDumped.indexOf(endpoint) === -1) {
-                    codeString += endpoint._dumpCode(uniqueNames, alreadyDumped);
-                }
-            }
-        }            
+        }   
 
         return codeString;
     }

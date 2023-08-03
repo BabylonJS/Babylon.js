@@ -4,14 +4,15 @@ import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryC
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
 import type { TeleportInBlock } from "./teleportInBlock";
+import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 
 /**
- * Defines a block used to receive a value from an teleport entry point
+ * Defines a block used to receive a value from a teleport entry point
  */
 export class TeleportOutBlock extends NodeGeometryBlock {
-    /** @hidden */
+    /** @internal */
     public _entryPoint: Nullable<TeleportInBlock> = null;
-    /** @hidden */
+    /** @internal */
     public _tempEntryPointUniqueId: Nullable<number> = null;
 
     /**
@@ -60,6 +61,33 @@ export class TeleportOutBlock extends NodeGeometryBlock {
         // All work done by the emitter
     }
 
+    protected _customBuildStep(state: NodeGeometryBuildState): void {
+        if (this.entryPoint) {
+            this.entryPoint.build(state);
+        }
+    }
+
+    public _dumpCode(uniqueNames: string[], alreadyDumped: NodeGeometryBlock[]) {
+        let codeString: string = "";
+        if (this.entryPoint) {
+            if (alreadyDumped.indexOf(this.entryPoint) === -1) {
+                codeString += this.entryPoint._dumpCode(uniqueNames, alreadyDumped);
+            }
+        }
+
+        return codeString + super._dumpCode(uniqueNames, alreadyDumped);
+    }
+
+    public _dumpCodeForOutputConnections(alreadyDumped: NodeGeometryBlock[]) {
+        let codeString = super._dumpCodeForOutputConnections(alreadyDumped);
+
+        if (this.entryPoint) {
+            codeString += this.entryPoint._dumpCodeForOutputConnections(alreadyDumped);
+        }
+
+        return codeString;
+    }    
+
     /**
      * Clone the current block to a new identical block
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
@@ -69,7 +97,7 @@ export class TeleportOutBlock extends NodeGeometryBlock {
         const clone = super.clone(rootUrl);
 
         if (this.entryPoint) {
-            this.entryPoint.attachToEndpoint(clone as any as TeleportOutBlock);
+            this.entryPoint.attachToEndpoint(clone as TeleportOutBlock);
         }
 
         return clone;
