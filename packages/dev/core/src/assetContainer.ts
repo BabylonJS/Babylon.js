@@ -1006,11 +1006,12 @@ export class AssetContainer extends AbstractScene {
 
     /**
      * @since
-     * This method checks for any asset that has no parent
-     * and is not on the rootNodes array, and adds the asset
+     * This method checks for any node that has no parent
+     * and is not in the rootNodes array, and adds the node
      * there, if so.
      */
     public populateRootNodes() {
+        this.rootNodes.length = 0;
         this.meshes.forEach((m) => {
             if (!m.parent && this.rootNodes.indexOf(m) === -1) {
                 this.rootNodes.push(m);
