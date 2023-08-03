@@ -57,6 +57,10 @@ export class TeleportOutPropertyTabComponent extends React.Component<IPropertyCo
                         propertyName="entryPoint"
                         noDirectUpdate={true}
                         onSelect={(value) => {
+                            // Remove the highlight from the previous entry point
+                            if (block.entryPoint) {
+                                this.props.stateManager.onHighlightNodeObservable.notifyObservers({ data: block.entryPoint, active: false });
+                            }
                             switch (value) {
                                 case -1:
                                     block.detach();
@@ -66,7 +70,10 @@ export class TeleportOutPropertyTabComponent extends React.Component<IPropertyCo
                                     source?.attachToEndpoint(block);
                                 }
                             }
-
+                            // Highlight the new entry point
+                            if (block.entryPoint) {
+                                this.props.stateManager.onHighlightNodeObservable.notifyObservers({ data: block.entryPoint, active: true });
+                            }
                             this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
                             this.forceUpdate();
                         }}
