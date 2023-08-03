@@ -32,6 +32,8 @@ export interface IRotationGizmo extends IGizmo {
     onDragEndObservable: Observable<unknown>;
     /** Drag distance in babylon units that the gizmo will snap to when dragged */
     snapDistance: number;
+    /** Custom sensitivity value for the drag strength */
+    sensitivity: number;
     /**
      * Builds Gizmo Axis Cache to enable features such as hover state preservation and graying out other axis during manipulation
      * @param mesh Axis gizmo mesh
@@ -101,6 +103,7 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
     protected _meshAttached: Nullable<AbstractMesh>;
     protected _nodeAttached: Nullable<Node>;
     protected _observables: Observer<PointerInfo>[] = [];
+    protected _sensitivity: number = 1;
 
     /** Node Caching for quick lookup */
     protected _gizmoAxisCache: Map<Mesh, GizmoAxisCache> = new Map();
@@ -141,6 +144,21 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
         if (this._nodeAttached && (<TransformNode>this._nodeAttached).billboardMode) {
             console.log("Rotation Gizmo will not work with transforms in billboard mode.");
         }
+    }
+
+    /**
+     * Sensitivity factor for dragging (Default: 1)
+     */
+    public set sensitivity(value: number) {
+        this._sensitivity = value;
+        [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
+            if (gizmo) {
+                gizmo.sensitivity = value;
+            }
+        });
+    }
+    public get sensitivity() {
+        return this._sensitivity;
     }
 
     /**
