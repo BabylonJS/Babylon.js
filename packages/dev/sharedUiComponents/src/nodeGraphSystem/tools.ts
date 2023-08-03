@@ -1,8 +1,8 @@
-import { NodeMaterialTeleportInBlock } from "core/Materials/Node/Blocks/Teleport/teleportInBlock";
+import type { NodeMaterialTeleportInBlock } from "core/Materials/Node/Blocks/Teleport/teleportInBlock";
 import type { GraphNode } from "./graphNode";
 import type { NodeLink } from "./nodeLink";
 import type { FramePortData } from "./types/framePortData";
-import { GraphCanvasComponent } from "./graphCanvas";
+import type { GraphCanvasComponent } from "./graphCanvas";
 
 export const IsFramePortData = (variableToCheck: any): variableToCheck is FramePortData => {
     if (variableToCheck) {
