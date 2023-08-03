@@ -29,6 +29,8 @@ export interface IPlaneRotationGizmo extends IGizmo {
     dragBehavior: PointerDragBehavior;
     /** Drag distance in babylon units that the gizmo will snap to when dragged */
     snapDistance: number;
+    /** Sensitivity factor for dragging */
+    sensitivity: number;
     /**
      * Event that fires each time the gizmo snaps to a new location.
      * * snapDistance is the the change in distance
@@ -78,6 +80,11 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
      */
     public angle: number = 0;
 
+    /**
+     * Custom sensitivity value for the drag strength
+     */
+    public sensitivity = 1;
+
     /** Default material used to render when gizmo is not disabled or hovered */
     public get coloredMaterial() {
         return this._coloredMaterial;
@@ -92,6 +99,7 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
     public get disableMaterial() {
         return this._disableMaterial;
     }
+
     protected _isEnabled: boolean = true;
     protected _parent: Nullable<RotationGizmo> = null;
     protected _coloredMaterial: StandardMaterial;
@@ -277,7 +285,7 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                 const originalVector = lastDragPosition.subtract(nodeTranslationForOperation).normalize();
                 const cross = Vector3.Cross(newVector, originalVector);
                 const dot = Vector3.Dot(newVector, originalVector);
-                let angle = Math.atan2(cross.length(), dot);
+                let angle = Math.atan2(cross.length(), dot) * this.sensitivity;
                 planeNormalTowardsCamera.copyFrom(planeNormal);
                 localPlaneNormalTowardsCamera.copyFrom(planeNormal);
                 if (this.updateGizmoRotationToMatchAttachedMesh) {
