@@ -5,7 +5,7 @@ import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import type { Scene } from "../../../../scene";
-import { NodeMaterialBlockTargets } from "../../Enums";
+import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 
 /**
