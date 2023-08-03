@@ -27,6 +27,7 @@ import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
 import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
+import type { NodeMaterialTeleportInBlock, NodeMaterialTeleportOutBlock } from "core/Materials/Node/Blocks";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -204,6 +205,19 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             this._graphCanvas.handleKeyDown(
                 evt,
                 (nodeData) => {
+                    const block = nodeData.data as NodeMaterialBlock;
+                    if (block.getClassName() === "NodeMaterialTeleportOutBlock" && (block as NodeMaterialTeleportOutBlock).entryPoint) {
+                        // Dehighlight and detach from any teleport in blocks before removing
+                        props.globalState.stateManager.onHighlightNodeObservable.notifyObservers({ data: (block as NodeMaterialTeleportOutBlock).entryPoint, active: false });
+                        (block as NodeMaterialTeleportOutBlock).detach();
+                    } else if (block.getClassName() === "NodeMaterialTeleportInBlock") {
+                        // If there are any teleport out blocks connected to it, we have to detach and dehighlight them
+                        const teleportOutBlocks = this.props.globalState.nodeMaterial!.attachedBlocks.filter((b) => b.getClassName() === "NodeMaterialTeleportOutBlock");
+                        for (const teleportOutBlock of teleportOutBlocks) {
+                            props.globalState.stateManager.onHighlightNodeObservable.notifyObservers({ data: teleportOutBlock, active: false });
+                            (block as NodeMaterialTeleportInBlock).detachFromEndpoint(teleportOutBlock as NodeMaterialTeleportOutBlock);
+                        }
+                    }
                     this.props.globalState.nodeMaterial!.removeBlock(nodeData.data as NodeMaterialBlock);
                 },
                 this._mouseLocationX,

@@ -184,7 +184,7 @@ export class InputBlock extends NodeMaterialBlock {
      * @param type defines the type of the input (can be set to NodeMaterialBlockConnectionPointTypes.AutoDetect)
      */
     public constructor(name: string, target = NodeMaterialBlockTargets.Vertex, type: NodeMaterialBlockConnectionPointTypes = NodeMaterialBlockConnectionPointTypes.AutoDetect) {
-        super(name, target, false, true);
+        super(name, target, false);
 
         this._type = type;
 

@@ -41,6 +41,7 @@ export class GraphNode {
     private _onSelectionBoxMovedObserver: Nullable<Observer<ClientRect | DOMRect>>;
     private _onFrameCreatedObserver: Nullable<Observer<GraphFrame>>;
     private _onUpdateRequiredObserver: Nullable<Observer<Nullable<INodeData>>>;
+    private _onHighlightNodeObserver: Nullable<Observer<any>>;
     private _ownerCanvas: GraphCanvasComponent;
     private _isSelected: boolean;
     private _displayManager: Nullable<IDisplayManager> = null;
@@ -197,12 +198,29 @@ export class GraphNode {
             const { selection: node } = options || {};
             if (node === this) {
                 this._visual.classList.add(localStyles["selected"]);
+                if (this._displayManager && this._displayManager.onSelectionChanged) {
+                    this._displayManager.onSelectionChanged(this.content, true, this._stateManager);
+                }
             } else {
                 setTimeout(() => {
                     if (this._ownerCanvas.selectedNodes.indexOf(this) === -1) {
                         this._visual.classList.remove(localStyles["selected"]);
+                        if (this._displayManager && this._displayManager.onSelectionChanged) {
+                            this._displayManager.onSelectionChanged(this.content, false, this._stateManager);
+                        }
                     }
                 });
+            }
+        });
+
+        this._onHighlightNodeObserver = this._stateManager.onHighlightNodeObservable.add((data) => {
+            if (data.data !== this.content.data) {
+                return;
+            }
+            if (data.active) {
+                this._visual.classList.add(localStyles["highlighted"]);
+            } else {
+                this._visual.classList.remove(localStyles["highlighted"]);
             }
         });
 
@@ -584,6 +602,10 @@ export class GraphNode {
 
         if (this._onUpdateRequiredObserver) {
             this._stateManager.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
+        }
+
+        if (this._onHighlightNodeObserver) {
+            this._stateManager.onHighlightNodeObservable.remove(this._onHighlightNodeObserver);
         }
 
         if (this._onSelectionBoxMovedObserver) {
