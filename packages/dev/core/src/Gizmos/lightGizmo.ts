@@ -1,5 +1,5 @@
 import type { Nullable } from "../types";
-import { Vector3, Quaternion } from "../Maths/math.vector";
+import { Vector3, Quaternion, TmpVectors } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
@@ -138,7 +138,8 @@ export class LightGizmo extends Gizmo implements ILightGizmo {
             if ((light as any).direction) {
                 this.attachedMesh!.setDirection((light as any).direction);
                 this.attachedMesh!.computeWorldMatrix(true);
-                this._cachedForward.copyFrom(this.attachedMesh!.getScene().useRightHandedSystem ? this.attachedMesh!.forward.negate() : this.attachedMesh!.forward);
+                const forward = this._getMeshForward();
+                this._cachedForward.copyFrom(forward);
             }
 
             this._update();
@@ -153,6 +154,19 @@ export class LightGizmo extends Gizmo implements ILightGizmo {
      */
     public get material() {
         return this._material;
+    }
+
+    /**
+     * @internal
+     * returns mesh forward
+     */
+    protected _getMeshForward(): Vector3 {
+        let forward = this.attachedMesh!.forward;
+        if (this.attachedMesh!.getScene().useRightHandedSystem) {
+            forward.negateToRef(TmpVectors.Vector3[0]);
+            forward = TmpVectors.Vector3[0];
+        }
+        return forward;
     }
 
     /**
@@ -188,10 +202,7 @@ export class LightGizmo extends Gizmo implements ILightGizmo {
         }
         if ((this._light as any).direction) {
             // If the gizmo is moved update the light otherwise update the gizmo to match the light
-            const forward = this.attachedMesh!.forward;
-            if (this.attachedMesh!.getScene().useRightHandedSystem) {
-                forward.negateInPlace();
-            }
+            const forward = this._getMeshForward();
             if (Vector3.DistanceSquared(forward, this._cachedForward) > 0.0001) {
                 // update light to match gizmo
                 const direction = forward;
