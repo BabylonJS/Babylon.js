@@ -188,7 +188,7 @@ export class LightGizmo extends Gizmo implements ILightGizmo {
         }
         if ((this._light as any).direction) {
             // If the gizmo is moved update the light otherwise update the gizmo to match the light
-            let forward = this.attachedMesh!.forward;
+            const forward = this.attachedMesh!.forward;
             if (this.attachedMesh!.getScene().useRightHandedSystem) {
                 forward.negateInPlace();
             }
