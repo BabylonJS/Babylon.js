@@ -199,17 +199,15 @@ export class GraphNode {
             if (node === this) {
                 this._visual.classList.add(localStyles["selected"]);
                 if (this._displayManager && this._displayManager.onSelectionChanged) {
-                    this._displayManager.onSelectionChanged(this.content, true, this._stateManager);
+                    this._displayManager.onSelectionChanged(this.content, node.content, this._stateManager);
                 }
             } else {
-                setTimeout(() => {
-                    if (this._ownerCanvas.selectedNodes.indexOf(this) === -1) {
-                        this._visual.classList.remove(localStyles["selected"]);
-                        if (this._displayManager && this._displayManager.onSelectionChanged) {
-                            this._displayManager.onSelectionChanged(this.content, false, this._stateManager);
-                        }
+                if (this._ownerCanvas.selectedNodes.indexOf(this) === -1) {
+                    this._visual.classList.remove(localStyles["selected"]);
+                    if (this._displayManager && this._displayManager.onSelectionChanged) {
+                        this._displayManager.onSelectionChanged(this.content, node && (node as GraphNode).content ? (node as GraphNode).content : null, this._stateManager);
                     }
-                });
+                }
             }
         });
 
@@ -593,6 +591,10 @@ export class GraphNode {
     }
 
     public dispose() {
+        if (this._displayManager && this._displayManager.onDispose) {
+            this._displayManager.onDispose(this.content, this._stateManager);
+        }
+
         // notify frame observers that this node is being deleted
         this._stateManager.onGraphNodeRemovalObservable.notifyObservers(this);
 
