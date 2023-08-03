@@ -39,4 +39,11 @@ export class TeleportOutDisplayManager implements IDisplayManager {
             this._hasHighlights = true;
         }
     }
+
+    public onDispose(nodeData: INodeData, manager: StateManager) {
+        const block = nodeData.data as NodeMaterialTeleportOutBlock;
+        if (block.entryPoint) {
+            manager.onHighlightNodeObservable.notifyObservers({ data: block.entryPoint, active: false });
+        }
+    }
 }

@@ -67,6 +67,19 @@ export class NodeMaterialTeleportInBlock extends NodeMaterialBlock {
             endpoint._entryPoint = null;
         }
     }
+
+    /**
+     * Release resources
+     */
+    public dispose() {
+        super.dispose();
+
+        for (const endpoint of this._endpoints) {
+            this.detachFromEndpoint(endpoint);
+        }
+
+        this._endpoints = [];
+    }
 }
 
 RegisterClass("BABYLON.NodeMaterialTeleportInBlock", NodeMaterialTeleportInBlock);

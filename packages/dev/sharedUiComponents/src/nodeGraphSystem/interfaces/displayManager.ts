@@ -14,4 +14,5 @@ export interface IDisplayManager {
     getBackgroundColor(data: INodeData): string;
     getHeaderText(data: INodeData): string;
     onSelectionChanged?(data: INodeData, selected: boolean, manager: StateManager): void;
+    onDispose?(nodeData: INodeData, manager: StateManager): void;
 }

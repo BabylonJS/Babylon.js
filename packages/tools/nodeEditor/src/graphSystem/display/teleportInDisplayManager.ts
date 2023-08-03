@@ -41,4 +41,11 @@ export class TeleportInDisplayManager implements IDisplayManager {
         }
         this._hasHighlights = true;
     }
+
+    public onDispose(nodeData: INodeData, manager: StateManager) {
+        const block = nodeData.data as NodeMaterialTeleportInBlock;
+        for (const endpoint of block.endpoints) {
+            manager.onHighlightNodeObservable.notifyObservers({ data: endpoint, active: false });
+        }
+    }
 }
