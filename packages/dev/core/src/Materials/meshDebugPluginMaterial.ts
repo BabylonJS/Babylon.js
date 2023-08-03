@@ -603,7 +603,8 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
             rollback = function () {
                 mesh.setIndices(indices);
                 for (const kind of kinds) {
-                    mesh.setVerticesData(kind, data[kind]);
+                    const stride = mesh.getVertexBuffer(kind)!.getStrideSize();
+                    mesh.setVerticesData(kind, data[kind], undefined, stride);
                 }
                 mesh.removeVerticesData("dbg_initialPass");
             };
