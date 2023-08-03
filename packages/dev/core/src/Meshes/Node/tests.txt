@@ -68,8 +68,7 @@ var createScene = function () {
 Block ideas:
 - scene loader (file?)
 - drag drop d'un teleport: mauvaise accroche sur in et cut sur output
-- glow teleport
-- demo PG
+- demo PG: 
 
 
 
