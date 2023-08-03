@@ -1,3 +1,4 @@
+import type { Nullable } from "core/types";
 import type { StateManager } from "../stateManager";
 import type { INodeData } from "./nodeData";
 import type { IPortData } from "./portData";
@@ -13,6 +14,6 @@ export interface IDisplayManager {
     updateFullVisualContent?(data: INodeData, visualContent: VisualContentDescription): void;
     getBackgroundColor(data: INodeData): string;
     getHeaderText(data: INodeData): string;
-    onSelectionChanged?(data: INodeData, selected: boolean, manager: StateManager): void;
+    onSelectionChanged?(data: INodeData, selectedData: Nullable<INodeData>, manager: StateManager): void;
     onDispose?(nodeData: INodeData, manager: StateManager): void;
 }

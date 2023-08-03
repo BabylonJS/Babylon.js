@@ -27,7 +27,6 @@ import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import { TypeLedger } from "shared-ui-components/nodeGraphSystem/typeLedger";
 import type { IEditorData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeLocationInfo";
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
-import type { NodeMaterialTeleportInBlock, NodeMaterialTeleportOutBlock } from "core/Materials/Node/Blocks";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
