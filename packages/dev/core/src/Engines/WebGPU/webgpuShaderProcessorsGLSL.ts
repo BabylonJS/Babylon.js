@@ -200,8 +200,8 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
                 // Manage textures and samplers.
                 if (!isTextureArray) {
                     arraySize = 1;
-                    uniform = `layout(set = ${samplerGroupIndex}, binding = ${samplerBindingIndex}) uniform ${componentType}${samplerType} ${samplerName};
-                        layout(set = ${textureInfo.textures[0].groupIndex}, binding = ${textureInfo.textures[0].bindingIndex}) uniform ${textureType} ${name}Texture;
+                    uniform = `layout(set = ${samplerGroupIndex}, binding = ${samplerBindingIndex}) uniform ${samplerType} ${samplerName};
+                        layout(set = ${textureInfo.textures[0].groupIndex}, binding = ${textureInfo.textures[0].bindingIndex}) uniform ${componentType}${textureType} ${name}Texture;
                         #define ${name} ${componentType}${samplerFunction}(${name}Texture, ${samplerName})`;
                 } else {
                     const layouts = [];
