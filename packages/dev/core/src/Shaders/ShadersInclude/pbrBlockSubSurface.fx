@@ -19,9 +19,13 @@ struct subSurfaceOutParams
     #endif
 #endif
 #if DEBUGMODE > 0
-    vec4 thicknessMap;
-    vec4 environmentRefraction;
-    vec3 refractionTransmittance;
+    #ifdef SS_THICKNESSANDMASK_TEXTURE
+        vec4 thicknessMap;
+    #endif
+    #ifdef SS_REFRACTION
+        vec4 environmentRefraction;
+        vec3 refractionTransmittance;
+    #endif
 #endif
 };
 

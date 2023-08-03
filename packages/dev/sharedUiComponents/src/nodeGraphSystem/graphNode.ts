@@ -42,6 +42,7 @@ export class GraphNode {
     private _onSelectionBoxMovedObserver: Nullable<Observer<ClientRect | DOMRect>>;
     private _onFrameCreatedObserver: Nullable<Observer<GraphFrame>>;
     private _onUpdateRequiredObserver: Nullable<Observer<Nullable<INodeData>>>;
+    private _onHighlightNodeObserver: Nullable<Observer<any>>;
     private _ownerCanvas: GraphCanvasComponent;
     private _isSelected: boolean;
     private _displayManager: Nullable<IDisplayManager> = null;
@@ -198,12 +199,27 @@ export class GraphNode {
             const { selection: node } = options || {};
             if (node === this) {
                 this._visual.classList.add(localStyles["selected"]);
+                if (this._displayManager && this._displayManager.onSelectionChanged) {
+                    this._displayManager.onSelectionChanged(this.content, node.content, this._stateManager);
+                }
             } else {
-                setTimeout(() => {
-                    if (this._ownerCanvas.selectedNodes.indexOf(this) === -1) {
-                        this._visual.classList.remove(localStyles["selected"]);
+                if (this._ownerCanvas.selectedNodes.indexOf(this) === -1) {
+                    this._visual.classList.remove(localStyles["selected"]);
+                    if (this._displayManager && this._displayManager.onSelectionChanged) {
+                        this._displayManager.onSelectionChanged(this.content, node && (node as GraphNode).content ? (node as GraphNode).content : null, this._stateManager);
                     }
-                });
+                }
+            }
+        });
+
+        this._onHighlightNodeObserver = this._stateManager.onHighlightNodeObservable.add((data) => {
+            if (data.data !== this.content.data) {
+                return;
+            }
+            if (data.active) {
+                this._visual.classList.add(localStyles["highlighted"]);
+            } else {
+                this._visual.classList.remove(localStyles["highlighted"]);
             }
         });
 
@@ -367,6 +383,9 @@ export class GraphNode {
         this._executionTime.innerHTML = this.content.executionTime ? `${this.content.executionTime.toFixed(2)} ms` : "";
 
         this.content.prepareHeaderIcon(this._headerIcon, this._headerIconImg);
+        if (this._headerIconImg.src) {
+            this._header.classList.add(localStyles["headerWithIcon"]);
+        }
     }
 
     private _onDown(evt: PointerEvent) {
@@ -585,6 +604,10 @@ export class GraphNode {
     }
 
     public dispose() {
+        if (this._displayManager && this._displayManager.onDispose) {
+            this._displayManager.onDispose(this.content, this._stateManager);
+        }
+
         // notify frame observers that this node is being deleted
         this._stateManager.onGraphNodeRemovalObservable.notifyObservers(this);
 
@@ -594,6 +617,10 @@ export class GraphNode {
 
         if (this._onUpdateRequiredObserver) {
             this._stateManager.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
+        }
+
+        if (this._onHighlightNodeObserver) {
+            this._stateManager.onHighlightNodeObservable.remove(this._onHighlightNodeObserver);
         }
 
         if (this._onSelectionBoxMovedObserver) {

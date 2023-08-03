@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/core",
-    "version": "6.13.0",
+    "version": "6.14.1",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -9,7 +9,8 @@
         "**/*.d.ts",
         "**/*.map",
         "readme.md",
-        "license.md"
+        "license.md",
+        "NOTICE.md"
     ],
     "scripts": {
         "build": "npm run clean && npm run compile",

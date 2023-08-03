@@ -1,4 +1,4 @@
-import type { ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
+import type { ProcessingOptions, ShaderCustomProcessingFunction } from "../Engines/Processors/shaderProcessingOptions";
 import type { Nullable } from "../types";
 import { Material } from "./material";
 import type {
@@ -23,6 +23,9 @@ import { EngineStore } from "../Engines/engineStore";
 import type { Scene } from "../scene";
 import type { Engine } from "../Engines/engine";
 import type { MaterialPluginBase } from "./materialPluginBase";
+import { ShaderProcessor } from "../Engines/Processors/shaderProcessor";
+import { ShaderLanguage } from "./shaderLanguage";
+import { ShaderStore } from "../Engines/shaderStore";
 
 declare module "./material" {
     export interface Material {
@@ -275,7 +278,7 @@ export class MaterialPluginManager {
                 if (this._uboList.length > 0) {
                     eventData.uniformBuffersNames.push(...this._uboList);
                 }
-                eventData.customCode = this._injectCustomCode(eventData.customCode);
+                eventData.customCode = this._injectCustomCode(eventData, eventData.customCode);
                 break;
             }
 
@@ -327,7 +330,7 @@ export class MaterialPluginManager {
         }
     }
 
-    protected _injectCustomCode(existingCallback?: (shaderType: string, code: string) => string): ShaderCustomProcessingFunction {
+    protected _injectCustomCode(eventData: MaterialPluginPrepareEffect, existingCallback?: (shaderType: string, code: string) => string): ShaderCustomProcessingFunction {
         return (shaderType: string, code: string) => {
             if (existingCallback) {
                 code = existingCallback(shaderType, code);
@@ -345,13 +348,38 @@ export class MaterialPluginManager {
             if (!points) {
                 return code;
             }
+            let processorOptions: Nullable<ProcessingOptions> = null;
             for (let pointName in points) {
                 let injectedCode = "";
                 for (const plugin of this._activePlugins) {
-                    const customCode = plugin.getCustomCode(shaderType);
-                    if (customCode?.[pointName]) {
-                        injectedCode += customCode[pointName] + "\r\n";
+                    let customCode = plugin.getCustomCode(shaderType)?.[pointName];
+                    if (!customCode) {
+                        continue;
                     }
+                    if (plugin.resolveIncludes) {
+                        if (processorOptions === null) {
+                            const shaderLanguage = ShaderLanguage.GLSL;
+                            processorOptions = {
+                                defines: [], // not used by _ProcessIncludes
+                                indexParameters: eventData.indexParameters,
+                                isFragment: false,
+                                shouldUseHighPrecisionShader: this._engine._shouldUseHighPrecisionShader,
+                                processor: undefined as any, // not used by _ProcessIncludes
+                                supportsUniformBuffers: this._engine.supportsUniformBuffers,
+                                shadersRepository: ShaderStore.GetShadersRepository(shaderLanguage),
+                                includesShadersStore: ShaderStore.GetIncludesShadersStore(shaderLanguage),
+                                version: undefined as any, // not used by _ProcessIncludes
+                                platformName: this._engine.shaderPlatformName,
+                                processingContext: undefined as any, // not used by _ProcessIncludes
+                                isNDCHalfZRange: this._engine.isNDCHalfZRange,
+                                useReverseDepthBuffer: this._engine.useReverseDepthBuffer,
+                                processCodeAfterIncludes: undefined as any, // not used by _ProcessIncludes
+                            };
+                        }
+                        processorOptions.isFragment = shaderType === "fragment";
+                        ShaderProcessor._ProcessIncludes(customCode, processorOptions, (code) => (customCode = code));
+                    }
+                    injectedCode += customCode + "\r\n";
                 }
                 if (injectedCode.length > 0) {
                     if (pointName.charAt(0) === "!") {

@@ -209,6 +209,7 @@ export class MeshUVSpaceRenderer {
             Constants.TEXTUREFORMAT_RGBA
         );
 
+        rtt.renderParticles = false;
         rtt.optimizeUVAllocation = !!this._options.optimizeUVAllocation;
 
         rtt.onClearObservable.addOnce(() => {

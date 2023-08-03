@@ -109,7 +109,7 @@ module.exports = (env) => {
                 "node-editor": path.resolve(basePathForTools, "nodeEditor", outputDirectoryForAliases),
                 "node-geometry-editor": path.resolve(basePathForTools, "nodeGeometryEditor", outputDirectoryForAliases),
                 "gui-editor": path.resolve(basePathForTools, "guiEditor", outputDirectoryForAliases),
-                "accesibility": path.resolve(basePathForTools, "accessibility", outputDirectoryForAliases),
+                "accessibility": path.resolve(basePathForTools, "accessibility", outputDirectoryForAliases),
             },
             symlinks: false,
             // modules: [path.resolve(__dirname, "../../dev/"), 'node_modules'],
@@ -151,7 +151,7 @@ module.exports = (env) => {
                 "Access-Control-Allow-Origin": "*",
             },
             client: {
-                overlay: {
+                overlay: process.env.DISABLE_DEV_OVERLAY ? false : {
                     warnings: false,
                     errors: true,
                 },

@@ -19,4 +19,6 @@ export interface INodeData {
 
     inputs: IPortData[];
     outputs: IPortData[];
+
+    invisibleEndpoints?: Nullable<any[]>;
 }

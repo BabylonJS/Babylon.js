@@ -244,10 +244,10 @@ export class NativeEngine extends Engine {
             colorBufferFloat: false,
             textureFloat: true,
             textureFloatLinearFiltering: false,
-            textureFloatRender: false,
-            textureHalfFloat: false,
+            textureFloatRender: true,
+            textureHalfFloat: true,
             textureHalfFloatLinearFiltering: false,
-            textureHalfFloatRender: false,
+            textureHalfFloatRender: true,
             textureLOD: true,
             texelFetch: false,
             drawBuffersExtension: false,
@@ -1863,8 +1863,8 @@ export class NativeEngine extends Engine {
         const nativeRTWrapper = rtWrapper as NativeRenderTargetWrapper;
         const texture = new InternalTexture(this, InternalTextureSource.DepthStencil);
 
-        const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
-        const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
+        const width = (<{ width: number; height: number; layers?: number }>size).width ?? <number>size;
+        const height = (<{ width: number; height: number; layers?: number }>size).height ?? <number>size;
 
         const framebuffer = this._engine.createFrameBuffer(texture._hardwareTexture!.underlyingResource, width, height, generateStencil, true, samples);
         nativeRTWrapper._framebufferDepthStencil = framebuffer;
@@ -2129,8 +2129,8 @@ export class NativeEngine extends Engine {
         }
 
         const texture = new InternalTexture(this, source);
-        const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
-        const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
+        const width = (<{ width: number; height: number; layers?: number }>size).width ?? <number>size;
+        const height = (<{ width: number; height: number; layers?: number }>size).height ?? <number>size;
 
         const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
         if (layers !== 0) {
@@ -2179,8 +2179,8 @@ export class NativeEngine extends Engine {
         }
 
         const texture = colorAttachment || (noColorAttachment ? null : this._createInternalTexture(size, options, true, InternalTextureSource.RenderTarget));
-        const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
-        const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
+        const width = (<{ width: number; height: number; layers?: number }>size).width ?? <number>size;
+        const height = (<{ width: number; height: number; layers?: number }>size).height ?? <number>size;
 
         const framebuffer = this._engine.createFrameBuffer(
             texture ? texture._hardwareTexture!.underlyingResource : null,
@@ -2202,7 +2202,8 @@ export class NativeEngine extends Engine {
     }
 
     public updateRenderTargetTextureSampleCount(rtWrapper: RenderTargetWrapper, samples: number): number {
-        throw new Error("Updating render target sample count is not currently supported");
+        Logger.Warn("Updating render target sample count is not currently supported");
+        return rtWrapper.samples;
     }
 
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
