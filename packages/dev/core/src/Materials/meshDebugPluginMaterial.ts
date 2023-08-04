@@ -319,42 +319,44 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
     public static MaterialColors: Color3[] = defaultMaterialColors;
 
     /**
-     * Options for the plugin.
-     * See MeshDebugOptions interface for defaults.
-     */
-    private _options: Required<MeshDebugOptions>;
-
-    /**
      * Material ID color of this plugin instance.
      * Taken from index `_PluginCount` of `MaterialColors` at time of instantiation.
      */
     @serializeAsColor3()
     private _materialColor: Color3;
-
+    
     /**
      * Whether the mesh debug plugin is enabled in the material.
      * Defaults to true in constructor.
-     */
-    @serialize()
-    private _isEnabled = false;
+    */
+   @serialize()
+   private _isEnabled: boolean;
 
-    private _mode: MeshDebugMode = MeshDebugMode.NONE;
+   private _options: Required<MeshDebugOptions>;
+   /**
+    * Options for the plugin.
+    * See MeshDebugOptions interface for defaults.
+    */
+   @expandToProperty("_markAllDefinesAsDirty")
+   public options: Required<MeshDebugOptions>;
+
+    private _mode: MeshDebugMode;
     /**
      * Current mesh debug visualization.
-     * Defaults to NONE.
+     * Defaults to NONE in constructor.
      */
     @serialize()
     @expandToProperty("_markAllDefinesAsDirty")
-    public mode: MeshDebugMode = MeshDebugMode.NONE;
+    public mode: MeshDebugMode;
 
-    private _multiply: boolean = true;
+    private _multiply: boolean;
     /**
      * Whether the mesh debug visualization multiplies with colors underneath.
-     * Defaults to true.
+     * Defaults to true in constructor.
      */
     @serialize()
     @expandToProperty("_markAllDefinesAsDirty")
-    public multiply: boolean = true;
+    public multiply: boolean;
 
     /** @internal */
     protected _markAllDefinesAsDirty(): void {
