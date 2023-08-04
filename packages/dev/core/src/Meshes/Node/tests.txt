@@ -2,6 +2,8 @@ Block ideas:
 - scene loader (file?)
 - drag drop d'un teleport: mauvaise accroche sur in et cut sur output
 - demo PG: http://localhost:1338/#PYY6XE#10 (#PBKIJL)
+- boolean
+
 
 
 
