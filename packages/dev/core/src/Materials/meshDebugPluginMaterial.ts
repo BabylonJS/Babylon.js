@@ -328,17 +328,17 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
     /**
      * Whether the mesh debug plugin is enabled in the material.
      * Defaults to true in constructor.
-    */
-   @serialize()
-   private _isEnabled: boolean;
+     */
+    @serialize()
+    private _isEnabled: boolean;
 
-   private _options: Required<MeshDebugOptions>;
-   /**
-    * Options for the plugin.
-    * See MeshDebugOptions interface for defaults.
-    */
-   @expandToProperty("_markAllDefinesAsDirty")
-   public options: Required<MeshDebugOptions>;
+    private _options: Required<MeshDebugOptions>;
+    /**
+     * Options for the plugin.
+     * See MeshDebugOptions interface for defaults.
+     */
+    @expandToProperty("_markAllDefinesAsDirty")
+    public options: Required<MeshDebugOptions>;
 
     /** @internal */
     protected _markAllDefinesAsDirty(): void {
