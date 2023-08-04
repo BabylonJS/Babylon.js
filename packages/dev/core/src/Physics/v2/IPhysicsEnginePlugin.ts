@@ -126,7 +126,7 @@ export enum PhysicsConstraintMotorType {
     POSITION,
 }
 
-export enum PhysicsCollisionEventType {
+export enum PhysicsEventType {
     COLLISION_STARTED = "started",
     COLLISION_CONTINUED = "continued",
     COLLISION_FINISHED = "finished",
@@ -155,7 +155,7 @@ export interface IBasePhysicsCollisionEvent {
     /**
      * Event type
      */
-    type: PhysicsCollisionEventType;
+    type: PhysicsEventType;
 }
 
 /**

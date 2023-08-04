@@ -6,7 +6,7 @@ import {
     PhysicsConstraintMotorType,
     PhysicsConstraintAxis,
     PhysicsConstraintAxisLimitMode,
-    PhysicsCollisionEventType,
+    PhysicsEventType,
 } from "../IPhysicsEnginePlugin";
 import type { PhysicsShapeParameters, IPhysicsEnginePluginV2, PhysicsMassProperties, IPhysicsCollisionEvent, IBasePhysicsCollisionEvent } from "../IPhysicsEnginePlugin";
 import type { IRaycastQuery, PhysicsRaycastResult } from "../../physicsRaycastResult";
@@ -1773,7 +1773,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 collidedAgainstIndex: bodyInfoB.index,
                 type: this._nativeCollisionValueToCollisionType(event.type),
             };
-            if (collisionInfo.type === PhysicsCollisionEventType.COLLISION_FINISHED) {
+            if (collisionInfo.type === PhysicsEventType.COLLISION_FINISHED) {
                 this.onCollisionEndedObservable.notifyObservers(collisionInfo);
             } else {
                 event.contactOnB.position.subtractToRef(event.contactOnA.position, this._tmpVec3[0]);
@@ -1785,7 +1785,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 this.onCollisionObservable.notifyObservers(collisionInfo);
             }
 
-            if (this._bodyCollisionObservable.size && collisionInfo.type !== PhysicsCollisionEventType.COLLISION_FINISHED) {
+            if (this._bodyCollisionObservable.size && collisionInfo.type !== PhysicsEventType.COLLISION_FINISHED) {
                 const observableA = this._bodyCollisionObservable.get(event.contactOnA.bodyId);
                 const observableB = this._bodyCollisionObservable.get(event.contactOnB.bodyId);
 
@@ -1914,16 +1914,16 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         }
     }
 
-    private _nativeCollisionValueToCollisionType(type: number): PhysicsCollisionEventType {
+    private _nativeCollisionValueToCollisionType(type: number): PhysicsEventType {
         switch (type) {
             case this._hknp.EventType.COLLISION_STARTED.value:
-                return PhysicsCollisionEventType.COLLISION_STARTED;
+                return PhysicsEventType.COLLISION_STARTED;
             case this._hknp.EventType.COLLISION_FINISHED.value:
-                return PhysicsCollisionEventType.COLLISION_FINISHED;
+                return PhysicsEventType.COLLISION_FINISHED;
             case this._hknp.EventType.COLLISION_CONTINUED.value:
-                return PhysicsCollisionEventType.COLLISION_CONTINUED;
+                return PhysicsEventType.COLLISION_CONTINUED;
         }
 
-        return PhysicsCollisionEventType.COLLISION_STARTED;
+        return PhysicsEventType.COLLISION_STARTED;
     }
 }
