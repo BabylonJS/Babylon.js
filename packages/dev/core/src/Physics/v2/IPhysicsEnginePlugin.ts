@@ -127,9 +127,11 @@ export enum PhysicsConstraintMotorType {
 }
 
 export enum PhysicsEventType {
-    COLLISION_STARTED = "started",
-    COLLISION_CONTINUED = "continued",
-    COLLISION_FINISHED = "finished",
+    COLLISION_STARTED = "COLLISION_STARTED",
+    COLLISION_CONTINUED = "COLLISION_CONTINUED",
+    COLLISION_FINISHED = "COLLISION_FINISHED",
+    TRIGGER_ENTERED = "TRIGGER_ENTERED",
+    TRIGGER_EXITED = "TRIGGER_EXITED",
 }
 
 /**
@@ -396,6 +398,7 @@ export interface IPhysicsEnginePluginV2 {
     getNumChildren(shape: PhysicsShape): number;
     getBoundingBox(shape: PhysicsShape): BoundingBox;
     disposeShape(shape: PhysicsShape): void;
+    setTrigger(shape: PhysicsShape, isTrigger: boolean): void;
 
     // constraint
     initConstraint(constraint: PhysicsConstraint, body: PhysicsBody, childBody: PhysicsBody): void;

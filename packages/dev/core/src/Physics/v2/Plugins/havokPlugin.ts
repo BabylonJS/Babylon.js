@@ -239,6 +239,19 @@ class CollisionEvent {
     }
 }
 
+class TriggerEvent {
+    public bodyIdA: bigint = BigInt(0);
+    public bodyIdB: bigint = BigInt(0);
+    public type: number = 0;
+
+    static readToRef(buffer: any, offset: number, eventOut: TriggerEvent) {
+        const intBuf = new Int32Array(buffer, offset);
+        eventOut.type = intBuf[0];
+        eventOut.bodyIdA = BigInt(intBuf[2]);
+        eventOut.bodyIdB = BigInt(intBuf[6]);
+    }
+}
+
 /**
  * The Havok Physics plugin
  */
@@ -273,6 +286,10 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Observable for collision ended events
      */
     public onCollisionEndedObservable = new Observable<IBasePhysicsCollisionEvent>();
+    /**
+     * Observable for trigger entered and trigger exited events
+     */
+    public onTriggerCollisionObservable = new Observable<IBasePhysicsCollisionEvent>();
 
     public constructor(private _useDeltaForWorldStep: boolean = true, hpInjection: any = HK) {
         if (typeof hpInjection === "function") {
@@ -354,6 +371,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         }
 
         this._notifyCollisions();
+        this._notifyTriggers();
     }
 
     /**
@@ -1283,6 +1301,15 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     }
 
     /**
+     * Marks the shape as a trigger
+     * @param shape the shape to mark as a trigger
+     * @param isTrigger if the shape is a trigger
+     */
+    public setTrigger(shape: PhysicsShape, isTrigger: boolean): void {
+        this._hknp.HP_Shape_SetTrigger(shape._pluginData, isTrigger);
+    }
+
+    /**
      * Calculates the bounding box of a given physics shape.
      *
      * @param _shape - The physics shape to calculate the bounding box for.
@@ -1755,6 +1782,28 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         }
     }
 
+    private _notifyTriggers() {
+        let eventAddress = this._hknp.HP_World_GetTriggerEvents(this.world)[1];
+        const event = new TriggerEvent();
+        while (eventAddress) {
+            TriggerEvent.readToRef(this._hknp.HEAPU8.buffer, eventAddress, event);
+
+            const bodyInfoA = this._bodies.get(event.bodyIdA)!;
+            const bodyInfoB = this._bodies.get(event.bodyIdB)!;
+
+            const triggerCollisionInfo: IBasePhysicsCollisionEvent = {
+                collider: bodyInfoA.body,
+                colliderIndex: bodyInfoA.index,
+                collidedAgainst: bodyInfoB.body,
+                collidedAgainstIndex: bodyInfoB.index,
+                type: this._nativeTriggerCollisionValueToCollisionType(event.type),
+            };
+            this.onTriggerCollisionObservable.notifyObservers(triggerCollisionInfo);
+
+            eventAddress = this._hknp.HP_World_GetNextTriggerEvent(this.world, eventAddress);
+        }
+    }
+
     /**
      * Runs thru all detected collisions and filter by body
      */
@@ -1925,5 +1974,15 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         }
 
         return PhysicsEventType.COLLISION_STARTED;
+    }
+
+    private _nativeTriggerCollisionValueToCollisionType(type: number): PhysicsEventType {
+        switch (type) {
+            case 8:
+                return PhysicsEventType.TRIGGER_ENTERED;
+            case 16:
+                return PhysicsEventType.TRIGGER_EXITED;
+        }
+        return PhysicsEventType.TRIGGER_ENTERED;
     }
 }
