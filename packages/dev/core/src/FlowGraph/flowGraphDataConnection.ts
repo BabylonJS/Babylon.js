@@ -15,7 +15,7 @@ export class FlowGraphDataConnection<T> {
 
     public constructor(public name: string, public type: FlowGraphConnectionType, private _ownerBlock: FlowGraphBlock, private _valueContainer: ValueContainer<T>) {}
 
-    connectTo(point: FlowGraphDataConnection<T>): void {
+    public connectTo(point: FlowGraphDataConnection<T>): void {
         if (this.type === point.type) {
             throw new Error("Cannot connect two points of the same direction");
         }
@@ -23,7 +23,7 @@ export class FlowGraphDataConnection<T> {
         point._connectedPoint = this;
     }
 
-    get value(): T {
+    public get value(): T {
         if (this.type === FlowGraphConnectionType.Output) {
             this._ownerBlock._updateOutputs();
             return this._valueContainer.value;
