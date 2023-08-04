@@ -265,7 +265,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         defines.GREASED_LINE_HAS_COLOR = !!options.color;
         defines.GREASED_LINE_SIZE_ATTENUATION = options.sizeAttenuation ?? false;
         defines.GREASED_LINE_COLOR_DISTRIBUTION_TYPE_LINE = options.colorDistributionType === GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_LINE;
-        defines.GREASED_LNE_RIGHT_HANDED_COORDINATE_SYSTEM = _scene.useRightHandedSystem
+        defines.GREASED_LNE_RIGHT_HANDED_COORDINATE_SYSTEM = _scene.useRightHandedSystem;
         super(material, GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME, 200, defines);
 
         this._scene = this._scene ?? material.getScene();
@@ -412,7 +412,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         defines.GREASED_LINE_HAS_COLOR = !!this._color;
         defines.GREASED_LINE_SIZE_ATTENUATION = this._sizeAttenuation ?? false;
         defines.GREASED_LINE_COLOR_DISTRIBUTION_TYPE_LINE = this._colorsDistributionType === GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_LINE;
-        defines.GREASED_LNE_RIGHT_HANDED_COORDINATE_SYSTEM = _scene.useRightHandedSystem
+        defines.GREASED_LNE_RIGHT_HANDED_COORDINATE_SYSTEM = _scene.useRightHandedSystem;
     }
 
     /**
