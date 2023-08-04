@@ -324,7 +324,7 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
      */
     @serializeAsColor3()
     private _materialColor: Color3;
-    
+
     /**
      * Whether the mesh debug plugin is enabled in the material.
      * Defaults to true in constructor.
