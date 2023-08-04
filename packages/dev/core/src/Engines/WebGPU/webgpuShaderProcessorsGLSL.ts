@@ -68,9 +68,9 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
     }
 
     public varyingCheck(varying: string, isFragment: boolean) {
-        const outRegex = /(flat\s)?\s*out /;
-        const inRegex = /(flat\s)?\s*in /;
-        const varyingRegex = /(flat\s)?\s*varying /;
+        const outRegex = /(flat\s)?\s*\bout\b /;
+        const inRegex = /(flat\s)?\s*\bin\b /;
+        const varyingRegex = /(flat\s)?\s*\bvarying\b /;
 
         const regex = isFragment && this._fragmentIsGLES3 ? inRegex : !isFragment && this._vertexIsGLES3 ? outRegex : varyingRegex;
 
