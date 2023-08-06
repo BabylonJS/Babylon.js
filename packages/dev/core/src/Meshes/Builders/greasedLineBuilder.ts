@@ -1,5 +1,5 @@
 import type { GreasedLineMaterialOptions } from "../../Materials/greasedLinePluginMaterial";
-import { GreasedLineMeshMaterialType, GreasedLinePluginMaterial } from "../../Materials/greasedLinePluginMaterial";
+import { GreasedLineMeshColorDistributionType, GreasedLineMeshMaterialType, GreasedLinePluginMaterial } from "../../Materials/greasedLinePluginMaterial";
 import { StandardMaterial } from "./../../Materials/standardMaterial";
 import { PBRMaterial } from "../../Materials/PBR/pbrMaterial";
 import type { Nullable } from "../../types";
@@ -150,7 +150,13 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     const widths = CompleteGreasedLineWidthTable(length, options.widths ?? [], options.widthDistribution);
 
     const colors = materialOptions?.colors
-        ? CompleteGreasedLineColorTable(length, materialOptions.colors, materialOptions.colorDistribution, materialOptions.color ?? GreasedLinePluginMaterial.DEFAULT_COLOR)
+        ? CompleteGreasedLineColorTable(
+              length,
+              materialOptions.colors,
+              materialOptions.colorDistribution,
+              materialOptions.color ?? GreasedLinePluginMaterial.DEFAULT_COLOR,
+              materialOptions.colorDistributionType ?? GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_LINE
+          )
         : undefined;
 
     // create new mesh if instance is not defined
@@ -350,7 +356,14 @@ export function CompleteGreasedLineWidthTable(
  * @param defaultColor default color to be used to fill empty entries in the color table
  * @returns completed array of Color3s
  */
-export function CompleteGreasedLineColorTable(pointCount: number, colors: Color3[], colorDistribution: GreasedLineMeshColorDistribution, defaultColor: Color3): Color3[] {
+export function CompleteGreasedLineColorTable(
+    pointCount: number,
+    colors: Color3[],
+    colorDistribution: GreasedLineMeshColorDistribution,
+    defaultColor: Color3,
+    colorDistributionType: GreasedLineMeshColorDistributionType
+): Color3[] {
+    pointCount = colorDistributionType === GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_SEGMENT ? pointCount : Math.ceil(pointCount / 2);
     const missingCount = pointCount - colors.length;
     if (missingCount < 0) {
         return colors.slice(0, pointCount);

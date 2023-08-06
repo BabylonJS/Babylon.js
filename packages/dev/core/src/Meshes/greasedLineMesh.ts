@@ -160,7 +160,7 @@ export class GreasedLineMesh extends Mesh {
      * Updated a lazy line. Rerenders the line and updates boundinfo as well.
      */
     public updateLazy() {
-        this.setPoints(this._points);
+        this._setPoints(this._points);
         if (!this._options.colorPointers) {
             this._updateColorPointers();
         }
@@ -282,11 +282,29 @@ export class GreasedLineMesh extends Mesh {
         });
     }
 
+    private _updateWidthsBuffer() {
+        let pointCount = 0;
+        for (const points of this._points) {
+            pointCount += points.length;
+        }
+        const countDiff = pointCount * 2 - this._widths.length;
+        for (let i = 0; i < countDiff; i++) {
+            this._widths.push(1);
+        }
+    }
+
     /**
      * Sets line points and rerenders the line.
      * @param points points table
      */
     public setPoints(points: number[][]) {
+        this._points = points;
+        this._updateWidthsBuffer();
+        this._updateColorPointers();
+        this._setPoints(points);
+    }
+
+    private _setPoints(points: number[][]) {
         this._points = points;
         this._options.points = points;
 
