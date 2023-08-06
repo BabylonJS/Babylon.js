@@ -282,7 +282,7 @@ export class GreasedLineMesh extends Mesh {
         });
     }
 
-    private _updateWidthsBuffer() {
+    private _updateWidths() {
         let pointCount = 0;
         for (const points of this._points) {
             pointCount += points.length;
@@ -299,7 +299,7 @@ export class GreasedLineMesh extends Mesh {
      */
     public setPoints(points: number[][]) {
         this._points = points;
-        this._updateWidthsBuffer();
+        this._updateWidths();
         this._updateColorPointers();
         this._setPoints(points);
     }
