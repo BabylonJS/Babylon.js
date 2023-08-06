@@ -3,6 +3,7 @@ import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/inter
 import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/nodeData";
 import type { NodeMaterialTeleportOutBlock } from "core/Materials/Node/Blocks/Teleport/teleportOutBlock";
 import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import type { Nullable } from "core/types";
 
 export class TeleportOutDisplayManager implements IDisplayManager {
     private _hasHighlights = false;
@@ -25,11 +26,23 @@ export class TeleportOutDisplayManager implements IDisplayManager {
 
     public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {}
 
-    public onSelectionChanged(nodeData: INodeData, selected: boolean, manager: StateManager): void {
+    public onSelectionChanged(nodeData: INodeData, selectedData: Nullable<INodeData>, manager: StateManager): void {
         const block = nodeData.data as NodeMaterialTeleportOutBlock;
-        if (!selected) {
+        if (selectedData !== nodeData) {
             if (this._hasHighlights) {
-                manager.onHighlightNodeObservable.notifyObservers({ data: block.entryPoint, active: false });
+                let removeHighlight: boolean;
+
+                if (selectedData && selectedData.data.getClassName() === "NodeMaterialTeleportOutBlock") {
+                    const otherTeleport = selectedData.data as NodeMaterialTeleportOutBlock;
+
+                    removeHighlight = otherTeleport.entryPoint !== block.entryPoint;
+                } else {
+                    removeHighlight = true;
+                }
+
+                if (removeHighlight) {
+                    manager.onHighlightNodeObservable.notifyObservers({ data: block.entryPoint, active: false });
+                }
                 this._hasHighlights = false;
             }
             return;
@@ -37,6 +50,13 @@ export class TeleportOutDisplayManager implements IDisplayManager {
         if (block.entryPoint) {
             manager.onHighlightNodeObservable.notifyObservers({ data: block.entryPoint, active: true });
             this._hasHighlights = true;
+        }
+    }
+
+    public onDispose(nodeData: INodeData, manager: StateManager) {
+        const block = nodeData.data as NodeMaterialTeleportOutBlock;
+        if (block.entryPoint) {
+            manager.onHighlightNodeObservable.notifyObservers({ data: block.entryPoint, active: false });
         }
     }
 }

@@ -1,8 +1,7 @@
-import type { NodeMaterialTeleportInBlock } from "core/Materials/Node/Blocks/Teleport/teleportInBlock";
+import type { GraphCanvasComponent } from "./graphCanvas";
 import type { GraphNode } from "./graphNode";
 import type { NodeLink } from "./nodeLink";
 import type { FramePortData } from "./types/framePortData";
-import type { GraphCanvasComponent } from "./graphCanvas";
 
 export const IsFramePortData = (variableToCheck: any): variableToCheck is FramePortData => {
     if (variableToCheck) {
@@ -33,14 +32,18 @@ export const RefreshNode = (node: GraphNode, visitedNodes?: Set<GraphNode>, visi
                 RefreshNode(nodeB, visitedNodes, visitedLinks);
             }
         });
-        // if it's a teleport in block, we have to refresh the corresponding teleport out block
-        if (node.content.data.getClassName() === "NodeMaterialTeleportInBlock") {
-            for (const endpoint of (node.content.data as NodeMaterialTeleportInBlock).endpoints) {
-                const graphNode = canvas?.findNodeFromData(endpoint);
-                if (graphNode) {
+    }
+
+    // Invisible endpoints (for teleport nodes)
+    const invisibleEndpoints = node.content.invisibleEndpoints;
+    if (invisibleEndpoints && invisibleEndpoints.length) {
+        for (const endpoint of invisibleEndpoints) {
+            const graphNode = canvas?.findNodeFromData(endpoint);
+            if (graphNode) {
+                if (visitedNodes) {
                     visitedNodes.add(graphNode);
-                    RefreshNode(graphNode, visitedNodes, visitedLinks);
                 }
+                RefreshNode(graphNode, visitedNodes, visitedLinks);
             }
         }
     }

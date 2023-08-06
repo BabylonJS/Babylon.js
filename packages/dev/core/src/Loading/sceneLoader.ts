@@ -1183,7 +1183,7 @@ export class SceneLoader {
                     if (!assetContainer) {
                         return;
                     }
-
+                    assetContainer.populateRootNodes();
                     scene.loadingPluginName = plugin.name;
                     successHandler(assetContainer);
                 } else if ((<any>plugin).loadAssetContainerAsync) {
@@ -1191,6 +1191,7 @@ export class SceneLoader {
                     asyncedPlugin
                         .loadAssetContainerAsync(scene, data, fileInfo.rootUrl, progressHandler, fileInfo.name)
                         .then((assetContainer) => {
+                            assetContainer.populateRootNodes();
                             scene.loadingPluginName = plugin.name;
                             successHandler(assetContainer);
                         })

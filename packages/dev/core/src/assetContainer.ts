@@ -549,23 +549,27 @@ export class AssetContainer extends AbstractScene {
      * @param predicate defines a predicate used to select which entity will be added (can be null)
      */
     public addToScene(predicate: Nullable<(entity: any) => boolean> = null) {
+        const addedNodes: Node[] = [];
         this.cameras.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
             this.scene.addCamera(o);
+            addedNodes.push(o);
         });
         this.lights.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
             this.scene.addLight(o);
+            addedNodes.push(o);
         });
         this.meshes.forEach((o) => {
             if (predicate && !predicate(o)) {
                 return;
             }
             this.scene.addMesh(o);
+            addedNodes.push(o);
         });
         this.skeletons.forEach((o) => {
             if (predicate && !predicate(o)) {
@@ -614,6 +618,7 @@ export class AssetContainer extends AbstractScene {
                 return;
             }
             this.scene.addTransformNode(o);
+            addedNodes.push(o);
         });
         this.actionManagers.forEach((o) => {
             if (predicate && !predicate(o)) {
@@ -633,6 +638,18 @@ export class AssetContainer extends AbstractScene {
             }
             this.scene.addReflectionProbe(o);
         });
+
+        for (const addedNode of addedNodes) {
+            // If node was added to the scene, but parent is not in the scene, break the relationship
+            if (addedNode.parent && this.scene.getNodes().indexOf(addedNode.parent) === -1) {
+                // Use setParent to keep transform if possible
+                if ((addedNode as TransformNode).setParent) {
+                    (addedNode as TransformNode).setParent(null);
+                } else {
+                    addedNode.parent = null;
+                }
+            }
+        }
     }
 
     /**
@@ -1002,5 +1019,35 @@ export class AssetContainer extends AbstractScene {
         });
 
         return newAnimationGroups;
+    }
+
+    /**
+     * @since
+     * This method checks for any node that has no parent
+     * and is not in the rootNodes array, and adds the node
+     * there, if so.
+     */
+    public populateRootNodes() {
+        this.rootNodes.length = 0;
+        this.meshes.forEach((m) => {
+            if (!m.parent && this.rootNodes.indexOf(m) === -1) {
+                this.rootNodes.push(m);
+            }
+        });
+        this.transformNodes.forEach((t) => {
+            if (!t.parent && this.rootNodes.indexOf(t) === -1) {
+                this.rootNodes.push(t);
+            }
+        });
+        this.lights.forEach((l) => {
+            if (!l.parent && this.rootNodes.indexOf(l) === -1) {
+                this.rootNodes.push(l);
+            }
+        });
+        this.cameras.forEach((c) => {
+            if (!c.parent && this.rootNodes.indexOf(c) === -1) {
+                this.rootNodes.push(c);
+            }
+        });
     }
 }

@@ -41,6 +41,23 @@ export class NodeMaterialTeleportInBlock extends NodeMaterialBlock {
         return this._inputs[0];
     }
 
+    /** Gets a boolean indicating that this connection will be used in the fragment shader */
+    public isConnectedInFragmentShader() {
+        return this.endpoints.some((e) => e.output.isConnectedInFragmentShader);
+    }
+
+    public _dumpCode(uniqueNames: string[], alreadyDumped: NodeMaterialBlock[]) {
+        let codeString = super._dumpCode(uniqueNames, alreadyDumped);
+
+        for (const endpoint of this.endpoints) {
+            if (alreadyDumped.indexOf(endpoint) === -1) {
+                codeString += endpoint._dumpCode(uniqueNames, alreadyDumped);
+            }
+        }
+
+        return codeString;
+    }
+
     /**
      * Add an enpoint to this block
      * @param endpoint define the endpoint to attach to
@@ -66,6 +83,19 @@ export class NodeMaterialTeleportInBlock extends NodeMaterialBlock {
             endpoint._outputs[0]._typeConnectionSource = null;
             endpoint._entryPoint = null;
         }
+    }
+
+    /**
+     * Release resources
+     */
+    public dispose() {
+        super.dispose();
+
+        for (const endpoint of this._endpoints) {
+            this.detachFromEndpoint(endpoint);
+        }
+
+        this._endpoints = [];
     }
 }
 
