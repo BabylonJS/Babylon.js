@@ -287,7 +287,7 @@ export class GreasedLineMesh extends Mesh {
         for (const points of this._points) {
             pointCount += points.length;
         }
-        const countDiff = pointCount * 2 - this._widths.length;
+        const countDiff = pointCount / 3 * 2 - this._widths.length;
         for (let i = 0; i < countDiff; i++) {
             this._widths.push(1);
         }
