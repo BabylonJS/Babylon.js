@@ -67,7 +67,7 @@ export class ReflectBlock extends NodeMaterialBlock {
 
         const output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = reflect(${this.incident.associatedVariableName}.xyz, ${this.normal.associatedVariableName}.xyz);\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = reflect(${this.incident.associatedVariableName}.xyz, ${this.normal.associatedVariableName}.xyz);\n`;
 
         return this;
     }

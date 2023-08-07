@@ -198,63 +198,63 @@ export class VectorMergerBlock extends NodeMaterialBlock {
 
         if (xyzwInput.isConnected) {
             if (v4Output.hasEndpoints) {
-                state.compilationString += this._declareOutput(v4Output, state) + ` = ${xyzwInput.associatedVariableName}${this._buildSwizzle(4)};\r\n`;
+                state.compilationString += this._declareOutput(v4Output, state) + ` = ${xyzwInput.associatedVariableName}${this._buildSwizzle(4)};\n`;
             }
 
             if (v3Output.hasEndpoints) {
-                state.compilationString += this._declareOutput(v3Output, state) + ` = ${xyzwInput.associatedVariableName}${this._buildSwizzle(3)};\r\n`;
+                state.compilationString += this._declareOutput(v3Output, state) + ` = ${xyzwInput.associatedVariableName}${this._buildSwizzle(3)};\n`;
             }
 
             if (v2Output.hasEndpoints) {
-                state.compilationString += this._declareOutput(v2Output, state) + ` = ${xyzwInput.associatedVariableName}${this._buildSwizzle(2)};\r\n`;
+                state.compilationString += this._declareOutput(v2Output, state) + ` = ${xyzwInput.associatedVariableName}${this._buildSwizzle(2)};\n`;
             }
         } else if (xyzInput.isConnected) {
             if (v4Output.hasEndpoints) {
                 state.compilationString +=
                     this._declareOutput(v4Output, state) +
-                    ` = vec4(${xyzInput.associatedVariableName}, ${wInput.isConnected ? this._writeVariable(wInput) : "0.0"})${this._buildSwizzle(4)};\r\n`;
+                    ` = vec4(${xyzInput.associatedVariableName}, ${wInput.isConnected ? this._writeVariable(wInput) : "0.0"})${this._buildSwizzle(4)};\n`;
             }
 
             if (v3Output.hasEndpoints) {
-                state.compilationString += this._declareOutput(v3Output, state) + ` = ${xyzInput.associatedVariableName}${this._buildSwizzle(3)};\r\n`;
+                state.compilationString += this._declareOutput(v3Output, state) + ` = ${xyzInput.associatedVariableName}${this._buildSwizzle(3)};\n`;
             }
 
             if (v2Output.hasEndpoints) {
-                state.compilationString += this._declareOutput(v2Output, state) + ` = ${xyzInput.associatedVariableName}${this._buildSwizzle(2)};\r\n`;
+                state.compilationString += this._declareOutput(v2Output, state) + ` = ${xyzInput.associatedVariableName}${this._buildSwizzle(2)};\n`;
             }
         } else if (xyInput.isConnected) {
             if (v4Output.hasEndpoints) {
                 if (zwInput.isConnected) {
                     state.compilationString +=
-                        this._declareOutput(v4Output, state) + ` = vec4(${xyInput.associatedVariableName}, ${zwInput.associatedVariableName})${this._buildSwizzle(4)};\r\n`;
+                        this._declareOutput(v4Output, state) + ` = vec4(${xyInput.associatedVariableName}, ${zwInput.associatedVariableName})${this._buildSwizzle(4)};\n`;
                 } else {
                     state.compilationString +=
                         this._declareOutput(v4Output, state) +
                         ` = vec4(${xyInput.associatedVariableName}, ${zInput.isConnected ? this._writeVariable(zInput) : "0.0"}, ${
                             wInput.isConnected ? this._writeVariable(wInput) : "0.0"
-                        })${this._buildSwizzle(4)};\r\n`;
+                        })${this._buildSwizzle(4)};\n`;
                 }
             }
 
             if (v3Output.hasEndpoints) {
                 state.compilationString +=
                     this._declareOutput(v3Output, state) +
-                    ` = vec3(${xyInput.associatedVariableName}, ${zInput.isConnected ? this._writeVariable(zInput) : "0.0"})${this._buildSwizzle(3)};\r\n`;
+                    ` = vec3(${xyInput.associatedVariableName}, ${zInput.isConnected ? this._writeVariable(zInput) : "0.0"})${this._buildSwizzle(3)};\n`;
             }
 
             if (v2Output.hasEndpoints) {
-                state.compilationString += this._declareOutput(v2Output, state) + ` = ${xyInput.associatedVariableName}${this._buildSwizzle(2)};\r\n`;
+                state.compilationString += this._declareOutput(v2Output, state) + ` = ${xyInput.associatedVariableName}${this._buildSwizzle(2)};\n`;
             }
 
             if (v2CompOutput.hasEndpoints) {
                 if (zwInput.isConnected) {
-                    state.compilationString += this._declareOutput(v2CompOutput, state) + ` = ${zwInput.associatedVariableName}${this._buildSwizzle(2)};\r\n`;
+                    state.compilationString += this._declareOutput(v2CompOutput, state) + ` = ${zwInput.associatedVariableName}${this._buildSwizzle(2)};\n`;
                 } else {
                     state.compilationString +=
                         this._declareOutput(v2CompOutput, state) +
                         ` = vec2(${zInput.isConnected ? this._writeVariable(zInput) : "0.0"}, ${wInput.isConnected ? this._writeVariable(wInput) : "0.0"})${this._buildSwizzle(
                             2
-                        )};\r\n`;
+                        )};\n`;
                 }
             }
         } else {
@@ -264,13 +264,13 @@ export class VectorMergerBlock extends NodeMaterialBlock {
                         this._declareOutput(v4Output, state) +
                         ` = vec4(${xInput.isConnected ? this._writeVariable(xInput) : "0.0"}, ${yInput.isConnected ? this._writeVariable(yInput) : "0.0"}, ${
                             zwInput.associatedVariableName
-                        })${this._buildSwizzle(4)};\r\n`;
+                        })${this._buildSwizzle(4)};\n`;
                 } else {
                     state.compilationString +=
                         this._declareOutput(v4Output, state) +
                         ` = vec4(${xInput.isConnected ? this._writeVariable(xInput) : "0.0"}, ${yInput.isConnected ? this._writeVariable(yInput) : "0.0"}, ${
                             zInput.isConnected ? this._writeVariable(zInput) : "0.0"
-                        }, ${wInput.isConnected ? this._writeVariable(wInput) : "0.0"})${this._buildSwizzle(4)};\r\n`;
+                        }, ${wInput.isConnected ? this._writeVariable(wInput) : "0.0"})${this._buildSwizzle(4)};\n`;
                 }
             }
 
@@ -279,7 +279,7 @@ export class VectorMergerBlock extends NodeMaterialBlock {
                     this._declareOutput(v3Output, state) +
                     ` = vec3(${xInput.isConnected ? this._writeVariable(xInput) : "0.0"}, ${yInput.isConnected ? this._writeVariable(yInput) : "0.0"}, ${
                         zInput.isConnected ? this._writeVariable(zInput) : "0.0"
-                    })${this._buildSwizzle(3)};\r\n`;
+                    })${this._buildSwizzle(3)};\n`;
             }
 
             if (v2Output.hasEndpoints) {
@@ -287,18 +287,18 @@ export class VectorMergerBlock extends NodeMaterialBlock {
                     this._declareOutput(v2Output, state) +
                     ` = vec2(${xInput.isConnected ? this._writeVariable(xInput) : "0.0"}, ${yInput.isConnected ? this._writeVariable(yInput) : "0.0"})${this._buildSwizzle(
                         2
-                    )};\r\n`;
+                    )};\n`;
             }
 
             if (v2CompOutput.hasEndpoints) {
                 if (zwInput.isConnected) {
-                    state.compilationString += this._declareOutput(v2CompOutput, state) + ` = ${zwInput.associatedVariableName}${this._buildSwizzle(2)};\r\n`;
+                    state.compilationString += this._declareOutput(v2CompOutput, state) + ` = ${zwInput.associatedVariableName}${this._buildSwizzle(2)};\n`;
                 } else {
                     state.compilationString +=
                         this._declareOutput(v2CompOutput, state) +
                         ` = vec2(${zInput.isConnected ? this._writeVariable(zInput) : "0.0"}, ${wInput.isConnected ? this._writeVariable(wInput) : "0.0"})${this._buildSwizzle(
                             2
-                        )};\r\n`;
+                        )};\n`;
                 }
             }
         }
@@ -328,10 +328,10 @@ export class VectorMergerBlock extends NodeMaterialBlock {
 
     protected _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
-        codeString += `${this._codeVariableName}.xSwizzle = "${this.xSwizzle}";\r\n`;
-        codeString += `${this._codeVariableName}.ySwizzle = "${this.ySwizzle}";\r\n`;
-        codeString += `${this._codeVariableName}.zSwizzle = "${this.zSwizzle}";\r\n`;
-        codeString += `${this._codeVariableName}.wSwizzle = "${this.wSwizzle}";\r\n`;
+        codeString += `${this._codeVariableName}.xSwizzle = "${this.xSwizzle}";\n`;
+        codeString += `${this._codeVariableName}.ySwizzle = "${this.ySwizzle}";\n`;
+        codeString += `${this._codeVariableName}.zSwizzle = "${this.zSwizzle}";\n`;
+        codeString += `${this._codeVariableName}.wSwizzle = "${this.wSwizzle}";\n`;
 
         return codeString;
     }

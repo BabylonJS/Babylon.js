@@ -1429,7 +1429,7 @@ export class NodeMaterial extends PushMaterial {
      * Get a string representing the shaders built by the current node graph
      */
     public get compiledShaders() {
-        return `// Vertex shader\r\n${this._vertexCompilationState.compilationString}\r\n\r\n// Fragment shader\r\n${this._fragmentCompilationState.compilationString}`;
+        return `// Vertex shader\n${this._vertexCompilationState.compilationString}\n\n// Fragment shader\n${this._fragmentCompilationState.compilationString}`;
     }
 
     /**
@@ -1891,8 +1891,8 @@ export class NodeMaterial extends PushMaterial {
         }
 
         // Generate vertex shader
-        let codeString = `var nodeMaterial = new BABYLON.NodeMaterial("${this.name || "node material"}");\r\n`;
-        codeString += `nodeMaterial.mode = BABYLON.NodeMaterialModes.${NodeMaterialModes[this.mode]};\r\n`;
+        let codeString = `var nodeMaterial = new BABYLON.NodeMaterial("${this.name || "node material"}");\n`;
+        codeString += `nodeMaterial.mode = BABYLON.NodeMaterialModes.${NodeMaterialModes[this.mode]};\n`;
         for (const node of vertexBlocks) {
             if (node.isInput && alreadyDumped.indexOf(node) === -1) {
                 codeString += node._dumpCode(uniqueNames, alreadyDumped);
@@ -1908,7 +1908,7 @@ export class NodeMaterial extends PushMaterial {
 
         // Connections
         alreadyDumped = [];
-        codeString += "\r\n// Connections\r\n";
+        codeString += "\n// Connections\n";
         for (const node of this._vertexOutputNodes) {
             codeString += node._dumpCodeForOutputConnections(alreadyDumped);
         }
@@ -1917,16 +1917,16 @@ export class NodeMaterial extends PushMaterial {
         }
 
         // Output nodes
-        codeString += "\r\n// Output nodes\r\n";
+        codeString += "\n// Output nodes\n";
         for (const node of this._vertexOutputNodes) {
-            codeString += `nodeMaterial.addOutputNode(${node._codeVariableName});\r\n`;
+            codeString += `nodeMaterial.addOutputNode(${node._codeVariableName});\n`;
         }
 
         for (const node of this._fragmentOutputNodes) {
-            codeString += `nodeMaterial.addOutputNode(${node._codeVariableName});\r\n`;
+            codeString += `nodeMaterial.addOutputNode(${node._codeVariableName});\n`;
         }
 
-        codeString += `nodeMaterial.build();\r\n`;
+        codeString += `nodeMaterial.build();\n`;
 
         return codeString;
     }

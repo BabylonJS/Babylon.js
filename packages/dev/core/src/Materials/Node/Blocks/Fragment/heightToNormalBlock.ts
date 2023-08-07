@@ -145,10 +145,10 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
             this._declareOutput(output, state) +
             ` = heightToNormal(${this.input.associatedVariableName}, ${this.worldPosition.associatedVariableName}, ${
                 this.worldTangent.isConnected ? this.worldTangent.associatedVariableName : "vec3(0.)"
-            }.xyz, ${this.worldNormal.associatedVariableName});\r\n`;
+            }.xyz, ${this.worldNormal.associatedVariableName});\n`;
 
         if (this.xyz.hasEndpoints) {
-            state.compilationString += this._declareOutput(this.xyz, state) + ` = ${this.output.associatedVariableName}.xyz;\r\n`;
+            state.compilationString += this._declareOutput(this.xyz, state) + ` = ${this.output.associatedVariableName}.xyz;\n`;
         }
 
         return this;
@@ -156,9 +156,9 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
 
     protected _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
-        codeString += `${this._codeVariableName}.generateInWorldSpace = ${this.generateInWorldSpace};\r\n`;
-        codeString += `${this._codeVariableName}.automaticNormalizationNormal = ${this.automaticNormalizationNormal};\r\n`;
-        codeString += `${this._codeVariableName}.automaticNormalizationTangent = ${this.automaticNormalizationTangent};\r\n`;
+        codeString += `${this._codeVariableName}.generateInWorldSpace = ${this.generateInWorldSpace};\n`;
+        codeString += `${this._codeVariableName}.automaticNormalizationNormal = ${this.automaticNormalizationNormal};\n`;
+        codeString += `${this._codeVariableName}.automaticNormalizationTangent = ${this.automaticNormalizationTangent};\n`;
 
         return codeString;
     }

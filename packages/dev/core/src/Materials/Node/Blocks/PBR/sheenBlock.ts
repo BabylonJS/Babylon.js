@@ -181,7 +181,7 @@ export class SheenBlock extends NodeMaterialBlock {
             #ifdef SHEEN_LINKWITHALBEDO
                 surfaceAlbedo = sheenOut.surfaceAlbedo;
             #endif
-        #endif\r\n`;
+        #endif\n`;
 
         return code;
     }
@@ -197,8 +197,8 @@ export class SheenBlock extends NodeMaterialBlock {
     protected _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
 
-        codeString += `${this._codeVariableName}.albedoScaling = ${this.albedoScaling};\r\n`;
-        codeString += `${this._codeVariableName}.linkSheenWithAlbedo = ${this.linkSheenWithAlbedo};\r\n`;
+        codeString += `${this._codeVariableName}.albedoScaling = ${this.albedoScaling};\n`;
+        codeString += `${this._codeVariableName}.linkSheenWithAlbedo = ${this.linkSheenWithAlbedo};\n`;
 
         return codeString;
     }

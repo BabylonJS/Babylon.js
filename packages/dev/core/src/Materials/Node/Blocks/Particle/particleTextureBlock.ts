@@ -152,15 +152,15 @@ export class ParticleTextureBlock extends NodeMaterialBlock {
     }
 
     private _writeOutput(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string) {
-        state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\r\n`;
+        state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\n`;
 
-        state.compilationString += `#ifdef ${this._linearDefineName}\r\n`;
-        state.compilationString += `${output.associatedVariableName} = toGammaSpace(${output.associatedVariableName});\r\n`;
-        state.compilationString += `#endif\r\n`;
+        state.compilationString += `#ifdef ${this._linearDefineName}\n`;
+        state.compilationString += `${output.associatedVariableName} = toGammaSpace(${output.associatedVariableName});\n`;
+        state.compilationString += `#endif\n`;
 
-        state.compilationString += `#ifdef ${this._gammaDefineName}\r\n`;
-        state.compilationString += `${output.associatedVariableName} = toLinearSpace(${output.associatedVariableName});\r\n`;
-        state.compilationString += `#endif\r\n`;
+        state.compilationString += `#ifdef ${this._gammaDefineName}\n`;
+        state.compilationString += `${output.associatedVariableName} = toLinearSpace(${output.associatedVariableName});\n`;
+        state.compilationString += `#endif\n`;
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
@@ -184,7 +184,7 @@ export class ParticleTextureBlock extends NodeMaterialBlock {
         const comments = `//${this.name}`;
         state._emitFunctionFromInclude("helperFunctions", comments);
 
-        state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${this.uv.associatedVariableName});\r\n`;
+        state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${this.uv.associatedVariableName});\n`;
 
         for (const output of this._outputs) {
             if (output.hasEndpoints) {

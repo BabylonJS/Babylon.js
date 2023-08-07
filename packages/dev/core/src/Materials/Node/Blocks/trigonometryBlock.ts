@@ -173,7 +173,7 @@ export class TrigonometryBlock extends NodeMaterialBlock {
             }
         }
 
-        state.compilationString += this._declareOutput(output, state) + ` = ${operation}(${this.input.associatedVariableName});\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = ${operation}(${this.input.associatedVariableName});\n`;
 
         return this;
     }
@@ -194,7 +194,7 @@ export class TrigonometryBlock extends NodeMaterialBlock {
 
     protected _dumpPropertiesCode() {
         const codeString =
-            super._dumpPropertiesCode() + `${this._codeVariableName}.operation = BABYLON.TrigonometryBlockOperations.${TrigonometryBlockOperations[this.operation]};\r\n`;
+            super._dumpPropertiesCode() + `${this._codeVariableName}.operation = BABYLON.TrigonometryBlockOperations.${TrigonometryBlockOperations[this.operation]};\n`;
         return codeString;
     }
 }

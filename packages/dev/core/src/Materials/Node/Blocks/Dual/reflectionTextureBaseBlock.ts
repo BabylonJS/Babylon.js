@@ -290,16 +290,16 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
 
         const worldPosVaryingName = this.generateOnlyFragmentCode ? this._worldPositionNameInFragmentOnlyMode : "v_" + this.worldPosition.associatedVariableName;
         if (this.generateOnlyFragmentCode || state._emitVaryingFromString(worldPosVaryingName, "vec4")) {
-            code += `${this.generateOnlyFragmentCode ? "vec4 " : ""}${worldPosVaryingName} = ${this.worldPosition.associatedVariableName};\r\n`;
+            code += `${this.generateOnlyFragmentCode ? "vec4 " : ""}${worldPosVaryingName} = ${this.worldPosition.associatedVariableName};\n`;
         }
 
         this._positionUVWName = state._getFreeVariableName("positionUVW");
         this._directionWName = state._getFreeVariableName("directionW");
 
         if (this.generateOnlyFragmentCode || state._emitVaryingFromString(this._positionUVWName, "vec3", this._defineSkyboxName)) {
-            code += `#ifdef ${this._defineSkyboxName}\r\n`;
-            code += `${this.generateOnlyFragmentCode ? "vec3 " : ""}${this._positionUVWName} = ${this.position.associatedVariableName}.xyz;\r\n`;
-            code += `#endif\r\n`;
+            code += `#ifdef ${this._defineSkyboxName}\n`;
+            code += `${this.generateOnlyFragmentCode ? "vec3 " : ""}${this._positionUVWName} = ${this.position.associatedVariableName}.xyz;\n`;
+            code += `#endif\n`;
         }
 
         if (
@@ -310,11 +310,11 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
                 `defined(${this._defineEquirectangularFixedName}) || defined(${this._defineMirroredEquirectangularFixedName})`
             )
         ) {
-            code += `#if defined(${this._defineEquirectangularFixedName}) || defined(${this._defineMirroredEquirectangularFixedName})\r\n`;
+            code += `#if defined(${this._defineEquirectangularFixedName}) || defined(${this._defineMirroredEquirectangularFixedName})\n`;
             code += `${this.generateOnlyFragmentCode ? "vec3 " : ""}${this._directionWName} = normalize(vec3(${this.world.associatedVariableName} * vec4(${
                 this.position.associatedVariableName
-            }.xyz, 0.0)));\r\n`;
-            code += `#endif\r\n`;
+            }.xyz, 0.0)));\n`;
+            code += `#endif\n`;
         }
 
         return code;
@@ -335,11 +335,11 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         this._2DSamplerName = state._getFreeVariableName(this.name + "2DSampler");
         state.samplers.push(this._2DSamplerName);
 
-        state._samplerDeclaration += `#ifdef ${this._define3DName}\r\n`;
-        state._samplerDeclaration += `uniform samplerCube ${this._cubeSamplerName};\r\n`;
-        state._samplerDeclaration += `#else\r\n`;
-        state._samplerDeclaration += `uniform sampler2D ${this._2DSamplerName};\r\n`;
-        state._samplerDeclaration += `#endif\r\n`;
+        state._samplerDeclaration += `#ifdef ${this._define3DName}\n`;
+        state._samplerDeclaration += `uniform samplerCube ${this._cubeSamplerName};\n`;
+        state._samplerDeclaration += `#else\n`;
+        state._samplerDeclaration += `uniform sampler2D ${this._2DSamplerName};\n`;
+        state._samplerDeclaration += `#endif\n`;
 
         // Fragment
         state.sharedData.blocksWithDefines.push(this);
@@ -422,12 +422,12 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
 
             #ifdef ${this._defineExplicitName}
                 vec3 ${this._reflectionVectorName} = vec3(0, 0, 0);
-            #endif\r\n`;
+            #endif\n`;
 
         if (!doNotEmitInvertZ) {
             code += `#ifdef ${this._defineOppositeZ}
                 ${this._reflectionVectorName}.z *= -1.0;
-            #endif\r\n`;
+            #endif\n`;
         }
 
         if (!onlyReflectionVector) {
@@ -440,7 +440,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
                         ${this._reflectionCoordsName} /= ${this._reflectionVectorName}.z;
                     #endif
                     ${this._reflectionCoordsName}.y = 1.0 - ${this._reflectionCoordsName}.y;
-                #endif\r\n`;
+                #endif\n`;
         }
 
         return code;
@@ -456,24 +456,24 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         const colorType = "vec" + (swizzleLookupTexture.length === 0 ? "4" : swizzleLookupTexture.length - 1);
 
         let code = `${colorType} ${this._reflectionColorName};
-            #ifdef ${this._define3DName}\r\n`;
+            #ifdef ${this._define3DName}\n`;
 
         if (lodVarName) {
-            code += `${this._reflectionColorName} = textureCubeLodEXT(${this._cubeSamplerName}, ${this._reflectionVectorName}, ${lodVarName})${swizzleLookupTexture};\r\n`;
+            code += `${this._reflectionColorName} = textureCubeLodEXT(${this._cubeSamplerName}, ${this._reflectionVectorName}, ${lodVarName})${swizzleLookupTexture};\n`;
         } else {
-            code += `${this._reflectionColorName} = textureCube(${this._cubeSamplerName}, ${this._reflectionVectorName})${swizzleLookupTexture};\r\n`;
+            code += `${this._reflectionColorName} = textureCube(${this._cubeSamplerName}, ${this._reflectionVectorName})${swizzleLookupTexture};\n`;
         }
 
         code += `
-            #else\r\n`;
+            #else\n`;
 
         if (lodVarName) {
-            code += `${this._reflectionColorName} = texture2DLodEXT(${this._2DSamplerName}, ${this._reflectionCoordsName}, ${lodVarName})${swizzleLookupTexture};\r\n`;
+            code += `${this._reflectionColorName} = texture2DLodEXT(${this._2DSamplerName}, ${this._reflectionCoordsName}, ${lodVarName})${swizzleLookupTexture};\n`;
         } else {
-            code += `${this._reflectionColorName} = texture2D(${this._2DSamplerName}, ${this._reflectionCoordsName})${swizzleLookupTexture};\r\n`;
+            code += `${this._reflectionColorName} = texture2D(${this._2DSamplerName}, ${this._reflectionCoordsName})${swizzleLookupTexture};\n`;
         }
 
-        code += `#endif\r\n`;
+        code += `#endif\n`;
 
         return code;
     }
@@ -490,7 +490,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         if (state.target === NodeMaterialBlockTargets.Fragment) {
             for (const output of this._outputs) {
                 if (output.hasEndpoints) {
-                    code += `${this._declareOutput(output, state)} = ${varName}.${output.name};\r\n`;
+                    code += `${this._declareOutput(output, state)} = ${varName}.${output.name};\n`;
                 }
             }
         }
@@ -514,11 +514,11 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
             const forcedExtension = (this.texture as CubeTexture).forcedExtension;
             codeString += `${this._codeVariableName}.texture = new BABYLON.CubeTexture("${this.texture.name}", undefined, undefined, ${
                 this.texture.noMipmap
-            }, null, undefined, undefined, undefined, ${this.texture._prefiltered}, ${forcedExtension ? '"' + forcedExtension + '"' : "null"});\r\n`;
+            }, null, undefined, undefined, undefined, ${this.texture._prefiltered}, ${forcedExtension ? '"' + forcedExtension + '"' : "null"});\n`;
         } else {
-            codeString += `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}", null);\r\n`;
+            codeString += `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}", null);\n`;
         }
-        codeString += `${this._codeVariableName}.texture.coordinatesMode = ${this.texture.coordinatesMode};\r\n`;
+        codeString += `${this._codeVariableName}.texture.coordinatesMode = ${this.texture.coordinatesMode};\n`;
 
         return codeString;
     }
