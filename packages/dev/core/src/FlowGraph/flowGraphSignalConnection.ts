@@ -1,6 +1,7 @@
 import type { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 import { FlowGraphConnectionType } from "./flowGraphConnectionType";
 import { FlowGraphConnection } from "./flowGraphConnection";
+import type { Nullable } from "../types";
 
 /**
  * @experimental
@@ -9,6 +10,7 @@ import { FlowGraphConnection } from "./flowGraphConnection";
  * When an input point is activated, it will execute the block it belongs to.
  */
 export class FlowGraphSignalConnection extends FlowGraphConnection {
+    protected _connectedPoint: Nullable<FlowGraphSignalConnection>;
     public constructor(name: string, type: FlowGraphConnectionType, protected _ownerBlock: FlowGraphExecutionBlock) {
         super(name, type);
     }
@@ -24,7 +26,7 @@ export class FlowGraphSignalConnection extends FlowGraphConnection {
         if (this.type === FlowGraphConnectionType.Input) {
             this._ownerBlock._execute();
         } else {
-            (this._connectedPoint as FlowGraphSignalConnection)?._activateSignal();
+            this._connectedPoint?._activateSignal();
         }
     }
 }

@@ -7,10 +7,10 @@ import type { FlowGraphConnectionType } from "./flowGraphConnectionType";
  * The base connection class.
  */
 export abstract class FlowGraphConnection {
-    protected _connectedPoint: Nullable<FlowGraphConnection>;
+    protected abstract _connectedPoint: Nullable<FlowGraphConnection>;
     protected abstract _ownerBlock: FlowGraphBlock;
     protected constructor(public name: string, public type: FlowGraphConnectionType) {}
-    public connectTo(point: FlowGraphConnection): void {
+    protected connectTo(point: FlowGraphConnection): void {
         if (this.type === point.type) {
             throw new Error(`Cannot connect two points of type ${this.type}`);
         }
