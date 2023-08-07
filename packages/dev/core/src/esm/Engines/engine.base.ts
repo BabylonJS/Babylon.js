@@ -24,17 +24,78 @@ import type { IFileRequest } from "core/Misc/fileRequest";
 import type { IRawTextureEngineExtension } from "./Extensions/engine.rawTexture";
 import type { Texture } from "core/Materials/Textures/texture";
 import { EngineType } from "./engine.interfaces";
+import { IsWindowObjectExist } from "./runtimeEnvironment";
+import { PerformanceConfigurator } from "core/Engines/performanceConfigurator";
 
 const activeRequests: WeakMap<any, IFileRequest> = new WeakMap();
 
-/**
- * Information about the current host
- */
-export interface HostInformation {
+export interface IBaseEngineOptions {
     /**
-     * Defines if the current host is a mobile
+     * Defines if the engine should no exceed a specified device ratio
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
      */
-    isMobile: boolean;
+    limitDeviceRatio?: number;
+    // taken the audio engine out of this context
+    // /**
+    //  * Defines if webaudio should be initialized as well
+    //  * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
+    //  */
+    // audioEngine?: boolean;
+    // /**
+    //  * Specifies options for the audio engine
+    //  */
+    // audioEngineOptions?: IAudioEngineOptions;
+
+    /**
+     * Defines if animations should run using a deterministic lock step
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
+     */
+    deterministicLockstep?: boolean;
+    /** Defines the maximum steps to use with deterministic lock step mode */
+    lockstepMaxSteps?: number;
+    /** Defines the seconds between each deterministic lock step */
+    timeStep?: number;
+    /**
+     * Defines that engine should ignore context lost events
+     * If this event happens when this parameter is true, you will have to reload the page to restore rendering
+     */
+    doNotHandleContextLost?: boolean;
+    /**
+     * Defines that engine should ignore modifying touch action attribute and style
+     * If not handle, you might need to set it up on your side for expected touch devices behavior.
+     */
+    doNotHandleTouchAction?: boolean;
+
+    /**
+     * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default
+     */
+    useHighPrecisionMatrix?: boolean;
+
+    /**
+     * Defines whether to adapt to the device's viewport characteristics (default: false)
+     */
+    adaptToDeviceRatio?: boolean;
+
+    /**
+     * True if the more expensive but exact conversions should be used for transforming colors to and from linear space within shaders.
+     * Otherwise, the default is to use a cheaper approximation.
+     */
+    useExactSrgbConversions?: boolean;
+
+    /**
+     * Defines whether MSAA is enabled on the canvas.
+     */
+    antialias?: boolean;
+
+    /**
+     * Defines whether the stencil buffer should be enabled.
+     */
+    stencil?: boolean;
+
+    /**
+     * Defines whether the canvas should be created in "premultiplied" mode (if false, the canvas is created in the "opaque" mode) (true by default)
+     */
+    premultipliedAlpha?: boolean;
 }
 
 interface IBaseEnginePrivate {
@@ -52,6 +113,7 @@ interface IBaseEnginePrivate {
     _emptyTexture3D: Nullable<InternalTexture>;
     _emptyTexture2DArray: Nullable<InternalTexture>;
     // _activeRequests - moved to the scope of this file, privately. Maps object to IFileRequest.
+    // _checkForMobile - moved to hostInformation
 }
 
 export interface IBaseEngineProtected {
@@ -60,7 +122,7 @@ export interface IBaseEngineProtected {
     _shaderProcessor: Nullable<IShaderProcessor>;
     _renderingCanvas: Nullable<HTMLCanvasElement>;
     _windowIsBackground: boolean;
-    _creationOptions: EngineOptions; // TODO?
+    _creationOptions: IBaseEngineOptions; // TODO?
     _audioContext: Nullable<AudioContext>;
     _audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>;
     _highPrecisionShadersAllowed: boolean;
@@ -244,7 +306,7 @@ export interface IBaseEnginePublic {
     /**
      * Gets information about the current host
      */
-    hostInformation: HostInformation; // REDUNDANT!! can move to top level
+    // hostInformation: HostInformation; // REDUNDANT!! can move to top level
     /**
      * Gets the current viewport
      */
@@ -269,6 +331,14 @@ export interface IBaseEnginePublic {
      * Gets the shader platform name used by the effects.
      */
     readonly shaderPlatformName: string;
+
+    // snapshotRendering - only in WebGPU
+    // snapshotRenderingMode - only in WebGPU
+
+    /**
+     * Gets a boolean indicating if the exact sRGB conversions or faster approximations are used for converting to and from linear space.
+     */
+    readonly useExactSrgbConversions: boolean;
 }
 
 export type BaseEngineState = IBaseEnginePublic & IBaseEngineInternals & IBaseEngineProtected;
@@ -279,7 +349,19 @@ let engineCounter = 0;
 /**
  * @internal
  */
-export function initBaseEngineState(overrides?: Partial<BaseEngineState>): BaseEngineState {
+export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, options: IBaseEngineOptions = {}): BaseEngineState {
+    const devicePixelRatio = IsWindowObjectExist() ? window.devicePixelRatio || 1.0 : 1.0;
+
+    const limitDeviceRatio = options.limitDeviceRatio || devicePixelRatio;
+
+    options.deterministicLockstep = options.deterministicLockstep ?? false;
+    options.lockstepMaxSteps = options.lockstepMaxSteps ?? 4;
+    options.timeStep = options.timeStep ?? 1 / 60;
+    options.stencil = options.stencil ?? true;
+
+    // TODO - this needs to be a module as well
+    PerformanceConfigurator.SetMatrixPrecision(!!options.useHighPrecisionMatrix);
+
     const engineState: BaseEngineStateFull = {
         // module: {},
         _uniqueId: engineCounter++,
@@ -334,10 +416,7 @@ export function initBaseEngineState(overrides?: Partial<BaseEngineState>): BaseE
         onContextRestoredObservable: new Observable<IBaseEnginePublic>(),
         doNotHandleContextLost: false,
         disableVertexArrayObjects: false,
-        adaptToDeviceRatio: false,
-        hostInformation: {
-            isMobile: false,
-        },
+        adaptToDeviceRatio: options.adaptToDeviceRatio ?? false,
         get currentViewport() {
             return engineState._cachedViewport;
         },
@@ -352,6 +431,7 @@ export function initBaseEngineState(overrides?: Partial<BaseEngineState>): BaseE
         get supportsUniformBuffers(): boolean {
             return false;
         },
+        useExactSrgbConversions: options.useExactSrgbConversions || false,
 
         // internals
         _uniformBuffers: [],
@@ -370,9 +450,12 @@ export function initBaseEngineState(overrides?: Partial<BaseEngineState>): BaseE
         _boundTexturesCache: {},
         _compiledEffects: {},
         _vertexAttribArraysEnabled: [],
-        _lastDevicePixelRatio: 1,
+        _lastDevicePixelRatio: devicePixelRatio,
+        _hardwareScalingLevel: options.adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, devicePixelRatio) : 1.0,
         _transformTextureUrl: null, // can be moved out, probably
         _renderWidthOverride: null,
+        _creationOptions: options,
+        _isStencilEnable: !!options.stencil,
     };
 
     // TODO is getOwnPropertyDescriptors supported in native? if it doesn't we will need to use getOwnPropertyNames

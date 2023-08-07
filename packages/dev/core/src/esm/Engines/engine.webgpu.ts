@@ -5,16 +5,21 @@ import { WebGPUShaderProcessorWGSL } from "core/Engines/WebGPU/webgpuShaderProce
 import { WebGPUShaderProcessorGLSL } from "core/Engines/WebGPU/webgpuShaderProcessorsGLSL";
 import type { IBaseEngineProtected, IBaseEnginePublic, IBaseEngineInternals } from "./engine.base";
 import { initBaseEngineState } from "./engine.base";
+import type { WebGPUSnapshotRendering } from "core/Engines/WebGPU/webgpuSnapshotRendering";
 
 interface IWebGPUEnginePrivate {
     _shaderProcessorWGSL: Nullable<IShaderProcessor>;
+    _snapshotRendering: WebGPUSnapshotRendering;
 }
 
 export interface IWebGPUEngineProtected extends IBaseEngineProtected {}
 
 export interface IWebGPUEngineInternals extends IBaseEngineInternals {}
 
-export interface IWebGPUEnginePublic extends IBaseEnginePublic {}
+export interface IWebGPUEnginePublic extends IBaseEnginePublic {
+    snapshotRendering: boolean;
+    snapshotRenderingMode: number;
+}
 
 export type WebGPUEngineState = IWebGPUEnginePublic & IWebGPUEngineInternals & IWebGPUEngineProtected;
 export type WebGPUEngineStateFull = WebGPUEngineState & IWebGPUEnginePrivate;
@@ -28,12 +33,28 @@ export function initWebGPUEngineState(): WebGPUEngineState {
         needPOTTextures: false,
     });
     // public and protected
-    const fes = baseEngineState as WebGPUEngineState;
+    const fes = baseEngineState as WebGPUEngineStateFull;
     fes._shaderProcessor = new WebGPUShaderProcessorGLSL();
+    fes._shaderProcessorWGSL = new WebGPUShaderProcessorWGSL();
+    // fes._snapshotRendering = new WebGPUSnapshotRendering(); // TODO
 
-    // private
-    const ps = fes as WebGPUEngineStateFull;
-    ps._shaderProcessorWGSL = new WebGPUShaderProcessorWGSL();
+    // TODO - this is a hack to get the snapshotRendering property to work. Normalize it.
+    Object.defineProperty(fes, "snapshotRendering", {
+        get() {
+            return (fes as WebGPUEngineStateFull)._snapshotRendering.enabled;
+        },
+        set(value) {
+            (fes as WebGPUEngineStateFull)._snapshotRendering.enabled = value;
+        },
+    });
+    Object.defineProperty(fes, "snapshotRenderingMode", {
+        get() {
+            return (fes as WebGPUEngineStateFull)._snapshotRendering.mode;
+        },
+        set(value) {
+            (fes as WebGPUEngineStateFull)._snapshotRendering.mode = value;
+        },
+    });
 
     return fes;
 }
@@ -45,4 +66,12 @@ export function _getShaderProcessor(engineState: IWebGPUEnginePublic, shaderLang
         return shaderProcessorWGSL;
     }
     return _shaderProcessor;
+}
+
+export function isWebGPU(engineState: IBaseEnginePublic): engineState is WebGPUEngineState {
+    return engineState.name === "WebGPU";
+}
+
+export function resetSnapshotRendering(engineState: IWebGPUEnginePublic) {
+    (engineState as WebGPUEngineStateFull)._snapshotRendering.reset();
 }

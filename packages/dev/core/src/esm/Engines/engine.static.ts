@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { ICanvas } from "core/Engines/ICanvas";
 import { Effect } from "core/Materials/effect";
 import type { IInternalTextureLoader } from "core/Materials/Textures/internalTextureLoader";
 
@@ -40,22 +39,6 @@ export let ShadersRepository = Effect.ShadersRepository;
 export function SetShadersRepository(path: string): void {
     Effect.ShadersRepository = path;
     ShadersRepository = Effect.ShadersRepository;
-}
-
-/**
- * Create a canvas. This method is overridden by other engines
- * @param width width
- * @param height height
- * @returns ICanvas interface
- */
-export function CreateCanvas(width: number, height: number): ICanvas {
-    if (typeof document === "undefined") {
-        return new OffscreenCanvas(width, height) as unknown as ICanvas;
-    }
-    const canvas = document.createElement("canvas") as ICanvas;
-    canvas.width = width;
-    canvas.height = height;
-    return canvas;
 }
 
 // TODO is this needed? this will allow `import Statics from "package/Engines"`.
