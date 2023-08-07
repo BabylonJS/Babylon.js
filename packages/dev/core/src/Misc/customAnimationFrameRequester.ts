@@ -16,4 +16,8 @@ export interface ICustomAnimationFrameRequester {
      * @see https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame#Return_value
      */
     requestID?: number;
+    /**
+     * Called to cancel the next frame request
+     */
+    cancelAnimationFrame?: Function;
 }

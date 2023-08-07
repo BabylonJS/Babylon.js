@@ -30,6 +30,7 @@ export class StateManager {
     onExposePortOnFrameObservable = new Observable<GraphNode>();
     onGridSizeChanged = new Observable<void>();
     onNewBlockRequiredObservable = new Observable<{ type: string; targetX: number; targetY: number; needRepositioning?: boolean; smartAdd?: boolean }>();
+    onHighlightNodeObservable = new Observable<{ data: any; active: boolean }>();
 
     exportData: (data: any, frame?: Nullable<GraphFrame>) => string;
     isElbowConnectionAllowed: (nodeA: FrameNodePort | NodePort, nodeB: FrameNodePort | NodePort) => boolean;

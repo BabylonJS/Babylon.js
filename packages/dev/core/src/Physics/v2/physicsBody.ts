@@ -531,6 +531,16 @@ export class PhysicsBody {
     }
 
     /**
+     * Set the target transformation (position and rotation) of the body, such that the body will set its velocity to reach that target
+     * @param position The target position
+     * @param rotation The target rotation
+     * @param instanceIndex The index of the instance in an instanced body
+     */
+    public setTargetTransform(position: Vector3, rotation: Quaternion, instanceIndex?: number) {
+        this._physicsPlugin.setTargetTransform(this, position, rotation, instanceIndex);
+    }
+
+    /**
      * Disposes the body from the physics engine.
      *
      * This method is useful for cleaning up the physics engine when a body is no longer needed. Disposing the body will free up resources and prevent memory leaks.

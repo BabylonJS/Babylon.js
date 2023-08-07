@@ -1465,6 +1465,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         const uniformBuffers = ["Material", "Scene", "Mesh"];
 
+        const indexParameters = { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS };
+
         this._eventInfo.fallbacks = fallbacks;
         this._eventInfo.fallbackRank = fallbackRank;
         this._eventInfo.defines = defines;
@@ -1474,6 +1476,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this._eventInfo.uniformBuffersNames = uniformBuffers;
         this._eventInfo.customCode = undefined;
         this._eventInfo.mesh = mesh;
+        this._eventInfo.indexParameters = indexParameters;
         this._callbackPluginEventGeneric(MaterialPluginEvent.PrepareEffect, this._eventInfo);
 
         PrePassConfiguration.AddUniforms(uniforms);
@@ -1511,7 +1514,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 fallbacks: fallbacks,
                 onCompiled: onCompiled,
                 onError: onError,
-                indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS },
+                indexParameters,
                 processFinalCode: csnrOptions.processFinalCode,
                 processCodeAfterIncludes: this._eventInfo.customCode,
                 multiTarget: defines.PREPASS,

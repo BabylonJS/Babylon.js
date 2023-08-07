@@ -61,6 +61,8 @@ import type { Material } from "../material";
 import { MaterialHelper } from "../materialHelper";
 import type { TriPlanarBlock } from "./Blocks/triPlanarBlock";
 import type { BiPlanarBlock } from "./Blocks/biPlanarBlock";
+import type { NodeMaterialTeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
+import type { NodeMaterialTeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -609,6 +611,15 @@ export class NodeMaterial extends PushMaterial {
         return this._sharedData && this._sharedData.hints.needAlphaTesting;
     }
 
+    private _processInitializeOnLink(block: NodeMaterialBlock, state: NodeMaterialBuildState, nodesToProcessForOtherBuildState: NodeMaterialBlock[], autoConfigure = true) {
+        if (block.target === NodeMaterialBlockTargets.VertexAndFragment) {
+            nodesToProcessForOtherBuildState.push(block);
+        } else if (state.target === NodeMaterialBlockTargets.Fragment && block.target === NodeMaterialBlockTargets.Vertex && block._preparationId !== this._buildId) {
+            nodesToProcessForOtherBuildState.push(block);
+        }
+        this._initializeBlock(block, state, nodesToProcessForOtherBuildState, autoConfigure);
+    }
+
     private _initializeBlock(node: NodeMaterialBlock, state: NodeMaterialBuildState, nodesToProcessForOtherBuildState: NodeMaterialBlock[], autoConfigure = true) {
         node.initialize(state);
         if (autoConfigure) {
@@ -636,13 +647,16 @@ export class NodeMaterial extends PushMaterial {
             if (connectedPoint) {
                 const block = connectedPoint.ownerBlock;
                 if (block !== node) {
-                    if (block.target === NodeMaterialBlockTargets.VertexAndFragment) {
-                        nodesToProcessForOtherBuildState.push(block);
-                    } else if (state.target === NodeMaterialBlockTargets.Fragment && block.target === NodeMaterialBlockTargets.Vertex && block._preparationId !== this._buildId) {
-                        nodesToProcessForOtherBuildState.push(block);
-                    }
-                    this._initializeBlock(block, state, nodesToProcessForOtherBuildState, autoConfigure);
+                    this._processInitializeOnLink(block, state, nodesToProcessForOtherBuildState, autoConfigure);
                 }
+            }
+        }
+
+        // Teleportation
+        if (node.isTeleportOut) {
+            const teleport = node as NodeMaterialTeleportOutBlock;
+            if (teleport.entryPoint) {
+                this._processInitializeOnLink(teleport.entryPoint, state, nodesToProcessForOtherBuildState, autoConfigure);
             }
         }
 
@@ -663,6 +677,14 @@ export class NodeMaterial extends PushMaterial {
                 if (block !== node) {
                     this._resetDualBlocks(block, id);
                 }
+            }
+        }
+
+        // If this is a teleport out, we need to reset the connected block
+        if (node.isTeleportOut) {
+            const teleportOut = node as NodeMaterialTeleportOutBlock;
+            if (teleportOut.entryPoint) {
+                this._resetDualBlocks(teleportOut.entryPoint, id);
             }
         }
     }
@@ -1840,6 +1862,14 @@ export class NodeMaterial extends PushMaterial {
                 }
             }
         }
+
+        // Teleportation
+        if (rootNode.isTeleportOut) {
+            const block = rootNode as NodeMaterialTeleportOutBlock;
+            if (block.entryPoint) {
+                this._gatherBlocks(block.entryPoint, list);
+            }
+        }
     }
 
     /**
@@ -1999,6 +2029,18 @@ export class NodeMaterial extends PushMaterial {
                 map[parsedBlock.id] = block;
 
                 this.attachedBlocks.push(block);
+            }
+        }
+
+        // Reconnect teleportation
+        for (const block of this.attachedBlocks) {
+            if (block.isTeleportOut) {
+                const teleportOut = block as NodeMaterialTeleportOutBlock;
+                const id = teleportOut._tempEntryPointUniqueId;
+                if (id) {
+                    const source = map[id] as NodeMaterialTeleportInBlock;
+                    source.attachToEndpoint(teleportOut);
+                }
             }
         }
 

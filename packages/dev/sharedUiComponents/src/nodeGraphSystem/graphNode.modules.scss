@@ -14,6 +14,15 @@
     box-shadow: 7px 6px 2px rgba(0, 0, 0, 0.2);
 }
 
+.highlighted {
+    @keyframes glow {
+        to {
+            border-color: white;
+        }
+    }
+    animation: glow 0.5s infinite alternate;
+}
+
 .header-container {
     grid-row: 1;
     grid-column: 1;
@@ -30,18 +39,17 @@
     grid-template-rows: 100%;
 }
 
+$iconSize: 20px;
+$iconMargin: 6px;
+
 .headerIcon {
-    position: absolute;
-    right: 0px;
-    top: 2px;
     z-index: 10;
-    justify-self: end;
     align-self: center;
     user-select: none;
     pointer-events: none;
-    width: 20px;
+    width: $iconSize;
     display: grid;
-    margin-left: 6px;
+    margin-left: $iconMargin;
 }
 
 .header {
@@ -50,7 +58,10 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-    max-width: 190px;
+}
+
+.headerWithIcon {
+    margin-left: calc(#{$iconSize} + #{$iconMargin});
 }
 
 .connections {

@@ -1,38 +1,90 @@
 {
-    "fromTag": "6.13.0",
+    "fromTag": "6.14.0",
     "changelog": {
-        "6.13.0": [
+        "6.14.1": [
             {
-                "pr": "14065",
-                "title": "FreeCameraMouseInput: Reset Active pointerId when detaching controls",
-                "description": "A user in the forum found an issue where the camera controls stopped working after an animation started.  It was determined the issue was caused by the controls being detached before the `pointerup` event was handled.  A line was added to make sure the the tracked active pointerid was being reset when the controls were no longer active so that input could begin to be received again.\r\n\r\nA test has also been added to check for this scenario\r\n\r\nForum Link: https://forum.babylonjs.com/t/mesh-actionmanager-camera-control-bug/42292",
+                "pr": "14099",
+                "title": "Document parameter ranges of HSVtoRGBToRef()",
+                "description": "HSVtoRGBToRef() of Color3 was missing ranges of hue, saturation, and value parameters:\r\n\r\nForum: https://forum.babylonjs.com/t/hsv-colorspace-hue-in-degrees/42796",
                 "author": {
-                    "name": "PolygonalSun",
-                    "url": "https://github.com/PolygonalSun"
+                    "name": "Atsutakemura",
+                    "url": "https://github.com/Atsutakemura"
                 },
                 "files": [
-                    "packages/dev/core/src/Cameras/Inputs/freeCameraMouseInput.ts",
-                    "packages/dev/core/test/unit/DeviceInput/babylon.inputManager.test.ts"
+                    "packages/dev/core/src/Maths/math.color.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14094",
+                "title": "Make wireframes of MeshDebugPluginMaterial unshaded",
+                "description": "Before, shading was being applied to the wireframes of TRIANGLES, VERTICES, and TRIANGLES_VERTICES modes. This resulted in black wireframes turning grey-ish. These changes should fix the issue.",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/meshDebugPluginMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14096",
+                "title": "Enable texture float rendering in native engine",
+                "description": "Also, minor fix to support zero width / height textures",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14095",
+                "title": "A more stable vis-test startup in our CI",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/testTools/src/utils.ts",
+                    "packages/tools/tests/test/visualization/visualization.utils.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14093",
+                "title": "Fix inertia view of parented bodies",
+                "description": null,
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/physicsViewer.ts"
                 ],
                 "tags": [
                     "bug",
-                    "inputs"
+                    "physics"
                 ]
             },
             {
-                "pr": "14062",
-                "title": "AnimationGroup: Add MergeAnimationGroups method",
-                "description": "Closes #12895",
+                "pr": "14092",
+                "title": "Effect renderer: Restore the right values for the depth and stencil states",
+                "description": "See https://forum.babylonjs.com/t/stencil-buffer-set-wrong-in-effectrenderer/42756/2",
                 "author": {
                     "name": "Popov72",
                     "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/Animations/animationGroup.ts"
+                    "packages/dev/core/src/Materials/effectRenderer.ts"
                 ],
                 "tags": [
-                    "animations",
-                    "new feature"
+                    "bug",
+                    "rendering engine"
                 ]
             }
         ],
@@ -307,6 +359,41 @@
                 ],
                 "tags": [
                     "skip changelog"
+                ]
+            }
+        ],
+        "6.13.0": [
+            {
+                "pr": "14065",
+                "title": "FreeCameraMouseInput: Reset Active pointerId when detaching controls",
+                "description": "A user in the forum found an issue where the camera controls stopped working after an animation started.  It was determined the issue was caused by the controls being detached before the `pointerup` event was handled.  A line was added to make sure the the tracked active pointerid was being reset when the controls were no longer active so that input could begin to be received again.\r\n\r\nA test has also been added to check for this scenario\r\n\r\nForum Link: https://forum.babylonjs.com/t/mesh-actionmanager-camera-control-bug/42292",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraMouseInput.ts",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.inputManager.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "14062",
+                "title": "AnimationGroup: Add MergeAnimationGroups method",
+                "description": "Closes #12895",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animationGroup.ts"
+                ],
+                "tags": [
+                    "animations",
+                    "new feature"
                 ]
             }
         ],

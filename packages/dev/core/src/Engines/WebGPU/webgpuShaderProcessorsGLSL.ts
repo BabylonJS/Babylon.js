@@ -68,9 +68,9 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
     }
 
     public varyingCheck(varying: string, isFragment: boolean) {
-        const outRegex = /(flat\s)?\s*out/;
-        const inRegex = /(flat\s)?\s*in/;
-        const varyingRegex = /(flat\s)?\s*varying/;
+        const outRegex = /(flat\s)?\s*\bout\b/;
+        const inRegex = /(flat\s)?\s*\bin\b/;
+        const varyingRegex = /(flat\s)?\s*\bvarying\b/;
 
         const regex = isFragment && this._fragmentIsGLES3 ? inRegex : !isFragment && this._vertexIsGLES3 ? outRegex : varyingRegex;
 
@@ -200,8 +200,8 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
                 // Manage textures and samplers.
                 if (!isTextureArray) {
                     arraySize = 1;
-                    uniform = `layout(set = ${samplerGroupIndex}, binding = ${samplerBindingIndex}) uniform ${componentType}${samplerType} ${samplerName};
-                        layout(set = ${textureInfo.textures[0].groupIndex}, binding = ${textureInfo.textures[0].bindingIndex}) uniform ${textureType} ${name}Texture;
+                    uniform = `layout(set = ${samplerGroupIndex}, binding = ${samplerBindingIndex}) uniform ${samplerType} ${samplerName};
+                        layout(set = ${textureInfo.textures[0].groupIndex}, binding = ${textureInfo.textures[0].bindingIndex}) uniform ${componentType}${textureType} ${name}Texture;
                         #define ${name} ${componentType}${samplerFunction}(${name}Texture, ${samplerName})`;
                 } else {
                     const layouts = [];
@@ -283,6 +283,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
             `;
 
             const injectCode = hasFragCoord ? "vec4 glFragCoord_;\n" : "";
+            const hasOutput = code.search(/layout *\(location *= *0\) *out/g) !== -1;
 
             code = code.replace(/texture2DLodEXT\s*\(/g, "textureLod(");
             code = code.replace(/textureCubeLodEXT\s*\(/g, "textureLod(");
@@ -292,7 +293,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
             code = code.replace(/gl_FragData/g, "glFragData");
             code = code.replace(/gl_FragCoord/g, "glFragCoord_");
             if (!this._fragmentIsGLES3) {
-                code = code.replace(/void\s+?main\s*\(/g, (hasDrawBuffersExtension ? "" : "layout(location = 0) out vec4 glFragColor;\n") + "void main(");
+                code = code.replace(/void\s+?main\s*\(/g, (hasDrawBuffersExtension || hasOutput ? "" : "layout(location = 0) out vec4 glFragColor;\n") + "void main(");
             } else {
                 const match = /^\s*out\s+\S+\s+\S+\s*;/gm.exec(code);
                 if (match !== null) {

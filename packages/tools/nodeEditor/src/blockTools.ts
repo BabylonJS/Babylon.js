@@ -97,10 +97,16 @@ import { BiPlanarBlock } from "core/Materials/Node/Blocks/biPlanarBlock";
 import { MatrixDeterminantBlock } from "core/Materials/Node/Blocks/matrixDeterminantBlock";
 import { MatrixTransposeBlock } from "core/Materials/Node/Blocks/matrixTransposeBlock";
 import { CurveBlock } from "core/Materials/Node/Blocks/curveBlock";
+import { NodeMaterialTeleportInBlock } from "core/Materials/Node/Blocks/Teleport/teleportInBlock";
+import { NodeMaterialTeleportOutBlock } from "core/Materials/Node/Blocks/Teleport/teleportOutBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
         switch (data) {
+            case "TeleportInBlock":
+                return new NodeMaterialTeleportInBlock("Teleport In");
+            case "TeleportOutBlock":
+                return new NodeMaterialTeleportOutBlock("Teleport Out");
             case "HeightToNormalBlock":
                 return new HeightToNormalBlock("HeightToNormal");
             case "ElbowBlock":

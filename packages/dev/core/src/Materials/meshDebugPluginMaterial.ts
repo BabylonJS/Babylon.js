@@ -104,15 +104,15 @@ flat varying float dbg_vPass;
 #endif`;
 
 const fragmentMainEnd = `#if defined(DBG_ENABLED)
-vec3 dbg_color = dbg_shadedDiffuseColor;
+vec3 dbg_color = vec3(1.);
 #if DBG_MODE == 1
-    dbg_color = mix(dbg_wireframeTrianglesColor, dbg_color, dbg_edgeFactor());
+    dbg_color = mix(dbg_wireframeTrianglesColor, vec3(1.), dbg_edgeFactor());
 #elif DBG_MODE == 2 || DBG_MODE == 3
     float dbg_cornerFactor = dbg_cornerFactor();
     if (dbg_vPass == 0. && dbg_cornerFactor == 1.) discard;
-    dbg_color = mix(dbg_vertexColor, dbg_color, dbg_cornerFactor);
+    dbg_color = mix(dbg_vertexColor, vec3(1.), dbg_cornerFactor);
     #if DBG_MODE == 3
-        dbg_color *= mix(dbg_wireframeVerticesColor, dbg_color, dbg_edgeFactor());
+        dbg_color *= mix(dbg_wireframeVerticesColor, vec3(1.), dbg_edgeFactor());
     #endif
 #elif DBG_MODE == 4 && defined(UV1)
     dbg_color = mix(dbg_uvPrimaryColor, dbg_uvSecondaryColor, dbg_checkerboardFactor(vMainUV1));
@@ -128,10 +128,10 @@ vec3 dbg_color = dbg_shadedDiffuseColor;
     gl_FragColor *= vec4(dbg_color, 1.);
 #else
     #if DBG_MODE != 6
-        gl_FragColor = vec4(dbg_applyShading(dbg_color), 1.);
+        gl_FragColor = vec4(dbg_applyShading(dbg_shadedDiffuseColor) * dbg_color, 1.);
     #else
         gl_FragColor = vec4(dbg_color, 1.);
-    #endif                
+    #endif
 #endif
 #endif`;
 
@@ -319,12 +319,6 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
     public static MaterialColors: Color3[] = defaultMaterialColors;
 
     /**
-     * Options for the plugin.
-     * See MeshDebugOptions interface for defaults.
-     */
-    private _options: Required<MeshDebugOptions>;
-
-    /**
      * Material ID color of this plugin instance.
      * Taken from index `_PluginCount` of `MaterialColors` at time of instantiation.
      */
@@ -336,25 +330,15 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
      * Defaults to true in constructor.
      */
     @serialize()
-    private _isEnabled = false;
+    private _isEnabled: boolean;
 
-    private _mode: MeshDebugMode = MeshDebugMode.NONE;
+    private _options: Required<MeshDebugOptions>;
     /**
-     * Current mesh debug visualization.
-     * Defaults to NONE.
+     * Options for the plugin.
+     * See MeshDebugOptions interface for defaults.
      */
-    @serialize()
     @expandToProperty("_markAllDefinesAsDirty")
-    public mode: MeshDebugMode = MeshDebugMode.NONE;
-
-    private _multiply: boolean = true;
-    /**
-     * Whether the mesh debug visualization multiplies with colors underneath.
-     * Defaults to true.
-     */
-    @serialize()
-    @expandToProperty("_markAllDefinesAsDirty")
-    public multiply: boolean = true;
+    public options: Required<MeshDebugOptions>;
 
     /** @internal */
     protected _markAllDefinesAsDirty(): void {
@@ -391,8 +375,6 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
             uvSecondaryColor: new Color3(0.5, 0.5, 0.5),
         };
 
-        this._mode = defines.DBG_MODE;
-        this._multiply = defines.DBG_MULTIPLY;
         this._options = { ...defaults, ...options };
         this._materialColor = MeshDebugPluginMaterial.MaterialColors[MeshDebugPluginMaterial._PluginCount++ % MeshDebugPluginMaterial.MaterialColors.length];
         this.isEnabled = true;
@@ -437,7 +419,7 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
      */
     public prepareDefines(defines: MeshDebugDefines, scene: Scene, mesh: AbstractMesh) {
         if (
-            (this._mode == MeshDebugMode.VERTICES || this._mode == MeshDebugMode.TRIANGLES || this._mode == MeshDebugMode.TRIANGLES_VERTICES) &&
+            (this._options.mode == MeshDebugMode.VERTICES || this._options.mode == MeshDebugMode.TRIANGLES || this._options.mode == MeshDebugMode.TRIANGLES_VERTICES) &&
             !mesh.isVerticesDataPresent("dbg_initialPass")
         ) {
             Logger.Warn(
@@ -446,8 +428,8 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
             );
         }
 
-        defines.DBG_MODE = this._mode;
-        defines.DBG_MULTIPLY = this._multiply;
+        defines.DBG_MODE = this._options.mode;
+        defines.DBG_MULTIPLY = this._options.multiply;
         defines.DBG_ENABLED = this._isEnabled;
     }
 
@@ -529,6 +511,8 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
     public serialize(): any {
         const serializationObject = super.serialize();
 
+        serializationObject.mode = this._options.mode;
+        serializationObject.multiply = this._options.multiply;
         serializationObject.shadedDiffuseColor = this._options.shadedDiffuseColor.asArray();
         serializationObject.shadedSpecularColor = this._options.shadedSpecularColor.asArray();
         serializationObject.shadedSpecularPower = this._options.shadedSpecularPower;
@@ -603,7 +587,8 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
             rollback = function () {
                 mesh.setIndices(indices);
                 for (const kind of kinds) {
-                    mesh.setVerticesData(kind, data[kind]);
+                    const stride = mesh.getVertexBuffer(kind)!.getStrideSize();
+                    mesh.setVerticesData(kind, data[kind], undefined, stride);
                 }
                 mesh.removeVerticesData("dbg_initialPass");
             };
