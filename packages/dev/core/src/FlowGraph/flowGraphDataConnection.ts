@@ -1,5 +1,6 @@
 import type { Nullable } from "../types";
 import type { FlowGraphBlock } from "./flowGraphBlock";
+import { FlowGraphConnection } from "./flowGraphConnection";
 import { FlowGraphConnectionType } from "./flowGraphConnectionType";
 import type { ValueContainer } from "./valueContainer";
 
@@ -10,17 +11,11 @@ import type { ValueContainer } from "./valueContainer";
  * An output point will only have a value if it is connected to an input point. Furthermore,
  * if the point belongs to a "function" node, the node will run its function to update the value.
  */
-export class FlowGraphDataConnection<T> {
-    private _connectedPoint: Nullable<FlowGraphDataConnection<T>>;
+export class FlowGraphDataConnection<T> extends FlowGraphConnection {
+    protected _connectedPoint: Nullable<FlowGraphDataConnection<T>>;
 
-    public constructor(public name: string, public type: FlowGraphConnectionType, private _ownerBlock: FlowGraphBlock, private _valueContainer: ValueContainer<T>) {}
-
-    public connectTo(point: FlowGraphDataConnection<T>): void {
-        if (this.type === point.type) {
-            throw new Error("Cannot connect two points of the same direction");
-        }
-        this._connectedPoint = point;
-        point._connectedPoint = this;
+    public constructor(public name: string, public type: FlowGraphConnectionType, protected _ownerBlock: FlowGraphBlock, private _valueContainer: ValueContainer<T>) {
+        super(name, type);
     }
 
     public get value(): T {
