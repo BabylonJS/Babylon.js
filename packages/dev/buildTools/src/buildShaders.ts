@@ -105,7 +105,6 @@ export function buildShader(filePath: string, basePackageName: string = "core", 
         .replace(/^\s+/gm, "")
         // eslint-disable-next-line no-useless-escape
         .replace(/ ([\*\/\=\+\-\>\<]+) /g, "$1")
-        .replace(/,[ \n]/g, ",")
         .replace(/ {1,}/g, " ")
         // .replace(/;\s*/g, ";")
         .replace(/^#(.*)/gm, "#$1\n")
