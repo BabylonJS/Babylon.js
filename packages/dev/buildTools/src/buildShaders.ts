@@ -114,7 +114,6 @@ export function buildShader(filePath: string, basePackageName: string = "core", 
         .replace(/\n\}/g, "}")
         .replace(/^(?:[\t ]*(?:\r?\n|\r))+/gm, "")
         .replace(/;\n([^#])/g, ";$1");
-    // .replace(/"/g, "\"");
 
     // Generate imports for includes.
     let includeText = "";
@@ -147,7 +146,6 @@ export function buildShader(filePath: string, basePackageName: string = "core", 
     } else {
         shaderStoreLocation = basePackageName + "/Engines/shaderStore";
     }
-    console.log(fxData, fxData.split("\n"));
 
     // Fill template in.
     let tsContent = tsShaderTemplate.replace("##SHADERSTORELOCATION_PLACEHOLDER##", shaderStoreLocation);
