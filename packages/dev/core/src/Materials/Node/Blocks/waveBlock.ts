@@ -80,8 +80,7 @@ export class WaveBlock extends NodeMaterialBlock {
             }
             case WaveBlockKind.Triangle: {
                 state.compilationString +=
-                    this._declareOutput(output, state) +
-                    ` = 2.0 * abs(2.0 * (${this.input.associatedVariableName} - floor(0.5 + ${this.input.associatedVariableName}))) - 1.0;\n`;
+                    this._declareOutput(output, state) + ` = 2.0 * abs(2.0 * (${this.input.associatedVariableName} - floor(0.5 + ${this.input.associatedVariableName}))) - 1.0;\n`;
                 break;
             }
         }

@@ -285,9 +285,7 @@ export class VectorMergerBlock extends NodeMaterialBlock {
             if (v2Output.hasEndpoints) {
                 state.compilationString +=
                     this._declareOutput(v2Output, state) +
-                    ` = vec2(${xInput.isConnected ? this._writeVariable(xInput) : "0.0"}, ${yInput.isConnected ? this._writeVariable(yInput) : "0.0"})${this._buildSwizzle(
-                        2
-                    )};\n`;
+                    ` = vec2(${xInput.isConnected ? this._writeVariable(xInput) : "0.0"}, ${yInput.isConnected ? this._writeVariable(yInput) : "0.0"})${this._buildSwizzle(2)};\n`;
             }
 
             if (v2CompOutput.hasEndpoints) {

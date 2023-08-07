@@ -115,8 +115,7 @@ export class TransformBlock extends NodeMaterialBlock {
                         break;
                     default:
                         state.compilationString +=
-                            this._declareOutput(this.output, state) +
-                            ` = vec4(${transformName} * ${vector.associatedVariableName}.xyz, ${this._writeFloat(this.complementW)});\n`;
+                            this._declareOutput(this.output, state) + ` = vec4(${transformName} * ${vector.associatedVariableName}.xyz, ${this._writeFloat(this.complementW)});\n`;
                         break;
                 }
             } else {
