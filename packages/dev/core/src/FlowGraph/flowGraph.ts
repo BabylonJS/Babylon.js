@@ -13,7 +13,6 @@ import { FlowGraphEventBlock } from "./flowGraphEventBlock";
  */
 export class FlowGraph {
     private _blocks: FlowGraphBlock[] = [];
-    private _eventBlocks: FlowGraphEventBlock[] = [];
     private _sceneDisposeObserver: Nullable<Observer<Scene>>;
 
     public constructor(private _scene: Scene) {
@@ -26,9 +25,6 @@ export class FlowGraph {
      */
     public _addBlock(block: FlowGraphBlock): void {
         this._blocks.push(block);
-        if (block instanceof FlowGraphEventBlock) {
-            this._eventBlocks.push(block);
-        }
     }
 
     /**
@@ -44,8 +40,10 @@ export class FlowGraph {
      * Starts the flow graph.
      */
     public start() {
-        for (const block of this._eventBlocks) {
-            block._startListening();
+        for (const block of this._blocks) {
+            if (block instanceof FlowGraphEventBlock) {
+                block._startListening();
+            }
         }
     }
 
@@ -53,8 +51,10 @@ export class FlowGraph {
      * Disposes of the flow graph.
      */
     public dispose() {
-        for (const block of this._eventBlocks) {
-            block._stopListening();
+        for (const block of this._blocks) {
+            if (block instanceof FlowGraphEventBlock) {
+                block._stopListening();
+            }
         }
         if (this._sceneDisposeObserver) {
             this._scene.onDisposeObservable.remove(this._sceneDisposeObserver);

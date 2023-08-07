@@ -1,6 +1,5 @@
 import type { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
-import { FlowGraphConnectionType } from "./flowGraphConnectionType";
-import { FlowGraphConnection } from "./flowGraphConnection";
+import { FlowGraphConnection, FlowGraphConnectionType } from "./flowGraphConnection";
 import type { Nullable } from "../types";
 
 /**

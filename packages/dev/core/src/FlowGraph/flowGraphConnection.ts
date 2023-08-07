@@ -1,6 +1,10 @@
 import type { Nullable } from "../types";
 import type { FlowGraphBlock } from "./flowGraphBlock";
-import type { FlowGraphConnectionType } from "./flowGraphConnectionType";
+
+export enum FlowGraphConnectionType {
+    Input,
+    Output,
+}
 
 /**
  * @experimental

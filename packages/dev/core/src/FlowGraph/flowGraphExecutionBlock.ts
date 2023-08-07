@@ -1,6 +1,6 @@
 import type { FlowGraph } from "./flowGraph";
 import { FlowGraphBlock } from "./flowGraphBlock";
-import { FlowGraphConnectionType } from "./flowGraphConnectionType";
+import { FlowGraphConnectionType } from "./flowGraphConnection";
 import { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
 
 /**

@@ -43,7 +43,7 @@ export class FlowGraphForLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
         this.startIndex = this._registerDataInput("startIndex", 0);
         this.endIndex = this._registerDataInput("endIndex", 0);
         this.step = this._registerDataInput("step", 1);
-        
+
         this.index = this._registerDataOutput("index", 0);
         this.onLoop = this._registerSignalOutput("onLoop");
         this.onDone = this._registerSignalOutput("onDone");

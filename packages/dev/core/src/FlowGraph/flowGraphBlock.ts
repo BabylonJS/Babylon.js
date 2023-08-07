@@ -1,5 +1,5 @@
 import type { FlowGraph } from "./flowGraph";
-import { FlowGraphConnectionType } from "./flowGraphConnectionType";
+import { FlowGraphConnectionType } from "./flowGraphConnection";
 import { FlowGraphDataConnection } from "./flowGraphDataConnection";
 
 /**
