@@ -30,7 +30,7 @@ class FlowGraphBinaryOpBaseBlock<LeftT, RightT, OutputT> extends FlowGraphBlock 
     private readonly _binOp: (left: LeftT, right: RightT) => OutputT;
     private readonly _setOutput: (value: OutputT) => void;
 
-    public constructor(graph: FlowGraph, defaultLeftValue: LeftT, defaultRightValue: RightT, defaultOutValue: OutputT, binOp: (left: LeftT, right: RightT) => OutputT) {
+    public constructor(graph: FlowGraph, defaultLeftValue: LeftT, defaultRightValue: RightT, binOp: (left: LeftT, right: RightT) => OutputT) {
         super(graph);
 
         const leftRegister = this._registerDataInput("left", defaultLeftValue);
@@ -41,7 +41,7 @@ class FlowGraphBinaryOpBaseBlock<LeftT, RightT, OutputT> extends FlowGraphBlock 
         this.right = rightRegister.connectionPoint;
         this.setRight = rightRegister.valueSetter;
 
-        const outRegister = this._registerDataOutput("output", defaultOutValue);
+        const outRegister = this._registerDataOutput("output", binOp(defaultLeftValue, defaultRightValue));
         this.output = outRegister.connectionPoint;
         this._setOutput = outRegister.valueSetter;
 
@@ -59,6 +59,6 @@ class FlowGraphBinaryOpBaseBlock<LeftT, RightT, OutputT> extends FlowGraphBlock 
  */
 export class FlowGraphAddNumberBlock extends FlowGraphBinaryOpBaseBlock<number, number, number> {
     public constructor(graph: FlowGraph) {
-        super(graph, 0, 0, 0, (left, right) => left + right);
+        super(graph, 0, 0, (left, right) => left + right);
     }
 }
