@@ -10,12 +10,14 @@ import { RegisterToDisplayManagers } from "./graphSystem/registerToDisplayLedger
 import { RegisterToPropertyTabManagers } from "./graphSystem/registerToPropertyLedger";
 import { RegisterTypeLedger } from "./graphSystem/registerToTypeLedger";
 import type { Color4 } from "core/Maths/math.color";
+import type { Scene } from "core/scene";
 
 /**
  * Interface used to specify creation options for the node editor
  */
 export interface INodeEditorOptions {
     nodeGeometry: NodeGeometry;
+    hostScene: Scene;
     hostElement?: HTMLElement;
     customSave?: { label: string; action: (data: string) => Promise<void> };
     customLoadObservable?: Observable<any>;
@@ -84,12 +86,12 @@ export class NodeGeometryEditor {
 
         // Close the popup window when the page is refreshed or scene is disposed
         const popupWindow = (Popup as any)["node-geometry-editor"];
-        if (globalState.nodeGeometry && popupWindow) {
-            // globalState.nodeGeometry.getScene().onDisposeObservable.addOnce(() => {
-            //     if (popupWindow) {
-            //         popupWindow.close();
-            //     }
-            // });
+        if (globalState.nodeGeometry && options.hostScene && popupWindow) {
+            options.hostScene.onDisposeObservable.addOnce(() => {
+                if (popupWindow) {
+                    popupWindow.close();
+                }
+            });
             window.onbeforeunload = () => {
                 const popupWindow = (Popup as any)["node-geometry-editor"];
                 if (popupWindow) {

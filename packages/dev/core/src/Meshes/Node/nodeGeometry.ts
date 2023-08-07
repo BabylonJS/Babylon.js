@@ -33,6 +33,7 @@ export interface INodeGeometryEditorOptions {
     /** Additional configuration for the NGE */
     nodeGeometryEditorConfig?: {
         backgroundColor?: Color4;
+        hostScene?: Scene;
     };
 }
 
