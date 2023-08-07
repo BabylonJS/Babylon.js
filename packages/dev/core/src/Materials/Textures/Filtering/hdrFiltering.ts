@@ -92,6 +92,7 @@ export class HDRFiltering {
 
         const effect = this._effectWrapper.effect;
         const outputTexture = this._createRenderTarget(width);
+        this._effectRenderer.saveStates();
         this._effectRenderer.setViewport();
 
         const intTexture = texture.getInternalTexture();
