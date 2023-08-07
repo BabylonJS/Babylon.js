@@ -19,7 +19,7 @@ const tsShaderTemplate = `// Do not edit.
 import { ShaderStore } from "##SHADERSTORELOCATION_PLACEHOLDER##";
 ##INCLUDES_PLACEHOLDER##
 const name = "##NAME_PLACEHOLDER##";
-const shader = "##SHADER_PLACEHOLDER##";
+const shader = \`##SHADER_PLACEHOLDER##\`;
 // Sideeffect
 ShaderStore.##SHADERSTORE_PLACEHOLDER##[name] = shader;
 ##EXPORT_PLACEHOLDER##
@@ -153,7 +153,7 @@ export function buildShader(filePath: string, basePackageName: string = "core", 
     let tsContent = tsShaderTemplate.replace("##SHADERSTORELOCATION_PLACEHOLDER##", shaderStoreLocation);
     tsContent = tsContent.replace("##INCLUDES_PLACEHOLDER##", includeText);
     tsContent = tsContent.replace("##NAME_PLACEHOLDER##", shaderName);
-    tsContent = tsContent.replace("##SHADER_PLACEHOLDER##", fxData.replace(/"/g, `\\"`).split("\n").join('\\n" + "'));
+    tsContent = tsContent.replace("##SHADER_PLACEHOLDER##", fxData);
     tsContent = tsContent.replace("##SHADERSTORE_PLACEHOLDER##", shaderStore);
     tsContent = tsContent.replace(
         "##EXPORT_PLACEHOLDER##",
