@@ -1,3 +1,4 @@
+import type { Nullable } from "../types";
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import type { FlowGraphConnectionType } from "./flowGraphConnectionType";
 
@@ -6,7 +7,7 @@ import type { FlowGraphConnectionType } from "./flowGraphConnectionType";
  * The base connection class.
  */
 export abstract class FlowGraphConnection {
-    protected abstract _connectedPoint: FlowGraphConnection | null;
+    protected _connectedPoint: Nullable<FlowGraphConnection>;
     protected abstract _ownerBlock: FlowGraphBlock;
     protected constructor(public name: string, public type: FlowGraphConnectionType) {}
     public connectTo(point: FlowGraphConnection): void {
