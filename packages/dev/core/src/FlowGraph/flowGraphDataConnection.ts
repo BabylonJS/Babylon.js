@@ -2,7 +2,6 @@ import type { Nullable } from "../types";
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphConnection } from "./flowGraphConnection";
 import { FlowGraphConnectionType } from "./flowGraphConnectionType";
-import type { ValueContainer } from "./valueContainer";
 
 /**
  * @experimental
@@ -13,7 +12,7 @@ import type { ValueContainer } from "./valueContainer";
  */
 export class FlowGraphDataConnection<T> extends FlowGraphConnection {
     protected _connectedPoint: Nullable<FlowGraphDataConnection<T>>;
-    public constructor(name: string, type: FlowGraphConnectionType, protected _ownerBlock: FlowGraphBlock, private _valueContainer: ValueContainer<T>) {
+    public constructor(name: string, type: FlowGraphConnectionType, protected _ownerBlock: FlowGraphBlock, private _value: T) {
         super(name, type);
     }
 
@@ -21,14 +20,18 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection {
         super.connectTo(point);
     }
 
+    public set value(value: T) {
+        this._value = value;
+    }
+
     public get value(): T {
         if (this.type === FlowGraphConnectionType.Output) {
             this._ownerBlock._updateOutputs();
-            return this._valueContainer.value;
+            return this._value;
         }
 
         if (!this._connectedPoint) {
-            return this._valueContainer.value;
+            return this._value;
         } else {
             return this._connectedPoint.value;
         }

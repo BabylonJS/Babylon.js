@@ -1,7 +1,6 @@
 import type { FlowGraph } from "./flowGraph";
 import { FlowGraphConnectionType } from "./flowGraphConnectionType";
 import { FlowGraphDataConnection } from "./flowGraphDataConnection";
-import { makeValueContainer } from "./valueContainer";
 
 /**
  * @experimental
@@ -39,17 +38,15 @@ export class FlowGraphBlock {
         // empty by default, overriden in data blocks
     }
 
-    protected _registerDataInput<T>(name: string, defaultValue: T): { connectionPoint: FlowGraphDataConnection<T>; valueSetter: (value: T) => void } {
-        const inputValueContainer = makeValueContainer(defaultValue);
-        const input = new FlowGraphDataConnection<T>(name, FlowGraphConnectionType.Input, this, inputValueContainer);
+    protected _registerDataInput<T>(name: string, defaultValue: T): FlowGraphDataConnection<T> {
+        const input = new FlowGraphDataConnection<T>(name, FlowGraphConnectionType.Input, this, defaultValue);
         this.dataInputs.push(input);
-        return { connectionPoint: input, valueSetter: inputValueContainer.setValue };
+        return input;
     }
 
-    protected _registerDataOutput<T>(name: string, defaultValue: T): { connectionPoint: FlowGraphDataConnection<T>; valueSetter: (value: T) => void } {
-        const outputValueContainer = makeValueContainer(defaultValue);
-        const output = new FlowGraphDataConnection<T>(name, FlowGraphConnectionType.Output, this, outputValueContainer);
+    protected _registerDataOutput<T>(name: string, defaultValue: T): FlowGraphDataConnection<T> {
+        const output = new FlowGraphDataConnection<T>(name, FlowGraphConnectionType.Output, this, defaultValue);
         this.dataOutputs.push(output);
-        return { connectionPoint: output, valueSetter: outputValueContainer.setValue };
+        return output;
     }
 }

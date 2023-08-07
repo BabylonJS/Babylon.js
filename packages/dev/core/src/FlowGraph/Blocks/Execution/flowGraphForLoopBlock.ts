@@ -33,40 +33,25 @@ export class FlowGraphForLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
      */
     public readonly onDone: FlowGraphSignalConnection;
 
-    public readonly setStartIndex: (value: number) => void;
-    public readonly setEndIndex: (value: number) => void;
-    public readonly setStep: (value: number) => void;
-
     private _currentIndex: number = 0;
     private _cachedEndIndex: number = 0;
     private _cachedStep: number = 0;
-    private readonly _setIndex: (value: number) => void;
 
     public constructor(graph: FlowGraph) {
         super(graph);
 
-        const startRegister = this._registerDataInput("startIndex", 0);
-        this.startIndex = startRegister.connectionPoint;
-        this.setStartIndex = startRegister.valueSetter;
-
-        const endRegister = this._registerDataInput("endIndex", 0);
-        this.endIndex = endRegister.connectionPoint;
-        this.setEndIndex = endRegister.valueSetter;
-
-        const stepRegister = this._registerDataInput("step", 1);
-        this.step = stepRegister.connectionPoint;
-        this.setStep = stepRegister.valueSetter;
-
-        const indexOut = this._registerDataOutput("index", 0);
-        this.index = indexOut.connectionPoint;
-        this._setIndex = indexOut.valueSetter;
-
+        this.startIndex = this._registerDataInput("startIndex", 0);
+        this.endIndex = this._registerDataInput("endIndex", 0);
+        this.step = this._registerDataInput("step", 1);
+        
+        this.index = this._registerDataOutput("index", 0);
         this.onLoop = this._registerSignalOutput("onLoop");
+        this.onDone = this._registerSignalOutput("onDone");
     }
 
     private _executeLoop() {
         if (this._currentIndex < this._cachedEndIndex) {
-            this._setIndex(this._currentIndex);
+            this.index.value = this._currentIndex;
             this.onLoop._activateSignal();
             this._currentIndex += this._cachedStep;
             this._executeLoop();

@@ -18,38 +18,24 @@ class FlowGraphBinaryOpBaseBlock<LeftT, RightT, OutputT> extends FlowGraphBlock 
      * The output of the binary operation.
      */
     public readonly output: FlowGraphDataConnection<OutputT>;
-    /**
-     * Set the value of the left input
-     */
-    public readonly setLeft: (value: LeftT) => void;
-    /**
-     * Set the value of the right input
-     */
-    public readonly setRight: (value: RightT) => void;
 
     private readonly _binOp: (left: LeftT, right: RightT) => OutputT;
-    private readonly _setOutput: (value: OutputT) => void;
 
     public constructor(graph: FlowGraph, defaultLeftValue: LeftT, defaultRightValue: RightT, binOp: (left: LeftT, right: RightT) => OutputT) {
         super(graph);
 
-        const leftRegister = this._registerDataInput("left", defaultLeftValue);
-        this.left = leftRegister.connectionPoint;
-        this.setLeft = leftRegister.valueSetter;
-
-        const rightRegister = this._registerDataInput("right", defaultRightValue);
-        this.right = rightRegister.connectionPoint;
-        this.setRight = rightRegister.valueSetter;
-
-        const outRegister = this._registerDataOutput("output", binOp(defaultLeftValue, defaultRightValue));
-        this.output = outRegister.connectionPoint;
-        this._setOutput = outRegister.valueSetter;
-
         this._binOp = binOp;
+
+        this.left = this._registerDataInput("left", defaultLeftValue);
+        this.right = this._registerDataInput("right", defaultRightValue);
+        this.output = this._registerDataOutput("output", binOp(defaultLeftValue, defaultRightValue));
     }
 
+    /**
+     * @internal
+     */
     public _updateOutputs(): void {
-        this._setOutput(this._binOp(this.left.value, this.right.value));
+        this.output.value = this._binOp(this.left.value, this.right.value);
     }
 }
 
