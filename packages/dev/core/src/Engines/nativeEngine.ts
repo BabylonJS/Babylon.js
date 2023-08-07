@@ -1775,7 +1775,7 @@ export class NativeEngine extends Engine {
                     data,
                     !noMipmap,
                     invertY,
-                    useSRGBBuffer,
+                    texture._useSRGBBuffer,
                     () => {
                         texture.baseWidth = this._engine.getTextureWidth(underlyingResource);
                         texture.baseHeight = this._engine.getTextureHeight(underlyingResource);
@@ -1982,6 +1982,7 @@ export class NativeEngine extends Engine {
         texture.generateMipMaps = !noMipmap;
         texture._lodGenerationScale = lodScale;
         texture._lodGenerationOffset = lodOffset;
+        texture._useSRGBBuffer = this._getUseSRGBBuffer(useSRGBBuffer, !!noMipmap);
 
         if (!this._doNotHandleContextLost) {
             texture._extension = forcedExtension;
@@ -2019,7 +2020,7 @@ export class NativeEngine extends Engine {
                     texture._hardwareTexture!.underlyingResource,
                     imageData,
                     false,
-                    useSRGBBuffer,
+                    texture._useSRGBBuffer,
                     () => {
                         texture.isReady = true;
                         if (onLoad) {
@@ -2053,7 +2054,7 @@ export class NativeEngine extends Engine {
             Promise.all(reorderedFiles.map((file) => Tools.LoadFileAsync(file).then((data) => new Uint8Array(data as ArrayBuffer))))
                 .then((data) => {
                     return new Promise<void>((resolve, reject) => {
-                        this._engine.loadCubeTexture(texture._hardwareTexture!.underlyingResource, data, !noMipmap, true, useSRGBBuffer, resolve, reject);
+                        this._engine.loadCubeTexture(texture._hardwareTexture!.underlyingResource, data, !noMipmap, true, texture._useSRGBBuffer, resolve, reject);
                     });
                 })
                 .then(
@@ -2114,7 +2115,7 @@ export class NativeEngine extends Engine {
             generateMipMaps = !!options;
         }
 
-        useSRGBBuffer &&= this._caps.supportSRGBBuffers && (this.webGLVersion > 1 || this.isWebGPU);
+        useSRGBBuffer = this._getUseSRGBBuffer(useSRGBBuffer, !generateMipMaps);
 
         if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
             // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
