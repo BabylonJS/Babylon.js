@@ -60,7 +60,7 @@ export class SetMaterialIDBlock extends NodeGeometryBlock {
 
         this.output._storedFunction = (state) => {
             const vertexData = this.geometry.getConnectedValue(state) as VertexData;
-            if (!vertexData.indices || !vertexData.positions) {
+            if (!vertexData || !vertexData.indices || !vertexData.positions) {
                 return vertexData;
             }
 

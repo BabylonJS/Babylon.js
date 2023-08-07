@@ -628,7 +628,7 @@ export class VertexData {
             if (this.indices) {
                 vertexData.indices = [];
                 for (let index = materialInfo.indexStart; index < materialInfo.indexStart + materialInfo.indexCount; index++ ) {
-                    vertexData.indices.push(this.indices[index] - materialInfo.indexStart);
+                    vertexData.indices.push(this.indices[index] - materialInfo.verticesStart);
                 }
             }
 
@@ -637,7 +637,7 @@ export class VertexData {
             newMaterialInfo.indexCount = vertexData.indices ? vertexData.indices.length : 0;
             newMaterialInfo.materialIndex = materialInfo.materialIndex;
             newMaterialInfo.verticesStart = 0;
-            newMaterialInfo.verticesCount = vertexData.positions ? vertexData.positions.length : 0;
+            newMaterialInfo.verticesCount = (vertexData.positions ? vertexData.positions.length : 0) / 3;
             vertexData.materialInfos = [
                 newMaterialInfo
             ]
@@ -654,15 +654,16 @@ export class VertexData {
      * @param use32BitsIndices defines a boolean indicating if indices must be store in a 32 bits array
      * @param forceCloneIndices defines a boolean indicating if indices are forced to be cloned
      * @param mergeMaterialIds defines a boolean indicating if we need to merge the material infos
+     * @param enableCompletion defines a boolean indicating if the vertex data should be completed to be compatible
      * @returns the modified VertexData
      */
-    public merge(others: VertexData | VertexData[], use32BitsIndices = false, forceCloneIndices = false, mergeMaterialIds = false) {
+    public merge(others: VertexData | VertexData[], use32BitsIndices = false, forceCloneIndices = false, mergeMaterialIds = false, enableCompletion = false) {
         const vertexDatas: { vertexData: VertexData; transform?: Matrix }[] = Array.isArray(others)
             ? others.map((other) => {
                   return { vertexData: other };
               })
             : [{ vertexData: others }];
-        return runCoroutineSync(this._mergeCoroutine(undefined, vertexDatas, use32BitsIndices, false, forceCloneIndices, mergeMaterialIds));
+        return runCoroutineSync(this._mergeCoroutine(undefined, vertexDatas, use32BitsIndices, false, forceCloneIndices, mergeMaterialIds, enableCompletion));
     }
 
     /**
@@ -674,7 +675,8 @@ export class VertexData {
         use32BitsIndices = false,
         isAsync: boolean,
         forceCloneIndices: boolean,
-        mergeMaterialIds = false
+        mergeMaterialIds = false,
+        enableCompletion = false
     ): Coroutine<VertexData> {
         this._validate();
 
@@ -685,23 +687,130 @@ export class VertexData {
         for (const other of others) {
             other._validate();
 
-            if (
-                !this.normals !== !other.normals ||
-                !this.tangents !== !other.tangents ||
-                !this.uvs !== !other.uvs ||
-                !this.uvs2 !== !other.uvs2 ||
-                !this.uvs3 !== !other.uvs3 ||
-                !this.uvs4 !== !other.uvs4 ||
-                !this.uvs5 !== !other.uvs5 ||
-                !this.uvs6 !== !other.uvs6 ||
-                !this.colors !== !other.colors ||
-                !this.matricesIndices !== !other.matricesIndices ||
-                !this.matricesWeights !== !other.matricesWeights ||
-                !this.matricesIndicesExtra !== !other.matricesIndicesExtra ||
-                !this.matricesWeightsExtra !== !other.matricesWeightsExtra
-            ) {
-                throw new Error("Cannot merge vertex data that do not have the same set of attributes");
+            if (!enableCompletion) {
+                if (
+                    !this.normals !== !other.normals ||
+                    !this.tangents !== !other.tangents ||
+                    !this.uvs !== !other.uvs ||
+                    !this.uvs2 !== !other.uvs2 ||
+                    !this.uvs3 !== !other.uvs3 ||
+                    !this.uvs4 !== !other.uvs4 ||
+                    !this.uvs5 !== !other.uvs5 ||
+                    !this.uvs6 !== !other.uvs6 ||
+                    !this.colors !== !other.colors ||
+                    !this.matricesIndices !== !other.matricesIndices ||
+                    !this.matricesWeights !== !other.matricesWeights ||
+                    !this.matricesIndicesExtra !== !other.matricesIndicesExtra ||
+                    !this.matricesWeightsExtra !== !other.matricesWeightsExtra
+                ) {
+                    throw new Error("Cannot merge vertex data that do not have the same set of attributes");
+                }
+            } else {
+                if (!this.normals !== !other.normals) {
+                    if (!this.normals) {
+                        this.normals = Array.from(other.normals!);
+                    } else {
+                        other.normals = Array.from(this.normals);
+                    }
+                }
+
+                if (!this.tangents !== !other.tangents) {
+                    if (!this.tangents) {
+                        this.tangents = Array.from(other.tangents!);
+                    } else {
+                        other.tangents = Array.from(this.tangents);
+                    }
+                }
+                
+                if (!this.uvs !== !other.uvs) {
+                    if (!this.uvs) {
+                        this.uvs = Array.from(other.uvs!);
+                    } else {
+                        other.uvs = Array.from(this.uvs);
+                    }
+                }
+
+                if (!this.uvs2 !== !other.uvs2) {
+                    if (!this.uvs2) {
+                        this.uvs2 = Array.from(other.uvs2!);
+                    } else {
+                        other.uvs2 = Array.from(this.uvs2);
+                    }
+                }
+
+                if (!this.uvs3 !== !other.uvs3) {
+                    if (!this.uvs3) {
+                        this.uvs3 = Array.from(other.uvs3!);
+                    } else {
+                        other.uvs3 = Array.from(this.uvs3);
+                    }
+                }
+
+                if (!this.uvs4 !== !other.uvs4) {
+                    if (!this.uvs4) {
+                        this.uvs4 = Array.from(other.uvs4!);
+                    } else {
+                        other.uvs4 = Array.from(this.uvs4);
+                    }
+                }
+                
+                if (!this.uvs5 !== !other.uvs5) {
+                    if (!this.uvs5) {
+                        this.uvs5 = Array.from(other.uvs5!);
+                    } else {
+                        other.uvs5 = Array.from(this.uvs5);
+                    }
+                }
+
+                if (!this.uvs6 !== !other.uvs6) {
+                    if (!this.uvs6) {
+                        this.uvs6 = Array.from(other.uvs6!);
+                    } else {
+                        other.uvs6 = Array.from(this.uvs6);
+                    }
+                }   
+
+                if (!this.colors !== !other.colors) {
+                    if (!this.colors) {
+                        this.colors = Array.from(other.colors!);
+                    } else {
+                        other.colors = Array.from(this.colors);
+                    }
+                }
+
+                if (!this.matricesIndices !== !other.matricesIndices) {
+                    if (!this.matricesIndices) {
+                        this.matricesIndices = Array.from(other.matricesIndices!);
+                    } else {
+                        other.matricesIndices = Array.from(this.matricesIndices);
+                    }
+                }
+                
+                if (!this.matricesWeights !== !other.matricesWeights) {
+                    if (!this.matricesWeights) {
+                        this.matricesWeights = Array.from(other.matricesWeights!);
+                    } else {
+                        other.matricesWeights = Array.from(this.matricesWeights);
+                    }
+                }
+
+                if (!this.matricesIndicesExtra !== !other.matricesIndicesExtra) {
+                    if (!this.matricesIndicesExtra) {
+                        this.matricesIndicesExtra = Array.from(other.matricesIndicesExtra!);
+                    } else {
+                        other.matricesIndicesExtra = Array.from(this.matricesIndicesExtra);
+                    }
+                }    
+
+                if (!this.matricesWeightsExtra !== !other.matricesWeightsExtra) {
+                    if (!this.matricesWeightsExtra) {
+                        this.matricesWeightsExtra = Array.from(other.matricesWeightsExtra!);
+                    } else {
+                        other.matricesWeightsExtra = Array.from(this.matricesWeightsExtra);
+                    }
+                }            
             }
+
         }
 
         if (mergeMaterialIds) {
@@ -833,120 +942,146 @@ export class VertexData {
         if (isAsync) {
             yield;
         }
-        this.normals = VertexData._MergeElement(
-            VertexBuffer.NormalKind,
-            root.normals,
-            transform,
-            vertexDatas.map((other) => [other.vertexData.normals, other.transform])
-        );
-        if (isAsync) {
-            yield;
+        if (root.normals) {
+            this.normals = VertexData._MergeElement(
+                VertexBuffer.NormalKind,
+                root.normals,
+                transform,
+                vertexDatas.map((other) => [other.vertexData.normals, other.transform])
+            );
+            if (isAsync) {
+                yield;
+            }
         }
-        this.tangents = VertexData._MergeElement(
-            VertexBuffer.TangentKind,
-            root.tangents,
-            transform,
-            vertexDatas.map((other) => [other.vertexData.tangents, other.transform])
-        );
-        if (isAsync) {
-            yield;
+        if (root.tangents) {
+            this.tangents = VertexData._MergeElement(
+                VertexBuffer.TangentKind,
+                root.tangents,
+                transform,
+                vertexDatas.map((other) => [other.vertexData.tangents, other.transform])
+            );
+            if (isAsync) {
+                yield;
+            }
         }
-        this.uvs = VertexData._MergeElement(
-            VertexBuffer.UVKind,
-            root.uvs,
-            transform,
-            vertexDatas.map((other) => [other.vertexData.uvs, other.transform])
-        );
-        if (isAsync) {
-            yield;
+        if (root.uvs) {
+            this.uvs = VertexData._MergeElement(
+                VertexBuffer.UVKind,
+                root.uvs,
+                transform,
+                vertexDatas.map((other) => [other.vertexData.uvs, other.transform])
+            );
+            if (isAsync) {
+                yield;
+            }
         }
-        this.uvs2 = VertexData._MergeElement(
-            VertexBuffer.UV2Kind,
-            root.uvs2,
-            transform,
-            vertexDatas.map((other) => [other.vertexData.uvs2, other.transform])
-        );
-        if (isAsync) {
-            yield;
+        if (root.uvs2) {
+            this.uvs2 = VertexData._MergeElement(
+                VertexBuffer.UV2Kind,
+                root.uvs2,
+                transform,
+                vertexDatas.map((other) => [other.vertexData.uvs2, other.transform])
+            );
+            if (isAsync) {
+                yield;
+            }
         }
-        this.uvs3 = VertexData._MergeElement(
-            VertexBuffer.UV3Kind,
-            root.uvs3,
-            transform,
-            vertexDatas.map((other) => [other.vertexData.uvs3, other.transform])
-        );
-        if (isAsync) {
-            yield;
+        if (root.uvs3) {
+            this.uvs3 = VertexData._MergeElement(
+                VertexBuffer.UV3Kind,
+                root.uvs3,
+                transform,
+                vertexDatas.map((other) => [other.vertexData.uvs3, other.transform])
+            );
+            if (isAsync) {
+                yield;
+            }
         }
-        this.uvs4 = VertexData._MergeElement(
-            VertexBuffer.UV4Kind,
-            root.uvs4,
-            transform,
-            vertexDatas.map((other) => [other.vertexData.uvs4, other.transform])
-        );
-        if (isAsync) {
-            yield;
+        if (root.uvs4) {
+            this.uvs4 = VertexData._MergeElement(
+                VertexBuffer.UV4Kind,
+                root.uvs4,
+                transform,
+                vertexDatas.map((other) => [other.vertexData.uvs4, other.transform])
+            );
+            if (isAsync) {
+                yield;
+            }
         }
-        this.uvs5 = VertexData._MergeElement(
-            VertexBuffer.UV5Kind,
-            root.uvs5,
-            transform,
-            vertexDatas.map((other) => [other.vertexData.uvs5, other.transform])
-        );
-        if (isAsync) {
-            yield;
+        if (root.uvs5) {
+            this.uvs5 = VertexData._MergeElement(
+                VertexBuffer.UV5Kind,
+                root.uvs5,
+                transform,
+                vertexDatas.map((other) => [other.vertexData.uvs5, other.transform])
+            );
+            if (isAsync) {
+                yield;
+            }
         }
-        this.uvs6 = VertexData._MergeElement(
-            VertexBuffer.UV6Kind,
-            root.uvs6,
-            transform,
-            vertexDatas.map((other) => [other.vertexData.uvs6, other.transform])
-        );
-        if (isAsync) {
-            yield;
+        if (root.uvs6) {
+            this.uvs6 = VertexData._MergeElement(
+                VertexBuffer.UV6Kind,
+                root.uvs6,
+                transform,
+                vertexDatas.map((other) => [other.vertexData.uvs6, other.transform])
+            );
+            if (isAsync) {
+                yield;
+            }
         }
-        this.colors = VertexData._MergeElement(
-            VertexBuffer.ColorKind,
-            root.colors,
-            transform,
-            vertexDatas.map((other) => [other.vertexData.colors, other.transform])
-        );
-        if (isAsync) {
-            yield;
+        if (root.colors) {
+            this.colors = VertexData._MergeElement(
+                VertexBuffer.ColorKind,
+                root.colors,
+                transform,
+                vertexDatas.map((other) => [other.vertexData.colors, other.transform])
+            );
+            if (isAsync) {
+                yield;
+            }
         }
-        this.matricesIndices = VertexData._MergeElement(
-            VertexBuffer.MatricesIndicesKind,
-            root.matricesIndices,
-            transform,
-            vertexDatas.map((other) => [other.vertexData.matricesIndices, other.transform])
-        );
-        if (isAsync) {
-            yield;
+        if (root.matricesIndices) {
+            this.matricesIndices = VertexData._MergeElement(
+                VertexBuffer.MatricesIndicesKind,
+                root.matricesIndices,
+                transform,
+                vertexDatas.map((other) => [other.vertexData.matricesIndices, other.transform])
+            );
+            if (isAsync) {
+                yield;
+            }
         }
-        this.matricesWeights = VertexData._MergeElement(
-            VertexBuffer.MatricesWeightsKind,
-            root.matricesWeights,
-            transform,
-            vertexDatas.map((other) => [other.vertexData.matricesWeights, other.transform])
-        );
-        if (isAsync) {
-            yield;
+        if (root.matricesWeights) {
+            this.matricesWeights = VertexData._MergeElement(
+                VertexBuffer.MatricesWeightsKind,
+                root.matricesWeights,
+                transform,
+                vertexDatas.map((other) => [other.vertexData.matricesWeights, other.transform])
+            );
+            if (isAsync) {
+                yield;
+            }
         }
-        this.matricesIndicesExtra = VertexData._MergeElement(
-            VertexBuffer.MatricesIndicesExtraKind,
-            root.matricesIndicesExtra,
-            transform,
-            vertexDatas.map((other) => [other.vertexData.matricesIndicesExtra, other.transform])
-        );
-        if (isAsync) {
-            yield;
+        if (root.matricesIndicesExtra) {
+            this.matricesIndicesExtra = VertexData._MergeElement(
+                VertexBuffer.MatricesIndicesExtraKind,
+                root.matricesIndicesExtra,
+                transform,
+                vertexDatas.map((other) => [other.vertexData.matricesIndicesExtra, other.transform])
+            );
+            if (isAsync) {
+                yield;
+            }
         }
-        this.matricesWeightsExtra = VertexData._MergeElement(
-            VertexBuffer.MatricesWeightsExtraKind,
-            root.matricesWeightsExtra,
-            transform,
-            vertexDatas.map((other) => [other.vertexData.matricesWeightsExtra, other.transform])
-        );
+        if (root.matricesWeightsExtra) {
+            this.matricesWeightsExtra = VertexData._MergeElement(
+                VertexBuffer.MatricesWeightsExtraKind,
+                root.matricesWeightsExtra,
+                transform,
+                vertexDatas.map((other) => [other.vertexData.matricesWeightsExtra, other.transform])
+            );
+        }
 
         return this;
     }
@@ -2211,33 +2346,33 @@ export class VertexData {
         }
 
         // uv2s
-        const uv2s = parsedVertexData.uv2s;
-        if (uv2s) {
-            vertexData.set(uv2s, VertexBuffer.UV2Kind);
+        const uvs2 = parsedVertexData.uvs2;
+        if (uvs2) {
+            vertexData.set(uvs2, VertexBuffer.UV2Kind);
         }
 
         // uv3s
-        const uv3s = parsedVertexData.uv3s;
-        if (uv3s) {
-            vertexData.set(uv3s, VertexBuffer.UV3Kind);
+        const uvs3 = parsedVertexData.uvs3;
+        if (uvs3) {
+            vertexData.set(uvs3, VertexBuffer.UV3Kind);
         }
 
         // uv4s
-        const uv4s = parsedVertexData.uv4s;
-        if (uv4s) {
-            vertexData.set(uv4s, VertexBuffer.UV4Kind);
+        const uvs4 = parsedVertexData.uvs4;
+        if (uvs4) {
+            vertexData.set(uvs4, VertexBuffer.UV4Kind);
         }
 
         // uv5s
-        const uv5s = parsedVertexData.uv5s;
-        if (uv5s) {
-            vertexData.set(uv5s, VertexBuffer.UV5Kind);
+        const uvs5 = parsedVertexData.uvs5;
+        if (uvs5) {
+            vertexData.set(uvs5, VertexBuffer.UV5Kind);
         }
 
         // uv6s
-        const uv6s = parsedVertexData.uv6s;
-        if (uv6s) {
-            vertexData.set(uv6s, VertexBuffer.UV6Kind);
+        const uvs6 = parsedVertexData.uvs6;
+        if (uvs6) {
+            vertexData.set(uvs6, VertexBuffer.UV6Kind);
         }
 
         // colors

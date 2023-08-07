@@ -89,17 +89,17 @@ export class NodeGeometryConnectionPoint {
     /**
      * Gets or sets the default value used for this point if nothing is connected
      */
-    public notConnectedValue: Nullable<any> = null;
+    public value: Nullable<any> = null;
 
     /**
      * Gets or sets the min value accepted for this point if nothing is connected
      */
-    public notConnectedValueMin: Nullable<any> = null;
+    public valueMin: Nullable<any> = null;
 
     /**
      * Gets or sets the max value accepted for this point if nothing is connected
      */
-    public notConnectedValueMax: Nullable<any> = null;
+    public valueMax: Nullable<any> = null;
 
     /**
      * Gets or sets the connection point type (default is float)
@@ -208,7 +208,7 @@ export class NodeGeometryConnectionPoint {
     /**
      * Gets the value represented by this connection point
      * @param state current evaluation state
-     * @returns the connected value or the notConnectedValue if nothing is connected
+     * @returns the connected value or the value if nothing is connected
      */
     public getConnectedValue(state: NodeGeometryBuildState) {
         if (this.isConnected) {
@@ -217,7 +217,7 @@ export class NodeGeometryConnectionPoint {
             }
             return this._connectedPoint?._storedValue;
         }
-        return this.notConnectedValue;
+        return this.value;
     }
 
     /**
@@ -348,13 +348,13 @@ export class NodeGeometryConnectionPoint {
 
         serializationObject.name = this.name;
         serializationObject.displayName = this.displayName;
-        if (this.notConnectedValue !== undefined && this.notConnectedValue !== null) {
-            if (this.notConnectedValue.asArray) {
-                serializationObject.notConnectedValueType = "BABYLON." + this.notConnectedValue.getClassName();
-                serializationObject.notConnectedValue = this.notConnectedValue.asArray();
+        if (this.value !== undefined && this.value !== null) {
+            if (this.value.asArray) {
+                serializationObject.valueType = "BABYLON." + this.value.getClassName();
+                serializationObject.value = this.value.asArray();
             } else {
-                serializationObject.notConnectedValueType = "number";
-                serializationObject.notConnectedValue = this.notConnectedValue;
+                serializationObject.valueType = "number";
+                serializationObject.value = this.value;
             }
         }
 

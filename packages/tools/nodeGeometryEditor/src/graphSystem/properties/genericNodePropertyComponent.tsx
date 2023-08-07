@@ -43,18 +43,18 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
     renderConnectionPoint(point: NodeGeometryConnectionPoint) {
         switch (point.type) {
             case NodeGeometryBlockConnectionPointTypes.Int: {
-                if (point.notConnectedValueMax !== undefined && point.notConnectedValueMin !== undefined) {
+                if (point.valueMax !== undefined && point.valueMin !== undefined) {
                     return (
                         <SliderLineComponent
                             lockObject={this.props.stateManager.lockObject}
                             key={point.name}
                             label={point.name}
                             target={point}
-                            propertyName="notConnectedValue"
+                            propertyName="value"
                             decimalCount={0}
                             step={1}
-                            minimum={point.notConnectedValueMin}
-                            maximum={point.notConnectedValueMax}
+                            minimum={point.valueMin}
+                            maximum={point.valueMax}
                             onChange={() => this.processUpdate()}
                         />
                     );
@@ -68,24 +68,24 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                         step="1"
                         digits={0}
                         target={point}
-                        propertyName="notConnectedValue"
+                        propertyName="value"
                         onChange={() => this.processUpdate()}
                     />
                 );
             }
             case NodeGeometryBlockConnectionPointTypes.Float: {
-                if (point.notConnectedValueMax !== undefined && point.notConnectedValueMin !== undefined) {
+                if (point.valueMax !== undefined && point.valueMin !== undefined) {
                     return (
                         <SliderLineComponent
                             lockObject={this.props.stateManager.lockObject}
                             key={point.name}
                             label={point.name}
                             target={point}
-                            propertyName="notConnectedValue"
+                            propertyName="value"
                             decimalCount={2}
-                            step={(point.notConnectedValueMax - point.notConnectedValueMin) / 100.0}
-                            minimum={point.notConnectedValueMin}
-                            maximum={point.notConnectedValueMax}
+                            step={(point.valueMax - point.valueMin) / 100.0}
+                            minimum={point.valueMin}
+                            maximum={point.valueMax}
                             onChange={() => this.processUpdate()}
                         />
                     );
@@ -96,7 +96,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                         key={point.name}
                         label={point.name}
                         target={point}
-                        propertyName="notConnectedValue"
+                        propertyName="value"
                         onChange={() => this.processUpdate()}
                     />
                 );
@@ -108,7 +108,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                         key={point.name}
                         label={point.name}
                         target={point}
-                        propertyName="notConnectedValue"
+                        propertyName="value"
                         onChange={() => this.processUpdate()}
                     />
                 );
@@ -119,7 +119,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                         key={point.name}
                         label={point.name}
                         target={point}
-                        propertyName="notConnectedValue"
+                        propertyName="value"
                         onChange={() => this.processUpdate()}
                     />
                 );
@@ -130,7 +130,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                         key={point.name}
                         label={point.name}
                         target={point}
-                        propertyName="notConnectedValue"
+                        propertyName="value"
                         onChange={() => this.processUpdate()}
                     />
                 );
@@ -142,7 +142,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
         const block = this.props.nodeData.data as NodeGeometryBlock;
 
         const nonConnectedInputs = block.inputs.filter((input) => {
-            return !input.isConnected && input.notConnectedValue !== null && input.notConnectedValue !== undefined;
+            return !input.isConnected && input.value !== null && input.value !== undefined;
         });
 
         return (

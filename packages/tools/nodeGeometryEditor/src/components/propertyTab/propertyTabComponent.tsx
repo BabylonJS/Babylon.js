@@ -435,15 +435,17 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             }}
                         />
                         {this.props.globalState.customSave && (
-                            <ButtonLineComponent
-                                label={this.props.globalState.customSave!.label}
-                                isDisabled={this.state.uploadInProgress}
-                                onClick={() => {
-                                    this.customSave();
-                                }}
-                            />
+                            <>
+                                <ButtonLineComponent
+                                    label={this.props.globalState.customSave!.label}
+                                    isDisabled={this.state.uploadInProgress}
+                                    onClick={() => {
+                                        this.customSave();
+                                    }}
+                                />
+                                <TextLineComponent label="(*) Mesh data will NOT be serialized" ignoreValue={true} additionalClass="label-center"/>
+                            </>
                         )}                        
-                        <TextLineComponent label="(*) Mesh data will NOT be serialized to the snippet server" ignoreValue={true} additionalClass="label-center"/>
                         <FileButtonLineComponent label="Load Frame" uploadName={"frame-upload"} onClick={(file) => this.loadFrame(file)} accept=".json" />
                     </LineContainerComponent>
                     {!this.props.globalState.customSave && (

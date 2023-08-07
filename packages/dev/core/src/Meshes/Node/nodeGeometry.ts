@@ -16,6 +16,26 @@ import { PrecisionDate } from "../../Misc/precisionDate";
 import type { TeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
 import type { TeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
 import { Tools } from "../../Misc/tools";
+import type { Color4 } from "../../Maths/math.color";
+import { Engine } from "../../Engines/engine";
+
+
+// declare NODEGEOMETRYEDITOR namespace for compilation issue
+declare let NODEGEOMETRYEDITOR: any;
+declare let BABYLON: any;
+
+/**
+ * Interface used to configure the node geometry editor
+ */
+export interface INodeGeometryEditorOptions {
+    /** Define the URL to load node editor script from */
+    editorURL?: string;
+    /** Additional configuration for the NGE */
+    nodeGeometryEditorConfig?: {
+        backgroundColor?: Color4;
+    };
+}
+
 
 /**
  * Defines a node based geometry
@@ -27,8 +47,29 @@ export class NodeGeometry {
     private _vertexData: Nullable<VertexData> = null;
     private _buildExecutionTime: number = 0;
 
+    /** Define the Url to load node editor script */
+    public static EditorURL = `https://unpkg.com/babylonjs-node-geometry-editor@${Engine.Version}/babylon.nodeGeometryEditor.js`;    
+
     /** Define the Url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    private BJSNODEGEOMETRYEDITOR = this._getGlobalNodeGeometryEditor();
+
+    /** Get the inspector from bundle or global */
+    private _getGlobalNodeGeometryEditor(): any {
+        // UMD Global name detection from Webpack Bundle UMD Name.
+        if (typeof NODEGEOMETRYEDITOR !== "undefined") {
+            return NODEGEOMETRYEDITOR;
+        }
+
+        // In case of module let's check the global emitted from the editor entry point.
+        if (typeof BABYLON !== "undefined" && typeof BABYLON.NodeGeometryEditor !== "undefined") {
+            return BABYLON;
+        }
+
+        return undefined;
+    }    
 
     /**
      * Gets the time spent to build this block (in ms)
@@ -141,6 +182,40 @@ export class NodeGeometry {
     }
 
     /**
+     * Launch the node geometry editor
+     * @param config Define the configuration of the editor
+     * @returns a promise fulfilled when the node editor is visible
+     */
+    public edit(config?: INodeGeometryEditorOptions): Promise<void> {
+        return new Promise((resolve) => {
+            this.BJSNODEGEOMETRYEDITOR = this.BJSNODEGEOMETRYEDITOR || this._getGlobalNodeGeometryEditor();
+            if (typeof this.BJSNODEGEOMETRYEDITOR == "undefined") {
+                const editorUrl = config && config.editorURL ? config.editorURL : NodeGeometry.EditorURL;
+
+                // Load editor and add it to the DOM
+                Tools.LoadScript(editorUrl, () => {
+                    this.BJSNODEGEOMETRYEDITOR = this.BJSNODEGEOMETRYEDITOR || this._getGlobalNodeGeometryEditor();
+                    this._createNodeEditor(config?.nodeGeometryEditorConfig);
+                    resolve();
+                });
+            } else {
+                // Otherwise creates the editor
+                this._createNodeEditor(config?.nodeGeometryEditorConfig);
+                resolve();
+            }
+        });
+    }    
+
+    /** Creates the node editor window. */
+    private _createNodeEditor(additionalConfig?: any) {
+        const nodeEditorConfig: any = {
+            nodeGeometry: this,
+            ...additionalConfig,
+        };
+        this.BJSNODEGEOMETRYEDITOR.NodeGeometryEditor.Show(nodeEditorConfig);
+    }    
+
+    /**
      * Build the material and generates the inner effect
      * @param verbose defines if the build should log activity
      * @param updateBuildId defines if the internal build Id should be updated (default is true)
@@ -195,6 +270,10 @@ export class NodeGeometry {
 
         const mesh = new Mesh(name, scene);
         this._vertexData.applyToMesh(mesh);
+
+        mesh.metadata = mesh.metadata || {};
+        mesh.metadata.nodeGeometry = this;
+
         return mesh;
     }
 

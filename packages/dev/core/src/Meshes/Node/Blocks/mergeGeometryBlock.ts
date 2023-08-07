@@ -104,8 +104,8 @@ export class MergeGeometryBlock extends NodeGeometryBlock {
                 additionalVertexData.push(this.geometry4.getConnectedValue(state));
             }
 
-            if (additionalVertexData.length) {
-                vertexData = vertexData.merge(additionalVertexData, true, false, true);
+            if (additionalVertexData.length && vertexData) {
+                vertexData = vertexData.merge(additionalVertexData, true, false, true, true);
             }
             return vertexData;
         };

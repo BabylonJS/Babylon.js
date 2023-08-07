@@ -142,7 +142,7 @@ export class NodeGeometryBuildState {
      */
     adaptInput(source: NodeGeometryConnectionPoint, targetType: NodeGeometryBlockConnectionPointTypes, defaultValue: any) {
         if (!source.isConnected) {
-            return source.notConnectedValue || defaultValue;
+            return source.value || defaultValue;
         }
 
         const value = source.getConnectedValue(this);

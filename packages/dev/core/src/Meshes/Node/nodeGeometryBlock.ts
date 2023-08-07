@@ -165,25 +165,25 @@ export class NodeGeometryBlock {
      * @param name defines the connection point name
      * @param type defines the connection point type
      * @param isOptional defines a boolean indicating that this input can be omitted
-     * @param notConnectedValue value to return if there is no connection
-     * @param notConnectedValueMin min value accepted for notConnectedValue
-     * @param notConnectedValueMax max value accepted for notConnectedValue
+     * @param value value to return if there is no connection
+     * @param valueMin min value accepted for value
+     * @param valueMax max value accepted for value
      * @returns the current block
      */
     public registerInput(
         name: string,
         type: NodeGeometryBlockConnectionPointTypes,
         isOptional: boolean = false,
-        notConnectedValue?: any,
-        notConnectedValueMin?: any,
-        notConnectedValueMax?: any
+        value?: any,
+        valueMin?: any,
+        valueMax?: any
     ) {
         const point = new NodeGeometryConnectionPoint(name, this, NodeGeometryConnectionPointDirection.Input);
         point.type = type;
         point.isOptional = isOptional;
-        point.notConnectedValue = notConnectedValue;
-        point.notConnectedValueMin = notConnectedValueMin;
-        point.notConnectedValueMax = notConnectedValueMax;
+        point.value = value;
+        point.valueMin = valueMin;
+        point.valueMax = valueMax;
 
         this._inputs.push(point);
 
@@ -379,14 +379,14 @@ export class NodeGeometryBlock {
                     this.inputs[i].isExposedOnFrame = port.isExposedOnFrame;
                     this.inputs[i].exposedPortPosition = port.exposedPortPosition;
                 }
-                if (port.notConnectedValue !== undefined && port.notConnectedValue !== null) {
-                    if (port.notConnectedValueType === "number") {
-                        this.inputs[i].notConnectedValue = port.notConnectedValue;
+                if (port.value !== undefined && port.value !== null) {
+                    if (port.valueType === "number") {
+                        this.inputs[i].value = port.value;
                     } else {
-                        const valueType = GetClass(port.notConnectedValueType);
+                        const valueType = GetClass(port.valueType);
 
                         if (valueType) {
-                            this.inputs[i].notConnectedValue = valueType.FromArray(port.notConnectedValue);
+                            this.inputs[i].value = valueType.FromArray(port.value);
                         }
                     }
                 }
