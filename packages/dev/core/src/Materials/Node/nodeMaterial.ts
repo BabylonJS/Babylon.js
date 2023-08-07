@@ -682,7 +682,7 @@ export class NodeMaterial extends PushMaterial {
 
         // If this is a teleport out, we need to reset the connected block
         if (node.isTeleportOut) {
-            const teleportOut = node as any as NodeMaterialTeleportOutBlock;
+            const teleportOut = node as NodeMaterialTeleportOutBlock;
             if (teleportOut.entryPoint) {
                 this._resetDualBlocks(teleportOut.entryPoint, id);
             }

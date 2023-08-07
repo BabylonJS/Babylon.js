@@ -13,8 +13,6 @@ import { UniqueIdGenerator } from "../../Misc/uniqueIdGenerator";
 import type { Scene } from "../../scene";
 import { GetClass } from "../../Misc/typeStore";
 import type { EffectFallbacks } from "../effectFallbacks";
-import type { NodeMaterialTeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
-import type { NodeMaterialTeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
 
 /**
  * Defines a block that can be used inside a node based material
@@ -256,6 +254,11 @@ export class NodeMaterialBlock {
      */
     public getClassName() {
         return "NodeMaterialBlock";
+    }
+
+    /** Gets a boolean indicating that this connection will be used in the fragment shader */
+    public isConnectedInFragmentShader() {
+        return this.outputs.some((o) => o.isConnectedInFragmentShader);
     }
 
     /**
@@ -596,6 +599,11 @@ export class NodeMaterialBlock {
         return true;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    protected _customBuildStep(state: NodeMaterialBuildState, activeBlocks: NodeMaterialBlock[]): void {
+        // Must be implemented by children
+    }
+
     /**
      * Compile the current node and generate the shader code
      * @param state defines the current compilation state (uniforms, samplers, current string)
@@ -642,13 +650,7 @@ export class NodeMaterialBlock {
             }
         }
 
-        // If this is a teleport out, we need to build the connected block
-        if (this._isTeleportOut) {
-            const teleportOut = this as any as NodeMaterialTeleportOutBlock;
-            if (teleportOut.entryPoint) {
-                teleportOut.entryPoint.build(state, activeBlocks);
-            }
-        }
+        this._customBuildStep(state, activeBlocks);
 
         if (this._buildId === state.sharedData.buildId) {
             return true; // Need to check again as inputs can be connected multiple time to this endpoint
@@ -716,18 +718,6 @@ export class NodeMaterialBlock {
     public _dumpCode(uniqueNames: string[], alreadyDumped: NodeMaterialBlock[]) {
         alreadyDumped.push(this);
 
-        let codeString: string = "";
-
-        // Teleportation
-        if (this.isTeleportOut) {
-            const teleportOut = this as any as NodeMaterialTeleportOutBlock;
-            if (teleportOut.entryPoint) {
-                if (alreadyDumped.indexOf(teleportOut.entryPoint) === -1) {
-                    codeString += teleportOut.entryPoint._dumpCode(uniqueNames, alreadyDumped);
-                }
-            }
-        }
-
         // Get unique name
         const nameAsVariableName = this.name.replace(/[^A-Za-z_]+/g, "");
         this._codeVariableName = nameAsVariableName || `${this.getClassName()}_${this.uniqueId}`;
@@ -743,7 +733,7 @@ export class NodeMaterialBlock {
         uniqueNames.push(this._codeVariableName);
 
         // Declaration
-        codeString += `\r\n// ${this.getClassName()}\r\n`;
+        let codeString = `\r\n// ${this.getClassName()}\r\n`;
         if (this.comments) {
             codeString += `// ${this.comments}\r\n`;
         }
@@ -780,16 +770,6 @@ export class NodeMaterialBlock {
             }
         }
 
-        // Teleportation
-        if (this.isTeleportIn) {
-            const teleportIn = this as any as NodeMaterialTeleportInBlock;
-            for (const endpoint of teleportIn.endpoints) {
-                if (alreadyDumped.indexOf(endpoint) === -1) {
-                    codeString += endpoint._dumpCode(uniqueNames, alreadyDumped);
-                }
-            }
-        }
-
         return codeString;
     }
 
@@ -817,14 +797,6 @@ export class NodeMaterialBlock {
             codeString += `${connectedBlock._codeVariableName}.${connectedBlock._outputRename(connectedOutput.name)}.connectTo(${this._codeVariableName}.${this._inputRename(
                 input.name
             )});\r\n`;
-        }
-
-        // Teleportation
-        if (this.isTeleportOut) {
-            const teleportOut = this as any as NodeMaterialTeleportOutBlock;
-            if (teleportOut.entryPoint) {
-                codeString += teleportOut.entryPoint._dumpCodeForOutputConnections(alreadyDumped);
-            }
         }
 
         return codeString;
