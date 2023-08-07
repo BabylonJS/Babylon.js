@@ -19,7 +19,7 @@ const tsShaderTemplate = `// Do not edit.
 import { ShaderStore } from "##SHADERSTORELOCATION_PLACEHOLDER##";
 ##INCLUDES_PLACEHOLDER##
 const name = "##NAME_PLACEHOLDER##";
-const shader = \`##SHADER_PLACEHOLDER##\`;
+const shader = "##SHADER_PLACEHOLDER##";
 // Sideeffect
 ShaderStore.##SHADERSTORE_PLACEHOLDER##[name] = shader;
 ##EXPORT_PLACEHOLDER##
@@ -99,6 +99,7 @@ export function buildShader(filePath: string, basePackageName: string = "core", 
     // Remove Trailing whitespace...
     fxData = fxData
         .replace(/^\uFEFF/, "")
+        .replace(/\r\n/g, "\n")
         .replace(/(\/\/)+.*$/gm, "")
         .replace(/\t+/gm, " ")
         .replace(/^\s+/gm, "")
@@ -113,6 +114,7 @@ export function buildShader(filePath: string, basePackageName: string = "core", 
         .replace(/\n\}/g, "}")
         .replace(/^(?:[\t ]*(?:\r?\n|\r))+/gm, "")
         .replace(/;\n([^#])/g, ";$1");
+    // .replace(/"/g, "\"");
 
     // Generate imports for includes.
     let includeText = "";
@@ -145,12 +147,13 @@ export function buildShader(filePath: string, basePackageName: string = "core", 
     } else {
         shaderStoreLocation = basePackageName + "/Engines/shaderStore";
     }
+    console.log(fxData, fxData.split("\n"));
 
     // Fill template in.
     let tsContent = tsShaderTemplate.replace("##SHADERSTORELOCATION_PLACEHOLDER##", shaderStoreLocation);
     tsContent = tsContent.replace("##INCLUDES_PLACEHOLDER##", includeText);
     tsContent = tsContent.replace("##NAME_PLACEHOLDER##", shaderName);
-    tsContent = tsContent.replace("##SHADER_PLACEHOLDER##", fxData);
+    tsContent = tsContent.replace("##SHADER_PLACEHOLDER##", fxData.replace(/"/g, `\\"`).split("\n").join('\\n" + "'));
     tsContent = tsContent.replace("##SHADERSTORE_PLACEHOLDER##", shaderStore);
     tsContent = tsContent.replace(
         "##EXPORT_PLACEHOLDER##",
