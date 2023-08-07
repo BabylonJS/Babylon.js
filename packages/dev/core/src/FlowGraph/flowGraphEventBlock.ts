@@ -9,11 +9,11 @@ export abstract class FlowGraphEventBlock extends FlowGraphWithOnDoneExecutionBl
     /**
      * @internal
      */
-    public abstract _start(): void;
+    public abstract _startListening(): void;
     /**
      * @internal
      */
-    public abstract _stop(): void;
+    public abstract _stopListening(): void;
 
     /**
      * @internal

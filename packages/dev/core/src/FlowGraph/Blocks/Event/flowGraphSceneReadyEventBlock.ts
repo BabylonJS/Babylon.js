@@ -20,7 +20,7 @@ export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
     /**
      * @internal
      */
-    public _start(): void {
+    public _startListening(): void {
         if (!this._sceneReadyObserver) {
             this._sceneReadyObserver = this._scene.onReadyObservable.add(() => {
                 this._execute();
@@ -31,9 +31,8 @@ export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
     /**
      * @internal
      */
-    public _stop() {
-        if (this._sceneReadyObserver) {
-            this._scene.onReadyObservable.remove(this._sceneReadyObserver);
-        }
+    public _stopListening() {
+        this._scene.onReadyObservable.remove(this._sceneReadyObserver);
+        this._sceneReadyObserver = null;
     }
 }

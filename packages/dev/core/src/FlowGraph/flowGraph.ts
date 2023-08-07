@@ -45,7 +45,7 @@ export class FlowGraph {
      */
     public start() {
         for (const block of this._eventBlocks) {
-            block._start();
+            block._startListening();
         }
     }
 
@@ -54,7 +54,7 @@ export class FlowGraph {
      */
     public dispose() {
         for (const block of this._eventBlocks) {
-            block._stop();
+            block._stopListening();
         }
         if (this._sceneDisposeObserver) {
             this._scene.onDisposeObservable.remove(this._sceneDisposeObserver);
