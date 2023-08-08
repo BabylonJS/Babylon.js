@@ -4,6 +4,8 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { Matrix, Vector2, Vector3, Vector4 } from "../../../Maths/math.vector";
 import type { VertexData } from "../../../Meshes/mesh.vertexData";
+import { PropertyTypeForEdition, editableInPropertyPage } from "../Interfaces/nodeGeometryDecorator";
+import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 
 /**
  * Block used to apply a transform to vector
@@ -14,6 +16,13 @@ export class GeometryTransformBlock extends NodeGeometryBlock {
     private _translationMatrix = new Matrix();
     private _scalingRotationMatrix = new Matrix();
     private _transformMatrix = new Matrix();
+
+    /**
+     * Gets or sets a boolean indicating that this block can evaluate context
+     * Build performance is improved when this value is set to false as the system will cache values instead of reevaluating everything per context change
+     */
+    @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { rebuild: true } })
+    public evaluateContext = true;    
 
     /**
      * Create a new GeometryTransformBlock
@@ -85,14 +94,14 @@ export class GeometryTransformBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock() {
+    protected _buildBlock(state: NodeGeometryBuildState) {
         if (!this.value.isConnected) {
             this.output._storedFunction = null;
             this.output._storedValue = null;
             return;
         }
 
-        this.output._storedFunction = (state) => {
+        const func = (state: NodeGeometryBuildState) => {
             const value = this.value.getConnectedValue(state);
 
             if (!value) {
@@ -134,6 +143,12 @@ export class GeometryTransformBlock extends NodeGeometryBlock {
 
             return null;
         };
+
+        if (this.evaluateContext) {
+            this.output._storedFunction = func;
+        } else {
+            this.output._storedValue = func(state);
+        }        
     }
 }
 
