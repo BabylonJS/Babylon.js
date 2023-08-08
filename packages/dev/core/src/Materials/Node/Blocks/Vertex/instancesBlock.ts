@@ -172,22 +172,22 @@ export class InstancesBlock extends NodeMaterialBlock {
         const world2 = this.world2;
         const world3 = this.world3;
 
-        state.compilationString += `#ifdef INSTANCES\r\n`;
+        state.compilationString += `#ifdef INSTANCES\n`;
         state.compilationString +=
             this._declareOutput(output, state) +
-            ` = mat4(${world0.associatedVariableName}, ${world1.associatedVariableName}, ${world2.associatedVariableName}, ${world3.associatedVariableName});\r\n`;
-        state.compilationString += `#ifdef THIN_INSTANCES\r\n`;
-        state.compilationString += `${output.associatedVariableName} = ${this.world.associatedVariableName} * ${output.associatedVariableName};\r\n`;
-        state.compilationString += `#endif\r\n`;
+            ` = mat4(${world0.associatedVariableName}, ${world1.associatedVariableName}, ${world2.associatedVariableName}, ${world3.associatedVariableName});\n`;
+        state.compilationString += `#ifdef THIN_INSTANCES\n`;
+        state.compilationString += `${output.associatedVariableName} = ${this.world.associatedVariableName} * ${output.associatedVariableName};\n`;
+        state.compilationString += `#endif\n`;
         if (engine._caps.canUseGLInstanceID) {
-            state.compilationString += this._declareOutput(instanceID, state) + ` = float(gl_InstanceID);\r\n`;
+            state.compilationString += this._declareOutput(instanceID, state) + ` = float(gl_InstanceID);\n`;
         } else {
-            state.compilationString += this._declareOutput(instanceID, state) + ` = 0.0;\r\n`;
+            state.compilationString += this._declareOutput(instanceID, state) + ` = 0.0;\n`;
         }
-        state.compilationString += `#else\r\n`;
-        state.compilationString += this._declareOutput(output, state) + ` = ${this.world.associatedVariableName};\r\n`;
-        state.compilationString += this._declareOutput(instanceID, state) + ` = 0.0;\r\n`;
-        state.compilationString += `#endif\r\n`;
+        state.compilationString += `#else\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = ${this.world.associatedVariableName};\n`;
+        state.compilationString += this._declareOutput(instanceID, state) + ` = 0.0;\n`;
+        state.compilationString += `#endif\n`;
         return this;
     }
 }

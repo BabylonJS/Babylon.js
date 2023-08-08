@@ -323,7 +323,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
                     ${reflectionVectorName}.z *= -1.0;
                 #endif
                 ${this._vEnvironmentIrradianceName} = computeEnvironmentIrradiance(${reflectionVectorName});
-            #endif\r\n`;
+            #endif\n`;
 
         return code;
     }
@@ -353,7 +353,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
                 #define sampleReflection(s, c) textureCube(s, c)
             #else
                 #define sampleReflection(s, c) texture2D(s, c)
-            #endif\r\n`,
+            #endif\n`,
             `//${this.name}`
         );
 
@@ -364,7 +364,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
                 #define sampleReflectionLod(s, c, l) textureCubeLodEXT(s, c, l)
             #else
                 #define sampleReflectionLod(s, c, l) texture2DLodEXT(s, c, l)
-            #endif\r\n`,
+            #endif\n`,
             `//${this.name}`
         );
 
@@ -372,7 +372,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
             vec3 computeReflectionCoordsPBR(vec4 worldPos, vec3 worldNormal) {
                 ${this.handleFragmentSideCodeReflectionCoords("worldNormal", "worldPos", true, true)}
                 return ${this._reflectionVectorName};
-            }\r\n`;
+            }\n`;
 
         state._emitFunction("computeReflectionCoordsPBR", computeReflectionCoordsFunc, `//${this.name}`);
 
@@ -437,7 +437,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
             #endif
                 reflectionOut
             );
-        #endif\r\n`;
+        #endif\n`;
 
         return code;
     }
@@ -457,10 +457,10 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         let codeString = super._dumpPropertiesCode();
 
         if (this.texture) {
-            codeString += `${this._codeVariableName}.texture.gammaSpace = ${this.texture.gammaSpace};\r\n`;
+            codeString += `${this._codeVariableName}.texture.gammaSpace = ${this.texture.gammaSpace};\n`;
         }
-        codeString += `${this._codeVariableName}.useSphericalHarmonics = ${this.useSphericalHarmonics};\r\n`;
-        codeString += `${this._codeVariableName}.forceIrradianceInFragment = ${this.forceIrradianceInFragment};\r\n`;
+        codeString += `${this._codeVariableName}.useSphericalHarmonics = ${this.useSphericalHarmonics};\n`;
+        codeString += `${this._codeVariableName}.forceIrradianceInFragment = ${this.forceIrradianceInFragment};\n`;
 
         return codeString;
     }

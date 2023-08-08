@@ -77,7 +77,7 @@ export class ShaderCodeNode {
                 }
             }
 
-            result += value + "\r\n";
+            result += value + "\n";
         }
 
         this.children.forEach((child) => {
