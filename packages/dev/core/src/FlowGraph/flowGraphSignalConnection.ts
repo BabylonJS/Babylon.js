@@ -1,6 +1,5 @@
 import type { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 import { FlowGraphConnection, FlowGraphConnectionType } from "./flowGraphConnection";
-import type { Nullable } from "../types";
 
 /**
  * @experimental
@@ -8,16 +7,7 @@ import type { Nullable } from "../types";
  * When an output point is activated, it will activate the connected input point.
  * When an input point is activated, it will execute the block it belongs to.
  */
-export class FlowGraphSignalConnection extends FlowGraphConnection {
-    protected _connectedPoint: Nullable<FlowGraphSignalConnection>;
-    public constructor(name: string, type: FlowGraphConnectionType, protected _ownerBlock: FlowGraphExecutionBlock) {
-        super(name, type);
-    }
-
-    public connectTo(point: FlowGraphSignalConnection): void {
-        super.connectTo(point);
-    }
-
+export class FlowGraphSignalConnection extends FlowGraphConnection<FlowGraphExecutionBlock, FlowGraphSignalConnection> {
     /**
      * @internal
      */
