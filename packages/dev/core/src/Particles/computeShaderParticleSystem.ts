@@ -32,6 +32,12 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
         this._engine = engine;
     }
 
+    public contextLost(): void {
+        this._updateComputeShader = undefined as any;
+        this._bufferComputeShader = [];
+        this._renderVertexBuffers = [];
+    }
+
     public isUpdateBufferCreated(): boolean {
         return !!this._updateComputeShader;
     }

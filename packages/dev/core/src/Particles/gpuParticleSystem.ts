@@ -1724,7 +1724,18 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * Rebuilds the particle system
      */
     public rebuild(): void {
-        this._initialize(true);
+        const checkUpdateEffect = () => {
+            if (!this._recreateUpdateEffect() || !this._platform.isUpdateBufferReady()) {
+                setTimeout(checkUpdateEffect, 10);
+            } else {
+                this._initialize(true);
+            }
+        };
+
+        this._cachedUpdateDefines = "";
+        this._platform.contextLost();
+
+        checkUpdateEffect();
     }
 
     private _releaseBuffers() {
