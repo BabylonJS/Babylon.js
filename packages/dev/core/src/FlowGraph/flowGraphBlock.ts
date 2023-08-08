@@ -24,7 +24,7 @@ export class FlowGraphBlock {
     /**
      * The graph that this block belongs to.
      */
-    private _graph: FlowGraph;
+    protected _graph: FlowGraph;
 
     protected constructor(graph: FlowGraph) {
         this._graph = graph;

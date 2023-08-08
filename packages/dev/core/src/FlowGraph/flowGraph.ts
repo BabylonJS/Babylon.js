@@ -14,9 +14,35 @@ import { FlowGraphEventBlock } from "./flowGraphEventBlock";
 export class FlowGraph {
     private _blocks: FlowGraphBlock[] = [];
     private _sceneDisposeObserver: Nullable<Observer<Scene>>;
+    private _variables = new Map<string, any>();
 
     public constructor(private _scene: Scene) {
         this._sceneDisposeObserver = this._scene.onDisposeObservable.add(this.dispose.bind(this));
+    }
+    
+    /**
+     * @internal
+     */
+    public get scene() {
+        return this._scene;
+    }
+
+    /**
+     * Get a variable by its name.
+     * @param name 
+     * @returns 
+     */
+    public getVariable(name: string): any {
+        return this._variables.get(name);
+    }
+
+    /**
+     * Sets a variable by its name.
+     * @param name 
+     * @param value 
+     */
+    public setVariable(name: string, value: any) {
+        this._variables.set(name, value);
     }
 
     /**
