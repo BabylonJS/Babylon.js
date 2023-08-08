@@ -685,6 +685,10 @@ export class VertexData {
         let root: VertexData = this;
 
         for (const other of others) {
+            if (!other) {
+                continue;
+            }
+
             other._validate();
 
             if (!enableCompletion) {
