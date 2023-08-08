@@ -43,7 +43,7 @@ export function CreateIcoSphereVertexData(options: {
     const sideOrientation = options.sideOrientation || VertexData.DEFAULTSIDE;
     const radius = options.radius || 1;
     const flat = options.flat === undefined ? true : options.flat;
-    const subdivisions = options.subdivisions || 4;
+    const subdivisions = (options.subdivisions || 4) | 0;
     const radiusX = options.radiusX || radius;
     const radiusY = options.radiusY || radius;
     const radiusZ = options.radiusZ || radius;
