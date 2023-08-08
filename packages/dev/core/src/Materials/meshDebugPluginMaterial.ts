@@ -212,7 +212,7 @@ export enum MeshDebugMode {
 }
 
 /**
- * Options for MeshDebugPluginMaterial that are given at initialization
+ * Options for MeshDebugPluginMaterial visualizations
  */
 export interface MeshDebugOptions {
     /**
@@ -332,13 +332,122 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
     @serialize()
     private _isEnabled: boolean;
 
-    private _options: Required<MeshDebugOptions>;
+    private _mode: MeshDebugMode;
     /**
-     * Options for the plugin.
-     * See MeshDebugOptions interface for defaults.
+     * The mesh debug visualization.
+     * Defaults to NONE.
      */
+    @serialize()
     @expandToProperty("_markAllDefinesAsDirty")
-    public options: Required<MeshDebugOptions>;
+    public mode: MeshDebugMode;
+
+    private _multiply: boolean;
+    /**
+     * Whether the mesh debug visualization should multiply with color underneath.
+     * Defaults to true.
+     */
+    @serialize()
+    @expandToProperty("_markAllDefinesAsDirty")
+    public multiply: boolean;
+
+    private _shadedDiffuseColor: Color3;
+    /**
+     * Diffuse color used to shade the mesh.
+     * Defaults to (1.0, 1.0, 1.0).
+     */
+    @serializeAsColor3()
+    @expandToProperty("_markAllDefinesAsDirty")
+    public shadedDiffuseColor: Color3;
+
+    private _shadedSpecularColor: Color3;
+    /**
+     * Specular color used to shade the mesh.
+     * Defaults to (0.8, 0.8, 0.8).
+     */
+    @serializeAsColor3()
+    @expandToProperty("_markAllDefinesAsDirty")
+    public shadedSpecularColor: Color3;
+
+    private _shadedSpecularPower: number;
+    /**
+     * Specular power used to shade the mesh.
+     * Defaults to 10.
+     */
+    @serialize()
+    @expandToProperty("_markAllDefinesAsDirty")
+    public shadedSpecularPower: number;
+
+    private _wireframeThickness: number;
+    /**
+     * Width of edge lines in TRIANGLES and TRIANGLE_VERTICES modes.
+     * Defaults to 0.7.
+     */
+    @serialize()
+    @expandToProperty("_markAllDefinesAsDirty")
+    public wireframeThickness: number;
+
+    private _wireframeTrianglesColor: Color3;
+    /**
+     * Color of edge lines in TRIANGLES mode.
+     * Defaults to (0.0, 0.0, 0.0).
+     */
+    @serializeAsColor3()
+    @expandToProperty("_markAllDefinesAsDirty")
+    public wireframeTrianglesColor: Color3;
+
+    private _wireframeVerticesColor: Color3;
+    /**
+     * Color of edge lines in TRIANGLES_VERTICES modes.
+     * Defaults to (0.8, 0.8, 0.8).
+     */
+    @serializeAsColor3()
+    @expandToProperty("_markAllDefinesAsDirty")
+    public wireframeVerticesColor: Color3;
+
+    private _vertexColor: Color3;
+    /**
+     * Color of vertices in TRIANGLES_VERTICES and VERTICES mode.
+     * Defaults to (0.0, 0.0, 0.0).
+     */
+    @serializeAsColor3()
+    @expandToProperty("_markAllDefinesAsDirty")
+    public vertexColor: Color3;
+
+    private _vertexRadius: number;
+    /**
+     * Radius of dots drawn over vertices in TRIANGLE_VERTICES and VERTICES mode.
+     * Defaults to 1.2.
+     */
+    @serialize()
+    @expandToProperty("_markAllDefinesAsDirty")
+    public vertexRadius: number;
+
+    private _uvScale: number;
+    /**
+     * Size of tiles in UV1 or UV2 modes.
+     * Defaults to 20.
+     */
+    @serialize()
+    @expandToProperty("_markAllDefinesAsDirty")
+    public uvScale: number;
+
+    private _uvPrimaryColor: Color3;
+    /**
+     * 1st color of checkerboard grid in UV1 or UV2 modes.
+     * Defaults to (1.0, 1.0, 1.0).
+     */
+    @serializeAsColor3()
+    @expandToProperty("_markAllDefinesAsDirty")
+    public uvPrimaryColor: Color3;
+
+    private _uvSecondaryColor: Color3;
+    /**
+     * 2nd color of checkerboard grid in UV1 or UV2 modes.
+     * Defaults to (0.5, 0.5, 0.5).
+     */
+    @serializeAsColor3()
+    @expandToProperty("_markAllDefinesAsDirty")
+    public uvSecondaryColor: Color3;
 
     /** @internal */
     protected _markAllDefinesAsDirty(): void {
@@ -359,23 +468,20 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
         defines.DBG_MULTIPLY = options.multiply ?? defines.DBG_MULTIPLY;
         super(material, "MeshDebug", 200, defines, true, true);
 
-        const defaults: Required<MeshDebugOptions> = {
-            mode: defines.DBG_MODE,
-            multiply: defines.DBG_MULTIPLY,
-            shadedDiffuseColor: new Color3(1, 1, 1),
-            shadedSpecularColor: new Color3(0.8, 0.8, 0.8),
-            shadedSpecularPower: 10,
-            wireframeThickness: 0.7,
-            wireframeTrianglesColor: new Color3(0, 0, 0),
-            wireframeVerticesColor: new Color3(0.8, 0.8, 0.8),
-            vertexColor: new Color3(0, 0, 0),
-            vertexRadius: 1.2,
-            uvScale: 20,
-            uvPrimaryColor: new Color3(1, 1, 1),
-            uvSecondaryColor: new Color3(0.5, 0.5, 0.5),
-        };
+        this._mode = defines.DBG_MODE;
+        this._multiply = defines.DBG_MULTIPLY;
+        this._shadedDiffuseColor = options.shadedDiffuseColor ?? new Color3(1, 1, 1);
+        this._shadedSpecularColor = options.shadedSpecularColor ?? new Color3(0.8, 0.8, 0.8);
+        this._shadedSpecularPower = options.shadedSpecularPower ?? 10;
+        this._wireframeThickness = options.wireframeThickness ?? 0.7;
+        this._wireframeTrianglesColor = options.wireframeTrianglesColor ?? new Color3(0, 0, 0);
+        this._wireframeVerticesColor = options.wireframeVerticesColor ?? new Color3(0.8, 0.8, 0.8);
+        this._vertexColor = options.vertexColor ?? new Color3(0, 0, 0);
+        this._vertexRadius = options.vertexRadius ?? 1.2;
+        this._uvScale = options.uvScale ?? 20;
+        this._uvPrimaryColor = options.uvPrimaryColor ?? new Color3(1, 1, 1);
+        this._uvSecondaryColor = options.uvSecondaryColor ?? new Color3(0.5, 0.5, 0.5);
 
-        this._options = { ...defaults, ...options };
         this._materialColor = MeshDebugPluginMaterial.MaterialColors[MeshDebugPluginMaterial._PluginCount++ % MeshDebugPluginMaterial.MaterialColors.length];
         this.isEnabled = true;
     }
@@ -419,7 +525,7 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
      */
     public prepareDefines(defines: MeshDebugDefines, scene: Scene, mesh: AbstractMesh) {
         if (
-            (this._options.mode == MeshDebugMode.VERTICES || this._options.mode == MeshDebugMode.TRIANGLES || this._options.mode == MeshDebugMode.TRIANGLES_VERTICES) &&
+            (this._mode == MeshDebugMode.VERTICES || this._mode == MeshDebugMode.TRIANGLES || this._mode == MeshDebugMode.TRIANGLES_VERTICES) &&
             !mesh.isVerticesDataPresent("dbg_initialPass")
         ) {
             Logger.Warn(
@@ -428,8 +534,8 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
             );
         }
 
-        defines.DBG_MODE = this._options.mode;
-        defines.DBG_MULTIPLY = this._options.multiply;
+        defines.DBG_MODE = this._mode;
+        defines.DBG_MULTIPLY = this._multiply;
         defines.DBG_ENABLED = this._isEnabled;
     }
 
@@ -470,20 +576,20 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
         if (!this._isEnabled) {
             return;
         }
-        uniformBuffer.updateFloat3("dbg_shadedDiffuseColor", this._options.shadedDiffuseColor.r, this._options.shadedDiffuseColor.g, this._options.shadedDiffuseColor.b);
+        uniformBuffer.updateFloat3("dbg_shadedDiffuseColor", this._shadedDiffuseColor.r, this._shadedDiffuseColor.g, this._shadedDiffuseColor.b);
         uniformBuffer.updateFloat4(
             "dbg_shadedSpecularColorPower",
-            this._options.shadedSpecularColor.r,
-            this._options.shadedSpecularColor.g,
-            this._options.shadedSpecularColor.b,
-            this._options.shadedSpecularPower
+            this._shadedSpecularColor.r,
+            this._shadedSpecularColor.g,
+            this._shadedSpecularColor.b,
+            this._shadedSpecularPower
         );
-        uniformBuffer.updateFloat3("dbg_thicknessRadiusScale", this._options.wireframeThickness, this._options.vertexRadius, this._options.uvScale);
-        uniformBuffer.updateColor3("dbg_wireframeTrianglesColor", this._options.wireframeTrianglesColor);
-        uniformBuffer.updateColor3("dbg_wireframeVerticesColor", this._options.wireframeVerticesColor);
-        uniformBuffer.updateColor3("dbg_vertexColor", this._options.vertexColor);
-        uniformBuffer.updateColor3("dbg_uvPrimaryColor", this._options.uvPrimaryColor);
-        uniformBuffer.updateColor3("dbg_uvSecondaryColor", this._options.uvSecondaryColor);
+        uniformBuffer.updateFloat3("dbg_thicknessRadiusScale", this._wireframeThickness, this._vertexRadius, this._uvScale);
+        uniformBuffer.updateColor3("dbg_wireframeTrianglesColor", this._wireframeTrianglesColor);
+        uniformBuffer.updateColor3("dbg_wireframeVerticesColor", this._wireframeVerticesColor);
+        uniformBuffer.updateColor3("dbg_vertexColor", this._vertexColor);
+        uniformBuffer.updateColor3("dbg_uvPrimaryColor", this._uvPrimaryColor);
+        uniformBuffer.updateColor3("dbg_uvSecondaryColor", this._uvSecondaryColor);
         uniformBuffer.updateColor3("dbg_materialColor", this._materialColor);
     }
 
@@ -502,56 +608,6 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
                   CUSTOM_FRAGMENT_DEFINITIONS: fragmentDefinitions,
                   CUSTOM_FRAGMENT_MAIN_END: fragmentMainEnd,
               };
-    }
-
-    /**
-     * Serializes this plugin material
-     * @returns serialized object
-     */
-    public serialize(): any {
-        const serializationObject = super.serialize();
-
-        serializationObject.mode = this._options.mode;
-        serializationObject.multiply = this._options.multiply;
-        serializationObject.shadedDiffuseColor = this._options.shadedDiffuseColor.asArray();
-        serializationObject.shadedSpecularColor = this._options.shadedSpecularColor.asArray();
-        serializationObject.shadedSpecularPower = this._options.shadedSpecularPower;
-        serializationObject.wireframeThickness = this._options.wireframeThickness;
-        serializationObject.wireframeTrianglesColor = this._options.wireframeTrianglesColor.asArray();
-        serializationObject.wireframeVerticesColor = this._options.wireframeVerticesColor.asArray();
-        serializationObject.vertexColor = this._options.vertexColor.asArray();
-        serializationObject.vertexRadius = this._options.vertexRadius;
-        serializationObject.uvScale = this._options.uvScale;
-        serializationObject.uvPrimaryColor = this._options.uvPrimaryColor.asArray();
-        serializationObject.uvSecondaryColor = this._options.uvSecondaryColor.asArray();
-
-        return serializationObject;
-    }
-
-    /**
-     * Parses a serialized object
-     * @param serializationObject serialized object
-     * @param scene scene
-     * @param rootUrl root url for textures
-     */
-    public parse(serializationObject: any, scene: Scene, rootUrl: string): void {
-        super.parse(serializationObject, scene, rootUrl);
-
-        this._options.mode = serializationObject.mode;
-        this._options.multiply = serializationObject.multiply;
-        this._options.shadedDiffuseColor = Color3.FromArray(serializationObject.shadedDiffuseColor);
-        this._options.shadedSpecularColor = Color3.FromArray(serializationObject.shadedSpecularColor);
-        this._options.shadedSpecularPower = serializationObject.shadedSpecularPower;
-        this._options.wireframeThickness = serializationObject.wireframeThickness;
-        this._options.wireframeTrianglesColor = Color3.FromArray(serializationObject.wireframeTrianglesColor);
-        this._options.wireframeVerticesColor = Color3.FromArray(serializationObject.wireframeVerticesColor);
-        this._options.vertexColor = Color3.FromArray(serializationObject.vertexColor);
-        this._options.vertexRadius = serializationObject.vertexRadius;
-        this._options.uvScale = serializationObject.uvScale;
-        this._options.uvPrimaryColor = Color3.FromArray(serializationObject.uvPrimaryColor);
-        this._options.uvSecondaryColor = Color3.FromArray(serializationObject.uvSecondaryColor);
-
-        this.markAllDefinesAsDirty();
     }
 
     /**
