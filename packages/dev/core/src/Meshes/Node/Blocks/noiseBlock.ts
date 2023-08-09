@@ -41,7 +41,7 @@ export class NoiseBlock extends NodeGeometryBlock {
     /**
      * Gets the roughtness input component
      */
-    public get roughtness(): NodeGeometryConnectionPoint {
+    public get roughness(): NodeGeometryConnectionPoint {
         return this._inputs[1];
     }
 
