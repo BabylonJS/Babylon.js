@@ -1,11 +1,18 @@
 import type { Nullable } from "../types";
 
+/**
+ * @experimental
+ * The type of a connection point - inpput or output.
+ */
 export enum FlowGraphConnectionType {
     Input,
     Output,
 }
 
-interface IConnectable {
+/**
+ * @experimental
+ */
+export interface IConnectable {
     _connectedPoint: Nullable<IConnectable>;
     _type: FlowGraphConnectionType;
     connectTo(point: IConnectable): void;
