@@ -4,7 +4,7 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { Matrix, Vector2, Vector3, Vector4 } from "../../../Maths/math.vector";
 import type { VertexData } from "../../../Meshes/mesh.vertexData";
-import { PropertyTypeForEdition, editableInPropertyPage } from "../Interfaces/nodeGeometryDecorator";
+import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 
 /**

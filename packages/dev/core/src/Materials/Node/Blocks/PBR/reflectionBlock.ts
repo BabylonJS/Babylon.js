@@ -14,7 +14,7 @@ import type { BaseTexture } from "../../../Textures/baseTexture";
 import type { Mesh } from "../../../../Meshes/mesh";
 import type { SubMesh } from "../../../../Meshes/subMesh";
 import type { Effect } from "../../../effect";
-import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import type { Scene } from "../../../../scene";
 import { Scalar } from "../../../../Maths/math.scalar";
 
