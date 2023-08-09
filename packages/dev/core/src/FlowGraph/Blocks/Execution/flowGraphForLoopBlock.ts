@@ -5,6 +5,12 @@ import { FlowGraphWithOnDoneExecutionBlock } from "core/FlowGraph/flowGraphWithO
 
 /**
  * @experimental
+ */
+export interface IFlowGraphForLoopBlockParams {
+    graph: FlowGraph;
+}
+/**
+ * @experimental
  * Block that executes a loop.
  */
 export class FlowGraphForLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
@@ -37,8 +43,8 @@ export class FlowGraphForLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
     private _cachedEndIndex: number = 0;
     private _cachedStep: number = 0;
 
-    public constructor(graph: FlowGraph) {
-        super(graph);
+    public constructor(params: IFlowGraphForLoopBlockParams) {
+        super(params.graph);
 
         this.startIndex = this._registerDataInput("startIndex", 0);
         this.endIndex = this._registerDataInput("endIndex", 0);

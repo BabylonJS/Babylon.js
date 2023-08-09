@@ -2,6 +2,11 @@ import type { FlowGraph } from "../../flowGraph";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
 
+export interface IFlowGraphSetVariableBlockParams<T> {
+    graph: FlowGraph;
+    variableName: string;
+    defaultValue: T;
+}
 /**
  * @experimental
  */
@@ -10,10 +15,14 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphWithOnDoneExecutionBl
      *
      */
     public readonly input: FlowGraphDataConnection<T>;
-    constructor(graph: FlowGraph, private _variableName: string, defaultValue: T) {
-        super(graph);
 
-        this.input = this._registerDataInput("input", defaultValue);
+    private _variableName: string;
+
+    constructor(params: IFlowGraphSetVariableBlockParams<T>) {
+        super(params.graph);
+
+        this._variableName = params.variableName;
+        this.input = this._registerDataInput("input", params.defaultValue);
     }
 
     public _execute(): void {

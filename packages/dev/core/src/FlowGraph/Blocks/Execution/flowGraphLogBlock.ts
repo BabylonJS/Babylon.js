@@ -4,6 +4,12 @@ import { FlowGraphWithOnDoneExecutionBlock } from "core/FlowGraph/flowGraphWithO
 
 /**
  * @experimental
+ */
+export interface IFlowGraphLogBlockParams {
+    graph: FlowGraph;
+}
+/**
+ * @experimental
  * Block that logs a message to the console.
  */
 export class FlowGraphLogBlock extends FlowGraphWithOnDoneExecutionBlock {
@@ -12,8 +18,8 @@ export class FlowGraphLogBlock extends FlowGraphWithOnDoneExecutionBlock {
      */
     public readonly message: FlowGraphDataConnection<any>;
 
-    public constructor(graph: FlowGraph) {
-        super(graph);
+    public constructor(params: IFlowGraphLogBlockParams) {
+        super(params.graph);
         this.message = this._registerDataInput("message", "Hello world");
     }
 

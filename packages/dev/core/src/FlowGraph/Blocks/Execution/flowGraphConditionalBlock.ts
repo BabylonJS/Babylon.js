@@ -3,6 +3,9 @@ import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphExecutionBlock } from "../../flowGraphExecutionBlock";
 import type { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
 
+export interface IFlowGraphConditionalBlockParams {
+    graph: FlowGraph;
+}
 /**
  * @experimental
  * A block that evaluates a condition and executes one of two branches.
@@ -12,8 +15,8 @@ export class FlowGraphConditionalBlock extends FlowGraphExecutionBlock {
     public readonly onTrue: FlowGraphSignalConnection;
     public readonly onFalse: FlowGraphSignalConnection;
 
-    constructor(graph: FlowGraph) {
-        super(graph);
+    constructor(params: IFlowGraphConditionalBlockParams) {
+        super(params.graph);
 
         this.condition = this._registerDataInput("condition", false);
 

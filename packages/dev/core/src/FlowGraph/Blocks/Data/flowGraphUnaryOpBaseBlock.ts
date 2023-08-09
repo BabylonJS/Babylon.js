@@ -5,6 +5,14 @@ import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 /**
  * @experimental
  */
+export interface IFlowGraphUnaryOpBaseBlockParams<InputT, OutputT> {
+    graph: FlowGraph;
+    defaultInputValue: InputT;
+    op: (input: InputT) => OutputT;
+}
+/**
+ * @experimental
+ */
 export class FlowGraphUnaryOpBaseBlock<InputT, OutputT> extends FlowGraphBlock {
     public readonly input: FlowGraphDataConnection<InputT>;
     /**
@@ -14,13 +22,13 @@ export class FlowGraphUnaryOpBaseBlock<InputT, OutputT> extends FlowGraphBlock {
 
     private readonly _op: (input: InputT) => OutputT;
 
-    public constructor(graph: FlowGraph, defaultInputValue: InputT, op: (input: InputT) => OutputT) {
-        super(graph);
+    public constructor(params: IFlowGraphUnaryOpBaseBlockParams<InputT, OutputT>) {
+        super(params.graph);
 
-        this._op = op;
+        this._op = params.op;
 
-        this.input = this._registerDataInput("input", defaultInputValue);
-        this.output = this._registerDataOutput("output", op(defaultInputValue));
+        this.input = this._registerDataInput("input", params.defaultInputValue);
+        this.output = this._registerDataOutput("output", this._op(params.defaultInputValue));
     }
 
     /**

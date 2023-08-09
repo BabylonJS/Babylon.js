@@ -5,6 +5,9 @@ import type { FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphEventBlock } from "./flowGraphEventBlock";
 import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 
+export interface FlowGraphParams {
+    scene: Scene;
+}
 /**
  * @experimental
  * Class used to represent a flow graph.
@@ -16,8 +19,9 @@ export class FlowGraph {
     private _blocks: FlowGraphBlock[] = [];
     private _sceneDisposeObserver: Nullable<Observer<Scene>>;
     private _variables = new Map<string, any>();
-
-    public constructor(private _scene: Scene) {
+    private _scene: Scene;
+    public constructor(params: FlowGraphParams) {
+        this._scene = params.scene;
         this._sceneDisposeObserver = this._scene.onDisposeObservable.add(this.dispose.bind(this));
     }
 

@@ -6,6 +6,14 @@ import { AdvancedTimer } from "../../../Misc";
 
 /**
  * @experimental
+ */
+export interface IFlowGraphTimerBlockParameters {
+    graph: FlowGraph;
+    defaultTimeout?: number;
+}
+
+/**
+ * @experimental
  * Block that can execute an action immediately and another after a delay.
  * The delay is counted on the scene's tick.
  */
@@ -18,10 +26,10 @@ export class FlowGraphTimerBlock extends FlowGraphWithOnDoneExecutionBlock {
      */
     private _runningTimers: Array<AdvancedTimer> = [];
 
-    constructor(graph: FlowGraph, defaultTimeout: number) {
-        super(graph);
+    constructor(params: IFlowGraphTimerBlockParameters) {
+        super(params.graph);
 
-        this.timeout = this._registerDataInput("timeout", defaultTimeout);
+        this.timeout = this._registerDataInput("timeout", params.defaultTimeout ?? 0);
         this.onTimerDone = this._registerSignalOutput("onTimerDone");
     }
 

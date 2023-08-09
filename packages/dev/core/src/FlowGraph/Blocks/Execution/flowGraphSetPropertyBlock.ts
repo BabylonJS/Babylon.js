@@ -4,6 +4,15 @@ import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExec
 
 /**
  * @experimental
+ */
+export interface IFlowGraphSetPropertyBlockParams<PropT> {
+    defaultTarget: any;
+    defaultProperty: string;
+    defaultValue: PropT;
+    graph: FlowGraph;
+}
+/**
+ * @experimental
  * Block that sets a property on a target object.
  * TODO: Add support for animating the property.
  */
@@ -14,12 +23,12 @@ export class FlowGraphSetPropertyBlock<PropT> extends FlowGraphWithOnDoneExecuti
 
     public readonly outTarget: FlowGraphDataConnection<any>;
 
-    public constructor(graph: FlowGraph, defaultTarget: any, defaultProperty: string, defaultValue: PropT) {
-        super(graph);
+    public constructor(params: IFlowGraphSetPropertyBlockParams<PropT>) {
+        super(params.graph);
 
-        this.target = this._registerDataInput("target", defaultTarget);
-        this.property = this._registerDataInput("property", defaultProperty);
-        this.value = this._registerDataInput("value", defaultValue);
+        this.target = this._registerDataInput("target", params.defaultTarget);
+        this.property = this._registerDataInput("property", params.defaultProperty);
+        this.value = this._registerDataInput("value", params.defaultValue);
 
         this.outTarget = this._registerDataOutput("outTarget", this.target);
     }

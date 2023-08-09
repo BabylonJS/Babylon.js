@@ -4,6 +4,15 @@ import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 
 /**
  * @experimental
+ */
+export interface IFlowGraphConditionalDataBlockParams<T> {
+    defaultTrueValue: T;
+    defaultFalseValue: T;
+    graph: FlowGraph;
+}
+
+/**
+ * @experimental
  * Block that returns a value based on a condition.
  */
 export class FlowGraphConditionalDataBlock<T> extends FlowGraphBlock {
@@ -13,14 +22,14 @@ export class FlowGraphConditionalDataBlock<T> extends FlowGraphBlock {
 
     public readonly output: FlowGraphDataConnection<T>;
 
-    constructor(graph: FlowGraph, defaultTrueValue: T, defaultFalseValue: T) {
-        super(graph);
+    constructor(params: IFlowGraphConditionalDataBlockParams<T>) {
+        super(params.graph);
 
         this.condition = this._registerDataInput("condition", false);
-        this.trueValue = this._registerDataInput("trueValue", defaultTrueValue);
-        this.falseValue = this._registerDataInput("falseValue", defaultFalseValue);
+        this.trueValue = this._registerDataInput("trueValue", params.defaultTrueValue);
+        this.falseValue = this._registerDataInput("falseValue", params.defaultFalseValue);
 
-        this.output = this._registerDataOutput("output", defaultFalseValue);
+        this.output = this._registerDataOutput("output", params.defaultFalseValue);
     }
 
     /**

@@ -7,7 +7,15 @@ import { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
 
 /**
- * @internal
+ * @experimental
+ */
+export interface IFlowGraphPlayAnimationBlockParams {
+    graph: FlowGraph;
+    defaultTarget: IAnimatable;
+    defaultAnimation: Animation;
+}
+/**
+ * @experimental
  * A block that plays an animation on an animatable object.
  * QUESTION: should it also handle animation groups?
  */
@@ -44,11 +52,11 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphWithOnDoneExecutionBlo
 
     private _runningAnimations: Array<Animatable> = [];
 
-    public constructor(graph: FlowGraph, target: IAnimatable, animation: Animation) {
-        super(graph);
+    public constructor(params: IFlowGraphPlayAnimationBlockParams) {
+        super(params.graph);
 
-        this.target = new FlowGraphDataConnection<IAnimatable>("target", FlowGraphConnectionType.Input, this, target);
-        this.animation = new FlowGraphDataConnection<Animation>("animation", FlowGraphConnectionType.Input, this, animation);
+        this.target = new FlowGraphDataConnection<IAnimatable>("target", FlowGraphConnectionType.Input, this, params.defaultTarget);
+        this.animation = new FlowGraphDataConnection<Animation>("animation", FlowGraphConnectionType.Input, this, params.defaultAnimation);
         this.speed = new FlowGraphDataConnection<number>("speed", FlowGraphConnectionType.Input, this, 1);
         this.loop = new FlowGraphDataConnection<boolean>("loop", FlowGraphConnectionType.Input, this, false);
         this.from = new FlowGraphDataConnection<number>("from", FlowGraphConnectionType.Input, this, 0);
