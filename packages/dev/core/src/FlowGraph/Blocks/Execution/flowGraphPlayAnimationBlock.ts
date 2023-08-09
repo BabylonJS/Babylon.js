@@ -83,7 +83,9 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphWithOnDoneExecutionBlo
      * QUESTION: better to pause or stop? should the animations be disposed of?
      */
     public _cancelPendingTasks(): void {
-        this._runningAnimations.forEach((anim) => anim.pause());
+        for (const anim of this._runningAnimations) {
+            anim.pause();
+        }
         this._runningAnimations.length = 0;
     }
 }
