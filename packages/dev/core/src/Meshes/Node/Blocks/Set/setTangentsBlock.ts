@@ -99,9 +99,9 @@ export class SetTangentsBlock extends NodeGeometryBlock implements INodeGeometry
         // Processing
         const vertexCount = this._vertexData.positions.length / 3;
         for (this._currentIndex = 0; this._currentIndex < vertexCount; this._currentIndex++) {
-            const tempVector3 = this.tangents.getConnectedValue(state) as Vector4;
-            if (tempVector3) {
-                tempVector3.toArray(this._vertexData.tangents, this._currentIndex * 4);
+            const tempVector4 = this.tangents.getConnectedValue(state) as Vector4;
+            if (tempVector4) {
+                tempVector4.toArray(this._vertexData.tangents, this._currentIndex * 4);
             }
         }
 
