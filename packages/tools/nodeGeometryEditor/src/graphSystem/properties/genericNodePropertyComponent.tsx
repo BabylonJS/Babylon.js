@@ -9,12 +9,12 @@ import { TextLineComponent } from "shared-ui-components/lines/textLineComponent"
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
-import { PropertyTypeForEdition } from "core/Meshes/Node/Interfaces/nodeGeometryDecorator";
-import type { IEditablePropertyOption, IPropertyDescriptionForEdition, IEditablePropertyListOption } from "core/Meshes/Node/Interfaces/nodeGeometryDecorator";
 import type { NodeGeometryConnectionPoint } from "core/Meshes/Node/nodeGeometryBlockConnectionPoint";
 import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
 import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
 import { Vector4LineComponent } from "shared-ui-components/lines/vector4LineComponent";
+import type { IEditablePropertyListOption } from "core/Decorators/nodeDecorator";
+import { PropertyTypeForEdition, type IEditablePropertyOption, type IPropertyDescriptionForEdition } from "core/Decorators/nodeDecorator";
 
 export class GenericPropertyComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -200,7 +200,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
             this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
         }
 
-        const rebuild = notifiers?.callback?.(this.props.nodeData.data as NodeGeometryBlock) ?? false;
+        const rebuild = notifiers?.callback?.(null, this.props.nodeData.data as NodeGeometryBlock) ?? false;
 
         if (rebuild) {
             this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
