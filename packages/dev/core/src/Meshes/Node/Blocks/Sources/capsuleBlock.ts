@@ -6,7 +6,7 @@ import { GeometryInputBlock } from "../geometryInputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Vector3 } from "../../../../Maths/math.vector";
 import { CreateCapsuleVertexData } from "core/Meshes/Builders/capsuleBuilder";
-import { PropertyTypeForEdition, editableInPropertyPage } from "../../Interfaces/nodeGeometryDecorator";
+import { PropertyTypeForEdition, editableInPropertyPage } from "../../../../Decorators/nodeDecorator";
 
 /**
  * Defines a block used to generate capsule geometry data

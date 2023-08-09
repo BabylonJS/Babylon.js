@@ -194,58 +194,58 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         let injectionCode = "";
 
         if (manager?.isUsingTextureForTargets && repeatCount > 0) {
-            injectionCode += `float vertexID;\r\n`;
+            injectionCode += `float vertexID;\n`;
         }
 
         for (let index = 0; index < repeatCount; index++) {
-            injectionCode += `#ifdef MORPHTARGETS\r\n`;
+            injectionCode += `#ifdef MORPHTARGETS\n`;
             if (manager?.isUsingTextureForTargets) {
-                injectionCode += `vertexID = float(gl_VertexID) * morphTargetTextureInfo.x;\r\n`;
-                injectionCode += `${positionOutput.associatedVariableName} += (readVector3FromRawSampler(${index}, vertexID) - ${position.associatedVariableName}) * morphTargetInfluences[${index}];\r\n`;
-                injectionCode += `vertexID += 1.0;\r\n`;
+                injectionCode += `vertexID = float(gl_VertexID) * morphTargetTextureInfo.x;\n`;
+                injectionCode += `${positionOutput.associatedVariableName} += (readVector3FromRawSampler(${index}, vertexID) - ${position.associatedVariableName}) * morphTargetInfluences[${index}];\n`;
+                injectionCode += `vertexID += 1.0;\n`;
             } else {
-                injectionCode += `${positionOutput.associatedVariableName} += (position${index} - ${position.associatedVariableName}) * morphTargetInfluences[${index}];\r\n`;
+                injectionCode += `${positionOutput.associatedVariableName} += (position${index} - ${position.associatedVariableName}) * morphTargetInfluences[${index}];\n`;
             }
 
             if (hasNormals) {
-                injectionCode += `#ifdef MORPHTARGETS_NORMAL\r\n`;
+                injectionCode += `#ifdef MORPHTARGETS_NORMAL\n`;
                 if (manager?.isUsingTextureForTargets) {
-                    injectionCode += `${normalOutput.associatedVariableName} += (readVector3FromRawSampler(${index}, vertexID) - ${normal.associatedVariableName}) * morphTargetInfluences[${index}];\r\n`;
-                    injectionCode += `vertexID += 1.0;\r\n`;
+                    injectionCode += `${normalOutput.associatedVariableName} += (readVector3FromRawSampler(${index}, vertexID) - ${normal.associatedVariableName}) * morphTargetInfluences[${index}];\n`;
+                    injectionCode += `vertexID += 1.0;\n`;
                 } else {
-                    injectionCode += `${normalOutput.associatedVariableName} += (normal${index} - ${normal.associatedVariableName}) * morphTargetInfluences[${index}];\r\n`;
+                    injectionCode += `${normalOutput.associatedVariableName} += (normal${index} - ${normal.associatedVariableName}) * morphTargetInfluences[${index}];\n`;
                 }
-                injectionCode += `#endif\r\n`;
+                injectionCode += `#endif\n`;
             }
 
             if (hasUVs) {
-                injectionCode += `#ifdef MORPHTARGETS_UV\r\n`;
+                injectionCode += `#ifdef MORPHTARGETS_UV\n`;
                 if (manager?.isUsingTextureForTargets) {
-                    injectionCode += `${uvOutput.associatedVariableName} += (readVector3FromRawSampler(${index}, vertexID).xy - ${uv.associatedVariableName}) * morphTargetInfluences[${index}];\r\n`;
-                    injectionCode += `vertexID += 1.0;\r\n`;
+                    injectionCode += `${uvOutput.associatedVariableName} += (readVector3FromRawSampler(${index}, vertexID).xy - ${uv.associatedVariableName}) * morphTargetInfluences[${index}];\n`;
+                    injectionCode += `vertexID += 1.0;\n`;
                 } else {
-                    injectionCode += `${uvOutput.associatedVariableName}.xy += (uv_${index} - ${uv.associatedVariableName}.xy) * morphTargetInfluences[${index}];\r\n`;
+                    injectionCode += `${uvOutput.associatedVariableName}.xy += (uv_${index} - ${uv.associatedVariableName}.xy) * morphTargetInfluences[${index}];\n`;
                 }
-                injectionCode += `#endif\r\n`;
+                injectionCode += `#endif\n`;
             }
 
             if (hasTangents) {
-                injectionCode += `#ifdef MORPHTARGETS_TANGENT\r\n`;
+                injectionCode += `#ifdef MORPHTARGETS_TANGENT\n`;
                 if (manager?.isUsingTextureForTargets) {
-                    injectionCode += `${tangentOutput.associatedVariableName}.xyz += (readVector3FromRawSampler(${index}, vertexID) - ${tangent.associatedVariableName}.xyz) * morphTargetInfluences[${index}];\r\n`;
+                    injectionCode += `${tangentOutput.associatedVariableName}.xyz += (readVector3FromRawSampler(${index}, vertexID) - ${tangent.associatedVariableName}.xyz) * morphTargetInfluences[${index}];\n`;
                 } else {
-                    injectionCode += `${tangentOutput.associatedVariableName}.xyz += (tangent${index} - ${tangent.associatedVariableName}.xyz) * morphTargetInfluences[${index}];\r\n`;
+                    injectionCode += `${tangentOutput.associatedVariableName}.xyz += (tangent${index} - ${tangent.associatedVariableName}.xyz) * morphTargetInfluences[${index}];\n`;
                 }
 
                 if (tangent.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
-                    injectionCode += `${tangentOutput.associatedVariableName}.w = ${tangent.associatedVariableName}.w;\r\n`;
+                    injectionCode += `${tangentOutput.associatedVariableName}.w = ${tangent.associatedVariableName}.w;\n`;
                 } else {
-                    injectionCode += `${tangentOutput.associatedVariableName}.w = 1.;\r\n`;
+                    injectionCode += `${tangentOutput.associatedVariableName}.w = 1.;\n`;
                 }
-                injectionCode += `#endif\r\n`;
+                injectionCode += `#endif\n`;
             }
 
-            injectionCode += `#endif\r\n`;
+            injectionCode += `#endif\n`;
         }
 
         state.compilationString = state.compilationString.replace(this._repeatableContentAnchor, injectionCode);
@@ -302,22 +302,22 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
             repeatKey: "maxSimultaneousMorphTargets",
         });
 
-        state.compilationString += `${this._declareOutput(positionOutput, state)} = ${position.associatedVariableName};\r\n`;
-        state.compilationString += `#ifdef NORMAL\r\n`;
-        state.compilationString += `${this._declareOutput(normalOutput, state)} = ${normal.associatedVariableName};\r\n`;
-        state.compilationString += `#else\r\n`;
-        state.compilationString += `${this._declareOutput(normalOutput, state)} = vec3(0., 0., 0.);\r\n`;
-        state.compilationString += `#endif\r\n`;
-        state.compilationString += `#ifdef TANGENT\r\n`;
-        state.compilationString += `${this._declareOutput(tangentOutput, state)} = ${tangent.associatedVariableName};\r\n`;
-        state.compilationString += `#else\r\n`;
-        state.compilationString += `${this._declareOutput(tangentOutput, state)} = vec4(0., 0., 0., 0.);\r\n`;
-        state.compilationString += `#endif\r\n`;
-        state.compilationString += `#ifdef UV1\r\n`;
-        state.compilationString += `${this._declareOutput(uvOutput, state)} = ${uv.associatedVariableName};\r\n`;
-        state.compilationString += `#else\r\n`;
-        state.compilationString += `${this._declareOutput(uvOutput, state)} = vec2(0., 0.);\r\n`;
-        state.compilationString += `#endif\r\n`;
+        state.compilationString += `${this._declareOutput(positionOutput, state)} = ${position.associatedVariableName};\n`;
+        state.compilationString += `#ifdef NORMAL\n`;
+        state.compilationString += `${this._declareOutput(normalOutput, state)} = ${normal.associatedVariableName};\n`;
+        state.compilationString += `#else\n`;
+        state.compilationString += `${this._declareOutput(normalOutput, state)} = vec3(0., 0., 0.);\n`;
+        state.compilationString += `#endif\n`;
+        state.compilationString += `#ifdef TANGENT\n`;
+        state.compilationString += `${this._declareOutput(tangentOutput, state)} = ${tangent.associatedVariableName};\n`;
+        state.compilationString += `#else\n`;
+        state.compilationString += `${this._declareOutput(tangentOutput, state)} = vec4(0., 0., 0., 0.);\n`;
+        state.compilationString += `#endif\n`;
+        state.compilationString += `#ifdef UV1\n`;
+        state.compilationString += `${this._declareOutput(uvOutput, state)} = ${uv.associatedVariableName};\n`;
+        state.compilationString += `#else\n`;
+        state.compilationString += `${this._declareOutput(uvOutput, state)} = vec2(0., 0.);\n`;
+        state.compilationString += `#endif\n`;
 
         // Repeatable content
         this._repeatableContentAnchor = state._repeatableContentAnchor;

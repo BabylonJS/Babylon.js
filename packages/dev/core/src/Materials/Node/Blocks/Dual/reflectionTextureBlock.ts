@@ -190,7 +190,7 @@ export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
 
         const normalWUnit = state._getFreeVariableName("normalWUnit");
 
-        state.compilationString += `vec4 ${normalWUnit} = normalize(${this.worldNormal.associatedVariableName});\r\n`;
+        state.compilationString += `vec4 ${normalWUnit} = normalize(${this.worldNormal.associatedVariableName});\n`;
 
         state.compilationString += this.handleFragmentSideCodeReflectionCoords(normalWUnit);
 

@@ -6,7 +6,7 @@ import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import type { INodeGeometryExecutionContext } from "../../Interfaces/nodeGeometryExecutionContext";
 import type { VertexData } from "../../../mesh.vertexData";
 import type { Vector2 } from "../../../../Maths/math.vector";
-import { PropertyTypeForEdition, editableInPropertyPage } from "../../Interfaces/nodeGeometryDecorator";
+import { PropertyTypeForEdition, editableInPropertyPage } from "../../../../Decorators/nodeDecorator";
 
 /**
  * Block used to set texture coordinates for a geometry
@@ -114,9 +114,9 @@ export class SetUVsBlock extends NodeGeometryBlock implements INodeGeometryExecu
         // Processing
         const vertexCount = this._vertexData.positions.length / 3;
         for (this._currentIndex = 0; this._currentIndex < vertexCount; this._currentIndex++) {
-            const tempVector3 = this.uvs.getConnectedValue(state) as Vector2;
-            if (tempVector3) {
-                tempVector3.toArray(uvs, this._currentIndex * 2);
+            const tempVector2 = this.uvs.getConnectedValue(state) as Vector2;
+            if (tempVector2) {
+                tempVector2.toArray(uvs, this._currentIndex * 2);
             }
         }
 

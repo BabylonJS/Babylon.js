@@ -2,8 +2,8 @@ import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
-import { PropertyTypeForEdition, editableInPropertyPage } from "../Interfaces/nodeGeometryDecorator";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
+import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
 
 /**
  * Conditions supported by the condition block
@@ -157,9 +157,9 @@ export class ConditionBlock extends NodeGeometryBlock {
                     break;
             }
             return condition;
-        }
+        };
 
-        this.output._storedFunction = (state) => {           
+        this.output._storedFunction = (state) => {
             if (func(state)) {
                 return this.ifTrue.getConnectedValue(state);
             }

@@ -3,20 +3,19 @@ import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnect
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import { VertexDataMaterialInfo, type VertexData } from "../../../../Meshes/mesh.vertexData";
-import { PropertyTypeForEdition, editableInPropertyPage } from "../../Interfaces/nodeGeometryDecorator";
+import { PropertyTypeForEdition, editableInPropertyPage } from "../../../../Decorators/nodeDecorator";
 import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 
 /**
  * Block used to affect a material ID to a geometry
  */
 export class SetMaterialIDBlock extends NodeGeometryBlock {
-
     /**
      * Gets or sets a boolean indicating that this block can evaluate context
      * Build performance is improved when this value is set to false as the system will cache values instead of reevaluating everything per context change
      */
     @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { rebuild: true } })
-    public evaluateContext = true;    
+    public evaluateContext = true;
 
     /**
      * Create a new SetMaterialIDBlock
@@ -90,7 +89,7 @@ export class SetMaterialIDBlock extends NodeGeometryBlock {
             this.output._storedFunction = func;
         } else {
             this.output._storedValue = func(state);
-        }        
+        }
     }
 }
 

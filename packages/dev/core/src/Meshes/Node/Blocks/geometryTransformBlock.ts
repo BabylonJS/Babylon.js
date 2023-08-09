@@ -4,7 +4,7 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { Matrix, Vector2, Vector3, Vector4 } from "../../../Maths/math.vector";
 import type { VertexData } from "../../../Meshes/mesh.vertexData";
-import { PropertyTypeForEdition, editableInPropertyPage } from "../Interfaces/nodeGeometryDecorator";
+import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 
 /**
@@ -22,7 +22,7 @@ export class GeometryTransformBlock extends NodeGeometryBlock {
      * Build performance is improved when this value is set to false as the system will cache values instead of reevaluating everything per context change
      */
     @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { rebuild: true } })
-    public evaluateContext = true;    
+    public evaluateContext = true;
 
     /**
      * Create a new GeometryTransformBlock
@@ -148,7 +148,7 @@ export class GeometryTransformBlock extends NodeGeometryBlock {
             this.output._storedFunction = func;
         } else {
             this.output._storedValue = func(state);
-        }        
+        }
     }
 }
 

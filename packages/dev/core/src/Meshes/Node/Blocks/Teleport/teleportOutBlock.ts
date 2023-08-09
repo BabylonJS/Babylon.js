@@ -30,7 +30,7 @@ export class TeleportOutBlock extends NodeGeometryBlock {
      */
     public get entryPoint() {
         return this._entryPoint;
-    }        
+    }
 
     /**
      * Gets the current class name
@@ -52,7 +52,6 @@ export class TeleportOutBlock extends NodeGeometryBlock {
         if (!this._entryPoint) {
             return;
         }
-        
         this._entryPoint.detachFromEndpoint(this);
     }
 
@@ -86,7 +85,7 @@ export class TeleportOutBlock extends NodeGeometryBlock {
         }
 
         return codeString;
-    }    
+    }
 
     /**
      * Clone the current block to a new identical block
@@ -104,7 +103,6 @@ export class TeleportOutBlock extends NodeGeometryBlock {
 
     protected _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
-        
         if (this.entryPoint) {
             codeString += `${this.entryPoint._codeVariableName}.attachToEndpoint(${this._codeVariableName});\r\n`;
         }
@@ -127,7 +125,7 @@ export class TeleportOutBlock extends NodeGeometryBlock {
         super._deserialize(serializationObject);
 
         this._tempEntryPointUniqueId = serializationObject.entryPoint;
-    }    
+    }
 }
 
 RegisterClass("BABYLON.TeleportOutBlock", TeleportOutBlock);

@@ -57,7 +57,7 @@ export class PowBlock extends NodeMaterialBlock {
 
         const output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = pow(${this.value.associatedVariableName}, ${this.power.associatedVariableName});\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = pow(${this.value.associatedVariableName}, ${this.power.associatedVariableName});\n`;
 
         return this;
     }

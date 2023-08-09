@@ -54,7 +54,7 @@ export class StepBlock extends NodeMaterialBlock {
 
         const output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = step(${this.edge.associatedVariableName}, ${this.value.associatedVariableName});\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = step(${this.edge.associatedVariableName}, ${this.value.associatedVariableName});\n`;
 
         return this;
     }

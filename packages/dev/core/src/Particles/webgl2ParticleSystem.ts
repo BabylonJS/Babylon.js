@@ -96,6 +96,12 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
         };
     }
 
+    public contextLost(): void {
+        this._updateEffect = undefined as any;
+        this._renderVAO.length = 0;
+        this._updateVAO.length = 0;
+    }
+
     public isUpdateBufferCreated(): boolean {
         return !!this._updateEffect;
     }

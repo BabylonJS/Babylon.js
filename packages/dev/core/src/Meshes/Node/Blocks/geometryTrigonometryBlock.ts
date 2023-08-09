@@ -5,7 +5,7 @@ import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { Vector2, Vector3, Vector4 } from "../../../Maths/math.vector";
-import { PropertyTypeForEdition, editableInPropertyPage } from "../Interfaces/nodeGeometryDecorator";
+import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
 
 /**
  * Operations supported by the Trigonometry block
@@ -193,11 +193,11 @@ export class GeometryTrigonometryBlock extends NodeGeometryBlock {
                 break;
             }
             case GeometryTrigonometryBlockOperations.ToRadians: {
-                func = (value: number) => value * Math.PI / 180;
+                func = (value: number) => (value * Math.PI) / 180;
                 break;
             }
             case GeometryTrigonometryBlockOperations.ToDegrees: {
-                func = (value: number) => value * 180 / Math.PI;
+                func = (value: number) => (value * 180) / Math.PI;
                 break;
             }
         }

@@ -18,7 +18,7 @@ export class NoiseBlock extends NodeGeometryBlock {
         super(name);
 
         this.registerInput("octaves", NodeGeometryBlockConnectionPointTypes.Float, true, 2, 0, 16);
-        this.registerInput("roughtness", NodeGeometryBlockConnectionPointTypes.Float, true, 0.5, 0, 1);
+        this.registerInput("roughness", NodeGeometryBlockConnectionPointTypes.Float, true, 0.5, 0, 1);
 
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Float);
     }
@@ -41,7 +41,7 @@ export class NoiseBlock extends NodeGeometryBlock {
     /**
      * Gets the roughtness input component
      */
-    public get roughtness(): NodeGeometryConnectionPoint {
+    public get roughness(): NodeGeometryConnectionPoint {
         return this._inputs[1];
     }
 
@@ -181,9 +181,9 @@ export class NoiseBlock extends NodeGeometryBlock {
         this.output._storedFunction = (state) => {
             const position = state.getContextualValue(NodeGeometryContextualSources.Positions) as Vector3;
             const octaves = this.octaves.getConnectedValue(state) || 2;
-            const roughtness = this.roughtness.getConnectedValue(state) || 0.5;
+            const roughness = this.roughness.getConnectedValue(state) || 0.5;
 
-            return this.noise(octaves, roughtness, position);
+            return this.noise(octaves, roughness, position);
         };
     }
 }

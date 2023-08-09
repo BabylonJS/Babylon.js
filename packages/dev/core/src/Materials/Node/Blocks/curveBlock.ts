@@ -133,10 +133,10 @@ export class CurveBlock extends NodeMaterialBlock {
         `;
 
         for (let i = 1; i <= size; i++) {
-            code += this._duplicateEntry(entry, i === 1 ? "x" : i === 2 ? "y" : i === 3 ? "z" : "w") + ";\r\n";
+            code += this._duplicateEntry(entry, i === 1 ? "x" : i === 2 ? "y" : i === 3 ? "z" : "w") + ";\n";
         }
 
-        code += "return ret;\r\n";
+        code += "return ret;\n";
         return code;
     }
 
@@ -291,9 +291,9 @@ export class CurveBlock extends NodeMaterialBlock {
             }
         }
 
-        state._emitFunction(registeredFunctionName, `${inputType} ${registeredFunctionName}(${inputType} v) {${registeredFunction};}\r\n`, "");
+        state._emitFunction(registeredFunctionName, `${inputType} ${registeredFunctionName}(${inputType} v) {${registeredFunction};}\n`, "");
 
-        state.compilationString += this._declareOutput(output, state) + ` = ${registeredFunctionName}(${this.input.associatedVariableName});\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = ${registeredFunctionName}(${this.input.associatedVariableName});\n`;
 
         return this;
     }
@@ -313,7 +313,7 @@ export class CurveBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.type = BABYLON.CurveBlockTypes.${CurveBlockTypes[this.type]};\r\n`;
+        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.type = BABYLON.CurveBlockTypes.${CurveBlockTypes[this.type]};\n`;
         return codeString;
     }
 }

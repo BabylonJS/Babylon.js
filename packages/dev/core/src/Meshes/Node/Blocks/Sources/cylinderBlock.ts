@@ -7,7 +7,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Vector4 } from "../../../../Maths/math.vector";
 import { CreateCylinderVertexData } from "core/Meshes/Builders/cylinderBuilder";
 import type { Color4 } from "../../../../Maths/math.color";
-import { PropertyTypeForEdition, editableInPropertyPage } from "../../Interfaces/nodeGeometryDecorator";
+import { PropertyTypeForEdition, editableInPropertyPage } from "../../../../Decorators/nodeDecorator";
 
 /**
  * Defines a block used to generate cylinder geometry data

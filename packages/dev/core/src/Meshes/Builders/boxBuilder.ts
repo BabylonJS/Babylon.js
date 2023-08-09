@@ -241,6 +241,87 @@ export function CreateSegmentedBoxVertexData(options: {
 }
 
 /**
+ * Creates the VertexData for a segmented box
+ * @param options an object used to set the following optional parameters for the box, required but can be empty
+ * * size sets the width, height and depth of the box to the value of size, optional default 1
+ * * width sets the width (x direction) of the box, overwrites the width set by size, optional, default size
+ * * height sets the height (y direction) of the box, overwrites the height set by size, optional, default size
+ * * depth sets the depth (z direction) of the box, overwrites the depth set by size, optional, default size
+ * * segments sets the number of segments on the all axis (1 by default)
+ * * widthSegments sets the number of segments on the x axis (1 by default)
+ * * heightSegments sets the number of segments on the y axis (1 by default)
+ * * depthSegments sets the number of segments on the z axis (1 by default)
+ * @param options.size
+ * @param options.width
+ * @param options.height
+ * @param options.depth
+ * @param options.segments
+ * @param options.widthSegments
+ * @param options.heightSegments
+ * @param options.depthSegments
+ * @returns the VertexData of the box
+ */
+export function CreateSegmentedBoxVertexData(options: {
+    size?: number;
+    width?: number;
+    height?: number;
+    depth?: number;
+    segments?: number;
+    widthSegments?: number;
+    heightSegments?: number;
+    depthSegments?: number;
+}): VertexData {
+    const width = options.width || options.size || 1;
+    const height = options.height || options.size || 1;
+    const depth = options.depth || options.size || 1;
+    const widthSegments = (options.widthSegments || options.segments || 1) | 0;
+    const heightSegments = (options.heightSegments || options.segments || 1) | 0;
+    const depthSegments = (options.depthSegments || options.segments || 1) | 0;
+    const rotationMatrix = new Matrix();
+    const translationMatrix = new Matrix();
+    const transformMatrix = new Matrix();
+
+    const bottomPlane = CreateGroundVertexData({ width: width, height: depth, subdivisionsX: widthSegments, subdivisionsY: depthSegments });
+    Matrix.TranslationToRef(0, -height / 2, 0, translationMatrix);
+    Matrix.RotationZToRef(Math.PI, rotationMatrix);
+    rotationMatrix.multiplyToRef(translationMatrix, transformMatrix);
+    bottomPlane.transform(transformMatrix);
+
+    const topPlane = CreateGroundVertexData({ width: width, height: depth, subdivisionsX: widthSegments, subdivisionsY: depthSegments });
+    Matrix.TranslationToRef(0, height / 2, 0, transformMatrix);
+    topPlane.transform(transformMatrix);
+
+    const negXPlane = CreateGroundVertexData({ width: height, height: depth, subdivisionsX: heightSegments, subdivisionsY: depthSegments });
+    Matrix.TranslationToRef(-width / 2, 0, 0, translationMatrix);
+    Matrix.RotationZToRef(Math.PI / 2, rotationMatrix);
+    rotationMatrix.multiplyToRef(translationMatrix, transformMatrix);
+    negXPlane.transform(transformMatrix);
+
+    const posXPlane = CreateGroundVertexData({ width: height, height: depth, subdivisionsX: heightSegments, subdivisionsY: depthSegments });
+    Matrix.TranslationToRef(width / 2, 0, 0, translationMatrix);
+    Matrix.RotationZToRef(-Math.PI / 2, rotationMatrix);
+    rotationMatrix.multiplyToRef(translationMatrix, transformMatrix);
+    posXPlane.transform(transformMatrix);
+
+    const negZPlane = CreateGroundVertexData({ width: width, height: height, subdivisionsX: widthSegments, subdivisionsY: heightSegments });
+    Matrix.TranslationToRef(0, 0, -depth / 2, translationMatrix);
+    Matrix.RotationXToRef(-Math.PI / 2, rotationMatrix);
+    rotationMatrix.multiplyToRef(translationMatrix, transformMatrix);
+    negZPlane.transform(transformMatrix);
+
+    const posZPlane = CreateGroundVertexData({ width: width, height: height, subdivisionsX: widthSegments, subdivisionsY: heightSegments });
+    Matrix.TranslationToRef(0, 0, depth / 2, translationMatrix);
+    Matrix.RotationXToRef(Math.PI / 2, rotationMatrix);
+    rotationMatrix.multiplyToRef(translationMatrix, transformMatrix);
+    posZPlane.transform(transformMatrix);
+
+    // Result
+    bottomPlane.merge([topPlane, posXPlane, negXPlane, negZPlane, posZPlane], true);
+
+    return bottomPlane;
+}
+
+/**
  * Creates a box mesh
  * * The parameter `size` sets the size (float) of each box side (default 1)
  * * You can set some different box dimensions by using the parameters `width`, `height` and `depth` (all by default have the same value of `size`)

@@ -66,7 +66,7 @@ export class SmoothStepBlock extends NodeMaterialBlock {
 
         state.compilationString +=
             this._declareOutput(output, state) +
-            ` = smoothstep(${this.edge0.associatedVariableName}, ${this.edge1.associatedVariableName}, ${this.value.associatedVariableName});\r\n`;
+            ` = smoothstep(${this.edge0.associatedVariableName}, ${this.edge1.associatedVariableName}, ${this.value.associatedVariableName});\n`;
 
         return this;
     }

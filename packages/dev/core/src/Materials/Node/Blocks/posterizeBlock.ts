@@ -64,7 +64,7 @@ export class PosterizeBlock extends NodeMaterialBlock {
 
         state.compilationString +=
             this._declareOutput(output, state) +
-            ` = floor(${this.value.associatedVariableName} / (1.0 / ${this.steps.associatedVariableName})) * (1.0 / ${this.steps.associatedVariableName});\r\n`;
+            ` = floor(${this.value.associatedVariableName} / (1.0 / ${this.steps.associatedVariableName})) * (1.0 / ${this.steps.associatedVariableName});\n`;
         return this;
     }
 }

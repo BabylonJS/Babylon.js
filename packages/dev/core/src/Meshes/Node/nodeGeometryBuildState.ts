@@ -38,7 +38,7 @@ export class NodeGeometryBuildState {
     getContextualValue(source: NodeGeometryContextualSources) {
         if (!this.executionContext || !this.geometryContext) {
             return null;
-        }        
+        }
 
         const index = this.executionContext.getExecutionIndex();
 
@@ -54,7 +54,7 @@ export class NodeGeometryBuildState {
             case NodeGeometryContextualSources.Normals:
                 if (this.executionContext.getOverrideNormalsContextualValue) {
                     return this.executionContext.getOverrideNormalsContextualValue();
-                }                
+                }
                 if (!this.geometryContext.normals) {
                     return Vector3.Zero();
                 }

@@ -9,6 +9,8 @@ import type { DataArray } from "../types";
 export interface IGPUParticleSystemPlatform {
     alignDataInBuffer: boolean;
 
+    contextLost: () => void;
+
     isUpdateBufferCreated: () => boolean;
     isUpdateBufferReady: () => boolean;
 

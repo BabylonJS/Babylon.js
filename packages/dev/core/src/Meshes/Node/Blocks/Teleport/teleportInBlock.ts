@@ -50,7 +50,7 @@ export class TeleportInBlock extends NodeGeometryBlock {
         }
 
         return codeString;
-    }    
+    }
 
     /**
      * Add an enpoint to this block
@@ -83,8 +83,8 @@ export class TeleportInBlock extends NodeGeometryBlock {
         for (const endpoint of this._endpoints) {
             endpoint.output._storedFunction = (state) => {
                 return this.input.getConnectedValue(state);
-            }
-        };
+            };
+        }
     }
 }
 

@@ -579,11 +579,11 @@ export class VertexData {
 
             if (this.tangents) {
                 vertexData.tangents = this.tangents.slice(materialInfo.verticesStart * 4, (materialInfo.verticesCount + materialInfo.verticesStart) * 4);
-            }            
+            }
 
             if (this.colors) {
                 vertexData.colors = this.colors.slice(materialInfo.verticesStart * 4, (materialInfo.verticesCount + materialInfo.verticesStart) * 4);
-            }            
+            }
 
             if (this.uvs) {
                 vertexData.uvs = this.uvs.slice(materialInfo.verticesStart * 2, (materialInfo.verticesCount + materialInfo.verticesStart) * 2);
@@ -591,43 +591,43 @@ export class VertexData {
 
             if (this.uvs2) {
                 vertexData.uvs2 = this.uvs2.slice(materialInfo.verticesStart * 2, (materialInfo.verticesCount + materialInfo.verticesStart) * 2);
-            }    
-            
+            }
+
             if (this.uvs3) {
                 vertexData.uvs3 = this.uvs3.slice(materialInfo.verticesStart * 2, (materialInfo.verticesCount + materialInfo.verticesStart) * 2);
-            }        
+            }
 
             if (this.uvs4) {
                 vertexData.uvs4 = this.uvs4.slice(materialInfo.verticesStart * 2, (materialInfo.verticesCount + materialInfo.verticesStart) * 2);
-            }         
-            
+            }
+
             if (this.uvs5) {
                 vertexData.uvs5 = this.uvs5.slice(materialInfo.verticesStart * 2, (materialInfo.verticesCount + materialInfo.verticesStart) * 2);
-            }      
-            
+            }
+
             if (this.uvs6) {
                 vertexData.uvs6 = this.uvs6.slice(materialInfo.verticesStart * 2, (materialInfo.verticesCount + materialInfo.verticesStart) * 2);
-            }      
+            }
 
             if (this.matricesIndices) {
                 vertexData.matricesIndices = this.matricesIndices.slice(materialInfo.verticesStart * 4, (materialInfo.verticesCount + materialInfo.verticesStart) * 4);
-            }                    
+            }
 
             if (this.matricesIndicesExtra) {
                 vertexData.matricesIndicesExtra = this.matricesIndicesExtra.slice(materialInfo.verticesStart * 4, (materialInfo.verticesCount + materialInfo.verticesStart) * 4);
-            }                     
+            }
 
             if (this.matricesWeights) {
                 vertexData.matricesWeights = this.matricesWeights.slice(materialInfo.verticesStart * 4, (materialInfo.verticesCount + materialInfo.verticesStart) * 4);
-            }                    
+            }
 
             if (this.matricesWeightsExtra) {
                 vertexData.matricesWeightsExtra = this.matricesWeightsExtra.slice(materialInfo.verticesStart * 4, (materialInfo.verticesCount + materialInfo.verticesStart) * 4);
-            }               
+            }
 
             if (this.indices) {
                 vertexData.indices = [];
-                for (let index = materialInfo.indexStart; index < materialInfo.indexStart + materialInfo.indexCount; index++ ) {
+                for (let index = materialInfo.indexStart; index < materialInfo.indexStart + materialInfo.indexCount; index++) {
                     vertexData.indices.push(this.indices[index] - materialInfo.verticesStart);
                 }
             }
@@ -638,9 +638,7 @@ export class VertexData {
             newMaterialInfo.materialIndex = materialInfo.materialIndex;
             newMaterialInfo.verticesStart = 0;
             newMaterialInfo.verticesCount = (vertexData.positions ? vertexData.positions.length : 0) / 3;
-            vertexData.materialInfos = [
-                newMaterialInfo
-            ]
+            vertexData.materialInfos = [newMaterialInfo];
 
             result.push(vertexData);
         }
@@ -725,7 +723,6 @@ export class VertexData {
                         other.tangents = Array.from(this.tangents);
                     }
                 }
-                
                 if (!this.uvs !== !other.uvs) {
                     if (!this.uvs) {
                         this.uvs = Array.from(other.uvs!);
@@ -757,7 +754,6 @@ export class VertexData {
                         other.uvs4 = Array.from(this.uvs4);
                     }
                 }
-                
                 if (!this.uvs5 !== !other.uvs5) {
                     if (!this.uvs5) {
                         this.uvs5 = Array.from(other.uvs5!);
@@ -772,7 +768,7 @@ export class VertexData {
                     } else {
                         other.uvs6 = Array.from(this.uvs6);
                     }
-                }   
+                }
 
                 if (!this.colors !== !other.colors) {
                     if (!this.colors) {
@@ -789,7 +785,6 @@ export class VertexData {
                         other.matricesIndices = Array.from(this.matricesIndices);
                     }
                 }
-                
                 if (!this.matricesWeights !== !other.matricesWeights) {
                     if (!this.matricesWeights) {
                         this.matricesWeights = Array.from(other.matricesWeights!);
@@ -804,7 +799,7 @@ export class VertexData {
                     } else {
                         other.matricesIndicesExtra = Array.from(this.matricesIndicesExtra);
                     }
-                }    
+                }
 
                 if (!this.matricesWeightsExtra !== !other.matricesWeightsExtra) {
                     if (!this.matricesWeightsExtra) {
@@ -812,7 +807,7 @@ export class VertexData {
                     } else {
                         other.matricesWeightsExtra = Array.from(this.matricesWeightsExtra);
                     }
-                }            
+                }
             }
 
         }
@@ -825,15 +820,15 @@ export class VertexData {
             const materialInfos: VertexDataMaterialInfo[] = [];
             let currentMaterialInfo: Nullable<VertexDataMaterialInfo> = null;
             const vertexDataList: { vertexData: VertexData; transform?: Matrix }[] = [];
-            
+
             // We need to split vertexData with more than one materialInfo
             for (const split of this.splitBasedOnMaterialID()) {
-                vertexDataList.push({vertexData: split, transform: transform});
+                vertexDataList.push({ vertexData: split, transform: transform });
             }
-            
+
             for (const vertexData of vertexDatas) {
                 for (const split of vertexData.vertexData.splitBasedOnMaterialID()) {
-                    vertexDataList.push({vertexData: split, transform: vertexData.transform});
+                    vertexDataList.push({ vertexData: split, transform: vertexData.transform });
                 }
             }
 
@@ -850,9 +845,9 @@ export class VertexData {
                     return 0;
                 }
 
-                return -1
+                return -1;
             });
-            
+
             // Build the new material info
             for (const vertexDataSource of vertexDataList) {
                 const vertexData = vertexDataSource.vertexData;
@@ -882,7 +877,7 @@ export class VertexData {
             const first = vertexDataList.splice(0, 1)[0];
             root = first.vertexData;
             transform = first.transform;
-            others = vertexDataList.map(v => v.vertexData);
+            others = vertexDataList.map((v) => v.vertexData);
             vertexDatas = vertexDataList;
 
             this.materialInfos = materialInfos;

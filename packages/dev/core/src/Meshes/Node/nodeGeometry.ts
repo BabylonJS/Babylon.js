@@ -19,7 +19,6 @@ import { Tools } from "../../Misc/tools";
 import type { Color4 } from "../../Maths/math.color";
 import { Engine } from "../../Engines/engine";
 
-
 // declare NODEGEOMETRYEDITOR namespace for compilation issue
 declare let NODEGEOMETRYEDITOR: any;
 declare let BABYLON: any;
@@ -37,7 +36,6 @@ export interface INodeGeometryEditorOptions {
     };
 }
 
-
 /**
  * Defines a node based geometry
  */
@@ -49,7 +47,7 @@ export class NodeGeometry {
     private _buildExecutionTime: number = 0;
 
     /** Define the Url to load node editor script */
-    public static EditorURL = `https://unpkg.com/babylonjs-node-geometry-editor@${Engine.Version}/babylon.nodeGeometryEditor.js`;    
+    public static EditorURL = `https://unpkg.com/babylonjs-node-geometry-editor@${Engine.Version}/babylon.nodeGeometryEditor.js`;
 
     /** Define the Url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
@@ -70,7 +68,7 @@ export class NodeGeometry {
         }
 
         return undefined;
-    }    
+    }
 
     /**
      * Gets the time spent to build this block (in ms)
@@ -205,7 +203,7 @@ export class NodeGeometry {
                 resolve();
             }
         });
-    }    
+    }
 
     /** Creates the node editor window. */
     private _createNodeEditor(additionalConfig?: any) {
@@ -214,7 +212,7 @@ export class NodeGeometry {
             ...additionalConfig,
         };
         this.BJSNODEGEOMETRYEDITOR.NodeGeometryEditor.Show(nodeEditorConfig);
-    }    
+    }
 
     /**
      * Build the material and generates the inner effect
@@ -501,7 +499,7 @@ export class NodeGeometry {
             if (block.entryPoint) {
                 this._gatherBlocks(block.entryPoint, list);
             }
-        }        
+        }
     }
 
     /**

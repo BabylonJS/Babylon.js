@@ -65,7 +65,7 @@ export class IntFloatConverterBlock extends NodeGeometryBlock {
             return "intIn";
         }
         return name;
-    }    
+    }
 
     protected _buildBlock() {
         this.floatOut._storedFunction = (state) => {
@@ -88,7 +88,7 @@ export class IntFloatConverterBlock extends NodeGeometryBlock {
             }
 
             return 0;
-        };        
+        };
     }
 }
 

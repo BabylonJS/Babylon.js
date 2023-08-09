@@ -7,7 +7,6 @@ import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnection
  * Defines a block used to debug values going through it
  */
 export class DebugBlock extends NodeGeometryBlock {
-
     /**
      * Gets the log entries
      */
@@ -32,7 +31,7 @@ export class DebugBlock extends NodeGeometryBlock {
      */
     public get buildExecutionTime() {
         return 0;
-    }        
+    }
 
     /**
      * Gets the current class name
@@ -67,7 +66,7 @@ export class DebugBlock extends NodeGeometryBlock {
         this.output._storedFunction = (state) => {
             const input = this.input.getConnectedValue(state);
 
-            this.log.push(input ? input.toString() :  "null");
+            this.log.push(input ? input.toString() : "null");
 
             return input;
         };

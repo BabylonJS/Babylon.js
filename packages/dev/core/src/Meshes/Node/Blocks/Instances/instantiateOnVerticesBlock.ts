@@ -6,7 +6,7 @@ import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import type { INodeGeometryExecutionContext } from "../../Interfaces/nodeGeometryExecutionContext";
 import type { VertexData } from "../../../mesh.vertexData";
 import { Vector3 } from "../../../../Maths/math.vector";
-import { PropertyTypeForEdition, editableInPropertyPage } from "../../Interfaces/nodeGeometryDecorator";
+import { PropertyTypeForEdition, editableInPropertyPage } from "../../../../Decorators/nodeDecorator";
 import { Epsilon } from "../../../../Maths/math.constants";
 import type { Nullable } from "../../../../types";
 
@@ -16,7 +16,7 @@ import type { Nullable } from "../../../../types";
 export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext {
     private _vertexData: VertexData;
     private _currentIndex: number;
-    private _indexTranslation: Nullable<{[key: number]: number}> = null;
+    private _indexTranslation: Nullable<{ [key: number]: number }> = null;
 
     /**
      * Gets or sets a boolean indicating if the block should remove duplicated positions
@@ -135,11 +135,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
                 const z = vertices[this._currentIndex * 3 + 2];
                 let found = false;
                 for (let index = 0; index < alreadyDone.length; index += 3) {
-                    if ( 
-                        Math.abs(alreadyDone[index] - x) < Epsilon && 
-                        Math.abs(alreadyDone[index + 1] - y) < Epsilon && 
-                        Math.abs(alreadyDone[index + 2] - z) < Epsilon
-                        ) { 
+                    if (Math.abs(alreadyDone[index] - x) < Epsilon && Math.abs(alreadyDone[index + 1] - y) < Epsilon && Math.abs(alreadyDone[index + 2] - z) < Epsilon) {
                         found = true;
                         break;
                     }

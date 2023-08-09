@@ -25,7 +25,7 @@ export class GeometryElbowBlock extends NodeGeometryBlock {
      */
     public get buildExecutionTime() {
         return 0;
-    }    
+    }
 
     /**
      * Gets the current class name

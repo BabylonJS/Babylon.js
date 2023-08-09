@@ -48,7 +48,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
     }
 
     public preProcessShaderCode(code: string, isFragment: boolean): string {
-        const ubDeclaration = `// Internals UBO\r\nuniform ${WebGPUShaderProcessor.InternalsUBOName} {\nfloat yFactor_;\nfloat textureOutputHeight_;\n};\n`;
+        const ubDeclaration = `// Internals UBO\nuniform ${WebGPUShaderProcessor.InternalsUBOName} {\nfloat yFactor_;\nfloat textureOutputHeight_;\n};\n`;
         const alreadyInjected = code.indexOf("// Internals UBO") !== -1;
 
         if (isFragment) {
@@ -68,9 +68,9 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
     }
 
     public varyingCheck(varying: string, isFragment: boolean) {
-        const outRegex = /(flat\s)?\s*out /;
-        const inRegex = /(flat\s)?\s*in /;
-        const varyingRegex = /(flat\s)?\s*varying /;
+        const outRegex = /(flat\s)?\s*\bout\b/;
+        const inRegex = /(flat\s)?\s*\bin\b/;
+        const varyingRegex = /(flat\s)?\s*\bvarying\b/;
 
         const regex = isFragment && this._fragmentIsGLES3 ? inRegex : !isFragment && this._vertexIsGLES3 ? outRegex : varyingRegex;
 
@@ -206,16 +206,16 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
                 } else {
                     const layouts = [];
                     layouts.push(`layout(set = ${samplerGroupIndex}, binding = ${samplerBindingIndex}) uniform ${componentType}${samplerType} ${samplerName};`);
-                    uniform = `\r\n`;
+                    uniform = `\n`;
                     for (let i = 0; i < arraySize; ++i) {
                         const textureSetIndex = textureInfo.textures[i].groupIndex;
                         const textureBindingIndex = textureInfo.textures[i].bindingIndex;
 
                         layouts.push(`layout(set = ${textureSetIndex}, binding = ${textureBindingIndex}) uniform ${textureType} ${name}Texture${i};`);
 
-                        uniform += `${i > 0 ? "\r\n" : ""}#define ${name}${i} ${componentType}${samplerFunction}(${name}Texture${i}, ${samplerName})`;
+                        uniform += `${i > 0 ? "\n" : ""}#define ${name}${i} ${componentType}${samplerFunction}(${name}Texture${i}, ${samplerName})`;
                     }
-                    uniform = layouts.join("\r\n") + uniform;
+                    uniform = layouts.join("\n") + uniform;
                     this._textureArrayProcessing.push(name);
                 }
 

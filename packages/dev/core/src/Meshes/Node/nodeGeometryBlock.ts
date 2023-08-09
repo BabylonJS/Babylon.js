@@ -80,14 +80,14 @@ export class NodeGeometryBlock {
      */
     public get isTeleportOut(): boolean {
         return this._isTeleportOut;
-    }    
+    }
 
     /**
      * Gets a boolean indicating if this block is a teleport in
      */
     public get isTeleportIn(): boolean {
         return this._isTeleportIn;
-    }        
+    }
 
     /**
      * Gets a boolean indicating that this block can only be used once per NodeGeometry
@@ -170,14 +170,7 @@ export class NodeGeometryBlock {
      * @param valueMax max value accepted for value
      * @returns the current block
      */
-    public registerInput(
-        name: string,
-        type: NodeGeometryBlockConnectionPointTypes,
-        isOptional: boolean = false,
-        value?: any,
-        valueMin?: any,
-        valueMax?: any
-    ) {
+    public registerInput(name: string, type: NodeGeometryBlockConnectionPointTypes, isOptional: boolean = false, value?: any, valueMin?: any, valueMax?: any) {
         const point = new NodeGeometryConnectionPoint(name, this, NodeGeometryConnectionPointDirection.Input);
         point.type = type;
         point.isOptional = isOptional;
@@ -214,7 +207,7 @@ export class NodeGeometryBlock {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _customBuildStep(state: NodeGeometryBuildState): void {
         // Must be implemented by children
-    }    
+    }
 
     /**
      * Build the current node and generate the vertex data
@@ -434,7 +427,7 @@ export class NodeGeometryBlock {
             codeString += `${connectedBlock._codeVariableName}.${connectedBlock._outputRename(connectedOutput.name)}.connectTo(${this._codeVariableName}.${this._inputRename(
                 input.name
             )});\r\n`;
-        }   
+        }
 
         return codeString;
     }
@@ -495,7 +488,7 @@ export class NodeGeometryBlock {
                     codeString += connectedBlock._dumpCode(uniqueNames, alreadyDumped);
                 }
             }
-        }   
+        }
 
         return codeString;
     }

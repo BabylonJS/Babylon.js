@@ -7,7 +7,7 @@ import type { BaseTexture } from "../../../Textures/baseTexture";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Scene } from "../../../../scene";
 import type { InputBlock } from "../Input/inputBlock";
-import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import type { Effect } from "../../../effect";
 
 import type { NodeMaterial } from "../../nodeMaterial";
@@ -161,7 +161,7 @@ export class SceneDepthBlock extends NodeMaterialBlock {
 
         state._emitVaryingFromString(this._mainUVName, "vec2");
 
-        state.compilationString += `${this._mainUVName} = ${uvInput.associatedVariableName}.xy;\r\n`;
+        state.compilationString += `${this._mainUVName} = ${uvInput.associatedVariableName}.xy;\n`;
 
         if (!this._outputs.some((o) => o.isConnectedInVertexShader)) {
             return;
@@ -184,16 +184,16 @@ export class SceneDepthBlock extends NodeMaterialBlock {
                 return;
             }
 
-            state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${uvInput.associatedVariableName}.xy);\r\n`;
+            state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${uvInput.associatedVariableName}.xy);\n`;
             return;
         }
 
         if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
-            state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${uvInput.associatedVariableName}.xy);\r\n`;
+            state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${uvInput.associatedVariableName}.xy);\n`;
             return;
         }
 
-        state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${this._mainUVName});\r\n`;
+        state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${this._mainUVName});\n`;
     }
 
     private _writeOutput(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string, vertexMode = false) {
@@ -202,16 +202,16 @@ export class SceneDepthBlock extends NodeMaterialBlock {
                 return;
             }
 
-            state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\r\n`;
+            state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\n`;
             return;
         }
 
         if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
-            state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\r\n`;
+            state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\n`;
             return;
         }
 
-        state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\r\n`;
+        state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\n`;
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {
