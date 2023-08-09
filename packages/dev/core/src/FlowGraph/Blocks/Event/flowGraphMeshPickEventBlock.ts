@@ -23,9 +23,14 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
 
     public set meshToPick(mesh: AbstractMesh) {
         if (this._meshToPick !== mesh) {
-            this._stopListening();
+            const wasListening = !!this._meshPickObserver;
+            if (wasListening) {
+                this._stopListening();
+            }
             this._meshToPick = mesh;
-            this._startListening();
+            if (wasListening) {
+                this._startListening();
+            }
         }
     }
 

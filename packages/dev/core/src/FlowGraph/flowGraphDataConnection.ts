@@ -1,4 +1,3 @@
-import type { Nullable } from "../types";
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphConnection, FlowGraphConnectionType } from "./flowGraphConnection";
 
@@ -9,14 +8,9 @@ import { FlowGraphConnection, FlowGraphConnectionType } from "./flowGraphConnect
  * An output point will only have a value if it is connected to an input point. Furthermore,
  * if the point belongs to a "function" node, the node will run its function to update the value.
  */
-export class FlowGraphDataConnection<T> extends FlowGraphConnection {
-    protected _connectedPoint: Nullable<FlowGraphDataConnection<T>>;
-    public constructor(name: string, type: FlowGraphConnectionType, protected _ownerBlock: FlowGraphBlock, private _value: T) {
-        super(name, type);
-    }
-
-    public connectTo(point: FlowGraphDataConnection<T>): void {
-        super.connectTo(point);
+export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlock, FlowGraphDataConnection<T>> {
+    public constructor(name: string, type: FlowGraphConnectionType, ownerBlock: FlowGraphBlock, private _value: T) {
+        super(name, type, ownerBlock);
     }
 
     public set value(value: T) {
