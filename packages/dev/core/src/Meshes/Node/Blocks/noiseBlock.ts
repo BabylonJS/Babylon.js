@@ -18,7 +18,7 @@ export class NoiseBlock extends NodeGeometryBlock {
         super(name);
 
         this.registerInput("octaves", NodeGeometryBlockConnectionPointTypes.Float, true, 2, 0, 16);
-        this.registerInput("roughtness", NodeGeometryBlockConnectionPointTypes.Float, true, 0.5, 0, 1);
+        this.registerInput("roughness", NodeGeometryBlockConnectionPointTypes.Float, true, 0.5, 0, 1);
 
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Float);
     }
