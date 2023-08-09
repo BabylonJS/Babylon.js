@@ -7,7 +7,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Scene } from "../../../../scene";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import type { NodeMaterialDefines } from "../../nodeMaterial";
-import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { MaterialHelper } from "../../../materialHelper";
 
 import type { NodeMaterial } from "../../nodeMaterial";

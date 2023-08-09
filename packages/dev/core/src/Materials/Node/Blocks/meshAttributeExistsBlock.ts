@@ -6,7 +6,7 @@ import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { InputBlock } from "./Input/inputBlock";
 import { MorphTargetsBlock } from "./Vertex/morphTargetsBlock";
-import { PropertyTypeForEdition, editableInPropertyPage } from "../nodeMaterialDecorator";
+import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
 import type { Scene } from "core/scene";
 
 export enum MeshAttributeExistsBlockTypes {

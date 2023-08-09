@@ -11,7 +11,7 @@ import type { Mesh } from "../../../../Meshes/mesh";
 import { InputBlock } from "../Input/inputBlock";
 import type { Effect } from "../../../effect";
 import type { Scene } from "../../../../scene";
-import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import type { TextureBlock } from "../Dual/textureBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { TBNBlock } from "./TBNBlock";

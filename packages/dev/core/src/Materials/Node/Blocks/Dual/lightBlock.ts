@@ -14,7 +14,7 @@ import type { Light } from "../../../../Lights/light";
 import type { Nullable } from "../../../../types";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Scene } from "../../../../scene";
-import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 
 import "../../../../Shaders/ShadersInclude/lightFragmentDeclaration";
 import "../../../../Shaders/ShadersInclude/lightVxFragmentDeclaration";

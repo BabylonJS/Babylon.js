@@ -17,7 +17,7 @@ import "../../../Shaders/ShadersInclude/helperFunctions";
 import { ImageSourceBlock } from "./Dual/imageSourceBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../nodeMaterialConnectionPointCustomObject";
 import { EngineStore } from "../../../Engines/engineStore";
-import { editableInPropertyPage, PropertyTypeForEdition } from "../nodeMaterialDecorator";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
 
 /**
  * Block used to read a texture with triplanar mapping (see "boxmap" in https://iquilezles.org/articles/biplanar/)

@@ -9,7 +9,7 @@ import type { Effect } from "../../../effect";
 import type { Mesh } from "../../../../Meshes/mesh";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Scene } from "../../../../scene";
-import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 
 import "../../../../Shaders/ShadersInclude/helperFunctions";
 import "../../../../Shaders/ShadersInclude/imageProcessingDeclaration";

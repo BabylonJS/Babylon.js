@@ -19,7 +19,7 @@ import "../../../../Shaders/ShadersInclude/reflectionFunction";
 import { CubeTexture } from "../../../Textures/cubeTexture";
 import { Texture } from "../../../Textures/texture";
 import { EngineStore } from "../../../../Engines/engineStore";
-import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 
 /**
  * Base block used to read a reflection texture from a sampler

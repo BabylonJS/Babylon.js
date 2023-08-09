@@ -7,7 +7,7 @@ import type { BaseTexture } from "../../../Textures/baseTexture";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Scene } from "../../../../scene";
 import type { InputBlock } from "../Input/inputBlock";
-import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import type { Effect } from "../../../effect";
 
 import type { NodeMaterial } from "../../nodeMaterial";
