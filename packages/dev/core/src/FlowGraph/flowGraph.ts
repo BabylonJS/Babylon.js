@@ -25,9 +25,6 @@ export class FlowGraph {
         this._sceneDisposeObserver = this._scene.onDisposeObservable.add(this.dispose.bind(this));
     }
 
-    /**
-     * @internal
-     */
     public get scene() {
         return this._scene;
     }
