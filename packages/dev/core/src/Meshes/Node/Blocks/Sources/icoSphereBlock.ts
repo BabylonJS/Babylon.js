@@ -110,9 +110,8 @@ export class IcoSphereBlock extends NodeGeometryBlock {
             options.radius = this.radius.getConnectedValue(state);
             options.subdivisions = this.subdivisions.getConnectedValue(state);
             options.radiusX = this.radiusX.getConnectedValue(state);
-            options.radiusX = this.radiusX.getConnectedValue(state);
-            options.radiusX = this.radiusX.getConnectedValue(state);
-            options.radiusX = this.radiusX.getConnectedValue(state);
+            options.radiusY = this.radiusY.getConnectedValue(state);
+            options.radiusZ = this.radiusZ.getConnectedValue(state);
 
             // Append vertex data from the plane builder
             return CreateIcoSphereVertexData(options);
