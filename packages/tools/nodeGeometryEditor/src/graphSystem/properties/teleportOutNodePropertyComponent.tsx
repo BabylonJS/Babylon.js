@@ -51,34 +51,34 @@ export class TeleportOutPropertyTabComponent extends React.Component<IPropertyCo
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="PROPERTIES">
                     <OptionsLineComponent
-                            label="Entry point"
-                            options={options}
-                            target={block}
-                            propertyName="entryPoint"
-                            noDirectUpdate={true}
-                            onSelect={(value) => {
-                                switch (value) {
-                                    case -1:
-                                        block.detach();
-                                        break;
-                                    default: {
-                                        const source = teleporters.find((t) => t.uniqueId === value);
-                                        source?.attachToEndpoint(block);
-                                    }
+                        label="Entry point"
+                        options={options}
+                        target={block}
+                        propertyName="entryPoint"
+                        noDirectUpdate={true}
+                        onSelect={(value) => {
+                            switch (value) {
+                                case -1:
+                                    block.detach();
+                                    break;
+                                default: {
+                                    const source = teleporters.find((t) => t.uniqueId === value);
+                                    source?.attachToEndpoint(block);
                                 }
+                            }
 
-                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
-                                this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
-                                this.forceUpdate();
-                            }}
-                            extractValue={() => {
-                                if (!block.entryPoint) {
-                                    return -1;
-                                }
+                            this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
+                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+                            this.forceUpdate();
+                        }}
+                        extractValue={() => {
+                            if (!block.entryPoint) {
+                                return -1;
+                            }
 
-                                return block.entryPoint?.uniqueId;
-                            }}
-                        />
+                            return block.entryPoint?.uniqueId;
+                        }}
+                    />
                 </LineContainerComponent>
             </div>
         );

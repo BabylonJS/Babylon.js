@@ -19,7 +19,7 @@ export class LogComponent extends React.Component<ILogComponentProps, { logs: Lo
     constructor(props: ILogComponentProps) {
         super(props);
 
-        this.state = { logs: [] };        
+        this.state = { logs: [] };
         this._logConsoleRef = React.createRef();
     }
 

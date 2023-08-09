@@ -31,13 +31,9 @@ export class DebugPropertyTabComponent extends React.Component<IPropertyComponen
             <div>
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="DEBUG INFOS">
-                {
-                    debugBlock.log.map((str, i) => {
-                        return (
-                            <TextLineComponent key={i} label={i + " >"} value={str} />
-                        )
-                    })
-                }
+                    {debugBlock.log.map((str, i) => {
+                        return <TextLineComponent key={i} label={i + " >"} value={str} />;
+                    })}
                 </LineContainerComponent>
             </div>
         );

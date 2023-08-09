@@ -7,7 +7,7 @@ import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateMan
 
 export class TeleportInDisplayManager implements IDisplayManager {
     private _hasHighlights = false;
-    
+
     public getHeaderClass() {
         return "";
     }
@@ -50,5 +50,4 @@ export class TeleportInDisplayManager implements IDisplayManager {
             manager.onHighlightNodeObservable.notifyObservers({ data: endpoint, active: false });
         }
     }
-}    
-
+}

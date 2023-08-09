@@ -83,7 +83,6 @@ export class BlockNodeData implements INodeData {
         iconDiv.classList.add(styles.hidden);
     }
 
-
     public get invisibleEndpoints() {
         if (this.data.isTeleportIn) {
             const teleportIn = this.data as TeleportInBlock;
@@ -91,7 +90,7 @@ export class BlockNodeData implements INodeData {
         }
 
         return null;
-    }    
+    }
 
     public constructor(public data: NodeGeometryBlock, nodeContainer: INodeContainer) {
         if (data.inputs) {

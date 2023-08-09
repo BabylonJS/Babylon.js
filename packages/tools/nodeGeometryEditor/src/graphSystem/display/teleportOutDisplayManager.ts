@@ -27,7 +27,6 @@ export class TeleportOutDisplayManager implements IDisplayManager {
 
     public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {}
 
-
     public onSelectionChanged(nodeData: INodeData, selectedData: Nullable<INodeData>, manager: StateManager): void {
         const block = nodeData.data as TeleportOutBlock;
         if (selectedData !== nodeData) {
@@ -60,5 +59,5 @@ export class TeleportOutDisplayManager implements IDisplayManager {
         if (block.entryPoint) {
             manager.onHighlightNodeObservable.notifyObservers({ data: block.entryPoint, active: false });
         }
-    }    
+    }
 }

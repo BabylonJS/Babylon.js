@@ -47,11 +47,11 @@ export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
             case "TeleportInBlock":
-                return new TeleportInBlock("Teleport In");         
+                return new TeleportInBlock("Teleport In");
             case "TeleportOutBlock":
-                return new TeleportOutBlock("Teleport Out");                                     
+                return new TeleportOutBlock("Teleport Out");
             case "DebugBlock":
-                return new DebugBlock("Debug");            
+                return new DebugBlock("Debug");
             case "IntFloatConverterBlock":
                 return new IntFloatConverterBlock("Int/Float converter");
             case "EqualBlock": {
@@ -256,7 +256,7 @@ export class BlockTools {
                 const block = new GeometryTrigonometryBlock("To radians");
                 block.operation = GeometryTrigonometryBlockOperations.ToRadians;
                 return block;
-            }            
+            }
             case "AbsBlock": {
                 const block = new GeometryTrigonometryBlock("Abs");
                 block.operation = GeometryTrigonometryBlockOperations.Abs;

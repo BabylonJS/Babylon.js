@@ -809,7 +809,6 @@ export class VertexData {
                     }
                 }
             }
-
         }
 
         if (mergeMaterialIds) {
