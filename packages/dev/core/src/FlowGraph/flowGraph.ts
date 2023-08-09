@@ -3,6 +3,7 @@ import type { Nullable } from "../types";
 import type { Scene } from "../scene";
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphEventBlock } from "./flowGraphEventBlock";
+import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 
 /**
  * @experimental
@@ -19,7 +20,7 @@ export class FlowGraph {
     public constructor(private _scene: Scene) {
         this._sceneDisposeObserver = this._scene.onDisposeObservable.add(this.dispose.bind(this));
     }
-    
+
     /**
      * @internal
      */
@@ -29,8 +30,8 @@ export class FlowGraph {
 
     /**
      * Get a variable by its name.
-     * @param name 
-     * @returns 
+     * @param name
+     * @returns
      */
     public getVariable(name: string): any {
         return this._variables.get(name);
@@ -38,8 +39,8 @@ export class FlowGraph {
 
     /**
      * Sets a variable by its name.
-     * @param name 
-     * @param value 
+     * @param name
+     * @param value
      */
     public setVariable(name: string, value: any) {
         this._variables.set(name, value);
@@ -78,8 +79,8 @@ export class FlowGraph {
      */
     public dispose() {
         for (const block of this._blocks) {
-            if (block instanceof FlowGraphEventBlock) {
-                block._stopListening();
+            if (block instanceof FlowGraphExecutionBlock) {
+                block._cancelPendingTasks();
             }
         }
         this._blocks.length = 0;

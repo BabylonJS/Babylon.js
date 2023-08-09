@@ -28,6 +28,14 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
      */
     public abstract _execute(): void;
 
+    /**
+     * @internal
+     * This function can be overridden to cancel any
+     * pending tasks this node might have started,
+     * such as timeouts and playing animations.
+     */
+    public _cancelPendingTasks() {}
+
     protected _registerSignalInput(name: string): FlowGraphSignalConnection {
         const input = new FlowGraphSignalConnection(name, FlowGraphConnectionType.Input, this);
         this._signalInputs.push(input);

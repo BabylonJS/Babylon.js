@@ -1,4 +1,4 @@
-import type { IAnimatable } from "../../../Animations";
+import type { IAnimatable, Animatable } from "../../../Animations";
 import type { Animation } from "../../../Animations/animation";
 import type { FlowGraph } from "../../../FlowGraph/flowGraph";
 import { FlowGraphConnectionType } from "../../flowGraphConnection";
@@ -6,6 +6,11 @@ import { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
 
+/**
+ * @internal
+ * A block that plays an animation on an animatable object.
+ * QUESTION: should it also handle animation groups?
+ */
 export class FlowGraphPlayAnimationBlock extends FlowGraphWithOnDoneExecutionBlock {
     /**
      * The target to play the animation on.
@@ -29,13 +34,15 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphWithOnDoneExecutionBlo
     public readonly from: FlowGraphDataConnection<number>;
     /**
      * The ending frame of the animation.
-     */ 
+     */
     public readonly to: FlowGraphDataConnection<number>;
 
     /**
      * The signal that is triggered when the animation ends.
      */
     public readonly onAnimationEnd: FlowGraphSignalConnection;
+
+    private _runningAnimations: Array<Animatable> = [];
 
     public constructor(graph: FlowGraph, target: IAnimatable, animation: Animation) {
         super(graph);
@@ -48,23 +55,35 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphWithOnDoneExecutionBlo
         this.to = new FlowGraphDataConnection<number>("to", FlowGraphConnectionType.Input, this, 100);
 
         this.onAnimationEnd = new FlowGraphSignalConnection("onAnimationEnd", FlowGraphConnectionType.Output, this);
-
     }
-    
+
     public _execute(): void {
         const targetValue = this.target.value;
         const animationValue = this.animation.value;
 
-        this._graph.scene.beginDirectAnimation(
-            targetValue, [animationValue], 
-            this.from.value, this.to.value, 
-            this.loop.value, this.speed.value, () => this._onAnimationEnd());
+        const animatable = this._graph.scene.beginDirectAnimation(targetValue, [animationValue], this.from.value, this.to.value, this.loop.value, this.speed.value, () =>
+            this._onAnimationEnd(animatable)
+        );
+        this._runningAnimations.push(animatable);
 
         this.onDone._activateSignal();
     }
 
-    private _onAnimationEnd() {
+    private _onAnimationEnd(animatable: Animatable) {
+        const index = this._runningAnimations.indexOf(animatable);
+        if (index !== -1) {
+            this._runningAnimations.splice(index, 1);
+        }
         this.onAnimationEnd._activateSignal();
     }
 
+    /**
+     * @internal
+     * Stop any currently running animations.
+     * QUESTION: better to pause or stop? should the animations be disposed of?
+     */
+    public _cancelPendingTasks(): void {
+        this._runningAnimations.forEach((anim) => anim.pause());
+        this._runningAnimations.length = 0;
+    }
 }

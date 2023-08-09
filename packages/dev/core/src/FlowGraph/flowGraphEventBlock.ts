@@ -15,6 +15,10 @@ export abstract class FlowGraphEventBlock extends FlowGraphWithOnDoneExecutionBl
      */
     public abstract _stopListening(): void;
 
+    public _cancelPendingTasks(): void {
+        this._stopListening();
+    }
+
     /**
      * @internal
      */
