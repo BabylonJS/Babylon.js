@@ -181,9 +181,9 @@ export class NoiseBlock extends NodeGeometryBlock {
         this.output._storedFunction = (state) => {
             const position = state.getContextualValue(NodeGeometryContextualSources.Positions) as Vector3;
             const octaves = this.octaves.getConnectedValue(state) || 2;
-            const roughtness = this.roughtness.getConnectedValue(state) || 0.5;
+            const roughness = this.roughness.getConnectedValue(state) || 0.5;
 
-            return this.noise(octaves, roughtness, position);
+            return this.noise(octaves, roughness, position);
         };
     }
 }
