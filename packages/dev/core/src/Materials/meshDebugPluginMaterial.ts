@@ -460,9 +460,7 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
      * @param material Material to attach the mesh debug plugin to
      * @param options Options for the mesh debug plugin
      */
-    constructor(material: PBRBaseMaterial | StandardMaterial, options?: MeshDebugOptions) {
-        options = options ?? {};
-
+    constructor(material: PBRBaseMaterial | StandardMaterial, options: MeshDebugOptions = {}) {
         const defines = new MeshDebugDefines();
         defines.DBG_MODE = options.mode ?? defines.DBG_MODE;
         defines.DBG_MULTIPLY = options.multiply ?? defines.DBG_MULTIPLY;
