@@ -13,6 +13,14 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
         super(name, type, ownerBlock);
     }
 
+    /**
+     * An output data block can connect to multiple input data blocks,
+     * but an input data block can only connect to one output data block.
+     */
+    public _isSingularConnection(): boolean {
+        return this.type === FlowGraphConnectionType.Input;
+    }
+
     public set value(value: T) {
         this._value = value;
     }
@@ -23,10 +31,10 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
             return this._value;
         }
 
-        if (!this._connectedPoint) {
+        if (!this.isConnected()) {
             return this._value;
         } else {
-            return this._connectedPoint.value;
+            return this._connectedPoint[0].value;
         }
     }
 }

@@ -9,13 +9,21 @@ import { FlowGraphConnection, FlowGraphConnectionType } from "./flowGraphConnect
  */
 export class FlowGraphSignalConnection extends FlowGraphConnection<FlowGraphExecutionBlock, FlowGraphSignalConnection> {
     /**
+     * A signal input can be connected to more than one signal output,
+     * but a signal output can only connect to one signal input
+     */
+    public _isSingularConnection(): boolean {
+        return this.type === FlowGraphConnectionType.Output;
+    }
+
+    /**
      * @internal
      */
     public _activateSignal(): void {
         if (this.type === FlowGraphConnectionType.Input) {
             this._ownerBlock._execute();
         } else {
-            this._connectedPoint?._activateSignal();
+            this._connectedPoint[0]?._activateSignal();
         }
     }
 }

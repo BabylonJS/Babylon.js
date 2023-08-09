@@ -1,5 +1,3 @@
-import type { Nullable } from "../types";
-
 /**
  * @experimental
  * The type of a connection point - inpput or output.
@@ -13,7 +11,8 @@ export enum FlowGraphConnectionType {
  * @experimental
  */
 export interface IConnectable {
-    _connectedPoint: Nullable<IConnectable>;
+    _connectedPoint: Array<IConnectable>;
+    _isSingularConnection(): boolean;
     _type: FlowGraphConnectionType;
     connectTo(point: IConnectable): void;
 }
@@ -24,7 +23,7 @@ export interface IConnectable {
  */
 export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> implements IConnectable {
     /** @internal */
-    public _connectedPoint: Nullable<ConnectedToT> = null;
+    public _connectedPoint: Array<ConnectedToT> = [];
 
     public constructor(public name: string, /** @internal */ public _type: FlowGraphConnectionType, protected _ownerBlock: BlockT) {}
 
@@ -36,6 +35,22 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
     }
 
     /**
+     * @internal
+     * Override this to indicate if a point can connect to more than one point.
+     */
+    public _isSingularConnection(): boolean {
+        return true;
+    }
+
+    /**
+     * Returns if a point is connected to any other point.
+     * @returns boolean indicating if the point is connected.
+     */
+    public isConnected(): boolean {
+        return this._connectedPoint.length > 0;
+    }
+
+    /**
      * Connects two points together.
      * @param point
      */
@@ -43,7 +58,10 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
         if (this._type === point._type) {
             throw new Error(`Cannot connect two points of type ${this.type}`);
         }
-        this._connectedPoint = point;
-        point._connectedPoint = this;
+        if ((this._isSingularConnection() && this._connectedPoint.length > 0) || (point._isSingularConnection() && point._connectedPoint.length > 0)) {
+            throw new Error("Max number of connections for point reached");
+        }
+        this._connectedPoint.push(point);
+        point._connectedPoint.push(this);
     }
 }
