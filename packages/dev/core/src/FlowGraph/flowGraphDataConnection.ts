@@ -9,7 +9,6 @@ import { FlowGraphConnection, FlowGraphConnectionType } from "./flowGraphConnect
  * if the point belongs to a "function" node, the node will run its function to update the value.
  */
 export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlock, FlowGraphDataConnection<T>> {
-     
     public constructor(name: string, type: FlowGraphConnectionType, ownerBlock: FlowGraphBlock, private _value: T) {
         super(name, type, ownerBlock);
     }

@@ -56,8 +56,8 @@ export class FlowGraph {
                 block._stopListening();
             }
         }
-        if (this._sceneDisposeObserver) {
-            this._scene.onDisposeObservable.remove(this._sceneDisposeObserver);
-        }
+        this._blocks.length = 0;
+        this._scene.onDisposeObservable.remove(this._sceneDisposeObserver);
+        this._sceneDisposeObserver = null;
     }
 }

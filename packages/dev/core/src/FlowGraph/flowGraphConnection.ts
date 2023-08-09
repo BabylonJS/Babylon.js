@@ -18,13 +18,8 @@ interface IConnectable {
 export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> implements IConnectable {
     /** @internal */
     public _connectedPoint: Nullable<ConnectedToT> = null;
-    
 
-    public constructor(
-        public name: string, 
-        /** @internal */ public _type: FlowGraphConnectionType, 
-        protected _ownerBlock: BlockT) {
-    }
+    public constructor(public name: string, /** @internal */ public _type: FlowGraphConnectionType, protected _ownerBlock: BlockT) {}
 
     /**
      * The type of the connection
@@ -35,7 +30,7 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
 
     /**
      * Connects two points together.
-     * @param point 
+     * @param point
      */
     public connectTo(point: ConnectedToT): void {
         if (this._type === point._type) {
