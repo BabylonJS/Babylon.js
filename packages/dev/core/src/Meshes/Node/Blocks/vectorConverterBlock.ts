@@ -183,6 +183,29 @@ export class VectorConverterBlock extends NodeGeometryBlock {
         return name;
     }
 
+    protected _outputRename(name: string) {
+        switch (name) {
+            case "x":
+                return "xOut";
+            case "y":
+                return "yOut";
+            case "z":
+                return "zOut";
+            case "w":
+                return "wOut";
+            case "xy":
+                return "xyOut";
+            case "zw":
+                return "zwOut";
+            case "xyz":
+                return "xyzOut";
+            case "xyzw":
+                return "xyzwOut";
+            default:
+                return name;
+        }
+    }
+
     protected _buildBlock(state: NodeGeometryBuildState) {
         super._buildBlock(state);
 

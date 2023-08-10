@@ -207,6 +207,45 @@ export class GeometryInputBlock extends NodeGeometryBlock {
         super.dispose();
     }
 
+    protected _dumpPropertiesCode() {
+        const variableName = this._codeVariableName;
+
+        if (this.isContextual) {
+            return super._dumpPropertiesCode() + `${variableName}.contextualValue = BABYLON.NodeGeometryContextualSources.${NodeGeometryContextualSources[this._contextualSource]};\n`;
+        }
+        const codes: string[] = [];
+
+        let valueString = "";
+
+        switch (this.type) {
+            case NodeGeometryBlockConnectionPointTypes.Float:
+            case NodeGeometryBlockConnectionPointTypes.Int:
+                valueString = `${this.value}`;
+                break;
+            case NodeGeometryBlockConnectionPointTypes.Vector2:
+                valueString = `new BABYLON.Vector2(${this.value.x}, ${this.value.y})`;
+                break;
+            case NodeGeometryBlockConnectionPointTypes.Vector3:
+                valueString = `new BABYLON.Vector3(${this.value.x}, ${this.value.y}, ${this.value.z})`;
+                break;
+            case NodeGeometryBlockConnectionPointTypes.Vector4:
+                valueString = `new BABYLON.Vector4(${this.value.x}, ${this.value.y}, ${this.value.z}, ${this.value.w})`;
+                break;
+        }
+
+        // Common Property "Value"
+        codes.push(`${variableName}.value = ${valueString}`);
+
+        // Float-Value-Specific Properties
+        if (this.type === NodeGeometryBlockConnectionPointTypes.Float || this.type === NodeGeometryBlockConnectionPointTypes.Int) {
+            codes.push(`${variableName}.min = ${this.min}`, `${variableName}.max = ${this.max}`);
+        }
+
+        codes.push("");
+
+        return super._dumpPropertiesCode() + codes.join(";\n");
+    }
+
     public serialize(): any {
         const serializationObject = super.serialize();
 
