@@ -1,6 +1,72 @@
 {
     "fromTag": "6.15.0",
     "changelog": {
+        "6.16.0": [
+            {
+                "pr": "14149",
+                "title": "dependency update",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/tools/testTools/src/utils.ts",
+                    "profile.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14148",
+                "title": "Shadow generators: Add support for red channel only for the shadow map texture",
+                "description": "For CSM, this is now the default setting, as all engines that support CSM also support red textures only.\r\n\r\nFor the regular shadow generator, the default setting is to use an RGBA texture due to WebGL1 backward compatibility.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/Shadows/cascadedShadowGenerator.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "shadows"
+                ]
+            },
+            {
+                "pr": "14147",
+                "title": "Scene dispose: Fix endless loop when stopping animations",
+                "description": "See https://forum.babylonjs.com/t/looping-in-color-animations-is-not-possible/43125/8",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "14146",
+                "title": "PostProcess: Fix crash when detaching and reattaching a camera from/to a render pipeline",
+                "description": "See https://forum.babylonjs.com/t/bugs-when-managing-postprocess-pipeline/43184",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/postProcessRenderEffect.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "post-process"
+                ]
+            }
+        ],
         "6.14.1": [
             {
                 "pr": "14099",
