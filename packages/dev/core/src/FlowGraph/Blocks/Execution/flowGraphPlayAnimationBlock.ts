@@ -10,7 +10,6 @@ import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExec
  * @experimental
  */
 export interface IFlowGraphPlayAnimationBlockParams {
-    graph: FlowGraph;
     defaultTarget: IAnimatable;
     defaultAnimation: Animation;
 }
@@ -51,8 +50,8 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphWithOnDoneExecutionBlo
 
     private _runningAnimatables: Array<Animatable> = [];
 
-    public constructor(params: IFlowGraphPlayAnimationBlockParams) {
-        super(params.graph);
+    public constructor(graph: FlowGraph, params: IFlowGraphPlayAnimationBlockParams) {
+        super(graph);
 
         this.target = new FlowGraphDataConnection<IAnimatable>("target", FlowGraphConnectionType.Input, this, params.defaultTarget);
         this.animation = new FlowGraphDataConnection<Animation>("animation", FlowGraphConnectionType.Input, this, params.defaultAnimation);

@@ -11,7 +11,6 @@ import type { Node } from "../../../node";
  * @experimental
  */
 export interface IFlowGraphMeshPickParams {
-    graph: FlowGraph;
     mesh: AbstractMesh;
 }
 /**
@@ -23,8 +22,8 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
     private _meshPickObserver: Nullable<Observer<PointerInfo>>;
     private _meshDisposeObserver: Nullable<Observer<Node>>;
 
-    public constructor(params: IFlowGraphMeshPickParams) {
-        super(params.graph);
+    public constructor(graph: FlowGraph, params: IFlowGraphMeshPickParams) {
+        super(graph);
         this._mesh = params.mesh;
     }
 

@@ -9,7 +9,6 @@ export interface IFlowGraphSetPropertyBlockParams<PropT> {
     defaultTarget: any;
     defaultProperty: string;
     defaultValue: PropT;
-    graph: FlowGraph;
 }
 /**
  * @experimental
@@ -23,8 +22,8 @@ export class FlowGraphSetPropertyBlock<PropT> extends FlowGraphWithOnDoneExecuti
 
     public readonly outTarget: FlowGraphDataConnection<any>;
 
-    public constructor(params: IFlowGraphSetPropertyBlockParams<PropT>) {
-        super(params.graph);
+    public constructor(graph: FlowGraph, params: IFlowGraphSetPropertyBlockParams<PropT>) {
+        super(graph);
 
         this.target = this._registerDataInput("target", params.defaultTarget);
         this.property = this._registerDataInput("property", params.defaultProperty);

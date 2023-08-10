@@ -6,7 +6,6 @@ import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
  * @experimental
  */
 export interface IFlowGraphGetVariableBlockParams<T> {
-    graph: FlowGraph;
     variableName: string;
     defaultValue: T;
 }
@@ -19,8 +18,8 @@ export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
     private _variableName: string;
     private _defaultValue: T;
 
-    constructor(params: IFlowGraphGetVariableBlockParams<T>) {
-        super(params.graph);
+    constructor(graph: FlowGraph, params: IFlowGraphGetVariableBlockParams<T>) {
+        super(graph);
 
         this._variableName = params.variableName;
         this._defaultValue = params.defaultValue;

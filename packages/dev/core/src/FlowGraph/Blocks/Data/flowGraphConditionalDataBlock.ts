@@ -8,7 +8,6 @@ import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 export interface IFlowGraphConditionalDataBlockParams<T> {
     defaultTrueValue: T;
     defaultFalseValue: T;
-    graph: FlowGraph;
 }
 
 /**
@@ -22,8 +21,8 @@ export class FlowGraphConditionalDataBlock<T> extends FlowGraphBlock {
 
     public readonly output: FlowGraphDataConnection<T>;
 
-    constructor(params: IFlowGraphConditionalDataBlockParams<T>) {
-        super(params.graph);
+    constructor(graph: FlowGraph, params: IFlowGraphConditionalDataBlockParams<T>) {
+        super(graph);
 
         this.condition = this._registerDataInput("condition", false);
         this.trueValue = this._registerDataInput("trueValue", params.defaultTrueValue);

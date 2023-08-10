@@ -8,7 +8,6 @@ import { AdvancedTimer } from "../../../Misc/timer";
  * @experimental
  */
 export interface IFlowGraphTimerBlockParameters {
-    graph: FlowGraph;
     defaultTimeout?: number;
 }
 
@@ -26,8 +25,8 @@ export class FlowGraphTimerBlock extends FlowGraphWithOnDoneExecutionBlock {
      */
     private _runningTimers: Array<AdvancedTimer> = [];
 
-    constructor(params: IFlowGraphTimerBlockParameters) {
-        super(params.graph);
+    constructor(graph: FlowGraph, params: IFlowGraphTimerBlockParameters) {
+        super(graph);
 
         this.timeout = this._registerDataInput("timeout", params.defaultTimeout ?? 0);
         this.onTimerDone = this._registerSignalOutput("onTimerDone");

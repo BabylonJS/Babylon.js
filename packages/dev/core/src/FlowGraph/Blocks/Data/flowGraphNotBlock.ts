@@ -5,7 +5,6 @@ import { FlowGraphUnaryOpBaseBlock } from "./flowGraphUnaryOpBaseBlock";
  * @experimental
  */
 export interface IFlowGraphNotBlockParams<T> {
-    graph: FlowGraph;
     defaultInputValue: T;
 }
 
@@ -13,9 +12,8 @@ export interface IFlowGraphNotBlockParams<T> {
  * @experimental
  */
 export class FlowGraphNotBlock<T> extends FlowGraphUnaryOpBaseBlock<T, boolean> {
-    constructor(params: IFlowGraphNotBlockParams<T>) {
-        super({
-            graph: params.graph,
+    constructor(graph: FlowGraph, params: IFlowGraphNotBlockParams<T>) {
+        super(graph, {
             defaultInputValue: params.defaultInputValue,
             op: (value) => !value,
         });

@@ -6,7 +6,6 @@ import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
  * @experimental
  */
 export interface IFlowGraphUnaryOpBaseBlockParams<InputT, OutputT> {
-    graph: FlowGraph;
     defaultInputValue: InputT;
     op: (input: InputT) => OutputT;
 }
@@ -22,8 +21,8 @@ export class FlowGraphUnaryOpBaseBlock<InputT, OutputT> extends FlowGraphBlock {
 
     private readonly _op: (input: InputT) => OutputT;
 
-    public constructor(params: IFlowGraphUnaryOpBaseBlockParams<InputT, OutputT>) {
-        super(params.graph);
+    public constructor(graph: FlowGraph, params: IFlowGraphUnaryOpBaseBlockParams<InputT, OutputT>) {
+        super(graph);
 
         this._op = params.op;
 

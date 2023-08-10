@@ -6,20 +6,14 @@ import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
 
 /**
  * @experimental
- */
-export interface IFlowGraphSceneReadyEventBlockParams {
-    graph: FlowGraph;
-}
-/**
- * @experimental
  * Block that triggers when a scene is ready.
  */
 export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
     private _scene: Scene;
     private _sceneReadyObserver: Nullable<Observer<Scene>>;
 
-    public constructor(params: IFlowGraphSceneReadyEventBlockParams) {
-        super(params.graph);
+    public constructor(graph: FlowGraph) {
+        super(graph);
         this._scene = this._graph.scene;
     }
 

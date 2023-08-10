@@ -6,7 +6,6 @@ import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
  * @experimental
  */
 export interface IFlowGraphBinaryOpBaseBlockParams<LeftT, RightT, OutputT> {
-    graph: FlowGraph;
     defaultLeftValue: LeftT;
     defaultRightValue: RightT;
     binOp: (left: LeftT, right: RightT) => OutputT;
@@ -31,8 +30,8 @@ export class FlowGraphBinaryOpBaseBlock<LeftT, RightT, OutputT> extends FlowGrap
 
     private readonly _binOp: (left: LeftT, right: RightT) => OutputT;
 
-    public constructor(params: IFlowGraphBinaryOpBaseBlockParams<LeftT, RightT, OutputT>) {
-        super(params.graph);
+    public constructor(graph: FlowGraph, params: IFlowGraphBinaryOpBaseBlockParams<LeftT, RightT, OutputT>) {
+        super(graph);
 
         this._binOp = params.binOp;
 
