@@ -229,19 +229,25 @@ export class VectorConverterBlock extends NodeGeometryBlock {
 
             if (xyInput.isConnected) {
                 const temp = xyInput.getConnectedValue(state);
-                x = temp.x;
-                y = temp.y;
+                if (temp) {
+                    x = temp.x;
+                    y = temp.y;
+                }
             }
             if (zwInput.isConnected) {
                 const temp = zwInput.getConnectedValue(state);
-                z = temp.x;
-                w = temp.y;
+                if (temp) {
+                    z = temp.x;
+                    w = temp.y;
+                }
             }
             if (xyzInput.isConnected) {
                 const temp = xyzInput.getConnectedValue(state);
-                x = temp.x;
-                y = temp.y;
-                z = temp.z;
+                if (temp) {
+                    x = temp.x;
+                    y = temp.y;
+                    z = temp.z;
+                }
             }
 
             return new Vector4(x, y, z, w);
