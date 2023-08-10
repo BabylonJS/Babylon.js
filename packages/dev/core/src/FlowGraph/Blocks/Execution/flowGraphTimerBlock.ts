@@ -2,7 +2,7 @@ import type { FlowGraph } from "../../flowGraph";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import type { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
-import { AdvancedTimer } from "../../../Misc";
+import { AdvancedTimer } from "../../../Misc/timer";
 
 /**
  * @experimental
