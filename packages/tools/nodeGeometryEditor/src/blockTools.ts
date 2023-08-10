@@ -34,8 +34,8 @@ import { NodeGeometryContextualSources } from "core/Meshes/Node/Enums/nodeGeomet
 import { GeometryTrigonometryBlock, GeometryTrigonometryBlockOperations } from "core/Meshes/Node/Blocks/geometryTrigonometryBlock";
 import { GeometryElbowBlock } from "core/Meshes/Node/Blocks/geometryElbowBlock";
 import { SetMaterialIDBlock } from "core/Meshes/Node/Blocks/Set/setMaterialIDBlock";
-import { InstantiateOnVerticesBlock } from "core/Meshes/Node/Blocks/instances/instantiateOnVerticesBlock";
-import { InstantiateOnFacesBlock } from "core/Meshes/Node/Blocks/instances/instantiateOnFacesBlock";
+import { InstantiateOnVerticesBlock } from "core/Meshes/Node/Blocks/Instances/instantiateOnVerticesBlock";
+import { InstantiateOnFacesBlock } from "core/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock";
 import { DebugBlock } from "core/Meshes/Node/Blocks/debugBlock";
 import { TeleportInBlock } from "core/Meshes/Node/Blocks/Teleport/teleportInBlock";
 import { TeleportOutBlock } from "core/Meshes/Node/Blocks/Teleport/teleportOutBlock";
