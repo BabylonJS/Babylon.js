@@ -1,3 +1,3 @@
-import * as nodeEditor from "node-editor/legacy/legacy";
-export { nodeEditor };
-export default nodeEditor;
+import * as nodeGeometryEditor from "node-geometry-editor/legacy/legacy";
+export { nodeGeometryEditor };
+export default nodeGeometryEditor;
