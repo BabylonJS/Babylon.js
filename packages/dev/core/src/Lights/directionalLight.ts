@@ -131,7 +131,7 @@ export class DirectionalLight extends ShadowLight {
      * @param direction The direction of the light
      * @param scene The scene the light belongs to
      */
-    constructor(name: string, direction: Vector3, scene: Scene) {
+    constructor(name: string, direction: Vector3, scene?: Scene) {
         super(name, scene);
         this.position = direction.scale(-1.0);
         this.direction = direction;
