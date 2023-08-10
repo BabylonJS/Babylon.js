@@ -211,7 +211,9 @@ export class GeometryInputBlock extends NodeGeometryBlock {
         const variableName = this._codeVariableName;
 
         if (this.isContextual) {
-            return super._dumpPropertiesCode() + `${variableName}.contextualValue = BABYLON.NodeGeometryContextualSources.${NodeGeometryContextualSources[this._contextualSource]};\n`;
+            return (
+                super._dumpPropertiesCode() + `${variableName}.contextualValue = BABYLON.NodeGeometryContextualSources.${NodeGeometryContextualSources[this._contextualSource]};\n`
+            );
         }
         const codes: string[] = [];
 

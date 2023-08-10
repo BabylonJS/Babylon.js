@@ -26,6 +26,8 @@ export class GeometryOutputBlock extends NodeGeometryBlock {
     public constructor(name: string) {
         super(name);
 
+        this._isUnique = true;
+
         this.registerInput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);
     }
 
