@@ -669,6 +669,8 @@ export class Skeleton implements IAnimatable {
 
         this._isDirty = true;
 
+        this.prepare();
+
         return result;
     }
 
