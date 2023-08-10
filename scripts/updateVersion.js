@@ -73,14 +73,14 @@ const updateSinceTag = (version) => {
 };
 
 async function runTagsUpdate() {
-    // await runCommand(
-    //     `npx lerna version ${config.versionDefinition} --yes --no-push --conventional-prerelease --force-publish --no-private --no-git-tag-version ${
-    //         config.preid ? "--preid " + config.preid : ""
-    //     }`
-    // );
-    // // update package-json
-    // fs.rmSync("package-lock.json");
-    // await runCommand("npm install");
+    await runCommand(
+        `npx lerna version ${config.versionDefinition} --yes --no-push --conventional-prerelease --force-publish --no-private --no-git-tag-version ${
+            config.preid ? "--preid " + config.preid : ""
+        }`
+    );
+    // update package-json
+    fs.rmSync("package-lock.json");
+    await runCommand("npm install");
     const version = getNewVersion();
     // // update engine version
     // await updateEngineVersion(version);
