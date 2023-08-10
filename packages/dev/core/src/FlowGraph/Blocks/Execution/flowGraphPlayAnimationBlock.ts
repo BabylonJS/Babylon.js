@@ -17,7 +17,6 @@ export interface IFlowGraphPlayAnimationBlockParams {
 /**
  * @experimental
  * A block that plays an animation on an animatable object.
- * QUESTION: should it also handle animation groups?
  */
 export class FlowGraphPlayAnimationBlock extends FlowGraphWithOnDoneExecutionBlock {
     /**
@@ -50,7 +49,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphWithOnDoneExecutionBlo
      */
     public readonly onAnimationEnd: FlowGraphSignalConnection;
 
-    private _runningAnimations: Array<Animatable> = [];
+    private _runningAnimatables: Array<Animatable> = [];
 
     public constructor(params: IFlowGraphPlayAnimationBlockParams) {
         super(params.graph);
@@ -72,15 +71,15 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphWithOnDoneExecutionBlo
         const animatable = this._graph.scene.beginDirectAnimation(targetValue, [animationValue], this.from.value, this.to.value, this.loop.value, this.speed.value, () =>
             this._onAnimationEnd(animatable)
         );
-        this._runningAnimations.push(animatable);
+        this._runningAnimatables.push(animatable);
 
         this.onDone._activateSignal();
     }
 
     private _onAnimationEnd(animatable: Animatable) {
-        const index = this._runningAnimations.indexOf(animatable);
+        const index = this._runningAnimatables.indexOf(animatable);
         if (index !== -1) {
-            this._runningAnimations.splice(index, 1);
+            this._runningAnimatables.splice(index, 1);
         }
         this.onAnimationEnd._activateSignal();
     }
@@ -88,12 +87,11 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphWithOnDoneExecutionBlo
     /**
      * @internal
      * Stop any currently running animations.
-     * QUESTION: better to pause or stop? should the animations be disposed of?
      */
     public _cancelPendingTasks(): void {
-        for (const anim of this._runningAnimations) {
-            anim.pause();
+        for (const anim of this._runningAnimatables) {
+            anim.stop();
         }
-        this._runningAnimations.length = 0;
+        this._runningAnimatables.length = 0;
     }
 }
