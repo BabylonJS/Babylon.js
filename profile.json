@@ -1,0 +1,86 @@
+[
+  {
+    "name": "thread_name",
+    "ph": "M",
+    "pid": 6444,
+    "tid": 0,
+    "ts": 0,
+    "args": {
+      "name": "Group #1"
+    }
+  },
+  {
+    "name": "@dev/build-tools:build",
+    "cat": "@dev/build-tools,build,",
+    "ph": "X",
+    "ts": 2475906.599998474,
+    "dur": 29507588.800013065,
+    "pid": 6444,
+    "tid": 0,
+    "args": {
+      "target": {
+        "project": "@dev/build-tools",
+        "target": "build"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "name": "thread_name",
+    "ph": "M",
+    "pid": 6444,
+    "tid": 1,
+    "ts": 0,
+    "args": {
+      "name": "Group #2"
+    }
+  },
+  {
+    "name": "@dev/core:build",
+    "cat": "@dev/core,build,",
+    "ph": "X",
+    "ts": 31984572.30001688,
+    "dur": 113095237.59996891,
+    "pid": 6444,
+    "tid": 1,
+    "args": {
+      "target": {
+        "project": "@dev/core",
+        "target": "build"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "name": "@lts/core:build",
+    "cat": "@lts/core,build,",
+    "ph": "X",
+    "ts": 145080013.4999752,
+    "dur": 45227277.400016785,
+    "pid": 6444,
+    "tid": 0,
+    "args": {
+      "target": {
+        "project": "@lts/core",
+        "target": "build"
+      },
+      "status": "success"
+    }
+  },
+  {
+    "name": "core:build",
+    "cat": "core,build,",
+    "ph": "X",
+    "ts": 190310894.50001717,
+    "dur": 127396313.09998035,
+    "pid": 6444,
+    "tid": 1,
+    "args": {
+      "target": {
+        "project": "core",
+        "target": "build"
+      },
+      "status": "success"
+    }
+  }
+]
