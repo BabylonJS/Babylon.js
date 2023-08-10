@@ -167,6 +167,8 @@ export class PostProcessRenderEffect {
             if (this._cameras[cameraName]) {
                 this._cameras[cameraName] = null;
             }
+
+            delete this._indicesForCamera[cameraName];
         }
     }
 
