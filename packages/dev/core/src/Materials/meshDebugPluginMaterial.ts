@@ -350,103 +350,81 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
     @expandToProperty("_markAllDefinesAsDirty")
     public multiply: boolean;
 
-    private _shadedDiffuseColor: Color3;
     /**
      * Diffuse color used to shade the mesh.
      * Defaults to (1.0, 1.0, 1.0).
      */
     @serializeAsColor3()
-    @expandToProperty("_markAllDefinesAsDirty")
     public shadedDiffuseColor: Color3;
 
-    private _shadedSpecularColor: Color3;
     /**
      * Specular color used to shade the mesh.
      * Defaults to (0.8, 0.8, 0.8).
      */
     @serializeAsColor3()
-    @expandToProperty("_markAllDefinesAsDirty")
     public shadedSpecularColor: Color3;
 
-    private _shadedSpecularPower: number;
     /**
      * Specular power used to shade the mesh.
      * Defaults to 10.
      */
     @serialize()
-    @expandToProperty("_markAllDefinesAsDirty")
     public shadedSpecularPower: number;
 
-    private _wireframeThickness: number;
     /**
      * Width of edge lines in TRIANGLES and TRIANGLE_VERTICES modes.
      * Defaults to 0.7.
      */
     @serialize()
-    @expandToProperty("_markAllDefinesAsDirty")
     public wireframeThickness: number;
 
-    private _wireframeTrianglesColor: Color3;
     /**
      * Color of edge lines in TRIANGLES mode.
      * Defaults to (0.0, 0.0, 0.0).
      */
     @serializeAsColor3()
-    @expandToProperty("_markAllDefinesAsDirty")
     public wireframeTrianglesColor: Color3;
 
-    private _wireframeVerticesColor: Color3;
     /**
      * Color of edge lines in TRIANGLES_VERTICES modes.
      * Defaults to (0.8, 0.8, 0.8).
      */
     @serializeAsColor3()
-    @expandToProperty("_markAllDefinesAsDirty")
     public wireframeVerticesColor: Color3;
 
-    private _vertexColor: Color3;
     /**
      * Color of vertices in TRIANGLES_VERTICES and VERTICES mode.
      * Defaults to (0.0, 0.0, 0.0).
      */
     @serializeAsColor3()
-    @expandToProperty("_markAllDefinesAsDirty")
     public vertexColor: Color3;
 
-    private _vertexRadius: number;
     /**
      * Radius of dots drawn over vertices in TRIANGLE_VERTICES and VERTICES mode.
      * Defaults to 1.2.
      */
     @serialize()
-    @expandToProperty("_markAllDefinesAsDirty")
     public vertexRadius: number;
 
-    private _uvScale: number;
     /**
      * Size of tiles in UV1 or UV2 modes.
      * Defaults to 20.
      */
     @serialize()
-    @expandToProperty("_markAllDefinesAsDirty")
     public uvScale: number;
 
-    private _uvPrimaryColor: Color3;
     /**
      * 1st color of checkerboard grid in UV1 or UV2 modes.
      * Defaults to (1.0, 1.0, 1.0).
      */
     @serializeAsColor3()
-    @expandToProperty("_markAllDefinesAsDirty")
     public uvPrimaryColor: Color3;
 
-    private _uvSecondaryColor: Color3;
     /**
      * 2nd color of checkerboard grid in UV1 or UV2 modes.
      * Defaults to (0.5, 0.5, 0.5).
      */
     @serializeAsColor3()
-    @expandToProperty("_markAllDefinesAsDirty")
     public uvSecondaryColor: Color3;
 
     /** @internal */
@@ -468,17 +446,17 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
 
         this._mode = defines.DBG_MODE;
         this._multiply = defines.DBG_MULTIPLY;
-        this._shadedDiffuseColor = options.shadedDiffuseColor ?? new Color3(1, 1, 1);
-        this._shadedSpecularColor = options.shadedSpecularColor ?? new Color3(0.8, 0.8, 0.8);
-        this._shadedSpecularPower = options.shadedSpecularPower ?? 10;
-        this._wireframeThickness = options.wireframeThickness ?? 0.7;
-        this._wireframeTrianglesColor = options.wireframeTrianglesColor ?? new Color3(0, 0, 0);
-        this._wireframeVerticesColor = options.wireframeVerticesColor ?? new Color3(0.8, 0.8, 0.8);
-        this._vertexColor = options.vertexColor ?? new Color3(0, 0, 0);
-        this._vertexRadius = options.vertexRadius ?? 1.2;
-        this._uvScale = options.uvScale ?? 20;
-        this._uvPrimaryColor = options.uvPrimaryColor ?? new Color3(1, 1, 1);
-        this._uvSecondaryColor = options.uvSecondaryColor ?? new Color3(0.5, 0.5, 0.5);
+        this.shadedDiffuseColor = options.shadedDiffuseColor ?? new Color3(1, 1, 1);
+        this.shadedSpecularColor = options.shadedSpecularColor ?? new Color3(0.8, 0.8, 0.8);
+        this.shadedSpecularPower = options.shadedSpecularPower ?? 10;
+        this.wireframeThickness = options.wireframeThickness ?? 0.7;
+        this.wireframeTrianglesColor = options.wireframeTrianglesColor ?? new Color3(0, 0, 0);
+        this.wireframeVerticesColor = options.wireframeVerticesColor ?? new Color3(0.8, 0.8, 0.8);
+        this.vertexColor = options.vertexColor ?? new Color3(0, 0, 0);
+        this.vertexRadius = options.vertexRadius ?? 1.2;
+        this.uvScale = options.uvScale ?? 20;
+        this.uvPrimaryColor = options.uvPrimaryColor ?? new Color3(1, 1, 1);
+        this.uvSecondaryColor = options.uvSecondaryColor ?? new Color3(0.5, 0.5, 0.5);
 
         this._materialColor = MeshDebugPluginMaterial.MaterialColors[MeshDebugPluginMaterial._PluginCount++ % MeshDebugPluginMaterial.MaterialColors.length];
         this.isEnabled = true;
@@ -574,20 +552,14 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
         if (!this._isEnabled) {
             return;
         }
-        uniformBuffer.updateFloat3("dbg_shadedDiffuseColor", this._shadedDiffuseColor.r, this._shadedDiffuseColor.g, this._shadedDiffuseColor.b);
-        uniformBuffer.updateFloat4(
-            "dbg_shadedSpecularColorPower",
-            this._shadedSpecularColor.r,
-            this._shadedSpecularColor.g,
-            this._shadedSpecularColor.b,
-            this._shadedSpecularPower
-        );
-        uniformBuffer.updateFloat3("dbg_thicknessRadiusScale", this._wireframeThickness, this._vertexRadius, this._uvScale);
-        uniformBuffer.updateColor3("dbg_wireframeTrianglesColor", this._wireframeTrianglesColor);
-        uniformBuffer.updateColor3("dbg_wireframeVerticesColor", this._wireframeVerticesColor);
-        uniformBuffer.updateColor3("dbg_vertexColor", this._vertexColor);
-        uniformBuffer.updateColor3("dbg_uvPrimaryColor", this._uvPrimaryColor);
-        uniformBuffer.updateColor3("dbg_uvSecondaryColor", this._uvSecondaryColor);
+        uniformBuffer.updateFloat3("dbg_shadedDiffuseColor", this.shadedDiffuseColor.r, this.shadedDiffuseColor.g, this.shadedDiffuseColor.b);
+        uniformBuffer.updateFloat4("dbg_shadedSpecularColorPower", this.shadedSpecularColor.r, this.shadedSpecularColor.g, this.shadedSpecularColor.b, this.shadedSpecularPower);
+        uniformBuffer.updateFloat3("dbg_thicknessRadiusScale", this.wireframeThickness, this.vertexRadius, this.uvScale);
+        uniformBuffer.updateColor3("dbg_wireframeTrianglesColor", this.wireframeTrianglesColor);
+        uniformBuffer.updateColor3("dbg_wireframeVerticesColor", this.wireframeVerticesColor);
+        uniformBuffer.updateColor3("dbg_vertexColor", this.vertexColor);
+        uniformBuffer.updateColor3("dbg_uvPrimaryColor", this.uvPrimaryColor);
+        uniformBuffer.updateColor3("dbg_uvSecondaryColor", this.uvSecondaryColor);
         uniformBuffer.updateColor3("dbg_materialColor", this._materialColor);
     }
 
