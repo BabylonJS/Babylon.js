@@ -38,7 +38,7 @@ export interface INodeGeometryEditorOptions {
 
 /**
  * Defines a node based geometry
- * @see demo at https://playground.babylonjs.com#PYY6XE#68
+ * @see demo at https://playground.babylonjs.com#PYY6XE#69
  */
 export class NodeGeometry {
     private static _BuildIdGenerator: number = 0;
