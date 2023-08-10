@@ -378,7 +378,7 @@ export const checkPerformanceOfScene = async (
     page: Page,
     baseUrl: string,
     type: PerformanceTestType,
-    createSceneFunction: (metadata?: { playgroundId: string }, config?: any) => Promise<void>,
+    createSceneFunction: (metadata?: { playgroundId?: string }, config?: any) => Promise<void>,
     numberOfPasses: number = 5,
     framesToRender: number = 10000,
     metadata?: { playgroundId: string },
@@ -415,8 +415,8 @@ export const checkPerformanceOfScene = async (
 export const logPageErrors = async (page: Page, debug?: boolean) => {
     page.on("console", async (msg) => {
         // serialize my args the way I want
-        const args = await Promise.all(
-            msg.args().map((arg) =>
+        const args: any[] = await Promise.all(
+            msg.args().map((arg: any) =>
                 arg.executionContext().evaluate((argument: string | Error) => {
                     // I'm in a page context now. If my arg is an error - get me its message.
                     if (argument instanceof Error) return `[ERR] ${argument.message}`;
@@ -435,5 +435,5 @@ export const logPageErrors = async (page: Page, debug?: boolean) => {
             console.log(`${msg.type().substring(0, 3).toUpperCase()} ${msg.text()}`);
         }
     });
-    page.on("pageerror", ({ message }) => console.log(message)).on("requestfailed", (request) => console.log(`${request.failure().errorText} ${request.url()}`));
+    page.on("pageerror", ({ message }) => console.log(message)).on("requestfailed", (request) => console.log(`${request.failure()?.errorText} ${request.url()}`));
 };
