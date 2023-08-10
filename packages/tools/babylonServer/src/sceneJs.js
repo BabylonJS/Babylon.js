@@ -14,6 +14,10 @@ const openInspector = (e) => {
     }
 };
 const runScene = async () => {
+    try {
+        // eslint-disable-next-line no-undef
+        await Recast();
+    } catch (e) {}
     const playgroundId = getPlaygroundId();
     if (engine) {
         engine.dispose();
