@@ -8,7 +8,7 @@ import type { VertexData } from "../../../mesh.vertexData";
 import type { Vector3 } from "../../../../Maths/math.vector";
 
 /**
- * Block used to set positions for a geometry
+ * Block used to set normals for a geometry
  */
 export class SetNormalsBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext {
     private _vertexData: VertexData;

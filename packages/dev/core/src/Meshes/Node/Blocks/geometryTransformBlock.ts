@@ -8,7 +8,7 @@ import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorat
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 
 /**
- * Block used to apply a transform to vector
+ * Block used to apply a transform to a vector / geometry
  */
 export class GeometryTransformBlock extends NodeGeometryBlock {
     private _rotationMatrix = new Matrix();
@@ -148,6 +148,31 @@ export class GeometryTransformBlock extends NodeGeometryBlock {
             this.output._storedFunction = func;
         } else {
             this.output._storedValue = func(state);
+        }
+    }
+
+    protected _dumpPropertiesCode() {
+        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.evaluateContext = ${this.evaluateContext ? "true" : "false"};\n`;
+        return codeString;
+    }
+
+    /**
+     * Serializes this block in a JSON representation
+     * @returns the serialized block object
+     */
+    public serialize(): any {
+        const serializationObject = super.serialize();
+
+        serializationObject.evaluateContext = this.evaluateContext;
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
+
+        if (serializationObject.evaluateContext !== undefined) {
+            this.evaluateContext = serializationObject.evaluateContext;
         }
     }
 }

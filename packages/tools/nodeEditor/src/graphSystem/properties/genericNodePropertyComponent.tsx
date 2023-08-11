@@ -74,7 +74,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                                 this.forceUpdate();
 
                                 this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
-                                this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
+                                this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
                             }}
                         />
                     )}
@@ -109,7 +109,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
         }
 
         if (!notifiers || notifiers.rebuild) {
-            this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
+            this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
         }
 
         if (notifiers?.activatePreviewCommand) {
@@ -119,7 +119,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
         const rebuild = notifiers?.callback?.((this.props.stateManager.data as GlobalState).nodeMaterial.getScene(), this.props.nodeData.data as NodeMaterialBlock) ?? false;
 
         if (rebuild) {
-            this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
+            this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
         }
     }
 

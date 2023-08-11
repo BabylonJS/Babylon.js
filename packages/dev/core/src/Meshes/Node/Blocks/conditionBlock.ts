@@ -88,7 +88,7 @@ export class ConditionBlock extends NodeGeometryBlock {
     }
 
     /**
-     * Gets the positions input component
+     * Gets the right input component
      */
     public get right(): NodeGeometryConnectionPoint {
         return this._inputs[1];
@@ -169,7 +169,7 @@ export class ConditionBlock extends NodeGeometryBlock {
     }
 
     protected _dumpPropertiesCode() {
-        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.test = BABYLON.ConditionBlockTests.${ConditionBlockTests[this.test]};\r\n`;
+        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.test = BABYLON.ConditionBlockTests.${ConditionBlockTests[this.test]};\n`;
         return codeString;
     }
 

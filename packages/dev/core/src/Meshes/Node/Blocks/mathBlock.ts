@@ -57,6 +57,10 @@ export class MathBlock extends NodeGeometryBlock {
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.BasedOnInput);
 
         this._outputs[0]._typeConnectionSource = this._inputs[0];
+        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Matrix);
+        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Geometry);
+        this._inputs[1].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Matrix);
+        this._inputs[1].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Geometry);
         this._linkConnectionTypes(0, 1);
     }
 
@@ -76,7 +80,7 @@ export class MathBlock extends NodeGeometryBlock {
     }
 
     /**
-     * Gets the positions input component
+     * Gets the right input component
      */
     public get right(): NodeGeometryConnectionPoint {
         return this._inputs[1];
@@ -220,7 +224,7 @@ export class MathBlock extends NodeGeometryBlock {
     }
 
     protected _dumpPropertiesCode() {
-        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.operation = BABYLON.MathBlockOperations.${MathBlockOperations[this.operation]};\r\n`;
+        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.operation = BABYLON.MathBlockOperations.${MathBlockOperations[this.operation]};\n`;
         return codeString;
     }
 

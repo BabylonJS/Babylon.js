@@ -723,7 +723,6 @@ export class VertexData {
                         other.tangents = Array.from(this.tangents);
                     }
                 }
-
                 if (!this.uvs !== !other.uvs) {
                     if (!this.uvs) {
                         this.uvs = Array.from(other.uvs!);
@@ -755,7 +754,6 @@ export class VertexData {
                         other.uvs4 = Array.from(this.uvs4);
                     }
                 }
-
                 if (!this.uvs5 !== !other.uvs5) {
                     if (!this.uvs5) {
                         this.uvs5 = Array.from(other.uvs5!);
@@ -787,7 +785,6 @@ export class VertexData {
                         other.matricesIndices = Array.from(this.matricesIndices);
                     }
                 }
-
                 if (!this.matricesWeights !== !other.matricesWeights) {
                     if (!this.matricesWeights) {
                         this.matricesWeights = Array.from(other.matricesWeights!);

@@ -1,0 +1,7 @@
+{
+    "declarationLibs": ["@tools/node-geometry-editor", "@dev/shared-ui-components"],
+    "devPackageName": "nodeGeometryEditor",
+    "filename": "babylon.nodeGeometryEditor.module.d.ts",
+    "outputDirectory": "./",
+    "fileFilterRegex": "stories"
+}

@@ -66,7 +66,7 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
      * Gets the value associated with a contextual positions
      * @returns the value associated with the source
      */
-    getOverridePositionsContextualValue?() {
+    public getOverridePositionsContextualValue() {
         return this._currentPosition;
     }
 
@@ -74,7 +74,7 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
      * Gets the value associated with a contextual normals
      * @returns the value associated with the source
      */
-    getOverrideNormalsContextualValue?() {
+    public getOverrideNormalsContextualValue() {
         this._vertex1.subtractToRef(this._vertex0, this._tempVector0);
         this._vertex2.subtractToRef(this._vertex1, this._tempVector1);
         this._tempVector0.normalize();
@@ -229,7 +229,7 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
     }
 
     protected _dumpPropertiesCode() {
-        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.evaluateContext = ${this.evaluateContext ? "true" : "false"};\r\n`;
+        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.evaluateContext = ${this.evaluateContext ? "true" : "false"};\n`;
         return codeString;
     }
 

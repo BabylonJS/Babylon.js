@@ -23,6 +23,11 @@ export class RandomBlock extends NodeGeometryBlock {
 
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.BasedOnInput);
 
+        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Matrix);
+        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Geometry);
+        this._inputs[1].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Matrix);
+        this._inputs[1].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Geometry);
+
         this._outputs[0]._typeConnectionSource = this._inputs[0];
         this._linkConnectionTypes(0, 1);
     }
@@ -36,14 +41,14 @@ export class RandomBlock extends NodeGeometryBlock {
     }
 
     /**
-     * Gets the left input component
+     * Gets the min input component
      */
     public get min(): NodeGeometryConnectionPoint {
         return this._inputs[0];
     }
 
     /**
-     * Gets the positions input component
+     * Gets the max input component
      */
     public get max(): NodeGeometryConnectionPoint {
         return this._inputs[1];
@@ -74,6 +79,7 @@ export class RandomBlock extends NodeGeometryBlock {
         let func: Nullable<(state: NodeGeometryBuildState) => any> = null;
 
         switch (this.min.type) {
+            case NodeGeometryBlockConnectionPointTypes.Int:
             case NodeGeometryBlockConnectionPointTypes.Float: {
                 func = (state) => {
                     const min = this.min.getConnectedValue(state) || 0;

@@ -20,7 +20,7 @@ export class TorusBlock extends NodeGeometryBlock {
     public evaluateContext = false;
 
     /**
-     * Create a new SphereBlock
+     * Create a new TorusBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
@@ -103,7 +103,7 @@ export class TorusBlock extends NodeGeometryBlock {
     }
 
     protected _dumpPropertiesCode() {
-        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.evaluateContext = ${this.evaluateContext ? "true" : "false"};\r\n`;
+        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.evaluateContext = ${this.evaluateContext ? "true" : "false"};\n`;
         return codeString;
     }
 

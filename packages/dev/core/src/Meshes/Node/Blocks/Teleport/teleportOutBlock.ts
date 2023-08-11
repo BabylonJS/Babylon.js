@@ -52,7 +52,6 @@ export class TeleportOutBlock extends NodeGeometryBlock {
         if (!this._entryPoint) {
             return;
         }
-
         this._entryPoint.detachFromEndpoint(this);
     }
 
@@ -104,9 +103,8 @@ export class TeleportOutBlock extends NodeGeometryBlock {
 
     protected _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
-
         if (this.entryPoint) {
-            codeString += `${this.entryPoint._codeVariableName}.attachToEndpoint(${this._codeVariableName});\r\n`;
+            codeString += `${this.entryPoint._codeVariableName}.attachToEndpoint(${this._codeVariableName});\n`;
         }
         return codeString;
     }

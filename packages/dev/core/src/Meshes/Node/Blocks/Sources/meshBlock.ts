@@ -64,7 +64,7 @@ export class MeshBlock extends NodeGeometryBlock {
     }
 
     /**
-     * Serializes this block in a JSON representation     *
+     * Serializes this block in a JSON representation
      * @param saveMeshData defines a boolean indicating that mesh data must be saved as well
      * @returns the serialized block object
      */

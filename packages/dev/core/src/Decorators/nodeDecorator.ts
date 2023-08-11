@@ -1,3 +1,4 @@
+import type { Nullable } from "../types";
 import type { Scene } from "../scene";
 
 /**
@@ -43,7 +44,7 @@ export interface IEditablePropertyOption {
         /** the onPreviewCommandActivated observer of the preview manager should be triggered */
         activatePreviewCommand?: boolean;
         /** a callback to trigger */
-        callback?: (scene: Scene, block: any) => boolean | undefined | void;
+        callback?: (scene: Nullable<Scene>, block: any) => boolean | undefined | void;
         /** a callback to validate the property. Returns true if the property is ok, else false. If false, the rebuild/update/callback events won't be called */
         onValidation?: (block: any, propertyName: string) => boolean;
     };

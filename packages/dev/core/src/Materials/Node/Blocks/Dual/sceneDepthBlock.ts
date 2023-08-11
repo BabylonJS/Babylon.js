@@ -34,7 +34,9 @@ export class SceneDepthBlock extends NodeMaterialBlock {
                     sceneDepthBlock.storeCameraSpaceZ = false;
                     retVal = true;
                 }
-                scene.disableDepthRenderer();
+                if (scene) {
+                    scene.disableDepthRenderer();
+                }
                 return retVal;
             },
         },
@@ -54,7 +56,9 @@ export class SceneDepthBlock extends NodeMaterialBlock {
                     sceneDepthBlock.useNonLinearDepth = false;
                     retVal = true;
                 }
-                scene.disableDepthRenderer();
+                if (scene) {
+                    scene.disableDepthRenderer();
+                }
                 return retVal;
             },
         },
@@ -65,7 +69,7 @@ export class SceneDepthBlock extends NodeMaterialBlock {
      * Defines if the depth renderer should be setup in full 32 bits float mode
      */
     @editableInPropertyPage("Force 32 bits float", PropertyTypeForEdition.Boolean, "ADVANCED", {
-        notifiers: { activatePreviewCommand: true, callback: (scene) => scene.disableDepthRenderer() },
+        notifiers: { activatePreviewCommand: true, callback: (scene) => scene?.disableDepthRenderer() },
     })
     public force32itsFloat = false;
 

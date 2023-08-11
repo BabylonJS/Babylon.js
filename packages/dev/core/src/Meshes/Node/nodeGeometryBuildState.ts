@@ -35,7 +35,7 @@ export class NodeGeometryBuildState {
      * @param source Source of the contextual value
      * @returns the value associated with the source
      */
-    getContextualValue(source: NodeGeometryContextualSources) {
+    public getContextualValue(source: NodeGeometryContextualSources) {
         if (!this.executionContext || !this.geometryContext) {
             return null;
         }
@@ -172,15 +172,15 @@ export class NodeGeometryBuildState {
         for (const notConnectedInput of this.notConnectedNonOptionalInputs) {
             errorMessage += `input ${notConnectedInput.name} from block ${
                 notConnectedInput.ownerBlock.name
-            }[${notConnectedInput.ownerBlock.getClassName()}] is not connected and is not optional.\r\n`;
+            }[${notConnectedInput.ownerBlock.getClassName()}] is not connected and is not optional.\n`;
         }
 
         if (errorMessage) {
-            throw "Build of NodeGeometry failed:\r\n" + errorMessage;
+            throw "Build of NodeGeometry failed:\n" + errorMessage;
         }
     }
 
-    /** @hidden */
+    /** @internal  */
     public _instantiate(clone: VertexData, currentPosition: Vector3, rotation: Vector3, scaling: Vector3, additionalVertexData: VertexData[]) {
         // Transform
         Matrix.ScalingToRef(scaling.x, scaling.y, scaling.z, this._scalingMatrix);

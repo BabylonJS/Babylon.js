@@ -97,7 +97,7 @@ export class NodeGeometryBlock {
     }
 
     /**
-     * A free comment about the material
+     * A free comment about the block
      */
     @serialize("comment")
     public comments: string;
@@ -351,7 +351,6 @@ export class NodeGeometryBlock {
     /**
      * @internal
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public _deserialize(serializationObject: any) {
         this._name = serializationObject.name;
         this.comments = serializationObject.comments;
@@ -400,7 +399,7 @@ export class NodeGeometryBlock {
 
     protected _dumpPropertiesCode() {
         const variableName = this._codeVariableName;
-        return `${variableName}.visibleInInspector = ${this.visibleInInspector};\r\n${variableName}.visibleOnFrame = ${this.visibleOnFrame};\r\n`;
+        return `${variableName}.visibleInInspector = ${this.visibleInInspector};\n${variableName}.visibleOnFrame = ${this.visibleOnFrame};\n`;
     }
 
     /**
@@ -426,7 +425,7 @@ export class NodeGeometryBlock {
             codeString += connectedBlock._dumpCodeForOutputConnections(alreadyDumped);
             codeString += `${connectedBlock._codeVariableName}.${connectedBlock._outputRename(connectedOutput.name)}.connectTo(${this._codeVariableName}.${this._inputRename(
                 input.name
-            )});\r\n`;
+            )});\n`;
         }
 
         return codeString;
@@ -453,11 +452,11 @@ export class NodeGeometryBlock {
         uniqueNames.push(this._codeVariableName);
 
         // Declaration
-        let codeString = `\r\n// ${this.getClassName()}\r\n`;
+        let codeString = `\n// ${this.getClassName()}\n`;
         if (this.comments) {
-            codeString += `// ${this.comments}\r\n`;
+            codeString += `// ${this.comments}\n`;
         }
-        codeString += `var ${this._codeVariableName} = new BABYLON.${this.getClassName()}("${this.name}");\r\n`;
+        codeString += `var ${this._codeVariableName} = new BABYLON.${this.getClassName()}("${this.name}");\n`;
 
         // Properties
         codeString += this._dumpPropertiesCode();

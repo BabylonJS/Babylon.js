@@ -38,6 +38,7 @@ export interface INodeGeometryEditorOptions {
 
 /**
  * Defines a node based geometry
+ * @see demo at https://playground.babylonjs.com#PYY6XE#69
  */
 export class NodeGeometry {
     private static _BuildIdGenerator: number = 0;
@@ -151,7 +152,7 @@ export class NodeGeometry {
     }
 
     /**
-     * Get a block by its name
+     * Get a block using a predicate
      * @param predicate defines the predicate used to find the good candidate
      * @returns the required block or null if not found
      */
@@ -215,7 +216,7 @@ export class NodeGeometry {
     }
 
     /**
-     * Build the material and generates the inner effect
+     * Build the final geometry
      * @param verbose defines if the build should log activity
      * @param updateBuildId defines if the internal build Id should be updated (default is true)
      * @param autoConfigure defines if the autoConfigure method should be called when initializing blocks (default is false)
@@ -270,8 +271,8 @@ export class NodeGeometry {
         const mesh = new Mesh(name, scene);
         this._vertexData.applyToMesh(mesh);
 
-        mesh.metadata = mesh.metadata || {};
-        mesh.metadata.nodeGeometry = this;
+        mesh._internalMetadata = mesh._internalMetadata || {};
+        mesh._internalMetadata.nodeGeometry = this;
 
         return mesh;
     }
@@ -455,7 +456,7 @@ export class NodeGeometry {
         }
 
         // Generate
-        let codeString = `var nodeGeometry = new BABYLON.NodeGeometry("${this.name || "node geometry"}");\r\n`;
+        let codeString = `let nodeGeometry = new BABYLON.NodeGeometry("${this.name || "node geometry"}");\n`;
         for (const node of blocks) {
             if (node.isInput && alreadyDumped.indexOf(node) === -1) {
                 codeString += node._dumpCode(uniqueNames, alreadyDumped);
@@ -465,13 +466,13 @@ export class NodeGeometry {
         if (this.outputBlock) {
             // Connections
             alreadyDumped = [];
-            codeString += "\r\n// Connections\r\n";
+            codeString += "\n`;// Connections\n`;";
             codeString += this.outputBlock._dumpCodeForOutputConnections(alreadyDumped);
 
             // Output nodes
-            codeString += "\r\n// Output nodes\r\n";
-            codeString += `nodeGeometry.outputBlock = ${this.outputBlock._codeVariableName};\r\n`;
-            codeString += `nodeGeometry.build();\r\n`;
+            codeString += "\n`;// Output nodes\n`;";
+            codeString += `nodeGeometry.outputBlock = ${this.outputBlock._codeVariableName};\n`;
+            codeString += `nodeGeometry.build();\n`;
         }
 
         return codeString;

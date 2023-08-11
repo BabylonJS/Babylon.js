@@ -95,6 +95,8 @@ export class GeometryTrigonometryBlock extends NodeGeometryBlock {
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.BasedOnInput);
 
         this._outputs[0]._typeConnectionSource = this._inputs[0];
+        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Matrix);
+        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Geometry);
     }
 
     /**
@@ -208,6 +210,7 @@ export class GeometryTrigonometryBlock extends NodeGeometryBlock {
         }
 
         switch (this.input.type) {
+            case NodeGeometryBlockConnectionPointTypes.Int:
             case NodeGeometryBlockConnectionPointTypes.Float: {
                 this.output._storedFunction = (state) => {
                     const source = this.input.getConnectedValue(state);
@@ -258,7 +261,7 @@ export class GeometryTrigonometryBlock extends NodeGeometryBlock {
     protected _dumpPropertiesCode() {
         const codeString =
             super._dumpPropertiesCode() +
-            `${this._codeVariableName}.operation = BABYLON.GeometryTrigonometryBlockOperations.${GeometryTrigonometryBlockOperations[this.operation]};\r\n`;
+            `${this._codeVariableName}.operation = BABYLON.GeometryTrigonometryBlockOperations.${GeometryTrigonometryBlockOperations[this.operation]};\n`;
         return codeString;
     }
 }

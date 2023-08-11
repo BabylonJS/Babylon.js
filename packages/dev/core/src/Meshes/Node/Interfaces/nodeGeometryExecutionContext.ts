@@ -3,7 +3,7 @@
  */
 export interface INodeGeometryExecutionContext {
     /**
-     * Gets the current index in the current flow
+     * Gets the current vertex index in the current flow
      * @returns the current index
      */
     getExecutionIndex(): number;
