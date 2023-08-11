@@ -1,5 +1,5 @@
 {
-    "declarationLibs": ["@tools/node-editor", "@dev/shared-ui-components"],
+    "declarationLibs": ["@tools/node-geometry-editor", "@dev/shared-ui-components"],
     "devPackageName": "nodeGeometryEditor",
     "filename": "babylon.nodeGeometryEditor.module.d.ts",
     "buildType": "es6",
