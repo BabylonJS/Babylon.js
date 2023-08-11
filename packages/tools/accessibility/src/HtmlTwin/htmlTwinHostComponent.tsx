@@ -275,11 +275,11 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
         return result;
     }
 
-    private _hasChildrenWithA11yTag(node: Container): boolean {
+    private _hasChildrenWithA11yTag(node: Control): boolean {
         let result = false;
-        for (let i = 0; i < node.children.length; i++) {
-            const child = node.children[i];
-            if ((child instanceof Container && !(child instanceof Button) && this._hasChildrenWithA11yTag(child)) || child.accessibilityTag?.description) {
+        const descendants = node.getDescendants();
+        for (const child of descendants) {
+            if (child.accessibilityTag?.description) {
                 result = true;
                 break;
             }
@@ -295,13 +295,14 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
         const queue: Control[] = [...rootItems];
         for (let i: number = 0; i < queue.length; i++) {
             const curNode = queue[i];
-            if (!curNode.isVisible || (!this._options.addAllControls && !(curNode instanceof Container) && !curNode.accessibilityTag?.description)) {
+            const numOfDirectChildren = curNode.getDescendants(true).length;
+            if (!curNode.isVisible || (!this._options.addAllControls && !curNode.accessibilityTag?.description && numOfDirectChildren === 0)) {
                 continue;
             }
             if (
-                curNode instanceof Container &&
-                !(curNode instanceof Button) &&
-                ((this._options.addAllControls && curNode.children.length !== 0) || this._hasChildrenWithA11yTag(curNode))
+                curNode.getClassName() !== "Button" && // curNode = Non Button -> Container or not
+                numOfDirectChildren > 0 && // curNode = Non Button Container
+                (this._options.addAllControls || this._hasChildrenWithA11yTag(curNode))
             ) {
                 const curContainer = curNode as Container;
                 result.push(new HTMLTwinGUIItem(curContainer, this.props.scene, this._getHTMLTwinItemsFromGUI(curContainer.children)));
