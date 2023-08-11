@@ -20,7 +20,7 @@ export class TorusBlock extends NodeGeometryBlock {
     public evaluateContext = false;
 
     /**
-     * Create a new SphereBlock
+     * Create a new TorusBlock
      * @param name defines the block name
      */
     public constructor(name: string) {

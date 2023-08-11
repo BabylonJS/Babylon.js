@@ -257,7 +257,7 @@ export class GeometryInputBlock extends NodeGeometryBlock {
         serializationObject.max = this.max;
         serializationObject.groupInInspector = this.groupInInspector;
 
-        if (this._storedValue != null && !this.isContextual) {
+        if (this._storedValue !== null && !this.isContextual) {
             if (this._storedValue.asArray) {
                 serializationObject.valueType = "BABYLON." + this._storedValue.getClassName();
                 serializationObject.value = this._storedValue.asArray();

@@ -8,7 +8,7 @@ import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorat
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 
 /**
- * Block used to apply a transform to vector
+ * Block used to apply a transform to a vector / geometry
  */
 export class GeometryTransformBlock extends NodeGeometryBlock {
     private _rotationMatrix = new Matrix();

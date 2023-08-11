@@ -8,7 +8,7 @@ import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
  */
 export class NormalizeVectorBlock extends NodeGeometryBlock {
     /**
-     * Creates a new ComputeNormalsBlock
+     * Creates a new NormalizeVectorBlock
      * @param name defines the block name
      */
     public constructor(name: string) {

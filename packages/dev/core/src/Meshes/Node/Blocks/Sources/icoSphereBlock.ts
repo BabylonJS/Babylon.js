@@ -51,21 +51,21 @@ export class IcoSphereBlock extends NodeGeometryBlock {
     }
 
     /**
-     * Gets the radius input component
+     * Gets the radiusX input component
      */
     public get radiusX(): NodeGeometryConnectionPoint {
         return this._inputs[1];
     }
 
     /**
-     * Gets the radius input component
+     * Gets the radiusY input component
      */
     public get radiusY(): NodeGeometryConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the radius input component
+     * Gets the radiusZ input component
      */
     public get radiusZ(): NodeGeometryConnectionPoint {
         return this._inputs[3];

@@ -56,7 +56,7 @@ export class DiscBlock extends NodeGeometryBlock {
     }
 
     /**
-     * Gets the subdivisions input component
+     * Gets the arc input component
      */
     public get arc(): NodeGeometryConnectionPoint {
         return this._inputs[2];

@@ -88,7 +88,7 @@ export class ConditionBlock extends NodeGeometryBlock {
     }
 
     /**
-     * Gets the positions input component
+     * Gets the right input component
      */
     public get right(): NodeGeometryConnectionPoint {
         return this._inputs[1];
