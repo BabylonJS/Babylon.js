@@ -711,6 +711,11 @@ export class NodeMaterial extends PushMaterial {
      * @param autoConfigure defines if the autoConfigure method should be called when initializing blocks (default is false)
      */
     public build(verbose: boolean = false, updateBuildId = true, autoConfigure = false) {
+        // First time?
+        if (!this._vertexCompilationState && !autoConfigure) {
+            autoConfigure = true;
+        }
+
         this._buildWasSuccessful = false;
         const engine = this.getScene().getEngine();
 
