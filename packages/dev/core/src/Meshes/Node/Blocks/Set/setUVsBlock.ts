@@ -148,7 +148,7 @@ export class SetUVsBlock extends NodeGeometryBlock implements INodeGeometryExecu
     }
 
     protected _dumpPropertiesCode() {
-        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.textureCoordinateIndex};\r\n`;
+        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.textureCoordinateIndex};\n`;
         return codeString;
     }
 

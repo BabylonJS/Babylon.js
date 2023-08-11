@@ -258,7 +258,7 @@ export class GeometryTrigonometryBlock extends NodeGeometryBlock {
     protected _dumpPropertiesCode() {
         const codeString =
             super._dumpPropertiesCode() +
-            `${this._codeVariableName}.operation = BABYLON.GeometryTrigonometryBlockOperations.${GeometryTrigonometryBlockOperations[this.operation]};\r\n`;
+            `${this._codeVariableName}.operation = BABYLON.GeometryTrigonometryBlockOperations.${GeometryTrigonometryBlockOperations[this.operation]};\n`;
         return codeString;
     }
 }

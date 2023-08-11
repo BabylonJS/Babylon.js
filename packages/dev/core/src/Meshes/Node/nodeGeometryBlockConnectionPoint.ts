@@ -143,7 +143,7 @@ export class NodeGeometryConnectionPoint {
     public name: string;
 
     /**
-     * Gets or sets the connection point name
+     * Gets or sets the connection point display name
      */
     public displayName: string;
 

@@ -456,7 +456,7 @@ export class NodeGeometry {
         }
 
         // Generate
-        let codeString = `var nodeGeometry = new BABYLON.NodeGeometry("${this.name || "node geometry"}");\r\n`;
+        let codeString = `var nodeGeometry = new BABYLON.NodeGeometry("${this.name || "node geometry"}");\n`;
         for (const node of blocks) {
             if (node.isInput && alreadyDumped.indexOf(node) === -1) {
                 codeString += node._dumpCode(uniqueNames, alreadyDumped);
@@ -466,13 +466,13 @@ export class NodeGeometry {
         if (this.outputBlock) {
             // Connections
             alreadyDumped = [];
-            codeString += "\r\n// Connections\r\n";
+            codeString += "\n`;// Connections\n`;";
             codeString += this.outputBlock._dumpCodeForOutputConnections(alreadyDumped);
 
             // Output nodes
-            codeString += "\r\n// Output nodes\r\n";
-            codeString += `nodeGeometry.outputBlock = ${this.outputBlock._codeVariableName};\r\n`;
-            codeString += `nodeGeometry.build();\r\n`;
+            codeString += "\n`;// Output nodes\n`;";
+            codeString += `nodeGeometry.outputBlock = ${this.outputBlock._codeVariableName};\n`;
+            codeString += `nodeGeometry.build();\n`;
         }
 
         return codeString;
