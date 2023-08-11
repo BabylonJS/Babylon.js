@@ -83,7 +83,7 @@ async function runTagsUpdate() {
     await runCommand("npm install");
     const version = getNewVersion();
     // // update engine version
-    // await updateEngineVersion(version);
+    await updateEngineVersion(version);
     // generate changelog
     await generateChangelog(version);
     // update since tags
