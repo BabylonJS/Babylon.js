@@ -111,6 +111,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         RandomBlock: "Block used to generate a random value within a range",
         NoiseBlock: "Generate a value using Perlin noise algorithm",
         GeometryOutputBlock: "Output block used to gather the final geometry",
+        NullBlock: "Generate an empty geometry",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -191,7 +192,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         // Block types used to create the menu from
         const allBlocks: any = {
             Custom_Frames: customFrameNames,
-            Sources: ["BoxBlock", "PlaneBlock", "SphereBlock", "TorusBlock", "CylinderBlock", "CapsuleBlock", "DiscBlock", "IcoSphereBlock", "MeshBlock", "GridBlock"],
+            Sources: ["BoxBlock", "PlaneBlock", "SphereBlock", "TorusBlock", "CylinderBlock", "CapsuleBlock", "DiscBlock", "IcoSphereBlock", "MeshBlock", "GridBlock", "NullBlock"],
             Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Int"],
             Contextual: [
                 "PositionsBlock",

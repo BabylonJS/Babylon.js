@@ -24,6 +24,7 @@ import { MeshBlock } from "core/Meshes/Node/Blocks/Sources/meshBlock";
 import { GridBlock } from "core/Meshes/Node/Blocks/Sources/gridBlock";
 import { TorusBlock } from "core/Meshes/Node/Blocks/Sources/torusBlock";
 import { DiscBlock } from "core/Meshes/Node/Blocks/Sources/discBlock";
+import { NullBlock } from "core/Meshes/Node/Blocks/Sources/nullBlock";
 import { MergeGeometryBlock } from "core/Meshes/Node/Blocks/mergeGeometryBlock";
 import { VectorConverterBlock } from "core/Meshes/Node/Blocks/vectorConverterBlock";
 import { NormalizeVectorBlock } from "core/Meshes/Node/Blocks/normalizeVectorBlock";
@@ -46,6 +47,8 @@ import { ConditionBlock, ConditionBlockTests } from "core/Meshes/Node/Blocks/con
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "NullBlock":
+                return new NullBlock("Null");
             case "TeleportInBlock":
                 return new TeleportInBlock("Teleport In");
             case "TeleportOutBlock":
