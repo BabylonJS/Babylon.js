@@ -555,7 +555,7 @@ export class NodeMaterialBlock {
             ) {
                 const connectedPoint = input.connectedPoint!;
                 if (state._vertexState._emitVaryingFromString("v_" + connectedPoint.associatedVariableName, state._getGLType(connectedPoint.type))) {
-                    state._vertexState.compilationString += `${"v_" + connectedPoint.associatedVariableName} = ${connectedPoint.associatedVariableName};\r\n`;
+                    state._vertexState.compilationString += `${"v_" + connectedPoint.associatedVariableName} = ${connectedPoint.associatedVariableName};\n`;
                 }
                 input.associatedVariableName = "v_" + connectedPoint.associatedVariableName;
                 input._enforceAssociatedVariableName = true;
@@ -674,7 +674,7 @@ export class NodeMaterialBlock {
         }
 
         if (!this.isInput && state.sharedData.emitComments) {
-            state.compilationString += `\r\n//${this.name}\r\n`;
+            state.compilationString += `\n//${this.name}\n`;
         }
 
         this._buildBlock(state);
@@ -709,7 +709,7 @@ export class NodeMaterialBlock {
 
     protected _dumpPropertiesCode() {
         const variableName = this._codeVariableName;
-        return `${variableName}.visibleInInspector = ${this.visibleInInspector};\r\n${variableName}.visibleOnFrame = ${this.visibleOnFrame};\r\n${variableName}.target = ${this.target};\r\n`;
+        return `${variableName}.visibleInInspector = ${this.visibleInInspector};\n${variableName}.visibleOnFrame = ${this.visibleOnFrame};\n${variableName}.target = ${this.target};\n`;
     }
 
     /**
@@ -733,11 +733,11 @@ export class NodeMaterialBlock {
         uniqueNames.push(this._codeVariableName);
 
         // Declaration
-        let codeString = `\r\n// ${this.getClassName()}\r\n`;
+        let codeString = `\n// ${this.getClassName()}\n`;
         if (this.comments) {
-            codeString += `// ${this.comments}\r\n`;
+            codeString += `// ${this.comments}\n`;
         }
-        codeString += `var ${this._codeVariableName} = new BABYLON.${this.getClassName()}("${this.name}");\r\n`;
+        codeString += `var ${this._codeVariableName} = new BABYLON.${this.getClassName()}("${this.name}");\n`;
 
         // Properties
         codeString += this._dumpPropertiesCode();
@@ -796,7 +796,7 @@ export class NodeMaterialBlock {
             codeString += connectedBlock._dumpCodeForOutputConnections(alreadyDumped);
             codeString += `${connectedBlock._codeVariableName}.${connectedBlock._outputRename(connectedOutput.name)}.connectTo(${this._codeVariableName}.${this._inputRename(
                 input.name
-            )});\r\n`;
+            )});\n`;
         }
 
         return codeString;

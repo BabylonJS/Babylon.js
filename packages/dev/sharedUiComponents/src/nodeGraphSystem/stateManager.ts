@@ -25,7 +25,7 @@ export class StateManager {
     onCandidateLinkMoved = new Observable<Nullable<Vector2>>();
     onCandidatePortSelectedObservable = new Observable<Nullable<NodePort | FrameNodePort>>();
     onNewNodeCreatedObservable = new Observable<GraphNode>();
-    onRebuildRequiredObservable = new Observable<boolean>();
+    onRebuildRequiredObservable = new Observable<void>();
     onErrorMessageDialogRequiredObservable = new Observable<string>();
     onExposePortOnFrameObservable = new Observable<GraphNode>();
     onGridSizeChanged = new Observable<void>();

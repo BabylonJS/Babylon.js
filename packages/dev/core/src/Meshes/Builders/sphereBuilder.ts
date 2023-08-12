@@ -45,7 +45,7 @@ export function CreateSphereVertexData(options: {
     backUVs?: Vector4;
     dedupTopBottomIndices?: boolean;
 }): VertexData {
-    const segments: number = options.segments || 32;
+    const segments: number = (options.segments || 32) | 0;
     const diameterX: number = options.diameterX || options.diameter || 1;
     const diameterY: number = options.diameterY || options.diameter || 1;
     const diameterZ: number = options.diameterZ || options.diameter || 1;

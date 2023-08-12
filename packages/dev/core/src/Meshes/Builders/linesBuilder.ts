@@ -136,7 +136,7 @@ export function CreateDashedLinesVertexData(options: { points: Vector3[]; dashSi
 export function CreateLineSystem(
     name: string,
     options: { lines: Vector3[][]; updatable?: boolean; instance?: Nullable<LinesMesh>; colors?: Nullable<Color4[][]>; useVertexAlpha?: boolean; material?: Material },
-    scene: Nullable<Scene>
+    scene: Nullable<Scene> = null
 ): LinesMesh {
     const instance = options.instance;
     const lines = options.lines;

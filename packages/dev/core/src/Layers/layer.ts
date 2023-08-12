@@ -243,7 +243,7 @@ export class Layer {
         }
 
         if (this.texture && !this.texture.gammaSpace) {
-            defines += "\r\n#define LINEAR";
+            defines += "\n#define LINEAR";
         }
 
         if (this._previousDefines !== defines) {

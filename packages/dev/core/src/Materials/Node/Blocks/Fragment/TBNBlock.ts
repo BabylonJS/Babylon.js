@@ -190,17 +190,15 @@ export class TBNBlock extends NodeMaterialBlock {
 
             if (row0.hasEndpoints) {
                 state.compilationString +=
-                    this._declareOutput(row0, state) +
-                    ` = vec3(${TBN.associatedVariableName}[0][0], ${TBN.associatedVariableName}[0][1], ${TBN.associatedVariableName}[0][2]);\r\n`;
+                    this._declareOutput(row0, state) + ` = vec3(${TBN.associatedVariableName}[0][0], ${TBN.associatedVariableName}[0][1], ${TBN.associatedVariableName}[0][2]);\n`;
             }
             if (row1.hasEndpoints) {
                 state.compilationString +=
-                    this._declareOutput(row1, state) + ` = vec3(${TBN.associatedVariableName}[1[0], ${TBN.associatedVariableName}[1][1], ${TBN.associatedVariableName}[1][2]);\r\n`;
+                    this._declareOutput(row1, state) + ` = vec3(${TBN.associatedVariableName}[1[0], ${TBN.associatedVariableName}[1][1], ${TBN.associatedVariableName}[1][2]);\n`;
             }
             if (row2.hasEndpoints) {
                 state.compilationString +=
-                    this._declareOutput(row2, state) +
-                    ` = vec3(${TBN.associatedVariableName}[2][0], ${TBN.associatedVariableName}[2][1], ${TBN.associatedVariableName}[2][2]);\r\n`;
+                    this._declareOutput(row2, state) + ` = vec3(${TBN.associatedVariableName}[2][0], ${TBN.associatedVariableName}[2][1], ${TBN.associatedVariableName}[2][2]);\n`;
             }
 
             state.sharedData.blocksWithDefines.push(this);

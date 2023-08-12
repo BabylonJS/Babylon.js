@@ -1022,7 +1022,7 @@ export class AssetContainer extends AbstractScene {
     }
 
     /**
-     * @since
+     * @since 6.15.0
      * This method checks for any node that has no parent
      * and is not in the rootNodes array, and adds the node
      * there, if so.

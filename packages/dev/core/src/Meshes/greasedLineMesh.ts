@@ -1,6 +1,7 @@
 import type { Scene } from "../scene";
 import type { Matrix } from "../Maths/math.vector";
 import { Vector3 } from "../Maths/math.vector";
+import type { IGreasedLineMaterial } from "../Materials/greasedLinePluginMaterial";
 import { GreasedLinePluginMaterial } from "../Materials/greasedLinePluginMaterial";
 import { Mesh } from "./mesh";
 import type { Ray, TrianglePickingPredicate } from "../Culling/ray";
@@ -11,6 +12,7 @@ import type { Nullable } from "../types";
 import type { Node } from "../node";
 import { DeepCopier } from "../Misc/deepCopier";
 import { GreasedLineTools } from "../Misc/greasedLineTools";
+import { GreasedLineSimpleMaterial } from "../Materials/GreasedLineSimpleMaterial";
 
 export type GreasedLinePoints = Vector3[] | Vector3[][] | Float32Array | Float32Array[] | number[][] | number[];
 
@@ -244,7 +246,10 @@ export class GreasedLineMesh extends Mesh {
     /**
      * Gets the pluginMaterial associated with line
      */
-    get greasedLineMaterial() {
+    get greasedLineMaterial(): IGreasedLineMaterial {
+        if (this.material && this.material instanceof GreasedLineSimpleMaterial) {
+            return this.material;
+        }
         return <GreasedLinePluginMaterial>this.material?.pluginManager?.getPlugin(GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME);
     }
 
@@ -287,7 +292,7 @@ export class GreasedLineMesh extends Mesh {
         for (const points of this._points) {
             pointCount += points.length;
         }
-        const countDiff = pointCount / 3 * 2 - this._widths.length;
+        const countDiff = (pointCount / 3) * 2 - this._widths.length;
         for (let i = 0; i < countDiff; i++) {
             this._widths.push(1);
         }

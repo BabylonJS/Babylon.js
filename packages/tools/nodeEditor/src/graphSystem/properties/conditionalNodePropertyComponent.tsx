@@ -41,7 +41,7 @@ export class ConditionalPropertyTabComponent extends React.Component<IPropertyCo
                         propertyName="condition"
                         onSelect={() => {
                             this.props.stateManager.onUpdateRequiredObservable.notifyObservers(conditionBlock);
-                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
+                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
                             this.forceUpdate();
                         }}
                     />

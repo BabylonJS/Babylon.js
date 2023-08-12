@@ -30,7 +30,7 @@ export function CreateTorusVertexData(options: { diameter?: number; thickness?: 
 
     const diameter = options.diameter || 1;
     const thickness = options.thickness || 0.5;
-    const tessellation = options.tessellation || 16;
+    const tessellation = (options.tessellation || 16) | 0;
     const sideOrientation = options.sideOrientation === 0 ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
 
     const stride = tessellation + 1;

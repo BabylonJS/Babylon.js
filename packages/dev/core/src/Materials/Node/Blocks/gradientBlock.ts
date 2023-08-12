@@ -123,15 +123,15 @@ export class GradientBlock extends NodeMaterialBlock {
         const output = this._outputs[0];
 
         if (!this.colorSteps.length || !this.gradient.connectedPoint) {
-            state.compilationString += this._declareOutput(output, state) + ` = vec3(0., 0., 0.);\r\n`;
+            state.compilationString += this._declareOutput(output, state) + ` = vec3(0., 0., 0.);\n`;
             return;
         }
 
         const tempColor = state._getFreeVariableName("gradientTempColor");
         const tempPosition = state._getFreeVariableName("gradientTempPosition");
 
-        state.compilationString += `vec3 ${tempColor} = ${this._writeColorConstant(0)};\r\n`;
-        state.compilationString += `float ${tempPosition};\r\n`;
+        state.compilationString += `vec3 ${tempColor} = ${this._writeColorConstant(0)};\n`;
+        state.compilationString += `float ${tempPosition};\n`;
 
         let gradientSource = this.gradient.associatedVariableName;
 
@@ -144,10 +144,10 @@ export class GradientBlock extends NodeMaterialBlock {
             const previousStep = this.colorSteps[index - 1];
             state.compilationString += `${tempPosition} = clamp((${gradientSource} - ${state._emitFloat(previousStep.step)}) / (${state._emitFloat(
                 step.step
-            )} -  ${state._emitFloat(previousStep.step)}), 0.0, 1.0) * step(${state._emitFloat(index)}, ${state._emitFloat(this.colorSteps.length - 1)});\r\n`;
-            state.compilationString += `${tempColor} = mix(${tempColor}, ${this._writeColorConstant(index)}, ${tempPosition});\r\n`;
+            )} -  ${state._emitFloat(previousStep.step)}), 0.0, 1.0) * step(${state._emitFloat(index)}, ${state._emitFloat(this.colorSteps.length - 1)});\n`;
+            state.compilationString += `${tempColor} = mix(${tempColor}, ${this._writeColorConstant(index)}, ${tempPosition});\n`;
         }
-        state.compilationString += this._declareOutput(output, state) + ` = ${tempColor};\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = ${tempColor};\n`;
 
         return this;
     }
@@ -184,10 +184,10 @@ export class GradientBlock extends NodeMaterialBlock {
     protected _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
 
-        codeString += `${this._codeVariableName}.colorSteps = [];\r\n`;
+        codeString += `${this._codeVariableName}.colorSteps = [];\n`;
 
         for (const colorStep of this.colorSteps) {
-            codeString += `${this._codeVariableName}.colorSteps.push(new BABYLON.GradientBlockColorStep(${colorStep.step}, new BABYLON.Color3(${colorStep.color.r}, ${colorStep.color.g}, ${colorStep.color.b})));\r\n`;
+            codeString += `${this._codeVariableName}.colorSteps.push(new BABYLON.GradientBlockColorStep(${colorStep.step}, new BABYLON.Color3(${colorStep.color.r}, ${colorStep.color.g}, ${colorStep.color.b})));\n`;
         }
 
         return codeString;
