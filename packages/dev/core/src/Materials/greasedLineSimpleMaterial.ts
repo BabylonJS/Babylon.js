@@ -51,10 +51,10 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
     private _engine: Engine;
 
     /**
-     *
-     * @param name
-     * @param scene
-     * @param options
+     * GreasedLineSimple material constructor
+     * @param name mataerial name
+     * @param scene the scene
+     * @param options material options
      */
     constructor(name: string, scene: Scene, options: GreasedLineMaterialOptions) {
         super(
