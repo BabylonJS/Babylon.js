@@ -93,10 +93,11 @@ export class USDExport {
                             materials[material.uniqueId] = material;
                         }
 
-                        let noopNode: boolean = false;
-                        if (mesh.parent && isNoopNode(mesh.parent, false)) {
+                        let noopNode = mesh.parent && isNoopNode(mesh.parent, scene.useRightHandedSystem) && !scene.useRightHandedSystem;
+                        if (noopNode) {
                             (mesh.parent as TransformNode).scaling.z = 1;
                         }
+
 
                         output += USDExport._BuildXform(mesh, material);
 
