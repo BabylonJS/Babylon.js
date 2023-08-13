@@ -52,7 +52,7 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
 
     /**
      * GreasedLineSimple material constructor
-     * @param name mataerial name
+     * @param name material name
      * @param scene the scene
      * @param options material options
      */
