@@ -7,8 +7,8 @@ import type { GreasedLineMeshOptions } from "../greasedLineMesh";
 import { GreasedLineMesh } from "../greasedLineMesh";
 import type { Scene } from "../../scene";
 import { EngineStore } from "../../Engines/engineStore";
-import type { Color3 } from "core/Maths/math.color";
-import { GreasedLineSimpleMaterial } from "core/Materials/GreasedLineSimpleMaterial";
+import type { Color3 } from "../../Maths/math.color";
+import { GreasedLineSimpleMaterial } from "../../Materials/greasedLineSimpleMaterial";
 
 /**
  * How are the colors distributed along the color table

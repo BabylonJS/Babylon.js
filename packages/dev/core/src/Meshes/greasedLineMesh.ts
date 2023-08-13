@@ -12,7 +12,7 @@ import type { Nullable } from "../types";
 import type { Node } from "../node";
 import { DeepCopier } from "../Misc/deepCopier";
 import { GreasedLineTools } from "../Misc/greasedLineTools";
-import { GreasedLineSimpleMaterial } from "../Materials/GreasedLineSimpleMaterial";
+import { GreasedLineSimpleMaterial } from "../Materials/greasedLineSimpleMaterial";
 
 export type GreasedLinePoints = Vector3[] | Vector3[][] | Float32Array | Float32Array[] | number[][] | number[];
 
