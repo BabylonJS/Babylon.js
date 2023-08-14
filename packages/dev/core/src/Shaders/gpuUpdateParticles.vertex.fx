@@ -166,18 +166,38 @@ uniform vec4 cellInfos;
 
 
 vec3 getRandomVec3(float offset) {
-  return texture(randomSampler2, vec2(float(gl_VertexID) * offset / currentCount, 0)).rgb;
+  return texture(randomSampler2, vec2(float(gl_VertexID) * offset / currentCount, 0.0)).rgb;
 }
 
 vec4 getRandomVec4(float offset) {
-  return texture(randomSampler, vec2(float(gl_VertexID) * offset / currentCount, 0));
+  return texture(randomSampler, vec2(float(gl_VertexID) * offset / currentCount, 0.0));
 }
 
 void main() {
   float newAge = age + timeDelta;    
 
   // If particle is dead and system is not stopped, spawn as new particle
-  if (newAge >= life && stopFactor != 0.) {
+  if (newAge >= life) {
+    if (stopFactor < 0.01) {
+        #ifndef COLORGRADIENTS
+            outColor = vec4(0.0, 0.0, 0.0, 0.0);
+        #endif
+        outSize = vec3(0.0, 0.0, 0.0);
+        outPosition = vec3(0.0, 0.0, 0.0);
+        outLife = lifeTime.y;
+        outAge = lifeTime.y+1.0;
+        outSeed=seed;
+
+        #ifdef ANGULARSPEEDGRADIENTS
+            outAngle = 0.0;
+        #else
+            outAngle = vec2(0.0, 0.0);
+        #endif
+        
+        outDirection = vec3(0.0, 0.0, 0.0);
+        return;
+    }
+
     vec3 newPosition;
     vec3 newDirection;
 
@@ -218,7 +238,7 @@ void main() {
     vec3 randoms2 = getRandomVec3(seed.y);
     vec3 randoms3 = getRandomVec3(seed.z);
 
-    newPosition = vec3(0, 0, 0);
+    newPosition = vec3(0.0, 0.0, 0.0);
 
     newDirection = direction1 + (direction2 - direction1) * randoms3;
 #elif defined(BOXEMITTER)
@@ -365,11 +385,11 @@ void main() {
     float ageGradient = newAge / life;
 
 #ifdef VELOCITYGRADIENTS
-    directionScale *= texture(velocityGradientSampler, vec2(ageGradient, 0)).r;
+    directionScale *= texture(velocityGradientSampler, vec2(ageGradient, 0.0)).r;
 #endif
 
 #ifdef DRAGGRADIENTS
-    directionScale *= 1.0 - texture(dragGradientSampler, vec2(ageGradient, 0)).r;
+    directionScale *= 1.0 - texture(dragGradientSampler, vec2(ageGradient, 0.0)).r;
 #endif
 
 #if defined(CUSTOMEMITTER)
@@ -386,7 +406,7 @@ void main() {
 #endif
 
 #ifdef SIZEGRADIENTS
-	outSize.x = texture(sizeGradientSampler, vec2(ageGradient, 0)).r;
+	outSize.x = texture(sizeGradientSampler, vec2(ageGradient, 0.0)).r;
     outSize.yz = size.yz;
 #else
     outSize = size;
@@ -402,7 +422,7 @@ void main() {
     vec3 updatedDirection = direction + gravity * timeDelta;
 
     #ifdef LIMITVELOCITYGRADIENTS
-        float limitVelocity = texture(limitVelocityGradientSampler, vec2(ageGradient, 0)).r;
+        float limitVelocity = texture(limitVelocityGradientSampler, vec2(ageGradient, 0.0)).r;
 
         float currentVelocity = length(updatedDirection);
 
@@ -428,7 +448,7 @@ void main() {
 #endif 
 
 #ifdef ANGULARSPEEDGRADIENTS
-    float angularSpeed = texture(angularSpeedGradientSampler, vec2(ageGradient, 0)).r;
+    float angularSpeed = texture(angularSpeedGradientSampler, vec2(ageGradient, 0.0)).r;
     outAngle = angle + angularSpeed * timeDelta;
 #else
     outAngle = vec2(angle.x + angle.y * timeDelta, angle.y);

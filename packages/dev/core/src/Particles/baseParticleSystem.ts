@@ -102,6 +102,11 @@ export class BaseParticleSystem implements IClipPlanesHolder {
      * If you want to launch only a few particles at once, that can be done, as well.
      */
     public manualEmitCount = -1;
+    
+    /**
+     * On play manualEmitCount will be set to burst
+     */
+    public burst = 0;
 
     /**
      * The overall motion speed (0.01 is default update speed, faster updates = faster animation)

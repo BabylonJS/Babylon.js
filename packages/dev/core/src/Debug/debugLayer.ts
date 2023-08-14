@@ -174,11 +174,15 @@ declare module "../scene" {
         debugLayer: DebugLayer;
     }
 }
+
+Scene.prototype.getDebugLayer = function() {
+    return this._debugLayer;
+};
+
 Object.defineProperty(Scene.prototype, "debugLayer", {
     get: function (this: Scene) {
-        if (!this._debugLayer) {
+        if (!this._debugLayer)
             this._debugLayer = new DebugLayer(this);
-        }
         return this._debugLayer;
     },
     enumerable: true,

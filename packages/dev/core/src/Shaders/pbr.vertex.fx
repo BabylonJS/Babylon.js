@@ -91,8 +91,8 @@ varying vec4 vColor;
 #include<fogVertexDeclaration>
 #include<__decl__lightVxFragment>[0..maxSimultaneousLights]
 
-#include<morphTargetsVertexGlobalDeclaration>
-#include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
+// #include<morphTargetsVertexGlobalDeclaration>
+// #include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
 
 #ifdef REFLECTIONMAP_SKYBOX
 varying vec3 vPositionUVW;
@@ -120,8 +120,8 @@ void main(void) {
     vec2 uvUpdated = uv;
 #endif
 
-#include<morphTargetsVertexGlobal>
-#include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
+// #include<morphTargetsVertexGlobal>
+// #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 
 #ifdef REFLECTIONMAP_SKYBOX
     vPositionUVW = positionUpdated;
@@ -137,6 +137,9 @@ void main(void) {
     // Compute velocity before bones computation
     vCurrentPosition = viewProjection * finalWorld * vec4(positionUpdated, 1.0);
     vPreviousPosition = previousViewProjection * finalPreviousWorld * vec4(positionUpdated, 1.0);
+    float d = distance(vPreviousPosition, vCurrentPosition);
+    float alpha = d / 10.0;
+    vCurrentPosition = mix(vPreviousPosition, vCurrentPosition, saturate(alpha*alpha));
 #endif
 
 #include<bonesVertex>

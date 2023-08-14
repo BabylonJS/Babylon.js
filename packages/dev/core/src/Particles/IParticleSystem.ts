@@ -270,6 +270,11 @@ export interface IParticleSystem {
     manualEmitCount: number;
 
     /**
+     * On play manualEmitCount will be set to burst
+     */
+    burst: number;
+
+    /**
      * Specifies if the particles are updated in emitter local space or world space
      */
     isLocal: boolean;

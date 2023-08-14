@@ -1316,9 +1316,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             fallbacks.addFallback(fallbackRank++, "VERTEXCOLOR");
         }
 
-        if (defines.MORPHTARGETS) {
-            fallbacks.addFallback(fallbackRank++, "MORPHTARGETS");
-        }
+        // if (defines.MORPHTARGETS) {
+        //     fallbacks.addFallback(fallbackRank++, "MORPHTARGETS");
+        // }
 
         if (defines.MULTIVIEW) {
             fallbacks.addFallback(0, "MULTIVIEW");
@@ -1351,7 +1351,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
         MaterialHelper.PrepareAttributesForInstances(attribs, defines);
-        MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
+        // MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
         MaterialHelper.PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
 
         let shaderName = "pbr";
@@ -1423,8 +1423,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "vTangentSpaceParams",
             "boneTextureWidth",
             "vDebugMode",
-            "morphTargetTextureInfo",
-            "morphTargetTextureIndices",
+            // "morphTargetTextureInfo",
+            // "morphTargetTextureIndices",
         ];
 
         const samplers = [
@@ -1444,7 +1444,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             "boneSampler",
             "metallicReflectanceSampler",
             "reflectanceSampler",
-            "morphTargets",
+            // "morphTargets",
             "oitDepthSampler",
             "oitFrontColorSampler",
         ];
@@ -1497,7 +1497,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 fallbacks: fallbacks,
                 onCompiled: onCompiled,
                 onError: onError,
-                indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS },
+                indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, /*maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS*/ },
                 processFinalCode: csnrOptions.processFinalCode,
                 processCodeAfterIncludes: this._eventInfo.customCode,
                 multiTarget: defines.PREPASS,
@@ -2302,9 +2302,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect, true);
 
             // Morph targets
-            if (defines.NUM_MORPH_INFLUENCERS) {
-                MaterialHelper.BindMorphTargetParameters(mesh, this._activeEffect);
-            }
+            // if (defines.NUM_MORPH_INFLUENCERS) {
+            //     MaterialHelper.BindMorphTargetParameters(mesh, this._activeEffect);
+            // }
 
             if (defines.BAKED_VERTEX_ANIMATION_TEXTURE) {
                 mesh.bakedVertexAnimationManager?.bind(effect, defines.INSTANCES);

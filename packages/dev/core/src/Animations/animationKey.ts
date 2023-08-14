@@ -17,7 +17,15 @@ export interface IAnimationKey {
     /**
      * The output tangent for the cubic hermite spline
      */
-    outTangent?: any;
+    outTangent?: any; 
+    /**
+     * The input tangent weight for the cubic hermite spline
+     */
+    inWeight?: any;
+    /**
+     * The output tangent weight for the cubic hermite spline
+     */
+    outWeight?: any;
     /**
      * The animation interpolation type
      */

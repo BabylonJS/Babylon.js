@@ -658,9 +658,9 @@ Scene.prototype._animate = function (): void {
     // Getting time
     const now = PrecisionDate.Now;
     if (!this._animationTimeLast) {
-        if (this._pendingData.length > 0) {
-            return;
-        }
+        // if (this._pendingData.length > 0) {
+        //     return;
+        // }
         this._animationTimeLast = now;
     }
 

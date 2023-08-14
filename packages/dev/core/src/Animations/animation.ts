@@ -739,7 +739,7 @@ export class Animation {
     }
 
     /**
-     * Interpolates a scalar cubically
+     * Interpolates a scalar cubically with no weights
      * @param startValue Start value of the animation curve
      * @param outTangent End tangent of the animation
      * @param endValue End value of the animation curve
@@ -749,6 +749,51 @@ export class Animation {
      */
     public floatInterpolateFunctionWithTangents(startValue: number, outTangent: number, endValue: number, inTangent: number, gradient: number): number {
         return Scalar.Hermite(startValue, outTangent, endValue, inTangent, gradient);
+    }
+    
+    /**
+     * Interpolates a scalar cubically
+     * @returns Interpolated scalar value
+     */
+    public floatInterpolateFunctionWithTangentsAndWeights(x1:number, y1:number, yp1:number, wt1:number, x2:number, y2:number, yp2:number, wt2:number, gradient:number): number {
+        const Eps : number = Number.EPSILON;
+
+        let dx = x2 - x1;
+        gradient = (gradient - x1) / dx;
+        let dy = y2 - y1;
+        yp1 = yp1 * dx / dy;
+        yp2 = yp2 * dx / dy;
+        let wt2s = 1 - wt2;
+
+        let t = 0.5;
+        let t2;
+
+        if (wt1 == 1 / 3.0 && wt2 == 1 / 3.0)
+        {
+            t  = gradient;
+            t2 = 1 - t;
+        }
+        else
+        {
+            while (true)
+            {
+                t2 = (1 - t);
+                let fg = 3 * t2 * t2 * t * wt1 + 3 * t2 * t * t * wt2s + t * t * t - gradient;
+                if (Math.abs(fg) < 2*Eps)
+                    break;
+
+                // third order householder method
+                let fpg = 3 * t2 * t2 * wt1 + 6 * t2 * t * (wt2s - wt1) + 3 * t * t * (1 - wt2s);
+                let fppg = 6 * t2 * (wt2s - 2 * wt1) + 6 * t * (1 - 2 * wt2s + wt1);
+                let fpppg = 18 * wt1 - 18 * wt2s + 6;
+                
+                t -= (6 * fg * fpg * fpg - 3 * fg * fg * fppg) / (6 * fpg * fpg * fpg - 6 * fg * fpg * fppg + fg * fg * fpppg);
+            }
+        }
+        
+        let y = 3 * t2 * t2 * t * wt1 * yp1 + 3 * t2 * t * t * (1 - wt2 * yp2) + t * t * t;
+        
+        return y * dy + y1;
     }
 
     /**
@@ -962,9 +1007,28 @@ export class Animation {
         switch (this.dataType) {
             // Float
             case Animation.ANIMATIONTYPE_FLOAT: {
-                const floatValue = useTangent
-                    ? this.floatInterpolateFunctionWithTangents(startValue, startKey.outTangent * frameDelta, endValue, endKey.inTangent * frameDelta, gradient)
-                    : this.floatInterpolateFunction(startValue, endValue, gradient);
+                let floatValue;
+                
+                if (useTangent) {
+                //     const useWeights = startKey.inWeight || startKey.outWeight;
+                //     if (useWeights) {
+                //         floatValue = this.floatInterpolateFunctionWithTangentsAndWeights(
+                //             0, 
+                //             startValue, 
+                //             startKey.inTangent, 
+                //             startKey.inWeight,
+                //             1,
+                //             endValue,
+                //             endKey.outTangent,
+                //             endKey.outWeight,
+                //             gradient);
+                //     } else
+                //         floatValue = this.floatInterpolateFunctionWithTangents(startValue, startKey.outTangent * frameDelta, endValue, endKey.inTangent * frameDelta, gradient);
+                    
+                    floatValue = this.floatInterpolateFunctionWithTangents(startValue, startKey.outTangent * frameDelta, endValue, endKey.inTangent * frameDelta, gradient);
+                } else {
+                    floatValue = this.floatInterpolateFunction(startValue, endValue, gradient);
+                }
                 switch (state.loopMode) {
                     case Animation.ANIMATIONLOOPMODE_CYCLE:
                     case Animation.ANIMATIONLOOPMODE_CONSTANT:

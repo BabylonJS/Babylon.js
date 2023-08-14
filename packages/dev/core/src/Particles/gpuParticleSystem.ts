@@ -232,6 +232,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._started = true;
         this._stopped = false;
         this._preWarmDone = false;
+        this._currentActiveCount = 0;
+        this._actualFrame = 0;
+        this.manualEmitCount = this.burst;
 
         // Animations
         if (this.beginAnimationOnStart && this.animations && this.animations.length > 0 && this._scene) {
@@ -768,7 +771,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             capacity: number;
             randomTextureSize: number;
             randomTexture1 : RawTexture | undefined,
-            randomTexture2 : RawTexture | undefined
+            randomTexture2 : RawTexture | undefined,
+            platformClass: (new (...args: any[]) => IGPUParticleSystemPlatform) | undefined;
         }>,
         sceneOrEngine: Scene | ThinEngine,
         customEffect: Nullable<Effect> = null,
@@ -786,7 +790,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             this.defaultProjectionMatrix = Matrix.PerspectiveFovLH(0.8, 1, 0.1, 100, this._engine.isNDCHalfZRange);
         }
 
-        if (this._engine.getCaps().supportComputeShaders) {
+        options = options ?? {};
+
+        if (options.platformClass) {
+            this._platform = new options.platformClass(this, this._engine);
+        } else if (this._engine.getCaps().supportComputeShaders) {
             if (!GetClass("BABYLON.ComputeShaderParticleSystem")) {
                 throw new Error("The ComputeShaderParticleSystem class is not available! Make sure you have imported it.");
             }
@@ -808,8 +816,6 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);
-
-        options = options ?? {};
 
         if (!options.randomTextureSize) {
             delete options.randomTextureSize;
@@ -1688,11 +1694,21 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         // Get everything ready to render
         this._initialize();
 
-        this._accumulatedCount += this.emitRate * this._timeDelta;
-        if (this._accumulatedCount > 1) {
-            const intPart = this._accumulatedCount | 0;
-            this._accumulatedCount -= intPart;
-            this._currentActiveCount = Math.min(this._activeCount, this._currentActiveCount + intPart);
+        if (!this._stopped) {
+            if (this.manualEmitCount > -1) {
+                let lastActiveCount = this._currentActiveCount;
+                this._currentActiveCount = Math.min(this._capacity, this._currentActiveCount + this.manualEmitCount);
+                this.manualEmitCount -= this._currentActiveCount - lastActiveCount;
+                if (this.manualEmitCount <= 0)
+                    this.manualEmitCount = -1;
+            } else {
+                this._accumulatedCount += this.emitRate * this._timeDelta;
+                if (this._accumulatedCount > 1) {
+                    const intPart = this._accumulatedCount | 0;
+                    this._accumulatedCount -= intPart;
+                    this._currentActiveCount = Math.min(this._activeCount, this._currentActiveCount + intPart);
+                }
+            }
         }
 
         if (!this._currentActiveCount) {

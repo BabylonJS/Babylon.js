@@ -1236,6 +1236,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         // Convert the subEmitters field to the constant type field _subEmitters
         this._prepareSubEmitterInternalArray();
 
+        this.manualEmitCount = this.burst;
         this._started = true;
         this._stopped = false;
         this._actualFrame = 0;
@@ -2322,6 +2323,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         serializationObject.disposeOnStop = particleSystem.disposeOnStop;
         serializationObject.manualEmitCount = particleSystem.manualEmitCount;
+        serializationObject.burst = particleSystem.burst;
 
         // Emitter
         if ((<AbstractMesh>particleSystem.emitter).position) {
@@ -2915,6 +2917,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         particleSystem.disposeOnStop = parsedParticleSystem.disposeOnStop ?? false;
         particleSystem.manualEmitCount = parsedParticleSystem.manualEmitCount ?? -1;
+        particleSystem.burst = parsedParticleSystem.burst ?? -1;
     }
 
     /**

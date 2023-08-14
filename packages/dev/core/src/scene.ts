@@ -91,6 +91,7 @@ declare type MorphTarget = import("./Morph/morphTarget").MorphTarget;
 declare type WebVRFreeCamera = import("./Cameras/VR/webVRCamera").WebVRFreeCamera;
 declare type PerformanceViewerCollector = import("./Misc/PerformanceViewer/performanceViewerCollector").PerformanceViewerCollector;
 declare type IAction = import("./Actions/action").IAction;
+declare type DebugLayer = import("./Debug/debugLayer").DebugLayer;
 
 /**
  * Define an interface for all classes that will hold resources
@@ -4335,6 +4336,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /** @internal */
     public _animate(): void {
         // Nothing to do as long as Animatable have not been imported.
+    }  
+    
+    /** @internal */
+    public getDebugLayer(): DebugLayer | undefined {
+        // Nothing to do as long as DebugLayer have not been imported.
+        return undefined;
     }
 
     /** Execute all animations (for a frame) */

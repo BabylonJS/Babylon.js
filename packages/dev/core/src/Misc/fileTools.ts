@@ -510,6 +510,7 @@ export const RequestFile = (
         let request: Nullable<WebRequest> = new WebRequest();
         let retryHandle: Nullable<ReturnType<typeof setTimeout>> = null;
         let onReadyStateChange: Nullable<() => void>;
+        let onTimeout: Nullable<() => void>;
 
         const unbindEvents = () => {
             if (!request) {
@@ -523,6 +524,7 @@ export const RequestFile = (
                 request.removeEventListener("readystatechange", onReadyStateChange);
             }
             request.removeEventListener("loadend", onLoadEnd!);
+            request.removeEventListener("timeout", onTimeout!);
         };
 
         let onLoadEnd: Nullable<() => void> = () => {
@@ -532,7 +534,7 @@ export const RequestFile = (
             fileRequest.onCompleteObservable.clear();
 
             onProgress = undefined;
-            onReadyStateChange = null;
+            onTimeout = null;
             onLoadEnd = null;
             onError = undefined;
             onOpened = undefined;
@@ -571,49 +573,78 @@ export const RequestFile = (
             if (!request) {
                 return;
             }
-            request.open("GET", loadUrl);
 
-            if (onOpened) {
-                try {
-                    onOpened(request);
-                } catch (e) {
-                    handleError(e);
-                    return;
-                }
-            }
+            try {
+                request.open("GET", loadUrl);
 
-            if (useArrayBuffer) {
-                request.responseType = "arraybuffer";
-            }
-
-            if (onProgress) {
-                request.addEventListener("progress", onProgress);
-            }
-
-            if (onLoadEnd) {
-                request.addEventListener("loadend", onLoadEnd);
-            }
-
-            onReadyStateChange = () => {
-                if (aborted || !request) {
-                    return;
+                if (onOpened) {
+                    try {
+                        onOpened(request);
+                    } catch (e) {
+                        handleError(e);
+                        return;
+                    }
                 }
 
-                // In case of undefined state in some browsers.
-                if (request.readyState === (XMLHttpRequest.DONE || 4)) {
-                    // Some browsers have issues where onreadystatechange can be called multiple times with the same value.
-                    if (onReadyStateChange) {
-                        request.removeEventListener("readystatechange", onReadyStateChange);
+                if (useArrayBuffer) {
+                    request.responseType = "arraybuffer";
+                }
+
+                if (onProgress) {
+                    request.addEventListener("progress", onProgress);
+                }
+
+                if (onLoadEnd) {
+                    request.addEventListener("loadend", onLoadEnd);
+                }
+
+                onReadyStateChange = () => {
+                    if (aborted || !request) {
+                        return;
                     }
 
-                    if ((request.status >= 200 && request.status < 300) || (request.status === 0 && (!IsWindowObjectExist() || IsFileURL()))) {
-                        try {
-                            if (onSuccess) {
-                                onSuccess(useArrayBuffer ? request.response : request.responseText, request);
-                            }
-                        } catch (e) {
-                            handleError(e);
+                    // In case of undefined state in some browsers.
+                    if (request.readyState === (XMLHttpRequest.DONE || 4)) {
+                        // Some browsers have issues where onreadystatechange can be called multiple times with the same value.
+                        if (onReadyStateChange) {
+                            request.removeEventListener("readystatechange", onReadyStateChange);
                         }
+
+                        if ((request.status >= 200 && request.status < 300) || (request.status === 0 && (!IsWindowObjectExist() || IsFileURL()))) {
+                            try {
+                                if (onSuccess) {
+                                    onSuccess(useArrayBuffer ? request.response : request.responseText, request);
+                                }
+                            } catch (e) {
+                                handleError(e);
+                            }
+                            return;
+                        }
+
+                        const retryStrategy = FileToolsOptions.DefaultRetryStrategy;
+                        if (retryStrategy) {
+                            const waitTime = retryStrategy(loadUrl, request, retryIndex);
+                            if (waitTime !== -1) {
+                                // Prevent the request from completing for retry.
+                                unbindEvents();
+
+                                request = new WebRequest();
+                                retryHandle = setTimeout(() => retryLoop(retryIndex + 1), waitTime);
+                                return;
+                            }
+                        }
+
+                        const error = new RequestFileError("Error status: " + request.status + " " + request.statusText + " - Unable to load " + loadUrl, request);
+                        if (onError) {
+                            onError(error);
+                        }
+                    }
+                };
+                
+                onTimeout = () => {
+                    Logger.Error("[FileTools] timeout: " + loadUrl);
+
+                    if (aborted || !request) {
                         return;
                     }
 
@@ -630,16 +661,24 @@ export const RequestFile = (
                         }
                     }
 
-                    const error = new RequestFileError("Error status: " + request.status + " " + request.statusText + " - Unable to load " + loadUrl, request);
+                    const error = new RequestFileError("Error status: timeout" + request.statusText + " - Unable to load " + loadUrl, request);
                     if (onError) {
                         onError(error);
                     }
+                };
+
+                request.addEventListener("readystatechange", onReadyStateChange);
+                request.addEventListener("timeout", onTimeout);
+                request.timeout = 25*1000*(retryIndex+1);
+
+                request.send();
+            } catch(err) {
+                Logger.Error("[FileTools] " + err);
+                const error = new RequestFileError("Error status: unexpected error," + err + " - Unable to load " + loadUrl, request);
+                if (onError) {
+                    onError(error);
                 }
-            };
-
-            request.addEventListener("readystatechange", onReadyStateChange);
-
-            request.send();
+            }
         };
 
         retryLoop(0);

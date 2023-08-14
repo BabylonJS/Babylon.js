@@ -543,6 +543,13 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                         propertyName="emitRate"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
+                    <FloatLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Burst"
+                        target={system}
+                        propertyName="burst"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                     {system instanceof ParticleSystem && (
                         <ValueGradientGridComponent
                             globalState={this.props.globalState}
