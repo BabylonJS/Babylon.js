@@ -7,7 +7,7 @@ import { GreasedLineMeshColorMode, GreasedLineMeshColorDistributionType } from "
 import { ShaderMaterial } from "./shaderMaterial";
 import type { Nullable } from "../types";
 import { Color3 } from "../Maths/math.color";
-import { TmpVectors, Vector2 } from "../Maths/math.vector";
+import { Vector2 } from "../Maths/math.vector";
 import type { BaseTexture } from "./Textures/baseTexture";
 
 import "../Shaders/greasedLine.fragment";
