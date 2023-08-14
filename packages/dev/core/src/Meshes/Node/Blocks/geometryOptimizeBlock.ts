@@ -6,7 +6,8 @@ import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorat
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import type { FloatArray } from "../../../types";
 import { VertexData } from "../../../Meshes/mesh.vertexData";
-import { Epsilon } from "core/Maths";
+import { Scalar } from "../../../Maths/math.scalar";
+import { Epsilon } from "../../../Maths/math.constants";
 /**
  * Block used to extract unique positions from a geometry
  */
@@ -69,9 +70,9 @@ export class GeometryOptimizeBlock extends NodeGeometryBlock {
                 let found = false;
                 for (let checkIndex = 0; checkIndex < newPositions.length; checkIndex += 3) {
                     if (
-                        Math.abs(x - newPositions[checkIndex]) < Epsilon &&
-                        Math.abs(y - newPositions[checkIndex + 1]) < Epsilon &&
-                        Math.abs(z - newPositions[checkIndex + 2]) < Epsilon
+                        Scalar.WithinEpsilon(x, newPositions[checkIndex], Epsilon) &&
+                        Scalar.WithinEpsilon(y, newPositions[checkIndex + 1], Epsilon) &&
+                        Scalar.WithinEpsilon(z, newPositions[checkIndex + 2], Epsilon)
                     ) {
                         newIndicesMap[index / 3] = checkIndex / 3;
                         found = true;
