@@ -115,14 +115,18 @@ export function CreateGreasedLineMaterial(name: string, options: GreasedLineMate
     scene = <Scene>(scene ?? EngineStore.LastCreatedScene);
 
     let material;
-    if (options.materialType === GreasedLineMeshMaterialType.MATERIAL_TYPE_PBR) {
-        material = new PBRMaterial(name, scene);
-        new GreasedLinePluginMaterial(material, scene, options);
-    } else if (options.materialType === GreasedLineMeshMaterialType.MATERIAL_TYPE_STANDARD) {
-        material = new StandardMaterial(name, scene);
-        new GreasedLinePluginMaterial(material, scene, options);
-    } else {
-        material = new GreasedLineSimpleMaterial(name, scene, options);
+    switch (options.materialType) {
+        case GreasedLineMeshMaterialType.MATERIAL_TYPE_PBR:
+            material = new PBRMaterial(name, scene);
+            new GreasedLinePluginMaterial(material, scene, options);
+            break;
+        case GreasedLineMeshMaterialType.MATERIAL_TYPE_SIMPLE:
+            material = new GreasedLineSimpleMaterial(name, scene, options);
+            break;
+        default:
+            material = new StandardMaterial(name, scene);
+            new GreasedLinePluginMaterial(material, scene, options);
+            break;
     }
 
     return material;

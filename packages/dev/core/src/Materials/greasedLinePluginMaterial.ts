@@ -402,6 +402,10 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
             GreasedLinePluginMaterial._PrepareEmptyColorsTexture(_scene);
         }
 
+        this._engine.onDisposeObservable.add(() => {
+            GreasedLinePluginMaterial._EmptyColorsTexture?.dispose();
+        });
+
         this._enable(true); // always enabled
     }
 
@@ -939,8 +943,8 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
     private static _PrepareEmptyColorsTexture(scene: Scene) {
         if (!this._EmptyColorsTexture) {
             const colorsArray = new Uint8Array(4);
-            this._EmptyColorsTexture = new RawTexture(colorsArray, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false, false, RawTexture.NEAREST_NEAREST);
-            this._EmptyColorsTexture.name = "grlEmptyColorsTexture";
+            GreasedLinePluginMaterial._EmptyColorsTexture = new RawTexture(colorsArray, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false, false, RawTexture.NEAREST_NEAREST);
+            GreasedLinePluginMaterial._EmptyColorsTexture.name = "grlEmptyColorsTexture";
         }
     }
 }

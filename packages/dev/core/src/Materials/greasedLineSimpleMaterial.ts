@@ -111,6 +111,10 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
         if (this._colors) {
             this.setColors(this._colors);
         }
+
+        this._engine.onDisposeObservable.add(() => {
+            GreasedLineSimpleMaterial._EmptyColorsTexture?.dispose();
+        });
     }
 
     /**
@@ -195,6 +199,7 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
      * @returns
      */
     public setColors(colors: Nullable<Color3[]>, lazy = false, forceNewTexture = false): void {
+        debugger
         const origColorsCount = this._colors?.length ?? 0;
 
         this._colors = colors;
@@ -504,8 +509,8 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
     private static _PrepareEmptyColorsTexture(scene: Scene) {
         if (!this._EmptyColorsTexture) {
             const colorsArray = new Uint8Array(4);
-            this._EmptyColorsTexture = new RawTexture(colorsArray, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false, false, RawTexture.NEAREST_NEAREST);
-            this._EmptyColorsTexture.name = "grlEmptyColorsTexture";
+            GreasedLineSimpleMaterial._EmptyColorsTexture = new RawTexture(colorsArray, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false, false, RawTexture.NEAREST_NEAREST);
+            GreasedLineSimpleMaterial._EmptyColorsTexture.name = "grlEmptyColorsTexture";
         }
     }
 }

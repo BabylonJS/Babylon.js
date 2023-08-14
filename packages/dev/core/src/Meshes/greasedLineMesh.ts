@@ -246,11 +246,15 @@ export class GreasedLineMesh extends Mesh {
     /**
      * Gets the pluginMaterial associated with line
      */
-    get greasedLineMaterial(): IGreasedLineMaterial {
+    get greasedLineMaterial(): IGreasedLineMaterial | undefined {
         if (this.material && this.material instanceof GreasedLineSimpleMaterial) {
             return this.material;
         }
-        return <GreasedLinePluginMaterial>this.material?.pluginManager?.getPlugin(GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME);
+        const materialPlugin = this.material?.pluginManager?.getPlugin(GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME);
+        if (materialPlugin) {
+            return <GreasedLinePluginMaterial>materialPlugin;
+        }
+        return;
     }
 
     /**
