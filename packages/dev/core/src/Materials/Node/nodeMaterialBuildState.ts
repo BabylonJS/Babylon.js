@@ -81,50 +81,50 @@ export class NodeMaterialBuildState {
         const emitComments = state.sharedData.emitComments;
         const isFragmentMode = this.target === NodeMaterialBlockTargets.Fragment;
 
-        this.compilationString = `\r\n${emitComments ? "//Entry point\r\n" : ""}void main(void) {\r\n${this.compilationString}`;
+        this.compilationString = `\n${emitComments ? "//Entry point\n" : ""}void main(void) {\n${this.compilationString}`;
 
         if (this._constantDeclaration) {
-            this.compilationString = `\r\n${emitComments ? "//Constants\r\n" : ""}${this._constantDeclaration}\r\n${this.compilationString}`;
+            this.compilationString = `\n${emitComments ? "//Constants\n" : ""}${this._constantDeclaration}\n${this.compilationString}`;
         }
 
         let functionCode = "";
         for (const functionName in this.functions) {
-            functionCode += this.functions[functionName] + `\r\n`;
+            functionCode += this.functions[functionName] + `\n`;
         }
-        this.compilationString = `\r\n${functionCode}\r\n${this.compilationString}`;
+        this.compilationString = `\n${functionCode}\n${this.compilationString}`;
 
         if (!isFragmentMode && this._varyingTransfer) {
-            this.compilationString = `${this.compilationString}\r\n${this._varyingTransfer}`;
+            this.compilationString = `${this.compilationString}\n${this._varyingTransfer}`;
         }
 
         if (this._injectAtEnd) {
-            this.compilationString = `${this.compilationString}\r\n${this._injectAtEnd}`;
+            this.compilationString = `${this.compilationString}\n${this._injectAtEnd}`;
         }
 
-        this.compilationString = `${this.compilationString}\r\n}`;
+        this.compilationString = `${this.compilationString}\n}`;
 
         if (this.sharedData.varyingDeclaration) {
-            this.compilationString = `\r\n${emitComments ? "//Varyings\r\n" : ""}${this.sharedData.varyingDeclaration}\r\n${this.compilationString}`;
+            this.compilationString = `\n${emitComments ? "//Varyings\n" : ""}${this.sharedData.varyingDeclaration}\n${this.compilationString}`;
         }
 
         if (this._samplerDeclaration) {
-            this.compilationString = `\r\n${emitComments ? "//Samplers\r\n" : ""}${this._samplerDeclaration}\r\n${this.compilationString}`;
+            this.compilationString = `\n${emitComments ? "//Samplers\n" : ""}${this._samplerDeclaration}\n${this.compilationString}`;
         }
 
         if (this._uniformDeclaration) {
-            this.compilationString = `\r\n${emitComments ? "//Uniforms\r\n" : ""}${this._uniformDeclaration}\r\n${this.compilationString}`;
+            this.compilationString = `\n${emitComments ? "//Uniforms\n" : ""}${this._uniformDeclaration}\n${this.compilationString}`;
         }
 
         if (this._attributeDeclaration && !isFragmentMode) {
-            this.compilationString = `\r\n${emitComments ? "//Attributes\r\n" : ""}${this._attributeDeclaration}\r\n${this.compilationString}`;
+            this.compilationString = `\n${emitComments ? "//Attributes\n" : ""}${this._attributeDeclaration}\n${this.compilationString}`;
         }
 
-        this.compilationString = "precision highp float;\r\n" + this.compilationString;
-        this.compilationString = "#if defined(WEBGL2) || defines(WEBGPU)\r\nprecision highp sampler2DArray;\r\n#endif\r\n" + this.compilationString;
+        this.compilationString = "precision highp float;\n" + this.compilationString;
+        this.compilationString = "#if defined(WEBGL2) || defines(WEBGPU)\nprecision highp sampler2DArray;\n#endif\n" + this.compilationString;
 
         for (const extensionName in this.extensions) {
             const extension = this.extensions[extensionName];
-            this.compilationString = `\r\n${extension}\r\n${this.compilationString}`;
+            this.compilationString = `\n${extension}\n${this.compilationString}`;
         }
 
         this._builtCompilationString = this.compilationString;
@@ -182,7 +182,7 @@ export class NodeMaterialBuildState {
      */
     public _emit2DSampler(name: string) {
         if (this.samplers.indexOf(name) < 0) {
-            this._samplerDeclaration += `uniform sampler2D ${name};\r\n`;
+            this._samplerDeclaration += `uniform sampler2D ${name};\n`;
             this.samplers.push(name);
         }
     }
@@ -192,7 +192,7 @@ export class NodeMaterialBuildState {
      */
     public _emit2DArraySampler(name: string) {
         if (this.samplers.indexOf(name) < 0) {
-            this._samplerDeclaration += `uniform sampler2DArray ${name};\r\n`;
+            this._samplerDeclaration += `uniform sampler2DArray ${name};\n`;
             this.samplers.push(name);
         }
     }
@@ -230,7 +230,7 @@ export class NodeMaterialBuildState {
         }
 
         if (define) {
-            extension = `#if ${define}\r\n${extension}\r\n#endif`;
+            extension = `#if ${define}\n${extension}\n#endif`;
         }
         this.extensions[name] = extension;
     }
@@ -244,7 +244,7 @@ export class NodeMaterialBuildState {
         }
 
         if (this.sharedData.emitComments) {
-            code = comments + `\r\n` + code;
+            code = comments + `\n` + code;
         }
 
         this.functions[name] = code;
@@ -263,13 +263,13 @@ export class NodeMaterialBuildState {
         }
     ) {
         if (options && options.repeatKey) {
-            return `#include<${includeName}>${options.substitutionVars ? "(" + options.substitutionVars + ")" : ""}[0..${options.repeatKey}]\r\n`;
+            return `#include<${includeName}>${options.substitutionVars ? "(" + options.substitutionVars + ")" : ""}[0..${options.repeatKey}]\n`;
         }
 
-        let code = Effect.IncludesShadersStore[includeName] + "\r\n";
+        let code = Effect.IncludesShadersStore[includeName] + "\n";
 
         if (this.sharedData.emitComments) {
-            code = comments + `\r\n` + code;
+            code = comments + `\n` + code;
         }
 
         if (!options) {
@@ -310,13 +310,13 @@ export class NodeMaterialBuildState {
 
         if (!options || (!options.removeAttributes && !options.removeUniforms && !options.removeVaryings && !options.removeIfDef && !options.replaceStrings)) {
             if (options && options.repeatKey) {
-                this.functions[key] = `#include<${includeName}>${options.substitutionVars ? "(" + options.substitutionVars + ")" : ""}[0..${options.repeatKey}]\r\n`;
+                this.functions[key] = `#include<${includeName}>${options.substitutionVars ? "(" + options.substitutionVars + ")" : ""}[0..${options.repeatKey}]\n`;
             } else {
-                this.functions[key] = `#include<${includeName}>${options?.substitutionVars ? "(" + options?.substitutionVars + ")" : ""}\r\n`;
+                this.functions[key] = `#include<${includeName}>${options?.substitutionVars ? "(" + options?.substitutionVars + ")" : ""}\n`;
             }
 
             if (this.sharedData.emitComments) {
-                this.functions[key] = comments + `\r\n` + this.functions[key];
+                this.functions[key] = comments + `\n` + this.functions[key];
             }
 
             return;
@@ -325,7 +325,7 @@ export class NodeMaterialBuildState {
         this.functions[key] = Effect.IncludesShadersStore[includeName];
 
         if (this.sharedData.emitComments) {
-            this.functions[key] = comments + `\r\n` + this.functions[key];
+            this.functions[key] = comments + `\n` + this.functions[key];
         }
 
         if (options.removeIfDef) {
@@ -336,15 +336,15 @@ export class NodeMaterialBuildState {
         }
 
         if (options.removeAttributes) {
-            this.functions[key] = this.functions[key].replace(/^\s*?attribute.+$/gm, "");
+            this.functions[key] = this.functions[key].replace(/\s*?attribute .+?;/g, "\n");
         }
 
         if (options.removeUniforms) {
-            this.functions[key] = this.functions[key].replace(/^\s*?uniform.+$/gm, "");
+            this.functions[key] = this.functions[key].replace(/\s*?uniform .*?;/g, "\n");
         }
 
         if (options.removeVaryings) {
-            this.functions[key] = this.functions[key].replace(/^\s*?varying.+$/gm, "");
+            this.functions[key] = this.functions[key].replace(/\s*?(varying|in) .+?;/g, "\n");
         }
 
         if (options.replaceStrings) {
@@ -379,14 +379,14 @@ export class NodeMaterialBuildState {
 
         if (define) {
             if (define.startsWith("defined(")) {
-                this.sharedData.varyingDeclaration += `#if ${define}\r\n`;
+                this.sharedData.varyingDeclaration += `#if ${define}\n`;
             } else {
-                this.sharedData.varyingDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\r\n`;
+                this.sharedData.varyingDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\n`;
             }
         }
-        this.sharedData.varyingDeclaration += `varying ${type} ${name};\r\n`;
+        this.sharedData.varyingDeclaration += `varying ${type} ${name};\n`;
         if (define) {
-            this.sharedData.varyingDeclaration += `#endif\r\n`;
+            this.sharedData.varyingDeclaration += `#endif\n`;
         }
 
         return true;
@@ -404,14 +404,14 @@ export class NodeMaterialBuildState {
 
         if (define) {
             if (define.startsWith("defined(")) {
-                this._uniformDeclaration += `#if ${define}\r\n`;
+                this._uniformDeclaration += `#if ${define}\n`;
             } else {
-                this._uniformDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\r\n`;
+                this._uniformDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\n`;
             }
         }
-        this._uniformDeclaration += `uniform ${type} ${name};\r\n`;
+        this._uniformDeclaration += `uniform ${type} ${name};\n`;
         if (define) {
-            this._uniformDeclaration += `#endif\r\n`;
+            this._uniformDeclaration += `#endif\n`;
         }
     }
 

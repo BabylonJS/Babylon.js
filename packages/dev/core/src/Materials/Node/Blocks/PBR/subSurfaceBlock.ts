@@ -246,7 +246,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
             #endif
         #else
             subSurfaceOut.specularEnvironmentReflectance = specularEnvironmentReflectance;
-        #endif\r\n`;
+        #endif\n`;
 
         return code;
     }

@@ -6,8 +6,9 @@ import {
     PhysicsConstraintMotorType,
     PhysicsConstraintAxis,
     PhysicsConstraintAxisLimitMode,
+    PhysicsEventType,
 } from "../IPhysicsEnginePlugin";
-import type { PhysicsShapeParameters, IPhysicsEnginePluginV2, PhysicsMassProperties, IPhysicsCollisionEvent } from "../IPhysicsEnginePlugin";
+import type { PhysicsShapeParameters, IPhysicsEnginePluginV2, PhysicsMassProperties, IPhysicsCollisionEvent, IBasePhysicsCollisionEvent } from "../IPhysicsEnginePlugin";
 import type { IRaycastQuery, PhysicsRaycastResult } from "../../physicsRaycastResult";
 import { Logger } from "../../../Misc/logger";
 import type { PhysicsBody } from "../physicsBody";
@@ -18,12 +19,25 @@ import { PhysicsShape } from "../physicsShape";
 import type { BoundingBox } from "../../../Culling/boundingBox";
 import type { TransformNode } from "../../../Meshes/transformNode";
 import { Mesh } from "../../../Meshes/mesh";
+import { InstancedMesh } from "../../../Meshes/instancedMesh";
 import type { Scene } from "../../../scene";
 import { VertexBuffer } from "../../../Buffers/buffer";
 import { ArrayTools } from "../../../Misc/arrayTools";
 import { Observable } from "../../../Misc/observable";
 import type { Nullable } from "../../../types";
 declare let HK: any;
+
+/**
+ * Helper to keep a reference to plugin memory.
+ * Used to avoid https://github.com/emscripten-core/emscripten/issues/7294
+ * @internal
+ */
+interface PluginMemoryRef {
+    /** The offset from the beginning of the plugin's heap */
+    offset: number;
+    /** The number of identically-sized objects the buffer contains */
+    numObjects: number;
+}
 
 class MeshAccumulator {
     /**
@@ -52,18 +66,53 @@ class MeshAccumulator {
      * have a physics impostor. This is useful for creating a physics engine
      * that accurately reflects the mesh and its children.
      */
-    public addMesh(mesh: Mesh, includeChildren: boolean): void {
-        const indexOffset = this._vertices.length;
-        // Force absoluteScaling to be computed
+    public addNodeMeshes(mesh: TransformNode, includeChildren: boolean): void {
+        // Force absoluteScaling to be computed; we're going to use that to bake
+        // the scale of any parent nodes into this shape, as physics engines
+        // usually use rigid transforms, so can't handle arbitrary scale.
         mesh.computeWorldMatrix(true);
-        const shapeFromBody = TmpVectors.Matrix[0];
-        Matrix.ScalingToRef(mesh.absoluteScaling.x, mesh.absoluteScaling.y, mesh.absoluteScaling.z, shapeFromBody);
+        const rootScaled = TmpVectors.Matrix[0];
+        Matrix.ScalingToRef(mesh.absoluteScaling.x, mesh.absoluteScaling.y, mesh.absoluteScaling.z, rootScaled);
 
+        if (mesh instanceof Mesh) {
+            this._addMesh(mesh, rootScaled);
+        } else if (mesh instanceof InstancedMesh) {
+            this._addMesh(mesh.sourceMesh, rootScaled);
+        }
+
+        if (includeChildren) {
+            const worldToRoot = TmpVectors.Matrix[1];
+            mesh.computeWorldMatrix().invertToRef(worldToRoot);
+            const worldToRootScaled = TmpVectors.Matrix[2];
+            worldToRoot.multiplyToRef(rootScaled, worldToRootScaled);
+
+            const children = mesh.getChildMeshes(false);
+            //  Ignore any children which have a physics body.
+            //  Other plugin implementations do not have this check, which appears to be
+            //  a bug, as otherwise, the mesh will have a duplicate collider
+            children
+                .filter((m: any) => !m.physicsBody)
+                .forEach((m: TransformNode) => {
+                    const childToWorld = m.computeWorldMatrix();
+                    const childToRootScaled = TmpVectors.Matrix[3];
+                    childToWorld.multiplyToRef(worldToRootScaled, childToRootScaled);
+
+                    if (m instanceof Mesh) {
+                        this._addMesh(m, childToRootScaled);
+                    } else if (m instanceof InstancedMesh) {
+                        this._addMesh(m.sourceMesh, childToRootScaled);
+                    }
+                });
+        }
+    }
+
+    private _addMesh(mesh: Mesh, meshToRoot: Matrix): void {
         const vertexData = mesh.getVerticesData(VertexBuffer.PositionKind) || [];
         const numVerts = vertexData.length / 3;
+        const indexOffset = this._vertices.length;
         for (let v = 0; v < numVerts; v++) {
             const pos = new Vector3(vertexData[v * 3 + 0], vertexData[v * 3 + 1], vertexData[v * 3 + 2]);
-            this._vertices.push(Vector3.TransformCoordinates(pos, shapeFromBody));
+            this._vertices.push(Vector3.TransformCoordinates(pos, meshToRoot));
         }
 
         if (this._collectIndices) {
@@ -83,14 +132,6 @@ class MeshAccumulator {
                 }
             }
         }
-
-        if (includeChildren) {
-            const children = mesh.getChildMeshes(false);
-            //  Ignore any children which have a physics body.
-            //  Other plugin implementations do not have this check, which appears to be
-            //  a bug, as otherwise, the mesh will have a duplicate collider
-            children.filter((m: any) => !m.physicsBody).forEach((m: any) => this.addMesh(m, includeChildren));
-        }
     }
 
     /**
@@ -101,7 +142,7 @@ class MeshAccumulator {
      * freeBuffer() on the returned array once you have finished with it, in order to free the
      * memory inside the plugin..
      */
-    public getVertices(plugin: any): Float32Array {
+    public getVertices(plugin: any): PluginMemoryRef {
         const nFloats = this._vertices.length * 3;
         const bytesPerFloat = 4;
         const nBytes = nFloats * bytesPerFloat;
@@ -114,11 +155,11 @@ class MeshAccumulator {
             ret[i * 3 + 2] = this._vertices[i].z;
         }
 
-        return ret;
+        return { offset: bufferBegin, numObjects: nFloats };
     }
 
-    public freeBuffer(plugin: any, arr: Float32Array | Int32Array) {
-        plugin._free(arr.byteOffset);
+    public freeBuffer(plugin: any, arr: PluginMemoryRef) {
+        plugin._free(arr.offset);
     }
 
     /**
@@ -128,7 +169,7 @@ class MeshAccumulator {
      * of the triangle positions, where a single triangle is defined by three indices. You must call
      * freeBuffer() on this array once you have finished with it, to free the memory inside the plugin..
      */
-    public getTriangles(plugin: any): Int32Array {
+    public getTriangles(plugin: any): PluginMemoryRef {
         const bytesPerInt = 4;
         const nBytes = this._indices.length * bytesPerInt;
         const bufferBegin = plugin._malloc(nBytes);
@@ -137,7 +178,7 @@ class MeshAccumulator {
             ret[i] = this._indices[i];
         }
 
-        return ret;
+        return { offset: bufferBegin, numObjects: this._indices.length };
     }
 
     private _isRightHanded: boolean;
@@ -177,10 +218,10 @@ class ContactPoint {
 }
 
 class CollisionEvent {
-    //public eventType: number = 0; //0,1
     public contactOnA: ContactPoint = new ContactPoint(); //1
     public contactOnB: ContactPoint = new ContactPoint();
     public impulseApplied: number = 0;
+    public type: number = 0;
 
     static readToRef(buffer: any, offset: number, eventOut: CollisionEvent) {
         const intBuf = new Int32Array(buffer, offset);
@@ -194,6 +235,20 @@ class CollisionEvent {
         eventOut.contactOnB.position.set(floatBuf[offB + 8], floatBuf[offB + 9], floatBuf[offB + 10]);
         eventOut.contactOnB.normal.set(floatBuf[offB + 11], floatBuf[offB + 12], floatBuf[offB + 13]);
         eventOut.impulseApplied = floatBuf[offB + 13 + 3];
+        eventOut.type = intBuf[0];
+    }
+}
+
+class TriggerEvent {
+    public bodyIdA: bigint = BigInt(0);
+    public bodyIdB: bigint = BigInt(0);
+    public type: number = 0;
+
+    static readToRef(buffer: any, offset: number, eventOut: TriggerEvent) {
+        const intBuf = new Int32Array(buffer, offset);
+        eventOut.type = intBuf[0];
+        eventOut.bodyIdA = BigInt(intBuf[2]);
+        eventOut.bodyIdB = BigInt(intBuf[6]);
     }
 }
 
@@ -224,9 +279,17 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     private _bodyBuffer: number;
     private _bodyCollisionObservable = new Map<bigint, Observable<IPhysicsCollisionEvent>>();
     /**
-     *
+     * Observable for collision started and collision continued events
      */
     public onCollisionObservable = new Observable<IPhysicsCollisionEvent>();
+    /**
+     * Observable for collision ended events
+     */
+    public onCollisionEndedObservable = new Observable<IBasePhysicsCollisionEvent>();
+    /**
+     * Observable for trigger entered and trigger exited events
+     */
+    public onTriggerCollisionObservable = new Observable<IBasePhysicsCollisionEvent>();
 
     public constructor(private _useDeltaForWorldStep: boolean = true, hpInjection: any = HK) {
         if (typeof hpInjection === "function") {
@@ -308,6 +371,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         }
 
         this._notifyCollisions();
+        this._notifyTriggers();
     }
 
     /**
@@ -970,6 +1034,23 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     }
 
     /**
+     * Set the target transformation (position and rotation) of the body, such that the body will set its velocity to reach that target
+     * @param body The physics body to set the target transformation for.
+     * @param position The target position
+     * @param rotation The target rotation
+     * @param instanceIndex The index of the instance in an instanced body
+     */
+    public setTargetTransform(body: PhysicsBody, position: Vector3, rotation: Quaternion, instanceIndex?: number | undefined): void {
+        this._applyToBodyOrInstances(
+            body,
+            (pluginRef) => {
+                this._hknp.HP_Body_SetTargetQTransform(pluginRef.hpBodyId, [this._bVecToV3(position), this._bQuatToV4(rotation)]);
+            },
+            instanceIndex
+        );
+    }
+
+    /**
      * Sets the gravity factor of a body
      * @param body the physics body to set the gravity factor for
      * @param factor the gravity factor
@@ -1074,17 +1155,17 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                         const includeChildMeshes = !!options.includeChildMeshes;
                         const needIndices = type != PhysicsShapeType.CONVEX_HULL;
                         const accum = new MeshAccumulator(mesh, needIndices, mesh?.getScene());
-                        accum.addMesh(mesh, includeChildMeshes);
+                        accum.addNodeMeshes(mesh, includeChildMeshes);
 
                         const positions = accum.getVertices(this._hknp);
-                        const numVec3s = positions.length / 3;
+                        const numVec3s = positions.numObjects / 3;
 
                         if (type == PhysicsShapeType.CONVEX_HULL) {
-                            shape._pluginData = this._hknp.HP_Shape_CreateConvexHull(positions.byteOffset, numVec3s)[1];
+                            shape._pluginData = this._hknp.HP_Shape_CreateConvexHull(positions.offset, numVec3s)[1];
                         } else {
                             const triangles = accum.getTriangles(this._hknp);
-                            const numTriangles = triangles.length / 3;
-                            shape._pluginData = this._hknp.HP_Shape_CreateMesh(positions.byteOffset, numVec3s, triangles.byteOffset, numTriangles)[1];
+                            const numTriangles = triangles.numObjects / 3;
+                            shape._pluginData = this._hknp.HP_Shape_CreateMesh(positions.offset, numVec3s, triangles.offset, numTriangles)[1];
                             accum.freeBuffer(this._hknp, triangles);
                         }
                         accum.freeBuffer(this._hknp, positions);
@@ -1184,7 +1265,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Adds a child shape to the given shape.
      * @param shape - The parent shape.
      * @param newChild - The child shape to add.
-     * @param childTransform - The transform of the child shape relative to the parent shape.
+     * @param translation - The relative translation of the child from the parent shape
+     * @param rotation - The relative rotation of the child from the parent shape
+     * @param scale - The relative scale scale of the child from the parent shaep
      *
      */
     public addChild(shape: PhysicsShape, newChild: PhysicsShape, translation?: Vector3, rotation?: Quaternion, scale?: Vector3): void {
@@ -1218,16 +1301,25 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     }
 
     /**
+     * Marks the shape as a trigger
+     * @param shape the shape to mark as a trigger
+     * @param isTrigger if the shape is a trigger
+     */
+    public setTrigger(shape: PhysicsShape, isTrigger: boolean): void {
+        this._hknp.HP_Shape_SetTrigger(shape._pluginData, isTrigger);
+    }
+
+    /**
      * Calculates the bounding box of a given physics shape.
      *
-     * @param shape - The physics shape to calculate the bounding box for.
+     * @param _shape - The physics shape to calculate the bounding box for.
      * @returns The calculated bounding box.
      *
      * This method is useful for physics engines as it allows to calculate the
      * boundaries of a given shape. Knowing the boundaries of a shape is important
      * for collision detection and other physics calculations.
      */
-    public getBoundingBox(shape: PhysicsShape): BoundingBox {
+    public getBoundingBox(_shape: PhysicsShape): BoundingBox {
         return {} as BoundingBox;
     }
 
@@ -1376,6 +1468,12 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                         this._hknp.HP_Constraint_SetAxisMode(jointId, axId, this._hknp.ConstraintAxisLimitMode.LIMITED);
                         this._hknp.HP_Constraint_SetAxisMaxLimit(jointId, axId, l.maxLimit);
                     }
+                }
+                if (l.stiffness) {
+                    this._hknp.HP_Constraint_SetAxisStiffness(jointId, axId, l.stiffness);
+                }
+                if (l.damping) {
+                    this._hknp.HP_Constraint_SetAxisDamping(jointId, axId, l.damping);
                 }
             }
         } else {
@@ -1684,6 +1782,28 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         }
     }
 
+    private _notifyTriggers() {
+        let eventAddress = this._hknp.HP_World_GetTriggerEvents(this.world)[1];
+        const event = new TriggerEvent();
+        while (eventAddress) {
+            TriggerEvent.readToRef(this._hknp.HEAPU8.buffer, eventAddress, event);
+
+            const bodyInfoA = this._bodies.get(event.bodyIdA)!;
+            const bodyInfoB = this._bodies.get(event.bodyIdB)!;
+
+            const triggerCollisionInfo: IBasePhysicsCollisionEvent = {
+                collider: bodyInfoA.body,
+                colliderIndex: bodyInfoA.index,
+                collidedAgainst: bodyInfoB.body,
+                collidedAgainstIndex: bodyInfoB.index,
+                type: this._nativeTriggerCollisionValueToCollisionType(event.type),
+            };
+            this.onTriggerCollisionObservable.notifyObservers(triggerCollisionInfo);
+
+            eventAddress = this._hknp.HP_World_GetNextTriggerEvent(this.world, eventAddress);
+        }
+    }
+
     /**
      * Runs thru all detected collisions and filter by body
      */
@@ -1693,23 +1813,28 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         const worldAddr = Number(this.world);
         while (eventAddress) {
             CollisionEvent.readToRef(this._hknp.HEAPU8.buffer, eventAddress, event);
-            event.contactOnB.position.subtractToRef(event.contactOnA.position, this._tmpVec3[0]);
-            const distance = Vector3.Dot(this._tmpVec3[0], event.contactOnA.normal);
             const bodyInfoA = this._bodies.get(event.contactOnA.bodyId)!;
             const bodyInfoB = this._bodies.get(event.contactOnB.bodyId)!;
-            const collisionInfo = {
+            const collisionInfo: any = {
                 collider: bodyInfoA.body,
                 colliderIndex: bodyInfoA.index,
                 collidedAgainst: bodyInfoB.body,
                 collidedAgainstIndex: bodyInfoB.index,
-                point: event.contactOnA.position,
-                distance: distance,
-                impulse: event.impulseApplied,
-                normal: event.contactOnA.normal,
+                type: this._nativeCollisionValueToCollisionType(event.type),
             };
-            this.onCollisionObservable.notifyObservers(collisionInfo);
+            if (collisionInfo.type === PhysicsEventType.COLLISION_FINISHED) {
+                this.onCollisionEndedObservable.notifyObservers(collisionInfo);
+            } else {
+                event.contactOnB.position.subtractToRef(event.contactOnA.position, this._tmpVec3[0]);
+                const distance = Vector3.Dot(this._tmpVec3[0], event.contactOnA.normal);
+                collisionInfo.point = event.contactOnA.position;
+                collisionInfo.distance = distance;
+                collisionInfo.impulse = event.impulseApplied;
+                collisionInfo.normal = event.contactOnA.normal;
+                this.onCollisionObservable.notifyObservers(collisionInfo);
+            }
 
-            if (this._bodyCollisionObservable.size) {
+            if (this._bodyCollisionObservable.size && collisionInfo.type !== PhysicsEventType.COLLISION_FINISHED) {
                 const observableA = this._bodyCollisionObservable.get(event.contactOnA.bodyId);
                 const observableB = this._bodyCollisionObservable.get(event.contactOnB.bodyId);
 
@@ -1836,5 +1961,28 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             case PhysicsConstraintAxisLimitMode.LOCKED:
                 return this._hknp.ConstraintAxisLimitMode.LOCKED;
         }
+    }
+
+    private _nativeCollisionValueToCollisionType(type: number): PhysicsEventType {
+        switch (type) {
+            case this._hknp.EventType.COLLISION_STARTED.value:
+                return PhysicsEventType.COLLISION_STARTED;
+            case this._hknp.EventType.COLLISION_FINISHED.value:
+                return PhysicsEventType.COLLISION_FINISHED;
+            case this._hknp.EventType.COLLISION_CONTINUED.value:
+                return PhysicsEventType.COLLISION_CONTINUED;
+        }
+
+        return PhysicsEventType.COLLISION_STARTED;
+    }
+
+    private _nativeTriggerCollisionValueToCollisionType(type: number): PhysicsEventType {
+        switch (type) {
+            case 8:
+                return PhysicsEventType.TRIGGER_ENTERED;
+            case 16:
+                return PhysicsEventType.TRIGGER_EXITED;
+        }
+        return PhysicsEventType.TRIGGER_ENTERED;
     }
 }

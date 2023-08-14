@@ -50,6 +50,9 @@ export class EffectRenderer {
     private _fullscreenViewport = new Viewport(0, 0, 1, 1);
     private _onContextRestoredObserver: Nullable<Observer<ThinEngine>>;
 
+    private _savedStateDepthTest: boolean;
+    private _savedStateStencilTest: boolean;
+
     /**
      * Creates an effect renderer
      * @param engine the engine to use for rendering
@@ -107,11 +110,19 @@ export class EffectRenderer {
     }
 
     /**
+     * Saves engine states
+     */
+    public saveStates(): void {
+        this._savedStateDepthTest = this.engine.depthCullingState.depthTest;
+        this._savedStateStencilTest = this.engine.stencilState.stencilTest;
+    }
+
+    /**
      * Restores engine states
      */
     public restoreStates(): void {
-        this.engine.depthCullingState.depthTest = true;
-        this.engine.stencilState.stencilTest = true;
+        this.engine.depthCullingState.depthTest = this._savedStateDepthTest;
+        this.engine.stencilState.stencilTest = this._savedStateStencilTest;
     }
 
     /**
@@ -135,6 +146,8 @@ export class EffectRenderer {
         if (!effectWrapper.effect.isReady()) {
             return;
         }
+
+        this.saveStates();
 
         // Reset state
         this.setViewport();

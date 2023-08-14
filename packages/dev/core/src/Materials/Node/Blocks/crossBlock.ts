@@ -63,7 +63,7 @@ export class CrossBlock extends NodeMaterialBlock {
 
         const output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = cross(${this.left.associatedVariableName}.xyz, ${this.right.associatedVariableName}.xyz);\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = cross(${this.left.associatedVariableName}.xyz, ${this.right.associatedVariableName}.xyz);\n`;
 
         return this;
     }

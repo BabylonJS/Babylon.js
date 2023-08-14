@@ -59,11 +59,11 @@ export class DesaturateBlock extends NodeMaterialBlock {
         const tempMax = state._getFreeVariableName("colorMax");
         const tempMerge = state._getFreeVariableName("colorMerge");
 
-        state.compilationString += `float ${tempMin} = min(min(${colorName}.x, ${colorName}.y), ${colorName}.z);\r\n`;
-        state.compilationString += `float ${tempMax} = max(max(${colorName}.x, ${colorName}.y), ${colorName}.z);\r\n`;
-        state.compilationString += `float ${tempMerge} = 0.5 * (${tempMin} + ${tempMax});\r\n`;
+        state.compilationString += `float ${tempMin} = min(min(${colorName}.x, ${colorName}.y), ${colorName}.z);\n`;
+        state.compilationString += `float ${tempMax} = max(max(${colorName}.x, ${colorName}.y), ${colorName}.z);\n`;
+        state.compilationString += `float ${tempMerge} = 0.5 * (${tempMin} + ${tempMax});\n`;
         state.compilationString +=
-            this._declareOutput(output, state) + ` = mix(${colorName}, vec3(${tempMerge}, ${tempMerge}, ${tempMerge}), ${this.level.associatedVariableName});\r\n`;
+            this._declareOutput(output, state) + ` = mix(${colorName}, vec3(${tempMerge}, ${tempMerge}, ${tempMerge}), ${this.level.associatedVariableName});\n`;
 
         return this;
     }

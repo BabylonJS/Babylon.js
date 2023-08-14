@@ -2,6 +2,7 @@ import type { Scene } from "../../scene";
 import { Texture } from "./texture";
 import { Constants } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.rawTexture";
+import type { Nullable } from "../../types";
 /**
  * Class used to store 3D textures containing user data
  */
@@ -18,9 +19,10 @@ export class RawTexture3D extends Texture {
      * @param invertY defines if texture must be stored with Y axis inverted
      * @param samplingMode defines the sampling mode to use (Texture.TRILINEAR_SAMPLINGMODE by default)
      * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
+     * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      */
     constructor(
-        data: ArrayBufferView,
+        data: Nullable<ArrayBufferView>,
         width: number,
         height: number,
         depth: number,
@@ -30,11 +32,12 @@ export class RawTexture3D extends Texture {
         generateMipMaps: boolean = true,
         invertY: boolean = false,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
-        textureType = Constants.TEXTURETYPE_UNSIGNED_INT
+        textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
+        creationFlags?: number
     ) {
         super(null, scene, !generateMipMaps, invertY);
 
-        this._texture = scene.getEngine().createRawTexture3D(data, width, height, depth, format, generateMipMaps, invertY, samplingMode, null, textureType);
+        this._texture = scene.getEngine().createRawTexture3D(data, width, height, depth, format, generateMipMaps, invertY, samplingMode, null, textureType, creationFlags);
 
         this.is3D = true;
     }

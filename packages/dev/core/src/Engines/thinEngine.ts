@@ -197,6 +197,9 @@ export interface EngineOptions extends ThinEngineOptions, WebGLContextAttributes
  * The base engine class (root of all engines)
  */
 export class ThinEngine {
+    private static _TempClearColorUint32 = new Uint32Array(4);
+    private static _TempClearColorInt32 = new Int32Array(4);
+
     /** Use this array to turn off some WebGL2 features on known buggy browsers version */
     public static ExceptionList = [
         { key: "Chrome/63.0", capture: "63\\.0\\.3239\\.(\\d+)", captureConstraint: 108, targets: ["uniformBuffer"] },
@@ -222,14 +225,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@6.11.1";
+        return "babylonjs@6.16.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "6.11.1";
+        return "6.16.0";
     }
 
     /**
@@ -1557,6 +1560,7 @@ export class ThinEngine {
     public stopRenderLoop(renderFunction?: () => void): void {
         if (!renderFunction) {
             this._activeRenderLoops.length = 0;
+            this._cancelFrame();
             return;
         }
 
@@ -1564,6 +1568,26 @@ export class ThinEngine {
 
         if (index >= 0) {
             this._activeRenderLoops.splice(index, 1);
+            if (this._activeRenderLoops.length == 0) {
+                this._cancelFrame();
+            }
+        }
+    }
+
+    protected _cancelFrame() {
+        if (this._renderingQueueLaunched && this._frameHandler) {
+            this._renderingQueueLaunched = false;
+            if (!IsWindowObjectExist()) {
+                if (typeof cancelAnimationFrame === "function") {
+                    return cancelAnimationFrame(this._frameHandler);
+                }
+            } else {
+                const { cancelAnimationFrame } = this.getHostWindow() || window;
+                if (typeof cancelAnimationFrame === "function") {
+                    return cancelAnimationFrame(this._frameHandler);
+                }
+            }
+            return clearTimeout(this._frameHandler);
         }
     }
 
@@ -1706,8 +1730,38 @@ export class ThinEngine {
 
         let mode = 0;
         if (backBuffer && color) {
-            this._gl.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
-            mode |= this._gl.COLOR_BUFFER_BIT;
+            let setBackBufferColor = true;
+            if (this._currentRenderTarget) {
+                const textureFormat = this._currentRenderTarget.texture?.format;
+                if (
+                    textureFormat === Constants.TEXTUREFORMAT_RED_INTEGER ||
+                    textureFormat === Constants.TEXTUREFORMAT_RG_INTEGER ||
+                    textureFormat === Constants.TEXTUREFORMAT_RGB_INTEGER ||
+                    textureFormat === Constants.TEXTUREFORMAT_RGBA_INTEGER
+                ) {
+                    const textureType = this._currentRenderTarget.texture?.type;
+                    if (textureType === Constants.TEXTURETYPE_UNSIGNED_INTEGER || textureType === Constants.TEXTURETYPE_UNSIGNED_SHORT) {
+                        ThinEngine._TempClearColorUint32[0] = color.r * 255;
+                        ThinEngine._TempClearColorUint32[1] = color.g * 255;
+                        ThinEngine._TempClearColorUint32[2] = color.b * 255;
+                        ThinEngine._TempClearColorUint32[3] = color.a * 255;
+                        this._gl.clearBufferuiv(this._gl.COLOR, 0, ThinEngine._TempClearColorUint32);
+                        setBackBufferColor = false;
+                    } else {
+                        ThinEngine._TempClearColorInt32[0] = color.r * 255;
+                        ThinEngine._TempClearColorInt32[1] = color.g * 255;
+                        ThinEngine._TempClearColorInt32[2] = color.b * 255;
+                        ThinEngine._TempClearColorInt32[3] = color.a * 255;
+                        this._gl.clearBufferiv(this._gl.COLOR, 0, ThinEngine._TempClearColorInt32);
+                        setBackBufferColor = false;
+                    }
+                }
+            }
+
+            if (setBackBufferColor) {
+                this._gl.clearColor(color.r, color.g, color.b, color.a !== undefined ? color.a : 1.0);
+                mode |= this._gl.COLOR_BUFFER_BIT;
+            }
         }
 
         if (depth) {
@@ -6070,10 +6124,7 @@ export class ThinEngine {
                 return requestAnimationFrame(func);
             }
         } else {
-            const { requestPostAnimationFrame, requestAnimationFrame } = requester || window;
-            if (typeof requestPostAnimationFrame === "function") {
-                return requestPostAnimationFrame(func);
-            }
+            const { requestAnimationFrame } = requester || window;
             if (typeof requestAnimationFrame === "function") {
                 return requestAnimationFrame(func);
             }

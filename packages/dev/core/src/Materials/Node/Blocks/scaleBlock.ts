@@ -56,7 +56,7 @@ export class ScaleBlock extends NodeMaterialBlock {
 
         const output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = ${this.input.associatedVariableName} * ${this.factor.associatedVariableName};\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = ${this.input.associatedVariableName} * ${this.factor.associatedVariableName};\n`;
 
         return this;
     }

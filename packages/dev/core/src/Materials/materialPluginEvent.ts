@@ -47,6 +47,7 @@ export type MaterialPluginPrepareEffect = {
     samplers: string[];
     uniformBuffersNames: string[];
     mesh: AbstractMesh;
+    indexParameters: any;
 };
 
 /** @internal */

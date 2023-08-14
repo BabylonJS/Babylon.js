@@ -13,7 +13,7 @@ import { Color3, Color4 } from "core/Maths/math.color";
 import { Control } from "../../../2D/controls/control";
 import { CreatePlane } from "core/Meshes/Builders/planeBuilder";
 import { CreateBox } from "core/Meshes/Builders/boxBuilder";
-import { DomManagement } from "core/Misc/domManagement";
+import { IsDocumentAvailable } from "core/Misc/domManagement";
 import { FadeInOutBehavior } from "core/Behaviors/Meshes/fadeInOutBehavior";
 import { Grid } from "../../../2D/controls/grid";
 import { Image } from "../../../2D/controls/image";
@@ -475,7 +475,7 @@ export class TouchHolographicButton extends TouchButton3D {
         const panel = new StackPanel();
         panel.isVertical = true;
 
-        if (DomManagement.IsDocumentAvailable() && !!document.createElement) {
+        if (IsDocumentAvailable() && !!document.createElement) {
             if (this._imageUrl) {
                 const image = new Image();
                 image.source = this._imageUrl;
@@ -514,7 +514,7 @@ export class TouchHolographicButton extends TouchButton3D {
         panel.isVertical = false;
         panel.scaleY = this._getAspectRatio();
 
-        if (DomManagement.IsDocumentAvailable() && !!document.createElement) {
+        if (IsDocumentAvailable() && !!document.createElement) {
             if (this._imageUrl) {
                 const imageContainer = new Rectangle(`${this.name}_image`);
                 imageContainer.widthInPixels = this.imageSizeInPixels;

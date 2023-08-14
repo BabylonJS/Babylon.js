@@ -38,7 +38,7 @@ export class CurvePropertyTabComponent extends React.Component<IPropertyComponen
                         propertyName="type"
                         onSelect={() => {
                             this.props.stateManager.onUpdateRequiredObservable.notifyObservers(curveBlock);
-                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
+                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
                             this.forceUpdate();
                         }}
                     />

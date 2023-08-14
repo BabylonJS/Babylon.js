@@ -19,7 +19,7 @@ import { Color3 } from "core/Maths/math.color";
 import { TouchButton3D } from "./touchButton3D";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { SceneLoader } from "core/Loading/sceneLoader";
-import { DomManagement } from "core/Misc/domManagement";
+import { IsDocumentAvailable } from "core/Misc/domManagement";
 import { Scalar } from "core/Maths/math.scalar";
 
 /**
@@ -297,7 +297,7 @@ export class TouchHolographicButton extends TouchButton3D {
         const panel = new StackPanel();
         panel.isVertical = true;
 
-        if (DomManagement.IsDocumentAvailable() && !!document.createElement) {
+        if (IsDocumentAvailable() && !!document.createElement) {
             if (this._imageUrl) {
                 const image = new Image();
                 image.source = this._imageUrl;

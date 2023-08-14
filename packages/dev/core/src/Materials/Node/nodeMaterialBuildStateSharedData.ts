@@ -167,19 +167,19 @@ export class NodeMaterialBuildStateSharedData {
         let errorMessage = "";
 
         if (!this.checks.emitVertex && !this.allowEmptyVertexProgram) {
-            errorMessage += "NodeMaterial does not have a vertex output. You need to at least add a block that generates a glPosition value.\r\n";
+            errorMessage += "NodeMaterial does not have a vertex output. You need to at least add a block that generates a glPosition value.\n";
         }
         if (!this.checks.emitFragment) {
-            errorMessage += "NodeMaterial does not have a fragment output. You need to at least add a block that generates a glFragColor value.\r\n";
+            errorMessage += "NodeMaterial does not have a fragment output. You need to at least add a block that generates a glFragColor value.\n";
         }
         for (const notConnectedInput of this.checks.notConnectedNonOptionalInputs) {
             errorMessage += `input ${notConnectedInput.name} from block ${
                 notConnectedInput.ownerBlock.name
-            }[${notConnectedInput.ownerBlock.getClassName()}] is not connected and is not optional.\r\n`;
+            }[${notConnectedInput.ownerBlock.getClassName()}] is not connected and is not optional.\n`;
         }
 
         if (errorMessage) {
-            throw "Build of NodeMaterial failed:\r\n" + errorMessage;
+            throw "Build of NodeMaterial failed:\n" + errorMessage;
         }
     }
 }

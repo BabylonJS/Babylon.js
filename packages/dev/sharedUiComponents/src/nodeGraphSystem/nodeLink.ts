@@ -198,7 +198,7 @@ export class NodeLink {
                 this._graphCanvas.connectNodes(nodeA, pointA, newNode, newNode.getPortDataForPortDataContent(newElbowBlock.input)!);
                 this._graphCanvas.connectNodes(newNode, newNode.getPortDataForPortDataContent(newElbowBlock.output)!, nodeB, pointB);
 
-                stateManager.onRebuildRequiredObservable.notifyObservers(true);
+                stateManager.onRebuildRequiredObservable.notifyObservers();
             });
 
             stateManager.onNewBlockRequiredObservable.notifyObservers({
@@ -231,7 +231,7 @@ export class NodeLink {
 
             this._portA.portData.disconnectFrom(this._portB!.portData);
 
-            RefreshNode(this._nodeB);
+            RefreshNode(this._nodeB, undefined, undefined, this._graphCanvas);
         }
 
         if (notify) {

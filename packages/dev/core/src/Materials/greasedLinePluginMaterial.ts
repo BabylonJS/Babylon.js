@@ -169,6 +169,11 @@ export class MaterialGreasedLineDefines extends MaterialDefines {
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     GREASED_LINE_COLOR_DISTRIBUTION_TYPE_LINE = false;
+    /**
+     * True if scene is in right handed coordinate system.
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    GREASED_LNE_RIGHT_HANDED_COORDINATE_SYSTEM = false;
 }
 
 /**
@@ -260,6 +265,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         defines.GREASED_LINE_HAS_COLOR = !!options.color;
         defines.GREASED_LINE_SIZE_ATTENUATION = options.sizeAttenuation ?? false;
         defines.GREASED_LINE_COLOR_DISTRIBUTION_TYPE_LINE = options.colorDistributionType === GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_LINE;
+        defines.GREASED_LNE_RIGHT_HANDED_COORDINATE_SYSTEM = _scene.useRightHandedSystem;
         super(material, GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME, 200, defines);
 
         this._scene = this._scene ?? material.getScene();
@@ -329,7 +335,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         const ubo = [
             { name: "grl_projection", size: 16, type: "mat4" },
             { name: "grl_singleColor", size: 3, type: "vec3" },
-            { name: "grl_aspect_lineWidth", size: 3, type: "vec3" },
+            { name: "grl_aspect_resolution_lineWidth", size: 4, type: "vec4" },
             { name: "grl_dashOptions", size: 4, type: "vec4" },
             { name: "grl_colorMode_visibility_colorsWidth_useColors", size: 4, type: "vec4" },
         ];
@@ -337,7 +343,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         return {
             ubo,
             vertex: `
-                uniform vec3 grl_aspect_lineWidth;
+                uniform vec4 grl_aspect_resolution_lineWidth;
                 uniform mat4 grl_projection;
                 `,
             fragment: `
@@ -368,11 +374,12 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
             throw Error("GreasedLinePluginMaterial requires an active camera.");
         }
 
-        const resolutionLineWidth = TmpVectors.Vector3[0];
+        const resolutionLineWidth = TmpVectors.Vector4[0];
         resolutionLineWidth.x = this._aspect;
-        // TODO: y free
-        resolutionLineWidth.z = this.width;
-        uniformBuffer.updateVector3("grl_aspect_lineWidth", resolutionLineWidth);
+        resolutionLineWidth.y = this._resolution.x;
+        resolutionLineWidth.z = this._resolution.y;
+        resolutionLineWidth.w = this.width;
+        uniformBuffer.updateVector4("grl_aspect_resolution_lineWidth", resolutionLineWidth);
 
         const dashOptions = TmpVectors.Vector4[0];
         dashOptions.x = GreasedLinePluginMaterial._BooleanToNumber(this.useDash);
@@ -405,6 +412,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
         defines.GREASED_LINE_HAS_COLOR = !!this._color;
         defines.GREASED_LINE_SIZE_ATTENUATION = this._sizeAttenuation ?? false;
         defines.GREASED_LINE_COLOR_DISTRIBUTION_TYPE_LINE = this._colorsDistributionType === GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_LINE;
+        defines.GREASED_LNE_RIGHT_HANDED_COORDINATE_SYSTEM = _scene.useRightHandedSystem;
     }
 
     /**
@@ -448,8 +456,8 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 CUSTOM_VERTEX_MAIN_END: `
 
-                    float grlAspect = grl_aspect_lineWidth.x;
-                    float grlBaseWidth = grl_aspect_lineWidth.z;
+                    float grlAspect = grl_aspect_resolution_lineWidth.x;
+                    float grlBaseWidth = grl_aspect_resolution_lineWidth.w;
 
                     grlColorPointer = grl_colorPointers;
 
@@ -480,11 +488,15 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase {
                         grlDir = normalize( grlDir1 + grlDir2 );
                     }
                     vec4 grlNormal = vec4( -grlDir.y, grlDir.x, 0., 1. );
-                    grlNormal.xy *= .5 * grlWidth;
+                    #ifdef GREASED_LNE_RIGHT_HANDED_COORDINATE_SYSTEM
+                        grlNormal.xy *= -.5 * grlWidth;
+                    #else
+                        grlNormal.xy *= .5 * grlWidth;
+                    #endif
                     grlNormal *= grl_projection;
                     #ifdef GREASED_LINE_SIZE_ATTENUATION
                         grlNormal.xy *= grlFinalPosition.w;
-                        grlNormal.xy /= ( vec4( grlResolution, 0., 1. ) * grl_projection ).xy;
+                        grlNormal.xy /= ( vec4( grl_aspect_resolution_lineWidth.yz, 0., 1. ) * grl_projection ).xy;
                     #endif
                     grlFinalPosition.xy += grlNormal.xy * grlSide;
                     gl_Position = grlFinalPosition;

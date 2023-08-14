@@ -294,6 +294,8 @@
         grid-column: 1;
         width: 100%;
         display: grid;
+        grid-template-columns: 100%;
+        grid-template-rows: 100%;
         outline: 0 !important;
         padding: 0 !important;
         user-select: none;

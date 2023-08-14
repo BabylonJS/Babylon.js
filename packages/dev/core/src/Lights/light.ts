@@ -347,7 +347,7 @@ export abstract class Light extends Node implements ISortableLight {
      * @param name The friendly name of the light
      * @param scene The scene the light belongs too
      */
-    constructor(name: string, scene: Scene) {
+    constructor(name: string, scene?: Scene) {
         super(name, scene);
         this.getScene().addLight(this);
         this._uniformBuffer = new UniformBuffer(this.getScene().getEngine(), undefined, undefined, name);

@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/core",
-    "version": "6.11.1",
+    "version": "6.16.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -9,11 +9,12 @@
         "**/*.d.ts",
         "**/*.map",
         "readme.md",
-        "license.md"
+        "license.md",
+        "NOTICE.md"
     ],
     "scripts": {
         "build": "npm run clean && npm run compile",
-        "clean": "rimraf dist && rimraf *.tsbuildinfo && rimraf \"./**/*.!(cmd|md|json|build.json|lts.json|watcher.cjs)\"",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo && rimraf \"./**/*.!(cmd|md|json|build.json|lts.json|cjs)\"",
         "compile": "tsc -b tsconfig.build.json && tsc -b tsconfig.lts.json",
         "postcompile": "build-tools -c declarations-es6 -r ../../../dev/core/src/LibDeclarations -atf ./Engines/engine.d.ts && build-tools -c add-js-to-es6 && build-tools -c prepare-es6-build -cf Engines/constants.js",
         "watch": "node ./watcher.cjs"

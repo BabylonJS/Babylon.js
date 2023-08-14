@@ -31,7 +31,7 @@ export class LightInformationPropertyTabComponent extends React.Component<IPrope
                         onSelect={(name: any) => {
                             lightInformationBlock.light = scene.getLightByName(name);
                             this.forceUpdate();
-                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
+                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
                         }}
                     />
                 </LineContainerComponent>

@@ -8,6 +8,10 @@ import { VertexBuffer } from "../Buffers/buffer";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import type { TransformNode } from "../Meshes/transformNode";
 
+Mesh._TrailMeshParser = (parsedMesh: any, scene: Scene) => {
+    return TrailMesh.Parse(parsedMesh, scene);
+};
+
 /**
  * Class used to create a trail following a mesh
  */
@@ -170,6 +174,8 @@ export class TrailMesh extends Mesh {
      */
     public serialize(serializationObject: any): void {
         super.serialize(serializationObject);
+
+        serializationObject.generatorId = this._generator.id;
     }
 
     /**
@@ -179,6 +185,12 @@ export class TrailMesh extends Mesh {
      * @returns the created trail mesh
      */
     public static Parse(parsedMesh: any, scene: Scene): TrailMesh {
-        return new TrailMesh(parsedMesh.name, parsedMesh._generator, scene, parsedMesh.diameter ?? parsedMesh._diameter, parsedMesh._length, parsedMesh._autoStart);
+        const generator = scene.getLastMeshById(parsedMesh.generatorId) ?? scene.getLastTransformNodeById(parsedMesh.generatorId);
+
+        if (!generator) {
+            throw new Error("TrailMesh: generator not found with ID " + parsedMesh.generatorId);
+        }
+
+        return new TrailMesh(parsedMesh.name, generator, scene, parsedMesh.diameter ?? parsedMesh._diameter, parsedMesh._length, parsedMesh._autoStart);
     }
 }

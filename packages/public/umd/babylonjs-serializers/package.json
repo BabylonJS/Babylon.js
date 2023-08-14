@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-serializers",
-    "version": "6.11.1",
+    "version": "6.16.0",
     "main": "babylonjs.serializers.js",
     "types": "babylonjs.serializers.module.d.ts",
     "files": [
@@ -11,11 +11,12 @@
         "build:dev": "webpack --env development",
         "build:prod": "webpack --env production",
         "build:declaration": "build-tools -c pud --config ./config.json",
-        "clean": "rimraf dist && rimraf babylon*.*"
+        "clean": "rimraf dist && rimraf babylon*.*",
+        "test:escheck": "es-check es6 ./babylonjs.serializers.js"
     },
     "dependencies": {
-        "babylonjs": "^6.11.1",
-        "babylonjs-gltf2interface": "^6.11.1"
+        "babylonjs": "^6.16.0",
+        "babylonjs-gltf2interface": "^6.16.0"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
