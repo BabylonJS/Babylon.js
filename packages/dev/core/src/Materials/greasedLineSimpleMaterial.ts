@@ -70,7 +70,6 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
                     "worldViewProjection",
                     "projection",
                     "grlColorsWidth",
-                    "grlColors",
                     "grlUseColors",
                     "grlWidth",
                     "grlColor",
@@ -84,6 +83,7 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
                     "grlUseDash",
                     "grlVisibility",
                 ],
+                samplers: ["grlColors"],
                 defines: scene.useRightHandedSystem ? ["GREASED_LNE_RIGHT_HANDED_COORDINATE_SYSTEM"] : [],
             }
         );
@@ -163,9 +163,7 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
     }
 
     private _setColorModeAndColorDistributionType() {
-        TmpVectors.Vector2[0].x = this._colorMode;
-        TmpVectors.Vector2[0].y = this._colorsDistributionType;
-        this.setVector2("grl_colorModeAndColorDistributionType", TmpVectors.Vector2[0]);
+        this.setVector2("grl_colorModeAndColorDistributionType", new Vector2(this._colorMode, this._colorsDistributionType));
     }
 
     /**
@@ -199,7 +197,6 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
      * @returns
      */
     public setColors(colors: Nullable<Color3[]>, lazy = false, forceNewTexture = false): void {
-        debugger
         const origColorsCount = this._colors?.length ?? 0;
 
         this._colors = colors;

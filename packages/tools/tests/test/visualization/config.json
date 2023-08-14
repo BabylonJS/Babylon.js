@@ -7,6 +7,11 @@
             "referenceImage": "greased-line-basic.png"
         },
         {
+            "title": "GreasedLine - simple material",
+            "playgroundId": "#H1LRZ3#314",
+            "referenceImage": "greased-line-simple-material.png"
+        },
+        {
             "title": "MeshBuilder.CreateText",
             "playgroundId": "#6I2RMN#2",
             "referenceImage": "createText.png"
