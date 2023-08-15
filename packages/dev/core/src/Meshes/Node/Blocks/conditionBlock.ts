@@ -118,7 +118,7 @@ export class ConditionBlock extends NodeGeometryBlock {
     }
 
     protected _buildBlock() {
-        if (!this.left.isConnected || !this.ifTrue.isConnected && !this.ifFalse.isConnected) {
+        if (!this.left.isConnected || !this.ifTrue.isConnected || !this.ifFalse.isConnected) {
             this.output._storedFunction = null;
             this.output._storedValue = null;
             return;
