@@ -3,25 +3,48 @@ import { Camera } from "core/Cameras/camera";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { Texture } from "core/Materials/Textures/texture";
 import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
-import { type Color3, type Matrix } from "core/Maths/math";
-import { Vector2 } from "core/Maths/math";
+import { type Color3, type Matrix, Vector2 } from "core/Maths/math";
 import { type AbstractMesh } from "core/Meshes/abstractMesh";
 import { type TransformNode } from "core/Meshes/transformNode";
 import { type Scene } from "core/scene";
-import { strToU8, zipSync } from "fflate";
 import { type Material } from "core/Materials/material";
 import { Tools } from "core/Misc/tools";
-import { type FloatArray } from "core/types";
+import { type Nullable, type FloatArray } from "core/types";
 import { isNoopNode } from "serializers/glTF/2.0/glTFExporter";
+import { type Node } from "core/node";
 
 /* Converted from https://github.com/mrdoob/three.js/blob/dev/examples/jsm/exporters/USDZExporter.js */
 
+/**
+ *  Options for exporting to USDZ.
+ */
 export interface IUSDExportOptions {
+    /**
+     * Name of the model.
+     */
     modelName?: string;
+    /**
+     *  TODO get more information on USDZ options
+     */
     quickLookCompatible?: boolean;
+    /**
+     *  TODO get more information on USDZ options
+     */
     ar?: IUSDArOptions;
+
+    /**
+     * String to Uint8Array function. ffFlate is used by default.
+     */
+    strToU8: (str: string) => Uint8Array;
+    /**
+     * Zip function. ffFlate is used by default.
+     */
+    zipSync: (data: any, options: any) => Uint8Array;
 }
 
+/**
+ *  TODO get more information on USDZ options
+ */
 interface IUSDArOptions {
     anchoring: {
         type: "plane" | "point";
@@ -45,16 +68,23 @@ export class USDExport {
      * TODO get more information on these values and how they relate to Babylon Cameras
      */
     public static FilmGauge: number = 35;
+
+    /**
+     * Default Camera export values
+     * TODO get more information on these values and how they relate to Babylon Cameras
+     */
     public static Focus: number = 10;
+
+    private static _LastOptions: IUSDExportOptions;
 
     /**
      * Export Scene as USDZ file.
-     * @param scene to export
      * @param options TODO get more information on USDZ options
+     * @param scene to export
      * @param autoDownload automatically download the file.
      * @returns a promise with the data of the USDZ file.
      */
-    public static async ExportAsBinaryZip(scene: Scene, options: IUSDExportOptions = {}, autoDownload: boolean = true) {
+    public static async ExportAsBinaryZip(options: IUSDExportOptions, scene: Scene, autoDownload: boolean = true) {
         options = {
             ar: {
                 anchoring: { type: "plane" },
@@ -63,6 +93,8 @@ export class USDExport {
             quickLookCompatible: false,
             ...options,
         };
+
+        USDExport._LastOptions = options;
 
         const files: any = {};
         const modelFileName = `${options?.modelName || "model"}.usda`;
@@ -80,10 +112,22 @@ export class USDExport {
             .filter((mesh) => (mesh as any).geometry)
             .forEach((mesh) => {
                 const material = mesh.material ?? sharedMat;
+                const geometryFileName: string = "geometries/Geometry_" + mesh.uniqueId + ".usda";
+                let rootParent: Nullable<Node> = mesh;
+                let target: Nullable<Node> = mesh;
 
+                while (target?.parent) {
+                    rootParent = target;
+                    target = mesh.parent;
+                }
+
+                rootParent = rootParent ?? mesh;
+                const noopNode = rootParent && isNoopNode(rootParent, scene.useRightHandedSystem) && !scene.useRightHandedSystem;
+                if (noopNode) {
+                    (mesh.parent as TransformNode).scaling.z = 1;
+                }
                 switch (material.getClassName()) {
                     case "PBRMaterial":
-                        const geometryFileName = "geometries/Geometry_" + mesh.uniqueId + ".usda";
                         if (!(geometryFileName in files)) {
                             const meshObject = USDExport._BuildMeshObject(mesh);
                             files[geometryFileName] = USDExport._BuildUSDFileAsString(meshObject);
@@ -93,22 +137,15 @@ export class USDExport {
                             materials[material.uniqueId] = material;
                         }
 
-                        let noopNode = mesh.parent && isNoopNode(mesh.parent, scene.useRightHandedSystem) && !scene.useRightHandedSystem;
-                        if (noopNode) {
-                            (mesh.parent as TransformNode).scaling.z = 1;
-                        }
-
-
                         output += USDExport._BuildXform(mesh, material);
-
-                        if (noopNode) {
-                            (mesh.parent as TransformNode).scaling.z = -1;
-                        }
 
                         break;
                     default:
                         Tools.Warn("USDExporter: Standard Material is not supported currently.");
                         break;
+                }
+                if (noopNode) {
+                    (mesh.parent as TransformNode).scaling.z = -1;
                 }
             });
 
@@ -124,7 +161,7 @@ export class USDExport {
 
         output += await USDExport._BuildMaterials(materials, textures, options.quickLookCompatible);
 
-        files[modelFileName] = strToU8(output);
+        files[modelFileName] = options.strToU8(output);
 
         for (const id in textures) {
             const texture = textures[id];
@@ -150,13 +187,14 @@ export class USDExport {
             if (offsetMod64 !== 4) {
                 const padLength = 64 - offsetMod64;
                 const padding = new Uint8Array(padLength);
+                // eslint-disable-next-line @typescript-eslint/naming-convention
                 files[filename] = [file, { extra: { 12345: padding } }];
             }
 
             offset = file.length;
         }
 
-        const data = zipSync(files, { level: 0 });
+        const data = options.zipSync(files, { level: 0 });
 
         if (autoDownload) {
             Tools.Download(new Blob([data], { type: "application/octet-stream" }), `${options?.modelName || "model"}.usdz`);
@@ -280,7 +318,7 @@ export class USDExport {
     }
 
     private static _BuildVector2Array(count: number, attribute?: FloatArray) {
-        if (!attribute || !attribute.length) {
+        if (!attribute?.length) {
             Tools.Warn("USDExporter: UVs missing.");
             return Array(count / 2)
                 .fill("(0, 0)")
@@ -347,7 +385,7 @@ export class USDExport {
     `;
     }
 
-    static _BuildMatrix(matrix: Matrix) {
+    private static _BuildMatrix(matrix: Matrix) {
         const array = matrix.toArray() as number[];
         return `( ${USDExport._BuildMatrixRow(array, 0)}, ${USDExport._BuildMatrixRow(array, 4)}, ${USDExport._BuildMatrixRow(array, 8)}, ${USDExport._BuildMatrixRow(
             array,
@@ -625,7 +663,7 @@ export class USDExport {
     private static _BuildUSDFileAsString(dataToInsert: string) {
         let output = USDExport._BuildHeader();
         output += dataToInsert;
-        return strToU8(output);
+        return USDExport._LastOptions.strToU8(output);
     }
 
     /**
