@@ -8,7 +8,6 @@ import type { Observable, Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
-import { Button } from "gui/2D/controls/button";
 import { Container } from "gui/2D/controls/container";
 import type { Control } from "gui/2D/controls/control";
 import type { Node } from "core/node";
