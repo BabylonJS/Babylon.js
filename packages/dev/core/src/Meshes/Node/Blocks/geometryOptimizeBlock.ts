@@ -20,6 +20,12 @@ export class GeometryOptimizeBlock extends NodeGeometryBlock {
     public evaluateContext = false;
 
     /**
+     * Define the epsilon used to compare similar positions
+     */
+    @editableInPropertyPage("Epsilon", PropertyTypeForEdition.Float, "ADVANCED", { notifiers: { rebuild: true } })
+    public epsilon = Epsilon;
+
+    /**
      * Creates a new GeometryOptimizeBlock
      * @param name defines the block name
      */
@@ -70,9 +76,9 @@ export class GeometryOptimizeBlock extends NodeGeometryBlock {
                 let found = false;
                 for (let checkIndex = 0; checkIndex < newPositions.length; checkIndex += 3) {
                     if (
-                        Scalar.WithinEpsilon(x, newPositions[checkIndex], Epsilon) &&
-                        Scalar.WithinEpsilon(y, newPositions[checkIndex + 1], Epsilon) &&
-                        Scalar.WithinEpsilon(z, newPositions[checkIndex + 2], Epsilon)
+                        Scalar.WithinEpsilon(x, newPositions[checkIndex], this.epsilon) &&
+                        Scalar.WithinEpsilon(y, newPositions[checkIndex + 1], this.epsilon) &&
+                        Scalar.WithinEpsilon(z, newPositions[checkIndex + 2], this.epsilon)
                     ) {
                         newIndicesMap[index / 3] = checkIndex / 3;
                         found = true;
@@ -100,7 +106,8 @@ export class GeometryOptimizeBlock extends NodeGeometryBlock {
     }
 
     protected _dumpPropertiesCode() {
-        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.evaluateContext = ${this.evaluateContext ? "true" : "false"};\n`;
+        let codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.evaluateContext = ${this.evaluateContext ? "true" : "false"};\n`;
+        codeString += `${this._codeVariableName}.epsilon = ${this.epsilon};\n`;
         return codeString;
     }
 
@@ -112,6 +119,7 @@ export class GeometryOptimizeBlock extends NodeGeometryBlock {
         const serializationObject = super.serialize();
 
         serializationObject.evaluateContext = this.evaluateContext;
+        serializationObject.epsilon = this.epsilon;
 
         return serializationObject;
     }
@@ -120,6 +128,7 @@ export class GeometryOptimizeBlock extends NodeGeometryBlock {
         super._deserialize(serializationObject);
 
         this.evaluateContext = serializationObject.evaluateContext;
+        this.epsilon = serializationObject.epsilon;
     }
 }
 

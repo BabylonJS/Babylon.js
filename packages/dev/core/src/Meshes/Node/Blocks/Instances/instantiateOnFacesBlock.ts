@@ -160,7 +160,8 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
 
         const instanceCount = this.count.getConnectedValue(state);
         const faceCount = this._vertexData.indices.length / 3;
-        const instancePerFace = Math.max(1, Math.floor(instanceCount / faceCount));
+        const instancePerFace = instanceCount / faceCount;
+        let accumulatedCount = 0;
         const additionalVertexData: VertexData[] = [];
         let totalDone = 0;
 
@@ -170,7 +171,14 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
             this._vertex1.fromArray(this._vertexData.positions, this._vertexData.indices[this._currentFaceIndex * 3 + 1] * 3);
             this._vertex2.fromArray(this._vertexData.positions, this._vertexData.indices[this._currentFaceIndex * 3 + 2] * 3);
 
-            for (let faceDispatchCount = 0; faceDispatchCount < instancePerFace; faceDispatchCount++) {
+            accumulatedCount += instancePerFace;
+            const countPerFace = (accumulatedCount | 0) - totalDone;
+
+            if (countPerFace < 1) {
+                continue;
+            }
+
+            for (let faceDispatchCount = 0; faceDispatchCount < countPerFace; faceDispatchCount++) {
                 if (totalDone >= instanceCount) {
                     break;
                 }

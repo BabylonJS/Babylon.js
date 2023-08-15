@@ -164,9 +164,6 @@ export class NodeGeometryBlock {
             }
 
             for (const endpoint of output.endpoints) {
-                if (endpoint.ownerBlock.getClassName() === type) {
-                    return true;
-                }
                 if (endpoint.ownerBlock.isAnAncestorOfType(type)) {
                     return true;
                 }
