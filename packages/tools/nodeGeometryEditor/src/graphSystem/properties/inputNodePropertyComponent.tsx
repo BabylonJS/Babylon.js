@@ -231,7 +231,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                     break;
                                 default:
                                     switch (value) {
-                                        case NodeGeometryBlockConnectionPointTypes.Float:
+                                        case NodeGeometryBlockConnectionPointTypes.Int:
                                             inputBlock.contextualValue = NodeGeometryContextualSources.VertexID;
                                             break;
                                         case NodeGeometryBlockConnectionPointTypes.Vector2:
