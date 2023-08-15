@@ -306,7 +306,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      */
     public static DEFAULT_WIDTH = 0.1;
 
-    private static _EmptyColorsTexture: BaseTexture;
+    private static _EmptyColorsTexture: Nullable<BaseTexture>;
 
     /**
      * Whether to use the colors option to colorize the line
@@ -404,6 +404,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
 
         this._engine.onDisposeObservable.add(() => {
             GreasedLinePluginMaterial._EmptyColorsTexture?.dispose();
+            GreasedLinePluginMaterial._EmptyColorsTexture = null;
         });
 
         this._enable(true); // always enabled
