@@ -5,6 +5,7 @@ export * from "./nodeGeometryBuildState";
 export * from "./Interfaces/nodeGeometryExecutionContext";
 export * from "./Enums/nodeGeometryConnectionPointTypes";
 export * from "./Enums/nodeGeometryContextualSources";
+export * from "./Blocks/geometryOptimizeBlock";
 export * from "./Blocks/geometryOutputBlock";
 export * from "./Blocks/geometryInputBlock";
 export * from "./Blocks/Sources/planeBlock";

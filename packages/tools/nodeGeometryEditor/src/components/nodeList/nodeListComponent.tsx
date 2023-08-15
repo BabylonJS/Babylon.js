@@ -112,6 +112,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         NoiseBlock: "Generate a value using Perlin noise algorithm",
         GeometryOutputBlock: "Output block used to gather the final geometry",
         NullBlock: "Generate an empty geometry",
+        OptimizeBlock: "Eliminate vertices that share positions with another vertex",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -244,7 +245,17 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Matrices: ["RotationXBlock", "RotationYBlock", "RotationZBlock", "ScalingBlock", "TranslationBlock", "AlignBlock"],
             Instances: ["InstantiateOnVerticesBlock", "InstantiateOnFacesBlock"],
             Misc: ["ElbowBlock", "DebugBlock", "TeleportInBlock", "TeleportOutBlock"],
-            Updates: ["SetColorsBlock", "SetNormalsBlock", "SetPositionsBlock", "SetTangentsBlock", "SetUVsBlock", "SetMaterialIDBlock", "MergeBlock", "ComputeNormalsBlock"],
+            Updates: [
+                "SetColorsBlock",
+                "SetNormalsBlock",
+                "SetPositionsBlock",
+                "SetTangentsBlock",
+                "SetUVsBlock",
+                "SetMaterialIDBlock",
+                "MergeBlock",
+                "ComputeNormalsBlock",
+                "OptimizeBlock",
+            ],
             Noises: ["RandomBlock", "NoiseBlock"],
             Output_Nodes: ["GeometryOutputBlock"],
         };

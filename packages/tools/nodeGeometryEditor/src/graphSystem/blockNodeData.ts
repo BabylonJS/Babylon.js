@@ -69,6 +69,12 @@ export class BlockNodeData implements INodeData {
         return null;
     }
 
+    public isConnectedToOutput() {
+        const block = this.data;
+
+        return block.isAnAncestorOfType("GeometryOutputBlock");
+    }
+
     public dispose() {
         this.data.dispose();
         this.data.onBuildObservable.remove(this._onBuildObserver);

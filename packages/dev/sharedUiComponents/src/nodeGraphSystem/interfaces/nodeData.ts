@@ -21,4 +21,6 @@ export interface INodeData {
     outputs: IPortData[];
 
     invisibleEndpoints?: Nullable<any[]>;
+
+    isConnectedToOutput?: () => boolean;
 }

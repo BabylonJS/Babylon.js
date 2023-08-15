@@ -149,6 +149,34 @@ export class NodeGeometryBlock {
     }
 
     /**
+     * Checks if the current block is an ancestor of a given type
+     * @param block defines the potential type to check
+     * @returns true if block is a descendant
+     */
+    public isAnAncestorOfType(type: string): boolean {
+        if (this.getClassName() === type) {
+            return true;
+        }
+
+        for (const output of this._outputs) {
+            if (!output.hasEndpoints) {
+                continue;
+            }
+
+            for (const endpoint of output.endpoints) {
+                if (endpoint.ownerBlock.getClassName() === type) {
+                    return true;
+                }
+                if (endpoint.ownerBlock.isAnAncestorOfType(type)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Creates a new NodeGeometryBlock
      * @param name defines the block name
      */
