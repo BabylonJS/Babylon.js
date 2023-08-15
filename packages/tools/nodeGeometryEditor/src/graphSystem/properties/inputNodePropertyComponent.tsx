@@ -243,8 +243,8 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                         case NodeGeometryBlockConnectionPointTypes.Vector4:
                                             inputBlock.contextualValue = NodeGeometryContextualSources.Colors;
                                             break;
-                                        }
-                                break;
+                                    }
+                                    break;
                             }
                             this.forceUpdate();
                             this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);

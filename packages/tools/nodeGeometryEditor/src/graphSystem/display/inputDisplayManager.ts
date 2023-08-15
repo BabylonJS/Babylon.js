@@ -68,29 +68,29 @@ export class InputDisplayManager implements IDisplayManager {
                     break;
                 case NodeGeometryContextualSources.Tangents:
                     value = "Tangents";
-                    break;            
+                    break;
                 case NodeGeometryContextualSources.UV:
                     value = "UV";
-                    break;         
+                    break;
                 case NodeGeometryContextualSources.UV2:
                     value = "UV2";
-                    break;            
+                    break;
                 case NodeGeometryContextualSources.UV3:
                     value = "UV3";
-                    break;                                                        
+                    break;
                 case NodeGeometryContextualSources.UV4:
                     value = "UV4";
-                    break;                                                        
+                    break;
                 case NodeGeometryContextualSources.UV5:
                     value = "UV5";
-                    break;                                                        
+                    break;
                 case NodeGeometryContextualSources.UV6:
                     value = "UV6";
-                    break;                                                        
+                    break;
                 case NodeGeometryContextualSources.Colors:
                     value = "Colors";
-                    break;                                                        
-                }
+                    break;
+            }
         } else {
             switch (inputBlock.type) {
                 case NodeGeometryBlockConnectionPointTypes.Int:
