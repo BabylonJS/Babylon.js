@@ -69,6 +69,7 @@ export class ConditionBlock extends NodeGeometryBlock {
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.BasedOnInput);
 
         this._outputs[0]._typeConnectionSource = this._inputs[2];
+        this._outputs[0]._defaultConnectionPointType = NodeGeometryBlockConnectionPointTypes.Float;
         this._inputs[0].acceptedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Int);
         this._inputs[1].acceptedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Int);
         this._linkConnectionTypes(2, 3);
@@ -118,7 +119,7 @@ export class ConditionBlock extends NodeGeometryBlock {
     }
 
     protected _buildBlock() {
-        if (!this.left.isConnected || !this.ifTrue.isConnected || !this.ifFalse.isConnected) {
+        if (!this.left.isConnected) {
             this.output._storedFunction = null;
             this.output._storedValue = null;
             return;
