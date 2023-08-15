@@ -4,6 +4,8 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
+import { Scalar } from "../../../Maths/math.scalar";
+import { Epsilon } from "core/Maths";
 
 /**
  * Conditions supported by the condition block
@@ -61,8 +63,8 @@ export class ConditionBlock extends NodeGeometryBlock {
 
         this.registerInput("left", NodeGeometryBlockConnectionPointTypes.Float);
         this.registerInput("right", NodeGeometryBlockConnectionPointTypes.Float, true, 0);
-        this.registerInput("ifTrue", NodeGeometryBlockConnectionPointTypes.AutoDetect);
-        this.registerInput("ifFalse", NodeGeometryBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("ifTrue", NodeGeometryBlockConnectionPointTypes.AutoDetect, true, 1);
+        this.registerInput("ifFalse", NodeGeometryBlockConnectionPointTypes.AutoDetect, true, 0);
 
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.BasedOnInput);
 
@@ -116,7 +118,7 @@ export class ConditionBlock extends NodeGeometryBlock {
     }
 
     protected _buildBlock() {
-        if (!this.left.isConnected || !this.ifTrue.isConnected || !this.ifFalse.isConnected) {
+        if (!this.left.isConnected || !this.ifTrue.isConnected && !this.ifFalse.isConnected) {
             this.output._storedFunction = null;
             this.output._storedValue = null;
             return;
@@ -129,7 +131,7 @@ export class ConditionBlock extends NodeGeometryBlock {
 
             switch (this.test) {
                 case ConditionBlockTests.Equal:
-                    condition = left === right;
+                    condition = Scalar.WithinEpsilon(left, right, Epsilon);
                     break;
                 case ConditionBlockTests.NotEqual:
                     condition = left !== right;
