@@ -113,15 +113,11 @@ export class USDExport {
             .forEach((mesh) => {
                 const material = mesh.material ?? sharedMat;
                 const geometryFileName: string = "geometries/Geometry_" + mesh.uniqueId + ".usda";
-                let rootParent: Nullable<Node> = mesh;
-                let target: Nullable<Node> = mesh;
+                let rootParent: Node = mesh;
 
-                while (target?.parent) {
-                    rootParent = target;
-                    target = mesh.parent;
+                while (rootParent.parent) {
+                    rootParent= mesh.parent;
                 }
-
-                rootParent = rootParent ?? mesh;
                 const noopNode = rootParent && isNoopNode(rootParent, scene.useRightHandedSystem) && !scene.useRightHandedSystem;
                 if (noopNode) {
                     (mesh.parent as TransformNode).scaling.z = 1;
