@@ -44,6 +44,7 @@ import { MapRangeBlock } from "core/Meshes/Node/Blocks/mapRangeBlock";
 import { GeometryOptimizeBlock } from "core/Meshes/Node/Blocks/geometryOptimizeBlock";
 import { IntFloatConverterBlock } from "core/Meshes/Node/Blocks/intFloatConverterBlock";
 import { ConditionBlock, ConditionBlockTests } from "core/Meshes/Node/Blocks/conditionBlock";
+import { LinearClonerBlock } from "core/Meshes/Node/Blocks/linearClonerBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
@@ -357,6 +358,9 @@ export class BlockTools {
                 const block = new MathBlock("Max");
                 block.operation = MathBlockOperations.Max;
                 return block;
+            }
+            case "LinearClonerBlock":{
+                return new LinearClonerBlock("Linear Cloner");
             }
         }
 
