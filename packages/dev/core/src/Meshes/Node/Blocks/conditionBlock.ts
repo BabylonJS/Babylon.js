@@ -5,7 +5,7 @@ import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConn
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
 import { Scalar } from "../../../Maths/math.scalar";
-import { Epsilon } from "core/Maths";
+import { Epsilon } from "../../../Maths/math.constants";
 
 /**
  * Conditions supported by the condition block
