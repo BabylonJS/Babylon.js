@@ -114,6 +114,8 @@ export class VertexData {
      */
     public static readonly DEFAULTSIDE = 0;
 
+    private static _UniqueIDGenerator = 0;
+
     /**
      * An array of the x, y, z position of each vertex  [...., x, y, z, .....]
      */
@@ -193,6 +195,19 @@ export class VertexData {
      * An array defining material association for sub sections of the vertex data
      */
     public materialInfos: Nullable<Array<VertexDataMaterialInfo>>;
+
+    /**
+     * Gets the unique ID of this vertex Data
+     */
+    public uniqueId = 0;
+
+    /**
+     * Creates a new VertexData
+     */
+    public constructor() {
+        this.uniqueId = VertexData._UniqueIDGenerator;
+        VertexData._UniqueIDGenerator++;
+    }
 
     /**
      * Uses the passed data array to set the set the values for the specified kind of data
