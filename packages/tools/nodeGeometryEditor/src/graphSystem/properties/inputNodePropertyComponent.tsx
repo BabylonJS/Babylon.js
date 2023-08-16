@@ -151,7 +151,10 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
         const modeOptions = [{ label: "User-defined", value: 0 }];
 
         if (contextualSourcesOptions.length > 0) {
-            modeOptions.push({ label: "Contextual value", value: 1 });
+            modeOptions.push({ label: "Contextual value (Integer)", value: NodeGeometryBlockConnectionPointTypes.Int });
+            modeOptions.push({ label: "Contextual value (Vector2)", value: NodeGeometryBlockConnectionPointTypes.Vector2 });
+            modeOptions.push({ label: "Contextual value (Vector3)", value: NodeGeometryBlockConnectionPointTypes.Vector3 });
+            modeOptions.push({ label: "Contextual value (Vector4)", value: NodeGeometryBlockConnectionPointTypes.Vector4 });
         }
 
         const typeOptions = [
@@ -216,7 +219,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                         noDirectUpdate={true}
                         extractValue={() => {
                             if (inputBlock.isContextual) {
-                                return 1;
+                                return inputBlock.type;
                             }
 
                             return 0;
@@ -226,8 +229,21 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                                 case 0:
                                     this.setDefaultValue();
                                     break;
-                                case 1:
-                                    inputBlock.contextualValue = contextualSourcesOptions[1].value;
+                                default:
+                                    switch (value) {
+                                        case NodeGeometryBlockConnectionPointTypes.Int:
+                                            inputBlock.contextualValue = NodeGeometryContextualSources.VertexID;
+                                            break;
+                                        case NodeGeometryBlockConnectionPointTypes.Vector2:
+                                            inputBlock.contextualValue = NodeGeometryContextualSources.UV;
+                                            break;
+                                        case NodeGeometryBlockConnectionPointTypes.Vector3:
+                                            inputBlock.contextualValue = NodeGeometryContextualSources.Positions;
+                                            break;
+                                        case NodeGeometryBlockConnectionPointTypes.Vector4:
+                                            inputBlock.contextualValue = NodeGeometryContextualSources.Colors;
+                                            break;
+                                    }
                                     break;
                             }
                             this.forceUpdate();

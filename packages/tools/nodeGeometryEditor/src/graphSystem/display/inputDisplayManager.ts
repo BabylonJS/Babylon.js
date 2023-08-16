@@ -60,6 +60,36 @@ export class InputDisplayManager implements IDisplayManager {
                 case NodeGeometryContextualSources.Normals:
                     value = "Normals";
                     break;
+                case NodeGeometryContextualSources.VertexID:
+                    value = "VertexID";
+                    break;
+                case NodeGeometryContextualSources.FaceID:
+                    value = "FaceID";
+                    break;
+                case NodeGeometryContextualSources.Tangents:
+                    value = "Tangents";
+                    break;
+                case NodeGeometryContextualSources.UV:
+                    value = "UV";
+                    break;
+                case NodeGeometryContextualSources.UV2:
+                    value = "UV2";
+                    break;
+                case NodeGeometryContextualSources.UV3:
+                    value = "UV3";
+                    break;
+                case NodeGeometryContextualSources.UV4:
+                    value = "UV4";
+                    break;
+                case NodeGeometryContextualSources.UV5:
+                    value = "UV5";
+                    break;
+                case NodeGeometryContextualSources.UV6:
+                    value = "UV6";
+                    break;
+                case NodeGeometryContextualSources.Colors:
+                    value = "Colors";
+                    break;
             }
         } else {
             switch (inputBlock.type) {
