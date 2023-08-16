@@ -167,11 +167,7 @@ export class NoiseBlock extends NodeGeometryBlock {
      * @see Based on https://github.com/blender/blender/blob/main/source/blender/blenlib/intern/noise.cc#L533
      */
     noise(octaves: number, roughness: number, _position: Vector3, offset: Vector3, scale: number) {
-        const position = new Vector3(
-            _position.x + offset.x * scale,
-            _position.y + offset.y * scale,
-            _position.z + offset.z * scale
-        );
+        const position = new Vector3(_position.x + offset.x * scale, _position.y + offset.y * scale, _position.z + offset.z * scale);
 
         let fscale = 1.0;
         let amp = 1.0;
