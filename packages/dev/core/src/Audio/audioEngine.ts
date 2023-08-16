@@ -57,7 +57,7 @@ export class AudioEngine implements IAudioEngine {
 
     /**
      * Gets whether audio has been unlocked on the device.
-     * Some Browsers have strong restrictions about Audio and won t autoplay unless
+     * Some Browsers have strong restrictions about Audio and won't autoplay unless
      * a user interaction has happened.
      */
     public unlocked: boolean = true;
