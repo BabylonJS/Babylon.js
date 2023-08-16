@@ -113,10 +113,9 @@ export class USDExport {
             .forEach((mesh) => {
                 const material = mesh.material ?? sharedMat;
                 const geometryFileName: string = "geometries/Geometry_" + mesh.uniqueId + ".usda";
-                let rootParent: Node = mesh;
-
-                while (rootParent.parent) {
-                    rootParent= mesh.parent;
+                let rootParent: Nullable<Node> = mesh;
+                while (rootParent?.parent) {
+                    rootParent = mesh.parent;
                 }
                 const noopNode = rootParent && isNoopNode(rootParent, scene.useRightHandedSystem) && !scene.useRightHandedSystem;
                 if (noopNode) {
@@ -443,6 +442,43 @@ export class USDExport {
     `;
     }
 
+    private static _ChannelIndexMap: { [key: string]: number } = {
+        r: 0,
+        g: 1,
+        b: 2,
+        a: 3,
+    };
+
+    private static async _CreateDynamicTextureFromChannel(texture: Texture, channel: string, scene: Scene): Promise<DynamicTexture> {
+        const dt = new DynamicTexture("dt", { width: texture.getSize().width, height: texture.getSize().height }, scene, false);
+        const ctx = dt.getContext();
+        const img = (await texture.readPixels()) as any;
+        const data = (ctx as any).createImageData(texture.getSize().width, texture.getSize().height);
+        const count = texture.getSize().width * texture.getSize().height * 4;
+
+        for (let i = 0; i < count; i += 4) {
+            const value = channel === "r" ? 255 - img[i + USDExport._ChannelIndexMap[channel]] : img[i + USDExport._ChannelIndexMap[channel]];
+            data.data[i] = value;
+            data.data[i + 1] = value;
+            data.data[i + 2] = value;
+            data.data[i + 3] = 255;
+        }
+
+        ctx.putImageData(data, 0, 0);
+        dt.update(texture.invertY);
+        return dt;
+    }
+
+    private static async _BreakApartMetallicRoughnessAo(texture: Texture, scene: Scene): Promise<{ ao: DynamicTexture; roughness: DynamicTexture; metallic: DynamicTexture }> {
+        const ao = await USDExport._CreateDynamicTextureFromChannel(texture, "r", scene);
+        ao.name = "ao";
+        const roughness = await USDExport._CreateDynamicTextureFromChannel(texture, "g", scene);
+        roughness.name = "roughness";
+        const metallic = await USDExport._CreateDynamicTextureFromChannel(texture, "b", scene);
+        metallic.name = "metallic";
+        return { ao, roughness, metallic };
+    }
+
     private static async _BuildMaterial(_material: Material, textures: any, quickLookCompatible = false) {
         // https://graphics.pixar.com/usd/docs/UsdPreviewSurface-Proposal.html
         const pad = "			";
@@ -451,43 +487,7 @@ export class USDExport {
         const material = _material as PBRMaterial;
         const scene = material.getScene();
 
-        const channelIndexMap: { [key: string]: number } = {
-            r: 0,
-            g: 1,
-            b: 2,
-            a: 3,
-        };
-
-        async function createDynamicTextureFromChannel(texture: Texture, channel: string) {
-            const dt = new DynamicTexture("dt", { width: texture.getSize().width, height: texture.getSize().height }, scene, false);
-            const ctx = dt.getContext();
-            const img = (await texture.readPixels()) as any;
-            const data = (ctx as any).createImageData(texture.getSize().width, texture.getSize().height);
-            const count = texture.getSize().width * texture.getSize().height * 4;
-
-            for (let i = 0; i < count; i += 4) {
-                const value = channel === "r" ? 255 - img[i + channelIndexMap[channel]] : img[i + channelIndexMap[channel]];
-                data.data[i] = value;
-                data.data[i + 1] = value;
-                data.data[i + 2] = value;
-                data.data[i + 3] = 255;
-            }
-
-            ctx.putImageData(data, 0, 0);
-            dt.update(texture.invertY);
-            return dt;
-        }
-
-        async function breakApartMetallicRoughnessAo(texture: Texture) {
-            const ao = await createDynamicTextureFromChannel(texture, "r");
-            ao.name = "ao";
-            const roughness = await createDynamicTextureFromChannel(texture, "g");
-            roughness.name = "roughness";
-            const metallic = await createDynamicTextureFromChannel(texture, "b");
-            metallic.name = "metallic";
-            return { ao, roughness, metallic };
-        }
-
+        //TODO: rescope this whole function.
         function buildTexture(texture: Texture, mapType: string, color: Color3 | undefined = undefined) {
             const id = texture.uniqueId + "_" + texture.invertY;
             textures[id] = texture;
@@ -597,7 +597,7 @@ export class USDExport {
         }
 
         if (material.metallicTexture !== null) {
-            const maps = await breakApartMetallicRoughnessAo(material.metallicTexture as Texture);
+            const maps = await USDExport._BreakApartMetallicRoughnessAo(material.metallicTexture as Texture, scene);
 
             inputs.push(`${pad}float inputs:roughness.connect = </Materials/Material_${material.uniqueId}/Texture_${maps.roughness.uniqueId}_roughness.outputs:g>`);
             samplers.push(buildTexture(maps.roughness, "roughness"));
