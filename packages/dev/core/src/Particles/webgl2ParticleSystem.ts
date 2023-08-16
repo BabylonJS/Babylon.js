@@ -6,7 +6,7 @@ import type { IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
 
 import { CustomParticleEmitter } from "./EmitterTypes/customParticleEmitter";
 import type { GPUParticleSystem } from "./gpuParticleSystem";
-import type { DataArray } from "../types";
+import type { DataArray, Nullable } from "../types";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
 import { Constants } from "../Engines/constants";
@@ -25,6 +25,7 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
     private _updateEffectOptions: IEffectCreationOptions;
     private _renderVAO: WebGLVertexArrayObject[] = [];
     private _updateVAO: WebGLVertexArrayObject[] = [];
+    private _renderVertexBuffers: { [key: string]: VertexBuffer };
 
     public readonly alignDataInBuffer = false;
 
@@ -155,14 +156,20 @@ export class WebGL2ParticleSystem implements IGPUParticleSystemPlatform {
 
         this._renderVAO.push(this._engine.recordVertexArrayObject(renderVertexBuffers, null, this._parent._getWrapper(this._parent.blendMode).effect!));
         this._engine.bindArrayBuffer(null);
+
+        this._renderVertexBuffers = renderVertexBuffers;
     }
 
     public createParticleBuffer(data: number[]): DataArray | DataBuffer {
         return data;
     }
 
-    public bindDrawBuffers(index: number): void {
-        this._engine.bindVertexArrayObject(this._renderVAO[index], null);
+    public bindDrawBuffers(index: number, effect: Effect, indexBuffer: Nullable<DataBuffer>): void {
+        if (indexBuffer) {
+            this._engine.bindBuffers(this._renderVertexBuffers, indexBuffer, effect);
+        } else {
+            this._engine.bindVertexArrayObject(this._renderVAO[index], null);
+        }
     }
 
     public preUpdateParticleBuffer(): void {
