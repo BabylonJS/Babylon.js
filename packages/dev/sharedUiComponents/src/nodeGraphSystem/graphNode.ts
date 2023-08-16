@@ -440,6 +440,8 @@ export class GraphNode {
         const availableNodeOutputs: Nullable<IPortData>[] = [];
         const leftNode = this._ownerCanvas._targetLinkCandidate.nodeA;
         const rightNode = this._ownerCanvas._targetLinkCandidate.nodeB!;
+        const leftPort = this._ownerCanvas._targetLinkCandidate.portA.portData;
+        const rightPort = this._ownerCanvas._targetLinkCandidate.portB!.portData;
 
         // Delete previous
         this._ownerCanvas._targetLinkCandidate.dispose();
@@ -453,6 +455,20 @@ export class GraphNode {
         inputs.push(...leftNode.content.outputs);
 
         outputs.push(...rightNode.content.inputs.filter((i) => !i.isConnected));
+
+        // Prioritize the already connected ports
+        const leftPortIndex = inputs.indexOf(leftPort);
+        const rightPortIndex = outputs.indexOf(rightPort);
+
+        if (leftPortIndex > 0) {
+            inputs.splice(leftPortIndex, 1);
+            inputs.splice(0, 0, leftPort);
+        }
+
+        if (rightPortIndex > 0) {
+            outputs.splice(rightPortIndex, 1);
+            outputs.splice(0, 0, rightPort);
+        }
 
         // Reconnect
         this._ownerCanvas.automaticRewire(inputs, availableNodeInputs, true);
