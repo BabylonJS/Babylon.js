@@ -6,7 +6,7 @@ import type { IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
 import type { Buffer, VertexBuffer } from "../Buffers/buffer";
 import type { GPUParticleSystem } from "./gpuParticleSystem";
 
-import type { DataArray } from "../types";
+import type { DataArray, Nullable } from "../types";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { Constants } from "../Engines/constants";
 import { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
@@ -126,8 +126,8 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
         return buffer.getBuffer();
     }
 
-    public bindDrawBuffers(index: number, effect: Effect): void {
-        this._engine.bindBuffers(this._renderVertexBuffers[index], null, effect);
+    public bindDrawBuffers(index: number, effect: Effect, indexBuffer: Nullable<DataBuffer>): void {
+        this._engine.bindBuffers(this._renderVertexBuffers[index], indexBuffer, effect);
     }
 
     public preUpdateParticleBuffer(): void {}
