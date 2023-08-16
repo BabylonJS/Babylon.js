@@ -1,69 +1,83 @@
 {
-    "fromTag": "6.16.0",
+    "fromTag": "6.16.1",
     "changelog": {
-        "6.16.0": [
+        "6.16.2": [
             {
-                "pr": "14149",
-                "title": "dependency update",
+                "pr": "14167",
+                "title": "GUI InputTextArea: Fix inserting character in long string (wrapped)",
+                "description": "See https://forum.babylonjs.com/t/incorrect-word-wrap-behavior-in-inputtextarea-component/43346",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/inputTextArea.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "14168",
+                "title": "Add more control over UV for text builder",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/textBuilder.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14160",
+                "title": "More descriptive names for the AxesViewer's materials",
+                "description": "Currently they show up as \"no name\" in the Inspector, which can be confusing.\r\nhttps://forum.babylonjs.com/t/import-scene-without-materials-textures-dont-show-them-in-inspector/43326",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/axesViewer.ts"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "14164",
+                "title": "Fix equals issue + bad debug node rendering",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/conditionBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/debugBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryInputBlock.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/debugDisplayManager.modules.scss",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/inputDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14161",
+                "title": "Remove unneeded test",
                 "description": null,
                 "author": {
                     "name": "RaananW",
                     "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    "package-lock.json",
-                    "packages/tools/testTools/src/utils.ts",
-                    "profile.json"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "14148",
-                "title": "Shadow generators: Add support for red channel only for the shadow map texture",
-                "description": "For CSM, this is now the default setting, as all engines that support CSM also support red textures only.\r\n\r\nFor the regular shadow generator, the default setting is to use an RGBA texture due to WebGL1 backward compatibility.",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/core/src/Lights/Shadows/cascadedShadowGenerator.ts",
-                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts"
+                    "packages/tools/tests/src/umdCompile.ts",
+                    "packages/tools/tests/webpack.config.js"
                 ],
                 "tags": [
-                    "enhancement",
-                    "shadows"
-                ]
-            },
-            {
-                "pr": "14147",
-                "title": "Scene dispose: Fix endless loop when stopping animations",
-                "description": "See https://forum.babylonjs.com/t/looping-in-color-animations-is-not-possible/43125/8",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/core/src/scene.ts"
-                ],
-                "tags": [
-                    "bug",
-                    "animations"
-                ]
-            },
-            {
-                "pr": "14146",
-                "title": "PostProcess: Fix crash when detaching and reattaching a camera from/to a render pipeline",
-                "description": "See https://forum.babylonjs.com/t/bugs-when-managing-postprocess-pipeline/43184",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/core/src/PostProcesses/RenderPipeline/postProcessRenderEffect.ts"
-                ],
-                "tags": [
-                    "bug",
-                    "post-process"
+                    "skip changelog"
                 ]
             }
         ],
@@ -314,6 +328,72 @@
                     "packages/tools/tests/test/visualization/config.json"
                 ],
                 "tags": []
+            }
+        ],
+        "6.16.0": [
+            {
+                "pr": "14149",
+                "title": "dependency update",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/tools/testTools/src/utils.ts",
+                    "profile.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14148",
+                "title": "Shadow generators: Add support for red channel only for the shadow map texture",
+                "description": "For CSM, this is now the default setting, as all engines that support CSM also support red textures only.\r\n\r\nFor the regular shadow generator, the default setting is to use an RGBA texture due to WebGL1 backward compatibility.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/Shadows/cascadedShadowGenerator.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "shadows"
+                ]
+            },
+            {
+                "pr": "14147",
+                "title": "Scene dispose: Fix endless loop when stopping animations",
+                "description": "See https://forum.babylonjs.com/t/looping-in-color-animations-is-not-possible/43125/8",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "14146",
+                "title": "PostProcess: Fix crash when detaching and reattaching a camera from/to a render pipeline",
+                "description": "See https://forum.babylonjs.com/t/bugs-when-managing-postprocess-pipeline/43184",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/postProcessRenderEffect.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "post-process"
+                ]
             }
         ],
         "6.14.1": [
