@@ -37,6 +37,7 @@ import { GeometryElbowBlock } from "core/Meshes/Node/Blocks/geometryElbowBlock";
 import { SetMaterialIDBlock } from "core/Meshes/Node/Blocks/Set/setMaterialIDBlock";
 import { InstantiateOnVerticesBlock } from "core/Meshes/Node/Blocks/Instances/instantiateOnVerticesBlock";
 import { InstantiateOnFacesBlock } from "core/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock";
+import { InstantiateOnVolumeBlock } from "core/Meshes/Node/Blocks/Instances/instantiateOnVolumeBlock";
 import { DebugBlock } from "core/Meshes/Node/Blocks/debugBlock";
 import { TeleportInBlock } from "core/Meshes/Node/Blocks/Teleport/teleportInBlock";
 import { TeleportOutBlock } from "core/Meshes/Node/Blocks/Teleport/teleportOutBlock";
@@ -107,6 +108,8 @@ export class BlockTools {
             }
             case "SetMaterialIDBlock":
                 return new SetMaterialIDBlock("Set material ID");
+            case "InstantiateOnVolumeBlock":
+                return new InstantiateOnVolumeBlock("Instantiate on volume");
             case "InstantiateOnFacesBlock":
                 return new InstantiateOnFacesBlock("Instantiate on faces");
             case "InstantiateOnVerticesBlock":
