@@ -63,6 +63,9 @@ export class InputDisplayManager implements IDisplayManager {
                 case NodeGeometryContextualSources.VertexID:
                     value = "VertexID";
                     break;
+                case NodeGeometryContextualSources.GeometryID:
+                    value = "GeometryID";
+                    break;
                 case NodeGeometryContextualSources.FaceID:
                     value = "FaceID";
                     break;

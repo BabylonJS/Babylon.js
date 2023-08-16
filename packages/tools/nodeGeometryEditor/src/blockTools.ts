@@ -231,6 +231,11 @@ export class BlockTools {
                 block.contextualValue = NodeGeometryContextualSources.VertexID;
                 return block;
             }
+            case "GeometryIDBlock": {
+                const block = new GeometryInputBlock("Geometry ID");
+                block.contextualValue = NodeGeometryContextualSources.GeometryID;
+                return block;
+            }
             case "FaceIDBlock": {
                 const block = new GeometryInputBlock("Face ID");
                 block.contextualValue = NodeGeometryContextualSources.FaceID;

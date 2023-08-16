@@ -94,6 +94,7 @@ export class GeometryInputBlock extends NodeGeometryBlock {
                 this._type = NodeGeometryBlockConnectionPointTypes.Vector2;
                 break;
             case NodeGeometryContextualSources.VertexID:
+            case NodeGeometryContextualSources.GeometryID:
             case NodeGeometryContextualSources.FaceID:
                 this._type = NodeGeometryBlockConnectionPointTypes.Int;
                 break;

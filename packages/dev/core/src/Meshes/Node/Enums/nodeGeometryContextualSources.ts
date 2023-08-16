@@ -28,4 +28,6 @@ export enum NodeGeometryContextualSources {
     VertexID = 0x000b,
     /** FaceID */
     FaceID = 0x000c,
+    /** GeometryID */
+    GeometryID = 0x000d,
 }
