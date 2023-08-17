@@ -45,10 +45,16 @@ import { MapRangeBlock } from "core/Meshes/Node/Blocks/mapRangeBlock";
 import { GeometryOptimizeBlock } from "core/Meshes/Node/Blocks/geometryOptimizeBlock";
 import { IntFloatConverterBlock } from "core/Meshes/Node/Blocks/intFloatConverterBlock";
 import { ConditionBlock, ConditionBlockTests } from "core/Meshes/Node/Blocks/conditionBlock";
+import { GeometryCollectionBlock } from "core/Meshes/Node/Blocks/geometryCollectionBlock";
+import { GeometryInfoBlock } from "core/Meshes/Node/Blocks/geometryInfoBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "GeometryInfoBlock":
+                return new GeometryInfoBlock("Geometry Info");
+            case "CollectionBlock":
+                return new GeometryCollectionBlock("Collection");
             case "OptimizeBlock":
                 return new GeometryOptimizeBlock("Optimize");
             case "NullBlock":
@@ -234,6 +240,11 @@ export class BlockTools {
             case "GeometryIDBlock": {
                 const block = new GeometryInputBlock("Geometry ID");
                 block.contextualValue = NodeGeometryContextualSources.GeometryID;
+                return block;
+            }
+            case "CollectionIDBlock": {
+                const block = new GeometryInputBlock("Collection ID");
+                block.contextualValue = NodeGeometryContextualSources.CollectionID;
                 return block;
             }
             case "FaceIDBlock": {
