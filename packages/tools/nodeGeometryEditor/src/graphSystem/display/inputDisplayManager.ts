@@ -66,6 +66,9 @@ export class InputDisplayManager implements IDisplayManager {
                 case NodeGeometryContextualSources.GeometryID:
                     value = "GeometryID";
                     break;
+                case NodeGeometryContextualSources.CollectionID:
+                    value = "CollectionID";
+                    break;
                 case NodeGeometryContextualSources.FaceID:
                     value = "FaceID";
                     break;

@@ -123,6 +123,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                     { label: "Vertex ID", value: NodeGeometryContextualSources.VertexID },
                     { label: "Face ID", value: NodeGeometryContextualSources.FaceID },
                     { label: "Geometry ID", value: NodeGeometryContextualSources.GeometryID },
+                    { label: "Collection ID", value: NodeGeometryContextualSources.CollectionID },
                 ];
                 break;
             case NodeGeometryBlockConnectionPointTypes.Vector2:
