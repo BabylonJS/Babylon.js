@@ -411,7 +411,24 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
         this._pointerMoveEvent = (evt) => {
             const deviceType = this._getPointerType(evt);
-            const deviceSlot = deviceType === DeviceType.Mouse ? 0 : this._activeTouchIds.indexOf(evt.pointerId);
+            let deviceSlot = deviceType === DeviceType.Mouse ? 0 : this._activeTouchIds.indexOf(evt.pointerId);
+
+            // In the event that we're gettting pointermove events from touch inputs that we aren't tracking,
+            // look for an available slot and retroactively connect it.
+            if (deviceType === DeviceType.Touch && deviceSlot === -1) {
+                const idx = this._activeTouchIds.indexOf(-1);
+
+                if (idx >= 0) {
+                    deviceSlot = idx;
+                    this._activeTouchIds[idx] = evt.pointerId;
+                    // Because this is a "new" input, inform the connected callback
+                    this._onDeviceConnected(deviceType, deviceSlot);
+                } else {
+                    // We can't find an open slot to store new pointer so just return (can only support max number of touches)
+                    Tools.Warn(`Max number of touches exceeded.  Ignoring touches in excess of ${this._maxTouchPoints}`);
+                    return;
+                }
+            }
 
             if (!this._inputs[deviceType]) {
                 this._inputs[deviceType] = {};
@@ -428,6 +445,11 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
                 pointer[PointerInput.Horizontal] = evt.clientX;
                 pointer[PointerInput.Vertical] = evt.clientY;
+
+                // For touches that aren't started with a down, we need to set the button state to 1
+                if (deviceType === DeviceType.Touch && pointer[PointerInput.LeftClick] === 0) {
+                    pointer[PointerInput.LeftClick] = 1;
+                }
 
                 if (evt.pointerId === undefined) {
                     evt.pointerId = this._mouseId;
@@ -525,6 +547,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             const deviceSlot = deviceType === DeviceType.Mouse ? 0 : this._activeTouchIds.indexOf(evt.pointerId);
 
             if (deviceType === DeviceType.Touch) {
+                // If we're getting a pointerup event for a touch that isn't active, just return.
                 if (deviceSlot === -1) {
                     return;
                 } else {
@@ -590,6 +613,11 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 }
             } else {
                 const deviceSlot = this._activeTouchIds.indexOf(evt.pointerId);
+
+                // If we're getting a pointercancel event for a touch that isn't active, just return
+                if (deviceSlot === -1) {
+                    return;
+                }
 
                 if (this._elementToAttachTo.hasPointerCapture?.(evt.pointerId)) {
                     this._elementToAttachTo.releasePointerCapture(evt.pointerId);
