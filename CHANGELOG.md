@@ -1,5 +1,14 @@
 # Changelog
 
+## 6.17.0
+
+### Core
+
+- Added `getLinearVelocity` and `getAngularVelocity` to PhysicsBody - by [BarthPaleologue](https://github.com/BarthPaleologue) ([#14166](https://github.com/BabylonJS/Babylon.js/pull/14166))
+- Scale and Offset For NGE Noise - by [Pryme8](https://github.com/Pryme8) ([#14170](https://github.com/BabylonJS/Babylon.js/pull/14170))
+- AnimationGroup: Add masking support - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#14119](https://github.com/BabylonJS/Babylon.js/pull/14119))
+- Particle Systems: Fix display in wireframe mode - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14165](https://github.com/BabylonJS/Babylon.js/pull/14165))
+
 ## 6.16.2
 
 ### Core

@@ -1,5 +1,5 @@
 {
-    "fromTag": "6.16.1",
+    "fromTag": "6.16.2",
     "changelog": {
         "6.16.2": [
             {
@@ -75,6 +75,127 @@
                 "files": [
                     "packages/tools/tests/src/umdCompile.ts",
                     "packages/tools/tests/webpack.config.js"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "6.17.0": [
+            {
+                "pr": "14173",
+                "title": "Dropping a debug node on a wire from a VectorConverter will automatically connect it to the first node instead of the node of the wire",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14166",
+                "title": "Added `getLinearVelocity` and `getAngularVelocity` to PhysicsBody",
+                "description": "It's just small functions to get the velocities in one shot instead of creating a reference first then calling the function.",
+                "author": {
+                    "name": "BarthPaleologue",
+                    "url": "https://github.com/BarthPaleologue"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14170",
+                "title": "Scale and Offset For NGE Noise",
+                "description": "Noticed we needed this.",
+                "author": {
+                    "name": "Pryme8",
+                    "url": "https://github.com/Pryme8"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/noiseBlock.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14171",
+                "title": "Add geometryID to NGE",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryInputBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Enums/nodeGeometryContextualSources.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBuildState.ts",
+                    "packages/dev/core/src/Meshes/mesh.vertexData.ts",
+                    "packages/dev/sharedUiComponents/src/lines/vector3LineComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/inputDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14119",
+                "title": "AnimationGroup: Add masking support",
+                "description": "I create the PR as a draft, for discussion (is it the right design? what about the class / function names? ...)\r\n\r\nThe aim is to be able to create a mask for an animation group and not play animations for targets that are not in the mask.\r\n\r\nThe mask (`AnimationGroupMask`) is simply a set of target names. It's a set of `strings` instead of `TransformNode` / `Bone` / ... so that a single mask can be used for several animation groups.\r\n\r\nBy way of illustration, in the Avatar PoC, I can remove the custom functions `RemoveIdentityTransformationsFromAnimationGroup` and `RemoveTargetsFromAnimationGroup` and replace them with something like :\r\n```typescript\r\nconst animationGroupMask = new BABYLON.AnimationGroupMask([<list of bone names used by the facial animation>]);\r\n\r\nthis._facialAnimationGroup.mask = animationGroupMask;\r\nthis._facialAnimationGroup.removeUnmaskedAnimations();\r\n```\r\nThere's no hurry to review the PR, so don't bother if you're on vacation!",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animatable.ts",
+                    "packages/dev/core/src/Animations/animationGroup.ts",
+                    "packages/dev/core/src/Animations/animationGroupMask.ts",
+                    "packages/dev/core/src/Animations/index.ts"
+                ],
+                "tags": [
+                    "animations",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14165",
+                "title": "Particle Systems: Fix display in wireframe mode",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/IGPUParticleSystemPlatform.ts",
+                    "packages/dev/core/src/Particles/computeShaderParticleSystem.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts",
+                    "packages/dev/core/src/Particles/webgl2ParticleSystem.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "particles"
+                ]
+            },
+            {
+                "pr": "14163",
+                "title": "Add new node: InstantiateOnVolume",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVolumeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx"
                 ],
                 "tags": [
                     "skip changelog"
