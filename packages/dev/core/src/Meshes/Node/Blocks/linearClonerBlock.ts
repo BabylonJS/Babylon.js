@@ -2,9 +2,9 @@ import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
-import { Quaternion, Vector3 } from "../../../Maths/math.vector";
+import { Matrix, Quaternion, Vector3 } from "../../../Maths/math.vector";
 import { type NodeGeometryBuildState } from "../nodeGeometryBuildState";
-import { VertexData } from "core/Meshes/mesh.vertexData";
+import type { VertexData } from "core/Meshes/mesh.vertexData";
 
 /**
  * Block used to clone geometry along a line
@@ -52,6 +52,9 @@ export class LinearClonerBlock extends NodeGeometryBlock {
         //scale is magnitude per step, or total rotation
         this.registerInput("scale", NodeGeometryBlockConnectionPointTypes.Vector3, true, new Vector3(0, 0, 0));
         //Per step or total
+        this.registerInput("scalePerStepOrTotal", NodeGeometryBlockConnectionPointTypes.Int, true, 0, 0, 1);
+
+        //Random culling
         this.registerInput("scalePerStepOrTotal", NodeGeometryBlockConnectionPointTypes.Int, true, 0, 0, 1);
 
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Geometry);
@@ -155,7 +158,6 @@ export class LinearClonerBlock extends NodeGeometryBlock {
             state.geometryContext = null;
         }
 
-        const lastVertexIndex = this._vertexData.positions.length / 3 - 1;
         const origin = this.origin.getConnectedValue(state) as Vector3;
         const direction = this.direction.getConnectedValue(state) as Vector3;
         const transformPerStepOrTotal = this.transformPerStepOrTotal.getConnectedValue(state) as number;
@@ -166,40 +168,20 @@ export class LinearClonerBlock extends NodeGeometryBlock {
         const scale = this.scale.getConnectedValue(state) as Vector3;
         const scalePerStepOrTotal = this.scalePerStepOrTotal.getConnectedValue(state) as number;
 
-        const positionChunk = [...this._vertexData.positions];
-
-        let indexChunk: number[] = [];
-        if (this._vertexData.indices) {
-            indexChunk = [...this._vertexData.indices];
-        }
-
-        let normalChunk: number[] = [];
-        if (this._vertexData.normals?.length) {
-            normalChunk = [...this._vertexData.normals];
-        }
-
-        let uvChunk: number[] = [];
-        if (this._vertexData.uvs?.length) {
-            uvChunk = [...this._vertexData.uvs];
-        }
-
-        const newVertexData = new VertexData();
-        newVertexData.positions = [];
-        newVertexData.indices = [];
-        newVertexData.normals = [];
-        newVertexData.uvs = [];
-
         const countVector = new Vector3(count - 1, count - 1, count - 1);
         const invertRadians = Math.PI / 180;
 
+        const transformMatrix = Matrix.Identity();
+
         for (this._currentIndex = 0; this._currentIndex < count; this._currentIndex++) {
-            const currentIndexOffset = this._currentIndex * lastVertexIndex + 1 * this._currentIndex;
+            const clone = this._vertexData.clone();
 
             let transformOffset = direction.clone().scale(this._currentIndex);
             if (transformPerStepOrTotal == 1) {
                 const distanceStep = direction.divide(countVector).scale(this._currentIndex);
                 transformOffset = direction.clone().multiply(distanceStep);
             }
+            transformOffset.addInPlace(origin);
 
             let rotationOffset = rotation.clone().scale(this._currentIndex);
             if (rotationPerStepOrTotal == 1) {
@@ -212,50 +194,20 @@ export class LinearClonerBlock extends NodeGeometryBlock {
                 const scaleStep = scale.divide(countVector).scale(this._currentIndex);
                 scaleOffset = scale.clone().multiply(scaleStep);
             }
-
             scaleOffset.addInPlace(new Vector3(1, 1, 1));
 
-            for (let i = 0; i < positionChunk.length; i += 3) {
-                const srtPoint = new Vector3(positionChunk[i], positionChunk[i + 1], positionChunk[i + 2]);
-
-                srtPoint.multiplyInPlace(scaleOffset);
-
-                console.log(scaleOffset);
-
-                srtPoint.rotateByQuaternionToRef(
-                    Quaternion.FromEulerAngles(rotationOffset.x * invertRadians, rotationOffset.y * invertRadians, rotationOffset.z * invertRadians),
-                    srtPoint
-                );
-
-                srtPoint.addInPlace(origin).addInPlace(transformOffset);
-
-                newVertexData.positions.push(srtPoint.x, srtPoint.y, srtPoint.z);
-            }
-
-            if (indexChunk.length) {
-                for (let i = 0; i < indexChunk.length; i++) {
-                    newVertexData.indices.push(indexChunk[i] + currentIndexOffset);
-                }
-            }
-
-            if (normalChunk.length) {
-                for (let i = 0; i < normalChunk.length; i += 3) {
-                    newVertexData.normals.push(normalChunk[i]);
-                    newVertexData.normals.push(normalChunk[i + 1]);
-                    newVertexData.normals.push(normalChunk[i + 2]);
-                }
-            }
-
-            if (uvChunk.length) {
-                for (let i = 0; i < uvChunk.length; i += 2) {
-                    newVertexData.uvs.push(uvChunk[i]);
-                    newVertexData.uvs.push(uvChunk[i + 1]);
-                }
-            }
+            Matrix.ComposeToRef(
+                scaleOffset,
+                Quaternion.FromEulerAngles(rotationOffset.x * invertRadians, rotationOffset.y * invertRadians, rotationOffset.z * invertRadians),
+                transformOffset,
+                transformMatrix
+            );
+            clone.transform(transformMatrix);
+            this._vertexData.merge(clone);
         }
 
         // Storage
-        this.output._storedValue = newVertexData;
+        this.output._storedValue = this._vertexData;
         state.executionContext = null;
         state.geometryContext = null;
     }
