@@ -204,8 +204,8 @@ export class LinearClonerBlock extends NodeGeometryBlock {
                 transformOffset,
                 transformMatrix
             );
-            clone.transform(transformMatrix);    
-            results.push(clone);        
+            clone.transform(transformMatrix);
+            results.push(clone);
         }
         this._vertexData.merge(results, false, false, true, true);
         // Storage

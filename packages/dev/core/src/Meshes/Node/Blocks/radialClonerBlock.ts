@@ -39,14 +39,14 @@ export class RadialClonerBlock extends NodeGeometryBlock {
         this.registerInput("count", NodeGeometryBlockConnectionPointTypes.Int, true, 1, 0);
         this.registerInput("origin", NodeGeometryBlockConnectionPointTypes.Vector3, true, new Vector3(0, 0, 0));
         //Per step or total
-        this.registerInput("radius", NodeGeometryBlockConnectionPointTypes.Int, true, 0, 0);      
+        this.registerInput("radius", NodeGeometryBlockConnectionPointTypes.Int, true, 0, 0);
 
         //Angle start and end
         this.registerInput("angleStart", NodeGeometryBlockConnectionPointTypes.Float, true, 0);
         this.registerInput("angleEnd", NodeGeometryBlockConnectionPointTypes.Float, true, 0);
-        
+
         this.registerInput("clonerCenterOrGlobalForward", NodeGeometryBlockConnectionPointTypes.Int, true, 0, 0, 1);
-        
+
         //transform offset
         this.registerInput("transform", NodeGeometryBlockConnectionPointTypes.Vector3, true, new Vector3(0, 0, 0));
         //Per step or total
@@ -215,7 +215,7 @@ export class RadialClonerBlock extends NodeGeometryBlock {
         const invertRadians = Math.PI / 180;
         const angleStartRadians = angleStart * invertRadians;
         const angleEndRadians = angleEnd * invertRadians;
-        const pieSlice = (Math.PI * 2) - (angleStartRadians + angleEndRadians);
+        const pieSlice = Math.PI * 2 - (angleStartRadians + angleEndRadians);
         const rStep = pieSlice / count;
 
         const transformMatrix = Matrix.Identity();
@@ -244,7 +244,6 @@ export class RadialClonerBlock extends NodeGeometryBlock {
                 const rotationStep = rotation.divide(countVector).scale(this._currentIndex);
                 rotationOffset = rotation.clone().multiply(rotationStep);
             }
-            
 
             let scaleOffset = scale.clone().scale(this._currentIndex);
             if (scalePerStepOrTotal == 1) {
@@ -253,23 +252,18 @@ export class RadialClonerBlock extends NodeGeometryBlock {
             }
             scaleOffset.addInPlace(new Vector3(1, 1, 1));
 
-            const rotQuat = Quaternion.FromEulerAngles(rotationOffset.x * invertRadians, rotationOffset.y * invertRadians, rotationOffset.z * invertRadians)
+            const rotQuat = Quaternion.FromEulerAngles(rotationOffset.x * invertRadians, rotationOffset.y * invertRadians, rotationOffset.z * invertRadians);
 
-            if(clonerCenterOrGlobalForward == 0) {
+            if (clonerCenterOrGlobalForward == 0) {
                 rotQuat.multiplyInPlace(angleQuat);
             }
 
-            Matrix.ComposeToRef(
-                scaleOffset,
-                rotQuat,
-                transformOffset,
-                transformMatrix
-            );
+            Matrix.ComposeToRef(scaleOffset, rotQuat, transformOffset, transformMatrix);
             clone.transform(transformMatrix);
             results.push(clone);
         }
 
-        //Clear vertex data        
+        //Clear vertex data
         //TODO: this is a hack, what would be the best way to not include the first vertex data?
         this._vertexData.positions = [];
         this._vertexData.indices = [];
@@ -284,11 +278,11 @@ export class RadialClonerBlock extends NodeGeometryBlock {
         this._vertexData.matricesIndices = [];
         this._vertexData.matricesWeights = [];
         this._vertexData.matricesIndicesExtra = [];
-        this._vertexData.matricesWeightsExtra = [];        
-        if(this._vertexData.materialInfos?.length) {
+        this._vertexData.matricesWeightsExtra = [];
+        if (this._vertexData.materialInfos?.length) {
             this._vertexData.materialInfos = [];
-        }   
-        
+        }
+
         this._vertexData.merge(results, false, false, true, true);
         // Storage
         this.output._storedValue = this._vertexData;
