@@ -154,11 +154,10 @@ export class AudioEngine implements IAudioEngine {
     }
 
     private _resumeAudioContext(): Promise<void> {
-        let result: Promise<void>;
-        if (this._audioContext!.resume !== undefined) {
-            result = this._audioContext!.resume();
+        if (this._audioContext?.resume) {
+            return this._audioContext.resume();
         }
-        return result! || Promise.resolve();
+        return Promise.resolve();
     }
 
     private _initializeAudioContext() {
