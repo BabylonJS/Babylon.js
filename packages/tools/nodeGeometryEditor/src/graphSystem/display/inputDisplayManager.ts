@@ -16,10 +16,6 @@ export class InputDisplayManager implements IDisplayManager {
             return styles["contextual"];
         }
 
-        if (inputBlock.visibleInInspector) {
-            return styles["inspector"];
-        }
-
         return "";
     }
 

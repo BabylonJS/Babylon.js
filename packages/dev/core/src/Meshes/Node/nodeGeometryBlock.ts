@@ -102,9 +102,6 @@ export class NodeGeometryBlock {
     @serialize("comment")
     public comments: string;
 
-    /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
-    public visibleInInspector = false;
-
     /** Gets or sets a boolean indicating that this input can be edited from a collapsed frame */
     public visibleOnFrame = false;
 
@@ -379,7 +376,6 @@ export class NodeGeometryBlock {
     public _deserialize(serializationObject: any) {
         this._name = serializationObject.name;
         this.comments = serializationObject.comments;
-        this.visibleInInspector = !!serializationObject.visibleInInspector;
         this.visibleOnFrame = !!serializationObject.visibleOnFrame;
         this._deserializePortDisplayNamesAndExposedOnFrame(serializationObject);
     }
@@ -424,7 +420,7 @@ export class NodeGeometryBlock {
 
     protected _dumpPropertiesCode() {
         const variableName = this._codeVariableName;
-        return `${variableName}.visibleInInspector = ${this.visibleInInspector};\n${variableName}.visibleOnFrame = ${this.visibleOnFrame};\n`;
+        return `${variableName}.visibleOnFrame = ${this.visibleOnFrame};\n`;
     }
 
     /**
