@@ -220,6 +220,9 @@ export class RadialClonerBlock extends NodeGeometryBlock {
 
         const transformMatrix = Matrix.Identity();
         const results = [];
+
+        let rootData: Nullable<VertexData> = null;
+
         for (this._currentIndex = 0; this._currentIndex < count; this._currentIndex++) {
             const clone = this._vertexData.clone();
 
@@ -260,27 +263,17 @@ export class RadialClonerBlock extends NodeGeometryBlock {
 
             Matrix.ComposeToRef(scaleOffset, rotQuat, transformOffset, transformMatrix);
             clone.transform(transformMatrix);
-            results.push(clone);
+            
+            if (!rootData) {
+                rootData = clone;
+            } else {
+                results.push(clone);
+            }
         }
 
-        //Clear vertex data
-        //TODO: this is a hack, what would be the best way to not include the first vertex data?
-        this._vertexData.positions = [];
-        this._vertexData.indices = [];
-        this._vertexData.normals = [];
-        this._vertexData.uvs = [];
-        this._vertexData.uvs2 = [];
-        this._vertexData.uvs3 = [];
-        this._vertexData.uvs4 = [];
-        this._vertexData.uvs5 = [];
-        this._vertexData.uvs6 = [];
-        this._vertexData.colors = [];
-        this._vertexData.matricesIndices = [];
-        this._vertexData.matricesWeights = [];
-        this._vertexData.matricesIndicesExtra = [];
-        this._vertexData.matricesWeightsExtra = [];
-        if (this._vertexData.materialInfos?.length) {
-            this._vertexData.materialInfos = [];
+        if (rootData) {
+            rootData.merge(results, false, false, true, true);
+            this._vertexData = rootData;
         }
 
         this._vertexData.merge(results, false, false, true, true);

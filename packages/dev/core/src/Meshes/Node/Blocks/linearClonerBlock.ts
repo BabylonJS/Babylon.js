@@ -5,6 +5,7 @@ import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConn
 import { Matrix, Quaternion, Vector3 } from "../../../Maths/math.vector";
 import { type NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import type { VertexData } from "core/Meshes/mesh.vertexData";
+import { Nullable } from "core/types";
 
 /**
  * Block used to clone geometry along a line
@@ -175,7 +176,9 @@ export class LinearClonerBlock extends NodeGeometryBlock {
 
         const results = [];
 
-        for (this._currentIndex = 1; this._currentIndex < count; this._currentIndex++) {
+        let rootData: Nullable<VertexData> = null;
+
+        for (this._currentIndex = 0; this._currentIndex < count; this._currentIndex++) {
             const clone = this._vertexData.clone();
 
             let transformOffset = direction.clone().scale(this._currentIndex);
@@ -205,9 +208,19 @@ export class LinearClonerBlock extends NodeGeometryBlock {
                 transformMatrix
             );
             clone.transform(transformMatrix);
-            results.push(clone);
+
+            if (!rootData) {
+                rootData = clone;
+            } else {
+                results.push(clone);
+            }
         }
-        this._vertexData.merge(results, false, false, true, true);
+
+        if (rootData) {
+            rootData.merge(results, false, false, true, true);
+            this._vertexData = rootData;
+        }
+
         // Storage
         this.output._storedValue = this._vertexData;
         state.executionContext = null;
