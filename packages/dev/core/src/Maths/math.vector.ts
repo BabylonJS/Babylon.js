@@ -16,12 +16,12 @@ const _ExtractAsInt = (value: number) => {
     return parseInt(value.toString().replace(/\W/g, ""));
 };
 
-export declare class Vector {
+export declare abstract class Vector<N extends number[] = number[]> {
 
     /**
      * Creates a new Vector from the given coordinates
      */
-    constructor(...coords: number[]);
+    constructor(...coords: N);
 
     /**
      * Gets a string with the Vector coordinates
@@ -77,13 +77,13 @@ export declare class Vector {
      * @returns the current updated Vector
      */
 
-    copyFromFloats(...floats: number[]): this;
+    copyFromFloats(...floats: N): this;
 
     /**
      * Sets the Vector coordinates with the given floats
      * @returns the current updated Vector
      */
-    set(...values: number[]): this;
+    set(...values: N): this;
 
     /**
      * Sets the Vector coordinates to the given value
@@ -155,7 +155,7 @@ export declare class Vector {
      * @param args the coordinates to subtract with the last element as the result
      * @returns the result
      */
-    subtractFromFloatsToRef<T extends this>(...args: [...number[], T]): T;
+    subtractFromFloatsToRef<T extends this>(...args: [...N, T]): T;
 
     /**
      * Returns a new Vector set with the multiplication of the current Vector and the given one coordinates
@@ -219,7 +219,7 @@ export declare class Vector {
      * @param floats defines the floats to compare against
      * @returns this current updated Vector
      */
-    minimizeInPlaceFromFloats(...floats: number[]): this;
+    minimizeInPlaceFromFloats(...floats: N): this;
 
     /**
      * Updates the current Vector with the maximal coordinate values between its and the given vector ones.
@@ -233,7 +233,7 @@ export declare class Vector {
      * @param floats defines the floats to compare against
      * @returns this current updated Vector
      */
-    maximizeInPlaceFromFloats(...floats: number[]): this;
+    maximizeInPlaceFromFloats(...floats: N): this;
 
     /**
      * Gets a new Vector with current Vector negated coordinates
@@ -306,7 +306,7 @@ export declare class Vector {
      * @param floats defines the coordinates to compare against
      * @returns true if both vectors are equal
      */
-    equalsToFloats(...floats: number[]): boolean;
+    equalsToFloats(...floats: N): boolean;
 
     /**
      * Gets a new Vector from current Vector floored values
@@ -339,7 +339,7 @@ export declare class Vector {
     /**
      * The number of dimensions the vector has (i.e. the length of the coordinate array)
      */
-    get dimension(): number;
+    abstract dimension: number;
 
     /**
      * Gets the length of the vector
@@ -413,7 +413,7 @@ export declare class Vector {
      * Subclasses must implement their own FromArray method due to TypeScript types.
      * It is recommend to use FromArrayToRef for subclass implementations.
      */
-    static FromArray<T extends Vector>(array: ArrayLike<number>, offset?: number): Vector;
+    static FromArray(array: ArrayLike<number>, offset?: number): Vector;
 
     /**
      * Sets "result" from the given index element of the given array
@@ -610,7 +610,7 @@ export declare class Vector {
 /**
  * Represents a vector in any dimensional space
  */
-export class DynamicVector implements Vector {
+export class DynamicVector implements Vector<number[]> {
     [key: number]: number;
 
     /** @internal */
@@ -1652,12 +1652,10 @@ export class DynamicVector implements Vector {
  * Class representing a vector containing 2 coordinates
  * Example Playground - Overview -  https://playground.babylonjs.com/#QYBWV4#9
  */
-export class Vector2 implements Vector {
+export class Vector2 implements Vector<[number, number]> {
     private static _ZeroReadOnly = Vector2.Zero() as DeepImmutable<Vector2>;
 
-    get dimension(): 2 {
-        return 2;
-    }
+    public readonly dimension: 2 = 2;
 
     /**
      * Creates a new Vector2 from the given x and y coordinates
@@ -2019,8 +2017,7 @@ export class Vector2 implements Vector {
      * @param result defines the Vector2 object where to store the result
      * @returns the result
      */
-    public subtractFromFloatsToRef<T extends this>(...args: [...number[], T]): T {
-        const [x, y, result] = args as [number, number, T];
+    public subtractFromFloatsToRef<T extends this>(x: number, y: number, result: T): T {
         return result.copyFromFloats(this.x - x, this.y - y);
     }
 
@@ -2130,7 +2127,7 @@ export class Vector2 implements Vector {
      * @param y defines the y coordinate of the operand
      * @returns true if both vectors are equal
      */
-    public equalsToFloats(x: number, y: number, z: number): boolean {
+    public equalsToFloats(x: number, y: number): boolean {
         return this.x === x && this.y === y;
     }
 
@@ -2676,7 +2673,8 @@ export class Vector2 implements Vector {
  * Reminder: js uses a left handed forward facing system
  * Example Playground - Overview - https://playground.babylonjs.com/#R1F8YU
  */
-export class Vector3 {
+export class Vector3 implements Vector<[number, number, number]> {
+
     private static _UpReadOnly = Vector3.Up() as DeepImmutable<Vector3>;
     private static _DownReadOnly = Vector3.Down() as DeepImmutable<Vector3>;
     private static _LeftHandedForwardReadOnly = Vector3.Forward(false) as DeepImmutable<Vector3>;
@@ -2687,6 +2685,8 @@ export class Vector3 {
     private static _LeftReadOnly = Vector3.Left() as DeepImmutable<Vector3>;
     private static _ZeroReadOnly = Vector3.Zero() as DeepImmutable<Vector3>;
     private static _OneReadOnly = Vector3.One() as DeepImmutable<Vector3>;
+
+	public readonly dimension: 3 = 3;
 
     /** @internal */
     public _x: number;
@@ -3362,13 +3362,38 @@ export class Vector3 {
         return false;
     }
 
+	/**
+     * Gets the current Vector3's floored values and stores them in result
+     * @param result the vector to store the result in
+     * @returns the result vector
+     */
+    public floorToRef<T extends this>(result: T): T {
+        result.x = Math.floor(this.x);
+        result.y = Math.floor(this.y);
+        result.z = Math.floor(this.z);
+        return result;
+    }
+
     /**
      * Gets a new Vector3 from current Vector3 floored values
      * Example Playground https://playground.babylonjs.com/#R1F8YU#22
      * @returns a new Vector3
      */
     public floor(): this {
-        return new (this.constructor as Constructor<typeof Vector3, this>)(Math.floor(this._x), Math.floor(this._y), Math.floor(this._z));
+        const result = new (this.constructor as Constructor<typeof Vector3, this>)();
+		return this.floorToRef(result);
+    }
+
+	/**
+     * Gets the current Vector3's fractional values and stores them in result
+     * @param result the vector to store the result in
+     * @returns the result vector
+     */
+    public fractToRef<T extends this>(result: T): T {
+        result.x = this.x - Math.floor(this.x);
+        result.y = this.y - Math.floor(this.y);
+        result.z = this.z - Math.floor(this.z);
+        return result;
     }
 
     /**
@@ -3377,7 +3402,8 @@ export class Vector3 {
      * @returns a new Vector3
      */
     public fract(): this {
-        return new (this.constructor as Constructor<typeof Vector3, this>)(this._x - Math.floor(this._x), this._y - Math.floor(this._y), this._z - Math.floor(this._z));
+        const result = new (this.constructor as Constructor<typeof Vector3, this>)();
+		return this.fractToRef(result);
     }
 
     // Properties
@@ -4800,8 +4826,10 @@ export class Vector3 {
 /**
  * Vector4 class created for EulerAngle class conversion to Quaternion
  */
-export class Vector4 {
+export class Vector4 implements Vector<[number, number, number, number]> {
     private static _ZeroReadOnly = Vector4.Zero() as DeepImmutable<Vector4>;
+
+	public readonly dimension: 4 = 4;
 
     /**
      * Creates a Vector4 object from the given floats.
@@ -4905,6 +4933,22 @@ export class Vector4 {
         this.y += otherVector.y;
         this.z += otherVector.z;
         this.w += otherVector.w;
+        return this;
+    }
+
+	/**
+     * Adds the given coordinates to the current Vector4
+     * @param x defines the x coordinate of the operand
+     * @param y defines the y coordinate of the operand
+     * @param z defines the z coordinate of the operand
+     * @param w defines the w coordinate of the operand
+     * @returns the current updated Vector4
+     */
+    public addInPlaceFromFloats(x: number, y: number, z: number, w: number): this {
+        this.x += x;
+        this.y += y;
+        this.z += z;
+        this.w += w;
         return this;
     }
 
@@ -5233,11 +5277,86 @@ export class Vector4 {
     }
 
     /**
+     * Updates the current Vector4 with the minimal coordinate values between its and the given coordinates
+     * @param x defines the x coordinate of the operand
+     * @param y defines the y coordinate of the operand
+     * @param z defines the z coordinate of the operand
+     * @param w defines the w coordinate of the operand
+     * @returns the current updated Vector4
+     */
+    public minimizeInPlaceFromFloats(x: number, y: number, z: number, w: number): this {
+        if (x < this.x) {
+            this.x = x;
+        }
+        if (y < this.y) {
+            this.y = y;
+        }
+        if (z < this.z) {
+            this.z = z;
+        }
+		if (w < this.w) {
+            this.w = w;
+        }
+        return this;
+    }
+
+    /**
+     * Updates the current Vector4 with the maximal coordinate values between its and the given coordinates.
+     * @param x defines the x coordinate of the operand
+     * @param y defines the y coordinate of the operand
+     * @param z defines the z coordinate of the operand
+     * @param w defines the w coordinate of the operand
+     * @returns the current updated Vector4
+     */
+    public maximizeInPlaceFromFloats(x: number, y: number, z: number, w: number): this {
+        if (x > this.x) {
+            this.x = x;
+        }
+        if (y > this.y) {
+            this.y = y;
+        }
+        if (z > this.z) {
+            this.z = z;
+        }
+		if (w > this.w) {
+            this.w = w;
+        }
+        return this;
+    }
+
+	/**
+     * Gets the current Vector4's floored values and stores them in result
+     * @param result the vector to store the result in
+     * @returns the result vector
+     */
+    public floorToRef<T extends this>(result: T): T {
+        result.x = Math.floor(this.x);
+        result.y = Math.floor(this.y);
+        result.z = Math.floor(this.z);
+        result.w = Math.floor(this.w);
+        return result;
+    }
+
+    /**
      * Gets a new Vector4 from current Vector4 floored values
      * @returns a new Vector4
      */
     public floor(): this {
-        return new (this.constructor as Constructor<typeof Vector4, this>)(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z), Math.floor(this.w));
+        const result = new (this.constructor as Constructor<typeof Vector4, this>)();
+		return this.floorToRef(result);
+    }
+	
+	/**
+     * Gets the current Vector4's fractional values and stores them in result
+     * @param result the vector to store the result in
+     * @returns the result vector
+     */
+    public fractToRef<T extends this>(result: T): T {
+        result.x = this.x - Math.floor(this.x);
+        result.y = this.y - Math.floor(this.y);
+        result.z = this.z - Math.floor(this.z);
+        result.w = this.w - Math.floor(this.w);
+        return result;
     }
 
     /**
@@ -5245,12 +5364,8 @@ export class Vector4 {
      * @returns a new Vector4
      */
     public fract(): this {
-        return new (this.constructor as Constructor<typeof Vector4, this>)(
-            this.x - Math.floor(this.x),
-            this.y - Math.floor(this.y),
-            this.z - Math.floor(this.z),
-            this.w - Math.floor(this.w)
-        );
+		const result = new (this.constructor as Constructor<typeof Vector4, this>)();
+        return this.fractToRef(result);
     }
 
     // Properties
