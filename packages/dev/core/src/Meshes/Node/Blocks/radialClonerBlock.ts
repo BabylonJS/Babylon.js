@@ -62,9 +62,6 @@ export class RadialClonerBlock extends NodeGeometryBlock {
         //Per step or total
         this.registerInput("scalePerStepOrTotal", NodeGeometryBlockConnectionPointTypes.Int, true, 0, 0, 1);
 
-        //Random culling
-        this.registerInput("scalePerStepOrTotal", NodeGeometryBlockConnectionPointTypes.Int, true, 0, 0, 1);
-
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Geometry);
     }
 
