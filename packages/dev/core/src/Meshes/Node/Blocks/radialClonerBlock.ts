@@ -5,6 +5,7 @@ import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConn
 import { Matrix, Quaternion, Vector3 } from "../../../Maths/math.vector";
 import { type NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import type { VertexData } from "core/Meshes/mesh.vertexData";
+import type { Nullable } from "core/types";
 
 /**
  * Block used to clone geometry along a line

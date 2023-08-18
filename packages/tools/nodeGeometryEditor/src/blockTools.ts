@@ -50,7 +50,9 @@ import { RadialClonerBlock } from "core/Meshes/Node/Blocks/radialClonerBlock";
 import { GeometryCollectionBlock } from "core/Meshes/Node/Blocks/geometryCollectionBlock";
 import { GeometryInfoBlock } from "core/Meshes/Node/Blocks/geometryInfoBlock";
 
-
+/**
+ * Static class for BlockTools
+ */
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
@@ -380,10 +382,10 @@ export class BlockTools {
                 block.operation = MathBlockOperations.Max;
                 return block;
             }
-            case "LinearClonerBlock":{
+            case "LinearClonerBlock": {
                 return new LinearClonerBlock("Linear Cloner");
             }
-            case "RadialClonerBlock":{
+            case "RadialClonerBlock": {
                 return new RadialClonerBlock("Radial Cloner");
             }
         }
