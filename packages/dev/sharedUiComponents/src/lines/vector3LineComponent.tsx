@@ -1,5 +1,5 @@
 import * as React from "react";
-import type { Vector3 } from "core/Maths/math.vector";
+import { Vector3 } from "core/Maths/math.vector";
 import type { Observable } from "core/Misc/observable";
 
 import { NumericInputComponent } from "../lines/numericInputComponent";
@@ -35,7 +35,8 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
     constructor(props: IVector3LineComponentProps) {
         super(props);
 
-        this.state = { isExpanded: false, value: this.getCurrentValue().clone() };
+        const value = this.getCurrentValue();
+        this.state = { isExpanded: false, value: value ? value.clone() : Vector3.Zero() };
     }
 
     getCurrentValue() {

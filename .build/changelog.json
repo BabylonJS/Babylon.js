@@ -1,6 +1,456 @@
 {
-    "fromTag": "6.15.0",
+    "fromTag": "6.16.2",
     "changelog": {
+        "6.16.2": [
+            {
+                "pr": "14167",
+                "title": "GUI InputTextArea: Fix inserting character in long string (wrapped)",
+                "description": "See https://forum.babylonjs.com/t/incorrect-word-wrap-behavior-in-inputtextarea-component/43346",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/inputTextArea.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "14168",
+                "title": "Add more control over UV for text builder",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/textBuilder.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14160",
+                "title": "More descriptive names for the AxesViewer's materials",
+                "description": "Currently they show up as \"no name\" in the Inspector, which can be confusing.\r\nhttps://forum.babylonjs.com/t/import-scene-without-materials-textures-dont-show-them-in-inspector/43326",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/axesViewer.ts"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "14164",
+                "title": "Fix equals issue + bad debug node rendering",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/conditionBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/debugBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryInputBlock.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/debugDisplayManager.modules.scss",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/inputDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14161",
+                "title": "Remove unneeded test",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/tests/src/umdCompile.ts",
+                    "packages/tools/tests/webpack.config.js"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "6.17.0": [
+            {
+                "pr": "14173",
+                "title": "Dropping a debug node on a wire from a VectorConverter will automatically connect it to the first node instead of the node of the wire",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14166",
+                "title": "Added `getLinearVelocity` and `getAngularVelocity` to PhysicsBody",
+                "description": "It's just small functions to get the velocities in one shot instead of creating a reference first then calling the function.",
+                "author": {
+                    "name": "BarthPaleologue",
+                    "url": "https://github.com/BarthPaleologue"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14170",
+                "title": "Scale and Offset For NGE Noise",
+                "description": "Noticed we needed this.",
+                "author": {
+                    "name": "Pryme8",
+                    "url": "https://github.com/Pryme8"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/noiseBlock.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14171",
+                "title": "Add geometryID to NGE",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryInputBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Enums/nodeGeometryContextualSources.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBuildState.ts",
+                    "packages/dev/core/src/Meshes/mesh.vertexData.ts",
+                    "packages/dev/sharedUiComponents/src/lines/vector3LineComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/inputDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14119",
+                "title": "AnimationGroup: Add masking support",
+                "description": "I create the PR as a draft, for discussion (is it the right design? what about the class / function names? ...)\r\n\r\nThe aim is to be able to create a mask for an animation group and not play animations for targets that are not in the mask.\r\n\r\nThe mask (`AnimationGroupMask`) is simply a set of target names. It's a set of `strings` instead of `TransformNode` / `Bone` / ... so that a single mask can be used for several animation groups.\r\n\r\nBy way of illustration, in the Avatar PoC, I can remove the custom functions `RemoveIdentityTransformationsFromAnimationGroup` and `RemoveTargetsFromAnimationGroup` and replace them with something like :\r\n```typescript\r\nconst animationGroupMask = new BABYLON.AnimationGroupMask([<list of bone names used by the facial animation>]);\r\n\r\nthis._facialAnimationGroup.mask = animationGroupMask;\r\nthis._facialAnimationGroup.removeUnmaskedAnimations();\r\n```\r\nThere's no hurry to review the PR, so don't bother if you're on vacation!",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animatable.ts",
+                    "packages/dev/core/src/Animations/animationGroup.ts",
+                    "packages/dev/core/src/Animations/animationGroupMask.ts",
+                    "packages/dev/core/src/Animations/index.ts"
+                ],
+                "tags": [
+                    "animations",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14165",
+                "title": "Particle Systems: Fix display in wireframe mode",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/IGPUParticleSystemPlatform.ts",
+                    "packages/dev/core/src/Particles/computeShaderParticleSystem.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts",
+                    "packages/dev/core/src/Particles/webgl2ParticleSystem.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "particles"
+                ]
+            },
+            {
+                "pr": "14163",
+                "title": "Add new node: InstantiateOnVolume",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVolumeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "6.16.1": [
+            {
+                "pr": "14159",
+                "title": "Improve optimize block",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryOptimizeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14145",
+                "title": "fix children nodes with description not being rendered on a11y tree w…",
+                "description": "…hen addAllControls = false\r\nForum post: https://forum.babylonjs.com/t/accessibility-addallcontrols-suppress-gui-controls-with-accessibilitytag/43114",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinHostComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "accessibility"
+                ]
+            },
+            {
+                "pr": "14158",
+                "title": "Add a new geometry node to extractUnique positions from a geometry",
+                "description": "Also making sure we do not rebuild if not required",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryOptimizeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlock.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/interfaces/nodeData.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/blockNodeData.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14154",
+                "title": "GRL - added simple greased line material",
+                "description": null,
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/greasedLinePluginMaterial.ts",
+                    "packages/dev/core/src/Materials/greasedLineSimpleMaterial.ts",
+                    "packages/dev/core/src/Meshes/Builders/greasedLineBuilder.ts",
+                    "packages/dev/core/src/Meshes/greasedLineMesh.ts",
+                    "packages/dev/core/src/Misc/greasedLineTools.ts",
+                    "packages/dev/core/src/Shaders/greasedLine.fragment.fx",
+                    "packages/dev/core/src/Shaders/greasedLine.vertex.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/greased-line-simple-material.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14156",
+                "title": "Add registerclass for decalmapconfiguration",
+                "description": "See https://forum.babylonjs.com/t/saving-and-loading-a-serialized-scene-with-gltf-meshes/43173/17?u=raananw",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/material.decalMapConfiguration.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14141",
+                "title": "Node geometry",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    ".vscode/launch.json",
+                    ".vscode/tasks.json",
+                    "package.json",
+                    "packages/dev/buildTools/src/packageMapping.ts",
+                    "packages/dev/core/src/Decorators/nodeDecorator.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/sceneDepthBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVerticesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setNormalsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setUVsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/boxBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/capsuleBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/cylinderBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/discBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/gridBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/icoSphereBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/meshBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/nullBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/planeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/sphereBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/torusBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Teleport/teleportOutBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/conditionBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryInputBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryOutputBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryTransformBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryTrigonometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/intFloatConverterBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/mathBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/mergeGeometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/noiseBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/normalizeVectorBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/randomBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/vectorConverterBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Enums/nodeGeometryConnectionPointTypes.ts",
+                    "packages/dev/core/src/Meshes/Node/Enums/nodeGeometryContextualSources.ts",
+                    "packages/dev/core/src/Meshes/Node/Interfaces/nodeGeometryExecutionContext.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlockConnectionPoint.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBuildState.ts",
+                    "packages/dev/core/src/Meshes/mesh.vertexData.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/meshPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/sceneExplorerComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/colorPicker/hexColor.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/floatLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/vector3LineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/vector4LineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphCanvas.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.modules.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/interfaces/nodeData.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodeLink.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/stateManager.ts",
+                    "packages/public/@babylonjs/.gitignore",
+                    "packages/public/@babylonjs/node-geometry-editor/config.json",
+                    "packages/public/@babylonjs/node-geometry-editor/license.md",
+                    "packages/public/@babylonjs/node-geometry-editor/package.json",
+                    "packages/public/@babylonjs/node-geometry-editor/readme.md",
+                    "packages/public/@babylonjs/node-geometry-editor/src/index.ts",
+                    "packages/public/@babylonjs/node-geometry-editor/tsconfig.build.json",
+                    "packages/public/@babylonjs/node-geometry-editor/tsconfig.json",
+                    "packages/public/@babylonjs/node-geometry-editor/webpack.config.js",
+                    "packages/public/umd/babylonjs-node-geometry-editor/.npmignore",
+                    "packages/public/umd/babylonjs-node-geometry-editor/config.json",
+                    "packages/public/umd/babylonjs-node-geometry-editor/license.md",
+                    "packages/public/umd/babylonjs-node-geometry-editor/package.json",
+                    "packages/public/umd/babylonjs-node-geometry-editor/readme.md",
+                    "packages/public/umd/babylonjs-node-geometry-editor/src/index.ts",
+                    "packages/public/umd/babylonjs-node-geometry-editor/tsconfig.build.json",
+                    "packages/public/umd/babylonjs-node-geometry-editor/tsconfig.json",
+                    "packages/public/umd/babylonjs-node-geometry-editor/webpack.config.js",
+                    "packages/tools/babylonServer/declarationConfigDev.json",
+                    "packages/tools/babylonServer/declarationConfigLTS.json",
+                    "packages/tools/babylonServer/public/empty-preview.html",
+                    "packages/tools/babylonServer/public/empty-stable.html",
+                    "packages/tools/babylonServer/public/empty.html",
+                    "packages/tools/babylonServer/public/index-ts.html",
+                    "packages/tools/babylonServer/public/index.html",
+                    "packages/tools/babylonServer/public/test.html",
+                    "packages/tools/babylonServer/src/nodeGeometryEditor/index.ts",
+                    "packages/tools/babylonServer/tsconfig.build.json",
+                    "packages/tools/babylonServer/webpack.config.js",
+                    "packages/tools/devHost/src/createScene.ts",
+                    "packages/tools/nodeEditor/src/components/log/logComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/inputsPropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/properties/floatPropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/connectionPointPortData.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/colorMergerPropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/conditionalNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/curveNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/gradientNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/imageSourcePropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14151",
+                "title": "Bone IK controller: Make sure the absolute matrices are up to date",
+                "description": "See https://forum.babylonjs.com/t/boneikcontroller-demo-broken/43211\r\n\r\nThis bug appeared after my changes to the bone class because `BoneIKController` relied on a bug in the old `Bone` class, where the absolute transformation matrix had a value, but a wrong one - it contained the absolute bind matrix instead of the absolute matrix! To make sure we get up-to-date absolute matrices, we need to call `skeleton.computeAbsoluteMatrices()`.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Bones/boneIKController.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "bones"
+                ]
+            },
+            {
+                "pr": "14150",
+                "title": "Call the validateDrag function on planeDragGizmo",
+                "description": "Forum post: https://forum.babylonjs.com/t/xplanegizmo-yplanegizmo-zplanegizmo-unable-to-invoke-dragbehavior-validatedrag/43215\r\n\r\n",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/planeDragGizmo.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gizmos"
+                ]
+            },
+            {
+                "pr": "14139",
+                "title": "Fix exposing options of MeshDebugPluginMaterial",
+                "description": "I had believed PR #14127 would allow for a user to update `options` after initialization, but I forgot that the `expandToProperty` decorator won't work as expected for custom objects like `options`.  \r\n\r\nHere's a fix. The plugin no longer stores the options object, and instead unwraps each property of option into its own direct plugin property.\r\n\r\nIt also means I can remove the serialize/parse methods, applying the serialization decorator to each property instead.\r\n\r\n(I did look into making a new decorator for custom objects, but I don't know enough about TS metaprogramming to make it in time!)",
+                "author": {
+                    "name": "alexchuber",
+                    "url": "https://github.com/alexchuber"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/meshDebugPluginMaterial.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            }
+        ],
         "6.16.0": [
             {
                 "pr": "14149",

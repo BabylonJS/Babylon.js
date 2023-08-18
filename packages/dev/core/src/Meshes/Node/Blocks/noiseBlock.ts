@@ -2,7 +2,7 @@ import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
-import type { Vector3 } from "../../../Maths/math.vector";
+import { Vector3 } from "../../../Maths/math.vector";
 import { Scalar } from "../../../Maths/math.scalar";
 import { NodeGeometryContextualSources } from "../Enums/nodeGeometryContextualSources";
 
@@ -16,6 +16,9 @@ export class NoiseBlock extends NodeGeometryBlock {
      */
     public constructor(name: string) {
         super(name);
+
+        this.registerInput("offset", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.Zero());
+        this.registerInput("scale", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
 
         this.registerInput("octaves", NodeGeometryBlockConnectionPointTypes.Float, true, 2, 0, 16);
         this.registerInput("roughness", NodeGeometryBlockConnectionPointTypes.Float, true, 0.5, 0, 1);
@@ -32,17 +35,31 @@ export class NoiseBlock extends NodeGeometryBlock {
     }
 
     /**
+     * Gets the offset input component
+     */
+    public get offset(): NodeGeometryConnectionPoint {
+        return this._inputs[0];
+    }
+
+    /**
+     * Gets the scale input component
+     */
+    public get scale(): NodeGeometryConnectionPoint {
+        return this._inputs[1];
+    }
+
+    /**
      * Gets the octaves input component
      */
     public get octaves(): NodeGeometryConnectionPoint {
-        return this._inputs[0];
+        return this._inputs[2];
     }
 
     /**
      * Gets the roughtness input component
      */
     public get roughness(): NodeGeometryConnectionPoint {
-        return this._inputs[1];
+        return this._inputs[3];
     }
 
     /**
@@ -149,7 +166,9 @@ export class NoiseBlock extends NodeGeometryBlock {
      * @returns a value between 0 and 1
      * @see Based on https://github.com/blender/blender/blob/main/source/blender/blenlib/intern/noise.cc#L533
      */
-    noise(octaves: number, roughness: number, position: Vector3) {
+    noise(octaves: number, roughness: number, _position: Vector3, offset: Vector3, scale: number) {
+        const position = new Vector3(_position.x + offset.x * scale, _position.y + offset.y * scale, _position.z + offset.z * scale);
+
         let fscale = 1.0;
         let amp = 1.0;
         let maxamp = 0.0;
@@ -183,7 +202,10 @@ export class NoiseBlock extends NodeGeometryBlock {
             const octaves = this.octaves.getConnectedValue(state);
             const roughness = this.roughness.getConnectedValue(state);
 
-            return this.noise(octaves, roughness, position);
+            const offset = this.offset.getConnectedValue(state) as Vector3;
+            const scale = this.scale.getConnectedValue(state);
+
+            return this.noise(octaves, roughness, position, offset, scale);
         };
     }
 }

@@ -545,7 +545,7 @@ export class InputTextArea extends InputText {
 
                 line.split("").map((char) => {
                     if (context.measureText(flushedLine + char).width > width) {
-                        lines.push({ text: flushedLine, width: context.measureText(flushedLine).width, lineEnding: "\n" });
+                        lines.push({ text: flushedLine, width: context.measureText(flushedLine).width, lineEnding: "" });
                         flushedLine = "";
                     }
                     flushedLine += char;

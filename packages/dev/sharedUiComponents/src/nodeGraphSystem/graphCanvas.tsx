@@ -1364,7 +1364,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             link.onDisposedObservable.clear();
         });
 
-        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+        if (!nodeB.content.isConnectedToOutput || nodeB.content.isConnectedToOutput()) {
+            this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+        }
     }
 
     connectNodes(nodeA: GraphNode, pointA: IPortData, nodeB: GraphNode, pointB: IPortData) {
