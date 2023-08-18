@@ -2,7 +2,7 @@
 import { Scalar } from "./math.scalar";
 import { Epsilon } from "./math.constants";
 import type { Viewport } from "./math.viewport";
-import type { DeepImmutable, Nullable, FloatArray, float } from "../types";
+import type { DeepImmutable, Nullable, FloatArray, float, Constructor } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
 import type { IPlaneLike } from "./math.like";
 import { RegisterClass } from "../Misc/typeStore";
@@ -11,7 +11,6 @@ import { PerformanceConfigurator } from "../Engines/performanceConfigurator";
 import { EngineStore } from "../Engines/engineStore";
 import type { TransformNode } from "../Meshes/transformNode";
 
-type Constructor<T extends new (...args: any[]) => any> = new (...args: ConstructorParameters<T>) => InstanceType<T>;
 export type VectorConstructor<T extends Vector> = {
     new (...args: ConstructorParameters<typeof Vector>): T;
     Random(min: number, max: number): T;
@@ -116,7 +115,7 @@ export declare class Vector {
      * @param result defines the target vector
      * @returns result input
      */
-    addToRef<T extends this>(otherVector: DeepImmutable<this>, result: T): T;
+    addToRef<T extends this>(otherVector: DeepImmutable<T>, result: T): T;
 
     /**
      * Set the Vector coordinates by adding the given Vector coordinates
@@ -404,7 +403,7 @@ export declare class Vector {
      * @param max the maximum random value
      * @returns a Vector with random values between min and max
      */
-    static Random<T extends Vector>(this: VectorConstructor<T>, min?: number, max?: number): T;
+    static Random<T extends Vector>(min?: number, max?: number): T;
 
     /**
      * Returns a new Vector with random values between min and max
@@ -425,7 +424,7 @@ export declare class Vector {
      * Subclasses must implement their own FromArray method due to TypeScript types.
      * It is recommend to use FromArrayToRef for subclass implementations.
      */
-    static FromArray<T extends Vector>(this: VectorConstructor<T>, array: ArrayLike<number>, offset?: number): Vector;
+    static FromArray<T extends Vector>(array: ArrayLike<number>, offset?: number): Vector;
 
     /**
      * Sets "result" from the given index element of the given array
@@ -622,7 +621,7 @@ export declare class Vector {
 /**
  * Represents a vector in any dimensional space
  */
-export class DynamicVector {
+export class DynamicVector implements Vector {
     [key: number]: number;
 
     /** @internal */
@@ -759,7 +758,7 @@ export class DynamicVector {
      * @returns a new Vector set with the addition of the current Vector and the given one coordinates
      */
     public add(otherVector: DeepImmutable<this>): this {
-        const ref = new (this.constructor as Constructor<typeof this>)(); //new (this.constructor as typeof this)();
+        const ref = new (this.constructor as Constructor<typeof DynamicVector, this>)();
         this.addToRef(otherVector, ref);
         return ref;
     }
@@ -806,7 +805,7 @@ export class DynamicVector {
      * @returns a new Vector
      */
     public subtract(otherVector: DeepImmutable<this>): this {
-        const ref = new (this.constructor as VectorConstructor<this>)();
+        const ref = new (this.constructor as Constructor<typeof DynamicVector, this>)();
         this.subtractToRef(otherVector, ref);
         return ref;
     }
@@ -840,7 +839,7 @@ export class DynamicVector {
      * @returns the resulting Vector
      */
     public subtractFromFloats(...floats: number[]): this {
-        const ref = new (this.constructor as VectorConstructor<this>)();
+        const ref = new (this.constructor as Constructor<typeof DynamicVector, this>)();
         this.subtractFromFloatsToRef(...floats, ref);
         return ref;
     }
@@ -867,7 +866,7 @@ export class DynamicVector {
      * @returns a new Vector
      */
     public multiply(otherVector: DeepImmutable<this>): this {
-        const ref = new (this.constructor as VectorConstructor<this>)();
+        const ref = new (this.constructor as Constructor<typeof DynamicVector, this>)();
         this.multiplyToRef(otherVector, ref);
         return ref;
     }
@@ -900,7 +899,7 @@ export class DynamicVector {
      * @returns a new Vector
      */
     public multiplyByFloats(...floats: number[]): this {
-        const result = new (this.constructor as VectorConstructor<this>)();
+        const result = new (this.constructor as Constructor<typeof DynamicVector, this>)();
         for (let i = 0; i < this._length; i++) {
             result[i] = this[i] * floats[i];
         }
@@ -914,7 +913,7 @@ export class DynamicVector {
      * @returns a new Vector
      */
     public divide(otherVector: DeepImmutable<this>): this {
-        const ref = new (this.constructor as VectorConstructor<this>)();
+        const ref = new (this.constructor as Constructor<typeof DynamicVector, this>)();
         this.divideToRef(otherVector, ref);
         return ref;
     }
@@ -1007,7 +1006,7 @@ export class DynamicVector {
      * @returns a new Vector
      */
     public negate(): this {
-        const ref = new (this.constructor as VectorConstructor<this>)();
+        const ref = new (this.constructor as Constructor<typeof DynamicVector, this>)();
         this.negateToRef(ref);
         return ref;
     }
@@ -1049,7 +1048,7 @@ export class DynamicVector {
      * @returns a new Vector
      */
     public scale(scale: number): this {
-        const result = new (this.constructor as VectorConstructor<this>)();
+        const result = new (this.constructor as Constructor<typeof DynamicVector, this>)();
         this.scaleToRef(scale, result);
         return result;
     }
@@ -1138,7 +1137,7 @@ export class DynamicVector {
      * @returns a new Vector
      */
     public floor(): this {
-        const ref = new (this.constructor as VectorConstructor<this>)();
+        const ref = new (this.constructor as Constructor<typeof DynamicVector, this>)();
         this.floorToRef(ref);
         return ref;
     }
@@ -1162,7 +1161,7 @@ export class DynamicVector {
      * @returns a new Vector
      */
     public fract(): this {
-        const ref = new (this.constructor as VectorConstructor<this>)();
+        const ref = new (this.constructor as Constructor<typeof DynamicVector, this>)();
         this.fractToRef(ref);
         return ref;
     }
@@ -1239,7 +1238,7 @@ export class DynamicVector {
      * @returns the new Vector
      */
     public normalizeToNew(): this {
-        const normalized = new (this.constructor as VectorConstructor<this>)();
+        const normalized = new (this.constructor as Constructor<typeof DynamicVector, this>)();
         this.normalizeToRef(normalized);
         return normalized;
     }
@@ -1263,7 +1262,7 @@ export class DynamicVector {
      * @returns a new Vector
      */
     public clone(): this {
-        const ref = new (this.constructor as VectorConstructor<this>)();
+        const ref = new (this.constructor as Constructor<typeof DynamicVector, this>)();
         return ref.copyFrom(this as DeepImmutable<this>);
     }
 
@@ -1273,8 +1272,8 @@ export class DynamicVector {
      * @param max the maximum random value
      * @returns a Vector with random values between min and max
      */
-    public static Random<T extends DynamicVector>(this: VectorConstructor<T>, min: number = 0, max: number = 1): T {
-        const ref = new this();
+    public static Random(min: number = 0, max: number = 1): DynamicVector {
+        const ref = new (this as Constructor<typeof DynamicVector>)();
         this.RandomToRef(min, max, ref);
         return ref;
     }
@@ -1303,7 +1302,7 @@ export class DynamicVector {
      * Subclasses must implement their own FromArray method due to TypeScript types.
      * It is recommend to use FromArrayToRef for subclass implementations.
      */
-    public static FromArray<T extends DynamicVector>(this: VectorConstructor<T>, array: ArrayLike<number>, offset: number = 0): Vector {
+    public static FromArray(array: ArrayLike<number>, offset: number = 0): DynamicVector {
         return this.FromArrayToRef(array, offset, new this());
     }
 

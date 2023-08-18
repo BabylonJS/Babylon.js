@@ -62,3 +62,7 @@ export type DeepImmutableObject<T> = { readonly [K in keyof T]: DeepImmutable<T[
 interface DeepImmutableArray<T> extends ReadonlyArray<DeepImmutable<T>> {}
 /** @internal */
 /* interface DeepImmutableMap<K, V> extends ReadonlyMap<DeepImmutable<K>, DeepImmutable<V>> {} // es2015+ only */
+
+export type Constructor<C extends new (...args: any[]) => any, I extends InstanceType<C> = InstanceType<C>> = {
+  new (...args: ConstructorParameters<C>): I;
+}
