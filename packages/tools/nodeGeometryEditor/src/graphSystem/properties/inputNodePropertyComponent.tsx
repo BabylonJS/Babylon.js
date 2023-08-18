@@ -9,7 +9,6 @@ import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
-import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
@@ -159,61 +158,10 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
             modeOptions.push({ label: "Contextual value (Vector4)", value: NodeGeometryBlockConnectionPointTypes.Vector4 });
         }
 
-        const typeOptions = [
-            { label: "None", value: 0 },
-            { label: "Visible in the inspector", value: 1 },
-        ];
-
         return (
             <div>
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="PROPERTIES">
-                    {!inputBlock.isContextual && (
-                        <OptionsLineComponent
-                            label="Type"
-                            options={typeOptions}
-                            target={inputBlock}
-                            noDirectUpdate={true}
-                            extractValue={() => {
-                                if (inputBlock.visibleInInspector) {
-                                    return 1;
-                                }
-
-                                return 0;
-                            }}
-                            onSelect={(value: any) => {
-                                switch (value) {
-                                    case 0:
-                                        inputBlock.visibleInInspector = false;
-                                        break;
-                                    case 1:
-                                        inputBlock.visibleInInspector = true;
-                                        break;
-                                    case 2:
-                                        inputBlock.visibleInInspector = false;
-                                        break;
-                                }
-                                this.forceUpdate();
-                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
-                                this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
-                            }}
-                            propertyName={""}
-                        />
-                    )}
-                    {inputBlock.visibleInInspector && (
-                        <TextInputLineComponent
-                            label="Group"
-                            propertyName="groupInInspector"
-                            target={inputBlock}
-                            lockObject={this.props.stateManager.lockObject}
-                            onChange={() => {
-                                this.forceUpdate();
-                                this.props.stateManager.onUpdateRequiredObservable.notifyObservers(inputBlock);
-                                this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
-                            }}
-                            throttlePropertyChangedNotification={true}
-                        />
-                    )}
                     <OptionsLineComponent
                         label="Mode"
                         options={modeOptions}
