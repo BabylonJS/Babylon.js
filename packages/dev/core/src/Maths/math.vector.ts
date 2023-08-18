@@ -11,17 +11,6 @@ import { PerformanceConfigurator } from "../Engines/performanceConfigurator";
 import { EngineStore } from "../Engines/engineStore";
 import type { TransformNode } from "../Meshes/transformNode";
 
-export type VectorConstructor<T extends Vector> = {
-    new (...args: ConstructorParameters<typeof Vector>): T;
-    Random(min: number, max: number): T;
-    RandomToRef(min: number, max: number, result: T): T;
-    FromArray(array: ArrayLike<number>, offset: number): T;
-    FromArrayToRef(array: ArrayLike<number>, offset: number, result: T): T;
-};
-
-export type QuaternionConstructor<T extends Quaternion> = new (...args: ConstructorParameters<typeof Quaternion>) => T;
-export type MatrixConstructor<T extends Matrix> = new () => T;
-
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const _ExtractAsInt = (value: number) => {
     return parseInt(value.toString().replace(/\W/g, ""));
@@ -1350,7 +1339,7 @@ export class DynamicVector implements Vector {
         value4: DeepImmutable<T>,
         amount: number
     ): T {
-        const vector = new (value1.constructor as VectorConstructor<T>)(),
+        const vector = new (value1.constructor as Constructor<typeof DynamicVector, T>)(),
             squared = amount ** 2,
             cubed = squared * amount;
         for (let i = 0; i < value1.dimension; i++) {
@@ -1375,7 +1364,7 @@ export class DynamicVector implements Vector {
      * @returns a new Vector
      */
     public static Clamp<T extends DynamicVector>(value: DeepImmutable<T>, min: DeepImmutable<T>, max: DeepImmutable<T>): T {
-        const ref = new (value.constructor as VectorConstructor<T>)();
+        const ref = new (value.constructor as Constructor<typeof DynamicVector, T>)();
         this.ClampToRef(value, min, max, ref);
         return ref;
     }
@@ -1426,7 +1415,7 @@ export class DynamicVector implements Vector {
         tangent2: DeepImmutable<T>,
         amount: number
     ): T {
-        const vector = new (value1.constructor as VectorConstructor<T>)(),
+        const vector = new (value1.constructor as Constructor<typeof DynamicVector, T>)(),
             squared = amount ** 2,
             cubed = squared * amount;
 
@@ -1457,7 +1446,7 @@ export class DynamicVector implements Vector {
         tangent2: DeepImmutable<T>,
         time: number
     ): T {
-        const result = new (value1.constructor as VectorConstructor<T>)();
+        const result = new (value1.constructor as Constructor<typeof DynamicVector, T>)();
 
         this.Hermite1stDerivativeToRef(value1, tangent1, value2, tangent2, time, result);
 
@@ -1500,7 +1489,7 @@ export class DynamicVector implements Vector {
      * @returns a new Vector
      */
     public static Lerp<T extends DynamicVector>(start: DeepImmutable<T>, end: DeepImmutable<T>, amount: number): T {
-        const ref = new (start.constructor as VectorConstructor<T>)();
+        const ref = new (start.constructor as Constructor<typeof DynamicVector, T>)();
         return this.LerpToRef(start, end, amount, ref);
     }
 
@@ -1538,7 +1527,7 @@ export class DynamicVector implements Vector {
      * @returns a new Vector
      */
     public static Normalize<T extends DynamicVector>(vector: DeepImmutable<T>): T {
-        const newVector = new (vector.constructor as VectorConstructor<T>)();
+        const newVector = new (vector.constructor as Constructor<typeof DynamicVector, T>)();
         this.NormalizeToRef(vector, newVector);
         return newVector;
     }
@@ -1569,7 +1558,7 @@ export class DynamicVector implements Vector {
      * @returns a new Vector
      */
     public static Minimize<T extends DynamicVector>(left: DeepImmutable<T>, right: DeepImmutable<T>): T {
-        const result = new (left.constructor as VectorConstructor<T>)();
+        const result = new (left.constructor as Constructor<typeof DynamicVector, T>)();
         for (let i = 0; i < left.dimension; i++) {
             result[i] = left[i] < right[i] ? left[i] : right[i];
         }
@@ -1583,7 +1572,7 @@ export class DynamicVector implements Vector {
      * @returns a new Vector
      */
     public static Maximize<T extends DynamicVector>(left: DeepImmutable<T>, right: DeepImmutable<T>): T {
-        const result = new (left.constructor as VectorConstructor<T>)();
+        const result = new (left.constructor as Constructor<typeof DynamicVector, T>)();
         for (let i = 0; i < left.dimension; i++) {
             result[i] = left[i] > right[i] ? left[i] : right[i];
         }
@@ -1621,7 +1610,7 @@ export class DynamicVector implements Vector {
      * @returns a new Vector
      */
     public static Center<T extends DynamicVector>(value1: DeepImmutable<T>, value2: DeepImmutable<T>): T {
-        const result = new (value1.constructor as VectorConstructor<T>)();
+        const result = new (value1.constructor as Constructor<typeof DynamicVector, T>)();
         return this.CenterToRef(value1, value2, result);
     }
 
@@ -1665,12 +1654,6 @@ export class DynamicVector implements Vector {
  */
 export class Vector2 implements Vector {
     private static _ZeroReadOnly = Vector2.Zero() as DeepImmutable<Vector2>;
-
-    get _isDirty(): false {
-        return false;
-    }
-
-    public _length = 2;
 
     get dimension(): 2 {
         return 2;
@@ -1806,7 +1789,7 @@ export class Vector2 implements Vector {
      * @returns a new Vector2 set with the addition of the current Vector2 and the given one coordinates
      */
     public add(otherVector: DeepImmutable<Vector2>): this {
-        return new (this.constructor as VectorConstructor<this>)(this.x + otherVector.x, this.y + otherVector.y);
+        return new (this.constructor as Constructor<typeof Vector2, this>)(this.x + otherVector.x, this.y + otherVector.y);
     }
 
     /**
@@ -1853,7 +1836,7 @@ export class Vector2 implements Vector {
      * @returns a new Vector2
      */
     public addVector3(otherVector: Vector3): this {
-        return new (this.constructor as VectorConstructor<this>)(this.x + otherVector.x, this.y + otherVector.y);
+        return new (this.constructor as Constructor<typeof Vector2, this>)(this.x + otherVector.x, this.y + otherVector.y);
     }
 
     /**
@@ -1863,7 +1846,7 @@ export class Vector2 implements Vector {
      * @returns a new Vector2
      */
     public subtract(otherVector: Vector2): this {
-        return new (this.constructor as VectorConstructor<this>)(this.x - otherVector.x, this.y - otherVector.y);
+        return new (this.constructor as Constructor<typeof Vector2, this>)(this.x - otherVector.x, this.y - otherVector.y);
     }
 
     /**
@@ -1909,7 +1892,7 @@ export class Vector2 implements Vector {
      * @returns a new Vector2
      */
     public multiply(otherVector: DeepImmutable<Vector2>): this {
-        return new (this.constructor as VectorConstructor<this>)(this.x * otherVector.x, this.y * otherVector.y);
+        return new (this.constructor as Constructor<typeof Vector2, this>)(this.x * otherVector.x, this.y * otherVector.y);
     }
 
     /**
@@ -1933,7 +1916,7 @@ export class Vector2 implements Vector {
      * @returns a new Vector2
      */
     public multiplyByFloats(x: number, y: number): this {
-        return new (this.constructor as VectorConstructor<this>)(this.x * x, this.y * y);
+        return new (this.constructor as Constructor<typeof Vector2, this>)(this.x * x, this.y * y);
     }
 
     /**
@@ -1943,7 +1926,7 @@ export class Vector2 implements Vector {
      * @returns a new Vector2
      */
     public divide(otherVector: Vector2): this {
-        return new (this.constructor as VectorConstructor<this>)(this.x / otherVector.x, this.y / otherVector.y);
+        return new (this.constructor as Constructor<typeof Vector2, this>)(this.x / otherVector.x, this.y / otherVector.y);
     }
 
     /**
@@ -2026,7 +2009,7 @@ export class Vector2 implements Vector {
      * @returns the resulting Vector2
      */
     public subtractFromFloats(x: number, y: number): this {
-        return new (this.constructor as VectorConstructor<this>)(this.x - x, this.y - y);
+        return new (this.constructor as Constructor<typeof Vector2, this>)(this.x - x, this.y - y);
     }
 
     /**
@@ -2046,7 +2029,7 @@ export class Vector2 implements Vector {
      * @returns a new Vector2
      */
     public negate(): this {
-        return new (this.constructor as VectorConstructor<this>)(-this.x, -this.y);
+        return new (this.constructor as Constructor<typeof Vector2, this>)(-this.x, -this.y);
     }
 
     /**
@@ -2089,7 +2072,7 @@ export class Vector2 implements Vector {
      * @returns a new Vector2
      */
     public scale(scale: number): this {
-        const result = new (this.constructor as VectorConstructor<this>)(0, 0);
+        const result = new (this.constructor as Constructor<typeof Vector2, this>)(0, 0);
         this.scaleToRef(scale, result);
         return result;
     }
@@ -2158,7 +2141,7 @@ export class Vector2 implements Vector {
      * @returns a new Vector2
      */
     public floor(): this {
-        const result = new (this.constructor as VectorConstructor<this>)();
+        const result = new (this.constructor as Constructor<typeof Vector2, this>)();
         return this.floorToRef(result);
     }
 
@@ -2180,7 +2163,7 @@ export class Vector2 implements Vector {
      * @returns a new Vector2
      */
     public fract(): this {
-        const result = new (this.constructor as VectorConstructor<this>)();
+        const result = new (this.constructor as Constructor<typeof Vector2, this>)();
         return this.fractToRef(result);
     }
 
@@ -2260,7 +2243,7 @@ export class Vector2 implements Vector {
      * @returns the new Vector
      */
     public normalizeToNew(): this {
-        const normalized = new (this.constructor as VectorConstructor<this>)();
+        const normalized = new (this.constructor as Constructor<typeof Vector2, this>)();
         this.normalizeToRef(normalized);
         return normalized;
     }
@@ -2284,7 +2267,7 @@ export class Vector2 implements Vector {
      * @returns a new Vector2
      */
     public clone(): this {
-        return new (this.constructor as VectorConstructor<this>)(this.x, this.y);
+        return new (this.constructor as Constructor<typeof Vector2, this>)(this.x, this.y);
     }
 
     // Statics
@@ -2381,7 +2364,7 @@ export class Vector2 implements Vector {
                 (2.0 * value1.y - 5.0 * value2.y + 4.0 * value3.y - value4.y) * squared +
                 (-value1.y + 3.0 * value2.y - 3.0 * value3.y + value4.y) * cubed);
 
-        return new (value1.constructor as VectorConstructor<T>)(x, y);
+        return new (value1.constructor as Constructor<typeof Vector2, T>)(x, y);
     }
 
     /**
@@ -2403,7 +2386,7 @@ export class Vector2 implements Vector {
         y = y > max.y ? max.y : y;
         y = y < min.y ? min.y : y;
 
-        return new (value.constructor as VectorConstructor<T>)(x, y);
+        return new (value.constructor as Constructor<typeof Vector2, T>)(x, y);
     }
 
     /**
@@ -2433,7 +2416,7 @@ export class Vector2 implements Vector {
         const x = value1.x * part1 + value2.x * part2 + tangent1.x * part3 + tangent2.x * part4;
         const y = value1.y * part1 + value2.y * part2 + tangent1.y * part3 + tangent2.y * part4;
 
-        return new (value1.constructor as VectorConstructor<T>)(x, y);
+        return new (value1.constructor as Constructor<typeof Vector2, T>)(x, y);
     }
 
     /**
@@ -2453,7 +2436,7 @@ export class Vector2 implements Vector {
         tangent2: DeepImmutable<Vector2>,
         time: number
     ): T {
-        const result = new (value1.constructor as VectorConstructor<T>)();
+        const result = new (value1.constructor as Constructor<typeof Vector2, T>)();
 
         this.Hermite1stDerivativeToRef(value1, tangent1, value2, tangent2, time, result);
 
@@ -2498,7 +2481,7 @@ export class Vector2 implements Vector {
     public static Lerp<T extends Vector2>(start: DeepImmutable<T>, end: DeepImmutable<Vector2>, amount: number): Vector2 {
         const x = start.x + (end.x - start.x) * amount;
         const y = start.y + (end.y - start.y) * amount;
-        return new (start.constructor as VectorConstructor<T>)(x, y);
+        return new (start.constructor as Constructor<typeof Vector2, T>)(x, y);
     }
 
     /**
@@ -2519,7 +2502,7 @@ export class Vector2 implements Vector {
      * @returns a new Vector2
      */
     public static Normalize<T extends Vector2>(vector: DeepImmutable<T>): T {
-        const newVector = new (vector.constructor as VectorConstructor<T>)();
+        const newVector = new (vector.constructor as Constructor<typeof Vector2, T>)();
         this.NormalizeToRef(vector, newVector);
         return newVector;
     }
@@ -2553,7 +2536,7 @@ export class Vector2 implements Vector {
     public static Minimize<T extends Vector2>(left: DeepImmutable<T>, right: DeepImmutable<Vector2>): T {
         const x = left.x < right.x ? left.x : right.x;
         const y = left.y < right.y ? left.y : right.y;
-        return new (left.constructor as VectorConstructor<T>)(x, y);
+        return new (left.constructor as Constructor<typeof Vector2, T>)(x, y);
     }
 
     /**
@@ -2566,7 +2549,7 @@ export class Vector2 implements Vector {
     public static Maximize<T extends Vector2>(left: DeepImmutable<T>, right: DeepImmutable<Vector2>): T {
         const x = left.x > right.x ? left.x : right.x;
         const y = left.y > right.y ? left.y : right.y;
-        return new (left.constructor as VectorConstructor<T>)(x, y);
+        return new (left.constructor as Constructor<typeof Vector2, T>)(x, y);
     }
 
     /**
@@ -2577,7 +2560,7 @@ export class Vector2 implements Vector {
      * @returns a new Vector2
      */
     public static Transform<T extends Vector2>(vector: DeepImmutable<T>, transformation: DeepImmutable<Matrix>): T {
-        const result = new (vector.constructor as VectorConstructor<T>)();
+        const result = new (vector.constructor as Constructor<typeof Vector2, T>)();
         Vector2.TransformToRef(vector, transformation, result);
         return result;
     }
@@ -2650,7 +2633,7 @@ export class Vector2 implements Vector {
      * @returns a new Vector2
      */
     public static Center<T extends Vector2>(value1: DeepImmutable<T>, value2: DeepImmutable<Vector2>): T {
-        const result = new (value1.constructor as VectorConstructor<T>)();
+        const result = new (value1.constructor as Constructor<typeof Vector2, T>)();
         return Vector2.CenterToRef(value1, value2, result);
     }
 
@@ -2872,7 +2855,7 @@ export class Vector3 {
      * @returns the resulting Vector3
      */
     public add(otherVector: DeepImmutable<Vector3>): this {
-        return new (this.constructor as VectorConstructor<this>)(this._x + otherVector._x, this._y + otherVector._y, this._z + otherVector._z);
+        return new (this.constructor as Constructor<typeof Vector3, this>)(this._x + otherVector._x, this._y + otherVector._y, this._z + otherVector._z);
     }
 
     /**
@@ -2907,7 +2890,7 @@ export class Vector3 {
      * @returns the resulting Vector3
      */
     public subtract(otherVector: DeepImmutable<Vector3>): this {
-        return new (this.constructor as VectorConstructor<this>)(this._x - otherVector._x, this._y - otherVector._y, this._z - otherVector._z);
+        return new (this.constructor as Constructor<typeof Vector3, this>)(this._x - otherVector._x, this._y - otherVector._y, this._z - otherVector._z);
     }
 
     /**
@@ -2930,7 +2913,7 @@ export class Vector3 {
      * @returns the resulting Vector3
      */
     public subtractFromFloats(x: number, y: number, z: number): this {
-        return new (this.constructor as VectorConstructor<this>)(this._x - x, this._y - y, this._z - z);
+        return new (this.constructor as Constructor<typeof Vector3, this>)(this._x - x, this._y - y, this._z - z);
     }
 
     /**
@@ -2952,7 +2935,7 @@ export class Vector3 {
      * @returns a new Vector3
      */
     public negate(): this {
-        return new (this.constructor as VectorConstructor<this>)(-this._x, -this._y, -this._z);
+        return new (this.constructor as Constructor<typeof Vector3, this>)(-this._x, -this._y, -this._z);
     }
 
     /**
@@ -2999,7 +2982,7 @@ export class Vector3 {
      * @returns a new Vector3
      */
     public scale(scale: number): this {
-        return new (this.constructor as VectorConstructor<this>)(this._x * scale, this._y * scale, this._z * scale);
+        return new (this.constructor as Constructor<typeof Vector3, this>)(this._x * scale, this._y * scale, this._z * scale);
     }
 
     /**
@@ -3095,7 +3078,7 @@ export class Vector3 {
      * @returns a new Vector3
      */
     public applyRotationQuaternion(q: Quaternion): this {
-        return this.applyRotationQuaternionToRef(q, new (this.constructor as VectorConstructor<this>)());
+        return this.applyRotationQuaternionToRef(q, new (this.constructor as Constructor<typeof Vector3, this>)());
     }
 
     /**
@@ -3117,7 +3100,7 @@ export class Vector3 {
      * @returns the projected vector3
      */
     public projectOnPlane<T extends Vector3>(plane: Plane, origin: Vector3): T {
-        const result = new (this.constructor as VectorConstructor<T>)();
+        const result = new (this.constructor as Constructor<typeof Vector3, T>)();
         this.projectOnPlaneToRef(plane, origin, result);
 
         return result;
@@ -3240,7 +3223,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public multiplyByFloats(x: number, y: number, z: number): this {
-        return new (this.constructor as VectorConstructor<this>)(this._x * x, this._y * y, this._z * z);
+        return new (this.constructor as Constructor<typeof Vector3, this>)(this._x * x, this._y * y, this._z * z);
     }
 
     /**
@@ -3250,7 +3233,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public divide(otherVector: DeepImmutable<Vector3>): this {
-        return new (this.constructor as VectorConstructor<this>)(this._x / otherVector._x, this._y / otherVector._y, this._z / otherVector._z);
+        return new (this.constructor as Constructor<typeof Vector3, this>)(this._x / otherVector._x, this._y / otherVector._y, this._z / otherVector._z);
     }
 
     /**
@@ -3385,7 +3368,7 @@ export class Vector3 {
      * @returns a new Vector3
      */
     public floor(): this {
-        return new (this.constructor as VectorConstructor<this>)(Math.floor(this._x), Math.floor(this._y), Math.floor(this._z));
+        return new (this.constructor as Constructor<typeof Vector3, this>)(Math.floor(this._x), Math.floor(this._y), Math.floor(this._z));
     }
 
     /**
@@ -3394,7 +3377,7 @@ export class Vector3 {
      * @returns a new Vector3
      */
     public fract(): this {
-        return new (this.constructor as VectorConstructor<this>)(this._x - Math.floor(this._x), this._y - Math.floor(this._y), this._z - Math.floor(this._z));
+        return new (this.constructor as Constructor<typeof Vector3, this>)(this._x - Math.floor(this._x), this._y - Math.floor(this._y), this._z - Math.floor(this._z));
     }
 
     // Properties
@@ -3488,7 +3471,7 @@ export class Vector3 {
      * @returns the cross product
      */
     public cross(other: Vector3): this {
-        const result = new (this.constructor as VectorConstructor<this>)();
+        const result = new (this.constructor as Constructor<typeof Vector3, this>)();
         return Vector3.CrossToRef(this, other, result);
     }
 
@@ -3513,7 +3496,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public normalizeToNew(): this {
-        const normalized = new (this.constructor as VectorConstructor<this>)(0, 0, 0);
+        const normalized = new (this.constructor as Constructor<typeof Vector3, this>)(0, 0, 0);
         this.normalizeToRef(normalized);
         return normalized;
     }
@@ -3539,7 +3522,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public clone(): this {
-        return new (this.constructor as VectorConstructor<this>)(this._x, this._y, this._z);
+        return new (this.constructor as Constructor<typeof Vector3, this>)(this._x, this._y, this._z);
     }
 
     /**
@@ -4108,7 +4091,7 @@ export class Vector3 {
                 (2.0 * value1._z - 5.0 * value2._z + 4.0 * value3._z - value4._z) * squared +
                 (-value1._z + 3.0 * value2._z - 3.0 * value3._z + value4._z) * cubed);
 
-        return new (value1.constructor as VectorConstructor<T>)(x, y, z);
+        return new (value1.constructor as Constructor<typeof Vector3, T>)(x, y, z);
     }
 
     /**
@@ -4122,7 +4105,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public static Clamp<T extends Vector3>(value: DeepImmutable<T>, min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>): T {
-        const result = new (value.constructor as VectorConstructor<T>)();
+        const result = new (value.constructor as Constructor<typeof Vector3, T>)();
         Vector3.ClampToRef(value, min, max, result);
         return result;
     }
@@ -4193,7 +4176,7 @@ export class Vector3 {
         const x = value1._x * part1 + value2._x * part2 + tangent1._x * part3 + tangent2._x * part4;
         const y = value1._y * part1 + value2._y * part2 + tangent1._y * part3 + tangent2._y * part4;
         const z = value1._z * part1 + value2._z * part2 + tangent1._z * part3 + tangent2._z * part4;
-        return new (value1.constructor as VectorConstructor<T>)(x, y, z);
+        return new (value1.constructor as Constructor<typeof Vector3, T>)(x, y, z);
     }
 
     /**
@@ -4213,7 +4196,7 @@ export class Vector3 {
         tangent2: DeepImmutable<Vector3>,
         time: number
     ): T {
-        const result = new (value1.constructor as VectorConstructor<T>)();
+        const result = new (value1.constructor as Constructor<typeof Vector3, T>)();
 
         this.Hermite1stDerivativeToRef(value1, tangent1, value2, tangent2, time, result);
 
@@ -4257,7 +4240,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public static Lerp<T extends Vector3>(start: DeepImmutable<T>, end: DeepImmutable<Vector3>, amount: number): T {
-        const result = new (start.constructor as VectorConstructor<T>)(0, 0, 0);
+        const result = new (start.constructor as Constructor<typeof Vector3, T>)(0, 0, 0);
         Vector3.LerpToRef(start, end, amount, result);
         return result;
     }
@@ -4299,7 +4282,7 @@ export class Vector3 {
      * @returns the cross product
      */
     public static Cross<T extends Vector3>(left: DeepImmutable<T>, right: DeepImmutable<Vector3>): T {
-        const result = new (left.constructor as VectorConstructor<T>)();
+        const result = new (left.constructor as Constructor<typeof Vector3, T>)();
         Vector3.CrossToRef(left, right, result);
         return result;
     }
@@ -4355,7 +4338,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public static Project<T extends Vector3>(vector: DeepImmutable<T>, world: DeepImmutable<Matrix>, transform: DeepImmutable<Matrix>, viewport: DeepImmutable<Viewport>): T {
-        const result = new (vector.constructor as VectorConstructor<T>)();
+        const result = new (vector.constructor as Constructor<typeof Vector3, T>)();
         Vector3.ProjectToRef(vector, world, transform, viewport, result);
         return result;
     }
@@ -4470,7 +4453,7 @@ export class Vector3 {
         view: DeepImmutable<Matrix>,
         projection: DeepImmutable<Matrix>
     ): T {
-        const result = new (source.constructor as VectorConstructor<T>)();
+        const result = new (source.constructor as Constructor<typeof Vector3, T>)();
 
         Vector3.UnprojectToRef(source, viewportWidth, viewportHeight, world, view, projection, result);
 
@@ -4553,7 +4536,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public static Minimize<T extends Vector3>(left: DeepImmutable<T>, right: DeepImmutable<Vector3>): T {
-        const min = new (left.constructor as VectorConstructor<T>)();
+        const min = new (left.constructor as Constructor<typeof Vector3, T>)();
         min.copyFrom(left);
         min.minimizeInPlace(right);
         return min;
@@ -4567,7 +4550,7 @@ export class Vector3 {
      * @returns the new Vector3
      */
     public static Maximize<T extends Vector3>(left: DeepImmutable<T>, right: DeepImmutable<Vector3>): T {
-        const max = new (left.constructor as VectorConstructor<T>)();
+        const max = new (left.constructor as Constructor<typeof Vector3, T>)();
         max.copyFrom(left);
         max.maximizeInPlace(right);
         return max;
@@ -4792,7 +4775,7 @@ export class Vector3 {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/center_origin/target_align
      */
     public static RotationFromAxis<T extends Vector3>(axis1: DeepImmutable<T>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>): T {
-        const rotation = new (axis1.constructor as VectorConstructor<T>)();
+        const rotation = new (axis1.constructor as Constructor<typeof Vector3, T>)();
         Vector3.RotationFromAxisToRef(axis1, axis2, axis3, rotation);
         return rotation;
     }
@@ -4931,7 +4914,7 @@ export class Vector4 {
      * @returns the resulting vector
      */
     public add(otherVector: DeepImmutable<Vector4>): this {
-        return new (this.constructor as VectorConstructor<this>)(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z, this.w + otherVector.w);
+        return new (this.constructor as Constructor<typeof Vector4, this>)(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z, this.w + otherVector.w);
     }
 
     /**
@@ -4967,7 +4950,7 @@ export class Vector4 {
      * @returns the new vector with the result
      */
     public subtract(otherVector: DeepImmutable<Vector4>): this {
-        return new (this.constructor as VectorConstructor<this>)(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z, this.w - otherVector.w);
+        return new (this.constructor as Constructor<typeof Vector4, this>)(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z, this.w - otherVector.w);
     }
 
     /**
@@ -4996,7 +4979,7 @@ export class Vector4 {
      * @returns new vector containing the result
      */
     public subtractFromFloats(x: number, y: number, z: number, w: number): this {
-        return new (this.constructor as VectorConstructor<this>)(this.x - x, this.y - y, this.z - z, this.w - w);
+        return new (this.constructor as Constructor<typeof Vector4, this>)(this.x - x, this.y - y, this.z - z, this.w - w);
     }
 
     /**
@@ -5021,7 +5004,7 @@ export class Vector4 {
      * @returns a new vector with the negated values
      */
     public negate(): this {
-        return new (this.constructor as VectorConstructor<this>)(-this.x, -this.y, -this.z, -this.w);
+        return new (this.constructor as Constructor<typeof Vector4, this>)(-this.x, -this.y, -this.z, -this.w);
     }
 
     /**
@@ -5064,7 +5047,7 @@ export class Vector4 {
      * @returns a new vector with the result
      */
     public scale(scale: number): this {
-        return new (this.constructor as VectorConstructor<this>)(this.x * scale, this.y * scale, this.z * scale, this.w * scale);
+        return new (this.constructor as Constructor<typeof Vector4, this>)(this.x * scale, this.y * scale, this.z * scale, this.w * scale);
     }
 
     /**
@@ -5151,7 +5134,7 @@ export class Vector4 {
      * @returns resulting new vector
      */
     public multiply(otherVector: DeepImmutable<Vector4>): this {
-        return new (this.constructor as VectorConstructor<this>)(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z, this.w * otherVector.w);
+        return new (this.constructor as Constructor<typeof Vector4, this>)(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z, this.w * otherVector.w);
     }
     /**
      * Updates the given vector "result" with the multiplication result of the current Vector4 and the given one.
@@ -5175,7 +5158,7 @@ export class Vector4 {
      * @returns resulting new vector
      */
     public multiplyByFloats(x: number, y: number, z: number, w: number): this {
-        return new (this.constructor as VectorConstructor<this>)(this.x * x, this.y * y, this.z * z, this.w * w);
+        return new (this.constructor as Constructor<typeof Vector4, this>)(this.x * x, this.y * y, this.z * z, this.w * w);
     }
     /**
      * Returns a new Vector4 set with the division result of the current Vector4 by the given one.
@@ -5183,7 +5166,7 @@ export class Vector4 {
      * @returns resulting new vector
      */
     public divide(otherVector: DeepImmutable<Vector4>): this {
-        return new (this.constructor as VectorConstructor<this>)(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z, this.w / otherVector.w);
+        return new (this.constructor as Constructor<typeof Vector4, this>)(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z, this.w / otherVector.w);
     }
     /**
      * Updates the given vector "result" with the division result of the current Vector4 by the given one.
@@ -5254,7 +5237,7 @@ export class Vector4 {
      * @returns a new Vector4
      */
     public floor(): this {
-        return new (this.constructor as VectorConstructor<this>)(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z), Math.floor(this.w));
+        return new (this.constructor as Constructor<typeof Vector4, this>)(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z), Math.floor(this.w));
     }
 
     /**
@@ -5262,7 +5245,7 @@ export class Vector4 {
      * @returns a new Vector4
      */
     public fract(): this {
-        return new (this.constructor as VectorConstructor<this>)(
+        return new (this.constructor as Constructor<typeof Vector4, this>)(
             this.x - Math.floor(this.x),
             this.y - Math.floor(this.y),
             this.z - Math.floor(this.z),
@@ -5314,7 +5297,7 @@ export class Vector4 {
      * @returns the new cloned vector
      */
     public clone(): this {
-        return new (this.constructor as VectorConstructor<this>)(this.x, this.y, this.z, this.w);
+        return new (this.constructor as Constructor<typeof Vector4, this>)(this.x, this.y, this.z, this.w);
     }
     /**
      * Updates the current Vector4 with the given one coordinates.
@@ -5479,7 +5462,7 @@ export class Vector4 {
      * @returns a new vector with the minimum of the left and right vector values
      */
     public static Minimize<T extends Vector4>(left: DeepImmutable<T>, right: DeepImmutable<Vector4>): T {
-        const min = new (left.constructor as VectorConstructor<T>)();
+        const min = new (left.constructor as Constructor<typeof Vector4, T>)();
         min.copyFrom(left);
         min.minimizeInPlace(right);
         return min;
@@ -5492,7 +5475,7 @@ export class Vector4 {
      * @returns a new vector with the maximum of the left and right vector values
      */
     public static Maximize<T extends Vector4>(left: DeepImmutable<T>, right: DeepImmutable<Vector4>): T {
-        const max = new (left.constructor as VectorConstructor<T>)();
+        const max = new (left.constructor as Constructor<typeof Vector4, T>)();
         max.copyFrom(left);
         max.maximizeInPlace(right);
         return max;
@@ -5602,7 +5585,7 @@ export class Vector4 {
      * @returns the new vector
      */
     public static TransformNormal<T extends Vector4>(vector: DeepImmutable<T>, transformation: DeepImmutable<Matrix>): T {
-        const result = new (vector.constructor as VectorConstructor<T>)();
+        const result = new (vector.constructor as Constructor<typeof Vector4, T>)();
         Vector4.TransformNormalToRef(vector, transformation, result);
         return result;
     }
@@ -5823,7 +5806,7 @@ export class Quaternion {
      * @returns a new quaternion copied from the current one
      */
     public clone(): this {
-        return new (this.constructor as QuaternionConstructor<this>)(this._x, this._y, this._z, this._w);
+        return new (this.constructor as Constructor<typeof Quaternion, this>)(this._x, this._y, this._z, this._w);
     }
 
     /**
@@ -5879,7 +5862,7 @@ export class Quaternion {
      * @returns a new quaternion as the addition result of the given one and the current quaternion
      */
     public add(other: DeepImmutable<Quaternion>): this {
-        return new (this.constructor as QuaternionConstructor<this>)(this._x + other._x, this._y + other._y, this._z + other._z, this._w + other._w);
+        return new (this.constructor as Constructor<typeof Quaternion, this>)(this._x + other._x, this._y + other._y, this._z + other._z, this._w + other._w);
     }
 
     /**
@@ -5904,7 +5887,7 @@ export class Quaternion {
      * @returns a new quaternion as the subtraction result of the given one from the current one
      */
     public subtract(other: Quaternion): this {
-        return new (this.constructor as QuaternionConstructor<this>)(this._x - other._x, this._y - other._y, this._z - other._z, this._w - other._w);
+        return new (this.constructor as Constructor<typeof Quaternion, this>)(this._x - other._x, this._y - other._y, this._z - other._z, this._w - other._w);
     }
 
     /**
@@ -5929,7 +5912,7 @@ export class Quaternion {
      * @returns a new quaternion set by multiplying the current quaternion coordinates by the float "scale"
      */
     public scale(value: number): this {
-        return new (this.constructor as QuaternionConstructor<this>)(this._x * value, this._y * value, this._z * value, this._w * value);
+        return new (this.constructor as Constructor<typeof Quaternion, this>)(this._x * value, this._y * value, this._z * value, this._w * value);
     }
 
     /**
@@ -5987,7 +5970,7 @@ export class Quaternion {
      * @returns a new quaternion set as the multiplication result of the current one with the given one "q1"
      */
     public multiply(q1: DeepImmutable<Quaternion>): this {
-        const result = new (this.constructor as QuaternionConstructor<this>)(0, 0, 0, 1.0);
+        const result = new (this.constructor as Constructor<typeof Quaternion, this>)(0, 0, 0, 1.0);
         this.multiplyToRef(q1, result);
         return result;
     }
@@ -6049,7 +6032,7 @@ export class Quaternion {
      * @returns a new quaternion
      */
     public conjugate(): this {
-        return new (this.constructor as QuaternionConstructor<this>)(-this._x, -this._y, -this._z, this._w);
+        return new (this.constructor as Constructor<typeof Quaternion, this>)(-this._x, -this._y, -this._z, this._w);
     }
 
     /**
@@ -6333,7 +6316,7 @@ export class Quaternion {
      * @returns a new quaternion as the inverted current quaternion
      */
     public static Inverse<T extends Quaternion>(q: DeepImmutable<T>): T {
-        return new (q.constructor as QuaternionConstructor<T>)(-q._x, -q._y, -q._z, q._w);
+        return new (q.constructor as Constructor<typeof Quaternion, T>)(-q._x, -q._y, -q._z, q._w);
     }
 
     /**
@@ -6757,7 +6740,7 @@ export class Quaternion {
         const y = value1._y * part1 + value2._y * part2 + tangent1._y * part3 + tangent2._y * part4;
         const z = value1._z * part1 + value2._z * part2 + tangent1._z * part3 + tangent2._z * part4;
         const w = value1._w * part1 + value2._w * part2 + tangent1._w * part3 + tangent2._w * part4;
-        return new (value1.constructor as QuaternionConstructor<T>)(x, y, z, w);
+        return new (value1.constructor as Constructor<typeof Quaternion, T>)(x, y, z, w);
     }
 
     /**
@@ -6777,7 +6760,7 @@ export class Quaternion {
         tangent2: DeepImmutable<Quaternion>,
         time: number
     ): T {
-        const result = new (value1.constructor as QuaternionConstructor<T>)();
+        const result = new (value1.constructor as Constructor<typeof Quaternion, T>)();
 
         this.Hermite1stDerivativeToRef(value1, tangent1, value2, tangent2, time, result);
 
@@ -7058,7 +7041,7 @@ export class Matrix {
      * @returns a new matrix as the addition of the current matrix and the given one
      */
     public add(other: DeepImmutable<Matrix>): this {
-        const result = new (this.constructor as MatrixConstructor<this>)();
+        const result = new (this.constructor as Constructor<typeof Matrix, this>)();
         this.addToRef(other, result);
         return result;
     }
@@ -7309,7 +7292,7 @@ export class Matrix {
      * @returns a new matrix set with the multiplication result of the current Matrix and the given one
      */
     public multiply(other: DeepImmutable<Matrix>): this {
-        const result = new (this.constructor as MatrixConstructor<this>)();
+        const result = new (this.constructor as Constructor<typeof Matrix, this>)();
         this.multiplyToRef(other, result);
         return result;
     }
@@ -7490,7 +7473,7 @@ export class Matrix {
      * @returns a new matrix from the current matrix
      */
     public clone(): this {
-        const matrix = new (this.constructor as MatrixConstructor<this>)();
+        const matrix = new (this.constructor as Constructor<typeof Matrix, this>)();
         matrix.copyFrom(this);
         return matrix;
     }
@@ -7659,7 +7642,7 @@ export class Matrix {
      * @returns the new transposed matrix
      */
     public transpose(): this {
-        const result = new (this.constructor as MatrixConstructor<this>)();
+        const result = new (this.constructor as Constructor<typeof Matrix, this>)();
         Matrix.TransposeToRef(this, result);
         return result;
     }
@@ -7705,7 +7688,7 @@ export class Matrix {
      * @returns a new matrix
      */
     public scale(scale: number): this {
-        const result = new (this.constructor as MatrixConstructor<this>)();
+        const result = new (this.constructor as Constructor<typeof Matrix, this>)();
         this.scaleToRef(scale, result);
         return result;
     }
@@ -7757,7 +7740,7 @@ export class Matrix {
      * @returns a new matrix sets to the extracted rotation matrix from the current one
      */
     public getRotationMatrix(): this {
-        const result = new (this.constructor as MatrixConstructor<this>)();
+        const result = new (this.constructor as Constructor<typeof Matrix, this>)();
         this.getRotationMatrixToRef(result);
         return result;
     }
@@ -8104,7 +8087,7 @@ export class Matrix {
      * @returns the new matrix
      */
     public static Invert<T extends Matrix>(source: DeepImmutable<T>): T {
-        const result = new (source.constructor as MatrixConstructor<T>)();
+        const result = new (source.constructor as Constructor<typeof Matrix, T>)();
         source.invertToRef(result);
         return result;
     }
@@ -8383,7 +8366,7 @@ export class Matrix {
      * @returns the new matrix
      */
     public static Lerp<T extends Matrix>(startValue: DeepImmutable<T>, endValue: DeepImmutable<Matrix>, gradient: number): T {
-        const result = new (startValue.constructor as MatrixConstructor<T>)();
+        const result = new (startValue.constructor as Constructor<typeof Matrix, T>)();
         Matrix.LerpToRef(startValue, endValue, gradient, result);
         return result;
     }
@@ -8421,7 +8404,7 @@ export class Matrix {
      * @returns the new matrix
      */
     public static DecomposeLerp<T extends Matrix>(startValue: DeepImmutable<T>, endValue: DeepImmutable<Matrix>, gradient: number): T {
-        const result = new (startValue.constructor as MatrixConstructor<T>)();
+        const result = new (startValue.constructor as Constructor<typeof Matrix, T>)();
         Matrix.DecomposeLerpToRef(startValue, endValue, gradient, result);
         return result;
     }
@@ -9135,7 +9118,7 @@ export class Matrix {
 
         const viewportMatrix = Matrix.FromValues(cw / 2.0, 0.0, 0.0, 0.0, 0.0, -ch / 2.0, 0.0, 0.0, 0.0, 0.0, zmax - zmin, 0.0, cx + cw / 2.0, ch / 2.0 + cy, zmin, 1.0);
 
-        const matrix = new (world.constructor as MatrixConstructor<T>)();
+        const matrix = new (world.constructor as Constructor<typeof Matrix, T>)();
         world.multiplyToRef(view, matrix);
         matrix.multiplyToRef(projection, matrix);
         return matrix.multiplyToRef(viewportMatrix, matrix);
@@ -9169,7 +9152,7 @@ export class Matrix {
      * @returns the new matrix
      */
     public static Transpose<T extends Matrix>(matrix: DeepImmutable<T>): T {
-        const result = new (matrix.constructor as MatrixConstructor<T>)();
+        const result = new (matrix.constructor as Constructor<typeof Matrix, T>)();
         Matrix.TransposeToRef(matrix, result);
         return result;
     }
