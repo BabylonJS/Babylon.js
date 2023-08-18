@@ -125,6 +125,10 @@ export class MockedAudioObjects {
                 resume: jest.fn().mockName("resume").mockImplementation(() => {
                     this.audioContext.state = "running";
                     return Promise.resolve();
+                }),
+                suspend: jest.fn().mockName("suspend").mockImplementation(() => {
+                    this.audioContext.state = "suspended";
+                    return Promise.resolve();
                 })
             };
         }) as any;
