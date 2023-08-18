@@ -527,7 +527,13 @@ export class MeshPropertyGridComponent extends React.Component<
                         <ButtonLineComponent
                             label="Edit"
                             onClick={() => {
-                                mesh._internalMetadata.nodeGeometry.edit({ nodeGeometryEditorConfig: { backgroundColor: mesh.getScene().clearColor, hostScene: mesh.getScene() } });
+                                mesh._internalMetadata.nodeGeometry.edit({
+                                    nodeGeometryEditorConfig: {
+                                        backgroundColor: mesh.getScene().clearColor,
+                                        hostMesh: mesh,
+                                        hostScene: mesh.getScene(),
+                                    },
+                                });
                             }}
                         />
                     </LineContainerComponent>
