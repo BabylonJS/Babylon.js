@@ -114,6 +114,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         NullBlock: "Generate an empty geometry",
         OptimizeBlock: "Eliminate vertices that share positions with another vertex",
         LinearClonerBlock: "Clone a geometry linearly",
+        RadialClonerBlock: "Clone a geometry in a circle",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -258,7 +259,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "OptimizeBlock",
             ],
             Noises: ["RandomBlock", "NoiseBlock"],
-            Cloners: ["LinearClonerBlock"],
+            Cloners: ["LinearClonerBlock", "RadialClonerBlock"],
             Output_Nodes: ["GeometryOutputBlock"],
         };
 

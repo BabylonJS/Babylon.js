@@ -45,6 +45,7 @@ import { GeometryOptimizeBlock } from "core/Meshes/Node/Blocks/geometryOptimizeB
 import { IntFloatConverterBlock } from "core/Meshes/Node/Blocks/intFloatConverterBlock";
 import { ConditionBlock, ConditionBlockTests } from "core/Meshes/Node/Blocks/conditionBlock";
 import { LinearClonerBlock } from "core/Meshes/Node/Blocks/linearClonerBlock";
+import { RadialClonerBlock } from "core/Meshes/Node/Blocks/radialClonerBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
@@ -361,6 +362,9 @@ export class BlockTools {
             }
             case "LinearClonerBlock":{
                 return new LinearClonerBlock("Linear Cloner");
+            }
+            case "RadialClonerBlock":{
+                return new RadialClonerBlock("Radial Cloner");
             }
         }
 
