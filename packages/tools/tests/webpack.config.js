@@ -11,8 +11,7 @@ module.exports = (env) => {
             minStandardMaterial: "./src/minStandardMaterial.ts",
             sceneOnly: "./src/sceneOnly.ts",
             thinEngineOnly: "./src/thinEngineOnly.ts",
-            sceneWithInspector: "./src/sceneWithInspector.ts",
-            umdCOmpile: "./src/umdCompile.ts",
+            sceneWithInspector: "./src/sceneWithInspector.ts"
         },
         devtool: production ? false : "eval-cheap-module-source-map",
         output: {

@@ -57,10 +57,10 @@ export class AudioEngine implements IAudioEngine {
 
     /**
      * Gets whether audio has been unlocked on the device.
-     * Some Browsers have strong restrictions about Audio and won t autoplay unless
+     * Some Browsers have strong restrictions about Audio and won't autoplay unless
      * a user interaction has happened.
      */
-    public unlocked: boolean = true;
+    public unlocked: boolean = false;
 
     /**
      * Defines if the audio engine relies on a custom unlocked button.
@@ -84,10 +84,6 @@ export class AudioEngine implements IAudioEngine {
     public get audioContext(): Nullable<AudioContext> {
         if (!this._audioContextInitialized) {
             this._initializeAudioContext();
-        } else {
-            if (!this.unlocked && !this._muteButton) {
-                this._displayMuteButton();
-            }
         }
         return this._audioContext;
     }

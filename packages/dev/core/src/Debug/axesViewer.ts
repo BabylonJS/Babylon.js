@@ -61,21 +61,21 @@ export class AxesViewer {
         this.scaleLines = scaleLines;
 
         if (!xAxis) {
-            const redColoredMaterial = new StandardMaterial("", scene);
+            const redColoredMaterial = new StandardMaterial("xAxisMaterial", scene);
             redColoredMaterial.disableLighting = true;
             redColoredMaterial.emissiveColor = Color3.Red().scale(0.5);
             xAxis = AxisDragGizmo._CreateArrow(scene, redColoredMaterial, lineThickness);
         }
 
         if (!yAxis) {
-            const greenColoredMaterial = new StandardMaterial("", scene);
+            const greenColoredMaterial = new StandardMaterial("yAxisMaterial", scene);
             greenColoredMaterial.disableLighting = true;
             greenColoredMaterial.emissiveColor = Color3.Green().scale(0.5);
             yAxis = AxisDragGizmo._CreateArrow(scene, greenColoredMaterial, lineThickness);
         }
 
         if (!zAxis) {
-            const blueColoredMaterial = new StandardMaterial("", scene);
+            const blueColoredMaterial = new StandardMaterial("zAxisMaterial", scene);
             blueColoredMaterial.disableLighting = true;
             blueColoredMaterial.emissiveColor = Color3.Blue().scale(0.5);
             zAxis = AxisDragGizmo._CreateArrow(scene, blueColoredMaterial, lineThickness);
