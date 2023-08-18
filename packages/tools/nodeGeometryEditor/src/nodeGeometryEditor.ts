@@ -11,13 +11,15 @@ import { RegisterToPropertyTabManagers } from "./graphSystem/registerToPropertyL
 import { RegisterTypeLedger } from "./graphSystem/registerToTypeLedger";
 import type { Color4 } from "core/Maths/math.color";
 import type { Scene } from "core/scene";
+import type { Mesh } from "core/Meshes/mesh";
 
 /**
  * Interface used to specify creation options for the node editor
  */
 export interface INodeEditorOptions {
     nodeGeometry: NodeGeometry;
-    hostScene: Scene;
+    hostScene?: Scene;
+    hostMesh?: Mesh;
     hostElement?: HTMLElement;
     customSave?: { label: string; action: (data: string) => Promise<void> };
     customLoadObservable?: Observable<any>;
@@ -83,6 +85,14 @@ export class NodeGeometryEditor {
         globalState.hostWindow.addEventListener("beforeunload", () => {
             globalState.onPopupClosedObservable.notifyObservers();
         });
+
+        // Resync
+        if (options.hostMesh) {
+            globalState.resyncHandler = () => {
+                options.nodeGeometry.build();
+                options.nodeGeometry.updateMesh(options.hostMesh!);
+            };
+        }
 
         // Close the popup window when the page is refreshed or scene is disposed
         const popupWindow = (Popup as any)["node-geometry-editor"];
