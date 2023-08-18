@@ -3536,7 +3536,7 @@ export class Vector3 implements Vector<[number, number, number]> {
     public normalizeToRef<T extends Vector3>(reference: T): T {
         const len = this.length();
         if (len === 0 || len === 1.0) {
-            return reference.copyFromFloats(this._x, this._y, this._z);
+            return reference.copyFrom(this);
         }
 
         return this.scaleToRef(1.0 / len, reference);
@@ -5397,6 +5397,44 @@ export class Vector4 implements Vector<[number, number, number, number]> {
         }
 
         return this.scaleInPlace(1.0 / len);
+    }
+
+	/**
+     * Normalize the current Vector4 with the given input length.
+     * Please note that this is an in place operation.
+     * @param len the length of the vector
+     * @returns the current updated Vector4
+     */
+    public normalizeFromLength(len: number): this {
+        if (len === 0 || len === 1.0) {
+            return this;
+        }
+
+        return this.scaleInPlace(1.0 / len);
+    }
+
+    /**
+     * Normalize the current Vector4 to a new vector
+     * @returns the new Vector4
+     */
+    public normalizeToNew(): this {
+        const normalized = new (this.constructor as Constructor<typeof Vector4, this>)();
+        this.normalizeToRef(normalized);
+        return normalized;
+    }
+
+    /**
+     * Normalize the current Vector4 to the reference
+     * @param reference define the Vector4 to update
+     * @returns the updated Vector4
+     */
+    public normalizeToRef<T extends Vector4>(reference: T): T {
+        const len = this.length();
+        if (len === 0 || len === 1.0) {
+            return reference.copyFrom(this);
+        }
+
+        return this.scaleToRef(1.0 / len, reference);
     }
 
     /**
