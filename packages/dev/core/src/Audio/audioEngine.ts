@@ -163,8 +163,7 @@ export class AudioEngine implements IAudioEngine {
                 this._tryToRun = false;
                 this._triggerRunningState();
             });
-        }
-        else {
+        } else {
             this._triggerRunningState();
         }
     }
