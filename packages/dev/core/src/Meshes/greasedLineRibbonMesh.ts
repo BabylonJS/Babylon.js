@@ -334,15 +334,15 @@ export class GreasedLineRibbonMesh extends Mesh {
         }
 
         if (ribbonVertexData.indices) {
-            for (const p of ribbonVertexData.indices) {
-                this._indices.push(p + indiceOffset);
+            for (let i = 0; i < ribbonVertexData.indices.length; i++) {
+                this._indices.push(ribbonVertexData.indices[i] + indiceOffset);
             }
         }
         indiceOffset += positions.length / 3;
 
         if (ribbonVertexData.uvs) {
-            for (const p of ribbonVertexData.uvs) {
-                this._uvs.push(p);
+            for (let i = 0; i < ribbonVertexData.uvs.length; i++) {
+                this._uvs.push(ribbonVertexData.uvs[i]);
             }
         }
 
