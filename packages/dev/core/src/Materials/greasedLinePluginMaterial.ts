@@ -256,6 +256,11 @@ export interface GreasedLineMaterialOptions {
      * Rendering resolution
      */
     resolution?: Vector2;
+    /**
+     * Whether to use camera facing for the line.
+     * Defaults to true.
+     */
+    cameraFacing?: boolean;
 }
 
 /**
@@ -360,6 +365,8 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
     private _aspect: number;
     private _sizeAttenuation: boolean;
 
+    private _cameraFacing: boolean;
+
     private _colorsTexture?: RawTexture;
 
     private _engine: Engine;
@@ -394,6 +401,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
 
         this.dashCount = options.dashCount ?? 1; // calculate the _dashArray value, call the setter
         this.resolution = options.resolution ?? new Vector2(this._engine.getRenderWidth(), this._engine.getRenderHeight()); // calculate aspect call the setter
+        this._cameraFacing = options.cameraFacing ?? true;
 
         if (this._colors) {
             this._createColorsTexture(`${material.name}-colors-texture`, this._colors);
@@ -416,10 +424,15 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      */
     getAttributes(attributes: string[]) {
         attributes.push("grl_offsets");
-        attributes.push("grl_previousAndSide");
-        attributes.push("grl_nextAndCounters");
         attributes.push("grl_widths");
         attributes.push("grl_colorPointers");
+        if (!this._cameraFacing) {
+            attributes.push("grl_counters");
+            attributes.push("grl_slopes");
+        } else {
+            attributes.push("grl_previousAndSide");
+            attributes.push("grl_nextAndCounters");
+        }
     }
 
     /**
@@ -543,9 +556,32 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      */
     getCustomCode(shaderType: string): Nullable<{ [pointName: string]: string }> {
         if (shaderType === "vertex") {
-            return {
-                // eslint-disable-next-line @typescript-eslint/naming-convention
-                CUSTOM_VERTEX_DEFINITIONS: `
+            if (!this._cameraFacing) {
+                return {
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
+                    CUSTOM_VERTEX_DEFINITIONS: `
+                        attribute vec3 grl_slopes;
+                        attribute float grl_counters;
+                        attribute float grl_widths;
+                        // attribute vec3 grl_offsets;
+                        attribute float grl_colorPointers;
+                        varying float grlCounters;
+                        varying float grlColorPointer;
+                `,
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
+                    CUSTOM_VERTEX_UPDATE_POSITION: `
+                         positionUpdated += grl_slopes * grl_widths;
+                `,
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
+                    CUSTOM_VERTEX_MAIN_END: `
+                        grlCounters = grl_counters;
+                        grlColorPointer = grl_colorPointers;
+            `,
+                };
+            } else {
+                return {
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
+                    CUSTOM_VERTEX_DEFINITIONS: `
                     attribute vec4 grl_previousAndSide;
                     attribute vec4 grl_nextAndCounters;
                     attribute float grl_widths;
@@ -561,13 +597,13 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
                         return res;
                     }
                 `,
-                // eslint-disable-next-line @typescript-eslint/naming-convention
-                CUSTOM_VERTEX_UPDATE_POSITION: `
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
+                    CUSTOM_VERTEX_UPDATE_POSITION: `
                     vec3 grlPositionOffset = grl_offsets;
                     positionUpdated += grlPositionOffset;
                 `,
-                // eslint-disable-next-line @typescript-eslint/naming-convention
-                CUSTOM_VERTEX_MAIN_END: `
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
+                    CUSTOM_VERTEX_MAIN_END: `
 
                     float grlAspect = grl_aspect_resolution_lineWidth.x;
                     float grlBaseWidth = grl_aspect_resolution_lineWidth.w;
@@ -617,11 +653,11 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
                     vPositionW = vec3(grlFinalPosition);
 
                 `,
-                // eslint-disable-next-line @typescript-eslint/naming-convention
-                "!gl_Position\\=viewProjection\\*worldPos;": "//", // remove
-            };
+                    // eslint-disable-next-line @typescript-eslint/naming-convention
+                    "!gl_Position\\=viewProjection\\*worldPos;": "//", // remove
+                };
+            }
         }
-
         if (shaderType === "fragment") {
             return {
                 // eslint-disable-next-line @typescript-eslint/naming-convention

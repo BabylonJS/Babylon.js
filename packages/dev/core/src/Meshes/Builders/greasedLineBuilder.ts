@@ -9,6 +9,8 @@ import type { Scene } from "../../scene";
 import { EngineStore } from "../../Engines/engineStore";
 import type { Color3 } from "../../Maths/math.color";
 import { GreasedLineSimpleMaterial } from "../../Materials/greasedLineSimpleMaterial";
+import { GreasedLineTools } from "core/Misc";
+import { GreasedLineRibbonMesh } from "../greasedLineRibbonMesh";
 
 /**
  * How are the colors distributed along the color table
@@ -143,7 +145,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     scene = <Scene>(scene ?? EngineStore.LastCreatedScene);
 
     let instance;
-    const allPoints = GreasedLineMesh.ConvertPoints(options.points);
+    const allPoints = GreasedLineTools.ConvertPoints(options.points);
 
     let length = 0;
     if (Array.isArray(allPoints[0])) {
@@ -174,9 +176,16 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
             updatable: options.updatable,
             widths,
             lazy: options.lazy,
+            ribbonOptions: options.ribbonOptions,
         };
 
-        instance = new GreasedLineMesh(name, scene, initialGreasedLineOptions);
+        if (initialGreasedLineOptions.ribbonOptions) {
+            initialGreasedLineOptions.ribbonOptions.doubleSided = options.ribbonOptions?.doubleSided ?? true;
+        }
+
+        instance = initialGreasedLineOptions.ribbonOptions
+            ? new GreasedLineRibbonMesh(name, scene, initialGreasedLineOptions)
+            : new GreasedLineMesh(name, scene, initialGreasedLineOptions);
 
         if (materialOptions) {
             const initialMaterialOptions: GreasedLineMaterialOptions = {
@@ -195,6 +204,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
                 colorsSampling: materialOptions.colorsSampling,
                 colorDistributionType: materialOptions.colorDistributionType,
                 colors,
+                cameraFacing: materialOptions.cameraFacing,
             };
 
             if (materialOptions.createAndAssignMaterial) {

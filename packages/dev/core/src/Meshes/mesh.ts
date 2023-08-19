@@ -3876,6 +3876,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public static _GreasedLineRibbonMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
+        throw _WarnImport("GreasedLineRibbonMesh");
+    };
+
+    /**
+     * @internal
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _TrailMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
         throw _WarnImport("TrailMesh");
     };
