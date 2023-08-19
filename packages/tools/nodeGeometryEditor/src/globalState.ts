@@ -45,6 +45,8 @@ export class GlobalState {
 
     customSave?: { label: string; action: (data: string) => Promise<void> };
 
+    resyncHandler?: () => void;
+
     public get previewMode() {
         return this._previewMode;
     }

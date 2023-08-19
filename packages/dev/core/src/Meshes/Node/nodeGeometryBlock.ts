@@ -102,9 +102,6 @@ export class NodeGeometryBlock {
     @serialize("comment")
     public comments: string;
 
-    /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
-    public visibleInInspector = false;
-
     /** Gets or sets a boolean indicating that this input can be edited from a collapsed frame */
     public visibleOnFrame = false;
 
@@ -140,6 +137,31 @@ export class NodeGeometryBlock {
                     return true;
                 }
                 if (endpoint.ownerBlock.isAnAncestorOf(block)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks if the current block is an ancestor of a given type
+     * @param block defines the potential type to check
+     * @returns true if block is a descendant
+     */
+    public isAnAncestorOfType(type: string): boolean {
+        if (this.getClassName() === type) {
+            return true;
+        }
+
+        for (const output of this._outputs) {
+            if (!output.hasEndpoints) {
+                continue;
+            }
+
+            for (const endpoint of output.endpoints) {
+                if (endpoint.ownerBlock.isAnAncestorOfType(type)) {
                     return true;
                 }
             }
@@ -354,7 +376,6 @@ export class NodeGeometryBlock {
     public _deserialize(serializationObject: any) {
         this._name = serializationObject.name;
         this.comments = serializationObject.comments;
-        this.visibleInInspector = !!serializationObject.visibleInInspector;
         this.visibleOnFrame = !!serializationObject.visibleOnFrame;
         this._deserializePortDisplayNamesAndExposedOnFrame(serializationObject);
     }
@@ -399,7 +420,7 @@ export class NodeGeometryBlock {
 
     protected _dumpPropertiesCode() {
         const variableName = this._codeVariableName;
-        return `${variableName}.visibleInInspector = ${this.visibleInInspector};\n${variableName}.visibleOnFrame = ${this.visibleOnFrame};\n`;
+        return `${variableName}.visibleOnFrame = ${this.visibleOnFrame};\n`;
     }
 
     /**

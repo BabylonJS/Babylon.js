@@ -94,6 +94,8 @@ export class GeometryInputBlock extends NodeGeometryBlock {
                 this._type = NodeGeometryBlockConnectionPointTypes.Vector2;
                 break;
             case NodeGeometryContextualSources.VertexID:
+            case NodeGeometryContextualSources.GeometryID:
+            case NodeGeometryContextualSources.CollectionID:
             case NodeGeometryContextualSources.FaceID:
                 this._type = NodeGeometryBlockConnectionPointTypes.Int;
                 break;
@@ -167,6 +169,7 @@ export class GeometryInputBlock extends NodeGeometryBlock {
      * Set the input block to its default value (based on its type)
      */
     public setDefaultValue() {
+        this.contextualValue = NodeGeometryContextualSources.None;
         switch (this.type) {
             case NodeGeometryBlockConnectionPointTypes.Int:
             case NodeGeometryBlockConnectionPointTypes.Float:

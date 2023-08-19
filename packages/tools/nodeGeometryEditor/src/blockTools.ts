@@ -37,16 +37,26 @@ import { GeometryElbowBlock } from "core/Meshes/Node/Blocks/geometryElbowBlock";
 import { SetMaterialIDBlock } from "core/Meshes/Node/Blocks/Set/setMaterialIDBlock";
 import { InstantiateOnVerticesBlock } from "core/Meshes/Node/Blocks/Instances/instantiateOnVerticesBlock";
 import { InstantiateOnFacesBlock } from "core/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock";
+import { InstantiateOnVolumeBlock } from "core/Meshes/Node/Blocks/Instances/instantiateOnVolumeBlock";
 import { DebugBlock } from "core/Meshes/Node/Blocks/debugBlock";
 import { TeleportInBlock } from "core/Meshes/Node/Blocks/Teleport/teleportInBlock";
 import { TeleportOutBlock } from "core/Meshes/Node/Blocks/Teleport/teleportOutBlock";
 import { MapRangeBlock } from "core/Meshes/Node/Blocks/mapRangeBlock";
+import { GeometryOptimizeBlock } from "core/Meshes/Node/Blocks/geometryOptimizeBlock";
 import { IntFloatConverterBlock } from "core/Meshes/Node/Blocks/intFloatConverterBlock";
 import { ConditionBlock, ConditionBlockTests } from "core/Meshes/Node/Blocks/conditionBlock";
+import { GeometryCollectionBlock } from "core/Meshes/Node/Blocks/geometryCollectionBlock";
+import { GeometryInfoBlock } from "core/Meshes/Node/Blocks/geometryInfoBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "GeometryInfoBlock":
+                return new GeometryInfoBlock("Geometry Info");
+            case "CollectionBlock":
+                return new GeometryCollectionBlock("Collection");
+            case "OptimizeBlock":
+                return new GeometryOptimizeBlock("Optimize");
             case "NullBlock":
                 return new NullBlock("Null");
             case "TeleportInBlock":
@@ -104,6 +114,8 @@ export class BlockTools {
             }
             case "SetMaterialIDBlock":
                 return new SetMaterialIDBlock("Set material ID");
+            case "InstantiateOnVolumeBlock":
+                return new InstantiateOnVolumeBlock("Instantiate on volume");
             case "InstantiateOnFacesBlock":
                 return new InstantiateOnFacesBlock("Instantiate on faces");
             case "InstantiateOnVerticesBlock":
@@ -223,6 +235,16 @@ export class BlockTools {
             case "VertexIDBlock": {
                 const block = new GeometryInputBlock("Vertex ID");
                 block.contextualValue = NodeGeometryContextualSources.VertexID;
+                return block;
+            }
+            case "GeometryIDBlock": {
+                const block = new GeometryInputBlock("Geometry ID");
+                block.contextualValue = NodeGeometryContextualSources.GeometryID;
+                return block;
+            }
+            case "CollectionIDBlock": {
+                const block = new GeometryInputBlock("Collection ID");
+                block.contextualValue = NodeGeometryContextualSources.CollectionID;
                 return block;
             }
             case "FaceIDBlock": {

@@ -324,9 +324,23 @@ export class PhysicsBody {
      * @param linVel - The vector3 to store the linear velocity in.
      *
      * This method is useful for getting the linear velocity of a physics body in a physics engine.
-     * This can be used to determine the speed and direction of the body, which can be used to calculate the motion of the body.*/
+     * This can be used to determine the speed and direction of the body, which can be used to calculate the motion of the body.
+     */
     public getLinearVelocityToRef(linVel: Vector3, instanceIndex?: number): void {
         return this._physicsPlugin.getLinearVelocityToRef(this, linVel, instanceIndex);
+    }
+
+    /**
+     * Gets the linear velocity of the physics body as a new vector3.
+     * @returns The linear velocity of the physics body.
+     *
+     * This method is useful for getting the linear velocity of a physics body in a physics engine.
+     * This can be used to determine the speed and direction of the body, which can be used to calculate the motion of the body.
+     */
+    public getLinearVelocity(instanceIndex?: number): Vector3 {
+        const ref = new Vector3();
+        this.getLinearVelocityToRef(ref, instanceIndex);
+        return ref;
     }
 
     /**
@@ -350,6 +364,19 @@ export class PhysicsBody {
      */
     public getAngularVelocityToRef(angVel: Vector3, instanceIndex?: number): void {
         return this._physicsPlugin.getAngularVelocityToRef(this, angVel, instanceIndex);
+    }
+
+    /**
+     * Gets the angular velocity of the physics body as a new vector3.
+     * @returns The angular velocity of the physics body.
+     *
+     * This method is useful for getting the angular velocity of a physics body, which can be used to determine the body's
+     * rotational speed. This information can be used to create realistic physics simulations.
+     */
+    public getAngularVelocity(instanceIndex?: number): Vector3 {
+        const ref = new Vector3();
+        this.getAngularVelocityToRef(ref, instanceIndex);
+        return ref;
     }
 
     /**
