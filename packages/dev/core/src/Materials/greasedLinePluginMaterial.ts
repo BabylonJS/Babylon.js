@@ -372,6 +372,12 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
 
     private _engine: Engine;
 
+    /**
+     * Creates a new instance of the GreasedLinePluginMaterial
+     * @param material base material for the plugin
+     * @param scene the scene
+     * @param options plugin options
+     */
     constructor(material: Material, scene?: Scene, options?: GreasedLineMaterialOptions) {
         options = options || {
             color: GreasedLinePluginMaterial.DEFAULT_COLOR,
