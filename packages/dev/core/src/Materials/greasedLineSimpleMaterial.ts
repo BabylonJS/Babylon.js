@@ -12,6 +12,7 @@ import type { BaseTexture } from "./Textures/baseTexture";
 
 import "../Shaders/greasedLine.fragment";
 import "../Shaders/greasedLine.vertex";
+import "../Shaders/greasedLineNonCameraFacing.vertex";
 
 /**
  * GreasedLineSimpleMaterial
@@ -57,15 +58,18 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
      * @param options material options
      */
     constructor(name: string, scene: Scene, options: GreasedLineMaterialOptions) {
+        const defines = [];
+        scene.useRightHandedSystem && defines.push("GREASED_LNE_RIGHT_HANDED_COORDINATE_SYSTEM");
+
         super(
             name,
             scene,
             {
-                vertex: "greasedLine",
+                vertex: options.cameraFacing ? "greasedLine" : "greasedLineNonCameraFacing",
                 fragment: "greasedLine",
             },
             {
-                attributes: ["position", "normal", "grl_previousAndSide", "grl_nextAndCounters", "grl_widths", "grl_offsets", "grl_colorPointers"],
+                attributes: ["position", "grl_previousAndSide", "grl_nextAndCounters", "grl_widths", "grl_offsets", "grl_colorPointers", "grl_slopes"],
                 uniforms: [
                     "worldViewProjection",
                     "projection",
@@ -84,7 +88,7 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
                     "grlVisibility",
                 ],
                 samplers: ["grlColors"],
-                defines: scene.useRightHandedSystem ? ["GREASED_LNE_RIGHT_HANDED_COORDINATE_SYSTEM"] : [],
+                defines,
             }
         );
         options = options || {

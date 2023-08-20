@@ -10,7 +10,7 @@ import type { Node } from "../node";
 import { DeepCopier } from "../Misc/deepCopier";
 import { GreasedLineTools } from "../Misc/greasedLineTools";
 import { GreasedLineSimpleMaterial } from "../Materials/greasedLineSimpleMaterial";
-import { CreateRibbonVertexData } from "./Builders";
+import { CreateRibbonVertexData } from "./Builders/ribbonBuilder";
 import type { GreasedLineMeshOptions } from "./greasedLineMesh";
 
 Mesh._GreasedLineRibbonMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
@@ -308,13 +308,13 @@ export class GreasedLineRibbonMesh extends Mesh {
             throw "No width table provided.";
         }
         const widths = this._alignWidths(this._widths, positions, this._paths);
-        if (this._isLineRibbon) {
-            for (const w of widths) {
-                this._widths.push(w);
-            }
-        } else {
+        // if (this._isLineRibbon) {
+        //     for (const w of widths) {
+        //         this._widths.push(w);
+        //     }
+        // } else {
             this._widths = widths;
-        }
+        // }
 
         for (const p of positions) {
             this._vertexPositions.push(p);
