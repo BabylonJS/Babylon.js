@@ -2189,7 +2189,7 @@ export class Vector2 implements Vector<[number, number]> {
      * @returns the vector length (float)
      */
     public length(): number {
-        return Math.sqrt(this.x * this.x + this.y * this.y);
+        return Math.sqrt(this.lengthSquared());
     }
 
     /**
