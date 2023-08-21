@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 import type { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
 import { BlockTools } from "../../blockTools";
 import type { IDisplayManager } from "shared-ui-components/nodeGraphSystem/interfaces/displayManager";
@@ -7,8 +6,14 @@ import styles from "./inputDisplayManager.modules.scss";
 import type { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
 import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryContextualSources } from "core/Meshes/Node/Enums/nodeGeometryContextualSources";
+import type { Nullable } from "core/types";
+import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
+import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 
 export class InputDisplayManager implements IDisplayManager {
+    private _hasHighlights = false;
+    private _predicate = (b: NodeGeometryBlock) => !!(b as any).getExecutionIndex;
+
     public getHeaderClass(nodeData: INodeData) {
         const inputBlock = nodeData.data as GeometryInputBlock;
 
@@ -121,5 +126,51 @@ export class InputDisplayManager implements IDisplayManager {
 
         contentArea.innerHTML = value;
         contentArea.classList.add(styles["input-block"]);
+    }
+
+    public onSelectionChanged(nodeData: INodeData, selectedData: Nullable<INodeData>, manager: StateManager): void {
+        const block = nodeData.data as GeometryInputBlock;
+        if (!block.isContextual) {
+            return;
+        }
+        const contextGenerationBlock = block.getDescendantOfPredicate(this._predicate);
+
+        if (selectedData !== nodeData) {
+            if (this._hasHighlights) {
+                let removeHighlight: boolean;
+
+                if (selectedData && selectedData.data.getClassName() === "GeometryInputBlock") {
+                    const otherSelection = selectedData.data as GeometryInputBlock;
+                    const otherContextGenerationBlock = otherSelection.getDescendantOfPredicate(this._predicate);
+
+                    removeHighlight = contextGenerationBlock !== otherContextGenerationBlock;
+                } else {
+                    removeHighlight = true;
+                }
+
+                if (removeHighlight) {
+                    manager.onHighlightNodeObservable.notifyObservers({ data: contextGenerationBlock, active: false });
+                }
+                this._hasHighlights = false;
+            }
+            return;
+        }
+        if (contextGenerationBlock) {
+            manager.onHighlightNodeObservable.notifyObservers({ data: contextGenerationBlock, active: true });
+            this._hasHighlights = true;
+        }
+    }
+
+    public onDispose(nodeData: INodeData, manager: StateManager) {
+        const block = nodeData.data as GeometryInputBlock;
+        if (!block.isContextual) {
+            return;
+        }
+
+        const contextGenerationBlock = block.getDescendantOfPredicate(this._predicate);
+
+        if (contextGenerationBlock) {
+            manager.onHighlightNodeObservable.notifyObservers({ data: contextGenerationBlock, active: false });
+        }
     }
 }
