@@ -31,7 +31,6 @@ function colorChannelToGammaSpaceExact(color: number): number {
  * Class used to hold a RGB color
  */
 export class Color3 implements Vector<[number, number, number]> {
-
     public readonly dimension: 3 = 3;
 
     /**
@@ -357,7 +356,7 @@ export class Color3 implements Vector<[number, number, number]> {
      * @param epsilon defines the minimal distance to define values as equals
      * @returns true if both colors are distant less than epsilon
      */
-     public equalsWithEpsilon(otherColor: DeepImmutable<Color3>, epsilon: number = Epsilon): boolean {
+    public equalsWithEpsilon(otherColor: DeepImmutable<Color3>, epsilon: number = Epsilon): boolean {
         return (
             otherColor &&
             Scalar.WithinEpsilon(this.r, otherColor.r, epsilon) &&
@@ -365,7 +364,6 @@ export class Color3 implements Vector<[number, number, number]> {
             Scalar.WithinEpsilon(this.b, otherColor.b, epsilon)
         );
     }
-
 
     /**
      * Gets a new Color3 set with the current Color3 negated coordinates
@@ -525,7 +523,7 @@ export class Color3 implements Vector<[number, number, number]> {
         result.b = this.b - otherColor.b;
         return result;
     }
-    
+
     /**
      * Subtract the given color from the current Color3
      * @param otherColor defines the second operand
@@ -1079,8 +1077,7 @@ export class Color3 implements Vector<[number, number, number]> {
  * Class used to hold a RBGA color
  */
 export class Color4 implements Vector<[number, number, number, number]> {
-
-	public readonly dimension: 4 = 4;
+    public readonly dimension: 4 = 4;
 
     /**
      * Creates a new Color4 object from red, green, blue values, all between 0 and 1
@@ -1158,11 +1155,11 @@ export class Color4 implements Vector<[number, number, number, number]> {
      * @returns a new Color4 object
      */
     public add(right: DeepImmutable<this>): this {
-		const result = new (this.constructor as Constructor<typeof Color4, this>)();
+        const result = new (this.constructor as Constructor<typeof Color4, this>)();
         return this.addToRef(right, result);
     }
 
-	/**
+    /**
      * Updates the given color "result" with the result of the addition of the current Color4 and the given one.
      * @param otherColor the color to add
      * @param result the color to store the result
@@ -1176,7 +1173,7 @@ export class Color4 implements Vector<[number, number, number, number]> {
         return result;
     }
 
-	/**
+    /**
      * Adds in place the given Color4 values to the current Color4 object
      * @param otherColor defines the second operand
      * @returns the current updated Color4 object
@@ -1229,7 +1226,7 @@ export class Color4 implements Vector<[number, number, number, number]> {
         return result;
     }
 
-	/**
+    /**
      * Subtract in place the given color from the current Color4.
      * @param otherColor the color to subtract
      * @returns the updated Color4.
@@ -1242,7 +1239,7 @@ export class Color4 implements Vector<[number, number, number, number]> {
         return this;
     }
 
-	/**
+    /**
      * Returns a new Color4 set with the result of the subtraction of the given floats from the current Color4 coordinates.
      * @param r value to subtract
      * @param g value to subtract
@@ -1277,7 +1274,7 @@ export class Color4 implements Vector<[number, number, number, number]> {
      * @returns a new Color4 object
      */
     public scale(scale: number): this {
-		const result = new (this.constructor as Constructor<typeof Color4, this>)();
+        const result = new (this.constructor as Constructor<typeof Color4, this>)();
         return this.scaleToRef(scale, result);
     }
 
@@ -1343,7 +1340,7 @@ export class Color4 implements Vector<[number, number, number, number]> {
      * @returns a new Color4 object
      */
     public multiply(color: DeepImmutable<this>): this {
-		const result = new (this.constructor as Constructor<typeof Color4, this>)();
+        const result = new (this.constructor as Constructor<typeof Color4, this>)();
         return this.multiplyToRef(color, result);
     }
 
@@ -1361,7 +1358,7 @@ export class Color4 implements Vector<[number, number, number, number]> {
         return result;
     }
 
-	/**
+    /**
      * Multiplies in place the current Color4 by the given one.
      * @param otherColor color to multiple with
      * @returns the updated Color4.
@@ -1374,7 +1371,7 @@ export class Color4 implements Vector<[number, number, number, number]> {
         return this;
     }
 
-	/**
+    /**
      * Returns a new Color4 set with the multiplication result of the given floats and the current Color4 coordinates.
      * @param r value multiply with
      * @param g value multiply with
@@ -1386,7 +1383,7 @@ export class Color4 implements Vector<[number, number, number, number]> {
         return new (this.constructor as Constructor<typeof Color4, this>)(this.r * r, this.g * g, this.b * b, this.a * a);
     }
 
-	/**
+    /**
      * Returns a new Color4 set with the division result of the current Color4 by the given one.
      * @param otherColor color to devide with
      * @returns resulting new color
@@ -1550,7 +1547,7 @@ export class Color4 implements Vector<[number, number, number, number]> {
         return this.fractToRef(result);
     }
 
-	/**
+    /**
      * Returns the Color4 length (float).
      * @returns the length
      */
@@ -1565,7 +1562,7 @@ export class Color4 implements Vector<[number, number, number, number]> {
         return this.r * this.r + this.g * this.g + this.b * this.b + this.a * this.a;
     }
 
-	/**
+    /**
      * Normalizes in place the Color4.
      * @returns the updated Color4.
      */
@@ -1617,7 +1614,7 @@ export class Color4 implements Vector<[number, number, number, number]> {
         return this.scaleToRef(1.0 / len, reference);
     }
 
-	/**
+    /**
      * Returns a new Color4 set with the current Color4 negated coordinates.
      * @returns a new color with the negated values
      */
@@ -1646,7 +1643,7 @@ export class Color4 implements Vector<[number, number, number, number]> {
         return result.copyFromFloats(this.r * -1, this.g * -1, this.b * -1, this.a * -1);
     }
 
-	/**
+    /**
      * Boolean : True if the current Color4 coordinates are each beneath the distance "epsilon" from the given color ones.
      * @param otherColor color to compare against
      * @param epsilon (Default: very small number)
@@ -1707,7 +1704,7 @@ export class Color4 implements Vector<[number, number, number, number]> {
      * @returns a new Color4 object
      */
     public clone(): this {
-		const result = new (this.constructor as Constructor<typeof Color4, this>)();
+        const result = new (this.constructor as Constructor<typeof Color4, this>)();
         return result.copyFrom(this);
     }
 
@@ -1752,7 +1749,7 @@ export class Color4 implements Vector<[number, number, number, number]> {
         return this.copyFromFloats(r, g, b, a);
     }
 
-	/**
+    /**
      * Copies the given float to the current Vector4 coordinates
      * @param v defines the r, g, b, and a coordinates of the operand
      * @returns the current updated Vector4
