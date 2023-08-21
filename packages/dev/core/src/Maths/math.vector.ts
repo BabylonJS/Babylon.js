@@ -69,7 +69,7 @@ export declare abstract class Vector<N extends number[] = number[]> {
      * @param source defines the source Vector
      * @returns the current updated Vector
      */
-    copyFrom<T extends this>(source: DeepImmutable<T>): this;
+    copyFrom(source: DeepImmutable<this>): this;
 
     /**
      * Sets the Vector coordinates with the given floats
@@ -3402,7 +3402,7 @@ export class Vector3 implements Vector<[number, number, number]> {
      * @returns the length of the Vector3
      */
     public length(): number {
-        return Math.sqrt(this._x * this._x + this._y * this._y + this._z * this._z);
+        return Math.sqrt(this.lengthSquared());
     }
 
     /**
