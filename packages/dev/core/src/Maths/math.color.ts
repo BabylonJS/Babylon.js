@@ -1,8 +1,9 @@
-import type { DeepImmutable, FloatArray } from "../types";
+import type { Constructor, DeepImmutable, FloatArray } from "../types";
 import { Scalar } from "./math.scalar";
 import { ToLinearSpace, ToGammaSpace } from "./math.constants";
 import { ArrayTools } from "../Misc/arrayTools";
 import { RegisterClass } from "../Misc/typeStore";
+import type { Vector } from "./math.vector";
 
 function colorChannelToLinearSpace(color: number): number {
     return Math.pow(color, ToLinearSpace);
@@ -29,7 +30,7 @@ function colorChannelToGammaSpaceExact(color: number): number {
 /**
  * Class used to hold a RGB color
  */
-export class Color3 {
+export class Color3 implements Vector<[number, number, number]> {
     /**
      * Creates a new Color3 object from red, green, blue values, all between 0 and 1
      * @param r defines the red component (between 0 and 1, default is 0)
@@ -86,7 +87,7 @@ export class Color3 {
      * @param index defines an optional index in the target array to define where to start storing values
      * @returns the current Color3 object
      */
-    public toArray(array: FloatArray, index: number = 0): Color3 {
+    public toArray(array: FloatArray, index: number = 0): this {
         array[index] = this.r;
         array[index + 1] = this.g;
         array[index + 2] = this.b;
@@ -100,7 +101,7 @@ export class Color3 {
      * @param offset defines an offset in the source array
      * @returns the current Color3 object
      */
-    public fromArray(array: DeepImmutable<ArrayLike<number>>, offset: number = 0): Color3 {
+    public fromArray(array: DeepImmutable<ArrayLike<number>>, offset: number = 0): this {
         Color3.FromArrayToRef(array, offset, this);
         return this;
     }
@@ -118,7 +119,7 @@ export class Color3 {
      * Returns a new array populated with 3 numeric elements : red, green and blue values
      * @returns the new array
      */
-    public asArray(): number[] {
+    public asArray(): [number, number, number] {
         return [this.r, this.g, this.b];
     }
 
@@ -135,21 +136,22 @@ export class Color3 {
      * @param otherColor defines the second operand
      * @returns the new Color3 object
      */
-    public multiply(otherColor: DeepImmutable<Color3>): Color3 {
-        return new Color3(this.r * otherColor.r, this.g * otherColor.g, this.b * otherColor.b);
+    public multiply(otherColor: DeepImmutable<this>): this {
+        const result = new (this.constructor as Constructor<typeof Color3, this>)();
+        return this.multiplyToRef(otherColor, result);
     }
 
     /**
      * Multiply the rgb values of the Color3 and the given Color3 and stores the result in the object "result"
      * @param otherColor defines the second operand
      * @param result defines the Color3 object where to store the result
-     * @returns the current Color3
+     * @returns the result Color3
      */
-    public multiplyToRef(otherColor: DeepImmutable<Color3>, result: Color3): Color3 {
+    public multiplyToRef<T extends this>(otherColor: DeepImmutable<this>, result: T): T {
         result.r = this.r * otherColor.r;
         result.g = this.g * otherColor.g;
         result.b = this.b * otherColor.b;
-        return this;
+        return result;
     }
 
     /**
@@ -157,7 +159,7 @@ export class Color3 {
      * @param otherColor defines the second operand
      * @returns true if the rgb values are equal to the given ones
      */
-    public equals(otherColor: DeepImmutable<Color3>): boolean {
+    public equals(otherColor: DeepImmutable<this>): boolean {
         return otherColor && this.r === otherColor.r && this.g === otherColor.g && this.b === otherColor.b;
     }
 
@@ -177,8 +179,9 @@ export class Color3 {
      * @param scale defines the scaling factor to apply
      * @returns a new Color3 object
      */
-    public scale(scale: number): Color3 {
-        return new Color3(this.r * scale, this.g * scale, this.b * scale);
+    public scale(scale: number): this {
+        const result = new (this.constructor as Constructor<typeof Color3, this>)();
+        return this.scaleToRef(scale, result);
     }
 
     /**
@@ -186,7 +189,7 @@ export class Color3 {
      * @param scale defines the scaling factor to apply
      * @returns the current updated Color3
      */
-    public scaleInPlace(scale: number): Color3 {
+    public scaleInPlace(scale: number): this {
         this.r *= scale;
         this.g *= scale;
         this.b *= scale;
@@ -197,26 +200,26 @@ export class Color3 {
      * Multiplies the rgb values by scale and stores the result into "result"
      * @param scale defines the scaling factor
      * @param result defines the Color3 object where to store the result
-     * @returns the unmodified current Color3
+     * @returns the result Color3
      */
-    public scaleToRef(scale: number, result: Color3): Color3 {
+    public scaleToRef<T extends this>(scale: number, result: T): T {
         result.r = this.r * scale;
         result.g = this.g * scale;
         result.b = this.b * scale;
-        return this;
+        return result;
     }
 
     /**
      * Scale the current Color3 values by a factor and add the result to a given Color3
      * @param scale defines the scale factor
      * @param result defines color to store the result into
-     * @returns the unmodified current Color3
+     * @returns the result Color3
      */
-    public scaleAndAddToRef(scale: number, result: Color3): Color3 {
+    public scaleAndAddToRef<T extends this>(scale: number, result: T): T {
         result.r += this.r * scale;
         result.g += this.g * scale;
         result.b += this.b * scale;
-        return this;
+        return result;
     }
 
     /**
@@ -224,13 +227,13 @@ export class Color3 {
      * @param min defines minimum clamping value (default is 0)
      * @param max defines maximum clamping value (default is 1)
      * @param result defines color to store the result into
-     * @returns the original Color3
+     * @returns the result Color3
      */
-    public clampToRef(min: number = 0, max: number = 1, result: Color3): Color3 {
+    public clampToRef<T extends this>(min: number = 0, max: number = 1, result: T): T {
         result.r = Scalar.Clamp(this.r, min, max);
         result.g = Scalar.Clamp(this.g, min, max);
         result.b = Scalar.Clamp(this.b, min, max);
-        return this;
+        return result;
     }
 
     /**
@@ -238,8 +241,9 @@ export class Color3 {
      * @param otherColor defines the second operand
      * @returns the new Color3
      */
-    public add(otherColor: DeepImmutable<Color3>): Color3 {
-        return new Color3(this.r + otherColor.r, this.g + otherColor.g, this.b + otherColor.b);
+    public add(otherColor: DeepImmutable<this>): this {
+        const result = new (this.constructor as Constructor<typeof Color3, this>)();
+        return this.addToRef(otherColor, result);
     }
 
     /**
@@ -248,11 +252,11 @@ export class Color3 {
      * @param result defines Color3 object to store the result into
      * @returns the unmodified current Color3
      */
-    public addToRef(otherColor: DeepImmutable<Color3>, result: Color3): Color3 {
+    public addToRef<T extends this>(otherColor: DeepImmutable<this>, result: T): T {
         result.r = this.r + otherColor.r;
         result.g = this.g + otherColor.g;
         result.b = this.b + otherColor.b;
-        return this;
+        return result;
     }
 
     /**
@@ -260,8 +264,9 @@ export class Color3 {
      * @param otherColor defines the second operand
      * @returns the new Color3
      */
-    public subtract(otherColor: DeepImmutable<Color3>): Color3 {
-        return new Color3(this.r - otherColor.r, this.g - otherColor.g, this.b - otherColor.b);
+    public subtract(otherColor: DeepImmutable<this>): this {
+        const result = new (this.constructor as Constructor<typeof Color3, this>)();
+        return this.subtractToRef(otherColor, result);
     }
 
     /**
@@ -270,19 +275,19 @@ export class Color3 {
      * @param result defines Color3 object to store the result into
      * @returns the unmodified current Color3
      */
-    public subtractToRef(otherColor: DeepImmutable<Color3>, result: Color3): Color3 {
+    public subtractToRef<T extends this>(otherColor: DeepImmutable<this>, result: T): T {
         result.r = this.r - otherColor.r;
         result.g = this.g - otherColor.g;
         result.b = this.b - otherColor.b;
-        return this;
+        return result;
     }
 
     /**
      * Copy the current object
      * @returns a new Color3 copied the current one
      */
-    public clone(): Color3 {
-        return new Color3(this.r, this.g, this.b);
+    public clone(): this {
+        return new (this.constructor as Constructor<typeof Color3, this>)(this.r, this.g, this.b);
     }
 
     /**
@@ -290,7 +295,7 @@ export class Color3 {
      * @param source defines the source Color3 object
      * @returns the updated Color3 object
      */
-    public copyFrom(source: DeepImmutable<Color3>): Color3 {
+    public copyFrom(source: DeepImmutable<this>): this {
         this.r = source.r;
         this.g = source.g;
         this.b = source.b;
@@ -304,7 +309,7 @@ export class Color3 {
      * @param b defines the blue component to read from
      * @returns the current Color3 object
      */
-    public copyFromFloats(r: number, g: number, b: number): Color3 {
+    public copyFromFloats(r: number, g: number, b: number): this {
         this.r = r;
         this.g = g;
         this.b = b;
@@ -318,7 +323,7 @@ export class Color3 {
      * @param b defines the blue component to read from
      * @returns the current Color3 object
      */
-    public set(r: number, g: number, b: number): Color3 {
+    public set(r: number, g: number, b: number): this {
         return this.copyFromFloats(r, g, b);
     }
 
@@ -337,8 +342,8 @@ export class Color3 {
      * Converts current color in rgb space to HSV values
      * @returns a new color3 representing the HSV values
      */
-    public toHSV(): Color3 {
-        const result = new Color3();
+    public toHSV(): this {
+        const result = new (this.constructor as Constructor<typeof Color3, this>)();
 
         this.toHSVToRef(result);
 
@@ -349,7 +354,7 @@ export class Color3 {
      * Converts current color in rgb space to HSV values
      * @param result defines the Color3 where to store the HSV values
      */
-    public toHSVToRef(result: Color3) {
+    public toHSVToRef(result: this) {
         const r = this.r;
         const g = this.g;
         const b = this.b;
@@ -390,8 +395,8 @@ export class Color3 {
      * @param exact defines if the conversion will be done in an exact way which is slower but more accurate (default is false)
      * @returns a new Color3 object
      */
-    public toLinearSpace(exact = false): Color3 {
-        const convertedColor = new Color3();
+    public toLinearSpace(exact = false): this {
+        const convertedColor = new (this.constructor as Constructor<typeof Color3, this>)();
         this.toLinearSpaceToRef(convertedColor, exact);
         return convertedColor;
     }
@@ -402,7 +407,7 @@ export class Color3 {
      * @param exact defines if the conversion will be done in an exact way which is slower but more accurate (default is false)
      * @returns the unmodified Color3
      */
-    public toLinearSpaceToRef(convertedColor: Color3, exact = false): Color3 {
+    public toLinearSpaceToRef(convertedColor: this, exact = false): this {
         if (exact) {
             convertedColor.r = colorChannelToLinearSpaceExact(this.r);
             convertedColor.g = colorChannelToLinearSpaceExact(this.g);
@@ -420,8 +425,8 @@ export class Color3 {
      * @param exact defines if the conversion will be done in an exact way which is slower but more accurate (default is false)
      * @returns a new Color3 object
      */
-    public toGammaSpace(exact = false): Color3 {
-        const convertedColor = new Color3();
+    public toGammaSpace(exact = false): this {
+        const convertedColor = new (this.constructor as Constructor<typeof Color3, this>)();
         this.toGammaSpaceToRef(convertedColor, exact);
         return convertedColor;
     }
@@ -432,7 +437,7 @@ export class Color3 {
      * @param exact defines if the conversion will be done in an exact way which is slower but more accurate (default is false)
      * @returns the unmodified Color3
      */
-    public toGammaSpaceToRef(convertedColor: Color3, exact = false): Color3 {
+    public toGammaSpaceToRef(convertedColor: this, exact = false): this {
         if (exact) {
             convertedColor.r = colorChannelToGammaSpaceExact(this.r);
             convertedColor.g = colorChannelToGammaSpaceExact(this.g);
