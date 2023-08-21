@@ -143,6 +143,20 @@ export class GreasedLineRibbonMesh extends Mesh {
     }
 
     /**
+     * Returns the slopes of the line at each point relative to the center of the line
+     */
+    get slopes() {
+        return this._slopes;
+    }
+
+    /**
+     * Set the slopes of the line at each point relative to the center of the line
+     */
+    set slopes(slopes: number[]) {
+        this._slopes = slopes;
+    }
+
+    /**
      * Return the the points offsets
      */
     get offsets() {
@@ -313,7 +327,7 @@ export class GreasedLineRibbonMesh extends Mesh {
         //         this._widths.push(w);
         //     }
         // } else {
-            this._widths = widths;
+        this._widths = widths;
         // }
 
         for (const p of positions) {

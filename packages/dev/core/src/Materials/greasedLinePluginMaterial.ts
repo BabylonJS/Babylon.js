@@ -288,6 +288,10 @@ export class MaterialGreasedLineDefines extends MaterialDefines {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     GREASED_LINE_RIGHT_HANDED_COORDINATE_SYSTEM = false;
 
+    /**
+     * True if the line is in camera facing mode
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     GREASED_LINE_CAMERA_FACING = true;
 }
 
@@ -603,7 +607,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
                     vec3 grlPositionOffset = grl_offsets;
                     positionUpdated += grlPositionOffset;
                 #else
-                    positionUpdated += grl_slopes * grl_widths;
+                    positionUpdated = (positionUpdated + grl_offsets) + grl_slopes * grl_widths;
                 #endif
                 `,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
