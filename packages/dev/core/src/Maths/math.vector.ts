@@ -5002,9 +5002,6 @@ export class Vector4 implements Vector<[number, number, number, number]> {
 
     /**
      * Returns a new Vector4 set with the result of the subtraction of the given floats from the current Vector4 coordinates.
-     */
-    /**
-     * Returns a new Vector4 set with the result of the subtraction of the given floats from the current Vector4 coordinates.
      * @param x value to subtract
      * @param y value to subtract
      * @param z value to subtract
@@ -5363,7 +5360,7 @@ export class Vector4 implements Vector<[number, number, number, number]> {
      * @returns the length
      */
     public length(): number {
-        return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
+        return Math.sqrt(this.lengthSquared());
     }
     /**
      * Returns the Vector4 squared length (float).
@@ -5417,7 +5414,7 @@ export class Vector4 implements Vector<[number, number, number, number]> {
      * @param reference define the Vector4 to update
      * @returns the updated Vector4
      */
-    public normalizeToRef<T extends Vector4>(reference: T): T {
+    public normalizeToRef<T extends this>(reference: T): T {
         const len = this.length();
         if (len === 0 || len === 1.0) {
             return reference.copyFrom(this);
@@ -5481,9 +5478,9 @@ export class Vector4 implements Vector<[number, number, number, number]> {
     }
 
     /**
-     * Copies the given float to the current Vector3 coordinates
+     * Copies the given float to the current Vector4 coordinates
      * @param v defines the x, y, z and w coordinates of the operand
-     * @returns the current updated Vector3
+     * @returns the current updated Vector4
      */
     public setAll(v: number): this {
         this.x = this.y = this.z = this.w = v;
