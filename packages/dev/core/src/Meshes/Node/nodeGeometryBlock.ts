@@ -172,7 +172,7 @@ export class NodeGeometryBlock {
     }
 
     /**
-     * Get the first descendant of a given type
+     * Get the first descendant using a predicate
      * @param predicate defines the predicate to check
      * @returns descendant or null if none found
      */

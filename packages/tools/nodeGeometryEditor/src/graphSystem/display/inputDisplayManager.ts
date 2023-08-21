@@ -10,9 +10,10 @@ import type { Nullable } from "core/types";
 import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 
+const predicate = (b: NodeGeometryBlock) => !!(b as any).getExecutionIndex;
+
 export class InputDisplayManager implements IDisplayManager {
     private _hasHighlights = false;
-    private _predicate = (b: NodeGeometryBlock) => !!(b as any).getExecutionIndex;
 
     public getHeaderClass(nodeData: INodeData) {
         const inputBlock = nodeData.data as GeometryInputBlock;
@@ -133,7 +134,7 @@ export class InputDisplayManager implements IDisplayManager {
         if (!block.isContextual) {
             return;
         }
-        const contextGenerationBlock = block.getDescendantOfPredicate(this._predicate);
+        const contextGenerationBlock = block.getDescendantOfPredicate(predicate);
 
         if (selectedData !== nodeData) {
             if (this._hasHighlights) {
@@ -141,7 +142,7 @@ export class InputDisplayManager implements IDisplayManager {
 
                 if (selectedData && selectedData.data.getClassName() === "GeometryInputBlock") {
                     const otherSelection = selectedData.data as GeometryInputBlock;
-                    const otherContextGenerationBlock = otherSelection.getDescendantOfPredicate(this._predicate);
+                    const otherContextGenerationBlock = otherSelection.getDescendantOfPredicate(predicate);
 
                     removeHighlight = contextGenerationBlock !== otherContextGenerationBlock;
                 } else {
@@ -167,7 +168,7 @@ export class InputDisplayManager implements IDisplayManager {
             return;
         }
 
-        const contextGenerationBlock = block.getDescendantOfPredicate(this._predicate);
+        const contextGenerationBlock = block.getDescendantOfPredicate(predicate);
 
         if (contextGenerationBlock) {
             manager.onHighlightNodeObservable.notifyObservers({ data: contextGenerationBlock, active: false });
