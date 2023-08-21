@@ -12,7 +12,6 @@ import type { BaseTexture } from "./Textures/baseTexture";
 
 import "../Shaders/greasedLine.fragment";
 import "../Shaders/greasedLine.vertex";
-// import "../Shaders/greasedLineNonCameraFacing.vertex";
 
 /**
  * GreasedLineSimpleMaterial
@@ -58,7 +57,13 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
      * @param options material options
      */
     constructor(name: string, scene: Scene, options: GreasedLineMaterialOptions) {
-        const defines = [];
+        const defines = [
+            `COLOR_DISTRIBUTION_TYPE_LINE ${GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_LINE}.`,
+            `COLOR_DISTRIBUTION_TYPE_SEGMENT ${GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_SEGMENT}.`,
+            `COLOR_MODE_SET ${GreasedLineMeshColorMode.COLOR_MODE_SET}.`,
+            `COLOR_MODE_ADD ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.`,
+            `COLOR_MODE_MULTIPLY ${GreasedLineMeshColorMode.COLOR_MODE_MULTIPLY}.`,
+        ];
         const attributes = ["position", "grl_widths", "grl_offsets", "grl_colorPointers"];
 
         scene.useRightHandedSystem && defines.push("GREASED_LINE_RIGHT_HANDED_COORDINATE_SYSTEM");
@@ -68,6 +73,7 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
             attributes.push("grl_previousAndSide", "grl_nextAndCounters");
         } else {
             attributes.push("grl_slopes");
+            attributes.push("grl_counters");
         }
 
         super(

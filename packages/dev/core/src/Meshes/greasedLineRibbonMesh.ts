@@ -62,6 +62,7 @@ export class GreasedLineRibbonMesh extends Mesh {
     private _totalLengths: number[];
     private _counters: number[];
     private _slopes: number[];
+    private _ribbonHalfWidth: number;
 
     private _vertexPositions: number[];
     private _indices: number[];
@@ -93,8 +94,10 @@ export class GreasedLineRibbonMesh extends Mesh {
         this._indices = [];
         this._uvs = [];
         this._points = [];
-        this._colorPointers = _options.colorPointers ?? [];
-        this._widths = _options.widths ?? new Array(_options.points.length).fill(1);
+        this._colorPointers = [];
+        this._widths = [];
+
+        this._ribbonHalfWidth = _options.ribbonOptions?.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS ? (_options.ribbonOptions.width ?? 0.1) / 2 : 0.05;
 
         this._paths = [];
         this._counters = [];
@@ -321,14 +324,10 @@ export class GreasedLineRibbonMesh extends Mesh {
         if (!this._options.widths) {
             throw "No width table provided.";
         }
-        const widths = this._alignWidths(this._widths, positions, this._paths);
-        // if (this._isLineRibbon) {
-        //     for (const w of widths) {
-        //         this._widths.push(w);
-        //     }
-        // } else {
-        this._widths = widths;
-        // }
+        const widths = this._alignWidths(this._options.widths, positions, this._paths);
+        for (const w of widths) {
+            this._widths.push(w);
+        }
 
         for (const p of positions) {
             this._vertexPositions.push(p);
@@ -509,11 +508,11 @@ export class GreasedLineRibbonMesh extends Mesh {
 
         GreasedLineRibbonMesh._IterateVertices(vertexPositions, [path1, path2], null, (pointIndex, pathIndex, vertexPositionIndex) => {
             if (pathIndex === 0) {
-                const w = widths[pointIndex * 2] ?? 1;
-                alignedWidths[vertexPositionIndex / 3] = w - 1;
+                const w = widths[pointIndex * 2] - 1 ?? 0;
+                alignedWidths[vertexPositionIndex / 3] = w * this._ribbonHalfWidth;
             } else {
-                const w = widths[pointIndex * 2 + 1] ?? 1;
-                alignedWidths[vertexPositionIndex / 3] = w - 1;
+                const w = widths[pointIndex * 2 + 1] - 1 ?? 0;
+                alignedWidths[vertexPositionIndex / 3] = w * this._ribbonHalfWidth;
             }
         });
 

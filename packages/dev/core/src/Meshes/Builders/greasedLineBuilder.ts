@@ -9,7 +9,7 @@ import type { Scene } from "../../scene";
 import { EngineStore } from "../../Engines/engineStore";
 import type { Color3 } from "../../Maths/math.color";
 import { GreasedLineSimpleMaterial } from "../../Materials/greasedLineSimpleMaterial";
-import { GreasedLineRibbonMesh } from "../greasedLineRibbonMesh";
+import { GreasedLineRibbonMesh, GreasedLineRibbonPointsMode } from "../greasedLineRibbonMesh";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
 
 /**
@@ -182,6 +182,9 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
 
         if (initialGreasedLineOptions.ribbonOptions) {
             initialGreasedLineOptions.ribbonOptions.doubleSided = options.ribbonOptions?.doubleSided ?? true;
+            if (initialGreasedLineOptions.ribbonOptions.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS) {
+                initialGreasedLineOptions.ribbonOptions.width = materialOptions.width ?? initialGreasedLineOptions.ribbonOptions.width;
+            }
         }
 
         instance = initialGreasedLineOptions.ribbonOptions
@@ -216,18 +219,22 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     } else {
         // update the data on the mesh instance
         instance = options.instance;
-        const currentWidths = instance.widths;
-
-        if (currentWidths) {
-            const newWidths = currentWidths.slice();
-            for (const w of widths) {
-                newWidths.push(w);
-            }
-            instance.widths = newWidths;
+        if (options.ribbonOptions) {
+            instance.addPoints(allPoints);
         } else {
-            instance.widths = widths;
+            const currentWidths = instance.widths;
+
+            if (currentWidths) {
+                const newWidths = currentWidths.slice();
+                for (const w of widths) {
+                    newWidths.push(w);
+                }
+                instance.widths = newWidths;
+            } else {
+                instance.widths = widths;
+            }
+            instance.addPoints(allPoints);
         }
-        instance.addPoints(allPoints);
     }
 
     // add colors
