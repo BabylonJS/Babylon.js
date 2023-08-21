@@ -90,7 +90,7 @@ void main(void) {
 
 	vec2 cornerPos;
 
-	cornerPos = (vec2(offset.x - 0.5, offset.y  - 0.5) - translationPivot) * size + translationPivot;
+	cornerPos = (vec2(offset.x - 0.5, offset.y  - 0.5) - translationPivot) * size;
 
 #ifdef BILLBOARD
 	// Rotate
@@ -100,6 +100,7 @@ void main(void) {
 	rotatedCorner.x = cornerPos.x * cos(angle) - cornerPos.y * sin(angle);
 	rotatedCorner.z = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);
 	rotatedCorner.y = 0.;
+    rotatedCorner.xz += translationPivot;
 
 	vec3 yaxis = position - eyePosition;
 	yaxis.y = 0.;
@@ -111,6 +112,7 @@ void main(void) {
 	rotatedCorner.x = cornerPos.x * cos(angle) - cornerPos.y * sin(angle);
 	rotatedCorner.y = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);
 	rotatedCorner.z = 0.;
+    rotatedCorner.xy += translationPivot;
 
 	vec3 toCamera = position - eyePosition;
 	vPositionW = rotateAlign(toCamera, rotatedCorner);
@@ -120,6 +122,7 @@ void main(void) {
 	rotatedCorner.x = cornerPos.x * cos(angle) - cornerPos.y * sin(angle);
 	rotatedCorner.y = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);
 	rotatedCorner.z = 0.;
+    rotatedCorner.xy += translationPivot;
 
 	vec3 viewPos = (view * vec4(position, 1.0)).xyz + rotatedCorner;
 
@@ -138,6 +141,7 @@ void main(void) {
 	rotatedCorner.x = cornerPos.x * cos(angle) - cornerPos.y * sin(angle);
 	rotatedCorner.z = cornerPos.x * sin(angle) + cornerPos.y * cos(angle);
 	rotatedCorner.y = 0.;
+    rotatedCorner.xz += translationPivot;
 
 	vec3 yaxis = normalize(direction);
 	vPositionW = rotate(yaxis, rotatedCorner);
