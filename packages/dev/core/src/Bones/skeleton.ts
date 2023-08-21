@@ -503,6 +503,7 @@ export class Skeleton implements IAnimatable {
 
     /**
      * Build all resources required to render a skeleton
+     * @param dontCheckFrameId defines a boolean indicating if prepare should be run without checking first the current frame id (default: false)
      */
     public prepare(dontCheckFrameId = false): void {
         if (!dontCheckFrameId) {
