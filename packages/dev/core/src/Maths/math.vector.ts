@@ -17,7 +17,6 @@ const _ExtractAsInt = (value: number) => {
 };
 
 export declare abstract class Vector<N extends number[] = number[]> {
-
     /**
      * Creates a new Vector from the given coordinates
      */
@@ -63,7 +62,7 @@ export declare abstract class Vector<N extends number[] = number[]> {
      * Copy the current vector to an array
      * @returns a new array with the Vector coordinates.
      */
-    asArray(): number[];
+    asArray(): N;
 
     /**
      * Sets the current Vector coordinates with the given source coordinates
@@ -147,7 +146,7 @@ export declare abstract class Vector<N extends number[] = number[]> {
      * @param floats the coordinates to subtract
      * @returns the resulting Vector
      */
-    subtractFromFloats(...floats: number[]): this;
+    subtractFromFloats(...floats: N): this;
 
     /**
      * Subtracts the given floats from the current Vector coordinates and set the given vector "result" with this result
@@ -183,7 +182,7 @@ export declare abstract class Vector<N extends number[] = number[]> {
      * Gets a new Vector set with the Vector coordinates multiplied by the given floats
      * @returns a new Vector
      */
-    multiplyByFloats(...floats: number[]): this;
+    multiplyByFloats(...floats: N): this;
 
     /**
      * Returns a new Vector set with the Vector coordinates divided by the given one coordinates
@@ -338,6 +337,7 @@ export declare abstract class Vector<N extends number[] = number[]> {
 
     /**
      * The number of dimensions the vector has (i.e. the length of the coordinate array)
+     * Note this is abstract to allow a getter implementation in DynamicVector
      */
     abstract dimension: number;
 
@@ -404,14 +404,10 @@ export declare abstract class Vector<N extends number[] = number[]> {
     static RandomToRef<T extends Vector>(min: number | undefined, max: number | undefined, result: T): T;
 
     /**
-     * Gets a new Vector set from the given index element of the given array
+     * Gets a new vector from the given index element of the given array
      * @param array defines the data source
      * @param offset defines the offset in the data source
-     * @returns a new Vector
-     *
-     * @remarks
-     * Subclasses must implement their own FromArray method due to TypeScript types.
-     * It is recommend to use FromArrayToRef for subclass implementations.
+     * @returns a new vector
      */
     static FromArray(array: ArrayLike<number>, offset?: number): Vector;
 
@@ -428,7 +424,7 @@ export declare abstract class Vector<N extends number[] = number[]> {
      * Sets the given vector "result" with the given floats.
      * @param args defines the coordinates of the source with the last paramater being the result
      */
-    static FromFloatsToRef<T extends Vector>(...args: [...number[], T]): T;
+    static FromFloatsToRef<T extends Vector, N extends number[] = number[]>(...args: [...N, T]): T;
 
     /**
      * Gets a new Vector located for "amount" (float) on the CatmullRom spline defined by the given four Vector
@@ -504,7 +500,14 @@ export declare abstract class Vector<N extends number[] = number[]> {
      * @param result define where the derivative will be stored
      * @returns result input
      */
-    static Hermite1stDerivativeToRef<T extends Vector>(value1: DeepImmutable<T>, tangent1: DeepImmutable<T>, value2: DeepImmutable<T>, tangent2: DeepImmutable<T>, time: number, result: T): T;
+    static Hermite1stDerivativeToRef<T extends Vector>(
+        value1: DeepImmutable<T>,
+        tangent1: DeepImmutable<T>,
+        value2: DeepImmutable<T>,
+        tangent2: DeepImmutable<T>,
+        time: number,
+        result: T
+    ): T;
 
     /**
      * Returns a new Vector located for "amount" (float) on the linear interpolation between the vector "start" adn the vector "end".
@@ -604,7 +607,6 @@ export declare abstract class Vector<N extends number[] = number[]> {
      * @returns the shortest distance
      */
     static DistanceOfPointFromSegment<T extends Vector>(p: DeepImmutable<T>, segA: DeepImmutable<T>, segB: DeepImmutable<T>): number;
-
 }
 
 /**
@@ -1332,13 +1334,7 @@ export class DynamicVector implements Vector<number[]> {
      * @param amount defines the interpolation factor
      * @returns a new Vector
      */
-    public static CatmullRom<T extends DynamicVector>(
-        value1: DeepImmutable<T>,
-        value2: DeepImmutable<T>,
-        value3: DeepImmutable<T>,
-        value4: DeepImmutable<T>,
-        amount: number
-    ): T {
+    public static CatmullRom<T extends DynamicVector>(value1: DeepImmutable<T>, value2: DeepImmutable<T>, value3: DeepImmutable<T>, value4: DeepImmutable<T>, amount: number): T {
         const vector = new (value1.constructor as Constructor<typeof DynamicVector, T>)(),
             squared = amount ** 2,
             cubed = squared * amount;
@@ -1408,13 +1404,7 @@ export class DynamicVector implements Vector<number[]> {
      * @param amount defines the interpolation factor
      * @returns a new Vector
      */
-    public static Hermite<T extends DynamicVector>(
-        value1: DeepImmutable<T>,
-        tangent1: DeepImmutable<T>,
-        value2: DeepImmutable<T>,
-        tangent2: DeepImmutable<T>,
-        amount: number
-    ): T {
+    public static Hermite<T extends DynamicVector>(value1: DeepImmutable<T>, tangent1: DeepImmutable<T>, value2: DeepImmutable<T>, tangent2: DeepImmutable<T>, amount: number): T {
         const vector = new (value1.constructor as Constructor<typeof DynamicVector, T>)(),
             squared = amount ** 2,
             cubed = squared * amount;
@@ -1729,10 +1719,10 @@ export class Vector2 implements Vector<[number, number]> {
      * Example Playground https://playground.babylonjs.com/#QYBWV4#40
      * @returns a new array with 2 elements: the Vector2 coordinates.
      */
-    public asArray(): number[] {
+    public asArray(): [number, number] {
         const result = new Array<number>();
         this.toArray(result, 0);
-        return result;
+        return result as [number, number];
     }
 
     /**
@@ -2674,7 +2664,6 @@ export class Vector2 implements Vector<[number, number]> {
  * Example Playground - Overview - https://playground.babylonjs.com/#R1F8YU
  */
 export class Vector3 implements Vector<[number, number, number]> {
-
     private static _UpReadOnly = Vector3.Up() as DeepImmutable<Vector3>;
     private static _DownReadOnly = Vector3.Down() as DeepImmutable<Vector3>;
     private static _LeftHandedForwardReadOnly = Vector3.Forward(false) as DeepImmutable<Vector3>;
@@ -2686,7 +2675,7 @@ export class Vector3 implements Vector<[number, number, number]> {
     private static _ZeroReadOnly = Vector3.Zero() as DeepImmutable<Vector3>;
     private static _OneReadOnly = Vector3.One() as DeepImmutable<Vector3>;
 
-	public readonly dimension: 3 = 3;
+    public readonly dimension: 3 = 3;
 
     /** @internal */
     public _x: number;
@@ -2781,10 +2770,10 @@ export class Vector3 implements Vector<[number, number, number]> {
      * Example Playground https://playground.babylonjs.com/#R1F8YU#10
      * @returns a new array of numbers
      */
-    public asArray(): number[] {
+    public asArray(): [number, number, number] {
         const result: number[] = [];
         this.toArray(result, 0);
-        return result;
+        return result as [number, number, number];
     }
 
     /**
@@ -3362,7 +3351,7 @@ export class Vector3 implements Vector<[number, number, number]> {
         return false;
     }
 
-	/**
+    /**
      * Gets the current Vector3's floored values and stores them in result
      * @param result the vector to store the result in
      * @returns the result vector
@@ -3381,10 +3370,10 @@ export class Vector3 implements Vector<[number, number, number]> {
      */
     public floor(): this {
         const result = new (this.constructor as Constructor<typeof Vector3, this>)();
-		return this.floorToRef(result);
+        return this.floorToRef(result);
     }
 
-	/**
+    /**
      * Gets the current Vector3's fractional values and stores them in result
      * @param result the vector to store the result in
      * @returns the result vector
@@ -3403,7 +3392,7 @@ export class Vector3 implements Vector<[number, number, number]> {
      */
     public fract(): this {
         const result = new (this.constructor as Constructor<typeof Vector3, this>)();
-		return this.fractToRef(result);
+        return this.fractToRef(result);
     }
 
     // Properties
@@ -4829,7 +4818,7 @@ export class Vector3 implements Vector<[number, number, number]> {
 export class Vector4 implements Vector<[number, number, number, number]> {
     private static _ZeroReadOnly = Vector4.Zero() as DeepImmutable<Vector4>;
 
-	public readonly dimension: 4 = 4;
+    public readonly dimension: 4 = 4;
 
     /**
      * Creates a Vector4 object from the given floats.
@@ -4887,12 +4876,12 @@ export class Vector4 implements Vector<[number, number, number, number]> {
      * Returns a new array populated with 4 elements : the Vector4 coordinates.
      * @returns the resulting array
      */
-    public asArray(): number[] {
+    public asArray(): [number, number, number, number] {
         const result = new Array<number>();
 
         this.toArray(result, 0);
 
-        return result;
+        return result as [number, number, number, number];
     }
 
     /**
@@ -4936,7 +4925,7 @@ export class Vector4 implements Vector<[number, number, number, number]> {
         return this;
     }
 
-	/**
+    /**
      * Adds the given coordinates to the current Vector4
      * @param x defines the x coordinate of the operand
      * @param y defines the y coordinate of the operand
@@ -5294,7 +5283,7 @@ export class Vector4 implements Vector<[number, number, number, number]> {
         if (z < this.z) {
             this.z = z;
         }
-		if (w < this.w) {
+        if (w < this.w) {
             this.w = w;
         }
         return this;
@@ -5318,13 +5307,13 @@ export class Vector4 implements Vector<[number, number, number, number]> {
         if (z > this.z) {
             this.z = z;
         }
-		if (w > this.w) {
+        if (w > this.w) {
             this.w = w;
         }
         return this;
     }
 
-	/**
+    /**
      * Gets the current Vector4's floored values and stores them in result
      * @param result the vector to store the result in
      * @returns the result vector
@@ -5343,10 +5332,10 @@ export class Vector4 implements Vector<[number, number, number, number]> {
      */
     public floor(): this {
         const result = new (this.constructor as Constructor<typeof Vector4, this>)();
-		return this.floorToRef(result);
+        return this.floorToRef(result);
     }
-	
-	/**
+
+    /**
      * Gets the current Vector4's fractional values and stores them in result
      * @param result the vector to store the result in
      * @returns the result vector
@@ -5364,7 +5353,7 @@ export class Vector4 implements Vector<[number, number, number, number]> {
      * @returns a new Vector4
      */
     public fract(): this {
-		const result = new (this.constructor as Constructor<typeof Vector4, this>)();
+        const result = new (this.constructor as Constructor<typeof Vector4, this>)();
         return this.fractToRef(result);
     }
 
@@ -5399,7 +5388,7 @@ export class Vector4 implements Vector<[number, number, number, number]> {
         return this.scaleInPlace(1.0 / len);
     }
 
-	/**
+    /**
      * Normalize the current Vector4 with the given input length.
      * Please note that this is an in place operation.
      * @param len the length of the vector

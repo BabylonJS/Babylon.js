@@ -64,5 +64,5 @@ interface DeepImmutableArray<T> extends ReadonlyArray<DeepImmutable<T>> {}
 /* interface DeepImmutableMap<K, V> extends ReadonlyMap<DeepImmutable<K>, DeepImmutable<V>> {} // es2015+ only */
 
 export type Constructor<C extends new (...args: any[]) => any, I extends InstanceType<C> = InstanceType<C>> = {
-  new (...args: ConstructorParameters<C>): I;
-}
+    new (...args: ConstructorParameters<C>): I;
+};
