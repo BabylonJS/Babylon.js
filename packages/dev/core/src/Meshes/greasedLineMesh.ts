@@ -13,6 +13,7 @@ import type { Node } from "../node";
 import { DeepCopier } from "../Misc/deepCopier";
 import { GreasedLineTools } from "../Misc/greasedLineTools";
 import { GreasedLineSimpleMaterial } from "../Materials/greasedLineSimpleMaterial";
+import type { GreasedLineRibbonOptions } from "./greasedLineRibbonMesh";
 
 export type GreasedLinePoints = Vector3[] | Vector3[][] | Float32Array | Float32Array[] | number[][] | number[];
 
@@ -54,6 +55,11 @@ export interface GreasedLineMeshOptions {
      * Defaults to false.
      */
     lazy?: boolean;
+    /**
+     * The options for the ribbon which will be used as a line.
+     * If this option is set the line switches automatically to a non camera facing mode.
+     */
+    ribbonOptions?: GreasedLineRibbonOptions;
 }
 
 Mesh._GreasedLineMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
@@ -109,7 +115,7 @@ export class GreasedLineMesh extends Mesh {
         this._nextAndCounters = [];
 
         if (_options.points) {
-            this.addPoints(GreasedLineMesh.ConvertPoints(_options.points));
+            this.addPoints(GreasedLineTools.ConvertPoints(_options.points));
         }
     }
 
@@ -119,43 +125,6 @@ export class GreasedLineMesh extends Mesh {
      */
     public getClassName(): string {
         return "GreasedLineMesh";
-    }
-
-    /**
-     * Converts GreasedLinePoints to number[][]
-     * @param points GreasedLinePoints
-     * @returns number[][] with x, y, z coordinates of the points, like [[x, y, z, x, y, z, ...], [x, y, z, ...]]
-     */
-    public static ConvertPoints(points: GreasedLinePoints): number[][] {
-        if (points.length && Array.isArray(points) && typeof points[0] === "number") {
-            return [<number[]>points];
-        } else if (points.length && Array.isArray(points[0]) && typeof points[0][0] === "number") {
-            return <number[][]>points;
-        } else if (points.length && !Array.isArray(points[0]) && points[0] instanceof Vector3) {
-            const positions: number[] = [];
-            for (let j = 0; j < points.length; j++) {
-                const p = points[j] as Vector3;
-                positions.push(p.x, p.y, p.z);
-            }
-            return [positions];
-        } else if (points.length > 0 && Array.isArray(points[0]) && points[0].length > 0 && points[0][0] instanceof Vector3) {
-            const positions: number[][] = [];
-            const vectorPoints = points as Vector3[][];
-            vectorPoints.forEach((p) => {
-                positions.push(p.flatMap((p2) => [p2.x, p2.y, p2.z]));
-            });
-            return positions;
-        } else if (points instanceof Float32Array) {
-            return [Array.from(points)];
-        } else if (points.length && points[0] instanceof Float32Array) {
-            const positions: number[][] = [];
-            points.forEach((p) => {
-                positions.push(Array.from(p as Float32Array));
-            });
-            return positions;
-        }
-
-        return [];
     }
 
     /**

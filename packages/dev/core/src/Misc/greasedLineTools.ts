@@ -5,11 +5,49 @@ import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { IFontData } from "../Meshes/Builders/textBuilder";
 import { CreateTextShapePaths } from "../Meshes/Builders/textBuilder";
 import type { FloatArray, IndicesArray } from "../types";
+import type { GreasedLinePoints } from "../Meshes/greasedLineMesh";
 
 /**
  * Tool functions for GreasedLine
  */
 export class GreasedLineTools {
+    /**
+     * Converts GreasedLinePoints to number[][]
+     * @param points GreasedLinePoints
+     * @returns number[][] with x, y, z coordinates of the points, like [[x, y, z, x, y, z, ...], [x, y, z, ...]]
+     */
+    public static ConvertPoints(points: GreasedLinePoints): number[][] {
+        if (points.length && Array.isArray(points) && typeof points[0] === "number") {
+            return [<number[]>points];
+        } else if (points.length && Array.isArray(points[0]) && typeof points[0][0] === "number") {
+            return <number[][]>points;
+        } else if (points.length && !Array.isArray(points[0]) && points[0] instanceof Vector3) {
+            const positions: number[] = [];
+            for (let j = 0; j < points.length; j++) {
+                const p = points[j] as Vector3;
+                positions.push(p.x, p.y, p.z);
+            }
+            return [positions];
+        } else if (points.length > 0 && Array.isArray(points[0]) && points[0].length > 0 && points[0][0] instanceof Vector3) {
+            const positions: number[][] = [];
+            const vectorPoints = points as Vector3[][];
+            vectorPoints.forEach((p) => {
+                positions.push(p.flatMap((p2) => [p2.x, p2.y, p2.z]));
+            });
+            return positions;
+        } else if (points instanceof Float32Array) {
+            return [Array.from(points)];
+        } else if (points.length && points[0] instanceof Float32Array) {
+            const positions: number[][] = [];
+            points.forEach((p) => {
+                positions.push(Array.from(p as Float32Array));
+            });
+            return positions;
+        }
+
+        return [];
+    }
+
     /**
      * Omit zero length lines predicate for the MeshesToLines function
      * @param p1 point1 position of the face
@@ -73,10 +111,24 @@ export class GreasedLineTools {
      * @param points number array of x, y, z, x, y z, ... coordinates
      * @returns Vector3 array
      */
-    public static ToVector3Array(points: number[]) {
+    public static ToVector3Array(points: number[] | number[][]) {
+        if (Array.isArray(points[0])) {
+            const array: Vector3[][] = [];
+            const inputArray = points as number[][];
+            for (const subInputArray of inputArray) {
+                const subArray: Vector3[] = [];
+                for (let i = 0; i < subInputArray.length; i += 3) {
+                    subArray.push(new Vector3(subInputArray[i], subInputArray[i + 1], subInputArray[i + 2]));
+                }
+                array.push(subArray);
+            }
+            return array;
+        }
+
+        const inputArray = points as number[];
         const array: Vector3[] = [];
-        for (let i = 0; i < points.length; i += 3) {
-            array.push(new Vector3(points[i], points[i + 1], points[i + 2]));
+        for (let i = 0; i < inputArray.length; i += 3) {
+            array.push(new Vector3(inputArray[i], inputArray[i + 1], inputArray[i + 2]));
         }
         return array;
     }
@@ -120,9 +172,9 @@ export class GreasedLineTools {
 
         let points: Vector3[];
         if (typeof data[0] === "number") {
-            points = GreasedLineTools.ToVector3Array(<number[]>data);
+            points = GreasedLineTools.ToVector3Array(<number[]>data) as Vector3[];
         } else {
-            points = <Vector3[]>data;
+            points = data as Vector3[];
         }
 
         const tmp = TmpVectors.Vector3[0];
