@@ -9458,6 +9458,7 @@ export class TmpVectors {
     public static Matrix = ArrayTools.BuildTuple(8, Matrix.Identity); // 8 temp Matrices at once should be enough
 }
 
+RegisterClass("BABYLON.DynamicVector", DynamicVector);
 RegisterClass("BABYLON.Vector2", Vector2);
 RegisterClass("BABYLON.Vector3", Vector3);
 RegisterClass("BABYLON.Vector4", Vector4);
