@@ -33,6 +33,7 @@ export interface INodeGeometryEditorOptions {
     nodeGeometryEditorConfig?: {
         backgroundColor?: Color4;
         hostScene?: Scene;
+        hostMesh?: Mesh;
     };
 }
 
@@ -269,6 +270,28 @@ export class NodeGeometry {
         }
 
         const mesh = new Mesh(name, scene);
+        this._vertexData.applyToMesh(mesh);
+
+        mesh._internalMetadata = mesh._internalMetadata || {};
+        mesh._internalMetadata.nodeGeometry = this;
+
+        return mesh;
+    }
+
+    /**
+     * Creates a mesh from the geometry blocks
+     * @param mesh the mesh to update
+     * @returns True if successfully updated
+     */
+    public updateMesh(mesh: Mesh) {
+        if (!this._buildWasSuccessful) {
+            this.build();
+        }
+
+        if (!this._vertexData) {
+            return false;
+        }
+
         this._vertexData.applyToMesh(mesh);
 
         mesh._internalMetadata = mesh._internalMetadata || {};
