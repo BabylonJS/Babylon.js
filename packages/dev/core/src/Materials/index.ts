@@ -31,5 +31,6 @@ export * from "./material.detailMapConfiguration";
 export * from "./material.decalMapConfiguration";
 export * from "./materialPluginFactoryExport";
 export * from "./greasedLinePluginMaterial";
+export * from "./greasedLineSimpleMaterial";
 export * from "./meshDebugPluginMaterial";
 import "./material.decalMap";

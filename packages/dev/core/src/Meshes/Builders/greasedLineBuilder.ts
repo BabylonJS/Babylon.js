@@ -9,6 +9,8 @@ import type { Scene } from "../../scene";
 import { EngineStore } from "../../Engines/engineStore";
 import type { Color3 } from "../../Maths/math.color";
 import { GreasedLineSimpleMaterial } from "../../Materials/greasedLineSimpleMaterial";
+import { GreasedLineRibbonMesh, GreasedLineRibbonPointsMode } from "../greasedLineRibbonMesh";
+import { GreasedLineTools } from "../../Misc/greasedLineTools";
 
 /**
  * How are the colors distributed along the color table
@@ -100,7 +102,7 @@ export interface GreasedLineMeshBuilderOptions extends GreasedLineMeshOptions {
     widthDistribution?: GreasedLineMeshWidthDistribution;
 }
 
-/**
+/**˝
  * Builder class for create GreasedLineMeshes
  */
 
@@ -143,7 +145,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     scene = <Scene>(scene ?? EngineStore.LastCreatedScene);
 
     let instance;
-    const allPoints = GreasedLineMesh.ConvertPoints(options.points);
+    const allPoints = GreasedLineTools.ConvertPoints(options.points);
 
     let length = 0;
     if (Array.isArray(allPoints[0])) {
@@ -160,6 +162,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     materialOptions.createAndAssignMaterial = materialOptions.createAndAssignMaterial ?? true;
     materialOptions.colorDistribution = materialOptions?.colorDistribution ?? GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START;
     materialOptions.materialType = materialOptions.materialType ?? GreasedLineMeshMaterialType.MATERIAL_TYPE_STANDARD;
+    materialOptions.cameraFacing = materialOptions.cameraFacing ?? true;
 
     const widths = CompleteGreasedLineWidthTable(length, options.widths ?? [], options.widthDistribution);
 
@@ -174,9 +177,19 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
             updatable: options.updatable,
             widths,
             lazy: options.lazy,
+            ribbonOptions: options.ribbonOptions,
         };
 
-        instance = new GreasedLineMesh(name, scene, initialGreasedLineOptions);
+        if (initialGreasedLineOptions.ribbonOptions) {
+            initialGreasedLineOptions.ribbonOptions.doubleSided = options.ribbonOptions?.doubleSided ?? true;
+            if (initialGreasedLineOptions.ribbonOptions.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS) {
+                initialGreasedLineOptions.ribbonOptions.width = materialOptions.width ?? initialGreasedLineOptions.ribbonOptions.width;
+            }
+        }
+
+        instance = initialGreasedLineOptions.ribbonOptions
+            ? new GreasedLineRibbonMesh(name, scene, initialGreasedLineOptions)
+            : new GreasedLineMesh(name, scene, initialGreasedLineOptions);
 
         if (materialOptions) {
             const initialMaterialOptions: GreasedLineMaterialOptions = {
@@ -195,6 +208,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
                 colorsSampling: materialOptions.colorsSampling,
                 colorDistributionType: materialOptions.colorDistributionType,
                 colors,
+                cameraFacing: materialOptions.cameraFacing,
             };
 
             if (materialOptions.createAndAssignMaterial) {
@@ -205,18 +219,22 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     } else {
         // update the data on the mesh instance
         instance = options.instance;
-        const currentWidths = instance.widths;
-
-        if (currentWidths) {
-            const newWidths = currentWidths.slice();
-            for (const w of widths) {
-                newWidths.push(w);
-            }
-            instance.widths = newWidths;
+        if (options.ribbonOptions) {
+            instance.addPoints(allPoints);
         } else {
-            instance.widths = widths;
+            const currentWidths = instance.widths;
+
+            if (currentWidths) {
+                const newWidths = currentWidths.slice();
+                for (const w of widths) {
+                    newWidths.push(w);
+                }
+                instance.widths = newWidths;
+            } else {
+                instance.widths = widths;
+            }
+            instance.addPoints(allPoints);
         }
-        instance.addPoints(allPoints);
     }
 
     // add colors

@@ -57,6 +57,25 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
      * @param options material options
      */
     constructor(name: string, scene: Scene, options: GreasedLineMaterialOptions) {
+        const defines = [
+            `COLOR_DISTRIBUTION_TYPE_LINE ${GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_LINE}.`,
+            `COLOR_DISTRIBUTION_TYPE_SEGMENT ${GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_SEGMENT}.`,
+            `COLOR_MODE_SET ${GreasedLineMeshColorMode.COLOR_MODE_SET}.`,
+            `COLOR_MODE_ADD ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.`,
+            `COLOR_MODE_MULTIPLY ${GreasedLineMeshColorMode.COLOR_MODE_MULTIPLY}.`,
+        ];
+        const attributes = ["position", "grl_widths", "grl_offsets", "grl_colorPointers"];
+
+        scene.useRightHandedSystem && defines.push("GREASED_LINE_RIGHT_HANDED_COORDINATE_SYSTEM");
+
+        if (options.cameraFacing) {
+            defines.push("GREASED_LINE_CAMERA_FACING");
+            attributes.push("grl_previousAndSide", "grl_nextAndCounters");
+        } else {
+            attributes.push("grl_slopes");
+            attributes.push("grl_counters");
+        }
+
         super(
             name,
             scene,
@@ -65,7 +84,7 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
                 fragment: "greasedLine",
             },
             {
-                attributes: ["position", "normal", "grl_previousAndSide", "grl_nextAndCounters", "grl_widths", "grl_offsets", "grl_colorPointers"],
+                attributes,
                 uniforms: [
                     "worldViewProjection",
                     "projection",
@@ -84,7 +103,7 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
                     "grlVisibility",
                 ],
                 samplers: ["grlColors"],
-                defines: scene.useRightHandedSystem ? ["GREASED_LNE_RIGHT_HANDED_COORDINATE_SYSTEM"] : [],
+                defines,
             }
         );
         options = options || {

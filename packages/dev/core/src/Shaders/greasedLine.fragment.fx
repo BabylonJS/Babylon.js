@@ -30,17 +30,17 @@ void main() {
 
     if (grlUseColors == 1.) {
         vec4 textureColor;
-        if (grlColorDistributionType==1.) { // TYPE_SEGMENT = 0, TYPE_LINE = 1
+        if (grlColorDistributionType==COLOR_DISTRIBUTION_TYPE_LINE) { // TYPE_SEGMENT = 0, TYPE_LINE = 1
            textureColor = texture2D(grlColors, vec2(grlCounters, 0.), 0.);
         } else {
            textureColor = texture2D(grlColors, vec2(grlColorPointer/grlColorsWidth, 0.), 0.);
         }
 
-        if (grlColorMode == 0.) { // COLOR_MODE_SET = 0
+        if (grlColorMode == COLOR_MODE_SET) {
             gl_FragColor = textureColor;
-        } else if (grlColorMode == 1.) { // COLOR_MODE_ADD = 1
+        } else if (grlColorMode == COLOR_MODE_ADD) {
             gl_FragColor += textureColor;
-        } else if (grlColorMode == 2.) { // COLOR_MODE_MULTIPLY = 2
+        } else if (grlColorMode == COLOR_MODE_MULTIPLY) {
             gl_FragColor *= textureColor;
         }
     }
