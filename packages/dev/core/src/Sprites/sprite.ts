@@ -218,8 +218,6 @@ export class Sprite extends ThinSprite implements IAnimatable {
         sprite._loopAnimation = parsedSprite.loopAnimation;
         sprite._delay = parsedSprite.delay;
 
-        sprite.playAnimation(sprite._fromIndex, sprite._toIndex, sprite.loopAnimation, sprite.delay);
-
         if (parsedSprite.animationStarted) {
             sprite.playAnimation(sprite.fromIndex, sprite.toIndex, sprite.loopAnimation, sprite.delay);
         }
