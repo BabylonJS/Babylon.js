@@ -213,8 +213,14 @@ export class Sprite extends ThinSprite implements IAnimatable {
         sprite.isVisible = parsedSprite.isVisible;
         sprite.useAlphaForPicking = parsedSprite.useAlphaForPicking;
 
-        sprite.fromIndex = parsedSprite.fromIndex;
-        sprite.toIndex = parsedSprite.toIndex;
+        if (parsedSprite.fromIndex < parsedSprite.toIndex) {
+            sprite.toIndex = parsedSprite.toIndex;
+            sprite.fromIndex = parsedSprite.fromIndex;
+        } else {
+            sprite.fromIndex = parsedSprite.fromIndex;
+            sprite.toIndex = parsedSprite.toIndex;
+        }
+
         sprite.loopAnimation = parsedSprite.loopAnimation;
         sprite.delay = parsedSprite.delay;
 
