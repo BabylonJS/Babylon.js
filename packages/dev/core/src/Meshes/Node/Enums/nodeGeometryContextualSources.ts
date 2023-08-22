@@ -30,4 +30,6 @@ export enum NodeGeometryContextualSources {
     FaceID = 0x000c,
     /** GeometryID */
     GeometryID = 0x000d,
+    /** CollectionID */
+    CollectionID = 0x000e,
 }

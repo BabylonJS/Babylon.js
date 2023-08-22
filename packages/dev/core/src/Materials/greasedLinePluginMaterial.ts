@@ -351,6 +351,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      */
     public colorMode: GreasedLineMeshColorMode;
 
+    private _scene: Scene;
     private _dashCount: number;
     private _dashArray: number;
     private _color: Nullable<Color3>;
@@ -364,7 +365,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
 
     private _engine: Engine;
 
-    constructor(material: Material, private _scene: Scene, options?: GreasedLineMaterialOptions) {
+    constructor(material: Material, scene?: Scene, options?: GreasedLineMaterialOptions) {
         options = options || {
             color: GreasedLinePluginMaterial.DEFAULT_COLOR,
         };
@@ -373,10 +374,10 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
         defines.GREASED_LINE_HAS_COLOR = !!options.color;
         defines.GREASED_LINE_SIZE_ATTENUATION = options.sizeAttenuation ?? false;
         defines.GREASED_LINE_COLOR_DISTRIBUTION_TYPE_LINE = options.colorDistributionType === GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_LINE;
-        defines.GREASED_LNE_RIGHT_HANDED_COORDINATE_SYSTEM = _scene.useRightHandedSystem;
+        defines.GREASED_LNE_RIGHT_HANDED_COORDINATE_SYSTEM = (scene ?? material.getScene()).useRightHandedSystem;
         super(material, GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME, 200, defines);
 
-        this._scene = this._scene ?? material.getScene();
+        this._scene = scene ?? material.getScene();
         this._engine = this._scene.getEngine();
 
         this.visibility = options.visibility ?? 1;
@@ -399,7 +400,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
             this._createColorsTexture(`${material.name}-colors-texture`, this._colors);
         } else {
             this._color = this._color ?? GreasedLinePluginMaterial.DEFAULT_COLOR;
-            GreasedLinePluginMaterial._PrepareEmptyColorsTexture(_scene);
+            GreasedLinePluginMaterial._PrepareEmptyColorsTexture(this._scene);
         }
 
         this._engine.onDisposeObservable.add(() => {
@@ -814,7 +815,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * Gets the color of the line
      */
     get color() {
-        return this.color;
+        return this._color;
     }
 
     /**
@@ -934,6 +935,36 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
         greasedLineMaterialOptions.resolution && (this.resolution = greasedLineMaterialOptions.resolution);
 
         this.markAllDefinesAsDirty();
+    }
+
+    /**
+     * Makes a duplicate of the current configuration into another one.
+     * @param plugin define the config where to copy the info
+     */
+    public copyTo(plugin: MaterialPluginBase): void {
+        const dest = plugin as GreasedLinePluginMaterial;
+
+        dest._colorsTexture?.dispose();
+
+        if (this._colors) {
+            dest._createColorsTexture(`${dest._material.name}-colors-texture`, this._colors);
+        }
+
+        dest.setColor(this.color, true);
+        dest.colorsDistributionType = this.colorsDistributionType;
+        dest.colorsSampling = this.colorsSampling;
+        dest.colorMode = this.colorMode;
+        dest.useColors = this.useColors;
+        dest.visibility = this.visibility;
+        dest.useDash = this.useDash;
+        dest.dashCount = this.dashCount;
+        dest.dashRatio = this.dashRatio;
+        dest.dashOffset = this.dashOffset;
+        dest.width = this.width;
+        dest.sizeAttenuation = this.sizeAttenuation;
+        dest.resolution = this.resolution;
+
+        dest.markAllDefinesAsDirty();
     }
 
     /**

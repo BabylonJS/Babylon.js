@@ -105,6 +105,12 @@ export class NodeGeometryBuildState {
                 return this.executionContext.getExecutionFaceIndex();
             case NodeGeometryContextualSources.GeometryID:
                 return this.geometryContext.uniqueId;
+            case NodeGeometryContextualSources.CollectionID: {
+                if (!this.geometryContext.metadata) {
+                    return 0;
+                }
+                return this.geometryContext.metadata.collectionId || 0;
+            }
         }
 
         return null;

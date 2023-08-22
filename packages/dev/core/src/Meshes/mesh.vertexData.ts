@@ -202,6 +202,11 @@ export class VertexData {
     public uniqueId = 0;
 
     /**
+     * Metadata used to store contextual values
+     */
+    public metadata: any = {};
+
+    /**
      * Creates a new VertexData
      */
     public constructor() {
