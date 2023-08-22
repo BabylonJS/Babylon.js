@@ -1708,11 +1708,12 @@ export class Vector2 implements Vector<[number, number]> {
      * Update the current vector from an array
      * Example Playground https://playground.babylonjs.com/#QYBWV4#39
      * @param array defines the destination array
-     * @param index defines the offset in the destination array
+     * @param offset defines the offset in the destination array
      * @returns the current Vector2
      */
-    public fromArray(array: FloatArray, index: number = 0): this {
-        Vector2.FromArrayToRef(array, index, this);
+    public fromArray(array: FloatArray, offset: number = 0): this {
+		this.x = array[offset];
+        this.y = array[offset + 1];
         return this;
     }
 
@@ -1722,9 +1723,7 @@ export class Vector2 implements Vector<[number, number]> {
      * @returns a new array with 2 elements: the Vector2 coordinates.
      */
     public asArray(): [number, number] {
-        const result = new Array<number>();
-        this.toArray(result, 0);
-        return result as [number, number];
+        return [this.x, this.y];
     }
 
     /**
@@ -1939,7 +1938,9 @@ export class Vector2 implements Vector<[number, number]> {
      * @returns the current updated Vector2
      */
     public divideInPlace(otherVector: DeepImmutable<Vector2>): this {
-        return this.divideToRef(otherVector, this);
+		this.x = this.x / otherVector.x;
+		this.y = this.y / otherVector.y;
+        return this;
     }
 
     /**
@@ -2061,9 +2062,7 @@ export class Vector2 implements Vector<[number, number]> {
      * @returns a new Vector2
      */
     public scale(scale: number): this {
-        const result = new (this.constructor as Constructor<typeof Vector2, this>)(0, 0);
-        this.scaleToRef(scale, result);
-        return result;
+        return new (this.constructor as Constructor<typeof Vector2, this>)(this.x * scale, this.y * scale);
     }
 
     /**
@@ -2130,8 +2129,7 @@ export class Vector2 implements Vector<[number, number]> {
      * @returns a new Vector2
      */
     public floor(): this {
-        const result = new (this.constructor as Constructor<typeof Vector2, this>)();
-        return this.floorToRef(result);
+       	return new (this.constructor as Constructor<typeof Vector2, this>)(Math.floor(this.x), Math.floor(this.y));
     }
 
     /**
@@ -2152,8 +2150,7 @@ export class Vector2 implements Vector<[number, number]> {
      * @returns a new Vector2
      */
     public fract(): this {
-        const result = new (this.constructor as Constructor<typeof Vector2, this>)();
-        return this.fractToRef(result);
+        return new (this.constructor as Constructor<typeof Vector2, this>)(this.x - Math.floor(this.x), this.y - Math.floor(this.y));
     }
 
     /**
@@ -2191,7 +2188,7 @@ export class Vector2 implements Vector<[number, number]> {
      * @returns the vector length (float)
      */
     public length(): number {
-        return Math.sqrt(this.lengthSquared());
+        return Math.sqrt(this.x * this.x + this.y * this.y);
     }
 
     /**
@@ -2796,11 +2793,13 @@ export class Vector3 implements Vector<[number, number, number]> {
      * Update the current vector from an array
      * Example Playground https://playground.babylonjs.com/#R1F8YU#24
      * @param array defines the destination array
-     * @param index defines the offset in the destination array
+     * @param offset defines the offset in the destination array
      * @returns the current Vector3
      */
-    public fromArray(array: FloatArray, index: number = 0): this {
-        Vector3.FromArrayToRef(array, index, this);
+    public fromArray(array: FloatArray, offset: number = 0): this {
+        this.x = array[offset];
+        this.y = array[offset + 1];
+        this.z = array[offset + 2];
         return this;
     }
 
@@ -2820,7 +2819,11 @@ export class Vector3 implements Vector<[number, number, number]> {
      * @returns the current updated Vector3
      */
     public addInPlace(otherVector: DeepImmutable<Vector3>): this {
-        return this.addInPlaceFromFloats(otherVector._x, otherVector._y, otherVector._z);
+        this._x = otherVector._x;
+		this._y = otherVector._y;
+		this._z = otherVector._z;
+		this._isDirty = true;
+		return this;
     }
 
     /**
@@ -3245,7 +3248,11 @@ export class Vector3 implements Vector<[number, number, number]> {
      * @returns the current updated Vector3
      */
     public divideInPlace(otherVector: Vector3): this {
-        return this.divideToRef(otherVector, this);
+		this._x = this._x / otherVector._x;
+		this._y = this._y / otherVector._y;
+		this._z = this._z / otherVector._z;
+		this._isDirty = true;
+        return this;
     }
 
     /**
