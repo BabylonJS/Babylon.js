@@ -9,7 +9,7 @@ import { EngineStore } from "../../Engines/engineStore";
 import type { Color3 } from "../../Maths/math.color";
 import { GreasedLineSimpleMaterial } from "../../Materials/greasedLineSimpleMaterial";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
-import type { GreasedLineMeshOptions} from "../greasedLineBaseMesh";
+import type { GreasedLineMeshOptions } from "../greasedLineBaseMesh";
 import { GreasedLineRibbonPointsMode } from "../greasedLineBaseMesh";
 import { GreasedLineRibbonMesh } from "../greasedLineRibbonMesh";
 
