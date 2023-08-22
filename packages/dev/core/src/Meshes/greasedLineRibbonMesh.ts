@@ -1,107 +1,43 @@
 import type { Scene } from "../scene";
 import { Vector3 } from "../Maths/math.vector";
-import type { IGreasedLineMaterial } from "../Materials/greasedLinePluginMaterial";
-import { GreasedLinePluginMaterial } from "../Materials/greasedLinePluginMaterial";
 import { Mesh } from "./mesh";
 import { Buffer } from "../Buffers/buffer";
-import { VertexData } from "./mesh.vertexData";
 import type { Nullable } from "../types";
 import type { Node } from "../node";
 import { DeepCopier } from "../Misc/deepCopier";
 import { GreasedLineTools } from "../Misc/greasedLineTools";
-import { GreasedLineSimpleMaterial } from "../Materials/greasedLineSimpleMaterial";
-import { CreateRibbonVertexData } from "./Builders/ribbonBuilder";
-import type { GreasedLineMeshOptions } from "./greasedLineMesh";
+import type { GreasedLineMeshOptions, GreasedLineRibbonOptions } from "./greasedLineBaseMesh";
+import { GreasedLineBaseMesh, GreasedLineRibbonPointsMode } from "./greasedLineBaseMesh";
 
 Mesh._GreasedLineRibbonMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
     return GreasedLineRibbonMesh.Parse(parsedMesh, scene);
 };
 
-export enum GreasedLineRibbonPointsMode {
-    POINTS_MODE_POINTS = 0,
-    POINTS_MODE_PATHS = 1,
-}
-
-export type GreasedLineRibbonOptions = {
-    /**
-     * Whether the ribbon should be doublesided.
-     * Defaults to true.
-     */
-    doubleSided?: boolean;
-} & (
-    | {
-          /**
-           * Defines how the points are processed.
-           * Every array of points will become the center of the ribbon. The ribbon will be expanded by width/2 to direction and -direction as well.
-           */
-          pointsMode: GreasedLineRibbonPointsMode.POINTS_MODE_POINTS;
-          /**
-           * Normalized direction of the slope of the non camera facing line.
-           */
-          direction: Vector3;
-          /**
-           * Width of the ribbon.
-           */
-          width: number;
-      }
-    | {
-          /**
-           * Defines how the points are processed.
-           * Every array of points is one path. These will be used to buuld one ribbon.
-           */
-          pointsMode: GreasedLineRibbonPointsMode.POINTS_MODE_PATHS;
-      }
-);
-
 /**
  * GreasedLine
  */
-export class GreasedLineRibbonMesh extends Mesh {
+export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
+
     private _paths: Vector3[][];
     private _segmentLengths: number[][] = [];
     private _totalLengths: number[];
     private _counters: number[];
     private _slopes: number[];
-    private _ribbonHalfWidth: number;
-
-    private _vertexPositions: number[];
-    private _indices: number[];
-    private _uvs: number[];
-    private _points: number[][];
-    private _offsets: number[];
-    private _colorPointers: number[];
-    private _widths: number[];
-
-    private _offsetsBuffer?: Buffer;
-    private _widthsBuffer?: Buffer;
-    private _colorPointersBuffer?: Buffer;
-
-    private _lazy = false;
-    private _updatable = false;
 
     /**
-     * Treshold used to pick the mesh
+     * GreasedLineRibbonMesh
+     * @param name name of the mesh
+     * @param scene the scene
+     * @param _options mesh options
      */
-    public intersectionThreshold = 0.1;
-
-    constructor(public readonly name: string, scene: Scene, private _options: GreasedLineMeshOptions) {
-        super(name, scene, null, null, false, false);
-
-        this._lazy = _options.lazy ?? false;
-        this._updatable = _options.updatable ?? false;
-
-        this._vertexPositions = [];
-        this._indices = [];
-        this._uvs = [];
-        this._points = [];
-        this._colorPointers = [];
-        this._widths = [];
-
-        this._ribbonHalfWidth = _options.ribbonOptions?.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS ? (_options.ribbonOptions.width ?? 0.1) / 2 : 0.05;
+    constructor(public readonly name: string, scene: Scene, _options: GreasedLineMeshOptions) {
+        super(name, scene, _options);
 
         this._paths = [];
         this._counters = [];
         this._slopes = [];
+        this._colorPointers = [];
+        this._widths = [];
 
         if (_options.points) {
             this.addPoints(GreasedLineTools.ConvertPoints(_options.points));
@@ -114,35 +50,6 @@ export class GreasedLineRibbonMesh extends Mesh {
      */
     public getClassName(): string {
         return "GreasedLineRibbonMesh";
-    }
-
-    /**
-     * Updated a lazy line. Rerenders the line and updates boundinfo as well.
-     */
-    public updateLazy() {
-        this._setPoints(this._points);
-        if (!this._options.colorPointers) {
-            this._updateColorPointers();
-        }
-        this._createVertexBuffers();
-        this.refreshBoundingInfo();
-
-        this.greasedLineMaterial?.updateLazy();
-    }
-
-    /**
-     * Dispose the line and it's resources
-     */
-    public dispose() {
-        super.dispose();
-    }
-
-    /**
-     *
-     * @returns true if the mesh was created in lazy mode
-     */
-    public isLazy(): boolean {
-        return this._lazy;
     }
 
     /**
@@ -159,102 +66,9 @@ export class GreasedLineRibbonMesh extends Mesh {
         this._slopes = slopes;
     }
 
-    /**
-     * Return the the points offsets
-     */
-    get offsets() {
-        return this._offsets;
-    }
+    protected _updateWidths() {
+       // TODO
 
-    /**
-     * Sets point offests
-     * @param offsets offset table [x,y,z, x,y,z, ....]
-     */
-    set offsets(offsets: number[]) {
-        this._offsets = offsets;
-        if (!this._offsetsBuffer) {
-            this._createOffsetsBuffer(offsets);
-        } else {
-            this._offsetsBuffer && this._offsetsBuffer.update(offsets);
-        }
-    }
-
-    /**
-     * Gets widths at each line point like [widthLower, widthUpper, widthLower, widthUpper, ...]
-     */
-    get widths() {
-        return this._widths;
-    }
-
-    /**
-     * Sets widths at each line point
-     * @param widths width table [widthLower, widthUpper, widthLower, widthUpper ...]
-     */
-    set widths(widths: number[]) {
-        this._widths = widths;
-        if (!this._lazy) {
-            this._widthsBuffer && this._widthsBuffer.update(widths);
-        }
-    }
-
-    /**
-     * Gets the color pointer. Each vertex need a color pointer. These color pointers points to the colors in the color table @see colors
-     */
-    get colorPointers() {
-        return this._colorPointers;
-    }
-
-    /**
-     * Sets the color pointer
-     * @param colorPointers array of color pointer in the colors array. One pointer for every vertex is needed.
-     */
-    set colorPointers(colorPointers: number[]) {
-        this._colorPointers = colorPointers;
-        if (!this._lazy) {
-            this._colorPointersBuffer && this._colorPointersBuffer.update(colorPointers);
-        }
-    }
-
-    /**
-     * Gets the pluginMaterial associated with line
-     */
-    get greasedLineMaterial(): IGreasedLineMaterial | undefined {
-        if (this.material && this.material instanceof GreasedLineSimpleMaterial) {
-            return this.material;
-        }
-        const materialPlugin = this.material?.pluginManager?.getPlugin(GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME);
-        if (materialPlugin) {
-            return <GreasedLinePluginMaterial>materialPlugin;
-        }
-        return;
-    }
-
-    /**
-     * Return copy the points.
-     */
-    get points() {
-        const pointsCopy: number[][] = [];
-        DeepCopier.DeepCopy(this._points, pointsCopy);
-        return pointsCopy;
-    }
-
-    /**
-     * Adds new points to the line. It doesn't rerenders the line if in lazy mode.
-     * @param points points table
-     */
-    public addPoints(points: number[][]) {
-        for (const p of points) {
-            this._points.push(p);
-        }
-
-        if (!this._lazy) {
-            this.setPoints(this._points);
-        }
-    }
-
-    private _updateColorPointers() {}
-
-    private _updateWidths() {
         // let pointCount = 0;
         // for (const points of this._points) {
         //     pointCount += points.length;
@@ -265,18 +79,7 @@ export class GreasedLineRibbonMesh extends Mesh {
         // }
     }
 
-    /**
-     * Sets line points and rerenders the line.
-     * @param points points table
-     */
-    public setPoints(points: number[][]) {
-        this._points = points;
-        this._updateWidths();
-        this._updateColorPointers();
-        this._setPoints(points);
-    }
-
-    private _setPoints(points: number[][]) {
+    protected _setPoints(points: number[][]) {
         if (!this._options.ribbonOptions) {
             throw "No ribbonOptions provided.";
         }
@@ -305,51 +108,76 @@ export class GreasedLineRibbonMesh extends Mesh {
         }
     }
 
-    private get _isLineRibbon() {
+    /**
+     * Return true if the line was created from two edge paths or one points path.
+     * In this case the line is always flat.
+     */
+    public get isFlatLine() {
         return this._paths.length < 3;
+    }
+
+    private static _CreateRibbonVertexData(options: { pathArray: Vector3[][] }) {
+        const numOfPaths = options.pathArray.length;
+        if (numOfPaths < 2) {
+            throw "Minimum of two paths is required to create a ribbon.";
+        }
+
+        const positions = [];
+        const indices = [];
+
+        const path = options.pathArray[0];
+        for (let i = 0; i < path.length; i++) {
+            for (let pi = 0; pi < options.pathArray.length; pi++) {
+                if (numOfPaths === 3 && pi == 2) {
+                    continue;
+                }
+                const v = options.pathArray[pi][i];
+                positions.push(v.x, v.y, v.z);
+            }
+        }
+
+        for (let i = 0; i < positions.length / 3 - numOfPaths; i++) {
+            indices.push(i, i + 1, i + numOfPaths);
+        }
+
+        return {
+            positions,
+            indices,
+        };
     }
 
     private _preprocess(pathArray: Vector3[][], indiceOffset: number) {
         this._calculateSegmentLengths(pathArray);
         this._paths = pathArray;
 
-        const ribbonVertexData = CreateRibbonVertexData({
+        const ribbonVertexData = GreasedLineRibbonMesh._CreateRibbonVertexData({
             pathArray,
-            sideOrientation: this._options.ribbonOptions!.doubleSided ? Mesh.DOUBLESIDE : undefined,
         });
 
-        const positions = Array.from(ribbonVertexData.positions ?? []);
-        const colorPointersMax = Math.max(...this._colorPointers);
-        const { counters, colorPointers } = GreasedLineRibbonMesh._GetCountersAndColorPointers(
-            positions,
-            this._paths,
-            this._segmentLengths,
-            this._totalLengths,
-            this._counters.length,
-            colorPointersMax < 0 ? 0 : colorPointersMax
-        );
+        const positions = ribbonVertexData.positions;
 
         if (!this._options.widths) {
             throw "No width table provided.";
-        }
-        const widths = this._alignWidths(this._options.widths, positions, this._paths);
-        for (const w of widths) {
-            this._widths.push(w);
         }
 
         for (const p of positions) {
             this._vertexPositions.push(p);
         }
 
-        for (const c of counters) {
-            this._counters.push(c);
+        const pathArrayLength = pathArray.length;
+        const prevoiusCounters = new Array(pathArrayLength).fill(0);
+        for (let i = 0; i < positions.length / (pathArrayLength * 3); i++) {
+            for (let pi = 0; pi < pathArrayLength; pi++) {
+                const counter = prevoiusCounters[pi] + this._segmentLengths[pi][i] / this._totalLengths[pi];
+                this._counters.push(counter);
+                this._uvs.push(counter);
+                prevoiusCounters[pi] = counter;
+                this._colorPointers.push(i);
+                this._widths.push((this._options.widths[pi * pathArrayLength + i] - 1) * this._halfWidth);
+            }
         }
 
-        for (const cp of colorPointers) {
-            this._colorPointers.push(cp);
-        }
-
-        const slopes = this._calculateSlopes(positions, this._paths);
+        const slopes = GreasedLineRibbonMesh._CalculateSlopes(positions, this._paths);
         for (const s of slopes) {
             this._slopes.push(s);
         }
@@ -361,16 +189,12 @@ export class GreasedLineRibbonMesh extends Mesh {
         }
         indiceOffset += positions.length / 3;
 
-        if (ribbonVertexData.uvs) {
-            for (let i = 0; i < ribbonVertexData.uvs.length; i++) {
-                this._uvs.push(ribbonVertexData.uvs[i]);
-            }
-        }
-
         return indiceOffset;
     }
 
-    private _createVertexBuffers() {
+    protected _createVertexBuffers() {
+        super._createVertexBuffers();
+
         console.log("vertices", this._vertexPositions);
         console.log("indices", this._indices);
         console.log("counters", this._counters);
@@ -378,34 +202,19 @@ export class GreasedLineRibbonMesh extends Mesh {
         console.log("slopes", this._slopes);
         console.log("widths", this._widths);
 
-        const vertexData = new VertexData();
-        vertexData.positions = this._vertexPositions;
-        vertexData.indices = this._indices;
-        vertexData.uvs = this._uvs;
-        vertexData.applyToMesh(this, this._options.updatable);
 
-        const engine = this._scene.getEngine();
-
-        const countersBuffer = new Buffer(engine, this._counters, this._updatable, 1);
+        const countersBuffer = new Buffer(this._engine, this._counters, this._updatable, 1);
         this.setVerticesBuffer(countersBuffer.createVertexBuffer("grl_counters", 0, 1));
 
-        const colorPointersBuffer = new Buffer(engine, this._colorPointers, this._updatable, 1);
+        const colorPointersBuffer = new Buffer(this._engine, this._colorPointers, this._updatable, 1);
         this.setVerticesBuffer(colorPointersBuffer.createVertexBuffer("grl_colorPointers", 0, 1));
 
-        const slopesBuffer = new Buffer(engine, this._slopes, this._updatable, 3);
+        const slopesBuffer = new Buffer(this._engine, this._slopes, this._updatable, 3);
         this.setVerticesBuffer(slopesBuffer.createVertexBuffer("grl_slopes", 0, 3));
 
-        const widthsBuffer = new Buffer(engine, this._widths, this._updatable, 1);
+        const widthsBuffer = new Buffer(this._engine, this._widths, this._updatable, 1);
         this.setVerticesBuffer(widthsBuffer.createVertexBuffer("grl_widths", 0, 1));
         this._widthsBuffer = widthsBuffer;
-    }
-
-    private _createOffsetsBuffer(offsets: number[]) {
-        const engine = this._scene.getEngine();
-
-        const offsetBuffer = new Buffer(engine, offsets, this._updatable, 3);
-        this.setVerticesBuffer(offsetBuffer.createVertexBuffer("grl_offsets", 0, 3));
-        this._offsetsBuffer = offsetBuffer;
     }
 
     private static _ConvertToRibbonPath(points: number[], ribbonInfo: GreasedLineRibbonOptions) {
@@ -421,18 +230,6 @@ export class GreasedLineRibbonMesh extends Mesh {
             }
         }
         return [path1, path2];
-    }
-
-    private _createLineOptions() {
-        const lineOptions: GreasedLineMeshOptions = {
-            points: this._points,
-            colorPointers: this._colorPointers,
-            lazy: this._lazy,
-            updatable: this._updatable,
-            uvs: this._uvs,
-            widths: this._widths,
-        };
-        return lineOptions;
     }
 
     /**
@@ -480,10 +277,9 @@ export class GreasedLineRibbonMesh extends Mesh {
         return result;
     }
 
-    private _initGreasedLine() {
-        this._vertexPositions = [];
-        this._indices = [];
-        this._uvs = [];
+    protected _initGreasedLine() {
+        super._initGreasedLine();
+
         this._paths = [];
         this._counters = [];
         this._slopes = [];
@@ -503,29 +299,29 @@ export class GreasedLineRibbonMesh extends Mesh {
         return { pointIndex: -1, pathIndex: -1 };
     }
 
-    private _alignWidths(widths: number[], vertexPositions: number[], paths: Vector3[][]) {
-        const alignedWidths = new Array(vertexPositions.length / 3);
+    // private _alignWidthsNonAligned(widths: number[], vertexPositions: number[], paths: Vector3[][]) {
+    //     const alignedWidths = new Array(vertexPositions.length / 3);
 
-        if (!this._isLineRibbon) {
-            alignedWidths.fill(0);
-            return alignedWidths;
-        }
+    //     if (!this._isLineRibbon) {
+    //         alignedWidths.fill(0);
+    //         return alignedWidths;
+    //     }
 
-        const path1 = paths[0];
-        const path2 = paths.length === 2 ? paths[1] : paths[paths.length - 1];
+    //     const path1 = paths[0];
+    //     const path2 = paths.length === 2 ? paths[1] : paths[paths.length - 1];
 
-        GreasedLineRibbonMesh._IterateVertices(vertexPositions, [path1, path2], null, (pointIndex, pathIndex, vertexPositionIndex) => {
-            if (pathIndex === 0) {
-                const w = widths[pointIndex * 2] - 1 ?? 0;
-                alignedWidths[vertexPositionIndex / 3] = w * this._ribbonHalfWidth;
-            } else {
-                const w = widths[pointIndex * 2 + 1] - 1 ?? 0;
-                alignedWidths[vertexPositionIndex / 3] = w * this._ribbonHalfWidth;
-            }
-        });
+    //     GreasedLineRibbonMesh._IterateVertices(vertexPositions, [path1, path2], null, (pointIndex, pathIndex, vertexPositionIndex) => {
+    //         if (pathIndex === 0) {
+    //             const w = widths[pointIndex * 2] - 1 ?? 0;
+    //             alignedWidths[vertexPositionIndex / 3] = w * this._ribbonHalfWidth;
+    //         } else {
+    //             const w = widths[pointIndex * 2 + 1] - 1 ?? 0;
+    //             alignedWidths[vertexPositionIndex / 3] = w * this._ribbonHalfWidth;
+    //         }
+    //     });
 
-        return alignedWidths;
-    }
+    //     return alignedWidths;
+    // }
 
     // }
     // private _calculateSegmentLengths(paths: number[][]) {
@@ -567,7 +363,7 @@ export class GreasedLineRibbonMesh extends Mesh {
         }
     }
 
-    private _calculateSlopes(vertexPositions: number[], paths: Vector3[][]) {
+    private static _CalculateSlopes(vertexPositions: number[], paths: Vector3[][]) {
         const points1 = paths[0];
         const points2 = paths.length === 2 ? paths[1] : paths[paths.length - 1];
         const slopes: number[] = [];
@@ -594,43 +390,43 @@ export class GreasedLineRibbonMesh extends Mesh {
         return slopes;
     }
 
-    private static _CalcDistanceToPointIndex(index: number, segmentLengths: number[]) {
-        let distance = 0;
-        for (let i = 0; i <= index; i++) {
-            distance += segmentLengths[i];
-        }
-        return distance;
-    }
+    // private static _CalcDistanceToPointIndex(index: number, segmentLengths: number[]) {
+    //     let distance = 0;
+    //     for (let i = 0; i <= index; i++) {
+    //         distance += segmentLengths[i];
+    //     }
+    //     return distance;
+    // }
 
-    private static _GetCountersAndColorPointers(
-        vertexPositions: number[],
-        paths: Vector3[][],
-        segmentLengths: number[][],
-        totalLengths: number[],
-        existingCountersLength: number,
-        existingColorPointerssLength: number
-    ) {
-        const counters: number[] = [];
-        const colorPointers: number[] = [];
+    // private static _GetCountersAndColorPointersNonAligned(
+    //     vertexPositions: number[],
+    //     paths: Vector3[][],
+    //     segmentLengths: number[][],
+    //     totalLengths: number[],
+    //     existingCountersLength: number,
+    //     existingColorPointerssLength: number
+    // ) {
+    //     const counters: number[] = [];
+    //     const colorPointers: number[] = [];
 
-        let distance = -1;
+    //     let distance = -1;
 
-        GreasedLineRibbonMesh._IterateVertices(
-            vertexPositions,
-            paths,
-            () => {
-                distance = -1;
-            },
-            (pointIndex, pathIndex) => {
-                distance = GreasedLineRibbonMesh._CalcDistanceToPointIndex(pointIndex, segmentLengths[pathIndex]) / totalLengths[pathIndex];
+    //     GreasedLineRibbonMesh._IterateVertices(
+    //         vertexPositions,
+    //         paths,
+    //         () => {
+    //             distance = -1;
+    //         },
+    //         (pointIndex, pathIndex) => {
+    //             distance = GreasedLineRibbonMesh._CalcDistanceToPointIndex(pointIndex, segmentLengths[pathIndex]) / totalLengths[pathIndex];
 
-                counters.push(distance);
-                colorPointers.push(pointIndex + existingColorPointerssLength);
-            }
-        );
+    //             counters.push(distance);
+    //             colorPointers.push(pointIndex + existingColorPointerssLength);
+    //         }
+    //     );
 
-        return { counters, colorPointers };
-    }
+    //     return { counters, colorPointers };
+    // }
 
     private static _IterateVertices(
         vertexPositions: number[],

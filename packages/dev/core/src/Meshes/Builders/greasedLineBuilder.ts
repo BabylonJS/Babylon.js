@@ -3,14 +3,15 @@ import { GreasedLineMeshMaterialType, GreasedLinePluginMaterial } from "../../Ma
 import { StandardMaterial } from "./../../Materials/standardMaterial";
 import { PBRMaterial } from "../../Materials/PBR/pbrMaterial";
 import type { Nullable } from "../../types";
-import type { GreasedLineMeshOptions } from "../greasedLineMesh";
 import { GreasedLineMesh } from "../greasedLineMesh";
 import type { Scene } from "../../scene";
 import { EngineStore } from "../../Engines/engineStore";
 import type { Color3 } from "../../Maths/math.color";
 import { GreasedLineSimpleMaterial } from "../../Materials/greasedLineSimpleMaterial";
-import { GreasedLineRibbonMesh, GreasedLineRibbonPointsMode } from "../greasedLineRibbonMesh";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
+import type { GreasedLineMeshOptions} from "../greasedLineBaseMesh";
+import { GreasedLineRibbonPointsMode } from "../greasedLineBaseMesh";
+import { GreasedLineRibbonMesh } from "../greasedLineRibbonMesh";
 
 /**
  * How are the colors distributed along the color table
@@ -181,7 +182,6 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
         };
 
         if (initialGreasedLineOptions.ribbonOptions) {
-            initialGreasedLineOptions.ribbonOptions.doubleSided = options.ribbonOptions?.doubleSided ?? true;
             if (initialGreasedLineOptions.ribbonOptions.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS) {
                 initialGreasedLineOptions.ribbonOptions.width = materialOptions.width ?? initialGreasedLineOptions.ribbonOptions.width;
             }
