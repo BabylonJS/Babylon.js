@@ -3,7 +3,7 @@ import { Scalar } from "./math.scalar";
 import { ToLinearSpace, ToGammaSpace, Epsilon } from "./math.constants";
 import { ArrayTools } from "../Misc/arrayTools";
 import { RegisterClass } from "../Misc/typeStore";
-import type { Vector } from "./math.vector";
+import type { VectorLike } from "./math.vector";
 
 function colorChannelToLinearSpace(color: number): number {
     return Math.pow(color, ToLinearSpace);
@@ -30,7 +30,7 @@ function colorChannelToGammaSpaceExact(color: number): number {
 /**
  * Class used to hold a RGB color
  */
-export class Color3 implements Vector<[number, number, number]> {
+export class Color3 implements VectorLike<[number, number, number]> {
     public readonly dimension: 3 = 3;
 
     /**
@@ -308,22 +308,6 @@ export class Color3 implements Vector<[number, number, number]> {
     }
 
     /**
-     * Gets the length of the Color3
-     * @returns the length of the Color3
-     */
-    public length(): number {
-        return Math.sqrt(this.lengthSquared());
-    }
-
-    /**
-     * Gets the squared length of the Color3
-     * @returns squared length of the Color3
-     */
-    public lengthSquared(): number {
-        return this.r * this.r + this.g * this.g + this.b * this.b;
-    }
-
-    /**
      * Determines equality between Color3 objects
      * @param otherColor defines the second operand
      * @returns true if the rgb values are equal to the given ones
@@ -557,53 +541,6 @@ export class Color3 implements Vector<[number, number, number]> {
      */
     public subtractFromFloatsToRef<T extends Color3>(r: number, g: number, b: number, result: T): T {
         return result.copyFromFloats(this.r - r, this.g - g, this.b - b);
-    }
-
-    /**
-     * Normalize the current Color3.
-     * Please note that this is an in place operation.
-     * @returns the current updated Color3
-     */
-    public normalize(): this {
-        return this.normalizeFromLength(this.length());
-    }
-
-    /**
-     * Normalize the current Color3 with the given input length.
-     * Please note that this is an in place operation.
-     * @param len the length of the color
-     * @returns the current updated Color3
-     */
-    public normalizeFromLength(len: number): this {
-        if (len === 0 || len === 1.0) {
-            return this;
-        }
-
-        return this.scaleInPlace(1.0 / len);
-    }
-
-    /**
-     * Normalize the current Color3 to a new color
-     * @returns the new Color3
-     */
-    public normalizeToNew(): this {
-        const normalized = new (this.constructor as Constructor<typeof Color3, this>)(0, 0, 0);
-        this.normalizeToRef(normalized);
-        return normalized;
-    }
-
-    /**
-     * Normalize the current Color3 to the reference
-     * @param reference define the Color3 to update
-     * @returns the updated Color3
-     */
-    public normalizeToRef<T extends this>(reference: T): T {
-        const len = this.length();
-        if (len === 0 || len === 1.0) {
-            return reference.copyFrom(this);
-        }
-
-        return this.scaleToRef(1.0 / len, reference);
     }
 
     /**
@@ -1076,7 +1013,7 @@ export class Color3 implements Vector<[number, number, number]> {
 /**
  * Class used to hold a RBGA color
  */
-export class Color4 implements Vector<[number, number, number, number]> {
+export class Color4 implements VectorLike<[number, number, number, number]> {
     public readonly dimension: 4 = 4;
 
     /**
@@ -1545,73 +1482,6 @@ export class Color4 implements Vector<[number, number, number, number]> {
     public fract(): this {
         const result = new (this.constructor as Constructor<typeof Color4, this>)();
         return this.fractToRef(result);
-    }
-
-    /**
-     * Returns the Color4 length (float).
-     * @returns the length
-     */
-    public length(): number {
-        return Math.sqrt(this.lengthSquared());
-    }
-    /**
-     * Returns the Color4 squared length (float).
-     * @returns the length squared
-     */
-    public lengthSquared(): number {
-        return this.r * this.r + this.g * this.g + this.b * this.b + this.a * this.a;
-    }
-
-    /**
-     * Normalizes in place the Color4.
-     * @returns the updated Color4.
-     */
-    public normalize(): this {
-        const len = this.length();
-
-        if (len === 0) {
-            return this;
-        }
-
-        return this.scaleInPlace(1.0 / len);
-    }
-
-    /**
-     * Normalize the current Color4 with the given input length.
-     * Please note that this is an in place operation.
-     * @param len the length of the color
-     * @returns the current updated Color4
-     */
-    public normalizeFromLength(len: number): this {
-        if (len === 0 || len === 1.0) {
-            return this;
-        }
-
-        return this.scaleInPlace(1.0 / len);
-    }
-
-    /**
-     * Normalize the current Color4 to a new color
-     * @returns the new Color4
-     */
-    public normalizeToNew(): this {
-        const normalized = new (this.constructor as Constructor<typeof Color4, this>)();
-        this.normalizeToRef(normalized);
-        return normalized;
-    }
-
-    /**
-     * Normalize the current Color4 to the reference
-     * @param reference define the Color4 to update
-     * @returns the updated Color4
-     */
-    public normalizeToRef<T extends this>(reference: T): T {
-        const len = this.length();
-        if (len === 0 || len === 1.0) {
-            return reference.copyFrom(this);
-        }
-
-        return this.scaleToRef(1.0 / len, reference);
     }
 
     /**

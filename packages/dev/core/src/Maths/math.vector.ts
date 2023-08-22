@@ -16,7 +16,13 @@ const _ExtractAsInt = (value: number) => {
     return parseInt(value.toString().replace(/\W/g, ""));
 };
 
-export declare abstract class Vector<N extends number[] = number[]> {
+export declare abstract class VectorLike<N extends number[] = number[]> {
+    /**
+     * The number of dimensions the vector has (i.e. the length of the coordinate array)
+     * Note this is abstract to allow a getter implementation in DynamicVector
+     */
+    abstract dimension: number;
+
     /**
      * Creates a new Vector from the given coordinates
      */
@@ -336,51 +342,6 @@ export declare abstract class Vector<N extends number[] = number[]> {
     fractToRef<T extends this>(result: T): T;
 
     /**
-     * The number of dimensions the vector has (i.e. the length of the coordinate array)
-     * Note this is abstract to allow a getter implementation in DynamicVector
-     */
-    abstract dimension: number;
-
-    /**
-     * Gets the length of the vector
-     * @returns the vector length (float)
-     */
-    length(): number;
-
-    /**
-     * Gets the vector squared length
-     * @returns the vector squared length (float)
-     */
-    lengthSquared(): number;
-
-    /**
-     * Normalize the vector
-     * @returns the current updated Vector
-     */
-    normalize(): this;
-
-    /**
-     * Normalize the current Vector with the given input length.
-     * Please note that this is an in place operation.
-     * @param len the length of the vector
-     * @returns the current updated Vector
-     */
-    normalizeFromLength(len: number): this;
-
-    /**
-     * Normalize the current Vector to a new vector
-     * @returns the new Vector
-     */
-    normalizeToNew(): this;
-
-    /**
-     * Normalize the current Vector to the reference
-     * @param reference define the Vector to update
-     * @returns the updated Vector
-     */
-    normalizeToRef<T extends this>(reference: T): T;
-
-    /**
      * Gets a new Vector copied from the Vector
      * @returns a new Vector
      */
@@ -425,6 +386,104 @@ export declare abstract class Vector<N extends number[] = number[]> {
      * @param args defines the coordinates of the source with the last paramater being the result
      */
     static FromFloatsToRef<T extends Vector, N extends number[] = number[]>(...args: [...N, T]): T;
+
+    /**
+     * Gets the dot product of the vector "left" and the vector "right"
+     * @param left defines first vector
+     * @param right defines second vector
+     * @returns the dot product (float)
+     */
+    static Dot<T extends Vector>(left: DeepImmutable<T>, right: DeepImmutable<T>): number;
+
+    /**
+     * Gets a new Vector set with the minimal coordinate values from the "left" and "right" vectors
+     * @param left defines 1st vector
+     * @param right defines 2nd vector
+     * @returns a new Vector
+     */
+    static Minimize<T extends Vector>(left: DeepImmutable<T>, right: DeepImmutable<T>): T;
+
+    /**
+     * Gets a new Vector set with the maximal coordinate values from the "left" and "right" vectors
+     * @param left defines 1st vector
+     * @param right defines 2nd vector
+     * @returns a new Vector
+     */
+    static Maximize<T extends Vector>(left: DeepImmutable<T>, right: DeepImmutable<T>): T;
+
+    /**
+     * Gets the distance between the vectors "value1" and "value2"
+     * @param value1 defines first vector
+     * @param value2 defines second vector
+     * @returns the distance between vectors
+     */
+    static Distance<T extends Vector>(value1: DeepImmutable<T>, value2: DeepImmutable<T>): number;
+
+    /**
+     * Returns the squared distance between the vectors "value1" and "value2"
+     * @param value1 defines first vector
+     * @param value2 defines second vector
+     * @returns the squared distance between vectors
+     */
+    static DistanceSquared<T extends Vector>(value1: DeepImmutable<T>, value2: DeepImmutable<T>): number;
+
+    /**
+     * Gets a new Vector located at the center of the vectors "value1" and "value2"
+     * @param value1 defines first vector
+     * @param value2 defines second vector
+     * @returns a new Vector
+     */
+    static Center<T extends Vector>(value1: DeepImmutable<T>, value2: DeepImmutable<T>): T;
+
+    /**
+     * Gets the center of the vectors "value1" and "value2" and stores the result in the vector "ref"
+     * @param value1 defines first vector
+     * @param value2 defines second vector
+     * @param ref defines third vector
+     * @returns ref
+     */
+    static CenterToRef<T extends Vector>(value1: DeepImmutable<T>, value2: DeepImmutable<T>, ref: T): T;
+}
+
+export declare abstract class Vector<N extends number[] = number[]> extends VectorLike<N> {
+    /**
+     * Gets the length of the vector
+     * @returns the vector length (float)
+     */
+    length(): number;
+
+    /**
+     * Gets the vector squared length
+     * @returns the vector squared length (float)
+     */
+    lengthSquared(): number;
+
+    /**
+     * Normalize the vector
+     * @returns the current updated Vector
+     */
+    normalize(): this;
+
+    /**
+     * Normalize the current Vector with the given input length.
+     * Please note that this is an in place operation.
+     * @param len the length of the vector
+     * @returns the current updated Vector
+     */
+    normalizeFromLength(len: number): this;
+
+    /**
+     * Normalize the current Vector to a new vector
+     * @returns the new Vector
+     */
+    normalizeToNew(): this;
+
+    /**
+     * Normalize the current Vector to the reference
+     * @param reference define the Vector to update
+     * @returns the updated Vector
+     */
+    normalizeToRef<T extends this>(reference: T): T;
 
     /**
      * Gets a new Vector located for "amount" (float) on the CatmullRom spline defined by the given four Vector
@@ -528,14 +587,6 @@ export declare abstract class Vector<N extends number[] = number[]> {
     static LerpToRef<T extends Vector>(start: DeepImmutable<T>, end: DeepImmutable<T>, amount: number, result: T): T;
 
     /**
-     * Gets the dot product of the vector "left" and the vector "right"
-     * @param left defines first vector
-     * @param right defines second vector
-     * @returns the dot product (float)
-     */
-    static Dot<T extends Vector>(left: DeepImmutable<T>, right: DeepImmutable<T>): number;
-
-    /**
      * Returns a new Vector equal to the normalized given vector
      * @param vector defines the vector to normalize
      * @returns a new Vector
@@ -549,55 +600,6 @@ export declare abstract class Vector<N extends number[] = number[]> {
      * @returns result input
      */
     static NormalizeToRef<T extends Vector>(vector: DeepImmutable<T>, result: T): T;
-
-    /**
-     * Gets a new Vector set with the minimal coordinate values from the "left" and "right" vectors
-     * @param left defines 1st vector
-     * @param right defines 2nd vector
-     * @returns a new Vector
-     */
-    static Minimize<T extends Vector>(left: DeepImmutable<T>, right: DeepImmutable<T>): T;
-
-    /**
-     * Gets a new Vector set with the maximal coordinate values from the "left" and "right" vectors
-     * @param left defines 1st vector
-     * @param right defines 2nd vector
-     * @returns a new Vector
-     */
-    static Maximize<T extends Vector>(left: DeepImmutable<T>, right: DeepImmutable<T>): T;
-
-    /**
-     * Gets the distance between the vectors "value1" and "value2"
-     * @param value1 defines first vector
-     * @param value2 defines second vector
-     * @returns the distance between vectors
-     */
-    static Distance<T extends Vector>(value1: DeepImmutable<T>, value2: DeepImmutable<T>): number;
-
-    /**
-     * Returns the squared distance between the vectors "value1" and "value2"
-     * @param value1 defines first vector
-     * @param value2 defines second vector
-     * @returns the squared distance between vectors
-     */
-    static DistanceSquared<T extends Vector>(value1: DeepImmutable<T>, value2: DeepImmutable<T>): number;
-
-    /**
-     * Gets a new Vector located at the center of the vectors "value1" and "value2"
-     * @param value1 defines first vector
-     * @param value2 defines second vector
-     * @returns a new Vector
-     */
-    static Center<T extends Vector>(value1: DeepImmutable<T>, value2: DeepImmutable<T>): T;
-
-    /**
-     * Gets the center of the vectors "value1" and "value2" and stores the result in the vector "ref"
-     * @param value1 defines first vector
-     * @param value2 defines second vector
-     * @param ref defines third vector
-     * @returns ref
-     */
-    static CenterToRef<T extends Vector>(value1: DeepImmutable<T>, value2: DeepImmutable<T>, ref: T): T;
 
     /**
      * Gets the shortest distance (float) between the point "p" and the segment defined by the two points "segA" and "segB".
