@@ -377,5 +377,4 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
         this.setVerticesBuffer(colorPointersBuffer.createVertexBuffer("grl_colorPointers", 0, 1));
         this._colorPointersBuffer = colorPointersBuffer;
     }
-
 }
