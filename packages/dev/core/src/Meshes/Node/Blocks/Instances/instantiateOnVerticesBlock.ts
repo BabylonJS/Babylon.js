@@ -16,7 +16,15 @@ import type { Nullable } from "../../../../types";
 export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext {
     private _vertexData: VertexData;
     private _currentIndex: number;
+    private _currentLoopIndex: number;
     private _indexTranslation: Nullable<{ [key: number]: number }> = null;
+
+    /**
+     * Gets or sets a boolean indicating that this block can evaluate context
+     * Build performance is improved when this value is set to false as the system will cache values instead of reevaluating everything per context change
+     */
+    @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { rebuild: true } })
+    public evaluateContext = true;
 
     /**
      * Gets or sets a boolean indicating if the block should remove duplicated positions
@@ -47,6 +55,14 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
      */
     public getExecutionIndex(): number {
         return this._indexTranslation ? this._indexTranslation[this._currentIndex] : this._currentIndex;
+    }
+
+    /**
+     * Gets the current loop index in the current flow
+     * @returns the current loop index
+     */
+    public getExecutionLoopIndex(): number {
+        return this._currentLoopIndex;
     }
 
     /**
@@ -108,97 +124,106 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
     }
 
     protected _buildBlock(state: NodeGeometryBuildState) {
-        state.executionContext = this;
+        const func = (state: NodeGeometryBuildState) => {
+            state.executionContext = this;
 
-        this._vertexData = this.geometry.getConnectedValue(state);
-        state.geometryContext = this._vertexData;
+            this._vertexData = this.geometry.getConnectedValue(state);
+            state.geometryContext = this._vertexData;
 
-        if (!this._vertexData || !this._vertexData.positions || !this.instance.isConnected) {
-            state.executionContext = null;
-            state.geometryContext = null;
-            this.output._storedValue = null;
-            return;
-        }
+            if (!this._vertexData || !this._vertexData.positions || !this.instance.isConnected) {
+                state.executionContext = null;
+                state.geometryContext = null;
+                this.output._storedValue = null;
+                return;
+            }
 
-        // Processing
-        let vertexCount = this._vertexData.positions.length / 3;
-        const additionalVertexData: VertexData[] = [];
-        const currentPosition = new Vector3();
-        const alreadyDone = new Array<number>();
-        let vertices = this._vertexData.positions;
+            // Processing
+            let vertexCount = this._vertexData.positions.length / 3;
+            const additionalVertexData: VertexData[] = [];
+            const currentPosition = new Vector3();
+            const alreadyDone = new Array<number>();
+            let vertices = this._vertexData.positions;
+            this._currentLoopIndex = 0;
 
-        if (this.removeDuplicatedPositions) {
-            this._indexTranslation = {};
+            if (this.removeDuplicatedPositions) {
+                this._indexTranslation = {};
+                for (this._currentIndex = 0; this._currentIndex < vertexCount; this._currentIndex++) {
+                    const x = vertices[this._currentIndex * 3];
+                    const y = vertices[this._currentIndex * 3 + 1];
+                    const z = vertices[this._currentIndex * 3 + 2];
+                    let found = false;
+                    for (let index = 0; index < alreadyDone.length; index += 3) {
+                        if (Math.abs(alreadyDone[index] - x) < Epsilon && Math.abs(alreadyDone[index + 1] - y) < Epsilon && Math.abs(alreadyDone[index + 2] - z) < Epsilon) {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (found) {
+                        continue;
+                    }
+                    this._indexTranslation[alreadyDone.length / 3] = this._currentIndex;
+                    alreadyDone.push(x, y, z);
+                }
+
+                vertices = alreadyDone;
+                vertexCount = vertices.length / 3;
+            } else {
+                this._indexTranslation = null;
+            }
+
             for (this._currentIndex = 0; this._currentIndex < vertexCount; this._currentIndex++) {
-                const x = vertices[this._currentIndex * 3];
-                const y = vertices[this._currentIndex * 3 + 1];
-                const z = vertices[this._currentIndex * 3 + 2];
-                let found = false;
-                for (let index = 0; index < alreadyDone.length; index += 3) {
-                    if (Math.abs(alreadyDone[index] - x) < Epsilon && Math.abs(alreadyDone[index + 1] - y) < Epsilon && Math.abs(alreadyDone[index + 2] - z) < Epsilon) {
-                        found = true;
-                        break;
+                const instanceGeometry = this.instance.getConnectedValue(state) as VertexData;
+
+                if (!instanceGeometry || !instanceGeometry.positions || instanceGeometry.positions.length === 0) {
+                    continue;
+                }
+
+                const density = this.density.getConnectedValue(state);
+
+                if (density < 1) {
+                    if (Math.random() > density) {
+                        continue;
                     }
                 }
 
-                if (found) {
-                    continue;
-                }
-                this._indexTranslation[alreadyDone.length / 3] = this._currentIndex;
-                alreadyDone.push(x, y, z);
+                currentPosition.fromArray(vertices, this._currentIndex * 3);
+
+                // Clone the instance
+                const clone = instanceGeometry.clone();
+
+                // Transform
+                const scaling = state.adaptInput(this.scaling, NodeGeometryBlockConnectionPointTypes.Vector3, Vector3.OneReadOnly);
+                const rotation = this.rotation.getConnectedValue(state) || Vector3.ZeroReadOnly;
+                state._instantiate(clone, currentPosition, rotation, scaling, additionalVertexData);
+                this._currentLoopIndex++;
             }
 
-            vertices = alreadyDone;
-            vertexCount = vertices.length / 3;
-        } else {
-            this._indexTranslation = null;
-        }
-
-        for (this._currentIndex = 0; this._currentIndex < vertexCount; this._currentIndex++) {
-            const instanceGeometry = this.instance.getConnectedValue(state) as VertexData;
-
-            if (!instanceGeometry || !instanceGeometry.positions || instanceGeometry.positions.length === 0) {
-                continue;
-            }
-
-            const density = this.density.getConnectedValue(state);
-
-            if (density < 1) {
-                if (Math.random() > density) {
-                    continue;
+            // Merge
+            if (additionalVertexData.length) {
+                if (additionalVertexData.length === 1) {
+                    this._vertexData = additionalVertexData[0];
+                } else {
+                    // We do not merge the main one as user can use a merge node if wanted
+                    const main = additionalVertexData.splice(0, 1)[0];
+                    this._vertexData = main.merge(additionalVertexData, true, false, true, true);
                 }
             }
 
-            currentPosition.fromArray(vertices, this._currentIndex * 3);
-
-            // Clone the instance
-            const clone = instanceGeometry.clone();
-
-            // Transform
-            const scaling = state.adaptInput(this.scaling, NodeGeometryBlockConnectionPointTypes.Vector3, Vector3.OneReadOnly);
-            const rotation = this.rotation.getConnectedValue(state) || Vector3.ZeroReadOnly;
-            state._instantiate(clone, currentPosition, rotation, scaling, additionalVertexData);
-        }
-
-        // Merge
-        if (additionalVertexData.length) {
-            if (additionalVertexData.length === 1) {
-                this._vertexData = additionalVertexData[0];
-            } else {
-                // We do not merge the main one as user can use a merge node if wanted
-                const main = additionalVertexData.splice(0, 1)[0];
-                this._vertexData = main.merge(additionalVertexData, true, false, true, true);
-            }
-        }
+            return this._vertexData;
+        };
 
         // Storage
-        this.output._storedValue = this._vertexData;
-        state.executionContext = null;
-        state.geometryContext = null;
+        if (this.evaluateContext) {
+            this.output._storedFunction = func;
+        } else {
+            this.output._storedValue = func(state);
+        }
     }
 
     protected _dumpPropertiesCode() {
-        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.removeDuplicatedPositions = ${this.removeDuplicatedPositions ? "true" : "false"};\n`;
+        let codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.removeDuplicatedPositions = ${this.removeDuplicatedPositions ? "true" : "false"};\n`;
+        codeString += `${this._codeVariableName}.evaluateContext = ${this.evaluateContext ? "true" : "false"};\n`;
         return codeString;
     }
 
@@ -210,6 +235,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
         const serializationObject = super.serialize();
 
         serializationObject.removeDuplicatedPositions = this.removeDuplicatedPositions;
+        serializationObject.evaluateContext = this.evaluateContext;
 
         return serializationObject;
     }
@@ -218,6 +244,9 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
         super._deserialize(serializationObject);
 
         this.removeDuplicatedPositions = serializationObject.removeDuplicatedPositions;
+        if (serializationObject.evaluateContext !== undefined) {
+            this.evaluateContext = serializationObject.evaluateContext;
+        }
     }
 }
 

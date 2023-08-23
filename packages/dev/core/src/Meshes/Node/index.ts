@@ -47,6 +47,7 @@ export * from "./Blocks/Matrices/translationBlock";
 export * from "./Blocks/Instances/instantiateOnVerticesBlock";
 export * from "./Blocks/Instances/instantiateOnFacesBlock";
 export * from "./Blocks/Instances/instantiateOnVolumeBlock";
+export * from "./Blocks/Instances/instantiateBlock";
 export * from "./Blocks/intFloatConverterBlock";
 export * from "./Blocks/debugBlock";
 export * from "./Blocks/geometryInfoBlock";

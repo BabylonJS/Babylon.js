@@ -38,6 +38,7 @@ import { SetMaterialIDBlock } from "core/Meshes/Node/Blocks/Set/setMaterialIDBlo
 import { InstantiateOnVerticesBlock } from "core/Meshes/Node/Blocks/Instances/instantiateOnVerticesBlock";
 import { InstantiateOnFacesBlock } from "core/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock";
 import { InstantiateOnVolumeBlock } from "core/Meshes/Node/Blocks/Instances/instantiateOnVolumeBlock";
+import { InstantiateBlock } from "core/Meshes/Node/Blocks/Instances/instantiateBlock";
 import { DebugBlock } from "core/Meshes/Node/Blocks/debugBlock";
 import { TeleportInBlock } from "core/Meshes/Node/Blocks/Teleport/teleportInBlock";
 import { TeleportOutBlock } from "core/Meshes/Node/Blocks/Teleport/teleportOutBlock";
@@ -120,6 +121,8 @@ export class BlockTools {
                 return new InstantiateOnFacesBlock("Instantiate on faces");
             case "InstantiateOnVerticesBlock":
                 return new InstantiateOnVerticesBlock("Instantiate on vertices");
+            case "InstantiateBlock":
+                return new InstantiateBlock("Instantiate");
             case "MapRangeBlock":
                 return new MapRangeBlock("Map Range");
             case "NormalizeBlock":
@@ -235,6 +238,11 @@ export class BlockTools {
             case "VertexIDBlock": {
                 const block = new GeometryInputBlock("Vertex ID");
                 block.contextualValue = NodeGeometryContextualSources.VertexID;
+                return block;
+            }
+            case "LoopIDBlock": {
+                const block = new GeometryInputBlock("Loop ID");
+                block.contextualValue = NodeGeometryContextualSources.LoopID;
                 return block;
             }
             case "GeometryIDBlock": {

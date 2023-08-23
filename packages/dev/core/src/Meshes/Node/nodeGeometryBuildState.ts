@@ -36,7 +36,7 @@ export class NodeGeometryBuildState {
      * @returns the value associated with the source
      */
     public getContextualValue(source: NodeGeometryContextualSources) {
-        if (!this.executionContext || !this.geometryContext) {
+        if (!this.executionContext) {
             return null;
         }
 
@@ -47,7 +47,7 @@ export class NodeGeometryBuildState {
                 if (this.executionContext.getOverridePositionsContextualValue) {
                     return this.executionContext.getOverridePositionsContextualValue();
                 }
-                if (!this.geometryContext.positions) {
+                if (!this.geometryContext || !this.geometryContext.positions) {
                     return Vector3.Zero();
                 }
                 return Vector3.FromArray(this.geometryContext.positions as ArrayLike<number>, index * 3);
@@ -55,47 +55,47 @@ export class NodeGeometryBuildState {
                 if (this.executionContext.getOverrideNormalsContextualValue) {
                     return this.executionContext.getOverrideNormalsContextualValue();
                 }
-                if (!this.geometryContext.normals) {
+                if (!this.geometryContext || !this.geometryContext.normals) {
                     return Vector3.Zero();
                 }
                 return Vector3.FromArray(this.geometryContext.normals as ArrayLike<number>, index * 3);
             case NodeGeometryContextualSources.Colors:
-                if (!this.geometryContext.colors) {
+                if (!this.geometryContext || !this.geometryContext.colors) {
                     return Vector4.Zero();
                 }
                 return Vector4.FromArray(this.geometryContext.colors as ArrayLike<number>, index * 4);
             case NodeGeometryContextualSources.Tangents:
-                if (!this.geometryContext.tangents) {
+                if (!this.geometryContext || !this.geometryContext.tangents) {
                     return Vector4.Zero();
                 }
                 return Vector4.FromArray(this.geometryContext.tangents as ArrayLike<number>, index * 4);
             case NodeGeometryContextualSources.UV:
-                if (!this.geometryContext.uvs) {
+                if (!this.geometryContext || !this.geometryContext.uvs) {
                     return Vector2.Zero();
                 }
                 return Vector2.FromArray(this.geometryContext.uvs as ArrayLike<number>, index * 2);
             case NodeGeometryContextualSources.UV2:
-                if (!this.geometryContext.uvs2) {
+                if (!this.geometryContext || !this.geometryContext.uvs2) {
                     return Vector2.Zero();
                 }
                 return Vector2.FromArray(this.geometryContext.uvs2 as ArrayLike<number>, index * 2);
             case NodeGeometryContextualSources.UV3:
-                if (!this.geometryContext.uvs3) {
+                if (!this.geometryContext || !this.geometryContext.uvs3) {
                     return Vector2.Zero();
                 }
                 return Vector2.FromArray(this.geometryContext.uvs3 as ArrayLike<number>, index * 2);
             case NodeGeometryContextualSources.UV4:
-                if (!this.geometryContext.uvs4) {
+                if (!this.geometryContext || !this.geometryContext.uvs4) {
                     return Vector2.Zero();
                 }
                 return Vector2.FromArray(this.geometryContext.uvs4 as ArrayLike<number>, index * 2);
             case NodeGeometryContextualSources.UV5:
-                if (!this.geometryContext.uvs5) {
+                if (!this.geometryContext || !this.geometryContext.uvs5) {
                     return Vector2.Zero();
                 }
                 return Vector2.FromArray(this.geometryContext.uvs5 as ArrayLike<number>, index * 2);
             case NodeGeometryContextualSources.UV6:
-                if (!this.geometryContext.uvs6) {
+                if (!this.geometryContext || !this.geometryContext.uvs6) {
                     return Vector2.Zero();
                 }
                 return Vector2.FromArray(this.geometryContext.uvs6 as ArrayLike<number>, index * 2);
@@ -103,10 +103,12 @@ export class NodeGeometryBuildState {
                 return index;
             case NodeGeometryContextualSources.FaceID:
                 return this.executionContext.getExecutionFaceIndex();
+            case NodeGeometryContextualSources.LoopID:
+                return this.executionContext.getExecutionLoopIndex();
             case NodeGeometryContextualSources.GeometryID:
-                return this.geometryContext.uniqueId;
+                return !this.geometryContext ? 0 : this.geometryContext.uniqueId;
             case NodeGeometryContextualSources.CollectionID: {
-                if (!this.geometryContext.metadata) {
+                if (!this.geometryContext || !this.geometryContext.metadata) {
                     return 0;
                 }
                 return this.geometryContext.metadata.collectionId || 0;
@@ -205,6 +207,23 @@ export class NodeGeometryBuildState {
             if (clone.normals) {
                 this._tempVector3.fromArray(clone.normals, clonePositionIndex);
                 Vector3.TransformNormalToRef(this._tempVector3, this._scalingRotationMatrix, this._tempVector3);
+                this._tempVector3.toArray(clone.normals, clonePositionIndex);
+            }
+        }
+
+        additionalVertexData.push(clone);
+    }
+
+    /** @internal  */
+    public _instantiateWithMatrix(clone: VertexData, transform: Matrix, additionalVertexData: VertexData[]) {
+        for (let clonePositionIndex = 0; clonePositionIndex < clone.positions!.length; clonePositionIndex += 3) {
+            this._tempVector3.fromArray(clone.positions!, clonePositionIndex);
+            Vector3.TransformCoordinatesToRef(this._tempVector3, transform, this._tempVector3);
+            this._tempVector3.toArray(clone.positions!, clonePositionIndex);
+
+            if (clone.normals) {
+                this._tempVector3.fromArray(clone.normals, clonePositionIndex);
+                Vector3.TransformNormalToRef(this._tempVector3, transform, this._tempVector3);
                 this._tempVector3.toArray(clone.normals, clonePositionIndex);
             }
         }
