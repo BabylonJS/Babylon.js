@@ -2819,9 +2819,9 @@ export class Vector3 implements Vector<[number, number, number]> {
      * @returns the current updated Vector3
      */
     public addInPlace(otherVector: DeepImmutable<Vector3>): this {
-        this._x = otherVector._x;
-        this._y = otherVector._y;
-        this._z = otherVector._z;
+        this._x += otherVector._x;
+        this._y += otherVector._y;
+        this._z += otherVector._z;
         this._isDirty = true;
         return this;
     }
