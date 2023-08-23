@@ -123,7 +123,7 @@ export declare abstract class VectorLike<N extends number[] = number[]> {
      * @param floats the floats to add
      * @returns the current updated Vector
      */
-    addInPlaceFromFloats(...floats: number[]): this;
+    addInPlaceFromFloats(...floats: N): this;
 
     /**
      * Gets a new Vector2 set with the subtracted coordinates of the given one from the current Vector2
