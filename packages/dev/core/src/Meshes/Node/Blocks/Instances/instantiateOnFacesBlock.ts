@@ -15,6 +15,7 @@ import type { Nullable } from "../../../../types";
 export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext {
     private _vertexData: VertexData;
     private _currentFaceIndex: number;
+    private _currentLoopIndex: number;
     private _currentPosition = new Vector3();
     private _vertex0 = new Vector3();
     private _vertex1 = new Vector3();
@@ -60,6 +61,14 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
      */
     public getExecutionFaceIndex(): number {
         return this._currentFaceIndex;
+    }
+
+    /**
+     * Gets the current loop index in the current flow
+     * @returns the current loop index
+     */
+    public getExecutionLoopIndex(): number {
+        return this._currentLoopIndex;
     }
 
     /**
@@ -164,6 +173,7 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
         let accumulatedCount = 0;
         const additionalVertexData: VertexData[] = [];
         let totalDone = 0;
+        this._currentLoopIndex = 0;
 
         for (this._currentFaceIndex = 0; this._currentFaceIndex < faceCount; this._currentFaceIndex++) {
             // Extract face vertices
@@ -216,6 +226,7 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
                 const rotation = this.rotation.getConnectedValue(state) || Vector3.ZeroReadOnly;
                 state._instantiate(clone, this._currentPosition, rotation, scaling, additionalVertexData);
                 totalDone++;
+                this._currentLoopIndex++;
             }
         }
 

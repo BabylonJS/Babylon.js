@@ -16,6 +16,7 @@ import { extractMinAndMax } from "../../../../Maths/math.functions";
  */
 export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext {
     private _vertexData: VertexData;
+    private _currentLoopIndex: number;
     private _currentPosition = new Vector3();
     private _vertex0 = new Vector3();
     private _vertex1 = new Vector3();
@@ -59,6 +60,14 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
      */
     public getExecutionFaceIndex(): number {
         return 0;
+    }
+
+    /**
+     * Gets the current loop index in the current flow
+     * @returns the current loop index
+     */
+    public getExecutionLoopIndex(): number {
+        return this._currentLoopIndex;
     }
 
     /**
@@ -152,6 +161,7 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
         const max = boundingInfo.maximum;
         const direction = new Vector3(1, 0, 0);
         const faceCount = this._vertexData.indices.length / 3;
+        this._currentLoopIndex = 0;
 
         for (let index = 0; index < instanceCount; index++) {
             this._currentPosition.set(Math.random() * (max.x - min.x) + min.x, Math.random() * (max.y - min.y) + min.y, Math.random() * (max.z - min.z) + min.z);
@@ -192,6 +202,7 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
             const scaling = state.adaptInput(this.scaling, NodeGeometryBlockConnectionPointTypes.Vector3, Vector3.OneReadOnly);
             const rotation = this.rotation.getConnectedValue(state) || Vector3.ZeroReadOnly;
             state._instantiate(clone, this._currentPosition, rotation, scaling, additionalVertexData);
+            this._currentLoopIndex++;
         }
 
         // Merge

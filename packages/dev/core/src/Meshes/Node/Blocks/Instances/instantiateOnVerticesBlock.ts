@@ -16,6 +16,7 @@ import type { Nullable } from "../../../../types";
 export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext {
     private _vertexData: VertexData;
     private _currentIndex: number;
+    private _currentLoopIndex: number;
     private _indexTranslation: Nullable<{ [key: number]: number }> = null;
 
     /**
@@ -47,6 +48,14 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
      */
     public getExecutionIndex(): number {
         return this._indexTranslation ? this._indexTranslation[this._currentIndex] : this._currentIndex;
+    }
+
+    /**
+     * Gets the current loop index in the current flow
+     * @returns the current loop index
+     */
+    public getExecutionLoopIndex(): number {
+        return this._currentLoopIndex;
     }
 
     /**
@@ -126,6 +135,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
         const currentPosition = new Vector3();
         const alreadyDone = new Array<number>();
         let vertices = this._vertexData.positions;
+        this._currentLoopIndex = 0;
 
         if (this.removeDuplicatedPositions) {
             this._indexTranslation = {};
@@ -178,6 +188,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
             const scaling = state.adaptInput(this.scaling, NodeGeometryBlockConnectionPointTypes.Vector3, Vector3.OneReadOnly);
             const rotation = this.rotation.getConnectedValue(state) || Vector3.ZeroReadOnly;
             state._instantiate(clone, currentPosition, rotation, scaling, additionalVertexData);
+            this._currentLoopIndex++;
         }
 
         // Merge
