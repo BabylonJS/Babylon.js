@@ -17,7 +17,6 @@ Mesh._GreasedLineRibbonMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
  * GreasedLine
  */
 export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
-
     private _paths: Vector3[][];
     private _segmentLengths: number[][] = [];
     private _totalLengths: number[];
@@ -67,8 +66,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
     }
 
     protected _updateWidths() {
-       // TODO
-
+        // TODO
         // let pointCount = 0;
         // for (const points of this._points) {
         //     pointCount += points.length;
@@ -128,16 +126,34 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         const path = options.pathArray[0];
         for (let i = 0; i < path.length; i++) {
             for (let pi = 0; pi < options.pathArray.length; pi++) {
-                if (numOfPaths === 3 && pi == 2) {
-                    continue;
-                }
+                // if (numOfPaths === 3 && pi == 2) {
+                //     continue;
+                // }
                 const v = options.pathArray[pi][i];
                 positions.push(v.x, v.y, v.z);
             }
         }
 
-        for (let i = 0; i < positions.length / 3 - numOfPaths; i++) {
-            indices.push(i, i + 1, i + numOfPaths);
+        const v: number[] = [1, 0, numOfPaths];
+        if (numOfPaths > 2) {
+            // for (let i = 0, c = 0; i < positions.length / 3 - numOfPaths; i++) {
+            for (let pi = 0; pi < (numOfPaths - 1) * 2; pi++) {
+                if (pi % 2 !== 0) {
+                    v[2] += 1;
+                }
+                if (pi % 2 === 0 && pi > 0) {
+                    v[0] += 1;
+                    v[1] += 1;
+                }
+                indices.push(v[0]);
+                indices.push(v[1] + (pi % 2 !== 0 ? numOfPaths : 0));
+                indices.push(v[2]);
+            }
+            // }
+        } else {
+            for (let i = 0; i < positions.length / 3 - numOfPaths; i++) {
+                indices.push(i, i + 1, i + numOfPaths);
+            }
         }
 
         return {
@@ -165,15 +181,17 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         }
 
         const pathArrayLength = pathArray.length;
-        const prevoiusCounters = new Array(pathArrayLength).fill(0);
+        const previousCounters = new Array(pathArrayLength).fill(0);
+        const mul = this.isFlatLine ? 1 : 0;
         for (let i = 0; i < positions.length / (pathArrayLength * 3); i++) {
             for (let pi = 0; pi < pathArrayLength; pi++) {
-                const counter = prevoiusCounters[pi] + this._segmentLengths[pi][i] / this._totalLengths[pi];
+                const counter = previousCounters[pi] + this._segmentLengths[pi][i] / this._totalLengths[pi];
                 this._counters.push(counter);
                 this._uvs.push(counter);
-                prevoiusCounters[pi] = counter;
+                this._uvs.push(counter);
+                previousCounters[pi] = counter;
                 this._colorPointers.push(i);
-                this._widths.push((this._options.widths[pi * pathArrayLength + i] - 1) * this._halfWidth);
+                this._widths.push((this._options.widths[pi * pathArrayLength + i] ?? 1 - 1) * this._halfWidth * mul);
             }
         }
 
@@ -201,7 +219,6 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         console.log("colorPointers", this._colorPointers);
         console.log("slopes", this._slopes);
         console.log("widths", this._widths);
-
 
         const countersBuffer = new Buffer(this._engine, this._counters, this._updatable, 1);
         this.setVerticesBuffer(countersBuffer.createVertexBuffer("grl_counters", 0, 1));

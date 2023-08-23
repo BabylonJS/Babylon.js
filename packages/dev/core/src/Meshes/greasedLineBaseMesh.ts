@@ -310,11 +310,15 @@ export abstract class GreasedLineBaseMesh extends Mesh {
         serializationObject.lineOptions = this._createLineOptions();
     }
 
-    protected _createVertexBuffers() {
+    protected _createVertexBuffers(computeNormals = false) {
         const vertexData = new VertexData();
         vertexData.positions = this._vertexPositions;
         vertexData.indices = this._indices;
         vertexData.uvs = this._uvs;
+        if (computeNormals) {
+            vertexData.normals = []
+            VertexData.ComputeNormals(this._vertexPositions, this._indices, vertexData.normals);
+        }
         vertexData.applyToMesh(this, this._options.updatable);
     }
 

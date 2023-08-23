@@ -727,6 +727,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
                             }
                         }
                     #endif
+
                 `,
             };
         }
