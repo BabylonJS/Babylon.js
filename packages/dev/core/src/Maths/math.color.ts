@@ -139,8 +139,7 @@ export class Color3 implements VectorLike<[number, number, number]> {
      * @returns the new Color3 object
      */
     public multiply(otherColor: DeepImmutable<this>): this {
-        const result = new (this.constructor as Constructor<typeof Color3, this>)();
-        return this.multiplyToRef(otherColor, result);
+        return new (this.constructor as Constructor<typeof Color3, this>)(this.r * otherColor.r, this.g * otherColor.g, this.b * otherColor.b);
     }
 
     /**
@@ -204,7 +203,10 @@ export class Color3 implements VectorLike<[number, number, number]> {
      * @returns the current updated Color3
      */
     public divideInPlace(otherColor: Color3): this {
-        return this.divideToRef(otherColor, this);
+        this.r = this.r / otherColor.r;
+        this.g = this.g / otherColor.g;
+        this.b = this.b / otherColor.b;
+        return this;
     }
 
     /**
@@ -282,8 +284,7 @@ export class Color3 implements VectorLike<[number, number, number]> {
      * @returns a new Color3
      */
     public floor(): this {
-        const result = new (this.constructor as Constructor<typeof Color3, this>)();
-        return this.floorToRef(result);
+        return new (this.constructor as Constructor<typeof Color3, this>)(Math.floor(this.r), Math.floor(this.g), Math.floor(this.b));
     }
 
     /**
@@ -303,8 +304,7 @@ export class Color3 implements VectorLike<[number, number, number]> {
      * @returns a new Color3
      */
     public fract(): this {
-        const result = new (this.constructor as Constructor<typeof Color3, this>)();
-        return this.fractToRef(result);
+        return new (this.constructor as Constructor<typeof Color3, this>)(this.r - Math.floor(this.r), this.g - Math.floor(this.g), this.b - Math.floor(this.b));
     }
 
     /**
@@ -383,8 +383,7 @@ export class Color3 implements VectorLike<[number, number, number]> {
      * @returns a new Color3 object
      */
     public scale(scale: number): this {
-        const result = new (this.constructor as Constructor<typeof Color3, this>)();
-        return this.scaleToRef(scale, result);
+        return new (this.constructor as Constructor<typeof Color3, this>)(this.r * scale, this.g * scale, this.b * scale);
     }
 
     /**
@@ -445,8 +444,7 @@ export class Color3 implements VectorLike<[number, number, number]> {
      * @returns the new Color3
      */
     public add(otherColor: DeepImmutable<this>): this {
-        const result = new (this.constructor as Constructor<typeof Color3, this>)();
-        return this.addToRef(otherColor, result);
+        return new (this.constructor as Constructor<typeof Color3, this>)(this.r + otherColor.r, this.g + otherColor.g, this.b + otherColor.b);
     }
 
     /**
@@ -455,7 +453,10 @@ export class Color3 implements VectorLike<[number, number, number]> {
      * @returns the current updated Color3
      */
     public addInPlace(otherColor: DeepImmutable<Color3>): this {
-        return this.addInPlaceFromFloats(otherColor.r, otherColor.g, otherColor.b);
+        this.r += otherColor.r;
+        this.g += otherColor.g;
+        this.b += otherColor.b;
+        return this;
     }
 
     /**
@@ -491,8 +492,7 @@ export class Color3 implements VectorLike<[number, number, number]> {
      * @returns the new Color3
      */
     public subtract(otherColor: DeepImmutable<this>): this {
-        const result = new (this.constructor as Constructor<typeof Color3, this>)();
-        return this.subtractToRef(otherColor, result);
+        return new (this.constructor as Constructor<typeof Color3, this>)(this.r - otherColor.r, this.g - otherColor.g, this.b - otherColor.b);
     }
 
     /**
@@ -1073,7 +1073,10 @@ export class Color4 implements VectorLike<[number, number, number, number]> {
      * @returns the current Color4 object
      */
     public fromArray(array: DeepImmutable<ArrayLike<number>>, offset: number = 0): this {
-        Color4.FromArrayToRef(array, offset, this);
+        this.r = array[offset];
+        this.g = array[offset + 1];
+        this.b = array[offset + 2];
+        this.a = array[offset + 3];
         return this;
     }
 
@@ -1088,12 +1091,11 @@ export class Color4 implements VectorLike<[number, number, number, number]> {
 
     /**
      * Creates a new Color4 set with the added values of the current Color4 and of the given one
-     * @param right defines the second operand
+     * @param otherColor defines the second operand
      * @returns a new Color4 object
      */
-    public add(right: DeepImmutable<this>): this {
-        const result = new (this.constructor as Constructor<typeof Color4, this>)();
-        return this.addToRef(right, result);
+    public add(otherColor: DeepImmutable<this>): this {
+        return new (this.constructor as Constructor<typeof Color4, this>)(this.r + otherColor.r, this.g + otherColor.g, this.b + otherColor.b, this.a + otherColor.a);
     }
 
     /**
@@ -1141,25 +1143,24 @@ export class Color4 implements VectorLike<[number, number, number, number]> {
 
     /**
      * Creates a new Color4 set with the subtracted values of the given one from the current Color4
-     * @param right defines the second operand
+     * @param otherColor defines the second operand
      * @returns a new Color4 object
      */
-    public subtract(right: DeepImmutable<this>): this {
-        const result = new (this.constructor as Constructor<typeof Color4, this>)();
-        return this.subtractToRef(right, result);
+    public subtract(otherColor: DeepImmutable<this>): this {
+        return new (this.constructor as Constructor<typeof Color4, this>)(this.r - otherColor.r, this.g - otherColor.g, this.b - otherColor.b, this.a - otherColor.a);
     }
 
     /**
      * Subtracts the given ones from the current Color4 values and stores the results in "result"
-     * @param right defines the second operand
+     * @param otherColor defines the second operand
      * @param result defines the Color4 object where to store the result
      * @returns the result Color4 object
      */
-    public subtractToRef<T extends this>(right: DeepImmutable<this>, result: T): T {
-        result.r = this.r - right.r;
-        result.g = this.g - right.g;
-        result.b = this.b - right.b;
-        result.a = this.a - right.a;
+    public subtractToRef<T extends this>(otherColor: DeepImmutable<this>, result: T): T {
+        result.r = this.r - otherColor.r;
+        result.g = this.g - otherColor.g;
+        result.b = this.b - otherColor.b;
+        result.a = this.a - otherColor.a;
         return result;
     }
 
@@ -1211,8 +1212,7 @@ export class Color4 implements VectorLike<[number, number, number, number]> {
      * @returns a new Color4 object
      */
     public scale(scale: number): this {
-        const result = new (this.constructor as Constructor<typeof Color4, this>)();
-        return this.scaleToRef(scale, result);
+        return new (this.constructor as Constructor<typeof Color4, this>)(this.r * scale, this.g * scale, this.b * scale, this.a * scale);
     }
 
     /**
@@ -1277,8 +1277,7 @@ export class Color4 implements VectorLike<[number, number, number, number]> {
      * @returns a new Color4 object
      */
     public multiply(color: DeepImmutable<this>): this {
-        const result = new (this.constructor as Constructor<typeof Color4, this>)();
-        return this.multiplyToRef(color, result);
+        return new (this.constructor as Constructor<typeof Color4, this>)(this.r * color.r, this.g * color.g, this.b * color.b, this.a * color.a);
     }
 
     /**
@@ -1458,8 +1457,7 @@ export class Color4 implements VectorLike<[number, number, number, number]> {
      * @returns a new Color4
      */
     public floor(): this {
-        const result = new (this.constructor as Constructor<typeof Color4, this>)();
-        return this.floorToRef(result);
+        return new (this.constructor as Constructor<typeof Color4, this>)(Math.floor(this.r), Math.floor(this.g), Math.floor(this.b), Math.floor(this.a));
     }
 
     /**
@@ -1480,8 +1478,12 @@ export class Color4 implements VectorLike<[number, number, number, number]> {
      * @returns a new Color4
      */
     public fract(): this {
-        const result = new (this.constructor as Constructor<typeof Color4, this>)();
-        return this.fractToRef(result);
+        return new (this.constructor as Constructor<typeof Color4, this>)(
+            this.r - Math.floor(this.r),
+            this.g - Math.floor(this.g),
+            this.b - Math.floor(this.b),
+            this.a - Math.floor(this.a)
+        );
     }
 
     /**

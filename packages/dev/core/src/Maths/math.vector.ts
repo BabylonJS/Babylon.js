@@ -1712,7 +1712,7 @@ export class Vector2 implements Vector<[number, number]> {
      * @returns the current Vector2
      */
     public fromArray(array: FloatArray, offset: number = 0): this {
-		this.x = array[offset];
+        this.x = array[offset];
         this.y = array[offset + 1];
         return this;
     }
@@ -1938,8 +1938,8 @@ export class Vector2 implements Vector<[number, number]> {
      * @returns the current updated Vector2
      */
     public divideInPlace(otherVector: DeepImmutable<Vector2>): this {
-		this.x = this.x / otherVector.x;
-		this.y = this.y / otherVector.y;
+        this.x = this.x / otherVector.x;
+        this.y = this.y / otherVector.y;
         return this;
     }
 
@@ -2129,7 +2129,7 @@ export class Vector2 implements Vector<[number, number]> {
      * @returns a new Vector2
      */
     public floor(): this {
-       	return new (this.constructor as Constructor<typeof Vector2, this>)(Math.floor(this.x), Math.floor(this.y));
+        return new (this.constructor as Constructor<typeof Vector2, this>)(Math.floor(this.x), Math.floor(this.y));
     }
 
     /**
@@ -2820,10 +2820,10 @@ export class Vector3 implements Vector<[number, number, number]> {
      */
     public addInPlace(otherVector: DeepImmutable<Vector3>): this {
         this._x = otherVector._x;
-		this._y = otherVector._y;
-		this._z = otherVector._z;
-		this._isDirty = true;
-		return this;
+        this._y = otherVector._y;
+        this._z = otherVector._z;
+        this._isDirty = true;
+        return this;
     }
 
     /**
@@ -3248,10 +3248,10 @@ export class Vector3 implements Vector<[number, number, number]> {
      * @returns the current updated Vector3
      */
     public divideInPlace(otherVector: Vector3): this {
-		this._x = this._x / otherVector._x;
-		this._y = this._y / otherVector._y;
-		this._z = this._z / otherVector._z;
-		this._isDirty = true;
+        this._x = this._x / otherVector._x;
+        this._y = this._y / otherVector._y;
+        this._z = this._z / otherVector._z;
+        this._isDirty = true;
         return this;
     }
 
@@ -4913,11 +4913,14 @@ export class Vector4 implements Vector<[number, number, number, number]> {
     /**
      * Update the current vector from an array
      * @param array defines the destination array
-     * @param index defines the offset in the destination array
+     * @param offset defines the offset in the destination array
      * @returns the current Vector3
      */
-    public fromArray(array: FloatArray, index: number = 0): this {
-        Vector4.FromArrayToRef(array, index, this);
+    public fromArray(array: FloatArray, offset: number = 0): this {
+        this.x = array[offset];
+        this.y = array[offset + 1];
+        this.z = array[offset + 2];
+        this.w = array[offset + 3];
         return this;
     }
 
@@ -5337,8 +5340,7 @@ export class Vector4 implements Vector<[number, number, number, number]> {
      * @returns a new Vector4
      */
     public floor(): this {
-        const result = new (this.constructor as Constructor<typeof Vector4, this>)();
-        return this.floorToRef(result);
+        return new (this.constructor as Constructor<typeof Vector4, this>)(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z), Math.floor(this.w));
     }
 
     /**
@@ -5359,8 +5361,12 @@ export class Vector4 implements Vector<[number, number, number, number]> {
      * @returns a new Vector4
      */
     public fract(): this {
-        const result = new (this.constructor as Constructor<typeof Vector4, this>)();
-        return this.fractToRef(result);
+        return new (this.constructor as Constructor<typeof Vector4, this>)(
+            this.x - Math.floor(this.x),
+            this.y - Math.floor(this.y),
+            this.z - Math.floor(this.z),
+            this.w - Math.floor(this.w)
+        );
     }
 
     // Properties
@@ -5369,7 +5375,7 @@ export class Vector4 implements Vector<[number, number, number, number]> {
      * @returns the length
      */
     public length(): number {
-        return Math.sqrt(this.lengthSquared());
+        return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
     }
     /**
      * Returns the Vector4 squared length (float).
