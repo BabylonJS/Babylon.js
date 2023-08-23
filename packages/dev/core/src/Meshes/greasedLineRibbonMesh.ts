@@ -183,12 +183,23 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         const pathArrayLength = pathArray.length;
         const previousCounters = new Array(pathArrayLength).fill(0);
         const mul = this.isFlatLine ? 1 : 0;
+        const uLength = new Vector3();
         for (let i = 0; i < positions.length / (pathArrayLength * 3); i++) {
+            let u = 0;
+            let totalULength = 0;
+            for (let pi = 1; pi < pathArrayLength; pi++) {
+                pathArray[pi][i].subtractToRef(pathArray[pi - 1][i], uLength);
+                totalULength += uLength.lengthSquared();
+            }
             for (let pi = 0; pi < pathArrayLength; pi++) {
+                if (pi > 0) {
+                    pathArray[pi][i].subtractToRef(pathArray[pi - 1][i], uLength);
+                    u = uLength.lengthSquared() / totalULength;
+                }
                 const counter = previousCounters[pi] + this._segmentLengths[pi][i] / this._totalLengths[pi];
                 this._counters.push(counter);
-                this._uvs.push(counter);
-                this._uvs.push(counter);
+                this._uvs.push(u);
+                this._uvs.push(counter); // vl
                 previousCounters[pi] = counter;
                 this._colorPointers.push(i);
                 this._widths.push((this._options.widths[pi * pathArrayLength + i] ?? 1 - 1) * this._halfWidth * mul);
