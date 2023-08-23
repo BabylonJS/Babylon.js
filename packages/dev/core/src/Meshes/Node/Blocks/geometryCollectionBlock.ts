@@ -153,7 +153,9 @@ export class GeometryCollectionBlock extends NodeGeometryBlock {
             if (!availables.length) {
                 return null;
             }
-            return availables[Math.round(Math.random() * (availables.length - 1))];
+            const index = Math.round(Math.random() * (availables.length - 1));
+            console.log(index);
+            return availables[index];
         };
 
         if (this.evaluateContext) {

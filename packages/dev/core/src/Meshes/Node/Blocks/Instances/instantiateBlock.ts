@@ -6,6 +6,7 @@ import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import type { INodeGeometryExecutionContext } from "../../Interfaces/nodeGeometryExecutionContext";
 import type { VertexData } from "../../../mesh.vertexData";
 import { Vector3 } from "../../../../Maths/math.vector";
+import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
 
 /**
  * Block used to instantiate a geometry inside a loop
@@ -13,6 +14,13 @@ import { Vector3 } from "../../../../Maths/math.vector";
 export class InstantiateBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext {
     private _vertexData: VertexData;
     private _currentIndex: number;
+
+    /**
+     * Gets or sets a boolean indicating that this block can evaluate context
+     * Build performance is improved when this value is set to false as the system will cache values instead of reevaluating everything per context change
+     */
+    @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { rebuild: true } })
+    public evaluateContext = true;
 
     /**
      * Create a new InstantiateBlock
@@ -114,49 +122,78 @@ export class InstantiateBlock extends NodeGeometryBlock implements INodeGeometry
     }
 
     protected _buildBlock(state: NodeGeometryBuildState) {
-        state.executionContext = this;
+        const func = (state: NodeGeometryBuildState) => {
+            state.executionContext = this;
 
-        // Processing
-        const iterationCount = this.count.getConnectedValue(state);
-        const additionalVertexData: VertexData[] = [];
+            // Processing
+            const iterationCount = this.count.getConnectedValue(state);
+            const additionalVertexData: VertexData[] = [];
 
-        for (this._currentIndex = 0; this._currentIndex < iterationCount; this._currentIndex++) {
-            const instanceGeometry = this.instance.getConnectedValue(state) as VertexData;
+            for (this._currentIndex = 0; this._currentIndex < iterationCount; this._currentIndex++) {
+                const instanceGeometry = this.instance.getConnectedValue(state) as VertexData;
 
-            if (!instanceGeometry || !instanceGeometry.positions || instanceGeometry.positions.length === 0) {
-                continue;
+                if (!instanceGeometry || !instanceGeometry.positions || instanceGeometry.positions.length === 0) {
+                    continue;
+                }
+
+                // Clone the instance
+                const clone = instanceGeometry.clone();
+
+                // Transform
+                if (this.matrix.isConnected) {
+                    const transform = this.matrix.getConnectedValue(state);
+                    state._instantiateWithMatrix(clone, transform, additionalVertexData);
+                } else {
+                    const position = this.position.getConnectedValue(state) || Vector3.ZeroReadOnly;
+                    const scaling = state.adaptInput(this.scaling, NodeGeometryBlockConnectionPointTypes.Vector3, Vector3.OneReadOnly);
+                    const rotation = this.rotation.getConnectedValue(state) || Vector3.ZeroReadOnly;
+                    state._instantiate(clone, position, rotation, scaling, additionalVertexData);
+                }
             }
 
-            // Clone the instance
-            const clone = instanceGeometry.clone();
-
-            // Transform
-            if (this.matrix.isConnected) {
-                const transform = this.matrix.getConnectedValue(state);
-                state._instantiateWithMatrix(clone, transform, additionalVertexData);
-            } else {
-                const position = this.position.getConnectedValue(state) || Vector3.ZeroReadOnly;
-                const scaling = state.adaptInput(this.scaling, NodeGeometryBlockConnectionPointTypes.Vector3, Vector3.OneReadOnly);
-                const rotation = this.rotation.getConnectedValue(state) || Vector3.ZeroReadOnly;
-                state._instantiate(clone, position, rotation, scaling, additionalVertexData);
+            // Merge
+            if (additionalVertexData.length) {
+                if (additionalVertexData.length === 1) {
+                    this._vertexData = additionalVertexData[0];
+                } else {
+                    // We do not merge the main one as user can use a merge node if wanted
+                    const main = additionalVertexData.splice(0, 1)[0];
+                    this._vertexData = main.merge(additionalVertexData, true, false, true, true);
+                }
             }
-        }
-
-        // Merge
-        if (additionalVertexData.length) {
-            if (additionalVertexData.length === 1) {
-                this._vertexData = additionalVertexData[0];
-            } else {
-                // We do not merge the main one as user can use a merge node if wanted
-                const main = additionalVertexData.splice(0, 1)[0];
-                this._vertexData = main.merge(additionalVertexData, true, false, true, true);
-            }
-        }
+            return this._vertexData;
+        };
 
         // Storage
-        this.output._storedValue = this._vertexData;
-        state.executionContext = null;
-        state.geometryContext = null;
+
+        if (this.evaluateContext) {
+            this.output._storedFunction = func;
+        } else {
+            this.output._storedValue = func(state);
+        }
+    }
+
+    protected _dumpPropertiesCode() {
+        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.evaluateContext = ${this.evaluateContext ? "true" : "false"};\n`;
+        return codeString;
+    }
+
+    /**
+     * Serializes this block in a JSON representation
+     * @returns the serialized block object
+     */
+    public serialize(): any {
+        const serializationObject = super.serialize();
+
+        serializationObject.evaluateContext = this.evaluateContext;
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
+
+        this.evaluateContext = serializationObject.evaluateContext;
     }
 }
 
