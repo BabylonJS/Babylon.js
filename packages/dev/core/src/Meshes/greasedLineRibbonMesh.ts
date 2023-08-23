@@ -136,20 +136,23 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
 
         const v: number[] = [1, 0, numOfPaths];
         if (numOfPaths > 2) {
-            // for (let i = 0, c = 0; i < positions.length / 3 - numOfPaths; i++) {
-            for (let pi = 0; pi < (numOfPaths - 1) * 2; pi++) {
-                if (pi % 2 !== 0) {
-                    v[2] += 1;
+            for (let i = 0; i < path.length - 1; i++) {
+                v[0] = 1 + numOfPaths * i;
+                v[1] = numOfPaths * i;
+                v[2] = (i + 1) * numOfPaths;
+                for (let pi = 0; pi < (numOfPaths - 1) * 2; pi++) {
+                    if (pi % 2 !== 0) {
+                        v[2] += 1;
+                    }
+                    if (pi % 2 === 0 && pi > 0) {
+                        v[0] += 1;
+                        v[1] += 1;
+                    }
+                    indices.push(v[0]);
+                    indices.push(v[1] + (pi % 2 !== 0 ? numOfPaths : 0));
+                    indices.push(v[2]);
                 }
-                if (pi % 2 === 0 && pi > 0) {
-                    v[0] += 1;
-                    v[1] += 1;
-                }
-                indices.push(v[0]);
-                indices.push(v[1] + (pi % 2 !== 0 ? numOfPaths : 0));
-                indices.push(v[2]);
             }
-            // }
         } else {
             for (let i = 0; i < positions.length / 3 - numOfPaths; i++) {
                 indices.push(i, i + 1, i + numOfPaths);
@@ -206,7 +209,11 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
             }
         }
 
-        const slopes = GreasedLineRibbonMesh._CalculateSlopes(positions, this._paths);
+        if (!this.isFlatLine) {
+            this._widths = new Array(positions.length / 3).fill(0);
+        }
+
+        const slopes = GreasedLineRibbonMesh._CalculateSlopes(this._paths);
         for (const s of slopes) {
             this._slopes.push(s);
         }
@@ -313,67 +320,6 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         this._slopes = [];
     }
 
-    private static _CompareV3(v: Vector3, positions: number[], i: number, theta = 0.00001) {
-        return Math.abs(v.x - positions[i]) < theta && Math.abs(v.y - positions[i + 1]) < theta && Math.abs(v.z - positions[i + 2]) < theta;
-    }
-
-    private static _VertexPositionToPathPositionIndex(vertexPositions: number[], i: number, paths: Vector3[][]) {
-        for (let pathIndex = 0; pathIndex < paths.length; pathIndex++) {
-            const pointIndex = paths[pathIndex].findIndex((v) => GreasedLineRibbonMesh._CompareV3(v, vertexPositions, i));
-            if (pointIndex > -1) {
-                return { pointIndex, pathIndex };
-            }
-        }
-        return { pointIndex: -1, pathIndex: -1 };
-    }
-
-    // private _alignWidthsNonAligned(widths: number[], vertexPositions: number[], paths: Vector3[][]) {
-    //     const alignedWidths = new Array(vertexPositions.length / 3);
-
-    //     if (!this._isLineRibbon) {
-    //         alignedWidths.fill(0);
-    //         return alignedWidths;
-    //     }
-
-    //     const path1 = paths[0];
-    //     const path2 = paths.length === 2 ? paths[1] : paths[paths.length - 1];
-
-    //     GreasedLineRibbonMesh._IterateVertices(vertexPositions, [path1, path2], null, (pointIndex, pathIndex, vertexPositionIndex) => {
-    //         if (pathIndex === 0) {
-    //             const w = widths[pointIndex * 2] - 1 ?? 0;
-    //             alignedWidths[vertexPositionIndex / 3] = w * this._ribbonHalfWidth;
-    //         } else {
-    //             const w = widths[pointIndex * 2 + 1] - 1 ?? 0;
-    //             alignedWidths[vertexPositionIndex / 3] = w * this._ribbonHalfWidth;
-    //         }
-    //     });
-
-    //     return alignedWidths;
-    // }
-
-    // }
-    // private _calculateSegmentLengths(paths: number[][]) {
-    //     this._segmentLengths = new Array(paths.length);
-    //     this._totalLengths = new Array(paths.length);
-    //     for (let pi = 0; pi < paths.length; pi++) {
-    //         const points = paths[pi];
-    //         this._segmentLengths[pi] = [0]; // first point has 0 distance
-    //         let length = 0;
-
-    //         for (let i = 0; i < points.length - 3; i += 3) {
-    //             TmpVectors.Vector3[0].x = points[i];
-    //             TmpVectors.Vector3[0].y = points[i + 1];
-    //             TmpVectors.Vector3[0].z = points[i + 3];
-    //             TmpVectors.Vector3[1].x = points[i * 2];
-    //             TmpVectors.Vector3[1].y = points[i * 2 + 1];
-    //             TmpVectors.Vector3[1].z = points[i * 2 + 3];
-    //             const l = Math.abs(TmpVectors.Vector3[0].subtract(TmpVectors.Vector3[1]).lengthSquared());
-    //             length += l;
-    //             this._segmentLengths[pi].push(l);
-    //         }
-    //         this._totalLengths[pi] = length;
-    //     }
-    // }
     private _calculateSegmentLengths(paths: Vector3[][]) {
         this._segmentLengths = new Array(paths.length);
         this._totalLengths = new Array(paths.length);
@@ -391,94 +337,24 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         }
     }
 
-    private static _CalculateSlopes(vertexPositions: number[], paths: Vector3[][]) {
+    private static _CalculateSlopes(paths: Vector3[][]) {
         const points1 = paths[0];
         const points2 = paths.length === 2 ? paths[1] : paths[paths.length - 1];
         const slopes: number[] = [];
 
-        let slope: Vector3;
-
-        GreasedLineRibbonMesh._IterateVertices(
-            vertexPositions,
-            paths,
-            () => {
-                slope = new Vector3();
-            },
-            (pointIndex, pathIndex) => {
-                if (pathIndex === 0) {
-                    points1[pointIndex].subtract(points2[pointIndex]).normalizeToRef(slope);
+        const slope = new Vector3();
+        for (let i = 0; i < points1.length; i++) {
+            for (let pi = 0; pi < paths.length; pi++) {
+                if (pi === 0 || pi === paths.length - 1) {
+                    points1[i].subtract(points2[i]).normalizeToRef(slope);
                     slopes.push(slope.x, slope.y, slope.z);
+                    slopes.push(-slope.x, -slope.y, -slope.z);
                 } else {
-                    points2[pointIndex].subtract(points1[pointIndex]).normalizeToRef(slope);
-                    slopes.push(slope.x, slope.y, slope.z);
+                    slopes.push(0, 0, 0, 0, 0, 0);
                 }
             }
-        );
+        }
 
         return slopes;
-    }
-
-    // private static _CalcDistanceToPointIndex(index: number, segmentLengths: number[]) {
-    //     let distance = 0;
-    //     for (let i = 0; i <= index; i++) {
-    //         distance += segmentLengths[i];
-    //     }
-    //     return distance;
-    // }
-
-    // private static _GetCountersAndColorPointersNonAligned(
-    //     vertexPositions: number[],
-    //     paths: Vector3[][],
-    //     segmentLengths: number[][],
-    //     totalLengths: number[],
-    //     existingCountersLength: number,
-    //     existingColorPointerssLength: number
-    // ) {
-    //     const counters: number[] = [];
-    //     const colorPointers: number[] = [];
-
-    //     let distance = -1;
-
-    //     GreasedLineRibbonMesh._IterateVertices(
-    //         vertexPositions,
-    //         paths,
-    //         () => {
-    //             distance = -1;
-    //         },
-    //         (pointIndex, pathIndex) => {
-    //             distance = GreasedLineRibbonMesh._CalcDistanceToPointIndex(pointIndex, segmentLengths[pathIndex]) / totalLengths[pathIndex];
-
-    //             counters.push(distance);
-    //             colorPointers.push(pointIndex + existingColorPointerssLength);
-    //         }
-    //     );
-
-    //     return { counters, colorPointers };
-    // }
-
-    private static _IterateVertices(
-        vertexPositions: number[],
-        paths: Vector3[][],
-        initFn: Nullable<() => void>,
-        resultFn: (pointIndex: number, pathIndex: number, vertexPositionIndex: number) => void
-    ) {
-        for (let vertexPositionIndex = 0; vertexPositionIndex < vertexPositions.length; vertexPositionIndex += 3) {
-            initFn && initFn();
-            const { pointIndex, pathIndex } = GreasedLineRibbonMesh._VertexPositionToPathPositionIndex(vertexPositions, vertexPositionIndex, paths);
-            if (pointIndex === -1) {
-                console.error(
-                    "Point couldn't be found. Index:",
-                    vertexPositionIndex,
-                    vertexPositions[vertexPositionIndex],
-                    vertexPositions[vertexPositionIndex + 1],
-                    vertexPositions[vertexPositionIndex + 2],
-                    "paths:",
-                    paths
-                );
-                break;
-            }
-
-            resultFn(pointIndex, pathIndex, vertexPositionIndex);
-        }
     }
 }

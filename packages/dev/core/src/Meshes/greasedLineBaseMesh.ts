@@ -122,7 +122,6 @@ export abstract class GreasedLineBaseMesh extends Mesh {
         this._colorPointers = _options.colorPointers ?? [];
         this._widths = _options.widths ?? new Array(_options.points.length).fill(1);
         this._halfWidth = _options.ribbonOptions?.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS ? (_options.ribbonOptions.width ?? 0.1) / 2 : 0.05;
-
     }
 
     /**
@@ -316,7 +315,7 @@ export abstract class GreasedLineBaseMesh extends Mesh {
         vertexData.indices = this._indices;
         vertexData.uvs = this._uvs;
         if (computeNormals) {
-            vertexData.normals = []
+            vertexData.normals = [];
             VertexData.ComputeNormals(this._vertexPositions, this._indices, vertexData.normals);
         }
         vertexData.applyToMesh(this, this._options.updatable);
