@@ -31,7 +31,7 @@ function colorChannelToGammaSpaceExact(color: number): number {
  * Class used to hold a RGB color
  */
 export class Color3 implements VectorLike<[number, number, number]> {
-    public readonly dimension: 3 = 3;
+    public readonly dimension: [number] = [3];
 
     /**
      * Creates a new Color3 object from red, green, blue values, all between 0 and 1
@@ -202,7 +202,7 @@ export class Color3 implements VectorLike<[number, number, number]> {
      * @param otherColor defines the second operand
      * @returns the current updated Color3
      */
-    public divideInPlace(otherColor: Color3): this {
+    public divideInPlace(otherColor: DeepImmutable<Color3>): this {
         this.r = this.r / otherColor.r;
         this.g = this.g / otherColor.g;
         this.b = this.b / otherColor.b;
@@ -1014,7 +1014,7 @@ export class Color3 implements VectorLike<[number, number, number]> {
  * Class used to hold a RBGA color
  */
 export class Color4 implements VectorLike<[number, number, number, number]> {
-    public readonly dimension: 4 = 4;
+    public readonly dimension: [number] = [4];
 
     /**
      * Creates a new Color4 object from red, green, blue values, all between 0 and 1
@@ -1299,7 +1299,7 @@ export class Color4 implements VectorLike<[number, number, number, number]> {
      * @param otherColor color to multiple with
      * @returns the updated Color4.
      */
-    public multiplyInPlace(otherColor: Color4): this {
+    public multiplyInPlace(otherColor: DeepImmutable<Color4>): this {
         this.r *= otherColor.r;
         this.g *= otherColor.g;
         this.b *= otherColor.b;

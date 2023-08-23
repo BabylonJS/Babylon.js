@@ -21,7 +21,7 @@ export declare abstract class VectorLike<N extends number[] = number[]> {
      * The number of dimensions the vector has (i.e. the length of the coordinate array)
      * Note this is abstract to allow a getter implementation in DynamicVector
      */
-    abstract dimension: number;
+    abstract dimension: [number];
 
     /**
      * Creates a new Vector from the given coordinates
@@ -703,7 +703,7 @@ export class DynamicVector implements Vector<number[]> {
      * @returns the current updated Vector
      */
     public copyFrom<T extends this>(source: DeepImmutable<T>): this {
-        for (let i = 0; i < source.dimension; i++) {
+        for (let i = 0; i < source._length; i++) {
             this[i] = source[i];
         }
         return this;
@@ -1177,8 +1177,8 @@ export class DynamicVector implements Vector<number[]> {
     /**
      * The number of dimensions the vector has (i.e. the length of the coordinate array)
      */
-    public get dimension(): number {
-        return this._length;
+    public get dimension(): [number] {
+        return [this._length];
     }
 
     /**
@@ -1279,7 +1279,7 @@ export class DynamicVector implements Vector<number[]> {
      * @returns the updated result Vector
      */
     public static RandomToRef<T extends DynamicVector>(min: number = 0, max: number = 1, result: T): T {
-        for (let i = 0; i < result.dimension; i++) {
+        for (let i = 0; i < result._length; i++) {
             result[i] = Scalar.RandomRange(min, max);
         }
         return result;
@@ -1307,7 +1307,7 @@ export class DynamicVector implements Vector<number[]> {
      * @returns result input
      */
     public static FromArrayToRef<T extends DynamicVector>(array: ArrayLike<number>, offset: number, result: T): T {
-        for (let i = 0; i < result.dimension; i++) {
+        for (let i = 0; i < result._length; i++) {
             result[i] = array[i + offset] ?? result[i];
         }
         result._isDirty = true;
@@ -1340,7 +1340,7 @@ export class DynamicVector implements Vector<number[]> {
         const vector = new (value1.constructor as Constructor<typeof DynamicVector, T>)(),
             squared = amount ** 2,
             cubed = squared * amount;
-        for (let i = 0; i < value1.dimension; i++) {
+        for (let i = 0; i < value1._length; i++) {
             vector[i] =
                 0.5 *
                 (2.0 * value2[i] +
@@ -1378,7 +1378,7 @@ export class DynamicVector implements Vector<number[]> {
      * @returns the updated result Vector
      */
     public static ClampToRef<T extends DynamicVector>(value: DeepImmutable<T>, min: DeepImmutable<T>, max: DeepImmutable<T>, result: T): T {
-        for (let i = 0; i < value.dimension; i++) {
+        for (let i = 0; i < value._length; i++) {
             result[i] = value[i] > max[i] ? max[i] : value[i];
             result[i] = value[i] < min[i] ? min[i] : value[i];
         }
@@ -1411,7 +1411,7 @@ export class DynamicVector implements Vector<number[]> {
             squared = amount ** 2,
             cubed = squared * amount;
 
-        for (let i = 0; i < value1.dimension; i++) {
+        for (let i = 0; i < value1._length; i++) {
             vector[i] =
                 value1[i] * (2.0 * cubed - 3.0 * squared + 1.0) +
                 value2[i] * (-2.0 * cubed + 3.0 * squared) +
@@ -1463,7 +1463,7 @@ export class DynamicVector implements Vector<number[]> {
         time: number,
         result: T
     ): T {
-        for (let i = 0; i < value1.dimension; i++) {
+        for (let i = 0; i < value1._length; i++) {
             result[i] =
                 (time ** 2 - time) * 6 * value1[i] +
                 (3 * time ** 2 - 4 * time + 1) * tangent1[i] +
@@ -1493,7 +1493,7 @@ export class DynamicVector implements Vector<number[]> {
      * @returns a new Vector
      */
     public static LerpToRef<T extends DynamicVector>(start: DeepImmutable<T>, end: DeepImmutable<T>, amount: number, result: T): T {
-        for (let i = 0; i < start.dimension; i++) {
+        for (let i = 0; i < start._length; i++) {
             result[i] = start[i] + (end[i] - start[i]) * amount;
         }
         return result;
@@ -1507,7 +1507,7 @@ export class DynamicVector implements Vector<number[]> {
      */
     public static Dot<T extends DynamicVector>(left: DeepImmutable<T>, right: DeepImmutable<T>): number {
         let dot = 0;
-        for (let i = 0; i < left.dimension; i++) {
+        for (let i = 0; i < left._length; i++) {
             dot += left[i] * right[i];
         }
         return dot;
@@ -1537,7 +1537,7 @@ export class DynamicVector implements Vector<number[]> {
             return result;
         }
 
-        for (let i = 0; i < vector.dimension; i++) {
+        for (let i = 0; i < vector._length; i++) {
             result[i] = vector[i] / len;
         }
         return result;
@@ -1551,7 +1551,7 @@ export class DynamicVector implements Vector<number[]> {
      */
     public static Minimize<T extends DynamicVector>(left: DeepImmutable<T>, right: DeepImmutable<T>): T {
         const result = new (left.constructor as Constructor<typeof DynamicVector, T>)();
-        for (let i = 0; i < left.dimension; i++) {
+        for (let i = 0; i < left._length; i++) {
             result[i] = left[i] < right[i] ? left[i] : right[i];
         }
         return result;
@@ -1565,7 +1565,7 @@ export class DynamicVector implements Vector<number[]> {
      */
     public static Maximize<T extends DynamicVector>(left: DeepImmutable<T>, right: DeepImmutable<T>): T {
         const result = new (left.constructor as Constructor<typeof DynamicVector, T>)();
-        for (let i = 0; i < left.dimension; i++) {
+        for (let i = 0; i < left._length; i++) {
             result[i] = left[i] > right[i] ? left[i] : right[i];
         }
         return result;
@@ -1589,7 +1589,7 @@ export class DynamicVector implements Vector<number[]> {
      */
     public static DistanceSquared<T extends DynamicVector>(value1: DeepImmutable<T>, value2: DeepImmutable<T>): number {
         let distance = 0;
-        for (let i = 0; i < value1.dimension; i++) {
+        for (let i = 0; i < value1._length; i++) {
             distance += (value1[i] - value2[i]) ** 2;
         }
         return distance;
@@ -1614,7 +1614,7 @@ export class DynamicVector implements Vector<number[]> {
      * @returns ref
      */
     public static CenterToRef<T extends DynamicVector>(value1: DeepImmutable<T>, value2: DeepImmutable<T>, ref: T): T {
-        for (let i = 0; i < ref.dimension; i++) {
+        for (let i = 0; i < ref._length; i++) {
             ref[i] = (value1[i] + value2[i]) / 2;
         }
         ref._isDirty = true;
@@ -1647,7 +1647,7 @@ export class DynamicVector implements Vector<number[]> {
 export class Vector2 implements Vector<[number, number]> {
     private static _ZeroReadOnly = Vector2.Zero() as DeepImmutable<Vector2>;
 
-    public readonly dimension: 2 = 2;
+    public readonly dimension: [number] = [2];
 
     /**
      * Creates a new Vector2 from the given x and y coordinates
@@ -1834,7 +1834,7 @@ export class Vector2 implements Vector<[number, number]> {
      * @param otherVector defines the other vector
      * @returns a new Vector2
      */
-    public subtract(otherVector: Vector2): this {
+    public subtract(otherVector: DeepImmutable<Vector2>): this {
         return new (this.constructor as Constructor<typeof Vector2, this>)(this.x - otherVector.x, this.y - otherVector.y);
     }
 
@@ -1914,7 +1914,7 @@ export class Vector2 implements Vector<[number, number]> {
      * @param otherVector defines the other vector
      * @returns a new Vector2
      */
-    public divide(otherVector: Vector2): this {
+    public divide(otherVector: DeepImmutable<Vector2>): this {
         return new (this.constructor as Constructor<typeof Vector2, this>)(this.x / otherVector.x, this.y / otherVector.y);
     }
 
@@ -2674,7 +2674,7 @@ export class Vector3 implements Vector<[number, number, number]> {
     private static _ZeroReadOnly = Vector3.Zero() as DeepImmutable<Vector3>;
     private static _OneReadOnly = Vector3.One() as DeepImmutable<Vector3>;
 
-    public readonly dimension: 3 = 3;
+    public readonly dimension: [3] = [3];
 
     /** @internal */
     public _x: number;
@@ -3001,7 +3001,7 @@ export class Vector3 implements Vector<[number, number, number]> {
      * @param result defines the Vector3 object where to store the resultant normal
      * returns the result
      */
-    public getNormalToRef(result: DeepImmutable<Vector3>): Vector3 {
+    public getNormalToRef(result: Vector3): Vector3 {
         /**
          * Calculates the spherical coordinates of the current vector
          * so saves on memory rather than importing whole Spherical Class
@@ -3247,7 +3247,7 @@ export class Vector3 implements Vector<[number, number, number]> {
      * @param otherVector defines the second operand
      * @returns the current updated Vector3
      */
-    public divideInPlace(otherVector: Vector3): this {
+    public divideInPlace(otherVector: DeepImmutable<Vector3>): this {
         this._x = this._x / otherVector._x;
         this._y = this._y / otherVector._y;
         this._z = this._z / otherVector._z;
@@ -4827,7 +4827,7 @@ export class Vector3 implements Vector<[number, number, number]> {
 export class Vector4 implements Vector<[number, number, number, number]> {
     private static _ZeroReadOnly = Vector4.Zero() as DeepImmutable<Vector4>;
 
-    public readonly dimension: 4 = 4;
+    public readonly dimension: [4] = [4];
 
     /**
      * Creates a Vector4 object from the given floats.
@@ -5162,7 +5162,7 @@ export class Vector4 implements Vector<[number, number, number, number]> {
      * @param otherVector vector to multiple with
      * @returns the updated Vector4.
      */
-    public multiplyInPlace(otherVector: Vector4): this {
+    public multiplyInPlace(otherVector: DeepImmutable<Vector4>): this {
         this.x *= otherVector.x;
         this.y *= otherVector.y;
         this.z *= otherVector.z;
