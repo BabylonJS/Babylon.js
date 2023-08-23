@@ -81,8 +81,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.props.globalState.onBuiltObservable.remove(this._onBuiltObserver);
     }
 
-    processInputBlockUpdate(ib: GeometryInputBlock) {
-        this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(ib);
+    processInputBlockUpdate() {
+        this.props.globalState.stateManager.onRebuildRequiredObservable.notifyObservers();
     }
 
     renderInputBlock(block: GeometryInputBlock) {
@@ -101,7 +101,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 target={block}
                                 isInteger={isInteger}
                                 propertyName="value"
-                                onChange={() => this.processInputBlockUpdate(block)}
+                                onChange={() => this.processInputBlockUpdate()}
                             />
                         )}
                         {!cantDisplaySlider && (
@@ -115,7 +115,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 decimalCount={isInteger ? 0 : 2}
                                 minimum={block.min}
                                 maximum={block.max}
-                                onChange={() => this.processInputBlockUpdate(block)}
+                                onChange={() => this.processInputBlockUpdate()}
                             />
                         )}
                     </div>
@@ -129,7 +129,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         label={block.name}
                         target={block}
                         propertyName="value"
-                        onChange={() => this.processInputBlockUpdate(block)}
+                        onChange={() => this.processInputBlockUpdate()}
                     />
                 );
             case NodeGeometryBlockConnectionPointTypes.Vector3:
@@ -140,7 +140,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         label={block.name}
                         target={block}
                         propertyName="value"
-                        onChange={() => this.processInputBlockUpdate(block)}
+                        onChange={() => this.processInputBlockUpdate()}
                     />
                 );
             case NodeGeometryBlockConnectionPointTypes.Vector4:
@@ -151,7 +151,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         label={block.name}
                         target={block}
                         propertyName="value"
-                        onChange={() => this.processInputBlockUpdate(block)}
+                        onChange={() => this.processInputBlockUpdate()}
                     />
                 );
         }
