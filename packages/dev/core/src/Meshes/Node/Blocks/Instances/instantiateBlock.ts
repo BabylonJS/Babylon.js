@@ -26,6 +26,7 @@ export class InstantiateBlock extends NodeGeometryBlock implements INodeGeometry
         this.registerInput("position", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.Zero());
         this.registerInput("rotation", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.Zero());
         this.registerInput("scaling", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.One());
+        this.registerInput("matrix", NodeGeometryBlockConnectionPointTypes.Matrix, true);
 
         this.scaling.acceptedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Float);
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Geometry);
@@ -99,6 +100,13 @@ export class InstantiateBlock extends NodeGeometryBlock implements INodeGeometry
     }
 
     /**
+     * Gets the matrix input component
+     */
+    public get matrix(): NodeGeometryConnectionPoint {
+        return this._inputs[5];
+    }
+
+    /**
      * Gets the geometry output component
      */
     public get output(): NodeGeometryConnectionPoint {
@@ -123,10 +131,15 @@ export class InstantiateBlock extends NodeGeometryBlock implements INodeGeometry
             const clone = instanceGeometry.clone();
 
             // Transform
-            const position = this.position.getConnectedValue(state) || Vector3.ZeroReadOnly;
-            const scaling = state.adaptInput(this.scaling, NodeGeometryBlockConnectionPointTypes.Vector3, Vector3.OneReadOnly);
-            const rotation = this.rotation.getConnectedValue(state) || Vector3.ZeroReadOnly;
-            state._instantiate(clone, position, rotation, scaling, additionalVertexData);
+            if (this.matrix.isConnected) {
+                const transform = this.matrix.getConnectedValue(state);
+                state._instantiateWithMatrix(clone, transform, additionalVertexData);
+            } else {
+                const position = this.position.getConnectedValue(state) || Vector3.ZeroReadOnly;
+                const scaling = state.adaptInput(this.scaling, NodeGeometryBlockConnectionPointTypes.Vector3, Vector3.OneReadOnly);
+                const rotation = this.rotation.getConnectedValue(state) || Vector3.ZeroReadOnly;
+                state._instantiate(clone, position, rotation, scaling, additionalVertexData);
+            }
         }
 
         // Merge
