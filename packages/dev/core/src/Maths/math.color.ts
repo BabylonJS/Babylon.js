@@ -235,15 +235,9 @@ export class Color3 implements VectorLike<[number, number, number]> {
      * @returns the current updated Color3
      */
     public minimizeInPlaceFromFloats(r: number, g: number, b: number): this {
-        if (r < this.r) {
-            this.r = r;
-        }
-        if (g < this.g) {
-            this.g = g;
-        }
-        if (b < this.b) {
-            this.b = b;
-        }
+        this.r = Math.min(r, this.r);
+        this.g = Math.min(g, this.g);
+        this.b = Math.min(b, this.b);
         return this;
     }
 
@@ -255,15 +249,9 @@ export class Color3 implements VectorLike<[number, number, number]> {
      * @returns the current updated Color3
      */
     public maximizeInPlaceFromFloats(r: number, g: number, b: number): this {
-        if (r > this.r) {
-            this.r = r;
-        }
-        if (g > this.g) {
-            this.g = g;
-        }
-        if (b > this.b) {
-            this.b = b;
-        }
+        this.r = Math.max(r, this.r);
+        this.g = Math.max(g, this.g);
+        this.b = Math.max(b, this.b);
         return this;
     }
 
@@ -1400,18 +1388,10 @@ export class Color4 implements VectorLike<[number, number, number, number]> {
      * @returns the current updated Color4
      */
     public minimizeInPlaceFromFloats(r: number, g: number, b: number, a: number): this {
-        if (r < this.r) {
-            this.r = r;
-        }
-        if (g < this.g) {
-            this.g = g;
-        }
-        if (b < this.b) {
-            this.b = b;
-        }
-        if (a < this.a) {
-            this.a = a;
-        }
+        this.r = Math.min(r, this.r);
+        this.g = Math.min(g, this.g);
+        this.b = Math.min(b, this.b);
+        this.a = Math.min(a, this.a);
         return this;
     }
 
@@ -1424,18 +1404,10 @@ export class Color4 implements VectorLike<[number, number, number, number]> {
      * @returns the current updated Color4
      */
     public maximizeInPlaceFromFloats(r: number, g: number, b: number, a: number): this {
-        if (r > this.r) {
-            this.r = r;
-        }
-        if (g > this.g) {
-            this.g = g;
-        }
-        if (b > this.b) {
-            this.b = b;
-        }
-        if (a > this.a) {
-            this.a = a;
-        }
+        this.r = Math.max(r, this.r);
+        this.g = Math.max(g, this.g);
+        this.b = Math.max(b, this.b);
+        this.a = Math.max(a, this.a);
         return this;
     }
 

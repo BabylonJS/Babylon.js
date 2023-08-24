@@ -247,7 +247,7 @@ describe("Babylon Vector tests", () => {
             it("should normalize the vector", () => {
                 vector1.normalize();
                 const length = vector1.length();
-                expect(length).toBeCloseTo(2.23606 /* sqrt(5) */);
+                expect(length).toBeCloseTo(1);
             });
         });
 
