@@ -20,12 +20,8 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
         this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
         this.registerInput("viewNormal", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
 
-        this.inputs[1].addExcludedConnectionPointFromAllowedTypes(
-            NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4
-        );
-        this.inputs[2].addExcludedConnectionPointFromAllowedTypes(
-            NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4
-        );
+        this.inputs[1].addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4);
+        this.inputs[2].addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4);
     }
 
     /**
@@ -105,4 +101,3 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
 }
 
 RegisterClass("BABYLON.PrePassOutputBlock", PrePassOutputBlock);
-
