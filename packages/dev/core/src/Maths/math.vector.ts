@@ -1169,7 +1169,7 @@ export class Vector2 implements Vector<[number, number]> {
      * @returns the current updated Vector2
      */
     public normalize(): this {
-        return this.normalizeFromLength(1);
+        return this.normalizeFromLength(this.length());
     }
 
     /**
