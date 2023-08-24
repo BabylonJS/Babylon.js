@@ -20,7 +20,7 @@ export class ConnectionPointPortData implements IPortData {
     public get name() {
         const block = this.data.ownerBlock;
         let portName = this.data.displayName || this.data.name;
-        if (this.data.ownerBlock.isInput) {
+        if (this.data.ownerBlock.isInput && this.data.ownerBlock.inputs.length === 1) {
             portName = block.name;
         }
 

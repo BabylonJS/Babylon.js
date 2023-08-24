@@ -19,6 +19,7 @@ import "../../../../Shaders/ShadersInclude/helperFunctions";
 import { ImageSourceBlock } from "./imageSourceBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { EngineStore } from "../../../../Engines/engineStore";
+import type { PrePassTextureBlock } from "../Input/prePassTextureBlock";
 
 /**
  * Block used to read a texture from a sampler
@@ -35,7 +36,7 @@ export class TextureBlock extends NodeMaterialBlock {
     private _mainUVName: string;
     private _mainUVDefineName: string;
     private _fragmentOnly: boolean;
-    private _imageSource: Nullable<ImageSourceBlock>;
+    private _imageSource: Nullable<ImageSourceBlock | PrePassTextureBlock>;
 
     protected _texture: Nullable<Texture>;
     /**
@@ -70,12 +71,25 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
+    private static _IsPrePassTextureBlock(block: Nullable<ImageSourceBlock | PrePassTextureBlock>): block is PrePassTextureBlock {
+        return block?.getClassName() === "PrePassTextureBlock";
+    }
+
+    private get _isSourcePrePass() {
+        return TextureBlock._IsPrePassTextureBlock(this._imageSource);
+    }
+
     /**
      * Gets the sampler name associated with this texture
      */
     public get samplerName(): string {
         if (this._imageSource) {
-            return this._imageSource.samplerName;
+            if (!TextureBlock._IsPrePassTextureBlock(this._imageSource)) {
+                return this._imageSource.samplerName;
+            }
+            if (this.source.connectedPoint) {
+                return this._imageSource.getSamplerName(this.source.connectedPoint);
+            }
         }
         return this._samplerName;
     }
@@ -370,6 +384,10 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 
     public isReady() {
+        if (this._isSourcePrePass) {
+            return true;
+        }
+
         if (this.texture && !this.texture.isReadyOrNotBlocking()) {
             return false;
         }
@@ -378,6 +396,10 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 
     public bind(effect: Effect) {
+        if (this._isSourcePrePass) {
+            effect.setFloat(this._textureInfoName, 1);
+        }
+
         if (!this.texture) {
             return;
         }

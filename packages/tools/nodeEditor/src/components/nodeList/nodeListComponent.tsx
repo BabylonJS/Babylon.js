@@ -51,6 +51,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         DeltaTimeBlock: "A float representing the time that has passed since the last frame was rendered",
         Float: "A floating point number representing a value with a fractional component",
         TextureBlock: "A node for reading a linked or embedded texture file",
+        PrePassTextureBlock: "A node for reading textures from the prepass",
         TimeBlock: "A float value that represents the time that has passed since the scene was loaded (it is incremented by 0.6 each second)",
         RealTimeBlock: "A float value that represents the number of seconds that have elapsed since the engine was initialized",
         Vector2: "a vector composed of X and Y channels",
@@ -85,6 +86,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         WorldPosition: "A Vector4 representing the position of each vertex of the attached mesh transformed into world space",
         DiscardBlock: "A final node that will not output a pixel below the cutoff value",
         FragmentOutputBlock: "A mandatory final node for outputing the color of each pixel",
+        PrePassOutputBlock: "An optional final node for outputing geometry data on prepass textures",
         VertexOutputBlock: "A mandatory final node for outputing the position of each vertex",
         ClampBlock: "Outputs values above the maximum or below minimum as maximum or minimum values respectively",
         NormalizeBlock: "Remaps the length of a vector or color to 1",
@@ -428,7 +430,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "MeshAttributeExistsBlock",
             ],
             Noises: ["RandomNumberBlock", "SimplexPerlin3DBlock", "WorleyNoise3DBlock", "CloudBlock", "VoronoiNoiseBlock"],
-            Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "DiscardBlock", "ClipPlanesBlock", "FragDepthBlock"],
+            Output_Nodes: ["VertexOutputBlock", "FragmentOutputBlock", "PrePassOutputBlock", "DiscardBlock", "ClipPlanesBlock", "FragDepthBlock"],
             Particle: [
                 "ParticleBlendMultiplyBlock",
                 "ParticleColorBlock",
@@ -439,7 +441,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "ParticleUVBlock",
             ],
             PBR: ["PBRMetallicRoughnessBlock", "AnisotropyBlock", "ClearCoatBlock", "ReflectionBlock", "RefractionBlock", "SheenBlock", "SubSurfaceBlock"],
-            PostProcess: ["ScreenPositionBlock", "CurrentScreenBlock"],
+            PostProcess: ["ScreenPositionBlock", "CurrentScreenBlock", "PrePassTextureBlock"],
             Procedural__Texture: ["ScreenPositionBlock"],
             Range: ["ClampBlock", "RemapBlock", "NormalizeBlock"],
             Round: ["RoundBlock", "CeilingBlock", "FloorBlock"],
@@ -468,6 +470,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 delete allBlocks["Particle"];
                 delete allBlocks["Procedural__Texture"];
                 delete allBlocks["PBR"];
+                allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
                 break;
             case NodeMaterialModes.ProceduralTexture:
                 delete allBlocks["Animation"];
@@ -475,6 +478,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 delete allBlocks["Particle"];
                 delete allBlocks["PostProcess"];
                 delete allBlocks["PBR"];
+                allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
                 break;
             case NodeMaterialModes.Particle:
                 delete allBlocks["Animation"];
@@ -485,6 +489,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("VertexOutputBlock"), 1);
                 allBlocks.Scene.splice(allBlocks.Scene.indexOf("FogBlock"), 1);
                 allBlocks.Scene.splice(allBlocks.Scene.indexOf("FogColorBlock"), 1);
+                allBlocks.Output_Nodes.splice(allBlocks.Output_Nodes.indexOf("PrePassOutputBlock"), 1);
                 break;
         }
 

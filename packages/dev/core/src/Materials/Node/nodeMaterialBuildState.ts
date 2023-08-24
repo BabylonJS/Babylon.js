@@ -33,6 +33,10 @@ export class NodeMaterialBuildState {
      * Gets the list of emitted extensions
      */
     public extensions: { [key: string]: string } = {};
+    /**
+     * Gets the list of emitted prePass outputs - if using the prepass
+     */
+    public prePassOutput: { [key: string]: string } = {};
 
     /**
      * Gets the target of the compilation state
@@ -121,6 +125,12 @@ export class NodeMaterialBuildState {
 
         this.compilationString = "precision highp float;\n" + this.compilationString;
         this.compilationString = "#if defined(WEBGL2) || defines(WEBGPU)\nprecision highp sampler2DArray;\n#endif\n" + this.compilationString;
+
+        if (isFragmentMode) {
+            this.compilationString =
+                "#if defined(PREPASS)\r\n#extension GL_EXT_draw_buffers : require\r\nlayout(location = 0) out highp vec4 glFragData[SCENE_MRT_COUNT];\r\nhighp vec4 gl_FragColor;\r\n#endif\r\n" +
+                this.compilationString;
+        }
 
         for (const extensionName in this.extensions) {
             const extension = this.extensions[extensionName];
