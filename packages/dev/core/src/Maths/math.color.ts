@@ -451,9 +451,9 @@ export class Color3 {
 
     /**
      * Converts Hue, saturation and value to a Color3 (RGB)
-     * @param hue defines the hue
-     * @param saturation defines the saturation
-     * @param value defines the value
+     * @param hue defines the hue (value between 0 and 360)
+     * @param saturation defines the saturation (value between 0 and 1)
+     * @param value defines the value (value between 0 and 1)
      * @param result defines the Color3 where to store the RGB values
      */
     public static HSVtoRGBToRef(hue: number, saturation: number, value: number, result: Color3) {

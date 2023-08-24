@@ -231,7 +231,7 @@ export class SpotLight extends ShadowLight {
      * @param exponent The light decay speed with the distance from the emission spot
      * @param scene The scene the lights belongs to
      */
-    constructor(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, scene: Scene) {
+    constructor(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, scene?: Scene) {
         super(name, scene);
 
         this.position = position;
@@ -314,8 +314,8 @@ export class SpotLight extends ShadowLight {
         this._projectionTextureViewLightDirty = false;
         this._projectionTextureDirty = true;
 
-        this.position.addToRef(this.direction, this._projectionTextureViewTargetVector);
-        Matrix.LookAtLHToRef(this.position, this._projectionTextureViewTargetVector, this._projectionTextureUpDirection, this._projectionTextureViewLightMatrix);
+        this.getAbsolutePosition().addToRef(this.direction, this._projectionTextureViewTargetVector);
+        Matrix.LookAtLHToRef(this.getAbsolutePosition(), this._projectionTextureViewTargetVector, this._projectionTextureUpDirection, this._projectionTextureViewLightMatrix);
     }
 
     protected _computeProjectionTextureProjectionLightMatrix(): void {

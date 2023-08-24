@@ -28,6 +28,12 @@
         "devPackageName": "node-editor",
         "filename": "node-editor.d.ts",
         "outputDirectory": "./declarations"
+    },    
+    {
+        "declarationLibs": ["@tools/node-geometry-editor"],
+        "devPackageName": "node-geometry-editor",
+        "filename": "node-geometry-editor.d.ts",
+        "outputDirectory": "./declarations"
     },
     {
         "declarationLibs": ["@tools/gui-editor"],
@@ -37,7 +43,7 @@
     },
     {
         "declarationLibs": ["@tools/accessibility"],
-        "devPackageName": "gui-editor",
+        "devPackageName": "accessibility",
         "filename": "accessibility.d.ts",
         "outputDirectory": "./declarations"
     },

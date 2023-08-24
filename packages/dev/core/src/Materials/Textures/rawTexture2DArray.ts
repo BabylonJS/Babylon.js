@@ -1,6 +1,7 @@
 import { Texture } from "./texture";
 import { Constants } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.rawTexture";
+import type { Nullable } from "../../types";
 
 import type { Scene } from "../../scene";
 
@@ -32,7 +33,7 @@ export class RawTexture2DArray extends Texture {
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      */
     constructor(
-        data: ArrayBufferView,
+        data: Nullable<ArrayBufferView>,
         width: number,
         height: number,
         depth: number,

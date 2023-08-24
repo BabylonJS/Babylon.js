@@ -373,7 +373,8 @@ export class ShaderProcessor {
         return preparedSourceCode;
     }
 
-    private static _ProcessIncludes(sourceCode: string, options: ProcessingOptions, callback: (data: any) => void): void {
+    /** @internal */
+    public static _ProcessIncludes(sourceCode: string, options: ProcessingOptions, callback: (data: any) => void): void {
         reusableMatches.length = 0;
         let match: RegExpMatchArray | null;
         // stay back-compat to the old matchAll syntax

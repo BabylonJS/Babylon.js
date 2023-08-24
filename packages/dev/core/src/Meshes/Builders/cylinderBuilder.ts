@@ -64,8 +64,8 @@ export function CreateCylinderVertexData(options: {
     let diameterBottom: number = options.diameterBottom === 0 ? 0 : options.diameterBottom || options.diameter || 1;
     diameterTop = diameterTop || 0.00001; // Prevent broken normals
     diameterBottom = diameterBottom || 0.00001; // Prevent broken normals
-    const tessellation: number = options.tessellation || 24;
-    const subdivisions: number = options.subdivisions || 1;
+    const tessellation: number = (options.tessellation || 24) | 0;
+    const subdivisions: number = (options.subdivisions || 1) | 0;
     const hasRings: boolean = options.hasRings ? true : false;
     const enclose: boolean = options.enclose ? true : false;
     const cap = options.cap === 0 ? 0 : options.cap || Mesh.CAP_ALL;

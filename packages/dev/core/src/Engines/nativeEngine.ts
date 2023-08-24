@@ -244,10 +244,10 @@ export class NativeEngine extends Engine {
             colorBufferFloat: false,
             textureFloat: true,
             textureFloatLinearFiltering: false,
-            textureFloatRender: false,
-            textureHalfFloat: false,
+            textureFloatRender: true,
+            textureHalfFloat: true,
             textureHalfFloatLinearFiltering: false,
-            textureHalfFloatRender: false,
+            textureHalfFloatRender: true,
             textureLOD: true,
             texelFetch: false,
             drawBuffersExtension: false,
@@ -1775,7 +1775,7 @@ export class NativeEngine extends Engine {
                     data,
                     !noMipmap,
                     invertY,
-                    useSRGBBuffer,
+                    texture._useSRGBBuffer,
                     () => {
                         texture.baseWidth = this._engine.getTextureWidth(underlyingResource);
                         texture.baseHeight = this._engine.getTextureHeight(underlyingResource);
@@ -1863,8 +1863,8 @@ export class NativeEngine extends Engine {
         const nativeRTWrapper = rtWrapper as NativeRenderTargetWrapper;
         const texture = new InternalTexture(this, InternalTextureSource.DepthStencil);
 
-        const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
-        const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
+        const width = (<{ width: number; height: number; layers?: number }>size).width ?? <number>size;
+        const height = (<{ width: number; height: number; layers?: number }>size).height ?? <number>size;
 
         const framebuffer = this._engine.createFrameBuffer(texture._hardwareTexture!.underlyingResource, width, height, generateStencil, true, samples);
         nativeRTWrapper._framebufferDepthStencil = framebuffer;
@@ -1982,6 +1982,7 @@ export class NativeEngine extends Engine {
         texture.generateMipMaps = !noMipmap;
         texture._lodGenerationScale = lodScale;
         texture._lodGenerationOffset = lodOffset;
+        texture._useSRGBBuffer = this._getUseSRGBBuffer(useSRGBBuffer, !!noMipmap);
 
         if (!this._doNotHandleContextLost) {
             texture._extension = forcedExtension;
@@ -2019,7 +2020,7 @@ export class NativeEngine extends Engine {
                     texture._hardwareTexture!.underlyingResource,
                     imageData,
                     false,
-                    useSRGBBuffer,
+                    texture._useSRGBBuffer,
                     () => {
                         texture.isReady = true;
                         if (onLoad) {
@@ -2053,7 +2054,7 @@ export class NativeEngine extends Engine {
             Promise.all(reorderedFiles.map((file) => Tools.LoadFileAsync(file).then((data) => new Uint8Array(data as ArrayBuffer))))
                 .then((data) => {
                     return new Promise<void>((resolve, reject) => {
-                        this._engine.loadCubeTexture(texture._hardwareTexture!.underlyingResource, data, !noMipmap, true, useSRGBBuffer, resolve, reject);
+                        this._engine.loadCubeTexture(texture._hardwareTexture!.underlyingResource, data, !noMipmap, true, texture._useSRGBBuffer, resolve, reject);
                     });
                 })
                 .then(
@@ -2114,7 +2115,7 @@ export class NativeEngine extends Engine {
             generateMipMaps = !!options;
         }
 
-        useSRGBBuffer &&= this._caps.supportSRGBBuffers && (this.webGLVersion > 1 || this.isWebGPU);
+        useSRGBBuffer = this._getUseSRGBBuffer(useSRGBBuffer, !generateMipMaps);
 
         if (type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) {
             // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
@@ -2129,8 +2130,8 @@ export class NativeEngine extends Engine {
         }
 
         const texture = new InternalTexture(this, source);
-        const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
-        const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
+        const width = (<{ width: number; height: number; layers?: number }>size).width ?? <number>size;
+        const height = (<{ width: number; height: number; layers?: number }>size).height ?? <number>size;
 
         const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
         if (layers !== 0) {
@@ -2179,8 +2180,8 @@ export class NativeEngine extends Engine {
         }
 
         const texture = colorAttachment || (noColorAttachment ? null : this._createInternalTexture(size, options, true, InternalTextureSource.RenderTarget));
-        const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
-        const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
+        const width = (<{ width: number; height: number; layers?: number }>size).width ?? <number>size;
+        const height = (<{ width: number; height: number; layers?: number }>size).height ?? <number>size;
 
         const framebuffer = this._engine.createFrameBuffer(
             texture ? texture._hardwareTexture!.underlyingResource : null,
@@ -2202,7 +2203,8 @@ export class NativeEngine extends Engine {
     }
 
     public updateRenderTargetTextureSampleCount(rtWrapper: RenderTargetWrapper, samples: number): number {
-        throw new Error("Updating render target sample count is not currently supported");
+        Logger.Warn("Updating render target sample count is not currently supported");
+        return rtWrapper.samples;
     }
 
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {

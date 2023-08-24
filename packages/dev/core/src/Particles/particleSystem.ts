@@ -130,6 +130,8 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
     private _vertexBuffers: { [key: string]: VertexBuffer } = {};
     private _spriteBuffer: Nullable<Buffer>;
     private _indexBuffer: Nullable<DataBuffer>;
+    private _linesIndexBuffer: Nullable<DataBuffer>;
+    private _linesIndexBufferUseInstancing: Nullable<DataBuffer>;
     private _drawWrappers: DrawWrapper[][]; // first index is render pass id, second index is blend mode
     private _customWrappers: { [blendMode: number]: Nullable<DrawWrapper> };
     private _scaledColorStep = new Color4(0, 0, 0, 0);
@@ -1165,9 +1167,11 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
     private _createIndexBuffer() {
         if (this._useInstancing) {
+            this._linesIndexBufferUseInstancing = this._engine.createIndexBuffer(new Uint32Array([0, 1, 1, 3, 3, 2, 2, 0, 0, 3]));
             return;
         }
         const indices = [];
+        const indicesWireframe = [];
         let index = 0;
         for (let count = 0; count < this._capacity; count++) {
             indices.push(index);
@@ -1176,10 +1180,12 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             indices.push(index);
             indices.push(index + 2);
             indices.push(index + 3);
+            indicesWireframe.push(index, index + 1, index + 1, index + 2, index + 2, index + 3, index + 3, index, index, index + 3);
             index += 4;
         }
 
         this._indexBuffer = this._engine.createIndexBuffer(indices);
+        this._linesIndexBuffer = this._engine.createIndexBuffer(indicesWireframe);
     }
 
     /**
@@ -2065,13 +2071,22 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
 
         if (this._vertexArrayObject !== undefined) {
-            if (!this._vertexArrayObject) {
-                this._vertexArrayObject = this._engine.recordVertexArrayObject(this._vertexBuffers, this._indexBuffer, effect);
-            }
+            if (this._scene?.forceWireframe) {
+                engine.bindBuffers(this._vertexBuffers, this._linesIndexBufferUseInstancing, effect);
+            } else {
+                if (!this._vertexArrayObject) {
+                    this._vertexArrayObject = this._engine.recordVertexArrayObject(this._vertexBuffers, null, effect);
+                }
 
-            this._engine.bindVertexArrayObject(this._vertexArrayObject, this._indexBuffer);
+                this._engine.bindVertexArrayObject(this._vertexArrayObject, this._scene?.forceWireframe ? this._linesIndexBufferUseInstancing : this._indexBuffer);
+            }
         } else {
-            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
+            if (!this._indexBuffer) {
+                // Use instancing mode
+                engine.bindBuffers(this._vertexBuffers, this._scene?.forceWireframe ? this._linesIndexBufferUseInstancing : null, effect);
+            } else {
+                engine.bindBuffers(this._vertexBuffers, this._scene?.forceWireframe ? this._linesIndexBuffer : this._indexBuffer, effect);
+            }
         }
 
         // Log. depth
@@ -2105,9 +2120,17 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         }
 
         if (this._useInstancing) {
-            engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, this._particles.length);
+            if (this._scene?.forceWireframe) {
+                engine.drawElementsType(Constants.MATERIAL_LineStripDrawMode, 0, 10, this._particles.length);
+            } else {
+                engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, this._particles.length);
+            }
         } else {
-            engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, this._particles.length * 6);
+            if (this._scene?.forceWireframe) {
+                engine.drawElementsType(Constants.MATERIAL_WireFrameFillMode, 0, this._particles.length * 10);
+            } else {
+                engine.drawElementsType(Constants.MATERIAL_TriangleFillMode, 0, this._particles.length * 6);
+            }
         }
 
         return this._particles.length;
@@ -2166,6 +2189,16 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         if (this._indexBuffer) {
             this._engine._releaseBuffer(this._indexBuffer);
             this._indexBuffer = null;
+        }
+
+        if (this._linesIndexBuffer) {
+            this._engine._releaseBuffer(this._linesIndexBuffer);
+            this._linesIndexBuffer = null;
+        }
+
+        if (this._linesIndexBufferUseInstancing) {
+            this._engine._releaseBuffer(this._linesIndexBufferUseInstancing);
+            this._linesIndexBufferUseInstancing = null;
         }
 
         if (this._vertexArrayObject) {

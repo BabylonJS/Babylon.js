@@ -1,0 +1,28 @@
+.debugBlock {
+    width: 40px;
+    grid-template-rows: 0px 40px 0px;
+    border-radius: 5px;
+    transform: translateY(-7px);
+}
+
+.hidden {
+    display: none;
+}
+
+.translatedConnections {
+    transform: translateY(7px);
+}
+
+.roundSelectionBorder {
+    border-radius: 0px;
+}
+
+.debugContent {
+    width: 20px;
+    transform: translate(16px, 10px);
+    background: transparent;
+    border: none;
+    display: block;
+    content: "?";
+    grid-row: 1;
+}

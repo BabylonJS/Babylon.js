@@ -60,6 +60,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     private _buffer1: Buffer;
     private _spriteBuffer: Buffer;
     private _renderVertexBuffers: Array<{ [key: string]: VertexBuffer }> = [];
+    private _linesIndexBufferUseInstancing: Nullable<DataBuffer>;
 
     private _targetIndex = 0;
     private _sourceBuffer: Buffer;
@@ -112,6 +113,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * An event triggered when the system is stopped
      */
     public onStoppedObservable = new Observable<IParticleSystem>();
+
+    private _createIndexBuffer() {
+        this._linesIndexBufferUseInstancing = this._engine.createIndexBuffer(new Uint32Array([0, 1, 1, 3, 3, 2, 2, 0, 0, 3]));
+    }
 
     /**
      * Gets the maximum number of particles active at the same time.
@@ -814,6 +819,8 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         if (this._drawWrappers[0].drawContext) {
             this._drawWrappers[0].drawContext.useInstancing = true;
         }
+
+        this._createIndexBuffer();
 
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);
@@ -1549,15 +1556,23 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         // Bind source VAO
-        this._platform.bindDrawBuffers(this._targetIndex, effect);
+        this._platform.bindDrawBuffers(this._targetIndex, effect, this._scene?.forceWireframe ? this._linesIndexBufferUseInstancing : null);
 
         if (this._onBeforeDrawParticlesObservable) {
             this._onBeforeDrawParticlesObservable.notifyObservers(effect);
         }
 
         // Render
-        this._engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, this._currentActiveCount);
+        if (this._scene?.forceWireframe) {
+            this._engine.drawElementsType(Constants.MATERIAL_LineStripDrawMode, 0, 10, this._currentActiveCount);
+        } else {
+            this._engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, this._currentActiveCount);
+        }
         this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
+
+        if (this._scene?.forceWireframe) {
+            this._engine.unbindInstanceAttributes();
+        }
 
         return this._currentActiveCount;
     }
@@ -1724,7 +1739,20 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * Rebuilds the particle system
      */
     public rebuild(): void {
-        this._initialize(true);
+        const checkUpdateEffect = () => {
+            if (!this._recreateUpdateEffect() || !this._platform.isUpdateBufferReady()) {
+                setTimeout(checkUpdateEffect, 10);
+            } else {
+                this._initialize(true);
+            }
+        };
+
+        this._createIndexBuffer();
+
+        this._cachedUpdateDefines = "";
+        this._platform.contextLost();
+
+        checkUpdateEffect();
     }
 
     private _releaseBuffers() {

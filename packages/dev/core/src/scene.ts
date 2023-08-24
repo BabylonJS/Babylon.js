@@ -4765,6 +4765,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.importedMeshesFiles = new Array<string>();
 
         if (this.stopAllAnimations) {
+            // Ensures that no animatable notifies a callback that could start a new animation group, constantly adding new animatables to the active list...
+            this._activeAnimatables.forEach((animatable) => {
+                animatable.onAnimationEndObservable.clear();
+                animatable.onAnimationEnd = null;
+            });
             this.stopAllAnimations();
         }
 

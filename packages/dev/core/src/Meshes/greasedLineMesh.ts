@@ -1,6 +1,7 @@
 import type { Scene } from "../scene";
 import type { Matrix } from "../Maths/math.vector";
 import { Vector3 } from "../Maths/math.vector";
+import type { IGreasedLineMaterial } from "../Materials/greasedLinePluginMaterial";
 import { GreasedLinePluginMaterial } from "../Materials/greasedLinePluginMaterial";
 import { Mesh } from "./mesh";
 import type { Ray, TrianglePickingPredicate } from "../Culling/ray";
@@ -11,6 +12,7 @@ import type { Nullable } from "../types";
 import type { Node } from "../node";
 import { DeepCopier } from "../Misc/deepCopier";
 import { GreasedLineTools } from "../Misc/greasedLineTools";
+import { GreasedLineSimpleMaterial } from "../Materials/greasedLineSimpleMaterial";
 
 export type GreasedLinePoints = Vector3[] | Vector3[][] | Float32Array | Float32Array[] | number[][] | number[];
 
@@ -160,7 +162,7 @@ export class GreasedLineMesh extends Mesh {
      * Updated a lazy line. Rerenders the line and updates boundinfo as well.
      */
     public updateLazy() {
-        this.setPoints(this._points);
+        this._setPoints(this._points);
         if (!this._options.colorPointers) {
             this._updateColorPointers();
         }
@@ -244,8 +246,15 @@ export class GreasedLineMesh extends Mesh {
     /**
      * Gets the pluginMaterial associated with line
      */
-    get greasedLineMaterial() {
-        return <GreasedLinePluginMaterial>this.material?.pluginManager?.getPlugin(GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME);
+    get greasedLineMaterial(): IGreasedLineMaterial | undefined {
+        if (this.material && this.material instanceof GreasedLineSimpleMaterial) {
+            return this.material;
+        }
+        const materialPlugin = this.material?.pluginManager?.getPlugin(GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME);
+        if (materialPlugin) {
+            return <GreasedLinePluginMaterial>materialPlugin;
+        }
+        return;
     }
 
     /**
@@ -282,11 +291,29 @@ export class GreasedLineMesh extends Mesh {
         });
     }
 
+    private _updateWidths() {
+        let pointCount = 0;
+        for (const points of this._points) {
+            pointCount += points.length;
+        }
+        const countDiff = (pointCount / 3) * 2 - this._widths.length;
+        for (let i = 0; i < countDiff; i++) {
+            this._widths.push(1);
+        }
+    }
+
     /**
      * Sets line points and rerenders the line.
      * @param points points table
      */
     public setPoints(points: number[][]) {
+        this._points = points;
+        this._updateWidths();
+        this._updateColorPointers();
+        this._setPoints(points);
+    }
+
+    private _setPoints(points: number[][]) {
         this._points = points;
         this._options.points = points;
 

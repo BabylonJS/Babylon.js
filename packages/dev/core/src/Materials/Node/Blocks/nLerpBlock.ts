@@ -70,7 +70,7 @@ export class NLerpBlock extends NodeMaterialBlock {
 
         state.compilationString +=
             this._declareOutput(output, state) +
-            ` = normalize(mix(${this.left.associatedVariableName} , ${this.right.associatedVariableName}, ${this.gradient.associatedVariableName}));\r\n`;
+            ` = normalize(mix(${this.left.associatedVariableName} , ${this.right.associatedVariableName}, ${this.gradient.associatedVariableName}));\n`;
 
         return this;
     }
