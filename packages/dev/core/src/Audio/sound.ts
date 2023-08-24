@@ -1165,7 +1165,8 @@ export class Sound {
     public serialize(): any {
         const serializationObject: any = {
             name: this.name,
-            url: this._urlOrArrayBuffer,
+            url: this._url,
+
             autoplay: this.autoplay,
             loop: this.loop,
             volume: this._volume,
