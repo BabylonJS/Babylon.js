@@ -4,7 +4,6 @@ import { Vector3 } from "../Maths/math.vector";
 import { Mesh } from "./mesh";
 import type { Ray, TrianglePickingPredicate } from "../Culling/ray";
 import { Buffer, VertexBuffer } from "../Buffers/buffer";
-import { VertexData } from "./mesh.vertexData";
 import { PickingInfo } from "../Collisions/pickingInfo";
 import type { Nullable } from "../types";
 import type { Node } from "../node";
