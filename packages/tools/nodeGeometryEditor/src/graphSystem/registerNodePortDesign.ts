@@ -5,8 +5,10 @@ import type { ConnectionPointPortData } from "./connectionPointPortData";
 import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
 
 export const RegisterNodePortDesign = (stateManager: StateManager) => {
-    stateManager.applyNodePortDesign = (portData: IPortData, element: HTMLElement, img: HTMLImageElement) => {
-        const type = (portData as ConnectionPointPortData).data.type;
+    stateManager.applyNodePortDesign = (portData: IPortData, element: HTMLElement, img: HTMLImageElement, pip: HTMLDivElement) => {
+        const connectionPortData = portData as ConnectionPointPortData;
+        const point = connectionPortData.data;
+        const type = point.type;
 
         element.style.background = BlockTools.GetColorFromConnectionNodeType(type);
         switch (type) {
@@ -37,6 +39,12 @@ export const RegisterNodePortDesign = (stateManager: StateManager) => {
                 img.style.width = "100%"; // it's so that the svg is correctly centered inside the outer circle
                 img.style.height = "100%";
                 break;
+        }
+
+        if (!point.isConnected && point.value !== undefined && point.value !== null && point.value !== point.defaultValue) {
+            pip.style.display = "";
+        } else {
+            pip.style.display = "none";
         }
     };
 };

@@ -26,10 +26,6 @@ export class ConnectionPointPortData implements IPortData {
             portName = block.name;
         }
 
-        if (this.data.value !== undefined && this.data.value !== null && !this.data.isConnected && this.data.isOptional) {
-            return `${portName}[${this.data.value}]`;
-        }
-
         return portName;
     }
 
