@@ -96,7 +96,6 @@ export abstract class GreasedLineBaseMesh extends Mesh {
     protected _offsets: number[];
     protected _colorPointers: number[];
     protected _widths: number[];
-    protected _halfWidth: number;
 
     protected _offsetsBuffer?: Buffer;
     protected _widthsBuffer?: Buffer;
@@ -121,7 +120,6 @@ export abstract class GreasedLineBaseMesh extends Mesh {
         this._points = [];
         this._colorPointers = _options.colorPointers ?? [];
         this._widths = _options.widths ?? new Array(_options.points.length).fill(1);
-        this._halfWidth = _options.ribbonOptions?.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS ? (_options.ribbonOptions.width ?? 0.1) / 2 : 0.05;
     }
 
     /**
@@ -164,7 +162,7 @@ export abstract class GreasedLineBaseMesh extends Mesh {
      * Adds new points to the line. It doesn't rerenders the line if in lazy mode.
      * @param points points table
      */
-    public addPoints(points: number[][]) {
+    public addPoints(points: number[][], _options?: GreasedLineMeshOptions) {
         for (const p of points) {
             this._points.push(p);
         }

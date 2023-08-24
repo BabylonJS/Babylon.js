@@ -5,7 +5,7 @@ import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { IFontData } from "../Meshes/Builders/textBuilder";
 import { CreateTextShapePaths } from "../Meshes/Builders/textBuilder";
 import type { FloatArray, IndicesArray } from "../types";
-import type { GreasedLinePoints } from "../Meshes/greasedLineMesh";
+import type { GreasedLinePoints } from "../Meshes/greasedLineBaseMesh";
 
 /**
  * Tool functions for GreasedLine

@@ -15,6 +15,8 @@ const CloneValue = (source: any, destinationObject: any) => {
         return source.clone();
     } else if (Array.isArray(source)) {
         return source.slice();
+    } else if (typeof source === 'object') {
+        return {...source}
     }
     return null;
 };

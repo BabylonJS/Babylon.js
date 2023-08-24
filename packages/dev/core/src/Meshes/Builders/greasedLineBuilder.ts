@@ -148,13 +148,6 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     let instance;
     const allPoints = GreasedLineTools.ConvertPoints(options.points);
 
-    let length = 0;
-    if (Array.isArray(allPoints[0])) {
-        allPoints.forEach((points) => {
-            length += points.length / 3;
-        });
-    }
-
     options.widthDistribution = options.widthDistribution ?? GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START;
 
     materialOptions = materialOptions ?? {
@@ -165,6 +158,13 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     materialOptions.materialType = materialOptions.materialType ?? GreasedLineMeshMaterialType.MATERIAL_TYPE_STANDARD;
     materialOptions.cameraFacing = materialOptions.cameraFacing ?? true;
 
+    let length = 0;
+    if (Array.isArray(allPoints[0])) {
+        allPoints.forEach((points) => {
+            length += points.length / 3;
+        });
+    }
+
     const widths = CompleteGreasedLineWidthTable(length, options.widths ?? [], options.widthDistribution);
 
     const colors = materialOptions?.colors
@@ -172,21 +172,21 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
         : undefined;
 
     // create new mesh if instance is not defined
-    if (!options.instance) {
-        const initialGreasedLineOptions: GreasedLineMeshOptions = {
-            points: allPoints,
-            updatable: options.updatable,
-            widths,
-            lazy: options.lazy,
-            ribbonOptions: options.ribbonOptions,
-        };
+    const initialGreasedLineOptions: GreasedLineMeshOptions = {
+        points: allPoints,
+        updatable: options.updatable,
+        widths,
+        lazy: options.lazy,
+        ribbonOptions: options.ribbonOptions,
+    };
 
-        if (initialGreasedLineOptions.ribbonOptions) {
-            if (initialGreasedLineOptions.ribbonOptions.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS) {
-                initialGreasedLineOptions.ribbonOptions.width = materialOptions.width ?? initialGreasedLineOptions.ribbonOptions.width;
-            }
+    if (initialGreasedLineOptions.ribbonOptions) {
+        if (initialGreasedLineOptions.ribbonOptions.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS) {
+            initialGreasedLineOptions.ribbonOptions.width = materialOptions.width ?? initialGreasedLineOptions.ribbonOptions.width ?? GreasedLinePluginMaterial.DEFAULT_WIDTH;
         }
+    }
 
+    if (!options.instance) {
         instance = initialGreasedLineOptions.ribbonOptions
             ? new GreasedLineRibbonMesh(name, scene, initialGreasedLineOptions)
             : new GreasedLineMesh(name, scene, initialGreasedLineOptions);
@@ -219,8 +219,8 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     } else {
         // update the data on the mesh instance
         instance = options.instance;
-        if (options.ribbonOptions) {
-            instance.addPoints(allPoints);
+        if (instance instanceof GreasedLineRibbonMesh) {
+            instance.addPoints(allPoints, initialGreasedLineOptions);
         } else {
             const currentWidths = instance.widths;
 
@@ -285,6 +285,9 @@ export function CompleteGreasedLineWidthTable(
 
     // is the width table shorter than the point table?
     if (missingCount > 0) {
+        if (missingCount % 2 != 0) {
+            widths.push(defaultWidthLower);
+        }
         // it is, fill in the missing elements
         if (widthsDistribution === GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START_END) {
             const halfCount = Math.floor(widths.length / 2);
