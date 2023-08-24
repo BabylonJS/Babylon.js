@@ -2316,9 +2316,10 @@ export class Vector3 implements Vector<[number, number, number]> {
      * @returns the result vector
      */
     public floorToRef<T extends this>(result: T): T {
-        result.x = Math.floor(this.x);
-        result.y = Math.floor(this.y);
-        result.z = Math.floor(this.z);
+        result._x = Math.floor(this._x);
+        result._y = Math.floor(this._y);
+        result._z = Math.floor(this._z);
+        result._isDirty = true;
         return result;
     }
 
@@ -2338,9 +2339,10 @@ export class Vector3 implements Vector<[number, number, number]> {
      * @returns the result vector
      */
     public fractToRef<T extends this>(result: T): T {
-        result.x = this.x - Math.floor(this.x);
-        result.y = this.y - Math.floor(this.y);
-        result.z = this.z - Math.floor(this.z);
+        result._x = this.x - Math.floor(this._x);
+        result._y = this.y - Math.floor(this._y);
+        result._z = this.z - Math.floor(this._z);
+        result._isDirty = true;
         return result;
     }
 
