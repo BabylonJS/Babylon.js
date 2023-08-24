@@ -183,7 +183,7 @@ export class Sound {
     private _offset?: number;
     private _tryToPlayTimeout: Nullable<NodeJS.Timeout>;
     private _audioUnlockedObserver?: Nullable<Observer<IAudioEngine>>;
-    private _urlOrArrayBuffer:any;
+    private _url?: Nullable<string>;
     /**
      * @internal
      */
