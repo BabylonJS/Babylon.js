@@ -35,7 +35,7 @@ export const RegisterNodePortDesign = (stateManager: StateManager) => {
                 break;
             case NodeGeometryBlockConnectionPointTypes.Geometry:
                 img.src =
-                    "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMSIgaGVpZ2h0PSIyMSIgdmlld0JveD0iMCAwIDIxIDIxIj48Y2lyY2xlIGN4PSI3LjEiIGN5PSIxMy4wOCIgcj0iMy4yNSIgc3R5bGU9ImZpbGw6I2ZmZiIvPjxwYXRoIGQ9Ik0xMC40OSwzQTcuNTIsNy41MiwwLDAsMCwzLDEwYTUuMTMsNS4xMywwLDEsMSw2LDcuODUsNy42MSw3LjYxLDAsMCwwLDEuNTIuMTYsNy41Miw3LjUyLDAsMCwwLDAtMTVaIiBzdHlsZT0iZmlsbDojZmZmIi8+PC9zdmc+";
+                    "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIGlkPSJMYXllcl81IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZGVmcz48c3R5bGU+LmNscy0xe2ZpbGw6I2ZmZjt9LmNscy0ye2ZpbGw6Izg0OTk1Yzt9PC9zdHlsZT48L2RlZnM+PHBhdGggY2xhc3M9ImNscy0yIiBkPSJtMTEuNzYsMjEuOTVjLTUuNTEsMC0xMC00LjQ5LTEwLTEwUzYuMjUsMS45NSwxMS43NiwxLjk1czEwLDQuNDksMTAsMTAtNC40OSwxMC0xMCwxMFoiLz48cG9seWdvbiBjbGFzcz0iY2xzLTEiIHBvaW50cz0iMTAuOTEgMTIuNDQgNS4xNiA5LjEyIDUuMTYgMTUuNzYgMTAuOTEgMTkuMDkgMTAuOTEgMTIuNDQiLz48cG9seWdvbiBjbGFzcz0iY2xzLTEiIHBvaW50cz0iMTEuNzYgMTAuOTcgMTcuNTIgNy42NCAxMS43NiA0LjMyIDYuMDEgNy42NCAxMS43NiAxMC45NyIvPjxwb2x5Z29uIGNsYXNzPSJjbHMtMSIgcG9pbnRzPSIxMi42MSAxMi40NCAxMi42MSAxOS4wOSAxOC4zNyAxNS43NiAxOC4zNyA5LjEyIDEyLjYxIDEyLjQ0Ii8+PC9zdmc+";
                 img.style.width = "100%"; // it's so that the svg is correctly centered inside the outer circle
                 img.style.height = "100%";
                 break;

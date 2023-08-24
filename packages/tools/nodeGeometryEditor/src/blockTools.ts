@@ -394,7 +394,7 @@ export class BlockTools {
         let color = "#880000";
         switch (type) {
             case NodeGeometryBlockConnectionPointTypes.Int:
-                color = "#2756CB";
+                color = "#51b0e5";
                 break;
             case NodeGeometryBlockConnectionPointTypes.Float:
                 color = "#cb9e27";
@@ -412,7 +412,7 @@ export class BlockTools {
                 color = "#591990";
                 break;
             case NodeGeometryBlockConnectionPointTypes.Geometry:
-                color = "#6174FA";
+                color = "#84995c";
                 break;
         }
 
