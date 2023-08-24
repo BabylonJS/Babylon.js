@@ -247,32 +247,32 @@ export class DirectionalLightFrustumViewer {
         this._rootNode = new TransformNode("directionalLightHelperRoot_" + this._light.name, this._scene);
         this._rootNode.parent = this._light.parent;
 
-        this._nearLinesPoints = [Vector3.ZeroReadOnly, Vector3.ZeroReadOnly, Vector3.ZeroReadOnly, Vector3.ZeroReadOnly, Vector3.ZeroReadOnly];
+        this._nearLinesPoints = [Vector3.ZeroReadOnly, Vector3.ZeroReadOnly, Vector3.ZeroReadOnly, Vector3.ZeroReadOnly, Vector3.ZeroReadOnly] as Vector3[];
         const nearLines = CreateLines("nearlines", { updatable: true, points: this._nearLinesPoints }, this._scene);
         nearLines.parent = this._rootNode;
         nearLines.alwaysSelectAsActiveMesh = true;
 
-        this._farLinesPoints = [Vector3.ZeroReadOnly, Vector3.ZeroReadOnly, Vector3.ZeroReadOnly, Vector3.ZeroReadOnly, Vector3.ZeroReadOnly];
+        this._farLinesPoints = [Vector3.ZeroReadOnly, Vector3.ZeroReadOnly, Vector3.ZeroReadOnly, Vector3.ZeroReadOnly, Vector3.ZeroReadOnly] as Vector3[];
         const farLines = CreateLines("farlines", { updatable: true, points: this._farLinesPoints }, this._scene);
         farLines.parent = this._rootNode;
         farLines.alwaysSelectAsActiveMesh = true;
 
-        this._trLinesPoints = [Vector3.ZeroReadOnly, Vector3.ZeroReadOnly];
+        this._trLinesPoints = [Vector3.ZeroReadOnly, Vector3.ZeroReadOnly] as Vector3[];
         const trLines = CreateLines("trlines", { updatable: true, points: this._trLinesPoints }, this._scene);
         trLines.parent = this._rootNode;
         trLines.alwaysSelectAsActiveMesh = true;
 
-        this._brLinesPoints = [Vector3.ZeroReadOnly, Vector3.ZeroReadOnly];
+        this._brLinesPoints = [Vector3.ZeroReadOnly, Vector3.ZeroReadOnly] as Vector3[];
         const brLines = CreateLines("brlines", { updatable: true, points: this._brLinesPoints }, this._scene);
         brLines.parent = this._rootNode;
         brLines.alwaysSelectAsActiveMesh = true;
 
-        this._tlLinesPoints = [Vector3.ZeroReadOnly, Vector3.ZeroReadOnly];
+        this._tlLinesPoints = [Vector3.ZeroReadOnly, Vector3.ZeroReadOnly] as Vector3[];
         const tlLines = CreateLines("tllines", { updatable: true, points: this._tlLinesPoints }, this._scene);
         tlLines.parent = this._rootNode;
         tlLines.alwaysSelectAsActiveMesh = true;
 
-        this._blLinesPoints = [Vector3.ZeroReadOnly, Vector3.ZeroReadOnly];
+        this._blLinesPoints = [Vector3.ZeroReadOnly, Vector3.ZeroReadOnly] as Vector3[];
         const blLines = CreateLines("bllines", { updatable: true, points: this._blLinesPoints }, this._scene);
         blLines.parent = this._rootNode;
         blLines.alwaysSelectAsActiveMesh = true;

@@ -21,7 +21,7 @@ export declare abstract class VectorLike<N extends number[] = number[]> {
      * The number of dimensions the vector has (i.e. the length of the coordinate array)
      * Note this is abstract to allow a getter implementation in DynamicVector
      */
-    abstract dimension: [number];
+    abstract readonly dimension: [number];
 
     /**
      * Creates a new Vector from the given coordinates
@@ -1636,7 +1636,7 @@ export class Vector3 implements Vector<[number, number, number]> {
     private static _ZeroReadOnly = Vector3.Zero() as DeepImmutable<Vector3>;
     private static _OneReadOnly = Vector3.One() as DeepImmutable<Vector3>;
 
-    public readonly dimension: [3] = [3];
+    public readonly dimension: [number] = [3];
 
     /** @internal */
     public _x: number;
@@ -2604,7 +2604,7 @@ export class Vector3 implements Vector<[number, number, number]> {
      * @param normal Normal of the projection plane
      * @returns the angle in radians (float) between vector0 and vector1 projected on the plane with the specified normal
      */
-    public static GetAngleBetweenVectorsOnPlane(vector0: Vector3, vector1: Vector3, normal: Vector3): number {
+    public static GetAngleBetweenVectorsOnPlane(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): number {
         MathTmp.Vector3[0].copyFrom(vector0);
         const v0 = MathTmp.Vector3[0];
         MathTmp.Vector3[1].copyFrom(vector1);
