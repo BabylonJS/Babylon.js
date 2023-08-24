@@ -2,7 +2,7 @@ import { serialize, SerializationHelper, serializeAsVector3 } from "../Misc/deco
 import { SmartArray } from "../Misc/smartArray";
 import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
-import type { Nullable } from "../types";
+import type { DeepImmutable, Nullable } from "../types";
 import type { CameraInputsManager } from "./cameraInputsManager";
 import type { Scene } from "../scene";
 import { Matrix, Vector3, Quaternion } from "../Maths/math.vector";
@@ -1361,7 +1361,7 @@ export class Camera extends Node {
      * @param localAxis Defines the reference axis to provide a relative direction.
      * @returns the direction
      */
-    public getDirection(localAxis: Vector3): Vector3 {
+    public getDirection(localAxis: DeepImmutable<Vector3>): Vector3 {
         const result = Vector3.Zero();
 
         this.getDirectionToRef(localAxis, result);
@@ -1383,7 +1383,7 @@ export class Camera extends Node {
      * @param localAxis Defines the reference axis to provide a relative direction.
      * @param result Defines the vector to store the result in
      */
-    public getDirectionToRef(localAxis: Vector3, result: Vector3): void {
+    public getDirectionToRef(localAxis: DeepImmutable<Vector3>, result: Vector3): void {
         Vector3.TransformNormalToRef(localAxis, this.getWorldMatrix(), result);
     }
 
