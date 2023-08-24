@@ -34,7 +34,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
      * @param scene the scene
      * @param _options mesh options
      */
-    constructor(public readonly name: string, scene: Scene, _options: GreasedLineMeshOptions) {
+    constructor(public readonly name: string, scene: Scene, _options: GreasedLineMeshOptions, _pathOptions?: { options: GreasedLineMeshOptions; pathCount: number }[]) {
         super(name, scene, _options);
 
         this._paths = [];
@@ -43,7 +43,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         this._colorPointers = [];
         this._widths = _options.widths ?? [];
         this._ribbonWidths = [];
-        this._pathsOptions = [];
+        this._pathsOptions = _pathOptions ?? [];
 
         if (_options.points) {
             this.addPoints(GreasedLineTools.ConvertPoints(_options.points), _options);
@@ -320,19 +320,13 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
     public clone(name: string = `${this.name}-cloned`, newParent?: Nullable<Node>) {
         const lineOptions = this._createLineOptions();
         const deepCopiedLineOptions: any = {};
-        DeepCopier.DeepCopy(lineOptions, deepCopiedLineOptions, ["instance", "points"]);
+        const pathOptionsCloned:any = []
+        DeepCopier.DeepCopy(this._pathsOptions, pathOptionsCloned)
+        DeepCopier.DeepCopy(lineOptions, deepCopiedLineOptions, ["instance"]);
 
-        const cloned = new GreasedLineRibbonMesh(name, this._scene, <GreasedLineMeshOptions>deepCopiedLineOptions);
+        const cloned = new GreasedLineRibbonMesh(name, this._scene, <GreasedLineMeshOptions>deepCopiedLineOptions, pathOptionsCloned);
         if (newParent) {
             cloned.parent = newParent;
-        }
-
-        const pointsCloned = this.points;
-        for (let i = 0, c = 0; i < this._pathsOptions.length; i++) {
-            const { options, pathCount } = this._pathsOptions[i];
-            const subPoints = pointsCloned.slice(c, c + pathCount);
-            c += pathCount;
-            cloned.addPoints(subPoints, options);
         }
 
         cloned.material = this.material;
@@ -349,6 +343,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         serializationObject.type = this.getClassName();
 
         serializationObject.lineOptions = this._createLineOptions();
+        serializationObject.pathsOptions = this._pathsOptions;
     }
 
     /**
@@ -360,7 +355,8 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
     public static Parse(parsedMesh: any, scene: Scene): Mesh {
         const lineOptions = <GreasedLineMeshOptions>parsedMesh.lineOptions;
         const name = <string>parsedMesh.name;
-        const result = new GreasedLineRibbonMesh(name, scene, lineOptions);
+        const pathOptions = parsedMesh.pathOptions
+        const result = new GreasedLineRibbonMesh(name, scene, lineOptions, pathOptions);
         return result;
     }
 
