@@ -12,7 +12,7 @@ import { GreasedLineTools } from "../../Misc/greasedLineTools";
 import type { GreasedLineMeshOptions } from "../greasedLineBaseMesh";
 import { GreasedLineRibbonPointsMode } from "../greasedLineBaseMesh";
 import { GreasedLineRibbonMesh } from "../greasedLineRibbonMesh";
-import { Vector3 } from "../../Maths";
+import { Vector3 } from "../../Maths/math.vector";
 
 /**
  * How are the colors distributed along the color table
