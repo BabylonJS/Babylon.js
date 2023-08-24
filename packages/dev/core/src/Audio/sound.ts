@@ -183,7 +183,7 @@ export class Sound {
     private _offset?: number;
     private _tryToPlayTimeout: Nullable<NodeJS.Timeout>;
     private _audioUnlockedObserver?: Nullable<Observer<IAudioEngine>>;
-
+    private _url?: Nullable<string>;
     /**
      * @internal
      */
@@ -253,6 +253,7 @@ export class Sound {
                 try {
                     if (typeof urlOrArrayBuffer === "string") {
                         this._urlType = "String";
+                        this._url = urlOrArrayBuffer;
                     } else if (urlOrArrayBuffer instanceof ArrayBuffer) {
                         this._urlType = "ArrayBuffer";
                     } else if (urlOrArrayBuffer instanceof HTMLMediaElement) {
@@ -1164,7 +1165,7 @@ export class Sound {
     public serialize(): any {
         const serializationObject: any = {
             name: this.name,
-            url: this.name,
+            url: this._url,
             autoplay: this.autoplay,
             loop: this.loop,
             volume: this._volume,
