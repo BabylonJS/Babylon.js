@@ -201,7 +201,7 @@ export class Sound {
      */
     constructor(name: string, urlOrArrayBuffer: any, scene?: Nullable<Scene>, readyToPlayCallback: Nullable<() => void> = null, options?: ISoundOptions) {
         this.name = name;
-        this._urlOrArrayBuffer=urlOrArrayBuffer;
+        this._url = urlOrArrayBuffer;
         scene = scene || EngineStore.LastCreatedScene;
         if (!scene) {
             return;
