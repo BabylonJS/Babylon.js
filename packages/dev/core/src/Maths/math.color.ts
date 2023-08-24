@@ -1344,18 +1344,10 @@ export class Color4 implements VectorLike<[number, number, number, number]> {
      * @returns the current updated Color4
      */
     public minimizeInPlace(other: DeepImmutable<Color4>): this {
-        if (other.r < this.r) {
-            this.r = other.r;
-        }
-        if (other.g < this.g) {
-            this.g = other.g;
-        }
-        if (other.b < this.b) {
-            this.b = other.b;
-        }
-        if (other.a < this.a) {
-            this.a = other.a;
-        }
+        this.r = Math.min(this.r, other.r);
+        this.g = Math.min(this.g, other.g);
+        this.b = Math.min(this.b, other.b);
+        this.a = Math.min(this.a, other.a);
         return this;
     }
     /**
@@ -1364,18 +1356,10 @@ export class Color4 implements VectorLike<[number, number, number, number]> {
      * @returns the current updated Color4
      */
     public maximizeInPlace(other: DeepImmutable<Color4>): this {
-        if (other.r > this.r) {
-            this.r = other.r;
-        }
-        if (other.g > this.g) {
-            this.g = other.g;
-        }
-        if (other.b > this.b) {
-            this.b = other.b;
-        }
-        if (other.a > this.a) {
-            this.a = other.a;
-        }
+        this.r = Math.max(this.r, other.r);
+        this.g = Math.max(this.g, other.g);
+        this.b = Math.max(this.b, other.b);
+        this.a = Math.max(this.a, other.a);
         return this;
     }
 

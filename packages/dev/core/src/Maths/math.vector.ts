@@ -683,8 +683,7 @@ export class Vector2 implements Vector<[number, number]> {
      * @returns the current Vector2
      */
     public fromArray(array: FloatArray, offset: number = 0): this {
-        this.x = array[offset];
-        this.y = array[offset + 1];
+        Vector2.FromArrayToRef(array, offset, this);
         return this;
     }
 
@@ -1760,9 +1759,7 @@ export class Vector3 implements Vector<[number, number, number]> {
      * @returns the current Vector3
      */
     public fromArray(array: FloatArray, offset: number = 0): this {
-        this.x = array[offset];
-        this.y = array[offset + 1];
-        this.z = array[offset + 2];
+        Vector3.FromArrayToRef(array, offset, this);
         return this;
     }
 
@@ -3870,10 +3867,7 @@ export class Vector4 implements Vector<[number, number, number, number]> {
      * @returns the current Vector3
      */
     public fromArray(array: FloatArray, offset: number = 0): this {
-        this.x = array[offset];
-        this.y = array[offset + 1];
-        this.z = array[offset + 2];
-        this.w = array[offset + 3];
+        Vector4.FromArrayToRef(array, offset, this);
         return this;
     }
 
