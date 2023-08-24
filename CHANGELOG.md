@@ -1,5 +1,12 @@
 # Changelog
 
+## 6.18.0
+
+### Core
+
+- Fix computenormals when no normals - by [deltakosh](https://github.com/deltakosh) ([#14198](https://github.com/BabylonJS/Babylon.js/pull/14198))
+- Fixed from/to issues in sprite anim - by [RolandCsibrei](https://github.com/RolandCsibrei) ([#14190](https://github.com/BabylonJS/Babylon.js/pull/14190))
+
 ## 6.17.1
 
 ### Core

@@ -1,6 +1,81 @@
 {
-    "fromTag": "6.17.0",
+    "fromTag": "6.17.1",
     "changelog": {
+        "6.18.0": [
+            {
+                "pr": "14196",
+                "title": "new NGE block: Instantiate",
+                "description": "The new instantiate node:\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/1306056/1ad88c6a-eb4c-4325-b572-7de22ebff6fe)\r\n\r\nI also introduced the notion of LoopID contextual value that let you control the transform per step\r\n\r\ncc @Pryme8 @PatrickRyanMS ",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVerticesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVolumeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setColorsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setNormalsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setPositionsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setTangentsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setUVsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryInputBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Enums/nodeGeometryContextualSources.ts",
+                    "packages/dev/core/src/Meshes/Node/Interfaces/nodeGeometryExecutionContext.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBuildState.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/inputDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14198",
+                "title": "Fix computenormals when no normals",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/computeNormalsBlock.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14197",
+                "title": "Fix updating issue with exposed inputs",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/propertyTabComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14190",
+                "title": "Fixed from/to issues in sprite anim",
+                "description": null,
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Sprites/sprite.ts"
+                ],
+                "tags": []
+            }
+        ],
         "6.17.1": [
             {
                 "pr": "14195",
