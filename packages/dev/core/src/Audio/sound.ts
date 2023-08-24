@@ -183,7 +183,7 @@ export class Sound {
     private _offset?: number;
     private _tryToPlayTimeout: Nullable<NodeJS.Timeout>;
     private _audioUnlockedObserver?: Nullable<Observer<IAudioEngine>>;
-
+    private _urlOrArrayBuffer:any;
     /**
      * @internal
      */
@@ -201,6 +201,7 @@ export class Sound {
      */
     constructor(name: string, urlOrArrayBuffer: any, scene?: Nullable<Scene>, readyToPlayCallback: Nullable<() => void> = null, options?: ISoundOptions) {
         this.name = name;
+        this._urlOrArrayBuffer=urlOrArrayBuffer;
         scene = scene || EngineStore.LastCreatedScene;
         if (!scene) {
             return;
@@ -1164,7 +1165,7 @@ export class Sound {
     public serialize(): any {
         const serializationObject: any = {
             name: this.name,
-            url: this.name,
+            url: this._urlOrArrayBuffer,
             autoplay: this.autoplay,
             loop: this.loop,
             volume: this._volume,
