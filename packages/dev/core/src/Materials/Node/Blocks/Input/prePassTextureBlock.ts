@@ -35,7 +35,7 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
      * @param target defines the target of that block (VertexAndFragment by default)
      */
     public constructor(name: string, target = NodeMaterialBlockTargets.VertexAndFragment) {
-        super(name, target, false, true);
+        super(name, target, false);
 
         this.registerOutput(
             "position",
@@ -55,12 +55,13 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
             NodeMaterialBlockTargets.VertexAndFragment,
             new NodeMaterialConnectionPointCustomObject("normal", this, NodeMaterialConnectionPointDirection.Output, ImageSourceBlock, "ImageSourceBlock")
         );
-
-        this._outputs[0].displayName = "position";
-        this._outputs[1].displayName = "depth";
-        this._outputs[2].displayName = "normal";
     }
 
+    /**
+     * Returns the sampler name associated with the node connection point
+     * @param output
+     * @returns
+     */
     public getSamplerName(output: NodeMaterialConnectionPoint): string {
         if (output === this._outputs[0]) {
             return this._positionSamplerName;
@@ -165,9 +166,15 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
             return;
         }
 
-        effect.setTexture(this._positionSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_POSITION_TEXTURE_TYPE)]);
-        effect.setTexture(this._depthSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
-        effect.setTexture(this._normalSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE)]);
+        if (this.position.isConnected) {
+            effect.setTexture(this._positionSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_POSITION_TEXTURE_TYPE)]);
+        }
+        if (this.depth.isConnected) {
+            effect.setTexture(this._depthSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
+        }
+        if (this.normal.isConnected) {
+            effect.setTexture(this._normalSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE)]);
+        }
     }
 }
 

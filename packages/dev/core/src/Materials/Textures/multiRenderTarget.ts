@@ -6,7 +6,6 @@ import { Constants } from "../../Engines/constants";
 
 import "../../Engines/Extensions/engine.multiRender";
 import type { InternalTexture } from "./internalTexture";
-import { Observable } from "core/Misc/observable";
 
 /**
  * Creation options of the multi render target texture.
@@ -99,8 +98,6 @@ export class MultiRenderTarget extends RenderTargetTexture {
     private _count: number;
     private _drawOnlyOnFirstAttachmentByDefault: boolean;
     private _textureNames?: string[];
-
-    public onRebuildObservable = new Observable<void>();
 
     /**
      * Get if draw buffers are currently supported by the used hardware and browser.
@@ -343,8 +340,6 @@ export class MultiRenderTarget extends RenderTargetTexture {
         if (this.samples !== 1) {
             this._renderTarget!.setSamples(this.samples, !this._drawOnlyOnFirstAttachmentByDefault, true);
         }
-
-        this.onRebuildObservable.notifyObservers();
     }
 
     private _createInternalTextures(): void {
@@ -550,8 +545,6 @@ export class MultiRenderTarget extends RenderTargetTexture {
             this._texture = null;
         }
         super.dispose();
-
-        this.onRebuildObservable.clear();
     }
 
     /**

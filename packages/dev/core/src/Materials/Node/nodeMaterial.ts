@@ -897,7 +897,7 @@ export class NodeMaterial extends PushMaterial {
      */
     public get prePassTextureOutputs(): number[] {
         const prePassOutputBlock = this.getBlockByPredicate((block) => block.getClassName() === "PrePassOutputBlock") as PrePassOutputBlock;
-        const result = [Constants.PREPASS_COLOR_TEXTURE_TYPE] as number[];
+        const result = [Constants.PREPASS_COLOR_TEXTURE_TYPE];
         if (!prePassOutputBlock) {
             return result;
         }
@@ -946,8 +946,7 @@ export class NodeMaterial extends PushMaterial {
     /**
      * Sets the required values to the prepass renderer.
      */
-    public setPrePassRenderer(_prePassRenderer: PrePassRenderer): boolean {
-        const prePassRenderer = this.getScene().prePassRenderer;
+    public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
         const prePassTexturesRequired = this.prePassTextureInputs.concat(this.prePassTextureOutputs);
 
         if (prePassRenderer && prePassTexturesRequired.length > 1) {
