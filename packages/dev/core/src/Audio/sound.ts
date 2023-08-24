@@ -201,7 +201,6 @@ export class Sound {
      */
     constructor(name: string, urlOrArrayBuffer: any, scene?: Nullable<Scene>, readyToPlayCallback: Nullable<() => void> = null, options?: ISoundOptions) {
         this.name = name;
-        this._url = urlOrArrayBuffer;
         scene = scene || EngineStore.LastCreatedScene;
         if (!scene) {
             return;
@@ -254,6 +253,7 @@ export class Sound {
                 try {
                     if (typeof urlOrArrayBuffer === "string") {
                         this._urlType = "String";
+                        this._url =urlOrArrayBuffer
                     } else if (urlOrArrayBuffer instanceof ArrayBuffer) {
                         this._urlType = "ArrayBuffer";
                     } else if (urlOrArrayBuffer instanceof HTMLMediaElement) {
@@ -1166,7 +1166,6 @@ export class Sound {
         const serializationObject: any = {
             name: this.name,
             url: this._url,
-
             autoplay: this.autoplay,
             loop: this.loop,
             volume: this._volume,
