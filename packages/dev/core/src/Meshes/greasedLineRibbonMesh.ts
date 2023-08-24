@@ -320,8 +320,8 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
     public clone(name: string = `${this.name}-cloned`, newParent?: Nullable<Node>) {
         const lineOptions = this._createLineOptions();
         const deepCopiedLineOptions: any = {};
-        const pathOptionsCloned:any = []
-        DeepCopier.DeepCopy(this._pathsOptions, pathOptionsCloned)
+        const pathOptionsCloned: any = [];
+        DeepCopier.DeepCopy(this._pathsOptions, pathOptionsCloned);
         DeepCopier.DeepCopy(lineOptions, deepCopiedLineOptions, ["instance"]);
 
         const cloned = new GreasedLineRibbonMesh(name, this._scene, <GreasedLineMeshOptions>deepCopiedLineOptions, pathOptionsCloned);
@@ -355,7 +355,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
     public static Parse(parsedMesh: any, scene: Scene): Mesh {
         const lineOptions = <GreasedLineMeshOptions>parsedMesh.lineOptions;
         const name = <string>parsedMesh.name;
-        const pathOptions = parsedMesh.pathOptions
+        const pathOptions = parsedMesh.pathOptions;
         const result = new GreasedLineRibbonMesh(name, scene, lineOptions, pathOptions);
         return result;
     }
