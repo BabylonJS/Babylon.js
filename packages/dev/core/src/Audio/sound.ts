@@ -253,7 +253,7 @@ export class Sound {
                 try {
                     if (typeof urlOrArrayBuffer === "string") {
                         this._urlType = "String";
-                        this._url =urlOrArrayBuffer
+                        this._url = urlOrArrayBuffer;
                     } else if (urlOrArrayBuffer instanceof ArrayBuffer) {
                         this._urlType = "ArrayBuffer";
                     } else if (urlOrArrayBuffer instanceof HTMLMediaElement) {
