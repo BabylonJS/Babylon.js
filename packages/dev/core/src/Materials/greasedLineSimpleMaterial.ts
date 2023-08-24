@@ -48,6 +48,7 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
     private _resolution: Vector2;
     private _sizeAttenuation: boolean;
     private _colorsTexture?: RawTexture;
+    private _cameraFacing: boolean;
     private _engine: Engine;
 
     /**
@@ -128,6 +129,7 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
         this.colorsSampling = options.colorsSampling ?? RawTexture.NEAREST_NEAREST;
         this.colorMode = options.colorMode ?? GreasedLineMeshColorMode.COLOR_MODE_SET;
         this._colors = options.colors ?? null;
+        this._cameraFacing = options.cameraFacing ?? true;
 
         this.resolution = options.resolution ?? new Vector2(this._engine.getRenderWidth(), this._engine.getRenderHeight()); // calculate aspect call the setter
 
@@ -479,6 +481,7 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
             useDash: this._useDash,
             visibility: this._visibility,
             width: this._width,
+            cameraFacing: this._cameraFacing,
         };
 
         this._colors && (greasedLineMaterialOptions.colors = this._colors);
@@ -519,6 +522,9 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
         greasedLineMaterialOptions.width && (this.width = greasedLineMaterialOptions.width);
         greasedLineMaterialOptions.sizeAttenuation && (this.sizeAttenuation = greasedLineMaterialOptions.sizeAttenuation);
         greasedLineMaterialOptions.resolution && (this.resolution = greasedLineMaterialOptions.resolution);
+
+        this._cameraFacing = greasedLineMaterialOptions.cameraFacing ?? true;
+        this.setDefine("GREASED_LINE_CAMERA_FACING", this._cameraFacing);
     }
 
     /**

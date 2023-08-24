@@ -89,6 +89,15 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         this._slopes = slopes;
     }
 
+    protected _updateColorPointers() {
+        // let colorPointer = 0;
+        // this._colorPointers = [];
+        // for (let i = 0; i < this._vertexPositions.length / 3; i++) {
+        //     this._colorPointers.push(colorPointer++);
+        // }
+    }
+
+    // TODO: move this to base with param
     protected _updateWidths() {
         let pointCount = 0;
         for (const points of this._points) {
@@ -154,9 +163,6 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         const path = options.pathArray[0];
         for (let i = 0; i < path.length; i++) {
             for (let pi = 0; pi < options.pathArray.length; pi++) {
-                // if (numOfPaths === 3 && pi == 2) {
-                //     continue;
-                // }
                 const v = options.pathArray[pi][i];
                 positions.push(v.x, v.y, v.z);
             }
@@ -182,10 +188,6 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
                 }
             }
         } else {
-            // for (let i = 0; i < options.pathArray[0].length; i++) {
-            //     positions.push(options.pathArray[0][i].x, options.pathArray[0][i].y, options.pathArray[0][i].z);
-            //     positions.push(options.pathArray[1][i].x, options.pathArray[1][i].y, options.pathArray[1][i].z);
-            // }
             for (let i = 0; i < positions.length / 3 - numOfPaths; i++) {
                 indices.push(i, i + 1, i + numOfPaths);
             }
@@ -217,6 +219,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
 
         const pathArrayLength = pathArray.length;
         const previousCounters = new Array(pathArrayLength).fill(0);
+        let cp = this._colorPointers.length;
         for (let i = 0; i < pathArray[0].length; i++) {
             let u = 0;
             for (let pi = 0; pi < pathArrayLength; pi++) {
@@ -225,28 +228,23 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
                 this._uvs.push(u);
                 this._uvs.push(counter); // vl
                 previousCounters[pi] = counter;
-                this._colorPointers.push(i);
+                this._colorPointers.push(cp);
 
                 const l = this._uSegmentLengths[i][pi] / this._uTotalLengths[i];
-                console.log(pi, i, this._widths[pi * pathArray[0].length + i]);
-                this._ribbonWidths.push((((this._widths[pi * pathArray[0].length + i] ?? 1) - 1) * this._uSegmentLengths[i][pi]) / 2);
-
                 u += l;
             }
+
+            cp += 1;
         }
 
-        // debugger;
-        let c = 0;
-        for (let pi = 0; pi < pathArrayLength; pi++) {
-            for (let i = 0; i < pathArray[0].length; i++) {
-                const hw = this._uSegmentLengths[i][pi] / 2;
-                this._ribbonWidths.push(((this._widths[c++] ?? 1) - 1) * hw);
-
-                this._ribbonWidths.push(((this._widths[c++] ?? 1) - 1) * hw);
+        for (let i = 0, c = 0; i < pathArray[0].length; i++) {
+            const wl = this._uSegmentLengths[i][0] / 2;
+            const wu = this._uSegmentLengths[i][pathArrayLength - 1] / 2;
+            this._ribbonWidths.push(((this._widths[c++] ?? 1) - 1) * wl);
+            for (let pi = 0; pi < pathArrayLength - 2; pi++) {
+                this._ribbonWidths.push(0);
             }
-        }
-        if (!this.isFlatLine) {
-            // this._widths = new Array(positions.length / 3).fill(0);
+            this._ribbonWidths.push(((this._widths[c++] ?? 1) - 1) * wu);
         }
 
         const slopes = GreasedLineRibbonMesh._CalculateSlopes(this._paths);
@@ -262,35 +260,6 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         indiceOffset += positions.length / 3;
 
         return indiceOffset;
-    }
-
-    protected _createVertexBuffers() {
-        super._createVertexBuffers();
-
-        console.log("vertices", this._vertexPositions);
-        console.log("indices", this._indices);
-        console.log("counters", this._counters);
-        console.log("colorPointers", this._colorPointers);
-        console.log("slopes", this._slopes);
-        console.log("widths", this._widths);
-        console.log("ribbonWidths", this._ribbonWidths);
-        console.log("uSegmentLengths", this._uSegmentLengths);
-        console.log("vSegmentLengths", this._vSegmentLengths);
-        console.log("uTotalLengths", this._uTotalLengths);
-        console.log("vTotalLengths", this._vTotalLengths);
-
-        const countersBuffer = new Buffer(this._engine, this._counters, this._updatable, 1);
-        this.setVerticesBuffer(countersBuffer.createVertexBuffer("grl_counters", 0, 1));
-
-        const colorPointersBuffer = new Buffer(this._engine, this._colorPointers, this._updatable, 1);
-        this.setVerticesBuffer(colorPointersBuffer.createVertexBuffer("grl_colorPointers", 0, 1));
-
-        const slopesBuffer = new Buffer(this._engine, this._slopes, this._updatable, 3);
-        this.setVerticesBuffer(slopesBuffer.createVertexBuffer("grl_slopes", 0, 3));
-
-        const widthsBuffer = new Buffer(this._engine, this._ribbonWidths, this._updatable, 1);
-        this.setVerticesBuffer(widthsBuffer.createVertexBuffer("grl_widths", 0, 1));
-        this._widthsBuffer = widthsBuffer;
     }
 
     private static _ConvertToRibbonPath(points: number[], ribbonInfo: GreasedLineRibbonOptions) {
@@ -422,5 +391,34 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         }
 
         return slopes;
+    }
+
+    protected _createVertexBuffers() {
+        super._createVertexBuffers();
+
+        console.log("vertices", this._vertexPositions);
+        console.log("indices", this._indices);
+        console.log("counters", this._counters);
+        console.log("colorPointers", this._colorPointers);
+        console.log("slopes", this._slopes);
+        console.log("widths", this._widths);
+        console.log("ribbonWidths", this._ribbonWidths);
+        console.log("uSegmentLengths", this._uSegmentLengths);
+        console.log("vSegmentLengths", this._vSegmentLengths);
+        console.log("uTotalLengths", this._uTotalLengths);
+        console.log("vTotalLengths", this._vTotalLengths);
+
+        const countersBuffer = new Buffer(this._engine, this._counters, this._updatable, 1);
+        this.setVerticesBuffer(countersBuffer.createVertexBuffer("grl_counters", 0, 1));
+
+        const colorPointersBuffer = new Buffer(this._engine, this._colorPointers, this._updatable, 1);
+        this.setVerticesBuffer(colorPointersBuffer.createVertexBuffer("grl_colorPointers", 0, 1));
+
+        const slopesBuffer = new Buffer(this._engine, this._slopes, this._updatable, 3);
+        this.setVerticesBuffer(slopesBuffer.createVertexBuffer("grl_slopes", 0, 3));
+
+        const widthsBuffer = new Buffer(this._engine, this._ribbonWidths, this._updatable, 1);
+        this.setVerticesBuffer(widthsBuffer.createVertexBuffer("grl_widths", 0, 1));
+        this._widthsBuffer = widthsBuffer;
     }
 }

@@ -132,17 +132,7 @@ export abstract class GreasedLineBaseMesh extends Mesh {
 
     protected abstract _setPoints(points: number[][]): void;
     protected abstract _updateWidths(): void;
-
-    protected _updateColorPointers() {
-        let colorPointer = 0;
-        this._colorPointers = [];
-        this._points.forEach((p) => {
-            for (let jj = 0; jj < p.length; jj += 3) {
-                this._colorPointers.push(colorPointer);
-                this._colorPointers.push(colorPointer++);
-            }
-        });
-    }
+    protected abstract _updateColorPointers(): void;
 
     /**
      * Updated a lazy line. Rerenders the line and updates boundinfo as well.
@@ -203,7 +193,7 @@ export abstract class GreasedLineBaseMesh extends Mesh {
         if (!this._offsetsBuffer) {
             this._createOffsetsBuffer(offsets);
         } else {
-            this._offsetsBuffer && this._offsetsBuffer.update(offsets);
+            this._offsetsBuffer.update(offsets);
         }
     }
 

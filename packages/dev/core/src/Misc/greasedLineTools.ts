@@ -221,7 +221,12 @@ export class GreasedLineTools {
      * @returns line point
      */
     public static SegmentizeLineBySegmentLength(what: Vector3[] | number[] | { point1: Vector3; point2: Vector3; length: number }[], segmentLength: number): Vector3[] {
-        const subLines = what[0] instanceof Vector3 ? GreasedLineTools.GetLineSegments(what as Vector3[]) : (what as { point1: Vector3; point2: Vector3; length: number }[]);
+        const subLines =
+            what[0] instanceof Vector3
+                ? GreasedLineTools.GetLineSegments(what as Vector3[])
+                : typeof what[0] === "number"
+                ? GreasedLineTools.GetLineSegments(GreasedLineTools.ToVector3Array(what as number[]) as Vector3[])
+                : (what as { point1: Vector3; point2: Vector3; length: number }[]);
         const points: Vector3[] = [];
         subLines.forEach((s) => {
             if (s.length > segmentLength) {
@@ -244,9 +249,10 @@ export class GreasedLineTools {
      * @param segmentCount number of segments
      * @returns line point
      */
-    public static SegmentizeLineBySegmentCount(what: Vector3[], segmentCount: number): Vector3[] {
-        const segmentLength = GreasedLineTools.GetLineLength(what) / segmentCount;
-        return GreasedLineTools.SegmentizeLineBySegmentLength(what, segmentLength);
+    public static SegmentizeLineBySegmentCount(what: Vector3[] | number[], segmentCount: number): Vector3[] {
+        const points = <Vector3[]>(typeof what[0] === "number" ? GreasedLineTools.ToVector3Array(<number[]>what) : what);
+        const segmentLength = GreasedLineTools.GetLineLength(points) / segmentCount;
+        return GreasedLineTools.SegmentizeLineBySegmentLength(points, segmentLength);
     }
     /**
      * Gets line segments.

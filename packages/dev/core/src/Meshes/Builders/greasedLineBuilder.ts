@@ -12,6 +12,7 @@ import { GreasedLineTools } from "../../Misc/greasedLineTools";
 import type { GreasedLineMeshOptions } from "../greasedLineBaseMesh";
 import { GreasedLineRibbonPointsMode } from "../greasedLineBaseMesh";
 import { GreasedLineRibbonMesh } from "../greasedLineRibbonMesh";
+import { Vector3 } from "core/Maths";
 
 /**
  * How are the colors distributed along the color table
@@ -134,6 +135,7 @@ export function CreateGreasedLineMaterial(name: string, options: GreasedLineMate
 
     return material;
 }
+
 /**
  * Creates a GreasedLine mesh
  * @param name name of the mesh
@@ -149,6 +151,11 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     const allPoints = GreasedLineTools.ConvertPoints(options.points);
 
     options.widthDistribution = options.widthDistribution ?? GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START;
+    if (options.ribbonOptions) {
+        options.ribbonOptions.pointsMode = options.ribbonOptions.pointsMode ?? GreasedLineRibbonPointsMode.POINTS_MODE_POINTS;
+        options.ribbonOptions.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS &&
+            (options.ribbonOptions.direction = options.ribbonOptions.direction ?? Vector3.UpReadOnly);
+    }
 
     materialOptions = materialOptions ?? {
         color: GreasedLinePluginMaterial.DEFAULT_COLOR,
@@ -156,7 +163,6 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     materialOptions.createAndAssignMaterial = materialOptions.createAndAssignMaterial ?? true;
     materialOptions.colorDistribution = materialOptions?.colorDistribution ?? GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START;
     materialOptions.materialType = materialOptions.materialType ?? GreasedLineMeshMaterialType.MATERIAL_TYPE_STANDARD;
-    materialOptions.cameraFacing = materialOptions.cameraFacing ?? true;
 
     let length = 0;
     if (Array.isArray(allPoints[0])) {
@@ -166,6 +172,12 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     }
 
     const widths = CompleteGreasedLineWidthTable(length, options.widths ?? [], options.widthDistribution);
+
+    if (options.ribbonOptions) {
+        if (options.ribbonOptions.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS) {
+            length *= 2;
+        }
+    }
 
     const colors = materialOptions?.colors
         ? CompleteGreasedLineColorTable(length, materialOptions.colors, materialOptions.colorDistribution, materialOptions.color ?? GreasedLinePluginMaterial.DEFAULT_COLOR)
@@ -208,7 +220,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
                 colorsSampling: materialOptions.colorsSampling,
                 colorDistributionType: materialOptions.colorDistributionType,
                 colors,
-                cameraFacing: materialOptions.cameraFacing,
+                cameraFacing: !options.ribbonOptions,
             };
 
             if (materialOptions.createAndAssignMaterial) {
@@ -285,8 +297,8 @@ export function CompleteGreasedLineWidthTable(
 
     // is the width table shorter than the point table?
     if (missingCount > 0) {
-        if (missingCount % 2 != 0) {
-            widths.push(defaultWidthLower);
+        if (widths.length % 2 != 0) {
+            widths.push(defaultWidthUpper);
         }
         // it is, fill in the missing elements
         if (widthsDistribution === GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START_END) {

@@ -390,7 +390,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
         };
 
         const defines = new MaterialGreasedLineDefines();
-        defines.GREASED_LINE_HAS_COLOR = !!options.color;
+        defines.GREASED_LINE_HAS_COLOR = !!options.color && !options.useColors;
         defines.GREASED_LINE_SIZE_ATTENUATION = options.sizeAttenuation ?? false;
         defines.GREASED_LINE_COLOR_DISTRIBUTION_TYPE_LINE = options.colorDistributionType === GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_LINE;
         defines.GREASED_LINE_RIGHT_HANDED_COORDINATE_SYSTEM = (scene ?? material.getScene()).useRightHandedSystem;
@@ -558,7 +558,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * @param _mesh
      */
     prepareDefines(defines: MaterialGreasedLineDefines, _scene: Scene, _mesh: AbstractMesh) {
-        defines.GREASED_LINE_HAS_COLOR = !!this._color;
+        defines.GREASED_LINE_HAS_COLOR = !!this.color && !this.useColors;
         defines.GREASED_LINE_SIZE_ATTENUATION = this._sizeAttenuation;
         defines.GREASED_LINE_COLOR_DISTRIBUTION_TYPE_LINE = this._colorsDistributionType === GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_LINE;
         defines.GREASED_LINE_RIGHT_HANDED_COORDINATE_SYSTEM = _scene.useRightHandedSystem;
