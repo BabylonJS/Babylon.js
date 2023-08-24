@@ -224,6 +224,7 @@ export class NodeGeometryBlock {
         const point = new NodeGeometryConnectionPoint(name, this, NodeGeometryConnectionPointDirection.Input);
         point.type = type;
         point.isOptional = isOptional;
+        point.defaultValue = value;
         point.value = value;
         point.valueMin = valueMin;
         point.valueMax = valueMax;
