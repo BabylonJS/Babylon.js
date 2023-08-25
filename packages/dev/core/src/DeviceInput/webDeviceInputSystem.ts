@@ -51,6 +51,8 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _pointerWheelEvent = (evt: any) => {};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _pointerBlurEvent = (evt: any) => {};
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _pointerMacOSChromeOutEvent = (evt: any) => {};
     private _wheelEventName: string;
     private _eventsAttached: boolean = false;
 
@@ -70,6 +72,13 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
     private _eventPrefix: string;
 
+    /**
+     * Constructor for the WebDeviceInputSystem
+     * @param engine Engine to reference
+     * @param onDeviceConnected Callback to execute when device is connected
+     * @param onDeviceDisconnected Callback to execute when device is disconnected
+     * @param onInputChanged Callback to execute when input changes on device
+     */
     constructor(
         engine: Engine,
         onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void,
@@ -765,11 +774,19 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             }
         };
 
+        // Workaround for MacOS Chromium Browsers for lost pointer capture bug
+        this._pointerMacOSChromeOutEvent = (evt) => {
+            if (this._usingMacOS && !this._usingSafari && evt.buttons > 1) {
+                this._pointerCancelEvent(evt);
+            }
+        };
+
         this._elementToAttachTo.addEventListener(this._eventPrefix + "move", this._pointerMoveEvent);
         this._elementToAttachTo.addEventListener(this._eventPrefix + "down", this._pointerDownEvent);
         this._elementToAttachTo.addEventListener(this._eventPrefix + "up", this._pointerUpEvent);
         this._elementToAttachTo.addEventListener(this._eventPrefix + "cancel", this._pointerCancelEvent);
         this._elementToAttachTo.addEventListener("blur", this._pointerBlurEvent);
+        this._elementToAttachTo.addEventListener("lostpointercapture", this._pointerMacOSChromeOutEvent);
         this._elementToAttachTo.addEventListener(this._wheelEventName, this._pointerWheelEvent, passiveSupported ? { passive: false } : false);
 
         // Since there's no up or down event for mouse wheel or delta x/y, clear mouse values at end of frame
