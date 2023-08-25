@@ -149,7 +149,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
     protected _computeShadowCastersBoundingInfo(): void {
         this._scbiMin.copyFromFloats(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-        this._scbiMax.copyFromFloats(Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE);
+        this._scbiMax.copyFromFloats(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
         if (this._shadowMap && this._shadowMap.renderList) {
             const renderList = this._shadowMap.renderList;
@@ -677,7 +677,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
     private _computeCascadeFrustum(cascadeIndex: number): void {
         this._cascadeMinExtents[cascadeIndex].copyFromFloats(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-        this._cascadeMaxExtents[cascadeIndex].copyFromFloats(Number.MIN_VALUE, Number.MIN_VALUE, Number.MIN_VALUE);
+        this._cascadeMaxExtents[cascadeIndex].copyFromFloats(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
         this._frustumCenter[cascadeIndex].copyFromFloats(0, 0, 0);
 
         const camera = this._getCamera();
