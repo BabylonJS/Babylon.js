@@ -259,10 +259,12 @@ export class ProceduralTexture extends Texture {
 
     /**
      * Resets the texture in order to recreate its associated resources.
-     * This can be called in case of context loss
+     * This can be called in case of context loss or if you change the shader code and need to regenerate the texture with the new code
      */
     public reset(): void {
         this._drawWrapper.effect?.dispose();
+        this._drawWrapper.effect = null;
+        this._cachedDefines = null;
     }
 
     protected _getDefines(): string {
