@@ -20,6 +20,7 @@ import "./grid.vertex";
 
 class GridMaterialDefines extends MaterialDefines {
     public OPACITY = false;
+    public ANTIALIAS = false;
     public TRANSPARENT = false;
     public FOG = false;
     public PREMULTIPLYALPHA = false;
@@ -83,6 +84,12 @@ export class GridMaterial extends PushMaterial {
      */
     @serialize()
     public opacity = 1.0;
+
+    /**
+     * Whether to antialias the grid
+     */
+    @serialize()
+    public antialias = true;
 
     /**
      * Determine RBG output is premultiplied by alpha value.
@@ -153,6 +160,11 @@ export class GridMaterial extends PushMaterial {
 
         if (defines.MAX_LINE !== this.useMaxLine) {
             defines.MAX_LINE = !defines.MAX_LINE;
+            defines.markAsUnprocessed();
+        }
+
+        if (defines.ANTIALIAS !== this.antialias) {
+            defines.ANTIALIAS = !defines.ANTIALIAS;
             defines.markAsUnprocessed();
         }
 
