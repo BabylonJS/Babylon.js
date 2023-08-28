@@ -154,7 +154,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
     private static _CreateRibbonVertexData(options: { pathArray: Vector3[][] }) {
         const numOfPaths = options.pathArray.length;
         if (numOfPaths < 2) {
-            throw "Minimum of two paths is required to create a ribbon.";
+            throw "Minimum of two paths arej required to create a ribbon.";
         }
 
         const positions = [];
@@ -247,7 +247,9 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
             this._ribbonWidths.push(((this._widths[c++] ?? 1) - 1) * wu);
         }
 
-        const slopes = GreasedLineRibbonMesh._CalculateSlopes(this._paths);
+        const slopes = GreasedLineRibbonPointsMode.POINTS_MODE_PATHS
+            ? new Array(pathArray[0].length * pathArray.length * 6).fill(0)
+            : GreasedLineRibbonMesh._CalculateSlopes(this._paths);
         for (const s of slopes) {
             this._slopes.push(s);
         }
