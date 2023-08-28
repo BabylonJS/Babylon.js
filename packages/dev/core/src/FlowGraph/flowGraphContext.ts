@@ -26,6 +26,10 @@ export class FlowGraphContext {
      */
     private _pendingBlocks: FlowGraphAsyncExecutionBlock[] = [];
 
+    public hasVariable(name: string) {
+        return this._userVariables.has(name);
+    }
+
     public setVariable(name: string, value: any) {
         this._userVariables.set(name, value);
     }

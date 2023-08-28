@@ -1,3 +1,4 @@
+import { FlowGraphValueType } from "core/FlowGraph/flowGraphTypes";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
@@ -7,24 +8,24 @@ import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExec
  * Block that sets a property on a target object.
  * TODO: Add support for animating the property.
  */
-export class FlowGraphSetPropertyBlock<PropT> extends FlowGraphWithOnDoneExecutionBlock {
-    public readonly target: FlowGraphDataConnection<any>;
-    public readonly property: FlowGraphDataConnection<string>;
-    public readonly value: FlowGraphDataConnection<PropT>;
+export class FlowGraphSetPropertyBlock extends FlowGraphWithOnDoneExecutionBlock {
+    public readonly target: FlowGraphDataConnection;
+    public readonly property: FlowGraphDataConnection;
+    public readonly value: FlowGraphDataConnection;
 
-    public readonly outTarget: FlowGraphDataConnection<any>;
+    public readonly outTarget: FlowGraphDataConnection;
 
     public constructor() {
         super();
 
-        this.target = this._registerDataInput("target", undefined);
-        this.property = this._registerDataInput<string>("property", undefined);
-        this.value = this._registerDataInput<PropT>("value", undefined);
+        this.target = this._registerDataInput("target", FlowGraphValueType.Any);
+        this.property = this._registerDataInput("property", FlowGraphValueType.String);
+        this.value = this._registerDataInput("value", FlowGraphValueType.Any);
 
-        this.outTarget = this._registerDataOutput("outTarget", this.target);
+        this.outTarget = this._registerDataOutput("outTarget", FlowGraphValueType.Any);
     }
 
-    private _setProperty(target: any, property: string, value: PropT): void {
+    private _setProperty(target: any, property: string, value: any): void {
         const splitProp = property.split(".");
 
         let currentTarget = target;
@@ -42,6 +43,8 @@ export class FlowGraphSetPropertyBlock<PropT> extends FlowGraphWithOnDoneExecuti
 
         if (target && property && value) {
             this._setProperty(target, property, value);
+        } else {
+            console.error("Invalid target, property or value.");
         }
 
         this.onDone._activateSignal(context);

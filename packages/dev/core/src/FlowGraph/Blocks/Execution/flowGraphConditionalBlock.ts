@@ -2,20 +2,21 @@ import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphExecutionBlock } from "../../flowGraphExecutionBlock";
 import type { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
+import { FlowGraphValueType } from "../../flowGraphTypes";
 
 /**
  * @experimental
  * A block that evaluates a condition and executes one of two branches.
  */
 export class FlowGraphConditionalBlock extends FlowGraphExecutionBlock {
-    public readonly condition: FlowGraphDataConnection<boolean>;
+    public readonly condition: FlowGraphDataConnection;
     public readonly onTrue: FlowGraphSignalConnection;
     public readonly onFalse: FlowGraphSignalConnection;
 
     constructor() {
         super();
 
-        this.condition = this._registerDataInput("condition", false);
+        this.condition = this._registerDataInput("condition", FlowGraphValueType.Boolean);
 
         this.onTrue = this._registerSignalOutput("onTrue");
         this.onFalse = this._registerSignalOutput("onFalse");

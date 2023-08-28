@@ -1,6 +1,8 @@
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphConnection, FlowGraphConnectionType } from "./flowGraphConnection";
 import type { FlowGraphContext } from "./flowGraphContext";
+import type { FlowGraphValueType } from "./flowGraphTypes";
+import { getDefaultValueForType } from "./flowGraphTypes";
 
 /**
  * @experimental
@@ -9,8 +11,11 @@ import type { FlowGraphContext } from "./flowGraphContext";
  * An output point will only have a value if it is connected to an input point. Furthermore,
  * if the point belongs to a "function" node, the node will run its function to update the value.
  */
-export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlock, FlowGraphDataConnection<T>> {
-    public constructor(name: string, type: FlowGraphConnectionType, ownerBlock: FlowGraphBlock, private _value: T | undefined) {
+export class FlowGraphDataConnection extends FlowGraphConnection<FlowGraphBlock, FlowGraphDataConnection> {
+    private _isValueUnintialized: boolean = true;
+    private _value?: any;
+
+    public constructor(name: string, type: FlowGraphConnectionType, ownerBlock: FlowGraphBlock, private _valueType: FlowGraphValueType) {
         super(name, type, ownerBlock);
     }
 
@@ -22,18 +27,19 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
         return this.type === FlowGraphConnectionType.Input;
     }
 
-    public set value(value: T | undefined) {
+    public set value(value: any) {
         this._value = value;
+        this._isValueUnintialized = false;
     }
 
-    public getValue(context: FlowGraphContext): T | undefined {
+    public getValue(context: FlowGraphContext): any {
         if (this.type === FlowGraphConnectionType.Output) {
             this._ownerBlock._updateOutputs(context);
             return this._value;
         }
 
         if (!this.isConnected()) {
-            return this._value;
+            return this._isValueUnintialized ? getDefaultValueForType(this._valueType) : this._value;
         } else {
             return this._connectedPoint[0].getValue(context);
         }

@@ -1,11 +1,11 @@
 import type { FlowGraphContext } from "../../flowGraphContext";
-import type { IAnimatable, Animatable } from "../../../Animations";
-import type { Animation } from "../../../Animations/animation";
+import type { Animatable, Animation } from "../../../Animations";
 import { FlowGraphConnectionType } from "../../flowGraphConnection";
 import { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
 import type { Scene } from "../../../scene";
 import { FlowGraphAsyncExecutionBlock } from "../../flowGraphAsyncExecutionBlock";
+import { FlowGraphValueType } from "core/FlowGraph/flowGraphTypes";
 
 /**
  * @experimental
@@ -15,27 +15,27 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     /**
      * The target to play the animation on.
      */
-    public readonly target: FlowGraphDataConnection<IAnimatable>;
+    public readonly target: FlowGraphDataConnection;
     /**
      * The animation to play.
      */
-    public readonly animation: FlowGraphDataConnection<Animation>;
+    public readonly animation: FlowGraphDataConnection;
     /**
      * The speed of the animation.
      */
-    public readonly speed: FlowGraphDataConnection<number>;
+    public readonly speed: FlowGraphDataConnection;
     /**
      * Should the animation loop?
      */
-    public readonly loop: FlowGraphDataConnection<boolean>;
+    public readonly loop: FlowGraphDataConnection;
     /**
      * The starting frame of the animation.
      */
-    public readonly from: FlowGraphDataConnection<number>;
+    public readonly from: FlowGraphDataConnection;
     /**
      * The ending frame of the animation.
      */
-    public readonly to: FlowGraphDataConnection<number>;
+    public readonly to: FlowGraphDataConnection;
 
     /**
      * The signal that is triggered when the animation ends.
@@ -45,12 +45,14 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     public constructor() {
         super();
 
-        this.target = new FlowGraphDataConnection<IAnimatable>("target", FlowGraphConnectionType.Input, this, undefined);
-        this.animation = new FlowGraphDataConnection<Animation>("animation", FlowGraphConnectionType.Input, this, undefined);
-        this.speed = new FlowGraphDataConnection<number>("speed", FlowGraphConnectionType.Input, this, 1);
-        this.loop = new FlowGraphDataConnection<boolean>("loop", FlowGraphConnectionType.Input, this, false);
-        this.from = new FlowGraphDataConnection<number>("from", FlowGraphConnectionType.Input, this, 0);
-        this.to = new FlowGraphDataConnection<number>("to", FlowGraphConnectionType.Input, this, 100);
+        this.target = new FlowGraphDataConnection("target", FlowGraphConnectionType.Input, this, FlowGraphValueType.Any);
+        this.animation = new FlowGraphDataConnection("animation", FlowGraphConnectionType.Input, this, FlowGraphValueType.Any);
+        this.speed = new FlowGraphDataConnection("speed", FlowGraphConnectionType.Input, this, FlowGraphValueType.Float);
+        this.speed.value = 1;
+        this.loop = new FlowGraphDataConnection("loop", FlowGraphConnectionType.Input, this, FlowGraphValueType.Boolean);
+        this.from = new FlowGraphDataConnection("from", FlowGraphConnectionType.Input, this, FlowGraphValueType.Float);
+        this.to = new FlowGraphDataConnection("to", FlowGraphConnectionType.Input, this, FlowGraphValueType.Float);
+        this.to.value = 100;
 
         this.onAnimationEnd = new FlowGraphSignalConnection("onAnimationEnd", FlowGraphConnectionType.Output, this);
     }
@@ -61,7 +63,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      */
     public _preparePendingTasks(context: FlowGraphContext): void {
         const targetValue = this.target.getValue(context);
-        const animationValue = this.animation.getValue(context);
+        const animationValue = this.animation.getValue(context) as Animation;
 
         if (!targetValue || !animationValue) {
             throw new Error("Cannot play animation without target or animation");

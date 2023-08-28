@@ -1,34 +1,27 @@
 import type { FlowGraphContext } from "../../flowGraphContext";
 import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
-
-/**
- * @experimental
- */
-export interface IFlowGraphConditionalDataBlockParams<T> {
-    defaultTrueValue: T;
-    defaultFalseValue: T;
-}
+import { FlowGraphValueType } from "core/FlowGraph/flowGraphTypes";
 
 /**
  * @experimental
  * Block that returns a value based on a condition.
  */
-export class FlowGraphConditionalDataBlock<T> extends FlowGraphBlock {
-    public readonly condition: FlowGraphDataConnection<boolean>;
-    public readonly trueValue: FlowGraphDataConnection<T>;
-    public readonly falseValue: FlowGraphDataConnection<T>;
+export class FlowGraphConditionalDataBlock extends FlowGraphBlock {
+    public readonly condition: FlowGraphDataConnection;
+    public readonly trueValue: FlowGraphDataConnection;
+    public readonly falseValue: FlowGraphDataConnection;
 
-    public readonly output: FlowGraphDataConnection<T>;
+    public readonly output: FlowGraphDataConnection;
 
-    constructor(params: IFlowGraphConditionalDataBlockParams<T>) {
+    constructor() {
         super();
 
-        this.condition = this._registerDataInput("condition", false);
-        this.trueValue = this._registerDataInput("trueValue", params.defaultTrueValue);
-        this.falseValue = this._registerDataInput("falseValue", params.defaultFalseValue);
+        this.condition = this._registerDataInput("condition", FlowGraphValueType.Boolean);
+        this.trueValue = this._registerDataInput("trueValue", FlowGraphValueType.Any);
+        this.falseValue = this._registerDataInput("falseValue", FlowGraphValueType.Any);
 
-        this.output = this._registerDataOutput("output", params.defaultFalseValue);
+        this.output = this._registerDataOutput("output", FlowGraphValueType.Any);
     }
 
     /**

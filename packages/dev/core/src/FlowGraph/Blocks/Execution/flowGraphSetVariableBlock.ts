@@ -1,30 +1,25 @@
+import { FlowGraphValueType } from "core/FlowGraph/flowGraphTypes";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
 
-export interface IFlowGraphSetVariableBlockParams<T> {
-    variableName: string;
-}
 /**
  * @experimental
  */
 export class FlowGraphSetVariableBlock<T> extends FlowGraphWithOnDoneExecutionBlock {
-    /**
-     *
-     */
-    public readonly input: FlowGraphDataConnection<T>;
+    public readonly variableName: FlowGraphDataConnection;
+    public readonly input: FlowGraphDataConnection;
 
-    private _variableName: string;
-
-    constructor(params: IFlowGraphSetVariableBlockParams<T>) {
+    constructor() {
         super();
 
-        this._variableName = params.variableName;
-        this.input = this._registerDataInput<T>("input", undefined);
+        this.variableName = this._registerDataInput("variableName", FlowGraphValueType.String);
+        this.input = this._registerDataInput("input", FlowGraphValueType.Any);
     }
 
     public _execute(context: FlowGraphContext): void {
-        context.setVariable(this._variableName, this.input.getValue(context));
+        const variableNameValue = this.variableName.getValue(context);
+        context.setVariable(variableNameValue, this.input.getValue(context));
         this.onDone._activateSignal(context);
     }
 }
