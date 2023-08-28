@@ -252,6 +252,10 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
     removeItem(value: string): void {
         const frameJson = localStorage.getItem("Custom-Frame-List");
         if (frameJson) {
+            const registeredIdx = NodeLedger.RegisteredNodeNames.indexOf(value);
+            if (registeredIdx !== -1) {
+                NodeLedger.RegisteredNodeNames.splice(registeredIdx, 1);
+            }
             const frameList = JSON.parse(frameJson);
             delete frameList[value];
             localStorage.removeItem(value);
@@ -573,11 +577,24 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             for (const key in allBlocks) {
                 const blocks = allBlocks[key] as string[];
                 if (blocks.length) {
-                    ledger.push(...blocks);
+                    for (const block of blocks) {
+                        if (!ledger.includes(block)) {
+                            ledger.push(block);
+                        }
+                    }
                 }
             }
             NodeLedger.NameFormatter = (name) => {
-                return name.replace("Block", "");
+                let finalName = name;
+                // custom frame
+                if (name.endsWith("Custom")) {
+                    const nameIndex = name.lastIndexOf("Custom");
+                    finalName = name.substring(0, nameIndex);
+                    finalName += " [custom]";
+                } else {
+                    finalName = name.replace("Block", "");
+                }
+                return finalName;
             };
         }
 
