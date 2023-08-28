@@ -61,6 +61,8 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
     private _wheel: Nullable<(p: PointerInfo, s: EventState) => void>;
     private _observer: Nullable<Observer<PointerInfo>>;
     private _hitPlane: Nullable<Plane>;
+    private _viewOffset: Vector3 = new Vector3(0, 0, 0);
+    private _globalOffset: Vector3 = new Vector3(0, 0, 0);
 
     protected _computeDeltaFromMouseWheelLegacyEvent(mouseWheelDelta: number, radius: number) {
         let delta = 0;
@@ -211,10 +213,10 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         const ray = scene.createPickingRay(scene.pointerX, scene.pointerY, Matrix.Identity(), camera, false);
         // Since the camera is the origin of the picking ray, we need to offset it by the camera's offset manually
         // Because the offset is in view space, we need to convert it to world space first
-        const viewOffset = new Vector3(camera.targetScreenOffset.x, camera.targetScreenOffset.y, 0);
+        this._viewOffset.set(camera.targetScreenOffset.x, camera.targetScreenOffset.y, 0);
         camera.getViewMatrix().invertToRef(camera._cameraTransformMatrix);
-        const globalOffset = Vector3.TransformNormal(viewOffset, camera._cameraTransformMatrix);
-        ray.origin.addInPlace(globalOffset);
+        this._globalOffset = Vector3.TransformNormal(this._viewOffset, camera._cameraTransformMatrix);
+        ray.origin.addInPlace(this._globalOffset);
 
         let distance = 0;
         if (this._hitPlane) {
