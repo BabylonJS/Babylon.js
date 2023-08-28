@@ -119,6 +119,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         NullBlock: "Generate an empty geometry",
         OptimizeBlock: "Eliminate vertices that share positions with another vertex",
         GeometryInfoBlock: "Provides information about a geometry",
+        MappingBlock: "Generate uv coordinates based on mapping type",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -269,6 +270,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "CollectionBlock",
                 "ComputeNormalsBlock",
                 "OptimizeBlock",
+                "MappingBlock",
             ],
             Noises: ["RandomBlock", "NoiseBlock"],
             Output_Nodes: ["GeometryOutputBlock"],
