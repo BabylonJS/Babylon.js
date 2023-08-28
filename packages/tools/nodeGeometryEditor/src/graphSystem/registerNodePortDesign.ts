@@ -15,8 +15,8 @@ export const RegisterNodePortDesign = (stateManager: StateManager) => {
             case NodeGeometryBlockConnectionPointTypes.Int:
                 img.src =
                     "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIGlkPSJMYXllcl81IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZGVmcz48c3R5bGU+LmNscy0xe2ZpbGw6I2ZmZjt9LmNscy0ye2ZpbGw6IzUxYjBlNTt9PC9zdHlsZT48L2RlZnM+PHBhdGggY2xhc3M9ImNscy0yIiBkPSJtMTEuNzYsMjEuOTVjLTUuNTEsMC0xMC00LjQ5LTEwLTEwUzYuMjUsMS45NSwxMS43NiwxLjk1czEwLDQuNDksMTAsMTAtNC40OSwxMC0xMCwxMFoiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Im0xNy44LDE2LjQxYy45MS0xLjI0LDEuNDYtMi43NywxLjQ2LTQuNDMsMC00LjE0LTMuMzYtNy41LTcuNS03LjVzLTcuNSwzLjM2LTcuNSw3LjVjMCwxLjY2LjU1LDMuMTksMS40Niw0LjQzaDEyLjA3WiIvPjwvc3ZnPg==";
-                    img.style.marginLeft = "-2px"; 
-                    img.style.marginTop = "-2px";
+                img.style.marginLeft = "-2px";
+                img.style.marginTop = "-2px";
                 break;
             case NodeGeometryBlockConnectionPointTypes.Float:
                 img.src =
