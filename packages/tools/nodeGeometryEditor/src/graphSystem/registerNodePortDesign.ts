@@ -13,6 +13,11 @@ export const RegisterNodePortDesign = (stateManager: StateManager) => {
         element.style.background = BlockTools.GetColorFromConnectionNodeType(type);
         switch (type) {
             case NodeGeometryBlockConnectionPointTypes.Int:
+                img.src =
+                    "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIGlkPSJMYXllcl81IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZGVmcz48c3R5bGU+LmNscy0xe2ZpbGw6I2ZmZjt9LmNscy0ye2ZpbGw6IzUxYjBlNTt9PC9zdHlsZT48L2RlZnM+PHBhdGggY2xhc3M9ImNscy0yIiBkPSJtMTEuNzYsMjEuOTVjLTUuNTEsMC0xMC00LjQ5LTEwLTEwUzYuMjUsMS45NSwxMS43NiwxLjk1czEwLDQuNDksMTAsMTAtNC40OSwxMC0xMCwxMFoiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Im0xNy44LDE2LjQxYy45MS0xLjI0LDEuNDYtMi43NywxLjQ2LTQuNDMsMC00LjE0LTMuMzYtNy41LTcuNS03LjVzLTcuNSwzLjM2LTcuNSw3LjVjMCwxLjY2LjU1LDMuMTksMS40Niw0LjQzaDEyLjA3WiIvPjwvc3ZnPg==";
+                img.style.marginLeft = "-2px";
+                img.style.marginTop = "-2px";
+                break;
             case NodeGeometryBlockConnectionPointTypes.Float:
                 img.src =
                     "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMSAyMSI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiNmZmY7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5WZWN0b3IxPC90aXRsZT48ZyBpZD0iTGF5ZXJfNSIgZGF0YS1uYW1lPSJMYXllciA1Ij48Y2lyY2xlIGNsYXNzPSJjbHMtMSIgY3g9IjEwLjUiIGN5PSIxMC41IiByPSI3LjUiLz48L2c+PC9zdmc+";
