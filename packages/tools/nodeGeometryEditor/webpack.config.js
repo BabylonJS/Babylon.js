@@ -16,6 +16,7 @@ module.exports = (env) => {
             extensions: [".js", ".ts", ".tsx", ".scss", "*.svg"],
             alias: {
                 "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
+                "serializers": path.resolve("../../dev/serializers/src")
             },
         },
         externals: [

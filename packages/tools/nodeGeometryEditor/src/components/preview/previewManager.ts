@@ -21,12 +21,15 @@ import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import { DataStorage } from "core/Misc/dataStorage";
 import type { TransformNode } from "core/Meshes/transformNode";
 import { MultiMaterial } from "core/Materials/multiMaterial";
+import { GLTF2Export } from "serializers/glTF/2.0/glTFSerializer";
+import type { GLTFData } from "serializers/glTF/2.0/glTFData";
 
 export class PreviewManager {
     private _nodeGeometry: NodeGeometry;
     private _onBuildObserver: Nullable<Observer<NodeGeometry>>;
 
     private _onFrameObserver: Nullable<Observer<void>>;
+    private _onExportToGLBObserver: Nullable<Observer<void>>;
     private _onAnimationCommandActivatedObserver: Nullable<Observer<void>>;
     private _onUpdateRequiredObserver: Nullable<Observer<Nullable<NodeGeometryBlock>>>;
     private _onPreviewBackgroundChangedObserver: Nullable<Observer<void>>;
@@ -46,6 +49,12 @@ export class PreviewManager {
     public constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState) {
         this._nodeGeometry = globalState.nodeGeometry;
         this._globalState = globalState;
+
+        this._onExportToGLBObserver = this._globalState.onExportToGLBRequired.add(() => {
+            GLTF2Export.GLBAsync(this._scene, "node-geometry-scene").then((glb: GLTFData) => {
+                glb.downloadFiles();
+            });
+        });
 
         this._onFrameObserver = this._globalState.onFrame.add(() => {
             this._frameCamera();
@@ -268,6 +277,7 @@ export class PreviewManager {
         this._globalState.onPreviewModeChanged.remove(this._onPreviewChangedObserver);
         this._globalState.onAnimationCommandActivated.remove(this._onAnimationCommandActivatedObserver);
         this._globalState.onPreviewBackgroundChanged.remove(this._onPreviewBackgroundChangedObserver);
+        this._globalState.onExportToGLBRequired.remove(this._onExportToGLBObserver);
 
         if (this._nodeGeometry) {
             this._nodeGeometry.dispose();
