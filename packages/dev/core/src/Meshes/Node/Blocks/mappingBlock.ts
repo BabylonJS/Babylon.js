@@ -103,7 +103,7 @@ export class MappingBlock extends NodeGeometryBlock {
                     const len = tempDirection.length();
                     if (len > 0) {
                         uv.x = Math.atan2(tempDirection.x / len, tempDirection.z / len) / (Math.PI * 2);
-                        uv.y = (tempDirection.z + 1.0) / 2.0;
+                        uv.y = (tempDirection.y + 1.0) / 2.0;
                     }
                     break;
                 }
