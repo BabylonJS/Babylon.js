@@ -3,13 +3,7 @@ import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import type { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
 import { AdvancedTimer } from "../../../Misc/timer";
-
-/**
- * @experimental
- */
-export interface IFlowGraphTimerBlockParameters {
-    defaultTimeout?: number;
-}
+import type { FlowGraphContext } from "../../flowGraphContext";
 
 /**
  * @experimental
@@ -20,51 +14,50 @@ export class FlowGraphTimerBlock extends FlowGraphWithOnDoneExecutionBlock {
     public readonly timeout: FlowGraphDataConnection<number>;
     public readonly onTimerDone: FlowGraphSignalConnection;
 
-    /**
-     * List of running timers.
-     */
-    private _runningTimers: Array<AdvancedTimer> = [];
-
-    constructor(graph: FlowGraph, params: IFlowGraphTimerBlockParameters) {
+    constructor(graph: FlowGraph) {
         super(graph);
 
-        this.timeout = this._registerDataInput("timeout", params.defaultTimeout ?? 0);
+        this.timeout = this._registerDataInput("timeout", 0);
         this.onTimerDone = this._registerSignalOutput("onTimerDone");
     }
 
     /**
      * @internal
      */
-    public _execute() {
-        const currentTimeout = this.timeout.value;
+    public _execute(context: FlowGraphContext) {
+        const currentTimeout = this.timeout.getValue(context);
 
-        if (currentTimeout >= 0) {
+        if (currentTimeout !== undefined && currentTimeout >= 0) {
+            const timers = context._getExecutionVariable(this, "runningTimers") || [];
             const timer: AdvancedTimer = new AdvancedTimer({
                 timeout: currentTimeout,
                 contextObservable: this._graph.scene.onBeforeRenderObservable,
-                onEnded: () => this._onEnded(timer),
+                onEnded: () => this._onEnded(timer, context),
             });
             timer.start();
 
-            this._runningTimers.push(timer);
+            timers.push(timer);
+            context._setExecutionVariable(this, "runningTimers", timers);
         }
 
-        this.onDone._activateSignal();
+        this.onDone._activateSignal(context);
     }
 
-    private _onEnded(timer: AdvancedTimer) {
-        const index = this._runningTimers.indexOf(timer);
+    private _onEnded(timer: AdvancedTimer, context: FlowGraphContext) {
+        const timers = context._getExecutionVariable(this, "runningTimers") || [];
+        const index = timers.indexOf(timer);
         if (index !== -1) {
-            this._runningTimers.splice(index, 1);
+            timers.splice(index, 1);
         }
 
-        this.onTimerDone._activateSignal();
+        this.onTimerDone._activateSignal(context);
     }
 
-    public _cancelPendingTasks(): void {
-        for (const timer of this._runningTimers) {
+    public _cancelPendingTasks(context: FlowGraphContext): void {
+        const timers = context._getExecutionVariable(this, "runningTimers") || [];
+        for (const timer of timers) {
             timer.dispose();
         }
-        this._runningTimers.length = 0;
+        context._deleteExecutionVariable(this, "runningTimers");
     }
 }

@@ -1,3 +1,4 @@
+import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraph } from "../../flowGraph";
 import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
@@ -33,7 +34,7 @@ export class FlowGraphUnaryOpBaseBlock<InputT, OutputT> extends FlowGraphBlock {
     /**
      * @internal
      */
-    public _updateOutputs(): void {
-        this.output.value = this._op(this.input.value);
+    public _updateOutputs(context: FlowGraphContext): void {
+        this.output.value = this._op(this.input.getValue(context)!);
     }
 }

@@ -1,6 +1,7 @@
+import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraph } from "../../flowGraph";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import { FlowGraphWithOnDoneExecutionBlock } from "core/FlowGraph/flowGraphWithOnDoneExecutionBlock";
+import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
 
 /**
  * @experimental
@@ -20,10 +21,10 @@ export class FlowGraphLogBlock extends FlowGraphWithOnDoneExecutionBlock {
     /**
      * @internal
      */
-    public _execute(): void {
-        const messageValue = this.message.value;
+    public _execute(context: FlowGraphContext): void {
+        const messageValue = this.message.getValue(context);
         console.log(messageValue);
         // activate the output flow block
-        this.onDone._activateSignal();
+        this.onDone._activateSignal(context);
     }
 }

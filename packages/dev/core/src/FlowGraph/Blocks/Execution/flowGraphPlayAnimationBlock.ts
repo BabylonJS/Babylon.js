@@ -1,3 +1,4 @@
+import type { FlowGraphContext } from "../../flowGraphContext";
 import type { IAnimatable, Animatable } from "../../../Animations";
 import type { Animation } from "../../../Animations/animation";
 import type { FlowGraph } from "../../../FlowGraph/flowGraph";
@@ -6,13 +7,6 @@ import { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
 
-/**
- * @experimental
- */
-export interface IFlowGraphPlayAnimationBlockParams {
-    defaultTarget: IAnimatable;
-    defaultAnimation: Animation;
-}
 /**
  * @experimental
  * A block that plays an animation on an animatable object.
@@ -48,13 +42,11 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphWithOnDoneExecutionBlo
      */
     public readonly onAnimationEnd: FlowGraphSignalConnection;
 
-    private _runningAnimatables: Array<Animatable> = [];
-
-    public constructor(graph: FlowGraph, params: IFlowGraphPlayAnimationBlockParams) {
+    public constructor(graph: FlowGraph) {
         super(graph);
 
-        this.target = new FlowGraphDataConnection<IAnimatable>("target", FlowGraphConnectionType.Input, this, params.defaultTarget);
-        this.animation = new FlowGraphDataConnection<Animation>("animation", FlowGraphConnectionType.Input, this, params.defaultAnimation);
+        this.target = new FlowGraphDataConnection<IAnimatable>("target", FlowGraphConnectionType.Input, this, undefined);
+        this.animation = new FlowGraphDataConnection<Animation>("animation", FlowGraphConnectionType.Input, this, undefined);
         this.speed = new FlowGraphDataConnection<number>("speed", FlowGraphConnectionType.Input, this, 1);
         this.loop = new FlowGraphDataConnection<boolean>("loop", FlowGraphConnectionType.Input, this, false);
         this.from = new FlowGraphDataConnection<number>("from", FlowGraphConnectionType.Input, this, 0);
@@ -63,34 +55,50 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphWithOnDoneExecutionBlo
         this.onAnimationEnd = new FlowGraphSignalConnection("onAnimationEnd", FlowGraphConnectionType.Output, this);
     }
 
-    public _execute(): void {
-        const targetValue = this.target.value;
-        const animationValue = this.animation.value;
+    public _execute(context: FlowGraphContext): void {
+        const targetValue = this.target.getValue(context);
+        const animationValue = this.animation.getValue(context);
 
-        const animatable = this._graph.scene.beginDirectAnimation(targetValue, [animationValue], this.from.value, this.to.value, this.loop.value, this.speed.value, () =>
-            this._onAnimationEnd(animatable)
+        if (!targetValue || !animationValue) {
+            throw new Error("Cannot play animation without target or animation");
+        }
+
+        const contextAnims = (context._getExecutionVariable(this, "runningAnimatables") as Animatable[] | undefined) ?? [];
+
+        const animatable = this._graph.scene.beginDirectAnimation(
+            targetValue,
+            [animationValue],
+            this.from.getValue(context)!,
+            this.to.getValue(context)!,
+            this.loop.getValue(context),
+            this.speed.getValue(context),
+            () => this._onAnimationEnd(animatable, context)
         );
-        this._runningAnimatables.push(animatable);
+        contextAnims.push(animatable);
 
-        this.onDone._activateSignal();
+        context._setExecutionVariable(this, "runningAnimatables", contextAnims);
+
+        this.onDone._activateSignal(context);
     }
 
-    private _onAnimationEnd(animatable: Animatable) {
-        const index = this._runningAnimatables.indexOf(animatable);
+    private _onAnimationEnd(animatable: Animatable, context: FlowGraphContext) {
+        const contextAnims = (context._getExecutionVariable(this, "runningAnimatables") as Animatable[] | undefined) ?? [];
+        const index = contextAnims.indexOf(animatable);
         if (index !== -1) {
-            this._runningAnimatables.splice(index, 1);
+            contextAnims.splice(index, 1);
         }
-        this.onAnimationEnd._activateSignal();
+        this.onAnimationEnd._activateSignal(context);
     }
 
     /**
      * @internal
      * Stop any currently running animations.
      */
-    public _cancelPendingTasks(): void {
-        for (const anim of this._runningAnimatables) {
+    public _cancelPendingTasks(context: FlowGraphContext): void {
+        const contextAnims = (context._getExecutionVariable(this, "runningAnimatables") as Animatable[] | undefined) ?? [];
+        for (const anim of contextAnims) {
             anim.stop();
         }
-        this._runningAnimatables.length = 0;
+        context._deleteExecutionVariable(this, "runningAnimatables");
     }
 }

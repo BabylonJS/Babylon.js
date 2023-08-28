@@ -1,5 +1,7 @@
+import { RandomGUID } from "../Misc/guid";
 import type { FlowGraph } from "./flowGraph";
 import { FlowGraphConnectionType } from "./flowGraphConnection";
+import type { FlowGraphContext } from "./flowGraphContext";
 import { FlowGraphDataConnection } from "./flowGraphDataConnection";
 
 /**
@@ -10,9 +12,9 @@ import { FlowGraphDataConnection } from "./flowGraphDataConnection";
  */
 export class FlowGraphBlock {
     /**
-     * The name of the block.
+     * A randomly generated GUID for each block.
      */
-    public name: string;
+    public uniqueId = RandomGUID();
     /**
      * The data inputs of the block.
      */
@@ -34,17 +36,17 @@ export class FlowGraphBlock {
     /**
      * @internal
      */
-    public _updateOutputs(): void {
+    public _updateOutputs(_context: FlowGraphContext): void {
         // empty by default, overriden in data blocks
     }
 
-    protected _registerDataInput<T>(name: string, defaultValue: T): FlowGraphDataConnection<T> {
+    protected _registerDataInput<T>(name: string, defaultValue: T | undefined): FlowGraphDataConnection<T> {
         const input = new FlowGraphDataConnection<T>(name, FlowGraphConnectionType.Input, this, defaultValue);
         this.dataInputs.push(input);
         return input;
     }
 
-    protected _registerDataOutput<T>(name: string, defaultValue: T): FlowGraphDataConnection<T> {
+    protected _registerDataOutput<T>(name: string, defaultValue: T | undefined): FlowGraphDataConnection<T> {
         const output = new FlowGraphDataConnection<T>(name, FlowGraphConnectionType.Output, this, defaultValue);
         this.dataOutputs.push(output);
         return output;

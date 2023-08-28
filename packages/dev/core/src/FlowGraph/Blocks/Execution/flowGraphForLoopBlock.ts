@@ -2,6 +2,7 @@ import type { FlowGraph } from "../../flowGraph";
 import type { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "core/FlowGraph/flowGraphWithOnDoneExecutionBlock";
+import type { FlowGraphContext } from "../../flowGraphContext";
 
 /**
  * @experimental
@@ -33,10 +34,6 @@ export class FlowGraphForLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
      */
     public readonly onDone: FlowGraphSignalConnection;
 
-    private _currentIndex: number = 0;
-    private _cachedEndIndex: number = 0;
-    private _cachedStep: number = 0;
-
     public constructor(graph: FlowGraph) {
         super(graph);
 
@@ -49,24 +46,31 @@ export class FlowGraphForLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
         this.onDone = this._registerSignalOutput("onDone");
     }
 
-    private _executeLoop() {
-        if (this._currentIndex < this._cachedEndIndex) {
-            this.index.value = this._currentIndex;
-            this.onLoop._activateSignal();
-            this._currentIndex += this._cachedStep;
-            this._executeLoop();
+    private _executeLoop(context: FlowGraphContext) {
+        let index = context._getExecutionVariable(this, "index");
+        const endIndex = context._getExecutionVariable(this, "endIndex");
+        if (index < endIndex) {
+            this.index.value = index;
+            this.onLoop._activateSignal(context);
+            const step = context._getExecutionVariable(this, "step");
+            index += step;
+            context._setExecutionVariable(this, "index", index);
+            this._executeLoop(context);
         } else {
-            this.onDone._activateSignal();
+            this.onDone._activateSignal(context);
         }
     }
 
     /**
      * @internal
      */
-    public _execute(): void {
-        this._currentIndex = this.startIndex.value;
-        this._cachedEndIndex = this.endIndex.value;
-        this._cachedStep = this.step.value;
-        this._executeLoop();
+    public _execute(context: FlowGraphContext): void {
+        const index = this.startIndex.getValue(context);
+        const endIndex = this.endIndex.getValue(context);
+        const step = this.step.getValue(context);
+        context._setExecutionVariable(this, "index", index);
+        context._setExecutionVariable(this, "endIndex", endIndex);
+        context._setExecutionVariable(this, "step", step);
+        this._executeLoop(context);
     }
 }

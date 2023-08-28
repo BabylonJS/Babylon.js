@@ -1,6 +1,7 @@
 import type { FlowGraph } from "./flowGraph";
 import { FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphConnectionType } from "./flowGraphConnection";
+import { FlowGraphContext } from "./flowGraphContext";
 import { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
 
 /**
@@ -26,7 +27,7 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
      * @internal
      * Executes the flow graph execution block.
      */
-    public abstract _execute(): void;
+    public abstract _execute(context: FlowGraphContext): void;
 
     /**
      * @internal
@@ -34,7 +35,7 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
      * pending tasks this node might have started,
      * such as timeouts and playing animations.
      */
-    public _cancelPendingTasks() {}
+    public _cancelPendingTasks(context: FlowGraphContext) {}
 
     protected _registerSignalInput(name: string): FlowGraphSignalConnection {
         const input = new FlowGraphSignalConnection(name, FlowGraphConnectionType.Input, this);

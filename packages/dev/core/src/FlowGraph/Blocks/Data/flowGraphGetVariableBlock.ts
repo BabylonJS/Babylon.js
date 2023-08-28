@@ -1,3 +1,4 @@
+import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraph } from "../../flowGraph";
 import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
@@ -30,7 +31,7 @@ export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
     /**
      * @internal
      */
-    public _updateOutputs(): void {
-        this.output.value = this._graph.getVariable(this._variableName) ?? this._defaultValue;
+    public _updateOutputs(context: FlowGraphContext): void {
+        this.output.value = context.getVariable(this._variableName) ?? this._defaultValue;
     }
 }

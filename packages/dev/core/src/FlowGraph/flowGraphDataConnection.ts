@@ -1,5 +1,6 @@
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphConnection, FlowGraphConnectionType } from "./flowGraphConnection";
+import type { FlowGraphContext } from "./flowGraphContext";
 
 /**
  * @experimental
@@ -9,7 +10,7 @@ import { FlowGraphConnection, FlowGraphConnectionType } from "./flowGraphConnect
  * if the point belongs to a "function" node, the node will run its function to update the value.
  */
 export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlock, FlowGraphDataConnection<T>> {
-    public constructor(name: string, type: FlowGraphConnectionType, ownerBlock: FlowGraphBlock, private _value: T) {
+    public constructor(name: string, type: FlowGraphConnectionType, ownerBlock: FlowGraphBlock, private _value: T | undefined) {
         super(name, type, ownerBlock);
     }
 
@@ -21,20 +22,20 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
         return this.type === FlowGraphConnectionType.Input;
     }
 
-    public set value(value: T) {
+    public set value(value: T | undefined) {
         this._value = value;
     }
 
-    public get value(): T {
+    public getValue(context: FlowGraphContext): T | undefined {
         if (this.type === FlowGraphConnectionType.Output) {
-            this._ownerBlock._updateOutputs();
+            this._ownerBlock._updateOutputs(context);
             return this._value;
         }
 
         if (!this.isConnected()) {
             return this._value;
         } else {
-            return this._connectedPoint[0].value;
+            return this._connectedPoint[0].getValue(context);
         }
     }
 }

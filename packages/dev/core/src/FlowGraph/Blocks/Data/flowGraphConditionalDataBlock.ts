@@ -1,3 +1,4 @@
+import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraph } from "../../flowGraph";
 import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
@@ -34,11 +35,11 @@ export class FlowGraphConditionalDataBlock<T> extends FlowGraphBlock {
     /**
      * @internal
      */
-    public _updateOutputs(): void {
-        if (this.condition.value) {
-            this.output.value = this.trueValue.value;
+    public _updateOutputs(context: FlowGraphContext): void {
+        if (this.condition.getValue(context)) {
+            this.output.value = this.trueValue.getValue(context);
         } else {
-            this.output.value = this.falseValue.value;
+            this.output.value = this.falseValue.getValue(context);
         }
     }
 }

@@ -1,3 +1,4 @@
+import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraph } from "../../flowGraph";
 import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
@@ -43,7 +44,7 @@ export class FlowGraphBinaryOpBaseBlock<LeftT, RightT, OutputT> extends FlowGrap
     /**
      * @internal
      */
-    public _updateOutputs(): void {
-        this.output.value = this._binOp(this.left.value, this.right.value);
+    public _updateOutputs(context: FlowGraphContext): void {
+        this.output.value = this._binOp(this.left.getValue(context)!, this.right.getValue(context)!);
     }
 }

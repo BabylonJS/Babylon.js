@@ -1,3 +1,4 @@
+import type { FlowGraphContext } from "./flowGraphContext";
 import { FlowGraphWithOnDoneExecutionBlock } from "./flowGraphWithOnDoneExecutionBlock";
 
 /**
@@ -9,20 +10,20 @@ export abstract class FlowGraphEventBlock extends FlowGraphWithOnDoneExecutionBl
     /**
      * @internal
      */
-    public abstract _startListening(): void;
+    public abstract _startListening(context: FlowGraphContext): void;
     /**
      * @internal
      */
-    public abstract _stopListening(): void;
+    public abstract _stopListening(context: FlowGraphContext): void;
 
-    public _cancelPendingTasks(): void {
-        this._stopListening();
+    public _cancelPendingTasks(context: FlowGraphContext): void {
+        this._stopListening(context);
     }
 
     /**
      * @internal
      */
-    public _execute(): void {
-        this.onDone._activateSignal();
+    public _execute(context: FlowGraphContext): void {
+        this.onDone._activateSignal(context);
     }
 }

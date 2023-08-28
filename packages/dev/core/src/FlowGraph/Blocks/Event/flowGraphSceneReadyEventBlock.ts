@@ -1,8 +1,7 @@
-import type { Nullable } from "../../../types";
-import type { Observer } from "../../../Misc/observable";
 import type { Scene } from "../../../scene";
 import type { FlowGraph } from "../../flowGraph";
 import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
+import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 
 /**
  * @experimental
@@ -10,7 +9,6 @@ import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
  */
 export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
     private _scene: Scene;
-    private _sceneReadyObserver: Nullable<Observer<Scene>>;
 
     public constructor(graph: FlowGraph) {
         super(graph);
@@ -20,19 +18,22 @@ export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
     /**
      * @internal
      */
-    public _startListening(): void {
-        if (!this._sceneReadyObserver) {
-            this._sceneReadyObserver = this._scene.onReadyObservable.add(() => {
-                this._execute();
+    public _startListening(context: FlowGraphContext): void {
+        let contextObserver = context._getExecutionVariable(this, "sceneReadyObserver");
+        if (!contextObserver) {
+            contextObserver = this._scene.onReadyObservable.add(() => {
+                this._execute(context);
             });
+            context._setExecutionVariable(this, "sceneReadyObserver", contextObserver);
         }
     }
 
     /**
      * @internal
      */
-    public _stopListening() {
-        this._scene.onReadyObservable.remove(this._sceneReadyObserver);
-        this._sceneReadyObserver = null;
+    public _stopListening(context: FlowGraphContext) {
+        const contextObserver = context._getExecutionVariable(this, "sceneReadyObserver");
+        this._scene.onReadyObservable.remove(contextObserver);
+        context._deleteExecutionVariable(this, "sceneReadyObserver");
     }
 }

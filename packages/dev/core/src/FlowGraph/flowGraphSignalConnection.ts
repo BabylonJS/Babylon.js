@@ -1,5 +1,6 @@
 import type { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 import { FlowGraphConnection, FlowGraphConnectionType } from "./flowGraphConnection";
+import type { FlowGraphContext } from "./flowGraphContext";
 
 /**
  * @experimental
@@ -19,11 +20,11 @@ export class FlowGraphSignalConnection extends FlowGraphConnection<FlowGraphExec
     /**
      * @internal
      */
-    public _activateSignal(): void {
+    public _activateSignal(context: FlowGraphContext): void {
         if (this.type === FlowGraphConnectionType.Input) {
-            this._ownerBlock._execute();
+            this._ownerBlock._execute(context);
         } else {
-            this._connectedPoint[0]?._activateSignal();
+            this._connectedPoint[0]?._activateSignal(context);
         }
     }
 }
