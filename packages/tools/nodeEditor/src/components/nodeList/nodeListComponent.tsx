@@ -579,7 +579,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 if (blocks.length) {
                     for (const block of blocks) {
                         if (!ledger.includes(block)) {
-                            ledger.push(...blocks);
+                            ledger.push(block);
                         }
                     }
                 }
