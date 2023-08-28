@@ -58,6 +58,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
     private _mouseId = -1;
     private readonly _isUsingFirefox = IsNavigatorAvailable() && navigator.userAgent && navigator.userAgent.indexOf("Firefox") !== -1;
+    private readonly _isUsingChromium = IsNavigatorAvailable() && navigator.userAgent && navigator.userAgent.indexOf("Chrome") !== -1;
 
     // Array to store active Pointer ID values; prevents issues with negative pointerIds
     private _activeTouchIds: Array<number>;
@@ -777,7 +778,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
         // Workaround for MacOS Chromium Browsers for lost pointer capture bug
         this._pointerMacOSChromeOutEvent = (evt) => {
-            if (this._usingMacOS && !this._usingSafari && evt.buttons > 1) {
+            if (this._usingMacOS && this._isUsingChromium  && evt.buttons > 1) {
                 this._pointerCancelEvent(evt);
             }
         };
