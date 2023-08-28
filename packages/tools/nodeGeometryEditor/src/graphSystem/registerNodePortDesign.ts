@@ -14,9 +14,7 @@ export const RegisterNodePortDesign = (stateManager: StateManager) => {
         switch (type) {
             case NodeGeometryBlockConnectionPointTypes.Int:
                 img.src =
-                    "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIGlkPSJMYXllcl81IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZGVmcz48c3R5bGU+LmNscy0xe2ZpbGw6I2ZmZjt9LmNscy0ye2ZpbGw6IzUxYjBlNTt9PC9zdHlsZT48L2RlZnM+PHBhdGggY2xhc3M9ImNscy0yIiBkPSJtMTEuNzYsMjEuOTVjLTUuNTEsMC0xMC00LjQ5LTEwLTEwUzYuMjUsMS45NSwxMS43NiwxLjk1czEwLDQuNDksMTAsMTAtNC40OSwxMC0xMCwxMFoiLz48cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Im0xNy44LDE2LjQxYy45MS0xLjI0LDEuNDYtMi43NywxLjQ2LTQuNDMsMC00LjE0LTMuMzYtNy41LTcuNS03LjVzLTcuNSwzLjM2LTcuNSw3LjVjMCwxLjY2LjU1LDMuMTksMS40Niw0LjQzaDEyLjA3WiIvPjwvc3ZnPg==";
-                img.style.marginLeft = "-2px";
-                img.style.marginTop = "-2px";
+                    "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIGlkPSJMYXllcl81IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj48ZGVmcz48c3R5bGU+LmNscy0xe2ZpbGw6I2ZmZjt9LmNscy0ye2ZpbGw6IzUxYjBlNTt9PC9zdHlsZT48L2RlZnM+PHBhdGggY2xhc3M9ImNscy0yIiBkPSJtMTAsMjBDNC40OSwyMCwwLDE1LjUxLDAsMTBTNC40OSwwLDEwLDBzMTAsNC40OSwxMCwxMC00LjQ5LDEwLTEwLDEwWiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0ibTE2LjA0LDE0LjQ2Yy45MS0xLjI0LDEuNDYtMi43NywxLjQ2LTQuNDMsMC00LjE0LTMuMzYtNy41LTcuNS03LjVzLTcuNSwzLjM2LTcuNSw3LjVjMCwxLjY2LjU1LDMuMTksMS40Niw0LjQzaDEyLjA3WiIvPjwvc3ZnPg==";
                 break;
             case NodeGeometryBlockConnectionPointTypes.Float:
                 img.src =
@@ -40,9 +38,7 @@ export const RegisterNodePortDesign = (stateManager: StateManager) => {
                 break;
             case NodeGeometryBlockConnectionPointTypes.Geometry:
                 img.src =
-                    "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIGlkPSJMYXllcl81IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0Ij48ZGVmcz48c3R5bGU+LmNscy0xe2ZpbGw6I2ZmZjt9LmNscy0ye2ZpbGw6Izg0OTk1Yzt9PC9zdHlsZT48L2RlZnM+PHBhdGggY2xhc3M9ImNscy0yIiBkPSJtMTEuNzYsMjEuOTVjLTUuNTEsMC0xMC00LjQ5LTEwLTEwUzYuMjUsMS45NSwxMS43NiwxLjk1czEwLDQuNDksMTAsMTAtNC40OSwxMC0xMCwxMFoiLz48cG9seWdvbiBjbGFzcz0iY2xzLTEiIHBvaW50cz0iMTAuOTEgMTIuNDQgNS4xNiA5LjEyIDUuMTYgMTUuNzYgMTAuOTEgMTkuMDkgMTAuOTEgMTIuNDQiLz48cG9seWdvbiBjbGFzcz0iY2xzLTEiIHBvaW50cz0iMTEuNzYgMTAuOTcgMTcuNTIgNy42NCAxMS43NiA0LjMyIDYuMDEgNy42NCAxMS43NiAxMC45NyIvPjxwb2x5Z29uIGNsYXNzPSJjbHMtMSIgcG9pbnRzPSIxMi42MSAxMi40NCAxMi42MSAxOS4wOSAxOC4zNyAxNS43NiAxOC4zNyA5LjEyIDEyLjYxIDEyLjQ0Ii8+PC9zdmc+";
-                img.style.width = "100%"; // it's so that the svg is correctly centered inside the outer circle
-                img.style.height = "100%";
+                    "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIGlkPSJMYXllcl81IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj48ZGVmcz48c3R5bGU+LmNscy0xe2ZpbGw6I2ZmZjt9LmNscy0ye2ZpbGw6Izg0OTk1Yzt9PC9zdHlsZT48L2RlZnM+PHBhdGggY2xhc3M9ImNscy0yIiBkPSJtMTAsMjBDNC40OSwyMCwwLDE1LjUxLDAsMTBTNC40OSwwLDEwLDBzMTAsNC40OSwxMCwxMC00LjQ5LDEwLTEwLDEwWiIvPjxwb2x5Z29uIGNsYXNzPSJjbHMtMSIgcG9pbnRzPSI5LjE1IDEwLjQ5IDMuMzkgNy4xNyAzLjM5IDEzLjgxIDkuMTUgMTcuMTQgOS4xNSAxMC40OSIvPjxwb2x5Z29uIGNsYXNzPSJjbHMtMSIgcG9pbnRzPSIxMCA5LjAyIDE1Ljc2IDUuNjkgMTAgMi4zNyA0LjI0IDUuNjkgMTAgOS4wMiIvPjxwb2x5Z29uIGNsYXNzPSJjbHMtMSIgcG9pbnRzPSIxMC44NSAxMC40OSAxMC44NSAxNy4xNCAxNi42MSAxMy44MSAxNi42MSA3LjE3IDEwLjg1IDEwLjQ5Ii8+PC9zdmc+";
                 break;
         }
 
