@@ -1,5 +1,4 @@
 import type { FlowGraphContext } from "../../flowGraphContext";
-import type { FlowGraph } from "../../flowGraph";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
 
@@ -13,8 +12,8 @@ export class FlowGraphLogBlock extends FlowGraphWithOnDoneExecutionBlock {
      */
     public readonly message: FlowGraphDataConnection<any>;
 
-    public constructor(graph: FlowGraph) {
-        super(graph);
+    public constructor() {
+        super();
         this.message = this._registerDataInput("message", "Hello world");
     }
 

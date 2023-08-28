@@ -1,17 +1,17 @@
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { IAnimatable, Animatable } from "../../../Animations";
 import type { Animation } from "../../../Animations/animation";
-import type { FlowGraph } from "../../../FlowGraph/flowGraph";
 import { FlowGraphConnectionType } from "../../flowGraphConnection";
 import { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
-import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
+import type { Scene } from "../../../scene";
+import { FlowGraphAsyncExecutionBlock } from "../../flowGraphAsyncExecutionBlock";
 
 /**
  * @experimental
  * A block that plays an animation on an animatable object.
  */
-export class FlowGraphPlayAnimationBlock extends FlowGraphWithOnDoneExecutionBlock {
+export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     /**
      * The target to play the animation on.
      */
@@ -42,8 +42,8 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphWithOnDoneExecutionBlo
      */
     public readonly onAnimationEnd: FlowGraphSignalConnection;
 
-    public constructor(graph: FlowGraph) {
-        super(graph);
+    public constructor() {
+        super();
 
         this.target = new FlowGraphDataConnection<IAnimatable>("target", FlowGraphConnectionType.Input, this, undefined);
         this.animation = new FlowGraphDataConnection<Animation>("animation", FlowGraphConnectionType.Input, this, undefined);
@@ -55,7 +55,11 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphWithOnDoneExecutionBlo
         this.onAnimationEnd = new FlowGraphSignalConnection("onAnimationEnd", FlowGraphConnectionType.Output, this);
     }
 
-    public _execute(context: FlowGraphContext): void {
+    /**
+     * @internal
+     * @param context
+     */
+    public _preparePendingTasks(context: FlowGraphContext): void {
         const targetValue = this.target.getValue(context);
         const animationValue = this.animation.getValue(context);
 
@@ -65,7 +69,8 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphWithOnDoneExecutionBlo
 
         const contextAnims = (context._getExecutionVariable(this, "runningAnimatables") as Animatable[] | undefined) ?? [];
 
-        const animatable = this._graph.scene.beginDirectAnimation(
+        const scene = context._getGraphVariable("scene") as Scene;
+        const animatable = scene.beginDirectAnimation(
             targetValue,
             [animationValue],
             this.from.getValue(context)!,
@@ -77,6 +82,10 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphWithOnDoneExecutionBlo
         contextAnims.push(animatable);
 
         context._setExecutionVariable(this, "runningAnimatables", contextAnims);
+    }
+
+    public _execute(context: FlowGraphContext): void {
+        this._startPendingTasks(context);
 
         this.onDone._activateSignal(context);
     }
@@ -87,6 +96,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphWithOnDoneExecutionBlo
         if (index !== -1) {
             contextAnims.splice(index, 1);
         }
+        context._removePendingBlock(this);
         this.onAnimationEnd._activateSignal(context);
     }
 

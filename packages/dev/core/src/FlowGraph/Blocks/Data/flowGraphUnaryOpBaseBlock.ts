@@ -1,5 +1,4 @@
 import type { FlowGraphContext } from "../../flowGraphContext";
-import type { FlowGraph } from "../../flowGraph";
 import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 
@@ -22,8 +21,8 @@ export class FlowGraphUnaryOpBaseBlock<InputT, OutputT> extends FlowGraphBlock {
 
     private readonly _op: (input: InputT) => OutputT;
 
-    public constructor(graph: FlowGraph, params: IFlowGraphUnaryOpBaseBlockParams<InputT, OutputT>) {
-        super(graph);
+    public constructor(params: IFlowGraphUnaryOpBaseBlockParams<InputT, OutputT>) {
+        super();
 
         this._op = params.op;
 

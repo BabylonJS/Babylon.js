@@ -1,9 +1,7 @@
 import type { Observer } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
-import type { FlowGraphBlock } from "./flowGraphBlock";
-import { FlowGraphEventBlock } from "./flowGraphEventBlock";
-import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
+import type { FlowGraphEventBlock } from "./flowGraphEventBlock";
 import { FlowGraphVariableDefinitions } from "./flowGraphVariableDefinitions";
 import type { FlowGraphContext } from "./flowGraphContext";
 
@@ -23,7 +21,7 @@ export class FlowGraph {
      */
     public variableDefinitions: FlowGraphVariableDefinitions = new FlowGraphVariableDefinitions();
 
-    private _blocks: FlowGraphBlock[] = [];
+    private _eventBlocks: FlowGraphEventBlock[] = [];
     private _sceneDisposeObserver: Nullable<Observer<Scene>>;
     private _scene: Scene;
     private _executionContexts: Array<FlowGraphContext> = [];
@@ -39,16 +37,16 @@ export class FlowGraph {
 
     public createContext() {
         const context = this.variableDefinitions.getContext();
+        context._setGraphVariable("scene", this._scene);
         this._executionContexts.push(context);
         return context;
     }
 
     /**
-     * @internal
      * @param block
      */
-    public _addBlock(block: FlowGraphBlock): void {
-        this._blocks.push(block);
+    public addEventBlock(block: FlowGraphEventBlock): void {
+        this._eventBlocks.push(block);
     }
 
     /**
@@ -59,10 +57,8 @@ export class FlowGraph {
             this.createContext();
         }
         for (const context of this._executionContexts) {
-            for (const block of this._blocks) {
-                if (block instanceof FlowGraphEventBlock) {
-                    block._startListening(context);
-                }
+            for (const block of this._eventBlocks) {
+                block._startPendingTasks(context);
             }
         }
     }
@@ -72,14 +68,10 @@ export class FlowGraph {
      */
     public dispose() {
         for (const context of this._executionContexts) {
-            for (const block of this._blocks) {
-                if (block instanceof FlowGraphExecutionBlock) {
-                    block._cancelPendingTasks(context);
-                }
-            }
+            context._clearPendingBlocks();
         }
         this._executionContexts.length = 0;
-        this._blocks.length = 0;
+        this._eventBlocks.length = 0;
         this._scene.onDisposeObservable.remove(this._sceneDisposeObserver);
         this._sceneDisposeObserver = null;
     }

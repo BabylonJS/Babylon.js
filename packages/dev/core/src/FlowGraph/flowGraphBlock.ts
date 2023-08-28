@@ -1,5 +1,4 @@
 import { RandomGUID } from "../Misc/guid";
-import type { FlowGraph } from "./flowGraph";
 import { FlowGraphConnectionType } from "./flowGraphConnection";
 import type { FlowGraphContext } from "./flowGraphContext";
 import { FlowGraphDataConnection } from "./flowGraphDataConnection";
@@ -23,15 +22,9 @@ export class FlowGraphBlock {
      * The data outputs of the block.
      */
     public readonly dataOutputs: FlowGraphDataConnection<any>[] = [];
-    /**
-     * The graph that this block belongs to.
-     */
-    protected _graph: FlowGraph;
 
-    protected constructor(graph: FlowGraph) {
-        this._graph = graph;
-        this._graph._addBlock(this);
-    }
+    /** Constructor is protected so only subclasses can be instantiated */
+    protected constructor() {}
 
     /**
      * @internal

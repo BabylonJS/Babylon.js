@@ -1,3 +1,4 @@
+import type { FlowGraphAsyncExecutionBlock } from "./flowGraphAsyncExecutionBlock";
 import type { FlowGraphBlock } from "./flowGraphBlock";
 
 /**
@@ -8,8 +9,22 @@ import type { FlowGraphBlock } from "./flowGraphBlock";
  * are set by the blocks.
  */
 export class FlowGraphContext {
+    /**
+     * These are the variables defined by a user.
+     */
     private _userVariables: Map<string, any> = new Map();
+    /**
+     * These are the variables set by the blocks.
+     */
     private _executionVariables: Map<string, any> = new Map();
+    /**
+     * These are the variables set by the graph.
+     */
+    private _graphVariables: Map<string, any> = new Map();
+    /**
+     * These are blocks that have currently pending tasks/listeners that need to be cleaned up.
+     */
+    private _pendingBlocks: FlowGraphAsyncExecutionBlock[] = [];
 
     public setVariable(name: string, value: any) {
         this._userVariables.set(name, value);
@@ -43,5 +58,52 @@ export class FlowGraphContext {
 
     public _deleteExecutionVariable(block: FlowGraphBlock, name: string) {
         this._executionVariables.delete(this._getBlockPrefixedName(block, name));
+    }
+
+    /**
+     * @internal
+     * @param name
+     * @param value
+     */
+    public _setGraphVariable(name: string, value: any) {
+        this._graphVariables.set(name, value);
+    }
+
+    /**
+     * @internal
+     * @param name
+     * @returns
+     */
+    public _getGraphVariable(name: string): any {
+        return this._graphVariables.get(name);
+    }
+
+    /**
+     * @internal
+     * @param block
+     */
+    public _addPendingBlock(block: FlowGraphAsyncExecutionBlock) {
+        this._pendingBlocks.push(block);
+    }
+
+    /**
+     * @internal
+     * @param block
+     */
+    public _removePendingBlock(block: FlowGraphAsyncExecutionBlock) {
+        const index = this._pendingBlocks.indexOf(block);
+        if (index !== -1) {
+            this._pendingBlocks.splice(index, 1);
+        }
+    }
+
+    /**
+     * @internal
+     */
+    public _clearPendingBlocks() {
+        for (const block of this._pendingBlocks) {
+            block._cancelPendingTasks(this);
+        }
+        this._pendingBlocks.length = 0;
     }
 }

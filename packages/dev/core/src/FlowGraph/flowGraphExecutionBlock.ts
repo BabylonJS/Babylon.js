@@ -1,12 +1,11 @@
-import type { FlowGraph } from "./flowGraph";
 import { FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphConnectionType } from "./flowGraphConnection";
-import { FlowGraphContext } from "./flowGraphContext";
+import type { FlowGraphContext } from "./flowGraphContext";
 import { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
 
 /**
  * @experimental
- * A block that executes some action. Always has an input signal.
+ * A block that executes some action. Always has an input signal (which is not used by event blocks).
  * Can have one or more output signals.
  */
 export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
@@ -18,9 +17,8 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
     private readonly _signalInputs: FlowGraphSignalConnection[] = [];
     private readonly _signalOutputs: FlowGraphSignalConnection[] = [];
 
-    protected constructor(graph: FlowGraph) {
-        super(graph);
-
+    protected constructor() {
+        super();
         this.onStart = this._registerSignalInput("onStart");
     }
     /**
@@ -28,14 +26,6 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
      * Executes the flow graph execution block.
      */
     public abstract _execute(context: FlowGraphContext): void;
-
-    /**
-     * @internal
-     * This function can be overridden to cancel any
-     * pending tasks this node might have started,
-     * such as timeouts and playing animations.
-     */
-    public _cancelPendingTasks(context: FlowGraphContext) {}
 
     protected _registerSignalInput(name: string): FlowGraphSignalConnection {
         const input = new FlowGraphSignalConnection(name, FlowGraphConnectionType.Input, this);

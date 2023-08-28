@@ -1,5 +1,4 @@
 import type { FlowGraphContext } from "../../flowGraphContext";
-import type { FlowGraph } from "../../flowGraph";
 import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 
@@ -19,8 +18,8 @@ export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
     private _variableName: string;
     private _defaultValue: T;
 
-    constructor(graph: FlowGraph, params: IFlowGraphGetVariableBlockParams<T>) {
-        super(graph);
+    constructor(params: IFlowGraphGetVariableBlockParams<T>) {
+        super();
 
         this._variableName = params.variableName;
         this._defaultValue = params.defaultValue;

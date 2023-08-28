@@ -1,5 +1,4 @@
 import type { FlowGraphContext } from "../../flowGraphContext";
-import type { FlowGraph } from "../../flowGraph";
 import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 
@@ -31,8 +30,8 @@ export class FlowGraphBinaryOpBaseBlock<LeftT, RightT, OutputT> extends FlowGrap
 
     private readonly _binOp: (left: LeftT, right: RightT) => OutputT;
 
-    public constructor(graph: FlowGraph, params: IFlowGraphBinaryOpBaseBlockParams<LeftT, RightT, OutputT>) {
-        super(graph);
+    public constructor(params: IFlowGraphBinaryOpBaseBlockParams<LeftT, RightT, OutputT>) {
+        super();
 
         this._binOp = params.binOp;
 

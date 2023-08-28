@@ -1,5 +1,4 @@
 import type { FlowGraphContext } from "../../flowGraphContext";
-import type { FlowGraph } from "../../flowGraph";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphExecutionBlock } from "../../flowGraphExecutionBlock";
 import type { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
@@ -13,8 +12,8 @@ export class FlowGraphConditionalBlock extends FlowGraphExecutionBlock {
     public readonly onTrue: FlowGraphSignalConnection;
     public readonly onFalse: FlowGraphSignalConnection;
 
-    constructor(graph: FlowGraph) {
-        super(graph);
+    constructor() {
+        super();
 
         this.condition = this._registerDataInput("condition", false);
 

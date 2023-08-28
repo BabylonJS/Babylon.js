@@ -1,5 +1,4 @@
 import type { FlowGraphContext } from "../../flowGraphContext";
-import type { FlowGraph } from "../../flowGraph";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
 
@@ -15,8 +14,8 @@ export class FlowGraphSetPropertyBlock<PropT> extends FlowGraphWithOnDoneExecuti
 
     public readonly outTarget: FlowGraphDataConnection<any>;
 
-    public constructor(graph: FlowGraph) {
-        super(graph);
+    public constructor() {
+        super();
 
         this.target = this._registerDataInput("target", undefined);
         this.property = this._registerDataInput<string>("property", undefined);

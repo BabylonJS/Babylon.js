@@ -1,4 +1,3 @@
-import type { FlowGraph } from "../../flowGraph";
 import type { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "core/FlowGraph/flowGraphWithOnDoneExecutionBlock";
@@ -34,8 +33,8 @@ export class FlowGraphForLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
      */
     public readonly onDone: FlowGraphSignalConnection;
 
-    public constructor(graph: FlowGraph) {
-        super(graph);
+    public constructor() {
+        super();
 
         this.startIndex = this._registerDataInput("startIndex", 0);
         this.endIndex = this._registerDataInput("endIndex", 0);
