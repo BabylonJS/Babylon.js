@@ -51,7 +51,13 @@ export class PreviewManager {
         this._globalState = globalState;
 
         this._onExportToGLBObserver = this._globalState.onExportToGLBRequired.add(() => {
-            GLTF2Export.GLBAsync(this._scene, "node-geometry-scene").then((glb: GLTFData) => {
+            if (!this._mesh) {
+                return;                
+            }
+            const currentMat = this._mesh.material;
+            this._mesh.material = this._matStd;
+            GLTF2Export.GLBAsync(this._scene, "node-geometry-scene").then((glb: GLTFData) => {                
+                this._mesh!.material = currentMat;
                 glb.downloadFiles();
             });
         });
