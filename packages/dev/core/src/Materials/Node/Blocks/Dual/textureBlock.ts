@@ -318,10 +318,10 @@ export class TextureBlock extends NodeMaterialBlock {
 
     public set target(value: NodeMaterialBlockTargets) {}
 
-    public autoConfigure(material: NodeMaterial) {
+    public autoConfigure(material: NodeMaterial, additionalFilteringInfo?: (node: NodeMaterialBlock) => boolean) {
         if (!this.uv.isConnected) {
             if (material.mode === NodeMaterialModes.PostProcess) {
-                const uvInput = material.getBlockByPredicate((b) => b.name === "uv");
+                const uvInput = material.getBlockByPredicate((b) => b.name === "uv" && (!additionalFilteringInfo || additionalFilteringInfo(b)));
 
                 if (uvInput) {
                     uvInput.connectTo(this);
@@ -329,7 +329,7 @@ export class TextureBlock extends NodeMaterialBlock {
             } else {
                 const attributeName = material.mode === NodeMaterialModes.Particle ? "particle_uv" : "uv";
 
-                let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === attributeName);
+                let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === attributeName && (!additionalFilteringInfo || additionalFilteringInfo(b)));
 
                 if (!uvInput) {
                     uvInput = new InputBlock("uv");

@@ -473,9 +473,10 @@ export class NodeMaterialBlock {
     /**
      * Lets the block try to connect some inputs automatically
      * @param material defines the hosting NodeMaterial
+     * @param additionalFilteringInfo optional additional filtering condition when looking for compatible blocks
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public autoConfigure(material: NodeMaterial) {
+    public autoConfigure(material: NodeMaterial, additionalFilteringInfo?: (node: NodeMaterialBlock) => boolean) {
         // Do nothing
     }
 

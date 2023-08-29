@@ -116,9 +116,11 @@ export class TBNBlock extends NodeMaterialBlock {
 
     public set target(value: NodeMaterialBlockTargets) {}
 
-    public autoConfigure(material: NodeMaterial) {
+    public autoConfigure(material: NodeMaterial, additionalFilteringInfo?: (node: NodeMaterialBlock) => boolean) {
         if (!this.world.isConnected) {
-            let worldInput = material.getInputBlockByPredicate((b) => b.isSystemValue && b.systemValue === NodeMaterialSystemValues.World);
+            let worldInput = material.getInputBlockByPredicate(
+                (b) => b.isSystemValue && b.systemValue === NodeMaterialSystemValues.World && (!additionalFilteringInfo || additionalFilteringInfo(b))
+            );
 
             if (!worldInput) {
                 worldInput = new InputBlock("world");
@@ -128,7 +130,7 @@ export class TBNBlock extends NodeMaterialBlock {
         }
 
         if (!this.normal.isConnected) {
-            let normalInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "normal");
+            let normalInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "normal" && (!additionalFilteringInfo || additionalFilteringInfo(b)));
 
             if (!normalInput) {
                 normalInput = new InputBlock("normal");
@@ -138,7 +140,9 @@ export class TBNBlock extends NodeMaterialBlock {
         }
 
         if (!this.tangent.isConnected) {
-            let tangentInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "tangent" && b.type === NodeMaterialBlockConnectionPointTypes.Vector4);
+            let tangentInput = material.getInputBlockByPredicate(
+                (b) => b.isAttribute && b.name === "tangent" && b.type === NodeMaterialBlockConnectionPointTypes.Vector4 && (!additionalFilteringInfo || additionalFilteringInfo(b))
+            );
 
             if (!tangentInput) {
                 tangentInput = new InputBlock("tangent");

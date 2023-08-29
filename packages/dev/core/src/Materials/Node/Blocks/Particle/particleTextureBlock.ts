@@ -126,9 +126,9 @@ export class ParticleTextureBlock extends NodeMaterialBlock {
         state._excludeVariableName("diffuseSampler");
     }
 
-    public autoConfigure(material: NodeMaterial) {
+    public autoConfigure(material: NodeMaterial, additionalFilteringInfo?: (node: NodeMaterialBlock) => boolean) {
         if (!this.uv.isConnected) {
-            let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "particle_uv");
+            let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "particle_uv" && (!additionalFilteringInfo || additionalFilteringInfo(b)));
 
             if (!uvInput) {
                 uvInput = new InputBlock("uv");

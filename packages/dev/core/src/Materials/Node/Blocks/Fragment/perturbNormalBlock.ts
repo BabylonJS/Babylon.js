@@ -201,9 +201,9 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         }
     }
 
-    public autoConfigure(material: NodeMaterial) {
+    public autoConfigure(material: NodeMaterial, additionalFilteringInfo?: (node: NodeMaterialBlock) => boolean) {
         if (!this.uv.isConnected) {
-            let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "uv");
+            let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "uv" && (!additionalFilteringInfo || additionalFilteringInfo(b)));
 
             if (!uvInput) {
                 uvInput = new InputBlock("uv");
