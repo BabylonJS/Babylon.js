@@ -409,7 +409,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
     }
 
     protected _createVertexBuffers() {
-        super._createVertexBuffers(this._options.ribbonOptions?.computeNormals);
+        super._createVertexBuffers(this._options.ribbonOptions?.smoothShading);
 
         console.log("vertices", this._vertexPositions);
         console.log("indices", this._indices);

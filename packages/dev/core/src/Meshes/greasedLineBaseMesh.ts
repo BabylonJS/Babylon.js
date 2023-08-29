@@ -16,9 +16,10 @@ export enum GreasedLineRibbonPointsMode {
 
 export type GreasedLineRibbonOptions = {
     /**
-     * If true, normals will be computed when creating the vertex buffers
+     * If true, normals will be computed when creating the vertex buffers.
+     * This results to smooth shading of the mesh.
      */
-    computeNormals?: boolean;
+    smoothShading?: boolean;
     /**
      * If true, creates double sided meshes. If false you can turn off backFaceCulling to have 'doubleSided' meshes.
      */
@@ -167,7 +168,7 @@ export abstract class GreasedLineBaseMesh extends Mesh {
         if (!this._options.colorPointers) {
             this._updateColorPointers();
         }
-        this._createVertexBuffers(this._options.ribbonOptions?.computeNormals);
+        this._createVertexBuffers(this._options.ribbonOptions?.smoothShading);
         this.refreshBoundingInfo();
 
         this.greasedLineMaterial?.updateLazy();
