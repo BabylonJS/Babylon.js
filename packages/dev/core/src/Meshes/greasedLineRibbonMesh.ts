@@ -43,7 +43,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         this._colorPointers = [];
         this._widths = _options.widths ?? [];
         this._ribbonWidths = [];
-        this._pathsOptions = _pathOptions ?? [];
+        this._pathsOptions = [];
 
         if (_options.points) {
             this.addPoints(GreasedLineTools.ConvertPoints(_options.points), _options);
@@ -60,11 +60,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
             throw "addPoints on GreasedLineRibbonMesh instance requires ribbonOptions";
         }
 
-        this._pathsOptions.push({
-            options,
-            pathCount: points.length,
-        });
-        super.addPoints(points);
+        super.addPoints(points, options);
     }
 
     /**
@@ -90,46 +86,35 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
     }
 
     protected _updateColorPointers() {
-        // let colorPointer = 0;
-        // this._colorPointers = [];
-        // for (let i = 0; i < this._vertexPositions.length / 3; i++) {
-        //     this._colorPointers.push(colorPointer++);
-        // }
+        // intentionally blank
     }
 
-    // TODO: move this to base with param
-    protected _updateWidths() {
-        let pointCount = 0;
-        for (const points of this._points) {
-            pointCount += points.length;
-        }
-        const countDiff = (pointCount / 3) * 2 - this._widths.length;
-        for (let i = 0; i < countDiff; i++) {
-            this._widths.push(0);
-        }
+    protected _updateWidths(): void {
+        super._updateWidthsWithValue(1);
     }
 
-    protected _setPoints(points: number[][]) {
+    protected _setPoints(points: number[][], options: GreasedLineMeshOptions) {
         if (!this._options.ribbonOptions) {
             throw "No ribbonOptions provided.";
         }
 
         this._points = points;
         this._options.points = points;
+        this._pathsOptions.push({ options, pathCount: points.length });
 
         this._initGreasedLine();
 
         let indiceOffset = 0;
         for (let i = 0, c = 0; i < this._pathsOptions.length; i++) {
-            const { options, pathCount } = this._pathsOptions[i];
+            const { options: pathOptions, pathCount } = this._pathsOptions[i];
             const subPoints = points.slice(c, c + pathCount);
             c += pathCount;
-            if (options.ribbonOptions?.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_PATHS) {
-                indiceOffset = this._preprocess(GreasedLineTools.ToVector3Array(subPoints) as Vector3[][], indiceOffset);
+            if (pathOptions.ribbonOptions?.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_PATHS) {
+                indiceOffset = this._preprocess(GreasedLineTools.ToVector3Array(subPoints) as Vector3[][], indiceOffset, pathOptions);
             } else {
                 subPoints.forEach((p) => {
-                    const pathArray = GreasedLineRibbonMesh._ConvertToRibbonPath(p, options.ribbonOptions!);
-                    indiceOffset = this._preprocess(pathArray, indiceOffset);
+                    const pathArray = GreasedLineRibbonMesh._ConvertToRibbonPath(p, pathOptions.ribbonOptions!);
+                    indiceOffset = this._preprocess(pathArray, indiceOffset, pathOptions);
                 });
             }
         }
@@ -151,8 +136,8 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         return this._paths.length < 3;
     }
 
-    private static _CreateRibbonVertexData(options: { pathArray: Vector3[][] }) {
-        const numOfPaths = options.pathArray.length;
+    private static _CreateRibbonVertexData(pathArray: Vector3[][], options: GreasedLineMeshOptions) {
+        const numOfPaths = pathArray.length;
         if (numOfPaths < 2) {
             throw "Minimum of two paths arej required to create a ribbon.";
         }
@@ -160,15 +145,17 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         const positions = [];
         const indices = [];
 
-        const path = options.pathArray[0];
+        const path = pathArray[0];
         for (let i = 0; i < path.length; i++) {
-            for (let pi = 0; pi < options.pathArray.length; pi++) {
-                const v = options.pathArray[pi][i];
+            for (let pi = 0; pi < pathArray.length; pi++) {
+                const v = pathArray[pi][i];
                 positions.push(v.x, v.y, v.z);
             }
         }
 
         const v: number[] = [1, 0, numOfPaths];
+        const doubleSided = options.ribbonOptions?.doubleSided ?? false;
+        const close = options.ribbonOptions?.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_PATHS && options.ribbonOptions.closePath;
         if (numOfPaths > 2) {
             for (let i = 0; i < path.length - 1; i++) {
                 v[0] = 1 + numOfPaths * i;
@@ -182,14 +169,32 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
                         v[0] += 1;
                         v[1] += 1;
                     }
-                    indices.push(v[0]);
-                    indices.push(v[1] + (pi % 2 !== 0 ? numOfPaths : 0));
-                    indices.push(v[2]);
+                    indices.push(v[1] + (pi % 2 !== 0 ? numOfPaths : 0), v[0], v[2]);
+                    if (doubleSided) {
+                        indices.push(v[0], v[1] + (pi % 2 !== 0 ? numOfPaths : 0), v[2]);
+                    }
+                }
+            }
+            if (close) {
+                let lastIndice = numOfPaths * (path.length - 1);
+                for (let pi = 0; pi < numOfPaths - 1; pi++) {
+                    indices.push(pi + 1, pi, lastIndice);
+                    indices.push(pi + 1, lastIndice, lastIndice + 1);
+                    if (doubleSided) {
+                        indices.push(pi, pi + 1, lastIndice);
+                        indices.push(lastIndice, pi + 1, lastIndice + 1);
+                    }
+                    lastIndice++;
                 }
             }
         } else {
-            for (let i = 0; i < positions.length / 3 - numOfPaths; i++) {
-                indices.push(i, i + 1, i + numOfPaths);
+            for (let i = 0; i < positions.length / 3 - 3; i += 2) {
+                indices.push(i, i + 1, i + 2);
+                indices.push(i + 2, i + 1, i + 3);
+                if (doubleSided) {
+                    indices.push(i + 1, i, i + 2);
+                    indices.push(i + 1, i + 2, i + 3);
+                }
             }
         }
 
@@ -199,13 +204,10 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         };
     }
 
-    private _preprocess(pathArray: Vector3[][], indiceOffset: number) {
-        this._calculateSegmentLengths(pathArray);
+    private _preprocess(pathArray: Vector3[][], indiceOffset: number, options: GreasedLineMeshOptions) {
         this._paths = pathArray;
 
-        const ribbonVertexData = GreasedLineRibbonMesh._CreateRibbonVertexData({
-            pathArray,
-        });
+        const ribbonVertexData = GreasedLineRibbonMesh._CreateRibbonVertexData(pathArray, options);
 
         const positions = ribbonVertexData.positions;
 
@@ -217,27 +219,37 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
             this._vertexPositions.push(p);
         }
 
-        const pathArrayLength = pathArray.length;
+        let pathArrayCopy = pathArray;
+        if (options.ribbonOptions?.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_PATHS && options.ribbonOptions.closePath) {
+            pathArrayCopy = [];
+            for (let i = 0; i < pathArray.length; i++) {
+                const pathCopy = pathArray[i].slice();
+                pathCopy.push(pathArray[i][0].clone());
+                pathArrayCopy.push(pathCopy);
+            }
+        }
+
+        this._calculateSegmentLengths(pathArrayCopy);
+
+        const pathArrayLength = pathArrayCopy.length;
         const previousCounters = new Array(pathArrayLength).fill(0);
         let cp = this._colorPointers.length;
-        for (let i = 0; i < pathArray[0].length; i++) {
+        for (let i = 0; i < pathArrayCopy[0].length; i++) {
             let u = 0;
             for (let pi = 0; pi < pathArrayLength; pi++) {
                 const counter = previousCounters[pi] + this._vSegmentLengths[pi][i] / this._vTotalLengths[pi];
                 this._counters.push(counter);
-                this._uvs.push(u);
-                this._uvs.push(counter); // vl
-                previousCounters[pi] = counter;
+                this._uvs.push(u, counter); // counter = vl
                 this._colorPointers.push(cp);
 
-                const l = this._uSegmentLengths[i][pi] / this._uTotalLengths[i];
-                u += l;
+                previousCounters[pi] = counter;
+                u += this._uSegmentLengths[i][pi] / this._uTotalLengths[i];
             }
 
-            cp += 1;
+            cp++;
         }
 
-        for (let i = 0, c = 0; i < pathArray[0].length; i++) {
+        for (let i = 0, c = 0; i < pathArrayCopy[0].length; i++) {
             const wl = this._uSegmentLengths[i][0] / 2;
             const wu = this._uSegmentLengths[i][pathArrayLength - 1] / 2;
             this._ribbonWidths.push(((this._widths[c++] ?? 1) - 1) * wl);
@@ -247,9 +259,10 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
             this._ribbonWidths.push(((this._widths[c++] ?? 1) - 1) * wu);
         }
 
-        const slopes = GreasedLineRibbonPointsMode.POINTS_MODE_PATHS
-            ? new Array(pathArray[0].length * pathArray.length * 6).fill(0)
-            : GreasedLineRibbonMesh._CalculateSlopes(this._paths);
+        const slopes =
+            options.ribbonOptions?.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_PATHS
+                ? new Array(pathArrayCopy[0].length * pathArrayCopy.length * 6).fill(0)
+                : GreasedLineRibbonMesh._CalculateSlopes(pathArrayCopy);
         for (const s of slopes) {
             this._slopes.push(s);
         }
@@ -396,7 +409,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
     }
 
     protected _createVertexBuffers() {
-        super._createVertexBuffers();
+        super._createVertexBuffers(this._options.ribbonOptions?.computeNormals);
 
         console.log("vertices", this._vertexPositions);
         console.log("indices", this._indices);

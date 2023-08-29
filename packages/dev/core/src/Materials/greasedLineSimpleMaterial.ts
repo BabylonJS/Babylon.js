@@ -111,10 +111,6 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
             color: GreasedLineSimpleMaterial.DEFAULT_COLOR,
         };
 
-        if (!options.cameraFacing) {
-            this.backFaceCulling = false;
-        }
-
         this._engine = scene.getEngine();
         this.visibility = options.visibility ?? 1;
         this.useDash = options.useDash ?? false;

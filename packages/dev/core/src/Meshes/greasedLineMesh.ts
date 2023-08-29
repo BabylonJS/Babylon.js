@@ -68,15 +68,8 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
         });
     }
 
-    protected _updateWidths() {
-        let pointCount = 0;
-        for (const points of this._points) {
-            pointCount += points.length;
-        }
-        const countDiff = (pointCount / 3) * 2 - this._widths.length;
-        for (let i = 0; i < countDiff; i++) {
-            this._widths.push(1);
-        }
+    protected _updateWidths(): void {
+        super._updateWidthsWithValue(0);
     }
 
     protected _setPoints(points: number[][]) {

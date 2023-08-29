@@ -401,9 +401,6 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
         this._engine = this._scene.getEngine();
 
         this._cameraFacing = options.cameraFacing ?? true;
-        if (!this._cameraFacing) {
-            material.backFaceCulling = false;
-        }
 
         this.visibility = options.visibility ?? 1;
         this.useDash = options.useDash ?? false;

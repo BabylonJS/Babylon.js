@@ -12,7 +12,6 @@ import { GreasedLineTools } from "../../Misc/greasedLineTools";
 import type { GreasedLineMeshOptions } from "../greasedLineBaseMesh";
 import { GreasedLineRibbonPointsMode } from "../greasedLineBaseMesh";
 import { GreasedLineRibbonMesh } from "../greasedLineRibbonMesh";
-import { Vector3 } from "../../Maths/math.vector";
 
 /**
  * How are the colors distributed along the color table
@@ -151,10 +150,12 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     const allPoints = GreasedLineTools.ConvertPoints(options.points);
 
     options.widthDistribution = options.widthDistribution ?? GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START;
+
     if (options.ribbonOptions) {
         options.ribbonOptions.pointsMode = options.ribbonOptions.pointsMode ?? GreasedLineRibbonPointsMode.POINTS_MODE_POINTS;
-        options.ribbonOptions.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS &&
-            (options.ribbonOptions.direction = options.ribbonOptions.direction ?? Vector3.UpReadOnly);
+        if (options.ribbonOptions.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS && !options.ribbonOptions.direction) {
+            throw "In POINTS_MODE_POINTS you need to specify a direction.";
+        }
     }
 
     materialOptions = materialOptions ?? {

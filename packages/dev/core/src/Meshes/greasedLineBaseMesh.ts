@@ -14,7 +14,16 @@ export enum GreasedLineRibbonPointsMode {
     POINTS_MODE_PATHS = 1,
 }
 
-export type GreasedLineRibbonOptions =
+export type GreasedLineRibbonOptions = {
+    /**
+     * If true, normals will be computed when creating the vertex buffers
+     */
+    computeNormals?: boolean;
+    /**
+     * If true, creates double sided meshes. If false you can turn off backFaceCulling to have 'doubleSided' meshes.
+     */
+    doubleSided?: boolean;
+} & (
     | {
           /**
            * Defines how the points are processed.
@@ -36,7 +45,12 @@ export type GreasedLineRibbonOptions =
            * Every array of points is one path. These will be used to buuld one ribbon.
            */
           pointsMode: GreasedLineRibbonPointsMode.POINTS_MODE_PATHS;
-      };
+          /**
+           * If true, the path will be closed.
+           */
+          closePath?: boolean;
+      }
+);
 
 export type GreasedLinePoints = Vector3[] | Vector3[][] | Float32Array | Float32Array[] | number[][] | number[];
 
@@ -130,9 +144,20 @@ export abstract class GreasedLineBaseMesh extends Mesh {
         return "GreasedLineMesh";
     }
 
-    protected abstract _setPoints(points: number[][]): void;
-    protected abstract _updateWidths(): void;
+    protected abstract _setPoints(points: number[][], options?: GreasedLineMeshOptions): void;
     protected abstract _updateColorPointers(): void;
+    protected abstract _updateWidths(): void;
+
+    protected _updateWidthsWithValue(defaulValue: number) {
+        let pointCount = 0;
+        for (const points of this._points) {
+            pointCount += points.length;
+        }
+        const countDiff = (pointCount / 3) * 2 - this._widths.length;
+        for (let i = 0; i < countDiff; i++) {
+            this._widths.push(defaulValue);
+        }
+    }
 
     /**
      * Updated a lazy line. Rerenders the line and updates boundinfo as well.
@@ -142,7 +167,7 @@ export abstract class GreasedLineBaseMesh extends Mesh {
         if (!this._options.colorPointers) {
             this._updateColorPointers();
         }
-        this._createVertexBuffers();
+        this._createVertexBuffers(this._options.ribbonOptions?.computeNormals);
         this.refreshBoundingInfo();
 
         this.greasedLineMaterial?.updateLazy();
@@ -152,13 +177,13 @@ export abstract class GreasedLineBaseMesh extends Mesh {
      * Adds new points to the line. It doesn't rerenders the line if in lazy mode.
      * @param points points table
      */
-    public addPoints(points: number[][], _options?: GreasedLineMeshOptions) {
+    public addPoints(points: number[][], options?: GreasedLineMeshOptions) {
         for (const p of points) {
             this._points.push(p);
         }
 
         if (!this._lazy) {
-            this.setPoints(this._points);
+            this.setPoints(this._points, options);
         }
     }
 
@@ -260,11 +285,11 @@ export abstract class GreasedLineBaseMesh extends Mesh {
      * Sets line points and rerenders the line.
      * @param points points table
      */
-    public setPoints(points: number[][]) {
+    public setPoints(points: number[][], options?: GreasedLineMeshOptions) {
         this._points = points;
         this._updateWidths();
         this._updateColorPointers();
-        this._setPoints(points);
+        this._setPoints(points, options);
     }
 
     protected _initGreasedLine() {
