@@ -155,7 +155,8 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
 
         const v: number[] = [1, 0, numOfPaths];
         const doubleSided = options.ribbonOptions?.doubleSided ?? false;
-        const close = options.ribbonOptions?.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_PATHS && options.ribbonOptions.closePath;
+
+        const closePath = options.ribbonOptions?.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_PATHS && options.ribbonOptions.closePath;
         if (numOfPaths > 2) {
             for (let i = 0; i < path.length - 1; i++) {
                 v[0] = 1 + numOfPaths * i;
@@ -175,18 +176,6 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
                     }
                 }
             }
-            if (close) {
-                let lastIndice = numOfPaths * (path.length - 1);
-                for (let pi = 0; pi < numOfPaths - 1; pi++) {
-                    indices.push(pi + 1, pi, lastIndice);
-                    indices.push(pi + 1, lastIndice, lastIndice + 1);
-                    if (doubleSided) {
-                        indices.push(pi, pi + 1, lastIndice);
-                        indices.push(lastIndice, pi + 1, lastIndice + 1);
-                    }
-                    lastIndice++;
-                }
-            }
         } else {
             for (let i = 0; i < positions.length / 3 - 3; i += 2) {
                 indices.push(i, i + 1, i + 2);
@@ -195,6 +184,18 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
                     indices.push(i + 1, i, i + 2);
                     indices.push(i + 1, i + 2, i + 3);
                 }
+            }
+        }
+        if (closePath) {
+            let lastIndice = numOfPaths * (path.length - 1);
+            for (let pi = 0; pi < numOfPaths - 1; pi++) {
+                indices.push(lastIndice, pi + 1, pi);
+                indices.push(lastIndice + 1, pi + 1, lastIndice);
+                if (doubleSided) {
+                    indices.push(pi, pi + 1, lastIndice);
+                    indices.push(lastIndice, pi + 1, lastIndice + 1);
+                }
+                lastIndice++;
             }
         }
 
