@@ -42,7 +42,13 @@ export const RegisterNodePortDesign = (stateManager: StateManager) => {
                 break;
         }
 
-        if (!point.isConnected && point.value !== undefined && point.value !== null && point.value !== point.defaultValue) {
+        if (
+            !point.isConnected &&
+            point.value !== undefined &&
+            point.value !== null &&
+            point.value !== point.defaultValue &&
+            (!point.value.equals || !point.value.equals(point.defaultValue))
+        ) {
             pip.style.display = "";
         } else {
             pip.style.display = "none";

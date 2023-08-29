@@ -48,6 +48,7 @@ import { IntFloatConverterBlock } from "core/Meshes/Node/Blocks/intFloatConverte
 import { ConditionBlock, ConditionBlockTests } from "core/Meshes/Node/Blocks/conditionBlock";
 import { GeometryCollectionBlock } from "core/Meshes/Node/Blocks/geometryCollectionBlock";
 import { GeometryInfoBlock } from "core/Meshes/Node/Blocks/geometryInfoBlock";
+import { MappingBlock } from "core/Meshes/Node/Blocks/mappingBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
@@ -113,6 +114,8 @@ export class BlockTools {
                 block.test = ConditionBlockTests.And;
                 return block;
             }
+            case "MappingBlock":
+                return new MappingBlock("Mapping");
             case "SetMaterialIDBlock":
                 return new SetMaterialIDBlock("Set material ID");
             case "InstantiateOnVolumeBlock":
