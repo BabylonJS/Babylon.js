@@ -10,7 +10,7 @@ import { type Scene } from "core/scene";
 import { type Material } from "core/Materials/material";
 import { Tools } from "core/Misc/tools";
 import { type Nullable, type FloatArray } from "core/types";
-import { isNoopNode } from "serializers/glTF/2.0/glTFExporter";
+import { isNoopNode } from "serializers/shared/sharedMethods";
 import { type Node } from "core/node";
 
 /* Converted from https://github.com/mrdoob/three.js/blob/dev/examples/jsm/exporters/USDZExporter.js */
