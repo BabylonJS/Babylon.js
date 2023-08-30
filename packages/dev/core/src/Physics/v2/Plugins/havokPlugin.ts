@@ -1389,10 +1389,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             return;
         }
 
-        const pluginDataArray = constraint._pluginData ?? [];
+        constraint._pluginData = constraint._pluginData ?? [];
         const jointId = this._hknp.HP_Constraint_Create()[1];
-        pluginDataArray.push(jointId);
-        constraint._pluginData = pluginDataArray;
+        constraint._pluginData.push(jointId);
 
         // body parenting
         const bodyA = this._getPluginReference(body, instanceIndex).hpBodyId;
