@@ -44,7 +44,7 @@ export class FlowGraphSetPropertyBlock extends FlowGraphWithOnDoneExecutionBlock
         if (target && property && value) {
             this._setProperty(target, property, value);
         } else {
-            console.error("Invalid target, property or value.");
+            throw new Error("Invalid target, property or value.");
         }
 
         this.onDone._activateSignal(context);

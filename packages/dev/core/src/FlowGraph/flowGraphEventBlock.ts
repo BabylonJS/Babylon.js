@@ -7,9 +7,6 @@ import type { FlowGraphContext } from "./flowGraphContext";
  * its output signal when the event is triggered.
  */
 export abstract class FlowGraphEventBlock extends FlowGraphAsyncExecutionBlock {
-    constructor() {
-        super();
-    }
     /**
      * @internal
      */

@@ -23,20 +23,16 @@ export class FlowGraph {
 
     private _eventBlocks: FlowGraphEventBlock[] = [];
     private _sceneDisposeObserver: Nullable<Observer<Scene>>;
-    private _scene: Scene;
-    private _executionContexts: Array<FlowGraphContext> = [];
+    public readonly _scene: Scene;
+    private _executionContexts: FlowGraphContext[] = [];
 
     public constructor(params: FlowGraphParams) {
         this._scene = params.scene;
         this._sceneDisposeObserver = this._scene.onDisposeObservable.add(this.dispose.bind(this));
     }
 
-    public get scene() {
-        return this._scene;
-    }
-
     public createContext() {
-        const context = this.variableDefinitions.getContext();
+        const context = this.variableDefinitions.generateContext();
         context._setGraphVariable("scene", this._scene);
         this._executionContexts.push(context);
         return context;

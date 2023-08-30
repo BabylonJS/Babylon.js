@@ -39,7 +39,7 @@ export class FlowGraphContext {
     }
 
     private _getBlockPrefixedName(block: FlowGraphBlock, name: string): string {
-        return block.uniqueId + "_" + name;
+        return `${block.uniqueId}_${name}`;
     }
 
     /**

@@ -69,7 +69,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             throw new Error("Cannot play animation without target or animation");
         }
 
-        const contextAnims = (context._getExecutionVariable(this, "runningAnimatables") as Animatable[] | undefined) ?? [];
+        const contextAnims = (context._getExecutionVariable(this, "runningAnimatables") as Animatable[]) ?? [];
 
         const scene = context._getGraphVariable("scene") as Scene;
         const animatable = scene.beginDirectAnimation(

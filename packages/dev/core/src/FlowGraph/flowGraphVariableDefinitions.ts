@@ -11,7 +11,7 @@ export class FlowGraphVariableDefinitions {
         this._definitions.set(name, defaultValue);
     }
 
-    public getContext(): FlowGraphContext {
+    public generateContext(): FlowGraphContext {
         const context = new FlowGraphContext();
         this._definitions.forEach((value, key) => {
             context.setVariable(key, value);

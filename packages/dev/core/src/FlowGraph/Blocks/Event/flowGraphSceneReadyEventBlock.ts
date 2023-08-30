@@ -7,10 +7,6 @@ import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
  * Block that triggers when a scene is ready.
  */
 export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
-    public constructor() {
-        super();
-    }
-
     /**
      * @internal
      */
