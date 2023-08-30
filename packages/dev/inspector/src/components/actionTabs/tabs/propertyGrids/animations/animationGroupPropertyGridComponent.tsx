@@ -178,7 +178,12 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
                         directValue={this.state.currentFrame}
                         onInput={(value) => this.onCurrentFrameChange(value)}
                     />
-                    <CheckBoxLineComponent label="Blending" target={animationGroup} propertyName="enableBlending" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <CheckBoxLineComponent
+                        label="Blending"
+                        target={animationGroup}
+                        propertyName="enableBlending"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                     <SliderLineComponent
                         lockObject={this.props.lockObject}
                         label="Blending speed"
@@ -189,7 +194,12 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
                         propertyName="blendingSpeed"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                    <CheckBoxLineComponent label="Is additive" target={animationGroup} propertyName="isAdditive" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <CheckBoxLineComponent
+                        label="Is additive"
+                        target={animationGroup}
+                        propertyName="isAdditive"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="Weight"
