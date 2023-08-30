@@ -2,7 +2,7 @@ import { Matrix, Quaternion, TmpVectors, Vector3 } from "core/Maths/math.vector"
 import { InstancedMesh } from "core/Meshes/instancedMesh";
 import { Mesh } from "core/Meshes/mesh";
 import { TransformNode } from "core/Meshes/transformNode";
-import { type Node } from "core/node";
+import type { Node } from "core/node";
 import type {
     INode,
 } from "babylonjs-gltf2interface";
