@@ -27,7 +27,7 @@ export class FlowGraphTimerBlock extends FlowGraphAsyncExecutionBlock {
 
         if (currentTimeout !== undefined && currentTimeout >= 0) {
             const timers = context._getExecutionVariable(this, "runningTimers") || [];
-            const scene = context._getGraphVariable("scene") as Scene;
+            const scene = context.graphVariables.scene;
             const timer: AdvancedTimer = new AdvancedTimer({
                 timeout: currentTimeout,
                 contextObservable: scene.onBeforeRenderObservable,

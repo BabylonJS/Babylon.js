@@ -1,6 +1,10 @@
+import type { Scene } from "../scene";
 import type { FlowGraphAsyncExecutionBlock } from "./flowGraphAsyncExecutionBlock";
 import type { FlowGraphBlock } from "./flowGraphBlock";
 
+export interface IFlowGraphContextParams {
+    scene: Scene;
+}
 /**
  * @experimental
  * The context represents the current state of the flow graph.
@@ -20,11 +24,17 @@ export class FlowGraphContext {
     /**
      * These are the variables set by the graph.
      */
-    private _graphVariables: Map<string, any> = new Map();
+    private readonly _graphVariables: { readonly scene: Scene };
     /**
      * These are blocks that have currently pending tasks/listeners that need to be cleaned up.
      */
     private _pendingBlocks: FlowGraphAsyncExecutionBlock[] = [];
+
+    constructor(params: IFlowGraphContextParams) {
+        this._graphVariables = {
+            scene: params.scene,
+        };
+    }
 
     public hasVariable(name: string) {
         return this._userVariables.has(name);
@@ -69,17 +79,8 @@ export class FlowGraphContext {
      * @param name
      * @param value
      */
-    public _setGraphVariable(name: string, value: any) {
-        this._graphVariables.set(name, value);
-    }
-
-    /**
-     * @internal
-     * @param name
-     * @returns
-     */
-    public _getGraphVariable(name: string): any {
-        return this._graphVariables.get(name);
+    public get graphVariables() {
+        return this._graphVariables;
     }
 
     /**

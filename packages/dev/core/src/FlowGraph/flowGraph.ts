@@ -23,6 +23,9 @@ export class FlowGraph {
 
     private _eventBlocks: FlowGraphEventBlock[] = [];
     private _sceneDisposeObserver: Nullable<Observer<Scene>>;
+    /**
+     * @internal
+     */
     public readonly _scene: Scene;
     private _executionContexts: FlowGraphContext[] = [];
 
@@ -32,8 +35,7 @@ export class FlowGraph {
     }
 
     public createContext() {
-        const context = this.variableDefinitions.generateContext();
-        context._setGraphVariable("scene", this._scene);
+        const context = this.variableDefinitions.generateContext(this._scene);
         this._executionContexts.push(context);
         return context;
     }

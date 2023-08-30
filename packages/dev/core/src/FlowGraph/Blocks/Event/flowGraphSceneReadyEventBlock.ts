@@ -12,7 +12,7 @@ export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
      */
     public _preparePendingTasks(context: FlowGraphContext): void {
         if (!context._getExecutionVariable(this, "sceneReadyObserver")) {
-            const scene = context._getGraphVariable("scene") as Scene;
+            const scene = context.graphVariables.scene;
             const contextObserver = scene.onReadyObservable.add(() => {
                 this._execute(context);
             });
@@ -25,7 +25,7 @@ export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
      */
     public _cancelPendingTasks(context: FlowGraphContext) {
         const contextObserver = context._getExecutionVariable(this, "sceneReadyObserver");
-        const scene = context._getGraphVariable("scene") as Scene;
+        const scene = context.graphVariables.scene;
         scene.onReadyObservable.remove(contextObserver);
         context._deleteExecutionVariable(this, "sceneReadyObserver");
     }

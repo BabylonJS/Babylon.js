@@ -3,7 +3,6 @@ import type { Animatable, Animation, IAnimatable } from "../../../Animations";
 import { FlowGraphConnectionType } from "../../flowGraphConnection";
 import { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
-import type { Scene } from "../../../scene";
 import { FlowGraphAsyncExecutionBlock } from "../../flowGraphAsyncExecutionBlock";
 import { RichTypes } from "../../flowGraphRichTypes";
 
@@ -71,7 +70,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
 
         const contextAnims = (context._getExecutionVariable(this, "runningAnimatables") as Animatable[]) ?? [];
 
-        const scene = context._getGraphVariable("scene") as Scene;
+        const scene = context.graphVariables.scene;
         const animatable = scene.beginDirectAnimation(
             targetValue,
             [animationValue],
