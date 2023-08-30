@@ -1,0 +1,19 @@
+{
+    "extends": "../../../tsconfig.build.json",
+
+    "compilerOptions": {
+        "composite": true,
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "skipLibCheck": true,
+        "paths": {
+            "core/*": ["esm/core/src/*"],
+        }
+    },
+
+    "include": ["./src/**/*.ts", "./src/**/*.tsx"],
+    "exclude": [
+        "**/node_modules",
+        "**/dist",
+    ]
+}

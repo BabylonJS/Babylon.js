@@ -5,26 +5,22 @@ import type { Nullable } from "core/types";
 import type { IShaderProcessor } from "core/Engines/Processors/iShaderProcessor";
 import type { UniformBuffer } from "core/Materials/uniformBuffer";
 import { Observable } from "core/Misc/observable";
-import { GEQUAL, LEQUAL, TEXTUREFORMAT_RGBA, TEXTURETYPE_UNSIGNED_INT, TEXTURE_NEAREST_SAMPLINGMODE } from "./engine.constants";
+import { ALPHA_ADD, ALPHA_DISABLE, GEQUAL, LEQUAL, TEXTUREFORMAT_RGBA, TEXTURETYPE_UNSIGNED_INT, TEXTURE_NEAREST_SAMPLINGMODE } from "./engine.constants";
 import { PrecisionDate } from "core/Misc";
 import type { StorageBuffer } from "core/Buffers";
 import type { EngineOptions } from "core/Engines/thinEngine";
 import type { EngineCapabilities } from "core/Engines/engineCapabilities";
 import type { EngineFeatures } from "core/Engines/engineFeatures";
 import type { DepthCullingState } from "core/States/depthCullingState";
-import type { StencilStateComposer } from "core/States/stencilStateComposer";
-import type { StencilState } from "core/States/stencilState";
-import type { AlphaState } from "core/States/alphaCullingState";
+import { AlphaState } from "core/States/alphaCullingState";
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
-import type { IDrawContext } from "core/Engines/IDrawContext";
-import type { IMaterialContext } from "core/Engines/IMaterialContext";
 import type { IViewportLike } from "core/Maths/math.like";
 import type { ICanvas, ICanvasRenderingContext } from "core/Engines/ICanvas";
 import type { IFileRequest } from "core/Misc/fileRequest";
 import type { IRawTextureEngineExtension } from "./Extensions/engine.rawTexture";
 import type { Texture } from "core/Materials/Textures/texture";
 import { EngineType } from "./engine.interfaces";
-import { IsWindowObjectExist } from "./runtimeEnvironment";
+import { IsDocumentAvailable, IsWindowObjectExist } from "./runtimeEnvironment";
 import { PerformanceConfigurator } from "core/Engines/performanceConfigurator";
 
 const activeRequests: WeakMap<any, IFileRequest> = new WeakMap();
@@ -101,8 +97,9 @@ export interface IBaseEngineOptions {
 interface IBaseEnginePrivate {
     _useReverseDepthBuffer: boolean;
     _frameId: number;
-    _onContextLost: (evt: Event) => void;
-    _onContextRestored: (evt: Event) => void;
+    // Those can move out of the engine context and be standalone functions
+    // _onContextLost: (evt: Event) => void;
+    // _onContextRestored: (evt: Event) => void;
     _currentTextureChannel: number;
     _vertexAttribArraysEnabled: boolean[];
 
@@ -123,18 +120,19 @@ export interface IBaseEngineProtected {
     _renderingCanvas: Nullable<HTMLCanvasElement>;
     _windowIsBackground: boolean;
     _creationOptions: IBaseEngineOptions; // TODO?
-    _audioContext: Nullable<AudioContext>;
-    _audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>;
-    _highPrecisionShadersAllowed: boolean;
+    // _audioContext: Nullable<AudioContext>; // move out of the context of the engine
+    // _audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>;
+    _highPrecisionShadersAllowed: boolean; // part of options, can be removed?
     _isStencilEnable: boolean;
     _renderingQueueLaunched: boolean;
     _activeRenderLoops: Array<() => void>;
     _contextWasLost: boolean;
     _colorWrite: boolean;
     _colorWriteChanged: boolean;
-    _depthCullingState: DepthCullingState;
-    _stencilStateComposer: StencilStateComposer;
-    _stencilState: StencilState;
+    // TODO - the following can be taken out of the engine completely. be state objects
+    _depthCullingState: Nullable<DepthCullingState>;
+    // _stencilStateComposer: StencilStateComposer; // moved to the engine level
+    // _stencilState: StencilState; // moved to the engine level
     _activeChannel: number;
     _boundTexturesCache: { [key: string]: Nullable<InternalTexture> };
     _currentEffect: Nullable<Effect>;
@@ -159,14 +157,14 @@ export interface IBaseEngineInternals {
     _hardwareScalingLevel: number;
     _caps: EngineCapabilities; // TODO
     _features: EngineFeatures;
-    _videoTextureSupported: boolean;
+    // _videoTextureSupported: boolean;
     _alphaState: AlphaState;
     _alphaMode: number;
     _alphaEquation: number;
     _internalTexturesCache: Array<InternalTexture>;
     _renderTargetWrapperCache: Array<RenderTargetWrapper>;
-    _currentDrawContext: IDrawContext;
-    _currentMaterialContext: IMaterialContext;
+    // _currentDrawContext: IDrawContext;
+    // _currentMaterialContext: IMaterialContext;
     _currentRenderTarget: Nullable<RenderTargetWrapper>;
     _boundRenderFunction: Function;
     _frameHandler: number;
@@ -365,6 +363,7 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
     const engineState: BaseEngineStateFull = {
         // module: {},
         _uniqueId: engineCounter++,
+        _type: EngineType.BASE,
         description: "Babylon.js Base Engine",
         name: "Base",
         _version: 1,
@@ -388,11 +387,12 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
             }
 
             engineState._useReverseDepthBuffer = useReverse;
-
-            if (useReverse) {
-                engineState._depthCullingState.depthFunc = GEQUAL;
-            } else {
-                engineState._depthCullingState.depthFunc = LEQUAL;
+            if (engineState._depthCullingState) {
+                if (useReverse) {
+                    engineState._depthCullingState.depthFunc = GEQUAL;
+                } else {
+                    engineState._depthCullingState.depthFunc = LEQUAL;
+                }
             }
         },
         isNDCHalfZRange: false,
@@ -456,6 +456,32 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
         _renderWidthOverride: null,
         _creationOptions: options,
         _isStencilEnable: !!options.stencil,
+
+        // Missing vars
+        _shaderProcessor: null,
+        _renderingCanvas: null,
+        _caps: {} as EngineCapabilities,
+        _features: {} as EngineFeatures,
+        _alphaState: new AlphaState(),
+        _alphaMode: ALPHA_ADD,
+        _alphaEquation: ALPHA_DISABLE,
+        _currentRenderTarget: null,
+        _boundRenderFunction: () => void 0,
+        _frameHandler: -1,
+
+        _highPrecisionShadersAllowed: true, // part of options, can be removed?
+        _colorWrite: true,
+        _colorWriteChanged: true,
+        _depthCullingState: null,
+        _currentEffect: null,
+        _cachedViewport: null,
+        _workingCanvas: null,
+        _workingContext: null,
+        _shaderPlatformName: "",
+        _emptyTexture: null,
+        _emptyCubeTexture: null,
+        _emptyTexture3D: null,
+        _emptyTexture2DArray: null,
     };
 
     // TODO is getOwnPropertyDescriptors supported in native? if it doesn't we will need to use getOwnPropertyNames
@@ -466,6 +492,74 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
     // populateBaseModule(engineState);
 
     return engineState;
+}
+
+/**
+ * Resize the view according to the canvas' size
+ * @param engineState defines the engine state
+ * @param forceSetSize true to force setting the sizes of the underlying canvas
+ */
+export function resize(engineState: IBaseEnginePublic, forceSetSize = false): void {
+    let width: number;
+    let height: number;
+    const fes = engineState as BaseEngineState;
+
+    // Re-query hardware scaling level to handle zoomed-in resizing.
+    if (engineState.adaptToDeviceRatio) {
+        const devicePixelRatio = IsWindowObjectExist() ? window.devicePixelRatio || 1.0 : 1.0;
+        const changeRatio = fes._lastDevicePixelRatio / devicePixelRatio;
+        fes._lastDevicePixelRatio = devicePixelRatio;
+        fes._hardwareScalingLevel *= changeRatio;
+    }
+
+    if (IsWindowObjectExist() && IsDocumentAvailable()) {
+        // make sure it is a Node object, and is a part of the document.
+        if (fes._renderingCanvas) {
+            const boundingRect = fes._renderingCanvas.getBoundingClientRect
+                ? fes._renderingCanvas.getBoundingClientRect()
+                : {
+                      // fallback to last solution in case the function doesn't exist
+                      width: fes._renderingCanvas.width * fes._hardwareScalingLevel,
+                      height: fes._renderingCanvas.height * fes._hardwareScalingLevel,
+                  };
+            width = fes._renderingCanvas.clientWidth || boundingRect.width || fes._renderingCanvas.width || 100;
+            height = fes._renderingCanvas.clientHeight || boundingRect.height || fes._renderingCanvas.height || 100;
+        } else {
+            width = window.innerWidth;
+            height = window.innerHeight;
+        }
+    } else {
+        width = fes._renderingCanvas ? fes._renderingCanvas.width : 100;
+        height = fes._renderingCanvas ? fes._renderingCanvas.height : 100;
+    }
+
+    setSize(engineState, width / fes._hardwareScalingLevel, height / fes._hardwareScalingLevel, forceSetSize);
+}
+
+/**
+ * Force a specific size of the canvas
+ * @param width defines the new canvas' width
+ * @param height defines the new canvas' height
+ * @param forceSetSize true to force setting the sizes of the underlying canvas
+ * @returns true if the size was changed
+ */
+export function setSize(engineState: IBaseEnginePublic, width: number, height: number, forceSetSize = false): boolean {
+    const fes = engineState as BaseEngineState;
+    if (!fes._renderingCanvas) {
+        return false;
+    }
+
+    width = width | 0;
+    height = height | 0;
+
+    if (!forceSetSize && fes._renderingCanvas.width === width && fes._renderingCanvas.height === height) {
+        return false;
+    }
+
+    fes._renderingCanvas.width = width;
+    fes._renderingCanvas.height = height;
+
+    return true;
 }
 
 function _rebuildInternalTextures(engineState: IBaseEnginePublic): void {

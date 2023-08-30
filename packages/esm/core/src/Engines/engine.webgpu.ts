@@ -6,6 +6,8 @@ import { WebGPUShaderProcessorGLSL } from "core/Engines/WebGPU/webgpuShaderProce
 import type { IBaseEngineProtected, IBaseEnginePublic, IBaseEngineInternals } from "./engine.base";
 import { initBaseEngineState } from "./engine.base";
 import type { WebGPUSnapshotRendering } from "core/Engines/WebGPU/webgpuSnapshotRendering";
+import type { IDrawContext } from "core/Engines/IDrawContext";
+import type { IMaterialContext } from "core/Engines/IMaterialContext";
 
 interface IWebGPUEnginePrivate {
     _shaderProcessorWGSL: Nullable<IShaderProcessor>;
@@ -14,7 +16,10 @@ interface IWebGPUEnginePrivate {
 
 export interface IWebGPUEngineProtected extends IBaseEngineProtected {}
 
-export interface IWebGPUEngineInternals extends IBaseEngineInternals {}
+export interface IWebGPUEngineInternals extends IBaseEngineInternals {
+    _currentDrawContext: IDrawContext;
+    _currentMaterialContext: IMaterialContext;
+}
 
 export interface IWebGPUEnginePublic extends IBaseEnginePublic {
     snapshotRendering: boolean;
