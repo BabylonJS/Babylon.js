@@ -1,4 +1,4 @@
-import type { IPhysicsCollisionEvent, IPhysicsEnginePluginV2, PhysicsMassProperties, PhysicsMotionType } from "./IPhysicsEnginePlugin";
+import type { IBasePhysicsCollisionEvent, IPhysicsCollisionEvent, IPhysicsEnginePluginV2, PhysicsMassProperties, PhysicsMotionType } from "./IPhysicsEnginePlugin";
 import type { PhysicsShape } from "./physicsShape";
 import { Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector";
 import type { Scene } from "../../scene";
@@ -434,7 +434,7 @@ export class PhysicsBody {
      * Returns an observable that will be notified when the body has finished colliding with another body
      * @returns
      */
-    public getCollisionEndedObservable(): Observable<IPhysicsCollisionEvent> {
+    public getCollisionEndedObservable(): Observable<IBasePhysicsCollisionEvent> {
         return this._physicsPlugin.getCollisionEndedObservable(this);
     }
 
