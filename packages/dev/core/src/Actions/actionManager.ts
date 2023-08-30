@@ -147,7 +147,7 @@ export class ActionManager extends AbstractActionManager {
      * Releases all associated resources
      */
     public dispose(): void {
-        const index = this._scene.actionManagers.indexOf(this);
+        const sceneIndex = this._scene.actionManagers.indexOf(this);
 
         for (let i = 0; i < this.actions.length; i++) {
             const action = this.actions[i];
@@ -157,8 +157,15 @@ export class ActionManager extends AbstractActionManager {
             }
         }
 
-        if (index > -1) {
-            this._scene.actionManagers.splice(index, 1);
+        this.actions.length = 0;
+
+        if (sceneIndex > -1) {
+            this._scene.actionManagers.splice(sceneIndex, 1);
+        }
+
+        const ownerMesh = this._scene.meshes.find((m) => m.actionManager === this);
+        if (ownerMesh) {
+            ownerMesh.actionManager = null;
         }
     }
 

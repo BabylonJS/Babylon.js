@@ -5,7 +5,7 @@ import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnection
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { Scene } from "../../../scene";
-import { editableInPropertyPage, PropertyTypeForEdition } from "../nodeMaterialDecorator";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
 
 /**
  * Block used to clamp a float
@@ -59,15 +59,15 @@ export class ClampBlock extends NodeMaterialBlock {
         const output = this._outputs[0];
 
         state.compilationString +=
-            this._declareOutput(output, state) + ` = clamp(${this.value.associatedVariableName}, ${this._writeFloat(this.minimum)}, ${this._writeFloat(this.maximum)});\r\n`;
+            this._declareOutput(output, state) + ` = clamp(${this.value.associatedVariableName}, ${this._writeFloat(this.minimum)}, ${this._writeFloat(this.maximum)});\n`;
 
         return this;
     }
 
     protected _dumpPropertiesCode() {
-        let codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.minimum = ${this.minimum};\r\n`;
+        let codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.minimum = ${this.minimum};\n`;
 
-        codeString += `${this._codeVariableName}.maximum = ${this.maximum};\r\n`;
+        codeString += `${this._codeVariableName}.maximum = ${this.maximum};\n`;
 
         return codeString;
     }

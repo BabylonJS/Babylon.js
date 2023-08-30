@@ -12,7 +12,7 @@ import type { Nullable } from "../../../../types";
 import type { BaseTexture } from "../../../Textures/baseTexture";
 import type { Mesh } from "../../../../Meshes/mesh";
 import type { Effect } from "../../../effect";
-import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import type { Scene } from "../../../../scene";
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { CubeTexture } from "../../../Textures/cubeTexture";
@@ -290,11 +290,11 @@ export class RefractionBlock extends NodeMaterialBlock {
 
         this._define3DName = state._getFreeDefineName("SS_REFRACTIONMAP_3D");
 
-        state._samplerDeclaration += `#ifdef ${this._define3DName}\r\n`;
-        state._samplerDeclaration += `uniform samplerCube ${this._cubeSamplerName};\r\n`;
-        state._samplerDeclaration += `#else\r\n`;
-        state._samplerDeclaration += `uniform sampler2D ${this._2DSamplerName};\r\n`;
-        state._samplerDeclaration += `#endif\r\n`;
+        state._samplerDeclaration += `#ifdef ${this._define3DName}\n`;
+        state._samplerDeclaration += `uniform samplerCube ${this._cubeSamplerName};\n`;
+        state._samplerDeclaration += `#else\n`;
+        state._samplerDeclaration += `uniform sampler2D ${this._2DSamplerName};\n`;
+        state._samplerDeclaration += `#endif\n`;
 
         // Fragment
         state.sharedData.blocksWithDefines.push(this);
@@ -315,7 +315,7 @@ export class RefractionBlock extends NodeMaterialBlock {
                 #define sampleRefraction(s, c) textureCube(s, c)
             #else
                 #define sampleRefraction(s, c) texture2D(s, c)
-            #endif\r\n`,
+            #endif\n`,
             `//${this.name}`
         );
 
@@ -326,7 +326,7 @@ export class RefractionBlock extends NodeMaterialBlock {
                 #define sampleRefractionLod(s, c, l) textureCubeLodEXT(s, c, l)
             #else
                 #define sampleRefractionLod(s, c, l) texture2DLodEXT(s, c, l)
-            #endif\r\n`,
+            #endif\n`,
             `//${this.name}`
         );
 
@@ -359,16 +359,16 @@ export class RefractionBlock extends NodeMaterialBlock {
 
         if (this.texture) {
             if (this.texture.isCube) {
-                codeString = `${this._codeVariableName}.texture = new BABYLON.CubeTexture("${this.texture.name}");\r\n`;
+                codeString = `${this._codeVariableName}.texture = new BABYLON.CubeTexture("${this.texture.name}");\n`;
             } else {
-                codeString = `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}");\r\n`;
+                codeString = `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}");\n`;
             }
-            codeString += `${this._codeVariableName}.texture.coordinatesMode = ${this.texture.coordinatesMode};\r\n`;
+            codeString += `${this._codeVariableName}.texture.coordinatesMode = ${this.texture.coordinatesMode};\n`;
         }
 
-        codeString += `${this._codeVariableName}.linkRefractionWithTransparency = ${this.linkRefractionWithTransparency};\r\n`;
-        codeString += `${this._codeVariableName}.invertRefractionY = ${this.invertRefractionY};\r\n`;
-        codeString += `${this._codeVariableName}.useThicknessAsDepth = ${this.useThicknessAsDepth};\r\n`;
+        codeString += `${this._codeVariableName}.linkRefractionWithTransparency = ${this.linkRefractionWithTransparency};\n`;
+        codeString += `${this._codeVariableName}.invertRefractionY = ${this.invertRefractionY};\n`;
+        codeString += `${this._codeVariableName}.useThicknessAsDepth = ${this.useThicknessAsDepth};\n`;
 
         return codeString;
     }

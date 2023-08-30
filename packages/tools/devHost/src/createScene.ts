@@ -2,6 +2,7 @@
 import { canvas, engine } from "./index";
 import "@dev/loaders";
 import "@tools/node-editor";
+import "@tools/node-geometry-editor";
 import * as GUIEditor from "@tools/gui-editor";
 import { Inspector, InjectGUIEditor } from "@dev/inspector";
 import type { ArcRotateCamera } from "@dev/core";

@@ -1,5 +1,7 @@
+import type { Color4 } from "../../Maths/math.color";
 import { Path2 } from "../../Maths/math.path";
 import { Vector3 } from "../../Maths/math.vector";
+import type { Vector4 } from "../../Maths/math.vector";
 import type { Scene } from "../../scene";
 import type { Nullable } from "../../types";
 import { Mesh } from "../mesh";
@@ -240,6 +242,10 @@ export function CreateText(
         resolution?: number;
         depth?: number;
         sideOrientation?: number;
+        faceUV?: Vector4[];
+        faceColors?: Color4[];
+        perLetterFaceUV?: (letterIndex: number) => Vector4[];
+        perLetterFaceColors?: (letterIndex: number) => Color4[];
     } = {
         size: 50,
         resolution: 8,
@@ -253,6 +259,7 @@ export function CreateText(
 
     // And extrude them
     const meshes: Mesh[] = [];
+    let letterIndex = 0;
     for (const shapePath of shapePaths) {
         if (!shapePath.paths.length) {
             continue;
@@ -313,12 +320,15 @@ export function CreateText(
                     shape: shapeVectors,
                     holes: holeVectors.length ? holeVectors : undefined,
                     depth: options.depth || 1.0,
+                    faceUV: options.faceUV || options.perLetterFaceUV?.(letterIndex),
+                    faceColors: options.faceColors || options.perLetterFaceColors?.(letterIndex),
                     sideOrientation: Mesh._GetDefaultSideOrientation(options.sideOrientation || Mesh.DOUBLESIDE),
                 },
                 scene,
                 earcutInjection
             );
             meshes.push(mesh);
+            letterIndex++;
         }
     }
 

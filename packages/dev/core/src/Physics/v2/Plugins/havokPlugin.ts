@@ -6,8 +6,9 @@ import {
     PhysicsConstraintMotorType,
     PhysicsConstraintAxis,
     PhysicsConstraintAxisLimitMode,
+    PhysicsEventType,
 } from "../IPhysicsEnginePlugin";
-import type { PhysicsShapeParameters, IPhysicsEnginePluginV2, PhysicsMassProperties, IPhysicsCollisionEvent } from "../IPhysicsEnginePlugin";
+import type { PhysicsShapeParameters, IPhysicsEnginePluginV2, PhysicsMassProperties, IPhysicsCollisionEvent, IBasePhysicsCollisionEvent } from "../IPhysicsEnginePlugin";
 import type { IRaycastQuery, PhysicsRaycastResult } from "../../physicsRaycastResult";
 import { Logger } from "../../../Misc/logger";
 import type { PhysicsBody } from "../physicsBody";
@@ -217,10 +218,10 @@ class ContactPoint {
 }
 
 class CollisionEvent {
-    //public eventType: number = 0; //0,1
     public contactOnA: ContactPoint = new ContactPoint(); //1
     public contactOnB: ContactPoint = new ContactPoint();
     public impulseApplied: number = 0;
+    public type: number = 0;
 
     static readToRef(buffer: any, offset: number, eventOut: CollisionEvent) {
         const intBuf = new Int32Array(buffer, offset);
@@ -234,6 +235,20 @@ class CollisionEvent {
         eventOut.contactOnB.position.set(floatBuf[offB + 8], floatBuf[offB + 9], floatBuf[offB + 10]);
         eventOut.contactOnB.normal.set(floatBuf[offB + 11], floatBuf[offB + 12], floatBuf[offB + 13]);
         eventOut.impulseApplied = floatBuf[offB + 13 + 3];
+        eventOut.type = intBuf[0];
+    }
+}
+
+class TriggerEvent {
+    public bodyIdA: bigint = BigInt(0);
+    public bodyIdB: bigint = BigInt(0);
+    public type: number = 0;
+
+    static readToRef(buffer: any, offset: number, eventOut: TriggerEvent) {
+        const intBuf = new Int32Array(buffer, offset);
+        eventOut.type = intBuf[0];
+        eventOut.bodyIdA = BigInt(intBuf[2]);
+        eventOut.bodyIdB = BigInt(intBuf[6]);
     }
 }
 
@@ -264,9 +279,17 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     private _bodyBuffer: number;
     private _bodyCollisionObservable = new Map<bigint, Observable<IPhysicsCollisionEvent>>();
     /**
-     *
+     * Observable for collision started and collision continued events
      */
     public onCollisionObservable = new Observable<IPhysicsCollisionEvent>();
+    /**
+     * Observable for collision ended events
+     */
+    public onCollisionEndedObservable = new Observable<IBasePhysicsCollisionEvent>();
+    /**
+     * Observable for trigger entered and trigger exited events
+     */
+    public onTriggerCollisionObservable = new Observable<IBasePhysicsCollisionEvent>();
 
     public constructor(private _useDeltaForWorldStep: boolean = true, hpInjection: any = HK) {
         if (typeof hpInjection === "function") {
@@ -348,6 +371,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         }
 
         this._notifyCollisions();
+        this._notifyTriggers();
     }
 
     /**
@@ -1010,6 +1034,23 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     }
 
     /**
+     * Set the target transformation (position and rotation) of the body, such that the body will set its velocity to reach that target
+     * @param body The physics body to set the target transformation for.
+     * @param position The target position
+     * @param rotation The target rotation
+     * @param instanceIndex The index of the instance in an instanced body
+     */
+    public setTargetTransform(body: PhysicsBody, position: Vector3, rotation: Quaternion, instanceIndex?: number | undefined): void {
+        this._applyToBodyOrInstances(
+            body,
+            (pluginRef) => {
+                this._hknp.HP_Body_SetTargetQTransform(pluginRef.hpBodyId, [this._bVecToV3(position), this._bQuatToV4(rotation)]);
+            },
+            instanceIndex
+        );
+    }
+
+    /**
      * Sets the gravity factor of a body
      * @param body the physics body to set the gravity factor for
      * @param factor the gravity factor
@@ -1257,6 +1298,15 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      */
     public getNumChildren(shape: PhysicsShape): number {
         return this._hknp.HP_Shape_GetNumChildren(shape._pluginData)[1];
+    }
+
+    /**
+     * Marks the shape as a trigger
+     * @param shape the shape to mark as a trigger
+     * @param isTrigger if the shape is a trigger
+     */
+    public setTrigger(shape: PhysicsShape, isTrigger: boolean): void {
+        this._hknp.HP_Shape_SetTrigger(shape._pluginData, isTrigger);
     }
 
     /**
@@ -1732,6 +1782,28 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         }
     }
 
+    private _notifyTriggers() {
+        let eventAddress = this._hknp.HP_World_GetTriggerEvents(this.world)[1];
+        const event = new TriggerEvent();
+        while (eventAddress) {
+            TriggerEvent.readToRef(this._hknp.HEAPU8.buffer, eventAddress, event);
+
+            const bodyInfoA = this._bodies.get(event.bodyIdA)!;
+            const bodyInfoB = this._bodies.get(event.bodyIdB)!;
+
+            const triggerCollisionInfo: IBasePhysicsCollisionEvent = {
+                collider: bodyInfoA.body,
+                colliderIndex: bodyInfoA.index,
+                collidedAgainst: bodyInfoB.body,
+                collidedAgainstIndex: bodyInfoB.index,
+                type: this._nativeTriggerCollisionValueToCollisionType(event.type),
+            };
+            this.onTriggerCollisionObservable.notifyObservers(triggerCollisionInfo);
+
+            eventAddress = this._hknp.HP_World_GetNextTriggerEvent(this.world, eventAddress);
+        }
+    }
+
     /**
      * Runs thru all detected collisions and filter by body
      */
@@ -1741,23 +1813,28 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         const worldAddr = Number(this.world);
         while (eventAddress) {
             CollisionEvent.readToRef(this._hknp.HEAPU8.buffer, eventAddress, event);
-            event.contactOnB.position.subtractToRef(event.contactOnA.position, this._tmpVec3[0]);
-            const distance = Vector3.Dot(this._tmpVec3[0], event.contactOnA.normal);
             const bodyInfoA = this._bodies.get(event.contactOnA.bodyId)!;
             const bodyInfoB = this._bodies.get(event.contactOnB.bodyId)!;
-            const collisionInfo = {
+            const collisionInfo: any = {
                 collider: bodyInfoA.body,
                 colliderIndex: bodyInfoA.index,
                 collidedAgainst: bodyInfoB.body,
                 collidedAgainstIndex: bodyInfoB.index,
-                point: event.contactOnA.position,
-                distance: distance,
-                impulse: event.impulseApplied,
-                normal: event.contactOnA.normal,
+                type: this._nativeCollisionValueToCollisionType(event.type),
             };
-            this.onCollisionObservable.notifyObservers(collisionInfo);
+            if (collisionInfo.type === PhysicsEventType.COLLISION_FINISHED) {
+                this.onCollisionEndedObservable.notifyObservers(collisionInfo);
+            } else {
+                event.contactOnB.position.subtractToRef(event.contactOnA.position, this._tmpVec3[0]);
+                const distance = Vector3.Dot(this._tmpVec3[0], event.contactOnA.normal);
+                collisionInfo.point = event.contactOnA.position;
+                collisionInfo.distance = distance;
+                collisionInfo.impulse = event.impulseApplied;
+                collisionInfo.normal = event.contactOnA.normal;
+                this.onCollisionObservable.notifyObservers(collisionInfo);
+            }
 
-            if (this._bodyCollisionObservable.size) {
+            if (this._bodyCollisionObservable.size && collisionInfo.type !== PhysicsEventType.COLLISION_FINISHED) {
                 const observableA = this._bodyCollisionObservable.get(event.contactOnA.bodyId);
                 const observableB = this._bodyCollisionObservable.get(event.contactOnB.bodyId);
 
@@ -1884,5 +1961,28 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             case PhysicsConstraintAxisLimitMode.LOCKED:
                 return this._hknp.ConstraintAxisLimitMode.LOCKED;
         }
+    }
+
+    private _nativeCollisionValueToCollisionType(type: number): PhysicsEventType {
+        switch (type) {
+            case this._hknp.EventType.COLLISION_STARTED.value:
+                return PhysicsEventType.COLLISION_STARTED;
+            case this._hknp.EventType.COLLISION_FINISHED.value:
+                return PhysicsEventType.COLLISION_FINISHED;
+            case this._hknp.EventType.COLLISION_CONTINUED.value:
+                return PhysicsEventType.COLLISION_CONTINUED;
+        }
+
+        return PhysicsEventType.COLLISION_STARTED;
+    }
+
+    private _nativeTriggerCollisionValueToCollisionType(type: number): PhysicsEventType {
+        switch (type) {
+            case 8:
+                return PhysicsEventType.TRIGGER_ENTERED;
+            case 16:
+                return PhysicsEventType.TRIGGER_EXITED;
+        }
+        return PhysicsEventType.TRIGGER_ENTERED;
     }
 }

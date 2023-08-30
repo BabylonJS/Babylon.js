@@ -1,3 +1,4 @@
+import type { GraphCanvasComponent } from "./graphCanvas";
 import type { GraphNode } from "./graphNode";
 import type { NodeLink } from "./nodeLink";
 import type { FramePortData } from "./types/framePortData";
@@ -10,7 +11,7 @@ export const IsFramePortData = (variableToCheck: any): variableToCheck is FrameP
     }
 };
 
-export const RefreshNode = (node: GraphNode, visitedNodes?: Set<GraphNode>, visitedLinks?: Set<NodeLink>) => {
+export const RefreshNode = (node: GraphNode, visitedNodes?: Set<GraphNode>, visitedLinks?: Set<NodeLink>, canvas?: GraphCanvasComponent) => {
     node.refresh();
 
     const links = node.links;
@@ -31,6 +32,20 @@ export const RefreshNode = (node: GraphNode, visitedNodes?: Set<GraphNode>, visi
                 RefreshNode(nodeB, visitedNodes, visitedLinks);
             }
         });
+    }
+
+    // Invisible endpoints (for teleport nodes)
+    const invisibleEndpoints = node.content.invisibleEndpoints;
+    if (invisibleEndpoints && invisibleEndpoints.length) {
+        for (const endpoint of invisibleEndpoints) {
+            const graphNode = canvas?.findNodeFromData(endpoint);
+            if (graphNode) {
+                if (visitedNodes) {
+                    visitedNodes.add(graphNode);
+                }
+                RefreshNode(graphNode, visitedNodes, visitedLinks);
+            }
+        }
     }
 
     if (!visitedLinks) {

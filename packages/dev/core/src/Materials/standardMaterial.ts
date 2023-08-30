@@ -1385,6 +1385,8 @@ export class StandardMaterial extends PushMaterial {
 
             const uniformBuffers = ["Material", "Scene", "Mesh"];
 
+            const indexParameters = { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS };
+
             this._eventInfo.fallbacks = fallbacks;
             this._eventInfo.fallbackRank = 0;
             this._eventInfo.defines = defines;
@@ -1394,6 +1396,7 @@ export class StandardMaterial extends PushMaterial {
             this._eventInfo.uniformBuffersNames = uniformBuffers;
             this._eventInfo.customCode = undefined;
             this._eventInfo.mesh = mesh;
+            this._eventInfo.indexParameters = indexParameters;
             this._callbackPluginEventGeneric(MaterialPluginEvent.PrepareEffect, this._eventInfo);
 
             PrePassConfiguration.AddUniforms(uniforms);
@@ -1434,7 +1437,7 @@ export class StandardMaterial extends PushMaterial {
                     fallbacks: fallbacks,
                     onCompiled: this.onCompiled,
                     onError: this.onError,
-                    indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS },
+                    indexParameters,
                     processFinalCode: csnrOptions.processFinalCode,
                     processCodeAfterIncludes: this._eventInfo.customCode,
                     multiTarget: defines.PREPASS,

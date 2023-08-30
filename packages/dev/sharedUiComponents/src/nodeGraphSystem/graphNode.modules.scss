@@ -14,6 +14,15 @@
     box-shadow: 7px 6px 2px rgba(0, 0, 0, 0.2);
 }
 
+.highlighted {
+    @keyframes glow {
+        to {
+            border-color: white;
+        }
+    }
+    animation: glow 0.5s infinite alternate;
+}
+
 .header-container {
     grid-row: 1;
     grid-column: 1;
@@ -80,6 +89,20 @@ $iconMargin: 6px;
     opacity: 0.8;
     display: grid;
     align-items: flex-end;
+    pointer-events: none;
+}
+
+.executionTime {
+    position: absolute;
+    bottom: 1px;
+    width: 195px;
+    height: 20px;
+    overflow: hidden;
+    font-size: 11px;
+    opacity: 0.5;
+    display: grid;
+    align-items: flex-end;
+    justify-content: end;
     pointer-events: none;
 }
 

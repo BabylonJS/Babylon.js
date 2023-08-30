@@ -1281,6 +1281,18 @@ export class Engine extends ThinEngine {
         }
     }
 
+    protected _cancelFrame() {
+        if (this._renderingQueueLaunched && this.customAnimationFrameRequester) {
+            this._renderingQueueLaunched = false;
+            const { cancelAnimationFrame } = this.customAnimationFrameRequester;
+            if (cancelAnimationFrame) {
+                cancelAnimationFrame(this.customAnimationFrameRequester.requestID);
+            }
+        } else {
+            super._cancelFrame();
+        }
+    }
+
     public _renderLoop(): void {
         if (!this._contextWasLost) {
             let shouldRender = true;

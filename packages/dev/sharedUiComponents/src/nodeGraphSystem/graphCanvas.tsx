@@ -366,7 +366,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         // Reconnect
         this.automaticRewire(inputs, availableNodeInputs, true);
         this.automaticRewire(availableNodeOutputs, outputs, true);
-        this.props.stateManager.onRebuildRequiredObservable.notifyObservers(false);
+        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
     }
 
     smartAddOverNode(node: GraphNode, source: GraphNode) {
@@ -381,7 +381,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
 
         // Reconnect
         this.automaticRewire(inputs, availableNodeInputs, true);
-        this.props.stateManager.onRebuildRequiredObservable.notifyObservers(false);
+        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
     }
 
     deleteSelection(onRemove: (nodeData: INodeData) => void, autoReconnect = false) {
@@ -437,7 +437,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this.automaticRewire(inputs, outputs);
 
         this.props.stateManager.onSelectionChangedObservable.notifyObservers(null);
-        this.props.stateManager.onRebuildRequiredObservable.notifyObservers(false);
+        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
     }
 
     handleKeyDown(
@@ -1364,7 +1364,9 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
             link.onDisposedObservable.clear();
         });
 
-        this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
+        if (!nodeB.content.isConnectedToOutput || nodeB.content.isConnectedToOutput()) {
+            this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+        }
     }
 
     connectNodes(nodeA: GraphNode, pointA: IPortData, nodeB: GraphNode, pointB: IPortData) {
@@ -1377,7 +1379,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         const visitedNodes = new Set<GraphNode>([nodeA]);
         const visitedLinks = new Set<NodeLink>([nodeB.links[nodeB.links.length - 1]]);
 
-        RefreshNode(nodeB, visitedNodes, visitedLinks);
+        RefreshNode(nodeB, visitedNodes, visitedLinks, this);
     }
 
     drop(newNode: GraphNode, targetX: number, targetY: number, offsetX: number, offsetY: number) {

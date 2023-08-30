@@ -221,7 +221,18 @@ export class PointsCloudSystem implements IDisposable {
         return new Color4(redForCoord / 255, greenForCoord / 255, blueForCoord / 255, alphaForCoord);
     }
 
-    private _setPointsColorOrUV(mesh: Mesh, pointsGroup: PointsGroup, isVolume: boolean, colorFromTexture?: boolean, hasTexture?: boolean, color?: Color4, range?: number) {
+    private _setPointsColorOrUV(
+        mesh: Mesh,
+        pointsGroup: PointsGroup,
+        isVolume: boolean,
+        colorFromTexture?: boolean,
+        hasTexture?: boolean,
+        color?: Color4,
+        range?: number,
+        uvSetIndex?: number
+    ): void {
+        uvSetIndex = uvSetIndex ?? 0;
+
         if (isVolume) {
             mesh.updateFacetData();
         }
@@ -231,7 +242,7 @@ export class PointsCloudSystem implements IDisposable {
 
         let meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
         const meshInd = <IndicesArray>mesh.getIndices();
-        const meshUV = <FloatArray>mesh.getVerticesData(VertexBuffer.UVKind);
+        const meshUV = <FloatArray>mesh.getVerticesData(VertexBuffer.UVKind + (uvSetIndex ? uvSetIndex + 1 : ""));
         const meshCol = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
 
         const place = Vector3.Zero();
@@ -508,7 +519,7 @@ export class PointsCloudSystem implements IDisposable {
                     const finalize = () => {
                         pointsGroup._groupImgWidth = textureList[n].getSize().width;
                         pointsGroup._groupImgHeight = textureList[n].getSize().height;
-                        this._setPointsColorOrUV(clone, pointsGroup, isVolume, true, true);
+                        this._setPointsColorOrUV(clone, pointsGroup, isVolume, true, true, undefined, undefined, textureList[n].coordinatesIndex);
                         clone.dispose();
                         resolve();
                     };

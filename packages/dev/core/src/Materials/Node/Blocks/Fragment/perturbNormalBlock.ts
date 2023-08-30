@@ -11,7 +11,7 @@ import type { Mesh } from "../../../../Meshes/mesh";
 import { InputBlock } from "../Input/inputBlock";
 import type { Effect } from "../../../effect";
 import type { Scene } from "../../../../scene";
-import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import type { TextureBlock } from "../Dual/textureBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { TBNBlock } from "./TBNBlock";
@@ -257,8 +257,8 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
         const replaceForBumpInfos =
             this.strength.isConnectedToInputBlock && this.strength.connectInputBlock!.isConstant
-                ? `\r\n#if !defined(NORMALXYSCALE)\r\n1.0/\r\n#endif\r\n${state._emitFloat(this.strength.connectInputBlock!.value)}`
-                : `\r\n#if !defined(NORMALXYSCALE)\r\n1.0/\r\n#endif\r\n${this.strength.associatedVariableName}`;
+                ? `\n#if !defined(NORMALXYSCALE)\n1.0/\n#endif\n${state._emitFloat(this.strength.connectInputBlock!.value)}`
+                : `\n#if !defined(NORMALXYSCALE)\n1.0/\n#endif\n${this.strength.associatedVariableName}`;
 
         state._emitExtension("derivatives", "#extension GL_OES_standard_derivatives : enable");
 
@@ -274,10 +274,10 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
             #endif
             `;
         } else if (worldTangent.isConnected) {
-            state.compilationString += `vec3 tbnNormal = normalize(${worldNormal.associatedVariableName}.xyz);\r\n`;
-            state.compilationString += `vec3 tbnTangent = normalize(${worldTangent.associatedVariableName}.xyz);\r\n`;
-            state.compilationString += `vec3 tbnBitangent = cross(tbnNormal, tbnTangent) * ${this._tangentCorrectionFactorName};\r\n`;
-            state.compilationString += `mat3 vTBN = mat3(tbnTangent, tbnBitangent, tbnNormal);\r\n`;
+            state.compilationString += `vec3 tbnNormal = normalize(${worldNormal.associatedVariableName}.xyz);\n`;
+            state.compilationString += `vec3 tbnTangent = normalize(${worldTangent.associatedVariableName}.xyz);\n`;
+            state.compilationString += `vec3 tbnBitangent = cross(tbnNormal, tbnTangent) * ${this._tangentCorrectionFactorName};\n`;
+            state.compilationString += `mat3 vTBN = mat3(tbnTangent, tbnBitangent, tbnNormal);\n`;
         }
 
         state._emitFunctionFromInclude("bumpFragmentMainFunctions", comments, {
@@ -290,7 +290,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
                 { search: /uniform sampler2D bumpSampler;/g, replace: "" },
                 {
                     search: /vec2 parallaxOcclusion\(vec3 vViewDirCoT,vec3 vNormalCoT,vec2 texCoord,float parallaxScale\)/g,
-                    replace: "#define inline\r\nvec2 parallaxOcclusion(vec3 vViewDirCoT, vec3 vNormalCoT, vec2 texCoord, float parallaxScale, sampler2D bumpSampler)",
+                    replace: "#define inline\nvec2 parallaxOcclusion(vec3 vViewDirCoT, vec3 vNormalCoT, vec2 texCoord, float parallaxScale, sampler2D bumpSampler)",
                 },
                 { search: /vec2 parallaxOffset\(vec3 viewDir,float heightScale\)/g, replace: "vec2 parallaxOffset(vec3 viewDir, float heightScale, float height_)" },
                 { search: /texture2D\(bumpSampler,vBumpUV\)\.w/g, replace: "height_" },
@@ -300,7 +300,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         const uvForPerturbNormal =
             !useParallax || !normalSamplerName ? this.normalMapColor.associatedVariableName : `texture2D(${normalSamplerName}, ${uv.associatedVariableName} + uvOffset).xyz`;
 
-        state.compilationString += this._declareOutput(this.output, state) + " = vec4(0.);\r\n";
+        state.compilationString += this._declareOutput(this.output, state) + " = vec4(0.);\n";
         state.compilationString += state._emitCodeFromInclude("bumpFragment", comments, {
             replaceStrings: [
                 { search: /texture2D\(bumpSampler,vBumpUV\)/g, replace: `${uvForPerturbNormal}` },
@@ -336,11 +336,11 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
     }
 
     protected _dumpPropertiesCode() {
-        let codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.invertX = ${this.invertX};\r\n`;
+        let codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.invertX = ${this.invertX};\n`;
 
-        codeString += `${this._codeVariableName}.invertY = ${this.invertY};\r\n`;
-        codeString += `${this._codeVariableName}.useParallaxOcclusion = ${this.useParallaxOcclusion};\r\n`;
-        codeString += `${this._codeVariableName}.useObjectSpaceNormalMap = ${this.useObjectSpaceNormalMap};\r\n`;
+        codeString += `${this._codeVariableName}.invertY = ${this.invertY};\n`;
+        codeString += `${this._codeVariableName}.useParallaxOcclusion = ${this.useParallaxOcclusion};\n`;
+        codeString += `${this._codeVariableName}.useObjectSpaceNormalMap = ${this.useObjectSpaceNormalMap};\n`;
 
         return codeString;
     }

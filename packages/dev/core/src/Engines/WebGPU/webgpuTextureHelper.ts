@@ -352,13 +352,13 @@ export class WebGPUTextureHelper {
 
         let pipelineAndBGL = this._pipelines[format][index];
         if (!pipelineAndBGL) {
-            let defines = "#version 450\r\n";
+            let defines = "#version 450\n";
             if (type === PipelineType.InvertYPremultiplyAlpha || type === PipelineType.InvertYPremultiplyAlphaWithOfst) {
                 if (params!.invertY) {
-                    defines += "#define INVERTY\r\n";
+                    defines += "#define INVERTY\n";
                 }
                 if (params!.premultiplyAlpha) {
-                    defines += "#define PREMULTIPLYALPHA\r\n";
+                    defines += "#define PREMULTIPLYALPHA\n";
                 }
             }
 

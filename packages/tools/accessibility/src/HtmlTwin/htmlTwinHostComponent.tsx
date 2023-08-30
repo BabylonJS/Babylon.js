@@ -8,7 +8,6 @@ import type { Observable, Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
-import { Button } from "gui/2D/controls/button";
 import { Container } from "gui/2D/controls/container";
 import type { Control } from "gui/2D/controls/control";
 import type { Node } from "core/node";
@@ -52,7 +51,12 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
 
         // Find all a11y entities in the scene, assemble the a11y forest (a11yTreeItems), and update React state to let React update DOM.
         const updateA11yTree = () => {
-            this._updateHTMLTwinItems();
+            // Delay the call to _updateHTMLTwinItems because during its execution, _isMeshGUI will be called and may access node.sourceMesh
+            // if node is an instanced mesh, but at this stage, the InstancedMesh constructor has not yet been executed and sourceMesh is undefined.
+            // The delay will give time for the InstancedMesh constructor to be executed.
+            setTimeout(() => {
+                this._updateHTMLTwinItems();
+            });
         };
 
         const addGUIObservers = (control: Control) => {
@@ -109,12 +113,17 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
             }
 
             // If the node has GUI, add observer to the controls
-            if (this._isMeshGUI(node)) {
-                const curMesh = node as AbstractMesh;
-                const adt = curMesh.material?.getActiveTextures()[0] as AdvancedDynamicTexture;
-                const guiRoot = adt.getChildren();
-                guiRoot.forEach((control) => addGUIObservers(control));
-            }
+            // Delays the call to _isMeshGUI because it can access node.sourceMesh if node is an instanced mesh, but at this stage
+            // the InstancedMesh constructor has not yet been executed and sourceMesh is undefined.
+            // The delay will give time for the InstancedMesh constructor to be executed.
+            setTimeout(() => {
+                if (this._isMeshGUI(node)) {
+                    const curMesh = node as AbstractMesh;
+                    const adt = curMesh.material?.getActiveTextures()[0] as AdvancedDynamicTexture;
+                    const guiRoot = adt.getChildren();
+                    guiRoot.forEach((control) => addGUIObservers(control));
+                }
+            });
         };
 
         const _updateAndAddNode = (node: Node) => {
@@ -265,6 +274,18 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
         return result;
     }
 
+    private _hasChildrenWithA11yTag(node: Control): boolean {
+        let result = false;
+        const descendants = node.getDescendants();
+        for (const child of descendants) {
+            if (child.accessibilityTag?.description) {
+                result = true;
+                break;
+            }
+        }
+        return result;
+    }
+
     private _getHTMLTwinItemsFromGUI(rootItems: Control[]): HTMLTwinGUIItem[] {
         if (!rootItems || rootItems.length === 0) {
             return [];
@@ -273,13 +294,18 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
         const queue: Control[] = [...rootItems];
         for (let i: number = 0; i < queue.length; i++) {
             const curNode = queue[i];
-            if (!curNode.isVisible || (!this._options.addAllControls && curNode.name !== "root" && !curNode.accessibilityTag?.description)) {
+            const numOfDirectChildren = curNode.getDescendants(true).length;
+            if (!curNode.isVisible || (!this._options.addAllControls && !curNode.accessibilityTag?.description && numOfDirectChildren === 0)) {
                 continue;
             }
-            if (curNode instanceof Container && curNode.children.length !== 0 && !(curNode instanceof Button)) {
+            if (
+                curNode.getClassName() !== "Button" && // curNode = Non Button -> Container or not
+                numOfDirectChildren > 0 && // curNode = Non Button Container
+                (this._options.addAllControls || this._hasChildrenWithA11yTag(curNode))
+            ) {
                 const curContainer = curNode as Container;
                 result.push(new HTMLTwinGUIItem(curContainer, this.props.scene, this._getHTMLTwinItemsFromGUI(curContainer.children)));
-            } else {
+            } else if (this._options.addAllControls || curNode.accessibilityTag?.description) {
                 result.push(new HTMLTwinGUIItem(curNode, this.props.scene, []));
             }
         }

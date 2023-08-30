@@ -1,9 +1,6 @@
 import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import type { Nullable } from "core/types";
-import type { Observer } from "core/Misc/observable";
 import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
-import type { ISelectionChangedOptions } from "shared-ui-components/nodeGraphSystem/interfaces/selectionChangedOptions";
 import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import type { NodePort } from "shared-ui-components/nodeGraphSystem/nodePort";
@@ -15,14 +12,8 @@ export interface IFrameNodePortPropertyTabComponentProps {
 }
 
 export class NodePortPropertyTabComponent extends React.Component<IFrameNodePortPropertyTabComponentProps> {
-    private _onSelectionChangedObserver: Nullable<Observer<Nullable<ISelectionChangedOptions>>>;
-
     constructor(props: IFrameNodePortPropertyTabComponentProps) {
         super(props);
-    }
-
-    componentWillUnmount() {
-        this.props.stateManager.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
     }
 
     toggleExposeOnFrame(value: boolean) {

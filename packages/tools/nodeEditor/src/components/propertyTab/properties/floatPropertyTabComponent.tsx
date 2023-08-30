@@ -18,7 +18,7 @@ export class FloatPropertyTabComponent extends React.Component<IFloatPropertyTab
                 propertyName="value"
                 onChange={() => {
                     if (this.props.inputBlock.isConstant) {
-                        this.props.globalState.stateManager.onRebuildRequiredObservable.notifyObservers(true);
+                        this.props.globalState.stateManager.onRebuildRequiredObservable.notifyObservers();
                     }
                     this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(this.props.inputBlock);
                 }}

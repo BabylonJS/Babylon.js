@@ -19,6 +19,7 @@ import "../../../../Shaders/ShadersInclude/helperFunctions";
 import { ImageSourceBlock } from "./imageSourceBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { EngineStore } from "../../../../Engines/engineStore";
+import type { PrePassTextureBlock } from "../Input/prePassTextureBlock";
 
 /**
  * Block used to read a texture from a sampler
@@ -35,7 +36,7 @@ export class TextureBlock extends NodeMaterialBlock {
     private _mainUVName: string;
     private _mainUVDefineName: string;
     private _fragmentOnly: boolean;
-    private _imageSource: Nullable<ImageSourceBlock>;
+    private _imageSource: Nullable<ImageSourceBlock | PrePassTextureBlock>;
 
     protected _texture: Nullable<Texture>;
     /**
@@ -70,12 +71,25 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
+    private static _IsPrePassTextureBlock(block: Nullable<ImageSourceBlock | PrePassTextureBlock>): block is PrePassTextureBlock {
+        return block?.getClassName() === "PrePassTextureBlock";
+    }
+
+    private get _isSourcePrePass() {
+        return TextureBlock._IsPrePassTextureBlock(this._imageSource);
+    }
+
     /**
      * Gets the sampler name associated with this texture
      */
     public get samplerName(): string {
         if (this._imageSource) {
-            return this._imageSource.samplerName;
+            if (!TextureBlock._IsPrePassTextureBlock(this._imageSource)) {
+                return this._imageSource.samplerName;
+            }
+            if (this.source.connectedPoint) {
+                return this._imageSource.getSamplerName(this.source.connectedPoint);
+            }
         }
         return this._samplerName;
     }
@@ -370,6 +384,10 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 
     public isReady() {
+        if (this._isSourcePrePass) {
+            return true;
+        }
+
         if (this.texture && !this.texture.isReadyOrNotBlocking()) {
             return false;
         }
@@ -378,6 +396,10 @@ export class TextureBlock extends NodeMaterialBlock {
     }
 
     public bind(effect: Effect) {
+        if (this._isSourcePrePass) {
+            effect.setFloat(this._textureInfoName, 1);
+        }
+
         if (!this.texture) {
             return;
         }
@@ -415,11 +437,11 @@ export class TextureBlock extends NodeMaterialBlock {
 
         state._emitUniformFromString(this._textureTransformName, "mat4", this._defineName);
 
-        state.compilationString += `#ifdef ${this._defineName}\r\n`;
-        state.compilationString += `${this._transformedUVName} = vec2(${this._textureTransformName} * vec4(${uvInput.associatedVariableName}.xy, 1.0, 0.0));\r\n`;
-        state.compilationString += `#elif defined(${this._mainUVDefineName})\r\n`;
-        state.compilationString += `${this._mainUVName} = ${uvInput.associatedVariableName}.xy;\r\n`;
-        state.compilationString += `#endif\r\n`;
+        state.compilationString += `#ifdef ${this._defineName}\n`;
+        state.compilationString += `${this._transformedUVName} = vec2(${this._textureTransformName} * vec4(${uvInput.associatedVariableName}.xy, 1.0, 0.0));\n`;
+        state.compilationString += `#elif defined(${this._mainUVDefineName})\n`;
+        state.compilationString += `${this._mainUVName} = ${uvInput.associatedVariableName}.xy;\n`;
+        state.compilationString += `#endif\n`;
 
         if (!this._outputs.some((o) => o.isConnectedInVertexShader)) {
             return;
@@ -458,13 +480,13 @@ export class TextureBlock extends NodeMaterialBlock {
     private _generateTextureLookup(state: NodeMaterialBuildState): void {
         const samplerName = this.samplerName;
 
-        state.compilationString += `#ifdef ${this._defineName}\r\n`;
-        state.compilationString += `vec4 ${this._tempTextureRead} = ${this._samplerFunc}(${samplerName}, ${this._getUVW(this._transformedUVName)}${this._samplerLodSuffix});\r\n`;
-        state.compilationString += `#elif defined(${this._mainUVDefineName})\r\n`;
+        state.compilationString += `#ifdef ${this._defineName}\n`;
+        state.compilationString += `vec4 ${this._tempTextureRead} = ${this._samplerFunc}(${samplerName}, ${this._getUVW(this._transformedUVName)}${this._samplerLodSuffix});\n`;
+        state.compilationString += `#elif defined(${this._mainUVDefineName})\n`;
         state.compilationString += `vec4 ${this._tempTextureRead} = ${this._samplerFunc}(${samplerName}, ${this._getUVW(
             this._mainUVName ? this._mainUVName : this.uv.associatedVariableName
-        )}${this._samplerLodSuffix});\r\n`;
-        state.compilationString += `#endif\r\n`;
+        )}${this._samplerLodSuffix});\n`;
+        state.compilationString += `#endif\n`;
     }
 
     private _writeTextureRead(state: NodeMaterialBuildState, vertexMode = false) {
@@ -482,7 +504,7 @@ export class TextureBlock extends NodeMaterialBlock {
         if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
             state.compilationString += `vec4 ${this._tempTextureRead} = ${this._samplerFunc}(${this.samplerName}, ${this._getUVW(uvInput.associatedVariableName)}${
                 this._samplerLodSuffix
-            });\r\n`;
+            });\n`;
             return;
         }
 
@@ -512,13 +534,13 @@ export class TextureBlock extends NodeMaterialBlock {
                 return;
             }
 
-            state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\r\n`;
+            state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\n`;
             this._generateConversionCode(state, output, swizzle);
             return;
         }
 
         if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
-            state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\r\n`;
+            state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\n`;
             this._generateConversionCode(state, output, swizzle);
             return;
         }
@@ -528,7 +550,7 @@ export class TextureBlock extends NodeMaterialBlock {
             complement = ` * ${this._textureInfoName}`;
         }
 
-        state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle}${complement};\r\n`;
+        state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle}${complement};\n`;
         this._generateConversionCode(state, output, swizzle);
     }
 
@@ -606,25 +628,25 @@ export class TextureBlock extends NodeMaterialBlock {
     protected _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
 
-        codeString += `${this._codeVariableName}.convertToGammaSpace = ${this.convertToGammaSpace};\r\n`;
-        codeString += `${this._codeVariableName}.convertToLinearSpace = ${this.convertToLinearSpace};\r\n`;
-        codeString += `${this._codeVariableName}.disableLevelMultiplication = ${this.disableLevelMultiplication};\r\n`;
+        codeString += `${this._codeVariableName}.convertToGammaSpace = ${this.convertToGammaSpace};\n`;
+        codeString += `${this._codeVariableName}.convertToLinearSpace = ${this.convertToLinearSpace};\n`;
+        codeString += `${this._codeVariableName}.disableLevelMultiplication = ${this.disableLevelMultiplication};\n`;
 
         if (!this.texture) {
             return codeString;
         }
 
-        codeString += `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}", null, ${this.texture.noMipmap}, ${this.texture.invertY}, ${this.texture.samplingMode});\r\n`;
-        codeString += `${this._codeVariableName}.texture.wrapU = ${this.texture.wrapU};\r\n`;
-        codeString += `${this._codeVariableName}.texture.wrapV = ${this.texture.wrapV};\r\n`;
-        codeString += `${this._codeVariableName}.texture.uAng = ${this.texture.uAng};\r\n`;
-        codeString += `${this._codeVariableName}.texture.vAng = ${this.texture.vAng};\r\n`;
-        codeString += `${this._codeVariableName}.texture.wAng = ${this.texture.wAng};\r\n`;
-        codeString += `${this._codeVariableName}.texture.uOffset = ${this.texture.uOffset};\r\n`;
-        codeString += `${this._codeVariableName}.texture.vOffset = ${this.texture.vOffset};\r\n`;
-        codeString += `${this._codeVariableName}.texture.uScale = ${this.texture.uScale};\r\n`;
-        codeString += `${this._codeVariableName}.texture.vScale = ${this.texture.vScale};\r\n`;
-        codeString += `${this._codeVariableName}.texture.coordinatesMode = ${this.texture.coordinatesMode};\r\n`;
+        codeString += `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}", null, ${this.texture.noMipmap}, ${this.texture.invertY}, ${this.texture.samplingMode});\n`;
+        codeString += `${this._codeVariableName}.texture.wrapU = ${this.texture.wrapU};\n`;
+        codeString += `${this._codeVariableName}.texture.wrapV = ${this.texture.wrapV};\n`;
+        codeString += `${this._codeVariableName}.texture.uAng = ${this.texture.uAng};\n`;
+        codeString += `${this._codeVariableName}.texture.vAng = ${this.texture.vAng};\n`;
+        codeString += `${this._codeVariableName}.texture.wAng = ${this.texture.wAng};\n`;
+        codeString += `${this._codeVariableName}.texture.uOffset = ${this.texture.uOffset};\n`;
+        codeString += `${this._codeVariableName}.texture.vOffset = ${this.texture.vOffset};\n`;
+        codeString += `${this._codeVariableName}.texture.uScale = ${this.texture.uScale};\n`;
+        codeString += `${this._codeVariableName}.texture.vScale = ${this.texture.vScale};\n`;
+        codeString += `${this._codeVariableName}.texture.coordinatesMode = ${this.texture.coordinatesMode};\n`;
 
         return codeString;
     }

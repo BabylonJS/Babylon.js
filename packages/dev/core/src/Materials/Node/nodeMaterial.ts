@@ -61,6 +61,11 @@ import type { Material } from "../material";
 import { MaterialHelper } from "../materialHelper";
 import type { TriPlanarBlock } from "./Blocks/triPlanarBlock";
 import type { BiPlanarBlock } from "./Blocks/biPlanarBlock";
+import type { PrePassRenderer } from "../../Rendering/prePassRenderer";
+import type { PrePassTextureBlock } from "./Blocks/Input/prePassTextureBlock";
+import type { PrePassOutputBlock } from "./Blocks/Fragment/prePassOutputBlock";
+import type { NodeMaterialTeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
+import type { NodeMaterialTeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -91,6 +96,15 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public UV4 = false;
     public UV5 = false;
     public UV6 = false;
+
+    public PREPASS = false;
+    public PREPASS_NORMAL = false;
+    public PREPASS_NORMAL_INDEX = -1;
+    public PREPASS_POSITION = false;
+    public PREPASS_POSITION_INDEX = -1;
+    public PREPASS_DEPTH = false;
+    public PREPASS_DEPTH_INDEX = -1;
+    public SCENE_MRT_COUNT = 0;
 
     /** BONES */
     public NUM_BONE_INFLUENCERS = 0;
@@ -167,7 +181,8 @@ export type NodeMaterialTextureBlocks =
     | ParticleTextureBlock
     | ImageSourceBlock
     | TriPlanarBlock
-    | BiPlanarBlock;
+    | BiPlanarBlock
+    | PrePassTextureBlock;
 
 /**
  * Class used to create a node based material built by assembling shader blocks
@@ -208,7 +223,8 @@ export class NodeMaterial extends PushMaterial {
             block.getClassName() === "ParticleTextureBlock" ||
             block.getClassName() === "ImageSourceBlock" ||
             block.getClassName() === "TriPlanarBlock" ||
-            block.getClassName() === "BiPlanarBlock"
+            block.getClassName() === "BiPlanarBlock" ||
+            block.getClassName() === "PrePassTextureBlock"
         );
     }
 
@@ -609,6 +625,15 @@ export class NodeMaterial extends PushMaterial {
         return this._sharedData && this._sharedData.hints.needAlphaTesting;
     }
 
+    private _processInitializeOnLink(block: NodeMaterialBlock, state: NodeMaterialBuildState, nodesToProcessForOtherBuildState: NodeMaterialBlock[], autoConfigure = true) {
+        if (block.target === NodeMaterialBlockTargets.VertexAndFragment) {
+            nodesToProcessForOtherBuildState.push(block);
+        } else if (state.target === NodeMaterialBlockTargets.Fragment && block.target === NodeMaterialBlockTargets.Vertex && block._preparationId !== this._buildId) {
+            nodesToProcessForOtherBuildState.push(block);
+        }
+        this._initializeBlock(block, state, nodesToProcessForOtherBuildState, autoConfigure);
+    }
+
     private _initializeBlock(node: NodeMaterialBlock, state: NodeMaterialBuildState, nodesToProcessForOtherBuildState: NodeMaterialBlock[], autoConfigure = true) {
         node.initialize(state);
         if (autoConfigure) {
@@ -636,13 +661,16 @@ export class NodeMaterial extends PushMaterial {
             if (connectedPoint) {
                 const block = connectedPoint.ownerBlock;
                 if (block !== node) {
-                    if (block.target === NodeMaterialBlockTargets.VertexAndFragment) {
-                        nodesToProcessForOtherBuildState.push(block);
-                    } else if (state.target === NodeMaterialBlockTargets.Fragment && block.target === NodeMaterialBlockTargets.Vertex && block._preparationId !== this._buildId) {
-                        nodesToProcessForOtherBuildState.push(block);
-                    }
-                    this._initializeBlock(block, state, nodesToProcessForOtherBuildState, autoConfigure);
+                    this._processInitializeOnLink(block, state, nodesToProcessForOtherBuildState, autoConfigure);
                 }
+            }
+        }
+
+        // Teleportation
+        if (node.isTeleportOut) {
+            const teleport = node as NodeMaterialTeleportOutBlock;
+            if (teleport.entryPoint) {
+                this._processInitializeOnLink(teleport.entryPoint, state, nodesToProcessForOtherBuildState, autoConfigure);
             }
         }
 
@@ -663,6 +691,14 @@ export class NodeMaterial extends PushMaterial {
                 if (block !== node) {
                     this._resetDualBlocks(block, id);
                 }
+            }
+        }
+
+        // If this is a teleport out, we need to reset the connected block
+        if (node.isTeleportOut) {
+            const teleportOut = node as NodeMaterialTeleportOutBlock;
+            if (teleportOut.entryPoint) {
+                this._resetDualBlocks(teleportOut.entryPoint, id);
             }
         }
     }
@@ -686,9 +722,14 @@ export class NodeMaterial extends PushMaterial {
      * Build the material and generates the inner effect
      * @param verbose defines if the build should log activity
      * @param updateBuildId defines if the internal build Id should be updated (default is true)
-     * @param autoConfigure defines if the autoConfigure method should be called when initializing blocks (default is true)
+     * @param autoConfigure defines if the autoConfigure method should be called when initializing blocks (default is false)
      */
-    public build(verbose: boolean = false, updateBuildId = true, autoConfigure = true) {
+    public build(verbose: boolean = false, updateBuildId = true, autoConfigure = false) {
+        // First time?
+        if (!this._vertexCompilationState && !autoConfigure) {
+            autoConfigure = true;
+        }
+
         this._buildWasSuccessful = false;
         const engine = this.getScene().getEngine();
 
@@ -798,6 +839,14 @@ export class NodeMaterial extends PushMaterial {
                 defines.reset();
             }
         }
+
+        if (this.prePassTextureInputs.length) {
+            this.getScene().enablePrePassRenderer();
+        }
+        const prePassRenderer = this.getScene().prePassRenderer;
+        if (prePassRenderer) {
+            prePassRenderer.markAsDirty();
+        }
     }
 
     /**
@@ -827,9 +876,100 @@ export class NodeMaterial extends PushMaterial {
             uvChanged = uvChanged || defines["UV" + i] !== oldUV;
         }
 
+        // PrePass
+        const oit = this.needAlphaBlendingForMesh(mesh) && this.getScene().useOrderIndependentTransparency;
+        MaterialHelper.PrepareDefinesForPrePass(this.getScene(), defines, !oit);
+
         if (oldNormal !== defines["NORMAL"] || oldTangent !== defines["TANGENT"] || oldColor !== defines["VERTEXCOLOR_NME"] || uvChanged) {
             defines.markAsAttributesDirty();
         }
+    }
+
+    /**
+     * Can this material render to prepass
+     */
+    public get isPrePassCapable(): boolean {
+        return true;
+    }
+
+    /**
+     * Outputs written to the prepass
+     */
+    public get prePassTextureOutputs(): number[] {
+        const prePassOutputBlock = this.getBlockByPredicate((block) => block.getClassName() === "PrePassOutputBlock") as PrePassOutputBlock;
+        const result = [Constants.PREPASS_COLOR_TEXTURE_TYPE];
+        if (!prePassOutputBlock) {
+            return result;
+        }
+        // Cannot write to prepass if we alread read from prepass
+        if (this.prePassTextureInputs.length) {
+            return result;
+        }
+
+        if (prePassOutputBlock.viewDepth.isConnected) {
+            result.push(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
+        }
+
+        if (prePassOutputBlock.viewNormal.isConnected) {
+            result.push(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
+        }
+
+        if (prePassOutputBlock.worldPosition.isConnected) {
+            result.push(Constants.PREPASS_POSITION_TEXTURE_TYPE);
+        }
+
+        return result;
+    }
+
+    /**
+     * Gets the list of prepass texture required
+     */
+    public get prePassTextureInputs(): number[] {
+        const prePassTextureBlocks = this.getAllTextureBlocks().filter((block) => block.getClassName() === "PrePassTextureBlock") as PrePassTextureBlock[];
+        const result = [] as number[];
+
+        for (const block of prePassTextureBlocks) {
+            if (block.position.isConnected && !result.includes(Constants.PREPASS_POSITION_TEXTURE_TYPE)) {
+                result.push(Constants.PREPASS_POSITION_TEXTURE_TYPE);
+            }
+            if (block.depth.isConnected && !result.includes(Constants.PREPASS_DEPTH_TEXTURE_TYPE)) {
+                result.push(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
+            }
+            if (block.normal.isConnected && !result.includes(Constants.PREPASS_NORMAL_TEXTURE_TYPE)) {
+                result.push(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Sets the required values to the prepass renderer.
+     */
+    public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
+        const prePassTexturesRequired = this.prePassTextureInputs.concat(this.prePassTextureOutputs);
+
+        if (prePassRenderer && prePassTexturesRequired.length > 1) {
+            let cfg = prePassRenderer.getEffectConfiguration("nodeMaterial");
+            if (!cfg) {
+                cfg = prePassRenderer.addEffectConfiguration({
+                    enabled: true,
+                    needsImageProcessing: false,
+                    name: "nodeMaterial",
+                    texturesRequired: [],
+                });
+            }
+            for (const prePassTexture of prePassTexturesRequired) {
+                if (!cfg.texturesRequired.includes(prePassTexture)) {
+                    cfg.texturesRequired.push(prePassTexture);
+                }
+            }
+            cfg.enabled = true;
+        }
+
+        // COLOR_TEXTURE is always required for prepass, length > 1 means
+        // we actually need to write to special prepass textures
+        return prePassTexturesRequired.length > 1;
     }
 
     /**
@@ -1361,6 +1501,7 @@ export class NodeMaterial extends PushMaterial {
                     fallbacks: result.fallbacks,
                     onCompiled: this.onCompiled,
                     onError: this.onError,
+                    multiTarget: defines.PREPASS,
                     indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS },
                 },
                 engine
@@ -1407,7 +1548,7 @@ export class NodeMaterial extends PushMaterial {
      * Get a string representing the shaders built by the current node graph
      */
     public get compiledShaders() {
-        return `// Vertex shader\r\n${this._vertexCompilationState.compilationString}\r\n\r\n// Fragment shader\r\n${this._fragmentCompilationState.compilationString}`;
+        return `// Vertex shader\n${this._vertexCompilationState.compilationString}\n\n// Fragment shader\n${this._fragmentCompilationState.compilationString}`;
     }
 
     /**
@@ -1840,6 +1981,14 @@ export class NodeMaterial extends PushMaterial {
                 }
             }
         }
+
+        // Teleportation
+        if (rootNode.isTeleportOut) {
+            const block = rootNode as NodeMaterialTeleportOutBlock;
+            if (block.entryPoint) {
+                this._gatherBlocks(block.entryPoint, list);
+            }
+        }
     }
 
     /**
@@ -1861,8 +2010,8 @@ export class NodeMaterial extends PushMaterial {
         }
 
         // Generate vertex shader
-        let codeString = `var nodeMaterial = new BABYLON.NodeMaterial("${this.name || "node material"}");\r\n`;
-        codeString += `nodeMaterial.mode = BABYLON.NodeMaterialModes.${NodeMaterialModes[this.mode]};\r\n`;
+        let codeString = `var nodeMaterial = new BABYLON.NodeMaterial("${this.name || "node material"}");\n`;
+        codeString += `nodeMaterial.mode = BABYLON.NodeMaterialModes.${NodeMaterialModes[this.mode]};\n`;
         for (const node of vertexBlocks) {
             if (node.isInput && alreadyDumped.indexOf(node) === -1) {
                 codeString += node._dumpCode(uniqueNames, alreadyDumped);
@@ -1878,7 +2027,7 @@ export class NodeMaterial extends PushMaterial {
 
         // Connections
         alreadyDumped = [];
-        codeString += "\r\n// Connections\r\n";
+        codeString += "\n// Connections\n";
         for (const node of this._vertexOutputNodes) {
             codeString += node._dumpCodeForOutputConnections(alreadyDumped);
         }
@@ -1887,16 +2036,16 @@ export class NodeMaterial extends PushMaterial {
         }
 
         // Output nodes
-        codeString += "\r\n// Output nodes\r\n";
+        codeString += "\n// Output nodes\n";
         for (const node of this._vertexOutputNodes) {
-            codeString += `nodeMaterial.addOutputNode(${node._codeVariableName});\r\n`;
+            codeString += `nodeMaterial.addOutputNode(${node._codeVariableName});\n`;
         }
 
         for (const node of this._fragmentOutputNodes) {
-            codeString += `nodeMaterial.addOutputNode(${node._codeVariableName});\r\n`;
+            codeString += `nodeMaterial.addOutputNode(${node._codeVariableName});\n`;
         }
 
-        codeString += `nodeMaterial.build();\r\n`;
+        codeString += `nodeMaterial.build();\n`;
 
         return codeString;
     }
@@ -1999,6 +2148,18 @@ export class NodeMaterial extends PushMaterial {
                 map[parsedBlock.id] = block;
 
                 this.attachedBlocks.push(block);
+            }
+        }
+
+        // Reconnect teleportation
+        for (const block of this.attachedBlocks) {
+            if (block.isTeleportOut) {
+                const teleportOut = block as NodeMaterialTeleportOutBlock;
+                const id = teleportOut._tempEntryPointUniqueId;
+                if (id) {
+                    const source = map[id] as NodeMaterialTeleportInBlock;
+                    source.attachToEndpoint(teleportOut);
+                }
             }
         }
 

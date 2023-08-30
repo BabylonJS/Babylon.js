@@ -42,7 +42,7 @@ export class FrontFacingBlock extends NodeMaterialBlock {
 
         const output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = gl_FrontFacing ? 1.0 : 0.0;\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = gl_FrontFacing ? 1.0 : 0.0;\n`;
 
         return this;
     }

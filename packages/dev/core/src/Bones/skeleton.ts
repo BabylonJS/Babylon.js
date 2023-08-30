@@ -48,6 +48,7 @@ export class Skeleton implements IAnimatable {
     private _animatables: IAnimatable[];
     private _identity = Matrix.Identity();
     private _synchronizedWithMesh: AbstractMesh;
+    private _currentRenderId = -1;
 
     private _ranges: { [name: string]: Nullable<AnimationRange> } = {};
 
@@ -502,8 +503,17 @@ export class Skeleton implements IAnimatable {
 
     /**
      * Build all resources required to render a skeleton
+     * @param dontCheckFrameId defines a boolean indicating if prepare should be run without checking first the current frame id (default: false)
      */
-    public prepare(): void {
+    public prepare(dontCheckFrameId = false): void {
+        if (!dontCheckFrameId) {
+            const currentRenderId = this.getScene().getRenderId();
+            if (this._currentRenderId === currentRenderId) {
+                return;
+            }
+            this._currentRenderId = currentRenderId;
+        }
+
         // Update the local matrix of bones with linked transform nodes.
         if (this._numBonesWithLinkedTransformNode > 0) {
             for (const bone of this.bones) {
@@ -668,6 +678,8 @@ export class Skeleton implements IAnimatable {
         }
 
         this._isDirty = true;
+
+        result.prepare(true);
 
         return result;
     }

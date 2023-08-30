@@ -324,9 +324,23 @@ export class PhysicsBody {
      * @param linVel - The vector3 to store the linear velocity in.
      *
      * This method is useful for getting the linear velocity of a physics body in a physics engine.
-     * This can be used to determine the speed and direction of the body, which can be used to calculate the motion of the body.*/
+     * This can be used to determine the speed and direction of the body, which can be used to calculate the motion of the body.
+     */
     public getLinearVelocityToRef(linVel: Vector3, instanceIndex?: number): void {
         return this._physicsPlugin.getLinearVelocityToRef(this, linVel, instanceIndex);
+    }
+
+    /**
+     * Gets the linear velocity of the physics body as a new vector3.
+     * @returns The linear velocity of the physics body.
+     *
+     * This method is useful for getting the linear velocity of a physics body in a physics engine.
+     * This can be used to determine the speed and direction of the body, which can be used to calculate the motion of the body.
+     */
+    public getLinearVelocity(instanceIndex?: number): Vector3 {
+        const ref = new Vector3();
+        this.getLinearVelocityToRef(ref, instanceIndex);
+        return ref;
     }
 
     /**
@@ -350,6 +364,19 @@ export class PhysicsBody {
      */
     public getAngularVelocityToRef(angVel: Vector3, instanceIndex?: number): void {
         return this._physicsPlugin.getAngularVelocityToRef(this, angVel, instanceIndex);
+    }
+
+    /**
+     * Gets the angular velocity of the physics body as a new vector3.
+     * @returns The angular velocity of the physics body.
+     *
+     * This method is useful for getting the angular velocity of a physics body, which can be used to determine the body's
+     * rotational speed. This information can be used to create realistic physics simulations.
+     */
+    public getAngularVelocity(instanceIndex?: number): Vector3 {
+        const ref = new Vector3();
+        this.getAngularVelocityToRef(ref, instanceIndex);
+        return ref;
     }
 
     /**
@@ -531,6 +558,16 @@ export class PhysicsBody {
     }
 
     /**
+     * Set the target transformation (position and rotation) of the body, such that the body will set its velocity to reach that target
+     * @param position The target position
+     * @param rotation The target rotation
+     * @param instanceIndex The index of the instance in an instanced body
+     */
+    public setTargetTransform(position: Vector3, rotation: Quaternion, instanceIndex?: number) {
+        this._physicsPlugin.setTargetTransform(this, position, rotation, instanceIndex);
+    }
+
+    /**
      * Disposes the body from the physics engine.
      *
      * This method is useful for cleaning up the physics engine when a body is no longer needed. Disposing the body will free up resources and prevent memory leaks.
@@ -547,6 +584,7 @@ export class PhysicsBody {
         this._physicsEngine.removeBody(this);
         this._physicsPlugin.removeBody(this);
         this._physicsPlugin.disposeBody(this);
+        this.transformNode.physicsBody = null;
         this._pluginData = null;
         this._pluginDataInstances.length = 0;
     }

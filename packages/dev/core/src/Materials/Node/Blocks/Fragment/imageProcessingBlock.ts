@@ -9,7 +9,7 @@ import type { Effect } from "../../../effect";
 import type { Mesh } from "../../../../Meshes/mesh";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Scene } from "../../../../scene";
-import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 
 import "../../../../Shaders/ShadersInclude/helperFunctions";
 import "../../../../Shaders/ShadersInclude/imageProcessingDeclaration";
@@ -154,25 +154,25 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
 
         if (color.connectedPoint?.isConnected) {
             if (color.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Color4 || color.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
-                state.compilationString += `${this._declareOutput(output, state)} = ${color.associatedVariableName};\r\n`;
+                state.compilationString += `${this._declareOutput(output, state)} = ${color.associatedVariableName};\n`;
             } else {
-                state.compilationString += `${this._declareOutput(output, state)} = vec4(${color.associatedVariableName}, 1.0);\r\n`;
+                state.compilationString += `${this._declareOutput(output, state)} = vec4(${color.associatedVariableName}, 1.0);\n`;
             }
-            state.compilationString += `#ifdef IMAGEPROCESSINGPOSTPROCESS\r\n`;
+            state.compilationString += `#ifdef IMAGEPROCESSINGPOSTPROCESS\n`;
             if (this.convertInputToLinearSpace) {
-                state.compilationString += `${output.associatedVariableName}.rgb = toLinearSpace(${color.associatedVariableName}.rgb);\r\n`;
+                state.compilationString += `${output.associatedVariableName}.rgb = toLinearSpace(${color.associatedVariableName}.rgb);\n`;
             }
-            state.compilationString += `#else\r\n`;
-            state.compilationString += `#ifdef IMAGEPROCESSING\r\n`;
+            state.compilationString += `#else\n`;
+            state.compilationString += `#ifdef IMAGEPROCESSING\n`;
             if (this.convertInputToLinearSpace) {
-                state.compilationString += `${output.associatedVariableName}.rgb = toLinearSpace(${color.associatedVariableName}.rgb);\r\n`;
+                state.compilationString += `${output.associatedVariableName}.rgb = toLinearSpace(${color.associatedVariableName}.rgb);\n`;
             }
-            state.compilationString += `${output.associatedVariableName} = applyImageProcessing(${output.associatedVariableName});\r\n`;
-            state.compilationString += `#endif\r\n`;
-            state.compilationString += `#endif\r\n`;
+            state.compilationString += `${output.associatedVariableName} = applyImageProcessing(${output.associatedVariableName});\n`;
+            state.compilationString += `#endif\n`;
+            state.compilationString += `#endif\n`;
 
             if (this.rgb.hasEndpoints) {
-                state.compilationString += this._declareOutput(this.rgb, state) + ` = ${this.output.associatedVariableName}.xyz;\r\n`;
+                state.compilationString += this._declareOutput(this.rgb, state) + ` = ${this.output.associatedVariableName}.xyz;\n`;
             }
         }
 
@@ -182,7 +182,7 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
     protected _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
 
-        codeString += `${this._codeVariableName}.convertInputToLinearSpace = ${this.convertInputToLinearSpace};\r\n`;
+        codeString += `${this._codeVariableName}.convertInputToLinearSpace = ${this.convertInputToLinearSpace};\n`;
 
         return codeString;
     }

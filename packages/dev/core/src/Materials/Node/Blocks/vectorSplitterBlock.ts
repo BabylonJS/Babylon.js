@@ -146,28 +146,28 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
 
         if (xyzOutput.hasEndpoints) {
             if (input === this.xyIn) {
-                state.compilationString += this._declareOutput(xyzOutput, state) + ` = vec3(${input.associatedVariableName}, 0.0);\r\n`;
+                state.compilationString += this._declareOutput(xyzOutput, state) + ` = vec3(${input.associatedVariableName}, 0.0);\n`;
             } else {
-                state.compilationString += this._declareOutput(xyzOutput, state) + ` = ${input.associatedVariableName}.xyz;\r\n`;
+                state.compilationString += this._declareOutput(xyzOutput, state) + ` = ${input.associatedVariableName}.xyz;\n`;
             }
         }
         if (zwOutput.hasEndpoints && this.xyzw.isConnected) {
-            state.compilationString += this._declareOutput(zwOutput, state) + ` = ${this.xyzw.associatedVariableName}.zw;\r\n`;
+            state.compilationString += this._declareOutput(zwOutput, state) + ` = ${this.xyzw.associatedVariableName}.zw;\n`;
         }
         if (xyOutput.hasEndpoints) {
-            state.compilationString += this._declareOutput(xyOutput, state) + ` = ${input.associatedVariableName}.xy;\r\n`;
+            state.compilationString += this._declareOutput(xyOutput, state) + ` = ${input.associatedVariableName}.xy;\n`;
         }
         if (xOutput.hasEndpoints) {
-            state.compilationString += this._declareOutput(xOutput, state) + ` = ${input.associatedVariableName}.x;\r\n`;
+            state.compilationString += this._declareOutput(xOutput, state) + ` = ${input.associatedVariableName}.x;\n`;
         }
         if (yOutput.hasEndpoints) {
-            state.compilationString += this._declareOutput(yOutput, state) + ` = ${input.associatedVariableName}.y;\r\n`;
+            state.compilationString += this._declareOutput(yOutput, state) + ` = ${input.associatedVariableName}.y;\n`;
         }
         if (zOutput.hasEndpoints) {
-            state.compilationString += this._declareOutput(zOutput, state) + ` = ${input.associatedVariableName}.z;\r\n`;
+            state.compilationString += this._declareOutput(zOutput, state) + ` = ${input.associatedVariableName}.z;\n`;
         }
         if (wOutput.hasEndpoints) {
-            state.compilationString += this._declareOutput(wOutput, state) + ` = ${input.associatedVariableName}.w;\r\n`;
+            state.compilationString += this._declareOutput(wOutput, state) + ` = ${input.associatedVariableName}.w;\n`;
         }
 
         return this;

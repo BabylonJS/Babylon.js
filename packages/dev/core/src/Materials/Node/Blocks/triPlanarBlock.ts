@@ -17,7 +17,7 @@ import "../../../Shaders/ShadersInclude/helperFunctions";
 import { ImageSourceBlock } from "./Dual/imageSourceBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../nodeMaterialConnectionPointCustomObject";
 import { EngineStore } from "../../../Engines/engineStore";
-import { editableInPropertyPage, PropertyTypeForEdition } from "../nodeMaterialDecorator";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
 
 /**
  * Block used to read a texture with triplanar mapping (see "boxmap" in https://iquilezles.org/articles/biplanar/)
@@ -432,7 +432,7 @@ export class TriPlanarBlock extends NodeMaterialBlock {
             complement = ` * ${this._textureInfoName}`;
         }
 
-        state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle}${complement};\r\n`;
+        state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle}${complement};\n`;
         this._generateConversionCode(state, output, swizzle);
     }
 
@@ -484,26 +484,26 @@ export class TriPlanarBlock extends NodeMaterialBlock {
     protected _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
 
-        codeString += `${this._codeVariableName}.convertToGammaSpace = ${this.convertToGammaSpace};\r\n`;
-        codeString += `${this._codeVariableName}.convertToLinearSpace = ${this.convertToLinearSpace};\r\n`;
-        codeString += `${this._codeVariableName}.disableLevelMultiplication = ${this.disableLevelMultiplication};\r\n`;
-        codeString += `${this._codeVariableName}.projectAsCube = ${this.projectAsCube};\r\n`;
+        codeString += `${this._codeVariableName}.convertToGammaSpace = ${this.convertToGammaSpace};\n`;
+        codeString += `${this._codeVariableName}.convertToLinearSpace = ${this.convertToLinearSpace};\n`;
+        codeString += `${this._codeVariableName}.disableLevelMultiplication = ${this.disableLevelMultiplication};\n`;
+        codeString += `${this._codeVariableName}.projectAsCube = ${this.projectAsCube};\n`;
 
         if (!this.texture) {
             return codeString;
         }
 
-        codeString += `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}", null, ${this.texture.noMipmap}, ${this.texture.invertY}, ${this.texture.samplingMode});\r\n`;
-        codeString += `${this._codeVariableName}.texture.wrapU = ${this.texture.wrapU};\r\n`;
-        codeString += `${this._codeVariableName}.texture.wrapV = ${this.texture.wrapV};\r\n`;
-        codeString += `${this._codeVariableName}.texture.uAng = ${this.texture.uAng};\r\n`;
-        codeString += `${this._codeVariableName}.texture.vAng = ${this.texture.vAng};\r\n`;
-        codeString += `${this._codeVariableName}.texture.wAng = ${this.texture.wAng};\r\n`;
-        codeString += `${this._codeVariableName}.texture.uOffset = ${this.texture.uOffset};\r\n`;
-        codeString += `${this._codeVariableName}.texture.vOffset = ${this.texture.vOffset};\r\n`;
-        codeString += `${this._codeVariableName}.texture.uScale = ${this.texture.uScale};\r\n`;
-        codeString += `${this._codeVariableName}.texture.vScale = ${this.texture.vScale};\r\n`;
-        codeString += `${this._codeVariableName}.texture.coordinatesMode = ${this.texture.coordinatesMode};\r\n`;
+        codeString += `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}", null, ${this.texture.noMipmap}, ${this.texture.invertY}, ${this.texture.samplingMode});\n`;
+        codeString += `${this._codeVariableName}.texture.wrapU = ${this.texture.wrapU};\n`;
+        codeString += `${this._codeVariableName}.texture.wrapV = ${this.texture.wrapV};\n`;
+        codeString += `${this._codeVariableName}.texture.uAng = ${this.texture.uAng};\n`;
+        codeString += `${this._codeVariableName}.texture.vAng = ${this.texture.vAng};\n`;
+        codeString += `${this._codeVariableName}.texture.wAng = ${this.texture.wAng};\n`;
+        codeString += `${this._codeVariableName}.texture.uOffset = ${this.texture.uOffset};\n`;
+        codeString += `${this._codeVariableName}.texture.vOffset = ${this.texture.vOffset};\n`;
+        codeString += `${this._codeVariableName}.texture.uScale = ${this.texture.uScale};\n`;
+        codeString += `${this._codeVariableName}.texture.vScale = ${this.texture.vScale};\n`;
+        codeString += `${this._codeVariableName}.texture.coordinatesMode = ${this.texture.coordinatesMode};\n`;
 
         return codeString;
     }

@@ -804,6 +804,7 @@ export class ShadowGenerator implements IShadowGenerator {
     }
 
     protected _scene: Scene;
+    protected _useRedTextureType: boolean;
     protected _lightDirection = Vector3.Zero();
 
     protected _viewMatrix = Matrix.Zero();
@@ -857,12 +858,14 @@ export class ShadowGenerator implements IShadowGenerator {
      * @param light The light object generating the shadows.
      * @param usefullFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
      * @param camera Camera associated with this shadow generator (default: null). If null, takes the scene active camera at the time we need to access it
+     * @param useRedTextureType Forces the generator to use a Red instead of a RGBA type for the shadow map texture format (default: false)
      */
-    constructor(mapSize: number, light: IShadowLight, usefullFloatFirst?: boolean, camera?: Nullable<Camera>) {
+    constructor(mapSize: number, light: IShadowLight, usefullFloatFirst?: boolean, camera?: Nullable<Camera>, useRedTextureType?: boolean) {
         this._mapSize = mapSize;
         this._light = light;
         this._scene = light.getScene();
         this._camera = camera ?? null;
+        this._useRedTextureType = !!useRedTextureType;
 
         let shadowGenerators = light._shadowGenerators;
         if (!shadowGenerators) {
@@ -922,7 +925,9 @@ export class ShadowGenerator implements IShadowGenerator {
                 this._light.needCube(),
                 undefined,
                 false,
-                false
+                false,
+                undefined,
+                this._useRedTextureType ? Constants.TEXTUREFORMAT_RED : Constants.TEXTUREFORMAT_RGBA
             );
             this._shadowMap.createDepthStencilTexture(engine.useReverseDepthBuffer ? Constants.GREATER : Constants.LESS, true);
         } else {
