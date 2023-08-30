@@ -19,6 +19,8 @@ export class NodeGeometryBuildState {
 
     /** Gets or sets the list of non connected mandatory inputs */
     public notConnectedNonOptionalInputs: NodeGeometryConnectionPoint[] = [];
+    /** Gets or sets the list of non contextual inputs having no contextudal data */
+    public noContextualData: NodeGeometryContextualSources[] = [];
     /** Gets or sets the build identifier */
     public buildId: number;
     /** Gets or sets a boolean indicating that verbose mode is on */
@@ -37,6 +39,7 @@ export class NodeGeometryBuildState {
      */
     public getContextualValue(source: NodeGeometryContextualSources) {
         if (!this.executionContext) {
+            this.noContextualData.push(source);
             return null;
         }
 
@@ -183,6 +186,10 @@ export class NodeGeometryBuildState {
             errorMessage += `input ${notConnectedInput.name} from block ${
                 notConnectedInput.ownerBlock.name
             }[${notConnectedInput.ownerBlock.getClassName()}] is not connected and is not optional.\n`;
+        }
+
+        for (const source of this.noContextualData) {
+            errorMessage += `Contextual input ${NodeGeometryContextualSources[source]} has no context to pull data from (must be connected to a setXXX block or a instantiateXXX block).\n`;
         }
 
         if (errorMessage) {
