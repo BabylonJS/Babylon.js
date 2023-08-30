@@ -359,6 +359,8 @@ export class LightBlock extends NodeMaterialBlock {
             }
             state.compilationString += `lightingInfo info;\n`;
             state.compilationString += `float shadow = 1.;\n`;
+            state.compilationString += `float aggShadow = 0.;\n`;
+            state.compilationString += `float numLights = 0.;\n`;
             state.compilationString += `float glossiness = ${this.glossiness.isConnected ? this.glossiness.associatedVariableName : "1.0"} * ${
                 this.glossPower.isConnected ? this.glossPower.associatedVariableName : "1024.0"
             };\n`;
@@ -377,6 +379,10 @@ export class LightBlock extends NodeMaterialBlock {
             });
         }
 
+        if (this._lightId === 0) {
+            state.compilationString += `aggShadow = aggShadow / numLights;\n`;
+        }
+
         const diffuseOutput = this.diffuseOutput;
         const specularOutput = this.specularOutput;
 
@@ -388,7 +394,7 @@ export class LightBlock extends NodeMaterialBlock {
         }
 
         if (this.shadow.hasEndpoints) {
-            state.compilationString += this._declareOutput(this.shadow, state) + ` = shadow;\n`;
+            state.compilationString += this._declareOutput(this.shadow, state) + ` = aggShadow;\n`;
         }
 
         return this;

@@ -44,7 +44,7 @@ const mapOutputToVariable: { [name: string]: [string, string] } = {
     sheenInd: ["sheenOut.finalSheenRadianceScaled", "!defined(UNLIT) && defined(REFLECTION) && defined(SHEEN) && defined(ENVIRONMENTBRDF)"],
     refraction: ["subSurfaceOut.finalRefraction", "!defined(UNLIT) && defined(SS_REFRACTION)"],
     lighting: ["finalColor.rgb", ""],
-    shadow: ["shadow", ""],
+    shadow: ["aggShadow", ""],
     alpha: ["alpha", ""],
 };
 

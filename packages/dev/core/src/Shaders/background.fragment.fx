@@ -130,6 +130,8 @@ void main(void) {
     float shadow = 1.;
     float globalShadow = 0.;
     float shadowLightCount = 0.;
+    float aggShadow = 0.;
+	float numLights = 0.;
 
 #include<lightFragment>[0..maxSimultaneousLights]
 

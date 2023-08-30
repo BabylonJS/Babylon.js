@@ -13,6 +13,8 @@ vec3 diffuseBase = vec3(0., 0., 0.);
 preLightingInfo preInfo;
 lightingInfo info;
 float shadow = 1.; // 1 - shadowLevel
+float aggShadow = 0.;
+float numLights = 0.;
 
 #if defined(CLEARCOAT) && defined(CLEARCOAT_TINT)
     vec3 absorption = vec3(0.);
