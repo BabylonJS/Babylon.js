@@ -278,6 +278,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     private _bodies = new Map<bigint, { body: PhysicsBody; index: number }>();
     private _bodyBuffer: number;
     private _bodyCollisionObservable = new Map<bigint, Observable<IPhysicsCollisionEvent>>();
+    private _bodyCollisionEndedObservable = new Map<bigint, Observable<IBasePhysicsCollisionEvent>>();
     /**
      * Observable for collision started and collision continued events
      */
@@ -1766,7 +1767,22 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     }
 
     /**
-     * Enable collision to be reported for a body when a callback is settup on the world
+     * Return the collision ended observable for a particular physics body.
+     * @param body the physics body
+     * @returns
+     */
+    public getCollisionEndedObservable(body: PhysicsBody): Observable<IBasePhysicsCollisionEvent> {
+        const bodyId = body._pluginData.hpBodyId[0];
+        let observable = this._bodyCollisionEndedObservable.get(bodyId);
+        if (!observable) {
+            observable = new Observable<IBasePhysicsCollisionEvent>();
+            this._bodyCollisionEndedObservable.set(bodyId, observable);
+        }
+        return observable;
+    }
+
+    /**
+     * Enable collision to be reported for a body when a callback is setup on the world
      * @param body the physics body
      * @param enabled
      */
@@ -1779,6 +1795,28 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             });
         } else if (body._pluginData) {
             this._hknp.HP_Body_SetEventMask(body._pluginData.hpBodyId, enabled ? collideEvents : 0);
+        }
+    }
+
+    /**
+     * Enable collision ended to be reported for a body when a callback is setup on the world
+     * @param body
+     * @param enabled
+     */
+    public setCollisionEndedCallbackEnabled(body: PhysicsBody, enabled: boolean): void {
+        // Register to collide ended events
+        const pluginRef = this._getPluginReference(body);
+        let currentCollideEvents = this._hknp.HP_Body_GetEventMask(pluginRef.hpBodyId)[1];
+        // update with the ended mask
+        currentCollideEvents = enabled
+            ? currentCollideEvents | this._hknp.EventType.COLLISION_FINISHED.value
+            : currentCollideEvents & ~this._hknp.EventType.COLLISION_FINISHED.value;
+        if (body._pluginDataInstances && body._pluginDataInstances.length) {
+            body._pluginDataInstances.forEach((bodyId) => {
+                this._hknp.HP_Body_SetEventMask(bodyId.hpBodyId, currentCollideEvents);
+            });
+        } else if (body._pluginData) {
+            this._hknp.HP_Body_SetEventMask(body._pluginData.hpBodyId, currentCollideEvents);
         }
     }
 
@@ -1837,6 +1875,22 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             if (this._bodyCollisionObservable.size && collisionInfo.type !== PhysicsEventType.COLLISION_FINISHED) {
                 const observableA = this._bodyCollisionObservable.get(event.contactOnA.bodyId);
                 const observableB = this._bodyCollisionObservable.get(event.contactOnB.bodyId);
+
+                if (observableA) {
+                    observableA.notifyObservers(collisionInfo);
+                } else if (observableB) {
+                    //<todo This seems like it would give unexpected results when both bodies have observers?
+                    // Flip collision info:
+                    collisionInfo.collider = bodyInfoB.body;
+                    collisionInfo.colliderIndex = bodyInfoB.index;
+                    collisionInfo.collidedAgainst = bodyInfoA.body;
+                    collisionInfo.collidedAgainstIndex = bodyInfoA.index;
+                    collisionInfo.normal = event.contactOnB.normal;
+                    observableB.notifyObservers(collisionInfo);
+                }
+            } else if (this._bodyCollisionEndedObservable.size) {
+                const observableA = this._bodyCollisionEndedObservable.get(event.contactOnA.bodyId);
+                const observableB = this._bodyCollisionEndedObservable.get(event.contactOnB.bodyId);
 
                 if (observableA) {
                     observableA.notifyObservers(collisionInfo);

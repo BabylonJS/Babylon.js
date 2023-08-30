@@ -378,8 +378,10 @@ export interface IPhysicsEnginePluginV2 {
     getBodyGeometry(body: PhysicsBody): {};
     disposeBody(body: PhysicsBody): void;
     setCollisionCallbackEnabled(body: PhysicsBody, enabled: boolean, instanceIndex?: number): void;
+    setCollisionEndedCallbackEnabled(body: PhysicsBody, enabled: boolean, instanceIndex?: number): void;
     addConstraint(body: PhysicsBody, childBody: PhysicsBody, constraint: PhysicsConstraint, instanceIndex?: number, childInstanceIndex?: number): void;
     getCollisionObservable(body: PhysicsBody, instanceIndex?: number): Observable<IPhysicsCollisionEvent>;
+    getCollisionEndedObservable(body: PhysicsBody, instanceIndex?: number): Observable<IBasePhysicsCollisionEvent>;
     setGravityFactor(body: PhysicsBody, factor: number, instanceIndex?: number): void;
     getGravityFactor(body: PhysicsBody, instanceIndex?: number): number;
     setTargetTransform(body: PhysicsBody, position: Vector3, rotation: Quaternion, instanceIndex?: number): void;
