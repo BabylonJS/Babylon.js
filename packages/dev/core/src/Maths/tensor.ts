@@ -2,7 +2,7 @@ import type { DeepImmutable, Flatten, FloatArray, MultidimensionalArray } from "
 
 /**
  * Describes a mathimatical tensor.
- * @see https://en.wikipedia.org/wiki/Tensor
+ * @see https://wikipedia.org/wiki/Tensor
  */
 export declare abstract class Tensor<V extends MultidimensionalArray<number, number> = number[]> {
     /**
