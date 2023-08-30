@@ -7,6 +7,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import { InputBlock } from "../Input/inputBlock";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { ReflectionTextureBaseBlock } from "./reflectionTextureBaseBlock";
+import type { NodeMaterialBlock } from "../../nodeMaterialBlock";
 
 /**
  * Block used to read a reflection texture from a sampler
@@ -155,11 +156,11 @@ export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
         return this._outputs[5];
     }
 
-    public autoConfigure(material: NodeMaterial) {
+    public autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         super.autoConfigure(material);
 
         if (!this.cameraPosition.isConnected) {
-            let cameraPositionInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.CameraPosition);
+            let cameraPositionInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.CameraPosition && additionalFilteringInfo(b));
 
             if (!cameraPositionInput) {
                 cameraPositionInput = new InputBlock("cameraPosition");
