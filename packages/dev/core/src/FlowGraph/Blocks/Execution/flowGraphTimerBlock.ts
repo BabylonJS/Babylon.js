@@ -2,7 +2,6 @@ import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import type { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
 import { AdvancedTimer } from "../../../Misc/timer";
 import type { FlowGraphContext } from "../../flowGraphContext";
-import type { Scene } from "../../../scene";
 import { FlowGraphAsyncExecutionBlock } from "../../flowGraphAsyncExecutionBlock";
 import { RichTypes } from "../../flowGraphRichTypes";
 

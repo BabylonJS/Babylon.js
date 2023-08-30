@@ -1,4 +1,3 @@
-import type { Scene } from "../../../scene";
 import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 
