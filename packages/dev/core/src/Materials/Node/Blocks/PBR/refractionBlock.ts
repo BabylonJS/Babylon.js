@@ -171,7 +171,7 @@ export class RefractionBlock extends NodeMaterialBlock {
         return this._scene.environmentTexture;
     }
 
-    public autoConfigure(material: NodeMaterial, additionalFilteringInfo?: (node: NodeMaterialBlock) => boolean) {
+    public autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.intensity.isConnected) {
             const intensityInput = new InputBlock("Refraction intensity", NodeMaterialBlockTargets.Fragment, NodeMaterialBlockConnectionPointTypes.Float);
             intensityInput.value = 1;
@@ -179,7 +179,7 @@ export class RefractionBlock extends NodeMaterialBlock {
         }
 
         if (this.view && !this.view.isConnected) {
-            let viewInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.View && (!additionalFilteringInfo || additionalFilteringInfo(b)));
+            let viewInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.View && additionalFilteringInfo(b));
 
             if (!viewInput) {
                 viewInput = new InputBlock("view");

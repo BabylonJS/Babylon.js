@@ -650,11 +650,9 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         return this._outputs[12];
     }
 
-    public autoConfigure(material: NodeMaterial, additionalFilteringInfo?: (node: NodeMaterialBlock) => boolean) {
+    public autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.cameraPosition.isConnected) {
-            let cameraPositionInput = material.getInputBlockByPredicate(
-                (b) => b.systemValue === NodeMaterialSystemValues.CameraPosition && (!additionalFilteringInfo || additionalFilteringInfo(b))
-            );
+            let cameraPositionInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.CameraPosition && additionalFilteringInfo(b));
 
             if (!cameraPositionInput) {
                 cameraPositionInput = new InputBlock("cameraPosition");
@@ -664,7 +662,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         }
 
         if (!this.view.isConnected) {
-            let viewInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.View && (!additionalFilteringInfo || additionalFilteringInfo(b)));
+            let viewInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.View && additionalFilteringInfo(b));
 
             if (!viewInput) {
                 viewInput = new InputBlock("view");

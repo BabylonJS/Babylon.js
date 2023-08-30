@@ -476,7 +476,7 @@ export class NodeMaterialBlock {
      * @param additionalFilteringInfo optional additional filtering condition when looking for compatible blocks
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public autoConfigure(material: NodeMaterial, additionalFilteringInfo?: (node: NodeMaterialBlock) => boolean) {
+    public autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         // Do nothing
     }
 

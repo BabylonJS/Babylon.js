@@ -168,9 +168,9 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         return this.texture;
     }
 
-    public autoConfigure(material: NodeMaterial, additionalFilteringInfo?: (node: NodeMaterialBlock) => boolean) {
+    public autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.position.isConnected) {
-            let positionInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "position" && (!additionalFilteringInfo || additionalFilteringInfo(b)));
+            let positionInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "position" && additionalFilteringInfo(b));
 
             if (!positionInput) {
                 positionInput = new InputBlock("position");
@@ -180,7 +180,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         }
 
         if (!this.world.isConnected) {
-            let worldInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.World && (!additionalFilteringInfo || additionalFilteringInfo(b)));
+            let worldInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.World && additionalFilteringInfo(b));
 
             if (!worldInput) {
                 worldInput = new InputBlock("world");
@@ -190,7 +190,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         }
 
         if (this.view && !this.view.isConnected) {
-            let viewInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.View && (!additionalFilteringInfo || additionalFilteringInfo(b)));
+            let viewInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.View && additionalFilteringInfo(b));
 
             if (!viewInput) {
                 viewInput = new InputBlock("view");

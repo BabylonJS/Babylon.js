@@ -53,11 +53,9 @@ export class ViewDirectionBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    public autoConfigure(material: NodeMaterial, additionalFilteringInfo?: (node: NodeMaterialBlock) => boolean) {
+    public autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.cameraPosition.isConnected) {
-            let cameraPositionInput = material.getInputBlockByPredicate(
-                (b) => b.systemValue === NodeMaterialSystemValues.CameraPosition && (!additionalFilteringInfo || additionalFilteringInfo(b))
-            );
+            let cameraPositionInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.CameraPosition && additionalFilteringInfo(b));
 
             if (!cameraPositionInput) {
                 cameraPositionInput = new InputBlock("cameraPosition");

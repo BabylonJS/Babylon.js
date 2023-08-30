@@ -109,9 +109,9 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         state._excludeVariableName("morphTargetInfluences");
     }
 
-    public autoConfigure(material: NodeMaterial, additionalFilteringInfo?: (node: NodeMaterialBlock) => boolean) {
+    public autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.position.isConnected) {
-            let positionInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "position" && (!additionalFilteringInfo || additionalFilteringInfo(b)));
+            let positionInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "position" && additionalFilteringInfo(b));
 
             if (!positionInput) {
                 positionInput = new InputBlock("position");
@@ -120,7 +120,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
             positionInput.output.connectTo(this.position);
         }
         if (!this.normal.isConnected) {
-            let normalInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "normal" && (!additionalFilteringInfo || additionalFilteringInfo(b)));
+            let normalInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "normal" && additionalFilteringInfo(b));
 
             if (!normalInput) {
                 normalInput = new InputBlock("normal");
@@ -129,7 +129,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
             normalInput.output.connectTo(this.normal);
         }
         if (!this.tangent.isConnected) {
-            let tangentInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "tangent" && (!additionalFilteringInfo || additionalFilteringInfo(b)));
+            let tangentInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "tangent" && additionalFilteringInfo(b));
 
             if (!tangentInput) {
                 tangentInput = new InputBlock("tangent");
@@ -138,7 +138,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
             tangentInput.output.connectTo(this.tangent);
         }
         if (!this.uv.isConnected) {
-            let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "uv" && (!additionalFilteringInfo || additionalFilteringInfo(b)));
+            let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "uv" && additionalFilteringInfo(b));
 
             if (!uvInput) {
                 uvInput = new InputBlock("uv");

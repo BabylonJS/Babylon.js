@@ -89,9 +89,9 @@ export class InstancesBlock extends NodeMaterialBlock {
         return this._outputs[1];
     }
 
-    public autoConfigure(material: NodeMaterial, additionalFilteringInfo?: (node: NodeMaterialBlock) => boolean) {
+    public autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.world0.connectedPoint) {
-            let world0Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world0" && (!additionalFilteringInfo || additionalFilteringInfo(b)));
+            let world0Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world0" && additionalFilteringInfo(b));
 
             if (!world0Input) {
                 world0Input = new InputBlock("world0");
@@ -100,7 +100,7 @@ export class InstancesBlock extends NodeMaterialBlock {
             world0Input.output.connectTo(this.world0);
         }
         if (!this.world1.connectedPoint) {
-            let world1Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world1" && (!additionalFilteringInfo || additionalFilteringInfo(b)));
+            let world1Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world1" && additionalFilteringInfo(b));
 
             if (!world1Input) {
                 world1Input = new InputBlock("world1");
@@ -109,7 +109,7 @@ export class InstancesBlock extends NodeMaterialBlock {
             world1Input.output.connectTo(this.world1);
         }
         if (!this.world2.connectedPoint) {
-            let world2Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world2" && (!additionalFilteringInfo || additionalFilteringInfo(b)));
+            let world2Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world2" && additionalFilteringInfo(b));
 
             if (!world2Input) {
                 world2Input = new InputBlock("world2");
@@ -118,7 +118,7 @@ export class InstancesBlock extends NodeMaterialBlock {
             world2Input.output.connectTo(this.world2);
         }
         if (!this.world3.connectedPoint) {
-            let world3Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world3" && (!additionalFilteringInfo || additionalFilteringInfo(b)));
+            let world3Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world3" && additionalFilteringInfo(b));
 
             if (!world3Input) {
                 world3Input = new InputBlock("world3");
@@ -127,7 +127,7 @@ export class InstancesBlock extends NodeMaterialBlock {
             world3Input.output.connectTo(this.world3);
         }
         if (!this.world.connectedPoint) {
-            let worldInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world" && (!additionalFilteringInfo || additionalFilteringInfo(b)));
+            let worldInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world" && additionalFilteringInfo(b));
 
             if (!worldInput) {
                 worldInput = new InputBlock("world");

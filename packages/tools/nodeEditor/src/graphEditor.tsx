@@ -438,7 +438,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
             // Don't allow blocks to automatically connect to other blocks that are inside frames
             block.autoConfigure(
                 this.props.globalState.nodeMaterial,
-                (block: NodeMaterialBlock) => !this._graphCanvas.nodes.some((node: any) => node.enclosingFrameId >= 0 && node.content.data.uniqueId === block.uniqueId)
+                (filterBlock: NodeMaterialBlock) => !this._graphCanvas.nodes.some((node: any) => node.enclosingFrameId >= 0 && node.content.data.uniqueId === filterBlock.uniqueId)
             );
             newNode = this.appendBlock(block);
             newNode.addClassToVisual(block.getClassName());
