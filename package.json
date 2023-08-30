@@ -9,9 +9,9 @@
     "devDependencies": {
         "@alex_neo/jest-expect-message": "~1.0.5",
         "@dev/build-tools": "^1.0.0",
-        "@nrwl/cli": "^14.3.5",
-        "@nrwl/tao": "^14.3.5",
-        "@nrwl/workspace": "^14.3.5",
+        "@nrwl/cli": "^15.9.3",
+        "@nrwl/tao": "^15.9.3",
+        "@nrwl/workspace": "^15.9.3",
         "@types/expect-puppeteer": "~5.0.3",
         "@types/fs-extra": "^9.0.13",
         "@types/jest": "~27.4.0",
@@ -25,26 +25,28 @@
         "chokidar": "~3.5.2",
         "concurrently": "~8.0.1",
         "dotenv": "~16.0.0",
+        "es-check": "^7.1.1",
         "eslint": "^8.11.0",
         "eslint-config-prettier": "~8.5.0",
         "eslint-formatter-azure-devops": "^0.2.0",
         "eslint-plugin-import": "~2.26.0",
         "eslint-plugin-jest": "~26.5.3",
-        "eslint-plugin-jsdoc": "~39.3.2",
+        "eslint-plugin-jsdoc": "~46.2.6",
         "eslint-plugin-prettier": "~4.0.0",
         "eslint-plugin-tsdoc": "~0.2.14",
         "fs-extra": "^10.0.1",
-        "jest": "~27.5.1",
+        "jest": "~29.5.0",
+        "jest-environment-jsdom": "^29.5.0",
         "jest-junit": "~13.2.0",
         "mini-css-extract-plugin": "~2.6.0",
         "prettier": "^2.6.0",
         "rimraf": "~3.0.2",
         "selenium-webdriver": "^4.3.1",
-        "ts-jest": "~27.1.3",
+        "ts-jest": "~29.1.0",
         "ts-node": "~10.7.0",
-        "ts-patch": "~2.1.0",
+        "ts-patch": "3.0.0",
         "tslib": "^2.4.0",
-        "typescript": "~4.9.4",
+        "typescript": "~5.1.0",
         "webpack": "^5.73.0",
         "webpack-cli": "^5.1.0"
     },
@@ -59,8 +61,8 @@
         "build:lts": "npm run build:assets && npm run build:source:lts",
         "build:source": "tsc -b ./tsconfig.devpackages.json",
         "build:source:lts": "npx nx run-many --target=compile --projects=@lts/core,@lts/gui,@lts/loaders,@lts/materials,@lts/post-processes,@lts/procedural-textures,@lts/serializers --parallel=1",
-        "build:umd": "nx run-many --target=build --parallel --maxParallel=6 --projects=babylonjs,babylonjs-gui,babylonjs-inspector,babylonjs-loaders,babylonjs-materials,babylonjs-serializers,babylonjs-post-process,babylonjs-procedural-textures,babylonjs-node-editor,babylonjs-gui-editor,babylonjs-ktx2decoder,babylonjs-viewer-assets,babylonjs-viewer,babylonjs-accessibility",
-        "build:es6": "nx run-many --target=build --parallel --maxParallel=6 --projects=core,gui,loaders,materials,serializers,post-processes,procedural-textures,node-editor,inspector,gui-editor,viewer,shared-ui-components,accessibility",
+        "build:umd": "nx run-many --target=build --parallel --maxParallel=6 --projects=babylonjs,babylonjs-gui,babylonjs-inspector,babylonjs-loaders,babylonjs-materials,babylonjs-serializers,babylonjs-post-process,babylonjs-procedural-textures,babylonjs-node-editor,babylonjs-node-geometry-editor,babylonjs-gui-editor,babylonjs-ktx2decoder,babylonjs-viewer-assets,babylonjs-viewer,babylonjs-accessibility",
+        "build:es6": "nx run-many --target=build --parallel --maxParallel=6 --projects=core,gui,loaders,materials,serializers,post-processes,procedural-textures,node-editor,node-geometry-editor,inspector,gui-editor,viewer,shared-ui-components,accessibility",
         "watch:shaders": "build-tools -c build-shaders --global --watch",
         "watch:assets": "build-tools -c pa --global --watch",
         "watch:source:dev": "tsc -b ./tsconfig.devpackages.json -w",
@@ -81,6 +83,7 @@
         "test:integration": "jest --selectProjects=integration --runInBand && npm run test -w @tools/memory-leak-tests",
         "test:performance": "jest --selectProjects=performance --runInBand",
         "test:interactions": "jest --selectProjects=interactions --runInBand",
+        "test:escheck": "nx run-many --target=test:escheck --parallel --maxParallel=6",
         "prepare": "ts-patch install -s && npm run build:tools && npm i @dev/build-tools -D && npm run build:assets && npm run build:test-tools",
         "clean": "npx nx run-many --target=clean --all && npm run build:tools",
         "format": "npm run format:check && npm run format:fix",
@@ -95,12 +98,15 @@
         "start": "concurrently --kill-others -m 2 -n dev-watch,cdn-server \"npm run watch:dev:skip-compile\" \"npm run serve -w @tools/babylon-server\""
     },
     "engines": {
-        "node": ">=14.0.0 <20.0.0",
+        "node": ">=14.0.0 <21.0.0",
         "npm": ">=8.0.0"
     },
     "changelog": {
         "nextVersion": "Unreleased",
         "ignoreCommitters": [],
         "feature": "New Feature"
+    },
+    "dependencies": {
+        "lerna": "^7.0.2"
     }
 }
