@@ -1,20 +1,20 @@
 import type { FlowGraphContext } from "../../flowGraphContext";
 import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import { FlowGraphValueType } from "core/FlowGraph/flowGraphTypes";
+import { RichTypes } from "../../flowGraphRichTypes";
 
 /**
  * @experimental
  */
-export class FlowGraphGetVariableBlock extends FlowGraphBlock {
-    public readonly variableName: FlowGraphDataConnection;
-    public readonly output: FlowGraphDataConnection;
+export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
+    public readonly variableName: FlowGraphDataConnection<string>;
+    public readonly output: FlowGraphDataConnection<T>;
 
     constructor() {
         super();
 
-        this.variableName = this._registerDataInput("variableName", FlowGraphValueType.String);
-        this.output = this._registerDataOutput("output", FlowGraphValueType.Any);
+        this.variableName = this._registerDataInput("variableName", RichTypes.String);
+        this.output = this._registerDataOutput("output", RichTypes.Any);
     }
 
     /**

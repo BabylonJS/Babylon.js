@@ -1,7 +1,7 @@
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
-import { FlowGraphValueType } from "core/FlowGraph/flowGraphTypes";
+import { RichTypes } from "../../flowGraphRichTypes";
 
 /**
  * @experimental
@@ -11,11 +11,11 @@ export class FlowGraphLogBlock extends FlowGraphWithOnDoneExecutionBlock {
     /**
      * The message to log.
      */
-    public readonly message: FlowGraphDataConnection;
+    public readonly message: FlowGraphDataConnection<any>;
 
     public constructor() {
         super();
-        this.message = this._registerDataInput("message", FlowGraphValueType.Any);
+        this.message = this._registerDataInput("message", RichTypes.Any);
         this.message.value = "Hello World!";
     }
 

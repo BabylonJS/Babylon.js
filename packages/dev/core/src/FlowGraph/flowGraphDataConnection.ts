@@ -1,8 +1,7 @@
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphConnection, FlowGraphConnectionType } from "./flowGraphConnection";
 import type { FlowGraphContext } from "./flowGraphContext";
-import type { FlowGraphValueType } from "./flowGraphTypes";
-import { getDefaultValueForType } from "./flowGraphTypes";
+import type { RichType } from "./flowGraphRichTypes";
 
 /**
  * @experimental
@@ -11,12 +10,12 @@ import { getDefaultValueForType } from "./flowGraphTypes";
  * An output point will only have a value if it is connected to an input point. Furthermore,
  * if the point belongs to a "function" node, the node will run its function to update the value.
  */
-export class FlowGraphDataConnection extends FlowGraphConnection<FlowGraphBlock, FlowGraphDataConnection> {
-    private _isValueUnintialized: boolean = true;
-    private _value?: any;
+export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlock, FlowGraphDataConnection<T>> {
+    private _value: T;
 
-    public constructor(name: string, type: FlowGraphConnectionType, ownerBlock: FlowGraphBlock, private _valueType: FlowGraphValueType) {
-        super(name, type, ownerBlock);
+    public constructor(name: string, connectionType: FlowGraphConnectionType, ownerBlock: FlowGraphBlock, private _valueType: RichType<T>) {
+        super(name, connectionType, ownerBlock);
+        this._value = this._valueType.defaultValueBuilder();
     }
 
     /**
@@ -24,22 +23,21 @@ export class FlowGraphDataConnection extends FlowGraphConnection<FlowGraphBlock,
      * but an input data block can only connect to one output data block.
      */
     public _isSingularConnection(): boolean {
-        return this.type === FlowGraphConnectionType.Input;
+        return this.connectionType === FlowGraphConnectionType.Input;
     }
 
-    public set value(value: any) {
+    public set value(value: T) {
         this._value = value;
-        this._isValueUnintialized = false;
     }
 
-    public getValue(context: FlowGraphContext): any {
-        if (this.type === FlowGraphConnectionType.Output) {
+    public getValue(context: FlowGraphContext): T {
+        if (this.connectionType === FlowGraphConnectionType.Output) {
             this._ownerBlock._updateOutputs(context);
             return this._value;
         }
 
         if (!this.isConnected()) {
-            return this._isValueUnintialized ? getDefaultValueForType(this._valueType) : this._value;
+            return this._value;
         } else {
             return this._connectedPoint[0].getValue(context);
         }

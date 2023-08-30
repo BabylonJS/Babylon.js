@@ -2,7 +2,7 @@ import { RandomGUID } from "../Misc/guid";
 import { FlowGraphConnectionType } from "./flowGraphConnection";
 import type { FlowGraphContext } from "./flowGraphContext";
 import { FlowGraphDataConnection } from "./flowGraphDataConnection";
-import type { FlowGraphValueType } from "./flowGraphTypes";
+import type { RichType } from "./flowGraphRichTypes";
 
 /**
  * @experimental
@@ -18,11 +18,11 @@ export class FlowGraphBlock {
     /**
      * The data inputs of the block.
      */
-    public readonly dataInputs: FlowGraphDataConnection[] = [];
+    public readonly dataInputs: FlowGraphDataConnection<any>[] = [];
     /**
      * The data outputs of the block.
      */
-    public readonly dataOutputs: FlowGraphDataConnection[] = [];
+    public readonly dataOutputs: FlowGraphDataConnection<any>[] = [];
 
     /** Constructor is protected so only subclasses can be instantiated */
     protected constructor() {}
@@ -34,13 +34,13 @@ export class FlowGraphBlock {
         // empty by default, overriden in data blocks
     }
 
-    protected _registerDataInput(name: string, className: FlowGraphValueType): FlowGraphDataConnection {
+    protected _registerDataInput<T>(name: string, className: RichType<T>): FlowGraphDataConnection<T> {
         const input = new FlowGraphDataConnection(name, FlowGraphConnectionType.Input, this, className);
         this.dataInputs.push(input);
         return input;
     }
 
-    protected _registerDataOutput(name: string, className: FlowGraphValueType): FlowGraphDataConnection {
+    protected _registerDataOutput<T>(name: string, className: RichType<T>): FlowGraphDataConnection<T> {
         const output = new FlowGraphDataConnection(name, FlowGraphConnectionType.Output, this, className);
         this.dataOutputs.push(output);
         return output;

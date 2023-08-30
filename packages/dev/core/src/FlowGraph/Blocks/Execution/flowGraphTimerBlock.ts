@@ -4,7 +4,7 @@ import { AdvancedTimer } from "../../../Misc/timer";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { Scene } from "../../../scene";
 import { FlowGraphAsyncExecutionBlock } from "../../flowGraphAsyncExecutionBlock";
-import { FlowGraphValueType } from "../../flowGraphTypes";
+import { RichTypes } from "../../flowGraphRichTypes";
 
 /**
  * @experimental
@@ -12,13 +12,13 @@ import { FlowGraphValueType } from "../../flowGraphTypes";
  * The delay is counted on the scene's tick.
  */
 export class FlowGraphTimerBlock extends FlowGraphAsyncExecutionBlock {
-    public readonly timeout: FlowGraphDataConnection;
+    public readonly timeout: FlowGraphDataConnection<number>;
     public readonly onTimerDone: FlowGraphSignalConnection;
 
     constructor() {
         super();
 
-        this.timeout = this._registerDataInput("timeout", FlowGraphValueType.Float);
+        this.timeout = this._registerDataInput("timeout", RichTypes.Number);
         this.onTimerDone = this._registerSignalOutput("onTimerDone");
     }
 

@@ -13,7 +13,7 @@ export enum FlowGraphConnectionType {
 export interface IConnectable {
     _connectedPoint: Array<IConnectable>;
     _isSingularConnection(): boolean;
-    _type: FlowGraphConnectionType;
+    _connectionType: FlowGraphConnectionType;
     connectTo(point: IConnectable): void;
 }
 
@@ -25,13 +25,13 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
     /** @internal */
     public _connectedPoint: Array<ConnectedToT> = [];
 
-    public constructor(public name: string, /** @internal */ public _type: FlowGraphConnectionType, protected _ownerBlock: BlockT) {}
+    public constructor(public name: string, /** @internal */ public _connectionType: FlowGraphConnectionType, protected _ownerBlock: BlockT) {}
 
     /**
      * The type of the connection
      */
-    public get type() {
-        return this._type;
+    public get connectionType() {
+        return this._connectionType;
     }
 
     /**
@@ -55,8 +55,8 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
      * @param point
      */
     public connectTo(point: ConnectedToT): void {
-        if (this._type === point._type) {
-            throw new Error(`Cannot connect two points of type ${this.type}`);
+        if (this._connectionType === point._connectionType) {
+            throw new Error(`Cannot connect two points of type ${this.connectionType}`);
         }
         if ((this._isSingularConnection() && this._connectedPoint.length > 0) || (point._isSingularConnection() && point._connectedPoint.length > 0)) {
             throw new Error("Max number of connections for point reached");

@@ -1,4 +1,4 @@
-import { FlowGraphValueType } from "core/FlowGraph/flowGraphTypes";
+import { RichTypes } from "../../flowGraphRichTypes";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
@@ -8,21 +8,17 @@ import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExec
  * Block that sets a property on a target object.
  * TODO: Add support for animating the property.
  */
-export class FlowGraphSetPropertyBlock extends FlowGraphWithOnDoneExecutionBlock {
-    public readonly target: FlowGraphDataConnection;
-    public readonly property: FlowGraphDataConnection;
-    public readonly value: FlowGraphDataConnection;
-
-    public readonly outTarget: FlowGraphDataConnection;
+export class FlowGraphSetPropertyBlock<TargetT, ValueT> extends FlowGraphWithOnDoneExecutionBlock {
+    public readonly target: FlowGraphDataConnection<TargetT>;
+    public readonly property: FlowGraphDataConnection<string>;
+    public readonly value: FlowGraphDataConnection<ValueT>;
 
     public constructor() {
         super();
 
-        this.target = this._registerDataInput("target", FlowGraphValueType.Any);
-        this.property = this._registerDataInput("property", FlowGraphValueType.String);
-        this.value = this._registerDataInput("value", FlowGraphValueType.Any);
-
-        this.outTarget = this._registerDataOutput("outTarget", FlowGraphValueType.Any);
+        this.target = this._registerDataInput("target", RichTypes.Any);
+        this.property = this._registerDataInput("property", RichTypes.String);
+        this.value = this._registerDataInput("value", RichTypes.Any);
     }
 
     private _setProperty(target: any, property: string, value: any): void {

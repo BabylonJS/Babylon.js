@@ -14,14 +14,14 @@ export class FlowGraphSignalConnection extends FlowGraphConnection<FlowGraphExec
      * but a signal output can only connect to one signal input
      */
     public _isSingularConnection(): boolean {
-        return this.type === FlowGraphConnectionType.Output;
+        return this.connectionType === FlowGraphConnectionType.Output;
     }
 
     /**
      * @internal
      */
     public _activateSignal(context: FlowGraphContext): void {
-        if (this.type === FlowGraphConnectionType.Input) {
+        if (this.connectionType === FlowGraphConnectionType.Input) {
             this._ownerBlock._execute(context);
         } else {
             this._connectedPoint[0]?._activateSignal(context);
