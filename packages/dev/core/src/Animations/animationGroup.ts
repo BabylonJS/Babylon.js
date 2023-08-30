@@ -62,6 +62,8 @@ export class AnimationGroup implements IDisposable {
     private _isAdditive = false;
     private _weight = -1;
     private _playOrder = 0;
+    private _enableBlending: Nullable<boolean> = null;
+    private _blendingSpeed: Nullable<number> = null;
 
     /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
@@ -320,22 +322,45 @@ export class AnimationGroup implements IDisposable {
 
     /**
      * Allows the animations of the animation group to blend with current running animations
-     * Note: this method should be called after all targeted animations have been added to the group
-     * @param blendingSpeed defines the blending speed to use
+     * Note that a null value means that each animation will use their own existing blending configuration (Animation.enableBlending)
      */
-    public enableBlending(blendingSpeed: number) {
-        for (let i = 0; i < this._targetedAnimations.length; ++i) {
-            this._targetedAnimations[i].animation.enableBlending = true;
-            this._targetedAnimations[i].animation.blendingSpeed = blendingSpeed;
+    public get enableBlending() {
+        return this._enableBlending;
+    }
+
+    public set enableBlending(value: Nullable<boolean>) {
+        if (this._enableBlending === value) {
+            return;
+        }
+
+        this._enableBlending = value;
+
+        if (value !== null) {
+            for (let i = 0; i < this._targetedAnimations.length; ++i) {
+                this._targetedAnimations[i].animation.enableBlending = value;
+            }
         }
     }
 
     /**
-     * Disable animation blending
+     * Gets or sets the animation blending speed
+     * Note that a null value means that each animation will use their own existing blending configuration (Animation.blendingSpeed)
      */
-    public disableBlending() {
-        for (let i = 0; i < this._targetedAnimations.length; ++i) {
-            this._targetedAnimations[i].animation.enableBlending = false;
+    public get blendingSpeed() {
+        return this._blendingSpeed;
+    }
+
+    public set blendingSpeed(value: Nullable<number>) {
+        if (this._blendingSpeed === value) {
+            return;
+        }
+
+        this._blendingSpeed = value;
+
+        if (value !== null) {
+            for (let i = 0; i < this._targetedAnimations.length; ++i) {
+                this._targetedAnimations[i].animation.blendingSpeed = value;
+            }
         }
     }
 
@@ -355,7 +380,7 @@ export class AnimationGroup implements IDisposable {
         weight = weight ?? animationGroups[0].weight;
 
         let beginFrame = Number.MAX_VALUE;
-        let endFrame = Number.MIN_VALUE;
+        let endFrame = -Number.MAX_VALUE;
 
         if (normalize) {
             for (const animationGroup of animationGroups) {
@@ -430,6 +455,14 @@ export class AnimationGroup implements IDisposable {
 
         if (this._to < keys[keys.length - 1].frame) {
             this._to = keys[keys.length - 1].frame;
+        }
+
+        if (this._enableBlending !== null) {
+            animation.enableBlending = this._enableBlending;
+        }
+
+        if (this._blendingSpeed !== null) {
+            animation.blendingSpeed = this._blendingSpeed;
         }
 
         this._targetedAnimations.push(targetedAnimation);
@@ -900,6 +933,82 @@ export class AnimationGroup implements IDisposable {
         }
 
         animationGroup.isAdditive = true;
+
+        return animationGroup;
+    }
+
+    /**
+     * Creates a new animation, keeping only the keys that are inside a given range
+     * @param animationGroup defines the animation group on which to operate
+     * @param fromKey defines the lower bound of the range
+     * @param toKey defines the upper bound of the range
+     * @param name defines the name of the new animation group. If not provided, use the same name as animationGroup
+     * @returns a new animation group stripped from all the keys outside the given range
+     */
+    public static ClipKeys(sourceAnimationGroup: AnimationGroup, fromKey: number, toKey: number, name?: string): AnimationGroup {
+        const animationGroup = sourceAnimationGroup.clone(name || sourceAnimationGroup.name);
+
+        return this.ClipKeysInPlace(animationGroup, fromKey, toKey);
+    }
+
+    /**
+     * Updates an existing animation, keeping only the keys that are inside a given range
+     * @param animationGroup defines the animation group on which to operate
+     * @param fromKey defines the lower bound of the range
+     * @param toKey defines the upper bound of the range
+     * @returns the source animationGroup stripped from all the keys outside the given range
+     */
+    public static ClipKeysInPlace(animationGroup: AnimationGroup, fromKey: number, toKey: number): AnimationGroup {
+        let from = Number.MAX_VALUE;
+        let to = -Number.MAX_VALUE;
+
+        const targetedAnimations = animationGroup.targetedAnimations;
+        for (let index = 0; index < targetedAnimations.length; index++) {
+            const targetedAnimation = targetedAnimations[index];
+            const animation = targetedAnimation.animation.clone();
+            const keys = animation.getKeys();
+            const newKeys: IAnimationKey[] = [];
+
+            let startFrame = Number.MAX_VALUE;
+            for (let k = 0; k < keys.length; k++) {
+                if (k >= fromKey && k <= toKey) {
+                    const key = keys[k];
+                    const newKey: IAnimationKey = {
+                        frame: key.frame,
+                        value: key.value,
+                        inTangent: key.inTangent,
+                        outTangent: key.outTangent,
+                        interpolation: key.interpolation,
+                        lockedTangent: key.lockedTangent,
+                    };
+                    if (startFrame === Number.MAX_VALUE) {
+                        startFrame = newKey.frame;
+                    }
+                    newKey.frame -= startFrame;
+                    newKeys.push(newKey);
+                }
+            }
+
+            if (newKeys.length === 0) {
+                targetedAnimations.splice(index, 1);
+                index--;
+                continue;
+            }
+
+            if (from > newKeys[0].frame) {
+                from = newKeys[0].frame;
+            }
+
+            if (to < newKeys[newKeys.length - 1].frame) {
+                to = newKeys[newKeys.length - 1].frame;
+            }
+
+            animation.setKeys(newKeys, true);
+            targetedAnimation.animation = animation;
+        }
+
+        animationGroup._from = from;
+        animationGroup._to = to;
 
         return animationGroup;
     }

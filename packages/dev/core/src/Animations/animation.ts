@@ -1140,9 +1140,10 @@ export class Animation {
     /**
      * Sets the key frames of the animation
      * @param values The animation key frames to set
+     * @param dontClone Whether to clone the keys or not (default is false, so the array of keys is cloned)
      */
-    public setKeys(values: Array<IAnimationKey>): void {
-        this._keys = values.slice(0);
+    public setKeys(values: Array<IAnimationKey>, dontClone = false): void {
+        this._keys = !dontClone ? values.slice(0) : values;
     }
 
     /**
