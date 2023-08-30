@@ -139,6 +139,8 @@ void main(void) {
     lightingInfo info;
 	float shadow = 1.;
     float glossiness = 0.;
+    float aggShadow = 0.;
+	float numLights = 0.;
     
 #include<lightFragment>[0]
 #include<lightFragment>[1]
