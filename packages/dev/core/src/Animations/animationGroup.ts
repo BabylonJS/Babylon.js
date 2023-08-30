@@ -62,6 +62,8 @@ export class AnimationGroup implements IDisposable {
     private _isAdditive = false;
     private _weight = -1;
     private _playOrder = 0;
+    private _enableBlending: Nullable<boolean> = null;
+    private _blendingSpeed: Nullable<number> = null;
 
     /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
@@ -320,22 +322,45 @@ export class AnimationGroup implements IDisposable {
 
     /**
      * Allows the animations of the animation group to blend with current running animations
-     * Note: this method should be called after all targeted animations have been added to the group
-     * @param blendingSpeed defines the blending speed to use
+     * Note that a null value means that each animation will use their own existing blending configuration (Animation.enableBlending)
      */
-    public enableBlending(blendingSpeed: number) {
-        for (let i = 0; i < this._targetedAnimations.length; ++i) {
-            this._targetedAnimations[i].animation.enableBlending = true;
-            this._targetedAnimations[i].animation.blendingSpeed = blendingSpeed;
+    public get enableBlending() {
+        return this._enableBlending;
+    }
+
+    public set enableBlending(value: Nullable<boolean>) {
+        if (this._enableBlending === value) {
+            return;
+        }
+
+        this._enableBlending = value;
+
+        if (value !== null) {
+            for (let i = 0; i < this._targetedAnimations.length; ++i) {
+                this._targetedAnimations[i].animation.enableBlending = value;
+            }
         }
     }
 
     /**
-     * Disable animation blending
+     * Gets or sets the animation blending speed
+     * Note that a null value means that each animation will use their own existing blending configuration (Animation.blendingSpeed)
      */
-    public disableBlending() {
-        for (let i = 0; i < this._targetedAnimations.length; ++i) {
-            this._targetedAnimations[i].animation.enableBlending = false;
+    public get blendingSpeed() {
+        return this._blendingSpeed;
+    }
+
+    public set blendingSpeed(value: Nullable<number>) {
+        if (this._blendingSpeed === value) {
+            return;
+        }
+
+        this._blendingSpeed = value;
+
+        if (value !== null) {
+            for (let i = 0; i < this._targetedAnimations.length; ++i) {
+                this._targetedAnimations[i].animation.blendingSpeed = value;
+            }
         }
     }
 
@@ -430,6 +455,14 @@ export class AnimationGroup implements IDisposable {
 
         if (this._to < keys[keys.length - 1].frame) {
             this._to = keys[keys.length - 1].frame;
+        }
+
+        if (this._enableBlending !== null) {
+            animation.enableBlending = this._enableBlending;
+        }
+
+        if (this._blendingSpeed !== null) {
+            animation.blendingSpeed = this._blendingSpeed;
         }
 
         this._targetedAnimations.push(targetedAnimation);
