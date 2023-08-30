@@ -12,6 +12,11 @@ export interface INodeGeometryExecutionContext {
      * @returns the current face index
      */
     getExecutionFaceIndex(): number;
+    /**
+     * Gets the current loop index in the current flow
+     * @returns the current loop index
+     */
+    getExecutionLoopIndex(): number;
 
     /**
      * Gets the value associated with a contextual positions

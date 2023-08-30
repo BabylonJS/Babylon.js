@@ -6,6 +6,7 @@ import { NodeGeometryConnectionPoint, NodeGeometryConnectionPointDirection } fro
 import type { NodeGeometryBuildState } from "./nodeGeometryBuildState";
 import { Observable } from "../../Misc/observable";
 import { PrecisionDate } from "../../Misc/precisionDate";
+import type { Nullable } from "../../types";
 
 /**
  * Defines a block that can be used inside a node based geometry
@@ -147,7 +148,7 @@ export class NodeGeometryBlock {
 
     /**
      * Checks if the current block is an ancestor of a given type
-     * @param block defines the potential type to check
+     * @param type defines the potential type to check
      * @returns true if block is a descendant
      */
     public isAnAncestorOfType(type: string): boolean {
@@ -168,6 +169,33 @@ export class NodeGeometryBlock {
         }
 
         return false;
+    }
+
+    /**
+     * Get the first descendant using a predicate
+     * @param predicate defines the predicate to check
+     * @returns descendant or null if none found
+     */
+    public getDescendantOfPredicate(predicate: (block: NodeGeometryBlock) => boolean): Nullable<NodeGeometryBlock> {
+        if (predicate(this)) {
+            return this;
+        }
+
+        for (const output of this._outputs) {
+            if (!output.hasEndpoints) {
+                continue;
+            }
+
+            for (const endpoint of output.endpoints) {
+                const descendant = endpoint.ownerBlock.getDescendantOfPredicate(predicate);
+
+                if (descendant) {
+                    return descendant;
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -196,6 +224,7 @@ export class NodeGeometryBlock {
         const point = new NodeGeometryConnectionPoint(name, this, NodeGeometryConnectionPointDirection.Input);
         point.type = type;
         point.isOptional = isOptional;
+        point.defaultValue = value;
         point.value = value;
         point.valueMin = valueMin;
         point.valueMax = valueMax;

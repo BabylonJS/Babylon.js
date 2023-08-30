@@ -49,6 +49,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         UV6sBlock: "Contextual value pointing at the uvs6 array of the active geometry",
         VertexIDBlock: "Contextual value representing the vertex index of the current vertex of the active geometry",
         FaceIDBlock: "Contextual value representing the face index of the current face of the active geometry",
+        LoopIDBlock: "Contextual value representing the current loop index (within a clone or an instantiate block)",
         GeometryIDBlock: "Contextual value representing the identifier of the current active geometry",
         CollectionIDBlock: "Contextual value representing the collection ID associated with the current active geometry",
         EqualBlock: "Conditional block set to Equal",
@@ -99,6 +100,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         InstantiateOnVerticesBlock: "Instantiate a geometry on every vertex of a target geometry",
         InstantiateOnFacesBlock: "Instantiate a geometry on the faces of a target geometry",
         InstantiateOnVolumeBlock: "Instantiate a geometry inside a target geometry",
+        InstantiateBlock: "Instantiate a geometry with a loop count",
         ElbowBlock: "Passthrough block mostly used to organize your graph",
         TeleportInBlock: "Passthrough block mostly used to organize your graph (but without visible lines). It works like a teleportation point for the graph.",
         TeleportOutBlock: "Endpoint for a TeleportInBlock.",
@@ -117,6 +119,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         NullBlock: "Generate an empty geometry",
         OptimizeBlock: "Eliminate vertices that share positions with another vertex",
         GeometryInfoBlock: "Provides information about a geometry",
+        MappingBlock: "Generate uv coordinates based on mapping type",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -179,6 +182,10 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
     removeItem(value: string): void {
         const frameJson = localStorage.getItem("Custom-Frame-List");
         if (frameJson) {
+            const registeredIdx = NodeLedger.RegisteredNodeNames.indexOf(value);
+            if (registeredIdx !== -1) {
+                NodeLedger.RegisteredNodeNames.splice(registeredIdx, 1);
+            }
             const frameList = JSON.parse(frameJson);
             delete frameList[value];
             localStorage.removeItem(value);
@@ -212,6 +219,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "UV6sBlock",
                 "VertexIDBlock",
                 "FaceIDBlock",
+                "LoopIDBlock",
                 "GeometryIDBlock",
                 "CollectionIDBlock",
             ],
@@ -249,7 +257,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             ],
             Math__Vector: ["TransformBlock", "VectorConverterBlock", "NormalizeBlock"],
             Matrices: ["RotationXBlock", "RotationYBlock", "RotationZBlock", "ScalingBlock", "TranslationBlock", "AlignBlock"],
-            Instances: ["InstantiateOnVerticesBlock", "InstantiateOnFacesBlock", "InstantiateOnVolumeBlock"],
+            Instances: ["InstantiateOnVerticesBlock", "InstantiateOnFacesBlock", "InstantiateOnVolumeBlock", "InstantiateBlock"],
             Misc: ["ElbowBlock", "DebugBlock", "TeleportInBlock", "TeleportOutBlock", "GeometryInfoBlock"],
             Updates: [
                 "SetColorsBlock",
@@ -262,6 +270,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "CollectionBlock",
                 "ComputeNormalsBlock",
                 "OptimizeBlock",
+                "MappingBlock",
             ],
             Noises: ["RandomBlock", "NoiseBlock"],
             Output_Nodes: ["GeometryOutputBlock"],
@@ -319,11 +328,24 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             for (const key in allBlocks) {
                 const blocks = allBlocks[key] as string[];
                 if (blocks.length) {
-                    ledger.push(...blocks);
+                    for (const block of blocks) {
+                        if (!ledger.includes(block)) {
+                            ledger.push(block);
+                        }
+                    }
                 }
             }
             NodeLedger.NameFormatter = (name) => {
-                return name.replace("Block", "");
+                let finalName = name;
+                // custom frame
+                if (name.endsWith("Custom")) {
+                    const nameIndex = name.lastIndexOf("Custom");
+                    finalName = name.substring(0, nameIndex);
+                    finalName += " [custom]";
+                } else {
+                    finalName = name.replace("Block", "");
+                }
+                return finalName;
             };
         }
 

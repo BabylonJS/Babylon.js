@@ -264,6 +264,9 @@
         shadow = 1.;
     #endif
 
+    aggShadow += shadow;
+    numLights += 1.0;
+
     #ifndef SHADOWONLY
         #ifdef CUSTOMUSERLIGHTING
             diffuseBase += computeCustomDiffuseLighting(info, diffuseBase, shadow);

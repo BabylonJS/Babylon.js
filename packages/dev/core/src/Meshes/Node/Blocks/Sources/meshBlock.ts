@@ -43,6 +43,13 @@ export class MeshBlock extends NodeGeometryBlock {
     }
 
     /**
+     * Gets a boolean indicating if the block is using cached data
+     */
+    public get isUsingCachedData() {
+        return !this.mesh && !!this._cachedVertexData;
+    }
+
+    /**
      * Gets the geometry output component
      */
     public get geometry(): NodeGeometryConnectionPoint {

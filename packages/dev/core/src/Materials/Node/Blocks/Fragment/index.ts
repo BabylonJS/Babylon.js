@@ -12,3 +12,4 @@ export * from "./TBNBlock";
 export * from "./heightToNormalBlock";
 export * from "./fragDepthBlock";
 export * from "./shadowMapBlock";
+export * from "./prePassOutputBlock";

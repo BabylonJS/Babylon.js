@@ -43,7 +43,7 @@ export class MeshPropertyTabComponent extends React.Component<IPropertyComponent
             const block = this.props.nodeData.data as MeshBlock;
             block.mesh = meshes[0] as Mesh;
 
-            this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
+            this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
         }
 
         this.forceUpdate();
@@ -108,6 +108,8 @@ export class MeshPropertyTabComponent extends React.Component<IPropertyComponent
                             }}
                         />
                     )}
+                    {!scene && !!block.mesh && <TextLineComponent ignoreValue={true} label={`Mesh ${block.mesh.name} defined by code`} />}
+                    {!scene && !!block.isUsingCachedData && <TextLineComponent ignoreValue={true} label={`Block is using cached data`} />}
                 </LineContainerComponent>
             </div>
         );

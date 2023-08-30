@@ -14,6 +14,7 @@ import { LightBlock } from "core/Materials/Node/Blocks/Dual/lightBlock";
 import { FogBlock } from "core/Materials/Node/Blocks/Dual/fogBlock";
 import { VertexOutputBlock } from "core/Materials/Node/Blocks/Vertex/vertexOutputBlock";
 import { FragmentOutputBlock } from "core/Materials/Node/Blocks/Fragment/fragmentOutputBlock";
+import { PrePassOutputBlock } from "core/Materials/Node/Blocks/Fragment/prePassOutputBlock";
 import { NormalizeBlock } from "core/Materials/Node/Blocks/normalizeBlock";
 import { AddBlock } from "core/Materials/Node/Blocks/addBlock";
 import { ModBlock } from "core/Materials/Node/Blocks/modBlock";
@@ -97,6 +98,7 @@ import { BiPlanarBlock } from "core/Materials/Node/Blocks/biPlanarBlock";
 import { MatrixDeterminantBlock } from "core/Materials/Node/Blocks/matrixDeterminantBlock";
 import { MatrixTransposeBlock } from "core/Materials/Node/Blocks/matrixTransposeBlock";
 import { CurveBlock } from "core/Materials/Node/Blocks/curveBlock";
+import { PrePassTextureBlock } from "core/Materials/Node/Blocks/Input/prePassTextureBlock";
 import { NodeMaterialTeleportInBlock } from "core/Materials/Node/Blocks/Teleport/teleportInBlock";
 import { NodeMaterialTeleportOutBlock } from "core/Materials/Node/Blocks/Teleport/teleportOutBlock";
 
@@ -145,6 +147,8 @@ export class BlockTools {
                 return new MorphTargetsBlock("MorphTargets");
             case "DiscardBlock":
                 return new DiscardBlock("Discard");
+            case "PrePassTextureBlock":
+                return new PrePassTextureBlock("PrePassTexture");
             case "ImageProcessingBlock":
                 return new ImageProcessingBlock("ImageProcessing");
             case "ColorMergerBlock":
@@ -167,6 +171,8 @@ export class BlockTools {
                 return new VertexOutputBlock("VertexOutput");
             case "FragmentOutputBlock":
                 return new FragmentOutputBlock("FragmentOutput");
+            case "PrePassOutputBlock":
+                return new PrePassOutputBlock("PrePassOutput");
             case "AddBlock":
                 return new AddBlock("Add");
             case "ClampBlock":

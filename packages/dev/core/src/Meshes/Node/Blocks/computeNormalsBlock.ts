@@ -47,6 +47,9 @@ export class ComputeNormalsBlock extends NodeGeometryBlock {
             }
 
             const vertexData = this.geometry.getConnectedValue(state);
+            if (!vertexData.normals) {
+                vertexData.normals = [];
+            }
 
             VertexData.ComputeNormals(vertexData.positions, vertexData.indices, vertexData.normals);
 
