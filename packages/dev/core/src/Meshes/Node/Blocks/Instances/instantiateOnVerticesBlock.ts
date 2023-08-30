@@ -43,6 +43,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
         this.registerInput("instance", NodeGeometryBlockConnectionPointTypes.Geometry, true);
         this.registerInput("rotation", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.Zero());
         this.registerInput("scaling", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.One());
+        this.registerInput("matrix", NodeGeometryBlockConnectionPointTypes.Matrix, true);
         this.registerInput("density", NodeGeometryBlockConnectionPointTypes.Float, true, 1, 0, 1);
 
         this.scaling.acceptedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Float);
@@ -110,10 +111,16 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
     }
 
     /**
+     * Gets the matrix input component
+     */
+    public get matrix(): NodeGeometryConnectionPoint {
+        return this._inputs[4];
+    }
+    /**
      * Gets the density input component
      */
     public get density(): NodeGeometryConnectionPoint {
-        return this._inputs[4];
+        return this._inputs[5];
     }
 
     /**
@@ -193,9 +200,14 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
                 const clone = instanceGeometry.clone();
 
                 // Transform
-                const scaling = state.adaptInput(this.scaling, NodeGeometryBlockConnectionPointTypes.Vector3, Vector3.OneReadOnly);
-                const rotation = this.rotation.getConnectedValue(state) || Vector3.ZeroReadOnly;
-                state._instantiate(clone, currentPosition, rotation, scaling, additionalVertexData);
+                if (this.matrix.isConnected) {
+                    const transform = this.matrix.getConnectedValue(state);
+                    state._instantiateWithMatrix(clone, transform, additionalVertexData);
+                } else {
+                    const scaling = state.adaptInput(this.scaling, NodeGeometryBlockConnectionPointTypes.Vector3, Vector3.OneReadOnly);
+                    const rotation = this.rotation.getConnectedValue(state) || Vector3.ZeroReadOnly;
+                    state._instantiate(clone, currentPosition, rotation, scaling, additionalVertexData);
+                }
                 this._currentLoopIndex++;
             }
 
