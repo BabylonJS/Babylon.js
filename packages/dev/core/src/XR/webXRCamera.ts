@@ -21,6 +21,12 @@ export class WebXRCamera extends FreeCamera {
     private _trackingState: WebXRTrackingState = WebXRTrackingState.NOT_TRACKING;
 
     /**
+     * This will be triggered after the first XR Frame initialized the camera,
+     * including the right number of views and their rendering parameters
+     */
+    public onXRCameraInitializedObservable = new Observable<WebXRCamera>();
+
+    /**
      * Observable raised before camera teleportation
      */
     public onBeforeCameraTeleport = new Observable<Vector3>();
@@ -79,6 +85,10 @@ export class WebXRCamera extends FreeCamera {
             () => {
                 if (this._firstFrame) {
                     this._updateFromXRSession();
+                }
+                if (this.onXRCameraInitializedObservable.hasObservers()) {
+                    this.onXRCameraInitializedObservable.notifyObservers(this);
+                    this.onXRCameraInitializedObservable.clear();
                 }
 
                 if (this._deferredUpdated) {
