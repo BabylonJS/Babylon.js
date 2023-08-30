@@ -15,6 +15,8 @@ import type { GlobalState } from "../../../../globalState";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { Context } from "./curveEditor/context";
 import { AnimationCurveEditorComponent } from "./curveEditor/animationCurveEditorComponent";
+import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
+import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 
 interface IAnimationGroupGridComponentProps {
     globalState: GlobalState;
@@ -155,6 +157,7 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
                 </LineContainerComponent>
                 <LineContainerComponent title="CONTROLS">
                     <ButtonLineComponent label={playButtonText} onClick={() => this.playOrPause()} />
+                    <ButtonLineComponent label="Stop" onClick={() => this.props.animationGroup.stop()} />
                     <SliderLineComponent
                         lockObject={this.props.lockObject}
                         label="Speed ratio"
@@ -174,6 +177,33 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
                         step={(animationGroup.to - animationGroup.from) / 1000.0}
                         directValue={this.state.currentFrame}
                         onInput={(value) => this.onCurrentFrameChange(value)}
+                    />
+                    <CheckBoxLineComponent label="Blending" target={animationGroup} propertyName="enableBlending" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <SliderLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Blending speed"
+                        minimum={0}
+                        maximum={1}
+                        step={0.01}
+                        target={animationGroup}
+                        propertyName="blendingSpeed"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <CheckBoxLineComponent label="Is additive" target={animationGroup} propertyName="isAdditive" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+                    <FloatLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Weight"
+                        target={animationGroup}
+                        propertyName="weight"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    <FloatLineComponent
+                        lockObject={this.props.lockObject}
+                        label="Play order"
+                        target={animationGroup}
+                        propertyName="playOrder"
+                        isInteger={true}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
                 <LineContainerComponent title="INFOS">
