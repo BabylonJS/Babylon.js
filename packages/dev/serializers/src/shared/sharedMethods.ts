@@ -3,9 +3,7 @@ import { InstancedMesh } from "core/Meshes/instancedMesh";
 import { Mesh } from "core/Meshes/mesh";
 import { TransformNode } from "core/Meshes/transformNode";
 import type { Node } from "core/node";
-import type {
-    INode,
-} from "babylonjs-gltf2interface";
+import type { INode } from "babylonjs-gltf2interface";
 
 // Matrix that converts handedness on the X-axis.
 const convertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion.Identity(), Vector3.Zero());
