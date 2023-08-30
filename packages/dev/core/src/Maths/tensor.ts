@@ -1,15 +1,15 @@
 import type { DeepImmutable, Flatten, FloatArray, MultidimensionalArray } from "../types";
 
-export type TensorValue = MultidimensionalArray<number, number>;
-
 /**
  * Describes a mathimatical tensor.
  * @see https://en.wikipedia.org/wiki/Tensor
  */
-export declare abstract class Tensor<V extends TensorValue = number[]> {
+export declare abstract class Tensor<V extends MultidimensionalArray<number, number> = number[]> {
     /**
      * The number of dimensions the tensor has (i.e. the length of the coordinate array)
-     * Note this is abstract to allow a getter implementation in DynamicTensor
+     * 
+     * @remarks
+     * This is abstract to allow implementations with getter
      */
     abstract readonly dimension: number[];
 
@@ -27,7 +27,7 @@ export declare abstract class Tensor<V extends TensorValue = number[]> {
 
     /**
      * Gets class name
-     * @returns the string "Tensor"
+     * @returns the class name
      */
 
     getClassName(): string;
