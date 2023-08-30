@@ -47,7 +47,7 @@ import { _GLTFAnimation } from "./glTFAnimation";
 import { Camera } from "core/Cameras/camera";
 import { EngineStore } from "core/Engines/engineStore";
 import { MultiMaterial } from "core/Materials/multiMaterial";
-import { isNoopNode, convertNodeHandedness } from "serializers/shared/sharedMethods";
+import { isNoopNode, convertNodeHandedness } from "serializers/tools";
 
 /**
  * Utility interface for storing vertex attribute data
