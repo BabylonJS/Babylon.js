@@ -938,6 +938,82 @@ export class AnimationGroup implements IDisposable {
     }
 
     /**
+     * Creates a new animation, keeping only the keys that are inside a given range
+     * @param animationGroup defines the animation group on which to operate
+     * @param fromKey defines the lower bound of the range
+     * @param toKey defines the upper bound of the range
+     * @param name defines the name of the new animation group. If not provided, use the same name as animationGroup
+     * @returns a new animation group stripped from all the keys outside the given range
+     */
+    public static ClipKeys(sourceAnimationGroup: AnimationGroup, fromKey: number, toKey: number, name?: string): AnimationGroup {
+        const animationGroup = sourceAnimationGroup.clone(name || sourceAnimationGroup.name);
+
+        return this.ClipKeysInPlace(animationGroup, fromKey, toKey);
+    }
+
+    /**
+     * Updates an existing animation, keeping only the keys that are inside a given range
+     * @param animationGroup defines the animation group on which to operate
+     * @param fromKey defines the lower bound of the range
+     * @param toKey defines the upper bound of the range
+     * @returns the source animationGroup stripped from all the keys outside the given range
+     */
+    public static ClipKeysInPlace(animationGroup: AnimationGroup, fromKey: number, toKey: number): AnimationGroup {
+        let from = Number.MAX_VALUE;
+        let to = -Number.MAX_VALUE;
+
+        const targetedAnimations = animationGroup.targetedAnimations;
+        for (let index = 0; index < targetedAnimations.length; index++) {
+            const targetedAnimation = targetedAnimations[index];
+            const animation = targetedAnimation.animation.clone();
+            const keys = animation.getKeys();
+            const newKeys: IAnimationKey[] = [];
+
+            let startFrame = Number.MAX_VALUE;
+            for (let k = 0; k < keys.length; k++) {
+                if (k >= fromKey && k <= toKey) {
+                    const key = keys[k];
+                    const newKey: IAnimationKey = {
+                        frame: key.frame,
+                        value: key.value,
+                        inTangent: key.inTangent,
+                        outTangent: key.outTangent,
+                        interpolation: key.interpolation,
+                        lockedTangent: key.lockedTangent,
+                    };
+                    if (startFrame === Number.MAX_VALUE) {
+                        startFrame = newKey.frame;
+                    }
+                    newKey.frame -= startFrame;
+                    newKeys.push(newKey);
+                }
+            }
+
+            if (newKeys.length === 0) {
+                targetedAnimations.splice(index, 1);
+                index--;
+                continue;
+            }
+
+            if (from > newKeys[0].frame) {
+                from = newKeys[0].frame;
+            }
+
+            if (to < newKeys[newKeys.length - 1].frame) {
+                to = newKeys[newKeys.length - 1].frame;
+            }
+
+            animation.setKeys(newKeys, true);
+            targetedAnimation.animation = animation;
+        }
+
+        animationGroup._from = from;
+        animationGroup._to = to;
+
+        return animationGroup;
+    }
+
+    /**
      * Returns the string "AnimationGroup"
      * @returns "AnimationGroup"
      */
