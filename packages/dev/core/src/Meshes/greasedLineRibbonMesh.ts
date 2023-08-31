@@ -1,5 +1,5 @@
 import type { Scene } from "../scene";
-import { Vector3 } from "../Maths/math.vector";
+import { Quaternion, Vector3 } from "../Maths/math.vector";
 import { Mesh } from "./mesh";
 import { Buffer } from "../Buffers/buffer";
 import type { Nullable } from "../types";
@@ -17,6 +17,15 @@ Mesh._GreasedLineRibbonMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
  * GreasedLine
  */
 export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
+    /**
+     * Defaule line width
+     */
+    public static DEFAULT_WIDTH = 0.1;
+
+    private static _RightHandedForwardReadOnlyQuaternion = Quaternion.RotationAxis(Vector3.RightHandedForwardReadOnly, Math.PI / 2);
+    private static _LeftHandedForwardReadOnlyQuaternion = Quaternion.RotationAxis(Vector3.LeftHandedForwardReadOnly, Math.PI / 2);
+    private static _LeftReadOnlyQuaternion = Quaternion.RotationAxis(Vector3.LeftReadOnly, Math.PI / 2);
+
     private _paths: Vector3[][];
     private _pathsOptions: { options: GreasedLineMeshOptions; pathCount: number }[];
     private _vSegmentLengths: number[][];
@@ -37,6 +46,12 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
     constructor(public readonly name: string, scene: Scene, _options: GreasedLineMeshOptions, _pathOptions?: { options: GreasedLineMeshOptions; pathCount: number }[]) {
         super(name, scene, _options);
 
+        if (!_options.ribbonOptions) {
+            throw "'ribbonOptions' is not set.";
+        } else {
+            _options.ribbonOptions.width = GreasedLineRibbonMesh.DEFAULT_WIDTH;
+        }
+
         this._paths = [];
         this._counters = [];
         this._slopes = [];
@@ -46,7 +61,8 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         this._pathsOptions = [];
 
         if (_options.points) {
-            this.addPoints(GreasedLineTools.ConvertPoints(_options.points), _options);
+            const convertedPoints = GreasedLineTools.ConvertPoints(_options.points);
+            this.addPoints(convertedPoints, _options);
         }
     }
 
@@ -113,7 +129,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
                 indiceOffset = this._preprocess(GreasedLineTools.ToVector3Array(subPoints) as Vector3[][], indiceOffset, pathOptions);
             } else {
                 subPoints.forEach((p) => {
-                    const pathArray = GreasedLineRibbonMesh._ConvertToRibbonPath(p, pathOptions.ribbonOptions!);
+                    const pathArray = GreasedLineRibbonMesh._ConvertToRibbonPath(p, pathOptions.ribbonOptions!, this._scene.useRightHandedSystem);
                     indiceOffset = this._preprocess(pathArray, indiceOffset, pathOptions);
                 });
             }
@@ -136,10 +152,49 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         return this._paths.length < 3;
     }
 
+    // private static _GetDirectionPlanes(pointsArray: number[][]) {
+    //     const directions = [];
+    //     const lastPointIndex = pointsArray[0].length - 3;
+    //     for (let i = 0; i < pointsArray.length; i++) {
+    //         const points = pointsArray[i];
+
+    //         TmpVectors.Vector3[0].x = points[0];
+    //         TmpVectors.Vector3[0].y = points[1];
+    //         TmpVectors.Vector3[0].z = points[2];
+
+    //         TmpVectors.Vector3[1].x = points[lastPointIndex];
+    //         TmpVectors.Vector3[1].y = points[lastPointIndex + 1];
+    //         TmpVectors.Vector3[1].z = points[lastPointIndex + 2];
+
+    //         TmpVectors.Vector3[1].subtractInPlace(TmpVectors.Vector3[0]); // direction
+
+    //         if (TmpVectors.Vector3[1].x > TmpVectors.Vector3[1].y && TmpVectors.Vector3[1].x > TmpVectors.Vector3[1].z) {
+    //             directions.push(new Vector3(0, 0, 1));
+    //             continue;
+    //         }
+    //         if (TmpVectors.Vector3[1].y > TmpVectors.Vector3[1].x && TmpVectors.Vector3[1].y > TmpVectors.Vector3[1].z) {
+    //             directions.push(new Vector3(1, 0, 0));
+    //             continue;
+    //         }
+    //         directions.push(new Vector3(0, 1, 0));
+    //     }
+
+    //     return directions;
+    // }
+
+    private static _GetDirectionPlaneQuaternion(point1: Vector3, point2: Vector3, rightHandedSystem: boolean) {
+        const direction = point2.subtract(point1);
+
+        if (direction.x > direction.y && direction.x > direction.z) {
+            return rightHandedSystem ? GreasedLineRibbonMesh._RightHandedForwardReadOnlyQuaternion : GreasedLineRibbonMesh._LeftHandedForwardReadOnlyQuaternion;
+        }
+        return GreasedLineRibbonMesh._LeftReadOnlyQuaternion;
+    }
+
     private static _CreateRibbonVertexData(pathArray: Vector3[][], options: GreasedLineMeshOptions) {
         const numOfPaths = pathArray.length;
         if (numOfPaths < 2) {
-            throw "Minimum of two paths arej required to create a ribbon.";
+            throw "Minimum of two paths are required to create a ribbon.";
         }
 
         const positions = [];
@@ -278,23 +333,51 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         return indiceOffset;
     }
 
-    private static _ConvertToRibbonPath(points: number[], ribbonInfo: GreasedLineRibbonOptions) {
+    private static _ConvertToRibbonPath(points: number[], ribbonInfo: GreasedLineRibbonOptions, rightHandedSystem: boolean) {
         if (ribbonInfo.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS && !ribbonInfo.width) {
             throw "Width must be specified in GreasedLineRibbonPointsMode.POINTS_MODE_POINTS";
         }
         const path1 = [];
         const path2 = [];
         if (ribbonInfo.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS) {
-            const width = ribbonInfo.width / 2;
-            const direction = ribbonInfo.direction.multiplyByFloats(width, width, width);
+            const width = ribbonInfo.width! / 2;
             const pointVectors = GreasedLineTools.ToVector3Array(points) as Vector3[];
-            for (const p of pointVectors) {
-                path1.push(p.add(direction));
-                path2.push(p.subtract(direction));
+            for (let i = 0; i < pointVectors.length - 1; i++) {
+                const p1 = pointVectors[i];
+                const p2 = pointVectors[i + 1];
+                const direction = p2.subtract(p1).normalize();
+
+                const rotationQuaternion = GreasedLineRibbonMesh._GetDirectionPlaneQuaternion(p1, p2, rightHandedSystem);
+                direction.applyRotationQuaternionInPlace(rotationQuaternion);
+
+                const fatDirection = direction.multiplyByFloats(width, width, width);
+                path1.push(p1.add(fatDirection));
+                path2.push(p1.subtract(fatDirection));
             }
+            path1.push(path1[path1.length - 1]);
+            path2.push(path1[path2.length - 1]);
         }
         return [path1, path2];
     }
+
+    // private static _ConvertToRibbonPath2(points: number[], ribbonInfo: GreasedLineRibbonOptions, directionPlane: Vector3) {
+    //     if (ribbonInfo.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS && !ribbonInfo.width) {
+    //         throw "Width must be specified in GreasedLineRibbonPointsMode.POINTS_MODE_POINTS";
+    //     }
+    //     const path1 = [];
+    //     const path2 = [];
+    //     if (ribbonInfo.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS) {
+    //         const width = ribbonInfo.width! / 2;
+    //         // const direction = ribbonInfo.directions![pointsIndex].multiplyByFloats(width, width, width);
+    //         const direction = directionPlane.multiplyByFloats(width, width, width);
+    //         const pointVectors = GreasedLineTools.ToVector3Array(points) as Vector3[];
+    //         for (const p of pointVectors) {
+    //             path1.push(p.add(direction));
+    //             path2.push(p.subtract(direction));
+    //         }
+    //     }
+    //     return [path1, path2];
+    // }
 
     /**
      * Clones the GreasedLineRibbonMesh.
