@@ -263,7 +263,10 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
                 const curMesh = curNode as AbstractMesh;
                 const adt = curMesh.material?.getActiveTextures()[0] as AdvancedDynamicTexture;
                 const guiRoot = adt.getChildren();
-                result.push(new HTMLTwinNodeItem(curNode, this.props.scene, this._getHTMLTwinItemsFromGUI(guiRoot)));
+                const twinItems = this._getHTMLTwinItemsFromGUI(guiRoot);
+                if (twinItems.length > 0) {
+                    result.push(new HTMLTwinNodeItem(curNode, this.props.scene, twinItems));
+                }
             } else if (curNode.accessibilityTag) {
                 result.push(new HTMLTwinNodeItem(curNode, this.props.scene, this._getHTMLTwinItemsFromNodes(curNode.getChildren())));
             } else {
@@ -271,7 +274,7 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
             }
         }
 
-        return result;
+        return this._emptyTree(result) ? [] : result;
     }
 
     private _hasChildrenWithA11yTag(node: Control): boolean {
@@ -284,6 +287,10 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
             }
         }
         return result;
+    }
+
+    private _emptyTree(tree: (HTMLTwinGUIItem | HTMLTwinItem)[]) {
+        return tree.length === 0 || (tree.length === 1 && tree[0].children.length === 0 && tree[0].description === "");
     }
 
     private _getHTMLTwinItemsFromGUI(rootItems: Control[]): HTMLTwinGUIItem[] {
@@ -310,7 +317,7 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
             }
         }
 
-        return result;
+        return this._emptyTree(result) ? [] : result;
     }
 
     private _isFullscreenGUI(texture: BaseTexture): texture is AdvancedDynamicTexture {
