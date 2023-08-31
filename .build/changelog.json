@@ -1,17 +1,335 @@
 {
-    "fromTag": "6.16.2",
+    "fromTag": "6.18.0",
     "changelog": {
-        "6.16.2": [
+        "6.18.0": [
             {
-                "pr": "14167",
-                "title": "GUI InputTextArea: Fix inserting character in long string (wrapped)",
-                "description": "See https://forum.babylonjs.com/t/incorrect-word-wrap-behavior-in-inputtextarea-component/43346",
+                "pr": "14196",
+                "title": "new NGE block: Instantiate",
+                "description": "The new instantiate node:\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/1306056/1ad88c6a-eb4c-4325-b572-7de22ebff6fe)\r\n\r\nI also introduced the notion of LoopID contextual value that let you control the transform per step\r\n\r\ncc @Pryme8 @PatrickRyanMS ",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVerticesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVolumeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setColorsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setNormalsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setPositionsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setTangentsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setUVsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryInputBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Enums/nodeGeometryContextualSources.ts",
+                    "packages/dev/core/src/Meshes/Node/Interfaces/nodeGeometryExecutionContext.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBuildState.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/inputDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14198",
+                "title": "Fix computenormals when no normals",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/computeNormalsBlock.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14197",
+                "title": "Fix updating issue with exposed inputs",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/propertyTabComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14190",
+                "title": "Fixed from/to issues in sprite anim",
+                "description": null,
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Sprites/sprite.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "6.19.0": [
+            {
+                "pr": "14223",
+                "title": "When reusing the same PhysicsConstraint JS object for more than one p…",
+                "description": "…air of bodies, store the information of all created Havok objects for proper get/set of properties and disposal.\r\n\r\nCurrently, if you create a PhysicsConstraint and use it on more than one `addConstraint` call, one Havok object will be created for each call, but only the most recent object is stored in JS side, which means it wasn't possible to set properties or dispose of the previously created ones. This can be observed in this PG: https://playground.babylonjs.com/#7DMWP8#574, where the same constraint is used for the two pairs of bodies and disposed of after 2s.\r\n\r\nThis PR changes the `_pluginData` object on the PhysicsConstraint to be an array, where each created joint reference is pushed, and updates the plugin methods accordingly. ",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsConstraint.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "14234",
+                "title": "Expose collisionEndedObservable to PhysicsBody",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/how-to-detect-when-two-physics-bodies-stop-colliding/42309/15?u=carolhmj\n\nThis PR just exposes a getCollisionEndedObservable on the same way as the getCollisionObservable.\n\nExample PG: #Z8HTUN#678",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14233",
+                "title": "Animation groups: Add ClipKeys helper + update inspector",
+                "description": "I also modified the `enableBlending` method to make it a getter/setter instead + added `blendingSpeed` as a getter/setter.\r\n\r\nCreating a method instead of a getter/setter was a bad decision I made a few weeks ago. As this is a new feature for version 7.0 and not yet used by any PGs, I thought it right to make a breaking change to keep the code clear.\r\n\r\nI've added a \"Stop\" button to the inspector, as the \"Is Additive\" and \"Enable blending\" switches only work after an animation group has been stopped and restarted (simply pausing/playing again doesn't work).",
                 "author": {
                     "name": "Popov72",
                     "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/gui/src/2D/controls/inputTextArea.ts"
+                    "packages/dev/core/src/Animations/animation.ts",
+                    "packages/dev/core/src/Animations/animationGroup.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/animationGroupPropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "14226",
+                "title": "Don't allow blocks in NME to automatically connect to other blocks in…",
+                "description": "…side frames.\r\n\r\nFixes #14225\r\n\r\nThankfully the NGE blocks don't need the same change as they only create new input blocks, never connect to existing blocks 😌 ",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/fogBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/lightBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBaseBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/textureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/TBNBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/perturbNormalBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/screenSpaceBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/refractionBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Particle/particleTextureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/bonesBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/instancesBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/morphTargetsBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/viewDirectionBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlock.ts",
+                    "packages/tools/nodeEditor/src/graphEditor.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "14207",
+                "title": "NME: Fix the shadow output of the light blocks",
+                "description": "See https://forum.babylonjs.com/t/nme-shadow-output-of-lights-node-doesnt-work-with-multiple-lights/43573\r\n\r\nI tagged it as a bug, as I think it does not behave as expected when there are multiple lights: depending on the position of the light that casts shadows in the light array, it will or will not generate the right value for the \"shadow\" output. Also, the current code does not work when multiple lights cast shadow.\r\n\r\nIn the case of a single light casting shadows, the code from the PR gives the same output than the current code, so it's not a breaking change in this regard.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/lightBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockDirectLighting.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockFinalLitComponents.fx",
+                    "packages/dev/core/src/Shaders/background.fragment.fx",
+                    "packages/dev/core/src/Shaders/default.fragment.fx",
+                    "packages/dev/materials/src/cell/cell.fragment.fx",
+                    "packages/dev/materials/src/fur/fur.fragment.fx",
+                    "packages/dev/materials/src/gradient/gradient.fragment.fx",
+                    "packages/dev/materials/src/lava/lava.fragment.fx",
+                    "packages/dev/materials/src/mix/mix.fragment.fx",
+                    "packages/dev/materials/src/normal/normal.fragment.fx",
+                    "packages/dev/materials/src/shadowOnly/shadowOnly.fragment.fx",
+                    "packages/dev/materials/src/simple/simple.fragment.fx",
+                    "packages/dev/materials/src/terrain/terrain.fragment.fx",
+                    "packages/dev/materials/src/triPlanar/triplanar.fragment.fx",
+                    "packages/dev/materials/src/water/water.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "14231",
+                "title": "a new on XR Camera initialized observable",
+                "description": "This observable will be called after the camera is correctly initialized, including the number of views and the initial position.\nThis will solve different issue, for example:\n\nhttps://forum.babylonjs.com/t/with-pipeline-enabled-console-shows-error-when-entering-xr/42493/5",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/webXRCamera.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14230",
+                "title": "Fix aggregate extent calculation when scaling is negative",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/what-are-the-best-practices-for-physics-gltf-models/43660\r\n\r\nIf the scaling of the node used for the aggregate was negative, we were getting negative extents, which would create the wrong physics shape.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/physicsAggregate.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "14229",
+                "title": "Fix port sync",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryInputBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14228",
+                "title": "Add matrix for instatiateXXX",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVerticesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVolumeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBuildState.ts",
+                    "packages/tools/nodeGeometryEditor/src/main.scss"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14209",
+                "title": "ArcRotateCamera: Modify offset math to correctly zoom to point",
+                "description": "There was a previous fix that updated the ArcRotateCamera to factor in a `targetScreenOffset` to zooming to a specific point.  Unfortunately, there was an issue with how it was modifying the ray origin used to determine zoom destination.  This PR changes the math up to properly convert the screen offset to world space so that the zoom origin is calculated correctly.",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/arcRotateCameraMouseWheelInput.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "14210",
+                "title": "WebDeviceInputSystem: Added workaround for MacOS Chromium based Browsers",
+                "description": "There was an issue found with Chromium based browsers on MacOS where if the cursor left the browser window after clicking on the canvas with a mouse button other than left click, pointer capture will be lost and the canvas will still think that there's a button down.  Because this is a Chromium issue, the only thing that we can do is to create a workaround until it's fixed.  This workaround will catch the `lostpointercapture` event generated and release the button, if necessary.",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/DeviceInput/webDeviceInputSystem.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14224",
+                "title": "Add missing cubic projection",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/mappingBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14216",
+                "title": "Add Export to .glb button",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeGeometryEditor/package.json",
+                    "packages/tools/nodeGeometryEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/globalState.ts",
+                    "packages/tools/nodeGeometryEditor/tsconfig.build.json",
+                    "packages/tools/nodeGeometryEditor/webpack.config.js"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14222",
+                "title": "fix stretch nine patch to respect sourceXXX parameters",
+                "description": "Forum issue: https://forum.babylonjs.com/t/when-using-nine-patch-sourcexxx-such-as-sourcetop-does-not-work/43626",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/image.ts"
                 ],
                 "tags": [
                     "bug",
@@ -19,62 +337,469 @@
                 ]
             },
             {
-                "pr": "14168",
-                "title": "Add more control over UV for text builder",
+                "pr": "14221",
+                "title": "PointCloudSystem: Fix uv coordinates used when getting color from texture",
+                "description": "See https://forum.babylonjs.com/t/pcs-and-sps-digest-always-take-1st-uv-slot-irrespective-of-texture/43651",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/pointsCloudSystem.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "particles"
+                ]
+            },
+            {
+                "pr": "14215",
+                "title": "New NGE node: Mapping",
                 "description": null,
                 "author": {
                     "name": "deltakosh",
                     "url": "https://github.com/deltakosh"
                 },
                 "files": [
-                    "packages/dev/core/src/Meshes/Builders/textBuilder.ts"
+                    "packages/dev/core/src/Meshes/Node/Blocks/mappingBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/registerNodePortDesign.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14220",
+                "title": "Fix bad input routing",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/inputsPropertyTabComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14219",
+                "title": "Generic and specific parameters on Cylinder are opposite of how Box works in NGE",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/cylinderBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14217",
+                "title": "better nge icons",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/registerNodePortDesign.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14212",
+                "title": "Ability to not antialias GridMaterial",
+                "description": "Pretty simple, adds ability for the GridMaterial to not be antialiased using `gridMaterial.antialias = false`\r\n\r\nThis playground can be used for testing: `#2KKVBH#127`\r\n\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/540620/2cf935ff-ef5e-4159-b7ac-9f31f974e83c)\r\n\r\nNote: maybe someone with better GLSL experience can figure out if it's possible to fix some of the diagnal lines:\r\n\r\n![Screenshot from 2023-08-27 23-46-30](https://github.com/BabylonJS/Babylon.js/assets/540620/41b69008-61e2-45d1-a6cd-101e09ba3836)\r\n",
+                "author": {
+                    "name": "Queatz",
+                    "url": "https://github.com/Queatz"
+                },
+                "files": [
+                    "packages/dev/materials/src/grid/grid.fragment.fx",
+                    "packages/dev/materials/src/grid/gridMaterial.ts"
                 ],
                 "tags": []
             },
             {
-                "pr": "14160",
-                "title": "More descriptive names for the AxesViewer's materials",
-                "description": "Currently they show up as \"no name\" in the Inspector, which can be confusing.\r\nhttps://forum.babylonjs.com/t/import-scene-without-materials-textures-dont-show-them-in-inspector/43326",
+                "pr": "14213",
+                "title": "* Change the Custom Frame name formatting.",
+                "description": "* Fix bug when deleting a custom frame from the list, its name would still appear on the space search menu.\r\n\r\nHere's how the custom frame name looks with the new formatting:\r\n<img width=\"251\" alt=\"image\" src=\"https://github.com/BabylonJS/Babylon.js/assets/6002144/1dcc010c-8de9-48e5-8a19-67bc475f1d21\">\r\n\r\n\r\nFixes #14208",
                 "author": {
                     "name": "carolhmj",
                     "url": "https://github.com/carolhmj"
                 },
                 "files": [
-                    "packages/dev/core/src/Debug/axesViewer.ts"
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx"
                 ],
                 "tags": [
-                    "enhancement"
+                    "bug",
+                    "nme",
+                    "nge"
                 ]
             },
             {
-                "pr": "14164",
-                "title": "Fix equals issue + bad debug node rendering",
+                "pr": "14211",
+                "title": "Procedural texture: Fix the reset method",
+                "description": "See https://forum.babylonjs.com/t/force-customproceduraltexture-to-recompile-from-new-shader-string/43575",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/Procedurals/proceduralTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "14205",
+                "title": "Better Int icon",
                 "description": null,
                 "author": {
                     "name": "deltakosh",
                     "url": "https://github.com/deltakosh"
                 },
                 "files": [
-                    "packages/dev/core/src/Meshes/Node/Blocks/conditionBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/debugBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/geometryInputBlock.ts",
-                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/debugDisplayManager.modules.scss",
-                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/inputDisplayManager.ts",
-                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx"
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/registerNodePortDesign.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14206",
+                "title": "Shadows: Fix shadow light frustum calculation",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/Shadows/cascadedShadowGenerator.ts",
+                    "packages/dev/core/src/Lights/directionalLight.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "shadows"
+                ]
+            },
+            {
+                "pr": "14204",
+                "title": "Sound url is not serialised",
+                "description": "https://github.com/BabylonJS/Babylon.js/issues/14203",
+                "author": {
+                    "name": "SubratGuptaCtruh",
+                    "url": "https://github.com/SubratGuptaCtruh"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/sound.ts"
                 ],
                 "tags": []
             },
             {
-                "pr": "14161",
-                "title": "Remove unneeded test",
-                "description": null,
+                "pr": "14200",
+                "title": "Better display of ports with values",
+                "description": "![image](https://github.com/BabylonJS/Babylon.js/assets/1306056/95a3d4a6-0a86-4a74-aa40-7496d3bb40ec)\r\n",
                 "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
                 },
                 "files": [
-                    "packages/tools/tests/src/umdCompile.ts",
-                    "packages/tools/tests/webpack.config.js"
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlockConnectionPoint.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/common.modules.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodePort.modules.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodePort.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/stateManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/sourceDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/registerNodePortDesign.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14014",
+                "title": "Make node materials compatible with prepass",
+                "description": "Also adds a new `PrePassTextureNode` in NME to use prepass textures in node materials\r\n\r\nCloses #13718",
+                "author": {
+                    "name": "CraigFeldspar",
+                    "url": "https://github.com/CraigFeldspar"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGL/webGLHardwareTexture.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGLRenderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/renderTargetWrapper.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/textureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/index.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/prePassOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/index.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/prePassTextureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
+                    "packages/dev/core/src/Rendering/prePassRenderer.ts",
+                    "packages/tools/nodeEditor/src/blockTools.ts",
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/connectionPointPortData.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            }
+        ],
+        "6.17.1": [
+            {
+                "pr": "14195",
+                "title": "Update to Havok 1.1.4",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/tools/babylonServer/public/havok/HavokPhysics.wasm"
+                ],
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "14189",
+                "title": "Highlight context source when picking a contextual input",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlock.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/inputDisplayManager.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14188",
+                "title": "Better mesh representation in NGE",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/meshBlock.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/meshNodePropertyComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14187",
+                "title": "Auto name teleport out",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Teleport/teleportInBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Teleport/teleportInBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14186",
+                "title": "Particle Systems: Fix the pivot position for rotations",
+                "description": "The fix applies the rotation before the pivot is added back, whereas the current code add the pivot back before applying the rotation.\r\n\r\nTest PG: https://playground.babylonjs.com/#0K3AQ2#2628",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/gpuRenderParticles.vertex.fx",
+                    "packages/dev/core/src/Shaders/particles.vertex.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "particles"
+                ]
+            },
+            {
+                "pr": "14185",
+                "title": "Bones: Fix wrong world matrix for meshes attached to bone",
+                "description": "Let's say mesh M1 is attached to bone B, and bone B is part of a skeleton used by mesh M2.\r\n\r\nIf M1 comes before M2 in `scene.meshes`, then M1 will use a world matrix from B that is lagging one frame behind compared to M2, because it's when M2 is processed that the world matrices of the bones are being recomputed (in `Skeleton.prepare`).\r\n\r\nRepro: https://playground.babylonjs.com/#317BIH#37\r\n\r\nIf you click on \"Slash 01\", the sword is moved and a screenshot of the next frame is taken and displayed in the bottom right corner. You will see that the particle system (attached to the sword) is displayed at the previous location of the sword.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Bones/skeleton.ts",
+                    "packages/dev/core/src/Meshes/transformNode.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "bones"
+                ]
+            },
+            {
+                "pr": "14180",
+                "title": "Add extra safety on audio",
+                "description": "https://forum.babylonjs.com/t/error-typeerror-null-is-not-an-object-evaluating-this-audiocontext-resume/43109",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/audioEngine.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "audio"
+                ]
+            },
+            {
+                "pr": "14181",
+                "title": "Remove unused \"inspector visibility\" for nge",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlock.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/inputDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14182",
+                "title": "Add a button to sync nge with the hosting scene and mesh",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/meshPropertyGridComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/globalState.ts",
+                    "packages/tools/nodeGeometryEditor/src/nodeGeometryEditor.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14178",
+                "title": "Fix mute button getting stuck on iOS",
+                "description": "On iOS, if `AudioEngine.unlock()` is called from any other event handler than a `click` event handler, then the promise returned by `audioContext.resume` never resolves and the audio engine `_tryToRun` flag never gets set back to `false`. This causes all subsequent calls to `AudioEngine._triggerRunningState()` to early out making it impossible to resume the audio context again.\r\n\r\nThis change fixes the issue by checking the `_tryToRun` flag. If it is `true` then the audio context is suspended and the `_tryToRun` flag is reset to `false` before attempting to resume the audio context.\r\n\r\nReported on forum: https://forum.babylonjs.com/t/unmute-icon-remove/257/25\r\n\r\nTested on iOS using playground https://playground.babylonjs.com/#35VF39#3",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/audioEngine.ts",
+                    "packages/dev/core/test/unit/Audio/helpers/mockedAudioObjects.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "14179",
+                "title": "Greased line plugin: Fix crash when cloning the material",
+                "description": "See https://forum.babylonjs.com/t/greased-line-doesnt-work-with-right-handed-system/42976/17",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/greasedLinePluginMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "14177",
+                "title": "Fix initial audio engine unlock state",
+                "description": "Changes the audio engine's initial `unlock` value to `false` so it is correct if the browser prevents audio before a user interaction.\r\n\r\nReported on forum: https://forum.babylonjs.com/t/remove-unmute-button/27577/30\r\n\r\nTested on Windows Edge, Chrome, and Firefox, macOS Safari, and iOS Safari.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/audioEngine.ts",
+                    "packages/dev/core/test/unit/Audio/audioEngine.test.ts",
+                    "packages/dev/core/test/unit/Audio/helpers/audioTestHelper.ts",
+                    "packages/dev/core/test/unit/Audio/helpers/audioTestSamples.ts",
+                    "packages/dev/core/test/unit/Audio/helpers/mockedAudioObjects.ts",
+                    "packages/dev/core/test/unit/Audio/sound.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "14174",
+                "title": "WebDeviceInputSystem: Add additional checks for pointermove started Touch events",
+                "description": "A user in the forum found a particular edge case where `pointermove` events were inconsistently interacting with a scene where pointer capture was being programmatically set.  Because this worked with 4.2.x, this behavior was seen as a regression.  This PR adds some additional checks to the touch code to more properly handle this scenario.\r\n\r\nForum Link: https://forum.babylonjs.com/t/pointer-capture-failing-for-babylon-pointer-observable-during-a-scroll-event/43253/7",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/DeviceInput/webDeviceInputSystem.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "14175",
+                "title": "Add new blocks: GeometryInfo and Collection",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryCollectionBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryInfoBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryInputBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Enums/nodeGeometryContextualSources.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBuildState.ts",
+                    "packages/dev/core/src/Meshes/mesh.vertexData.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/inputDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx"
                 ],
                 "tags": [
                     "skip changelog"
@@ -196,6 +921,86 @@
                     "packages/dev/core/src/Meshes/Node/index.ts",
                     "packages/tools/nodeGeometryEditor/src/blockTools.ts",
                     "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "6.16.2": [
+            {
+                "pr": "14167",
+                "title": "GUI InputTextArea: Fix inserting character in long string (wrapped)",
+                "description": "See https://forum.babylonjs.com/t/incorrect-word-wrap-behavior-in-inputtextarea-component/43346",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/inputTextArea.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "14168",
+                "title": "Add more control over UV for text builder",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/textBuilder.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14160",
+                "title": "More descriptive names for the AxesViewer's materials",
+                "description": "Currently they show up as \"no name\" in the Inspector, which can be confusing.\r\nhttps://forum.babylonjs.com/t/import-scene-without-materials-textures-dont-show-them-in-inspector/43326",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/axesViewer.ts"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "14164",
+                "title": "Fix equals issue + bad debug node rendering",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/conditionBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/debugBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryInputBlock.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/debugDisplayManager.modules.scss",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/inputDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14161",
+                "title": "Remove unneeded test",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/tests/src/umdCompile.ts",
+                    "packages/tools/tests/webpack.config.js"
                 ],
                 "tags": [
                     "skip changelog"

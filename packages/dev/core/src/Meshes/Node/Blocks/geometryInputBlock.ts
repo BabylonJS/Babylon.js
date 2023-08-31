@@ -97,8 +97,13 @@ export class GeometryInputBlock extends NodeGeometryBlock {
             case NodeGeometryContextualSources.GeometryID:
             case NodeGeometryContextualSources.CollectionID:
             case NodeGeometryContextualSources.FaceID:
+            case NodeGeometryContextualSources.LoopID:
                 this._type = NodeGeometryBlockConnectionPointTypes.Int;
                 break;
+        }
+
+        if (this.output) {
+            this.output.type = this._type;
         }
     }
 

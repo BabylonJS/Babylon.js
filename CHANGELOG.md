@@ -1,5 +1,65 @@
 # Changelog
 
+## 6.19.0
+
+### Core
+
+- When reusing the same PhysicsConstraint JS object for more than one p… - [_Bug Fix_] by [carolhmj](https://github.com/carolhmj) ([#14223](https://github.com/BabylonJS/Babylon.js/pull/14223))
+- Expose collisionEndedObservable to PhysicsBody - by [carolhmj](https://github.com/carolhmj) ([#14234](https://github.com/BabylonJS/Babylon.js/pull/14234))
+- Animation groups: Add ClipKeys helper + update inspector - by [Popov72](https://github.com/Popov72) ([#14233](https://github.com/BabylonJS/Babylon.js/pull/14233))
+- Don't allow blocks in NME to automatically connect to other blocks in… - [_Bug Fix_] by [carolhmj](https://github.com/carolhmj) ([#14226](https://github.com/BabylonJS/Babylon.js/pull/14226))
+- NME: Fix the shadow output of the light blocks - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14207](https://github.com/BabylonJS/Babylon.js/pull/14207))
+- a new on XR Camera initialized observable - by [RaananW](https://github.com/RaananW) ([#14231](https://github.com/BabylonJS/Babylon.js/pull/14231))
+- Fix aggregate extent calculation when scaling is negative - [_Bug Fix_] by [carolhmj](https://github.com/carolhmj) ([#14230](https://github.com/BabylonJS/Babylon.js/pull/14230))
+- ArcRotateCamera: Modify offset math to correctly zoom to point - [_Bug Fix_] by [PolygonalSun](https://github.com/PolygonalSun) ([#14209](https://github.com/BabylonJS/Babylon.js/pull/14209))
+- WebDeviceInputSystem: Added workaround for MacOS Chromium based Browsers - by [PolygonalSun](https://github.com/PolygonalSun) ([#14210](https://github.com/BabylonJS/Babylon.js/pull/14210))
+- PointCloudSystem: Fix uv coordinates used when getting color from texture - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14221](https://github.com/BabylonJS/Babylon.js/pull/14221))
+- Procedural texture: Fix the reset method - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14211](https://github.com/BabylonJS/Babylon.js/pull/14211))
+- Shadows: Fix shadow light frustum calculation - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14206](https://github.com/BabylonJS/Babylon.js/pull/14206))
+- Sound url is not serialised - by [SubratGuptaCtruh](https://github.com/SubratGuptaCtruh) ([#14204](https://github.com/BabylonJS/Babylon.js/pull/14204))
+- Make node materials compatible with prepass - by [CraigFeldspar](https://github.com/CraigFeldspar) ([#14014](https://github.com/BabylonJS/Babylon.js/pull/14014))
+
+### GUI
+
+- fix stretch nine patch to respect sourceXXX parameters - [_Bug Fix_] by [carolhmj](https://github.com/carolhmj) ([#14222](https://github.com/BabylonJS/Babylon.js/pull/14222))
+
+### Inspector
+
+- Animation groups: Add ClipKeys helper + update inspector - by [Popov72](https://github.com/Popov72) ([#14233](https://github.com/BabylonJS/Babylon.js/pull/14233))
+
+### Materials
+
+- NME: Fix the shadow output of the light blocks - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14207](https://github.com/BabylonJS/Babylon.js/pull/14207))
+- Ability to not antialias GridMaterial - by [Queatz](https://github.com/Queatz) ([#14212](https://github.com/BabylonJS/Babylon.js/pull/14212))
+
+### Node Editor
+
+- Don't allow blocks in NME to automatically connect to other blocks in… - [_Bug Fix_] by [carolhmj](https://github.com/carolhmj) ([#14226](https://github.com/BabylonJS/Babylon.js/pull/14226))
+- * Change the Custom Frame name formatting. - [_Bug Fix_] by [carolhmj](https://github.com/carolhmj) ([#14213](https://github.com/BabylonJS/Babylon.js/pull/14213))
+- Make node materials compatible with prepass - by [CraigFeldspar](https://github.com/CraigFeldspar) ([#14014](https://github.com/BabylonJS/Babylon.js/pull/14014))
+
+## 6.18.0
+
+### Core
+
+- Fix computenormals when no normals - by [deltakosh](https://github.com/deltakosh) ([#14198](https://github.com/BabylonJS/Babylon.js/pull/14198))
+- Fixed from/to issues in sprite anim - by [RolandCsibrei](https://github.com/RolandCsibrei) ([#14190](https://github.com/BabylonJS/Babylon.js/pull/14190))
+
+## 6.17.1
+
+### Core
+
+- Particle Systems: Fix the pivot position for rotations - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14186](https://github.com/BabylonJS/Babylon.js/pull/14186))
+- Bones: Fix wrong world matrix for meshes attached to bone - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14185](https://github.com/BabylonJS/Babylon.js/pull/14185))
+- Add extra safety on audio - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#14180](https://github.com/BabylonJS/Babylon.js/pull/14180))
+- Fix mute button getting stuck on iOS - [_Bug Fix_] by [docEdub](https://github.com/docEdub) ([#14178](https://github.com/BabylonJS/Babylon.js/pull/14178))
+- Greased line plugin: Fix crash when cloning the material - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14179](https://github.com/BabylonJS/Babylon.js/pull/14179))
+- Fix initial audio engine unlock state - [_Bug Fix_] by [docEdub](https://github.com/docEdub) ([#14177](https://github.com/BabylonJS/Babylon.js/pull/14177))
+- WebDeviceInputSystem: Add additional checks for pointermove started Touch events - [_Bug Fix_] by [PolygonalSun](https://github.com/PolygonalSun) ([#14174](https://github.com/BabylonJS/Babylon.js/pull/14174))
+
+### Inspector
+
+
 ## 6.17.0
 
 ### Core

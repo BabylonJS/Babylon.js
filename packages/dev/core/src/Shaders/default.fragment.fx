@@ -199,6 +199,8 @@ void main(void) {
 	vec3 specularBase = vec3(0., 0., 0.);
 #endif
 	float shadow = 1.;
+	float aggShadow = 0.;
+	float numLights = 0.;
 
 #ifdef LIGHTMAP
 	vec4 lightmapColor = texture2D(lightmapSampler, vLightmapUV + uvOffset);
@@ -209,6 +211,8 @@ void main(void) {
 #endif
 
 #include<lightFragment>[0..maxSimultaneousLights]
+
+	aggShadow = aggShadow / numLights;
 
 	// Refraction
 	vec4 refractionColor = vec4(0., 0., 0., 1.);

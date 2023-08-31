@@ -87,6 +87,11 @@ export class NodeGeometryConnectionPoint {
     public exposedPortPosition: number = -1;
 
     /**
+     * Gets the default value used for this point at creation time
+     */
+    public defaultValue: Nullable<any> = null;
+
+    /**
      * Gets or sets the default value used for this point if nothing is connected
      */
     public value: Nullable<any> = null;

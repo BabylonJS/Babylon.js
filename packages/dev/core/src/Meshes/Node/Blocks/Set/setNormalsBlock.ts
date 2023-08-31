@@ -36,6 +36,14 @@ export class SetNormalsBlock extends NodeGeometryBlock implements INodeGeometryE
     }
 
     /**
+     * Gets the current loop index in the current flow
+     * @returns the current loop index
+     */
+    public getExecutionLoopIndex(): number {
+        return this._currentIndex;
+    }
+
+    /**
      * Gets the current face index in the current flow
      * @returns the current face index
      */

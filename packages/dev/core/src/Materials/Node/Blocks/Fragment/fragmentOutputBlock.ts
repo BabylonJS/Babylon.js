@@ -6,11 +6,9 @@ import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnect
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Scene } from "../../../../scene";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import type { NodeMaterialDefines } from "../../nodeMaterial";
+import type { NodeMaterialDefines, NodeMaterial } from "../../nodeMaterial";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { MaterialHelper } from "../../../materialHelper";
-
-import type { NodeMaterial } from "../../nodeMaterial";
 import type { Effect } from "../../../effect";
 import type { Mesh } from "../../../../Meshes/mesh";
 
@@ -31,7 +29,6 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         this.registerInput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, true);
         this.registerInput("rgb", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
         this.registerInput("a", NodeMaterialBlockConnectionPointTypes.Float, true);
-
         this.rgb.addExcludedConnectionPointFromAllowedTypes(
             NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Float
         );
@@ -151,6 +148,10 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         if (this.useLogarithmicDepth) {
             state.compilationString += `gl_FragDepthEXT = log2(vFragmentDepth) * logarithmicDepthConstant * 0.5;\n`;
         }
+
+        state.compilationString += `#if defined(PREPASS)\r\n`;
+        state.compilationString += `gl_FragData[0] = gl_FragColor;\r\n`;
+        state.compilationString += `#endif\r\n`;
 
         return this;
     }

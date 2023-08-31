@@ -179,8 +179,10 @@
                 width: 24px;
             }
             #color-picker-image {
-                padding-left: 7px;
-                padding-bottom: 38px;
+                grid-column: 1;
+                grid-row: 1;
+                align-self: center;
+                justify-self: center;
             }
 
             #color-picker {

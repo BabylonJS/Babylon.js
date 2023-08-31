@@ -38,6 +38,7 @@ import { SetMaterialIDBlock } from "core/Meshes/Node/Blocks/Set/setMaterialIDBlo
 import { InstantiateOnVerticesBlock } from "core/Meshes/Node/Blocks/Instances/instantiateOnVerticesBlock";
 import { InstantiateOnFacesBlock } from "core/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock";
 import { InstantiateOnVolumeBlock } from "core/Meshes/Node/Blocks/Instances/instantiateOnVolumeBlock";
+import { InstantiateBlock } from "core/Meshes/Node/Blocks/Instances/instantiateBlock";
 import { DebugBlock } from "core/Meshes/Node/Blocks/debugBlock";
 import { TeleportInBlock } from "core/Meshes/Node/Blocks/Teleport/teleportInBlock";
 import { TeleportOutBlock } from "core/Meshes/Node/Blocks/Teleport/teleportOutBlock";
@@ -47,6 +48,7 @@ import { IntFloatConverterBlock } from "core/Meshes/Node/Blocks/intFloatConverte
 import { ConditionBlock, ConditionBlockTests } from "core/Meshes/Node/Blocks/conditionBlock";
 import { GeometryCollectionBlock } from "core/Meshes/Node/Blocks/geometryCollectionBlock";
 import { GeometryInfoBlock } from "core/Meshes/Node/Blocks/geometryInfoBlock";
+import { MappingBlock } from "core/Meshes/Node/Blocks/mappingBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
@@ -112,6 +114,8 @@ export class BlockTools {
                 block.test = ConditionBlockTests.And;
                 return block;
             }
+            case "MappingBlock":
+                return new MappingBlock("Mapping");
             case "SetMaterialIDBlock":
                 return new SetMaterialIDBlock("Set material ID");
             case "InstantiateOnVolumeBlock":
@@ -120,6 +124,8 @@ export class BlockTools {
                 return new InstantiateOnFacesBlock("Instantiate on faces");
             case "InstantiateOnVerticesBlock":
                 return new InstantiateOnVerticesBlock("Instantiate on vertices");
+            case "InstantiateBlock":
+                return new InstantiateBlock("Instantiate");
             case "MapRangeBlock":
                 return new MapRangeBlock("Map Range");
             case "NormalizeBlock":
@@ -235,6 +241,11 @@ export class BlockTools {
             case "VertexIDBlock": {
                 const block = new GeometryInputBlock("Vertex ID");
                 block.contextualValue = NodeGeometryContextualSources.VertexID;
+                return block;
+            }
+            case "LoopIDBlock": {
+                const block = new GeometryInputBlock("Loop ID");
+                block.contextualValue = NodeGeometryContextualSources.LoopID;
                 return block;
             }
             case "GeometryIDBlock": {
@@ -386,7 +397,7 @@ export class BlockTools {
         let color = "#880000";
         switch (type) {
             case NodeGeometryBlockConnectionPointTypes.Int:
-                color = "#2756CB";
+                color = "#51b0e5";
                 break;
             case NodeGeometryBlockConnectionPointTypes.Float:
                 color = "#cb9e27";
@@ -404,7 +415,7 @@ export class BlockTools {
                 color = "#591990";
                 break;
             case NodeGeometryBlockConnectionPointTypes.Geometry:
-                color = "#6174FA";
+                color = "#84995c";
                 break;
         }
 

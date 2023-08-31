@@ -29,8 +29,8 @@ export class CylinderBlock extends NodeGeometryBlock {
 
         this.registerInput("height", NodeGeometryBlockConnectionPointTypes.Float, true, 25);
         this.registerInput("diameter", NodeGeometryBlockConnectionPointTypes.Float, true, 1);
-        this.registerInput("diameterTop", NodeGeometryBlockConnectionPointTypes.Float, true, 0);
-        this.registerInput("diameterBottom", NodeGeometryBlockConnectionPointTypes.Float, true, 0);
+        this.registerInput("diameterTop", NodeGeometryBlockConnectionPointTypes.Float, true, -1);
+        this.registerInput("diameterBottom", NodeGeometryBlockConnectionPointTypes.Float, true, -1);
         this.registerInput("subdivisions", NodeGeometryBlockConnectionPointTypes.Int, true, 1);
         this.registerInput("tessellation", NodeGeometryBlockConnectionPointTypes.Int, true, 24);
         this.registerInput("arc", NodeGeometryBlockConnectionPointTypes.Float, true, 1.0);
@@ -138,10 +138,17 @@ export class CylinderBlock extends NodeGeometryBlock {
         const func = (state: NodeGeometryBuildState) => {
             options.height = this.height.getConnectedValue(state);
             options.diameter = this.diameter.getConnectedValue(state);
-            if (!options.diameter) {
-                options.diameterTop = this.diameterTop.getConnectedValue(state);
-                options.diameterBottom = this.diameterBottom.getConnectedValue(state);
+            options.diameterTop = this.diameterTop.getConnectedValue(state);
+            options.diameterBottom = this.diameterBottom.getConnectedValue(state);
+
+            if (options.diameterTop === -1) {
+                options.diameterTop = options.diameter;
             }
+
+            if (options.diameterBottom === -1) {
+                options.diameterBottom = options.diameter;
+            }
+
             options.tessellation = this.tessellation.getConnectedValue(state);
             options.subdivisions = this.subdivisions.getConnectedValue(state);
             options.arc = this.arc.getConnectedValue(state);

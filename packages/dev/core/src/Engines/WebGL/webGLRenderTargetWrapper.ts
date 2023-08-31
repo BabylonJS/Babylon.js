@@ -80,13 +80,13 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
         const depthbuffer = this._depthStencilBuffer;
         const framebuffer = renderTarget._MSAAFramebuffer || renderTarget._framebuffer;
 
-        if (renderTarget._depthStencilBuffer) {
+        if (renderTarget._depthStencilBuffer && renderTarget._depthStencilBuffer !== depthbuffer) {
             gl.deleteRenderbuffer(renderTarget._depthStencilBuffer);
         }
-        renderTarget._depthStencilBuffer = this._depthStencilBuffer;
-
+        renderTarget._depthStencilBuffer = depthbuffer;
+        const attachment = renderTarget._generateStencilBuffer ? gl.DEPTH_STENCIL_ATTACHMENT : gl.DEPTH_ATTACHMENT;
         this._engine._bindUnboundFramebuffer(framebuffer);
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depthbuffer);
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, attachment, gl.RENDERBUFFER, depthbuffer);
         this._engine._bindUnboundFramebuffer(null);
     }
 

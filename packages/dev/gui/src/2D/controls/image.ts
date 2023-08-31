@@ -915,7 +915,7 @@ export class Image extends Control {
                     this._drawImage(context, x, y, width, height, this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
                     break;
                 case Image.STRETCH_NINE_PATCH:
-                    this._renderNinePatch(context);
+                    this._renderNinePatch(context, x, y, width, height);
                     break;
             }
         }
@@ -923,11 +923,11 @@ export class Image extends Control {
         context.restore();
     }
 
-    private _renderNinePatch(context: ICanvasRenderingContext): void {
+    private _renderNinePatch(context: ICanvasRenderingContext, sx: number, sy: number, sw: number, sh: number): void {
         const leftWidth = this._sliceLeft;
         const topHeight = this._sliceTop;
-        const bottomHeight = this._imageHeight - this._sliceBottom;
-        const rightWidth = this._imageWidth - this._sliceRight;
+        const bottomHeight = sh - this._sliceBottom;
+        const rightWidth = sw - this._sliceRight;
         const centerWidth = this._sliceRight - this._sliceLeft;
         const centerHeight = this._sliceBottom - this._sliceTop;
         const targetCenterWidth = this._currentMeasure.width - rightWidth - leftWidth + 2;
@@ -938,31 +938,31 @@ export class Image extends Control {
         const bottomOffset = this._currentMeasure.top + this._currentMeasure.height - bottomHeight;
 
         //Top Left
-        this._drawImage(context, 0, 0, leftWidth, topHeight, this._currentMeasure.left, this._currentMeasure.top, leftWidth, topHeight);
+        this._drawImage(context, sx, sy, leftWidth, topHeight, this._currentMeasure.left, this._currentMeasure.top, leftWidth, topHeight);
         //Top
         context.clearRect(centerLeftOffset, this._currentMeasure.top, targetCenterWidth, topHeight);
-        this._drawImage(context, this._sliceLeft, 0, centerWidth, topHeight, centerLeftOffset, this._currentMeasure.top, targetCenterWidth, topHeight);
+        this._drawImage(context, sx + this._sliceLeft, sy, centerWidth, topHeight, centerLeftOffset, this._currentMeasure.top, targetCenterWidth, topHeight);
         //Top Right
         context.clearRect(rightOffset, this._currentMeasure.top, rightWidth, topHeight);
-        this._drawImage(context, this._sliceRight, 0, rightWidth, topHeight, rightOffset, this._currentMeasure.top, rightWidth, topHeight);
+        this._drawImage(context, sx + this._sliceRight, sy, rightWidth, topHeight, rightOffset, this._currentMeasure.top, rightWidth, topHeight);
         //Left
         context.clearRect(this._currentMeasure.left, centerTopOffset, leftWidth, targetCenterHeight);
-        this._drawImage(context, 0, this._sliceTop, leftWidth, centerHeight, this._currentMeasure.left, centerTopOffset, leftWidth, targetCenterHeight);
+        this._drawImage(context, sx, sy + this._sliceTop, leftWidth, centerHeight, this._currentMeasure.left, centerTopOffset, leftWidth, targetCenterHeight);
         // Center
         context.clearRect(centerLeftOffset, centerTopOffset, targetCenterWidth, targetCenterHeight);
-        this._drawImage(context, this._sliceLeft, this._sliceTop, centerWidth, centerHeight, centerLeftOffset, centerTopOffset, targetCenterWidth, targetCenterHeight);
+        this._drawImage(context, sx + this._sliceLeft, sy + this._sliceTop, centerWidth, centerHeight, centerLeftOffset, centerTopOffset, targetCenterWidth, targetCenterHeight);
         //Right
         context.clearRect(rightOffset, centerTopOffset, rightWidth, targetCenterHeight);
-        this._drawImage(context, this._sliceRight, this._sliceTop, rightWidth, centerHeight, rightOffset, centerTopOffset, rightWidth, targetCenterHeight);
+        this._drawImage(context, sx + this._sliceRight, sy + this._sliceTop, rightWidth, centerHeight, rightOffset, centerTopOffset, rightWidth, targetCenterHeight);
         //Bottom Left
         context.clearRect(this._currentMeasure.left, bottomOffset, leftWidth, bottomHeight);
-        this._drawImage(context, 0, this._sliceBottom, leftWidth, bottomHeight, this._currentMeasure.left, bottomOffset, leftWidth, bottomHeight);
+        this._drawImage(context, sx, sy + this._sliceBottom, leftWidth, bottomHeight, this._currentMeasure.left, bottomOffset, leftWidth, bottomHeight);
         //Bottom
         context.clearRect(centerLeftOffset, bottomOffset, targetCenterWidth, bottomHeight);
-        this._drawImage(context, this.sliceLeft, this._sliceBottom, centerWidth, bottomHeight, centerLeftOffset, bottomOffset, targetCenterWidth, bottomHeight);
+        this._drawImage(context, sx + this.sliceLeft, sy + this._sliceBottom, centerWidth, bottomHeight, centerLeftOffset, bottomOffset, targetCenterWidth, bottomHeight);
         //Bottom Right
         context.clearRect(rightOffset, bottomOffset, rightWidth, bottomHeight);
-        this._drawImage(context, this._sliceRight, this._sliceBottom, rightWidth, bottomHeight, rightOffset, bottomOffset, rightWidth, bottomHeight);
+        this._drawImage(context, sx + this._sliceRight, sy + this._sliceBottom, rightWidth, bottomHeight, rightOffset, bottomOffset, rightWidth, bottomHeight);
     }
 
     public dispose() {

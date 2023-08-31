@@ -198,6 +198,10 @@ export class RenderTargetWrapper {
         if (!this._textures) {
             this._textures = [];
         }
+        if (this._textures[index] === texture) {
+            return;
+        }
+
         if (this._textures[index] && disposePrevious) {
             this._textures[index].dispose();
         }

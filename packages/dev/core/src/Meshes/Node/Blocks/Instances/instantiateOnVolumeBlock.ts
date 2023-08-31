@@ -16,6 +16,7 @@ import { extractMinAndMax } from "../../../../Maths/math.functions";
  */
 export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext {
     private _vertexData: VertexData;
+    private _currentLoopIndex: number;
     private _currentPosition = new Vector3();
     private _vertex0 = new Vector3();
     private _vertex1 = new Vector3();
@@ -39,6 +40,7 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
         this.registerInput("instance", NodeGeometryBlockConnectionPointTypes.Geometry, true);
         this.registerInput("rotation", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.Zero());
         this.registerInput("scaling", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.One());
+        this.registerInput("matrix", NodeGeometryBlockConnectionPointTypes.Matrix, true);
         this.registerInput("count", NodeGeometryBlockConnectionPointTypes.Int, true, 256);
 
         this.scaling.acceptedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Float);
@@ -59,6 +61,14 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
      */
     public getExecutionFaceIndex(): number {
         return 0;
+    }
+
+    /**
+     * Gets the current loop index in the current flow
+     * @returns the current loop index
+     */
+    public getExecutionLoopIndex(): number {
+        return this._currentLoopIndex;
     }
 
     /**
@@ -106,10 +116,17 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
     }
 
     /**
+     * Gets the matrix input component
+     */
+    public get matrix(): NodeGeometryConnectionPoint {
+        return this._inputs[4];
+    }
+
+    /**
      * Gets the count input component
      */
     public get count(): NodeGeometryConnectionPoint {
-        return this._inputs[4];
+        return this._inputs[5];
     }
 
     /**
@@ -120,95 +137,96 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
     }
 
     protected _buildBlock(state: NodeGeometryBuildState) {
-        state.executionContext = this;
+        const func = (state: NodeGeometryBuildState) => {
+            state.executionContext = this;
 
-        this._vertexData = this.geometry.getConnectedValue(state);
-        state.geometryContext = this._vertexData;
+            this._vertexData = this.geometry.getConnectedValue(state);
+            state.geometryContext = this._vertexData;
 
-        if (!this._vertexData || !this._vertexData.positions || !this._vertexData.indices || !this.instance.isConnected) {
-            state.executionContext = null;
-            state.geometryContext = null;
-            this.output._storedValue = null;
-            return;
-        }
-
-        // Processing
-        let instanceGeometry: Nullable<VertexData> = null;
-        if (!this.evaluateContext) {
-            instanceGeometry = this.instance.getConnectedValue(state) as VertexData;
-
-            if (!instanceGeometry || !instanceGeometry.positions || instanceGeometry.positions.length === 0) {
+            if (!this._vertexData || !this._vertexData.positions || !this._vertexData.indices || !this.instance.isConnected) {
                 state.executionContext = null;
                 state.geometryContext = null;
                 this.output._storedValue = null;
                 return;
             }
-        }
 
-        const instanceCount = this.count.getConnectedValue(state);
-        const additionalVertexData: VertexData[] = [];
-        const boundingInfo = extractMinAndMax(this._vertexData.positions!, 0, this._vertexData.positions!.length / 3);
-        const min = boundingInfo.minimum;
-        const max = boundingInfo.maximum;
-        const direction = new Vector3(1, 0, 0);
-        const faceCount = this._vertexData.indices.length / 3;
+            // Processing
+            let instanceGeometry: Nullable<VertexData> = null;
+            const instanceCount = this.count.getConnectedValue(state);
+            const additionalVertexData: VertexData[] = [];
+            const boundingInfo = extractMinAndMax(this._vertexData.positions!, 0, this._vertexData.positions!.length / 3);
+            const min = boundingInfo.minimum;
+            const max = boundingInfo.maximum;
+            const direction = new Vector3(1, 0, 0);
+            const faceCount = this._vertexData.indices.length / 3;
+            this._currentLoopIndex = 0;
 
-        for (let index = 0; index < instanceCount; index++) {
-            this._currentPosition.set(Math.random() * (max.x - min.x) + min.x, Math.random() * (max.y - min.y) + min.y, Math.random() * (max.z - min.z) + min.z);
+            for (let index = 0; index < instanceCount; index++) {
+                this._currentPosition.set(Math.random() * (max.x - min.x) + min.x, Math.random() * (max.y - min.y) + min.y, Math.random() * (max.z - min.z) + min.z);
 
-            // Cast a ray from the random point in an arbitrary direction
-            const ray = new Ray(this._currentPosition, direction);
+                // Cast a ray from the random point in an arbitrary direction
+                const ray = new Ray(this._currentPosition, direction);
 
-            let intersectionCount = 0;
-            for (let currentFaceIndex = 0; currentFaceIndex < faceCount; currentFaceIndex++) {
-                // Extract face vertices
-                this._vertex0.fromArray(this._vertexData.positions!, this._vertexData.indices![currentFaceIndex * 3] * 3);
-                this._vertex1.fromArray(this._vertexData.positions!, this._vertexData.indices![currentFaceIndex * 3 + 1] * 3);
-                this._vertex2.fromArray(this._vertexData.positions!, this._vertexData.indices![currentFaceIndex * 3 + 2] * 3);
+                let intersectionCount = 0;
+                for (let currentFaceIndex = 0; currentFaceIndex < faceCount; currentFaceIndex++) {
+                    // Extract face vertices
+                    this._vertex0.fromArray(this._vertexData.positions!, this._vertexData.indices![currentFaceIndex * 3] * 3);
+                    this._vertex1.fromArray(this._vertexData.positions!, this._vertexData.indices![currentFaceIndex * 3 + 1] * 3);
+                    this._vertex2.fromArray(this._vertexData.positions!, this._vertexData.indices![currentFaceIndex * 3 + 2] * 3);
 
-                const currentIntersectInfo = ray.intersectsTriangle(this._vertex0, this._vertex1, this._vertex2);
+                    const currentIntersectInfo = ray.intersectsTriangle(this._vertex0, this._vertex1, this._vertex2);
 
-                if (currentIntersectInfo && currentIntersectInfo.distance > 0) {
-                    intersectionCount++;
+                    if (currentIntersectInfo && currentIntersectInfo.distance > 0) {
+                        intersectionCount++;
+                    }
                 }
-            }
 
-            if (intersectionCount % 2 === 0) {
-                // We are outside, try again
-                index--;
-                continue;
-            }
+                if (intersectionCount % 2 === 0) {
+                    // We are outside, try again
+                    index--;
+                    continue;
+                }
 
-            // Clone the instance
-            if (this.evaluateContext) {
+                // Clone the instance
                 instanceGeometry = this.instance.getConnectedValue(state) as VertexData;
 
                 if (!instanceGeometry || !instanceGeometry.positions || instanceGeometry.positions.length === 0) {
                     continue;
                 }
-            }
-            const clone = instanceGeometry!.clone();
+                const clone = instanceGeometry!.clone();
 
-            const scaling = state.adaptInput(this.scaling, NodeGeometryBlockConnectionPointTypes.Vector3, Vector3.OneReadOnly);
-            const rotation = this.rotation.getConnectedValue(state) || Vector3.ZeroReadOnly;
-            state._instantiate(clone, this._currentPosition, rotation, scaling, additionalVertexData);
-        }
-
-        // Merge
-        if (additionalVertexData.length) {
-            if (additionalVertexData.length === 1) {
-                this._vertexData = additionalVertexData[0];
-            } else {
-                // We do not merge the main one as user can use a merge node if wanted
-                const main = additionalVertexData.splice(0, 1)[0];
-                this._vertexData = main.merge(additionalVertexData, true, false, true, true);
+                if (this.matrix.isConnected) {
+                    const transform = this.matrix.getConnectedValue(state);
+                    state._instantiateWithMatrix(clone, transform, additionalVertexData);
+                } else {
+                    const scaling = state.adaptInput(this.scaling, NodeGeometryBlockConnectionPointTypes.Vector3, Vector3.OneReadOnly);
+                    const rotation = this.rotation.getConnectedValue(state) || Vector3.ZeroReadOnly;
+                    state._instantiate(clone, this._currentPosition, rotation, scaling, additionalVertexData);
+                }
+                this._currentLoopIndex++;
             }
-        }
+
+            // Merge
+            if (additionalVertexData.length) {
+                if (additionalVertexData.length === 1) {
+                    this._vertexData = additionalVertexData[0];
+                } else {
+                    // We do not merge the main one as user can use a merge node if wanted
+                    const main = additionalVertexData.splice(0, 1)[0];
+                    this._vertexData = main.merge(additionalVertexData, true, false, true, true);
+                }
+            }
+
+            return this._vertexData;
+        };
 
         // Storage
-        this.output._storedValue = this._vertexData;
-        state.executionContext = null;
-        state.geometryContext = null;
+
+        if (this.evaluateContext) {
+            this.output._storedFunction = func;
+        } else {
+            this.output._storedValue = func(state);
+        }
     }
 
     protected _dumpPropertiesCode() {
@@ -231,7 +249,9 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
     public _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 
-        this.evaluateContext = serializationObject.evaluateContext;
+        if (serializationObject.evaluateContext !== undefined) {
+            this.evaluateContext = serializationObject.evaluateContext;
+        }
     }
 }
 

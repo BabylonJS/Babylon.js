@@ -5,12 +5,17 @@ import type { ConnectionPointPortData } from "./connectionPointPortData";
 import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/nodeGeometryConnectionPointTypes";
 
 export const RegisterNodePortDesign = (stateManager: StateManager) => {
-    stateManager.applyNodePortDesign = (portData: IPortData, element: HTMLElement, img: HTMLImageElement) => {
-        const type = (portData as ConnectionPointPortData).data.type;
+    stateManager.applyNodePortDesign = (portData: IPortData, element: HTMLElement, img: HTMLImageElement, pip: HTMLDivElement) => {
+        const connectionPortData = portData as ConnectionPointPortData;
+        const point = connectionPortData.data;
+        const type = point.type;
 
         element.style.background = BlockTools.GetColorFromConnectionNodeType(type);
         switch (type) {
             case NodeGeometryBlockConnectionPointTypes.Int:
+                img.src =
+                    "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIGlkPSJMYXllcl81IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj48ZGVmcz48c3R5bGU+LmNscy0xe2ZpbGw6I2ZmZjt9LmNscy0ye2ZpbGw6IzUxYjBlNTt9PC9zdHlsZT48L2RlZnM+PHBhdGggY2xhc3M9ImNscy0yIiBkPSJtMTAsMjBDNC40OSwyMCwwLDE1LjUxLDAsMTBTNC40OSwwLDEwLDBzMTAsNC40OSwxMCwxMC00LjQ5LDEwLTEwLDEwWiIvPjxwYXRoIGNsYXNzPSJjbHMtMSIgZD0ibTE2LjA0LDE0LjQ2Yy45MS0xLjI0LDEuNDYtMi43NywxLjQ2LTQuNDMsMC00LjE0LTMuMzYtNy41LTcuNS03LjVzLTcuNSwzLjM2LTcuNSw3LjVjMCwxLjY2LjU1LDMuMTksMS40Niw0LjQzaDEyLjA3WiIvPjwvc3ZnPg==";
+                break;
             case NodeGeometryBlockConnectionPointTypes.Float:
                 img.src =
                     "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMSAyMSI+PGRlZnM+PHN0eWxlPi5jbHMtMXtmaWxsOiNmZmY7fTwvc3R5bGU+PC9kZWZzPjx0aXRsZT5WZWN0b3IxPC90aXRsZT48ZyBpZD0iTGF5ZXJfNSIgZGF0YS1uYW1lPSJMYXllciA1Ij48Y2lyY2xlIGNsYXNzPSJjbHMtMSIgY3g9IjEwLjUiIGN5PSIxMC41IiByPSI3LjUiLz48L2c+PC9zdmc+";
@@ -33,10 +38,20 @@ export const RegisterNodePortDesign = (stateManager: StateManager) => {
                 break;
             case NodeGeometryBlockConnectionPointTypes.Geometry:
                 img.src =
-                    "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMSIgaGVpZ2h0PSIyMSIgdmlld0JveD0iMCAwIDIxIDIxIj48Y2lyY2xlIGN4PSI3LjEiIGN5PSIxMy4wOCIgcj0iMy4yNSIgc3R5bGU9ImZpbGw6I2ZmZiIvPjxwYXRoIGQ9Ik0xMC40OSwzQTcuNTIsNy41MiwwLDAsMCwzLDEwYTUuMTMsNS4xMywwLDEsMSw2LDcuODUsNy42MSw3LjYxLDAsMCwwLDEuNTIuMTYsNy41Miw3LjUyLDAsMCwwLDAtMTVaIiBzdHlsZT0iZmlsbDojZmZmIi8+PC9zdmc+";
-                img.style.width = "100%"; // it's so that the svg is correctly centered inside the outer circle
-                img.style.height = "100%";
+                    "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIGlkPSJMYXllcl81IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj48ZGVmcz48c3R5bGU+LmNscy0xe2ZpbGw6I2ZmZjt9LmNscy0ye2ZpbGw6Izg0OTk1Yzt9PC9zdHlsZT48L2RlZnM+PHBhdGggY2xhc3M9ImNscy0yIiBkPSJtMTAsMjBDNC40OSwyMCwwLDE1LjUxLDAsMTBTNC40OSwwLDEwLDBzMTAsNC40OSwxMCwxMC00LjQ5LDEwLTEwLDEwWiIvPjxwb2x5Z29uIGNsYXNzPSJjbHMtMSIgcG9pbnRzPSI5LjE1IDEwLjQ5IDMuMzkgNy4xNyAzLjM5IDEzLjgxIDkuMTUgMTcuMTQgOS4xNSAxMC40OSIvPjxwb2x5Z29uIGNsYXNzPSJjbHMtMSIgcG9pbnRzPSIxMCA5LjAyIDE1Ljc2IDUuNjkgMTAgMi4zNyA0LjI0IDUuNjkgMTAgOS4wMiIvPjxwb2x5Z29uIGNsYXNzPSJjbHMtMSIgcG9pbnRzPSIxMC44NSAxMC40OSAxMC44NSAxNy4xNCAxNi42MSAxMy44MSAxNi42MSA3LjE3IDEwLjg1IDEwLjQ5Ii8+PC9zdmc+";
                 break;
+        }
+
+        if (
+            !point.isConnected &&
+            point.value !== undefined &&
+            point.value !== null &&
+            point.value !== point.defaultValue &&
+            (!point.value.equals || !point.value.equals(point.defaultValue))
+        ) {
+            pip.style.display = "";
+        } else {
+            pip.style.display = "none";
         }
     };
 };

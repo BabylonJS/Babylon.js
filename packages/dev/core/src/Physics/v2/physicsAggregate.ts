@@ -188,6 +188,10 @@ export class PhysicsAggregate {
         extents.copyFrom(bb.extendSize);
         extents.scaleInPlace(2);
         extents.multiplyInPlace(this.transformNode.scaling);
+        // In case we had any negative scaling, we need to take the absolute value of the extents.
+        extents.x = Math.abs(extents.x);
+        extents.y = Math.abs(extents.y);
+        extents.z = Math.abs(extents.z);
 
         const min = TmpVectors.Vector3[1];
         min.copyFrom(bb.minimum);

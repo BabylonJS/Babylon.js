@@ -528,7 +528,7 @@ export class PrePassRenderer {
      */
     public _clear() {
         if (this._enabled && this._currentTarget.enabled) {
-            this._bindFrameBuffer(this._currentTarget);
+            this._bindFrameBuffer();
 
             // Clearing other attachment with 0 on all other attachments
             this._engine.bindAttachments(this._clearAttachments);
@@ -543,7 +543,7 @@ export class PrePassRenderer {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private _bindFrameBuffer(prePassRenderTarget: PrePassRenderTarget) {
+    private _bindFrameBuffer() {
         if (this._enabled && this._currentTarget.enabled) {
             this._currentTarget._checkSize();
             const internalTexture = this._currentTarget.renderTarget;
@@ -581,6 +581,21 @@ export class PrePassRenderer {
 
         this._effectConfigurations.push(cfg);
         return cfg;
+    }
+
+    /**
+     * Retrieves an effect configuration by name
+     * @param name
+     * @returns the effect configuration, or null if not present
+     */
+    public getEffectConfiguration(name: string): Nullable<PrePassEffectConfiguration> {
+        for (let i = 0; i < this._effectConfigurations.length; i++) {
+            if (this._effectConfigurations[i].name === name) {
+                return this._effectConfigurations[i];
+            }
+        }
+
+        return null;
     }
 
     private _enable() {
@@ -684,7 +699,7 @@ export class PrePassRenderer {
             firstPP = firstCameraPP;
         }
 
-        this._bindFrameBuffer(prePassRenderTarget);
+        this._bindFrameBuffer();
         this._linkInternalTexture(prePassRenderTarget, firstPP);
     }
 
