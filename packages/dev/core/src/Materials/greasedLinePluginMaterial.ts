@@ -607,7 +607,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
                     vec3 grlPositionOffset = grl_offsets;
                     positionUpdated += grlPositionOffset;
                 #else
-                    positionUpdated = (positionUpdated + grl_offsets) + grl_slopes * grl_widths;
+                    positionUpdated = (positionUpdated + grl_offsets) + (grl_slopes * grl_widths);
                 #endif
                 `,
                 // eslint-disable-next-line @typescript-eslint/naming-convention

@@ -7,7 +7,7 @@ import type { Node } from "../node";
 import { DeepCopier } from "../Misc/deepCopier";
 import { GreasedLineTools } from "../Misc/greasedLineTools";
 import type { GreasedLineMeshOptions, GreasedLineRibbonOptions } from "./greasedLineBaseMesh";
-import { GreasedLineBaseMesh, GreasedLineRibbonPointsMode } from "./greasedLineBaseMesh";
+import { GreasedLineBaseMesh, GreasedLineRibbonFacesMode, GreasedLineRibbonPointsMode } from "./greasedLineBaseMesh";
 
 Mesh._GreasedLineRibbonMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
     return GreasedLineRibbonMesh.Parse(parsedMesh, scene);
@@ -154,7 +154,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         }
 
         const v: number[] = [1, 0, numOfPaths];
-        const doubleSided = options.ribbonOptions?.doubleSided ?? false;
+        const doubleSided = options.ribbonOptions?.facesMode === GreasedLineRibbonFacesMode.FACES_MODE_DOUBLE_SIDED ?? false;
 
         const closePath = options.ribbonOptions?.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_PATHS && options.ribbonOptions.closePath;
         if (numOfPaths > 2) {
@@ -236,28 +236,28 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         const previousCounters = new Array(pathArrayLength).fill(0);
         let cp = this._colorPointers.length;
         for (let i = 0; i < pathArrayCopy[0].length; i++) {
-            let u = 0;
+            let v = 0;
             for (let pi = 0; pi < pathArrayLength; pi++) {
                 const counter = previousCounters[pi] + this._vSegmentLengths[pi][i] / this._vTotalLengths[pi];
                 this._counters.push(counter);
-                this._uvs.push(u, counter); // counter = vl
+                this._uvs.push(counter, v); // counter = u
                 this._colorPointers.push(cp);
 
                 previousCounters[pi] = counter;
-                u += this._uSegmentLengths[i][pi] / this._uTotalLengths[i];
+                v += this._uSegmentLengths[i][pi] / this._uTotalLengths[i];
             }
 
             cp++;
         }
 
         for (let i = 0, c = 0; i < pathArrayCopy[0].length; i++) {
-            const wl = this._uSegmentLengths[i][0] / 2;
-            const wu = this._uSegmentLengths[i][pathArrayLength - 1] / 2;
-            this._ribbonWidths.push(((this._widths[c++] ?? 1) - 1) * wl);
+            const widthLower = this._uSegmentLengths[i][0] / 2;
+            const widthUpper = this._uSegmentLengths[i][pathArrayLength - 1] / 2;
+            this._ribbonWidths.push(((this._widths[c++] ?? 1) - 1) * widthLower);
             for (let pi = 0; pi < pathArrayLength - 2; pi++) {
                 this._ribbonWidths.push(0);
             }
-            this._ribbonWidths.push(((this._widths[c++] ?? 1) - 1) * wu);
+            this._ribbonWidths.push(((this._widths[c++] ?? 1) - 1) * widthUpper);
         }
 
         const slopes =
@@ -364,7 +364,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
             this._vSegmentLengths[pi] = [0]; // first point has 0 distance
             length = 0;
             for (let i = 0; i < points.length - 1; i++) {
-                const l = Math.abs(points[i].subtract(points[i + 1]).lengthSquared());
+                const l = Math.abs(points[i].subtract(points[i + 1]).lengthSquared()); // it's ok to have lengthSquared() here
                 length += l;
                 this._vSegmentLengths[pi].push(l);
             }
@@ -380,7 +380,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
             length = 0;
             for (let pi = 1; pi < pathArrayLength; pi++) {
                 pathArray[pi][i].subtractToRef(pathArray[pi - 1][i], uLength);
-                const l = uLength.lengthSquared();
+                const l = uLength.length(); // must be length()
                 length += l;
                 this._uSegmentLengths[i].push(l);
             }
@@ -414,6 +414,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
 
         console.log("vertices", this._vertexPositions);
         console.log("indices", this._indices);
+        console.log("uvs", this._uvs);
         console.log("counters", this._counters);
         console.log("colorPointers", this._colorPointers);
         console.log("slopes", this._slopes);

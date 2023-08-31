@@ -13,6 +13,11 @@ export enum GreasedLineRibbonPointsMode {
     POINTS_MODE_POINTS = 0,
     POINTS_MODE_PATHS = 1,
 }
+export enum GreasedLineRibbonFacesMode {
+    FACES_MODE_SINGLE_SIDED = 0,
+    FACES_MODE_SINGLE_SIDED_NO_BACKFACE_CULLING = 1,
+    FACES_MODE_DOUBLE_SIDED = 2
+}
 
 export type GreasedLineRibbonOptions = {
     /**
@@ -21,37 +26,31 @@ export type GreasedLineRibbonOptions = {
      */
     smoothShading?: boolean;
     /**
-     * If true, creates double sided meshes. If false you can turn off backFaceCulling to have 'doubleSided' meshes.
+     * Controls how the faces are created.
+     * GreasedLineRibbonFacesMode.FACES_MODE_SINGLE_SIDED = single sided with back face culling. Default value.
+     * GreasedLineRibbonFacesMode.FACES_MODE_SINGLE_SIDED_NO_BACKFACE_CULLING = single sided without back face culling
+     * GreasedLineRibbonFacesMode.FACES_MODE_DOUBLE_SIDED = extra back faces are created. This doubles the amount of faces of the mesh.
      */
-    doubleSided?: boolean;
-} & (
-    | {
-          /**
-           * Defines how the points are processed.
-           * Every array of points will become the center of the ribbon. The ribbon will be expanded by width/2 to direction and -direction as well.
-           */
-          pointsMode: GreasedLineRibbonPointsMode.POINTS_MODE_POINTS;
-          /**
-           * Normalized direction of the slope of the non camera facing line.
-           */
-          direction: Vector3;
-          /**
-           * Width of the ribbon.
-           */
-          width: number;
-      }
-    | {
-          /**
-           * Defines how the points are processed.
-           * Every array of points is one path. These will be used to buuld one ribbon.
-           */
-          pointsMode: GreasedLineRibbonPointsMode.POINTS_MODE_PATHS;
-          /**
-           * If true, the path will be closed.
-           */
-          closePath?: boolean;
-      }
-);
+    facesMode?: GreasedLineRibbonFacesMode;
+    /**
+     * Defines how the points are processed.
+     * In GreasedLineRibbonPointsMode.POINTS_MODE_POINTS every array of points will become the center of the ribbon. The ribbon will be expanded by width/2 to +direction and -direction as well.
+     * In GreasedLineRibbonPointsMode.POINTS_MODE_PATHS every array of points is one path. These will be used to buuld one ribbon.
+     */
+    pointsMode: GreasedLineRibbonPointsMode;
+    /**
+     * Normalized direction of the slope of the non camera facing line.
+     */
+    direction: Vector3;
+    /**
+     * Width of the ribbon.
+     */
+    width: number;
+    /**
+     * If true, the path will be closed.
+     */
+    closePath?: boolean;
+};
 
 export type GreasedLinePoints = Vector3[] | Vector3[][] | Float32Array | Float32Array[] | number[][] | number[];
 

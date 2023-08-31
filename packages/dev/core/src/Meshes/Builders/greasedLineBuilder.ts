@@ -10,8 +10,9 @@ import type { Color3 } from "../../Maths/math.color";
 import { GreasedLineSimpleMaterial } from "../../Materials/greasedLineSimpleMaterial";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
 import type { GreasedLineMeshOptions } from "../greasedLineBaseMesh";
-import { GreasedLineRibbonPointsMode } from "../greasedLineBaseMesh";
+import { GreasedLineRibbonFacesMode, GreasedLineRibbonPointsMode } from "../greasedLineBaseMesh";
 import { GreasedLineRibbonMesh } from "../greasedLineRibbonMesh";
+import { Vector3 } from "core/Maths";
 
 /**
  * How are the colors distributed along the color table
@@ -152,10 +153,10 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     options.widthDistribution = options.widthDistribution ?? GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START;
 
     if (options.ribbonOptions) {
+        options.ribbonOptions.facesMode = options.ribbonOptions.facesMode ?? GreasedLineRibbonFacesMode.FACES_MODE_SINGLE_SIDED;
         options.ribbonOptions.pointsMode = options.ribbonOptions.pointsMode ?? GreasedLineRibbonPointsMode.POINTS_MODE_POINTS;
-        if (options.ribbonOptions.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS && !options.ribbonOptions.direction) {
-            throw "In POINTS_MODE_POINTS you need to specify a direction.";
-        }
+        options.ribbonOptions.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS &&
+            (options.ribbonOptions.direction = options.ribbonOptions.direction ?? Vector3.UpReadOnly);
     }
 
     materialOptions = materialOptions ?? {
@@ -176,7 +177,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
 
     if (options.ribbonOptions) {
         if (options.ribbonOptions.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS) {
-            length *= 2;
+            // length *= 2;
         }
     }
 
@@ -227,6 +228,10 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
             if (materialOptions.createAndAssignMaterial) {
                 const material = CreateGreasedLineMaterial(name, initialMaterialOptions, scene);
                 instance.material = material;
+
+                if (options.ribbonOptions?.facesMode === GreasedLineRibbonFacesMode.FACES_MODE_SINGLE_SIDED_NO_BACKFACE_CULLING) {
+                    material.backFaceCulling = false;
+                }
             }
         }
     } else {
