@@ -84,7 +84,7 @@ export function initWebGLEngineState(): WebGLEngineState {
     // public and protected
     const fes = baseEngineState as WebGLEngineState;
     fes._shaderProcessor = new WebGLShaderProcessor();
-    
+
     // private
     const ps = fes as WebGLEngineStateFull;
     ps._uintIndicesCurrentlySet = false;
@@ -99,4 +99,21 @@ export function initWebGLEngineState(): WebGLEngineState {
     ps._supportsHardwareTextureRescaling = false;
     ps._version = ps._webGLVersion;
     return fes;
+}
+
+/**
+ * Gets an object containing information about the current webGL context
+ * @param engineState defines the engine state
+ * @returns an object containing the vendor, the renderer and the version of the current webGL context
+ */
+export function getGlInfo(engineState: WebGLEngineState) {
+    const gl = engineState._gl;
+    const glVersion = gl.getParameter(gl.VERSION);
+    const glRenderer = gl.getParameter(gl.RENDERER);
+    const glVendor = gl.getParameter(gl.VENDOR);
+    return {
+        glVersion,
+        glRenderer,
+        glVendor,
+    };
 }

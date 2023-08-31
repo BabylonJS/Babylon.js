@@ -684,10 +684,6 @@ export function getEmptyCubeTexture(engineState: IBaseEnginePublic, { createRawC
     return (engineState as BaseEngineStateFull)._emptyCubeTexture;
 }
 
-export function getCreationOptions(engineState: IBaseEnginePublic): EngineOptions {
-    return (engineState as BaseEngineState)._creationOptions;
-}
-
 /**
  * Gets a boolean indicating if all created effects are ready
  * @param engineState defines the engine state
@@ -737,6 +733,18 @@ export function resetTextureCache(engineState: IBaseEnginePublic): void {
 }
 
 /**
+ * Defines the hardware scaling level.
+ * By default the hardware scaling level is computed from the window device ratio.
+ * if level = 1 then the engine will render at the exact resolution of the canvas. If level = 0.5 then the engine will render at twice the size of the canvas.
+ * @param level defines the level to use
+ */
+export function setHardwareScalingLevel(engineState: IBaseEnginePublic, level: number): void {
+    const fes = engineState as BaseEngineStateFull;
+    fes._hardwareScalingLevel = level;
+    resize(engineState);
+}
+
+/**
  * stop executing a render loop function and remove it from the execution array
  * @param renderFunction defines the function to be removed. If not provided all functions will be removed.
  */
@@ -751,37 +759,6 @@ export function stopRenderLoop(engineState: IBaseEnginePublic, renderFunction?: 
 
     if (index >= 0) {
         fes._activeRenderLoops.splice(index, 1);
-    }
-}
-
-/** @internal */
-export function _renderLoop(engineState: IBaseEnginePublic): void {
-    const fes = engineState as BaseEngineState;
-    if (!fes._contextWasLost) {
-        let shouldRender = true;
-        if (fes._isDisposed || (!fes.renderEvenInBackground && fes._windowIsBackground)) {
-            shouldRender = false;
-        }
-
-        if (shouldRender) {
-            // Start new frame
-            beginFrame();
-
-            for (let index = 0; index < fes._activeRenderLoops.length; index++) {
-                const renderFunction = fes._activeRenderLoops[index];
-
-                renderFunction();
-            }
-
-            // Present
-            endFrame();
-        }
-    }
-
-    if (fes._activeRenderLoops.length > 0) {
-        fes._frameHandler = _queueNewFrame(fes._boundRenderFunction, fes.hostWindow);
-    } else {
-        fes._renderingQueueLaunched = false;
     }
 }
 
