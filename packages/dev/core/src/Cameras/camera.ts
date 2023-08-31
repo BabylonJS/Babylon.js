@@ -1495,4 +1495,14 @@ export class Camera extends Node {
 
         return camera;
     }
+
+    /** @internal */
+    public _calculateHandednessMultiplier(): number {
+        let handednessMultiplier = this.getScene().useRightHandedSystem ? -1 : 1;
+        if (this.parent && this.parent._getWorldMatrixDeterminant() < 0) {
+            handednessMultiplier *= -1;
+        }
+
+        return handednessMultiplier;
+    }
 }
