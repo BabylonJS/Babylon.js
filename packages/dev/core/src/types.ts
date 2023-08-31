@@ -106,18 +106,22 @@ export type Member<T, D = null> = D extends 0 ? T : T extends (infer U)[] ? Memb
 /**
  * Flattens an array
  */
-export type Flatten<A extends unknown[], D = null> =
-    A extends (infer U)[] ?
-    Member<U, D>[] :
-    A extends unknown[] ?
-    { [K in keyof A]: Member<A[K], D> } :
-    A;
+export type FlattenArray<A extends unknown[], D = null> = A extends (infer U)[] ? Member<U, D>[] : A extends unknown[] ? { [K in keyof A]: Member<A[K], D> } : A;
 
-export type FlattenTuple<A extends unknown[]> = A extends [infer U, ...infer Rest]
-	? U extends unknown[]
-	  ? [...U, ...FlattenTuple<Rest>]
-	  : [U, ...FlattenTuple<Rest>]
-	: [];
+/**
+ * Whether T is a tuple
+ */
+export type IsTuple<T> = T extends [] ? false : T extends [infer Head, ...infer Rest] ? true : false;
+
+/**
+ * Flattens a tuple
+ */
+export type FlattenTuple<A extends unknown[]> = A extends [infer U, ...infer Rest] ? (U extends unknown[] ? [...U, ...FlattenTuple<Rest>] : [U, ...FlattenTuple<Rest>]) : [];
+
+/**
+ * Flattens an array or tuple
+ */
+export type Flatten<A extends unknown[]> = IsTuple<A> extends true ? FlattenTuple<A> : FlattenArray<A>;
 
 /** Alias type for number array or Float32Array */
 export type FloatArray = number[] | Float32Array;

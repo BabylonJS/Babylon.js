@@ -7,7 +7,7 @@ import type { DeepImmutable, Flatten, FloatArray, MultidimensionalArray } from "
 export declare abstract class Tensor<V extends MultidimensionalArray<number, number> = number[]> {
     /**
      * The number of dimensions the tensor has (i.e. the length of the coordinate array)
-     * 
+     *
      * @remarks
      * This is abstract to allow implementations with getter
      */

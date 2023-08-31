@@ -10,13 +10,16 @@ import type { Plane } from "./math.plane";
 import { PerformanceConfigurator } from "../Engines/performanceConfigurator";
 import { EngineStore } from "../Engines/engineStore";
 import type { TransformNode } from "../Meshes/transformNode";
-import type { Tensor } from "./tensor";
+import { Tensor } from "./tensor";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const _ExtractAsInt = (value: number) => {
     return parseInt(value.toString().replace(/\W/g, ""));
 };
 
+/**
+ * Reprents a vector of any dimension
+ */
 export declare abstract class Vector<N extends number[] = number[]> extends Tensor<N> {
     /**
      * Gets the length of the vector
