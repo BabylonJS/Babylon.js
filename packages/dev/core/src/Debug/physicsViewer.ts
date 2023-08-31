@@ -226,14 +226,14 @@ export class PhysicsViewer {
 
     protected _updateDebugConstraint(constraint: PhysicsConstraint, parentingMesh: AbstractMesh) {
         if (!constraint._initOptions) {
-            return null;
+            return;
         }
 
         // Get constraint pivot and axes
         const { pivotA, pivotB, axisA, axisB, perpAxisA, perpAxisB } = constraint._initOptions;
 
         if (!pivotA || !pivotB || !axisA || !axisB || !perpAxisA || !perpAxisB) {
-            return null;
+            return;
         }
 
         parentingMesh.getDescendants(true).forEach((parentConstraintMesh) => {
@@ -244,8 +244,8 @@ export class PhysicsViewer {
             const { parentBody, parentBodyIndex } = parentCoordSystemNode.metadata;
             const { childBody, childBodyIndex } = childCoordSystemNode.metadata;
 
-            const parentTransform = this._getTransformFromBody(parentBody, parentBodyIndex);
-            const childTransform = this._getTransformFromBody(childBody, childBodyIndex);
+            const parentTransform = this._getTransformFromBodyToRef(parentBody, TmpVectors.Matrix[0], parentBodyIndex);
+            const childTransform = this._getTransformFromBodyToRef(childBody, TmpVectors.Matrix[1], childBodyIndex);
 
             parentTransform.decomposeToTransformNode(parentCoordSystemNode);
             this._makeScalingUnitInPlace(parentCoordSystemNode.scaling);
@@ -254,21 +254,19 @@ export class PhysicsViewer {
             this._makeScalingUnitInPlace(childCoordSystemNode.scaling);
 
             // Get the transform to align the XYZ axes to the constraint axes
-            const rotTransformParent = Quaternion.FromRotationMatrix(Matrix.FromXYZAxesToRef(axisA, perpAxisA, axisA.cross(perpAxisA), new Matrix()));
-            const rotTransformChild = Quaternion.FromRotationMatrix(Matrix.FromXYZAxesToRef(axisB, perpAxisB, axisB.cross(perpAxisB), new Matrix()));
+            const rotTransformParent = Quaternion.FromRotationMatrix(Matrix.FromXYZAxesToRef(axisA, perpAxisA, axisA.cross(perpAxisA), TmpVectors.Matrix[0]));
+            const rotTransformChild = Quaternion.FromRotationMatrix(Matrix.FromXYZAxesToRef(axisB, perpAxisB, axisB.cross(perpAxisB), TmpVectors.Matrix[1]));
 
-            const translateTransformParent = pivotA.clone();
-            const translateTransformChild = pivotB.clone();
+            const translateTransformParent = pivotA;
+            const translateTransformChild = pivotB;
 
             // Create a transform node and set its matrix
             const parentTransformNode = parentCoordSystemNode.getDescendants(true)[0] as TransformNode;
-            parentTransformNode.position = translateTransformParent;
+            parentTransformNode.position.copyFrom(translateTransformParent);
             parentTransformNode.rotationQuaternion = rotTransformParent;
-            parentTransformNode.parent = parentCoordSystemNode;
 
             const childTransformNode = childCoordSystemNode.getDescendants(true)[0] as TransformNode;
-            childTransformNode.parent = childCoordSystemNode;
-            childTransformNode.position = translateTransformChild;
+            childTransformNode.position.copyFrom(translateTransformChild);
             childTransformNode.rotationQuaternion = rotTransformChild;
         });
     }
@@ -795,12 +793,12 @@ export class PhysicsViewer {
         return inertiaBoxMesh;
     }
 
-    private _getTransformFromBody(body: PhysicsBody, instanceIndex?: number) {
+    private _getTransformFromBodyToRef(body: PhysicsBody, matrix: Matrix, instanceIndex?: number) {
         const tnode = body.transformNode;
         if (instanceIndex && instanceIndex >= 0) {
-            return Matrix.FromArrayToRef((tnode as Mesh)._thinInstanceDataStorage.matrixData!, instanceIndex, new Matrix());
+            return Matrix.FromArrayToRef((tnode as Mesh)._thinInstanceDataStorage.matrixData!, instanceIndex, matrix);
         } else {
-            return tnode.getWorldMatrix();
+            return matrix.copyFrom(tnode.getWorldMatrix());
         }
     }
 
@@ -835,8 +833,8 @@ export class PhysicsViewer {
             const { parentBody, parentBodyIndex, childBody, childBodyIndex } = bodyPairInfo;
             // Get the parent transform
 
-            const parentTransform = this._getTransformFromBody(parentBody, parentBodyIndex);
-            const childTransform = this._getTransformFromBody(childBody, childBodyIndex);
+            const parentTransform = this._getTransformFromBodyToRef(parentBody, TmpVectors.Matrix[0], parentBodyIndex);
+            const childTransform = this._getTransformFromBodyToRef(childBody, TmpVectors.Matrix[1], childBodyIndex);
 
             const parentCoordSystemNode = new TransformNode("parentCoordSystem", utilityLayerScene);
             // parentCoordSystemNode.parent = parentingMesh;
@@ -853,21 +851,21 @@ export class PhysicsViewer {
             childTransform.decomposeToTransformNode(childCoordSystemNode);
 
             // Get the transform to align the XYZ axes to the constraint axes
-            const rotTransformParent = Quaternion.FromRotationMatrix(Matrix.FromXYZAxesToRef(axisA, perpAxisA, axisA.cross(perpAxisA), new Matrix()));
-            const rotTransformChild = Quaternion.FromRotationMatrix(Matrix.FromXYZAxesToRef(axisB, perpAxisB, axisB.cross(perpAxisB), new Matrix()));
+            const rotTransformParent = Quaternion.FromRotationMatrix(Matrix.FromXYZAxesToRef(axisA, perpAxisA, axisA.cross(perpAxisA), TmpVectors.Matrix[0]));
+            const rotTransformChild = Quaternion.FromRotationMatrix(Matrix.FromXYZAxesToRef(axisB, perpAxisB, axisB.cross(perpAxisB), TmpVectors.Matrix[0]));
 
-            const translateTransformParent = pivotA.clone();
-            const translateTransformChild = pivotB.clone();
+            const translateTransformParent = pivotA;
+            const translateTransformChild = pivotB;
 
             // Create a transform node and set its matrix
             const parentTransformNode = new TransformNode("constraint_parent", utilityLayerScene);
-            parentTransformNode.position = translateTransformParent;
+            parentTransformNode.position.copyFrom(translateTransformParent);
             parentTransformNode.rotationQuaternion = rotTransformParent;
             parentTransformNode.parent = parentCoordSystemNode;
 
             const childTransformNode = new TransformNode("constraint_child", utilityLayerScene);
             childTransformNode.parent = childCoordSystemNode;
-            childTransformNode.position = translateTransformChild;
+            childTransformNode.position.copyFrom(translateTransformChild);
             childTransformNode.rotationQuaternion = rotTransformChild;
 
             // Create axes for the constraint
