@@ -3,6 +3,7 @@ import type { Vector3 } from "../../Maths/math.vector";
 import type { Nullable } from "../../types";
 import type { IPhysicsEnginePluginV2, PhysicsConstraintParameters, PhysicsConstraintAxisLimitMode, PhysicsConstraintMotorType } from "./IPhysicsEnginePlugin";
 import { PhysicsConstraintAxis, PhysicsConstraintType } from "./IPhysicsEnginePlugin";
+import type { PhysicsBody } from "./physicsBody";
 
 /**
  * This is a holder class for the physics constraint created by the physics plugin
@@ -20,6 +21,11 @@ export class PhysicsConstraint {
     protected _physicsPlugin: IPhysicsEnginePluginV2;
     protected _options: PhysicsConstraintParameters;
     protected _type: PhysicsConstraintType;
+    /**
+     * @internal
+     * The internal options that were used to init the constraint
+     */
+    public _initOptions?: PhysicsConstraintParameters;
 
     /**
      * Constructs a new constraint for the physics constraint.
@@ -105,6 +111,14 @@ export class PhysicsConstraint {
      */
     public get isCollisionsEnabled(): boolean {
         return this._physicsPlugin.getCollisionsEnabled(this);
+    }
+
+    /**
+     * Gets all bodies that are using this constraint
+     * @returns
+     */
+    public getBodiesUsingConstraint(): { parentBody: PhysicsBody; parentBodyIndex: number; childBody: PhysicsBody; childBodyIndex: number }[] {
+        return this._physicsPlugin.getBodiesUsingConstraint(this);
     }
 
     /**
