@@ -207,6 +207,23 @@ export class PhysicsViewer {
         }
     }
 
+    /**
+     * Given a scaling vector, make all of its components
+     * 1, preserving the sign
+     * @param scaling
+     */
+    protected _makeScalingUnitInPlace(scaling: Vector3) {
+        if (Math.abs(scaling.x - 1) > 1e-6) {
+            scaling.x = 1 * Math.sign(scaling.x);
+        }
+        if (Math.abs(scaling.y - 1) > 1e-6) {
+            scaling.y = 1 * Math.sign(scaling.y);
+        }
+        if (Math.abs(scaling.z - 1) > 1e-6) {
+            scaling.z = 1 * Math.sign(scaling.z);
+        }
+    }
+
     protected _updateDebugConstraint(constraint: PhysicsConstraint, parentingMesh: AbstractMesh) {
         if (!this._utilityLayer) {
             return;
@@ -240,10 +257,12 @@ export class PhysicsViewer {
             const parentCoordSystemNode = new TransformNode("parentCoordSystem", utilityLayerScene);
             parentCoordSystemNode.parent = parentingMesh;
             parentTransform.decomposeToTransformNode(parentCoordSystemNode);
+            this._makeScalingUnitInPlace(parentCoordSystemNode.scaling);
 
             const childCoordSystemNode = new TransformNode("childCoordSystem", utilityLayerScene);
             childCoordSystemNode.parent = parentingMesh;
             childTransform.decomposeToTransformNode(childCoordSystemNode);
+            this._makeScalingUnitInPlace(childCoordSystemNode.scaling);
 
             // Get the transform to align the XYZ axes to the constraint axes
             const rotTransformParent = Quaternion.FromRotationMatrix(Matrix.FromXYZAxesToRef(axisA, perpAxisA, axisA.cross(perpAxisA), new Matrix()));
