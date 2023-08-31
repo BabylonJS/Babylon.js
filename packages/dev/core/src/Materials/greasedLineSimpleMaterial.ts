@@ -117,7 +117,11 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
         this.dashRatio = options.dashRatio ?? 0.5;
         this.dashOffset = options.dashOffset ?? 0;
         this.dashCount = options.dashCount ?? 1; // calculate the _dashArray value, call the setter
-        this.width = options.width ? options.width : (options.sizeAttenuation && options.cameraFacing) ? GreasedLineSimpleMaterial.DEFAULT_WIDTH_ATTENUATED : GreasedLineSimpleMaterial.DEFAULT_WIDTH;
+        this.width = options.width
+            ? options.width
+            : options.sizeAttenuation && options.cameraFacing
+            ? GreasedLineSimpleMaterial.DEFAULT_WIDTH_ATTENUATED
+            : GreasedLineSimpleMaterial.DEFAULT_WIDTH;
         this.sizeAttenuation = options.sizeAttenuation ?? false;
         this.color = options.color ?? Color3.White();
         this.useColors = options.useColors ?? false;
