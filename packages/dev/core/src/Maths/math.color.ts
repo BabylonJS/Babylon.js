@@ -1,8 +1,9 @@
-import type { DeepImmutable, FloatArray } from "../types";
+import type { Constructor, DeepImmutable, FloatArray } from "../types";
 import { Scalar } from "./math.scalar";
-import { ToLinearSpace, ToGammaSpace } from "./math.constants";
+import { ToLinearSpace, ToGammaSpace, Epsilon } from "./math.constants";
 import { ArrayTools } from "../Misc/arrayTools";
 import { RegisterClass } from "../Misc/typeStore";
+import type { Tensor } from "./tensor";
 
 function colorChannelToLinearSpace(color: number): number {
     return Math.pow(color, ToLinearSpace);
@@ -29,7 +30,9 @@ function colorChannelToGammaSpaceExact(color: number): number {
 /**
  * Class used to hold a RGB color
  */
-export class Color3 {
+export class Color3 implements Tensor<[number, number, number]> {
+    public readonly dimension: [number] = [3];
+
     /**
      * Creates a new Color3 object from red, green, blue values, all between 0 and 1
      * @param r defines the red component (between 0 and 1, default is 0)
@@ -86,7 +89,7 @@ export class Color3 {
      * @param index defines an optional index in the target array to define where to start storing values
      * @returns the current Color3 object
      */
-    public toArray(array: FloatArray, index: number = 0): Color3 {
+    public toArray(array: FloatArray, index: number = 0): this {
         array[index] = this.r;
         array[index + 1] = this.g;
         array[index + 2] = this.b;
@@ -100,7 +103,7 @@ export class Color3 {
      * @param offset defines an offset in the source array
      * @returns the current Color3 object
      */
-    public fromArray(array: DeepImmutable<ArrayLike<number>>, offset: number = 0): Color3 {
+    public fromArray(array: DeepImmutable<ArrayLike<number>>, offset: number = 0): this {
         Color3.FromArrayToRef(array, offset, this);
         return this;
     }
@@ -118,7 +121,7 @@ export class Color3 {
      * Returns a new array populated with 3 numeric elements : red, green and blue values
      * @returns the new array
      */
-    public asArray(): number[] {
+    public asArray(): [number, number, number] {
         return [this.r, this.g, this.b];
     }
 
@@ -135,21 +138,161 @@ export class Color3 {
      * @param otherColor defines the second operand
      * @returns the new Color3 object
      */
-    public multiply(otherColor: DeepImmutable<Color3>): Color3 {
-        return new Color3(this.r * otherColor.r, this.g * otherColor.g, this.b * otherColor.b);
+    public multiply(otherColor: DeepImmutable<this>): this {
+        return new (this.constructor as Constructor<typeof Color3, this>)(this.r * otherColor.r, this.g * otherColor.g, this.b * otherColor.b);
     }
 
     /**
      * Multiply the rgb values of the Color3 and the given Color3 and stores the result in the object "result"
      * @param otherColor defines the second operand
      * @param result defines the Color3 object where to store the result
-     * @returns the current Color3
+     * @returns the result Color3
      */
-    public multiplyToRef(otherColor: DeepImmutable<Color3>, result: Color3): Color3 {
+    public multiplyToRef<T extends this>(otherColor: DeepImmutable<this>, result: T): T {
         result.r = this.r * otherColor.r;
         result.g = this.g * otherColor.g;
         result.b = this.b * otherColor.b;
+        return result;
+    }
+
+    /**
+     * Multiplies the current Color3 coordinates by the given ones
+     * @param otherColor defines the second operand
+     * @returns the current updated Color3
+     */
+    public multiplyInPlace(otherColor: DeepImmutable<Color3>): this {
+        this.r *= otherColor.r;
+        this.g *= otherColor.g;
+        this.b *= otherColor.b;
         return this;
+    }
+
+    /**
+     * Returns a new Color3 set with the result of the multiplication of the current Color3 coordinates by the given floats
+     * @param r defines the r coordinate of the operand
+     * @param g defines the g coordinate of the operand
+     * @param b defines the b coordinate of the operand
+     * @returns the new Color3
+     */
+    public multiplyByFloats(r: number, g: number, b: number): this {
+        return new (this.constructor as Constructor<typeof Color3, this>)(this.r * r, this.g * g, this.b * b);
+    }
+
+    /**
+     * Returns a new Color3 set with the result of the division of the current Color3 coordinates by the given ones
+     * @param otherColor defines the second operand
+     * @returns the new Color3
+     */
+    public divide(otherColor: DeepImmutable<Color3>): this {
+        return new (this.constructor as Constructor<typeof Color3, this>)(this.r / otherColor.r, this.g / otherColor.g, this.b / otherColor.b);
+    }
+
+    /**
+     * Divides the current Color3 coordinates by the given ones and stores the result in the given color "result"
+     * @param otherColor defines the second operand
+     * @param result defines the Color3 object where to store the result
+     * @returns the result
+     */
+    public divideToRef<T extends Color3>(otherColor: DeepImmutable<Color3>, result: T): T {
+        return result.copyFromFloats(this.r / otherColor.r, this.g / otherColor.g, this.b / otherColor.b);
+    }
+
+    /**
+     * Divides the current Color3 coordinates by the given ones.
+     * @param otherColor defines the second operand
+     * @returns the current updated Color3
+     */
+    public divideInPlace(otherColor: DeepImmutable<Color3>): this {
+        this.r = this.r / otherColor.r;
+        this.g = this.g / otherColor.g;
+        this.b = this.b / otherColor.b;
+        return this;
+    }
+
+    /**
+     * Updates the current Color3 with the minimal coordinate values between its and the given color ones
+     * @param other defines the second operand
+     * @returns the current updated Color3
+     */
+    public minimizeInPlace(other: DeepImmutable<Color3>): this {
+        return this.minimizeInPlaceFromFloats(other.r, other.g, other.b);
+    }
+
+    /**
+     * Updates the current Color3 with the maximal coordinate values between its and the given color ones.
+     * @param other defines the second operand
+     * @returns the current updated Color3
+     */
+    public maximizeInPlace(other: DeepImmutable<Color3>): this {
+        return this.maximizeInPlaceFromFloats(other.r, other.g, other.b);
+    }
+
+    /**
+     * Updates the current Color3 with the minimal coordinate values between its and the given coordinates
+     * @param r defines the r coordinate of the operand
+     * @param g defines the g coordinate of the operand
+     * @param b defines the b coordinate of the operand
+     * @returns the current updated Color3
+     */
+    public minimizeInPlaceFromFloats(r: number, g: number, b: number): this {
+        this.r = Math.min(r, this.r);
+        this.g = Math.min(g, this.g);
+        this.b = Math.min(b, this.b);
+        return this;
+    }
+
+    /**
+     * Updates the current Color3 with the maximal coordinate values between its and the given coordinates.
+     * @param r defines the r coordinate of the operand
+     * @param g defines the g coordinate of the operand
+     * @param b defines the b coordinate of the operand
+     * @returns the current updated Color3
+     */
+    public maximizeInPlaceFromFloats(r: number, g: number, b: number): this {
+        this.r = Math.max(r, this.r);
+        this.g = Math.max(g, this.g);
+        this.b = Math.max(b, this.b);
+        return this;
+    }
+
+    /**
+     * Gets the current Color3's floored values and stores them in result
+     * @param result the color to store the result in
+     * @returns the result color
+     */
+    public floorToRef<T extends this>(result: T): T {
+        result.r = Math.floor(this.r);
+        result.g = Math.floor(this.g);
+        result.b = Math.floor(this.b);
+        return result;
+    }
+
+    /**
+     * Gets a new Color3 from current Color3 floored values
+     * @returns a new Color3
+     */
+    public floor(): this {
+        return new (this.constructor as Constructor<typeof Color3, this>)(Math.floor(this.r), Math.floor(this.g), Math.floor(this.b));
+    }
+
+    /**
+     * Gets the current Color3's fractional values and stores them in result
+     * @param result the color to store the result in
+     * @returns the result color
+     */
+    public fractToRef<T extends this>(result: T): T {
+        result.r = this.r - Math.floor(this.r);
+        result.g = this.g - Math.floor(this.g);
+        result.b = this.b - Math.floor(this.b);
+        return result;
+    }
+
+    /**
+     * Gets a new Color3 from current Color3 fractional values
+     * @returns a new Color3
+     */
+    public fract(): this {
+        return new (this.constructor as Constructor<typeof Color3, this>)(this.r - Math.floor(this.r), this.g - Math.floor(this.g), this.b - Math.floor(this.b));
     }
 
     /**
@@ -157,8 +300,15 @@ export class Color3 {
      * @param otherColor defines the second operand
      * @returns true if the rgb values are equal to the given ones
      */
-    public equals(otherColor: DeepImmutable<Color3>): boolean {
+    public equals(otherColor: DeepImmutable<this>): boolean {
         return otherColor && this.r === otherColor.r && this.g === otherColor.g && this.b === otherColor.b;
+    }
+
+    /**
+     * Alias for equalsToFloats
+     */
+    public equalsFloats(r: number, g: number, b: number): boolean {
+        return this.equalsToFloats(r, g, b);
     }
 
     /**
@@ -168,8 +318,51 @@ export class Color3 {
      * @param b defines the blue component to check
      * @returns true if the rgb values are equal to the given ones
      */
-    public equalsFloats(r: number, g: number, b: number): boolean {
+    public equalsToFloats(r: number, g: number, b: number): boolean {
         return this.r === r && this.g === g && this.b === b;
+    }
+
+    /**
+     * Returns true if the current Color3 and the given color coordinates are distant less than epsilon
+     * @param otherColor defines the second operand
+     * @param epsilon defines the minimal distance to define values as equals
+     * @returns true if both colors are distant less than epsilon
+     */
+    public equalsWithEpsilon(otherColor: DeepImmutable<Color3>, epsilon: number = Epsilon): boolean {
+        return (
+            otherColor &&
+            Scalar.WithinEpsilon(this.r, otherColor.r, epsilon) &&
+            Scalar.WithinEpsilon(this.g, otherColor.g, epsilon) &&
+            Scalar.WithinEpsilon(this.b, otherColor.b, epsilon)
+        );
+    }
+
+    /**
+     * Gets a new Color3 set with the current Color3 negated coordinates
+     * @returns a new Color3
+     */
+    public negate(): this {
+        return new (this.constructor as Constructor<typeof Color3, this>)(-this.r, -this.g, -this.b);
+    }
+
+    /**
+     * Negate this color in place
+     * @returns this
+     */
+    public negateInPlace(): this {
+        this.r *= -1;
+        this.g *= -1;
+        this.b *= -1;
+        return this;
+    }
+
+    /**
+     * Negate the current Color3 and stores the result in the given color "result" coordinates
+     * @param result defines the Color3 object where to store the result
+     * @returns the result
+     */
+    public negateToRef<T extends Color3 = Color3>(result: T): T {
+        return result.copyFromFloats(this.r * -1, this.g * -1, this.b * -1);
     }
 
     /**
@@ -177,8 +370,8 @@ export class Color3 {
      * @param scale defines the scaling factor to apply
      * @returns a new Color3 object
      */
-    public scale(scale: number): Color3 {
-        return new Color3(this.r * scale, this.g * scale, this.b * scale);
+    public scale(scale: number): this {
+        return new (this.constructor as Constructor<typeof Color3, this>)(this.r * scale, this.g * scale, this.b * scale);
     }
 
     /**
@@ -186,7 +379,7 @@ export class Color3 {
      * @param scale defines the scaling factor to apply
      * @returns the current updated Color3
      */
-    public scaleInPlace(scale: number): Color3 {
+    public scaleInPlace(scale: number): this {
         this.r *= scale;
         this.g *= scale;
         this.b *= scale;
@@ -197,26 +390,26 @@ export class Color3 {
      * Multiplies the rgb values by scale and stores the result into "result"
      * @param scale defines the scaling factor
      * @param result defines the Color3 object where to store the result
-     * @returns the unmodified current Color3
+     * @returns the result Color3
      */
-    public scaleToRef(scale: number, result: Color3): Color3 {
+    public scaleToRef<T extends this>(scale: number, result: T): T {
         result.r = this.r * scale;
         result.g = this.g * scale;
         result.b = this.b * scale;
-        return this;
+        return result;
     }
 
     /**
      * Scale the current Color3 values by a factor and add the result to a given Color3
      * @param scale defines the scale factor
      * @param result defines color to store the result into
-     * @returns the unmodified current Color3
+     * @returns the result Color3
      */
-    public scaleAndAddToRef(scale: number, result: Color3): Color3 {
+    public scaleAndAddToRef<T extends this>(scale: number, result: T): T {
         result.r += this.r * scale;
         result.g += this.g * scale;
         result.b += this.b * scale;
-        return this;
+        return result;
     }
 
     /**
@@ -224,13 +417,13 @@ export class Color3 {
      * @param min defines minimum clamping value (default is 0)
      * @param max defines maximum clamping value (default is 1)
      * @param result defines color to store the result into
-     * @returns the original Color3
+     * @returns the result Color3
      */
-    public clampToRef(min: number = 0, max: number = 1, result: Color3): Color3 {
+    public clampToRef<T extends this>(min: number = 0, max: number = 1, result: T): T {
         result.r = Scalar.Clamp(this.r, min, max);
         result.g = Scalar.Clamp(this.g, min, max);
         result.b = Scalar.Clamp(this.b, min, max);
-        return this;
+        return result;
     }
 
     /**
@@ -238,8 +431,34 @@ export class Color3 {
      * @param otherColor defines the second operand
      * @returns the new Color3
      */
-    public add(otherColor: DeepImmutable<Color3>): Color3 {
-        return new Color3(this.r + otherColor.r, this.g + otherColor.g, this.b + otherColor.b);
+    public add(otherColor: DeepImmutable<this>): this {
+        return new (this.constructor as Constructor<typeof Color3, this>)(this.r + otherColor.r, this.g + otherColor.g, this.b + otherColor.b);
+    }
+
+    /**
+     * Adds the given color to the current Color3
+     * @param otherColor defines the second operand
+     * @returns the current updated Color3
+     */
+    public addInPlace(otherColor: DeepImmutable<Color3>): this {
+        this.r += otherColor.r;
+        this.g += otherColor.g;
+        this.b += otherColor.b;
+        return this;
+    }
+
+    /**
+     * Adds the given coordinates to the current Color3
+     * @param r defines the r coordinate of the operand
+     * @param g defines the g coordinate of the operand
+     * @param b defines the b coordinate of the operand
+     * @returns the current updated Color3
+     */
+    public addInPlaceFromFloats(r: number, g: number, b: number): this {
+        this.r += r;
+        this.g += g;
+        this.b += b;
+        return this;
     }
 
     /**
@@ -248,11 +467,11 @@ export class Color3 {
      * @param result defines Color3 object to store the result into
      * @returns the unmodified current Color3
      */
-    public addToRef(otherColor: DeepImmutable<Color3>, result: Color3): Color3 {
+    public addToRef<T extends this>(otherColor: DeepImmutable<this>, result: T): T {
         result.r = this.r + otherColor.r;
         result.g = this.g + otherColor.g;
         result.b = this.b + otherColor.b;
-        return this;
+        return result;
     }
 
     /**
@@ -260,8 +479,8 @@ export class Color3 {
      * @param otherColor defines the second operand
      * @returns the new Color3
      */
-    public subtract(otherColor: DeepImmutable<Color3>): Color3 {
-        return new Color3(this.r - otherColor.r, this.g - otherColor.g, this.b - otherColor.b);
+    public subtract(otherColor: DeepImmutable<this>): this {
+        return new (this.constructor as Constructor<typeof Color3, this>)(this.r - otherColor.r, this.g - otherColor.g, this.b - otherColor.b);
     }
 
     /**
@@ -270,19 +489,54 @@ export class Color3 {
      * @param result defines Color3 object to store the result into
      * @returns the unmodified current Color3
      */
-    public subtractToRef(otherColor: DeepImmutable<Color3>, result: Color3): Color3 {
+    public subtractToRef<T extends this>(otherColor: DeepImmutable<this>, result: T): T {
         result.r = this.r - otherColor.r;
         result.g = this.g - otherColor.g;
         result.b = this.b - otherColor.b;
+        return result;
+    }
+
+    /**
+     * Subtract the given color from the current Color3
+     * @param otherColor defines the second operand
+     * @returns the current updated Color3
+     */
+    public subtractInPlace(otherColor: DeepImmutable<Color3>): this {
+        this.r -= otherColor.r;
+        this.g -= otherColor.g;
+        this.b -= otherColor.b;
         return this;
+    }
+
+    /**
+     * Returns a new Color3 set with the subtraction of the given floats from the current Color3 coordinates
+     * @param r defines the r coordinate of the operand
+     * @param g defines the g coordinate of the operand
+     * @param b defines the b coordinate of the operand
+     * @returns the resulting Color3
+     */
+    public subtractFromFloats(r: number, g: number, b: number): this {
+        return new (this.constructor as Constructor<typeof Color3, this>)(this.r - r, this.g - g, this.b - b);
+    }
+
+    /**
+     * Subtracts the given floats from the current Color3 coordinates and set the given color "result" with this result
+     * @param r defines the r coordinate of the operand
+     * @param g defines the g coordinate of the operand
+     * @param b defines the b coordinate of the operand
+     * @param result defines the Color3 object where to store the result
+     * @returns the result
+     */
+    public subtractFromFloatsToRef<T extends Color3>(r: number, g: number, b: number, result: T): T {
+        return result.copyFromFloats(this.r - r, this.g - g, this.b - b);
     }
 
     /**
      * Copy the current object
      * @returns a new Color3 copied the current one
      */
-    public clone(): Color3 {
-        return new Color3(this.r, this.g, this.b);
+    public clone(): this {
+        return new (this.constructor as Constructor<typeof Color3, this>)(this.r, this.g, this.b);
     }
 
     /**
@@ -290,7 +544,7 @@ export class Color3 {
      * @param source defines the source Color3 object
      * @returns the updated Color3 object
      */
-    public copyFrom(source: DeepImmutable<Color3>): Color3 {
+    public copyFrom(source: DeepImmutable<Color3>): this {
         this.r = source.r;
         this.g = source.g;
         this.b = source.b;
@@ -304,7 +558,7 @@ export class Color3 {
      * @param b defines the blue component to read from
      * @returns the current Color3 object
      */
-    public copyFromFloats(r: number, g: number, b: number): Color3 {
+    public copyFromFloats(r: number, g: number, b: number): this {
         this.r = r;
         this.g = g;
         this.b = b;
@@ -318,8 +572,18 @@ export class Color3 {
      * @param b defines the blue component to read from
      * @returns the current Color3 object
      */
-    public set(r: number, g: number, b: number): Color3 {
+    public set(r: number, g: number, b: number): this {
         return this.copyFromFloats(r, g, b);
+    }
+
+    /**
+     * Copies the given float to the current Color3 coordinates
+     * @param v defines the r, g and b coordinates of the operand
+     * @returns the current updated Color3
+     */
+    public setAll(v: number): this {
+        this.r = this.g = this.b = v;
+        return this;
     }
 
     /**
@@ -337,8 +601,8 @@ export class Color3 {
      * Converts current color in rgb space to HSV values
      * @returns a new color3 representing the HSV values
      */
-    public toHSV(): Color3 {
-        const result = new Color3();
+    public toHSV(): this {
+        const result = new (this.constructor as Constructor<typeof Color3, this>)();
 
         this.toHSVToRef(result);
 
@@ -349,7 +613,7 @@ export class Color3 {
      * Converts current color in rgb space to HSV values
      * @param result defines the Color3 where to store the HSV values
      */
-    public toHSVToRef(result: Color3) {
+    public toHSVToRef(result: this) {
         const r = this.r;
         const g = this.g;
         const b = this.b;
@@ -390,8 +654,8 @@ export class Color3 {
      * @param exact defines if the conversion will be done in an exact way which is slower but more accurate (default is false)
      * @returns a new Color3 object
      */
-    public toLinearSpace(exact = false): Color3 {
-        const convertedColor = new Color3();
+    public toLinearSpace(exact = false): this {
+        const convertedColor = new (this.constructor as Constructor<typeof Color3, this>)();
         this.toLinearSpaceToRef(convertedColor, exact);
         return convertedColor;
     }
@@ -402,7 +666,7 @@ export class Color3 {
      * @param exact defines if the conversion will be done in an exact way which is slower but more accurate (default is false)
      * @returns the unmodified Color3
      */
-    public toLinearSpaceToRef(convertedColor: Color3, exact = false): Color3 {
+    public toLinearSpaceToRef(convertedColor: this, exact = false): this {
         if (exact) {
             convertedColor.r = colorChannelToLinearSpaceExact(this.r);
             convertedColor.g = colorChannelToLinearSpaceExact(this.g);
@@ -420,8 +684,8 @@ export class Color3 {
      * @param exact defines if the conversion will be done in an exact way which is slower but more accurate (default is false)
      * @returns a new Color3 object
      */
-    public toGammaSpace(exact = false): Color3 {
-        const convertedColor = new Color3();
+    public toGammaSpace(exact = false): this {
+        const convertedColor = new (this.constructor as Constructor<typeof Color3, this>)();
         this.toGammaSpaceToRef(convertedColor, exact);
         return convertedColor;
     }
@@ -432,7 +696,7 @@ export class Color3 {
      * @param exact defines if the conversion will be done in an exact way which is slower but more accurate (default is false)
      * @returns the unmodified Color3
      */
-    public toGammaSpaceToRef(convertedColor: Color3, exact = false): Color3 {
+    public toGammaSpaceToRef(convertedColor: this, exact = false): this {
         if (exact) {
             convertedColor.r = colorChannelToGammaSpaceExact(this.r);
             convertedColor.g = colorChannelToGammaSpaceExact(this.g);
@@ -737,7 +1001,9 @@ export class Color3 {
 /**
  * Class used to hold a RBGA color
  */
-export class Color4 {
+export class Color4 implements Tensor<[number, number, number, number]> {
+    public readonly dimension: [number] = [4];
+
     /**
      * Creates a new Color4 object from red, green, blue values, all between 0 and 1
      * @param r defines the red component (between 0 and 1, default is 0)
@@ -767,23 +1033,10 @@ export class Color4 {
     // Operators
 
     /**
-     * Adds in place the given Color4 values to the current Color4 object
-     * @param right defines the second operand
-     * @returns the current updated Color4 object
-     */
-    public addInPlace(right: DeepImmutable<Color4>): Color4 {
-        this.r += right.r;
-        this.g += right.g;
-        this.b += right.b;
-        this.a += right.a;
-        return this;
-    }
-
-    /**
      * Creates a new array populated with 4 numeric elements : red, green, blue, alpha values
      * @returns the new array
      */
-    public asArray(): number[] {
+    public asArray(): [number, number, number, number] {
         return [this.r, this.g, this.b, this.a];
     }
 
@@ -793,7 +1046,7 @@ export class Color4 {
      * @param index defines an optional index in the target array to define where to start storing values
      * @returns the current Color4 object
      */
-    public toArray(array: FloatArray, index: number = 0): Color4 {
+    public toArray(array: FloatArray, index: number = 0): this {
         array[index] = this.r;
         array[index + 1] = this.g;
         array[index + 2] = this.b;
@@ -807,8 +1060,11 @@ export class Color4 {
      * @param offset defines an offset in the source array
      * @returns the current Color4 object
      */
-    public fromArray(array: DeepImmutable<ArrayLike<number>>, offset: number = 0): Color4 {
-        Color4.FromArrayToRef(array, offset, this);
+    public fromArray(array: DeepImmutable<ArrayLike<number>>, offset: number = 0): this {
+        this.r = array[offset];
+        this.g = array[offset + 1];
+        this.b = array[offset + 2];
+        this.a = array[offset + 3];
         return this;
     }
 
@@ -817,40 +1073,125 @@ export class Color4 {
      * @param otherColor defines the second operand
      * @returns true if the rgba values are equal to the given ones
      */
-    public equals(otherColor: DeepImmutable<Color4>): boolean {
+    public equals(otherColor: DeepImmutable<this>): boolean {
         return otherColor && this.r === otherColor.r && this.g === otherColor.g && this.b === otherColor.b && this.a === otherColor.a;
     }
 
     /**
      * Creates a new Color4 set with the added values of the current Color4 and of the given one
-     * @param right defines the second operand
+     * @param otherColor defines the second operand
      * @returns a new Color4 object
      */
-    public add(right: DeepImmutable<Color4>): Color4 {
-        return new Color4(this.r + right.r, this.g + right.g, this.b + right.b, this.a + right.a);
+    public add(otherColor: DeepImmutable<this>): this {
+        return new (this.constructor as Constructor<typeof Color4, this>)(this.r + otherColor.r, this.g + otherColor.g, this.b + otherColor.b, this.a + otherColor.a);
+    }
+
+    /**
+     * Updates the given color "result" with the result of the addition of the current Color4 and the given one.
+     * @param otherColor the color to add
+     * @param result the color to store the result
+     * @returns result input
+     */
+    public addToRef<T extends Color4>(otherColor: DeepImmutable<this>, result: T): T {
+        result.r = this.r + otherColor.r;
+        result.g = this.g + otherColor.g;
+        result.b = this.b + otherColor.b;
+        result.a = this.a + otherColor.a;
+        return result;
+    }
+
+    /**
+     * Adds in place the given Color4 values to the current Color4 object
+     * @param otherColor defines the second operand
+     * @returns the current updated Color4 object
+     */
+    public addInPlace(otherColor: DeepImmutable<this>): this {
+        this.r += otherColor.r;
+        this.g += otherColor.g;
+        this.b += otherColor.b;
+        this.a += otherColor.a;
+        return this;
+    }
+
+    /**
+     * Adds the given coordinates to the current Color4
+     * @param r defines the r coordinate of the operand
+     * @param g defines the g coordinate of the operand
+     * @param b defines the b coordinate of the operand
+     * @param a defines the a coordinate of the operand
+     * @returns the current updated Color4
+     */
+    public addInPlaceFromFloats(r: number, g: number, b: number, a: number): this {
+        this.r += r;
+        this.g += g;
+        this.b += b;
+        this.a += a;
+        return this;
     }
 
     /**
      * Creates a new Color4 set with the subtracted values of the given one from the current Color4
-     * @param right defines the second operand
+     * @param otherColor defines the second operand
      * @returns a new Color4 object
      */
-    public subtract(right: DeepImmutable<Color4>): Color4 {
-        return new Color4(this.r - right.r, this.g - right.g, this.b - right.b, this.a - right.a);
+    public subtract(otherColor: DeepImmutable<this>): this {
+        return new (this.constructor as Constructor<typeof Color4, this>)(this.r - otherColor.r, this.g - otherColor.g, this.b - otherColor.b, this.a - otherColor.a);
     }
 
     /**
      * Subtracts the given ones from the current Color4 values and stores the results in "result"
-     * @param right defines the second operand
+     * @param otherColor defines the second operand
      * @param result defines the Color4 object where to store the result
-     * @returns the current Color4 object
+     * @returns the result Color4 object
      */
-    public subtractToRef(right: DeepImmutable<Color4>, result: Color4): Color4 {
-        result.r = this.r - right.r;
-        result.g = this.g - right.g;
-        result.b = this.b - right.b;
-        result.a = this.a - right.a;
+    public subtractToRef<T extends this>(otherColor: DeepImmutable<this>, result: T): T {
+        result.r = this.r - otherColor.r;
+        result.g = this.g - otherColor.g;
+        result.b = this.b - otherColor.b;
+        result.a = this.a - otherColor.a;
+        return result;
+    }
+
+    /**
+     * Subtract in place the given color from the current Color4.
+     * @param otherColor the color to subtract
+     * @returns the updated Color4.
+     */
+    public subtractInPlace(otherColor: DeepImmutable<Color4>): this {
+        this.r -= otherColor.r;
+        this.g -= otherColor.g;
+        this.b -= otherColor.b;
+        this.a -= otherColor.a;
         return this;
+    }
+
+    /**
+     * Returns a new Color4 set with the result of the subtraction of the given floats from the current Color4 coordinates.
+     * @param r value to subtract
+     * @param g value to subtract
+     * @param b value to subtract
+     * @param a value to subtract
+     * @returns new color containing the result
+     */
+    public subtractFromFloats(r: number, g: number, b: number, a: number): this {
+        return new (this.constructor as Constructor<typeof Color4, this>)(this.r - r, this.g - g, this.b - b, this.a - a);
+    }
+
+    /**
+     * Sets the given color "result" set with the result of the subtraction of the given floats from the current Color4 coordinates.
+     * @param r value to subtract
+     * @param g value to subtract
+     * @param b value to subtract
+     * @param a value to subtract
+     * @param result the color to store the result in
+     * @returns result input
+     */
+    public subtractFromFloatsToRef<T extends Color4>(r: number, g: number, b: number, a: number, result: T): T {
+        result.r = this.r - r;
+        result.g = this.g - g;
+        result.b = this.b - b;
+        result.a = this.a - a;
+        return result;
     }
 
     /**
@@ -858,8 +1199,8 @@ export class Color4 {
      * @param scale defines the scaling factor to apply
      * @returns a new Color4 object
      */
-    public scale(scale: number): Color4 {
-        return new Color4(this.r * scale, this.g * scale, this.b * scale, this.a * scale);
+    public scale(scale: number): this {
+        return new (this.constructor as Constructor<typeof Color4, this>)(this.r * scale, this.g * scale, this.b * scale, this.a * scale);
     }
 
     /**
@@ -867,7 +1208,7 @@ export class Color4 {
      * @param scale defines the scaling factor to apply
      * @returns the current updated Color4
      */
-    public scaleInPlace(scale: number): Color4 {
+    public scaleInPlace(scale: number): this {
         this.r *= scale;
         this.g *= scale;
         this.b *= scale;
@@ -879,28 +1220,28 @@ export class Color4 {
      * Multiplies the current Color4 values by scale and stores the result in "result"
      * @param scale defines the scaling factor to apply
      * @param result defines the Color4 object where to store the result
-     * @returns the current unmodified Color4
+     * @returns the result Color4
      */
-    public scaleToRef(scale: number, result: Color4): Color4 {
+    public scaleToRef<T extends this>(scale: number, result: T): T {
         result.r = this.r * scale;
         result.g = this.g * scale;
         result.b = this.b * scale;
         result.a = this.a * scale;
-        return this;
+        return result;
     }
 
     /**
      * Scale the current Color4 values by a factor and add the result to a given Color4
      * @param scale defines the scale factor
      * @param result defines the Color4 object where to store the result
-     * @returns the unmodified current Color4
+     * @returns the result Color4
      */
-    public scaleAndAddToRef(scale: number, result: Color4): Color4 {
+    public scaleAndAddToRef<T extends this>(scale: number, result: T): T {
         result.r += this.r * scale;
         result.g += this.g * scale;
         result.b += this.b * scale;
         result.a += this.a * scale;
-        return this;
+        return result;
     }
 
     /**
@@ -908,14 +1249,14 @@ export class Color4 {
      * @param min defines minimum clamping value (default is 0)
      * @param max defines maximum clamping value (default is 1)
      * @param result defines color to store the result into.
-     * @returns the current Color4
+     * @returns the result Color4
      */
-    public clampToRef(min: number = 0, max: number = 1, result: Color4): Color4 {
+    public clampToRef<T extends this>(min: number = 0, max: number = 1, result: T): T {
         result.r = Scalar.Clamp(this.r, min, max);
         result.g = Scalar.Clamp(this.g, min, max);
         result.b = Scalar.Clamp(this.b, min, max);
         result.a = Scalar.Clamp(this.a, min, max);
-        return this;
+        return result;
     }
 
     /**
@@ -923,8 +1264,8 @@ export class Color4 {
      * @param color defines the Color4 value to multiply by
      * @returns a new Color4 object
      */
-    public multiply(color: Color4): Color4 {
-        return new Color4(this.r * color.r, this.g * color.g, this.b * color.b, this.a * color.a);
+    public multiply(color: DeepImmutable<this>): this {
+        return new (this.constructor as Constructor<typeof Color4, this>)(this.r * color.r, this.g * color.g, this.b * color.b, this.a * color.a);
     }
 
     /**
@@ -933,12 +1274,229 @@ export class Color4 {
      * @param result defines the Color4 to fill the result in
      * @returns the result Color4
      */
-    public multiplyToRef(color: Color4, result: Color4): Color4 {
+    public multiplyToRef<T extends this>(color: DeepImmutable<this>, result: T): T {
         result.r = this.r * color.r;
         result.g = this.g * color.g;
         result.b = this.b * color.b;
         result.a = this.a * color.a;
         return result;
+    }
+
+    /**
+     * Multiplies in place the current Color4 by the given one.
+     * @param otherColor color to multiple with
+     * @returns the updated Color4.
+     */
+    public multiplyInPlace(otherColor: DeepImmutable<Color4>): this {
+        this.r *= otherColor.r;
+        this.g *= otherColor.g;
+        this.b *= otherColor.b;
+        this.a *= otherColor.a;
+        return this;
+    }
+
+    /**
+     * Returns a new Color4 set with the multiplication result of the given floats and the current Color4 coordinates.
+     * @param r value multiply with
+     * @param g value multiply with
+     * @param b value multiply with
+     * @param a value multiply with
+     * @returns resulting new color
+     */
+    public multiplyByFloats(r: number, g: number, b: number, a: number): this {
+        return new (this.constructor as Constructor<typeof Color4, this>)(this.r * r, this.g * g, this.b * b, this.a * a);
+    }
+
+    /**
+     * Returns a new Color4 set with the division result of the current Color4 by the given one.
+     * @param otherColor color to devide with
+     * @returns resulting new color
+     */
+    public divide(otherColor: DeepImmutable<Color4>): this {
+        return new (this.constructor as Constructor<typeof Color4, this>)(this.r / otherColor.r, this.g / otherColor.g, this.b / otherColor.b, this.a / otherColor.a);
+    }
+    /**
+     * Updates the given color "result" with the division result of the current Color4 by the given one.
+     * @param otherColor color to devide with
+     * @param result color to store the result
+     * @returns result input
+     */
+    public divideToRef<T extends Color4>(otherColor: DeepImmutable<Color4>, result: T): T {
+        result.r = this.r / otherColor.r;
+        result.g = this.g / otherColor.g;
+        result.b = this.b / otherColor.b;
+        result.a = this.a / otherColor.a;
+        return result;
+    }
+
+    /**
+     * Divides the current Color3 coordinates by the given ones.
+     * @param otherColor color to devide with
+     * @returns the updated Color3.
+     */
+    public divideInPlace(otherColor: DeepImmutable<Color4>): this {
+        return this.divideToRef(otherColor, this);
+    }
+
+    /**
+     * Updates the Color4 coordinates with the minimum values between its own and the given color ones
+     * @param other defines the second operand
+     * @returns the current updated Color4
+     */
+    public minimizeInPlace(other: DeepImmutable<Color4>): this {
+        this.r = Math.min(this.r, other.r);
+        this.g = Math.min(this.g, other.g);
+        this.b = Math.min(this.b, other.b);
+        this.a = Math.min(this.a, other.a);
+        return this;
+    }
+    /**
+     * Updates the Color4 coordinates with the maximum values between its own and the given color ones
+     * @param other defines the second operand
+     * @returns the current updated Color4
+     */
+    public maximizeInPlace(other: DeepImmutable<Color4>): this {
+        this.r = Math.max(this.r, other.r);
+        this.g = Math.max(this.g, other.g);
+        this.b = Math.max(this.b, other.b);
+        this.a = Math.max(this.a, other.a);
+        return this;
+    }
+
+    /**
+     * Updates the current Color4 with the minimal coordinate values between its and the given coordinates
+     * @param r defines the r coordinate of the operand
+     * @param g defines the g coordinate of the operand
+     * @param b defines the b coordinate of the operand
+     * @param a defines the a coordinate of the operand
+     * @returns the current updated Color4
+     */
+    public minimizeInPlaceFromFloats(r: number, g: number, b: number, a: number): this {
+        this.r = Math.min(r, this.r);
+        this.g = Math.min(g, this.g);
+        this.b = Math.min(b, this.b);
+        this.a = Math.min(a, this.a);
+        return this;
+    }
+
+    /**
+     * Updates the current Color4 with the maximal coordinate values between its and the given coordinates.
+     * @param r defines the r coordinate of the operand
+     * @param g defines the g coordinate of the operand
+     * @param b defines the b coordinate of the operand
+     * @param a defines the a coordinate of the operand
+     * @returns the current updated Color4
+     */
+    public maximizeInPlaceFromFloats(r: number, g: number, b: number, a: number): this {
+        this.r = Math.max(r, this.r);
+        this.g = Math.max(g, this.g);
+        this.b = Math.max(b, this.b);
+        this.a = Math.max(a, this.a);
+        return this;
+    }
+
+    /**
+     * Gets the current Color4's floored values and stores them in result
+     * @param result the color to store the result in
+     * @returns the result color
+     */
+    public floorToRef<T extends this>(result: T): T {
+        result.r = Math.floor(this.r);
+        result.g = Math.floor(this.g);
+        result.b = Math.floor(this.b);
+        result.a = Math.floor(this.a);
+        return result;
+    }
+
+    /**
+     * Gets a new Color4 from current Color4 floored values
+     * @returns a new Color4
+     */
+    public floor(): this {
+        return new (this.constructor as Constructor<typeof Color4, this>)(Math.floor(this.r), Math.floor(this.g), Math.floor(this.b), Math.floor(this.a));
+    }
+
+    /**
+     * Gets the current Color4's fractional values and stores them in result
+     * @param result the color to store the result in
+     * @returns the result color
+     */
+    public fractToRef<T extends this>(result: T): T {
+        result.r = this.r - Math.floor(this.r);
+        result.g = this.g - Math.floor(this.g);
+        result.b = this.b - Math.floor(this.b);
+        result.a = this.a - Math.floor(this.a);
+        return result;
+    }
+
+    /**
+     * Gets a new Color4 from current Color4 fractional values
+     * @returns a new Color4
+     */
+    public fract(): this {
+        return new (this.constructor as Constructor<typeof Color4, this>)(
+            this.r - Math.floor(this.r),
+            this.g - Math.floor(this.g),
+            this.b - Math.floor(this.b),
+            this.a - Math.floor(this.a)
+        );
+    }
+
+    /**
+     * Returns a new Color4 set with the current Color4 negated coordinates.
+     * @returns a new color with the negated values
+     */
+    public negate(): this {
+        return new (this.constructor as Constructor<typeof Color4, this>)(-this.r, -this.g, -this.b, -this.a);
+    }
+
+    /**
+     * Negate this color in place
+     * @returns this
+     */
+    public negateInPlace(): this {
+        this.r *= -1;
+        this.g *= -1;
+        this.b *= -1;
+        this.a *= -1;
+        return this;
+    }
+
+    /**
+     * Negate the current Color4 and stores the result in the given color "result" coordinates
+     * @param result defines the Color3 object where to store the result
+     * @returns the result
+     */
+    public negateToRef<T extends Color4>(result: T): T {
+        return result.copyFromFloats(this.r * -1, this.g * -1, this.b * -1, this.a * -1);
+    }
+
+    /**
+     * Boolean : True if the current Color4 coordinates are each beneath the distance "epsilon" from the given color ones.
+     * @param otherColor color to compare against
+     * @param epsilon (Default: very small number)
+     * @returns true if they are equal
+     */
+    public equalsWithEpsilon(otherColor: DeepImmutable<Color4>, epsilon: number = Epsilon): boolean {
+        return (
+            otherColor &&
+            Scalar.WithinEpsilon(this.r, otherColor.r, epsilon) &&
+            Scalar.WithinEpsilon(this.g, otherColor.g, epsilon) &&
+            Scalar.WithinEpsilon(this.b, otherColor.b, epsilon) &&
+            Scalar.WithinEpsilon(this.a, otherColor.a, epsilon)
+        );
+    }
+
+    /**
+     * Boolean : True if the given floats are strictly equal to the current Color4 coordinates.
+     * @param x x value to compare against
+     * @param y y value to compare against
+     * @param z z value to compare against
+     * @param w w value to compare against
+     * @returns true if equal
+     */
+    public equalsToFloats(x: number, y: number, z: number, w: number): boolean {
+        return this.r === x && this.g === y && this.b === z && this.a === w;
     }
 
     /**
@@ -973,8 +1531,9 @@ export class Color4 {
      * Creates a new Color4 copied from the current one
      * @returns a new Color4 object
      */
-    public clone(): Color4 {
-        return new Color4(this.r, this.g, this.b, this.a);
+    public clone(): this {
+        const result = new (this.constructor as Constructor<typeof Color4, this>)();
+        return result.copyFrom(this);
     }
 
     /**
@@ -982,7 +1541,7 @@ export class Color4 {
      * @param source defines the source Color4 object
      * @returns the current updated Color4 object
      */
-    public copyFrom(source: Color4): Color4 {
+    public copyFrom(source: DeepImmutable<Color4>): this {
         this.r = source.r;
         this.g = source.g;
         this.b = source.b;
@@ -998,7 +1557,7 @@ export class Color4 {
      * @param a defines the alpha component to read from
      * @returns the current updated Color4 object
      */
-    public copyFromFloats(r: number, g: number, b: number, a: number): Color4 {
+    public copyFromFloats(r: number, g: number, b: number, a: number): this {
         this.r = r;
         this.g = g;
         this.b = b;
@@ -1014,8 +1573,18 @@ export class Color4 {
      * @param a defines the alpha component to read from
      * @returns the current updated Color4 object
      */
-    public set(r: number, g: number, b: number, a: number): Color4 {
+    public set(r: number, g: number, b: number, a: number): this {
         return this.copyFromFloats(r, g, b, a);
+    }
+
+    /**
+     * Copies the given float to the current Vector4 coordinates
+     * @param v defines the r, g, b, and a coordinates of the operand
+     * @returns the current updated Vector4
+     */
+    public setAll(v: number): this {
+        this.r = this.g = this.b = this.a = v;
+        return this;
     }
 
     /**
