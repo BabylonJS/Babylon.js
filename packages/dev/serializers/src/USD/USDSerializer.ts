@@ -9,7 +9,7 @@ import { type TransformNode } from "core/Meshes/transformNode";
 import { type Scene } from "core/scene";
 import { type Material } from "core/Materials/material";
 import { Tools } from "core/Misc/tools";
-import { type Nullable, type FloatArray } from "core/types";
+import { type Nullable, type FloatArray, IndicesArray } from "core/types";
 import { isNoopNode } from "serializers/tools";
 import { type Node } from "core/node";
 
@@ -18,7 +18,7 @@ import { type Node } from "core/node";
 /**
  *  Options for exporting to USDZ.
  */
-export interface IUSDZExportOptions {
+export interface IUSDExportOptions {
     /**
      * Name of the model.
      */
@@ -30,7 +30,7 @@ export interface IUSDZExportOptions {
     /**
      *  TODO get more information on USDZ options
      */
-    ar?: IUSDZArOptions;
+    ar?: IUSDArOptions;
 
     /**
      * String to Uint8Array function. ffFlate is used by default.
@@ -45,7 +45,7 @@ export interface IUSDZExportOptions {
 /**
  *  TODO get more information on USDZ options
  */
-interface IUSDZArOptions {
+interface IUSDArOptions {
     anchoring: {
         type: "plane" | "point";
     };
@@ -55,9 +55,9 @@ interface IUSDZArOptions {
 }
 
 /**
- * Class for generating USDZ data from a Babylon scene.
+ * Class for generating USD data from a Babylon scene.
  */
-export class USDZExport {
+export class USDExport {
     /**
      * Float Rounding Precision
      */
@@ -75,7 +75,7 @@ export class USDZExport {
      */
     public static Focus: number = 10;
 
-    private static _LastOptions: IUSDZExportOptions;
+    private static _LastOptions: IUSDExportOptions;
 
     /**
      * Export Scene as USDZ file.
@@ -84,7 +84,7 @@ export class USDZExport {
      * @param autoDownload automatically download the file.
      * @returns a promise with the data of the USDZ file.
      */
-    public static async ExportAsBinaryZip(options: IUSDZExportOptions, scene: Scene, autoDownload: boolean = true) {
+    public static async ExportAsBinaryZip(options: IUSDExportOptions, scene: Scene, autoDownload: boolean = true) {
         options = {
             ar: {
                 anchoring: { type: "plane" },
@@ -94,14 +94,14 @@ export class USDZExport {
             ...options,
         };
 
-        USDZExport._LastOptions = options;
+        USDExport._LastOptions = options;
 
         const files: any = {};
         const modelFileName = `${options?.modelName || "model"}.usda`;
         files[modelFileName] = null;
 
-        let output: string = USDZExport._BuildHeader();
-        output += USDZExport._BuildSceneStart(options);
+        let output: string = USDExport._BuildHeader();
+        output += USDExport._BuildSceneStart(options);
 
         const materials: { [id: string]: Material } = {};
         const textures: { [id: string]: Texture } = {};
@@ -124,19 +124,19 @@ export class USDZExport {
                 switch (material.getClassName()) {
                     case "PBRMaterial":
                         if (!(geometryFileName in files)) {
-                            const meshObject = USDZExport._BuildMeshObject(mesh);
-                            files[geometryFileName] = USDZExport._BuildUSDZFileAsString(meshObject);
+                            const meshObject = USDExport._BuildMeshObject(mesh);
+                            files[geometryFileName] = USDExport._BuildUSDFileAsString(meshObject);
                         }
 
                         if (!(material.uniqueId in materials)) {
                             materials[material.uniqueId] = material;
                         }
 
-                        output += USDZExport._BuildXform(mesh, material);
+                        output += USDExport._BuildXform(mesh, material);
 
                         break;
                     default:
-                        Tools.Warn("USDZExporter: Standard Material is not supported currently.");
+                        Tools.Warn("USDExporter: Standard Material is not supported currently.");
                         break;
                 }
                 if (noopNode) {
@@ -146,22 +146,22 @@ export class USDZExport {
 
         if (scene.activeCameras?.length) {
             scene.activeCameras.forEach((camera) => {
-                output += USDZExport._BuildCamera(camera);
+                output += USDExport._BuildCamera(camera);
             });
         } else if (scene.activeCamera) {
-            output += USDZExport._BuildCamera(scene.activeCamera);
+            output += USDExport._BuildCamera(scene.activeCamera);
         }
 
-        output += USDZExport._BuildSceneEnd();
+        output += USDExport._BuildSceneEnd();
 
-        output += await USDZExport._BuildMaterials(materials, textures, options.quickLookCompatible);
+        output += await USDExport._BuildMaterials(materials, textures, options.quickLookCompatible);
 
         files[modelFileName] = options.strToU8(output);
 
         for (const id in textures) {
             const texture = textures[id];
-            const image = await USDZExport._TextureToImage(texture);
-            const canvas = USDZExport._ImageToCanvas(image, texture.invertY);
+            const image = await USDExport._TextureToImage(texture);
+            const canvas = USDExport._ImageToCanvas(image, texture.invertY);
             const blob: Blob | null = await new Promise((resolve: BlobCallback) => {
                 canvas.toBlob(resolve, "image/png", 1);
             });
@@ -204,7 +204,7 @@ export class USDZExport {
         return `#usda 1.0
     (
         customLayerData = {
-            string creator = "Babylon.js USDZExport"
+            string creator = "Babylon.js USDExport"
         }
         metersPerUnit = 1
         upAxis = "Y"
@@ -213,7 +213,7 @@ export class USDZExport {
     `;
     }
 
-    private static _BuildSceneStart(options: IUSDZExportOptions) {
+    private static _BuildSceneStart(options: any) {
         return `def Xform "Root"
     {
         def Scope "Scenes" (
@@ -228,8 +228,8 @@ export class USDZExport {
                 sceneName = "Scene"
             )
             {
-            token preliminary:anchoring:type = "${options.ar?.anchoring.type}"
-            token preliminary:planeAnchoring:alignment = "${options.ar?.planeAnchoring.alignment}"
+            token preliminary:anchoring:type = "${options.ar.anchoring.type}"
+            token preliminary:planeAnchoring:alignment = "${options.ar.planeAnchoring.alignment}"
     
     `;
     }
@@ -245,7 +245,7 @@ export class USDZExport {
     }
 
     private static _BuildMeshObject(_mesh: AbstractMesh) {
-        const mesh = USDZExport._BuildMesh(_mesh);
+        const mesh = USDExport._BuildMesh(_mesh);
         return `
     def "Geometry"
     {
@@ -263,13 +263,13 @@ export class USDZExport {
         return `
       def Mesh "mesh_${mesh.uniqueId}"
       {
-        int[] faceVertexCounts = [${USDZExport._BuildMeshVertexCount(count)}]
-        int[] faceVertexIndices = [${USDZExport._BuildMeshVertexIndices(mesh)}]
-        normal3f[] normals = [${USDZExport._BuildVector3Array(normalCount, normals as number[])}] (
+        int[] faceVertexCounts = [${USDExport._BuildMeshVertexCount(count)}]
+        int[] faceVertexIndices = [${USDExport._BuildMeshVertexIndices(mesh)}]
+        normal3f[] normals = [${USDExport._BuildVector3Array(normalCount, normals as number[])}] (
           interpolation = "vertex"
         )
-        point3f[] points = [${USDZExport._BuildVector3Array(count, positions as number[])}]
-    ${USDZExport._BuildPrimVars(mesh)}
+        point3f[] points = [${USDExport._BuildVector3Array(count, positions as number[])}]
+    ${USDExport._BuildPrimVars(mesh)}
         uniform token subdivisionScheme = "none"
       }
     `;
@@ -282,8 +282,8 @@ export class USDZExport {
     }
 
     private static _BuildMeshVertexIndices(mesh: AbstractMesh) {
-        const indices = mesh.getIndices() ?? [];
-        const array = [];
+        const indices: IndicesArray = mesh.getIndices() ?? [];
+        const array: number[] = [];
 
         for (let i = 0; i < indices.length; i++) {
             array.push(indices[i]);
@@ -294,19 +294,19 @@ export class USDZExport {
 
     private static _BuildVector3Array(count: number, attribute?: FloatArray) {
         if (attribute === undefined) {
-            Tools.Warn("USDZExporter: Normals missing.");
+            Tools.Warn("USDExporter: Normals missing.");
             return Array(count / 3)
                 .fill("(0, 0, 0)")
                 .join(", ");
         }
 
-        const array = [];
+        const array: string[] = [];
 
         for (let i = 0; i < count; i += 3) {
             const x = attribute[i];
             const y = attribute[i + 1];
             const z = attribute[i + 2];
-            array.push(`(${x.toPrecision(USDZExport.Precision)}, ${y.toPrecision(USDZExport.Precision)}, ${z.toPrecision(USDZExport.Precision)})`);
+            array.push(`(${x.toPrecision(USDExport.Precision)}, ${y.toPrecision(USDExport.Precision)}, ${z.toPrecision(USDExport.Precision)})`);
         }
 
         return array.join(", ");
@@ -314,18 +314,18 @@ export class USDZExport {
 
     private static _BuildVector2Array(count: number, attribute?: FloatArray) {
         if (!attribute?.length) {
-            Tools.Warn("USDZExporter: UVs missing.");
+            Tools.Warn("USDExporter: UVs missing.");
             return Array(count / 2)
                 .fill("(0, 0)")
                 .join(", ");
         }
 
-        const array = [];
+        const array: string[] = [];
 
         for (let i = 0; i < count; i += 2) {
             const x: number = attribute[i];
             const y: number = 1 - attribute[i + 1];
-            array.push(`(${x.toPrecision(USDZExport.Precision)}, ${y.toPrecision(USDZExport.Precision)})`);
+            array.push(`(${x.toPrecision(USDExport.Precision)}, ${y.toPrecision(USDExport.Precision)})`);
         }
         return array.join(", ");
     }
@@ -341,7 +341,7 @@ export class USDZExport {
         ];
         uvList.forEach((uv, id) => {
             if (uv.length) {
-                output += USDZExport._BuildUV(uv, 0, count);
+                output += USDExport._BuildUV(uv, 0, count);
             }
         });
         return output;
@@ -351,7 +351,7 @@ export class USDZExport {
         let output = "";
         if (uv?.length > 0) {
             output += `
-            texCoord2f[] primvars:st${id} = [${USDZExport._BuildVector2Array(count, uv)}] (
+            texCoord2f[] primvars:st${id} = [${USDExport._BuildVector2Array(count, uv)}] (
                 interpolation = "vertex"
             )`;
         }
@@ -362,10 +362,10 @@ export class USDZExport {
     private static _BuildXform(mesh: AbstractMesh, material: Material) {
         const name = "Object_" + mesh.uniqueId;
         const mat = mesh.getWorldMatrix();
-        const transform = USDZExport._BuildMatrix(mat);
+        const transform = USDExport._BuildMatrix(mat);
 
         if (mat.determinant() < 0) {
-            Tools.Warn(`USDZExport: USDZ does not support negative scales on nodes: ${mesh.name}`);
+            Tools.Warn(`USDExport: USDZ does not support negative scales on nodes: ${mesh.name}`);
         }
 
         return `def Xform "${name}" (
@@ -382,7 +382,7 @@ export class USDZExport {
 
     private static _BuildMatrix(matrix: Matrix) {
         const array = matrix.toArray() as number[];
-        return `( ${USDZExport._BuildMatrixRow(array, 0)}, ${USDZExport._BuildMatrixRow(array, 4)}, ${USDZExport._BuildMatrixRow(array, 8)}, ${USDZExport._BuildMatrixRow(
+        return `( ${USDExport._BuildMatrixRow(array, 0)}, ${USDExport._BuildMatrixRow(array, 4)}, ${USDExport._BuildMatrixRow(array, 8)}, ${USDExport._BuildMatrixRow(
             array,
             12
         )} )`;
@@ -396,10 +396,10 @@ export class USDZExport {
         const name = `${camera.name}_${camera.uniqueId}`;
         const mat = camera.getWorldMatrix();
 
-        const transform = USDZExport._BuildMatrix(mat);
+        const transform = USDExport._BuildMatrix(mat);
 
         if (mat.determinant() < 0) {
-            Tools.Warn(`USDZExport: USDZ does not support negative scales on camera: ${camera.name}`);
+            Tools.Warn(`USDExport: USDZ does not support negative scales on camera: ${camera.name}`);
         }
 
         if (camera.mode === Camera.ORTHOGRAPHIC_CAMERA) {
@@ -407,9 +407,9 @@ export class USDZExport {
                 {
                     matrix4d xformOp:transform = ${transform}
                     uniform token[] xformOpOrder = ["xformOp:transform"]
-                    float2 clippingRange = (${camera.minZ.toPrecision(USDZExport.Precision)}, ${camera.maxZ.toPrecision(USDZExport.Precision)})
-                    float horizontalAperture = ${((Math.abs(camera.orthoLeft ?? 0) + Math.abs(camera.orthoRight ?? 0)) * 10).toPrecision(USDZExport.Precision)}
-                    float verticalAperture = ${((Math.abs(camera.orthoTop ?? 0) + Math.abs(camera.orthoBottom ?? 0)) * 10).toPrecision(USDZExport.Precision)}
+                    float2 clippingRange = (${camera.minZ.toPrecision(USDExport.Precision)}, ${camera.maxZ.toPrecision(USDExport.Precision)})
+                    float horizontalAperture = ${((Math.abs(camera.orthoLeft ?? 0) + Math.abs(camera.orthoRight ?? 0)) * 10).toPrecision(USDExport.Precision)}
+                    float verticalAperture = ${((Math.abs(camera.orthoTop ?? 0) + Math.abs(camera.orthoBottom ?? 0)) * 10).toPrecision(USDExport.Precision)}
                     token projection = "orthographic"
                 }`;
         } else {
@@ -417,22 +417,22 @@ export class USDZExport {
                 {
                     matrix4d xformOp:transform = ${transform}
                     uniform token[] xformOpOrder = ["xformOp:transform"]
-                    float2 clippingRange = (${camera.minZ.toPrecision(USDZExport.Precision)}, ${camera.maxZ.toPrecision(USDZExport.Precision)})
-                    float focalLength = ${camera.fov.toPrecision(USDZExport.Precision)}
-                    float focusDistance = ${USDZExport.Focus.toPrecision(USDZExport.Precision) /*THIS IS PROBABLY WRONG*/}
-                    float horizontalAperture = ${USDZExport.FilmGauge.toPrecision(USDZExport.Precision) /*THIS IS PROBABLY WRONG*/} 
+                    float2 clippingRange = (${camera.minZ.toPrecision(USDExport.Precision)}, ${camera.maxZ.toPrecision(USDExport.Precision)})
+                    float focalLength = ${camera.fov.toPrecision(USDExport.Precision)}
+                    float focusDistance = ${USDExport.Focus.toPrecision(USDExport.Precision) /*THIS IS PROBABLY WRONG*/}
+                    float horizontalAperture = ${USDExport.FilmGauge.toPrecision(USDExport.Precision) /*THIS IS PROBABLY WRONG*/} 
                     token projection = "perspective"
-                    float verticalAperture = ${USDZExport.FilmGauge.toPrecision(USDZExport.Precision) /*THIS IS PROBABLY WRONG*/}
+                    float verticalAperture = ${USDExport.FilmGauge.toPrecision(USDExport.Precision) /*THIS IS PROBABLY WRONG*/}
                 }`;
         }
     }
 
-    private static async _BuildMaterials(materials: { [id: string]: Material }, textures: { [id: string]: Texture }, quickLookCompatible: boolean = false) {
-        const array = [];
+    private static async _BuildMaterials(materials: any, textures: any, quickLookCompatible: boolean = false) {
+        const array: string[] = [];
         for (const uuid in materials) {
             const material = materials[uuid];
 
-            array.push(await USDZExport._BuildMaterial(material, textures, quickLookCompatible));
+            array.push(await USDExport._BuildMaterial(material, textures, quickLookCompatible));
         }
 
         return `def "Materials"
@@ -457,7 +457,7 @@ export class USDZExport {
         const count = texture.getSize().width * texture.getSize().height * 4;
 
         for (let i = 0; i < count; i += 4) {
-            const value = channel === "r" ? 255 - img[i + USDZExport._ChannelIndexMap[channel]] : img[i + USDZExport._ChannelIndexMap[channel]];
+            const value = channel === "r" ? 255 - img[i + USDExport._ChannelIndexMap[channel]] : img[i + USDExport._ChannelIndexMap[channel]];
             data.data[i] = value;
             data.data[i + 1] = value;
             data.data[i + 2] = value;
@@ -470,20 +470,20 @@ export class USDZExport {
     }
 
     private static async _BreakApartMetallicRoughnessAo(texture: Texture, scene: Scene): Promise<{ ao: DynamicTexture; roughness: DynamicTexture; metallic: DynamicTexture }> {
-        const ao = await USDZExport._CreateDynamicTextureFromChannel(texture, "r", scene);
+        const ao = await USDExport._CreateDynamicTextureFromChannel(texture, "r", scene);
         ao.name = "ao";
-        const roughness = await USDZExport._CreateDynamicTextureFromChannel(texture, "g", scene);
+        const roughness = await USDExport._CreateDynamicTextureFromChannel(texture, "g", scene);
         roughness.name = "roughness";
-        const metallic = await USDZExport._CreateDynamicTextureFromChannel(texture, "b", scene);
+        const metallic = await USDExport._CreateDynamicTextureFromChannel(texture, "b", scene);
         metallic.name = "metallic";
         return { ao, roughness, metallic };
     }
 
-    private static async _BuildMaterial(_material: Material, textures: { [id: string]: Texture }, quickLookCompatible = false) {
+    private static async _BuildMaterial(_material: Material, textures: any, quickLookCompatible = false) {
         // https://graphics.pixar.com/usd/docs/UsdPreviewSurface-Proposal.html
         const pad = "			";
-        const inputs = [];
-        const samplers = [];
+        const inputs: string[] = [];
+        const samplers: string[] = [];
         const material = _material as PBRMaterial;
         const scene = material.getScene();
 
@@ -540,9 +540,9 @@ export class USDZExport {
             {
                 uniform token info:id = "UsdTransform2d"
                 token inputs:in.connect = </Materials/Material_${material.uniqueId}/PrimvarReader_${mapType}.outputs:result>
-                float inputs:rotation = ${(rotation * (180 / Math.PI)).toFixed(USDZExport.Precision)}
-                float2 inputs:scale = ${USDZExport._BuildVector2(repeat)}
-                float2 inputs:translation = ${USDZExport._BuildVector2(offset)}
+                float inputs:rotation = ${(rotation * (180 / Math.PI)).toFixed(USDExport.Precision)}
+                float2 inputs:scale = ${USDExport._BuildVector2(repeat)}
+                float2 inputs:translation = ${USDExport._BuildVector2(offset)}
                 float2 outputs:result
             }
             def Shader "Texture_${texture.uniqueId}_${mapType}"
@@ -550,7 +550,7 @@ export class USDZExport {
                 uniform token info:id = "UsdUVTexture"
                 asset inputs:file = @textures/Texture_${id}.png@
                 float2 inputs:st.connect = </Materials/Material_${material.uniqueId}/Transform2d_${mapType}.outputs:result>
-                ${color !== undefined ? "float4 inputs:scale = " + USDZExport._BuildColor4(color) : ""}
+                ${color !== undefined ? "float4 inputs:scale = " + USDExport._BuildColor4(color) : ""}
                 token inputs:sourceColorSpace = "${"sRGB" /* TODO CHECK THIS */}"
                 token inputs:wrapS = "${WRAPPINGS[texture.wrapU] /* TODO CHECK THIS */}"
                 token inputs:wrapT = "${WRAPPINGS[texture.wrapV] /* TODO CHECK THIS */}"
@@ -564,7 +564,7 @@ export class USDZExport {
         }
 
         if (!material.cullBackFaces) {
-            Tools.Warn(`USDZExport: USDZ does not support double sided materials, target mat: ${material.name}`);
+            Tools.Warn(`USDExport: USDZ does not support double sided materials, target mat: ${material.name}`);
         }
 
         if (material.albedoTexture !== null) {
@@ -579,7 +579,7 @@ export class USDZExport {
 
             samplers.push(buildTexture(material.albedoTexture as Texture, "diffuse", material.albedoColor));
         } else {
-            inputs.push(`${pad}color3f inputs:diffuseColor = ${USDZExport._BuildColor(material.albedoColor)}`);
+            inputs.push(`${pad}color3f inputs:diffuseColor = ${USDExport._BuildColor(material.albedoColor)}`);
         }
 
         if (material.emissiveTexture !== null) {
@@ -588,7 +588,7 @@ export class USDZExport {
             );
             samplers.push(buildTexture(material.emissiveTexture as Texture, "emissive"));
         } else if (material.emissiveColor) {
-            inputs.push(`${pad}color3f inputs:emissiveColor = ${USDZExport._BuildColor(material.emissiveColor)}`);
+            inputs.push(`${pad}color3f inputs:emissiveColor = ${USDExport._BuildColor(material.emissiveColor)}`);
         }
 
         if (material.bumpTexture !== null) {
@@ -597,7 +597,7 @@ export class USDZExport {
         }
 
         if (material.metallicTexture !== null) {
-            const maps = await USDZExport._BreakApartMetallicRoughnessAo(material.metallicTexture as Texture, scene);
+            const maps = await USDExport._BreakApartMetallicRoughnessAo(material.metallicTexture as Texture, scene);
 
             inputs.push(`${pad}float inputs:roughness.connect = </Materials/Material_${material.uniqueId}/Texture_${maps.roughness.uniqueId}_roughness.outputs:g>`);
             samplers.push(buildTexture(maps.roughness, "roughness"));
@@ -656,10 +656,10 @@ export class USDZExport {
         return `(${vector.x}, ${vector.y})`;
     }
 
-    private static _BuildUSDZFileAsString(dataToInsert: string) {
-        let output = USDZExport._BuildHeader();
+    private static _BuildUSDFileAsString(dataToInsert: string) {
+        let output = USDExport._BuildHeader();
         output += dataToInsert;
-        return USDZExport._LastOptions.strToU8(output);
+        return USDExport._LastOptions.strToU8(output);
     }
 
     /**
@@ -720,12 +720,12 @@ export class USDZExport {
                 }
                 context.drawImage(image, 0, 0, canvas.width, canvas.height);
             } else {
-                throw new Error("USDZExport: No valid canvas context. Unable to process texture.");
+                throw new Error("USDExport: No valid canvas context. Unable to process texture.");
             }
 
             return canvas;
         } else {
-            throw new Error("USDZExport: No valid image data found. Unable to process texture.");
+            throw new Error("USDExport: No valid image data found. Unable to process texture.");
         }
     }
 }
