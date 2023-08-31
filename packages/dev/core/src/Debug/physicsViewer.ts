@@ -225,11 +225,6 @@ export class PhysicsViewer {
     }
 
     protected _updateDebugConstraint(constraint: PhysicsConstraint, parentingMesh: AbstractMesh) {
-        if (!this._utilityLayer) {
-            return;
-        }
-        const utilityLayerScene = this._utilityLayer.utilityLayerScene;
-
         if (!constraint._initOptions) {
             return null;
         }
@@ -241,26 +236,20 @@ export class PhysicsViewer {
             return null;
         }
 
-        // Clear up the previous view (can we optimize?)
-        parentingMesh.getDescendants().forEach((d) => d.dispose());
-
-        // First, get a reference to all physic bodies that are using this constraint
-        const bodiesUsingConstraint = constraint.getBodiesUsingConstraint();
-
-        for (const bodyPairInfo of bodiesUsingConstraint) {
-            const { parentBody, parentBodyIndex, childBody, childBodyIndex } = bodyPairInfo;
+        parentingMesh.getDescendants(true).forEach((parentConstraintMesh) => {
             // Get the parent transform
+            const parentCoordSystemNode = parentConstraintMesh.getDescendants(true)[0] as TransformNode;
+            const childCoordSystemNode = parentConstraintMesh.getDescendants(true)[1] as TransformNode;
+
+            const { parentBody, parentBodyIndex } = parentCoordSystemNode.metadata;
+            const { childBody, childBodyIndex } = childCoordSystemNode.metadata;
 
             const parentTransform = this._getTransformFromBody(parentBody, parentBodyIndex);
             const childTransform = this._getTransformFromBody(childBody, childBodyIndex);
 
-            const parentCoordSystemNode = new TransformNode("parentCoordSystem", utilityLayerScene);
-            parentCoordSystemNode.parent = parentingMesh;
             parentTransform.decomposeToTransformNode(parentCoordSystemNode);
             this._makeScalingUnitInPlace(parentCoordSystemNode.scaling);
 
-            const childCoordSystemNode = new TransformNode("childCoordSystem", utilityLayerScene);
-            childCoordSystemNode.parent = parentingMesh;
             childTransform.decomposeToTransformNode(childCoordSystemNode);
             this._makeScalingUnitInPlace(childCoordSystemNode.scaling);
 
@@ -272,27 +261,16 @@ export class PhysicsViewer {
             const translateTransformChild = pivotB.clone();
 
             // Create a transform node and set its matrix
-            const parentTransformNode = new TransformNode("constraint_parent", utilityLayerScene);
+            const parentTransformNode = parentCoordSystemNode.getDescendants(true)[0] as TransformNode;
             parentTransformNode.position = translateTransformParent;
             parentTransformNode.rotationQuaternion = rotTransformParent;
             parentTransformNode.parent = parentCoordSystemNode;
 
-            const childTransformNode = new TransformNode("constraint_child", utilityLayerScene);
+            const childTransformNode = childCoordSystemNode.getDescendants(true)[0] as TransformNode;
             childTransformNode.parent = childCoordSystemNode;
             childTransformNode.position = translateTransformChild;
             childTransformNode.rotationQuaternion = rotTransformChild;
-
-            // Create axes for the constraint
-            const parentAxes = new AxesViewer(utilityLayerScene, this._constraintAxesSize);
-            parentAxes.xAxis.parent = parentTransformNode;
-            parentAxes.yAxis.parent = parentTransformNode;
-            parentAxes.zAxis.parent = parentTransformNode;
-
-            const childAxes = new AxesViewer(utilityLayerScene, this._constraintAxesSize);
-            childAxes.xAxis.parent = childTransformNode;
-            childAxes.yAxis.parent = childTransformNode;
-            childAxes.zAxis.parent = childTransformNode;
-        }
+        });
     }
 
     /**
@@ -850,6 +828,10 @@ export class PhysicsViewer {
         const bodiesUsingConstraint = constraint.getBodiesUsingConstraint();
 
         for (const bodyPairInfo of bodiesUsingConstraint) {
+            // Create a mesh to keep the pair of constraint axes
+            const parentOfPair = new TransformNode("parentOfPair", utilityLayerScene);
+            parentOfPair.parent = parentingMesh;
+
             const { parentBody, parentBodyIndex, childBody, childBodyIndex } = bodyPairInfo;
             // Get the parent transform
 
@@ -857,11 +839,17 @@ export class PhysicsViewer {
             const childTransform = this._getTransformFromBody(childBody, childBodyIndex);
 
             const parentCoordSystemNode = new TransformNode("parentCoordSystem", utilityLayerScene);
-            parentCoordSystemNode.parent = parentingMesh;
+            // parentCoordSystemNode.parent = parentingMesh;
+            parentCoordSystemNode.parent = parentOfPair;
+            // Save parent and index here to be able to get the transform on update
+            parentCoordSystemNode.metadata = { parentBody, parentBodyIndex };
             parentTransform.decomposeToTransformNode(parentCoordSystemNode);
 
             const childCoordSystemNode = new TransformNode("childCoordSystem", utilityLayerScene);
-            childCoordSystemNode.parent = parentingMesh;
+            // childCoordSystemNode.parent = parentingMesh;
+            childCoordSystemNode.parent = parentOfPair;
+            // Save child and index here to be able to get the transform on update
+            childCoordSystemNode.metadata = { childBody, childBodyIndex };
             childTransform.decomposeToTransformNode(childCoordSystemNode);
 
             // Get the transform to align the XYZ axes to the constraint axes
