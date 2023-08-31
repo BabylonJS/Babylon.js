@@ -213,7 +213,7 @@ export class USDZExport {
     `;
     }
 
-    private static _BuildSceneStart(options: any) {
+    private static _BuildSceneStart(options: IUSDZExportOptions) {
         return `def Xform "Root"
     {
         def Scope "Scenes" (
@@ -228,8 +228,8 @@ export class USDZExport {
                 sceneName = "Scene"
             )
             {
-            token preliminary:anchoring:type = "${options.ar.anchoring.type}"
-            token preliminary:planeAnchoring:alignment = "${options.ar.planeAnchoring.alignment}"
+            token preliminary:anchoring:type = "${options.ar?.anchoring.type}"
+            token preliminary:planeAnchoring:alignment = "${options.ar?.planeAnchoring.alignment}"
     
     `;
     }
@@ -427,7 +427,7 @@ export class USDZExport {
         }
     }
 
-    private static async _BuildMaterials(materials: any, textures: any, quickLookCompatible: boolean = false) {
+    private static async _BuildMaterials(materials: { [id: string]: Material }, textures: { [id: string]: Texture }, quickLookCompatible: boolean = false) {
         const array = [];
         for (const uuid in materials) {
             const material = materials[uuid];
@@ -479,7 +479,7 @@ export class USDZExport {
         return { ao, roughness, metallic };
     }
 
-    private static async _BuildMaterial(_material: Material, textures: any, quickLookCompatible = false) {
+    private static async _BuildMaterial(_material: Material, textures: { [id: string]: Texture }, quickLookCompatible = false) {
         // https://graphics.pixar.com/usd/docs/UsdPreviewSurface-Proposal.html
         const pad = "			";
         const inputs = [];
