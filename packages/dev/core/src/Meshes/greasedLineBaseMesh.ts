@@ -16,26 +16,14 @@ export enum GreasedLineRibbonPointsMode {
 export enum GreasedLineRibbonFacesMode {
     FACES_MODE_SINGLE_SIDED = 0,
     FACES_MODE_SINGLE_SIDED_NO_BACKFACE_CULLING = 1,
-    FACES_MODE_DOUBLE_SIDED = 2
+    FACES_MODE_DOUBLE_SIDED = 2,
 }
 
 export type GreasedLineRibbonOptions = {
     /**
-     * If true, normals will be computed when creating the vertex buffers.
-     * This results to smooth shading of the mesh.
-     */
-    smoothShading?: boolean;
-    /**
-     * Controls how the faces are created.
-     * GreasedLineRibbonFacesMode.FACES_MODE_SINGLE_SIDED = single sided with back face culling. Default value.
-     * GreasedLineRibbonFacesMode.FACES_MODE_SINGLE_SIDED_NO_BACKFACE_CULLING = single sided without back face culling
-     * GreasedLineRibbonFacesMode.FACES_MODE_DOUBLE_SIDED = extra back faces are created. This doubles the amount of faces of the mesh.
-     */
-    facesMode?: GreasedLineRibbonFacesMode;
-    /**
      * Defines how the points are processed.
      * In GreasedLineRibbonPointsMode.POINTS_MODE_POINTS every array of points will become the center of the ribbon. The ribbon will be expanded by width/2 to +direction and -direction as well.
-     * In GreasedLineRibbonPointsMode.POINTS_MODE_PATHS every array of points is one path. These will be used to buuld one ribbon.
+     * In GreasedLineRibbonPointsMode.POINTS_MODE_PATHS every array of points is one path. These will be used to buuid one ribbon.
      */
     pointsMode: GreasedLineRibbonPointsMode;
     /**
@@ -47,9 +35,21 @@ export type GreasedLineRibbonOptions = {
      */
     width: number;
     /**
+     * Controls how the faces are created.
+     * GreasedLineRibbonFacesMode.FACES_MODE_SINGLE_SIDED = single sided with back face culling. Default value.
+     * GreasedLineRibbonFacesMode.FACES_MODE_SINGLE_SIDED_NO_BACKFACE_CULLING = single sided without back face culling
+     * GreasedLineRibbonFacesMode.FACES_MODE_DOUBLE_SIDED = extra back faces are created. This doubles the amount of faces of the mesh.
+     */
+    facesMode?: GreasedLineRibbonFacesMode;
+    /**
      * If true, the path will be closed.
      */
     closePath?: boolean;
+    /**
+     * If true, normals will be computed when creating the vertex buffers.
+     * This results to smooth shading of the mesh.
+     */
+    smoothShading?: boolean;
 };
 
 export type GreasedLinePoints = Vector3[] | Vector3[][] | Float32Array | Float32Array[] | number[][] | number[];
