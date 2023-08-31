@@ -185,7 +185,11 @@ export class FreeCameraTouchInput implements ICameraInput<FreeCamera> {
         }
 
         const camera = this.camera;
-        camera.cameraRotation.y = this._offsetX / this.touchAngularSensibility;
+        let handednessMultiplier = camera.getScene().useRightHandedSystem ? -1 : 1;
+        if (camera.parent && camera.parent._getWorldMatrixDeterminant() < 0) {
+            handednessMultiplier *= -1;
+        }
+        camera.cameraRotation.y = handednessMultiplier * this._offsetX / this.touchAngularSensibility;
 
         const rotateCamera = (this.singleFingerRotate && this._pointerPressed.length === 1) || (!this.singleFingerRotate && this._pointerPressed.length > 1);
 
