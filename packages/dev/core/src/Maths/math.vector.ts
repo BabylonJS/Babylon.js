@@ -25,19 +25,19 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
      * Gets the length of the vector
      * @returns the vector length (float)
      */
-    length(): number;
+    public length(): number;
 
     /**
      * Gets the vector squared length
      * @returns the vector squared length (float)
      */
-    lengthSquared(): number;
+    public lengthSquared(): number;
 
     /**
      * Normalize the vector
      * @returns the current updated Vector
      */
-    normalize(): this;
+    public normalize(): this;
 
     /**
      * Normalize the current Vector with the given input length.
@@ -45,20 +45,20 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
      * @param len the length of the vector
      * @returns the current updated Vector
      */
-    normalizeFromLength(len: number): this;
+    public normalizeFromLength(len: number): this;
 
     /**
      * Normalize the current Vector to a new vector
      * @returns the new Vector
      */
-    normalizeToNew(): this;
+    public normalizeToNew(): this;
 
     /**
      * Normalize the current Vector to the reference
      * @param reference define the Vector to update
      * @returns the updated Vector
      */
-    normalizeToRef<T extends this>(reference: T): T;
+    public normalizeToRef<T extends this>(reference: T): T;
 
     /**
      * Gets a new Vector located for "amount" (float) on the CatmullRom spline defined by the given four Vector
@@ -69,7 +69,7 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
      * @param amount defines the interpolation factor
      * @returns a new Vector
      */
-    static CatmullRom<T extends Vector>(value1: DeepImmutable<T>, value2: DeepImmutable<T>, value3: DeepImmutable<T>, value4: DeepImmutable<T>, amount: number): T;
+    public static CatmullRom<T extends Vector>(value1: DeepImmutable<T>, value2: DeepImmutable<T>, value3: DeepImmutable<T>, value4: DeepImmutable<T>, amount: number): T;
 
     /**
      * Returns a new Vector set with same the coordinates than "value" ones if the vector "value" is in the square defined by "min" and "max".
@@ -80,7 +80,7 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
      * @param max defines the upper limit
      * @returns a new Vector
      */
-    static Clamp<T extends Vector>(value: DeepImmutable<T>, min: DeepImmutable<T>, max: DeepImmutable<T>): T;
+    public static Clamp<T extends Vector>(value: DeepImmutable<T>, min: DeepImmutable<T>, max: DeepImmutable<T>): T;
 
     /**
      * Returns a new Vector set with same the coordinates than "value" ones if the vector "value" is in the square defined by "min" and "max".
@@ -92,7 +92,7 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
      * @param result defines the vector where to store the result
      * @returns the updated result Vector
      */
-    static ClampToRef<T extends Vector>(value: DeepImmutable<T>, min: DeepImmutable<T>, max: DeepImmutable<T>, result: T): T;
+    public static ClampToRef<T extends Vector>(value: DeepImmutable<T>, min: DeepImmutable<T>, max: DeepImmutable<T>, result: T): T;
 
     /**
      * Checks if a given vector is inside a specific range
@@ -100,7 +100,7 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
      * @param min defines the minimum range
      * @param max defines the maximum range
      */
-    static CheckExtends(v: Vector, min: Vector, max: Vector): void;
+    public static CheckExtends(v: Vector, min: Vector, max: Vector): void;
 
     /**
      * Returns a new Vector located for "amount" (float) on the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2"
@@ -111,7 +111,7 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
      * @param amount defines the interpolation factor
      * @returns a new Vector
      */
-    static Hermite<T extends Vector>(value1: DeepImmutable<T>, tangent1: DeepImmutable<T>, value2: DeepImmutable<T>, tangent2: DeepImmutable<T>, amount: number): T;
+    public static Hermite<T extends Vector>(value1: DeepImmutable<T>, tangent1: DeepImmutable<T>, value2: DeepImmutable<T>, tangent2: DeepImmutable<T>, amount: number): T;
 
     /**
      * Returns a new Vector which is the 1st derivative of the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2".
@@ -122,7 +122,7 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
      * @param time define where the derivative must be done
      * @returns 1st derivative
      */
-    static Hermite1stDerivative<T extends Vector>(value1: DeepImmutable<T>, tangent1: DeepImmutable<T>, value2: DeepImmutable<T>, tangent2: DeepImmutable<T>, time: number): T;
+    public static Hermite1stDerivative<T extends Vector>(value1: DeepImmutable<T>, tangent1: DeepImmutable<T>, value2: DeepImmutable<T>, tangent2: DeepImmutable<T>, time: number): T;
 
     /**
      * Returns a new Vector which is the 1st derivative of the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2".
@@ -134,7 +134,7 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
      * @param result define where the derivative will be stored
      * @returns result input
      */
-    static Hermite1stDerivativeToRef<T extends Vector>(
+    public static Hermite1stDerivativeToRef<T extends Vector>(
         value1: DeepImmutable<T>,
         tangent1: DeepImmutable<T>,
         value2: DeepImmutable<T>,
@@ -150,7 +150,7 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
      * @param amount defines the interpolation factor
      * @returns a new Vector
      */
-    static Lerp<T extends Vector>(start: DeepImmutable<T>, end: DeepImmutable<T>, amount: number): T;
+    public static Lerp<T extends Vector>(start: DeepImmutable<T>, end: DeepImmutable<T>, amount: number): T;
 
     /**
      * Returns a new Vector located for "amount" (float) on the linear interpolation between the vector "start" adn the vector "end".
@@ -159,14 +159,14 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
      * @param amount defines the interpolation factor
      * @returns a new Vector
      */
-    static LerpToRef<T extends Vector>(start: DeepImmutable<T>, end: DeepImmutable<T>, amount: number, result: T): T;
+    public static LerpToRef<T extends Vector>(start: DeepImmutable<T>, end: DeepImmutable<T>, amount: number, result: T): T;
 
     /**
      * Returns a new Vector equal to the normalized given vector
      * @param vector defines the vector to normalize
      * @returns a new Vector
      */
-    static Normalize<T extends Vector>(vector: DeepImmutable<T>): T;
+    public static Normalize<T extends Vector>(vector: DeepImmutable<T>): T;
 
     /**
      * Normalize a given vector into a second one
@@ -174,7 +174,7 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
      * @param result defines the vector where to store the result
      * @returns result input
      */
-    static NormalizeToRef<T extends Vector>(vector: DeepImmutable<T>, result: T): T;
+    public static NormalizeToRef<T extends Vector>(vector: DeepImmutable<T>, result: T): T;
 
     /**
      * Gets the shortest distance (float) between the point "p" and the segment defined by the two points "segA" and "segB".
@@ -183,7 +183,7 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
      * @param segB defines the other point of the segment
      * @returns the shortest distance
      */
-    static DistanceOfPointFromSegment<T extends Vector>(p: DeepImmutable<T>, segA: DeepImmutable<T>, segB: DeepImmutable<T>): number;
+    public static DistanceOfPointFromSegment<T extends Vector>(p: DeepImmutable<T>, segA: DeepImmutable<T>, segB: DeepImmutable<T>): number;
 }
 
 /**
