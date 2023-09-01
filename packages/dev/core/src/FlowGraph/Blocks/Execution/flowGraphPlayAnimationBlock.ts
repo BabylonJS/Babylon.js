@@ -4,7 +4,7 @@ import { FlowGraphConnectionType } from "../../flowGraphConnection";
 import { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
 import { FlowGraphAsyncExecutionBlock } from "../../flowGraphAsyncExecutionBlock";
-import { RichTypes } from "../../flowGraphRichTypes";
+import { RichTypeAny, RichTypeNumber, RichTypeBoolean } from "../../flowGraphRichTypes";
 
 /**
  * @experimental
@@ -44,13 +44,13 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     public constructor() {
         super();
 
-        this.target = new FlowGraphDataConnection("target", FlowGraphConnectionType.Input, this, RichTypes.Any);
-        this.animation = new FlowGraphDataConnection("animation", FlowGraphConnectionType.Input, this, RichTypes.Any);
-        this.speed = new FlowGraphDataConnection("speed", FlowGraphConnectionType.Input, this, RichTypes.Number);
+        this.target = new FlowGraphDataConnection("target", FlowGraphConnectionType.Input, this, RichTypeAny);
+        this.animation = new FlowGraphDataConnection("animation", FlowGraphConnectionType.Input, this, RichTypeAny);
+        this.speed = new FlowGraphDataConnection("speed", FlowGraphConnectionType.Input, this, RichTypeNumber);
         this.speed.value = 1;
-        this.loop = new FlowGraphDataConnection("loop", FlowGraphConnectionType.Input, this, RichTypes.Boolean);
-        this.from = new FlowGraphDataConnection("from", FlowGraphConnectionType.Input, this, RichTypes.Number);
-        this.to = new FlowGraphDataConnection("to", FlowGraphConnectionType.Input, this, RichTypes.Number);
+        this.loop = new FlowGraphDataConnection("loop", FlowGraphConnectionType.Input, this, RichTypeBoolean);
+        this.from = new FlowGraphDataConnection("from", FlowGraphConnectionType.Input, this, RichTypeNumber);
+        this.to = new FlowGraphDataConnection("to", FlowGraphConnectionType.Input, this, RichTypeNumber);
         this.to.value = 100;
 
         this.onAnimationEnd = new FlowGraphSignalConnection("onAnimationEnd", FlowGraphConnectionType.Output, this);

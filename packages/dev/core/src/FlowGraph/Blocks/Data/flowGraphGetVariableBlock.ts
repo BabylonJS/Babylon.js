@@ -1,7 +1,7 @@
 import type { FlowGraphContext } from "../../flowGraphContext";
 import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import { RichTypes } from "../../flowGraphRichTypes";
+import { RichTypeString, RichTypeAny } from "../../flowGraphRichTypes";
 
 /**
  * @experimental
@@ -13,8 +13,8 @@ export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
     constructor() {
         super();
 
-        this.variableName = this._registerDataInput("variableName", RichTypes.String);
-        this.output = this._registerDataOutput("output", RichTypes.Any);
+        this.variableName = this._registerDataInput("variableName", RichTypeString);
+        this.output = this._registerDataOutput("output", RichTypeAny);
     }
 
     /**

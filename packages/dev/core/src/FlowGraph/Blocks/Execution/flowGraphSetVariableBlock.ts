@@ -1,4 +1,4 @@
-import { RichTypes } from "../../flowGraphRichTypes";
+import { RichTypeString, RichTypeAny } from "../../flowGraphRichTypes";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
@@ -13,8 +13,8 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphWithOnDoneExecutionBl
     constructor() {
         super();
 
-        this.variableName = this._registerDataInput("variableName", RichTypes.String);
-        this.input = this._registerDataInput("input", RichTypes.Any);
+        this.variableName = this._registerDataInput("variableName", RichTypeString);
+        this.input = this._registerDataInput("input", RichTypeAny);
     }
 
     public _execute(context: FlowGraphContext): void {

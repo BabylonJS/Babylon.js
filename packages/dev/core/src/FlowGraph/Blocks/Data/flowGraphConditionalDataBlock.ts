@@ -1,7 +1,7 @@
 import type { FlowGraphContext } from "../../flowGraphContext";
 import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import { RichTypes } from "../../flowGraphRichTypes";
+import { RichTypeBoolean, RichTypeAny } from "../../flowGraphRichTypes";
 
 /**
  * @experimental
@@ -17,11 +17,11 @@ export class FlowGraphConditionalDataBlock<T> extends FlowGraphBlock {
     constructor() {
         super();
 
-        this.condition = this._registerDataInput("condition", RichTypes.Boolean);
-        this.trueValue = this._registerDataInput("trueValue", RichTypes.Any);
-        this.falseValue = this._registerDataInput("falseValue", RichTypes.Any);
+        this.condition = this._registerDataInput("condition", RichTypeBoolean);
+        this.trueValue = this._registerDataInput("trueValue", RichTypeAny);
+        this.falseValue = this._registerDataInput("falseValue", RichTypeAny);
 
-        this.output = this._registerDataOutput("output", RichTypes.Any);
+        this.output = this._registerDataOutput("output", RichTypeAny);
     }
 
     /**

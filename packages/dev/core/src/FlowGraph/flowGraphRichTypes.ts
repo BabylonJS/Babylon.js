@@ -9,47 +9,52 @@ export interface RichType<T> {
     defaultValueBuilder: () => T;
 }
 
-const RichTypeAny: RichType<any> = {
+export const RichTypeAny: RichType<any> = {
     typeName: "any",
     defaultValueBuilder: () => undefined,
 };
 
-export const RichTypes = {
-    String: {
-        typeName: "string",
-        defaultValueBuilder: () => "",
-    },
-    Number: {
-        typeName: "number",
-        defaultValueBuilder: () => 0,
-    },
-    Boolean: {
-        typeName: "boolean",
-        defaultValueBuilder: () => false,
-    },
-    Vector2: {
-        typeName: "Vector2",
-        defaultValueBuilder: () => Vector2.Zero(),
-    },
-    Vector3: {
-        typeName: "Vector3",
-        defaultValueBuilder: () => Vector3.Zero(),
-    },
-    Vector4: {
-        typeName: "Vector4",
-        defaultValueBuilder: () => Vector4.Zero(),
-    },
-    Matrix: {
-        typeName: "Matrix",
-        defaultValueBuilder: () => Matrix.Identity(),
-    },
-    Color3: {
-        typeName: "Color3",
-        defaultValueBuilder: () => Color3.Black(),
-    },
-    Color4: {
-        typeName: "Color4",
-        defaultValueBuilder: () => new Color4(0, 0, 0, 0),
-    },
-    Any: RichTypeAny,
+export const RichTypeString: RichType<string> = {
+    typeName: "string",
+    defaultValueBuilder: () => "",
+};
+
+export const RichTypeNumber: RichType<number> = {
+    typeName: "number",
+    defaultValueBuilder: () => 0,
+};
+
+export const RichTypeBoolean: RichType<boolean> = {
+    typeName: "boolean",
+    defaultValueBuilder: () => false,
+};
+
+export const RichTypeVector2: RichType<Vector2> = {
+    typeName: "Vector2",
+    defaultValueBuilder: () => Vector2.Zero(),
+};
+
+export const RichTypeVector3: RichType<Vector3> = {
+    typeName: "Vector3",
+    defaultValueBuilder: () => Vector3.Zero(),
+};
+
+export const RichTypeVector4: RichType<Vector4> = {
+    typeName: "Vector4",
+    defaultValueBuilder: () => Vector4.Zero(),
+};
+
+export const RichTypeMatrix: RichType<Matrix> = {
+    typeName: "Matrix",
+    defaultValueBuilder: () => Matrix.Identity(),
+};
+
+export const RichTypeColor3: RichType<Color3> = {
+    typeName: "Color3",
+    defaultValueBuilder: () => Color3.Black(),
+};
+
+export const RichTypeColor4: RichType<Color4> = {
+    typeName: "Color4",
+    defaultValueBuilder: () => new Color4(0, 0, 0, 0),
 };

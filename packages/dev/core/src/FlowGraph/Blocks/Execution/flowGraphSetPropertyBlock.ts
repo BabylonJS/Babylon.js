@@ -1,4 +1,4 @@
-import { RichTypes } from "../../flowGraphRichTypes";
+import { RichTypeString, RichTypeAny } from "../../flowGraphRichTypes";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
@@ -16,9 +16,9 @@ export class FlowGraphSetPropertyBlock<TargetT, ValueT> extends FlowGraphWithOnD
     public constructor() {
         super();
 
-        this.target = this._registerDataInput("target", RichTypes.Any);
-        this.property = this._registerDataInput("property", RichTypes.String);
-        this.value = this._registerDataInput("value", RichTypes.Any);
+        this.target = this._registerDataInput("target", RichTypeAny);
+        this.property = this._registerDataInput("property", RichTypeString);
+        this.value = this._registerDataInput("value", RichTypeAny);
     }
 
     private _setProperty(target: any, property: string, value: any): void {

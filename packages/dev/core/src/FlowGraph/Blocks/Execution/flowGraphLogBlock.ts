@@ -1,7 +1,7 @@
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
-import { RichTypes } from "../../flowGraphRichTypes";
+import { RichTypeAny } from "../../flowGraphRichTypes";
 
 /**
  * @experimental
@@ -15,7 +15,7 @@ export class FlowGraphLogBlock extends FlowGraphWithOnDoneExecutionBlock {
 
     public constructor() {
         super();
-        this.message = this._registerDataInput("message", RichTypes.Any);
+        this.message = this._registerDataInput("message", RichTypeAny);
         this.message.value = "Hello World!";
     }
 

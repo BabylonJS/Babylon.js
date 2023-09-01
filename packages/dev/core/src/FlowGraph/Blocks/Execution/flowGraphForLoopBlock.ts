@@ -2,7 +2,7 @@ import type { FlowGraphSignalConnection } from "../../flowGraphSignalConnection"
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "core/FlowGraph/flowGraphWithOnDoneExecutionBlock";
 import type { FlowGraphContext } from "../../flowGraphContext";
-import { RichTypes } from "../../flowGraphRichTypes";
+import { RichTypeNumber } from "../../flowGraphRichTypes";
 
 /**
  * @experimental
@@ -37,12 +37,12 @@ export class FlowGraphForLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
     public constructor() {
         super();
 
-        this.startIndex = this._registerDataInput("startIndex", RichTypes.Number);
-        this.endIndex = this._registerDataInput("endIndex", RichTypes.Number);
-        this.step = this._registerDataInput("step", RichTypes.Number);
+        this.startIndex = this._registerDataInput("startIndex", RichTypeNumber);
+        this.endIndex = this._registerDataInput("endIndex", RichTypeNumber);
+        this.step = this._registerDataInput("step", RichTypeNumber);
         this.step.value = 1;
 
-        this.index = this._registerDataOutput("index", RichTypes.Number);
+        this.index = this._registerDataOutput("index", RichTypeNumber);
         this.onLoop = this._registerSignalOutput("onLoop");
         this.onDone = this._registerSignalOutput("onDone");
     }

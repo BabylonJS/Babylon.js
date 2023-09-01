@@ -1,4 +1,4 @@
-import { RichTypes } from "../../flowGraphRichTypes";
+import { RichTypeBoolean } from "../../flowGraphRichTypes";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphExecutionBlock } from "../../flowGraphExecutionBlock";
@@ -16,7 +16,7 @@ export class FlowGraphConditionalBlock extends FlowGraphExecutionBlock {
     constructor() {
         super();
 
-        this.condition = this._registerDataInput("condition", RichTypes.Boolean);
+        this.condition = this._registerDataInput("condition", RichTypeBoolean);
 
         this.onTrue = this._registerSignalOutput("onTrue");
         this.onFalse = this._registerSignalOutput("onFalse");

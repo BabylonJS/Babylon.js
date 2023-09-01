@@ -3,7 +3,7 @@ import type { FlowGraphSignalConnection } from "../../flowGraphSignalConnection"
 import { AdvancedTimer } from "../../../Misc/timer";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import { FlowGraphAsyncExecutionBlock } from "../../flowGraphAsyncExecutionBlock";
-import { RichTypes } from "../../flowGraphRichTypes";
+import { RichTypeNumber } from "../../flowGraphRichTypes";
 
 /**
  * @experimental
@@ -17,7 +17,7 @@ export class FlowGraphTimerBlock extends FlowGraphAsyncExecutionBlock {
     constructor() {
         super();
 
-        this.timeout = this._registerDataInput("timeout", RichTypes.Number);
+        this.timeout = this._registerDataInput("timeout", RichTypeNumber);
         this.onTimerDone = this._registerSignalOutput("onTimerDone");
     }
 

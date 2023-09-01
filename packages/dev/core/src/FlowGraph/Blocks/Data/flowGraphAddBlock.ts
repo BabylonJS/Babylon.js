@@ -1,7 +1,7 @@
 import type { FlowGraphContext } from "../../flowGraphContext";
 import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import { RichTypes } from "../../flowGraphRichTypes";
+import { RichTypeNumber } from "../../flowGraphRichTypes";
 
 /**
  * @experimental
@@ -13,9 +13,9 @@ export class FlowGraphAddNumbersBlock extends FlowGraphBlock {
 
     constructor() {
         super();
-        this.numberLeft = this._registerDataInput("numberLeft", RichTypes.Number);
-        this.numberRight = this._registerDataInput("numberRight", RichTypes.Number);
-        this.output = this._registerDataOutput("output", RichTypes.Number);
+        this.numberLeft = this._registerDataInput("numberLeft", RichTypeNumber);
+        this.numberRight = this._registerDataInput("numberRight", RichTypeNumber);
+        this.output = this._registerDataOutput("output", RichTypeNumber);
     }
 
     public _updateOutputs(_context: FlowGraphContext): void {
