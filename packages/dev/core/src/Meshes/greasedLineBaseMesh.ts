@@ -19,6 +19,13 @@ export enum GreasedLineRibbonFacesMode {
     FACES_MODE_DOUBLE_SIDED = 2,
 }
 
+export enum GreasedLineRibbonAutoDirectionMode {
+    AUTO_DIRECTIONS_FROM_FIRST_SEGMENT = 0,
+    AUTO_DIRECTIONS_FROM_ALL_SEGMENTS = 1,
+    AUTO_DIRECTIONS_ENHANCED = 2,
+    AUTO_DIRECTIONS_NONE = 99,
+}
+
 export type GreasedLineRibbonOptions = {
     /**
      * Defines how the points are processed.
@@ -30,6 +37,10 @@ export type GreasedLineRibbonOptions = {
      * Normalized directions of the slopes of the non camera facing lines.
      */
     directions?: Vector3[] | Vector3;
+    /**
+     * Defines the calculation mode of the directions which the line will be thickened to.
+     */
+    directionsAutoMode?: GreasedLineRibbonAutoDirectionMode;
     /**
      * Width of the ribbon.
      */

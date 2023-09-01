@@ -10,7 +10,7 @@ import type { Color3 } from "../../Maths/math.color";
 import { GreasedLineSimpleMaterial } from "../../Materials/greasedLineSimpleMaterial";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
 import type { GreasedLineMeshOptions } from "../greasedLineBaseMesh";
-import { GreasedLineRibbonFacesMode, GreasedLineRibbonPointsMode } from "../greasedLineBaseMesh";
+import { GreasedLineRibbonAutoDirectionMode, GreasedLineRibbonFacesMode, GreasedLineRibbonPointsMode } from "../greasedLineBaseMesh";
 import { GreasedLineRibbonMesh } from "../greasedLineRibbonMesh";
 
 /**
@@ -150,10 +150,12 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     const allPoints = GreasedLineTools.ConvertPoints(options.points);
 
     options.widthDistribution = options.widthDistribution ?? GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START;
-
     if (options.ribbonOptions) {
         options.ribbonOptions.facesMode = options.ribbonOptions.facesMode ?? GreasedLineRibbonFacesMode.FACES_MODE_SINGLE_SIDED_NO_BACKFACE_CULLING;
         options.ribbonOptions.pointsMode = options.ribbonOptions.pointsMode ?? GreasedLineRibbonPointsMode.POINTS_MODE_POINTS;
+        options.ribbonOptions.directionsAutoMode =
+            options.ribbonOptions.directionsAutoMode ??
+            (options.ribbonOptions.directions ? GreasedLineRibbonAutoDirectionMode.AUTO_DIRECTIONS_NONE : GreasedLineRibbonAutoDirectionMode.AUTO_DIRECTIONS_FROM_FIRST_SEGMENT);
     }
 
     materialOptions = materialOptions ?? {
