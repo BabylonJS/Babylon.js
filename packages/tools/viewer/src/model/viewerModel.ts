@@ -393,7 +393,7 @@ export class ViewerModel implements IDisposable {
         // can't use .find, noe available on IE
         const filtered = this._animations.filter((a) => a.name === name.trim());
         // what the next line means - if two animations have the same name, they will not be returned!
-        if (filtered.length === 1) {
+        if (filtered.length >= 1) {
             return filtered[0];
         } else {
             return null;
