@@ -152,7 +152,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     options.widthDistribution = options.widthDistribution ?? GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START;
 
     if (options.ribbonOptions) {
-        options.ribbonOptions.facesMode = options.ribbonOptions.facesMode ?? GreasedLineRibbonFacesMode.FACES_MODE_SINGLE_SIDED;
+        options.ribbonOptions.facesMode = options.ribbonOptions.facesMode ?? GreasedLineRibbonFacesMode.FACES_MODE_SINGLE_SIDED_NO_BACKFACE_CULLING;
         options.ribbonOptions.pointsMode = options.ribbonOptions.pointsMode ?? GreasedLineRibbonPointsMode.POINTS_MODE_POINTS;
     }
 

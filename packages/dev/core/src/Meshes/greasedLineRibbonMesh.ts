@@ -25,6 +25,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
     private static _RightHandedForwardReadOnlyQuaternion = Quaternion.RotationAxis(Vector3.RightHandedForwardReadOnly, Math.PI / 2);
     private static _LeftHandedForwardReadOnlyQuaternion = Quaternion.RotationAxis(Vector3.LeftHandedForwardReadOnly, Math.PI / 2);
     private static _LeftReadOnlyQuaternion = Quaternion.RotationAxis(Vector3.LeftReadOnly, Math.PI / 2);
+    private static _UpReadOnlyQuaternion = Quaternion.RotationAxis(Vector3.LeftHandedForwardReadOnly, Math.PI / 2);
 
     private _paths: Vector3[][];
     private _pathsOptions: { options: GreasedLineMeshOptions; pathCount: number }[];
@@ -61,8 +62,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         this._pathsOptions = [];
 
         if (_options.points) {
-            const convertedPoints = GreasedLineTools.ConvertPoints(_options.points);
-            this.addPoints(convertedPoints, _options);
+            this.addPoints(GreasedLineTools.ConvertPoints(_options.points), _options);
         }
     }
 
@@ -128,8 +128,14 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
             if (pathOptions.ribbonOptions?.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_PATHS) {
                 indiceOffset = this._preprocess(GreasedLineTools.ToVector3Array(subPoints) as Vector3[][], indiceOffset, pathOptions);
             } else {
-                subPoints.forEach((p) => {
-                    const pathArray = GreasedLineRibbonMesh._ConvertToRibbonPath(p, pathOptions.ribbonOptions!, this._scene.useRightHandedSystem);
+                const directionPlanes = GreasedLineRibbonMesh._GetDirectionPlanesFromDirectionsOption(subPoints.length, pathOptions.ribbonOptions!.directions);
+                subPoints.forEach((p, idx) => {
+                    const pathArray = GreasedLineRibbonMesh._ConvertToRibbonPath(
+                        p,
+                        pathOptions.ribbonOptions!,
+                        this._scene.useRightHandedSystem,
+                        directionPlanes ? directionPlanes[idx] : directionPlanes
+                    );
                     indiceOffset = this._preprocess(pathArray, indiceOffset, pathOptions);
                 });
             }
@@ -182,14 +188,29 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
     //     return directions;
     // }
 
-    private static _GetDirectionPlaneQuaternion(point1: Vector3, point2: Vector3, rightHandedSystem: boolean) {
-        const direction = point2.subtract(point1);
-
-        if (direction.x > direction.y && direction.x > direction.z) {
-            return rightHandedSystem ? GreasedLineRibbonMesh._RightHandedForwardReadOnlyQuaternion : GreasedLineRibbonMesh._LeftHandedForwardReadOnlyQuaternion;
+    private static _GetDirectionPlanesFromDirectionsOption(count: number, directions?: Vector3 | Vector3[]) {
+        if (!directions) {
+            return directions;
         }
-        return GreasedLineRibbonMesh._LeftReadOnlyQuaternion;
+
+        if (Array.isArray(directions)) {
+            return directions;
+        }
+
+        return new Array(count).fill(directions);
     }
+
+    // private static _GetDirectionPlaneQuaternion(point1: Vector3, point2: Vector3, rightHandedSystem: boolean) {
+    //     const direction = point2.subtract(point1).normalize();
+
+    //     return Quaternion.RotationAxis(direction, Math.PI / 2);
+
+    //     // if (direction.x > direction.y && direction.x > direction.z) {
+    //     //     // return rightHandedSystem ? GreasedLineRibbonMesh._RightHandedForwardReadOnlyQuaternion : GreasedLineRibbonMesh._LeftHandedForwardReadOnlyQuaternion;
+    //     //     return GreasedLineRibbonMesh._LeftReadOnlyQuaternion;
+    //     // }
+    //     // return GreasedLineRibbonMesh._LeftReadOnlyQuaternion;
+    // }
 
     private static _CreateRibbonVertexData(pathArray: Vector3[][], options: GreasedLineMeshOptions) {
         const numOfPaths = pathArray.length;
@@ -333,7 +354,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         return indiceOffset;
     }
 
-    private static _ConvertToRibbonPath(points: number[], ribbonInfo: GreasedLineRibbonOptions, rightHandedSystem: boolean) {
+    private static _ConvertToRibbonPath(points: number[], ribbonInfo: GreasedLineRibbonOptions, rightHandedSystem: boolean, directionPlane?: Vector3) {
         if (ribbonInfo.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS && !ribbonInfo.width) {
             throw "Width must be specified in GreasedLineRibbonPointsMode.POINTS_MODE_POINTS";
         }
@@ -342,20 +363,36 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         if (ribbonInfo.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS) {
             const width = ribbonInfo.width! / 2;
             const pointVectors = GreasedLineTools.ToVector3Array(points) as Vector3[];
-            for (let i = 0; i < pointVectors.length - 1; i++) {
+            for (let i = 0; i < pointVectors.length - (directionPlane ? 0 : 1); i++) {
                 const p1 = pointVectors[i];
                 const p2 = pointVectors[i + 1];
-                const direction = p2.subtract(p1).normalize();
 
-                const rotationQuaternion = GreasedLineRibbonMesh._GetDirectionPlaneQuaternion(p1, p2, rightHandedSystem);
-                direction.applyRotationQuaternionInPlace(rotationQuaternion);
+                let direction: Vector3;
+                if (directionPlane) {
+                    direction = <Vector3>directionPlane;
+                } else {
+                    const directionTemp = p2.subtract(p1);
+                    // TmpVectors.Vector3[0].x = -directionTemp.y
+                    // TmpVectors.Vector3[0].y = directionTemp.x
+                    // TmpVectors.Vector3[0].z = directionTemp.z
+                    directionTemp.applyRotationQuaternionInPlace(
+                        directionTemp.x > directionTemp.y && directionTemp.x > directionTemp.z
+                            ? rightHandedSystem
+                                ? GreasedLineRibbonMesh._RightHandedForwardReadOnlyQuaternion
+                                : GreasedLineRibbonMesh._LeftHandedForwardReadOnlyQuaternion
+                            : GreasedLineRibbonMesh._LeftReadOnlyQuaternion
+                    );
+                    direction = directionTemp.normalize();
+                }
 
                 const fatDirection = direction.multiplyByFloats(width, width, width);
                 path1.push(p1.add(fatDirection));
                 path2.push(p1.subtract(fatDirection));
             }
-            path1.push(path1[path1.length - 1]);
-            path2.push(path1[path2.length - 1]);
+            if (!directionPlane) {
+                path1.push(path1[path1.length - 1]);
+                path2.push(path1[path2.length - 1]);
+            }
         }
         return [path1, path2];
     }
