@@ -1,5 +1,5 @@
 import type { Scene } from "../scene";
-import type { IGreasedLineMaterial } from "../Materials/greasedLinePluginMaterial";
+import type { IGreasedLineMaterial } from "../Materials/greasedLineBaseMaterial";
 import { GreasedLinePluginMaterial } from "../Materials/greasedLinePluginMaterial";
 import { Mesh } from "./mesh";
 import { Buffer } from "../Buffers/buffer";

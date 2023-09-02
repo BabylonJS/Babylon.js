@@ -1,37 +1,21 @@
 import type { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
 import { RawTexture } from "./Textures/rawTexture";
-import type { GreasedLineMaterialOptions, IGreasedLineMaterial } from "./greasedLinePluginMaterial";
-import { GreasedLineMeshColorMode, GreasedLineMeshColorDistributionType } from "./greasedLinePluginMaterial";
 
 import { ShaderMaterial } from "./shaderMaterial";
 import type { Nullable } from "../types";
 import { Color3 } from "../Maths/math.color";
 import { Vector2 } from "../Maths/math.vector";
-import type { BaseTexture } from "./Textures/baseTexture";
 
 import "../Shaders/greasedLine.fragment";
 import "../Shaders/greasedLine.vertex";
+import type { GreasedLineMaterialOptions, IGreasedLineMaterial } from "./greasedLineBaseMaterial";
+import { GreasedLineBaseMaterial, GreasedLineMeshColorDistributionType, GreasedLineMeshColorMode } from "./greasedLineBaseMaterial";
 
 /**
  * GreasedLineSimpleMaterial
  */
 export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGreasedLineMaterial {
-    /**
-     * Default line color for newly created lines
-     */
-    public static DEFAULT_COLOR = Color3.White();
-    /**
-     * Default line width when sizeAttenuation is true
-     */
-    public static DEFAULT_WIDTH_ATTENUATED = 1;
-    /**
-     * Defaule line width
-     */
-    public static DEFAULT_WIDTH = 0.1;
-
-    private static _EmptyColorsTexture: BaseTexture;
-
     private _visibility: number;
     private _width: number;
     private _useDash: boolean;
@@ -108,7 +92,7 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
             }
         );
         options = options || {
-            color: GreasedLineSimpleMaterial.DEFAULT_COLOR,
+            color: GreasedLineBaseMaterial.DEFAULT_COLOR,
         };
 
         this._engine = scene.getEngine();
@@ -120,8 +104,8 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
         this.width = options.width
             ? options.width
             : options.sizeAttenuation && options.cameraFacing
-            ? GreasedLineSimpleMaterial.DEFAULT_WIDTH_ATTENUATED
-            : GreasedLineSimpleMaterial.DEFAULT_WIDTH;
+            ? GreasedLineBaseMaterial.DEFAULT_WIDTH_ATTENUATED
+            : GreasedLineBaseMaterial.DEFAULT_WIDTH;
         this.sizeAttenuation = options.sizeAttenuation ?? false;
         this.color = options.color ?? Color3.White();
         this.useColors = options.useColors ?? false;
@@ -138,7 +122,7 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
         }
 
         this._engine.onDisposeObservable.add(() => {
-            GreasedLineSimpleMaterial._EmptyColorsTexture?.dispose();
+            GreasedLineBaseMaterial.DisposeEmptyColorsTexture();
         });
     }
 
@@ -402,7 +386,7 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
      * @param value color
      */
     public setColor(value: Nullable<Color3>) {
-        value = value ?? GreasedLineSimpleMaterial.DEFAULT_COLOR;
+        value = value ?? GreasedLineBaseMaterial.DEFAULT_COLOR;
         this._color = value;
         this.setColor3("grlColor", value);
     }
@@ -506,7 +490,7 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
         if (greasedLineMaterialOptions.colors) {
             this._createColorsTexture(`${this.name}-colors-texture`, greasedLineMaterialOptions.colors);
         } else {
-            GreasedLineSimpleMaterial._PrepareEmptyColorsTexture(scene);
+            GreasedLineBaseMaterial.PrepareEmptyColorsTexture(scene);
         }
 
         greasedLineMaterialOptions.color && (this.color = greasedLineMaterialOptions.color);
@@ -525,18 +509,5 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
 
         this._cameraFacing = greasedLineMaterialOptions.cameraFacing ?? true;
         this.setDefine("GREASED_LINE_CAMERA_FACING", this._cameraFacing);
-    }
-
-    /**
-     * A minimum size texture for the colors sampler2D when there is no colors texture defined yet.
-     * For fast switching using the useColors property without the need to use defines.
-     * @param scene Scene
-     */
-    private static _PrepareEmptyColorsTexture(scene: Scene) {
-        if (!this._EmptyColorsTexture) {
-            const colorsArray = new Uint8Array(4);
-            GreasedLineSimpleMaterial._EmptyColorsTexture = new RawTexture(colorsArray, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false, false, RawTexture.NEAREST_NEAREST);
-            GreasedLineSimpleMaterial._EmptyColorsTexture.name = "grlEmptyColorsTexture";
-        }
     }
 }

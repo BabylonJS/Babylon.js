@@ -1,5 +1,3 @@
-import type { GreasedLineMaterialOptions } from "../../Materials/greasedLinePluginMaterial";
-import { GreasedLineMeshMaterialType, GreasedLinePluginMaterial } from "../../Materials/greasedLinePluginMaterial";
 import { StandardMaterial } from "./../../Materials/standardMaterial";
 import { PBRMaterial } from "../../Materials/PBR/pbrMaterial";
 import type { Nullable } from "../../types";
@@ -12,6 +10,8 @@ import { GreasedLineTools } from "../../Misc/greasedLineTools";
 import type { GreasedLineMeshOptions } from "../greasedLineBaseMesh";
 import { GreasedLineRibbonAutoDirectionMode, GreasedLineRibbonFacesMode, GreasedLineRibbonPointsMode } from "../greasedLineBaseMesh";
 import { GreasedLineRibbonMesh } from "../greasedLineRibbonMesh";
+import { GreasedLineMeshMaterialType, type GreasedLineMaterialOptions, GreasedLineBaseMaterial } from "../../Materials/greasedLineBaseMaterial";
+import { GreasedLinePluginMaterial } from "../../Materials/greasedLinePluginMaterial";
 
 /**
  * How are the colors distributed along the color table
@@ -159,7 +159,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     }
 
     materialOptions = materialOptions ?? {
-        color: GreasedLinePluginMaterial.DEFAULT_COLOR,
+        color: GreasedLineBaseMaterial.DEFAULT_COLOR,
     };
     materialOptions.createAndAssignMaterial = materialOptions.createAndAssignMaterial ?? true;
     materialOptions.colorDistribution = materialOptions?.colorDistribution ?? GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START;
@@ -181,7 +181,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     }
 
     const colors = materialOptions?.colors
-        ? CompleteGreasedLineColorTable(length, materialOptions.colors, materialOptions.colorDistribution, materialOptions.color ?? GreasedLinePluginMaterial.DEFAULT_COLOR)
+        ? CompleteGreasedLineColorTable(length, materialOptions.colors, materialOptions.colorDistribution, materialOptions.color ?? GreasedLineBaseMaterial.DEFAULT_COLOR)
         : undefined;
 
     // create new mesh if instance is not defined
@@ -195,7 +195,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
 
     if (initialGreasedLineOptions.ribbonOptions) {
         if (initialGreasedLineOptions.ribbonOptions.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS) {
-            initialGreasedLineOptions.ribbonOptions.width = materialOptions.width ?? initialGreasedLineOptions.ribbonOptions.width ?? GreasedLinePluginMaterial.DEFAULT_WIDTH;
+            initialGreasedLineOptions.ribbonOptions.width = materialOptions.width ?? initialGreasedLineOptions.ribbonOptions.width ?? GreasedLineBaseMaterial.DEFAULT_WIDTH;
         }
     }
 
