@@ -7,13 +7,13 @@ import { CustomProceduralTexture } from "../Materials/Textures/Procedurals/custo
 import { DumpTools } from "./dumpTools";
 import type { Vector3 } from "../Maths/math.vector";
 
-/** 
+/**
  * Interface containing options related to equirectangular capture of the current scene
  */
 export interface EquiRectangularCaptureOptions {
     /**
      * This option relates to smallest dimension of the given equirectangular capture
-     * Giving a 512px size would result in an image that 512 x 1024px 
+     * Giving a 512px size would result in an image that 512 x 1024px
      */
     size: number;
     /**
@@ -29,7 +29,7 @@ export interface EquiRectangularCaptureOptions {
     /**
      * Optional argument to specify position in 3D Space from where the equirectangular capture should be taken, if not specified, it would take the position of the scene's active camera or else origin
      */
-    position?: Vector3
+    position?: Vector3;
 }
 
 /**
@@ -49,7 +49,7 @@ export async function captureEquirectangularFromScene(scene: Scene, options: Equ
     probe.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
     probe.cubeTexture.render();
     const dumpTexture = new CustomProceduralTexture("tempProceduralTexture", "EquirectangularPanorama", { width: options.size * 2, height: options.size }, scene);
-    dumpTexture.setTexture('cubeMap', probe.cubeTexture);
+    dumpTexture.setTexture("cubeMap", probe.cubeTexture);
     return new Promise((resolve, reject) => {
         dumpTexture.onGeneratedObservable.addOnce(() => {
             const pixelDataPromise = dumpTexture.readPixels();
@@ -59,7 +59,7 @@ export async function captureEquirectangularFromScene(scene: Scene, options: Equ
                 probe.dispose();
                 return;
             }
-            pixelDataPromise.then(pixelData => {
+            pixelDataPromise.then((pixelData) => {
                 dumpTexture.dispose();
                 probe.dispose();
                 if (options.filename) {
@@ -69,10 +69,9 @@ export async function captureEquirectangularFromScene(scene: Scene, options: Equ
                     resolve(pixelData);
                 }
             });
-        })
-    })
+        });
+    });
 }
-
 
 ShaderStore.ShadersStore["EquirectangularPanoramaPixelShader"] = `
     #ifdef GL_ES

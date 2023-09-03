@@ -17,7 +17,7 @@ import { SceneSerializer } from "core/Misc/sceneSerializer";
 import { Mesh } from "core/Meshes/mesh";
 import { FilesInput } from "core/Misc/filesInput";
 import type { Scene } from "core/scene";
-import { captureEquirectangularFromScene } from 'core/Misc/equirectangularCapture';
+import { captureEquirectangularFromScene } from "core/Misc/equirectangularCapture";
 import { SceneLoader, SceneLoaderAnimationGroupLoadingMode } from "core/Loading/sceneLoader";
 import { Reflector } from "core/Misc/reflector";
 import { GLTFComponent } from "./tools/gltfComponent";
@@ -116,7 +116,7 @@ export class ToolsTabComponent extends PaneComponent {
     captureEquirectangular() {
         const scene = this.props.scene;
         if (scene.activeCamera) {
-            captureEquirectangularFromScene(scene, { size: 1024, filename: "equirectangular_capture.png" })
+            captureEquirectangularFromScene(scene, { size: 1024, filename: "equirectangular_capture.png" });
         }
     }
 
