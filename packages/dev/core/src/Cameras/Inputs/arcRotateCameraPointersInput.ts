@@ -228,7 +228,7 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
     /**
      * Called each time a new POINTERDOWN event occurs. Ie, for each button
      * press.
-     * @param evt
+     * @param evt Defines the event to track
      */
     public onButtonDown(evt: IPointerEvent): void {
         this._isPanClick = evt.button === this.camera._panningMouseButton;
@@ -237,8 +237,9 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
     /**
      * Called each time a new POINTERUP event occurs. Ie, for each button
      * release.
+     * @param _evt Defines the event to track
      */
-    public onButtonUp(): void {
+    public onButtonUp(_evt: IPointerEvent): void {
         this._twoFingerActivityCount = 0;
         this._isPinching = false;
     }

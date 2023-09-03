@@ -16,6 +16,7 @@ import type { Material } from "../Materials/material";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import { MultiMaterial } from "../Materials/multiMaterial";
 import type { PickingInfo } from "../Collisions/pickingInfo";
+import type { PBRMaterial } from "../Materials/PBR/pbrMaterial";
 
 /**
  * The SPS is a single updatable mesh. The solid particles are simply separate parts or faces of this big mesh.
@@ -324,6 +325,18 @@ export class SolidParticleSystem implements IDisposable {
         return this.mesh;
     }
 
+    private _getUVKind(mesh: Mesh, uvKind: number) {
+        if (uvKind === -1) {
+            if ((mesh.material as StandardMaterial)?.diffuseTexture) {
+                uvKind = (mesh.material as StandardMaterial).diffuseTexture!.coordinatesIndex;
+            } else if ((mesh.material as PBRMaterial)?.albedoTexture) {
+                uvKind = (mesh.material as PBRMaterial).albedoTexture!.coordinatesIndex;
+            }
+        }
+
+        return "uv" + (uvKind ? uvKind + 1 : "");
+    }
+
     /**
      * Digests the mesh and generates as many solid particles in the system as wanted. Returns the SPS.
      * These particles will have the same geometry than the mesh parts and will be positioned at the same localisation than the mesh original places.
@@ -333,19 +346,21 @@ export class SolidParticleSystem implements IDisposable {
      * {delta} (optional integer, default 0) is the random extra number of facets per particle , each particle will have between `facetNb` and `facetNb + delta` facets
      * {number} (optional positive integer) is the wanted number of particles : each particle is built with `mesh_total_facets / number` facets
      * {storage} (optional existing array) is an array where the particles will be stored for a further use instead of being inserted in the SPS.
+     * {uvKind} (optional positive integer, default 0) is the kind of UV to read from. Use -1 to deduce it from the diffuse/albedo texture (if any) of the mesh material
      * @param options.facetNb
      * @param options.number
      * @param options.delta
      * @param options.storage
+     * @param options.uvKind
      * @returns the current SPS
      */
-    public digest(mesh: Mesh, options?: { facetNb?: number; number?: number; delta?: number; storage?: [] }): SolidParticleSystem {
+    public digest(mesh: Mesh, options?: { facetNb?: number; number?: number; delta?: number; storage?: []; uvKind?: number }): SolidParticleSystem {
         let size: number = (options && options.facetNb) || 1;
         let number: number = (options && options.number) || 0;
         let delta: number = (options && options.delta) || 0;
         const meshPos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
         const meshInd = <IndicesArray>mesh.getIndices();
-        const meshUV = <FloatArray>mesh.getVerticesData(VertexBuffer.UVKind);
+        const meshUV = <FloatArray>mesh.getVerticesData(this._getUVKind(mesh, options?.uvKind ?? 0));
         const meshCol = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
         const meshNor = <FloatArray>mesh.getVerticesData(VertexBuffer.NormalKind);
         const storage = options && options.storage ? options.storage : null;
