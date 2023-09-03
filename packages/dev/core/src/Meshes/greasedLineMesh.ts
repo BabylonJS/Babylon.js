@@ -58,6 +58,10 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
     }
 
     protected _updateColorPointers() {
+        if (this._options.colorPointers) {
+            return;
+        }
+
         let colorPointer = 0;
         this._colorPointers = [];
         this._points.forEach((p) => {
@@ -358,7 +362,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
     }
 
     protected _createVertexBuffers() {
-        super._createVertexBuffers();
+        const vertexData = super._createVertexBuffers();
 
         const engine = this._scene.getEngine();
 
@@ -375,5 +379,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
         const colorPointersBuffer = new Buffer(engine, this._colorPointers, this._updatable, 1);
         this.setVerticesBuffer(colorPointersBuffer.createVertexBuffer("grl_colorPointers", 0, 1));
         this._colorPointersBuffer = colorPointersBuffer;
+
+        return vertexData;
     }
 }

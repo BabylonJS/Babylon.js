@@ -120,6 +120,10 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
     }
 
     protected _updateColorPointers() {
+        if (this._options.colorPointers) {
+            return;
+        }
+
         let colorPointer = 0;
         this._colorPointers = [];
         for (let i = 0; i < this._pathsOptions.length; i++) {
@@ -296,13 +300,12 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
 
         const pathArrayLength = pathArrayCopy.length;
         const previousCounters = new Array(pathArrayLength).fill(0);
-        const vDivider = options.ribbonOptions?.facesMode === GreasedLineRibbonFacesMode.FACES_MODE_DOUBLE_SIDED ? 2 : 1;
         for (let i = 0; i < pathArrayCopy[0].length; i++) {
             let v = 0;
             for (let pi = 0; pi < pathArrayLength; pi++) {
                 const counter = previousCounters[pi] + this._vSegmentLengths[pi][i] / this._vTotalLengths[pi];
                 this._counters.push(counter);
-                this._uvs.push(counter, v / vDivider); // counter = u
+                this._uvs.push(counter, v);
 
                 previousCounters[pi] = counter;
                 v += this._uSegmentLengths[i][pi] / this._uTotalLengths[i];
@@ -517,7 +520,15 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
     }
 
     protected _createVertexBuffers() {
-        super._createVertexBuffers(this._options.ribbonOptions?.smoothShading);
+        this._uvs = this._options.uvs ?? this._uvs;
+        const vertexData = super._createVertexBuffers(this._options.ribbonOptions?.smoothShading);
+
+        // if (this._options.ribbonOptions?.smoothShading && vertexData.normals) {
+        //     const frontUVs = undefined;
+        //     const backUVs = undefined;
+        //     const sideOrientation = this._options.ribbonOptions.facesMode === GreasedLineRibbonFacesMode.FACES_MODE_DOUBLE_SIDED ? VertexData.DOUBLESIDE : VertexData.DEFAULTSIDE;
+        //     VertexData._ComputeSides(sideOrientation, this._vertexPositions, this._indices, vertexData.normals, this._uvs, frontUVs, backUVs);
+        // }
 
         console.log("vertices", this._vertexPositions);
         console.log("indices", this._indices);
@@ -544,5 +555,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         const widthsBuffer = new Buffer(this._engine, this._ribbonWidths, this._updatable, 1);
         this.setVerticesBuffer(widthsBuffer.createVertexBuffer("grl_widths", 0, 1));
         this._widthsBuffer = widthsBuffer;
+
+        return vertexData;
     }
 }

@@ -88,6 +88,11 @@ export interface IGreasedLineMaterial {
     resolution: Vector2;
 
     /**
+     * You can provide a colorsTexture to use instead of one generated from the 'colors' option
+     */
+    colorsTexture: Nullable<RawTexture>;
+
+    /**
      * Allows to change the color without marking the material dirty.
      * MATERIAL_TYPE_STANDARD and MATERIAL_TYPE_PBR material's shaders will get recompiled if there was no color set and you set a color or when there was a color set and you set it to null.
      * @param value the color
@@ -257,7 +262,7 @@ export interface GreasedLineMaterialOptions {
     /**
      * You can provide a colorsTexture to use instead of one generated from the 'colors' option
      */
-    colorsTexture?: RawTexture
+    colorsTexture?: RawTexture;
 }
 
 /**
@@ -300,6 +305,18 @@ export class GreasedLineBaseMaterial {
     }
 
     /**
+     * Creates a RawTexture from an RGBA color array and sets it on the plugin material instance.
+     * @param name name of the texture
+     * @param colors Uint8Array of colors
+     */
+    public static CreateColorsTexture(name: string, colors: Color3[], colorsSampling: number, scene: Scene) {
+        const colorsArray = GreasedLineBaseMaterial.Color3toRGBAUint8(colors);
+        const colorsTexture = new RawTexture(colorsArray, colors.length, 1, Engine.TEXTUREFORMAT_RGBA, scene, false, true, colorsSampling);
+        colorsTexture.name = name;
+        return colorsTexture;
+    }
+
+    /**
      * A minimum size texture for the colors sampler2D when there is no colors texture defined yet.
      * For fast switching using the useColors property without the need to use defines.
      * @param scene Scene
@@ -318,5 +335,14 @@ export class GreasedLineBaseMaterial {
     public static DisposeEmptyColorsTexture() {
         GreasedLineBaseMaterial.EmptyColorsTexture?.dispose();
         GreasedLineBaseMaterial.EmptyColorsTexture = null;
+    }
+
+    /**
+     * Converts boolean to number.
+     * @param bool
+     * @returns 1 if true, 0 if false.
+     */
+    public static BooleanToNumber(bool?: boolean) {
+        return bool ? 1 : 0;
     }
 }

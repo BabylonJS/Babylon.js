@@ -191,6 +191,8 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
         widths,
         lazy: options.lazy,
         ribbonOptions: options.ribbonOptions,
+        uvs: options.uvs,
+        colorPointers: options.colorPointers,
     };
 
     if (initialGreasedLineOptions.ribbonOptions) {
@@ -222,6 +224,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
                 colorDistributionType: materialOptions.colorDistributionType,
                 colors,
                 cameraFacing: !options.ribbonOptions,
+                colorsTexture: materialOptions.colorsTexture,
             };
 
             if (materialOptions.createAndAssignMaterial) {

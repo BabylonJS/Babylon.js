@@ -345,6 +345,7 @@ export abstract class GreasedLineBaseMesh extends Mesh {
             VertexData.ComputeNormals(this._vertexPositions, this._indices, vertexData.normals);
         }
         vertexData.applyToMesh(this, this._options.updatable);
+        return vertexData;
     }
 
     protected _createOffsetsBuffer(offsets: number[]) {
