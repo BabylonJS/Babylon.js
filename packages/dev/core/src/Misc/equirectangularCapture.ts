@@ -4,7 +4,8 @@ import { ReflectionProbe } from "../Probes/reflectionProbe";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { CustomProceduralTexture } from "../Materials/Textures/Procedurals/customProceduralTexture";
-import { Tools } from "./tools";
+import { DumpTools } from "./dumpTools";
+import type { Vector3 } from "../Maths/math.vector";
 
 /** 
  * Interface containing options related to equirectangular capture of the current scene
@@ -24,6 +25,11 @@ export interface EquiRectangularCaptureOptions {
      * Optional argument to specify filename, passing this would auto download the given file
      */
     filename?: string;
+
+    /**
+     * Optional argument to specify position in 3D Space from where the equirectangular capture should be taken, if not specified, it would take the position of the scene's active camera or else origin
+     */
+    position?: Vector3
 }
 
 /**
@@ -33,6 +39,11 @@ export interface EquiRectangularCaptureOptions {
  */
 export async function captureEquirectangularFromScene(scene: Scene, options: EquiRectangularCaptureOptions): Promise<ArrayBufferView | null> {
     const probe = new ReflectionProbe("tempProbe", options.size, scene);
+    if (options.position) {
+        probe.position = options.position.clone();
+    } else if (scene.activeCamera) {
+        probe.position = scene.activeCamera.position.clone();
+    }
     const meshesToConsider = options.meshesFilter ? scene.meshes.filter(options.meshesFilter) : scene.meshes;
     probe.renderList?.push(...meshesToConsider);
     probe.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
@@ -40,7 +51,7 @@ export async function captureEquirectangularFromScene(scene: Scene, options: Equ
     const dumpTexture = new CustomProceduralTexture("tempProceduralTexture", "EquirectangularPanorama", { width: options.size * 2, height: options.size }, scene);
     dumpTexture.setTexture('cubeMap', probe.cubeTexture);
     return new Promise((resolve, reject) => {
-        dumpTexture.onGeneratedObservable.add(() => {
+        dumpTexture.onGeneratedObservable.addOnce(() => {
             const pixelDataPromise = dumpTexture.readPixels();
             if (!pixelDataPromise) {
                 reject(new Error("No Pixel Data found on procedural texture"));
@@ -49,9 +60,10 @@ export async function captureEquirectangularFromScene(scene: Scene, options: Equ
                 return;
             }
             pixelDataPromise.then(pixelData => {
+                dumpTexture.dispose();
+                probe.dispose();
                 if (options.filename) {
-                    const blob = new Blob([pixelData.buffer], { type: 'image/png' });
-                    Tools.DownloadBlob(blob, options.filename);
+                    DumpTools.DumpData(options.size * 2, options.size, pixelData, undefined, "image/png", options.filename);
                     resolve(null);
                 } else {
                     resolve(pixelData);
