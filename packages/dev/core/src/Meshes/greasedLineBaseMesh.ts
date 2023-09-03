@@ -299,7 +299,9 @@ export abstract class GreasedLineBaseMesh extends Mesh {
     public setPoints(points: number[][], options?: GreasedLineMeshOptions) {
         this._points = points;
         this._updateWidths();
-        this._updateColorPointers();
+        if (!options?.colorPointers) {
+            this._updateColorPointers();
+        }
         this._setPoints(points, options);
     }
 

@@ -162,7 +162,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
         }
 
         this._engine.onDisposeObservable.add(() => {
-            GreasedLineBaseMaterial.DisposeEmptyColorsTexture()
+            GreasedLineBaseMaterial.DisposeEmptyColorsTexture();
         });
 
         this._enable(true); // always enabled

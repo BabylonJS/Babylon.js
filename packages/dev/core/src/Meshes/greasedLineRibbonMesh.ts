@@ -66,7 +66,6 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         this._paths = [];
         this._counters = [];
         this._slopes = [];
-        this._colorPointers = [];
         this._widths = _options.widths ?? [];
         this._ribbonWidths = [];
         this._pathsOptions = [];
@@ -128,15 +127,18 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
             const points = this._points[i];
 
             if (pathOptions.ribbonOptions!.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS) {
-                for (let j = 0; j < points.length; j += 3) {
-                    this._colorPointers.push(colorPointer);
-                    this._colorPointers.push(colorPointer++);
+                for (let k = 0; k < pathCount; k++) {
+                    for (let j = 0; j < points.length; j += 3) {
+                        this._colorPointers.push(colorPointer);
+                        this._colorPointers.push(colorPointer++);
+                    }
                 }
             } else {
                 for (let j = 0; j < points.length; j += 3) {
                     for (let k = 0; k < pathCount; k++) {
-                        this._colorPointers.push(colorPointer++);
+                        this._colorPointers.push(colorPointer);
                     }
+                    colorPointer++;
                 }
             }
         }
@@ -294,20 +296,17 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
 
         const pathArrayLength = pathArrayCopy.length;
         const previousCounters = new Array(pathArrayLength).fill(0);
-        let cp = this._colorPointers.length;
+        const vDivider = options.ribbonOptions?.facesMode === GreasedLineRibbonFacesMode.FACES_MODE_DOUBLE_SIDED ? 2 : 1;
         for (let i = 0; i < pathArrayCopy[0].length; i++) {
             let v = 0;
             for (let pi = 0; pi < pathArrayLength; pi++) {
                 const counter = previousCounters[pi] + this._vSegmentLengths[pi][i] / this._vTotalLengths[pi];
                 this._counters.push(counter);
-                this._uvs.push(counter, v); // counter = u
-                this._colorPointers.push(cp);
+                this._uvs.push(counter, v / vDivider); // counter = u
 
                 previousCounters[pi] = counter;
                 v += this._uSegmentLengths[i][pi] / this._uTotalLengths[i];
             }
-
-            cp++;
         }
 
         for (let i = 0, c = 0; i < pathArrayCopy[0].length; i++) {

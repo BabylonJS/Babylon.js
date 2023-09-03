@@ -254,6 +254,10 @@ export interface GreasedLineMaterialOptions {
      * Defaults to true.
      */
     cameraFacing?: boolean;
+    /**
+     * You can provide a colorsTexture to use instead of one generated from the 'colors' option
+     */
+    colorsTexture?: RawTexture
 }
 
 /**
