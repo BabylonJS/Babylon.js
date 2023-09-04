@@ -86,7 +86,7 @@ ShaderStore.ShadersStore["EquirectangularPanoramaPixelShader"] = `
 
         vec2 uv = vUV;
         float longitude = uv.x * 2. * M_PI - M_PI + M_PI / 2.;
-        float latitude = uv.y * M_PI;
+        float latitude = (1. - uv.y) * M_PI;
         vec3 dir = vec3(
             - sin( longitude ) * sin( latitude ),
             cos( latitude ),
