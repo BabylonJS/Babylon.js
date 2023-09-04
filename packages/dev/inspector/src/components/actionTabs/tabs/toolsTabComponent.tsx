@@ -17,6 +17,7 @@ import { SceneSerializer } from "core/Misc/sceneSerializer";
 import { Mesh } from "core/Meshes/mesh";
 import { FilesInput } from "core/Misc/filesInput";
 import type { Scene } from "core/scene";
+import { captureEquirectangularFromScene } from "core/Misc/equirectangularCapture";
 import { SceneLoader, SceneLoaderAnimationGroupLoadingMode } from "core/Loading/sceneLoader";
 import { Reflector } from "core/Misc/reflector";
 import { GLTFComponent } from "./tools/gltfComponent";
@@ -109,6 +110,13 @@ export class ToolsTabComponent extends PaneComponent {
         const scene = this.props.scene;
         if (scene.activeCamera) {
             Tools.CreateScreenshot(scene.getEngine(), scene.activeCamera, this._screenShotSize);
+        }
+    }
+
+    captureEquirectangular() {
+        const scene = this.props.scene;
+        if (scene.activeCamera) {
+            captureEquirectangularFromScene(scene, { size: 1024, filename: "equirectangular_capture.png" });
         }
     }
 
@@ -358,6 +366,7 @@ export class ToolsTabComponent extends PaneComponent {
             <div className="pane">
                 <LineContainerComponent title="CAPTURE" selection={this.props.globalState}>
                     <ButtonLineComponent label="Screenshot" onClick={() => this.captureScreenshot()} />
+                    <ButtonLineComponent label="Generate equirectangular capture" onClick={() => this.captureEquirectangular()} />
                     <ButtonLineComponent label={this.state.tag} onClick={() => this.recordVideo()} />
                 </LineContainerComponent>
                 <LineContainerComponent title="CAPTURE WITH RTT" selection={this.props.globalState}>
