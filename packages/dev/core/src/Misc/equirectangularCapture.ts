@@ -5,7 +5,7 @@ import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { CustomProceduralTexture } from "../Materials/Textures/Procedurals/customProceduralTexture";
 import { DumpTools } from "./dumpTools";
 import type { Vector3 } from "../Maths/math.vector";
-import '../Shaders/EquirectangularPanorama.fragment';
+import "../Shaders/EquirectangularPanorama.fragment";
 
 /**
  * Interface containing options related to equirectangular capture of the current scene
@@ -72,4 +72,3 @@ export async function captureEquirectangularFromScene(scene: Scene, options: Equ
         });
     });
 }
-
