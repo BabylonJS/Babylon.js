@@ -59,6 +59,23 @@ export class PrePassRenderer {
     private _defaultAttachments: number[];
     private _clearAttachments: number[];
     private _clearDepthAttachments: number[];
+    private _generateNormalsInWorldSpace = false;
+
+    /**
+     * Indicates if the prepass renderer is generating normals in world space or camera space (default: camera space)
+     */
+    public get generateNormalsInWorldSpace() {
+        return this._generateNormalsInWorldSpace;
+    }
+
+    public set generateNormalsInWorldSpace(value: boolean) {
+        if (this._generateNormalsInWorldSpace === value) {
+            return;
+        }
+
+        this._generateNormalsInWorldSpace = value;
+        this._markAllMaterialsAsPrePassDirty();
+    }
 
     /**
      * Returns the index of a texture in the multi render target texture array.
