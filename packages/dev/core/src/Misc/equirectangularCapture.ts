@@ -5,7 +5,7 @@ import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { CustomProceduralTexture } from "../Materials/Textures/Procedurals/customProceduralTexture";
 import { DumpTools } from "./dumpTools";
 import type { Vector3 } from "../Maths/math.vector";
-import '../Shaders/equirectangularPanorama.fragment'
+import "../Shaders/equirectangularPanorama.fragment";
 
 /**
  * Interface containing options related to equirectangular capture of the current scene
@@ -30,6 +30,12 @@ export interface EquiRectangularCaptureOptions {
      * Optional argument to specify position in 3D Space from where the equirectangular capture should be taken, if not specified, it would take the position of the scene's active camera or else origin
      */
     position?: Vector3;
+
+    /**
+     * Optional argument to specify probe with which the equirectangular image is generated
+     * When passing this, size is ignored
+     */
+    probe?: ReflectionProbe;
 }
 
 /**
@@ -38,11 +44,14 @@ export interface EquiRectangularCaptureOptions {
  * @returns the requested capture's pixel-data or auto downloads the file if options.filename is specified
  */
 export async function captureEquirectangularFromScene(scene: Scene, options: EquiRectangularCaptureOptions): Promise<ArrayBufferView | null> {
-    const probe = new ReflectionProbe("tempProbe", options.size, scene);
-    if (options.position) {
-        probe.position = options.position.clone();
-    } else if (scene.activeCamera) {
-        probe.position = scene.activeCamera.position.clone();
+    const probe: ReflectionProbe = options.probe ?? new ReflectionProbe("tempProbe", options.size, scene);
+    const wasProbeProvided = !!options.probe;
+    if (!wasProbeProvided) {
+        if (options.position) {
+            probe.position = options.position.clone();
+        } else if (scene.activeCamera) {
+            probe.position = scene.activeCamera.position.clone();
+        }
     }
     const meshesToConsider = options.meshesFilter ? scene.meshes.filter(options.meshesFilter) : scene.meshes;
     probe.renderList?.push(...meshesToConsider);
