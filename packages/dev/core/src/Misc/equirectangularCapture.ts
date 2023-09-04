@@ -65,12 +65,16 @@ export async function captureEquirectangularFromScene(scene: Scene, options: Equ
             if (!pixelDataPromise) {
                 reject(new Error("No Pixel Data found on procedural texture"));
                 dumpTexture.dispose();
-                probe.dispose();
+                if (!wasProbeProvided) {
+                    probe.dispose();
+                }
                 return;
             }
             pixelDataPromise.then((pixelData) => {
                 dumpTexture.dispose();
-                probe.dispose();
+                if (!wasProbeProvided) {
+                    probe.dispose();
+                }
                 if (options.filename) {
                     DumpTools.DumpData(options.size * 2, options.size, pixelData, undefined, "image/png", options.filename);
                     resolve(null);
