@@ -5,7 +5,7 @@ import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { CustomProceduralTexture } from "../Materials/Textures/Procedurals/customProceduralTexture";
 import { DumpTools } from "./dumpTools";
 import type { Vector3 } from "../Maths/math.vector";
-import "../Shaders/EquirectangularPanorama.fragment";
+import '../Shaders/equirectangularPanorama.fragment'
 
 /**
  * Interface containing options related to equirectangular capture of the current scene
@@ -48,7 +48,7 @@ export async function captureEquirectangularFromScene(scene: Scene, options: Equ
     probe.renderList?.push(...meshesToConsider);
     probe.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
     probe.cubeTexture.render();
-    const dumpTexture = new CustomProceduralTexture("tempProceduralTexture", "EquirectangularPanorama", { width: options.size * 2, height: options.size }, scene);
+    const dumpTexture = new CustomProceduralTexture("tempProceduralTexture", "equirectangularPanorama", { width: options.size * 2, height: options.size }, scene);
     dumpTexture.setTexture("cubeMap", probe.cubeTexture);
     return new Promise((resolve, reject) => {
         dumpTexture.onGeneratedObservable.addOnce(() => {
