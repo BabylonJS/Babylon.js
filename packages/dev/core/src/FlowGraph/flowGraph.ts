@@ -4,6 +4,7 @@ import type { Scene } from "../scene";
 import type { FlowGraphEventBlock } from "./flowGraphEventBlock";
 import { FlowGraphVariableDefinitions } from "./flowGraphVariableDefinitions";
 import type { FlowGraphContext } from "./flowGraphContext";
+import type { FlowGraphEventCoordinator } from "./flowGraphEventCoordinator";
 
 /**
  * @experimental
@@ -14,6 +15,10 @@ export interface FlowGraphParams {
      * The scene that the flow graph belongs to.
      */
     scene: Scene;
+    /**
+     * The event coordinator used by the flow graph.
+     */
+    eventCoordinator: FlowGraphEventCoordinator;
 }
 /**
  * @experimental
@@ -34,6 +39,7 @@ export class FlowGraph {
      * @internal
      */
     public readonly _scene: Scene;
+    private _eventCoordinator: FlowGraphEventCoordinator;
     private _executionContexts: FlowGraphContext[] = [];
 
     /**
@@ -42,6 +48,7 @@ export class FlowGraph {
      */
     public constructor(params: FlowGraphParams) {
         this._scene = params.scene;
+        this._eventCoordinator = params.eventCoordinator;
         this._sceneDisposeObserver = this._scene.onDisposeObservable.add(this.dispose.bind(this));
     }
 
@@ -50,7 +57,7 @@ export class FlowGraph {
      * @returns the context, where you can get and set variables
      */
     public createContext() {
-        const context = this.variableDefinitions.generateContext(this._scene);
+        const context = this.variableDefinitions.generateContext({ scene: this._scene, eventCoordinator: this._eventCoordinator });
         this._executionContexts.push(context);
         return context;
     }

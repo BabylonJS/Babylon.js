@@ -1,16 +1,21 @@
 import type { Scene } from "../scene";
 import type { FlowGraphAsyncExecutionBlock } from "./flowGraphAsyncExecutionBlock";
 import type { FlowGraphBlock } from "./flowGraphBlock";
+import type { FlowGraphEventCoordinator } from "./flowGraphEventCoordinator";
 
 /**
  * Construction parameters for the context.
  * @experimental
  */
-export interface IFlowGraphContextParams {
+export interface IFlowGraphGraphVariables {
     /**
      * The scene that the flow graph context belongs to.
      */
-    scene: Scene;
+    readonly scene: Scene;
+    /**
+     * The event coordinator used by the flow graph context.
+     */
+    readonly eventCoordinator: FlowGraphEventCoordinator;
 }
 /**
  * @experimental
@@ -31,16 +36,14 @@ export class FlowGraphContext {
     /**
      * These are the variables set by the graph.
      */
-    private readonly _graphVariables: { readonly scene: Scene };
+    private readonly _graphVariables: IFlowGraphGraphVariables;
     /**
      * These are blocks that have currently pending tasks/listeners that need to be cleaned up.
      */
     private _pendingBlocks: FlowGraphAsyncExecutionBlock[] = [];
 
-    constructor(params: IFlowGraphContextParams) {
-        this._graphVariables = {
-            scene: params.scene,
-        };
+    constructor(params: IFlowGraphGraphVariables) {
+        this._graphVariables = params;
     }
 
     /**

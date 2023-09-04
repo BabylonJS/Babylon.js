@@ -3,6 +3,9 @@ import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { RichTypeString, RichTypeAny } from "../../flowGraphRichTypes";
 
+export interface IFlowGraphGetVariableBlockParameter {
+    variableName: string;
+}
 /**
  * A block that gets the value of a variable.
  * @experimental
@@ -17,10 +20,13 @@ export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
      */
     public readonly output: FlowGraphDataConnection<T>;
 
-    constructor() {
+    constructor(params?: IFlowGraphGetVariableBlockParameter) {
         super();
 
         this.variableName = this._registerDataInput("variableName", RichTypeString);
+        if (params?.variableName) {
+            this.variableName.value = params.variableName;
+        }
         this.output = this._registerDataOutput("output", RichTypeAny);
     }
 

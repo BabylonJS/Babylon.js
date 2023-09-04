@@ -13,7 +13,7 @@ export abstract class FlowGraphWithOnDoneExecutionBlock extends FlowGraphExecuti
      */
     public readonly onDone: FlowGraphSignalConnection;
 
-    protected constructor() {
+    public constructor() {
         super();
         this.onDone = this._registerSignalOutput("onDone");
     }

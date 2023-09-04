@@ -41,19 +41,25 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      */
     public readonly onAnimationEnd: FlowGraphSignalConnection;
 
+    /**
+     * Output connection: The animatable that is currently running.
+     */
+    public readonly runningAnimatable: FlowGraphDataConnection<Animatable>;
+
     public constructor() {
         super();
 
-        this.target = new FlowGraphDataConnection("target", FlowGraphConnectionType.Input, this, RichTypeAny);
-        this.animation = new FlowGraphDataConnection("animation", FlowGraphConnectionType.Input, this, RichTypeAny);
-        this.speed = new FlowGraphDataConnection("speed", FlowGraphConnectionType.Input, this, RichTypeNumber);
+        this.target = this._registerDataInput("target", RichTypeAny);
+        this.animation = this._registerDataInput("animation", RichTypeAny);
+        this.speed = this._registerDataInput("speed", RichTypeNumber);
         this.speed.value = 1;
-        this.loop = new FlowGraphDataConnection("loop", FlowGraphConnectionType.Input, this, RichTypeBoolean);
-        this.from = new FlowGraphDataConnection("from", FlowGraphConnectionType.Input, this, RichTypeNumber);
-        this.to = new FlowGraphDataConnection("to", FlowGraphConnectionType.Input, this, RichTypeNumber);
+        this.loop = this._registerDataInput("loop", RichTypeBoolean);
+        this.from = this._registerDataInput("from", RichTypeNumber);
+        this.to = this._registerDataInput("to", RichTypeNumber);
         this.to.value = 100;
 
-        this.onAnimationEnd = new FlowGraphSignalConnection("onAnimationEnd", FlowGraphConnectionType.Output, this);
+        this.onAnimationEnd = this._registerSignalOutput("onAnimationEnd");
+        this.runningAnimatable = this._registerDataOutput("runningAnimatable", RichTypeAny);
     }
 
     /**
@@ -80,6 +86,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             this.speed.getValue(context),
             () => this._onAnimationEnd(animatable, context)
         );
+        this.runningAnimatable.value = animatable;
         contextAnims.push(animatable);
 
         context._setExecutionVariable(this, "runningAnimatables", contextAnims);
