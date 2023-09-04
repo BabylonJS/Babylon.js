@@ -6,31 +6,31 @@ import { RichTypeNumber } from "../../flowGraphRichTypes";
 
 /**
  * @experimental
- * Block that executes a loop.
+ * Block that executes an action in a loop.
  */
 export class FlowGraphForLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
     /**
-     * The start index of the loop.
+     * Input connection: The start index of the loop.
      */
     public readonly startIndex: FlowGraphDataConnection<number>;
     /**
-     * The end index of the loop.
+     * Input connection: The end index of the loop.
      */
     public readonly endIndex: FlowGraphDataConnection<number>;
     /**
-     * The step of the loop.
+     * Input connection: The step of the loop.
      */
     public readonly step: FlowGraphDataConnection<number>;
     /**
-     * The current index of the loop.
+     * Output connection: The current index of the loop.
      */
     public readonly index: FlowGraphDataConnection<number>;
     /**
-     * The signal that is activated when the loop body is executed.
+     * Output connection: The signal that is activated when the loop body is executed.
      */
     public readonly onLoop: FlowGraphSignalConnection;
     /**
-     * The signal that is activated when the loop is done.
+     * Output connection: The signal that is activated when the loop is done.
      */
     public readonly onDone: FlowGraphSignalConnection;
 

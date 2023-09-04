@@ -10,7 +10,7 @@ import { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
  */
 export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
     /**
-     * The input signal of the block.
+     * Input connection: The input signal of the block.
      */
     public readonly onStart: FlowGraphSignalConnection;
 

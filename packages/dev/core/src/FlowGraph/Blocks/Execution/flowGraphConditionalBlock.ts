@@ -9,8 +9,17 @@ import type { FlowGraphSignalConnection } from "../../flowGraphSignalConnection"
  * A block that evaluates a condition and executes one of two branches.
  */
 export class FlowGraphConditionalBlock extends FlowGraphExecutionBlock {
+    /**
+     * Input connection: The condition to evaluate.
+     */
     public readonly condition: FlowGraphDataConnection<boolean>;
+    /**
+     * Output connection: The branch to execute if the condition is true.
+     */
     public readonly onTrue: FlowGraphSignalConnection;
+    /**
+     * Output connection: The branch to execute if the condition is false.
+     */
     public readonly onFalse: FlowGraphSignalConnection;
 
     constructor() {

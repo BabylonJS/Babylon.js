@@ -4,10 +4,17 @@ import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { RichTypeString, RichTypeAny } from "../../flowGraphRichTypes";
 
 /**
+ * A block that gets the value of a variable.
  * @experimental
  */
 export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
+    /**
+     * Input connection: The name of the variable to get.
+     */
     public readonly variableName: FlowGraphDataConnection<string>;
+    /**
+     * Output connection: The value of the variable.
+     */
     public readonly output: FlowGraphDataConnection<T>;
 
     constructor() {

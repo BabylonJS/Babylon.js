@@ -12,32 +12,32 @@ import { RichTypeAny, RichTypeNumber, RichTypeBoolean } from "../../flowGraphRic
  */
 export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     /**
-     * The target to play the animation on.
+     * Input connection: The target to play the animation on.
      */
     public readonly target: FlowGraphDataConnection<IAnimatable>;
     /**
-     * The animation to play.
+     * Input connection: The animation to play.
      */
     public readonly animation: FlowGraphDataConnection<Animation>;
     /**
-     * The speed of the animation.
+     * Input connection: The speed of the animation.
      */
     public readonly speed: FlowGraphDataConnection<number>;
     /**
-     * Should the animation loop?
+     * Input connection: Should the animation loop?
      */
     public readonly loop: FlowGraphDataConnection<boolean>;
     /**
-     * The starting frame of the animation.
+     * Input connection: The starting frame of the animation.
      */
     public readonly from: FlowGraphDataConnection<number>;
     /**
-     * The ending frame of the animation.
+     * Input connection: The ending frame of the animation.
      */
     public readonly to: FlowGraphDataConnection<number>;
 
     /**
-     * The signal that is triggered when the animation ends.
+     * Output connection: The signal that is triggered when the animation ends.
      */
     public readonly onAnimationEnd: FlowGraphSignalConnection;
 
@@ -92,7 +92,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     }
 
     private _onAnimationEnd(animatable: Animatable, context: FlowGraphContext) {
-        const contextAnims = (context._getExecutionVariable(this, "runningAnimatables") as Animatable[] | undefined) ?? [];
+        const contextAnims = (context._getExecutionVariable(this, "runningAnimatables") as Animatable[]) ?? [];
         const index = contextAnims.indexOf(animatable);
         if (index !== -1) {
             contextAnims.splice(index, 1);

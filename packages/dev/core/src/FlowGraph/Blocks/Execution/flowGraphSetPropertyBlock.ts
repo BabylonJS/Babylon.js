@@ -9,8 +9,18 @@ import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExec
  * TODO: Add support for animating the property.
  */
 export class FlowGraphSetPropertyBlock<TargetT, ValueT> extends FlowGraphWithOnDoneExecutionBlock {
+    /**
+     * Input connection: The target object.
+     */
     public readonly target: FlowGraphDataConnection<TargetT>;
+    /**
+     * Input connection: The property to set on the object.
+     * Supports dot notation.
+     */
     public readonly property: FlowGraphDataConnection<string>;
+    /**
+     * Input connection: The value to set on the property.
+     */
     public readonly value: FlowGraphDataConnection<ValueT>;
 
     public constructor() {

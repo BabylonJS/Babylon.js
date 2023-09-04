@@ -2,12 +2,19 @@ import type { Scene } from "../scene";
 import type { FlowGraphAsyncExecutionBlock } from "./flowGraphAsyncExecutionBlock";
 import type { FlowGraphBlock } from "./flowGraphBlock";
 
+/**
+ * Construction parameters for the context.
+ * @experimental
+ */
 export interface IFlowGraphContextParams {
+    /**
+     * The scene that the flow graph context belongs to.
+     */
     scene: Scene;
 }
 /**
  * @experimental
- * The context represents the current state of the flow graph.
+ * The context represents the current state and execution of the flow graph.
  * It contains both user-defined variables, which are derived from
  * a more general variable definition, and execution variables that
  * are set by the blocks.
@@ -36,14 +43,29 @@ export class FlowGraphContext {
         };
     }
 
+    /**
+     * Check if a user-defined variable is defined.
+     * @param name
+     * @returns
+     */
     public hasVariable(name: string) {
         return this._userVariables.has(name);
     }
 
+    /**
+     * Set a user-defined variable.
+     * @param name
+     * @param value
+     */
     public setVariable(name: string, value: any) {
         this._userVariables.set(name, value);
     }
 
+    /**
+     * Get a user-defined variable.
+     * @param name
+     * @returns
+     */
     public getVariable(name: string): any {
         return this._userVariables.get(name);
     }
@@ -53,6 +75,7 @@ export class FlowGraphContext {
     }
 
     /**
+     * Set an internal execution variable
      * @internal
      * @param name
      * @param value
@@ -62,6 +85,7 @@ export class FlowGraphContext {
     }
 
     /**
+     * Get an internal execution variable
      * @internal
      * @param name
      * @returns
@@ -75,6 +99,7 @@ export class FlowGraphContext {
     }
 
     /**
+     * Get the graph set variables
      * @internal
      * @param name
      * @param value
@@ -84,6 +109,7 @@ export class FlowGraphContext {
     }
 
     /**
+     * Add a block to the list of blocks that have pending tasks.
      * @internal
      * @param block
      */
@@ -92,6 +118,7 @@ export class FlowGraphContext {
     }
 
     /**
+     * Remove a block from the list of blocks that have pending tasks.
      * @internal
      * @param block
      */
@@ -103,6 +130,7 @@ export class FlowGraphContext {
     }
 
     /**
+     * Clear all pending blocks.
      * @internal
      */
     public _clearPendingBlocks() {

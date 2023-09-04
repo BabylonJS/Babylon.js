@@ -2,10 +2,19 @@ import { Vector2, Vector3, Vector4, Matrix } from "../Maths/math.vector";
 import { Color3, Color4 } from "../Maths/math.color";
 
 /**
+ * A rich type represents extra information about a type,
+ * such as its name and a default value constructor.
  * @experimental
  */
 export interface RichType<T> {
+    /**
+     * Name of the type
+     */
     typeName: string;
+    /**
+     * Constructor for the default value
+     * @returns the default value
+     */
     defaultValueBuilder: () => T;
 }
 

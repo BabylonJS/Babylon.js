@@ -5,7 +5,14 @@ import type { FlowGraphEventBlock } from "./flowGraphEventBlock";
 import { FlowGraphVariableDefinitions } from "./flowGraphVariableDefinitions";
 import type { FlowGraphContext } from "./flowGraphContext";
 
+/**
+ * @experimental
+ * Parameters used to create a flow graph.
+ */
 export interface FlowGraphParams {
+    /**
+     * The scene that the flow graph belongs to.
+     */
     scene: Scene;
 }
 /**
@@ -29,11 +36,19 @@ export class FlowGraph {
     public readonly _scene: Scene;
     private _executionContexts: FlowGraphContext[] = [];
 
+    /**
+     * Construct a Flow Graph
+     * @param params construction parameters. currently only the scene
+     */
     public constructor(params: FlowGraphParams) {
         this._scene = params.scene;
         this._sceneDisposeObserver = this._scene.onDisposeObservable.add(this.dispose.bind(this));
     }
 
+    /**
+     * Create a context. A context represents one self contained execution for the graph, with its own variables.
+     * @returns the context, where you can get and set variables
+     */
     public createContext() {
         const context = this.variableDefinitions.generateContext(this._scene);
         this._executionContexts.push(context);
@@ -41,6 +56,8 @@ export class FlowGraph {
     }
 
     /**
+     * Add an event block. When the graph is started, it will start listening to events
+     * from the block and execute the graph when they are triggered.
      * @param block
      */
     public addEventBlock(block: FlowGraphEventBlock): void {
@@ -48,7 +65,7 @@ export class FlowGraph {
     }
 
     /**
-     * Starts the flow graph.
+     * Starts the flow graph. Initializes the event blocks and starts listening to events.
      */
     public start() {
         if (this._executionContexts.length === 0) {
@@ -62,7 +79,7 @@ export class FlowGraph {
     }
 
     /**
-     * Disposes of the flow graph.
+     * Disposes of the flow graph. Cancels any pending tasks and removes all event listeners.
      */
     public dispose() {
         for (const context of this._executionContexts) {

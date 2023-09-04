@@ -3,11 +3,14 @@ import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 import type { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
 
 /**
+ * An async execution block can start tasks that will be executed asynchronously.
+ * It should also be responsible for clearing it in _cancelPendingTasks.
  * @experimental
  */
 export abstract class FlowGraphAsyncExecutionBlock extends FlowGraphExecutionBlock {
-    // question: for some reason adding readonly here doesn't let the children classes see the onDone??
-    // is readonly even useful, considering it's a ts only thing?
+    /**
+     * Output connection: The signal that is triggered when the execution of this block is done.
+     */
     public onDone: FlowGraphSignalConnection;
 
     constructor() {

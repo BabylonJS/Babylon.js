@@ -9,7 +9,7 @@ import { RichTypeAny } from "../../flowGraphRichTypes";
  */
 export class FlowGraphLogBlock extends FlowGraphWithOnDoneExecutionBlock {
     /**
-     * The message to log.
+     * Input connection: The message to log.
      */
     public readonly message: FlowGraphDataConnection<any>;
 

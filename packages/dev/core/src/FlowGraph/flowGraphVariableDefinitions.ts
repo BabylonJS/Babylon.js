@@ -2,6 +2,7 @@ import type { Scene } from "../scene";
 import { FlowGraphContext } from "./flowGraphContext";
 
 /**
+ * @experimental
  * This class represents the definition of a variable, with a name and
  * a default value. It can be used to create a context.
  */

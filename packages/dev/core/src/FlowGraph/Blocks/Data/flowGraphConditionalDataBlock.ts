@@ -8,10 +8,22 @@ import { RichTypeBoolean, RichTypeAny } from "../../flowGraphRichTypes";
  * Block that returns a value based on a condition.
  */
 export class FlowGraphConditionalDataBlock<T> extends FlowGraphBlock {
+    /**
+     * Input connection: The condition to check.
+     */
     public readonly condition: FlowGraphDataConnection<boolean>;
+    /**
+     * Input connection: The value to return if the condition is true.
+     */
     public readonly trueValue: FlowGraphDataConnection<T>;
+    /**
+     * Input connection: The value to return if the condition is false.
+     */
     public readonly falseValue: FlowGraphDataConnection<T>;
 
+    /**
+     * Output connection: The value that was returned.
+     */
     public readonly output: FlowGraphDataConnection<T>;
 
     constructor() {

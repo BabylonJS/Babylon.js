@@ -4,20 +4,35 @@ import { AdvancedTimer } from "../../../Misc/timer";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import { FlowGraphAsyncExecutionBlock } from "../../flowGraphAsyncExecutionBlock";
 import { RichTypeNumber } from "../../flowGraphRichTypes";
+import { Tools } from "core/Misc";
+
+export interface IFlowGraphTimerBlockParameters {
+    timeout?: number;
+}
 
 /**
  * @experimental
- * Block that can execute an action immediately and another after a delay.
+ * Block that provides two different output flows, one that is executed synchronically and another asynchronically
  * The delay is counted on the scene's tick.
  */
 export class FlowGraphTimerBlock extends FlowGraphAsyncExecutionBlock {
+    /**
+     * Input connection: The timeout of the timer.
+     */
     public readonly timeout: FlowGraphDataConnection<number>;
+    /**
+     * Output connection: The signal that is activated when the timer is done.
+     * This signal is activated asynchronically.
+     */
     public readonly onTimerDone: FlowGraphSignalConnection;
 
-    constructor() {
+    constructor(parameters?: IFlowGraphTimerBlockParameters) {
         super();
 
         this.timeout = this._registerDataInput("timeout", RichTypeNumber);
+        if (parameters?.timeout !== undefined) {
+            this.timeout.value = parameters.timeout;
+        }
         this.onTimerDone = this._registerSignalOutput("onTimerDone");
     }
 
@@ -52,6 +67,8 @@ export class FlowGraphTimerBlock extends FlowGraphAsyncExecutionBlock {
         const index = timers.indexOf(timer);
         if (index !== -1) {
             timers.splice(index, 1);
+        } else {
+            Tools.Warn("FlowGraphTimerBlock: Timer ended but was not found in the running timers list");
         }
         context._removePendingBlock(this);
         this.onTimerDone._activateSignal(context);
