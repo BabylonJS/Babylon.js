@@ -244,15 +244,9 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
      */
     private _rotateCamera(offsetX: number, offsetY: number): void {
         const camera = this.camera;
-        const scene = this.camera.getScene();
+        const handednessMultiplier = camera._calculateHandednessMultiplier();
 
-        if (scene.useRightHandedSystem) {
-            offsetX *= -1;
-        }
-
-        if (camera.parent && camera.parent._getWorldMatrixDeterminant() < 0) {
-            offsetX *= -1;
-        }
+        offsetX *= handednessMultiplier;
 
         const x = offsetX / this.angularSensibility;
         const y = offsetY / this.angularSensibility;
