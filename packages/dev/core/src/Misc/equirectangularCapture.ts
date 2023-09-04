@@ -33,7 +33,7 @@ export interface EquiRectangularCaptureOptions {
 
     /**
      * Optional argument to specify probe with which the equirectangular image is generated
-     * When passing this, size is ignored
+     * When passing this, size and position arguments are ignored
      */
     probe?: ReflectionProbe;
 }
