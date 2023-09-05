@@ -254,27 +254,22 @@ export class PhysicsViewer {
             childTransform.decomposeToTransformNode(childCoordSystemNode);
             this._makeScalingUnitInPlace(childCoordSystemNode.scaling);
 
-            // Get the transform to align the XYZ axes to the constraint axes
-            const rotTransformParent = Quaternion.FromRotationMatrixToRef(
-                Matrix.FromXYZAxesToRef(axisA, perpAxisA, Vector3.CrossToRef(axisA, perpAxisA, TmpVectors.Vector3[0]), TmpVectors.Matrix[0]),
-                TmpVectors.Quaternion[0]
-            );
-            const rotTransformChild = Quaternion.FromRotationMatrixToRef(
-                Matrix.FromXYZAxesToRef(axisB, perpAxisB, Vector3.CrossToRef(axisB, perpAxisB, TmpVectors.Vector3[1]), TmpVectors.Matrix[1]),
-                TmpVectors.Quaternion[1]
-            );
-
-            const translateTransformParent = pivotA;
-            const translateTransformChild = pivotB;
-
             // Create a transform node and set its matrix
             const parentTransformNode = parentCoordSystemNode.getDescendants(true)[0] as TransformNode;
-            parentTransformNode.position.copyFrom(translateTransformParent);
-            parentTransformNode.rotationQuaternion!.copyFrom(rotTransformParent);
+            parentTransformNode.position.copyFrom(pivotA);
 
             const childTransformNode = childCoordSystemNode.getDescendants(true)[0] as TransformNode;
-            childTransformNode.position.copyFrom(translateTransformChild);
-            childTransformNode.rotationQuaternion!.copyFrom(rotTransformChild);
+            childTransformNode.position.copyFrom(pivotB);
+
+            // Get the transform to align the XYZ axes to the constraint axes
+            Quaternion.FromRotationMatrixToRef(
+                Matrix.FromXYZAxesToRef(axisA, perpAxisA, Vector3.CrossToRef(axisA, perpAxisA, TmpVectors.Vector3[0]), TmpVectors.Matrix[0]),
+                parentTransformNode.rotationQuaternion!
+            );
+            Quaternion.FromRotationMatrixToRef(
+                Matrix.FromXYZAxesToRef(axisB, perpAxisB, Vector3.CrossToRef(axisB, perpAxisB, TmpVectors.Vector3[1]), TmpVectors.Matrix[1]),
+                childTransformNode.rotationQuaternion!
+            );
         });
     }
 
