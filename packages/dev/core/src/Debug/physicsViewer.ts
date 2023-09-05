@@ -373,6 +373,11 @@ export class PhysicsViewer {
         return debugMesh;
     }
 
+    /**
+     * Shows a debug mesh for a given physics constraint.
+     * @param constraint the physics constraint to show
+     * @returns the debug mesh, or null if the constraint is already shown
+     */
     public showConstraint(constraint: PhysicsConstraint): Nullable<AbstractMesh> {
         if (!this._scene) {
             return null;
@@ -531,6 +536,53 @@ export class PhysicsViewer {
 
         if (removed && this._numInertiaBodies === 0) {
             this._scene.unregisterBeforeRender(this._inertiaRenderFunction);
+        }
+    }
+
+    /**
+     * Hide a physics constraint from the viewer utility layer
+     * @param constraint the constraint to hide
+     */
+    public hideConstraint(constraint: Nullable<PhysicsConstraint>) {
+        if (!constraint || !this._scene || !this._utilityLayer) {
+            return;
+        }
+        let removed = false;
+        const utilityLayerScene = this._utilityLayer.utilityLayerScene;
+
+        for (let i = 0; i < this._numConstraints; i++) {
+            if (this._constraints[i] === constraint) {
+                const mesh = this._constraintMeshes[i];
+
+                if (!mesh) {
+                    continue;
+                }
+
+                utilityLayerScene.removeMesh(mesh);
+                mesh.dispose();
+
+                this._constraints.splice(i, 1);
+                this._constraintMeshes.splice(i, 1);
+
+                this._numConstraints--;
+
+                if (this._numConstraints > 0) {
+                    this._constraints[i] = this._constraints[this._numConstraints];
+                    this._constraintMeshes[i] = this._constraintMeshes[this._numConstraints];
+                    this._constraints[this._numConstraints] = null;
+                    this._constraintMeshes[this._numConstraints] = null;
+                } else {
+                    this._constraints[0] = null;
+                    this._constraintMeshes[0] = null;
+                }
+
+                removed = true;
+                break;
+            }
+        }
+
+        if (removed && this._numConstraints === 0) {
+            this._scene.unregisterBeforeRender(this._constraintRenderFunction);
         }
     }
 
