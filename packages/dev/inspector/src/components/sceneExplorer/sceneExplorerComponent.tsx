@@ -37,7 +37,6 @@ import "core/Audio/audioSceneComponent";
 import "core/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 
 import "./sceneExplorer.scss";
-import { Mesh } from "core/Meshes/mesh";
 
 interface ISceneExplorerFilterComponentProps {
     onFilter: (filter: string) => void;
