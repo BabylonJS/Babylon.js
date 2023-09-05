@@ -237,4 +237,24 @@ export class NodeGeometryBuildState {
 
         additionalVertexData.push(clone);
     }
+
+    /** @internal  */
+    public _instantiateWithPositionAndMatrix(clone: VertexData, currentPosition: Vector3, transform: Matrix, additionalVertexData: VertexData[]) {
+        Matrix.TranslationToRef(currentPosition.x, currentPosition.y, currentPosition.z, this._positionMatrix);
+        transform.multiplyToRef(this._positionMatrix, this._transformMatrix);
+
+        for (let clonePositionIndex = 0; clonePositionIndex < clone.positions!.length; clonePositionIndex += 3) {
+            this._tempVector3.fromArray(clone.positions!, clonePositionIndex);
+            Vector3.TransformCoordinatesToRef(this._tempVector3, this._transformMatrix, this._tempVector3);
+            this._tempVector3.toArray(clone.positions!, clonePositionIndex);
+
+            if (clone.normals) {
+                this._tempVector3.fromArray(clone.normals, clonePositionIndex);
+                Vector3.TransformNormalToRef(this._tempVector3, this._transformMatrix, this._tempVector3);
+                this._tempVector3.toArray(clone.normals, clonePositionIndex);
+            }
+        }
+
+        additionalVertexData.push(clone);
+    }
 }
