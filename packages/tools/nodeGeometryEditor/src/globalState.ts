@@ -42,6 +42,7 @@ export class GlobalState {
     lockObject = new LockObject();
     pointerOverCanvas: boolean = false;
     onRefreshPreviewMeshControlComponentRequiredObservable = new Observable<void>();
+    onExportToGLBRequired = new Observable<void>();
 
     customSave?: { label: string; action: (data: string) => Promise<void> };
 

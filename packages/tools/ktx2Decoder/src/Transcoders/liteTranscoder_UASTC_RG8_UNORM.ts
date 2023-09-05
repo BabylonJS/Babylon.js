@@ -9,7 +9,7 @@ import type { KTX2FileReader, IKTX2_ImageDesc } from "../ktx2FileReader";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class LiteTranscoder_UASTC_RG8_UNORM extends LiteTranscoder {
     /**
-     * URL to use when loading the wasm module for the transcoder (srgb)
+     * URL to use when loading the wasm module for the transcoder (unorm)
      */
     public static WasmModuleURL = "https://preview.babylonjs.com/ktx2Transcoders/1/uastc_rg8_unorm.wasm";
 

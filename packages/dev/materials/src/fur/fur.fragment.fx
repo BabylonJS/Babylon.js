@@ -112,6 +112,8 @@ void main(void) {
 
 	float shadow = 1.;
 	float glossiness = 0.;
+	float aggShadow = 0.;
+	float numLights = 0.;
 
 #ifdef SPECULARTERM
 	vec3 specularBase = vec3(0., 0., 0.);

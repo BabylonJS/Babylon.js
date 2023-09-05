@@ -1092,37 +1092,37 @@ export class Geometry implements IGetSetVerticesData {
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-            serializationObject.uv2s = this._toNumberArray(this.getVerticesData(VertexBuffer.UV2Kind));
+            serializationObject.uvs2 = this._toNumberArray(this.getVerticesData(VertexBuffer.UV2Kind));
             if (this.isVertexBufferUpdatable(VertexBuffer.UV2Kind)) {
-                serializationObject.uv2s._updatable = true;
+                serializationObject.uvs2._updatable = true;
             }
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.UV3Kind)) {
-            serializationObject.uv3s = this._toNumberArray(this.getVerticesData(VertexBuffer.UV3Kind));
+            serializationObject.uvs3 = this._toNumberArray(this.getVerticesData(VertexBuffer.UV3Kind));
             if (this.isVertexBufferUpdatable(VertexBuffer.UV3Kind)) {
-                serializationObject.uv3s._updatable = true;
+                serializationObject.uvs3._updatable = true;
             }
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.UV4Kind)) {
-            serializationObject.uv4s = this._toNumberArray(this.getVerticesData(VertexBuffer.UV4Kind));
+            serializationObject.uvs4 = this._toNumberArray(this.getVerticesData(VertexBuffer.UV4Kind));
             if (this.isVertexBufferUpdatable(VertexBuffer.UV4Kind)) {
-                serializationObject.uv4s._updatable = true;
+                serializationObject.uvs4._updatable = true;
             }
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.UV5Kind)) {
-            serializationObject.uv5s = this._toNumberArray(this.getVerticesData(VertexBuffer.UV5Kind));
+            serializationObject.uvs5 = this._toNumberArray(this.getVerticesData(VertexBuffer.UV5Kind));
             if (this.isVertexBufferUpdatable(VertexBuffer.UV5Kind)) {
-                serializationObject.uv5s._updatable = true;
+                serializationObject.uvs5._updatable = true;
             }
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.UV6Kind)) {
-            serializationObject.uv6s = this._toNumberArray(this.getVerticesData(VertexBuffer.UV6Kind));
+            serializationObject.uvs6 = this._toNumberArray(this.getVerticesData(VertexBuffer.UV6Kind));
             if (this.isVertexBufferUpdatable(VertexBuffer.UV6Kind)) {
-                serializationObject.uv6s._updatable = true;
+                serializationObject.uvs6._updatable = true;
             }
         }
 

@@ -911,18 +911,14 @@ export class ArcRotateCamera extends TargetCamera {
         // Inertia
         if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
             const directionModifier = this.invertRotation ? -1 : 1;
-            let inertialAlphaOffset = this.inertialAlphaOffset;
+            const handednessMultiplier = this._calculateHandednessMultiplier();
+            let inertialAlphaOffset = this.inertialAlphaOffset * handednessMultiplier;
+
             if (this.beta <= 0) {
                 inertialAlphaOffset *= -1;
             }
-            if (this.getScene().useRightHandedSystem) {
-                inertialAlphaOffset *= -1;
-            }
-            if (this.parent && this.parent._getWorldMatrixDeterminant() < 0) {
-                inertialAlphaOffset *= -1;
-            }
-            this.alpha += inertialAlphaOffset * directionModifier;
 
+            this.alpha += inertialAlphaOffset * directionModifier;
             this.beta += this.inertialBetaOffset * directionModifier;
 
             this.radius -= this.inertialRadiusOffset;

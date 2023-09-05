@@ -101,6 +101,10 @@ export class GeometryInputBlock extends NodeGeometryBlock {
                 this._type = NodeGeometryBlockConnectionPointTypes.Int;
                 break;
         }
+
+        if (this.output) {
+            this.output.type = this._type;
+        }
     }
 
     /**

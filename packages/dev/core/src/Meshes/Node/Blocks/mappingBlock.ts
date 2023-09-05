@@ -14,6 +14,8 @@ export enum MappingTypes {
     Spherical,
     /** Cylindrical */
     Cylindrical,
+    /** Cubic */
+    Cubic,
 }
 
 /**
@@ -28,6 +30,7 @@ export class MappingBlock extends NodeGeometryBlock {
         options: [
             { label: "Spherical", value: MappingTypes.Spherical },
             { label: "Cylindrical", value: MappingTypes.Cylindrical },
+            { label: "Cubic", value: MappingTypes.Cubic },
         ],
     })
     public mapping = MappingTypes.Spherical;
@@ -105,6 +108,29 @@ export class MappingBlock extends NodeGeometryBlock {
                         uv.x = Math.atan2(tempDirection.x / len, tempDirection.z / len) / (Math.PI * 2);
                         uv.y = (tempDirection.y + 1.0) / 2.0;
                     }
+                    break;
+                }
+                case MappingTypes.Cubic: {
+                    const absX = Math.abs(position.x);
+                    const absY = Math.abs(position.y);
+                    const absZ = Math.abs(position.z);
+
+                    let u = 0,
+                        v = 0;
+
+                    if (absX >= absY && absX >= absZ) {
+                        u = position.y - center.y;
+                        v = position.z - center.z;
+                    } else if (absY >= absX && absY >= absZ) {
+                        u = position.x - center.x;
+                        v = position.z - center.z;
+                    } else {
+                        u = position.x - center.x;
+                        v = position.y - center.y;
+                    }
+
+                    uv.x = u * 0.5 + 0.5;
+                    uv.y = v * 0.5 + 0.5;
                     break;
                 }
             }

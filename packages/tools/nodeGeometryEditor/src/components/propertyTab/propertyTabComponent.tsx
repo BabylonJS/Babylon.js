@@ -287,6 +287,10 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             });
     }
 
+    exportAsGLB() {
+        this.props.globalState.onExportToGLBRequired.notifyObservers();
+    }
+
     render() {
         if (this.state.currentNode) {
             return (
@@ -452,6 +456,12 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             </>
                         )}
                         <FileButtonLineComponent label="Load Frame" uploadName={"frame-upload"} onClick={(file) => this.loadFrame(file)} accept=".json" />
+                        <ButtonLineComponent
+                            label="Export as GLB"
+                            onClick={() => {
+                                this.exportAsGLB();
+                            }}
+                        />
                     </LineContainerComponent>
                     {!this.props.globalState.customSave && (
                         <LineContainerComponent title="SNIPPET">

@@ -341,19 +341,17 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      * Called each time a new POINTERDOWN event occurs. Ie, for each button
      * press.
      * Override this method to provide functionality.
-     * @param evt
+     * @param _evt Defines the event to track
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public onButtonDown(evt: IPointerEvent): void {}
+    public onButtonDown(_evt: IPointerEvent): void {}
 
     /**
      * Called each time a new POINTERUP event occurs. Ie, for each button
      * release.
      * Override this method to provide functionality.
-     * @param evt
+     * @param _evt Defines the event to track
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public onButtonUp(evt: IPointerEvent): void {}
+    public onButtonUp(_evt: IPointerEvent): void {}
 
     /**
      * Called when window becomes inactive.
