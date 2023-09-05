@@ -106,7 +106,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      * Stop any currently running animations.
      */
     public _cancelPendingTasks(context: FlowGraphContext): void {
-        const contextAnims = (context._getExecutionVariable(this, "runningAnimatables") as Animatable[] | undefined) ?? [];
+        const contextAnims = (context._getExecutionVariable(this, "runningAnimatables") as Animatable[]) ?? [];
         for (const anim of contextAnims) {
             anim.stop();
         }
