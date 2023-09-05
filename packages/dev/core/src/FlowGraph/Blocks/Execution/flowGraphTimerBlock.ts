@@ -12,8 +12,9 @@ export interface IFlowGraphTimerBlockParameters {
 
 /**
  * @experimental
- * Block that provides two different output flows, one that is executed synchronically and another asynchronically
- * The delay is counted on the scene's tick.
+ * question: is this doc understandable enough? accepting suggestions
+ * Block that provides two different output flows. One is started immediately once the block is executed,
+ * and the other is executed after a set time. The timer for this block runs based on the scene's render loop.
  */
 export class FlowGraphTimerBlock extends FlowGraphAsyncExecutionBlock {
     /**
