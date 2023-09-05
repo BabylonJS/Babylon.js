@@ -2,7 +2,7 @@
 import { Scalar } from "./math.scalar";
 import { Epsilon } from "./math.constants";
 import type { Viewport } from "./math.viewport";
-import type { DeepImmutable, Nullable, FloatArray, float, Constructor } from "../types";
+import type { DeepImmutable, Nullable, FloatArray, float, Constructor, Tuple } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
 import type { IPlaneLike } from "./math.like";
 import { RegisterClass } from "../Misc/typeStore";
@@ -196,7 +196,7 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
  * Class representing a vector containing 2 coordinates
  * Example Playground - Overview -  https://playground.babylonjs.com/#QYBWV4#9
  */
-export class Vector2 implements Vector<[number, number]> {
+export class Vector2 implements Vector<Tuple<number, 2>> {
     private static _ZeroReadOnly = Vector2.Zero() as DeepImmutable<Vector2>;
 
     public readonly dimension: [number] = [2];
@@ -1205,7 +1205,7 @@ export class Vector2 implements Vector<[number, number]> {
  * Reminder: js uses a left handed forward facing system
  * Example Playground - Overview - https://playground.babylonjs.com/#R1F8YU
  */
-export class Vector3 implements Vector<[number, number, number]> {
+export class Vector3 implements Vector<Tuple<number, 3>> {
     private static _UpReadOnly = Vector3.Up() as DeepImmutable<Vector3>;
     private static _DownReadOnly = Vector3.Down() as DeepImmutable<Vector3>;
     private static _LeftHandedForwardReadOnly = Vector3.Forward(false) as DeepImmutable<Vector3>;
@@ -1312,10 +1312,10 @@ export class Vector3 implements Vector<[number, number, number]> {
      * Example Playground https://playground.babylonjs.com/#R1F8YU#10
      * @returns a new array of numbers
      */
-    public asArray(): [number, number, number] {
+    public asArray(): Tuple<number, 3> {
         const result: number[] = [];
         this.toArray(result, 0);
-        return result as [number, number, number];
+        return result as Tuple<number, 3>;
     }
 
     /**
@@ -3357,7 +3357,7 @@ export class Vector3 implements Vector<[number, number, number]> {
 /**
  * Vector4 class created for EulerAngle class conversion to Quaternion
  */
-export class Vector4 implements Vector<[number, number, number, number]> {
+export class Vector4 implements Vector<Tuple<number, 4>> {
     private static _ZeroReadOnly = Vector4.Zero() as DeepImmutable<Vector4>;
 
     public readonly dimension: [4] = [4];
@@ -3418,12 +3418,12 @@ export class Vector4 implements Vector<[number, number, number, number]> {
      * Returns a new array populated with 4 elements : the Vector4 coordinates.
      * @returns the resulting array
      */
-    public asArray(): [number, number, number, number] {
+    public asArray(): Tuple<number, 4> {
         const result = new Array<number>();
 
         this.toArray(result, 0);
 
-        return result as [number, number, number, number];
+        return result as Tuple<number, 4>;
     }
 
     /**

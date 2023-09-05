@@ -1,4 +1,4 @@
-import type { Constructor, DeepImmutable, FloatArray } from "../types";
+import type { Constructor, DeepImmutable, FloatArray, Tuple } from "../types";
 import { Scalar } from "./math.scalar";
 import { ToLinearSpace, ToGammaSpace, Epsilon } from "./math.constants";
 import { ArrayTools } from "../Misc/arrayTools";
@@ -30,7 +30,7 @@ function colorChannelToGammaSpaceExact(color: number): number {
 /**
  * Class used to hold a RGB color
  */
-export class Color3 implements Tensor<[number, number, number]> {
+export class Color3 implements Tensor<Tuple<number, 3>> {
     public readonly dimension: [number] = [3];
 
     /**
@@ -121,7 +121,7 @@ export class Color3 implements Tensor<[number, number, number]> {
      * Returns a new array populated with 3 numeric elements : red, green and blue values
      * @returns the new array
      */
-    public asArray(): [number, number, number] {
+    public asArray(): Tuple<number, 3> {
         return [this.r, this.g, this.b];
     }
 
@@ -1001,7 +1001,7 @@ export class Color3 implements Tensor<[number, number, number]> {
 /**
  * Class used to hold a RBGA color
  */
-export class Color4 implements Tensor<[number, number, number, number]> {
+export class Color4 implements Tensor<Tuple<number, 4>> {
     public readonly dimension: [number] = [4];
 
     /**
@@ -1036,7 +1036,7 @@ export class Color4 implements Tensor<[number, number, number, number]> {
      * Creates a new array populated with 4 numeric elements : red, green, blue, alpha values
      * @returns the new array
      */
-    public asArray(): [number, number, number, number] {
+    public asArray(): Tuple<number, 4> {
         return [this.r, this.g, this.b, this.a];
     }
 

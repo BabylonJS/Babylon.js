@@ -71,10 +71,12 @@ export type Remove<A, B> = { 0: A; 1: Remove<Shift<A>, Shift<B>> }[Empty extends
  */
 export type Length<T> = T extends { length: number } ? T["length"] : never;
 
+type _FromLength<N extends number, R = Empty> = { 0: R; 1: _FromLength<N, Unshift<R, 0>> }[Length<R> extends N ? 0 : 1];
+
 /**
  * Creates a tuple of length N
  */
-export type FromLength<N extends number, R = Empty> = { 0: R; 1: FromLength<N, Unshift<R, 0>> }[Length<R> extends N ? 0 : 1];
+export type FromLength<N extends number> = _FromLength<N>;
 
 // compile-time math
 
@@ -122,6 +124,13 @@ export type FlattenTuple<A extends unknown[]> = A extends [infer U, ...infer Res
  * Flattens an array or tuple
  */
 export type Flatten<A extends unknown[]> = IsTuple<A> extends true ? FlattenTuple<A> : FlattenArray<A>;
+
+type _Tuple<T, N extends number, R extends unknown[] = Empty> = R["length"] extends N ? R : _Tuple<T, N, [T, ...R]>;
+
+/**
+ * Creates a tuple of T with length N
+ */
+export type Tuple<T, N extends number> = _Tuple<T, N>;
 
 /** Alias type for number array or Float32Array */
 export type FloatArray = number[] | Float32Array;
