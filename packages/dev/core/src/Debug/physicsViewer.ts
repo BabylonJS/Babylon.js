@@ -23,6 +23,7 @@ import { MeshBuilder } from "../Meshes/meshBuilder";
 import type { PhysicsConstraint } from "../Physics/v2/physicsConstraint";
 import { AxesViewer } from "./axesViewer";
 import { TransformNode } from "../Meshes/transformNode";
+import { Epsilon } from "../Maths/math.constants";
 
 /**
  * Used to show the physics impostor around the specific mesh
@@ -213,13 +214,13 @@ export class PhysicsViewer {
      * @param scaling
      */
     protected _makeScalingUnitInPlace(scaling: Vector3) {
-        if (Math.abs(scaling.x - 1) > 1e-6) {
+        if (Math.abs(scaling.x - 1) > Epsilon) {
             scaling.x = 1 * Math.sign(scaling.x);
         }
-        if (Math.abs(scaling.y - 1) > 1e-6) {
+        if (Math.abs(scaling.y - 1) > Epsilon) {
             scaling.y = 1 * Math.sign(scaling.y);
         }
-        if (Math.abs(scaling.z - 1) > 1e-6) {
+        if (Math.abs(scaling.z - 1) > Epsilon) {
             scaling.z = 1 * Math.sign(scaling.z);
         }
     }
@@ -254,8 +255,12 @@ export class PhysicsViewer {
             this._makeScalingUnitInPlace(childCoordSystemNode.scaling);
 
             // Get the transform to align the XYZ axes to the constraint axes
-            const rotTransformParent = Quaternion.FromRotationMatrix(Matrix.FromXYZAxesToRef(axisA, perpAxisA, axisA.cross(perpAxisA), TmpVectors.Matrix[0]));
-            const rotTransformChild = Quaternion.FromRotationMatrix(Matrix.FromXYZAxesToRef(axisB, perpAxisB, axisB.cross(perpAxisB), TmpVectors.Matrix[1]));
+            const rotTransformParent = Quaternion.FromRotationMatrix(
+                Matrix.FromXYZAxesToRef(axisA, perpAxisA, Vector3.CrossToRef(axisA, perpAxisA, TmpVectors.Vector3[0]), TmpVectors.Matrix[0])
+            );
+            const rotTransformChild = Quaternion.FromRotationMatrix(
+                Matrix.FromXYZAxesToRef(axisB, perpAxisB, Vector3.CrossToRef(axisB, perpAxisB, TmpVectors.Vector3[1]), TmpVectors.Matrix[1])
+            );
 
             const translateTransformParent = pivotA;
             const translateTransformChild = pivotB;
