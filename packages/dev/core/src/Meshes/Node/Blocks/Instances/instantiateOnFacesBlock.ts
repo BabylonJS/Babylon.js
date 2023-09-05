@@ -220,7 +220,7 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
 
                     if (this.matrix.isConnected) {
                         const transform = this.matrix.getConnectedValue(state);
-                        state._instantiateWithMatrix(clone, transform, additionalVertexData);
+                        state._instantiateWithPositionAndMatrix(clone, this._currentPosition, transform, additionalVertexData);
                     } else {
                         const scaling = state.adaptInput(this.scaling, NodeGeometryBlockConnectionPointTypes.Vector3, Vector3.OneReadOnly);
                         const rotation = this.rotation.getConnectedValue(state) || Vector3.ZeroReadOnly;
