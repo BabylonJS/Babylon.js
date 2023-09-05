@@ -122,7 +122,13 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
      * @param time define where the derivative must be done
      * @returns 1st derivative
      */
-    public static Hermite1stDerivative<T extends Vector>(value1: DeepImmutable<T>, tangent1: DeepImmutable<T>, value2: DeepImmutable<T>, tangent2: DeepImmutable<T>, time: number): T;
+    public static Hermite1stDerivative<T extends Vector>(
+        value1: DeepImmutable<T>,
+        tangent1: DeepImmutable<T>,
+        value2: DeepImmutable<T>,
+        tangent2: DeepImmutable<T>,
+        time: number
+    ): T;
 
     /**
      * Returns a new Vector which is the 1st derivative of the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2".
