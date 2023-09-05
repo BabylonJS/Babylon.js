@@ -1,8 +1,7 @@
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { Animatable, Animation, IAnimatable } from "../../../Animations";
-import { FlowGraphConnectionType } from "../../flowGraphConnection";
-import { FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
+import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
+import type { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
 import { FlowGraphAsyncExecutionBlock } from "../../flowGraphAsyncExecutionBlock";
 import { RichTypeAny, RichTypeNumber, RichTypeBoolean } from "../../flowGraphRichTypes";
 
