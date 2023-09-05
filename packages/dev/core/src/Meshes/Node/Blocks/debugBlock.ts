@@ -66,7 +66,12 @@ export class DebugBlock extends NodeGeometryBlock {
         this.output._storedFunction = (state) => {
             const input = this.input.getConnectedValue(state);
 
-            this.log.push(input !== undefined && input !== null ? input.toString() : "null");
+            if (input === null || input === undefined) {
+                this.log.push("null");
+                return input;
+            }
+
+            this.log.push(input.toString());
 
             return input;
         };
