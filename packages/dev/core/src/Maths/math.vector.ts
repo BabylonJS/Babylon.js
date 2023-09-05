@@ -5206,6 +5206,14 @@ export class Matrix {
     // Methods
 
     /**
+     * Gets a string with the Matrix values
+     * @returns a string with the Matrix values
+     */
+    public toString(): string {
+        return `{${this.m[0]}, ${this.m[1]}, ${this.m[2]}, ${this.m[3]}\n${this.m[4]}, ${this.m[5]}, ${this.m[6]}, ${this.m[7]}\n${this.m[8]}, ${this.m[9]}, ${this.m[10]}, ${this.m[11]}\n${this.m[12]}, ${this.m[13]}, ${this.m[14]}, ${this.m[15]}}`;
+    }
+
+    /**
      * Returns the matrix as a Float32Array or Array<number>
      * Example Playground - https://playground.babylonjs.com/#AV9X17#49
      * @returns the matrix underlying array

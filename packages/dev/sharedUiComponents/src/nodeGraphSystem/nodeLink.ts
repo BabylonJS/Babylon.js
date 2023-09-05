@@ -177,32 +177,51 @@ export class NodeLink {
 
     onClick(evt: MouseEvent) {
         const stateManager = this._graphCanvas.stateManager;
-        if (evt.altKey) {
-            const nodeA = this._nodeA;
-            const pointA = this._portA.portData;
-            const nodeB = this._nodeB!;
-            const pointB = this._portB!.portData;
+        const nodeA = this._nodeA;
+        const pointA = this._portA.portData;
+        const nodeB = this._nodeB!;
+        const pointB = this._portB!.portData;
 
+        const reconnect = (newNode: GraphNode) => {
+            const newBlock = newNode.content.data as any;
+
+            // Delete previous link
+            this.dispose();
+
+            // Connect to the new block
+            this._graphCanvas.connectNodes(nodeA, pointA, newNode, newNode.getPortDataForPortDataContent(newBlock.input)!);
+            this._graphCanvas.connectNodes(newNode, newNode.getPortDataForPortDataContent(newBlock.output)!, nodeB, pointB);
+
+            stateManager.onRebuildRequiredObservable.notifyObservers();
+        };
+
+        if (evt.altKey) {
             if (!stateManager.isElbowConnectionAllowed(this._portA, this._portB!)) {
                 return;
             }
 
             // Create an elbow at the clicked location
-            stateManager.onNewNodeCreatedObservable.addOnce((newNode) => {
-                const newElbowBlock = newNode.content.data as any;
-
-                // Delete previous link
-                this.dispose();
-
-                // Connect to Elbow block
-                this._graphCanvas.connectNodes(nodeA, pointA, newNode, newNode.getPortDataForPortDataContent(newElbowBlock.input)!);
-                this._graphCanvas.connectNodes(newNode, newNode.getPortDataForPortDataContent(newElbowBlock.output)!, nodeB, pointB);
-
-                stateManager.onRebuildRequiredObservable.notifyObservers();
-            });
+            stateManager.onNewNodeCreatedObservable.addOnce(reconnect);
 
             stateManager.onNewBlockRequiredObservable.notifyObservers({
                 type: "ElbowBlock",
+                targetX: evt.clientX,
+                targetY: evt.clientY,
+                needRepositioning: true,
+            });
+            return;
+        }
+
+        if (evt.ctrlKey) {
+            if (!stateManager.isDebugConnectionAllowed(this._portA, this._portB!)) {
+                return;
+            }
+
+            // Create a debug at the clicked location
+            stateManager.onNewNodeCreatedObservable.addOnce(reconnect);
+
+            stateManager.onNewBlockRequiredObservable.notifyObservers({
+                type: "DebugBlock",
                 targetX: evt.clientX,
                 targetY: evt.clientY,
                 needRepositioning: true,

@@ -34,6 +34,7 @@ export class StateManager {
 
     exportData: (data: any, frame?: Nullable<GraphFrame>) => string;
     isElbowConnectionAllowed: (nodeA: FrameNodePort | NodePort, nodeB: FrameNodePort | NodePort) => boolean;
+    isDebugConnectionAllowed: (nodeA: FrameNodePort | NodePort, nodeB: FrameNodePort | NodePort) => boolean;
     applyNodePortDesign: (data: IPortData, element: HTMLElement, img: HTMLImageElement, pip: HTMLDivElement) => void;
 
     storeEditorData: (serializationObject: any, frame?: Nullable<GraphFrame>) => void;
