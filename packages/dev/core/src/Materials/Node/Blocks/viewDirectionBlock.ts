@@ -53,9 +53,9 @@ export class ViewDirectionBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    public autoConfigure(material: NodeMaterial) {
+    public autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.cameraPosition.isConnected) {
-            let cameraPositionInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.CameraPosition);
+            let cameraPositionInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.CameraPosition && additionalFilteringInfo(b));
 
             if (!cameraPositionInput) {
                 cameraPositionInput = new InputBlock("cameraPosition");
@@ -71,7 +71,7 @@ export class ViewDirectionBlock extends NodeMaterialBlock {
         const output = this._outputs[0];
 
         state.compilationString +=
-            this._declareOutput(output, state) + ` = normalize(${this.cameraPosition.associatedVariableName} - ${this.worldPosition.associatedVariableName}.xyz);\r\n`;
+            this._declareOutput(output, state) + ` = normalize(${this.cameraPosition.associatedVariableName} - ${this.worldPosition.associatedVariableName}.xyz);\n`;
 
         return this;
     }

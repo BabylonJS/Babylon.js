@@ -111,16 +111,16 @@ export class VoronoiNoiseBlock extends NodeMaterialBlock {
         const tempOutput = state._getFreeVariableName("tempOutput");
         const tempCells = state._getFreeVariableName("tempCells");
 
-        state.compilationString += `float ${tempOutput} = 0.0;\r\n`;
-        state.compilationString += `float ${tempCells} = 0.0;\r\n`;
-        state.compilationString += `voronoi(${this.seed.associatedVariableName}, ${this.offset.associatedVariableName}, ${this.density.associatedVariableName}, ${tempOutput}, ${tempCells});\r\n`;
+        state.compilationString += `float ${tempOutput} = 0.0;\n`;
+        state.compilationString += `float ${tempCells} = 0.0;\n`;
+        state.compilationString += `voronoi(${this.seed.associatedVariableName}, ${this.offset.associatedVariableName}, ${this.density.associatedVariableName}, ${tempOutput}, ${tempCells});\n`;
 
         if (this.output.hasEndpoints) {
-            state.compilationString += this._declareOutput(this.output, state) + ` = ${tempOutput};\r\n`;
+            state.compilationString += this._declareOutput(this.output, state) + ` = ${tempOutput};\n`;
         }
 
         if (this.cells.hasEndpoints) {
-            state.compilationString += this._declareOutput(this.cells, state) + ` = ${tempCells};\r\n`;
+            state.compilationString += this._declareOutput(this.cells, state) + ` = ${tempCells};\n`;
         }
 
         return this;

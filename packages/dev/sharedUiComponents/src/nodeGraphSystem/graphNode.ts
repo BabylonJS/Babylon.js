@@ -26,6 +26,7 @@ export class GraphNode {
     private _outputsContainer: HTMLDivElement;
     private _content: HTMLDivElement;
     private _comments: HTMLDivElement;
+    private _executionTime: HTMLDivElement;
     private _selectionBorder: HTMLDivElement;
     private _inputPorts: NodePort[] = [];
     private _outputPorts: NodePort[] = [];
@@ -379,6 +380,8 @@ export class GraphNode {
         this._comments.innerHTML = this.content.comments || "";
         this._comments.title = this.content.comments || "";
 
+        this._executionTime.innerHTML = this.content.executionTime ? `${this.content.executionTime.toFixed(2)} ms` : "";
+
         this.content.prepareHeaderIcon(this._headerIcon, this._headerIconImg);
         if (this._headerIconImg.src) {
             this._header.classList.add(localStyles["headerWithIcon"]);
@@ -437,6 +440,8 @@ export class GraphNode {
         const availableNodeOutputs: Nullable<IPortData>[] = [];
         const leftNode = this._ownerCanvas._targetLinkCandidate.nodeA;
         const rightNode = this._ownerCanvas._targetLinkCandidate.nodeB!;
+        const leftPort = this._ownerCanvas._targetLinkCandidate.portA.portData;
+        const rightPort = this._ownerCanvas._targetLinkCandidate.portB!.portData;
 
         // Delete previous
         this._ownerCanvas._targetLinkCandidate.dispose();
@@ -451,11 +456,25 @@ export class GraphNode {
 
         outputs.push(...rightNode.content.inputs.filter((i) => !i.isConnected));
 
+        // Prioritize the already connected ports
+        const leftPortIndex = inputs.indexOf(leftPort);
+        const rightPortIndex = outputs.indexOf(rightPort);
+
+        if (leftPortIndex > 0) {
+            inputs.splice(leftPortIndex, 1);
+            inputs.splice(0, 0, leftPort);
+        }
+
+        if (rightPortIndex > 0) {
+            outputs.splice(rightPortIndex, 1);
+            outputs.splice(0, 0, rightPort);
+        }
+
         // Reconnect
         this._ownerCanvas.automaticRewire(inputs, availableNodeInputs, true);
         this._ownerCanvas.automaticRewire(availableNodeOutputs, outputs, true);
 
-        this._stateManager.onRebuildRequiredObservable.notifyObservers(false);
+        this._stateManager.onRebuildRequiredObservable.notifyObservers();
     }
 
     private _onMove(evt: PointerEvent) {
@@ -578,6 +597,12 @@ export class GraphNode {
 
         this._visual.appendChild(this._comments);
 
+        // Comments
+        this._executionTime = root.ownerDocument!.createElement("div");
+        this._executionTime.classList.add(localStyles.executionTime);
+
+        this._visual.appendChild(this._executionTime);
+
         // Connections
         for (const input of this.content.inputs) {
             this._inputPorts.push(NodePort.CreatePortElement(input, this, this._inputsContainer, this._displayManager, this._stateManager));
@@ -588,6 +613,10 @@ export class GraphNode {
         }
 
         this.refresh();
+
+        this.content.refreshCallback = () => {
+            this.refresh();
+        };
     }
 
     public dispose() {

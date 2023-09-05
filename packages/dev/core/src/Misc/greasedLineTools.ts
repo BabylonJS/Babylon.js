@@ -23,7 +23,7 @@ export class GreasedLineTools {
     /**
      * Gets mesh triangles as line positions
      * @param meshes array of meshes
-     * @param omitZeroLengthLines do not generate a line when the distance if the vertices in the triangle equals to zero
+     * @param predicate predicate function which decides whether to include the mesh triangle/face in the ouput
      * @returns array of arrays of points
      */
     public static MeshesToLines(

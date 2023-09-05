@@ -380,7 +380,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             action: () => {
                 const newNodeMaterial = new NodeMaterial(getUniqueName("node material"), scene);
                 newNodeMaterial.setToDefault();
-                newNodeMaterial.build();
+                newNodeMaterial.build(false, false, true);
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newNodeMaterial);
             },
         });

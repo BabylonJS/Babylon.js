@@ -17,7 +17,7 @@ import type { Effect } from "../../../effect";
 import type { PBRMetallicRoughnessBlock } from "./pbrMetallicRoughnessBlock";
 import type { PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
 import { PBRClearCoatConfiguration } from "../../../PBR/pbrClearCoatConfiguration";
-import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { TBNBlock } from "../Fragment/TBNBlock";
 
 /**
@@ -247,10 +247,10 @@ export class ClearCoatBlock extends NodeMaterialBlock {
             #endif
             `;
         } else if (worldTangent.isConnected) {
-            code += `vec3 tbnNormal = normalize(${worldNormalVarName}.xyz);\r\n`;
-            code += `vec3 tbnTangent = normalize(${worldTangent.associatedVariableName}.xyz);\r\n`;
-            code += `vec3 tbnBitangent = cross(tbnNormal, tbnTangent) * ${this._tangentCorrectionFactorName};\r\n`;
-            code += `mat3 vTBN = mat3(tbnTangent, tbnBitangent, tbnNormal);\r\n`;
+            code += `vec3 tbnNormal = normalize(${worldNormalVarName}.xyz);\n`;
+            code += `vec3 tbnTangent = normalize(${worldTangent.associatedVariableName}.xyz);\n`;
+            code += `vec3 tbnBitangent = cross(tbnNormal, tbnTangent) * ${this._tangentCorrectionFactorName};\n`;
+            code += `mat3 vTBN = mat3(tbnTangent, tbnBitangent, tbnNormal);\n`;
         }
 
         state._emitFunctionFromInclude("bumpFragmentMainFunctions", comments, {
@@ -297,9 +297,9 @@ export class ClearCoatBlock extends NodeMaterialBlock {
             state._emitUniformFromString("vClearCoatTangentSpaceParams", "vec2");
 
             const normalShading = ccBlock.worldNormal;
-            code += `vec3 vGeometricNormaClearCoatW = ${normalShading.isConnected ? "normalize(" + normalShading.associatedVariableName + ".xyz)" : "geometricNormalW"};\r\n`;
+            code += `vec3 vGeometricNormaClearCoatW = ${normalShading.isConnected ? "normalize(" + normalShading.associatedVariableName + ".xyz)" : "geometricNormalW"};\n`;
         } else {
-            code += `vec3 vGeometricNormaClearCoatW = geometricNormalW;\r\n`;
+            code += `vec3 vGeometricNormaClearCoatW = geometricNormalW;\n`;
         }
 
         if (generateTBNSpace && ccBlock) {
@@ -378,7 +378,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
             );
         #else
             clearcoatOut.specularEnvironmentR0 = specularEnvironmentR0;
-        #endif\r\n`;
+        #endif\n`;
 
         return code;
     }
@@ -400,7 +400,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
     protected _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
 
-        codeString += `${this._codeVariableName}.remapF0OnInterfaceChange = ${this.remapF0OnInterfaceChange};\r\n`;
+        codeString += `${this._codeVariableName}.remapF0OnInterfaceChange = ${this.remapF0OnInterfaceChange};\n`;
 
         return codeString;
     }

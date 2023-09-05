@@ -113,19 +113,19 @@ export class ColorSplitterBlock extends NodeMaterialBlock {
         const aOutput = this._outputs[4];
 
         if (rgbOutput.hasEndpoints) {
-            state.compilationString += this._declareOutput(rgbOutput, state) + ` = ${input.associatedVariableName}.rgb;\r\n`;
+            state.compilationString += this._declareOutput(rgbOutput, state) + ` = ${input.associatedVariableName}.rgb;\n`;
         }
         if (rOutput.hasEndpoints) {
-            state.compilationString += this._declareOutput(rOutput, state) + ` = ${input.associatedVariableName}.r;\r\n`;
+            state.compilationString += this._declareOutput(rOutput, state) + ` = ${input.associatedVariableName}.r;\n`;
         }
         if (gOutput.hasEndpoints) {
-            state.compilationString += this._declareOutput(gOutput, state) + ` = ${input.associatedVariableName}.g;\r\n`;
+            state.compilationString += this._declareOutput(gOutput, state) + ` = ${input.associatedVariableName}.g;\n`;
         }
         if (bOutput.hasEndpoints) {
-            state.compilationString += this._declareOutput(bOutput, state) + ` = ${input.associatedVariableName}.b;\r\n`;
+            state.compilationString += this._declareOutput(bOutput, state) + ` = ${input.associatedVariableName}.b;\n`;
         }
         if (aOutput.hasEndpoints) {
-            state.compilationString += this._declareOutput(aOutput, state) + ` = ${input.associatedVariableName}.a;\r\n`;
+            state.compilationString += this._declareOutput(aOutput, state) + ` = ${input.associatedVariableName}.a;\n`;
         }
 
         return this;

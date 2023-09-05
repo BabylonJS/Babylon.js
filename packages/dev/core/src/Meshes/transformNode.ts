@@ -850,7 +850,7 @@ export class TransformNode extends Node {
         this._transformToBoneReferal = affectedTransformNode;
         this.parent = bone;
 
-        bone.getSkeleton().prepare(); // make sure bone.getFinalMatrix() is up to date
+        bone.getSkeleton().prepare(true); // make sure bone.getFinalMatrix() is up to date
 
         if (bone.getFinalMatrix().determinant() < 0) {
             this.scalingDeterminant *= -1;
@@ -1128,7 +1128,9 @@ export class TransformNode extends Node {
             }
             if (cache.useBillboardPath) {
                 if (this._transformToBoneReferal) {
-                    parent.getWorldMatrix().multiplyToRef(this._transformToBoneReferal.getWorldMatrix(), TmpVectors.Matrix[7]);
+                    const bone = this.parent as Bone;
+                    bone.getSkeleton().prepare();
+                    bone.getFinalMatrix().multiplyToRef(this._transformToBoneReferal.getWorldMatrix(), TmpVectors.Matrix[7]);
                 } else {
                     TmpVectors.Matrix[7].copyFrom(parent.getWorldMatrix());
                 }
@@ -1150,7 +1152,9 @@ export class TransformNode extends Node {
                 this._localMatrix.multiplyToRef(TmpVectors.Matrix[7], this._worldMatrix);
             } else {
                 if (this._transformToBoneReferal) {
-                    this._localMatrix.multiplyToRef(parent.getWorldMatrix(), TmpVectors.Matrix[6]);
+                    const bone = this.parent as Bone;
+                    bone.getSkeleton().prepare();
+                    this._localMatrix.multiplyToRef(bone.getFinalMatrix(), TmpVectors.Matrix[6]);
                     TmpVectors.Matrix[6].multiplyToRef(this._transformToBoneReferal.getWorldMatrix(), this._worldMatrix);
                 } else {
                     this._localMatrix.multiplyToRef(parent.getWorldMatrix(), this._worldMatrix);

@@ -867,7 +867,7 @@ export class Effect implements IDisposable {
                     return " " + attribute;
                 })
         );
-        Logger.Error("Defines:\r\n" + this.defines);
+        Logger.Error("Defines:\n" + this.defines);
         if (Effect.LogShaderCodeOnCompilationError) {
             let lineErrorVertex = null,
                 lineErrorFragment = null,

@@ -298,16 +298,16 @@ export class MaterialPluginManager {
                                 if (uniform.size && uniform.type) {
                                     const arraySize = uniform.arraySize ?? 0;
                                     eventData.ubo.addUniform(uniform.name, uniform.size, arraySize);
-                                    this._uboDeclaration += `${uniform.type} ${uniform.name}${arraySize > 0 ? `[${arraySize}]` : ""};\r\n`;
+                                    this._uboDeclaration += `${uniform.type} ${uniform.name}${arraySize > 0 ? `[${arraySize}]` : ""};\n`;
                                 }
                                 this._uniformList.push(uniform.name);
                             }
                         }
                         if (uniforms.vertex) {
-                            this._vertexDeclaration += uniforms.vertex + "\r\n";
+                            this._vertexDeclaration += uniforms.vertex + "\n";
                         }
                         if (uniforms.fragment) {
-                            this._fragmentDeclaration += uniforms.fragment + "\r\n";
+                            this._fragmentDeclaration += uniforms.fragment + "\n";
                         }
                     }
                     plugin.getSamplers(this._samplerList);
@@ -379,7 +379,7 @@ export class MaterialPluginManager {
                         processorOptions.isFragment = shaderType === "fragment";
                         ShaderProcessor._ProcessIncludes(customCode, processorOptions, (code) => (customCode = code));
                     }
-                    injectedCode += customCode + "\r\n";
+                    injectedCode += customCode + "\n";
                 }
                 if (injectedCode.length > 0) {
                     if (pointName.charAt(0) === "!") {
@@ -418,7 +418,7 @@ export class MaterialPluginManager {
                         }
                     } else {
                         const fullPointName = "#define " + pointName;
-                        code = code.replace(fullPointName, "\r\n" + injectedCode + "\r\n" + fullPointName);
+                        code = code.replace(fullPointName, "\n" + injectedCode + "\n" + fullPointName);
                     }
                 }
             }

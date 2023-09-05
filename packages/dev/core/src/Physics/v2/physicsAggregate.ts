@@ -72,6 +72,11 @@ export interface PhysicsAggregateParameters {
      * Physics engine will try to make this body sleeping and not active
      */
     startAsleep?: boolean;
+
+    /**
+     * If true, mark the created shape as a trigger shape
+     */
+    isTriggerShape?: boolean;
 }
 /**
  * Helper class to create and interact with a PhysicsAggregate.
@@ -149,6 +154,10 @@ export class PhysicsAggregate {
             this.shape = new PhysicsShape({ type: type as PhysicsShapeType, parameters: this._options as any }, this._scene);
         }
 
+        if (this._options.isTriggerShape) {
+            this.shape.isTrigger = true;
+        }
+
         this.material = { friction: this._options.friction, restitution: this._options.restitution };
         this.body.shape = this.shape;
         this.shape.material = this.material;
@@ -179,6 +188,10 @@ export class PhysicsAggregate {
         extents.copyFrom(bb.extendSize);
         extents.scaleInPlace(2);
         extents.multiplyInPlace(this.transformNode.scaling);
+        // In case we had any negative scaling, we need to take the absolute value of the extents.
+        extents.x = Math.abs(extents.x);
+        extents.y = Math.abs(extents.y);
+        extents.z = Math.abs(extents.z);
 
         const min = TmpVectors.Vector3[1];
         min.copyFrom(bb.minimum);

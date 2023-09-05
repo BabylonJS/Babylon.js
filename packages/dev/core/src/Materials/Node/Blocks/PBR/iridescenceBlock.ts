@@ -136,7 +136,7 @@ export class IridescenceBlock extends NodeMaterialBlock {
 
             float iridescenceIntensity = iridescenceOut.iridescenceIntensity;
             specularEnvironmentR0 = iridescenceOut.specularEnvironmentR0;
-        #endif\r\n`;
+        #endif\n`;
 
         return code;
     }

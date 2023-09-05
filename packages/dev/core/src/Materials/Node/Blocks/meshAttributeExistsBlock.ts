@@ -6,7 +6,7 @@ import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { InputBlock } from "./Input/inputBlock";
 import { MorphTargetsBlock } from "./Vertex/morphTargetsBlock";
-import { PropertyTypeForEdition, editableInPropertyPage } from "../nodeMaterialDecorator";
+import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
 import type { Scene } from "core/scene";
 
 export enum MeshAttributeExistsBlockTypes {
@@ -179,15 +179,15 @@ export class MeshAttributeExistsBlock extends NodeMaterialBlock {
 
         const output = this._declareOutput(this.output, state);
         if (attributeDefine) {
-            state.compilationString += `#ifdef ${attributeDefine}\r\n`;
+            state.compilationString += `#ifdef ${attributeDefine}\n`;
         }
 
-        state.compilationString += `${output} = ${this.input.associatedVariableName};\r\n`;
+        state.compilationString += `${output} = ${this.input.associatedVariableName};\n`;
 
         if (attributeDefine) {
-            state.compilationString += `#else\r\n`;
-            state.compilationString += `${output} = ${this.fallback.associatedVariableName};\r\n`;
-            state.compilationString += `#endif\r\n`;
+            state.compilationString += `#else\n`;
+            state.compilationString += `${output} = ${this.fallback.associatedVariableName};\n`;
+            state.compilationString += `#endif\n`;
         }
         return this;
     }
@@ -209,7 +209,7 @@ export class MeshAttributeExistsBlock extends NodeMaterialBlock {
     protected _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
 
-        codeString += `${this._codeVariableName}.attributeType = ${this.attributeType};\r\n`;
+        codeString += `${this._codeVariableName}.attributeType = ${this.attributeType};\n`;
 
         return codeString;
     }

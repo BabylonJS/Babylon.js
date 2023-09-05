@@ -75,7 +75,7 @@ export class ElbowBlock extends NodeMaterialBlock {
         const output = this._outputs[0];
         const input = this._inputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = ${input.associatedVariableName};\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = ${input.associatedVariableName};\n`;
 
         return this;
     }

@@ -126,10 +126,18 @@ export enum PhysicsConstraintMotorType {
     POSITION,
 }
 
+export enum PhysicsEventType {
+    COLLISION_STARTED = "COLLISION_STARTED",
+    COLLISION_CONTINUED = "COLLISION_CONTINUED",
+    COLLISION_FINISHED = "COLLISION_FINISHED",
+    TRIGGER_ENTERED = "TRIGGER_ENTERED",
+    TRIGGER_EXITED = "TRIGGER_EXITED",
+}
+
 /**
- * Collision object that is the parameter when notification for collision fires.
+ * Base collision object
  */
-export interface IPhysicsCollisionEvent {
+export interface IBasePhysicsCollisionEvent {
     /**
      * 1st physics body that collided
      */
@@ -146,6 +154,16 @@ export interface IPhysicsCollisionEvent {
      * index in instances array for the collidedAgainst
      */
     collidedAgainstIndex: number;
+    /**
+     * Event type
+     */
+    type: PhysicsEventType;
+}
+
+/**
+ * Collision object that is the parameter when notification for collision fires.
+ */
+export interface IPhysicsCollisionEvent extends IBasePhysicsCollisionEvent {
     /**
      * World position where the collision occured
      */
@@ -360,8 +378,10 @@ export interface IPhysicsEnginePluginV2 {
     getBodyGeometry(body: PhysicsBody): {};
     disposeBody(body: PhysicsBody): void;
     setCollisionCallbackEnabled(body: PhysicsBody, enabled: boolean, instanceIndex?: number): void;
+    setCollisionEndedCallbackEnabled(body: PhysicsBody, enabled: boolean, instanceIndex?: number): void;
     addConstraint(body: PhysicsBody, childBody: PhysicsBody, constraint: PhysicsConstraint, instanceIndex?: number, childInstanceIndex?: number): void;
     getCollisionObservable(body: PhysicsBody, instanceIndex?: number): Observable<IPhysicsCollisionEvent>;
+    getCollisionEndedObservable(body: PhysicsBody, instanceIndex?: number): Observable<IBasePhysicsCollisionEvent>;
     setGravityFactor(body: PhysicsBody, factor: number, instanceIndex?: number): void;
     getGravityFactor(body: PhysicsBody, instanceIndex?: number): number;
     setTargetTransform(body: PhysicsBody, position: Vector3, rotation: Quaternion, instanceIndex?: number): void;
@@ -380,6 +400,7 @@ export interface IPhysicsEnginePluginV2 {
     getNumChildren(shape: PhysicsShape): number;
     getBoundingBox(shape: PhysicsShape): BoundingBox;
     disposeShape(shape: PhysicsShape): void;
+    setTrigger(shape: PhysicsShape, isTrigger: boolean): void;
 
     // constraint
     initConstraint(constraint: PhysicsConstraint, body: PhysicsBody, childBody: PhysicsBody): void;
@@ -388,19 +409,19 @@ export interface IPhysicsEnginePluginV2 {
     setCollisionsEnabled(constraint: PhysicsConstraint, isEnabled: boolean): void;
     getCollisionsEnabled(constraint: PhysicsConstraint): boolean;
     setAxisFriction(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, friction: number): void;
-    getAxisFriction(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): number;
+    getAxisFriction(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): Nullable<number>;
     setAxisMode(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, limitMode: PhysicsConstraintAxisLimitMode): void;
-    getAxisMode(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): PhysicsConstraintAxisLimitMode;
+    getAxisMode(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): Nullable<PhysicsConstraintAxisLimitMode>;
     setAxisMinLimit(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, minLimit: number): void;
-    getAxisMinLimit(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): number;
+    getAxisMinLimit(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): Nullable<number>;
     setAxisMaxLimit(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, limit: number): void;
-    getAxisMaxLimit(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): number;
+    getAxisMaxLimit(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): Nullable<number>;
     setAxisMotorType(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, motorType: PhysicsConstraintMotorType): void;
-    getAxisMotorType(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): PhysicsConstraintMotorType;
+    getAxisMotorType(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): Nullable<PhysicsConstraintMotorType>;
     setAxisMotorTarget(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, target: number): void;
-    getAxisMotorTarget(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): number;
+    getAxisMotorTarget(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): Nullable<number>;
     setAxisMotorMaxForce(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, maxForce: number): void;
-    getAxisMotorMaxForce(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): number;
+    getAxisMotorMaxForce(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): Nullable<number>;
     disposeConstraint(constraint: PhysicsConstraint): void;
 
     // raycast

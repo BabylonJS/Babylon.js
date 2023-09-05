@@ -49,9 +49,9 @@ export class ReciprocalBlock extends NodeMaterialBlock {
         const output = this._outputs[0];
 
         if (this.input.type === NodeMaterialBlockConnectionPointTypes.Matrix) {
-            state.compilationString += this._declareOutput(output, state) + ` = inverse(${this.input.associatedVariableName});\r\n`;
+            state.compilationString += this._declareOutput(output, state) + ` = inverse(${this.input.associatedVariableName});\n`;
         } else {
-            state.compilationString += this._declareOutput(output, state) + ` = 1. / ${this.input.associatedVariableName};\r\n`;
+            state.compilationString += this._declareOutput(output, state) + ` = 1. / ${this.input.associatedVariableName};\n`;
         }
 
         return this;

@@ -196,31 +196,31 @@ export class LightInformationBlock extends NodeMaterialBlock {
         state._emitUniformFromString(this._lightDataUniformName, "vec3");
         state._emitUniformFromString(this._lightColorUniformName, "vec4");
 
-        state.compilationString += `#ifdef ${this._lightTypeDefineName}\r\n`;
-        state.compilationString += this._declareOutput(direction, state) + ` = normalize(${this.worldPosition.associatedVariableName}.xyz - ${this._lightDataUniformName});\r\n`;
-        state.compilationString += `#else\r\n`;
-        state.compilationString += this._declareOutput(direction, state) + ` = ${this._lightDataUniformName};\r\n`;
-        state.compilationString += `#endif\r\n`;
+        state.compilationString += `#ifdef ${this._lightTypeDefineName}\n`;
+        state.compilationString += this._declareOutput(direction, state) + ` = normalize(${this.worldPosition.associatedVariableName}.xyz - ${this._lightDataUniformName});\n`;
+        state.compilationString += `#else\n`;
+        state.compilationString += this._declareOutput(direction, state) + ` = ${this._lightDataUniformName};\n`;
+        state.compilationString += `#endif\n`;
 
-        state.compilationString += this._declareOutput(color, state) + ` = ${this._lightColorUniformName}.rgb;\r\n`;
-        state.compilationString += this._declareOutput(intensity, state) + ` = ${this._lightColorUniformName}.a;\r\n`;
+        state.compilationString += this._declareOutput(color, state) + ` = ${this._lightColorUniformName}.rgb;\n`;
+        state.compilationString += this._declareOutput(intensity, state) + ` = ${this._lightColorUniformName}.a;\n`;
 
         if (shadowBias.hasEndpoints || shadowNormalBias.hasEndpoints || shadowDepthScale.hasEndpoints) {
             state._emitUniformFromString(this._lightShadowUniformName, "vec3");
             if (shadowBias.hasEndpoints) {
-                state.compilationString += this._declareOutput(shadowBias, state) + ` = ${this._lightShadowUniformName}.x;\r\n`;
+                state.compilationString += this._declareOutput(shadowBias, state) + ` = ${this._lightShadowUniformName}.x;\n`;
             }
             if (shadowNormalBias.hasEndpoints) {
-                state.compilationString += this._declareOutput(shadowNormalBias, state) + ` = ${this._lightShadowUniformName}.y;\r\n`;
+                state.compilationString += this._declareOutput(shadowNormalBias, state) + ` = ${this._lightShadowUniformName}.y;\n`;
             }
             if (shadowDepthScale.hasEndpoints) {
-                state.compilationString += this._declareOutput(shadowDepthScale, state) + ` = ${this._lightShadowUniformName}.z;\r\n`;
+                state.compilationString += this._declareOutput(shadowDepthScale, state) + ` = ${this._lightShadowUniformName}.z;\n`;
             }
         }
 
         if (shadowDepthRange.hasEndpoints) {
             state._emitUniformFromString(this._lightShadowExtraUniformName, "vec2");
-            state.compilationString += this._declareOutput(shadowDepthRange, state) + ` = ${this._lightShadowUniformName};\r\n`;
+            state.compilationString += this._declareOutput(shadowDepthRange, state) + ` = ${this._lightShadowUniformName};\n`;
         }
 
         return this;

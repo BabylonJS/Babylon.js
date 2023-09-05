@@ -346,9 +346,9 @@ export class RuntimeAnimation {
         let originalValue: any;
         const target = this._activeTargets[targetIndex];
 
-        if (target.getRestPose && this._targetPath === "_matrix") {
+        if (target.getLocalMatrix && this._targetPath === "_matrix") {
             // For bones
-            originalValue = target.getRestPose();
+            originalValue = target.getLocalMatrix();
         } else {
             originalValue = target[this._targetPath];
         }

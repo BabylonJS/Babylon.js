@@ -49,7 +49,7 @@ export class LengthBlock extends NodeMaterialBlock {
 
         const output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = length(${this.value.associatedVariableName});\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = length(${this.value.associatedVariableName});\n`;
 
         return this;
     }

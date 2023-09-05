@@ -221,7 +221,6 @@ export class FluidRenderer {
 
     /**
      * Adds a particle system to the fluid renderer.
-     * Note that you should not normally call this method directly, as you can simply use the renderAsFluid property of the ParticleSystem/GPUParticleSystem class
      * @param ps particle system
      * @param generateDiffuseTexture True if you want to generate a diffuse texture from the particle system and use it as part of the fluid rendering (default: false)
      * @param targetRenderer The target renderer used to display the particle system as a fluid. If not provided, the method will create a new one

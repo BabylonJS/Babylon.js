@@ -69,7 +69,7 @@ export class LerpBlock extends NodeMaterialBlock {
         const output = this._outputs[0];
 
         state.compilationString +=
-            this._declareOutput(output, state) + ` = mix(${this.left.associatedVariableName} , ${this.right.associatedVariableName}, ${this.gradient.associatedVariableName});\r\n`;
+            this._declareOutput(output, state) + ` = mix(${this.left.associatedVariableName} , ${this.right.associatedVariableName}, ${this.gradient.associatedVariableName});\n`;
 
         return this;
     }

@@ -199,6 +199,8 @@ void main(void) {
 	vec3 specularBase = vec3(0., 0., 0.);
 #endif
 	float shadow = 1.;
+	float aggShadow = 0.;
+	float numLights = 0.;
 
 #ifdef LIGHTMAP
 	vec4 lightmapColor = texture2D(lightmapSampler, vLightmapUV + uvOffset);
@@ -209,6 +211,8 @@ void main(void) {
 #endif
 
 #include<lightFragment>[0..maxSimultaneousLights]
+
+	aggShadow = aggShadow / numLights;
 
 	// Refraction
 	vec4 refractionColor = vec4(0., 0., 0., 1.);
@@ -452,7 +456,11 @@ color.rgb = max(color.rgb, 0.);
     #endif
 
     #ifdef PREPASS_NORMAL
-        gl_FragData[PREPASS_NORMAL_INDEX] = vec4(normalize((view * vec4(normalW, 0.0)).rgb), writeGeometryInfo); // Normal
+        #ifdef PREPASS_NORMAL_WORLDSPACE
+            gl_FragData[PREPASS_NORMAL_INDEX] = vec4(normalW, writeGeometryInfo); // Normal
+        #else
+            gl_FragData[PREPASS_NORMAL_INDEX] = vec4(normalize((view * vec4(normalW, 0.0)).rgb), writeGeometryInfo); // Normal
+        #endif
     #endif
 
     #ifdef PREPASS_ALBEDO_SQRT

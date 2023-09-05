@@ -69,6 +69,7 @@ export class NodeMaterialTeleportInBlock extends NodeMaterialBlock {
         endpoint._entryPoint = this;
         endpoint._outputs[0]._typeConnectionSource = this._inputs[0];
         endpoint._tempEntryPointUniqueId = null;
+        endpoint.name = "> " + this.name;
     }
 
     /**

@@ -25,7 +25,7 @@ export class StateManager {
     onCandidateLinkMoved = new Observable<Nullable<Vector2>>();
     onCandidatePortSelectedObservable = new Observable<Nullable<NodePort | FrameNodePort>>();
     onNewNodeCreatedObservable = new Observable<GraphNode>();
-    onRebuildRequiredObservable = new Observable<boolean>();
+    onRebuildRequiredObservable = new Observable<void>();
     onErrorMessageDialogRequiredObservable = new Observable<string>();
     onExposePortOnFrameObservable = new Observable<GraphNode>();
     onGridSizeChanged = new Observable<void>();
@@ -34,7 +34,7 @@ export class StateManager {
 
     exportData: (data: any, frame?: Nullable<GraphFrame>) => string;
     isElbowConnectionAllowed: (nodeA: FrameNodePort | NodePort, nodeB: FrameNodePort | NodePort) => boolean;
-    applyNodePortDesign: (data: IPortData, element: HTMLElement, img: HTMLImageElement) => void;
+    applyNodePortDesign: (data: IPortData, element: HTMLElement, img: HTMLImageElement, pip: HTMLDivElement) => void;
 
     storeEditorData: (serializationObject: any, frame?: Nullable<GraphFrame>) => void;
 

@@ -32,8 +32,8 @@ export function CreateGroundVertexData(options: { width?: number; height?: numbe
 
     const width: number = options.width || 1;
     const height: number = options.height || 1;
-    const subdivisionsX: number = options.subdivisionsX || options.subdivisions || 1;
-    const subdivisionsY: number = options.subdivisionsY || options.subdivisions || 1;
+    const subdivisionsX: number = (options.subdivisionsX || options.subdivisions || 1) | 0;
+    const subdivisionsY: number = (options.subdivisionsY || options.subdivisions || 1) | 0;
 
     for (row = 0; row <= subdivisionsY; row++) {
         for (col = 0; col <= subdivisionsX; col++) {

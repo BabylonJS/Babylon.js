@@ -131,7 +131,7 @@ export class DirectionalLight extends ShadowLight {
      * @param direction The direction of the light
      * @param scene The scene the light belongs to
      */
-    constructor(name: string, direction: Vector3, scene: Scene) {
+    constructor(name: string, direction: Vector3, scene?: Scene) {
         super(name, scene);
         this.position = direction.scale(-1.0);
         this.direction = direction;
@@ -209,12 +209,12 @@ export class DirectionalLight extends ShadowLight {
             const tempVector3 = Vector3.Zero();
 
             this._orthoLeft = Number.MAX_VALUE;
-            this._orthoRight = Number.MIN_VALUE;
-            this._orthoTop = Number.MIN_VALUE;
+            this._orthoRight = -Number.MAX_VALUE;
+            this._orthoTop = -Number.MAX_VALUE;
             this._orthoBottom = Number.MAX_VALUE;
 
             let shadowMinZ = Number.MAX_VALUE;
-            let shadowMaxZ = Number.MIN_VALUE;
+            let shadowMaxZ = -Number.MAX_VALUE;
 
             for (let meshIndex = 0; meshIndex < renderList.length; meshIndex++) {
                 const mesh = renderList[meshIndex];

@@ -48,16 +48,23 @@ if (vClipSpacePosition.x / vClipSpacePosition.w >= vDebugMode.x) {
 // Maps
     #elif DEBUGMODE == 20 && defined(ALBEDO)
         gl_FragColor.rgb = albedoTexture.rgb;
+        #ifndef GAMMAALBEDO
+            #define DEBUGMODE_GAMMA
+        #endif
     #elif DEBUGMODE == 21 && defined(AMBIENT)
         gl_FragColor.rgb = aoOut.ambientOcclusionColorMap.rgb;
     #elif DEBUGMODE == 22 && defined(OPACITY)
         gl_FragColor.rgb = opacityMap.rgb;
     #elif DEBUGMODE == 23 && defined(EMISSIVE)
         gl_FragColor.rgb = emissiveColorTex.rgb;
-        #define DEBUGMODE_GAMMA
+        #ifndef GAMMAEMISSIVE
+            #define DEBUGMODE_GAMMA
+        #endif
     #elif DEBUGMODE == 24 && defined(LIGHTMAP)
         gl_FragColor.rgb = lightmapColor.rgb;
-        #define DEBUGMODE_GAMMA
+        #ifndef GAMMALIGHTMAP
+            #define DEBUGMODE_GAMMA
+        #endif
     #elif DEBUGMODE == 25 && defined(REFLECTIVITY) && defined(METALLICWORKFLOW)
         gl_FragColor.rgb = reflectivityOut.surfaceMetallicColorMap.rgb;
     #elif DEBUGMODE == 26 && defined(REFLECTIVITY) && !defined(METALLICWORKFLOW)
@@ -82,7 +89,9 @@ if (vClipSpacePosition.x / vClipSpacePosition.w >= vDebugMode.x) {
         #define DEBUGMODE_GAMMA
     #elif DEBUGMODE == 41 && defined(REFLECTION)
         gl_FragColor.rgb = reflectionOut.environmentRadiance.rgb;
-        #define DEBUGMODE_GAMMA
+        #ifndef GAMMAREFLECTION
+            #define DEBUGMODE_GAMMA
+        #endif
     #elif DEBUGMODE == 42 && defined(CLEARCOAT) && defined(REFLECTION)
         gl_FragColor.rgb = clearcoatOut.environmentClearCoatRadiance.rgb;
         #define DEBUGMODE_GAMMA
@@ -101,7 +110,9 @@ if (vClipSpacePosition.x / vClipSpacePosition.w >= vDebugMode.x) {
         #define DEBUGMODE_GAMMA
     #elif DEBUGMODE == 54 && defined(REFLECTION)
         gl_FragColor.rgb = reflectionOut.environmentIrradiance.rgb;
-        #define DEBUGMODE_GAMMA
+        #ifndef GAMMAREFLECTION
+            #define DEBUGMODE_GAMMA
+        #endif
 // Lighting Params
     #elif DEBUGMODE == 60
         gl_FragColor.rgb = surfaceAlbedo.rgb;

@@ -41,7 +41,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         super(props);
 
         const currentValue = this.props.target[this.props.propertyName];
-        this.state = { value: this.getValueString(currentValue), dragging: false };
+        this.state = { value: this.getValueString(currentValue, this.props), dragging: false };
         this._store = currentValue;
     }
 
@@ -49,14 +49,14 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         this.unlock();
     }
 
-    getValueString(value: any): string {
+    getValueString(value: any, props: IFloatLineComponentProps): string {
         if (value) {
             if (value === conflictingValuesPlaceholder) {
                 return conflictingValuesPlaceholder;
-            } else if (this.props.isInteger) {
+            } else if (props.isInteger) {
                 return value.toFixed(0);
             } else {
-                return value.toFixed(this.props.digits || 4);
+                return value.toFixed(props.digits || 4);
             }
         }
         return "0";
@@ -69,14 +69,14 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         }
 
         const newValue = nextProps.target[nextProps.propertyName];
-        const newValueString = this.getValueString(newValue);
+        const newValueString = this.getValueString(newValue, nextProps);
 
         if (newValueString !== nextState.value) {
             nextState.value = newValueString;
             return true;
         }
 
-        if (nextState.dragging != this.state.dragging || nextProps.unit !== this.props.unit) {
+        if (nextState.dragging != this.state.dragging || nextProps.unit !== this.props.unit || nextProps.isInteger !== this.props.isInteger) {
             return true;
         }
 

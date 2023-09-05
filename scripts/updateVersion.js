@@ -82,7 +82,7 @@ async function runTagsUpdate() {
     fs.rmSync("package-lock.json");
     await runCommand("npm install");
     const version = getNewVersion();
-    // update engine version
+    // // update engine version
     await updateEngineVersion(version);
     // generate changelog
     await generateChangelog(version);

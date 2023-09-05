@@ -101,15 +101,20 @@ export class EffectRenderer {
      * @param effectWrapper Defines the effect to draw with
      */
     public applyEffectWrapper(effectWrapper: EffectWrapper): void {
-        this._savedStateDepthTest = this.engine.depthCullingState.depthTest;
-        this._savedStateStencilTest = this.engine.stencilState.stencilTest;
-
         this.engine.setState(true);
         this.engine.depthCullingState.depthTest = false;
         this.engine.stencilState.stencilTest = false;
         this.engine.enableEffect(effectWrapper._drawWrapper);
         this.bindBuffers(effectWrapper.effect);
         effectWrapper.onApplyObservable.notifyObservers({});
+    }
+
+    /**
+     * Saves engine states
+     */
+    public saveStates(): void {
+        this._savedStateDepthTest = this.engine.depthCullingState.depthTest;
+        this._savedStateStencilTest = this.engine.stencilState.stencilTest;
     }
 
     /**
@@ -141,6 +146,8 @@ export class EffectRenderer {
         if (!effectWrapper.effect.isReady()) {
             return;
         }
+
+        this.saveStates();
 
         // Reset state
         this.setViewport();

@@ -45,6 +45,8 @@ export class HexColor extends React.Component<IHexColorProps, { hex: string }> {
         if (valueString.length !== this.props.expectedLength) {
             if (this.props.expectedLength === 8 && valueString.length === 6) {
                 valueString = valueString + "FF";
+            } else if (this.props.expectedLength === 6 && valueString.length === 8) {
+                valueString = valueString.substring(0, 6);
             } else {
                 return;
             }

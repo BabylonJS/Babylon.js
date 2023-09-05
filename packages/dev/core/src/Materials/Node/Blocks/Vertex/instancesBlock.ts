@@ -89,9 +89,9 @@ export class InstancesBlock extends NodeMaterialBlock {
         return this._outputs[1];
     }
 
-    public autoConfigure(material: NodeMaterial) {
+    public autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.world0.connectedPoint) {
-            let world0Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world0");
+            let world0Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world0" && additionalFilteringInfo(b));
 
             if (!world0Input) {
                 world0Input = new InputBlock("world0");
@@ -100,7 +100,7 @@ export class InstancesBlock extends NodeMaterialBlock {
             world0Input.output.connectTo(this.world0);
         }
         if (!this.world1.connectedPoint) {
-            let world1Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world1");
+            let world1Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world1" && additionalFilteringInfo(b));
 
             if (!world1Input) {
                 world1Input = new InputBlock("world1");
@@ -109,7 +109,7 @@ export class InstancesBlock extends NodeMaterialBlock {
             world1Input.output.connectTo(this.world1);
         }
         if (!this.world2.connectedPoint) {
-            let world2Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world2");
+            let world2Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world2" && additionalFilteringInfo(b));
 
             if (!world2Input) {
                 world2Input = new InputBlock("world2");
@@ -118,7 +118,7 @@ export class InstancesBlock extends NodeMaterialBlock {
             world2Input.output.connectTo(this.world2);
         }
         if (!this.world3.connectedPoint) {
-            let world3Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world3");
+            let world3Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world3" && additionalFilteringInfo(b));
 
             if (!world3Input) {
                 world3Input = new InputBlock("world3");
@@ -127,7 +127,7 @@ export class InstancesBlock extends NodeMaterialBlock {
             world3Input.output.connectTo(this.world3);
         }
         if (!this.world.connectedPoint) {
-            let worldInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world");
+            let worldInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world" && additionalFilteringInfo(b));
 
             if (!worldInput) {
                 worldInput = new InputBlock("world");
@@ -172,22 +172,22 @@ export class InstancesBlock extends NodeMaterialBlock {
         const world2 = this.world2;
         const world3 = this.world3;
 
-        state.compilationString += `#ifdef INSTANCES\r\n`;
+        state.compilationString += `#ifdef INSTANCES\n`;
         state.compilationString +=
             this._declareOutput(output, state) +
-            ` = mat4(${world0.associatedVariableName}, ${world1.associatedVariableName}, ${world2.associatedVariableName}, ${world3.associatedVariableName});\r\n`;
-        state.compilationString += `#ifdef THIN_INSTANCES\r\n`;
-        state.compilationString += `${output.associatedVariableName} = ${this.world.associatedVariableName} * ${output.associatedVariableName};\r\n`;
-        state.compilationString += `#endif\r\n`;
+            ` = mat4(${world0.associatedVariableName}, ${world1.associatedVariableName}, ${world2.associatedVariableName}, ${world3.associatedVariableName});\n`;
+        state.compilationString += `#ifdef THIN_INSTANCES\n`;
+        state.compilationString += `${output.associatedVariableName} = ${this.world.associatedVariableName} * ${output.associatedVariableName};\n`;
+        state.compilationString += `#endif\n`;
         if (engine._caps.canUseGLInstanceID) {
-            state.compilationString += this._declareOutput(instanceID, state) + ` = float(gl_InstanceID);\r\n`;
+            state.compilationString += this._declareOutput(instanceID, state) + ` = float(gl_InstanceID);\n`;
         } else {
-            state.compilationString += this._declareOutput(instanceID, state) + ` = 0.0;\r\n`;
+            state.compilationString += this._declareOutput(instanceID, state) + ` = 0.0;\n`;
         }
-        state.compilationString += `#else\r\n`;
-        state.compilationString += this._declareOutput(output, state) + ` = ${this.world.associatedVariableName};\r\n`;
-        state.compilationString += this._declareOutput(instanceID, state) + ` = 0.0;\r\n`;
-        state.compilationString += `#endif\r\n`;
+        state.compilationString += `#else\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = ${this.world.associatedVariableName};\n`;
+        state.compilationString += this._declareOutput(instanceID, state) + ` = 0.0;\n`;
+        state.compilationString += `#endif\n`;
         return this;
     }
 }

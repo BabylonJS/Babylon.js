@@ -46,6 +46,8 @@ export class PhysicsShape {
 
     private _material: PhysicsMaterial;
 
+    private _isTrigger: boolean = false;
+
     /**
      * Constructs a new physics shape.
      * @param options The options for the physics shape. These are:
@@ -235,6 +237,18 @@ export class PhysicsShape {
      */
     public getBoundingBox(): BoundingBox {
         return this._physicsPlugin.getBoundingBox(this);
+    }
+
+    public set isTrigger(isTrigger: boolean) {
+        if (this._isTrigger === isTrigger) {
+            return;
+        }
+        this._isTrigger = isTrigger;
+        this._physicsPlugin.setTrigger(this, isTrigger);
+    }
+
+    public get isTrigger(): boolean {
+        return this._isTrigger;
     }
 
     /**

@@ -6,7 +6,7 @@ import type { IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
 import type { Buffer, VertexBuffer } from "../Buffers/buffer";
 import type { GPUParticleSystem } from "./gpuParticleSystem";
 
-import type { DataArray } from "../types";
+import type { DataArray, Nullable } from "../types";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { Constants } from "../Engines/constants";
 import { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
@@ -30,6 +30,12 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
     constructor(parent: GPUParticleSystem, engine: ThinEngine) {
         this._parent = parent;
         this._engine = engine;
+    }
+
+    public contextLost(): void {
+        this._updateComputeShader = undefined as any;
+        this._bufferComputeShader.length = 0;
+        this._renderVertexBuffers.length = 0;
     }
 
     public isUpdateBufferCreated(): boolean {
@@ -120,8 +126,8 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
         return buffer.getBuffer();
     }
 
-    public bindDrawBuffers(index: number, effect: Effect): void {
-        this._engine.bindBuffers(this._renderVertexBuffers[index], null, effect);
+    public bindDrawBuffers(index: number, effect: Effect, indexBuffer: Nullable<DataBuffer>): void {
+        this._engine.bindBuffers(this._renderVertexBuffers[index], indexBuffer, effect);
     }
 
     public preUpdateParticleBuffer(): void {}

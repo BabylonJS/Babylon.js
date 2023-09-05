@@ -2,7 +2,7 @@ import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { PointerInfo } from "../Events/pointerEvents";
-import { Vector3 } from "../Maths/math.vector";
+import { TmpVectors, Vector3 } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import { TransformNode } from "../Meshes/transformNode";
 import type { Node } from "../node";
@@ -146,7 +146,11 @@ export class PlaneDragGizmo extends Gizmo implements IPlaneDragGizmo {
 
                 // Snapping logic
                 if (this.snapDistance == 0) {
-                    this.attachedNode.getWorldMatrix().addTranslationFromFloats(event.delta.x, event.delta.y, event.delta.z);
+                    this.attachedNode.getWorldMatrix().getTranslationToRef(TmpVectors.Vector3[0]);
+                    TmpVectors.Vector3[0].addToRef(event.delta, TmpVectors.Vector3[0]);
+                    if (this.dragBehavior.validateDrag(TmpVectors.Vector3[0])) {
+                        this.attachedNode.getWorldMatrix().addTranslationFromFloats(event.delta.x, event.delta.y, event.delta.z);
+                    }
                 } else {
                     currentSnapDragDistance += event.dragDistance;
                     if (Math.abs(currentSnapDragDistance) > this.snapDistance) {
@@ -154,9 +158,13 @@ export class PlaneDragGizmo extends Gizmo implements IPlaneDragGizmo {
                         currentSnapDragDistance = currentSnapDragDistance % this.snapDistance;
                         event.delta.normalizeToRef(tmpVector);
                         tmpVector.scaleInPlace(this.snapDistance * dragSteps);
-                        this.attachedNode.getWorldMatrix().addTranslationFromFloats(tmpVector.x, tmpVector.y, tmpVector.z);
-                        tmpSnapEvent.snapDistance = this.snapDistance * dragSteps;
-                        this.onSnapObservable.notifyObservers(tmpSnapEvent);
+                        this.attachedNode.getWorldMatrix().getTranslationToRef(TmpVectors.Vector3[0]);
+                        TmpVectors.Vector3[0].addToRef(tmpVector, TmpVectors.Vector3[0]);
+                        if (this.dragBehavior.validateDrag(TmpVectors.Vector3[0])) {
+                            this.attachedNode.getWorldMatrix().addTranslationFromFloats(tmpVector.x, tmpVector.y, tmpVector.z);
+                            tmpSnapEvent.snapDistance = this.snapDistance * dragSteps;
+                            this.onSnapObservable.notifyObservers(tmpSnapEvent);
+                        }
                     }
                 }
                 this._matrixChanged();

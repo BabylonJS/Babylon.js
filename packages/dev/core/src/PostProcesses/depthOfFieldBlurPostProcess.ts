@@ -76,7 +76,7 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
             engine,
             reusable,
             textureType,
-            `#define DOF 1\r\n`,
+            `#define DOF 1\n`,
             blockCompilation,
             textureFormat
         );

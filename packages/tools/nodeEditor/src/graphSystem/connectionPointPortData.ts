@@ -3,6 +3,8 @@ import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import type { NodeMaterialConnectionPoint } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointCompatibilityStates, NodeMaterialConnectionPointDirection } from "core/Materials/Node/nodeMaterialBlockConnectionPoint";
 import type { Nullable } from "core/types";
+import type { GlobalState } from "node-editor/globalState";
+import type { GraphCanvasComponent } from "shared-ui-components/nodeGraphSystem/graphCanvas";
 import type { GraphNode } from "shared-ui-components/nodeGraphSystem/graphNode";
 import type { INodeContainer } from "shared-ui-components/nodeGraphSystem/interfaces/nodeContainer";
 import type { IPortData } from "shared-ui-components/nodeGraphSystem/interfaces/portData";
@@ -18,7 +20,7 @@ export class ConnectionPointPortData implements IPortData {
     public get name() {
         const block = this.data.ownerBlock;
         let portName = this.data.displayName || this.data.name;
-        if (this.data.ownerBlock.isInput) {
+        if (this.data.ownerBlock.isInput && this.data.ownerBlock.inputs.length === 1) {
             portName = block.name;
         }
 
@@ -59,6 +61,11 @@ export class ConnectionPointPortData implements IPortData {
 
             if (!otherNode) {
                 otherNode = this._nodeContainer.appendNode(TypeLedger.NodeDataBuilder(otherBlock, this._nodeContainer));
+
+                const globalState = (this._nodeContainer as GraphCanvasComponent).stateManager.data as GlobalState;
+                if (globalState.nodeMaterial!.attachedBlocks.indexOf(otherBlock) === -1) {
+                    globalState.nodeMaterial!.attachedBlocks.push(otherBlock);
+                }
             }
 
             this._connectedPort = otherNode.getPortDataForPortDataContent(this.data.connectedPoint!);

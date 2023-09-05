@@ -50,7 +50,7 @@ export class DiscardBlock extends NodeMaterialBlock {
             return;
         }
 
-        state.compilationString += `if (${this.value.associatedVariableName} < ${this.cutoff.associatedVariableName}) discard;\r\n`;
+        state.compilationString += `if (${this.value.associatedVariableName} < ${this.cutoff.associatedVariableName}) discard;\n`;
 
         return this;
     }

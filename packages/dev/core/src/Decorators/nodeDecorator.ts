@@ -1,8 +1,8 @@
-import type { Scene } from "../../scene";
-import type { NodeMaterialBlock } from "./nodeMaterialBlock";
+import type { Nullable } from "../types";
+import type { Scene } from "../scene";
 
 /**
- * Enum defining the type of properties that can be edited in the property pages in the NME
+ * Enum defining the type of properties that can be edited in the property pages in the node editor
  */
 export enum PropertyTypeForEdition {
     /** property is a boolean */
@@ -37,16 +37,16 @@ export interface IEditablePropertyOption {
     max?: number;
     /** notifiers: indicates which actions to take when the property is changed */
     notifiers?: {
-        /** the material should be rebuilt */
+        /** the entity should be rebuilt */
         rebuild?: boolean;
         /** the preview should be updated */
         update?: boolean;
         /** the onPreviewCommandActivated observer of the preview manager should be triggered */
         activatePreviewCommand?: boolean;
         /** a callback to trigger */
-        callback?: (scene: Scene, block: NodeMaterialBlock) => boolean | undefined | void;
+        callback?: (scene: Nullable<Scene>, block: any) => boolean | undefined | void;
         /** a callback to validate the property. Returns true if the property is ok, else false. If false, the rebuild/update/callback events won't be called */
-        onValidation?: (block: NodeMaterialBlock, propertyName: string) => boolean;
+        onValidation?: (block: any, propertyName: string) => boolean;
     };
     /** list of the options for a variable of type list */
     options?: IEditablePropertyListOption[];
@@ -69,7 +69,7 @@ export interface IPropertyDescriptionForEdition {
 }
 
 /**
- * Decorator that flags a property in a node material block as being editable
+ * Decorator that flags a property in a node block as being editable
  * @param displayName
  * @param propertyType
  * @param groupName
