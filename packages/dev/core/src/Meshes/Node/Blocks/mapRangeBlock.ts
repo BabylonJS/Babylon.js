@@ -91,7 +91,13 @@ export class MapRangeBlock extends NodeGeometryBlock {
             const toMin = this.toMin.getConnectedValue(state);
             const toMax = this.toMax.getConnectedValue(state);
 
-            return ((value - fromMin) / (fromMax - fromMin)) * (toMax - toMin) + toMin;
+            const result = ((value - fromMin) / (fromMax - fromMin)) * (toMax - toMin) + toMin;
+
+            if (this.output.type === NodeGeometryBlockConnectionPointTypes.Int) {
+                return Math.floor(result);
+            }
+
+            return result;
         };
     }
 }
