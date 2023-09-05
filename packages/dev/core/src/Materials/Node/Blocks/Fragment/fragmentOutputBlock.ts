@@ -6,11 +6,9 @@ import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnect
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Scene } from "../../../../scene";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import type { NodeMaterialDefines } from "../../nodeMaterial";
-import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
+import type { NodeMaterialDefines, NodeMaterial } from "../../nodeMaterial";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { MaterialHelper } from "../../../materialHelper";
-
-import type { NodeMaterial } from "../../nodeMaterial";
 import type { Effect } from "../../../effect";
 import type { Mesh } from "../../../../Meshes/mesh";
 
@@ -31,7 +29,6 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         this.registerInput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, true);
         this.registerInput("rgb", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
         this.registerInput("a", NodeMaterialBlockConnectionPointTypes.Float, true);
-
         this.rgb.addExcludedConnectionPointFromAllowedTypes(
             NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Float
         );
@@ -120,9 +117,9 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
 
         if (rgba.connectedPoint) {
             if (a.isConnected) {
-                state.compilationString += `gl_FragColor = vec4(${rgba.associatedVariableName}.rgb, ${a.associatedVariableName});\r\n`;
+                state.compilationString += `gl_FragColor = vec4(${rgba.associatedVariableName}.rgb, ${a.associatedVariableName});\n`;
             } else {
-                state.compilationString += `gl_FragColor = ${rgba.associatedVariableName};\r\n`;
+                state.compilationString += `gl_FragColor = ${rgba.associatedVariableName};\n`;
             }
         } else if (rgb.connectedPoint) {
             let aValue = "1.0";
@@ -132,34 +129,38 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
             }
 
             if (rgb.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Float) {
-                state.compilationString += `gl_FragColor = vec4(${rgb.associatedVariableName}, ${rgb.associatedVariableName}, ${rgb.associatedVariableName}, ${aValue});\r\n`;
+                state.compilationString += `gl_FragColor = vec4(${rgb.associatedVariableName}, ${rgb.associatedVariableName}, ${rgb.associatedVariableName}, ${aValue});\n`;
             } else {
-                state.compilationString += `gl_FragColor = vec4(${rgb.associatedVariableName}, ${aValue});\r\n`;
+                state.compilationString += `gl_FragColor = vec4(${rgb.associatedVariableName}, ${aValue});\n`;
             }
         } else {
             state.sharedData.checks.notConnectedNonOptionalInputs.push(rgba);
         }
 
-        state.compilationString += `#ifdef ${this._linearDefineName}\r\n`;
-        state.compilationString += `gl_FragColor = toLinearSpace(gl_FragColor);\r\n`;
-        state.compilationString += `#endif\r\n`;
+        state.compilationString += `#ifdef ${this._linearDefineName}\n`;
+        state.compilationString += `gl_FragColor = toLinearSpace(gl_FragColor);\n`;
+        state.compilationString += `#endif\n`;
 
-        state.compilationString += `#ifdef ${this._gammaDefineName}\r\n`;
-        state.compilationString += `gl_FragColor = toGammaSpace(gl_FragColor);\r\n`;
-        state.compilationString += `#endif\r\n`;
+        state.compilationString += `#ifdef ${this._gammaDefineName}\n`;
+        state.compilationString += `gl_FragColor = toGammaSpace(gl_FragColor);\n`;
+        state.compilationString += `#endif\n`;
 
         if (this.useLogarithmicDepth) {
-            state.compilationString += `gl_FragDepthEXT = log2(vFragmentDepth) * logarithmicDepthConstant * 0.5;\r\n`;
+            state.compilationString += `gl_FragDepthEXT = log2(vFragmentDepth) * logarithmicDepthConstant * 0.5;\n`;
         }
+
+        state.compilationString += `#if defined(PREPASS)\r\n`;
+        state.compilationString += `gl_FragData[0] = gl_FragColor;\r\n`;
+        state.compilationString += `#endif\r\n`;
 
         return this;
     }
 
     protected _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
-        codeString += `${this._codeVariableName}.convertToGammaSpace = ${this.convertToGammaSpace};\r\n`;
-        codeString += `${this._codeVariableName}.convertToLinearSpace = ${this.convertToLinearSpace};\r\n`;
-        codeString += `${this._codeVariableName}.useLogarithmicDepth = ${this.useLogarithmicDepth};\r\n`;
+        codeString += `${this._codeVariableName}.convertToGammaSpace = ${this.convertToGammaSpace};\n`;
+        codeString += `${this._codeVariableName}.convertToLinearSpace = ${this.convertToLinearSpace};\n`;
+        codeString += `${this._codeVariableName}.useLogarithmicDepth = ${this.useLogarithmicDepth};\n`;
 
         return codeString;
     }

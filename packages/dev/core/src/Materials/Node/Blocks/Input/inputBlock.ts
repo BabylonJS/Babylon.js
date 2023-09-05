@@ -391,10 +391,10 @@ export class InputBlock extends NodeMaterialBlock {
 
     private _emitDefine(define: string): string {
         if (define[0] === "!") {
-            return `#ifndef ${define.substring(1)}\r\n`;
+            return `#ifndef ${define.substring(1)}\n`;
         }
 
-        return `#ifdef ${define}\r\n`;
+        return `#ifdef ${define}\n`;
     }
 
     public initialize() {
@@ -480,7 +480,7 @@ export class InputBlock extends NodeMaterialBlock {
                     return;
                 }
                 state.constants.push(this.associatedVariableName);
-                state._constantDeclaration += this._declareOutput(this.output, state) + ` = ${this._emitConstant(state)};\r\n`;
+                state._constantDeclaration += this._declareOutput(this.output, state) + ` = ${this._emitConstant(state)};\n`;
                 return;
             }
 
@@ -492,9 +492,9 @@ export class InputBlock extends NodeMaterialBlock {
             if (define) {
                 state._uniformDeclaration += this._emitDefine(define);
             }
-            state._uniformDeclaration += `uniform ${state._getGLType(this.type)} ${this.associatedVariableName};\r\n`;
+            state._uniformDeclaration += `uniform ${state._getGLType(this.type)} ${this.associatedVariableName};\n`;
             if (define) {
-                state._uniformDeclaration += `#endif\r\n`;
+                state._uniformDeclaration += `#endif\n`;
             }
 
             // well known
@@ -551,9 +551,9 @@ export class InputBlock extends NodeMaterialBlock {
                 if (define) {
                     state._attributeDeclaration += this._emitDefine(define);
                 }
-                state._attributeDeclaration += `attribute ${state._getGLType(this.type)} ${this.associatedVariableName};\r\n`;
+                state._attributeDeclaration += `attribute ${state._getGLType(this.type)} ${this.associatedVariableName};\n`;
                 if (define) {
-                    state._attributeDeclaration += `#endif\r\n`;
+                    state._attributeDeclaration += `#endif\n`;
                 }
             }
         }
@@ -694,10 +694,10 @@ export class InputBlock extends NodeMaterialBlock {
         const variableName = this._codeVariableName;
 
         if (this.isAttribute) {
-            return super._dumpPropertiesCode() + `${variableName}.setAsAttribute("${this.name}");\r\n`;
+            return super._dumpPropertiesCode() + `${variableName}.setAsAttribute("${this.name}");\n`;
         }
         if (this.isSystemValue) {
-            return super._dumpPropertiesCode() + `${variableName}.setAsSystemValue(BABYLON.NodeMaterialSystemValues.${NodeMaterialSystemValues[this._systemValue!]});\r\n`;
+            return super._dumpPropertiesCode() + `${variableName}.setAsSystemValue(BABYLON.NodeMaterialSystemValues.${NodeMaterialSystemValues[this._systemValue!]});\n`;
         }
         if (this.isUniform) {
             const codes: string[] = [];
@@ -759,7 +759,7 @@ export class InputBlock extends NodeMaterialBlock {
 
             codes.push("");
 
-            return super._dumpPropertiesCode() + codes.join(";\r\n");
+            return super._dumpPropertiesCode() + codes.join(";\n");
         }
         return super._dumpPropertiesCode();
     }

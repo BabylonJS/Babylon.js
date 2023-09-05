@@ -242,13 +242,13 @@ export class ShadowDepthWrapper {
                         : Effect.IncludesShadersStore["shadowMapFragmentSoftTransparentShadow"],
                 fragmentBlockCode = Effect.IncludesShadersStore["shadowMapFragment"];
 
-            vertexCode = vertexCode.replace(/void\s+?main/g, Effect.IncludesShadersStore["shadowMapVertexExtraDeclaration"] + "\r\nvoid main");
+            vertexCode = vertexCode.replace(/void\s+?main/g, Effect.IncludesShadersStore["shadowMapVertexExtraDeclaration"] + "\nvoid main");
             vertexCode = vertexCode.replace(/#define SHADOWDEPTH_NORMALBIAS|#define CUSTOM_VERTEX_UPDATE_WORLDPOS/g, vertexNormalBiasCode);
 
             if (vertexCode.indexOf("#define SHADOWDEPTH_METRIC") !== -1) {
                 vertexCode = vertexCode.replace(/#define SHADOWDEPTH_METRIC/g, vertexMetricCode);
             } else {
-                vertexCode = vertexCode.replace(/}\s*$/g, vertexMetricCode + "\r\n}");
+                vertexCode = vertexCode.replace(/}\s*$/g, vertexMetricCode + "\n}");
             }
             vertexCode = vertexCode.replace(/#define SHADER_NAME.*?\n|out vec4 glFragColor;\n/g, "");
 
@@ -260,17 +260,17 @@ export class ShadowDepthWrapper {
             let fragmentCodeToInjectAtEnd = "";
 
             if (!hasLocationForSoftTransparentShadow) {
-                fragmentCodeToInjectAtEnd = fragmentSoftTransparentShadow + "\r\n";
+                fragmentCodeToInjectAtEnd = fragmentSoftTransparentShadow + "\n";
             } else {
                 fragmentCode = fragmentCode.replace(/#define SHADOWDEPTH_SOFTTRANSPARENTSHADOW|#define CUSTOM_FRAGMENT_BEFORE_FOG/g, fragmentSoftTransparentShadow);
             }
 
-            fragmentCode = fragmentCode.replace(/void\s+?main/g, Effect.IncludesShadersStore["shadowMapFragmentExtraDeclaration"] + "\r\nvoid main");
+            fragmentCode = fragmentCode.replace(/void\s+?main/g, Effect.IncludesShadersStore["shadowMapFragmentExtraDeclaration"] + "\nvoid main");
 
             if (hasLocationForFragment) {
                 fragmentCode = fragmentCode.replace(/#define SHADOWDEPTH_FRAGMENT/g, fragmentBlockCode);
             } else {
-                fragmentCodeToInjectAtEnd += fragmentBlockCode + "\r\n";
+                fragmentCodeToInjectAtEnd += fragmentBlockCode + "\n";
             }
             if (fragmentCodeToInjectAtEnd) {
                 fragmentCode = fragmentCode.replace(/}\s*$/g, fragmentCodeToInjectAtEnd + "}");

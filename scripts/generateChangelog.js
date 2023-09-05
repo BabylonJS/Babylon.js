@@ -129,8 +129,8 @@ async function generateChangelog(nextVersion) {
                             console.log(`Title: ${pr.pr.title}, by ${pr.pr.user.login} (${pr.pr.user.html_url})`);
 
                             // check if the title has an issue
-                            const matches = [...pr.pr.title.matchAll(/#(\d*)/g)].filter((match) => match[1] !== pr.prNumber);
-                            let title = pr.pr.title;
+                            const matches = [...pr.pr.title.matchAll(/#(\d{3,6})/g)].filter((match) => match[1] !== pr.prNumber);
+                            let title = pr.pr.title || "Issue title not found";
                             if (matches.length) {
                                 // get the title of the issue
                                 const issueTitle = await runCommand(`curl -u ${githubPatToken} -s https://api.github.com/repos/BabylonJS/Babylon.js/issues/${matches[0][1]}`);
@@ -172,15 +172,17 @@ async function generateChangelog(nextVersion) {
 function generateMarkdown(finalChangelog) {
     let markdown = "# Changelog\n";
     // Sort versions
-    const versions = Object.keys(finalChangelog).sort((a,b) => {
-        const sepA = a.split(".");
-        const sepB = b.split(".");
-        for(let i = 0; i < sepA.length; i++) {
-            if(sepA[i] !== sepB[i]) {
-                return sepA[i] - sepB[i];
+    const versions = Object.keys(finalChangelog)
+        .sort((a, b) => {
+            const sepA = a.split(".");
+            const sepB = b.split(".");
+            for (let i = 0; i < sepA.length; i++) {
+                if (sepA[i] !== sepB[i]) {
+                    return sepA[i] - sepB[i];
+                }
             }
-        }
-    }).reverse();
+        })
+        .reverse();
     // per package
     const versionChangelog = {};
     versions.forEach((version) => {
@@ -210,7 +212,7 @@ function generateMarkdown(finalChangelog) {
             const prettyPackage = friendlyNames[pck];
             markdown += `\n### ${prettyPackage}\n\n`;
             versionChangelog[version][pck].forEach((pr) => {
-                if(pr.tags && pr.tags.indexOf(skipChangelogTag) !== -1) {
+                if (pr.tags && pr.tags.indexOf(skipChangelogTag) !== -1) {
                     return;
                 }
                 const tag = pr.tags.find((tag) => {

@@ -9,6 +9,7 @@ import { EngineStore } from "../Engines/engineStore";
 
 import type { AbstractScene } from "../abstractScene";
 import { Tags } from "../Misc/tags";
+import type { AnimationGroupMask } from "./animationGroupMask";
 
 /**
  * This class defines the direct association between an animation and a target
@@ -61,6 +62,8 @@ export class AnimationGroup implements IDisposable {
     private _isAdditive = false;
     private _weight = -1;
     private _playOrder = 0;
+    private _enableBlending: Nullable<boolean> = null;
+    private _blendingSpeed: Nullable<number> = null;
 
     /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
@@ -104,6 +107,67 @@ export class AnimationGroup implements IDisposable {
      * Gets or sets an object used to store user defined information for the node
      */
     public metadata: any = null;
+
+    /**
+     * Gets or sets the mask associated with this animation group. This mask is used to filter which objects should be animated.
+     */
+    public mask?: AnimationGroupMask;
+
+    /**
+     * Makes sure that the animations are either played or stopped according to the animation group mask.
+     * Note however that the call won't have any effect if the animation group has not been started yet.
+     * You should call this function if you modify the mask after the animation group has been started.
+     */
+    public syncWithMask() {
+        if (!this.mask) {
+            return;
+        }
+
+        for (let i = 0; i < this._animatables.length; ++i) {
+            const animatable = this._animatables[i];
+
+            if (this.mask.retainsTarget(animatable.target.name)) {
+                if (animatable.paused) {
+                    animatable.restart();
+                }
+            } else {
+                if (!animatable.paused) {
+                    animatable.pause();
+                }
+            }
+        }
+    }
+
+    /**
+     * Removes all animations for the targets not retained by the animation group mask.
+     * Use this function if you know you won't need those animations anymore and if you want to free memory.
+     */
+    public removeUnmaskedAnimations() {
+        if (!this.mask) {
+            return;
+        }
+
+        // Removes all animatables (in case the animation group has already been started)
+        for (let i = 0; i < this._animatables.length; ++i) {
+            const animatable = this._animatables[i];
+
+            if (!this.mask.retainsTarget(animatable.target.name)) {
+                animatable.stop();
+                this._animatables.splice(i, 1);
+                --i;
+            }
+        }
+
+        // Removes the targeted animations
+        for (let index = 0; index < this._targetedAnimations.length; index++) {
+            const targetedAnimation = this._targetedAnimations[index];
+
+            if (!this.mask.retainsTarget(targetedAnimation.target.name)) {
+                this._targetedAnimations.splice(index, 1);
+                --index;
+            }
+        }
+    }
 
     /**
      * Gets the first frame
@@ -258,22 +322,45 @@ export class AnimationGroup implements IDisposable {
 
     /**
      * Allows the animations of the animation group to blend with current running animations
-     * Note: this method should be called after all targeted animations have been added to the group
-     * @param blendingSpeed defines the blending speed to use
+     * Note that a null value means that each animation will use their own existing blending configuration (Animation.enableBlending)
      */
-    public enableBlending(blendingSpeed: number) {
-        for (let i = 0; i < this._targetedAnimations.length; ++i) {
-            this._targetedAnimations[i].animation.enableBlending = true;
-            this._targetedAnimations[i].animation.blendingSpeed = blendingSpeed;
+    public get enableBlending() {
+        return this._enableBlending;
+    }
+
+    public set enableBlending(value: Nullable<boolean>) {
+        if (this._enableBlending === value) {
+            return;
+        }
+
+        this._enableBlending = value;
+
+        if (value !== null) {
+            for (let i = 0; i < this._targetedAnimations.length; ++i) {
+                this._targetedAnimations[i].animation.enableBlending = value;
+            }
         }
     }
 
     /**
-     * Disable animation blending
+     * Gets or sets the animation blending speed
+     * Note that a null value means that each animation will use their own existing blending configuration (Animation.blendingSpeed)
      */
-    public disableBlending() {
-        for (let i = 0; i < this._targetedAnimations.length; ++i) {
-            this._targetedAnimations[i].animation.enableBlending = false;
+    public get blendingSpeed() {
+        return this._blendingSpeed;
+    }
+
+    public set blendingSpeed(value: Nullable<number>) {
+        if (this._blendingSpeed === value) {
+            return;
+        }
+
+        this._blendingSpeed = value;
+
+        if (value !== null) {
+            for (let i = 0; i < this._targetedAnimations.length; ++i) {
+                this._targetedAnimations[i].animation.blendingSpeed = value;
+            }
         }
     }
 
@@ -293,7 +380,7 @@ export class AnimationGroup implements IDisposable {
         weight = weight ?? animationGroups[0].weight;
 
         let beginFrame = Number.MAX_VALUE;
-        let endFrame = Number.MIN_VALUE;
+        let endFrame = -Number.MAX_VALUE;
 
         if (normalize) {
             for (const animationGroup of animationGroups) {
@@ -368,6 +455,14 @@ export class AnimationGroup implements IDisposable {
 
         if (this._to < keys[keys.length - 1].frame) {
             this._to = keys[keys.length - 1].frame;
+        }
+
+        if (this._enableBlending !== null) {
+            animation.enableBlending = this._enableBlending;
+        }
+
+        if (this._blendingSpeed !== null) {
+            animation.blendingSpeed = this._blendingSpeed;
         }
 
         this._targetedAnimations.push(targetedAnimation);
@@ -502,6 +597,8 @@ export class AnimationGroup implements IDisposable {
             this._processLoop(animatable, targetedAnimation, index);
             this._animatables.push(animatable);
         }
+
+        this.syncWithMask();
 
         this._scene.sortActiveAnimatables();
 
@@ -836,6 +933,82 @@ export class AnimationGroup implements IDisposable {
         }
 
         animationGroup.isAdditive = true;
+
+        return animationGroup;
+    }
+
+    /**
+     * Creates a new animation, keeping only the keys that are inside a given range
+     * @param animationGroup defines the animation group on which to operate
+     * @param fromKey defines the lower bound of the range
+     * @param toKey defines the upper bound of the range
+     * @param name defines the name of the new animation group. If not provided, use the same name as animationGroup
+     * @returns a new animation group stripped from all the keys outside the given range
+     */
+    public static ClipKeys(sourceAnimationGroup: AnimationGroup, fromKey: number, toKey: number, name?: string): AnimationGroup {
+        const animationGroup = sourceAnimationGroup.clone(name || sourceAnimationGroup.name);
+
+        return this.ClipKeysInPlace(animationGroup, fromKey, toKey);
+    }
+
+    /**
+     * Updates an existing animation, keeping only the keys that are inside a given range
+     * @param animationGroup defines the animation group on which to operate
+     * @param fromKey defines the lower bound of the range
+     * @param toKey defines the upper bound of the range
+     * @returns the source animationGroup stripped from all the keys outside the given range
+     */
+    public static ClipKeysInPlace(animationGroup: AnimationGroup, fromKey: number, toKey: number): AnimationGroup {
+        let from = Number.MAX_VALUE;
+        let to = -Number.MAX_VALUE;
+
+        const targetedAnimations = animationGroup.targetedAnimations;
+        for (let index = 0; index < targetedAnimations.length; index++) {
+            const targetedAnimation = targetedAnimations[index];
+            const animation = targetedAnimation.animation.clone();
+            const keys = animation.getKeys();
+            const newKeys: IAnimationKey[] = [];
+
+            let startFrame = Number.MAX_VALUE;
+            for (let k = 0; k < keys.length; k++) {
+                if (k >= fromKey && k <= toKey) {
+                    const key = keys[k];
+                    const newKey: IAnimationKey = {
+                        frame: key.frame,
+                        value: key.value,
+                        inTangent: key.inTangent,
+                        outTangent: key.outTangent,
+                        interpolation: key.interpolation,
+                        lockedTangent: key.lockedTangent,
+                    };
+                    if (startFrame === Number.MAX_VALUE) {
+                        startFrame = newKey.frame;
+                    }
+                    newKey.frame -= startFrame;
+                    newKeys.push(newKey);
+                }
+            }
+
+            if (newKeys.length === 0) {
+                targetedAnimations.splice(index, 1);
+                index--;
+                continue;
+            }
+
+            if (from > newKeys[0].frame) {
+                from = newKeys[0].frame;
+            }
+
+            if (to < newKeys[newKeys.length - 1].frame) {
+                to = newKeys[newKeys.length - 1].frame;
+            }
+
+            animation.setKeys(newKeys, true);
+            targetedAnimation.animation = animation;
+        }
+
+        animationGroup._from = from;
+        animationGroup._to = to;
 
         return animationGroup;
     }

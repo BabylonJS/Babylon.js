@@ -250,13 +250,9 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
     }
 
     private _getLocalRotation(): number {
-        let rotation = (this.rotationSpeed * this._engine.getDeltaTime()) / 1000;
-        if (this.camera.getScene().useRightHandedSystem) {
-            rotation *= -1;
-        }
-        if (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() < 0) {
-            rotation *= -1;
-        }
+        const handednessMultiplier = this.camera._calculateHandednessMultiplier();
+        const rotation = ((this.rotationSpeed * this._engine.getDeltaTime()) / 1000) * handednessMultiplier;
+
         return rotation;
     }
 }

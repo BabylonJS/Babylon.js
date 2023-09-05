@@ -522,6 +522,22 @@ export class MeshPropertyGridComponent extends React.Component<
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                 </LineContainerComponent>
+                {mesh._internalMetadata && mesh._internalMetadata.nodeGeometry && (
+                    <LineContainerComponent title="NODE GEOMETRY" selection={this.props.globalState}>
+                        <ButtonLineComponent
+                            label="Edit"
+                            onClick={() => {
+                                mesh._internalMetadata.nodeGeometry.edit({
+                                    nodeGeometryEditorConfig: {
+                                        backgroundColor: mesh.getScene().clearColor,
+                                        hostMesh: mesh,
+                                        hostScene: mesh.getScene(),
+                                    },
+                                });
+                            }}
+                        />
+                    </LineContainerComponent>
+                )}
                 <LineContainerComponent title="DISPLAY" closed={true} selection={this.props.globalState}>
                     {!mesh.isAnInstance && (
                         <SliderLineComponent

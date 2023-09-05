@@ -67,7 +67,7 @@ export class ScreenSizeBlock extends NodeMaterialBlock {
 
         for (const output of this._outputs) {
             if (output.hasEndpoints) {
-                code += `${this._declareOutput(output, state)} = ${varName}.${output.name};\r\n`;
+                code += `${this._declareOutput(output, state)} = ${varName}.${output.name};\n`;
             }
         }
 

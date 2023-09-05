@@ -71,17 +71,16 @@ export class WaveBlock extends NodeMaterialBlock {
 
         switch (this.kind) {
             case WaveBlockKind.SawTooth: {
-                state.compilationString += this._declareOutput(output, state) + ` = ${this.input.associatedVariableName} - floor(0.5 + ${this.input.associatedVariableName});\r\n`;
+                state.compilationString += this._declareOutput(output, state) + ` = ${this.input.associatedVariableName} - floor(0.5 + ${this.input.associatedVariableName});\n`;
                 break;
             }
             case WaveBlockKind.Square: {
-                state.compilationString += this._declareOutput(output, state) + ` = 1.0 - 2.0 * round(fract(${this.input.associatedVariableName}));\r\n`;
+                state.compilationString += this._declareOutput(output, state) + ` = 1.0 - 2.0 * round(fract(${this.input.associatedVariableName}));\n`;
                 break;
             }
             case WaveBlockKind.Triangle: {
                 state.compilationString +=
-                    this._declareOutput(output, state) +
-                    ` = 2.0 * abs(2.0 * (${this.input.associatedVariableName} - floor(0.5 + ${this.input.associatedVariableName}))) - 1.0;\r\n`;
+                    this._declareOutput(output, state) + ` = 2.0 * abs(2.0 * (${this.input.associatedVariableName} - floor(0.5 + ${this.input.associatedVariableName}))) - 1.0;\n`;
                 break;
             }
         }

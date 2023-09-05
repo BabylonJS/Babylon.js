@@ -462,7 +462,7 @@ export class ImageProcessingPostProcess extends PostProcess {
         let defines = "";
         for (const define in this._defines) {
             if ((<any>this._defines)[define]) {
-                defines += `#define ${define};\r\n`;
+                defines += `#define ${define};\n`;
             }
         }
 

@@ -41,7 +41,7 @@ export class Vector4LineComponent extends React.Component<IVector4LineComponentP
     }
 
     shouldComponentUpdate(nextProps: IVector4LineComponentProps, nextState: { isExpanded: boolean; value: Vector4 }) {
-        const nextPropsValue = this.getCurrentValue();
+        const nextPropsValue = nextProps.value || nextProps.target[nextProps.propertyName!];
 
         if (!nextPropsValue.equals(nextState.value) || this._localChange) {
             nextState.value = nextPropsValue.clone();

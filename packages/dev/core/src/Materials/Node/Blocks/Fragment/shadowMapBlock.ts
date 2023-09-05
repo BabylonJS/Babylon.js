@@ -87,17 +87,17 @@ export class ShadowMapBlock extends NodeMaterialBlock {
 
         state._emitFunctionFromInclude("packingFunctions", comments);
 
-        state.compilationString += `vec4 worldPos = ${this.worldPosition.associatedVariableName};\r\n`;
-        state.compilationString += `vec3 vPositionWSM;\r\n`;
-        state.compilationString += `float vDepthMetricSM = 0.0;\r\n`;
-        state.compilationString += `float zSM;\r\n`;
+        state.compilationString += `vec4 worldPos = ${this.worldPosition.associatedVariableName};\n`;
+        state.compilationString += `vec3 vPositionWSM;\n`;
+        state.compilationString += `float vDepthMetricSM = 0.0;\n`;
+        state.compilationString += `float zSM;\n`;
 
         if (this.worldNormal.isConnected) {
-            state.compilationString += `vec3 vNormalW = ${this.worldNormal.associatedVariableName}.xyz;\r\n`;
+            state.compilationString += `vec3 vNormalW = ${this.worldNormal.associatedVariableName}.xyz;\n`;
             state.compilationString += state._emitCodeFromInclude("shadowMapVertexNormalBias", comments);
         }
 
-        state.compilationString += `vec4 clipPos = ${this.viewProjection.associatedVariableName} * worldPos;\r\n`;
+        state.compilationString += `vec4 clipPos = ${this.viewProjection.associatedVariableName} * worldPos;\n`;
 
         state.compilationString += state._emitCodeFromInclude("shadowMapVertexMetric", comments, {
             replaceStrings: [
@@ -127,7 +127,7 @@ export class ShadowMapBlock extends NodeMaterialBlock {
             #endif
         `;
 
-        state.compilationString += `${this._declareOutput(this.depth, state)} = vec3(depthSM, 1., 1.);\r\n`;
+        state.compilationString += `${this._declareOutput(this.depth, state)} = vec3(depthSM, 1., 1.);\n`;
 
         return this;
     }

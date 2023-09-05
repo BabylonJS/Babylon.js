@@ -136,6 +136,8 @@ export class BoneIKController {
 
         this.mesh = mesh;
 
+        bone.getSkeleton().computeAbsoluteMatrices();
+
         const bonePos = bone.getPosition();
 
         if (bone.getAbsoluteMatrix().determinant() > 0) {

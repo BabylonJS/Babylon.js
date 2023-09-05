@@ -52,7 +52,7 @@ export class NormalizeBlock extends NodeMaterialBlock {
         const output = this._outputs[0];
         const input = this._inputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = normalize(${input.associatedVariableName});\r\n`;
+        state.compilationString += this._declareOutput(output, state) + ` = normalize(${input.associatedVariableName});\n`;
 
         return this;
     }

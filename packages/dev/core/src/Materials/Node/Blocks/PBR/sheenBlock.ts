@@ -5,7 +5,7 @@ import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnect
 import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { editableInPropertyPage, PropertyTypeForEdition } from "../../nodeMaterialDecorator";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
@@ -181,7 +181,7 @@ export class SheenBlock extends NodeMaterialBlock {
             #ifdef SHEEN_LINKWITHALBEDO
                 surfaceAlbedo = sheenOut.surfaceAlbedo;
             #endif
-        #endif\r\n`;
+        #endif\n`;
 
         return code;
     }
@@ -197,8 +197,8 @@ export class SheenBlock extends NodeMaterialBlock {
     protected _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
 
-        codeString += `${this._codeVariableName}.albedoScaling = ${this.albedoScaling};\r\n`;
-        codeString += `${this._codeVariableName}.linkSheenWithAlbedo = ${this.linkSheenWithAlbedo};\r\n`;
+        codeString += `${this._codeVariableName}.albedoScaling = ${this.albedoScaling};\n`;
+        codeString += `${this._codeVariableName}.linkSheenWithAlbedo = ${this.linkSheenWithAlbedo};\n`;
 
         return codeString;
     }

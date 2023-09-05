@@ -37,7 +37,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
 
     forceRebuild() {
         this.props.stateManager.onUpdateRequiredObservable.notifyObservers(this.props.nodeData.data as GradientBlock);
-        this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
+        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
     }
 
     deleteStep(step: GradientBlockColorStep) {
@@ -132,7 +132,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
                             }
                             this.forceUpdate();
                             this.props.stateManager.onUpdateRequiredObservable.notifyObservers(gradientBlock);
-                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
+                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
                         }}
                         propertyName={""}
                     />

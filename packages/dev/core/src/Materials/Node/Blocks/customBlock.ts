@@ -70,7 +70,7 @@ export class CustomBlock extends NodeMaterialBlock {
 
         // Declare the output variables
         this._outputs.forEach((output) => {
-            state.compilationString += this._declareOutput(output, state) + ";\r\n";
+            state.compilationString += this._declareOutput(output, state) + ";\n";
         });
 
         // Generate the function call
@@ -96,7 +96,7 @@ export class CustomBlock extends NodeMaterialBlock {
             state.compilationString += output.associatedVariableName;
         });
 
-        state.compilationString += ");\r\n";
+        state.compilationString += ");\n";
 
         return this;
     }
@@ -104,7 +104,7 @@ export class CustomBlock extends NodeMaterialBlock {
     protected _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
 
-        codeString += `${this._codeVariableName}.options = ${JSON.stringify(this._options)};\r\n`;
+        codeString += `${this._codeVariableName}.options = ${JSON.stringify(this._options)};\n`;
 
         return codeString;
     }
@@ -125,7 +125,7 @@ export class CustomBlock extends NodeMaterialBlock {
 
     private _deserializeOptions(options: any) {
         this._options = options;
-        this._code = options.code.join("\r\n") + "\r\n";
+        this._code = options.code.join("\n") + "\n";
         this.name = this.name || options.name;
         this.target = (<any>NodeMaterialBlockTargets)[options.target];
 

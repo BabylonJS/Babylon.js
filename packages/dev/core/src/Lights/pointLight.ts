@@ -76,7 +76,7 @@ export class PointLight extends ShadowLight {
      * @param position The position of the point light in the scene
      * @param scene The scene the lights belongs to
      */
-    constructor(name: string, position: Vector3, scene: Scene) {
+    constructor(name: string, position: Vector3, scene?: Scene) {
         super(name, scene);
         this.position = position;
     }

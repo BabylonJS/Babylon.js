@@ -48,6 +48,12 @@
         "outputDirectory": "./declarations"
     },
     {
+        "declarationLibs": ["@tools/node-geometry-editor"],
+        "devPackageName": "node-geometry-editor",
+        "filename": "node-geometry-editor.d.ts",
+        "outputDirectory": "./declarations"
+    },
+    {
         "declarationLibs": ["@tools/gui-editor"],
         "devPackageName": "gui-editor",
         "filename": "gui-editor.d.ts",

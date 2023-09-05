@@ -6,4 +6,4 @@ export * from "./nodeMaterialBlock";
 export * from "./nodeMaterial";
 export * from "./Blocks/index";
 export * from "./Optimizers/index";
-export * from "./nodeMaterialDecorator";
+export * from "../../Decorators/nodeDecorator";

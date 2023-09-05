@@ -137,11 +137,11 @@ export class ColorMergerBlock extends NodeMaterialBlock {
             if (color4Output.hasEndpoints) {
                 state.compilationString +=
                     this._declareOutput(color4Output, state) +
-                    ` = vec4(${rgbInput.associatedVariableName}, ${aInput.isConnected ? this._writeVariable(aInput) : "0.0"})${this._buildSwizzle(4)};\r\n`;
+                    ` = vec4(${rgbInput.associatedVariableName}, ${aInput.isConnected ? this._writeVariable(aInput) : "0.0"})${this._buildSwizzle(4)};\n`;
             }
 
             if (color3Output.hasEndpoints) {
-                state.compilationString += this._declareOutput(color3Output, state) + ` = ${rgbInput.associatedVariableName}${this._buildSwizzle(3)};\r\n`;
+                state.compilationString += this._declareOutput(color3Output, state) + ` = ${rgbInput.associatedVariableName}${this._buildSwizzle(3)};\n`;
             }
         } else {
             if (color4Output.hasEndpoints) {
@@ -149,7 +149,7 @@ export class ColorMergerBlock extends NodeMaterialBlock {
                     this._declareOutput(color4Output, state) +
                     ` = vec4(${rInput.isConnected ? this._writeVariable(rInput) : "0.0"}, ${gInput.isConnected ? this._writeVariable(gInput) : "0.0"}, ${
                         bInput.isConnected ? this._writeVariable(bInput) : "0.0"
-                    }, ${aInput.isConnected ? this._writeVariable(aInput) : "0.0"})${this._buildSwizzle(4)};\r\n`;
+                    }, ${aInput.isConnected ? this._writeVariable(aInput) : "0.0"})${this._buildSwizzle(4)};\n`;
             }
 
             if (color3Output.hasEndpoints) {
@@ -157,7 +157,7 @@ export class ColorMergerBlock extends NodeMaterialBlock {
                     this._declareOutput(color3Output, state) +
                     ` = vec3(${rInput.isConnected ? this._writeVariable(rInput) : "0.0"}, ${gInput.isConnected ? this._writeVariable(gInput) : "0.0"}, ${
                         bInput.isConnected ? this._writeVariable(bInput) : "0.0"
-                    })${this._buildSwizzle(3)};\r\n`;
+                    })${this._buildSwizzle(3)};\n`;
             }
         }
 
@@ -186,10 +186,10 @@ export class ColorMergerBlock extends NodeMaterialBlock {
 
     protected _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
-        codeString += `${this._codeVariableName}.rSwizzle = "${this.rSwizzle}";\r\n`;
-        codeString += `${this._codeVariableName}.gSwizzle = "${this.gSwizzle}";\r\n`;
-        codeString += `${this._codeVariableName}.bSwizzle = "${this.bSwizzle}";\r\n`;
-        codeString += `${this._codeVariableName}.aSwizzle = "${this.aSwizzle}";\r\n`;
+        codeString += `${this._codeVariableName}.rSwizzle = "${this.rSwizzle}";\n`;
+        codeString += `${this._codeVariableName}.gSwizzle = "${this.gSwizzle}";\n`;
+        codeString += `${this._codeVariableName}.bSwizzle = "${this.bSwizzle}";\n`;
+        codeString += `${this._codeVariableName}.aSwizzle = "${this.aSwizzle}";\n`;
 
         return codeString;
     }

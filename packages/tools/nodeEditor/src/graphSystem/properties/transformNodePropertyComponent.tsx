@@ -24,7 +24,7 @@ export class TransformPropertyTabComponent extends React.Component<IPropertyComp
                             } else {
                                 transformBlock.complementW = 1;
                             }
-                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
+                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
                         }}
                         isSelected={() => (this.props.nodeData.data as TransformBlock).complementW === 0}
                     />

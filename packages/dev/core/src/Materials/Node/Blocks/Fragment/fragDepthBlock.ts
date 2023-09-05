@@ -53,7 +53,7 @@ export class FragDepthBlock extends NodeMaterialBlock {
         super._buildBlock(state);
 
         if (this.depth.isConnected) {
-            state.compilationString += `gl_FragDepth = ${this.depth.associatedVariableName};\r\n`;
+            state.compilationString += `gl_FragDepth = ${this.depth.associatedVariableName};\n`;
         } else if (this.worldPos.isConnected && this.viewProjection.isConnected) {
             state.compilationString += `
                 vec4 p = ${this.viewProjection.associatedVariableName} * ${this.worldPos.associatedVariableName};

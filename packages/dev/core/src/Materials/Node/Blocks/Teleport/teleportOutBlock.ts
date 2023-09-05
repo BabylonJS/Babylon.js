@@ -76,7 +76,7 @@ export class NodeMaterialTeleportOutBlock extends NodeMaterialBlock {
         super._buildBlock(state);
 
         if (this.entryPoint) {
-            state.compilationString += this._declareOutput(this.output, state) + ` = ${this.entryPoint.input.associatedVariableName};\r\n`;
+            state.compilationString += this._declareOutput(this.output, state) + ` = ${this.entryPoint.input.associatedVariableName};\n`;
         }
     }
 
@@ -127,7 +127,7 @@ export class NodeMaterialTeleportOutBlock extends NodeMaterialBlock {
         let codeString = super._dumpPropertiesCode();
 
         if (this.entryPoint) {
-            codeString += `${this.entryPoint._codeVariableName}.attachToEndpoint(${this._codeVariableName});\r\n`;
+            codeString += `${this.entryPoint._codeVariableName}.attachToEndpoint(${this._codeVariableName});\n`;
         }
         return codeString;
     }

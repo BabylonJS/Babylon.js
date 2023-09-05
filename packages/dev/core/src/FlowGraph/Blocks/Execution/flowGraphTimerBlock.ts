@@ -4,7 +4,7 @@ import { AdvancedTimer } from "../../../Misc/timer";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import { FlowGraphAsyncExecutionBlock } from "../../flowGraphAsyncExecutionBlock";
 import { RichTypeNumber } from "../../flowGraphRichTypes";
-import { Tools } from "core/Misc";
+import { Tools } from "../../../Misc/tools";
 
 export interface IFlowGraphTimerBlockParameters {
     timeout?: number;

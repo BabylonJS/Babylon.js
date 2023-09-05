@@ -406,7 +406,7 @@ export class ComputeEffect {
 
         // Let's go through fallbacks then
         Logger.Error("Unable to compile compute effect:");
-        Logger.Error("Defines:\r\n" + this.defines);
+        Logger.Error("Defines:\n" + this.defines);
         if (ComputeEffect.LogShaderCodeOnCompilationError) {
             let lineErrorVertex = null,
                 code = null;

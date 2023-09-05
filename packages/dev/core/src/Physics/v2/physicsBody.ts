@@ -1,4 +1,4 @@
-import type { IPhysicsCollisionEvent, IPhysicsEnginePluginV2, PhysicsMassProperties, PhysicsMotionType } from "./IPhysicsEnginePlugin";
+import type { IBasePhysicsCollisionEvent, IPhysicsCollisionEvent, IPhysicsEnginePluginV2, PhysicsMassProperties, PhysicsMotionType } from "./IPhysicsEnginePlugin";
 import type { PhysicsShape } from "./physicsShape";
 import { Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector";
 import type { Scene } from "../../scene";
@@ -39,6 +39,10 @@ export class PhysicsBody {
      * If the collision callback is enabled
      */
     private _collisionCBEnabled: boolean = false;
+    /**
+     * If the collision ended callback is enabled
+     */
+    private _collisionEndedCBEnabled: boolean = false;
     /**
      * The transform node associated with this Physics Body
      */
@@ -324,9 +328,23 @@ export class PhysicsBody {
      * @param linVel - The vector3 to store the linear velocity in.
      *
      * This method is useful for getting the linear velocity of a physics body in a physics engine.
-     * This can be used to determine the speed and direction of the body, which can be used to calculate the motion of the body.*/
+     * This can be used to determine the speed and direction of the body, which can be used to calculate the motion of the body.
+     */
     public getLinearVelocityToRef(linVel: Vector3, instanceIndex?: number): void {
         return this._physicsPlugin.getLinearVelocityToRef(this, linVel, instanceIndex);
+    }
+
+    /**
+     * Gets the linear velocity of the physics body as a new vector3.
+     * @returns The linear velocity of the physics body.
+     *
+     * This method is useful for getting the linear velocity of a physics body in a physics engine.
+     * This can be used to determine the speed and direction of the body, which can be used to calculate the motion of the body.
+     */
+    public getLinearVelocity(instanceIndex?: number): Vector3 {
+        const ref = new Vector3();
+        this.getLinearVelocityToRef(ref, instanceIndex);
+        return ref;
     }
 
     /**
@@ -350,6 +368,19 @@ export class PhysicsBody {
      */
     public getAngularVelocityToRef(angVel: Vector3, instanceIndex?: number): void {
         return this._physicsPlugin.getAngularVelocityToRef(this, angVel, instanceIndex);
+    }
+
+    /**
+     * Gets the angular velocity of the physics body as a new vector3.
+     * @returns The angular velocity of the physics body.
+     *
+     * This method is useful for getting the angular velocity of a physics body, which can be used to determine the body's
+     * rotational speed. This information can be used to create realistic physics simulations.
+     */
+    public getAngularVelocity(instanceIndex?: number): Vector3 {
+        const ref = new Vector3();
+        this.getAngularVelocityToRef(ref, instanceIndex);
+        return ref;
     }
 
     /**
@@ -392,11 +423,19 @@ export class PhysicsBody {
     }
 
     /**
-     * Returns an observable that will be notified for all collisions happening for event-enabled bodies
+     * Returns an observable that will be notified for when a collision starts or continues for this PhysicsBody
      * @returns Observable
      */
     public getCollisionObservable(): Observable<IPhysicsCollisionEvent> {
         return this._physicsPlugin.getCollisionObservable(this);
+    }
+
+    /**
+     * Returns an observable that will be notified when the body has finished colliding with another body
+     * @returns
+     */
+    public getCollisionEndedObservable(): Observable<IBasePhysicsCollisionEvent> {
+        return this._physicsPlugin.getCollisionEndedObservable(this);
     }
 
     /**
@@ -406,6 +445,11 @@ export class PhysicsBody {
     public setCollisionCallbackEnabled(enabled: boolean): void {
         this._collisionCBEnabled = enabled;
         this._physicsPlugin.setCollisionCallbackEnabled(this, enabled);
+    }
+
+    public setCollisionEndedCallbackEnabled(enabled: boolean): void {
+        this._collisionEndedCBEnabled = enabled;
+        this._physicsPlugin.setCollisionEndedCallbackEnabled(this, enabled);
     }
 
     /*
@@ -550,6 +594,9 @@ export class PhysicsBody {
         if (this._collisionCBEnabled) {
             this.setCollisionCallbackEnabled(false);
         }
+        if (this._collisionEndedCBEnabled) {
+            this.setCollisionEndedCallbackEnabled(false);
+        }
         if (this._nodeDisposeObserver) {
             this.transformNode.onDisposeObservable.remove(this._nodeDisposeObserver);
             this._nodeDisposeObserver = null;
@@ -557,6 +604,7 @@ export class PhysicsBody {
         this._physicsEngine.removeBody(this);
         this._physicsPlugin.removeBody(this);
         this._physicsPlugin.disposeBody(this);
+        this.transformNode.physicsBody = null;
         this._pluginData = null;
         this._pluginDataInstances.length = 0;
     }

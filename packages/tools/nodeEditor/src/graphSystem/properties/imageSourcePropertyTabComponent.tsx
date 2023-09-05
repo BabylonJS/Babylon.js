@@ -48,7 +48,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
 
     updateAfterTextureLoad() {
         this.props.stateManager.onUpdateRequiredObservable.notifyObservers(this.props.nodeData.data as NodeMaterialBlock);
-        this.props.stateManager.onRebuildRequiredObservable.notifyObservers(true);
+        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
         this.forceUpdate();
     }
 

@@ -7,6 +7,9 @@ export interface INodeData {
     uniqueId: number;
     isInput: boolean;
     comments: string;
+    executionTime?: number;
+
+    refreshCallback?: () => void;
 
     prepareHeaderIcon: (iconDiv: HTMLDivElement, img: HTMLImageElement) => void;
     getClassName: () => string;
@@ -18,4 +21,6 @@ export interface INodeData {
     outputs: IPortData[];
 
     invisibleEndpoints?: Nullable<any[]>;
+
+    isConnectedToOutput?: () => boolean;
 }
