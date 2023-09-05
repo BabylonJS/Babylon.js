@@ -8,7 +8,14 @@ import {
     PhysicsConstraintAxisLimitMode,
     PhysicsEventType,
 } from "../IPhysicsEnginePlugin";
-import type { PhysicsShapeParameters, IPhysicsEnginePluginV2, PhysicsMassProperties, IPhysicsCollisionEvent, IBasePhysicsCollisionEvent } from "../IPhysicsEnginePlugin";
+import type {
+    PhysicsShapeParameters,
+    IPhysicsEnginePluginV2,
+    PhysicsMassProperties,
+    IPhysicsCollisionEvent,
+    IBasePhysicsCollisionEvent,
+    ConstrainedBodyPair,
+} from "../IPhysicsEnginePlugin";
 import type { IRaycastQuery, PhysicsRaycastResult } from "../../physicsRaycastResult";
 import { Logger } from "../../../Misc/logger";
 import type { PhysicsBody } from "../physicsBody";
@@ -1504,8 +1511,13 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         this._hknp.HP_Constraint_SetEnabled(jointId, true);
     }
 
-    getBodiesUsingConstraint(constraint: PhysicsConstraint) {
-        const pairs: { parentBody: PhysicsBody; parentBodyIndex: number; childBody: PhysicsBody; childBodyIndex: number }[] = [];
+    /**
+     * Get a list of all the pairs of bodies that are connected by this constraint.
+     * @param constraint the constraint to search from
+     * @returns a list of parent, child pairs
+     */
+    getBodiesUsingConstraint(constraint: PhysicsConstraint): ConstrainedBodyPair[] {
+        const pairs: ConstrainedBodyPair[] = [];
         for (const jointId of constraint._pluginData) {
             const bodyIds = this._constraintToBodyIdPair.get(jointId[0]);
             if (bodyIds) {

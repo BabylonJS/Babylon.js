@@ -1,9 +1,8 @@
 import type { Scene } from "../../scene";
 import type { Vector3 } from "../../Maths/math.vector";
 import type { Nullable } from "../../types";
-import type { IPhysicsEnginePluginV2, PhysicsConstraintParameters, PhysicsConstraintAxisLimitMode, PhysicsConstraintMotorType } from "./IPhysicsEnginePlugin";
+import type { IPhysicsEnginePluginV2, PhysicsConstraintParameters, PhysicsConstraintAxisLimitMode, PhysicsConstraintMotorType, ConstrainedBodyPair } from "./IPhysicsEnginePlugin";
 import { PhysicsConstraintAxis, PhysicsConstraintType } from "./IPhysicsEnginePlugin";
-import type { PhysicsBody } from "./physicsBody";
 
 /**
  * This is a holder class for the physics constraint created by the physics plugin
@@ -117,7 +116,7 @@ export class PhysicsConstraint {
      * Gets all bodies that are using this constraint
      * @returns
      */
-    public getBodiesUsingConstraint(): { parentBody: PhysicsBody; parentBodyIndex: number; childBody: PhysicsBody; childBodyIndex: number }[] {
+    public getBodiesUsingConstraint(): ConstrainedBodyPair[] {
         return this._physicsPlugin.getBodiesUsingConstraint(this);
     }
 

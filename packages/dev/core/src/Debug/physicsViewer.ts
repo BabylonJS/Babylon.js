@@ -255,11 +255,13 @@ export class PhysicsViewer {
             this._makeScalingUnitInPlace(childCoordSystemNode.scaling);
 
             // Get the transform to align the XYZ axes to the constraint axes
-            const rotTransformParent = Quaternion.FromRotationMatrix(
-                Matrix.FromXYZAxesToRef(axisA, perpAxisA, Vector3.CrossToRef(axisA, perpAxisA, TmpVectors.Vector3[0]), TmpVectors.Matrix[0])
+            const rotTransformParent = Quaternion.FromRotationMatrixToRef(
+                Matrix.FromXYZAxesToRef(axisA, perpAxisA, Vector3.CrossToRef(axisA, perpAxisA, TmpVectors.Vector3[0]), TmpVectors.Matrix[0]),
+                TmpVectors.Quaternion[0]
             );
-            const rotTransformChild = Quaternion.FromRotationMatrix(
-                Matrix.FromXYZAxesToRef(axisB, perpAxisB, Vector3.CrossToRef(axisB, perpAxisB, TmpVectors.Vector3[1]), TmpVectors.Matrix[1])
+            const rotTransformChild = Quaternion.FromRotationMatrixToRef(
+                Matrix.FromXYZAxesToRef(axisB, perpAxisB, Vector3.CrossToRef(axisB, perpAxisB, TmpVectors.Vector3[1]), TmpVectors.Matrix[1]),
+                TmpVectors.Quaternion[1]
             );
 
             const translateTransformParent = pivotA;
@@ -268,11 +270,11 @@ export class PhysicsViewer {
             // Create a transform node and set its matrix
             const parentTransformNode = parentCoordSystemNode.getDescendants(true)[0] as TransformNode;
             parentTransformNode.position.copyFrom(translateTransformParent);
-            parentTransformNode.rotationQuaternion = rotTransformParent;
+            parentTransformNode.rotationQuaternion!.copyFrom(rotTransformParent);
 
             const childTransformNode = childCoordSystemNode.getDescendants(true)[0] as TransformNode;
             childTransformNode.position.copyFrom(translateTransformChild);
-            childTransformNode.rotationQuaternion = rotTransformChild;
+            childTransformNode.rotationQuaternion!.copyFrom(rotTransformChild);
         });
     }
 
