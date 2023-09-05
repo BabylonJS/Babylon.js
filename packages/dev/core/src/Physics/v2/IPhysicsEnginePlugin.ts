@@ -326,6 +326,11 @@ export enum PhysicsMotionType {
     DYNAMIC,
 }
 
+/**
+ * Represents a pair of bodies connected by a constraint.
+ */
+export type ConstrainedBodyPair = { parentBody: PhysicsBody; parentBodyIndex: number; childBody: PhysicsBody; childBodyIndex: number };
+
 /** @internal */
 export interface IPhysicsEnginePluginV2 {
     /**
@@ -423,6 +428,7 @@ export interface IPhysicsEnginePluginV2 {
     setAxisMotorMaxForce(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, maxForce: number): void;
     getAxisMotorMaxForce(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): Nullable<number>;
     disposeConstraint(constraint: PhysicsConstraint): void;
+    getBodiesUsingConstraint(constraint: PhysicsConstraint): ConstrainedBodyPair[];
 
     // raycast
     raycast(from: Vector3, to: Vector3, result: PhysicsRaycastResult, query?: IRaycastQuery): void;

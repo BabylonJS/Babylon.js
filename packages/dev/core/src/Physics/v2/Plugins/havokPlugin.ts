@@ -8,7 +8,14 @@ import {
     PhysicsConstraintAxisLimitMode,
     PhysicsEventType,
 } from "../IPhysicsEnginePlugin";
-import type { PhysicsShapeParameters, IPhysicsEnginePluginV2, PhysicsMassProperties, IPhysicsCollisionEvent, IBasePhysicsCollisionEvent } from "../IPhysicsEnginePlugin";
+import type {
+    PhysicsShapeParameters,
+    IPhysicsEnginePluginV2,
+    PhysicsMassProperties,
+    IPhysicsCollisionEvent,
+    IBasePhysicsCollisionEvent,
+    ConstrainedBodyPair,
+} from "../IPhysicsEnginePlugin";
 import type { IRaycastQuery, PhysicsRaycastResult } from "../../physicsRaycastResult";
 import { Logger } from "../../../Misc/logger";
 import type { PhysicsBody } from "../physicsBody";
@@ -278,6 +285,8 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     private _bodies = new Map<bigint, { body: PhysicsBody; index: number }>();
     private _bodyBuffer: number;
     private _bodyCollisionObservable = new Map<bigint, Observable<IPhysicsCollisionEvent>>();
+    // Map from constraint id to the pair of bodies, where the first is the parent and the second is the child
+    private _constraintToBodyIdPair = new Map<bigint, [bigint, bigint]>();
     private _bodyCollisionEndedObservable = new Map<bigint, Observable<IBasePhysicsCollisionEvent>>();
     /**
      * Observable for collision started and collision continued events
@@ -1400,6 +1409,8 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         this._hknp.HP_Constraint_SetParentBody(jointId, bodyA);
         this._hknp.HP_Constraint_SetChildBody(jointId, bodyB);
 
+        this._constraintToBodyIdPair.set(jointId[0], [bodyA[0], bodyB[0]]);
+
         // anchors
         const pivotA = options.pivotA ? this._bVecToV3(options.pivotA) : this._bVecToV3(Vector3.Zero());
         const axisA = options.axisA ?? new Vector3(1, 0, 0);
@@ -1419,6 +1430,19 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             axisB.getNormalToRef(perpAxisB);
         }
         this._hknp.HP_Constraint_SetAnchorInChild(jointId, pivotB, this._bVecToV3(axisB), this._bVecToV3(perpAxisB));
+
+        // Save the options that were used for initializing the constraint for debugging purposes
+        // Check first to avoid copying the same options multiple times
+        if (!constraint._initOptions) {
+            constraint._initOptions = {
+                axisA: axisA.clone(),
+                axisB: axisB.clone(),
+                perpAxisA: perpAxisA.clone(),
+                perpAxisB: perpAxisB.clone(),
+                pivotA: new Vector3(pivotA[0], pivotA[1], pivotA[2]),
+                pivotB: new Vector3(pivotB[0], pivotB[1], pivotB[2]),
+            };
+        }
 
         if (type == PhysicsConstraintType.LOCK) {
             this._hknp.HP_Constraint_SetAxisMode(jointId, this._hknp.ConstraintAxis.LINEAR_X, this._hknp.ConstraintAxisLimitMode.LOCKED);
@@ -1485,6 +1509,26 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         const collisionEnabled = !!options.collision;
         this._hknp.HP_Constraint_SetCollisionsEnabled(jointId, collisionEnabled);
         this._hknp.HP_Constraint_SetEnabled(jointId, true);
+    }
+
+    /**
+     * Get a list of all the pairs of bodies that are connected by this constraint.
+     * @param constraint the constraint to search from
+     * @returns a list of parent, child pairs
+     */
+    getBodiesUsingConstraint(constraint: PhysicsConstraint): ConstrainedBodyPair[] {
+        const pairs: ConstrainedBodyPair[] = [];
+        for (const jointId of constraint._pluginData) {
+            const bodyIds = this._constraintToBodyIdPair.get(jointId[0]);
+            if (bodyIds) {
+                const parentBodyInfo = this._bodies.get(bodyIds[0]);
+                const childBodyInfo = this._bodies.get(bodyIds[1]);
+                if (parentBodyInfo && childBodyInfo) {
+                    pairs.push({ parentBody: parentBodyInfo.body, parentBodyIndex: parentBodyInfo.index, childBody: childBodyInfo.body, childBodyIndex: childBodyInfo.index });
+                }
+            }
+        }
+        return pairs;
     }
 
     /**
