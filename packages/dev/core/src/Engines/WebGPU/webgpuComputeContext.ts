@@ -9,6 +9,7 @@ import { ComputeBindingType } from "../Extensions/engine.computeShader";
 import type { WebGPUCacheSampler } from "./webgpuCacheSampler";
 import * as WebGPUConstants from "./webgpuConstants";
 import type { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
+import type { ExternalTexture } from "core/Materials/Textures/externalTexture";
 
 /** @internal */
 export class WebGPUComputeContext implements IComputeContext {
@@ -94,6 +95,21 @@ export class WebGPUComputeContext implements IComputeContext {
                             entries.push({
                                 binding: index,
                                 resource: hardwareTexture.viewForWriting!,
+                            });
+                        }
+                        break;
+                    }
+
+                    case ComputeBindingType.ExternalTexture: {
+                        const texture = object as ExternalTexture;
+                        const externalTexture = texture.underlyingResource;
+                        if (indexInGroupEntries !== undefined && bindGroupEntriesExist) {
+                            entries[indexInGroupEntries].resource = this._device.importExternalTexture({ source: externalTexture });
+                        } else {
+                            binding.indexInGroupEntries = entries.length;
+                            entries.push({
+                                binding: index,
+                                resource: this._device.importExternalTexture({ source: externalTexture }),
                             });
                         }
                         break;
