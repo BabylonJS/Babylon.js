@@ -2347,10 +2347,35 @@ export class NodeMaterial extends PushMaterial {
                             if (!skipBuild) {
                                 nodeMaterial.build();
                             }
-                            resolve(nodeMaterial);
                         } catch (err) {
                             reject(err);
                         }
+
+                        // Ensures all textures are ready to render.
+                        const textureReadyPromises: Promise<void>[] = [];
+                        nodeMaterial.getActiveTextures().forEach((texture) => {
+                            const internalTexture = texture.getInternalTexture();
+                            if (internalTexture && !internalTexture.isReady) {
+                                textureReadyPromises.push(
+                                    new Promise((textureResolve, textureReject) => {
+                                        internalTexture.onLoadedObservable.addOnce(() => {
+                                            textureResolve();
+                                        });
+                                        internalTexture.onErrorObservable.addOnce((e) => {
+                                            textureReject(e);
+                                        });
+                                    })
+                                );
+                            }
+                        });
+
+                        Promise.all(textureReadyPromises)
+                            .then(() => {
+                                resolve(nodeMaterial!);
+                            })
+                            .catch((err) => {
+                                reject(err);
+                            });
                     } else {
                         reject("Unable to load the snippet " + snippetId);
                     }
