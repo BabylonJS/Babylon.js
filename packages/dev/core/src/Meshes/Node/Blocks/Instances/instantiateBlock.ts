@@ -7,11 +7,12 @@ import type { INodeGeometryExecutionContext } from "../../Interfaces/nodeGeometr
 import type { VertexData } from "../../../mesh.vertexData";
 import { Vector3 } from "../../../../Maths/math.vector";
 import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
+import type { INodeGeometryInstancingContext } from "../../Interfaces/nodeGeometryInstancingContext";
 
 /**
  * Block used to instantiate a geometry inside a loop
  */
-export class InstantiateBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext {
+export class InstantiateBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext, INodeGeometryInstancingContext {
     private _vertexData: VertexData;
     private _currentIndex: number;
 
@@ -38,6 +39,14 @@ export class InstantiateBlock extends NodeGeometryBlock implements INodeGeometry
 
         this.scaling.acceptedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Float);
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Geometry);
+    }
+
+    /**
+     * Gets the current instance index in the current flow
+     * @returns the current index
+     */
+    public getInstanceIndex(): number {
+        return this._currentIndex;
     }
 
     /**
@@ -124,6 +133,7 @@ export class InstantiateBlock extends NodeGeometryBlock implements INodeGeometry
     protected _buildBlock(state: NodeGeometryBuildState) {
         const func = (state: NodeGeometryBuildState) => {
             state.executionContext = this;
+            state.instancingContext = this;
 
             // Processing
             const iterationCount = this.count.getConnectedValue(state);
@@ -193,7 +203,9 @@ export class InstantiateBlock extends NodeGeometryBlock implements INodeGeometry
     public _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 
-        this.evaluateContext = serializationObject.evaluateContext;
+        if (serializationObject.evaluateContext !== undefined) {
+            this.evaluateContext = serializationObject.evaluateContext;
+        }
     }
 }
 

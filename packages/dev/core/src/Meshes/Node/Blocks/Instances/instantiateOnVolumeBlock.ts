@@ -10,11 +10,12 @@ import { PropertyTypeForEdition, editableInPropertyPage } from "../../../../Deco
 import type { Nullable } from "../../../../types";
 import { Ray } from "../../../../Culling/ray";
 import { extractMinAndMax } from "../../../../Maths/math.functions";
+import type { INodeGeometryInstancingContext } from "../../Interfaces/nodeGeometryInstancingContext";
 
 /**
  * Block used to instance geometry inside a geometry
  */
-export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext {
+export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext, INodeGeometryInstancingContext {
     private _vertexData: VertexData;
     private _currentLoopIndex: number;
     private _currentPosition = new Vector3();
@@ -45,6 +46,14 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
 
         this.scaling.acceptedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Float);
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Geometry);
+    }
+
+    /**
+     * Gets the current instance index in the current flow
+     * @returns the current index
+     */
+    public getInstanceIndex(): number {
+        return this._currentLoopIndex;
     }
 
     /**
@@ -139,6 +148,7 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
     protected _buildBlock(state: NodeGeometryBuildState) {
         const func = (state: NodeGeometryBuildState) => {
             state.executionContext = this;
+            state.instancingContext = this;
 
             this._vertexData = this.geometry.getConnectedValue(state);
             state.geometryContext = this._vertexData;
@@ -146,6 +156,7 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
             if (!this._vertexData || !this._vertexData.positions || !this._vertexData.indices || !this.instance.isConnected) {
                 state.executionContext = null;
                 state.geometryContext = null;
+                state.instancingContext = null;
                 this.output._storedValue = null;
                 return;
             }

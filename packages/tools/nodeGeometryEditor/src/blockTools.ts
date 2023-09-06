@@ -251,6 +251,11 @@ export class BlockTools {
                 block.contextualValue = NodeGeometryContextualSources.LoopID;
                 return block;
             }
+            case "InstanceIDBlock": {
+                const block = new GeometryInputBlock("Instance ID");
+                block.contextualValue = NodeGeometryContextualSources.InstanceID;
+                return block;
+            }
             case "GeometryIDBlock": {
                 const block = new GeometryInputBlock("Geometry ID");
                 block.contextualValue = NodeGeometryContextualSources.GeometryID;
