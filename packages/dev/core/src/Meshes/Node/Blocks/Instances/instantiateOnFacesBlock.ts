@@ -8,11 +8,12 @@ import type { VertexData } from "../../../mesh.vertexData";
 import { Vector3 } from "../../../../Maths/math.vector";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../../Decorators/nodeDecorator";
 import type { Nullable } from "../../../../types";
+import type { INodeGeometryInstancingContext } from "../../Interfaces/nodeGeometryInstancingContext";
 
 /**
  * Block used to instance geometry on every face of a geometry
  */
-export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext {
+export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext, INodeGeometryInstancingContext {
     private _vertexData: VertexData;
     private _currentFaceIndex: number;
     private _currentLoopIndex: number;
@@ -46,6 +47,14 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
 
         this.scaling.acceptedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Float);
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Geometry);
+    }
+
+    /**
+     * Gets the current instance index in the current flow
+     * @returns the current index
+     */
+    public getInstanceIndex(): number {
+        return this._currentLoopIndex;
     }
 
     /**
@@ -152,6 +161,7 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
     protected _buildBlock(state: NodeGeometryBuildState) {
         const func = (state: NodeGeometryBuildState) => {
             state.executionContext = this;
+            state.instancingContext = this;
 
             this._vertexData = this.geometry.getConnectedValue(state);
             state.geometryContext = this._vertexData;
@@ -159,6 +169,7 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
             if (!this._vertexData || !this._vertexData.positions || !this._vertexData.indices || !this.instance.isConnected) {
                 state.executionContext = null;
                 state.geometryContext = null;
+                state.instancingContext = null;
                 this.output._storedValue = null;
                 return;
             }
@@ -241,7 +252,6 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
                     this._vertexData = main.merge(additionalVertexData, true, false, true, true);
                 }
             }
-
             return this._vertexData;
         };
 

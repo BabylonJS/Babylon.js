@@ -5,6 +5,7 @@ import { NodeGeometryContextualSources } from "./Enums/nodeGeometryContextualSou
 import { Matrix, Vector2, Vector3, Vector4 } from "../../Maths/math.vector";
 import type { INodeGeometryExecutionContext } from "./Interfaces/nodeGeometryExecutionContext";
 import { NodeGeometryBlockConnectionPointTypes } from "./Enums/nodeGeometryConnectionPointTypes";
+import type { INodeGeometryInstancingContext } from "./Interfaces/nodeGeometryInstancingContext";
 
 /**
  * Class used to store node based geometry build state
@@ -31,6 +32,8 @@ export class NodeGeometryBuildState {
     public geometryContext: Nullable<VertexData> = null;
     /** Gets or sets the execution context */
     public executionContext: Nullable<INodeGeometryExecutionContext> = null;
+    /** Gets or sets the instancing context */
+    public instancingContext: Nullable<INodeGeometryInstancingContext> = null;
 
     /**
      * Gets the value associated with a contextual source
@@ -108,6 +111,8 @@ export class NodeGeometryBuildState {
                 return this.executionContext.getExecutionFaceIndex();
             case NodeGeometryContextualSources.LoopID:
                 return this.executionContext.getExecutionLoopIndex();
+            case NodeGeometryContextualSources.InstanceID:
+                return this.instancingContext ? this.instancingContext.getInstanceIndex() : 0;
             case NodeGeometryContextualSources.GeometryID:
                 return !this.geometryContext ? 0 : this.geometryContext.uniqueId;
             case NodeGeometryContextualSources.CollectionID: {
