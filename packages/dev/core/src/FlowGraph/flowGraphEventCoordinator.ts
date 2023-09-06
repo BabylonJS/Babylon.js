@@ -10,6 +10,11 @@ import type { FlowGraphCustomEvent } from "./flowGraphCustomEvent";
 export class FlowGraphEventCoordinator {
     private _customEventsMap: Map<string, Observable<FlowGraphCustomEvent>> = new Map();
 
+    /**
+     * Get an observable that will be notified when the event with the given id is fired.
+     * @param id the id of the event
+     * @returns the observable for the event
+     */
     getCustomEventObservable(id: string): Observable<FlowGraphCustomEvent> {
         let observable = this._customEventsMap.get(id);
         if (!observable) {
@@ -19,10 +24,15 @@ export class FlowGraphEventCoordinator {
         return observable;
     }
 
+    /**
+     * Notifies the observable for the given event id with the given data.
+     * @param id the id of the event
+     * @param data the data to send with the event
+     */
     notifyCustomEvent(id: string, data: any) {
         const observable = this._customEventsMap.get(id);
         if (observable) {
-            observable.notifyObservers({ id: id, data });
+            observable.notifyObservers(data);
         }
     }
 }

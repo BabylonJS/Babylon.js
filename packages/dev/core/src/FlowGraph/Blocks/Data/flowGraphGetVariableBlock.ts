@@ -2,7 +2,10 @@ import type { FlowGraphContext } from "../../flowGraphContext";
 import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { RichTypeString, RichTypeAny } from "../../flowGraphRichTypes";
-
+/**
+ * @experimental
+ * Parameters used to create a FlowGraphGetVariableBlock.
+ */
 export interface IFlowGraphGetVariableBlockParameter {
     variableName: string;
 }
@@ -20,6 +23,10 @@ export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
      */
     public readonly output: FlowGraphDataConnection<T>;
 
+    /**
+     * Construct a FlowGraphGetVariableBlock.
+     * @param params optional construction parameters
+     */
     constructor(params?: IFlowGraphGetVariableBlockParameter) {
         super();
 

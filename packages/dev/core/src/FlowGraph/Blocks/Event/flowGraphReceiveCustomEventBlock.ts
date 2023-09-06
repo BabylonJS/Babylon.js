@@ -3,16 +3,23 @@ import type { FlowGraphContext } from "../../flowGraphContext";
 import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
 import type { FlowGraphCustomEvent } from "../../flowGraphCustomEvent";
 import type { Nullable } from "../../../types";
-import { Tools } from "../../../Misc";
+import { Tools } from "../../../Misc/tools";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { RichTypeAny } from "../../flowGraphRichTypes";
 
+/**
+ * @experimental
+ * Parameters used to create a FlowGraphReceiveCustomEventBlock.
+ */
 export interface IFlowGraphReceiveCustomEventBlockParameters {
     eventId: string;
 }
 
+/**
+ * @experimental
+ * A block that receives a custom event. It saves the data sent in the eventData output.
+ */
 export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
-    private _params: IFlowGraphReceiveCustomEventBlockParameters;
     private _eventObserver: Nullable<Observer<FlowGraphCustomEvent>>;
 
     /**
@@ -20,15 +27,14 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
      */
     public eventData: FlowGraphDataConnection<any>;
 
-    constructor(params: IFlowGraphReceiveCustomEventBlockParameters) {
+    constructor(private _params: IFlowGraphReceiveCustomEventBlockParameters) {
         super();
-        this._params = params;
         this.eventData = this._registerDataOutput("eventData", RichTypeAny);
     }
     public _preparePendingTasks(context: FlowGraphContext): void {
         const observable = context.graphVariables.eventCoordinator.getCustomEventObservable(this._params.eventId);
         this._eventObserver = observable.add((event) => {
-            this.eventData.value = event.data;
+            this.eventData.value = event;
             this._execute(context);
         });
     }
