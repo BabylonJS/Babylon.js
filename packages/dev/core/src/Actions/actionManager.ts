@@ -163,8 +163,8 @@ export class ActionManager extends AbstractActionManager {
             this._scene.actionManagers.splice(sceneIndex, 1);
         }
 
-        const ownerMesh = this._scene.meshes.find((m) => m.actionManager === this);
-        if (ownerMesh) {
+        const ownerMeshes = this._scene.meshes.filter((m) => m.actionManager === this);
+        for (const ownerMesh of ownerMeshes) {
             ownerMesh.actionManager = null;
         }
     }
