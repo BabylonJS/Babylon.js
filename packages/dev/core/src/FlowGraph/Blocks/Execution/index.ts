@@ -5,3 +5,5 @@ export * from "./flowGraphPlayAnimationBlock";
 export * from "./flowGraphSetVariableBlock";
 export * from "./flowGraphSetPropertyBlock";
 export * from "./flowGraphTimerBlock";
+export * from "./flowGraphSendCustomEventBlock";
+export * from "./flowGraphStopAnimationBlock";

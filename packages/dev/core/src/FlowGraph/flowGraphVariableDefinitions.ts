@@ -1,4 +1,4 @@
-import type { Scene } from "../scene";
+import type { IFlowGraphGraphVariables } from "./flowGraphContext";
 import { FlowGraphContext } from "./flowGraphContext";
 
 /**
@@ -13,8 +13,8 @@ export class FlowGraphVariableDefinitions {
         this._definitions.set(name, defaultValue);
     }
 
-    public generateContext(scene: Scene): FlowGraphContext {
-        const context = new FlowGraphContext({ scene });
+    public generateContext(params: IFlowGraphGraphVariables): FlowGraphContext {
+        const context = new FlowGraphContext(params);
         this._definitions.forEach((value, key) => {
             context.setVariable(key, value);
         });
