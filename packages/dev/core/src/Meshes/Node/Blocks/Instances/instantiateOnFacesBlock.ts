@@ -39,10 +39,10 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
 
         this.registerInput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);
         this.registerInput("instance", NodeGeometryBlockConnectionPointTypes.Geometry, true);
+        this.registerInput("count", NodeGeometryBlockConnectionPointTypes.Int, true, 256);
+        this.registerInput("matrix", NodeGeometryBlockConnectionPointTypes.Matrix, true);
         this.registerInput("rotation", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.Zero());
         this.registerInput("scaling", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.One());
-        this.registerInput("matrix", NodeGeometryBlockConnectionPointTypes.Matrix, true);
-        this.registerInput("count", NodeGeometryBlockConnectionPointTypes.Int, true, 256);
 
         this.scaling.acceptedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Float);
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Geometry);
@@ -115,30 +115,30 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
     }
 
     /**
-     * Gets the rotation input component
+     * Gets the count input component
      */
-    public get rotation(): NodeGeometryConnectionPoint {
+    public get count(): NodeGeometryConnectionPoint {
         return this._inputs[2];
-    }
-
-    /**
-     * Gets the scaling input component
-     */
-    public get scaling(): NodeGeometryConnectionPoint {
-        return this._inputs[3];
     }
 
     /**
      * Gets the matrix input component
      */
     public get matrix(): NodeGeometryConnectionPoint {
+        return this._inputs[3];
+    }
+
+    /**
+     * Gets the rotation input component
+     */
+    public get rotation(): NodeGeometryConnectionPoint {
         return this._inputs[4];
     }
 
     /**
-     * Gets the count input component
+     * Gets the scaling input component
      */
-    public get count(): NodeGeometryConnectionPoint {
+    public get scaling(): NodeGeometryConnectionPoint {
         return this._inputs[5];
     }
 
