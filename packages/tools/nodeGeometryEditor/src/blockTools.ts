@@ -49,10 +49,13 @@ import { ConditionBlock, ConditionBlockTests } from "core/Meshes/Node/Blocks/con
 import { GeometryCollectionBlock } from "core/Meshes/Node/Blocks/geometryCollectionBlock";
 import { GeometryInfoBlock } from "core/Meshes/Node/Blocks/geometryInfoBlock";
 import { MappingBlock } from "core/Meshes/Node/Blocks/mappingBlock";
+import { MatrixComposeBlock } from "core/Meshes/Node/Blocks/matrixComposeBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "MatrixComposeBlock":
+                return new MatrixComposeBlock("Matrix Compose");
             case "GeometryInfoBlock":
                 return new GeometryInfoBlock("Geometry Info");
             case "CollectionBlock":

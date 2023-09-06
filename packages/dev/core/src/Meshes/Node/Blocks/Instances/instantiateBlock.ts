@@ -31,10 +31,10 @@ export class InstantiateBlock extends NodeGeometryBlock implements INodeGeometry
 
         this.registerInput("instance", NodeGeometryBlockConnectionPointTypes.Geometry, true);
         this.registerInput("count", NodeGeometryBlockConnectionPointTypes.Int, true, 1);
+        this.registerInput("matrix", NodeGeometryBlockConnectionPointTypes.Matrix, true);
         this.registerInput("position", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.Zero());
         this.registerInput("rotation", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.Zero());
         this.registerInput("scaling", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.One());
-        this.registerInput("matrix", NodeGeometryBlockConnectionPointTypes.Matrix, true);
 
         this.scaling.acceptedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Float);
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Geometry);
@@ -87,30 +87,30 @@ export class InstantiateBlock extends NodeGeometryBlock implements INodeGeometry
     }
 
     /**
+     * Gets the matrix input component
+     */
+    public get matrix(): NodeGeometryConnectionPoint {
+        return this._inputs[2];
+    }
+
+    /**
      * Gets the position input component
      */
     public get position(): NodeGeometryConnectionPoint {
-        return this._inputs[2];
+        return this._inputs[3];
     }
 
     /**
      * Gets the rotation input component
      */
     public get rotation(): NodeGeometryConnectionPoint {
-        return this._inputs[3];
+        return this._inputs[4];
     }
 
     /**
      * Gets the scaling input component
      */
     public get scaling(): NodeGeometryConnectionPoint {
-        return this._inputs[4];
-    }
-
-    /**
-     * Gets the matrix input component
-     */
-    public get matrix(): NodeGeometryConnectionPoint {
         return this._inputs[5];
     }
 
