@@ -17,13 +17,14 @@ export class WebGPUQuerySet {
         return this._querySet;
     }
 
-    constructor(count: number, type: QueryType, device: GPUDevice, bufferManager: WebGPUBufferManager, canUseMultipleBuffers = true) {
+    constructor(count: number, type: QueryType, device: GPUDevice, bufferManager: WebGPUBufferManager, canUseMultipleBuffers = true, label?: string) {
         this._device = device;
         this._bufferManager = bufferManager;
         this._count = count;
         this._canUseMultipleBuffers = canUseMultipleBuffers;
 
         this._querySet = device.createQuerySet({
+            label,
             type,
             count,
         });
