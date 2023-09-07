@@ -106,21 +106,21 @@ export class SetUVsBlock extends NodeGeometryBlock implements INodeGeometryExecu
 
     protected _buildBlock(state: NodeGeometryBuildState) {
         const func = (state: NodeGeometryBuildState) => {
-            state.executionContext = this;
+            state.pushExecutionContext(this);
 
             this._vertexData = this.geometry.getConnectedValue(state);
-            state.geometryContext = this._vertexData;
+            state.pushGeometryContext(this._vertexData);
 
             if (!this._vertexData || !this._vertexData.positions) {
-                state.executionContext = null;
-                state.geometryContext = null;
+                state.restoreGeometryContext();
+                state.restoreExecutionContext();
                 this.output._storedValue = null;
                 return;
             }
 
             if (!this.uvs.isConnected) {
-                state.executionContext = null;
-                state.geometryContext = null;
+                state.restoreGeometryContext();
+                state.restoreExecutionContext();
                 this.output._storedValue = this._vertexData;
                 return;
             }
@@ -158,6 +158,8 @@ export class SetUVsBlock extends NodeGeometryBlock implements INodeGeometryExecu
             }
 
             // Storage
+            state.restoreGeometryContext();
+            state.restoreExecutionContext();
             return this._vertexData;
         };
 

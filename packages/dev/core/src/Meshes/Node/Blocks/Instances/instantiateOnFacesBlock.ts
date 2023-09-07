@@ -160,16 +160,16 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
 
     protected _buildBlock(state: NodeGeometryBuildState) {
         const func = (state: NodeGeometryBuildState) => {
-            state.executionContext = this;
-            state.instancingContext = this;
+            state.pushExecutionContext(this);
+            state.pushInstancingContext(this);
 
             this._vertexData = this.geometry.getConnectedValue(state);
-            state.geometryContext = this._vertexData;
+            state.pushGeometryContext(this._vertexData);
 
             if (!this._vertexData || !this._vertexData.positions || !this._vertexData.indices || !this.instance.isConnected) {
-                state.executionContext = null;
-                state.geometryContext = null;
-                state.instancingContext = null;
+                state.restoreExecutionContext();
+                state.restoreInstancingContext();
+                state.restoreGeometryContext();
                 this.output._storedValue = null;
                 return;
             }
@@ -252,6 +252,9 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
                     this._vertexData = main.merge(additionalVertexData, true, false, true, true);
                 }
             }
+            state.restoreExecutionContext();
+            state.restoreInstancingContext();
+            state.restoreGeometryContext();
             return this._vertexData;
         };
 

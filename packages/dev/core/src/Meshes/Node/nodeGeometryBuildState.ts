@@ -28,12 +28,81 @@ export class NodeGeometryBuildState {
     public verbose: boolean;
     /** Gets or sets the vertex data */
     public vertexData: Nullable<VertexData> = null;
+
+    private _geometryContext: Nullable<VertexData> = null;
+    private _executionContext: Nullable<INodeGeometryExecutionContext> = null;
+    private _instancingContext: Nullable<INodeGeometryInstancingContext> = null;
+
+    private _geometryContextStack: Array<Nullable<VertexData>> = [];
+    private _executionContextStack: Array<Nullable<INodeGeometryExecutionContext>> = [];
+    private _instancingContextStack: Array<Nullable<INodeGeometryInstancingContext>> = [];
+
     /** Gets or sets the geometry context */
-    public geometryContext: Nullable<VertexData> = null;
+    public get geometryContext() {
+        return this._geometryContext;
+    }
+
     /** Gets or sets the execution context */
-    public executionContext: Nullable<INodeGeometryExecutionContext> = null;
+    public get executionContext() {
+        return this._executionContext;
+    }
+
     /** Gets or sets the instancing context */
-    public instancingContext: Nullable<INodeGeometryInstancingContext> = null;
+    public get instancingContext() {
+        return this._instancingContext;
+    }
+
+    /**
+     * Push the new active geometry context
+     * @param geometryContext defines the geometry context
+     */
+    public pushGeometryContext(geometryContext: VertexData) {
+        this._geometryContext = geometryContext;
+        this._geometryContextStack.push(this._geometryContext);
+    }
+
+    /**
+     * Push the new active execution context
+     * @param executionContext defines the execution context
+     * @param instancingContext defines the instancing context
+     */
+    public pushExecutionContext(executionContext: INodeGeometryExecutionContext) {
+        this._executionContext = executionContext;
+        this._executionContextStack.push(this._executionContext);
+    }
+
+    /**
+     * Push the new active instancing context
+     * @param instancingContext defines the instancing context
+     */
+    public pushInstancingContext(instancingContext: INodeGeometryInstancingContext) {
+        this._instancingContext = instancingContext;
+        this._instancingContextStack.push(this._instancingContext);
+    }
+
+    /**
+     * Remove current geometry context and restore the previous one
+     */
+    public restoreGeometryContext() {
+        this._geometryContextStack.pop();
+        this._geometryContext = this._geometryContextStack.length > 0 ? this._geometryContextStack[this._geometryContextStack.length - 1] : null;
+    }
+
+    /**
+     * Remove current execution context and restore the previous one
+     */
+    public restoreExecutionContext() {
+        this._executionContextStack.pop();
+        this._executionContext = this._executionContextStack.length > 0 ? this._executionContextStack[this._executionContextStack.length - 1] : null;
+    }
+
+    /**
+     * Remove current isntancing context and restore the previous one
+     */
+    public restoreInstancingContext() {
+        this._instancingContextStack.pop();
+        this._instancingContext = this._instancingContextStack.length > 0 ? this._instancingContextStack[this._instancingContextStack.length - 1] : null;
+    }
 
     /**
      * Gets the value associated with a contextual source

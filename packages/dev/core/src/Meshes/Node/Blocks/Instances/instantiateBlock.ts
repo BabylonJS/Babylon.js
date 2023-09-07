@@ -132,8 +132,8 @@ export class InstantiateBlock extends NodeGeometryBlock implements INodeGeometry
 
     protected _buildBlock(state: NodeGeometryBuildState) {
         const func = (state: NodeGeometryBuildState) => {
-            state.executionContext = this;
-            state.instancingContext = this;
+            state.pushExecutionContext(this);
+            state.pushInstancingContext(this);
 
             // Processing
             const iterationCount = this.count.getConnectedValue(state);
@@ -171,6 +171,9 @@ export class InstantiateBlock extends NodeGeometryBlock implements INodeGeometry
                     this._vertexData = main.merge(additionalVertexData, true, false, true, true);
                 }
             }
+
+            state.restoreExecutionContext();
+            state.restoreInstancingContext();
             return this._vertexData;
         };
 

@@ -413,22 +413,28 @@ export class NodeGeometryBlock {
         const serializedInputs = serializationObject.inputs;
         const serializedOutputs = serializationObject.outputs;
         if (serializedInputs) {
-            serializedInputs.forEach((port: any, i: number) => {
+            serializedInputs.forEach((port: any) => {
+                const input = this.inputs.find((i) => i.name === port.name);
+
+                if (!input) {
+                    return;
+                }
+
                 if (port.displayName) {
-                    this.inputs[i].displayName = port.displayName;
+                    input.displayName = port.displayName;
                 }
                 if (port.isExposedOnFrame) {
-                    this.inputs[i].isExposedOnFrame = port.isExposedOnFrame;
-                    this.inputs[i].exposedPortPosition = port.exposedPortPosition;
+                    input.isExposedOnFrame = port.isExposedOnFrame;
+                    input.exposedPortPosition = port.exposedPortPosition;
                 }
                 if (port.value !== undefined && port.value !== null) {
                     if (port.valueType === "number") {
-                        this.inputs[i].value = port.value;
+                        input.value = port.value;
                     } else {
                         const valueType = GetClass(port.valueType);
 
                         if (valueType) {
-                            this.inputs[i].value = valueType.FromArray(port.value);
+                            input.value = valueType.FromArray(port.value);
                         }
                     }
                 }
