@@ -17,6 +17,7 @@ export class WebGPUOcclusionQuery {
     private _lastBuffer: Nullable<BigUint64Array>;
     private _frameLastBuffer: number;
     private _frameQuerySetIsDirty = -1;
+    private _queryFrameId: number[] = [];
 
     public get querySet(): GPUQuerySet {
         return this._querySet.querySet;
@@ -26,22 +27,30 @@ export class WebGPUOcclusionQuery {
         return this._currentTotalIndices !== this._availableIndices.length;
     }
 
-    public get canBeginQuery(): boolean {
-        if (this._frameQuerySetIsDirty === this._engine.frameId) {
+    public canBeginQuery(index: number): boolean {
+        if (this._frameQuerySetIsDirty === this._engine.frameId || this._queryFrameId[index] === this._engine.frameId) {
             return false;
         }
+
+        let canBegin = false;
 
         const passIndex = this._engine._getCurrentRenderPassIndex();
         switch (passIndex) {
             case 0: {
-                return this._engine._mainRenderPassWrapper.renderPassDescriptor!.occlusionQuerySet !== undefined;
+                canBegin = this._engine._mainRenderPassWrapper.renderPassDescriptor!.occlusionQuerySet !== undefined;
+                break;
             }
             case 1: {
-                return this._engine._rttRenderPassWrapper.renderPassDescriptor!.occlusionQuerySet !== undefined;
+                canBegin = this._engine._rttRenderPassWrapper.renderPassDescriptor!.occlusionQuerySet !== undefined;
+                break;
             }
         }
 
-        return false;
+        if (canBegin) {
+            this._queryFrameId[index] = this._engine.frameId;
+        }
+
+        return canBegin;
     }
 
     constructor(engine: WebGPUEngine, device: GPUDevice, bufferManager: WebGPUBufferManager, startCount = 50, incrementCount = 100) {
