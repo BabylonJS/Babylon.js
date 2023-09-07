@@ -941,6 +941,7 @@ export class WebGPUEngine extends Engine {
         };
 
         this._mainRenderPassWrapper.renderPassDescriptor = {
+            label: "MainRenderPass",
             colorAttachments: mainColorAttachments,
             depthStencilAttachment: mainDepthAttachment,
         };
@@ -2775,6 +2776,7 @@ export class WebGPUEngine extends Engine {
         this._debugPushGroup?.("render target pass", 1);
 
         this._rttRenderPassWrapper.renderPassDescriptor = {
+            label: (renderTargetWrapper.label ?? "RTT") + "RenderPass",
             colorAttachments,
             depthStencilAttachment:
                 depthStencilTexture && gpuDepthStencilTexture
