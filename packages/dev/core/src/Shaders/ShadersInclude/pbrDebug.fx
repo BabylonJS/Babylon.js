@@ -197,5 +197,8 @@ if (vClipSpacePosition.x / vClipSpacePosition.w >= vDebugMode.x) {
         gl_FragData[0] = toLinearSpace(gl_FragColor); // linear to cancel gamma transform in prepass
         gl_FragData[1] = vec4(0., 0., 0., 0.); // tag as no SSS
     #endif
+#ifdef DEBUGMODE_FORCERETURN
+    return;
+#endif
 }
 #endif
