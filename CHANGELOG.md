@@ -1,5 +1,31 @@
 # Changelog
 
+## 6.20.0
+
+### Core
+
+- Flow graph iteration 0.0.3 - [_New Feature_] by [carolhmj](https://github.com/carolhmj) ([#14261](https://github.com/BabylonJS/Babylon.js/pull/14261))
+- Fix texture not ready when parsing NME - by [sebavan](https://github.com/sebavan) ([#14270](https://github.com/BabylonJS/Babylon.js/pull/14270))
+- fix action manager disposal when shared - [_Bug Fix_] by [carolhmj](https://github.com/carolhmj) ([#14267](https://github.com/BabylonJS/Babylon.js/pull/14267))
+- Compute shaders: Add support for external (video)  textures - by [Popov72](https://github.com/Popov72) ([#14266](https://github.com/BabylonJS/Babylon.js/pull/14266))
+- Screenshots: Fix OffscreenCanvas not supported in older browsers - by [Popov72](https://github.com/Popov72) ([#14265](https://github.com/BabylonJS/Babylon.js/pull/14265))
+- Flow graph iteration 0.0.2 - [_New Feature_] by [carolhmj](https://github.com/carolhmj) ([#14140](https://github.com/BabylonJS/Babylon.js/pull/14140))
+- Constraints debug view - pivots - [_New Feature_] by [carolhmj](https://github.com/carolhmj) ([#14255](https://github.com/BabylonJS/Babylon.js/pull/14255))
+- Pre-pass renderer: Add an option to generate normals in world space - by [Popov72](https://github.com/Popov72) ([#14254](https://github.com/BabylonJS/Babylon.js/pull/14254))
+- Fixes Bounty #Generate equirectangular 360 panorama from babylon.js scene - by [lokiiarora](https://github.com/lokiiarora) ([#14251](https://github.com/BabylonJS/Babylon.js/pull/14251))
+- Occlusion queries: Use the first camera in the case of multiple cameras - by [Popov72](https://github.com/Popov72) ([#14253](https://github.com/BabylonJS/Babylon.js/pull/14253))
+- Performance viewer: Fix crash when object is empty - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14250](https://github.com/BabylonJS/Babylon.js/pull/14250))
+- bug Update geometry.ts - by [wayne2006](https://github.com/wayne2006) ([#14252](https://github.com/BabylonJS/Babylon.js/pull/14252))
+- RuntimeAnimation: Fix original value used in the bone matrix case - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14249](https://github.com/BabylonJS/Babylon.js/pull/14249))
+- FreeCameraTouchInput: Add check for Handedness - [_Bug Fix_] by [PolygonalSun](https://github.com/PolygonalSun) ([#14238](https://github.com/BabylonJS/Babylon.js/pull/14238))
+
+### Inspector
+
+- Fixes Bounty #Generate equirectangular 360 panorama from babylon.js scene - by [lokiiarora](https://github.com/lokiiarora) ([#14251](https://github.com/BabylonJS/Babylon.js/pull/14251))
+
+### Node Editor
+
+
 ## 6.19.1
 
 ### Core

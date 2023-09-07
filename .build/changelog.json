@@ -1,5 +1,5 @@
 {
-    "fromTag": "6.19.0",
+    "fromTag": "6.19.1",
     "changelog": {
         "6.19.1": [
             {
@@ -62,6 +62,461 @@
                 "tags": [
                     "enhancement",
                     "particles"
+                ]
+            }
+        ],
+        "6.20.0": [
+            {
+                "pr": "14261",
+                "title": "Flow graph iteration 0.0.3",
+                "description": "This PR introduces the ability to send and receive custom events. Events are identified by an event id of type string, and event data of type any. To centralize the listening and notifying of events, a new class was added, named FlowGraphEventCoordinator. Multiple Flow Graphs can share the same Event Coordinator and with that, communicate with each other through events. \r\n\r\nExamples:\r\n#J1N2GP#1 -> click on the sphere, the door opening animation will play\r\n#GPPEUA#5 -> click on the green button, the animation plays. Click on the red button, the animation stops.\r\n#MD0K3B -> click on the button, the two spheres will move up\r\n\r\nOn the three cases, the button and the acted upon object have distinct graphs, and communicate through a custom event.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphGetVariableBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphReceiveCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphPlayAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSendCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetVariableBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphStopAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/index.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraph.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphContext.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphCustomEvent.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphEventCoordinator.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphVariableDefinitions.ts",
+                    "packages/dev/core/src/FlowGraph/index.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "flow graph"
+                ]
+            },
+            {
+                "pr": "14270",
+                "title": "Fix texture not ready when parsing NME",
+                "description": "https://forum.babylonjs.com/t/node-material-post-processes-flashing-replace-colour-at-initialisation/43865",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "14269",
+                "title": "Add new InstanceID info",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVerticesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVolumeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setColorsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setMaterialIDBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setNormalsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setPositionsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setTangentsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setUVsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryInputBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Enums/nodeGeometryContextualSources.ts",
+                    "packages/dev/core/src/Meshes/Node/Interfaces/nodeGeometryInstancingContext.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBuildState.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/inputDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14268",
+                "title": "Matrix Compose block needed for NGE",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVerticesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVolumeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/matrixComposeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/nodeGeometry.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14267",
+                "title": "fix action manager disposal when shared",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/how-do-you-dispose-the-actions-of-an-actionmanager/9985/7\r\n\r\nPG to test: #J19GYK#567",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Actions/actionManager.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "14266",
+                "title": "Compute shaders: Add support for external (video)  textures",
+                "description": "See https://forum.babylonjs.com/t/compute-shader-videotexture-input/43864",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Compute/computeShader.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.computeShader.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuComputeContext.ts",
+                    "packages/dev/core/src/Materials/Textures/videoTexture.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "14265",
+                "title": "Screenshots: Fix OffscreenCanvas not supported in older browsers",
+                "description": "See https://forum.babylonjs.com/t/create-screenshot-using-render-target-and-report-an-error-on-ios-cant-find-variable-offscreencanvas/43878",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/dumpTools.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14263",
+                "title": "Fix mathblock to accept floats with vectors",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/mathBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14262",
+                "title": "Add context action to create Node Geometry in PG to parallel Node Material flow",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/sceneExplorer/sceneExplorerComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14260",
+                "title": "Map Range node in NGE appears to accept Vectors, but results in NaN",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/mapRangeBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14259",
+                "title": "Conversion from float to int inconsistent in NGE nodes",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/intFloatConverterBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/mapRangeBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14258",
+                "title": "Debug node does not handle matrices in NGE",
+                "description": "Fix #14243",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/debugBlock.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodeLink.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/stateManager.ts",
+                    "packages/tools/nodeEditor/src/globalState.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/registerDebugSupport.ts",
+                    "packages/tools/nodeGeometryEditor/src/globalState.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/registerDebugSupport.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14140",
+                "title": "Flow graph iteration 0.0.2",
+                "description": "## Changes:\r\n- Added the idea of a \"context\" of a graph, that is created by `graph.createContext`, and is used for both user variables , block-scoped execution variables (such as the current index of a for loop block), graph-scoped execution variables (such as the scene the graph runs in), and also to keep a list of blocks with pending tasks. When blocks execute, they pass the context down to the next block.\r\n- GetVariable and SetVariable blocks\r\n- Conditional data and conditional execution block. The former returns a value depending on a condition and the latter executes a flow depending on a condition.\r\n- PlayAnimation Block \r\n- SetProperty Block\r\n- Timer Block, it can execute an action immediately and another action after a delay\r\n- Data connection points now receive a RichType instead of a default value. A RichType follows an interface containing the name of the type (which can be useful for displaying different colors depending of type on the visual tool), and a function to generate a default value of the type. \r\n- A connection point is now able to connect to multiple other points depending on its type, as follows:\r\n    - Data output blocks can connect to MULTIPLE points, since a piece of data can be used by many blocks.\r\n    - Data input blocks can only connect to ONE point, because a block has to have a well defined source of data.\r\n    - Signal output blocks can only connect to ONE point, because a block can only execute one well defined flow after it.\r\n    - Signal input blocks can connect to MULTIPLE points, since the same flow can be executed from multiple antecessors.\r\n\r\n\r\n## Example PGs:\r\n- #43USDV#4 -> once the scene starts, runs a for loop and log its index \r\n- #43USDV#3 -> click on the sphere or on the cube, it will run a for loop and log its index \r\n- #GQAXFL#7 -> click on the sphere or on the cube, it will immediately change color to red, and 1s later change color to yellow\r\n- #GQAXFL#5 -> click on the sphere or on the cube and each will run a different animation. you can press \"p\" to dispose of the graph",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphAddBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphBinaryOpBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphConditionalDataBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphGetVariableBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphMeshPickEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphSceneReadyEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphConditionalBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphForLoopBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphLogBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphPlayAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetPropertyBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetVariableBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphTimerBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/index.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraph.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphAsyncExecutionBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphConnection.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphContext.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphDataConnection.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphExecutionBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphRichTypes.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphSignalConnection.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphVariableDefinitions.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphWithOnDoneExecutionBlock.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14257",
+                "title": "Instantiate nodes using matrices need original positions",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVerticesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVolumeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBuildState.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14255",
+                "title": "Constraints debug view - pivots",
+                "description": "This PR introduces a new function to `PhysicsViewer`, `showConstraint(constraint)`, which will display on all of the pairs of bodies that use that constraint, axes representing the pivots and axes of it.\r\n\r\n![constraint-view-2](https://github.com/BabylonJS/Babylon.js/assets/6002144/8ad16927-eafd-41e1-a851-7101fc6ffd12)\r\n\r\n",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/physicsViewer.ts",
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsConstraint.ts"
+                ],
+                "tags": [
+                    "physics",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14254",
+                "title": "Pre-pass renderer: Add an option to generate normals in world space",
+                "description": "Also added a `bindTexture` helper to `UniformBuffer`.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/materialHelper.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Materials/uniformBuffer.ts",
+                    "packages/dev/core/src/Rendering/prePassRenderer.ts",
+                    "packages/dev/core/src/Shaders/default.fragment.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14251",
+                "title": "Fixes Bounty #Generate equirectangular 360 panorama from babylon.js scene",
+                "description": "Hey, I'm a first-time contributor to Babylon.js, love the community, and would love it if someone could review this PR.\r\nThis PR is based on @Pryme8 's work on this playground [here](https://playground.babylonjs.com/#JTUAY3#5).",
+                "author": {
+                    "name": "lokiiarora",
+                    "url": "https://github.com/lokiiarora"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/equirectangularCapture.ts",
+                    "packages/dev/core/src/Misc/index.ts",
+                    "packages/dev/core/src/Shaders/equirectangularPanorama.fragment.fx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/toolsTabComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14253",
+                "title": "Occlusion queries: Use the first camera in the case of multiple cameras",
+                "description": "See https://forum.babylonjs.com/t/webgpu-occlusion-query-with-2-cameras/43840",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14250",
+                "title": "Performance viewer: Fix crash when object is empty",
+                "description": "See https://forum.babylonjs.com/t/open-source-multiplayer-3d-rpg-using-colyseus/35733/206",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/PerformanceViewer/performanceViewerCollectionStrategies.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "performance viewer"
+                ]
+            },
+            {
+                "pr": "14252",
+                "title": "bug Update geometry.ts",
+                "description": "fix the problem of losing UV2, UV3, UV4, UV5, UV6 after importing .babylon format.\r\n\r\nReference: https://github.com/BabylonJS/Babylon.js/commit/b955d1559a5c7c57aa662f8de7cdd14ef4e81acb#diff- f9bb01d7c335d9866b1042172a02aafacdb9c82a581ca7929359a0efdc49b8f5",
+                "author": {
+                    "name": "wayne2006",
+                    "url": "https://github.com/wayne2006"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/geometry.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14249",
+                "title": "RuntimeAnimation: Fix original value used in the bone matrix case",
+                "description": "We want the original value to be the current (matrix) value at the time the `RuntimeAnimation` is started, which may be different than the rest matrix (which should not be used, anyway, as it's a matrix for user consumption only).",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/runtimeAnimation.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "14248",
+                "title": "KTX2Decoder: Fix UASTC_R8_UNORM wasm path",
+                "description": "See https://forum.babylonjs.com/t/typeerror-ktx2decoder-litetranscoder-uastc-r8-unorm-is-undefined/43759",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/tools/ktx2Decoder/src/Transcoders/index.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_R8_UNORM.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_RG8_UNORM.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "14238",
+                "title": "FreeCameraTouchInput: Add check for Handedness",
+                "description": "Recently, on the forum, a user found an issue where the UniversalCamera's touch controls weren't accounting for a right-handed system.  Upon investigating, it was found that this check was missing.  This PR adds that check to the touch controls.\r\n\r\nEdit: Moved logic to Camera function and modified calls to use said function.\r\n\r\nForum Link: https://forum.babylonjs.com/t/how-to-make-the-touch-rotation-on-the-y-axis-of-universalcamera-consistent-in-different-coordinate-system/43716",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/flyCameraMouseInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraKeyboardMoveInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraMouseInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraTouchInput.ts",
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts",
+                    "packages/dev/core/src/Cameras/camera.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
                 ]
             }
         ],
