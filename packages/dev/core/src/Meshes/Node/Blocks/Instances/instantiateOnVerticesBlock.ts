@@ -142,16 +142,16 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
 
     protected _buildBlock(state: NodeGeometryBuildState) {
         const func = (state: NodeGeometryBuildState) => {
-            state.executionContext = this;
-            state.instancingContext = this;
+            state.pushExecutionContext(this);
+            state.pushInstancingContext(this);
 
             this._vertexData = this.geometry.getConnectedValue(state);
-            state.geometryContext = this._vertexData;
+            state.pushGeometryContext(this._vertexData);
 
             if (!this._vertexData || !this._vertexData.positions || !this.instance.isConnected) {
-                state.executionContext = null;
-                state.geometryContext = null;
-                state.instancingContext = null;
+                state.restoreExecutionContext();
+                state.restoreInstancingContext();
+                state.restoreGeometryContext();
                 this.output._storedValue = null;
                 return;
             }
@@ -234,6 +234,9 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
                 }
             }
 
+            state.restoreGeometryContext();
+            state.restoreExecutionContext();
+            state.restoreInstancingContext();
             return this._vertexData;
         };
 
