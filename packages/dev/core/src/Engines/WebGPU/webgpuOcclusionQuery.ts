@@ -16,6 +16,7 @@ export class WebGPUOcclusionQuery {
     private _availableIndices: number[] = [];
     private _lastBuffer: Nullable<BigUint64Array>;
     private _frameLastBuffer: number;
+    private _frameQuerySetIsDirty = -1;
 
     public get querySet(): GPUQuerySet {
         return this._querySet.querySet;
@@ -26,6 +27,10 @@ export class WebGPUOcclusionQuery {
     }
 
     public get canBeginQuery(): boolean {
+        if (this._frameQuerySetIsDirty === this._engine.frameId) {
+            return false;
+        }
+
         const passIndex = this._engine._getCurrentRenderPassIndex();
         switch (passIndex) {
             case 0: {
@@ -63,7 +68,7 @@ export class WebGPUOcclusionQuery {
     }
 
     public deleteQuery(index: number): void {
-        this._availableIndices[this._availableIndices.length - 1] = index;
+        this._availableIndices[this._availableIndices.length] = index;
     }
 
     public isQueryResultAvailable(index: number): boolean {
@@ -99,7 +104,16 @@ export class WebGPUOcclusionQuery {
         }
 
         this._currentTotalIndices += numIndices;
-        this._querySet = new WebGPUQuerySet(this._currentTotalIndices, WebGPUConstants.QueryType.Occlusion, this._device, this._bufferManager, false);
+        this._querySet = new WebGPUQuerySet(
+            this._currentTotalIndices,
+            WebGPUConstants.QueryType.Occlusion,
+            this._device,
+            this._bufferManager,
+            false,
+            "QuerySet_OcclusionQuery_count_" + this._currentTotalIndices
+        );
+
+        this._frameQuerySetIsDirty = this._engine.frameId;
     }
 
     private _delayQuerySetDispose(): void {
