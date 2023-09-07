@@ -393,6 +393,7 @@ export class USDZExport {
     }
 
     private static _BuildCamera(camera: Camera) {
+        const scene = camera.getScene();
         const name = `${camera.name}_${camera.uniqueId}`;
         const mat = camera.getWorldMatrix();
 
@@ -418,11 +419,11 @@ export class USDZExport {
                     matrix4d xformOp:transform = ${transform}
                     uniform token[] xformOpOrder = ["xformOp:transform"]
                     float2 clippingRange = (${camera.minZ.toPrecision(USDZExport.Precision)}, ${camera.maxZ.toPrecision(USDZExport.Precision)})
-                    float focalLength = ${camera.fov.toPrecision(USDZExport.Precision)}
-                    float focusDistance = ${USDZExport.Focus.toPrecision(USDZExport.Precision) /*THIS IS PROBABLY WRONG*/}
-                    float horizontalAperture = ${USDZExport.FilmGauge.toPrecision(USDZExport.Precision) /*THIS IS PROBABLY WRONG*/} 
+                    float focalLength = ${(USDZExport.FilmGauge * Math.min(scene.getEngine().getAspectRatio(camera, true), 1)).toPrecision(USDZExport.Precision)}
+                    float focusDistance = ${USDZExport.Focus.toPrecision(USDZExport.Precision)}
+                    float horizontalAperture = ${USDZExport.FilmGauge.toPrecision(USDZExport.Precision)} 
                     token projection = "perspective"
-                    float verticalAperture = ${USDZExport.FilmGauge.toPrecision(USDZExport.Precision) /*THIS IS PROBABLY WRONG*/}
+                    float verticalAperture = ${USDZExport.FilmGauge.toPrecision(USDZExport.Precision)}
                 }`;
         }
     }
