@@ -52,7 +52,7 @@ export class MatrixComposeBlock extends NodeGeometryBlock {
     }
 
     protected _buildBlock() {
-        this.output._storedValue = (state: NodeGeometryBuildState) => {
+        this.output._storedFunction = (state: NodeGeometryBuildState) => {
             if (!this.matrix0.isConnected || !this.matrix1.isConnected) {
                 return null;
             }
@@ -60,6 +60,9 @@ export class MatrixComposeBlock extends NodeGeometryBlock {
             const matrix0 = this.matrix0.getConnectedValue(state) as Matrix;
             const matrix1 = this.matrix1.getConnectedValue(state) as Matrix;
 
+            if (!matrix0 || !matrix1) {
+                return null;
+            }
             return matrix0.multiply(matrix1);
         };
     }
