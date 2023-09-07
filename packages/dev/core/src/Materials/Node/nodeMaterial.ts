@@ -2263,6 +2263,31 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Awaits for all the material textures to be ready before resolving the returned promise.
+     */
+    public whenTexturesReadyAsync(): Promise<void[]> {
+        // Ensures all textures are ready to render.
+        const textureReadyPromises: Promise<void>[] = [];
+        this.getActiveTextures().forEach((texture) => {
+            const internalTexture = texture.getInternalTexture();
+            if (internalTexture && !internalTexture.isReady) {
+                textureReadyPromises.push(
+                    new Promise((textureResolve, textureReject) => {
+                        internalTexture.onLoadedObservable.addOnce(() => {
+                            textureResolve();
+                        });
+                        internalTexture.onErrorObservable.addOnce((e) => {
+                            textureReject(e);
+                        });
+                    })
+                );
+            }
+        });
+
+        return Promise.all(textureReadyPromises);
+    }
+
+    /**
      * Creates a node material from parsed material data
      * @param source defines the JSON representation of the material
      * @param scene defines the hosting scene
@@ -2353,33 +2378,18 @@ export class NodeMaterial extends PushMaterial {
                             reject(err);
                         }
 
-                        // Ensures all textures are ready to render.
-                        const textureReadyPromises: Promise<void>[] = [];
                         if (waitForTextureReadyness) {
-                            nodeMaterial.getActiveTextures().forEach((texture) => {
-                                const internalTexture = texture.getInternalTexture();
-                                if (internalTexture && !internalTexture.isReady) {
-                                    textureReadyPromises.push(
-                                        new Promise((textureResolve, textureReject) => {
-                                            internalTexture.onLoadedObservable.addOnce(() => {
-                                                textureResolve();
-                                            });
-                                            internalTexture.onErrorObservable.addOnce((e) => {
-                                                textureReject(e);
-                                            });
-                                        })
-                                    );
-                                }
-                            });
+                            nodeMaterial
+                                .whenTexturesReadyAsync()
+                                .then(() => {
+                                    resolve(nodeMaterial!);
+                                })
+                                .catch((err) => {
+                                    reject(err);
+                                });
+                        } else {
+                            resolve(nodeMaterial);
                         }
-
-                        Promise.all(textureReadyPromises)
-                            .then(() => {
-                                resolve(nodeMaterial!);
-                            })
-                            .catch((err) => {
-                                reject(err);
-                            });
                     } else {
                         reject("Unable to load the snippet " + snippetId);
                     }
