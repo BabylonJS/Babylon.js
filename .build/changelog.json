@@ -1,67 +1,171 @@
 {
-    "fromTag": "6.19.1",
+    "fromTag": "6.20.0",
     "changelog": {
-        "6.19.1": [
+        "6.20.1": [
             {
-                "pr": "14241",
-                "title": "adding _evt to arc rotate's pointer input",
-                "description": "This PR helps with extending the arc rotate pointer input, passing the evt object correctly",
+                "pr": "14279",
+                "title": "Fix context lost or unwanted data update",
+                "description": null,
                 "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
                 },
                 "files": [
-                    "packages/dev/core/src/Cameras/Inputs/BaseCameraPointersInput.ts",
-                    "packages/dev/core/src/Cameras/Inputs/arcRotateCameraPointersInput.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "14240",
-                "title": "fix alignment issue in NME",
-                "description": "Fix #14227",
-                "author": {
-                    "name": "carolhmj",
-                    "url": "https://github.com/carolhmj"
-                },
-                "files": [
-                    "packages/tools/nodeEditor/src/main.scss"
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVerticesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVolumeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setColorsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setMaterialIDBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setNormalsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setPositionsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setTangentsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setUVsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/boxBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/capsuleBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/cylinderBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/discBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/gridBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/icoSphereBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/meshBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/planeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/sphereBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/torusBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryCollectionBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryOptimizeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryTransformBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/mergeGeometryBlock.ts"
                 ],
                 "tags": [
-                    "bug",
-                    "nme"
+                    "skip changelog"
                 ]
             },
             {
-                "pr": "14239",
-                "title": "avoid rendering empty trees on a11y tree",
-                "description": "Related forum issue: https://forum.babylonjs.com/t/accessibility-empty-accessibility-node-for-any-adt-added-even-if-empty/43415/7\r\n\r\nPreviously, if we reached a texture ADT, we would render at least the root node, even if it was empty (no children and no description). Now this scenario is checked, and if it occurs, we skip rendering that tree. This avoids empty divs on the twin tree.",
-                "author": {
-                    "name": "carolhmj",
-                    "url": "https://github.com/carolhmj"
-                },
-                "files": [
-                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinHostComponent.tsx"
-                ],
-                "tags": [
-                    "bug",
-                    "accessibility"
-                ]
-            },
-            {
-                "pr": "14237",
-                "title": "SolidParticleSystem: Add uvKind option to the digest method",
-                "description": "See https://forum.babylonjs.com/t/pcs-and-sps-digest-always-take-1st-uv-slot-irrespective-of-texture/43651/3",
+                "pr": "14278",
+                "title": "Animations: Refactor the code that creates additive animations",
+                "description": "* added some options to drive more precisely the creation of additive animations\r\n* added a helper function to clip an animation group given a range of frames\r\n* fixed the `clone` / `serialize` / `parse` methods of the `AnimationGroup` class",
                 "author": {
                     "name": "Popov72",
                     "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/Particles/solidParticleSystem.ts"
+                    "packages/dev/core/src/Animations/animation.ts",
+                    "packages/dev/core/src/Animations/animationGroup.ts"
                 ],
                 "tags": [
                     "enhancement",
-                    "particles"
+                    "animations"
+                ]
+            },
+            {
+                "pr": "14276",
+                "title": "Add textures ready helper",
+                "description": "https://forum.babylonjs.com/t/node-material-post-processes-flashing-replace-colour-at-initialisation/43865/9",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14275",
+                "title": "I'm with stupid...",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/matrixComposeBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14274",
+                "title": "WebGPU: Fix having a single occlusion query per mesh per frame",
+                "description": "See https://forum.babylonjs.com/t/webgpu-occlusion-query-with-2-cameras/43840",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.query.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuOcclusionQuery.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "14273",
+                "title": "Rework entire stack system for context",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVerticesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVolumeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setColorsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setNormalsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setPositionsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setTangentsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setUVsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBuildState.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14272",
+                "title": "WebGPU: Fix warnings when using occlusion queries",
+                "description": "I also added some labels for some objects for debugging purpose in WebGPU.\r\n\r\n(my PG so that it does not get lost: http://localhost:1338/?webgpu#QDAZ80#457)",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.query.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTargetCube.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuOcclusionQuery.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuQuerySet.ts",
+                    "packages/dev/core/src/Engines/renderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "14271",
+                "title": "NME: Fix PBR debug mode",
+                "description": "See https://forum.babylonjs.com/t/nme-pbr-material-debug-mode/43908/2",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDebug.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
                 ]
             }
         ],
@@ -517,6 +621,70 @@
                 "tags": [
                     "bug",
                     "inputs"
+                ]
+            }
+        ],
+        "6.19.1": [
+            {
+                "pr": "14241",
+                "title": "adding _evt to arc rotate's pointer input",
+                "description": "This PR helps with extending the arc rotate pointer input, passing the evt object correctly",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/BaseCameraPointersInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/arcRotateCameraPointersInput.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14240",
+                "title": "fix alignment issue in NME",
+                "description": "Fix #14227",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/main.scss"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "14239",
+                "title": "avoid rendering empty trees on a11y tree",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/accessibility-empty-accessibility-node-for-any-adt-added-even-if-empty/43415/7\r\n\r\nPreviously, if we reached a texture ADT, we would render at least the root node, even if it was empty (no children and no description). Now this scenario is checked, and if it occurs, we skip rendering that tree. This avoids empty divs on the twin tree.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinHostComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "accessibility"
+                ]
+            },
+            {
+                "pr": "14237",
+                "title": "SolidParticleSystem: Add uvKind option to the digest method",
+                "description": "See https://forum.babylonjs.com/t/pcs-and-sps-digest-always-take-1st-uv-slot-irrespective-of-texture/43651/3",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/solidParticleSystem.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "particles"
                 ]
             }
         ],
