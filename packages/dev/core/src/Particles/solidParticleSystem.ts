@@ -654,24 +654,26 @@ export class SolidParticleSystem implements IDisposable {
                 u += 2;
             }
 
-            if (copy.color) {
-                this._color.copyFrom(tmpColor);
-            } else {
-                const color = this._color;
-                if (meshCol && meshCol[c] !== undefined) {
-                    color.r = meshCol[c];
-                    color.g = meshCol[c + 1];
-                    color.b = meshCol[c + 2];
-                    color.a = meshCol[c + 3];
+            if (meshCol) {
+                if (copy.color) {
+                    this._color.copyFrom(tmpColor);
                 } else {
-                    color.r = 1.0;
-                    color.g = 1.0;
-                    color.b = 1.0;
-                    color.a = 1.0;
+                    const color = this._color;
+                    if (meshCol && meshCol[c] !== undefined) {
+                        color.r = meshCol[c];
+                        color.g = meshCol[c + 1];
+                        color.b = meshCol[c + 2];
+                        color.a = meshCol[c + 3];
+                    } else {
+                        color.r = 1.0;
+                        color.g = 1.0;
+                        color.b = 1.0;
+                        color.a = 1.0;
+                    }
                 }
+                colors.push(this._color.r, this._color.g, this._color.b, this._color.a);
+                c += 4;
             }
-            colors.push(this._color.r, this._color.g, this._color.b, this._color.a);
-            c += 4;
 
             if (!this.recomputeNormals && meshNor) {
                 Vector3.TransformNormalFromFloatsToRef(meshNor[n], meshNor[n + 1], meshNor[n + 2], rotMatrix, tmpVector);
