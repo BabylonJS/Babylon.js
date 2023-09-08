@@ -21,6 +21,42 @@ import type { Animatable } from "./animatable";
 import type { RuntimeAnimation } from "./runtimeAnimation";
 
 /**
+ * Options to be used when creating an additive animation
+ */
+export interface IMakeAnimationAdditiveOptions {
+    /**
+     * The frame that the animation should be relative to (if not provided, 0 will be used)
+     */
+    referenceFrame?: number;
+    /**
+     * The name of the animation range to convert to additive. If not provided, fromFrame / toFrame will be used
+     * If fromFrame / toFrame are not provided either, the whole animation will be converted to additive
+     */
+    range?: string;
+    /**
+     * If true, the original animation will be cloned and converted to additive. If false, the original animation will be converted to additive (default is false)
+     */
+    cloneOriginalAnimation?: boolean;
+    /**
+     * The name of the cloned animation if cloneOriginalAnimation is true. If not provided, use the original animation name
+     */
+    clonedAnimationName?: string;
+    /**
+     * Together with toFrame, defines the range of the animation to convert to additive. Will only be used if range is not provided
+     * If range and fromFrame / toFrame are not provided, the whole animation will be converted to additive
+     */
+    fromFrame?: number;
+    /**
+     * Together with fromFrame, defines the range of the animation to convert to additive.
+     */
+    toFrame?: number;
+    /**
+     * If true, the key frames will be clipped to the range specified by range or fromFrame / toFrame (default is false)
+     */
+    clipKeys?: boolean;
+}
+
+/**
  * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -32,6 +68,12 @@ export class _IAnimationState {
     offsetValue?: any;
     highLimitValue?: any;
 }
+
+const evaluateAnimationState: _IAnimationState = {
+    key: 0,
+    repeatCount: 0,
+    loopMode: 2 /*Animation.ANIMATIONLOOPMODE_CONSTANT*/,
+};
 
 /**
  * Class used to store any kind of animation
@@ -283,27 +325,57 @@ export class Animation {
     }
 
     /**
-     * Convert the keyframes for all animations belonging to the group to be relative to a given reference frame.
+     * Convert the keyframes of an animation to be relative to a given reference frame.
      * @param sourceAnimation defines the Animation containing keyframes to convert
-     * @param referenceFrame defines the frame that keyframes in the range will be relative to
+     * @param referenceFrame defines the frame that keyframes in the range will be relative to (default: 0)
      * @param range defines the name of the AnimationRange belonging to the Animation to convert
      * @param cloneOriginal defines whether or not to clone the animation and convert the clone or convert the original animation (default is false)
      * @param clonedName defines the name of the resulting cloned Animation if cloneOriginal is true
      * @returns a new Animation if cloneOriginal is true or the original Animation if cloneOriginal is false
      */
-    public static MakeAnimationAdditive(sourceAnimation: Animation, referenceFrame = 0, range?: string, cloneOriginal = false, clonedName?: string): Animation {
+    public static MakeAnimationAdditive(sourceAnimation: Animation, referenceFrame?: number, range?: string, cloneOriginal?: boolean, clonedName?: string): Animation;
+
+    /**
+     * Convert the keyframes of an animation to be relative to a given reference frame.
+     * @param sourceAnimation defines the Animation containing keyframes to convert
+     * @param options defines the options to use when converting ey keyframes
+     * @returns a new Animation if options.cloneOriginalAnimation is true or the original Animation if options.cloneOriginalAnimation is false
+     */
+    public static MakeAnimationAdditive(sourceAnimation: Animation, options?: IMakeAnimationAdditiveOptions): Animation;
+
+    /** @internal */
+    public static MakeAnimationAdditive(
+        sourceAnimation: Animation,
+        referenceFrameOrOptions?: number | IMakeAnimationAdditiveOptions,
+        range?: string,
+        cloneOriginal = false,
+        clonedName?: string
+    ): Animation {
+        let options: IMakeAnimationAdditiveOptions;
+
+        if (typeof referenceFrameOrOptions === "object") {
+            options = referenceFrameOrOptions;
+        } else {
+            options = {
+                referenceFrame: referenceFrameOrOptions ?? 0,
+                range: range,
+                cloneOriginalAnimation: cloneOriginal,
+                clonedAnimationName: clonedName,
+            };
+        }
+
         let animation = sourceAnimation;
 
-        if (cloneOriginal) {
+        if (options.cloneOriginalAnimation) {
             animation = sourceAnimation.clone();
-            animation.name = clonedName || animation.name;
+            animation.name = options.clonedAnimationName || animation.name;
         }
 
         if (!animation._keys.length) {
             return animation;
         }
 
-        referenceFrame = referenceFrame >= 0 ? referenceFrame : 0;
+        const referenceFrame = options.referenceFrame && options.referenceFrame >= 0 ? options.referenceFrame : 0;
         let startIndex = 0;
         const firstKey = animation._keys[0];
         let endIndex = animation._keys.length - 1;
@@ -317,117 +389,51 @@ export class Animation {
             keyQuaternion: TmpVectors.Quaternion[1],
             keyScaling: TmpVectors.Vector3[3],
         };
-        let referenceFound = false;
         let from = firstKey.frame;
         let to = lastKey.frame;
-        if (range) {
-            const rangeValue = animation.getRange(range);
+        if (options.range) {
+            const rangeValue = animation.getRange(options.range);
 
             if (rangeValue) {
                 from = rangeValue.from;
                 to = rangeValue.to;
             }
+        } else {
+            from = options.fromFrame ?? from;
+            to = options.toFrame ?? to;
         }
-        let fromKeyFound = firstKey.frame === from;
-        let toKeyFound = lastKey.frame === to;
+
+        if (from !== firstKey.frame) {
+            startIndex = animation.createKeyForFrame(from);
+        }
+
+        if (to !== lastKey.frame) {
+            endIndex = animation.createKeyForFrame(to);
+        }
 
         // There's only one key, so use it
         if (animation._keys.length === 1) {
             const value = animation._getKeyValue(animation._keys[0]);
             valueStore.referenceValue = value.clone ? value.clone() : value;
-            referenceFound = true;
         }
 
         // Reference frame is before the first frame, so just use the first frame
         else if (referenceFrame <= firstKey.frame) {
             const value = animation._getKeyValue(firstKey.value);
             valueStore.referenceValue = value.clone ? value.clone() : value;
-            referenceFound = true;
         }
 
         // Reference frame is after the last frame, so just use the last frame
         else if (referenceFrame >= lastKey.frame) {
             const value = animation._getKeyValue(lastKey.value);
             valueStore.referenceValue = value.clone ? value.clone() : value;
-            referenceFound = true;
         }
 
-        // Find key bookends, create them if they don't exist
-        let index = 0;
-        while (!referenceFound || !fromKeyFound || (!toKeyFound && index < animation._keys.length - 1)) {
-            const currentKey = animation._keys[index];
-            const nextKey = animation._keys[index + 1];
-
-            // If reference frame wasn't found yet, check if we can interpolate to it
-            if (!referenceFound && referenceFrame >= currentKey.frame && referenceFrame <= nextKey.frame) {
-                let value;
-
-                if (referenceFrame === currentKey.frame) {
-                    value = animation._getKeyValue(currentKey.value);
-                } else if (referenceFrame === nextKey.frame) {
-                    value = animation._getKeyValue(nextKey.value);
-                } else {
-                    const animationState = {
-                        key: index,
-                        repeatCount: 0,
-                        loopMode: this.ANIMATIONLOOPMODE_CONSTANT,
-                    };
-                    value = animation._interpolate(referenceFrame, animationState);
-                }
-
-                valueStore.referenceValue = value.clone ? value.clone() : value;
-                referenceFound = true;
-            }
-
-            // If from key wasn't found yet, check if we can interpolate to it
-            if (!fromKeyFound && from >= currentKey.frame && from <= nextKey.frame) {
-                if (from === currentKey.frame) {
-                    startIndex = index;
-                } else if (from === nextKey.frame) {
-                    startIndex = index + 1;
-                } else {
-                    const animationState = {
-                        key: index,
-                        repeatCount: 0,
-                        loopMode: this.ANIMATIONLOOPMODE_CONSTANT,
-                    };
-                    const value = animation._interpolate(from, animationState);
-                    const key: IAnimationKey = {
-                        frame: from,
-                        value: value.clone ? value.clone() : value,
-                    };
-                    animation._keys.splice(index + 1, 0, key);
-                    startIndex = index + 1;
-                }
-
-                fromKeyFound = true;
-            }
-
-            // If to key wasn't found yet, check if we can interpolate to it
-            if (!toKeyFound && to >= currentKey.frame && to <= nextKey.frame) {
-                if (to === currentKey.frame) {
-                    endIndex = index;
-                } else if (to === nextKey.frame) {
-                    endIndex = index + 1;
-                } else {
-                    const animationState = {
-                        key: index,
-                        repeatCount: 0,
-                        loopMode: this.ANIMATIONLOOPMODE_CONSTANT,
-                    };
-                    const value = animation._interpolate(to, animationState);
-                    const key: IAnimationKey = {
-                        frame: to,
-                        value: value.clone ? value.clone() : value,
-                    };
-                    animation._keys.splice(index + 1, 0, key);
-                    endIndex = index + 1;
-                }
-
-                toKeyFound = true;
-            }
-
-            index++;
+        // Interpolate the reference value from the animation
+        else {
+            evaluateAnimationState.key = 0;
+            const value = animation._interpolate(referenceFrame, evaluateAnimationState);
+            valueStore.referenceValue = value.clone ? value.clone() : value;
         }
 
         // Conjugate the quaternion
@@ -441,9 +447,28 @@ export class Animation {
             valueStore.referenceQuaternion.normalize().conjugateInPlace();
         }
 
+        let startFrame = Number.MAX_VALUE;
+        const clippedKeys: Nullable<IAnimationKey[]> = options.clipKeys ? [] : null;
+
         // Subtract the reference value from all of the key values
-        for (index = startIndex; index <= endIndex; index++) {
-            const key = animation._keys[index];
+        for (let index = startIndex; index <= endIndex; index++) {
+            let key = animation._keys[index];
+
+            if (clippedKeys) {
+                key = {
+                    frame: key.frame,
+                    value: key.value.clone ? key.value.clone() : key.value,
+                    inTangent: key.inTangent,
+                    outTangent: key.outTangent,
+                    interpolation: key.interpolation,
+                    lockedTangent: key.lockedTangent,
+                };
+                if (startFrame === Number.MAX_VALUE) {
+                    startFrame = key.frame;
+                }
+                key.frame -= startFrame;
+                clippedKeys.push(key);
+            }
 
             // If this key was duplicated to create a frame 0 key, skip it because its value has already been updated
             if (index && animation.dataType !== Animation.ANIMATIONTYPE_FLOAT && key.value === firstKey.value) {
@@ -478,6 +503,10 @@ export class Animation {
                 default:
                     key.value -= valueStore.referenceValue;
             }
+        }
+
+        if (clippedKeys) {
+            animation.setKeys(clippedKeys, true);
         }
 
         return animation;
@@ -899,17 +928,14 @@ export class Animation {
      * @returns the animation value
      */
     public evaluate(currentFrame: number) {
-        return this._interpolate(currentFrame, {
-            key: 0,
-            repeatCount: 0,
-            loopMode: Animation.ANIMATIONLOOPMODE_CONSTANT,
-        });
+        evaluateAnimationState.key = 0;
+        return this._interpolate(currentFrame, evaluateAnimationState);
     }
 
     /**
      * @internal Internal use only
      */
-    public _interpolate(currentFrame: number, state: _IAnimationState): any {
+    public _interpolate(currentFrame: number, state: _IAnimationState, searchClosestKeyOnly = false): any {
         if (state.loopMode === Animation.ANIMATIONLOOPMODE_CONSTANT && state.repeatCount > 0) {
             return state.highLimitValue.clone ? state.highLimitValue.clone() : state.highLimitValue;
         }
@@ -930,13 +956,18 @@ export class Animation {
         state.key = key;
 
         if (key < 0) {
-            return this._getKeyValue(keys[0].value);
+            return searchClosestKeyOnly ? undefined : this._getKeyValue(keys[0].value);
         } else if (key + 1 > keysLength - 1) {
-            return this._getKeyValue(keys[keysLength - 1].value);
+            return searchClosestKeyOnly ? undefined : this._getKeyValue(keys[keysLength - 1].value);
         }
 
         const startKey = keys[key];
         const endKey = keys[key + 1];
+
+        if (searchClosestKeyOnly && (currentFrame === startKey.frame || currentFrame === endKey.frame)) {
+            return undefined;
+        }
+
         const startValue = this._getKeyValue(startKey.value);
         const endValue = this._getKeyValue(endKey.value);
         if (startKey.interpolation === AnimationKeyInterpolation.STEP) {
@@ -1144,6 +1175,32 @@ export class Animation {
      */
     public setKeys(values: Array<IAnimationKey>, dontClone = false): void {
         this._keys = !dontClone ? values.slice(0) : values;
+    }
+
+    /**
+     * Creates a key for the frame passed as a parameter and adds it to the animation IF a key doesn't already exist for that frame
+     * @param frame Frame number
+     * @returns The key index if the key was added or the index of the pre existing key if the frame passed as parameter already has a corresponding key
+     */
+    public createKeyForFrame(frame: number) {
+        // Find the key corresponding to frame
+        evaluateAnimationState.key = 0;
+        const value = this._interpolate(frame, evaluateAnimationState, true);
+
+        if (!value) {
+            // A key corresponding to this frame already exists
+            return evaluateAnimationState.key === frame ? evaluateAnimationState.key : evaluateAnimationState.key + 1;
+        }
+
+        // The frame is between two keys, so create a new key
+        const newKey: IAnimationKey = {
+            frame,
+            value: value.clone ? value.clone() : value,
+        };
+
+        this._keys.splice(evaluateAnimationState.key + 1, 0, newKey);
+
+        return evaluateAnimationState.key + 1;
     }
 
     /**
