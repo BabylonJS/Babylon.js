@@ -6481,8 +6481,6 @@ export class Matrix {
         m[14] = 0;
         m[15] = 1;
         result.markAsUpdated();
-
-        console.log(result.determinant());
         return result;
     }
 
