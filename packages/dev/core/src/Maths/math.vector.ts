@@ -6445,18 +6445,18 @@ export class Matrix {
         const m = result._m;
         if (c < -1 + Epsilon) {
             // from and to are colinear and opposite direction.
-            // compute a PI rotation on Z axis
+            // compute a PI rotation on Y axis
             m[0] = -1;
             m[1] = 0;
             m[2] = 0;
             m[3] = 0;
             m[4] = 0;
-            m[5] = -1;
+            m[5] = 1;
             m[6] = 0;
             m[7] = 0;
             m[8] = 0;
             m[9] = 0;
-            m[10] = 1;
+            m[10] = -1;
             m[11] = 0;
         } else {
             const v = Vector3.Cross(to, from);
@@ -6480,6 +6480,8 @@ export class Matrix {
         m[14] = 0;
         m[15] = 1;
         result.markAsUpdated();
+
+        console.log(result.determinant());
         return result;
     }
 

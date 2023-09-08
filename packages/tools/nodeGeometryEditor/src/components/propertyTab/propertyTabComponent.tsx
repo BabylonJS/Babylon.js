@@ -111,7 +111,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 label={block.name}
                                 target={block}
                                 propertyName="value"
-                                step={(isInteger ? 1 : block.max - block.min) / 100.0}
+                                step={isInteger ? 1 : Math.abs(block.max - block.min) / 100.0}
                                 decimalCount={isInteger ? 0 : 2}
                                 minimum={block.min}
                                 maximum={block.max}
