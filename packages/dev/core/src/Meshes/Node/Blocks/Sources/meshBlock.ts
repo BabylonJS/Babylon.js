@@ -66,8 +66,12 @@ export class MeshBlock extends NodeGeometryBlock {
             return;
         }
 
-        this.geometry._storedValue = VertexData.ExtractFromMesh(this._mesh, false, true);
+        const vertexData = VertexData.ExtractFromMesh(this._mesh, false, true);
         this._cachedVertexData = null;
+
+        this.geometry._storedFunction = () => {
+            return vertexData.clone();
+        };
     }
 
     /**

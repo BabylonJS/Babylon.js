@@ -244,6 +244,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
         if (this.evaluateContext) {
             this.output._storedFunction = func;
         } else {
+            this.output._storedFunction = null;
             this.output._storedValue = func(state);
         }
     }

@@ -239,6 +239,7 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
         if (this.evaluateContext) {
             this.output._storedFunction = func;
         } else {
+            this.output._storedFunction = null;
             this.output._storedValue = func(state);
         }
     }
