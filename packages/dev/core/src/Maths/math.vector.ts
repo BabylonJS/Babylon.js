@@ -6438,9 +6438,10 @@ export class Matrix {
      * @param from defines the vector to align
      * @param to defines the vector to align to
      * @param result defines the target matrix
+     * @param useYAxisForCoplanar defines a boolean indicating that we should favor Y axis for coplanar vectors (default is false)
      * @returns result input
      */
-    public static RotationAlignToRef<T extends Matrix>(from: DeepImmutable<Vector3>, to: DeepImmutable<Vector3>, result: T): T {
+    public static RotationAlignToRef<T extends Matrix>(from: DeepImmutable<Vector3>, to: DeepImmutable<Vector3>, result: T, useYAxisForCoplanar = false): T {
         const c = Vector3.Dot(to, from);
         const m = result._m;
         if (c < -1 + Epsilon) {
@@ -6451,12 +6452,12 @@ export class Matrix {
             m[2] = 0;
             m[3] = 0;
             m[4] = 0;
-            m[5] = 1;
+            m[5] = useYAxisForCoplanar ? 1 : -1;
             m[6] = 0;
             m[7] = 0;
             m[8] = 0;
             m[9] = 0;
-            m[10] = -1;
+            m[10] = useYAxisForCoplanar ? -1 : 1;
             m[11] = 0;
         } else {
             const v = Vector3.Cross(to, from);
