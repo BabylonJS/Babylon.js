@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Effect } from "core/Materials/effect";
 import type { IInternalTextureLoader } from "core/Materials/Textures/internalTextureLoader";
+import { IsWindowObjectExist } from "./runtimeEnvironment";
 
 // used to be WebGL only, a single array
 export const ExceptionList = {
@@ -39,6 +40,33 @@ export let ShadersRepository = Effect.ShadersRepository;
 export function SetShadersRepository(path: string): void {
     Effect.ShadersRepository = path;
     ShadersRepository = Effect.ShadersRepository;
+}
+
+/**
+ * Queue a new function into the requested animation frame pool (ie. this function will be executed by the browser (or the javascript engine) for the next frame)
+ * @param func - the function to be called
+ * @param requester - the object that will request the next frame. Falls back to window.
+ * @returns frame number
+ */
+export function QueueNewFrame(func: FrameRequestCallback, requester?: any): number {
+    // Note that there is kind of a typing issue here, as `setTimeout` might return something else than a number (NodeJs returns a NodeJS.Timeout object).
+    // Also if the global `requestAnimationFrame`'s returnType is number, `requester.requestPostAnimationFrame` and `requester.requestAnimationFrame` types
+    // are `any`.
+
+    if (!IsWindowObjectExist()) {
+        if (typeof requestAnimationFrame === "function") {
+            return requestAnimationFrame(func);
+        }
+    } else {
+        const { requestAnimationFrame } = requester || window;
+        if (typeof requestAnimationFrame === "function") {
+            return requestAnimationFrame(func);
+        }
+    }
+
+    // fallback to the global `setTimeout`.
+    // In most cases (aka in the browser), `window` is the global object, so instead of calling `window.setTimeout` we could call the global `setTimeout`.
+    return setTimeout(func, 16) as unknown as number;
 }
 
 // TODO is this needed? this will allow `import Statics from "package/Engines"`.

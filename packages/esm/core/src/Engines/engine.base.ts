@@ -5,10 +5,20 @@ import type { Nullable } from "core/types";
 import type { IShaderProcessor } from "core/Engines/Processors/iShaderProcessor";
 import type { UniformBuffer } from "core/Materials/uniformBuffer";
 import { Observable } from "core/Misc/observable";
-import { ALPHA_ADD, ALPHA_DISABLE, GEQUAL, LEQUAL, TEXTUREFORMAT_RGBA, TEXTURETYPE_UNSIGNED_INT, TEXTURE_NEAREST_SAMPLINGMODE } from "./engine.constants";
+import {
+    ALPHA_ADD,
+    ALPHA_DISABLE,
+    GEQUAL,
+    LEQUAL,
+    MATERIAL_PointFillMode,
+    MATERIAL_TriangleFillMode,
+    MATERIAL_WireFrameFillMode,
+    TEXTUREFORMAT_RGBA,
+    TEXTURETYPE_UNSIGNED_INT,
+    TEXTURE_NEAREST_SAMPLINGMODE,
+} from "./engine.constants";
 import { PrecisionDate } from "core/Misc";
-import type { StorageBuffer } from "core/Buffers";
-import type { EngineOptions } from "core/Engines/thinEngine";
+import type { DataBuffer, StorageBuffer } from "core/Buffers";
 import type { EngineCapabilities } from "core/Engines/engineCapabilities";
 import type { EngineFeatures } from "core/Engines/engineFeatures";
 import type { DepthCullingState } from "core/States/depthCullingState";
@@ -22,6 +32,8 @@ import type { Texture } from "core/Materials/Textures/texture";
 import { EngineType } from "./engine.interfaces";
 import { IsDocumentAvailable, IsWindowObjectExist } from "./runtimeEnvironment";
 import { PerformanceConfigurator } from "core/Engines/performanceConfigurator";
+import { QueueNewFrame } from "./engine.static";
+import type { IPipelineContext } from "core/Engines/IPipelineContext";
 
 const activeRequests: WeakMap<any, IFileRequest> = new WeakMap();
 
@@ -142,6 +154,7 @@ export interface IBaseEngineProtected {
     _workingContext: Nullable<ICanvasRenderingContext>;
     _lastDevicePixelRatio: number;
     _shaderPlatformName: string; // feels redundant
+    _viewportCached: { x: number; y: number; z: number; w: number };
 }
 
 export interface IBaseEngineInternals {
@@ -166,11 +179,12 @@ export interface IBaseEngineInternals {
     // _currentDrawContext: IDrawContext;
     // _currentMaterialContext: IMaterialContext;
     _currentRenderTarget: Nullable<RenderTargetWrapper>;
-    _boundRenderFunction: Function;
+    _boundRenderFunction: FrameRequestCallback;
     _frameHandler: number;
     _transformTextureUrl: Nullable<(url: string) => string>; // can move out?
     // replacing _framebufferDimensionsObject
     _renderWidthOverride: Nullable<{ width: number; height: number }>;
+    _dimensionsObject: Nullable<{ width: number; height: number }>;
 }
 
 /**
@@ -339,8 +353,8 @@ export interface IBaseEnginePublic {
     readonly useExactSrgbConversions: boolean;
 }
 
-export type BaseEngineState = IBaseEnginePublic & IBaseEngineInternals & IBaseEngineProtected;
-export type BaseEngineStateFull = BaseEngineState & IBaseEnginePrivate;
+export type BaseEngineState<T extends IBaseEnginePublic = IBaseEnginePublic> = T & IBaseEngineInternals & IBaseEngineProtected;
+export type BaseEngineStateFull<T extends IBaseEnginePublic = IBaseEnginePublic> = BaseEngineState<T> & IBaseEnginePrivate;
 
 let engineCounter = 0;
 
@@ -482,6 +496,8 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
         _emptyCubeTexture: null,
         _emptyTexture3D: null,
         _emptyTexture2DArray: null,
+        _dimensionsObject: null,
+        _viewportCached: { x: 0, y: 0, z: 0, w: 0 },
     };
 
     // TODO is getOwnPropertyDescriptors supported in native? if it doesn't we will need to use getOwnPropertyNames
@@ -538,6 +554,7 @@ export function resize(engineState: IBaseEnginePublic, forceSetSize = false): vo
 
 /**
  * Force a specific size of the canvas
+ * @param engineState defines the engine state
  * @param width defines the new canvas' width
  * @param height defines the new canvas' height
  * @param forceSetSize true to force setting the sizes of the underlying canvas
@@ -745,13 +762,48 @@ export function setHardwareScalingLevel(engineState: IBaseEnginePublic, level: n
 }
 
 /**
+ * Register and execute a render loop. The engine can have more than one render function
+ * @param engineState defines the engine state
+ * @param renderFunction defines the function to continuously execute
+ */
+export function runRenderLoop(
+    {
+        beginFrameFunc,
+        endFrameFunc = endFrame,
+        queueNewFrameFunc = QueueNewFrame,
+    }: {
+        beginFrameFunc?: (engineState: IBaseEnginePublic) => void;
+        endFrameFunc: (engineState: IBaseEnginePublic) => void;
+        queueNewFrameFunc?: (func: FrameRequestCallback, requester?: any) => number;
+    },
+    engineState: IBaseEnginePublic,
+    renderFunction: () => void
+): void {
+    const fes = engineState as BaseEngineStateFull;
+    if (fes._activeRenderLoops.indexOf(renderFunction) !== -1) {
+        return;
+    }
+
+    fes._activeRenderLoops.push(renderFunction);
+
+    if (!fes._renderingQueueLaunched) {
+        fes._renderingQueueLaunched = true;
+        _renderLoop({ beginFrameFunc, endFrameFunc, queueNewFrameFunc }, engineState);
+        fes._boundRenderFunction = _renderLoop.bind(null, engineState, { beginFrameFunc, endFrameFunc, queueNewFrameFunc });
+        fes._frameHandler = queueNewFrameFunc(fes._boundRenderFunction, getHostWindow(engineState));
+    }
+}
+
+/**
  * stop executing a render loop function and remove it from the execution array
+ * @param engineState defines the engine state
  * @param renderFunction defines the function to be removed. If not provided all functions will be removed.
  */
-export function stopRenderLoop(engineState: IBaseEnginePublic, renderFunction?: () => void): void {
+export function stopRenderLoop(engineState: IBaseEnginePublic, renderFunction?: () => void, cancelFrame = _cancelFrame): void {
     const fes = engineState as BaseEngineState;
     if (!renderFunction) {
         fes._activeRenderLoops.length = 0;
+        cancelFrame(engineState);
         return;
     }
 
@@ -759,15 +811,276 @@ export function stopRenderLoop(engineState: IBaseEnginePublic, renderFunction?: 
 
     if (index >= 0) {
         fes._activeRenderLoops.splice(index, 1);
+        if (fes._activeRenderLoops.length == 0) {
+            cancelFrame(engineState);
+        }
     }
 }
 
 /**
- * This will populate the entire module object. For better tree-shaking populate the minimum required
- * @param engineState The current engine state
+ * Enf the current frame
  */
-// export function populateBaseModule(engineState: IEnginePublic) {
-//     engineState.module = {
-//         _getShaderProcessor,
-//     };
-// }
+export function endFrame(engineState: IBaseEnginePublic): void {
+    const fes = engineState as BaseEngineState;
+    fes._frameId++;
+}
+
+// Was protected, now passed as a variable
+function _cancelFrame(engineState: IBaseEnginePublic) {
+    const fes = engineState as BaseEngineState;
+    if (fes._renderingQueueLaunched && fes._frameHandler) {
+        fes._renderingQueueLaunched = false;
+        if (!IsWindowObjectExist()) {
+            if (typeof cancelAnimationFrame === "function") {
+                return cancelAnimationFrame(fes._frameHandler);
+            }
+        } else {
+            const { cancelAnimationFrame } = getHostWindow(engineState) || window;
+            if (typeof cancelAnimationFrame === "function") {
+                return cancelAnimationFrame(fes._frameHandler);
+            }
+        }
+        return clearTimeout(fes._frameHandler);
+    }
+}
+
+/** @internal */
+export function _renderLoop(
+    {
+        queueNewFrameFunc = QueueNewFrame,
+        endFrameFunc = endFrame,
+        beginFrameFunc,
+    }: {
+        beginFrameFunc?: (engineState: IBaseEnginePublic) => void;
+        endFrameFunc?: typeof endFrame;
+        queueNewFrameFunc: typeof QueueNewFrame;
+    },
+    engineState: IBaseEnginePublic
+): void {
+    const fes = engineState as BaseEngineState;
+    if (!fes._contextWasLost) {
+        let shouldRender = true;
+        if (fes._isDisposed || (!fes.renderEvenInBackground && fes._windowIsBackground)) {
+            shouldRender = false;
+        }
+
+        if (shouldRender) {
+            // Start new frame
+            beginFrameFunc?.(engineState);
+
+            for (let index = 0; index < fes._activeRenderLoops.length; index++) {
+                const renderFunction = fes._activeRenderLoops[index];
+
+                renderFunction();
+            }
+
+            // Present
+            endFrameFunc(engineState);
+        }
+    }
+
+    if (fes._activeRenderLoops.length > 0) {
+        fes._frameHandler = queueNewFrameFunc(fes._boundRenderFunction, getHostWindow(engineState));
+    } else {
+        fes._renderingQueueLaunched = false;
+    }
+}
+
+/**
+ * Gets host window
+ * @returns the host window object
+ */
+export function getHostWindow(engineState: IBaseEnginePublic): Nullable<Window> {
+    const fes = engineState as BaseEngineState;
+    if (!IsWindowObjectExist()) {
+        return null;
+    }
+
+    if (fes._renderingCanvas && fes._renderingCanvas.ownerDocument && fes._renderingCanvas.ownerDocument.defaultView) {
+        return fes._renderingCanvas.ownerDocument.defaultView;
+    }
+
+    return window;
+}
+
+/**
+ * Gets the current render width
+ * @param engineState defines the engine state
+ * @param useScreen defines if screen size must be used (or the current render target if any)
+ * @returns a number defining the current render width
+ */
+export function getRenderWidth<T extends IBaseEnginePublic = IBaseEnginePublic>(engineState: T, useScreen = false): number {
+    const fes = engineState as BaseEngineState<T>;
+    if (!useScreen && fes._currentRenderTarget) {
+        return fes._currentRenderTarget.width;
+    }
+
+    return fes._dimensionsObject ? fes._dimensionsObject.width : 0;
+}
+
+/**
+ * Gets the current render height
+ * @param engineState defines the engine state
+ * @param useScreen defines if screen size must be used (or the current render target if any)
+ * @returns a number defining the current render height
+ */
+export function getRenderHeight<T extends IBaseEnginePublic = IBaseEnginePublic>(engineState: T, useScreen = false): number {
+    const fes = engineState as BaseEngineState<T>;
+    if (!useScreen && fes._currentRenderTarget) {
+        return fes._currentRenderTarget.height;
+    }
+
+    return fes._dimensionsObject ? fes._dimensionsObject.width : 0;
+}
+
+/**
+ * Set the WebGL's viewport
+ * @param viewport defines the viewport element to be used
+ * @param requiredWidth defines the width required for rendering. If not provided the rendering canvas' width is used
+ * @param requiredHeight defines the height required for rendering. If not provided the rendering canvas' height is used
+ */
+export function setViewport<T extends IBaseEnginePublic = IBaseEnginePublic>(
+    {
+        viewportChangedFunc = _viewport,
+        getRenderWidthFunc = getRenderWidth,
+        getRenderHeightFunc = getRenderHeight,
+    }: {
+        viewportChangedFunc: (engineState: T, x: number, y: number, width: number, height: number) => void;
+        getRenderWidthFunc?: typeof getRenderWidth<T>;
+        getRenderHeightFunc?: typeof getRenderHeight<T>;
+    },
+    engineState: T,
+    viewport: IViewportLike,
+    requiredWidth?: number,
+    requiredHeight?: number
+): void {
+    const width = requiredWidth || getRenderWidthFunc(engineState);
+    const height = requiredHeight || getRenderHeightFunc(engineState);
+    const x = viewport.x || 0;
+    const y = viewport.y || 0;
+
+    (engineState as BaseEngineState<T>)._cachedViewport = viewport;
+
+    viewportChangedFunc(engineState, x * width, y * height, width * viewport.width, height * viewport.height);
+}
+
+/**
+ * @internal
+ */
+export function _viewport(engineState: IBaseEnginePublic, x: number, y: number, width: number, height: number): void {
+    const fes = engineState as BaseEngineState;
+    fes._viewportCached.x = x;
+    fes._viewportCached.y = y;
+    fes._viewportCached.z = width;
+    fes._viewportCached.w = height;
+}
+
+/**
+ * Send a draw order
+ * @param useTriangles defines if triangles must be used to draw (else wireframe will be used)
+ * @param indexStart defines the starting index
+ * @param indexCount defines the number of index to draw
+ * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
+ */
+export function draw(
+    { drawElementsType }: { drawElementsType: (engineState: IBaseEnginePublic, fillMode: number, indexStart: number, indexCount: number, instancesCount?: number) => void },
+    engineState: IBaseEnginePublic,
+    useTriangles: boolean,
+    indexStart: number,
+    indexCount: number,
+    instancesCount?: number
+): void {
+    drawElementsType(engineState, useTriangles ? MATERIAL_TriangleFillMode : MATERIAL_WireFrameFillMode, indexStart, indexCount, instancesCount);
+}
+
+/**
+ * Draw a list of points
+ * @param verticesStart defines the index of first vertex to draw
+ * @param verticesCount defines the count of vertices to draw
+ * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
+ */
+export function drawPointClouds(
+    { drawArraysType }: { drawArraysType: (engineState: IBaseEnginePublic, fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number) => void },
+    engineState: IBaseEnginePublic,
+    verticesStart: number,
+    verticesCount: number,
+    instancesCount?: number
+): void {
+    drawArraysType(engineState, MATERIAL_PointFillMode, verticesStart, verticesCount, instancesCount);
+}
+
+/**
+ * Draw a list of unindexed primitives
+ * @param useTriangles defines if triangles must be used to draw (else wireframe will be used)
+ * @param verticesStart defines the index of first vertex to draw
+ * @param verticesCount defines the count of vertices to draw
+ * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
+ */
+export function drawUnIndexed(
+    { drawArraysType }: { drawArraysType: (engineState: IBaseEnginePublic, fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number) => void },
+    engineState: IBaseEnginePublic,
+    useTriangles: boolean,
+    verticesStart: number,
+    verticesCount: number,
+    instancesCount?: number
+): void {
+    drawArraysType(engineState, useTriangles ? MATERIAL_TriangleFillMode : MATERIAL_WireFrameFillMode, verticesStart, verticesCount, instancesCount);
+}
+
+/**
+ * @internal
+ */
+export function _releaseEffect(
+    { _deletePipelineContext }: { _deletePipelineContext: (engineState: IBaseEnginePublic, pipelineContext: IPipelineContext) => void },
+    engineState: IBaseEnginePublic,
+    effect: Effect
+): void {
+    const fes = engineState as BaseEngineState;
+    if (fes._compiledEffects[effect._key]) {
+        delete fes._compiledEffects[effect._key];
+    }
+    const pipelineContext = effect.getPipelineContext();
+    if (pipelineContext) {
+        _deletePipelineContext(engineState, pipelineContext);
+    }
+}
+
+/** @internal */
+export function _getGlobalDefines(engineState: IBaseEnginePublic, defines?: { [key: string]: string }): string | undefined {
+    if (defines) {
+        if (engineState.isNDCHalfZRange) {
+            defines["IS_NDC_HALF_ZRANGE"] = "";
+        } else {
+            delete defines["IS_NDC_HALF_ZRANGE"];
+        }
+        if (engineState.useReverseDepthBuffer) {
+            defines["USE_REVERSE_DEPTHBUFFER"] = "";
+        } else {
+            delete defines["USE_REVERSE_DEPTHBUFFER"];
+        }
+        if (engineState.useExactSrgbConversions) {
+            defines["USE_EXACT_SRGB_CONVERSIONS"] = "";
+        } else {
+            delete defines["USE_EXACT_SRGB_CONVERSIONS"];
+        }
+        return;
+    } else {
+        let s = "";
+        if (engineState.isNDCHalfZRange) {
+            s += "#define IS_NDC_HALF_ZRANGE";
+        }
+        if (engineState.useReverseDepthBuffer) {
+            if (s) {
+                s += "\n";
+            }
+            s += "#define USE_REVERSE_DEPTHBUFFER";
+        }
+        if (engineState.useExactSrgbConversions) {
+            if (s) {
+                s += "\n";
+            }
+            s += "#define USE_EXACT_SRGB_CONVERSIONS";
+        }
+        return s;
+    }
+}
