@@ -1063,7 +1063,7 @@ export class AnimationGroup implements IDisposable {
     public static ClipKeys(sourceAnimationGroup: AnimationGroup, fromKey: number, toKey: number, name?: string, dontCloneAnimations?: boolean): AnimationGroup {
         const animationGroup = sourceAnimationGroup.clone(name || sourceAnimationGroup.name);
 
-        return this.ClipKeysInPlace(animationGroup, fromKey, toKey, dontCloneAnimations);
+        return AnimationGroup.ClipKeysInPlace(animationGroup, fromKey, toKey, dontCloneAnimations);
     }
 
     /**
@@ -1090,7 +1090,7 @@ export class AnimationGroup implements IDisposable {
     public static ClipFrames(sourceAnimationGroup: AnimationGroup, fromFrame: number, toFrame: number, name?: string, dontCloneAnimations?: boolean): AnimationGroup {
         const animationGroup = sourceAnimationGroup.clone(name || sourceAnimationGroup.name);
 
-        return this.ClipFramesInPlace(animationGroup, fromFrame, toFrame, dontCloneAnimations);
+        return AnimationGroup.ClipFramesInPlace(animationGroup, fromFrame, toFrame, dontCloneAnimations);
     }
 
     /**
