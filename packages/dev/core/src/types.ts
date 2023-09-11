@@ -83,22 +83,22 @@ export type FromLength<N extends number> = _FromLength<N>;
 /**
  * Increments N
  */
-export type Increment<N extends number> = Length<Unshift<FromLength<N>, 0>>;
+export type Increment<N extends number> = Length<Unshift<_FromLength<N>, 0>>;
 
 /**
  * Decrements N
  */
-export type Decrement<N extends number> = Length<Shift<FromLength<N>>>;
+export type Decrement<N extends number> = Length<Shift<_FromLength<N>>>;
 
 /**
  * Gets the sum of A and B
  */
-export type Add<A extends number, B extends number> = Length<Concat<FromLength<A>, FromLength<B>>>;
+export type Add<A extends number, B extends number> = Length<Concat<_FromLength<A>, _FromLength<B>>>;
 
 /**
  * Subtracts B from A
  */
-export type Subtract<A extends number, B extends number> = Length<Remove<FromLength<A>, FromLength<B>>>;
+export type Subtract<A extends number, B extends number> = Length<Remove<_FromLength<A>, _FromLength<B>>>;
 
 /**
  * Gets the type of an array's members

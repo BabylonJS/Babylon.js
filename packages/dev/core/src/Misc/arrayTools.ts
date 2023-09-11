@@ -1,24 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import type { Nullable } from "../types";
-
-/** @internal */
-interface TupleTypes<T> {
-    2: [T, T];
-    3: [T, T, T];
-    4: [T, T, T, T];
-    5: [T, T, T, T, T];
-    6: [T, T, T, T, T, T];
-    7: [T, T, T, T, T, T, T];
-    8: [T, T, T, T, T, T, T, T];
-    9: [T, T, T, T, T, T, T, T, T];
-    10: [T, T, T, T, T, T, T, T, T, T];
-    11: [T, T, T, T, T, T, T, T, T, T, T];
-    12: [T, T, T, T, T, T, T, T, T, T, T, T];
-    13: [T, T, T, T, T, T, T, T, T, T, T, T, T];
-    14: [T, T, T, T, T, T, T, T, T, T, T, T, T, T];
-    15: [T, T, T, T, T, T, T, T, T, T, T, T, T, T, T];
-}
+import type { Nullable, Tuple } from "../types";
 
 /**
  * Class containing a set of static utilities functions for arrays.
@@ -44,7 +26,7 @@ export class ArrayTools {
      * @param itemBuilder a callback responsible for creating new instance of item. Called once per tuple entry.
      * @returns a new tuple filled with new objects.
      */
-    public static BuildTuple<T, N extends keyof TupleTypes<unknown>>(size: N, itemBuilder: () => T): TupleTypes<T>[N] {
+    public static BuildTuple<T, N extends number>(size: N, itemBuilder: () => T): Tuple<T, N> {
         return ArrayTools.BuildArray(size, itemBuilder) as any;
     }
 }
