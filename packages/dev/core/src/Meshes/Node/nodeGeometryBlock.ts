@@ -17,6 +17,7 @@ export class NodeGeometryBlock {
     private _isInput = false;
     private _isTeleportOut = false;
     private _isTeleportIn = false;
+    private _isDebug = false;
     protected _isUnique = false;
     private _buildExecutionTime: number = 0;
 
@@ -88,6 +89,13 @@ export class NodeGeometryBlock {
      */
     public get isTeleportIn(): boolean {
         return this._isTeleportIn;
+    }
+
+    /**
+     * Gets a boolean indicating if this block is a debug block
+     */
+    public get isDebug(): boolean {
+        return this._isDebug;
     }
 
     /**
@@ -207,6 +215,7 @@ export class NodeGeometryBlock {
         this._isInput = this.getClassName() === "GeometryInputBlock";
         this._isTeleportOut = this.getClassName() === "TeleportOutBlock";
         this._isTeleportIn = this.getClassName() === "TeleportInBlock";
+        this._isDebug = this.getClassName() === "DebugBlock";
         this.uniqueId = UniqueIdGenerator.UniqueId;
     }
 
@@ -271,7 +280,7 @@ export class NodeGeometryBlock {
         }
 
         if (this._outputs.length > 0) {
-            if (!this._outputs.some((o) => o.hasEndpoints)) {
+            if (!this._outputs.some((o) => o.hasEndpoints) && !this.isDebug) {
                 return false;
             }
         }
