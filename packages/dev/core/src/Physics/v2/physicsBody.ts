@@ -60,6 +60,8 @@ export class PhysicsBody {
 
     private _nodeDisposeObserver: Nullable<Observer<Node>>;
 
+    private _isDisposed = false;
+
     /**
      * Constructs a new physics body for the given node.
      * @param transformNode - The Transform Node to construct the physics body for. For better performance, it is advised that this node does not have a parent.
@@ -590,6 +592,9 @@ export class PhysicsBody {
      * This method is useful for cleaning up the physics engine when a body is no longer needed. Disposing the body will free up resources and prevent memory leaks.
      */
     public dispose() {
+        if (this._isDisposed) {
+            return;
+        }
         // Disable collisions CB so it doesn't fire when the body is disposed
         if (this._collisionCBEnabled) {
             this.setCollisionCallbackEnabled(false);
@@ -607,5 +612,6 @@ export class PhysicsBody {
         this.transformNode.physicsBody = null;
         this._pluginData = null;
         this._pluginDataInstances.length = 0;
+        this._isDisposed = true;
     }
 }
