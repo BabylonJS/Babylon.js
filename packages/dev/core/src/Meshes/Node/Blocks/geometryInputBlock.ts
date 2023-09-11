@@ -117,6 +117,7 @@ export class GeometryInputBlock extends NodeGeometryBlock {
         super(name);
 
         this._type = type;
+        this._isInput = true;
 
         this.setDefaultValue();
 

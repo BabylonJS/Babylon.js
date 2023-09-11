@@ -72,7 +72,7 @@ export class BlockNodeData implements INodeData {
     public isConnectedToOutput() {
         const block = this.data;
 
-        return block.isAnAncestorOfType("GeometryOutputBlock");
+        return block.isDebug || block.isAnAncestorOfType("GeometryOutputBlock");
     }
 
     public dispose() {

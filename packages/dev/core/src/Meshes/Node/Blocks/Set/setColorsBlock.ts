@@ -131,6 +131,7 @@ export class SetColorsBlock extends NodeGeometryBlock implements INodeGeometryEx
         if (this.evaluateContext) {
             this.output._storedFunction = func;
         } else {
+            this.output._storedFunction = null;
             this.output._storedValue = func(state);
         }
     }

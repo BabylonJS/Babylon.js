@@ -19,6 +19,8 @@ export class DebugBlock extends NodeGeometryBlock {
     public constructor(name: string) {
         super(name);
 
+        this._isDebug = true;
+
         this.registerInput("input", NodeGeometryBlockConnectionPointTypes.AutoDetect);
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.BasedOnInput);
 

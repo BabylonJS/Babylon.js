@@ -21,6 +21,7 @@ export class TeleportInBlock extends NodeGeometryBlock {
      */
     public constructor(name: string) {
         super(name);
+        this._isTeleportIn = true;
 
         this.registerInput("input", NodeGeometryBlockConnectionPointTypes.AutoDetect);
     }
