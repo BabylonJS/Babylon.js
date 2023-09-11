@@ -2,7 +2,7 @@
 import { Scalar } from "./math.scalar";
 import { Epsilon } from "./math.constants";
 import type { Viewport } from "./math.viewport";
-import type { DeepImmutable, Nullable, FloatArray, float, Constructor, Tuple } from "../types";
+import type { DeepImmutable, Nullable, FloatArray, float, Constructor, Tuple, Length } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
 import type { IPlaneLike } from "./math.like";
 import { RegisterClass } from "../Misc/typeStore";
@@ -21,6 +21,8 @@ const _ExtractAsInt = (value: number) => {
  * Reprents a vector of any dimension
  */
 export declare abstract class Vector<N extends number[] = number[]> extends Tensor<N> {
+    public readonly dimension: [Length<N>];
+
     /**
      * Gets the length of the vector
      * @returns the vector length (float)
@@ -199,7 +201,7 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
 export class Vector2 implements Vector<Tuple<number, 2>> {
     private static _ZeroReadOnly = Vector2.Zero() as DeepImmutable<Vector2>;
 
-    public readonly dimension: [number] = [2];
+    public declare readonly dimension: [2];
 
     /**
      * Creates a new Vector2 from the given x and y coordinates
@@ -1197,6 +1199,7 @@ export class Vector2 implements Vector<Tuple<number, 2>> {
         return Vector2.Distance(p, proj);
     }
 }
+Object.defineProperty(Vector2.prototype, "dimension", { value: 2 });
 
 /**
  * Class used to store (x,y,z) vector representation
@@ -1217,7 +1220,7 @@ export class Vector3 implements Vector<Tuple<number, 3>> {
     private static _ZeroReadOnly = Vector3.Zero() as DeepImmutable<Vector3>;
     private static _OneReadOnly = Vector3.One() as DeepImmutable<Vector3>;
 
-    public readonly dimension: [number] = [3];
+    public declare readonly dimension: [3];
 
     /** @internal */
     public _x: number;
@@ -3353,6 +3356,7 @@ export class Vector3 implements Vector<Tuple<number, 3>> {
         return ref;
     }
 }
+Object.defineProperty(Vector3.prototype, "dimension", { value: 3 });
 
 /**
  * Vector4 class created for EulerAngle class conversion to Quaternion
@@ -3360,7 +3364,7 @@ export class Vector3 implements Vector<Tuple<number, 3>> {
 export class Vector4 implements Vector<Tuple<number, 4>> {
     private static _ZeroReadOnly = Vector4.Zero() as DeepImmutable<Vector4>;
 
-    public readonly dimension: [4] = [4];
+    public declare readonly dimension: [4];
 
     /**
      * Creates a Vector4 object from the given floats.
@@ -4308,6 +4312,7 @@ export class Vector4 implements Vector<Tuple<number, 4>> {
         return new Vector4(source._x, source._y, source._z, w);
     }
 }
+Object.defineProperty(Vector4.prototype, "dimension", { value: 4 });
 
 /**
  * Class used to store quaternion data
