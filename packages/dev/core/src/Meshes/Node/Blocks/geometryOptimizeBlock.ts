@@ -17,7 +17,7 @@ export class GeometryOptimizeBlock extends NodeGeometryBlock {
      * Build performance is improved when this value is set to false as the system will cache values instead of reevaluating everything per context change
      */
     @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { rebuild: true } })
-    public evaluateContext = false;
+    public evaluateContext = true;
 
     /**
      * Define the epsilon used to compare similar positions
