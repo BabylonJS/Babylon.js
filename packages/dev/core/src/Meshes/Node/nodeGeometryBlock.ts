@@ -14,10 +14,10 @@ import type { Nullable } from "../../types";
 export class NodeGeometryBlock {
     private _name = "";
     private _buildId: number;
-    private _isInput = false;
-    private _isTeleportOut = false;
-    private _isTeleportIn = false;
-    private _isDebug = false;
+    protected _isInput = false;
+    protected _isTeleportOut = false;
+    protected _isTeleportIn = false;
+    protected _isDebug = false;
     protected _isUnique = false;
     private _buildExecutionTime: number = 0;
 
@@ -212,10 +212,6 @@ export class NodeGeometryBlock {
      */
     public constructor(name: string) {
         this._name = name;
-        this._isInput = this.getClassName() === "GeometryInputBlock";
-        this._isTeleportOut = this.getClassName() === "TeleportOutBlock";
-        this._isTeleportIn = this.getClassName() === "TeleportInBlock";
-        this._isDebug = this.getClassName() === "DebugBlock";
         this.uniqueId = UniqueIdGenerator.UniqueId;
     }
 
