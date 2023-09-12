@@ -1199,7 +1199,7 @@ export class Vector2 implements Vector<Tuple<number, 2>> {
         return Vector2.Distance(p, proj);
     }
 }
-Object.defineProperty(Vector2.prototype, "dimension", { value: 2 });
+Object.defineProperty(Vector2.prototype, "dimension", { value: [2] });
 
 /**
  * Class used to store (x,y,z) vector representation
@@ -3356,7 +3356,7 @@ export class Vector3 implements Vector<Tuple<number, 3>> {
         return ref;
     }
 }
-Object.defineProperty(Vector3.prototype, "dimension", { value: 3 });
+Object.defineProperty(Vector3.prototype, "dimension", { value: [3] });
 
 /**
  * Vector4 class created for EulerAngle class conversion to Quaternion
@@ -4312,7 +4312,7 @@ export class Vector4 implements Vector<Tuple<number, 4>> {
         return new Vector4(source._x, source._y, source._z, w);
     }
 }
-Object.defineProperty(Vector4.prototype, "dimension", { value: 4 });
+Object.defineProperty(Vector4.prototype, "dimension", { value: [4] });
 
 /**
  * Class used to store quaternion data

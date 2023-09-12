@@ -31,7 +31,7 @@ function colorChannelToGammaSpaceExact(color: number): number {
  * Class used to hold a RGB color
  */
 export class Color3 implements Tensor<Tuple<number, 3>> {
-    public declare readonly dimension: [4];
+    public declare readonly dimension: [3];
 
     /**
      * Creates a new Color3 object from red, green, blue values, all between 0 and 1
@@ -997,7 +997,7 @@ export class Color3 implements Tensor<Tuple<number, 3>> {
         return new Color3(Math.random(), Math.random(), Math.random());
     }
 }
-Object.defineProperty(Color3.prototype, "dimension", { value: 3 });
+Object.defineProperty(Color3.prototype, "dimension", { value: [3] });
 
 /**
  * Class used to hold a RBGA color
@@ -1866,7 +1866,7 @@ export class Color4 implements Tensor<Tuple<number, 4>> {
         return colors;
     }
 }
-Object.defineProperty(Color4.prototype, "dimension", { value: 4 });
+Object.defineProperty(Color4.prototype, "dimension", { value: [4] });
 
 /**
  * @internal
