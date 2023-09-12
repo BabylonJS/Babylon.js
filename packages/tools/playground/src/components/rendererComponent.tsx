@@ -18,6 +18,7 @@ declare const Ammo: any;
 declare const Recast: any;
 declare const HavokPhysics: any;
 declare const HK: any;
+declare const fflate: any;
 
 export class RenderingComponent extends React.Component<IRenderingComponentProps> {
     private _engine: Nullable<Engine>;
@@ -194,6 +195,10 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             if ((location.href.indexOf("UnityToolkit") !== -1 || Utilities.ReadBoolFromStore("unity-toolkit", false)) && !this._unityToolkitWasLoaded) {
                 await this._loadScriptAsync("/libs/babylon.manager.js");
                 this._unityToolkitWasLoaded = true;
+            }
+
+            if(code.includes("USDZExport") && typeof fflate === "undefined") {
+                await this._loadScriptAsync("https://cdn.jsdelivr.net/npm/fflate@0.8.0/umd/index.js");
             }
 
             let createEngineFunction = "createDefaultEngine";
