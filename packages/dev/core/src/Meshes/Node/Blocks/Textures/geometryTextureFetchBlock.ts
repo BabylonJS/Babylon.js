@@ -59,6 +59,10 @@ export class GeometryTextureFetchBlock extends NodeGeometryBlock {
 
             const uv = this.coordinates.getConnectedValue(state) as Vector2;
 
+            if (!uv) {
+                return null;;
+            }
+
             const x = Math.floor(uv.x * (textureData.width - 1));
             const y = Math.floor(uv.y * (textureData.height - 1));
             const index = x + textureData.width * y;
