@@ -22,6 +22,9 @@ export class MapRangeBlock extends NodeGeometryBlock {
 
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.BasedOnInput);
 
+        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Vector2);
+        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Vector3);
+        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Vector4);
         this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Matrix);
         this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Geometry);
         this._outputs[0]._typeConnectionSource = this._inputs[0];
@@ -91,7 +94,13 @@ export class MapRangeBlock extends NodeGeometryBlock {
             const toMin = this.toMin.getConnectedValue(state);
             const toMax = this.toMax.getConnectedValue(state);
 
-            return ((value - fromMin) / (fromMax - fromMin)) * (toMax - toMin) + toMin;
+            const result = ((value - fromMin) / (fromMax - fromMin)) * (toMax - toMin) + toMin;
+
+            if (this.output.type === NodeGeometryBlockConnectionPointTypes.Int) {
+                return Math.floor(result);
+            }
+
+            return result;
         };
     }
 }

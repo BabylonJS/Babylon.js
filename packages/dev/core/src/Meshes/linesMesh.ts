@@ -119,7 +119,7 @@ export class LinesMesh extends Mesh {
     }
 
     public isReady() {
-        if (!this._lineMaterial.isReady(this, !!this._userInstancedBuffersStorage)) {
+        if (!this._lineMaterial.isReady(this, !!this._userInstancedBuffersStorage || this.hasThinInstances)) {
             return false;
         }
 
@@ -169,7 +169,7 @@ export class LinesMesh extends Mesh {
 
         // VBOs
         const indexToBind = this.isUnIndexed ? null : this._geometry.getIndexBuffer();
-        if (!this._userInstancedBuffersStorage) {
+        if (!this._userInstancedBuffersStorage || this.hasThinInstances) {
             this._geometry._bind(colorEffect, indexToBind);
         } else {
             this._geometry._bind(colorEffect, indexToBind, this._userInstancedBuffersStorage.vertexBuffers, this._userInstancedBuffersStorage.vertexArrayObjects);

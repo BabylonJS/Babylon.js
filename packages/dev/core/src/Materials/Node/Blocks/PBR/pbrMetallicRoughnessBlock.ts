@@ -677,6 +677,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         defines.setValue("PBR", true);
         defines.setValue("METALLICWORKFLOW", true);
         defines.setValue("DEBUGMODE", this.debugMode, true);
+        defines.setValue("DEBUGMODE_FORCERETURN", true);
         defines.setValue("NORMALXYSCALE", true);
         defines.setValue("BUMP", this.perturbedNormal.isConnected, true);
         defines.setValue("LODBASEDMICROSFURACE", this._scene.getEngine().getCaps().textureLOD);

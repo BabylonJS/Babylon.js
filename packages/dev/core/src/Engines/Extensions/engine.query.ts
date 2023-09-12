@@ -508,7 +508,7 @@ AbstractMesh.prototype._checkOcclusionQuery = function () {
         return false;
     }
 
-    if (this.isOcclusionQueryInProgress && this._occlusionQuery) {
+    if (this.isOcclusionQueryInProgress && this._occlusionQuery !== null && this._occlusionQuery !== undefined) {
         const isOcclusionQueryAvailable = engine.isQueryResultAvailable(this._occlusionQuery);
         if (isOcclusionQueryAvailable) {
             const occlusionQueryResult = engine.getQueryResult(this._occlusionQuery);

@@ -34,4 +34,6 @@ export enum NodeGeometryContextualSources {
     CollectionID = 0x000e,
     /** LoopID */
     LoopID = 0x000f,
+    /** InstanceID */
+    InstanceID = 0x0010,
 }

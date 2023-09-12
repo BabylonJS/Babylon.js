@@ -1,24 +1,16 @@
-import { FlowGraphWithOnDoneExecutionBlock } from "./flowGraphWithOnDoneExecutionBlock";
+import { FlowGraphAsyncExecutionBlock } from "./flowGraphAsyncExecutionBlock";
+import type { FlowGraphContext } from "./flowGraphContext";
 
 /**
  * @experimental
  * A type of block that listens to an event observable and activates
- * its output signal ("onTriggered"), when the event is triggered.
+ * its output signal when the event is triggered.
  */
-export abstract class FlowGraphEventBlock extends FlowGraphWithOnDoneExecutionBlock {
+export abstract class FlowGraphEventBlock extends FlowGraphAsyncExecutionBlock {
     /**
      * @internal
      */
-    public abstract _startListening(): void;
-    /**
-     * @internal
-     */
-    public abstract _stopListening(): void;
-
-    /**
-     * @internal
-     */
-    public _execute(): void {
-        this.onDone._activateSignal();
+    public _execute(context: FlowGraphContext): void {
+        this.onDone._activateSignal(context);
     }
 }

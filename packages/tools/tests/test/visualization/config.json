@@ -1,6 +1,11 @@
 ﻿{
     "root": "https://cdn.babylonjs.com",
-    "tests": [
+    "tests": [                
+        {
+            "title": "Node geometry",
+            "playgroundId": "#WGZLGJ#9152",
+            "referenceImage": "nodeGeometry.png"
+        },
         {
             "title": "GreasedLine - basic",
             "playgroundId": "#H1LRZ3#103",

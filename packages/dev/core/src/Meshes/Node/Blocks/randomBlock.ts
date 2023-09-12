@@ -6,11 +6,20 @@ import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { GeometryInputBlock } from "./geometryInputBlock";
 import { Vector2, Vector3, Vector4 } from "../../../Maths/math.vector";
 import type { Nullable } from "../../../types";
+import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
+import { NodeGeometryContextualSources } from "../Enums/nodeGeometryContextualSources";
 
 /**
  * Block used to get a random number
  */
 export class RandomBlock extends NodeGeometryBlock {
+    private _currentLoopId = -1;
+    /**
+     * Gets or sets a boolean indicating that this block will generate a new value only once per loop
+     */
+    @editableInPropertyPage("Lock per loop", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { rebuild: true } })
+    public lockPerLoop = false;
+
     /**
      * Create a new RandomBlock
      * @param name defines the block name
@@ -77,6 +86,7 @@ export class RandomBlock extends NodeGeometryBlock {
 
     protected _buildBlock() {
         let func: Nullable<(state: NodeGeometryBuildState) => any> = null;
+        this._currentLoopId = -1;
 
         switch (this.min.type) {
             case NodeGeometryBlockConnectionPointTypes.Int:
@@ -119,7 +129,41 @@ export class RandomBlock extends NodeGeometryBlock {
             }
         }
 
-        this.output._storedFunction = func;
+        if (!this.lockPerLoop || !func) {
+            this.output._storedFunction = func;
+        } else {
+            this.output._storedFunction = (state) => {
+                const loopId = state.getContextualValue(NodeGeometryContextualSources.LoopID);
+                if (this._currentLoopId !== loopId) {
+                    this._currentLoopId = loopId;
+                    this.output._storedValue = func!(state);
+                }
+                return this.output._storedValue;
+            };
+        }
+    }
+
+    protected _dumpPropertiesCode() {
+        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.lockPerLoop = ${this.lockPerLoop ? "true" : "false"};\n`;
+        return codeString;
+    }
+
+    /**
+     * Serializes this block in a JSON representation
+     * @returns the serialized block object
+     */
+    public serialize(): any {
+        const serializationObject = super.serialize();
+
+        serializationObject.lockPerLoop = this.lockPerLoop;
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
+
+        this.lockPerLoop = !!serializationObject.lockPerLoop;
     }
 }
 

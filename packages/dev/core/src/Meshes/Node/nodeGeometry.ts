@@ -18,6 +18,7 @@ import type { TeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
 import { Tools } from "../../Misc/tools";
 import type { Color4 } from "../../Maths/math.color";
 import { Engine } from "../../Engines/engine";
+import type { DebugBlock } from "./Blocks/debugBlock";
 
 // declare NODEGEOMETRYEDITOR namespace for compilation issue
 declare let NODEGEOMETRYEDITOR: any;
@@ -239,6 +240,13 @@ export class NodeGeometry {
         state.verbose = verbose;
 
         this.outputBlock.build(state);
+
+        // Special case for debug nodes which are not connected to output
+        const debugNodesToProcess = this.attachedBlocks.filter((b) => b.getClassName() === "DebugBlock" && !b._outputs[0].isConnected) as DebugBlock[];
+
+        for (const debugNode of debugNodesToProcess) {
+            debugNode.output._storedFunction!(state);
+        }
 
         if (updateBuildId) {
             this._buildId = NodeGeometry._BuildIdGenerator++;
@@ -489,11 +497,11 @@ export class NodeGeometry {
         if (this.outputBlock) {
             // Connections
             alreadyDumped = [];
-            codeString += "\n`;// Connections\n`;";
+            codeString += "// Connections\n";
             codeString += this.outputBlock._dumpCodeForOutputConnections(alreadyDumped);
 
             // Output nodes
-            codeString += "\n`;// Output nodes\n`;";
+            codeString += "// Output nodes\n";
             codeString += `nodeGeometry.outputBlock = ${this.outputBlock._codeVariableName};\n`;
             codeString += `nodeGeometry.build();\n`;
         }

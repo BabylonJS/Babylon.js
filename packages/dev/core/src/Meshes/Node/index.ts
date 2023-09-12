@@ -52,5 +52,6 @@ export * from "./Blocks/intFloatConverterBlock";
 export * from "./Blocks/debugBlock";
 export * from "./Blocks/geometryInfoBlock";
 export * from "./Blocks/mappingBlock";
+export * from "./Blocks/matrixComposeBlock";
 export * from "./Blocks/Teleport/teleportInBlock";
 export * from "./Blocks/Teleport/teleportOutBlock";

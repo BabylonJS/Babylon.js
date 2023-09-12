@@ -17,6 +17,7 @@ import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager"
 import { RegisterDefaultInput } from "./graphSystem/registerDefaultInput";
 import { RegisterExportData } from "./graphSystem/registerExportData";
 import type { FilesInput } from "core/Misc/filesInput";
+import { RegisterDebugSupport } from "./graphSystem/registerDebugSupport";
 
 export class GlobalState {
     nodeMaterial: NodeMaterial;
@@ -86,6 +87,7 @@ export class GlobalState {
         this.stateManager.lockObject = this.lockObject;
 
         RegisterElbowSupport(this.stateManager);
+        RegisterDebugSupport(this.stateManager);
         RegisterNodePortDesign(this.stateManager);
         RegisterDefaultInput(this.stateManager);
         RegisterExportData(this.stateManager);

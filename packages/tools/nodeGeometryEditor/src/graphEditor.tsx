@@ -434,7 +434,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         let offsetX = GraphCanvasComponent.NodeWidth;
         let offsetY = 20;
 
-        if (blockType === "ElbowBlock") {
+        if (blockType === "ElbowBlock" || blockType === "DebugBlock") {
             offsetX = 10;
             offsetY = 10;
         }
