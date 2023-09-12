@@ -13,6 +13,8 @@ import { type Nullable, type FloatArray } from "core/types";
 import { isNoopNode } from "serializers/tools";
 import { type Node } from "core/node";
 
+declare const fflate: any | undefined;
+
 /* Converted from https://github.com/mrdoob/three.js/blob/dev/examples/jsm/exporters/USDZExporter.js */
 
 /**
@@ -33,11 +35,7 @@ export interface IUSDZExportOptions {
     ar?: IUSDZArOptions;
 
     /**
-     * String to Uint8Array function. ffFlate is used by default.
-     */
-    strToU8: (str: string) => Uint8Array;
-    /**
-     * Zip function. ffFlate is used by default.
+     * Zip function. fflate is used by default.
      */
     zipSync: (data: any, options: any) => Uint8Array;
 }
@@ -75,7 +73,7 @@ export class USDZExport {
      */
     public static Focus: number = 10;
 
-    private static _LastOptions: IUSDZExportOptions;
+    private static _StrToU8: (str: string) => Uint8Array = (str) => new TextEncoder().encode(str);
 
     /**
      * Export Scene as USDZ file.
@@ -85,6 +83,9 @@ export class USDZExport {
      * @returns a promise with the data of the USDZ file.
      */
     public static async ExportAsBinaryZip(options: IUSDZExportOptions, scene: Scene, autoDownload: boolean = true) {
+        if (!options.zipSync && typeof fflate !== "undefined") {
+            options.zipSync = (data, options) => fflate.zipSync(data, options);
+        }
         options = {
             ar: {
                 anchoring: { type: "plane" },
@@ -93,8 +94,6 @@ export class USDZExport {
             quickLookCompatible: false,
             ...options,
         };
-
-        USDZExport._LastOptions = options;
 
         const files: any = {};
         const modelFileName = `${options?.modelName || "model"}.usda`;
@@ -156,7 +155,7 @@ export class USDZExport {
 
         output += await USDZExport._BuildMaterials(materials, textures, options.quickLookCompatible);
 
-        files[modelFileName] = options.strToU8(output);
+        files[modelFileName] = USDZExport._StrToU8(output);
 
         for (const id in textures) {
             const texture = textures[id];
@@ -660,7 +659,7 @@ export class USDZExport {
     private static _BuildUSDZFileAsString(dataToInsert: string) {
         let output = USDZExport._BuildHeader();
         output += dataToInsert;
-        return USDZExport._LastOptions.strToU8(output);
+        return USDZExport._StrToU8(output);
     }
 
     /**
