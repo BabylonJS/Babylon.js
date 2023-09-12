@@ -552,9 +552,9 @@ export class USDZExport {
                 asset inputs:file = @textures/Texture_${id}.png@
                 float2 inputs:st.connect = </Materials/Material_${material.uniqueId}/Transform2d_${mapType}.outputs:result>
                 ${color !== undefined ? "float4 inputs:scale = " + USDZExport._BuildColor4(color) : ""}
-                token inputs:sourceColorSpace = "${"sRGB" /* TODO CHECK THIS */}"
-                token inputs:wrapS = "${WRAPPINGS[texture.wrapU] /* TODO CHECK THIS */}"
-                token inputs:wrapT = "${WRAPPINGS[texture.wrapV] /* TODO CHECK THIS */}"
+                token inputs:sourceColorSpace = "${texture.gammaSpace ? "sRGB" : "linear"}"
+                token inputs:wrapS = "${WRAPPINGS[texture.wrapU]}"
+                token inputs:wrapT = "${WRAPPINGS[texture.wrapV]}"
                 float outputs:r
                 float outputs:g
                 float outputs:b
