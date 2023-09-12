@@ -494,7 +494,6 @@ export class USDZExport {
 
             const uv = texture.coordinatesIndex > 0 ? `st${texture.coordinatesIndex}` : `st`;
 
-            /* TODO CHECK THIS */
             const WRAPPINGS = [
                 "clamp", // ClampToEdgeWrapping
                 "repeat", // RepeatWrapping
