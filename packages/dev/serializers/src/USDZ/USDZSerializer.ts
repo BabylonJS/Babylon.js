@@ -559,7 +559,7 @@ export class USDZExport {
                 float outputs:g
                 float outputs:b
                 float3 outputs:rgb
-                ${material.needAlphaTesting() ? "float outputs:a" : "" /* TODO NEED A BETTER CHECK */}
+                ${material.needAlphaTesting() || material.needAlphaBlending() ? "float outputs:a" : ""}
     
             }`;
         }
