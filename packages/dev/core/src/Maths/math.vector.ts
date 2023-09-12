@@ -2,7 +2,7 @@
 import { Scalar } from "./math.scalar";
 import { Epsilon } from "./math.constants";
 import type { Viewport } from "./math.viewport";
-import type { DeepImmutable, Nullable, FloatArray, float, Constructor, Tuple, Length } from "../types";
+import type { DeepImmutable, Nullable, FloatArray, float, Constructor, Tuple } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
 import type { IPlaneLike } from "./math.like";
 import { RegisterClass } from "../Misc/typeStore";
@@ -10,7 +10,7 @@ import type { Plane } from "./math.plane";
 import { PerformanceConfigurator } from "../Engines/performanceConfigurator";
 import { EngineStore } from "../Engines/engineStore";
 import type { TransformNode } from "../Meshes/transformNode";
-import { Tensor } from "./tensor";
+import { Tensor, Dimension } from "./tensor";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const _ExtractAsInt = (value: number) => {
@@ -21,7 +21,7 @@ const _ExtractAsInt = (value: number) => {
  * Reprents a vector of any dimension
  */
 export declare abstract class Vector<N extends number[] = number[]> extends Tensor<N> {
-    public readonly dimension: [Length<N>];
+    public readonly dimension: Dimension<N>;
 
     /**
      * Gets the length of the vector

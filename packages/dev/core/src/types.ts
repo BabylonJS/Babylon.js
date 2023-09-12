@@ -148,7 +148,17 @@ export type DataArray = number[] | ArrayBuffer | ArrayBufferView;
  * @remarks
  * Supports 0 dimensional arrays (i.e. MultidimensionalArray\<T, 0\> is T)
  */
-export type MultidimensionalArray<T, D> = D extends number ? (D extends 0 ? T : MultidimensionalArray<T[], Decrement<D>>) : never;
+export type MultidimensionalArray<T, D> = D extends 0
+    ? T
+    : D extends 1
+    ? T[]
+    : D extends number
+    ? T extends unknown[]
+        ? T extends Array<infer U>
+            ? MultidimensionalArray<U, Decrement<D>>[]
+            : never
+        : MultidimensionalArray<T, Decrement<D>>[]
+    : never;
 
 /**
  * Alias type for primitive types
