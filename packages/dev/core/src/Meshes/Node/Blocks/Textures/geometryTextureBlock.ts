@@ -25,7 +25,7 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
     public get textureWidth() {
         return this._width;
     }
-    
+
     /**
      * Gets the texture height
      */
@@ -61,15 +61,15 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
     private _prepareImgToLoadAsync(url: string) {
         return new Promise<void>((resolve, reject) => {
             const img = new Image();
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
 
             img.onload = () => {
                 canvas.width = img.width;
                 canvas.height = img.height;
 
                 ctx!.drawImage(img, 0, 0);
-                
+
                 const imageData = ctx!.getImageData(0, 0, img.width, img.height);
                 const pixels = imageData.data;
                 const floatArray = new Float32Array(pixels.length);
@@ -87,14 +87,14 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
             img.onerror = () => {
                 this._data = null;
                 reject();
-            }
+            };
 
             img.src = url;
         });
     }
 
     /**
-     * Load the texture data 
+     * Load the texture data
      * @param imageFile defines the file to load data from
      * @returns a promise fulfilled when image data is loaded
      */
@@ -103,7 +103,7 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
     }
 
     /**
-     * Load the texture data 
+     * Load the texture data
      * @param url defines the url to load data from
      * @returns a promise fulfilled when image data is loaded
      */
@@ -120,8 +120,8 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
         const textureData: INodeGeometryTextureData = {
             data: this._data,
             width: this._width,
-            height: this._height
-        }
+            height: this._height,
+        };
 
         this.texture._storedValue = textureData;
     }

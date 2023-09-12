@@ -1,4 +1,4 @@
-import { Color4, type Vector2 } from "core/Maths";
+import { Vector4, type Vector2 } from "core/Maths";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import type { INodeGeometryTextureData } from "../../Interfaces/nodeGeometryTextureData";
@@ -15,7 +15,7 @@ export class GeometryTextureFetchBlock extends NodeGeometryBlock {
      */
     public constructor(name: string) {
         super(name);
-        
+
         this.registerInput("texture", NodeGeometryBlockConnectionPointTypes.Texture);
         this.registerInput("coordinates", NodeGeometryBlockConnectionPointTypes.Vector2);
         this.registerOutput("color", NodeGeometryBlockConnectionPointTypes.Vector4);
@@ -41,7 +41,7 @@ export class GeometryTextureFetchBlock extends NodeGeometryBlock {
      */
     public get coordinates(): NodeGeometryConnectionPoint {
         return this.inputs[1];
-    }    
+    }
 
     /**
      * Gets the color component
@@ -59,12 +59,12 @@ export class GeometryTextureFetchBlock extends NodeGeometryBlock {
 
             const uv = this.coordinates.getConnectedValue(state) as Vector2;
 
-            const x = uv.x * textureData.width;
-            const y = uv.y * textureData.height;
+            const x = Math.floor(uv.x * (textureData.width - 1));
+            const y = Math.floor(uv.y * (textureData.height - 1));
             const index = x + textureData.width * y;
 
-            return Color4.FromArray(textureData.data, index * 4);
-        }
+            return Vector4.FromArray(textureData.data, index * 4);
+        };
     }
 }
 
