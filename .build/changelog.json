@@ -1,5 +1,5 @@
 {
-    "fromTag": "6.20.0",
+    "fromTag": "6.20.1",
     "changelog": {
         "6.20.1": [
             {
@@ -166,6 +166,215 @@
                 "tags": [
                     "bug",
                     "nme"
+                ]
+            }
+        ],
+        "6.20.2": [
+            {
+                "pr": "14292",
+                "title": "Mark native engine as supporting MSAA",
+                "description": null,
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14293",
+                "title": "Document adding and updating visual snapshots",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "buildSystem.md"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14291",
+                "title": "Fix scale for noiseblock",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/noiseBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14290",
+                "title": "Add a rebuild button",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/propertyTabComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14288",
+                "title": "Evaluate Debug node for NGE like teleport node so it doesn't need to be connected to GeometryOutput",
+                "description": "@PatrickRyanMS @PirateJC : I would qualify this as low level confidence. It is a bit of a hack. I think it is acceptable if it does not grow more hacky. So let's make sure to test it widely when merged",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Teleport/teleportInBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Teleport/teleportOutBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/debugBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryInputBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlock.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/blockNodeData.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14289",
+                "title": "Optimize block on context by default",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryOptimizeBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14287",
+                "title": "ReflectionProbe: Add a setter for renderList",
+                "description": "See https://forum.babylonjs.com/t/renderlist-with-all-meshes/43995/5",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Probes/reflectionProbe.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "14286",
+                "title": "Idempotent disposing of physics bodies and shapes.",
+                "description": "Forum: https://forum.babylonjs.com/t/exception-when-double-disposing-physicsaggregate/43959",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts",
+                    "packages/dev/core/src/Physics/v2/physicsShape.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "14285",
+                "title": "Effect: Call pipelineContext.setUIntX instead of setIntX for the unsigned variants",
+                "description": "See https://forum.babylonjs.com/t/cannot-use-uint-uniforms-in-shadermaterial/43998",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/effect.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "14284",
+                "title": "MeshLine: Add support for thin instances",
+                "description": "See https://forum.babylonjs.com/t/thin-instance-linesmesh-question-issue/43955",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/linesMesh.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14283",
+                "title": "Fix issue with merge conflicts when data was not present",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.vertexData.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14282",
+                "title": "Fix few bugs",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Matrices/alignBlock.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/inputsPropertyTabComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/propertyTabComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14280",
+                "title": "Add an option to lock random values per loop",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/randomBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
                 ]
             }
         ],
