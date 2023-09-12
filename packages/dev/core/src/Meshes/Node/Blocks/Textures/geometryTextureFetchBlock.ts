@@ -4,11 +4,18 @@ import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryC
 import type { INodeGeometryTextureData } from "../../Interfaces/nodeGeometryTextureData";
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
+import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
 
 /**
  * Block used to fetch a color from texture data
  */
 export class GeometryTextureFetchBlock extends NodeGeometryBlock {
+    /**
+     * Gets or sets a boolean indicating if coordinates should be clamped between 0 and 1
+     */
+    @editableInPropertyPage("Clamp Coordinates", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { rebuild: true } })
+    public clampCoordinates = true;
+
     /**
      * Creates a new GeometryTextureFetchBlock
      * @param name defines the block name
@@ -50,6 +57,14 @@ export class GeometryTextureFetchBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
+    private _repeatClamp(num: number) {
+        if (num >= 0) {
+            return num % 1;
+        } else {
+            return 1 - (Math.abs(num) % 1);
+        }
+    }
+
     protected _buildBlock() {
         this.color._storedFunction = (state) => {
             const textureData = this.texture.getConnectedValue(state) as INodeGeometryTextureData;
@@ -60,15 +75,41 @@ export class GeometryTextureFetchBlock extends NodeGeometryBlock {
             const uv = this.coordinates.getConnectedValue(state) as Vector2;
 
             if (!uv) {
-                return null;;
+                return null;
             }
 
-            const x = Math.floor(uv.x * (textureData.width - 1));
-            const y = Math.floor(uv.y * (textureData.height - 1));
+            const u = this.clampCoordinates ? Math.max(0, Math.min(uv.x, 1.0)) : this._repeatClamp(uv.x);
+            const v = this.clampCoordinates ? Math.max(0, Math.min(uv.y, 1.0)) : this._repeatClamp(uv.y);
+
+            const x = Math.floor(u * (textureData.width - 1));
+            const y = Math.floor(v * (textureData.height - 1));
             const index = x + textureData.width * y;
 
             return Vector4.FromArray(textureData.data, index * 4);
         };
+    }
+
+    protected _dumpPropertiesCode() {
+        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.clampCoordinates = ${this.clampCoordinates};\n`;
+        return codeString;
+    }
+
+    /**
+     * Serializes this block in a JSON representation
+     * @returns the serialized block object
+     */
+    public serialize(): any {
+        const serializationObject = super.serialize();
+
+        serializationObject.clampCoordinates = this.clampCoordinates;
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
+
+        this.clampCoordinates = serializationObject.clampCoordinates;
     }
 }
 

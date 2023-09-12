@@ -432,7 +432,7 @@ export class BlockTools {
                 color = "#84995c";
                 break;
             case NodeGeometryBlockConnectionPointTypes.Texture:
-                color = "#84995c";
+                color = "#f28e0a";
                 break;
         }
 

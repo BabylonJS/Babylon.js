@@ -14,6 +14,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
         const block = this.props.nodeData.data as GeometryTextureBlock;
         await block.loadTextureFromFileAsync(file);
         this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+        this.props.stateManager.onUpdateRequiredObservable.notifyObservers(block);
     }
 
     render() {
