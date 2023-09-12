@@ -122,6 +122,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         GeometryInfoBlock: "Provides information about a geometry",
         MappingBlock: "Generate uv coordinates based on mapping type",
         MatrixComposeBlock: "Multiply two matrices together",
+        TextureBlock: "Provide a texture data source",
+        TextureFetchBlock: "Fetch a color from a texture data source"
     };
 
     private _customFrameList: { [key: string]: string };
@@ -276,6 +278,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "MappingBlock",
             ],
             Noises: ["RandomBlock", "NoiseBlock"],
+            Textures: ["TextureBlock", "TextureFetchBlock"],
             Output_Nodes: ["GeometryOutputBlock"],
         };
 

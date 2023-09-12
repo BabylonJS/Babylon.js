@@ -50,10 +50,16 @@ import { GeometryCollectionBlock } from "core/Meshes/Node/Blocks/geometryCollect
 import { GeometryInfoBlock } from "core/Meshes/Node/Blocks/geometryInfoBlock";
 import { MappingBlock } from "core/Meshes/Node/Blocks/mappingBlock";
 import { MatrixComposeBlock } from "core/Meshes/Node/Blocks/matrixComposeBlock";
+import { GeometryTextureBlock } from "core/Meshes/Node/Blocks/Textures/geometryTextureBlock";
+import { GeometryTextureFetchBlock } from "core/Meshes/Node/Blocks/Textures/geometryTextureFetchBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "TextureFetchBlock":
+                return new GeometryTextureFetchBlock("Texture Fetch");
+            case "TextureBlock":
+                return new GeometryTextureBlock("Texture");
             case "MatrixComposeBlock":
                 return new MatrixComposeBlock("Matrix Compose");
             case "GeometryInfoBlock":
@@ -423,6 +429,9 @@ export class BlockTools {
                 color = "#591990";
                 break;
             case NodeGeometryBlockConnectionPointTypes.Geometry:
+                color = "#84995c";
+                break;
+            case NodeGeometryBlockConnectionPointTypes.Texture:
                 color = "#84995c";
                 break;
         }
