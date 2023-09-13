@@ -92,22 +92,23 @@ export class GeometryInfoBlock extends NodeGeometryBlock {
         }
 
         this.output._storedFunction = (state: NodeGeometryBuildState) => {
-            return this._currentVertexData || (this.geometry.getConnectedValue(state) as VertexData);
+            this._currentVertexData = this.geometry.getConnectedValue(state) as VertexData;
+            return this._currentVertexData;
         };
         this.id._storedFunction = (state: NodeGeometryBuildState) => {
-            this._currentVertexData = this.geometry.getConnectedValue(state) as VertexData;
+            this._currentVertexData = this._currentVertexData || (this.geometry.getConnectedValue(state) as VertexData);
             return this._currentVertexData.uniqueId;
         };
         this.collectionId._storedFunction = (state: NodeGeometryBuildState) => {
-            this._currentVertexData = this.geometry.getConnectedValue(state) as VertexData;
+            this._currentVertexData = this._currentVertexData || (this.geometry.getConnectedValue(state) as VertexData);
             return this._currentVertexData.metadata ? this._currentVertexData.metadata.collectionId : 0;
         };
         this.verticesCount._storedFunction = (state: NodeGeometryBuildState) => {
-            this._currentVertexData = this.geometry.getConnectedValue(state) as VertexData;
+            this._currentVertexData = this._currentVertexData || (this.geometry.getConnectedValue(state) as VertexData);
             return this._currentVertexData.positions ? this._currentVertexData.positions.length / 3 : 0;
         };
         this.facesCount._storedFunction = (state: NodeGeometryBuildState) => {
-            this._currentVertexData = this.geometry.getConnectedValue(state) as VertexData;
+            this._currentVertexData = this._currentVertexData || (this.geometry.getConnectedValue(state) as VertexData);
             return this._currentVertexData.indices ? this._currentVertexData.indices.length / 3 : 0;
         };
     }

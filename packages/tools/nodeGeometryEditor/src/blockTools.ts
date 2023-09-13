@@ -50,10 +50,13 @@ import { GeometryCollectionBlock } from "core/Meshes/Node/Blocks/geometryCollect
 import { GeometryInfoBlock } from "core/Meshes/Node/Blocks/geometryInfoBlock";
 import { MappingBlock } from "core/Meshes/Node/Blocks/mappingBlock";
 import { MatrixComposeBlock } from "core/Meshes/Node/Blocks/matrixComposeBlock";
+import { BoundingBlock } from "core/Meshes/Node/Blocks/boundingBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "BoundingBlock":
+                return new BoundingBlock("Bounding");
             case "MatrixComposeBlock":
                 return new MatrixComposeBlock("Matrix Compose");
             case "GeometryInfoBlock":

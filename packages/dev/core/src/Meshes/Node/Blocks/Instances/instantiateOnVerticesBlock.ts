@@ -223,6 +223,11 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
                 this._currentLoopIndex++;
             }
 
+            // Restore
+            state.restoreGeometryContext();
+            state.restoreExecutionContext();
+            state.restoreInstancingContext();
+
             // Merge
             if (additionalVertexData.length) {
                 if (additionalVertexData.length === 1) {
@@ -232,11 +237,10 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
                     const main = additionalVertexData.splice(0, 1)[0];
                     this._vertexData = main.merge(additionalVertexData, true, false, true, true);
                 }
+            } else {
+                return null;
             }
 
-            state.restoreGeometryContext();
-            state.restoreExecutionContext();
-            state.restoreInstancingContext();
             return this._vertexData;
         };
 
