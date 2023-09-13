@@ -577,7 +577,7 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
         const size = 512;
 
         const data = new Uint8Array(size * size * 3);
-        for (let index = 0; index < data.length;) {
+        for (let index = 0; index < data.length; ) {
             const value = Math.floor(Scalar.RandomRange(0.42, 0.58) * 255);
             data[index++] = value;
             data[index++] = value;

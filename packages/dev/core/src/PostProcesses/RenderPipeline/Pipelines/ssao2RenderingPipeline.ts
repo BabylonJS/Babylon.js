@@ -636,7 +636,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
 
         const data = new Uint8Array(size * size * 3);
         const randVector = Vector2.Zero();
-        for (let index = 0; index < data.length;) {
+        for (let index = 0; index < data.length; ) {
             randVector.set(Scalar.RandomRange(0, 1), Scalar.RandomRange(0, 1)).normalize().scaleInPlace(255);
             data[index++] = Math.floor(randVector.x);
             data[index++] = Math.floor(randVector.y);

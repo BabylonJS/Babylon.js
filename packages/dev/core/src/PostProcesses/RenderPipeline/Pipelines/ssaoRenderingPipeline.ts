@@ -342,7 +342,7 @@ export class SSAORenderingPipeline extends PostProcessRenderPipeline {
         const size = 512;
 
         const data = new Uint8Array(size * size * 3);
-        for (let index = 0; index < data.length;) {
+        for (let index = 0; index < data.length; ) {
             data[index++] = Math.floor(Math.max(0.0, Scalar.RandomRange(-1.0, 1.0)) * 255);
             data[index++] = Math.floor(Math.max(0.0, Scalar.RandomRange(-1.0, 1.0)) * 255);
             data[index++] = Math.floor(Math.max(0.0, Scalar.RandomRange(-1.0, 1.0)) * 255);
