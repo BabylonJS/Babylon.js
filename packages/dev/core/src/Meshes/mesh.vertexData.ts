@@ -847,9 +847,12 @@ export class VertexData {
                 vertexDataList.push({ vertexData: split, transform: transform });
             }
 
-            for (const vertexData of vertexDatas) {
-                for (const split of vertexData.vertexData.splitBasedOnMaterialID()) {
-                    vertexDataList.push({ vertexData: split, transform: vertexData.transform });
+            for (const data of vertexDatas) {
+                if (!data.vertexData) {
+                    continue;
+                }
+                for (const split of data.vertexData.splitBasedOnMaterialID()) {
+                    vertexDataList.push({ vertexData: split, transform: data.transform });
                 }
             }
 

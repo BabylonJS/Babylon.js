@@ -225,6 +225,7 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
                     instanceGeometry = this.instance.getConnectedValue(state) as VertexData;
 
                     if (!instanceGeometry || !instanceGeometry.positions || instanceGeometry.positions.length === 0) {
+                        accumulatedCount -= instancePerFace;
                         continue;
                     }
                     const clone = instanceGeometry!.clone();

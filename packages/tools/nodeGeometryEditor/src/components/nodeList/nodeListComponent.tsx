@@ -124,6 +124,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         MatrixComposeBlock: "Multiply two matrices together",
         TextureBlock: "Provide a texture data source",
         TextureFetchBlock: "Fetch a color from a texture data source",
+        BoundingBlock: "Compute the bounding box of a geometry",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -260,7 +261,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "ToDegreesBlock",
                 "ToRadiansBlock",
             ],
-            Math__Vector: ["TransformBlock", "VectorConverterBlock", "NormalizeBlock"],
+            Math__Vector: ["TransformBlock", "VectorConverterBlock", "NormalizeBlock", "BoundingBlock"],
             Matrices: ["RotationXBlock", "RotationYBlock", "RotationZBlock", "ScalingBlock", "TranslationBlock", "AlignBlock", "MatrixComposeBlock"],
             Instances: ["InstantiateOnVerticesBlock", "InstantiateOnFacesBlock", "InstantiateOnVolumeBlock", "InstantiateBlock"],
             Misc: ["ElbowBlock", "DebugBlock", "TeleportInBlock", "TeleportOutBlock", "GeometryInfoBlock"],

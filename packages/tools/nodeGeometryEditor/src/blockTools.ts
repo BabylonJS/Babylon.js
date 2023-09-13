@@ -52,6 +52,7 @@ import { MappingBlock } from "core/Meshes/Node/Blocks/mappingBlock";
 import { MatrixComposeBlock } from "core/Meshes/Node/Blocks/matrixComposeBlock";
 import { GeometryTextureBlock } from "core/Meshes/Node/Blocks/Textures/geometryTextureBlock";
 import { GeometryTextureFetchBlock } from "core/Meshes/Node/Blocks/Textures/geometryTextureFetchBlock";
+import { BoundingBlock } from "core/Meshes/Node/Blocks/boundingBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
@@ -60,6 +61,8 @@ export class BlockTools {
                 return new GeometryTextureFetchBlock("Texture Fetch");
             case "TextureBlock":
                 return new GeometryTextureBlock("Texture");
+            case "BoundingBlock":
+                return new BoundingBlock("Bounding");
             case "MatrixComposeBlock":
                 return new MatrixComposeBlock("Matrix Compose");
             case "GeometryInfoBlock":
