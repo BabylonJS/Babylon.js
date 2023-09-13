@@ -7,8 +7,8 @@ import { PostProcess } from "../../../PostProcesses/postProcess";
 import { PostProcessRenderPipeline } from "../../../PostProcesses/RenderPipeline/postProcessRenderPipeline";
 import { PostProcessRenderEffect } from "../../../PostProcesses/RenderPipeline/postProcessRenderEffect";
 import type { Scene } from "../../../scene";
-import { RawTexture } from "core/Materials/Textures/rawTexture";
-import { Constants } from "core/Engines/constants";
+import { RawTexture } from "../../../Materials/Textures/rawTexture";
+import { Constants } from "../../../Engines/constants";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 
