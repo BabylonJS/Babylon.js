@@ -11,8 +11,8 @@ import { BlurPostProcess } from "../../../PostProcesses/blurPostProcess";
 import { Constants } from "../../../Engines/constants";
 import { serialize } from "../../../Misc/decorators";
 import type { Scene } from "../../../scene";
-import { RawTexture } from "core/Materials/Textures/rawTexture";
-import { Scalar } from "core/Maths/math.scalar";
+import { RawTexture } from "../../../Materials/Textures/rawTexture";
+import { Scalar } from "../../../Maths/math.scalar";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 

@@ -17,8 +17,8 @@ import type { PrePassRenderer } from "../../../Rendering/prePassRenderer";
 import type { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
 import { Constants } from "../../../Engines/constants";
 import type { Nullable } from "../../../types";
-import { Scalar } from "core/Maths/math.scalar";
-import { RawTexture } from "core/Materials/Textures/rawTexture";
+import { Scalar } from "../../../Maths/math.scalar";
+import { RawTexture } from "../../../Materials/Textures/rawTexture";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 

@@ -15,7 +15,7 @@ import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSc
 import "../../../Shaders/chromaticAberration.fragment";
 import "../../../Shaders/lensHighlights.fragment";
 import "../../../Shaders/depthOfField.fragment";
-import { Scalar } from "core/Maths/math.scalar";
+import { Scalar } from "../../../Maths/math.scalar";
 
 /**
  * BABYLON.JS Chromatic Aberration GLSL Shader
