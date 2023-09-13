@@ -341,14 +341,15 @@ export class SSAORenderingPipeline extends PostProcessRenderPipeline {
     private _createRandomTexture(): void {
         const size = 512;
 
-        const data = new Uint8Array(size * size * 3);
+        const data = new Uint8Array(size * size * 4);
         for (let index = 0; index < data.length; ) {
             data[index++] = Math.floor(Math.max(0.0, Scalar.RandomRange(-1.0, 1.0)) * 255);
             data[index++] = Math.floor(Math.max(0.0, Scalar.RandomRange(-1.0, 1.0)) * 255);
             data[index++] = Math.floor(Math.max(0.0, Scalar.RandomRange(-1.0, 1.0)) * 255);
+            data[index++] = 255;
         }
 
-        const texture = RawTexture.CreateRGBTexture(data, size, size, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
+        const texture = RawTexture.CreateRGBATexture(data, size, size, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
         texture.name = "SSAORandomTexture";
         texture.wrapU = Texture.WRAP_ADDRESSMODE;
         texture.wrapV = Texture.WRAP_ADDRESSMODE;

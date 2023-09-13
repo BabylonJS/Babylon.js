@@ -576,15 +576,16 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
     private _createGrainTexture(): void {
         const size = 512;
 
-        const data = new Uint8Array(size * size * 3);
+        const data = new Uint8Array(size * size * 4);
         for (let index = 0; index < data.length; ) {
             const value = Math.floor(Scalar.RandomRange(0.42, 0.58) * 255);
             data[index++] = value;
             data[index++] = value;
             data[index++] = value;
+            data[index++] = 255;
         }
 
-        const texture = RawTexture.CreateRGBTexture(data, size, size, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
+        const texture = RawTexture.CreateRGBATexture(data, size, size, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
         texture.name = "LensNoiseTexture";
         texture.wrapU = Texture.WRAP_ADDRESSMODE;
         texture.wrapV = Texture.WRAP_ADDRESSMODE;
