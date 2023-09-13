@@ -197,7 +197,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 this._unityToolkitWasLoaded = true;
             }
 
-            if(code.includes("USDZExport") && typeof fflate === "undefined") {
+            if (code.includes("USDZExport") && typeof fflate === "undefined") {
                 await this._loadScriptAsync("https://cdn.jsdelivr.net/npm/fflate@0.8.0/umd/index.js");
             }
 
