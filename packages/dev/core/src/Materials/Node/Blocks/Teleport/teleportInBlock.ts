@@ -65,6 +65,10 @@ export class NodeMaterialTeleportInBlock extends NodeMaterialBlock {
      */
     public isAnAncestorOf(block: NodeMaterialBlock): boolean {
         for (const endpoint of this.endpoints) {
+            if (endpoint === block) {
+                return true;
+            }
+
             if (endpoint.isAnAncestorOf(block)) {
                 return true;
             }
