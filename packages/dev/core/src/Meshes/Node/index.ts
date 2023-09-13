@@ -55,3 +55,4 @@ export * from "./Blocks/mappingBlock";
 export * from "./Blocks/matrixComposeBlock";
 export * from "./Blocks/Teleport/teleportInBlock";
 export * from "./Blocks/Teleport/teleportOutBlock";
+export * from "./Blocks/boundingBlock";
