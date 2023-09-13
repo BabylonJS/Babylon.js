@@ -2,18 +2,20 @@
 import type { Camera } from "../../../Cameras/camera";
 import type { Effect } from "../../../Materials/effect";
 import { Texture } from "../../../Materials/Textures/texture";
-import { DynamicTexture } from "../../../Materials/Textures/dynamicTexture";
 import type { RenderTargetTexture } from "../../../Materials/Textures/renderTargetTexture";
 import { PostProcess } from "../../../PostProcesses/postProcess";
 import { PostProcessRenderPipeline } from "../../../PostProcesses/RenderPipeline/postProcessRenderPipeline";
 import { PostProcessRenderEffect } from "../../../PostProcesses/RenderPipeline/postProcessRenderEffect";
 import type { Scene } from "../../../scene";
+import { RawTexture } from "../../../Materials/Textures/rawTexture";
+import { Constants } from "../../../Engines/constants";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 
 import "../../../Shaders/chromaticAberration.fragment";
 import "../../../Shaders/lensHighlights.fragment";
 import "../../../Shaders/depthOfField.fragment";
+import { Scalar } from "../../../Maths/math.scalar";
 
 /**
  * BABYLON.JS Chromatic Aberration GLSL Shader
@@ -574,24 +576,19 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
     private _createGrainTexture(): void {
         const size = 512;
 
-        this._grainTexture = new DynamicTexture("LensNoiseTexture", size, this._scene, false, Texture.BILINEAR_SAMPLINGMODE);
-        this._grainTexture.wrapU = Texture.WRAP_ADDRESSMODE;
-        this._grainTexture.wrapV = Texture.WRAP_ADDRESSMODE;
-
-        const context = (<DynamicTexture>this._grainTexture).getContext();
-
-        const rand = (min: number, max: number) => {
-            return Math.random() * (max - min) + min;
-        };
-
-        let value;
-        for (let x = 0; x < size; x++) {
-            for (let y = 0; y < size; y++) {
-                value = Math.floor(rand(0.42, 0.58) * 255);
-                context.fillStyle = "rgb(" + value + ", " + value + ", " + value + ")";
-                context.fillRect(x, y, 1, 1);
-            }
+        const data = new Uint8Array(size * size * 4);
+        for (let index = 0; index < data.length; ) {
+            const value = Math.floor(Scalar.RandomRange(0.42, 0.58) * 255);
+            data[index++] = value;
+            data[index++] = value;
+            data[index++] = value;
+            data[index++] = 255;
         }
-        (<DynamicTexture>this._grainTexture).update(false);
+
+        const texture = RawTexture.CreateRGBATexture(data, size, size, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
+        texture.name = "LensNoiseTexture";
+        texture.wrapU = Texture.WRAP_ADDRESSMODE;
+        texture.wrapV = Texture.WRAP_ADDRESSMODE;
+        this._grainTexture = texture;
     }
 }
