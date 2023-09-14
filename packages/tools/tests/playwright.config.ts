@@ -9,6 +9,7 @@ import { defineConfig, devices } from "@playwright/test";
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
+console.log((process.env.CUSTOM_FLAGS ? process.env.CUSTOM_FLAGS.split(" ") : ["--use-angle=default"]));
 export default defineConfig({
     testDir: "./test/playwright",
     /* Run tests in files in parallel */
