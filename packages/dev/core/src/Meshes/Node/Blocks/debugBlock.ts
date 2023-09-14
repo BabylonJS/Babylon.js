@@ -2,6 +2,7 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
+import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 
 /**
  * Defines a block used to debug values going through it
@@ -58,7 +59,7 @@ export class DebugBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock() {
+    protected _buildBlock(state: NodeGeometryBuildState) {
         if (!this.input.isConnected) {
             this.output._storedFunction = null;
             this.output._storedValue = null;
@@ -66,7 +67,7 @@ export class DebugBlock extends NodeGeometryBlock {
         }
 
         this.log = [];
-        this.output._storedFunction = (state) => {
+        const func = (state: NodeGeometryBuildState) => {
             const input = this.input.getConnectedValue(state);
 
             if (input === null || input === undefined) {
@@ -78,6 +79,12 @@ export class DebugBlock extends NodeGeometryBlock {
 
             return input;
         };
+
+        if (this.output.isConnected) {
+            this.output._storedFunction = func;
+        } else {
+            this.output._storedValue = func(state);
+        }
     }
 }
 

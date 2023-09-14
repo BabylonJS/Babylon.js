@@ -64,7 +64,6 @@ export class NodeGeometryBuildState {
     /**
      * Push the new active execution context
      * @param executionContext defines the execution context
-     * @param instancingContext defines the instancing context
      */
     public pushExecutionContext(executionContext: INodeGeometryExecutionContext) {
         this._executionContext = executionContext;
