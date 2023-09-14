@@ -20,7 +20,7 @@ export default defineConfig({
     /* Opt out of parallel tests on CI. */
     workers: process.env.CI ? 1 : undefined,
     /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-    reporter: "html",
+    reporter: process.env.CI ? 'dot' : "html",
     /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
     use: {
         /* Base URL to use in actions like `await page.goto('/')`. */
@@ -36,9 +36,9 @@ export default defineConfig({
             name: "webgl2",
             testMatch: "**/*webgl2.test.ts",
             use: {
-                ...devices[!!process.env.CI ? "Desktop Firefox" : "Desktop Chrome"],
+                ...devices[process.env.CI ? "Desktop Firefox" : "Desktop Chrome"],
                 launchOptions: {
-                    args: [!!process.env.CI ? "-wait-for-browser" : "--use-angle=default"],
+                    args: [process.env.CI ? "-wait-for-browser" : "--use-angle=default"],
                 },
             },
         },
@@ -47,9 +47,9 @@ export default defineConfig({
             name: "webgl1",
             testMatch: "**/*webgl1.test.ts",
             use: {
-                ...devices[!!process.env.CI ? "Desktop Firefox" : "Desktop Chrome"],
+                ...devices[process.env.CI ? "Desktop Firefox" : "Desktop Chrome"],
                 launchOptions: {
-                    args: [!!process.env.CI ? "-wait-for-browser" : "--use-angle=default"],
+                    args: [process.env.CI ? "-wait-for-browser" : "--use-angle=default"],
                 },
             },
         },
