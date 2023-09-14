@@ -59,7 +59,9 @@ export default defineConfig({
             name: "webgpu",
             testMatch: "**/*webgpu.test.ts",
             use: {
-                ...devices["Desktop Chrome"],
+                // ...devices["Desktop Chrome"],
+                channel: "chrome",
+                headless: !process.env.CI,
                 launchOptions: {
                     args: (process.env.CUSTOM_FLAGS ? process.env.CUSTOM_FLAGS.split(" ") : ["--use-angle=default"]),
                 },
