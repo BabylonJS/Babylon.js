@@ -60,7 +60,7 @@ export default defineConfig({
             use: {
                 ...devices["Desktop Chrome"],
                 launchOptions: {
-                    args: ["--use-angle=default"],
+                    args: ["--use-angle=default", ...(process.env.CUSTOM_FLAGS ? process.env.CUSTOM_FLAGS.split(" ") : [])],
                 },
             },
         },
