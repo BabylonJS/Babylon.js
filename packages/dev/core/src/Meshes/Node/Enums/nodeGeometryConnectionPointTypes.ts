@@ -16,6 +16,8 @@ export enum NodeGeometryBlockConnectionPointTypes {
     Matrix = 0x0020,
     /** Geometry */
     Geometry = 0x0040,
+    /** Texture */
+    Texture = 0x0080,
     /** Detect type based on connection */
     AutoDetect = 0x0400,
     /** Output type that will be defined by input type */

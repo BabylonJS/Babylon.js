@@ -52,7 +52,11 @@
 			{
 				currRayHeight -= stepSize;
 				vLastOffset = vCurrOffset;
+			#ifdef PARALLAX_RHS
+				vCurrOffset -= stepSize * vMaxOffset;
+			#else
 				vCurrOffset += stepSize * vMaxOffset;
+			#endif
 
 				lastSampledHeight = currSampledHeight;
 			}
@@ -66,6 +70,10 @@
 		// calculate amount of offset for Parallax Mapping With Offset Limiting
 		float height = texture2D(bumpSampler, vBumpUV).w;
 		vec2 texCoordOffset = heightScale * viewDir.xy * height;
+	#ifdef PARALLAX_RHS
+		return texCoordOffset;
+	#else
 		return -texCoordOffset;
+	#endif
 	}
 #endif
