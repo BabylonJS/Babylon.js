@@ -66,6 +66,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public BUMP = false;
     public BUMPDIRECTUV = 0;
     public PARALLAX = false;
+    public PARALLAX_RHS = false;
     public PARALLAXOCCLUSION = false;
     public SPECULAROVERALPHA = false;
     public CLIPPLANE = false;
@@ -1080,6 +1081,7 @@ export class StandardMaterial extends PushMaterial {
                         MaterialHelper.PrepareDefinesForMergedUV(this._bumpTexture, defines, "BUMP");
 
                         defines.PARALLAX = this._useParallax;
+                        defines.PARALLAX_RHS = scene.useRightHandedSystem;
                         defines.PARALLAXOCCLUSION = this._useParallaxOcclusion;
                     }
 
@@ -1087,6 +1089,7 @@ export class StandardMaterial extends PushMaterial {
                 } else {
                     defines.BUMP = false;
                     defines.PARALLAX = false;
+                    defines.PARALLAX_RHS = false;
                     defines.PARALLAXOCCLUSION = false;
                 }
 
@@ -1231,6 +1234,10 @@ export class StandardMaterial extends PushMaterial {
 
             if (defines.PARALLAX) {
                 fallbacks.addFallback(1, "PARALLAX");
+            }
+
+            if (defines.PARALLAX_RHS) {
+                fallbacks.addFallback(1, "PARALLAX_RHS");
             }
 
             if (defines.PARALLAXOCCLUSION) {

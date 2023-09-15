@@ -180,6 +180,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
         defines.setValue("BUMP", true);
         defines.setValue("PARALLAX", useParallax, true);
+        defines.setValue("PARALLAX_RHS", nodeMaterial.getScene().useRightHandedSystem, true);
         defines.setValue("PARALLAXOCCLUSION", this.useParallaxOcclusion, true);
         defines.setValue("OBJECTSPACE_NORMALMAP", this.useObjectSpaceNormalMap, true);
     }

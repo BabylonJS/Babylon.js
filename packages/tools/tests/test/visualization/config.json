@@ -24,7 +24,7 @@
         {
             "title": "Negative scaling with instances",
             "playgroundId": "#Z3YS9T#0",
-            "referenceImage": "negative scaling with instances.png"
+            "referenceImage": "negative-scaling-with-instances.png"
         },
         {
             "title": "Iridescence",
@@ -34,14 +34,14 @@
         {
             "title": "Iridescence NME",
             "playgroundId": "#2FDQT5#1507",
-            "referenceImage": "iridescence_nme.png",
+            "referenceImage": "iridescence-nme.png",
             "excludedEngines": ["webgl1"],
             "excludeFromAutomaticTesting": true
         },
         {
             "title": "Iridescence GLTF",
             "playgroundId": "#2FDQT5#1508",
-            "referenceImage": "iridescence_gltf.png"
+            "referenceImage": "iridescence-gltf.png"
         },
         {
             "title": "Merge Meshes",
@@ -51,7 +51,7 @@
         {
             "title": "Texture cache",
             "playgroundId": "#3TFH5I#0",
-            "referenceImage": "texture cache.png",
+            "referenceImage": "texture-cache.png",
             "excludedEngines": ["webgl1"]
         },
         {
@@ -63,7 +63,7 @@
             "title": "Procedural texture with NME",
             "renderCount": 2,
             "playgroundId": "#8S19ZC#3",
-            "referenceImage": "procedural_nme.png"
+            "referenceImage": "procedural-nme.png"
         },
         {
             "title": "EXT_texture_webp",
@@ -165,13 +165,13 @@
             "title": "Nested BBG",
             "playgroundId": "#ZG0C8B#6",
             "renderCount": 10,
-            "referenceImage": "nested_BBG.png"
+            "referenceImage": "nested-BBG.png"
         },
         {
             "title": "Weighted animations",
             "playgroundId": "#LL5BIQ#72",
             "renderCount": 50,
-            "referenceImage": "weighted animations.png"
+            "referenceImage": "weighted-animations.png"
         },
         {
             "title": "Anisotropic",
@@ -259,7 +259,7 @@
             "title": "Ribbon morphing",
             "playgroundId": "#ACKC2#1",
             "renderCount": 50,
-            "referenceImage": "ribbon morphing.png"
+            "referenceImage": "ribbon-morphing.png"
         },
         {
             "title": "Clip planes",
@@ -288,13 +288,13 @@
             "title": "Particle Helper",
             "playgroundId": "#1VGT5D#2",
             "renderCount": 50,
-            "referenceImage": "particle_helper.png"
+            "referenceImage": "particle-helper.png"
         },
         {
             "title": "Chibi Rex",
             "playgroundId": "#NZ2RZY#3",
             "renderCount": 50,
-            "referenceImage": "chibi_rex.png"
+            "referenceImage": "chibi-rex.png"
         },
         {
             "title": "Yeti",
@@ -728,7 +728,7 @@
             "errorRatio": 1.1
         },
         {
-            "title": "GLTF Serializer with Negative World Matrix (left handed, twice)",
+            "title": "GLTF Serializer with Negative World Matrix (right handed, twice)",
             "playgroundId": "#KX53VK#48",
             "referenceImage": "glTFSerializerNegativeWorldMatrix.png",
             "replace": "useRightHandedSystem = false, useRightHandedSystem = true, iterations = 1, iterations = 2",
@@ -895,28 +895,28 @@
         {
             "title": "PBR refraction",
             "playgroundId": "#LCA0Q4#26",
-            "referenceImage": "pbr_refraction.png"
+            "referenceImage": "pbr-refraction.png"
         },
         {
             "title": "PBR shader code coverage 1",
             "playgroundId": "#QI7TL3#16",
-            "referenceImage": "pbr_codecoverage1.png"
+            "referenceImage": "pbr-codecoverage1.png"
         },
         {
             "title": "PBR shader code coverage 2",
             "playgroundId": "#QI7TL3#17",
-            "referenceImage": "pbr_codecoverage2.png"
+            "referenceImage": "pbr-codecoverage2.png"
         },
         {
             "title": "PBR shader code coverage 3",
             "playgroundId": "#QI7TL3#18",
-            "referenceImage": "pbr_codecoverage3.png"
+            "referenceImage": "pbr-codecoverage3.png"
         },
         {
             "title": "MultiSample render targets",
             "renderCount": 20,
             "playgroundId": "#12MKMN#0",
-            "referenceImage": "MultiSample render targets.png"
+            "referenceImage": "MultiSample-render-targets.png"
         },
         {
             "title": "Default rendering pipeline",
@@ -987,7 +987,7 @@
             "title": "Local cubemaps",
             "renderCount": 2,
             "playgroundId": "#RNASML#4",
-            "referenceImage": "local cubemaps.png"
+            "referenceImage": "local-cubemaps.png"
         },
         {
             "title": "TGA",
@@ -1593,39 +1593,48 @@
         },
         {
             "title": "GUI Input Text Area Inside ScrollViewer",
-            "playgroundId": "#NVAEWD#69"
+            "playgroundId": "#NVAEWD#69",
+            "referenceImage": "GUI-Input-Text-Area-Inside-ScrollViewer.png"
         },
         {
             "title": "GUI Images in Grid",
-            "playgroundId": "#8Y0XJL#1"
+            "playgroundId": "#8Y0XJL#1",
+            "referenceImage": "GUI-Images-in-Grid.png"
         },
         {
             "title": "GUI Force Resize Width",
-            "playgroundId": "#XCPP9Y#17259"
+            "playgroundId": "#XCPP9Y#17259",
+            "referenceImage": "GUI-Force-Resize-Width.png"
         },
         {
             "title": "GUI Gradient Linear",
-            "playgroundId": "#XCPP9Y#17227"
+            "playgroundId": "#XCPP9Y#17227",
+            "referenceImage": "GUI-Gradient-Linear.png"
         },
         {
             "title": "GUI Gradient Radial",
-            "playgroundId": "#4Z7EK3"
+            "playgroundId": "#4Z7EK3",
+            "referenceImage": "GUI-Gradient-Radial.png"
         },
         {
             "title": "GUI Gradient Linear with transparency",
-            "playgroundId": "#PFK1Z5"
+            "playgroundId": "#PFK1Z5",
+            "referenceImage": "GUI-Gradient-Linear-with-transparency.png"
         },
         {
             "title": "Load babylon files with same geometry uniqueId",
-            "playgroundId": "#3UCFHS"
+            "playgroundId": "#3UCFHS",
+            "referenceImage": "Load-babylon-files-with-same-geometry-uniqueId.png"
         },
         {
             "title": "Asset Container Instantiate to Scene",
-            "playgroundId": "#5NFRVE#142"
+            "playgroundId": "#5NFRVE#142",
+            "referenceImage": "Asset-Container-Instantiate-to-Scene"
         },
         {
             "title": "Asset Container Instantiate to Scene 2",
-            "playgroundId": "#5NFRVE#161"
+            "playgroundId": "#5NFRVE#161",
+            "referenceImage": "Asset-Container-Instantiate-to-Scene-2"
         },
         {
             "title": "Loading glTF model with KTX2 textures",
@@ -1634,55 +1643,67 @@
         },
         {
             "title": "Instantiate Hierarchy",
-            "playgroundId": "#BET11L"
+            "playgroundId": "#BET11L",
+            "referenceImage": "Instantiate-Hierarchy.png"
         },
         {
             "title": "Screen Space Reflections 2",
             "playgroundId": "#PIZ1GK#1320",
             "renderCount": 5,
-            "excludedEngines": ["webgl1"]
+            "excludedEngines": ["webgl1"],
+            "referenceImage": "Screen-Space-Reflections-2.png"
         },
         {
             "title": "MultiRenderTarget with different texture types",
             "playgroundId": "#XSNYAU#22",
-            "excludedEngines": ["webgl1"]
+            "excludedEngines": ["webgl1"],
+            "referenceImage": "MultiRenderTarget-with-different-texture-types.png"
         },
         {
             "title": "Decal Map",
-            "playgroundId": "#9BVW2S#43"
+            "playgroundId": "#9BVW2S#67",
+            "referenceImage": "Decal-Map.png"
         },
         {
             "title": "GUI Text Block with resizeToFit and forceResizeWidth",
-            "playgroundId": "#XCPP9Y#17810"
+            "playgroundId": "#XCPP9Y#17810",
+            "referenceImage": "GUI-Text-Block-with-resizeToFit-and-forceResizeWidth.png"
         },
         {
             "title": "GUI Horizontal Stack Panel and Text Block with resizeToFit and forceResizeWidth",
-            "playgroundId": "#XCPP9Y#17811"
+            "playgroundId": "#XCPP9Y#17811",
+            "referenceImage": "GUI-Horizontal-Stack-Panel-and-Text-Block-with-resizeToFit-and-forceResizeWidth.png"
         },
         {
             "title": "Scene Recorder Apply Delta",
-            "playgroundId": "#9ZS92P#9"
+            "playgroundId": "#9ZS92P#9",
+            "referenceImage": "Scene-Recorder-Apply-Delta.png"
         },
         {
             "title": "Sprites Pixel Perfect",
             "playgroundId": "#ZX8DJ3#10",
-            "excludedEngines": ["webgl1"]
+            "excludedEngines": ["webgl1"],
+            "referenceImage": "Sprites-Pixel-Perfect.png"
         },
         {
             "title": "Rounding values on controls inside StackPanel",
-            "playgroundId": "#XCPP9Y#18325"
+            "playgroundId": "#XCPP9Y#18325",
+            "referenceImage": "Rounding-values-on-controls-inside-StackPanel.png"
         },
         {
             "title": "Rounding cell widths on Grid",
-            "playgroundId": "#PQ4G5G#2"
+            "playgroundId": "#PQ4G5G#2",
+            "referenceImage": "Rounding-cell-widths-on-Grid.png"
         },
         {
             "title": "GUI for Mesh cloning",
-            "playgroundId": "#ZUAPLL#2"
+            "playgroundId": "#ZUAPLL#2",
+            "referenceImage": "GUI-for-Mesh-cloning.png"
         },
         {
             "title": "PBR Debug Modes",
-            "playgroundId": "#2FDQT5#2300"
+            "playgroundId": "#2FDQT5#2300",
+            "referenceImage": "PBR-Debug-Modes.png"
         },
         {
             "title": "convertToFlatShadedMesh",
@@ -1690,7 +1711,8 @@
         },
         {
             "title": "SerializeMesh with hierarchy",
-            "playgroundId": "#TX92RN#5"
+            "playgroundId": "#TX92RN#5",
+            "referenceImage": "SerializeMesh-with-hierarchy.png"
         },
         {
             "title": "MeshDebugPluginMaterial",
@@ -1699,11 +1721,13 @@
         },
         {
             "title": "SerializeScene and ImportMesh with string skeletonIds",
-            "playgroundId": "#D4ZZ8#430"
+            "playgroundId": "#D4ZZ8#430",
+            "referenceImage": "SerializeScene-and-ImportMesh-with-string-skeletonIds.png"
         },
         {
             "title": "SerializeScene and ImportMesh with MorphTargetManager",
-            "playgroundId": "#HPV2TZ#378"
+            "playgroundId": "#HPV2TZ#378",
+            "referenceImage": "SerializeScene-and-ImportMesh-with-MorphTargetManager.png"
         }
     ]
 }

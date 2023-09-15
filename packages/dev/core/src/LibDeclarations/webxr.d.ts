@@ -1063,8 +1063,8 @@ interface XRFrame {
     // Anchors
     trackedAnchors?: XRAnchorSet;
     // World geometries. DEPRECATED
-    worldInformation?: XRWorldInformation;
-    detectedPlanes?: XRPlaneSet;
+    worldInformation?: XRWorldInformation | undefined;
+    detectedPlanes?: XRPlaneSet | undefined;
     // Hand tracking
     getJointPose?(joint: XRJointSpace, baseSpace: XRSpace): XRJointPose;
     fillJointRadii?(jointSpaces: XRJointSpace[], radii: Float32Array): boolean;

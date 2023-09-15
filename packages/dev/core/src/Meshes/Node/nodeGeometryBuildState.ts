@@ -64,7 +64,6 @@ export class NodeGeometryBuildState {
     /**
      * Push the new active execution context
      * @param executionContext defines the execution context
-     * @param instancingContext defines the instancing context
      */
     public pushExecutionContext(executionContext: INodeGeometryExecutionContext) {
         this._executionContext = executionContext;
@@ -202,7 +201,7 @@ export class NodeGeometryBuildState {
      * @returns the adapted value
      */
     adapt(source: NodeGeometryConnectionPoint, targetType: NodeGeometryBlockConnectionPointTypes) {
-        const value = source.getConnectedValue(this);
+        const value = source.getConnectedValue(this) || 0;
 
         if (source.type === targetType) {
             return value;

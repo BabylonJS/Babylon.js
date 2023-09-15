@@ -1,128 +1,66 @@
 {
-    "fromTag": "6.20.1",
+    "fromTag": "6.20.2",
     "changelog": {
-        "6.20.1": [
+        "6.21.0": [
             {
-                "pr": "14279",
-                "title": "Fix context lost or unwanted data update",
+                "pr": "14297",
+                "title": "Nge texture",
                 "description": null,
                 "author": {
                     "name": "deltakosh",
                     "url": "https://github.com/deltakosh"
                 },
                 "files": [
-                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVerticesBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVolumeBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setColorsBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setMaterialIDBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setNormalsBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setPositionsBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setTangentsBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setUVsBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/boxBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/capsuleBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/cylinderBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/discBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/gridBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/icoSphereBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/meshBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/planeBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/sphereBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/torusBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/geometryCollectionBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/geometryOptimizeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Textures/geometryTextureBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Textures/geometryTextureFetchBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/debugBlock.ts",
                     "packages/dev/core/src/Meshes/Node/Blocks/geometryTransformBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/mergeGeometryBlock.ts"
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryTrigonometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/mapRangeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/mathBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/normalizeVectorBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/randomBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Enums/nodeGeometryConnectionPointTypes.ts",
+                    "packages/dev/core/src/Meshes/Node/Interfaces/nodeGeometryTextureData.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/textureDisplayManager.modules.scss",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/textureDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/textureNodePropertyComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/registerDebugSupport.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/registerNodePortDesign.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/registerToDisplayLedger.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/registerToPropertyLedger.ts"
                 ],
                 "tags": [
                     "skip changelog"
                 ]
             },
             {
-                "pr": "14278",
-                "title": "Animations: Refactor the code that creates additive animations",
-                "description": "* added some options to drive more precisely the creation of additive animations\r\n* added a helper function to clip an animation group given a range of frames\r\n* fixed the `clone` / `serialize` / `parse` methods of the `AnimationGroup` class",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/core/src/Animations/animation.ts",
-                    "packages/dev/core/src/Animations/animationGroup.ts"
-                ],
-                "tags": [
-                    "enhancement",
-                    "animations"
-                ]
-            },
-            {
-                "pr": "14276",
-                "title": "Add textures ready helper",
-                "description": "https://forum.babylonjs.com/t/node-material-post-processes-flashing-replace-colour-at-initialisation/43865/9",
-                "author": {
-                    "name": "sebavan",
-                    "url": "https://github.com/sebavan"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
-                ],
-                "tags": [
-                    "skip changelog"
-                ]
-            },
-            {
-                "pr": "14275",
-                "title": "I'm with stupid...",
+                "pr": "14303",
+                "title": "Fix continuity with teleports",
                 "description": null,
                 "author": {
                     "name": "deltakosh",
                     "url": "https://github.com/deltakosh"
                 },
                 "files": [
-                    "packages/dev/core/src/Meshes/Node/Blocks/matrixComposeBlock.ts"
+                    "packages/dev/core/src/Materials/Node/Blocks/Teleport/teleportInBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Teleport/teleportInBlock.ts"
                 ],
-                "tags": [
-                    "skip changelog"
-                ]
+                "tags": []
             },
             {
-                "pr": "14274",
-                "title": "WebGPU: Fix having a single occlusion query per mesh per frame",
-                "description": "See https://forum.babylonjs.com/t/webgpu-occlusion-query-with-2-cameras/43840",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.query.ts",
-                    "packages/dev/core/src/Engines/WebGPU/webgpuOcclusionQuery.ts"
-                ],
-                "tags": [
-                    "bug",
-                    "WebGPU"
-                ]
-            },
-            {
-                "pr": "14273",
-                "title": "Rework entire stack system for context",
+                "pr": "14302",
+                "title": "Fix adapt to not trigger with undefined",
                 "description": null,
                 "author": {
                     "name": "deltakosh",
                     "url": "https://github.com/deltakosh"
                 },
                 "files": [
-                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVerticesBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVolumeBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setColorsBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setNormalsBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setPositionsBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setTangentsBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setUVsBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlock.ts",
                     "packages/dev/core/src/Meshes/Node/nodeGeometryBuildState.ts"
                 ],
                 "tags": [
@@ -130,42 +68,68 @@
                 ]
             },
             {
-                "pr": "14272",
-                "title": "WebGPU: Fix warnings when using occlusion queries",
-                "description": "I also added some labels for some objects for debugging purpose in WebGPU.\r\n\r\n(my PG so that it does not get lost: http://localhost:1338/?webgpu#QDAZ80#457)",
+                "pr": "14300",
+                "title": "Improve perf of noise texture gen in lens and ssao",
+                "description": "Use raw texture with a buffer of pixels instead of dynamic texture to render one pixel at a time using canvas.",
                 "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
                 },
                 "files": [
-                    "packages/dev/core/src/Engines/Extensions/engine.query.ts",
-                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTarget.ts",
-                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTargetCube.ts",
-                    "packages/dev/core/src/Engines/WebGPU/webgpuOcclusionQuery.ts",
-                    "packages/dev/core/src/Engines/WebGPU/webgpuQuerySet.ts",
-                    "packages/dev/core/src/Engines/renderTargetWrapper.ts",
-                    "packages/dev/core/src/Engines/webgpuEngine.ts"
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/lensRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14298",
+                "title": "Vertex color mesh used for instantiate source not visible if density set to 0",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVerticesBlock.ts",
+                    "packages/dev/core/src/Meshes/mesh.vertexData.ts"
                 ],
                 "tags": [
-                    "bug",
-                    "WebGPU"
+                    "skip changelog"
                 ]
             },
             {
-                "pr": "14271",
-                "title": "NME: Fix PBR debug mode",
-                "description": "See https://forum.babylonjs.com/t/nme-pbr-material-debug-mode/43908/2",
+                "pr": "14299",
+                "title": "- Given a data set of positional Values, ability to get the min and max from that list",
+                "description": "cc @PatrickRyanMS @PirateJC ",
                 "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
                 },
                 "files": [
-                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
-                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDebug.fx"
+                    "packages/dev/core/src/Meshes/Node/Blocks/boundingBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx"
                 ],
                 "tags": [
-                    "bug",
-                    "nme"
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14294",
+                "title": "Fix geom caching",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryInfoBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
                 ]
             }
         ],
@@ -375,6 +339,174 @@
                 ],
                 "tags": [
                     "skip changelog"
+                ]
+            }
+        ],
+        "6.20.1": [
+            {
+                "pr": "14279",
+                "title": "Fix context lost or unwanted data update",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVerticesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVolumeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setColorsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setMaterialIDBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setNormalsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setPositionsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setTangentsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setUVsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/boxBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/capsuleBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/cylinderBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/discBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/gridBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/icoSphereBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/meshBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/planeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/sphereBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/torusBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryCollectionBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryOptimizeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryTransformBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/mergeGeometryBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14278",
+                "title": "Animations: Refactor the code that creates additive animations",
+                "description": "* added some options to drive more precisely the creation of additive animations\r\n* added a helper function to clip an animation group given a range of frames\r\n* fixed the `clone` / `serialize` / `parse` methods of the `AnimationGroup` class",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animation.ts",
+                    "packages/dev/core/src/Animations/animationGroup.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "14276",
+                "title": "Add textures ready helper",
+                "description": "https://forum.babylonjs.com/t/node-material-post-processes-flashing-replace-colour-at-initialisation/43865/9",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14275",
+                "title": "I'm with stupid...",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/matrixComposeBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14274",
+                "title": "WebGPU: Fix having a single occlusion query per mesh per frame",
+                "description": "See https://forum.babylonjs.com/t/webgpu-occlusion-query-with-2-cameras/43840",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.query.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuOcclusionQuery.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "14273",
+                "title": "Rework entire stack system for context",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVerticesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVolumeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setColorsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setNormalsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setPositionsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setTangentsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setUVsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBuildState.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14272",
+                "title": "WebGPU: Fix warnings when using occlusion queries",
+                "description": "I also added some labels for some objects for debugging purpose in WebGPU.\r\n\r\n(my PG so that it does not get lost: http://localhost:1338/?webgpu#QDAZ80#457)",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.query.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTargetCube.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuOcclusionQuery.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuQuerySet.ts",
+                    "packages/dev/core/src/Engines/renderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "14271",
+                "title": "NME: Fix PBR debug mode",
+                "description": "See https://forum.babylonjs.com/t/nme-pbr-material-debug-mode/43908/2",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDebug.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
                 ]
             }
         ],
