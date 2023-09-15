@@ -59,13 +59,7 @@ function decodeMesh(
     data: Int8Array,
     attributes: { [kind: string]: number } | undefined,
     onIndicesData: (indices: Uint16Array | Uint32Array) => void,
-    onAttributeData: (
-        kind: string,
-        data: ArrayBufferView,
-        offset: number,
-        stride: number,
-        normalized: boolean
-    ) => void
+    onAttributeData: (kind: string, data: ArrayBufferView, offset: number, stride: number, normalized: boolean) => void
 ): number {
     let decoder: Nullable<Decoder> = null;
     let buffer: Nullable<DecoderBuffer> = null;
@@ -78,17 +72,13 @@ function decodeMesh(
         buffer.Init(data, data.byteLength);
 
         const geometryType = decoder.GetEncodedGeometryType(buffer);
-        if (geometryType !== decoderModule.TRIANGULAR_MESH) {
-            throw new Error(`Unsupported geometry type ${geometryType}`);
-        }
-
-        mesh = new decoderModule.Mesh();
-        const status = decoder.DecodeBufferToMesh(buffer, mesh);
-        if (!status.ok() || !mesh.ptr) {
-            throw new Error(status.error_msg());
-        }
-
         if (geometryType === decoderModule.TRIANGULAR_MESH) {
+            mesh = new decoderModule.Mesh();
+            const status = decoder.DecodeBufferToMesh(buffer, mesh);
+            if (!status.ok() || !mesh.ptr) {
+                throw new Error(status.error_msg());
+            }
+
             const numIndices = mesh.num_faces() * 3;
             const byteLength = numIndices * 4;
 
@@ -99,6 +89,8 @@ function decodeMesh(
             } finally {
                 decoderModule._free(ptr);
             }
+        } else {
+            throw new Error(`Unsupported geometry type ${geometryType}`);
         }
 
         const numPoints = mesh.num_points();
@@ -460,20 +452,22 @@ export class DracoCompression implements IDisposable {
                                     break;
                                 }
                                 case "attribute": {
-                                    resultAttributes.push(new VertexBuffer(
-                                        engine,
-                                        message.data,
-                                        message.kind,
-                                        false,
-                                        undefined,
-                                        message.stride,
-                                        undefined,
-                                        message.offset,
-                                        undefined,
-                                        undefined,
-                                        message.normalized,
-                                        true
-                                    ));
+                                    resultAttributes.push(
+                                        new VertexBuffer(
+                                            engine,
+                                            message.data,
+                                            message.kind,
+                                            false,
+                                            undefined,
+                                            message.stride,
+                                            undefined,
+                                            message.offset,
+                                            undefined,
+                                            undefined,
+                                            message.normalized,
+                                            true
+                                        )
+                                    );
                                     break;
                                 }
                             }
@@ -502,20 +496,7 @@ export class DracoCompression implements IDisposable {
                         resultIndices = indices;
                     },
                     (kind, data, offset, stride, normalized) => {
-                        resultAttributes.push(new VertexBuffer(
-                            null,
-                            data,
-                            kind,
-                            false,
-                            undefined,
-                            stride,
-                            undefined,
-                            offset,
-                            undefined,
-                            undefined,
-                            normalized,
-                            true
-                        ));
+                        resultAttributes.push(new VertexBuffer(null, data, kind, false, undefined, stride, undefined, offset, undefined, undefined, normalized, true));
                     }
                 );
 
