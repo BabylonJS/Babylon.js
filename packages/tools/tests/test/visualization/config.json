@@ -51,7 +51,7 @@
         {
             "title": "Texture cache",
             "playgroundId": "#3TFH5I#0",
-            "referenceImage": "texture cache.png",
+            "referenceImage": "texture-cache.png",
             "excludedEngines": ["webgl1"]
         },
         {
