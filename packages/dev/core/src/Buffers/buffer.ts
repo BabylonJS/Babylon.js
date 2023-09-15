@@ -37,7 +37,7 @@ export class Buffer {
         data: DataArray | DataBuffer,
         updatable: boolean,
         stride = 0,
-        postponeInternalCreation = false,
+        postponeInternalCreation = !engine,
         instanced = false,
         useBytes = false,
         divisor?: number
