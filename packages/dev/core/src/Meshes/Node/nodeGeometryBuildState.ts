@@ -106,11 +106,14 @@ export class NodeGeometryBuildState {
     /**
      * Gets the value associated with a contextual source
      * @param source Source of the contextual value
+     * @param skipWarning Do not store the warning for reporting if true
      * @returns the value associated with the source
      */
-    public getContextualValue(source: NodeGeometryContextualSources) {
+    public getContextualValue(source: NodeGeometryContextualSources, skipWarning = false) {
         if (!this.executionContext) {
-            this.noContextualData.push(source);
+            if (!skipWarning) {
+                this.noContextualData.push(source);
+            }
             return null;
         }
 
