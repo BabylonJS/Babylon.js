@@ -4,7 +4,7 @@ const isCI = !!process.env.CI;
 const browserType = process.env.BROWSER || (isCI ? "Firefox" : "Chrome");
 const numberOfWorkers = process.env.CIWORKERS ? +process.env.CIWORKERS : process.env.CI ? 1 : undefined;
 const customFlags = process.env.CUSTOM_FLAGS ? process.env.CUSTOM_FLAGS.split(" ") : [];
-const headless = process.env.HEADLESS === "false";
+const headless = process.env.HEADLESS !== "false";
 
 const args = browserType === "Chrome" ? ["--use-angle=default", "--js-flags=--expose-gc"] : ["-wait-for-browser"];
 args.push(...customFlags);
@@ -25,6 +25,7 @@ export default defineConfig({
     use: {
         /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
         trace: "on-first-retry",
+        ignoreHTTPSErrors: true,
     },
 
     /* Project configuration */
