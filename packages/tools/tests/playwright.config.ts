@@ -1,14 +1,14 @@
 import { defineConfig, devices } from "@playwright/test";
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// require('dotenv').config();
+const isCI = !!process.env.CI;
+const browserType = process.env.BROWSER || (isCI ? "Firefox" : "Chrome");
+const numberOfWorkers = process.env.CIWORKERS ? +process.env.CIWORKERS : process.env.CI ? 1 : undefined;
+const customFlags = process.env.CUSTOM_FLAGS ? process.env.CUSTOM_FLAGS.split(" ") : [];
+const headless = process.env.HEADLESS === "false";
 
-/**
- * See https://playwright.dev/docs/test-configuration.
- */
+const args = browserType === "Chrome" ? ["--use-angle=default", "--js-flags=--expose-gc"] : ["-wait-for-browser"];
+args.push(...customFlags);
+
 export default defineConfig({
     testDir: "./test/playwright",
     /* Run tests in files in parallel */
@@ -18,27 +18,25 @@ export default defineConfig({
     /* Retry on CI only */
     retries: process.env.CI ? 2 : 1,
     /* Opt out of parallel tests on CI. */
-    workers: process.env.CIWORKERS ? +process.env.CIWORKERS : process.env.CI ? 1 : undefined,
+    workers: numberOfWorkers,
     /* Reporter to use. See https://playwright.dev/docs/test-reporters */
     reporter: process.env.CI ? "dot" : "html",
     /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
     use: {
-        /* Base URL to use in actions like `await page.goto('/')`. */
-        // baseURL: 'http://127.0.0.1:3000',
-
         /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
         trace: "on-first-retry",
     },
 
-    /* Configure projects for major browsers */
+    /* Project configuration */
     projects: [
         {
             name: "webgl2",
             testMatch: "**/*webgl2.test.ts",
             use: {
-                ...devices[process.env.CI ? "Desktop Firefox" : "Desktop Chrome"],
+                ...devices["Desktop " + browserType],
+                headless,
                 launchOptions: {
-                    args: [process.env.CI ? "-wait-for-browser" : "--use-angle=default"],
+                    args
                 },
             },
         },
@@ -47,9 +45,10 @@ export default defineConfig({
             name: "webgl1",
             testMatch: "**/*webgl1.test.ts",
             use: {
-                ...devices[process.env.CI ? "Desktop Firefox" : "Desktop Chrome"],
+                ...devices["Desktop " + browserType],
+                headless,
                 launchOptions: {
-                    args: [process.env.CI ? "-wait-for-browser" : "--use-angle=default"],
+                    args
                 },
             },
         },
@@ -58,54 +57,16 @@ export default defineConfig({
             name: "webgpu",
             testMatch: "**/*webgpu.test.ts",
             use: {
-                // ...devices["Desktop Chrome"],
+                // use real chrome (not chromium) for webgpu tests
                 channel: "chrome",
-                headless: !process.env.CI,
+                headless,
                 launchOptions: {
-                    args: process.env.CUSTOM_FLAGS ? process.env.CUSTOM_FLAGS.split(" ") : ["--use-angle=default"],
+                    args
                 },
             },
         },
-
-        {
-            name: "CI",
-            testMatch: "**/*webgl*.test.ts",
-            use: {
-                ...devices["Desktop Firefox"],
-                launchOptions: {
-                    args: ["-wait-for-browser"],
-                },
-            },
-        },
-
-        /* Test against mobile viewports. */
-        // {
-        //   name: 'Mobile Chrome',
-        //   use: { ...devices['Pixel 5'] },
-        // },
-        // {
-        //   name: 'Mobile Safari',
-        //   use: { ...devices['iPhone 12'] },
-        // },
-
-        /* Test against branded browsers. */
-        // {
-        //   name: 'Microsoft Edge',
-        //   use: { ...devices['Desktop Edge'], channel: 'msedge' },
-        // },
-        // {
-        //   name: 'Google Chrome',
-        //   use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-        // },
     ],
 
     snapshotPathTemplate: "test/visualization/ReferenceImages/{arg}{ext}",
-
-    /* Run your local dev server before starting the tests */
-    // webServer: {
-    //   command: 'npm run start',
-    //   url: 'http://127.0.0.1:1337',
-    //   reuseExistingServer: !process.env.CI,
-    // },
 });
 
