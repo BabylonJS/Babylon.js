@@ -7,7 +7,8 @@ import { Geometry } from "../geometry";
 import { VertexBuffer } from "../buffer";
 import { VertexData } from "../mesh.vertexData";
 import type { ThinEngine } from "../../Engines/thinEngine";
-import type { DracoDecoderModule, DecoderModule, DecoderBuffer, Decoder, Mesh } from "draco3dgltf";
+import { DracoDecoderModule } from "draco3dgltf";
+import type { DecoderModule, DecoderBuffer, Decoder, Mesh } from "draco3dgltf";
 
 declare let DracoDecoderModule: DracoDecoderModule;
 
@@ -428,7 +429,7 @@ export class DracoCompression implements IDisposable {
                 return new Promise<MeshData>((resolve, reject) => {
                     workerPool.push((worker, onComplete) => {
                         let resultIndices: Nullable<Uint16Array | Uint32Array> = null;
-                        let resultAttributes: Array<VertexBuffer> = [];
+                        const resultAttributes: Array<VertexBuffer> = [];
 
                         const onError = (error: ErrorEvent) => {
                             worker.removeEventListener("error", onError);
@@ -486,7 +487,7 @@ export class DracoCompression implements IDisposable {
         if (this._decoderModulePromise) {
             return this._decoderModulePromise.then((decoder) => {
                 let resultIndices: Nullable<Uint16Array | Uint32Array> = null;
-                let resultAttributes: Array<VertexBuffer> = [];
+                const resultAttributes: Array<VertexBuffer> = [];
 
                 const numPoints = decodeMesh(
                     decoder.module,
