@@ -161,7 +161,7 @@ export class Buffer {
         }
 
         if (!this._engine) {
-            throw new Error("Engine must be pass to the buffer constructor in order to create");
+            throw new Error("Engine must be provided in the buffer constructor in order to create");
         }
 
         if (!this._buffer) {
@@ -207,7 +207,7 @@ export class Buffer {
 
         if (this._updatable) {
             if (!this._engine) {
-                throw new Error("Engine must be pass to the buffer constructor in order to update directly");
+                throw new Error("Engine must be provided in the buffer constructor in order to update directly");
             }
 
             // update buffer
