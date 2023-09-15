@@ -7,7 +7,7 @@ import { Geometry } from "../geometry";
 import { VertexBuffer } from "../buffer";
 import { VertexData } from "../mesh.vertexData";
 import type { ThinEngine } from "../../Engines/thinEngine";
-import { DracoDecoderModule, DecoderModule, DecoderBuffer, Decoder, Mesh } from "draco3dgltf";
+import type { DracoDecoderModule, DecoderModule, DecoderBuffer, Decoder, Mesh } from "draco3dgltf";
 
 declare let DracoDecoderModule: DracoDecoderModule;
 

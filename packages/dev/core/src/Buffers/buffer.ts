@@ -1,7 +1,7 @@
 import type { Nullable, DataArray, FloatArray } from "../types";
 import type { ThinEngine } from "../Engines/thinEngine";
 import { DataBuffer } from "./dataBuffer";
-import { Mesh } from "../Meshes/mesh";
+import type { Mesh } from "../Meshes/mesh";
 
 /**
  * Class used to store data that will be store in GPU memory
