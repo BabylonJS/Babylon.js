@@ -24,7 +24,7 @@
         {
             "title": "Negative scaling with instances",
             "playgroundId": "#Z3YS9T#0",
-            "referenceImage": "negative scaling with instances.png"
+            "referenceImage": "negative-scaling-with-instances.png"
         },
         {
             "title": "Iridescence",
@@ -171,7 +171,7 @@
             "title": "Weighted animations",
             "playgroundId": "#LL5BIQ#72",
             "renderCount": 50,
-            "referenceImage": "weighted animations.png"
+            "referenceImage": "weighted-animations.png"
         },
         {
             "title": "Anisotropic",
@@ -259,7 +259,7 @@
             "title": "Ribbon morphing",
             "playgroundId": "#ACKC2#1",
             "renderCount": 50,
-            "referenceImage": "ribbon morphing.png"
+            "referenceImage": "ribbon-morphing.png"
         },
         {
             "title": "Clip planes",
@@ -916,7 +916,7 @@
             "title": "MultiSample render targets",
             "renderCount": 20,
             "playgroundId": "#12MKMN#0",
-            "referenceImage": "MultiSample render targets.png"
+            "referenceImage": "MultiSample-render-targets.png"
         },
         {
             "title": "Default rendering pipeline",
@@ -987,7 +987,7 @@
             "title": "Local cubemaps",
             "renderCount": 2,
             "playgroundId": "#RNASML#4",
-            "referenceImage": "local cubemaps.png"
+            "referenceImage": "local-cubemaps.png"
         },
         {
             "title": "TGA",
