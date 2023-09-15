@@ -59,7 +59,7 @@ export class TextureHelper {
             return result;
         } finally {
             if (globalState) {
-                globalState.blockMutationUpdates = true;
+                globalState.blockMutationUpdates = false;
             }
         }
     }
