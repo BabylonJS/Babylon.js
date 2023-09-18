@@ -69,7 +69,7 @@ function decodeMesh(
     try {
         decoder = new decoderModule.Decoder();
 
-        const buffer = new decoderModule.DecoderBuffer();
+        buffer = new decoderModule.DecoderBuffer();
         buffer.Init(data, data.byteLength);
 
         let status: Status;
