@@ -578,12 +578,14 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                         if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh == mesh) {
                             pointerIds[(<IPointerEvent>pointerInfo.event).pointerId] = mesh;
                             mesh.material = this._hoverColoredMaterial;
+                            this._isHovered = true;
                         }
                     });
             } else {
                 if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh != pointerIds[(<IPointerEvent>pointerInfo.event).pointerId]) {
                     pointerIds[(<IPointerEvent>pointerInfo.event).pointerId].material = this._coloredMaterial;
                     delete pointerIds[(<IPointerEvent>pointerInfo.event).pointerId];
+                    this._isHovered = false;
                 }
             }
         });
