@@ -13,7 +13,7 @@ import type { DecoderModule, DecoderBuffer, Decoder, Mesh, PointCloud, Status } 
 declare let DracoDecoderModule: DracoDecoderModule;
 
 interface MeshData {
-    indices: Uint16Array | Uint32Array;
+    indices?: Uint16Array | Uint32Array;
     attributes: Array<VertexBuffer>;
     totalVertices: number;
 }
@@ -66,9 +66,6 @@ function decodeMesh(
     let buffer: Nullable<DecoderBuffer> = null;
     let geometry: Nullable<Mesh | PointCloud> = null;
 
-    // TODO: DefinitelyTyped for draco3d has some issues. See https://github.com/DefinitelyTyped/DefinitelyTyped/pull/66741.
-    // Once this PR is merged, remove `as Mesh` casts in this function.
-
     try {
         decoder = new decoderModule.Decoder();
 
@@ -88,7 +85,7 @@ function decodeMesh(
                 const numFaces = mesh.num_faces();
                 const numIndices = numFaces * 3;
                 const byteLength = numIndices * 4;
-    
+
                 const ptr = decoderModule._malloc(byteLength);
                 try {
                     decoder.GetTrianglesUInt32Array(mesh, byteLength, ptr);
@@ -105,9 +102,10 @@ function decodeMesh(
             case decoderModule.POINT_CLOUD: {
                 const pointCloud = new decoderModule.PointCloud();
                 status = decoder.DecodeBufferToPointCloud(buffer, pointCloud);
-                if (!status.ok() || !(pointCloud as Mesh).ptr) {
+                if (!status.ok() || !pointCloud.ptr) {
                     throw new Error(status.error_msg());
                 }
+
                 geometry = pointCloud;
                 break;
             }
@@ -145,7 +143,7 @@ function decodeMesh(
 
             const ptr = decoderModule._malloc(byteLength);
             try {
-                decoder.GetAttributeDataArrayForAllPoints(geometry as Mesh, attribute, dataType, byteLength, ptr);
+                decoder.GetAttributeDataArrayForAllPoints(geometry, attribute, dataType, byteLength, ptr);
                 const data = new info.typedArrayConstructor(info.heap.buffer, ptr, numValues);
                 onAttributeData(kind, data.slice(), byteOffset, byteStride, normalized);
             } finally {
@@ -156,7 +154,7 @@ function decodeMesh(
         if (attributes) {
             for (const kind in attributes) {
                 const id = attributes[kind];
-                const attribute = decoder.GetAttributeByUniqueId(geometry as Mesh, id);
+                const attribute = decoder.GetAttributeByUniqueId(geometry, id);
                 processAttribute(decoder, geometry, kind, attribute);
             }
         } else {
@@ -542,7 +540,9 @@ export class DracoCompression implements IDisposable {
         return this._decodeMeshAsync(scene.getEngine(), data, attributes).then((meshData) => {
             const geometry = new Geometry(name, scene);
 
-            geometry.setIndices(meshData.indices);
+            if (meshData.indices) {
+                geometry.setIndices(meshData.indices);
+            }
 
             for (const attribute of meshData.attributes) {
                 geometry.setVerticesBuffer(attribute);
@@ -563,7 +563,9 @@ export class DracoCompression implements IDisposable {
         return this._decodeMeshAsync(null, data, attributes).then((meshData) => {
             const vertexData = new VertexData();
 
-            vertexData.indices = meshData.indices;
+            if (meshData.indices) {
+                vertexData.indices = meshData.indices;
+            }
 
             for (const attribute of meshData.attributes) {
                 vertexData.set(attribute.getFloatData(meshData.totalVertices)!, attribute.getKind());
