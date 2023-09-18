@@ -510,6 +510,8 @@ export class DracoCompression implements IDisposable {
 
     /**
      * Decode Draco compressed mesh data to Babylon geometry.
+     * @param name The name to use when creating the geometry
+     * @param scene The scene to use when creating the geometry
      * @param data The ArrayBuffer or ArrayBufferView for the Draco compression data
      * @param attributes A map of attributes from vertex buffer kinds to Draco unique ids
      * @returns A promise that resolves with the decoded geometry

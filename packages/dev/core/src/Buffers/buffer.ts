@@ -33,7 +33,7 @@ export class Buffer {
      * @param divisor sets an optional divisor for instances (1 by default)
      */
     constructor(
-        engine: Nullable<Mesh | ThinEngine>,
+        engine: Nullable<ThinEngine>,
         data: DataArray | DataBuffer,
         updatable: boolean,
         stride = 0,
@@ -42,15 +42,11 @@ export class Buffer {
         useBytes = false,
         divisor?: number
     ) {
-        if (engine) {
+        if (engine && (engine as unknown as Mesh).getScene) {
             // old versions of VertexBuffer accepted 'mesh' instead of 'engine'
-            if ((engine as Mesh).getScene) {
-                this._engine = (engine as Mesh).getScene().getEngine();
-            } else {
-                this._engine = engine as ThinEngine;
-            }
+            this._engine = (engine as unknown as Mesh).getScene().getEngine();
         } else {
-            this._engine = null;
+            this._engine = engine;
         }
 
         this._updatable = updatable;
