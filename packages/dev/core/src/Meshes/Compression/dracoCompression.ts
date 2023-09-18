@@ -8,7 +8,7 @@ import { VertexBuffer } from "../buffer";
 import { VertexData } from "../mesh.vertexData";
 import type { ThinEngine } from "../../Engines/thinEngine";
 import { DracoDecoderModule } from "draco3dgltf";
-import type { DecoderModule, DecoderBuffer, Decoder, Mesh } from "draco3dgltf";
+import type { DecoderModule, DecoderBuffer, Decoder, Mesh, PointCloud, Status } from "draco3dgltf";
 
 declare let DracoDecoderModule: DracoDecoderModule;
 
@@ -64,39 +64,61 @@ function decodeMesh(
 ): number {
     let decoder: Nullable<Decoder> = null;
     let buffer: Nullable<DecoderBuffer> = null;
-    let mesh: Nullable<Mesh> = null;
+    let geometry: Nullable<Mesh | PointCloud> = null;
+
+    // TODO: DefinitelyTyped for draco3d has some issues. See https://github.com/DefinitelyTyped/DefinitelyTyped/pull/66741.
+    // Once this PR is merged, remove `as Mesh` casts in this function.
 
     try {
         decoder = new decoderModule.Decoder();
 
-        buffer = new decoderModule.DecoderBuffer();
+        const buffer = new decoderModule.DecoderBuffer();
         buffer.Init(data, data.byteLength);
 
-        const geometryType = decoder.GetEncodedGeometryType(buffer);
-        if (geometryType === decoderModule.TRIANGULAR_MESH) {
-            mesh = new decoderModule.Mesh();
-            const status = decoder.DecodeBufferToMesh(buffer, mesh);
-            if (!status.ok() || !mesh.ptr) {
-                throw new Error(status.error_msg());
-            }
+        let status: Status;
+        const type = decoder.GetEncodedGeometryType(buffer);
+        switch (type) {
+            case decoderModule.TRIANGULAR_MESH: {
+                const mesh = new decoderModule.Mesh();
+                status = decoder.DecodeBufferToMesh(buffer, mesh);
+                if (!status.ok() || mesh.ptr === 0) {
+                    throw new Error(status.error_msg());
+                }
 
-            const numIndices = mesh.num_faces() * 3;
-            const byteLength = numIndices * 4;
+                const numFaces = mesh.num_faces();
+                const numIndices = numFaces * 3;
+                const byteLength = numIndices * 4;
+    
+                const ptr = decoderModule._malloc(byteLength);
+                try {
+                    decoder.GetTrianglesUInt32Array(mesh, byteLength, ptr);
+                    const indices = new Uint32Array(numIndices);
+                    indices.set(new Uint32Array(decoderModule.HEAPF32.buffer, ptr, numIndices));
+                    onIndicesData(indices);
+                } finally {
+                    decoderModule._free(ptr);
+                }
 
-            const ptr = decoderModule._malloc(byteLength);
-            try {
-                decoder.GetTrianglesUInt32Array(mesh, byteLength, ptr);
-                onIndicesData(new Uint32Array(decoderModule.HEAPF32.buffer, ptr, numIndices).slice());
-            } finally {
-                decoderModule._free(ptr);
+                geometry = mesh;
+                break;
             }
-        } else {
-            throw new Error(`Unsupported geometry type ${geometryType}`);
+            case decoderModule.POINT_CLOUD: {
+                const pointCloud = new decoderModule.PointCloud();
+                status = decoder.DecodeBufferToPointCloud(buffer, pointCloud);
+                if (!status.ok() || !(pointCloud as Mesh).ptr) {
+                    throw new Error(status.error_msg());
+                }
+                geometry = pointCloud;
+                break;
+            }
+            default: {
+                throw new Error(`Invalid geometry type ${type}`);
+            }
         }
 
-        const numPoints = mesh.num_points();
+        const numPoints = geometry.num_points();
 
-        const processAttribute = (decoder: Decoder, mesh: Mesh, kind: string, attribute: any) => {
+        const processAttribute = (decoder: Decoder, geometry: Mesh | PointCloud, kind: string, attribute: any) => {
             const dataType = attribute.data_type();
             const numComponents = attribute.num_components();
             const normalized = attribute.normalized();
@@ -123,7 +145,7 @@ function decodeMesh(
 
             const ptr = decoderModule._malloc(byteLength);
             try {
-                decoder.GetAttributeDataArrayForAllPoints(mesh, attribute, dataType, byteLength, ptr);
+                decoder.GetAttributeDataArrayForAllPoints(geometry as Mesh, attribute, dataType, byteLength, ptr);
                 const data = new info.typedArrayConstructor(info.heap.buffer, ptr, numValues);
                 onAttributeData(kind, data.slice(), byteOffset, byteStride, normalized);
             } finally {
@@ -134,8 +156,8 @@ function decodeMesh(
         if (attributes) {
             for (const kind in attributes) {
                 const id = attributes[kind];
-                const attribute = decoder.GetAttributeByUniqueId(mesh, id);
-                processAttribute(decoder, mesh, kind, attribute);
+                const attribute = decoder.GetAttributeByUniqueId(geometry as Mesh, id);
+                processAttribute(decoder, geometry, kind, attribute);
             }
         } else {
             const dracoAttributeTypes: { [kind: string]: number } = {
@@ -146,18 +168,18 @@ function decodeMesh(
             };
 
             for (const kind in dracoAttributeTypes) {
-                const id = decoder.GetAttributeId(mesh, dracoAttributeTypes[kind]);
+                const id = decoder.GetAttributeId(geometry, dracoAttributeTypes[kind]);
                 if (id !== -1) {
-                    const attribute = decoder.GetAttribute(mesh, id);
-                    processAttribute(decoder, mesh, kind, attribute);
+                    const attribute = decoder.GetAttribute(geometry, id);
+                    processAttribute(decoder, geometry, kind, attribute);
                 }
             }
         }
 
         return numPoints;
     } finally {
-        if (mesh) {
-            decoderModule.destroy(mesh);
+        if (geometry) {
+            decoderModule.destroy(geometry);
         }
 
         if (buffer) {
