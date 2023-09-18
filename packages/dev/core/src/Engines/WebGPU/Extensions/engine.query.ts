@@ -32,7 +32,7 @@ WebGPUEngine.prototype.getQueryResult = function (query: OcclusionQuery): number
 
 WebGPUEngine.prototype.beginOcclusionQuery = function (algorithmType: number, query: OcclusionQuery): boolean {
     if (this.compatibilityMode) {
-        if (this._occlusionQuery.canBeginQuery) {
+        if (this._occlusionQuery.canBeginQuery(query as number)) {
             this._currentRenderPass?.beginOcclusionQuery(query as number);
             return true;
         }

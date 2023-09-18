@@ -15,6 +15,8 @@ import type { StorageBuffer } from "../Buffers/storageBuffer";
 import { Logger } from "../Misc/logger";
 import { TextureSampler } from "../Materials/Textures/textureSampler";
 import type { DataBuffer } from "core/Buffers/dataBuffer";
+import type { ExternalTexture } from "core/Materials/Textures/externalTexture";
+import type { VideoTexture } from "core/Materials/Textures/videoTexture";
 
 /**
  * Defines the options associated with the creation of a compute shader.
@@ -173,6 +175,38 @@ export class ComputeShader {
     }
 
     /**
+     * Binds an external texture to the shader
+     * @param name Binding name of the texture
+     * @param texture Texture to bind
+     */
+    public setExternalTexture(name: string, texture: ExternalTexture): void {
+        const current = this._bindings[name];
+
+        this._contextIsDirty ||= !current || current.object !== texture;
+
+        this._bindings[name] = {
+            type: ComputeBindingType.ExternalTexture,
+            object: texture,
+            indexInGroupEntries: current?.indexInGroupEntries,
+        };
+    }
+
+    /**
+     * Binds a video texture to the shader (by binding the external texture attached to this video)
+     * @param name Binding name of the texture
+     * @param texture Texture to bind
+     * @returns true if the video texture was successfully bound, else false. false will be returned if the current engine does not support external textures
+     */
+    public setVideoTexture(name: string, texture: VideoTexture) {
+        if (texture.externalTexture) {
+            this.setExternalTexture(name, texture.externalTexture);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Binds a uniform buffer to the shader
      * @param name Binding name of the buffer
      * @param buffer Buffer to bind
@@ -240,6 +274,13 @@ export class ComputeShader {
                 case ComputeBindingType.TextureWithoutSampler:
                 case ComputeBindingType.StorageTexture: {
                     const texture = object as BaseTexture;
+                    if (!texture.isReady()) {
+                        return false;
+                    }
+                    break;
+                }
+                case ComputeBindingType.ExternalTexture: {
+                    const texture = object as ExternalTexture;
                     if (!texture.isReady()) {
                         return false;
                     }
@@ -317,6 +358,11 @@ export class ComputeShader {
                         );
                         this._contextIsDirty = true;
                     }
+                    break;
+                }
+                case ComputeBindingType.ExternalTexture: {
+                    // we must recreate the bind groups each time if there's an external texture, because device.importExternalTexture must be called each frame
+                    this._contextIsDirty = true;
                     break;
                 }
                 case ComputeBindingType.UniformBuffer: {

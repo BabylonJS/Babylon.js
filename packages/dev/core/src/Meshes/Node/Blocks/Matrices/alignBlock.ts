@@ -61,7 +61,7 @@ export class AlignBlock extends NodeGeometryBlock {
             source.normalize();
             target.normalize();
 
-            Matrix.RotationAlignToRef(source, target, result);
+            Matrix.RotationAlignToRef(source, target, result, true);
 
             return result;
         };

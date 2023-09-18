@@ -49,10 +49,22 @@ import { ConditionBlock, ConditionBlockTests } from "core/Meshes/Node/Blocks/con
 import { GeometryCollectionBlock } from "core/Meshes/Node/Blocks/geometryCollectionBlock";
 import { GeometryInfoBlock } from "core/Meshes/Node/Blocks/geometryInfoBlock";
 import { MappingBlock } from "core/Meshes/Node/Blocks/mappingBlock";
+import { MatrixComposeBlock } from "core/Meshes/Node/Blocks/matrixComposeBlock";
+import { GeometryTextureBlock } from "core/Meshes/Node/Blocks/Textures/geometryTextureBlock";
+import { GeometryTextureFetchBlock } from "core/Meshes/Node/Blocks/Textures/geometryTextureFetchBlock";
+import { BoundingBlock } from "core/Meshes/Node/Blocks/boundingBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "TextureFetchBlock":
+                return new GeometryTextureFetchBlock("Texture Fetch");
+            case "TextureBlock":
+                return new GeometryTextureBlock("Texture");
+            case "BoundingBlock":
+                return new BoundingBlock("Bounding");
+            case "MatrixComposeBlock":
+                return new MatrixComposeBlock("Matrix Compose");
             case "GeometryInfoBlock":
                 return new GeometryInfoBlock("Geometry Info");
             case "CollectionBlock":
@@ -248,6 +260,11 @@ export class BlockTools {
                 block.contextualValue = NodeGeometryContextualSources.LoopID;
                 return block;
             }
+            case "InstanceIDBlock": {
+                const block = new GeometryInputBlock("Instance ID");
+                block.contextualValue = NodeGeometryContextualSources.InstanceID;
+                return block;
+            }
             case "GeometryIDBlock": {
                 const block = new GeometryInputBlock("Geometry ID");
                 block.contextualValue = NodeGeometryContextualSources.GeometryID;
@@ -416,6 +433,9 @@ export class BlockTools {
                 break;
             case NodeGeometryBlockConnectionPointTypes.Geometry:
                 color = "#84995c";
+                break;
+            case NodeGeometryBlockConnectionPointTypes.Texture:
+                color = "#f28e0a";
                 break;
         }
 

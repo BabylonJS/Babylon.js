@@ -489,11 +489,11 @@ export class NodeGeometry {
         if (this.outputBlock) {
             // Connections
             alreadyDumped = [];
-            codeString += "\n`;// Connections\n`;";
+            codeString += "// Connections\n";
             codeString += this.outputBlock._dumpCodeForOutputConnections(alreadyDumped);
 
             // Output nodes
-            codeString += "\n`;// Output nodes\n`;";
+            codeString += "// Output nodes\n";
             codeString += `nodeGeometry.outputBlock = ${this.outputBlock._codeVariableName};\n`;
             codeString += `nodeGeometry.build();\n`;
         }

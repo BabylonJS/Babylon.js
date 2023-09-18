@@ -145,14 +145,9 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                     if (engine.isPointerLock && this._onMouseMove) {
                         this._onMouseMove(p.event);
                     } else if (this._previousPosition) {
-                        let offsetX = evt.clientX - this._previousPosition.x;
+                        const handednessMultiplier = this.camera._calculateHandednessMultiplier();
+                        const offsetX = (evt.clientX - this._previousPosition.x) * handednessMultiplier;
                         const offsetY = evt.clientY - this._previousPosition.y;
-                        if (this.camera.getScene().useRightHandedSystem) {
-                            offsetX *= -1;
-                        }
-                        if (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() < 0) {
-                            offsetX *= -1;
-                        }
 
                         if (this._allowCameraRotation) {
                             this.camera.cameraRotation.y += offsetX / this.angularSensibility;
@@ -182,13 +177,9 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                 return;
             }
 
-            let offsetX = evt.movementX;
-            if (this.camera.getScene().useRightHandedSystem) {
-                offsetX *= -1;
-            }
-            if (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() < 0) {
-                offsetX *= -1;
-            }
+            const handednessMultiplier = this.camera._calculateHandednessMultiplier();
+            const offsetX = evt.movementX * handednessMultiplier;
+
             this.camera.cameraRotation.y += offsetX / this.angularSensibility;
 
             const offsetY = evt.movementY;

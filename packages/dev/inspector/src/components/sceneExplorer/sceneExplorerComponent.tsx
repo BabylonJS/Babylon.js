@@ -29,6 +29,7 @@ import { SpriteManager } from "core/Sprites/spriteManager";
 import type { TargetCamera } from "core/Cameras/targetCamera";
 import type { Camera } from "core/Cameras/camera";
 import type { PostProcessRenderPipeline } from "core/PostProcesses";
+import { NodeGeometry } from "core/Meshes/Node/nodeGeometry";
 
 // side effects
 import "core/Sprites/spriteSceneComponent";
@@ -341,6 +342,17 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 }
 
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newFreeCamera);
+            },
+        });
+        defaultMenuItems.push({
+            label: "Add new mesh from Node Geometry",
+            action: () => {
+                const ng = new NodeGeometry("Node Geometry");
+                ng.setToDefault();
+                ng.build();
+                const newMesh = ng.createMesh("Node geometry mesh", scene);
+
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(newMesh);
             },
         });
 

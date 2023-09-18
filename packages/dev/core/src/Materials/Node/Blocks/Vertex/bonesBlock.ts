@@ -97,9 +97,9 @@ export class BonesBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    public autoConfigure(material: NodeMaterial) {
+    public autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.matricesIndices.isConnected) {
-            let matricesIndicesInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "matricesIndices");
+            let matricesIndicesInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "matricesIndices" && additionalFilteringInfo(b));
 
             if (!matricesIndicesInput) {
                 matricesIndicesInput = new InputBlock("matricesIndices");
@@ -108,7 +108,7 @@ export class BonesBlock extends NodeMaterialBlock {
             matricesIndicesInput.output.connectTo(this.matricesIndices);
         }
         if (!this.matricesWeights.isConnected) {
-            let matricesWeightsInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "matricesWeights");
+            let matricesWeightsInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "matricesWeights" && additionalFilteringInfo(b));
 
             if (!matricesWeightsInput) {
                 matricesWeightsInput = new InputBlock("matricesWeights");
@@ -117,7 +117,7 @@ export class BonesBlock extends NodeMaterialBlock {
             matricesWeightsInput.output.connectTo(this.matricesWeights);
         }
         if (!this.world.isConnected) {
-            let worldInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.World);
+            let worldInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.World && additionalFilteringInfo(b));
 
             if (!worldInput) {
                 worldInput = new InputBlock("world");

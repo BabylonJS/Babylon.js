@@ -1,6 +1,1519 @@
 {
-    "fromTag": "6.17.1",
+    "fromTag": "6.20.2",
     "changelog": {
+        "6.21.0": [
+            {
+                "pr": "14297",
+                "title": "Nge texture",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Textures/geometryTextureBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Textures/geometryTextureFetchBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/debugBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryTransformBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryTrigonometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/mapRangeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/mathBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/normalizeVectorBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/randomBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Enums/nodeGeometryConnectionPointTypes.ts",
+                    "packages/dev/core/src/Meshes/Node/Interfaces/nodeGeometryTextureData.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/textureDisplayManager.modules.scss",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/textureDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/textureNodePropertyComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/registerDebugSupport.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/registerNodePortDesign.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/registerToDisplayLedger.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/registerToPropertyLedger.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14303",
+                "title": "Fix continuity with teleports",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Teleport/teleportInBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Teleport/teleportInBlock.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14302",
+                "title": "Fix adapt to not trigger with undefined",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBuildState.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14300",
+                "title": "Improve perf of noise texture gen in lens and ssao",
+                "description": "Use raw texture with a buffer of pixels instead of dynamic texture to render one pixel at a time using canvas.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/lensRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14298",
+                "title": "Vertex color mesh used for instantiate source not visible if density set to 0",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVerticesBlock.ts",
+                    "packages/dev/core/src/Meshes/mesh.vertexData.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14299",
+                "title": "- Given a data set of positional Values, ability to get the min and max from that list",
+                "description": "cc @PatrickRyanMS @PirateJC ",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/boundingBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14294",
+                "title": "Fix geom caching",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryInfoBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "6.20.2": [
+            {
+                "pr": "14292",
+                "title": "Mark native engine as supporting MSAA",
+                "description": null,
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14293",
+                "title": "Document adding and updating visual snapshots",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "buildSystem.md"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14291",
+                "title": "Fix scale for noiseblock",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/noiseBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14290",
+                "title": "Add a rebuild button",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/propertyTabComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14288",
+                "title": "Evaluate Debug node for NGE like teleport node so it doesn't need to be connected to GeometryOutput",
+                "description": "@PatrickRyanMS @PirateJC : I would qualify this as low level confidence. It is a bit of a hack. I think it is acceptable if it does not grow more hacky. So let's make sure to test it widely when merged",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Teleport/teleportInBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Teleport/teleportOutBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/debugBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryInputBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlock.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/blockNodeData.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14289",
+                "title": "Optimize block on context by default",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryOptimizeBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14287",
+                "title": "ReflectionProbe: Add a setter for renderList",
+                "description": "See https://forum.babylonjs.com/t/renderlist-with-all-meshes/43995/5",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Probes/reflectionProbe.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "14286",
+                "title": "Idempotent disposing of physics bodies and shapes.",
+                "description": "Forum: https://forum.babylonjs.com/t/exception-when-double-disposing-physicsaggregate/43959",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts",
+                    "packages/dev/core/src/Physics/v2/physicsShape.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "14285",
+                "title": "Effect: Call pipelineContext.setUIntX instead of setIntX for the unsigned variants",
+                "description": "See https://forum.babylonjs.com/t/cannot-use-uint-uniforms-in-shadermaterial/43998",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/effect.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "14284",
+                "title": "MeshLine: Add support for thin instances",
+                "description": "See https://forum.babylonjs.com/t/thin-instance-linesmesh-question-issue/43955",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/linesMesh.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14283",
+                "title": "Fix issue with merge conflicts when data was not present",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.vertexData.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14282",
+                "title": "Fix few bugs",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Matrices/alignBlock.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/inputsPropertyTabComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/propertyTabComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14280",
+                "title": "Add an option to lock random values per loop",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/randomBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "6.20.1": [
+            {
+                "pr": "14279",
+                "title": "Fix context lost or unwanted data update",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVerticesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVolumeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setColorsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setMaterialIDBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setNormalsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setPositionsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setTangentsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setUVsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/boxBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/capsuleBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/cylinderBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/discBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/gridBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/icoSphereBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/meshBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/planeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/sphereBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/torusBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryCollectionBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryOptimizeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryTransformBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/mergeGeometryBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14278",
+                "title": "Animations: Refactor the code that creates additive animations",
+                "description": "* added some options to drive more precisely the creation of additive animations\r\n* added a helper function to clip an animation group given a range of frames\r\n* fixed the `clone` / `serialize` / `parse` methods of the `AnimationGroup` class",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animation.ts",
+                    "packages/dev/core/src/Animations/animationGroup.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "14276",
+                "title": "Add textures ready helper",
+                "description": "https://forum.babylonjs.com/t/node-material-post-processes-flashing-replace-colour-at-initialisation/43865/9",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14275",
+                "title": "I'm with stupid...",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/matrixComposeBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14274",
+                "title": "WebGPU: Fix having a single occlusion query per mesh per frame",
+                "description": "See https://forum.babylonjs.com/t/webgpu-occlusion-query-with-2-cameras/43840",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.query.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuOcclusionQuery.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "14273",
+                "title": "Rework entire stack system for context",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVerticesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVolumeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setColorsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setNormalsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setPositionsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setTangentsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setUVsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBuildState.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14272",
+                "title": "WebGPU: Fix warnings when using occlusion queries",
+                "description": "I also added some labels for some objects for debugging purpose in WebGPU.\r\n\r\n(my PG so that it does not get lost: http://localhost:1338/?webgpu#QDAZ80#457)",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.query.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTargetCube.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuOcclusionQuery.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuQuerySet.ts",
+                    "packages/dev/core/src/Engines/renderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "14271",
+                "title": "NME: Fix PBR debug mode",
+                "description": "See https://forum.babylonjs.com/t/nme-pbr-material-debug-mode/43908/2",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDebug.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            }
+        ],
+        "6.20.0": [
+            {
+                "pr": "14261",
+                "title": "Flow graph iteration 0.0.3",
+                "description": "This PR introduces the ability to send and receive custom events. Events are identified by an event id of type string, and event data of type any. To centralize the listening and notifying of events, a new class was added, named FlowGraphEventCoordinator. Multiple Flow Graphs can share the same Event Coordinator and with that, communicate with each other through events. \r\n\r\nExamples:\r\n#J1N2GP#1 -> click on the sphere, the door opening animation will play\r\n#GPPEUA#5 -> click on the green button, the animation plays. Click on the red button, the animation stops.\r\n#MD0K3B -> click on the button, the two spheres will move up\r\n\r\nOn the three cases, the button and the acted upon object have distinct graphs, and communicate through a custom event.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphGetVariableBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphReceiveCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphPlayAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSendCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetVariableBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphStopAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/index.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraph.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphContext.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphCustomEvent.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphEventCoordinator.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphVariableDefinitions.ts",
+                    "packages/dev/core/src/FlowGraph/index.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "flow graph"
+                ]
+            },
+            {
+                "pr": "14270",
+                "title": "Fix texture not ready when parsing NME",
+                "description": "https://forum.babylonjs.com/t/node-material-post-processes-flashing-replace-colour-at-initialisation/43865",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "14269",
+                "title": "Add new InstanceID info",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVerticesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVolumeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setColorsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setMaterialIDBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setNormalsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setPositionsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setTangentsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setUVsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryInputBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Enums/nodeGeometryContextualSources.ts",
+                    "packages/dev/core/src/Meshes/Node/Interfaces/nodeGeometryInstancingContext.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBuildState.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/inputDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14268",
+                "title": "Matrix Compose block needed for NGE",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVerticesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVolumeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/matrixComposeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/nodeGeometry.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14267",
+                "title": "fix action manager disposal when shared",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/how-do-you-dispose-the-actions-of-an-actionmanager/9985/7\r\n\r\nPG to test: #J19GYK#567",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Actions/actionManager.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "14266",
+                "title": "Compute shaders: Add support for external (video)  textures",
+                "description": "See https://forum.babylonjs.com/t/compute-shader-videotexture-input/43864",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Compute/computeShader.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.computeShader.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuComputeContext.ts",
+                    "packages/dev/core/src/Materials/Textures/videoTexture.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "14265",
+                "title": "Screenshots: Fix OffscreenCanvas not supported in older browsers",
+                "description": "See https://forum.babylonjs.com/t/create-screenshot-using-render-target-and-report-an-error-on-ios-cant-find-variable-offscreencanvas/43878",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/dumpTools.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14263",
+                "title": "Fix mathblock to accept floats with vectors",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/mathBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14262",
+                "title": "Add context action to create Node Geometry in PG to parallel Node Material flow",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/sceneExplorer/sceneExplorerComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14260",
+                "title": "Map Range node in NGE appears to accept Vectors, but results in NaN",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/mapRangeBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14259",
+                "title": "Conversion from float to int inconsistent in NGE nodes",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/intFloatConverterBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/mapRangeBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14258",
+                "title": "Debug node does not handle matrices in NGE",
+                "description": "Fix #14243",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/debugBlock.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodeLink.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/stateManager.ts",
+                    "packages/tools/nodeEditor/src/globalState.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/registerDebugSupport.ts",
+                    "packages/tools/nodeGeometryEditor/src/globalState.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/registerDebugSupport.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14140",
+                "title": "Flow graph iteration 0.0.2",
+                "description": "## Changes:\r\n- Added the idea of a \"context\" of a graph, that is created by `graph.createContext`, and is used for both user variables , block-scoped execution variables (such as the current index of a for loop block), graph-scoped execution variables (such as the scene the graph runs in), and also to keep a list of blocks with pending tasks. When blocks execute, they pass the context down to the next block.\r\n- GetVariable and SetVariable blocks\r\n- Conditional data and conditional execution block. The former returns a value depending on a condition and the latter executes a flow depending on a condition.\r\n- PlayAnimation Block \r\n- SetProperty Block\r\n- Timer Block, it can execute an action immediately and another action after a delay\r\n- Data connection points now receive a RichType instead of a default value. A RichType follows an interface containing the name of the type (which can be useful for displaying different colors depending of type on the visual tool), and a function to generate a default value of the type. \r\n- A connection point is now able to connect to multiple other points depending on its type, as follows:\r\n    - Data output blocks can connect to MULTIPLE points, since a piece of data can be used by many blocks.\r\n    - Data input blocks can only connect to ONE point, because a block has to have a well defined source of data.\r\n    - Signal output blocks can only connect to ONE point, because a block can only execute one well defined flow after it.\r\n    - Signal input blocks can connect to MULTIPLE points, since the same flow can be executed from multiple antecessors.\r\n\r\n\r\n## Example PGs:\r\n- #43USDV#4 -> once the scene starts, runs a for loop and log its index \r\n- #43USDV#3 -> click on the sphere or on the cube, it will run a for loop and log its index \r\n- #GQAXFL#7 -> click on the sphere or on the cube, it will immediately change color to red, and 1s later change color to yellow\r\n- #GQAXFL#5 -> click on the sphere or on the cube and each will run a different animation. you can press \"p\" to dispose of the graph",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphAddBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphBinaryOpBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphConditionalDataBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphGetVariableBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphMeshPickEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphSceneReadyEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphConditionalBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphForLoopBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphLogBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphPlayAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetPropertyBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetVariableBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphTimerBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/index.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraph.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphAsyncExecutionBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphConnection.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphContext.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphDataConnection.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphExecutionBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphRichTypes.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphSignalConnection.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphVariableDefinitions.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphWithOnDoneExecutionBlock.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14257",
+                "title": "Instantiate nodes using matrices need original positions",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVerticesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVolumeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBuildState.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14255",
+                "title": "Constraints debug view - pivots",
+                "description": "This PR introduces a new function to `PhysicsViewer`, `showConstraint(constraint)`, which will display on all of the pairs of bodies that use that constraint, axes representing the pivots and axes of it.\r\n\r\n![constraint-view-2](https://github.com/BabylonJS/Babylon.js/assets/6002144/8ad16927-eafd-41e1-a851-7101fc6ffd12)\r\n\r\n",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/physicsViewer.ts",
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsConstraint.ts"
+                ],
+                "tags": [
+                    "physics",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14254",
+                "title": "Pre-pass renderer: Add an option to generate normals in world space",
+                "description": "Also added a `bindTexture` helper to `UniformBuffer`.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/materialHelper.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Materials/uniformBuffer.ts",
+                    "packages/dev/core/src/Rendering/prePassRenderer.ts",
+                    "packages/dev/core/src/Shaders/default.fragment.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14251",
+                "title": "Fixes Bounty #Generate equirectangular 360 panorama from babylon.js scene",
+                "description": "Hey, I'm a first-time contributor to Babylon.js, love the community, and would love it if someone could review this PR.\r\nThis PR is based on @Pryme8 's work on this playground [here](https://playground.babylonjs.com/#JTUAY3#5).",
+                "author": {
+                    "name": "lokiiarora",
+                    "url": "https://github.com/lokiiarora"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/equirectangularCapture.ts",
+                    "packages/dev/core/src/Misc/index.ts",
+                    "packages/dev/core/src/Shaders/equirectangularPanorama.fragment.fx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/toolsTabComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14253",
+                "title": "Occlusion queries: Use the first camera in the case of multiple cameras",
+                "description": "See https://forum.babylonjs.com/t/webgpu-occlusion-query-with-2-cameras/43840",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14250",
+                "title": "Performance viewer: Fix crash when object is empty",
+                "description": "See https://forum.babylonjs.com/t/open-source-multiplayer-3d-rpg-using-colyseus/35733/206",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/PerformanceViewer/performanceViewerCollectionStrategies.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "performance viewer"
+                ]
+            },
+            {
+                "pr": "14252",
+                "title": "bug Update geometry.ts",
+                "description": "fix the problem of losing UV2, UV3, UV4, UV5, UV6 after importing .babylon format.\r\n\r\nReference: https://github.com/BabylonJS/Babylon.js/commit/b955d1559a5c7c57aa662f8de7cdd14ef4e81acb#diff- f9bb01d7c335d9866b1042172a02aafacdb9c82a581ca7929359a0efdc49b8f5",
+                "author": {
+                    "name": "wayne2006",
+                    "url": "https://github.com/wayne2006"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/geometry.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14249",
+                "title": "RuntimeAnimation: Fix original value used in the bone matrix case",
+                "description": "We want the original value to be the current (matrix) value at the time the `RuntimeAnimation` is started, which may be different than the rest matrix (which should not be used, anyway, as it's a matrix for user consumption only).",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/runtimeAnimation.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "14248",
+                "title": "KTX2Decoder: Fix UASTC_R8_UNORM wasm path",
+                "description": "See https://forum.babylonjs.com/t/typeerror-ktx2decoder-litetranscoder-uastc-r8-unorm-is-undefined/43759",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/tools/ktx2Decoder/src/Transcoders/index.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_R8_UNORM.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_RG8_UNORM.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "14238",
+                "title": "FreeCameraTouchInput: Add check for Handedness",
+                "description": "Recently, on the forum, a user found an issue where the UniversalCamera's touch controls weren't accounting for a right-handed system.  Upon investigating, it was found that this check was missing.  This PR adds that check to the touch controls.\r\n\r\nEdit: Moved logic to Camera function and modified calls to use said function.\r\n\r\nForum Link: https://forum.babylonjs.com/t/how-to-make-the-touch-rotation-on-the-y-axis-of-universalcamera-consistent-in-different-coordinate-system/43716",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/flyCameraMouseInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraKeyboardMoveInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraMouseInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraTouchInput.ts",
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts",
+                    "packages/dev/core/src/Cameras/camera.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            }
+        ],
+        "6.19.1": [
+            {
+                "pr": "14241",
+                "title": "adding _evt to arc rotate's pointer input",
+                "description": "This PR helps with extending the arc rotate pointer input, passing the evt object correctly",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/BaseCameraPointersInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/arcRotateCameraPointersInput.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14240",
+                "title": "fix alignment issue in NME",
+                "description": "Fix #14227",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/main.scss"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "14239",
+                "title": "avoid rendering empty trees on a11y tree",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/accessibility-empty-accessibility-node-for-any-adt-added-even-if-empty/43415/7\r\n\r\nPreviously, if we reached a texture ADT, we would render at least the root node, even if it was empty (no children and no description). Now this scenario is checked, and if it occurs, we skip rendering that tree. This avoids empty divs on the twin tree.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinHostComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "accessibility"
+                ]
+            },
+            {
+                "pr": "14237",
+                "title": "SolidParticleSystem: Add uvKind option to the digest method",
+                "description": "See https://forum.babylonjs.com/t/pcs-and-sps-digest-always-take-1st-uv-slot-irrespective-of-texture/43651/3",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/solidParticleSystem.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "particles"
+                ]
+            }
+        ],
+        "6.19.0": [
+            {
+                "pr": "14223",
+                "title": "When reusing the same PhysicsConstraint JS object for more than one p…",
+                "description": "…air of bodies, store the information of all created Havok objects for proper get/set of properties and disposal.\r\n\r\nCurrently, if you create a PhysicsConstraint and use it on more than one `addConstraint` call, one Havok object will be created for each call, but only the most recent object is stored in JS side, which means it wasn't possible to set properties or dispose of the previously created ones. This can be observed in this PG: https://playground.babylonjs.com/#7DMWP8#574, where the same constraint is used for the two pairs of bodies and disposed of after 2s.\r\n\r\nThis PR changes the `_pluginData` object on the PhysicsConstraint to be an array, where each created joint reference is pushed, and updates the plugin methods accordingly. ",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsConstraint.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "14234",
+                "title": "Expose collisionEndedObservable to PhysicsBody",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/how-to-detect-when-two-physics-bodies-stop-colliding/42309/15?u=carolhmj\n\nThis PR just exposes a getCollisionEndedObservable on the same way as the getCollisionObservable.\n\nExample PG: #Z8HTUN#678",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14233",
+                "title": "Animation groups: Add ClipKeys helper + update inspector",
+                "description": "I also modified the `enableBlending` method to make it a getter/setter instead + added `blendingSpeed` as a getter/setter.\r\n\r\nCreating a method instead of a getter/setter was a bad decision I made a few weeks ago. As this is a new feature for version 7.0 and not yet used by any PGs, I thought it right to make a breaking change to keep the code clear.\r\n\r\nI've added a \"Stop\" button to the inspector, as the \"Is Additive\" and \"Enable blending\" switches only work after an animation group has been stopped and restarted (simply pausing/playing again doesn't work).",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animation.ts",
+                    "packages/dev/core/src/Animations/animationGroup.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/animationGroupPropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "14226",
+                "title": "Don't allow blocks in NME to automatically connect to other blocks in…",
+                "description": "…side frames.\r\n\r\nFixes #14225\r\n\r\nThankfully the NGE blocks don't need the same change as they only create new input blocks, never connect to existing blocks 😌 ",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/fogBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/lightBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBaseBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/textureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/TBNBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/perturbNormalBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/screenSpaceBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/refractionBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Particle/particleTextureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/bonesBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/instancesBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/morphTargetsBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/viewDirectionBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlock.ts",
+                    "packages/tools/nodeEditor/src/graphEditor.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "14207",
+                "title": "NME: Fix the shadow output of the light blocks",
+                "description": "See https://forum.babylonjs.com/t/nme-shadow-output-of-lights-node-doesnt-work-with-multiple-lights/43573\r\n\r\nI tagged it as a bug, as I think it does not behave as expected when there are multiple lights: depending on the position of the light that casts shadows in the light array, it will or will not generate the right value for the \"shadow\" output. Also, the current code does not work when multiple lights cast shadow.\r\n\r\nIn the case of a single light casting shadows, the code from the PR gives the same output than the current code, so it's not a breaking change in this regard.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/lightBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockDirectLighting.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockFinalLitComponents.fx",
+                    "packages/dev/core/src/Shaders/background.fragment.fx",
+                    "packages/dev/core/src/Shaders/default.fragment.fx",
+                    "packages/dev/materials/src/cell/cell.fragment.fx",
+                    "packages/dev/materials/src/fur/fur.fragment.fx",
+                    "packages/dev/materials/src/gradient/gradient.fragment.fx",
+                    "packages/dev/materials/src/lava/lava.fragment.fx",
+                    "packages/dev/materials/src/mix/mix.fragment.fx",
+                    "packages/dev/materials/src/normal/normal.fragment.fx",
+                    "packages/dev/materials/src/shadowOnly/shadowOnly.fragment.fx",
+                    "packages/dev/materials/src/simple/simple.fragment.fx",
+                    "packages/dev/materials/src/terrain/terrain.fragment.fx",
+                    "packages/dev/materials/src/triPlanar/triplanar.fragment.fx",
+                    "packages/dev/materials/src/water/water.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "14231",
+                "title": "a new on XR Camera initialized observable",
+                "description": "This observable will be called after the camera is correctly initialized, including the number of views and the initial position.\nThis will solve different issue, for example:\n\nhttps://forum.babylonjs.com/t/with-pipeline-enabled-console-shows-error-when-entering-xr/42493/5",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/webXRCamera.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14230",
+                "title": "Fix aggregate extent calculation when scaling is negative",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/what-are-the-best-practices-for-physics-gltf-models/43660\r\n\r\nIf the scaling of the node used for the aggregate was negative, we were getting negative extents, which would create the wrong physics shape.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/physicsAggregate.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "14229",
+                "title": "Fix port sync",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryInputBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14228",
+                "title": "Add matrix for instatiateXXX",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVerticesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVolumeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBuildState.ts",
+                    "packages/tools/nodeGeometryEditor/src/main.scss"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14209",
+                "title": "ArcRotateCamera: Modify offset math to correctly zoom to point",
+                "description": "There was a previous fix that updated the ArcRotateCamera to factor in a `targetScreenOffset` to zooming to a specific point.  Unfortunately, there was an issue with how it was modifying the ray origin used to determine zoom destination.  This PR changes the math up to properly convert the screen offset to world space so that the zoom origin is calculated correctly.",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/arcRotateCameraMouseWheelInput.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "14210",
+                "title": "WebDeviceInputSystem: Added workaround for MacOS Chromium based Browsers",
+                "description": "There was an issue found with Chromium based browsers on MacOS where if the cursor left the browser window after clicking on the canvas with a mouse button other than left click, pointer capture will be lost and the canvas will still think that there's a button down.  Because this is a Chromium issue, the only thing that we can do is to create a workaround until it's fixed.  This workaround will catch the `lostpointercapture` event generated and release the button, if necessary.",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/DeviceInput/webDeviceInputSystem.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14224",
+                "title": "Add missing cubic projection",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/mappingBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14216",
+                "title": "Add Export to .glb button",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeGeometryEditor/package.json",
+                    "packages/tools/nodeGeometryEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/globalState.ts",
+                    "packages/tools/nodeGeometryEditor/tsconfig.build.json",
+                    "packages/tools/nodeGeometryEditor/webpack.config.js"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14222",
+                "title": "fix stretch nine patch to respect sourceXXX parameters",
+                "description": "Forum issue: https://forum.babylonjs.com/t/when-using-nine-patch-sourcexxx-such-as-sourcetop-does-not-work/43626",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/image.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "14221",
+                "title": "PointCloudSystem: Fix uv coordinates used when getting color from texture",
+                "description": "See https://forum.babylonjs.com/t/pcs-and-sps-digest-always-take-1st-uv-slot-irrespective-of-texture/43651",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/pointsCloudSystem.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "particles"
+                ]
+            },
+            {
+                "pr": "14215",
+                "title": "New NGE node: Mapping",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/mappingBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/registerNodePortDesign.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14220",
+                "title": "Fix bad input routing",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/inputsPropertyTabComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14219",
+                "title": "Generic and specific parameters on Cylinder are opposite of how Box works in NGE",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/cylinderBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14217",
+                "title": "better nge icons",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/registerNodePortDesign.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14212",
+                "title": "Ability to not antialias GridMaterial",
+                "description": "Pretty simple, adds ability for the GridMaterial to not be antialiased using `gridMaterial.antialias = false`\r\n\r\nThis playground can be used for testing: `#2KKVBH#127`\r\n\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/540620/2cf935ff-ef5e-4159-b7ac-9f31f974e83c)\r\n\r\nNote: maybe someone with better GLSL experience can figure out if it's possible to fix some of the diagnal lines:\r\n\r\n![Screenshot from 2023-08-27 23-46-30](https://github.com/BabylonJS/Babylon.js/assets/540620/41b69008-61e2-45d1-a6cd-101e09ba3836)\r\n",
+                "author": {
+                    "name": "Queatz",
+                    "url": "https://github.com/Queatz"
+                },
+                "files": [
+                    "packages/dev/materials/src/grid/grid.fragment.fx",
+                    "packages/dev/materials/src/grid/gridMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14213",
+                "title": "* Change the Custom Frame name formatting.",
+                "description": "* Fix bug when deleting a custom frame from the list, its name would still appear on the space search menu.\r\n\r\nHere's how the custom frame name looks with the new formatting:\r\n<img width=\"251\" alt=\"image\" src=\"https://github.com/BabylonJS/Babylon.js/assets/6002144/1dcc010c-8de9-48e5-8a19-67bc475f1d21\">\r\n\r\n\r\nFixes #14208",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "nme",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "14211",
+                "title": "Procedural texture: Fix the reset method",
+                "description": "See https://forum.babylonjs.com/t/force-customproceduraltexture-to-recompile-from-new-shader-string/43575",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/Procedurals/proceduralTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "14205",
+                "title": "Better Int icon",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/registerNodePortDesign.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14206",
+                "title": "Shadows: Fix shadow light frustum calculation",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/Shadows/cascadedShadowGenerator.ts",
+                    "packages/dev/core/src/Lights/directionalLight.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "shadows"
+                ]
+            },
+            {
+                "pr": "14204",
+                "title": "Sound url is not serialised",
+                "description": "https://github.com/BabylonJS/Babylon.js/issues/14203",
+                "author": {
+                    "name": "SubratGuptaCtruh",
+                    "url": "https://github.com/SubratGuptaCtruh"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/sound.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14200",
+                "title": "Better display of ports with values",
+                "description": "![image](https://github.com/BabylonJS/Babylon.js/assets/1306056/95a3d4a6-0a86-4a74-aa40-7496d3bb40ec)\r\n",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlockConnectionPoint.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/common.modules.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodePort.modules.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodePort.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/stateManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/display/sourceDisplayManager.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/registerNodePortDesign.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14014",
+                "title": "Make node materials compatible with prepass",
+                "description": "Also adds a new `PrePassTextureNode` in NME to use prepass textures in node materials\r\n\r\nCloses #13718",
+                "author": {
+                    "name": "CraigFeldspar",
+                    "url": "https://github.com/CraigFeldspar"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGL/webGLHardwareTexture.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGLRenderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/renderTargetWrapper.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/textureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/index.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/prePassOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/index.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/prePassTextureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
+                    "packages/dev/core/src/Rendering/prePassRenderer.ts",
+                    "packages/tools/nodeEditor/src/blockTools.ts",
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/connectionPointPortData.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            }
+        ],
         "6.18.0": [
             {
                 "pr": "14196",

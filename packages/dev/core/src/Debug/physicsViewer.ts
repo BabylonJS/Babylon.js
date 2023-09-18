@@ -20,6 +20,10 @@ import { Logger } from "../Misc/logger";
 import type { PhysicsBody } from "../Physics/v2/physicsBody";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import { MeshBuilder } from "../Meshes/meshBuilder";
+import type { PhysicsConstraint } from "../Physics/v2/physicsConstraint";
+import { AxesViewer } from "./axesViewer";
+import { TransformNode } from "../Meshes/transformNode";
+import { Epsilon } from "../Maths/math.constants";
 
 /**
  * Used to show the physics impostor around the specific mesh
@@ -31,22 +35,31 @@ export class PhysicsViewer {
     protected _meshes: Array<Nullable<AbstractMesh>> = [];
     /** @internal */
     protected _bodies: Array<Nullable<PhysicsBody>> = [];
+    /** @internal */
     protected _inertiaBodies: Array<Nullable<PhysicsBody>> = [];
+    /** @internal */
+    protected _constraints: Array<Nullable<PhysicsConstraint>> = [];
     /** @internal */
     protected _bodyMeshes: Array<Nullable<AbstractMesh>> = [];
     /** @internal */
     protected _inertiaMeshes: Array<Nullable<AbstractMesh>> = [];
+    /** @internal */
+    protected _constraintMeshes: Array<Nullable<AbstractMesh>> = [];
     /** @internal */
     protected _scene: Nullable<Scene>;
     /** @internal */
     protected _numMeshes = 0;
     /** @internal */
     protected _numBodies = 0;
+    /** @internal */
     protected _numInertiaBodies = 0;
+    /** @internal */
+    protected _numConstraints = 0;
     /** @internal */
     protected _physicsEnginePlugin: IPhysicsEnginePluginV1 | IPhysicsEnginePluginV2 | null;
     private _renderFunction: () => void;
     private _inertiaRenderFunction: () => void;
+    private _constraintRenderFunction: () => void;
     private _utilityLayer: Nullable<UtilityLayerRenderer>;
 
     private _debugBoxMesh: Mesh;
@@ -56,6 +69,8 @@ export class PhysicsViewer {
     private _debugMaterial: StandardMaterial;
     private _debugInertiaMaterial: StandardMaterial;
     private _debugMeshMeshes = new Array<Mesh>();
+
+    private _constraintAxesSize = 0.4;
 
     /**
      * Creates a new PhysicsViewer
@@ -183,6 +198,81 @@ export class PhysicsViewer {
         }
     }
 
+    protected _updateDebugConstraints() {
+        for (let i = 0; i < this._numConstraints; i++) {
+            const constraint = this._constraints[i];
+            const mesh = this._constraintMeshes[i];
+            if (constraint && mesh) {
+                this._updateDebugConstraint(constraint, mesh);
+            }
+        }
+    }
+
+    /**
+     * Given a scaling vector, make all of its components
+     * 1, preserving the sign
+     * @param scaling
+     */
+    protected _makeScalingUnitInPlace(scaling: Vector3) {
+        if (Math.abs(scaling.x - 1) > Epsilon) {
+            scaling.x = 1 * Math.sign(scaling.x);
+        }
+        if (Math.abs(scaling.y - 1) > Epsilon) {
+            scaling.y = 1 * Math.sign(scaling.y);
+        }
+        if (Math.abs(scaling.z - 1) > Epsilon) {
+            scaling.z = 1 * Math.sign(scaling.z);
+        }
+    }
+
+    protected _updateDebugConstraint(constraint: PhysicsConstraint, parentingMesh: AbstractMesh) {
+        if (!constraint._initOptions) {
+            return;
+        }
+
+        // Get constraint pivot and axes
+        const { pivotA, pivotB, axisA, axisB, perpAxisA, perpAxisB } = constraint._initOptions;
+
+        if (!pivotA || !pivotB || !axisA || !axisB || !perpAxisA || !perpAxisB) {
+            return;
+        }
+
+        parentingMesh.getDescendants(true).forEach((parentConstraintMesh) => {
+            // Get the parent transform
+            const parentCoordSystemNode = parentConstraintMesh.getDescendants(true)[0] as TransformNode;
+            const childCoordSystemNode = parentConstraintMesh.getDescendants(true)[1] as TransformNode;
+
+            const { parentBody, parentBodyIndex } = parentCoordSystemNode.metadata;
+            const { childBody, childBodyIndex } = childCoordSystemNode.metadata;
+
+            const parentTransform = this._getTransformFromBodyToRef(parentBody, TmpVectors.Matrix[0], parentBodyIndex);
+            const childTransform = this._getTransformFromBodyToRef(childBody, TmpVectors.Matrix[1], childBodyIndex);
+
+            parentTransform.decomposeToTransformNode(parentCoordSystemNode);
+            this._makeScalingUnitInPlace(parentCoordSystemNode.scaling);
+
+            childTransform.decomposeToTransformNode(childCoordSystemNode);
+            this._makeScalingUnitInPlace(childCoordSystemNode.scaling);
+
+            // Create a transform node and set its matrix
+            const parentTransformNode = parentCoordSystemNode.getDescendants(true)[0] as TransformNode;
+            parentTransformNode.position.copyFrom(pivotA);
+
+            const childTransformNode = childCoordSystemNode.getDescendants(true)[0] as TransformNode;
+            childTransformNode.position.copyFrom(pivotB);
+
+            // Get the transform to align the XYZ axes to the constraint axes
+            Quaternion.FromRotationMatrixToRef(
+                Matrix.FromXYZAxesToRef(axisA, perpAxisA, Vector3.CrossToRef(axisA, perpAxisA, TmpVectors.Vector3[0]), TmpVectors.Matrix[0]),
+                parentTransformNode.rotationQuaternion!
+            );
+            Quaternion.FromRotationMatrixToRef(
+                Matrix.FromXYZAxesToRef(axisB, perpAxisB, Vector3.CrossToRef(axisB, perpAxisB, TmpVectors.Vector3[1]), TmpVectors.Matrix[1]),
+                childTransformNode.rotationQuaternion!
+            );
+        });
+    }
+
     /**
      * Renders a specified physic impostor
      * @param impostor defines the impostor to render
@@ -280,6 +370,38 @@ export class PhysicsViewer {
             }
 
             this._numInertiaBodies++;
+        }
+
+        return debugMesh;
+    }
+
+    /**
+     * Shows a debug mesh for a given physics constraint.
+     * @param constraint the physics constraint to show
+     * @returns the debug mesh, or null if the constraint is already shown
+     */
+    public showConstraint(constraint: PhysicsConstraint): Nullable<AbstractMesh> {
+        if (!this._scene) {
+            return null;
+        }
+
+        for (let i = 0; i < this._numConstraints; i++) {
+            if (this._constraints[i] == constraint) {
+                return null;
+            }
+        }
+
+        const debugMesh = this._getDebugConstraintMesh(constraint);
+        if (debugMesh) {
+            this._constraints[this._numConstraints] = constraint;
+            this._constraintMeshes[this._numConstraints] = debugMesh;
+
+            if (this._numConstraints === 0) {
+                this._constraintRenderFunction = this._updateDebugConstraints.bind(this);
+                this._scene.registerBeforeRender(this._constraintRenderFunction);
+            }
+
+            this._numConstraints++;
         }
 
         return debugMesh;
@@ -416,6 +538,53 @@ export class PhysicsViewer {
 
         if (removed && this._numInertiaBodies === 0) {
             this._scene.unregisterBeforeRender(this._inertiaRenderFunction);
+        }
+    }
+
+    /**
+     * Hide a physics constraint from the viewer utility layer
+     * @param constraint the constraint to hide
+     */
+    public hideConstraint(constraint: Nullable<PhysicsConstraint>) {
+        if (!constraint || !this._scene || !this._utilityLayer) {
+            return;
+        }
+        let removed = false;
+        const utilityLayerScene = this._utilityLayer.utilityLayerScene;
+
+        for (let i = 0; i < this._numConstraints; i++) {
+            if (this._constraints[i] === constraint) {
+                const mesh = this._constraintMeshes[i];
+
+                if (!mesh) {
+                    continue;
+                }
+
+                utilityLayerScene.removeMesh(mesh);
+                mesh.dispose();
+
+                this._constraints.splice(i, 1);
+                this._constraintMeshes.splice(i, 1);
+
+                this._numConstraints--;
+
+                if (this._numConstraints > 0) {
+                    this._constraints[i] = this._constraints[this._numConstraints];
+                    this._constraintMeshes[i] = this._constraintMeshes[this._numConstraints];
+                    this._constraints[this._numConstraints] = null;
+                    this._constraintMeshes[this._numConstraints] = null;
+                } else {
+                    this._constraints[0] = null;
+                    this._constraintMeshes[0] = null;
+                }
+
+                removed = true;
+                break;
+            }
+        }
+
+        if (removed && this._numConstraints === 0) {
+            this._scene.unregisterBeforeRender(this._constraintRenderFunction);
         }
     }
 
@@ -676,6 +845,96 @@ export class PhysicsViewer {
         inertiaBoxMesh.material = this._getDebugInertiaMaterial(utilityLayerScene);
 
         return inertiaBoxMesh;
+    }
+
+    private _getTransformFromBodyToRef(body: PhysicsBody, matrix: Matrix, instanceIndex?: number) {
+        const tnode = body.transformNode;
+        if (instanceIndex && instanceIndex >= 0) {
+            return Matrix.FromArrayToRef((tnode as Mesh)._thinInstanceDataStorage.matrixData!, instanceIndex, matrix);
+        } else {
+            return matrix.copyFrom(tnode.getWorldMatrix());
+        }
+    }
+
+    private _getDebugConstraintMesh(constraint: PhysicsConstraint): Nullable<AbstractMesh> {
+        if (!this._utilityLayer) {
+            return null;
+        }
+        const utilityLayerScene = this._utilityLayer.utilityLayerScene;
+
+        if (!constraint._initOptions) {
+            return null;
+        }
+
+        // Get constraint pivot and axes
+        const { pivotA, pivotB, axisA, axisB, perpAxisA, perpAxisB } = constraint._initOptions;
+
+        if (!pivotA || !pivotB || !axisA || !axisB || !perpAxisA || !perpAxisB) {
+            return null;
+        }
+
+        // Create a mesh to parent all the constraint debug meshes to
+        const parentingMesh = new Mesh("parentingDebugConstraint", utilityLayerScene);
+
+        // First, get a reference to all physic bodies that are using this constraint
+        const bodiesUsingConstraint = constraint.getBodiesUsingConstraint();
+
+        for (const bodyPairInfo of bodiesUsingConstraint) {
+            // Create a mesh to keep the pair of constraint axes
+            const parentOfPair = new TransformNode("parentOfPair", utilityLayerScene);
+            parentOfPair.parent = parentingMesh;
+
+            const { parentBody, parentBodyIndex, childBody, childBodyIndex } = bodyPairInfo;
+            // Get the parent transform
+
+            const parentTransform = this._getTransformFromBodyToRef(parentBody, TmpVectors.Matrix[0], parentBodyIndex);
+            const childTransform = this._getTransformFromBodyToRef(childBody, TmpVectors.Matrix[1], childBodyIndex);
+
+            const parentCoordSystemNode = new TransformNode("parentCoordSystem", utilityLayerScene);
+            // parentCoordSystemNode.parent = parentingMesh;
+            parentCoordSystemNode.parent = parentOfPair;
+            // Save parent and index here to be able to get the transform on update
+            parentCoordSystemNode.metadata = { parentBody, parentBodyIndex };
+            parentTransform.decomposeToTransformNode(parentCoordSystemNode);
+
+            const childCoordSystemNode = new TransformNode("childCoordSystem", utilityLayerScene);
+            // childCoordSystemNode.parent = parentingMesh;
+            childCoordSystemNode.parent = parentOfPair;
+            // Save child and index here to be able to get the transform on update
+            childCoordSystemNode.metadata = { childBody, childBodyIndex };
+            childTransform.decomposeToTransformNode(childCoordSystemNode);
+
+            // Get the transform to align the XYZ axes to the constraint axes
+            const rotTransformParent = Quaternion.FromRotationMatrix(Matrix.FromXYZAxesToRef(axisA, perpAxisA, axisA.cross(perpAxisA), TmpVectors.Matrix[0]));
+            const rotTransformChild = Quaternion.FromRotationMatrix(Matrix.FromXYZAxesToRef(axisB, perpAxisB, axisB.cross(perpAxisB), TmpVectors.Matrix[0]));
+
+            const translateTransformParent = pivotA;
+            const translateTransformChild = pivotB;
+
+            // Create a transform node and set its matrix
+            const parentTransformNode = new TransformNode("constraint_parent", utilityLayerScene);
+            parentTransformNode.position.copyFrom(translateTransformParent);
+            parentTransformNode.rotationQuaternion = rotTransformParent;
+            parentTransformNode.parent = parentCoordSystemNode;
+
+            const childTransformNode = new TransformNode("constraint_child", utilityLayerScene);
+            childTransformNode.parent = childCoordSystemNode;
+            childTransformNode.position.copyFrom(translateTransformChild);
+            childTransformNode.rotationQuaternion = rotTransformChild;
+
+            // Create axes for the constraint
+            const parentAxes = new AxesViewer(utilityLayerScene, this._constraintAxesSize);
+            parentAxes.xAxis.parent = parentTransformNode;
+            parentAxes.yAxis.parent = parentTransformNode;
+            parentAxes.zAxis.parent = parentTransformNode;
+
+            const childAxes = new AxesViewer(utilityLayerScene, this._constraintAxesSize);
+            childAxes.xAxis.parent = childTransformNode;
+            childAxes.yAxis.parent = childTransformNode;
+            childAxes.zAxis.parent = childTransformNode;
+        }
+
+        return parentingMesh;
     }
 
     /**

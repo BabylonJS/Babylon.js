@@ -43,6 +43,11 @@ export class RenderTargetWrapper {
     public _depthStencilTextureWithStencil: boolean = false;
 
     /**
+     * Gets or sets the label of the render target wrapper (optional, for debugging purpose)
+     */
+    public label?: string;
+
+    /**
      * Gets the depth/stencil texture (if created by a createDepthStencilTexture() call)
      */
     public get depthStencilTexture() {
@@ -165,13 +170,15 @@ export class RenderTargetWrapper {
      * @param isCube true if the wrapper should render to a cube texture
      * @param size size of the render target (width/height/layers)
      * @param engine engine used to create the render target
+     * @param label defines the label to use for the wrapper (for debugging purpose only)
      */
-    constructor(isMulti: boolean, isCube: boolean, size: TextureSize, engine: ThinEngine) {
+    constructor(isMulti: boolean, isCube: boolean, size: TextureSize, engine: ThinEngine, label?: string) {
         this._isMulti = isMulti;
         this._isCube = isCube;
         this._size = size;
         this._engine = engine;
         this._depthStencilTexture = null;
+        this.label = label;
     }
 
     /**

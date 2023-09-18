@@ -9,11 +9,12 @@ import { Vector3 } from "../../../../Maths/math.vector";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../../Decorators/nodeDecorator";
 import { Epsilon } from "../../../../Maths/math.constants";
 import type { Nullable } from "../../../../types";
+import type { INodeGeometryInstancingContext } from "../../Interfaces/nodeGeometryInstancingContext";
 
 /**
  * Block used to instance geometry on every vertex of a geometry
  */
-export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext {
+export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext, INodeGeometryInstancingContext {
     private _vertexData: VertexData;
     private _currentIndex: number;
     private _currentLoopIndex: number;
@@ -41,13 +42,21 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
 
         this.registerInput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);
         this.registerInput("instance", NodeGeometryBlockConnectionPointTypes.Geometry, true);
+        this.registerInput("density", NodeGeometryBlockConnectionPointTypes.Float, true, 1, 0, 1);
+        this.registerInput("matrix", NodeGeometryBlockConnectionPointTypes.Matrix, true);
         this.registerInput("rotation", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.Zero());
         this.registerInput("scaling", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.One());
-        this.registerInput("matrix", NodeGeometryBlockConnectionPointTypes.Matrix, true);
-        this.registerInput("density", NodeGeometryBlockConnectionPointTypes.Float, true, 1, 0, 1);
 
         this.scaling.acceptedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Float);
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Geometry);
+    }
+
+    /**
+     * Gets the current instance index in the current flow
+     * @returns the current index
+     */
+    public getInstanceIndex(): number {
+        return this._currentLoopIndex;
     }
 
     /**
@@ -97,29 +106,30 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
     }
 
     /**
-     * Gets the rotation input component
+     * Gets the density input component
      */
-    public get rotation(): NodeGeometryConnectionPoint {
+    public get density(): NodeGeometryConnectionPoint {
         return this._inputs[2];
-    }
-
-    /**
-     * Gets the scaling input component
-     */
-    public get scaling(): NodeGeometryConnectionPoint {
-        return this._inputs[3];
     }
 
     /**
      * Gets the matrix input component
      */
     public get matrix(): NodeGeometryConnectionPoint {
+        return this._inputs[3];
+    }
+
+    /**
+     * Gets the rotation input component
+     */
+    public get rotation(): NodeGeometryConnectionPoint {
         return this._inputs[4];
     }
+
     /**
-     * Gets the density input component
+     * Gets the scaling input component
      */
-    public get density(): NodeGeometryConnectionPoint {
+    public get scaling(): NodeGeometryConnectionPoint {
         return this._inputs[5];
     }
 
@@ -132,14 +142,16 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
 
     protected _buildBlock(state: NodeGeometryBuildState) {
         const func = (state: NodeGeometryBuildState) => {
-            state.executionContext = this;
+            state.pushExecutionContext(this);
+            state.pushInstancingContext(this);
 
             this._vertexData = this.geometry.getConnectedValue(state);
-            state.geometryContext = this._vertexData;
+            state.pushGeometryContext(this._vertexData);
 
             if (!this._vertexData || !this._vertexData.positions || !this.instance.isConnected) {
-                state.executionContext = null;
-                state.geometryContext = null;
+                state.restoreExecutionContext();
+                state.restoreInstancingContext();
+                state.restoreGeometryContext();
                 this.output._storedValue = null;
                 return;
             }
@@ -202,7 +214,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
                 // Transform
                 if (this.matrix.isConnected) {
                     const transform = this.matrix.getConnectedValue(state);
-                    state._instantiateWithMatrix(clone, transform, additionalVertexData);
+                    state._instantiateWithPositionAndMatrix(clone, currentPosition, transform, additionalVertexData);
                 } else {
                     const scaling = state.adaptInput(this.scaling, NodeGeometryBlockConnectionPointTypes.Vector3, Vector3.OneReadOnly);
                     const rotation = this.rotation.getConnectedValue(state) || Vector3.ZeroReadOnly;
@@ -210,6 +222,11 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
                 }
                 this._currentLoopIndex++;
             }
+
+            // Restore
+            state.restoreGeometryContext();
+            state.restoreExecutionContext();
+            state.restoreInstancingContext();
 
             // Merge
             if (additionalVertexData.length) {
@@ -220,6 +237,8 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
                     const main = additionalVertexData.splice(0, 1)[0];
                     this._vertexData = main.merge(additionalVertexData, true, false, true, true);
                 }
+            } else {
+                return null;
             }
 
             return this._vertexData;
@@ -229,6 +248,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
         if (this.evaluateContext) {
             this.output._storedFunction = func;
         } else {
+            this.output._storedFunction = null;
             this.output._storedValue = func(state);
         }
     }

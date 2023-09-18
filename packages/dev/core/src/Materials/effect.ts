@@ -1141,7 +1141,7 @@ export class Effect implements IDisposable {
      * @returns this effect.
      */
     public setUInt(uniformName: string, value: number): Effect {
-        this._pipelineContext!.setInt(uniformName, value);
+        this._pipelineContext!.setUInt(uniformName, value);
         return this;
     }
 
@@ -1153,7 +1153,7 @@ export class Effect implements IDisposable {
      * @returns this effect.
      */
     public setUInt2(uniformName: string, x: number, y: number): Effect {
-        this._pipelineContext!.setInt2(uniformName, x, y);
+        this._pipelineContext!.setUInt2(uniformName, x, y);
         return this;
     }
 
@@ -1166,7 +1166,7 @@ export class Effect implements IDisposable {
      * @returns this effect.
      */
     public setUInt3(uniformName: string, x: number, y: number, z: number): Effect {
-        this._pipelineContext!.setInt3(uniformName, x, y, z);
+        this._pipelineContext!.setUInt3(uniformName, x, y, z);
         return this;
     }
 
@@ -1180,7 +1180,7 @@ export class Effect implements IDisposable {
      * @returns this effect.
      */
     public setUInt4(uniformName: string, x: number, y: number, z: number, w: number): Effect {
-        this._pipelineContext!.setInt4(uniformName, x, y, z, w);
+        this._pipelineContext!.setUInt4(uniformName, x, y, z, w);
         return this;
     }
 

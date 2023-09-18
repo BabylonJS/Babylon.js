@@ -37,6 +37,7 @@ WebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, 
 
     const texture = fullOptions.noColorAttachment ? null : this._createInternalTexture(size, options, true, InternalTextureSource.RenderTarget);
 
+    rtWrapper.label = fullOptions.label ?? "RenderTargetWrapper";
     rtWrapper._samples = fullOptions.samples ?? 1;
     rtWrapper._generateDepthBuffer = fullOptions.generateDepthBuffer;
     rtWrapper._generateStencilBuffer = fullOptions.generateStencilBuffer ? true : false;

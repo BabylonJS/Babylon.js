@@ -22,6 +22,8 @@ export class TeleportOutBlock extends NodeGeometryBlock {
     public constructor(name: string) {
         super(name);
 
+        this._isTeleportOut = true;
+
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.BasedOnInput);
     }
 

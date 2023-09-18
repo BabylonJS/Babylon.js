@@ -111,7 +111,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 label={block.name}
                                 target={block}
                                 propertyName="value"
-                                step={(isInteger ? 1 : block.max - block.min) / 100.0}
+                                step={isInteger ? 1 : Math.abs(block.max - block.min) / 100.0}
                                 decimalCount={isInteger ? 0 : 2}
                                 minimum={block.min}
                                 maximum={block.max}
@@ -424,11 +424,10 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             />
                         )}
                     </LineContainerComponent>
-                    {this.props.globalState.resyncHandler && (
-                        <LineContainerComponent title="SYNC">
-                            <ButtonLineComponent label="Update mesh in scene" onClick={() => this.props.globalState.resyncHandler!()} />
-                        </LineContainerComponent>
-                    )}
+                    <LineContainerComponent title="SYNC">
+                        {this.props.globalState.resyncHandler && <ButtonLineComponent label="Update mesh in scene" onClick={() => this.props.globalState.resyncHandler!()} />}
+                        <ButtonLineComponent label="Rebuild" onClick={() => this.props.globalState.stateManager.onRebuildRequiredObservable.notifyObservers()} />
+                    </LineContainerComponent>
                     <LineContainerComponent title="FILE">
                         <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
                         <ButtonLineComponent
