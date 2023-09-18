@@ -94,6 +94,11 @@ export interface IBoundingBoxGizmo extends IGizmo {
     coloredMaterial: StandardMaterial;
     /** Material used to render when gizmo is hovered with mouse*/
     hoverMaterial: StandardMaterial;
+
+    /** Drag distance in babylon units that the gizmo will snap scaling to when dragged */
+    scalingSnapDistance: number;
+    /** Drag distance in babylon units that the gizmo will snap rotation to when dragged */
+    rotationSnapDistance: number;
 }
 
 /**
@@ -107,6 +112,8 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
     protected _renderObserver: Nullable<Observer<Scene>> = null;
     protected _pointerObserver: Nullable<Observer<PointerInfo>> = null;
     protected _scaleDragSpeed = 0.2;
+    protected _scalingSnapDistance = 0;
+    protected _rotationSnapDistance = 0;
 
     private _tmpQuaternion = new Quaternion();
     private _tmpVector = new Vector3(0, 0, 0);
@@ -220,6 +227,38 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
      */
     public get scaleDragSpeed(): number {
         return this._scaleDragSpeed;
+    }
+
+    /**
+     * Sets scaling snap distance
+     * @param value the scaling snap distance value
+     */
+    public set scalingSnapDistance(value: number) {
+        this._scalingSnapDistance = value;
+    }
+
+    /**
+     * Gets scaling snap distance
+     * @returns the scaling snap distance number
+     */
+    public get scalingSnapDistance(): number {
+        return this._scalingSnapDistance;
+    }
+
+    /**
+     * Sets rotation snap distance
+     * @param value the rotation snap distance value
+     */
+    public set rotationSnapDistance(value: number) {
+        this._rotationSnapDistance = value;
+    }
+
+    /**
+     * Gets rotation snap distance
+     * @returns the rotation snap distance number
+     */
+    public get rotationSnapDistance(): number {
+        return this._rotationSnapDistance;
     }
 
     /**
@@ -394,9 +433,11 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
             sphere.addBehavior(_dragBehavior);
             const startingTurnDirection = new Vector3(1, 0, 0);
             let totalTurnAmountOfDrag = 0;
+            let previousProjectDist = 0;
             _dragBehavior.onDragStartObservable.add(() => {
                 startingTurnDirection.copyFrom(sphere.forward);
                 totalTurnAmountOfDrag = 0;
+                previousProjectDist = 0;
             });
             _dragBehavior.onDragObservable.add((event) => {
                 this.onRotationSphereDragObservable.notifyObservers({});
@@ -439,6 +480,12 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                     // Do not allow the object to turn more than a full circle
                     totalTurnAmountOfDrag += projectDist;
                     if (Math.abs(totalTurnAmountOfDrag) <= 2 * Math.PI) {
+                        if (this._rotationSnapDistance > 0) {
+                            const dragSteps = Math.floor(Math.abs(totalTurnAmountOfDrag) / this._rotationSnapDistance) * (totalTurnAmountOfDrag < 0 ? -1 : 1);
+                            const angle = this._rotationSnapDistance * dragSteps;
+                            projectDist = angle - previousProjectDist;
+                            previousProjectDist = angle;
+                        }
                         if (i >= 8) {
                             Quaternion.RotationYawPitchRollToRef(0, 0, projectDist, this._tmpQuaternion);
                         } else if (i >= 4) {
@@ -501,6 +548,8 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                     const _dragBehavior = new PointerDragBehavior({ dragAxis: dragAxis });
                     _dragBehavior.updateDragPlane = false;
                     _dragBehavior.moveAttached = false;
+                    let totalRelativeDragDistance = 0;
+                    let previousScale = 0;
                     box.addBehavior(_dragBehavior);
                     _dragBehavior.onDragObservable.add((event) => {
                         this.onScaleBoxDragObservable.notifyObservers({});
@@ -511,7 +560,15 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                                 return;
                             }
                             PivotTools._RemoveAndStorePivotPoint(this.attachedMesh);
-                            const relativeDragDistance = (event.dragDistance / this._boundingDimensions.length()) * this._anchorMesh.scaling.length();
+                            let relativeDragDistance = (event.dragDistance / this._boundingDimensions.length()) * this._anchorMesh.scaling.length();
+                            totalRelativeDragDistance += relativeDragDistance;
+                            if (this._scalingSnapDistance > 0) {
+                                const dragSteps = Math.floor(Math.abs(totalRelativeDragDistance) / this._scalingSnapDistance) * (totalRelativeDragDistance < 0 ? -1 : 1);
+                                const scale = this._scalingSnapDistance * dragSteps;
+                                relativeDragDistance = scale - previousScale;
+                                previousScale = scale;
+                            }
+
                             const deltaScale = new Vector3(relativeDragDistance, relativeDragDistance, relativeDragDistance);
                             if (zeroAxisCount === 2) {
                                 // scale on 1 axis when using the anchor box in the face middle
@@ -553,6 +610,8 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                     _dragBehavior.onDragStartObservable.add(() => {
                         this.onDragStartObservable.notifyObservers({});
                         this._selectNode(box);
+                        totalRelativeDragDistance = 0;
+                        previousScale = 0;
                     });
                     _dragBehavior.onDragEndObservable.add((event) => {
                         this.onScaleBoxDragEndObservable.notifyObservers({});
