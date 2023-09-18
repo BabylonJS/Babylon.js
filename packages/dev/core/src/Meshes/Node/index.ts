@@ -55,3 +55,6 @@ export * from "./Blocks/mappingBlock";
 export * from "./Blocks/matrixComposeBlock";
 export * from "./Blocks/Teleport/teleportInBlock";
 export * from "./Blocks/Teleport/teleportOutBlock";
+export * from "./Blocks/Textures/geometryTextureBlock";
+export * from "./Blocks/Textures/geometryTextureFetchBlock";
+export * from "./Blocks/boundingBlock";
