@@ -11,6 +11,10 @@ export const RegisterDebugSupport = (stateManager: StateManager) => {
             return false; // We do not support debug on geometries
         }
 
+        if (pointA.type === NodeGeometryBlockConnectionPointTypes.Texture || pointB.type === NodeGeometryBlockConnectionPointTypes.Texture) {
+            return false; // We do not support debug on texture data
+        }
+
         return true;
     };
 };

@@ -64,7 +64,6 @@ export class NodeGeometryBuildState {
     /**
      * Push the new active execution context
      * @param executionContext defines the execution context
-     * @param instancingContext defines the instancing context
      */
     public pushExecutionContext(executionContext: INodeGeometryExecutionContext) {
         this._executionContext = executionContext;
@@ -107,11 +106,14 @@ export class NodeGeometryBuildState {
     /**
      * Gets the value associated with a contextual source
      * @param source Source of the contextual value
+     * @param skipWarning Do not store the warning for reporting if true
      * @returns the value associated with the source
      */
-    public getContextualValue(source: NodeGeometryContextualSources) {
+    public getContextualValue(source: NodeGeometryContextualSources, skipWarning = false) {
         if (!this.executionContext) {
-            this.noContextualData.push(source);
+            if (!skipWarning) {
+                this.noContextualData.push(source);
+            }
             return null;
         }
 
@@ -202,7 +204,7 @@ export class NodeGeometryBuildState {
      * @returns the adapted value
      */
     adapt(source: NodeGeometryConnectionPoint, targetType: NodeGeometryBlockConnectionPointTypes) {
-        const value = source.getConnectedValue(this);
+        const value = source.getConnectedValue(this) || 0;
 
         if (source.type === targetType) {
             return value;
