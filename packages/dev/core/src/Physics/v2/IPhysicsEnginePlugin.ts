@@ -346,6 +346,14 @@ export interface IPhysicsEnginePluginV2 {
      * Collision observable
      */
     onCollisionObservable: Observable<IPhysicsCollisionEvent>;
+    /**
+     * Collision ended observable
+     */
+    onCollisionEndedObservable: Observable<IBasePhysicsCollisionEvent>;
+    /**
+     * Trigger observable
+     */
+    onTriggerCollisionObservable: Observable<IBasePhysicsCollisionEvent>;
 
     setGravity(gravity: Vector3): void;
     setTimeStep(timeStep: number): void;
