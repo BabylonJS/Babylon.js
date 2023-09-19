@@ -453,7 +453,9 @@ export class DracoCompression implements IDisposable {
         const applyGltfNormalizedOverride = (kind: string, normalized: boolean): boolean => {
             if (gltfNormalizedOverride && gltfNormalizedOverride[kind] !== undefined) {
                 if (normalized !== gltfNormalizedOverride[kind]) {
-                    Logger.Warn(`Normalized flag from Draco data (${normalized}) does not match normalized flag from glTF accessor (${gltfNormalizedOverride[kind]}). Using flag from glTF accessor.`);
+                    Logger.Warn(
+                        `Normalized flag from Draco data (${normalized}) does not match normalized flag from glTF accessor (${gltfNormalizedOverride[kind]}). Using flag from glTF accessor.`
+                    );
                 }
 
                 return gltfNormalizedOverride[kind];
