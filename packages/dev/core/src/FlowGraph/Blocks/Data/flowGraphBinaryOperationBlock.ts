@@ -17,7 +17,7 @@ export class FlowGraphBinaryOperationBlock<LeftT, RightT, ResultT> extends FlowG
         super();
         this.leftInput = this._registerDataInput("leftInput", leftRichType);
         this.rightInput = this._registerDataInput("rightInput", rightRichType);
-        this.output = this._registerDataOutput("0utput", resultRichType);
+        this.output = this._registerDataOutput("Output", resultRichType);
     }
 
     public _updateOutputs(_context: FlowGraphContext): void {
