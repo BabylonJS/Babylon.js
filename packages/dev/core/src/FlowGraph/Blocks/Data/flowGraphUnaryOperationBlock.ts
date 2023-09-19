@@ -9,9 +9,6 @@ import type { FlowGraphContext } from "../../flowGraphContext";
  */
 export class FlowGraphUnaryOperationBlock<InputT, ResultT> extends FlowGraphBlock {
     input: FlowGraphDataConnection<InputT>;
-    /**
-     *
-     */
     output: FlowGraphDataConnection<ResultT>;
 
     constructor(inputRichType: RichType<InputT>, resultRichType: RichType<ResultT>, private _operation: (input: InputT) => ResultT) {

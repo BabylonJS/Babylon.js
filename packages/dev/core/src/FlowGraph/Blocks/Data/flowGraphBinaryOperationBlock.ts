@@ -9,17 +9,8 @@ import type { FlowGraphContext } from "../../flowGraphContext";
  * LeftT, one of type RightT, and outputs a value of type ResultT.
  */
 export class FlowGraphBinaryOperationBlock<LeftT, RightT, ResultT> extends FlowGraphBlock {
-    /**
-     *
-     */
     leftInput: FlowGraphDataConnection<LeftT>;
-    /**
-     *
-     */
     rightInput: FlowGraphDataConnection<RightT>;
-    /**
-     *
-     */
     output: FlowGraphDataConnection<ResultT>;
 
     constructor(leftRichType: RichType<LeftT>, rightRichType: RichType<RightT>, resultRichType: RichType<ResultT>, private _operation: (left: LeftT, right: RightT) => ResultT) {

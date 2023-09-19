@@ -2,8 +2,6 @@ import type { FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphConnection, FlowGraphConnectionType } from "./flowGraphConnection";
 import type { FlowGraphContext } from "./flowGraphContext";
 import type { RichType } from "./flowGraphRichTypes";
-import { FlowGraphValueWithRichType } from "./flowGraphValueWithRichType";
-
 /**
  * @experimental
  * Represents a connection point for data.
@@ -12,11 +10,11 @@ import { FlowGraphValueWithRichType } from "./flowGraphValueWithRichType";
  * if the point belongs to a "function" node, the node will run its function to update the value.
  */
 export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlock, FlowGraphDataConnection<T>> {
-    private richValue: FlowGraphValueWithRichType<T, RichType<T>>;
+    private _value: T;
 
     public constructor(name: string, connectionType: FlowGraphConnectionType, ownerBlock: FlowGraphBlock, public richType: RichType<T>) {
         super(name, connectionType, ownerBlock);
-        this.richValue = new FlowGraphValueWithRichType(richType);
+        this._value = richType.defaultValueBuilder();
     }
 
     /**
@@ -28,17 +26,17 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
     }
 
     public set value(value: T) {
-        this.richValue.value = value;
+        this._value = value;
     }
 
     public getValue(context: FlowGraphContext): T {
         if (this.connectionType === FlowGraphConnectionType.Output) {
             this._ownerBlock._updateOutputs(context);
-            return this.richValue.value;
+            return this._value;
         }
 
         if (!this.isConnected()) {
-            return this.richValue.value;
+            return this._value;
         } else {
             return this._connectedPoint[0].getValue(context);
         }
