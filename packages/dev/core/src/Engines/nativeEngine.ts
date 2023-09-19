@@ -39,7 +39,17 @@ import { NativePipelineContext } from "./Native/nativePipelineContext";
 import { NativeRenderTargetWrapper } from "./Native/nativeRenderTargetWrapper";
 import { NativeHardwareTexture } from "./Native/nativeHardwareTexture";
 import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
-import { getNativeAlphaMode, getNativeAttribType, getNativeSamplingMode, getNativeTextureFormat, getNativeStencilDepthFail, getNativeStencilDepthPass, getNativeStencilFunc, getNativeStencilOpFail, getNativeAddressMode } from "./Native/nativeHelpers";
+import {
+    getNativeAlphaMode,
+    getNativeAttribType,
+    getNativeSamplingMode,
+    getNativeTextureFormat,
+    getNativeStencilDepthFail,
+    getNativeStencilDepthPass,
+    getNativeStencilFunc,
+    getNativeStencilOpFail,
+    getNativeAddressMode,
+} from "./Native/nativeHelpers";
 
 declare const _native: INative;
 
