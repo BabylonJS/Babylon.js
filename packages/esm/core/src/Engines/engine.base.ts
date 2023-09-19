@@ -1,9 +1,10 @@
 import { Effect } from "core/Materials/effect";
 import type { ShaderLanguage } from "core/Materials/shaderLanguage";
-import type { InternalTexture } from "core/Materials/Textures/internalTexture";
+import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import type { Nullable } from "core/types";
 import type { IShaderProcessor } from "core/Engines/Processors/iShaderProcessor";
 import type { UniformBuffer } from "core/Materials/uniformBuffer";
+import type { Observer } from "core/Misc/observable";
 import { Observable } from "core/Misc/observable";
 import {
     ALPHA_ADD,
@@ -16,9 +17,11 @@ import {
     TEXTUREFORMAT_RGBA,
     TEXTURETYPE_UNSIGNED_INT,
     TEXTURE_NEAREST_SAMPLINGMODE,
+    TEXTURE_TRILINEAR_SAMPLINGMODE,
 } from "./engine.constants";
-import { PrecisionDate } from "core/Misc";
-import type { DataBuffer, StorageBuffer } from "core/Buffers";
+import { PrecisionDate } from "core/Misc/precisionDate";
+import type { PerfCounter } from "core/Misc/perfCounter";
+import type { StorageBuffer } from "core/Buffers";
 import type { EngineCapabilities } from "core/Engines/engineCapabilities";
 import type { EngineFeatures } from "core/Engines/engineFeatures";
 import type { DepthCullingState } from "core/States/depthCullingState";
@@ -29,13 +32,17 @@ import type { ICanvas, ICanvasRenderingContext } from "core/Engines/ICanvas";
 import type { IFileRequest } from "core/Misc/fileRequest";
 import type { IRawTextureEngineExtension } from "./Extensions/engine.rawTexture";
 import type { Texture } from "core/Materials/Textures/texture";
+import type { ISceneLike } from "./engine.interfaces";
 import { EngineType } from "./engine.interfaces";
 import { IsDocumentAvailable, IsWindowObjectExist } from "./runtimeEnvironment";
 import { PerformanceConfigurator } from "core/Engines/performanceConfigurator";
-import { QueueNewFrame } from "./engine.static";
+import { QueueNewFrame, _TextureLoaders } from "./engine.static";
 import type { IPipelineContext } from "core/Engines/IPipelineContext";
-
-const activeRequests: WeakMap<any, IFileRequest> = new WeakMap();
+import type { IInternalTextureLoader } from "core/Materials/Textures/internalTextureLoader";
+import { Logger } from "core/Misc/logger";
+import type { IWebRequest } from "core/Misc/interfaces/iWebRequest";
+import { _loadFile } from "./engine.tools";
+import { LoadImage } from "core/Misc/fileTools";
 
 export interface IBaseEngineOptions {
     /**
@@ -121,7 +128,7 @@ interface IBaseEnginePrivate {
     _emptyCubeTexture: Nullable<InternalTexture>;
     _emptyTexture3D: Nullable<InternalTexture>;
     _emptyTexture2DArray: Nullable<InternalTexture>;
-    // _activeRequests - moved to the scope of this file, privately. Maps object to IFileRequest.
+    _activeRequests: IFileRequest[]; // - moved to the scope of this file, privately. Maps object to IFileRequest.
     // _checkForMobile - moved to hostInformation
 }
 
@@ -185,6 +192,7 @@ export interface IBaseEngineInternals {
     // replacing _framebufferDimensionsObject
     _renderWidthOverride: Nullable<{ width: number; height: number }>;
     _dimensionsObject: Nullable<{ width: number; height: number }>;
+    _drawCalls?: PerfCounter;
 }
 
 /**
@@ -498,6 +506,7 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
         _emptyTexture2DArray: null,
         _dimensionsObject: null,
         _viewportCached: { x: 0, y: 0, z: 0, w: 0 },
+        _activeRequests: [],
     };
 
     // TODO is getOwnPropertyDescriptors supported in native? if it doesn't we will need to use getOwnPropertyNames
@@ -1083,4 +1092,271 @@ export function _getGlobalDefines(engineState: IBaseEnginePublic, defines?: { [k
         }
         return s;
     }
+}
+
+/**
+ * Clears the list of texture accessible through engine.
+ * This can help preventing texture load conflict due to name collision.
+ */
+export function clearInternalTexturesCache(engineState: IBaseEnginePublic) {
+    (engineState as BaseEngineStateFull)._internalTexturesCache.length = 0;
+}
+
+export function _createTextureBase(
+    engineState: IBaseEnginePublic,
+    url: Nullable<string>,
+    noMipmap: boolean,
+    invertY: boolean,
+    scene: Nullable<ISceneLike>,
+    samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE,
+    onLoad: Nullable<(texture: InternalTexture) => void> = null,
+    onError: Nullable<(message: string, exception: any) => void> = null,
+    prepareTexture: (
+        texture: InternalTexture,
+        extension: string,
+        scene: Nullable<ISceneLike>,
+        img: HTMLImageElement | ImageBitmap | { width: number; height: number },
+        invertY: boolean,
+        noMipmap: boolean,
+        isCompressed: boolean,
+        processFunction: (
+            width: number,
+            height: number,
+            img: HTMLImageElement | ImageBitmap | { width: number; height: number },
+            extension: string,
+            texture: InternalTexture,
+            continuationCallback: () => void
+        ) => boolean,
+        samplingMode: number
+    ) => void,
+    prepareTextureProcessFunction: (
+        width: number,
+        height: number,
+        img: HTMLImageElement | ImageBitmap | { width: number; height: number },
+        extension: string,
+        texture: InternalTexture,
+        continuationCallback: () => void
+    ) => boolean,
+    buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
+    fallback: Nullable<InternalTexture> = null,
+    format: Nullable<number> = null,
+    forcedExtension: Nullable<string> = null,
+    mimeType?: string,
+    loaderOptions?: any,
+    useSRGBBuffer?: boolean
+): InternalTexture {
+    const fes = engineState as BaseEngineStateFull;
+    url = url || "";
+    const fromData = url.substring(0, 5) === "data:";
+    const fromBlob = url.substring(0, 5) === "blob:";
+    const isBase64 = fromData && url.indexOf(";base64,") !== -1;
+
+    const texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Url);
+
+    if (texture !== fallback) {
+        texture.label = url.substring(0, 60); // default label, can be overriden by the caller
+    }
+
+    const originalUrl = url;
+    if (fes._transformTextureUrl && !isBase64 && !fallback && !buffer) {
+        url = fes._transformTextureUrl(url);
+    }
+
+    if (originalUrl !== url) {
+        texture._originalUrl = originalUrl;
+    }
+
+    // establish the file extension, if possible
+    const lastDot = url.lastIndexOf(".");
+    let extension = forcedExtension ? forcedExtension : lastDot > -1 ? url.substring(lastDot).toLowerCase() : "";
+    let loader: Nullable<IInternalTextureLoader> = null;
+
+    // Remove query string
+    const queryStringIndex = extension.indexOf("?");
+
+    if (queryStringIndex > -1) {
+        extension = extension.split("?")[0];
+    }
+
+    for (const availableLoader of _TextureLoaders) {
+        if (availableLoader.canLoad(extension, mimeType)) {
+            loader = availableLoader;
+            break;
+        }
+    }
+
+    if (scene) {
+        scene.addPendingData(texture);
+    }
+    texture.url = url;
+    texture.generateMipMaps = !noMipmap;
+    texture.samplingMode = samplingMode;
+    texture.invertY = invertY;
+    texture._useSRGBBuffer = _getUseSRGBBuffer(fes, !!useSRGBBuffer, noMipmap);
+
+    if (!fes.doNotHandleContextLost) {
+        // Keep a link to the buffer only if we plan to handle context lost
+        texture._buffer = buffer;
+    }
+
+    let onLoadObserver: Nullable<Observer<InternalTexture>> = null;
+    if (onLoad && !fallback) {
+        onLoadObserver = texture.onLoadedObservable.add(onLoad);
+    }
+
+    if (!fallback) {
+        fes._internalTexturesCache.push(texture);
+    }
+
+    const onInternalError = (message?: string, exception?: any) => {
+        if (scene) {
+            scene.removePendingData(texture);
+        }
+
+        if (url === originalUrl) {
+            if (onLoadObserver) {
+                texture.onLoadedObservable.remove(onLoadObserver);
+            }
+
+            if (EngineStore.UseFallbackTexture) {
+                _createTextureBase(
+                    fes,
+                    EngineStore.FallbackTexture,
+                    noMipmap,
+                    texture.invertY,
+                    scene,
+                    samplingMode,
+                    null,
+                    onError,
+                    prepareTexture,
+                    prepareTextureProcessFunction,
+                    buffer,
+                    texture
+                );
+            }
+
+            message = (message || "Unknown error") + (EngineStore.UseFallbackTexture ? " - Fallback texture was used" : "");
+            texture.onErrorObservable.notifyObservers({ message, exception });
+            if (onError) {
+                onError(message, exception);
+            }
+        } else {
+            // fall back to the original url if the transformed url fails to load
+            Logger.Warn(`Failed to load ${url}, falling back to ${originalUrl}`);
+            _createTextureBase(
+                fes,
+                originalUrl,
+                noMipmap,
+                texture.invertY,
+                scene,
+                samplingMode,
+                onLoad,
+                onError,
+                prepareTexture,
+                prepareTextureProcessFunction,
+                buffer,
+                texture,
+                format,
+                forcedExtension,
+                mimeType,
+                loaderOptions,
+                useSRGBBuffer
+            );
+        }
+    };
+
+    // processing for non-image formats
+    if (loader) {
+        const callback = (data: ArrayBufferView) => {
+            loader!.loadData(
+                data,
+                texture,
+                (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed) => {
+                    if (loadFailed) {
+                        onInternalError("TextureLoader failed to load data");
+                    } else {
+                        prepareTexture(
+                            texture,
+                            extension,
+                            scene,
+                            { width, height },
+                            texture.invertY,
+                            !loadMipmap,
+                            isCompressed,
+                            () => {
+                                done();
+                                return false;
+                            },
+                            samplingMode
+                        );
+                    }
+                },
+                loaderOptions
+            );
+        };
+
+        if (!buffer) {
+            _loadFile(
+                engineState,
+                url,
+                (data) => callback(new Uint8Array(data as ArrayBuffer)),
+                undefined,
+                scene ? scene.offlineProvider : undefined,
+                true,
+                (request?: IWebRequest, exception?: any) => {
+                    onInternalError("Unable to load " + (request ? request.responseURL : url, exception));
+                }
+            );
+        } else {
+            if (buffer instanceof ArrayBuffer) {
+                callback(new Uint8Array(buffer));
+            } else if (ArrayBuffer.isView(buffer)) {
+                callback(buffer);
+            } else {
+                if (onError) {
+                    onError("Unable to load: only ArrayBuffer or ArrayBufferView is supported", null);
+                }
+            }
+        }
+    } else {
+        const onload = (img: HTMLImageElement | ImageBitmap) => {
+            if (fromBlob && !fes.doNotHandleContextLost) {
+                // We need to store the image if we need to rebuild the texture
+                // in case of a webgl context lost
+                texture._buffer = img;
+            }
+
+            prepareTexture(texture, extension, scene, img, texture.invertY, noMipmap, false, prepareTextureProcessFunction, samplingMode);
+        };
+        // According to the WebGL spec section 6.10, ImageBitmaps must be inverted on creation.
+        // So, we pass imageOrientation to _FileToolsLoadImage() as it may create an ImageBitmap.
+
+        if (!fromData || isBase64) {
+            if (buffer && (typeof (<HTMLImageElement>buffer).decoding === "string" || (<ImageBitmap>buffer).close)) {
+                onload(<HTMLImageElement>buffer);
+            } else {
+                LoadImage(
+                    url,
+                    onload,
+                    onInternalError,
+                    scene ? scene.offlineProvider : null,
+                    mimeType,
+                    texture.invertY && fes._features.needsInvertingBitmap ? { imageOrientation: "flipY" } : undefined
+                );
+            }
+        } else if (typeof buffer === "string" || buffer instanceof ArrayBuffer || ArrayBuffer.isView(buffer) || buffer instanceof Blob) {
+            LoadImage(
+                buffer,
+                onload,
+                onInternalError,
+                scene ? scene.offlineProvider : null,
+                mimeType,
+                texture.invertY && fes._features.needsInvertingBitmap ? { imageOrientation: "flipY" } : undefined
+            );
+        } else if (buffer) {
+            onload(buffer);
+        }
+    }
+
+    return texture;
 }

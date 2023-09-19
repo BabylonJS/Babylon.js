@@ -24,5 +24,11 @@ export interface IEngineModule {
     _getShaderProcessor(engineState: IEnginePublic, shaderLanguage: ShaderLanguage): Nullable<IShaderProcessor>;
 
     dispose(engineState: IEnginePublic): void;
-    clear(engineState: IEnginePublic, color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean): void
+    clear(engineState: IEnginePublic, color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean): void;
+}
+
+export interface ISceneLike {
+    addPendingData(data: any): void;
+    removePendingData(data: any): void;
+    offlineProvider: IOfflineProvider;
 }

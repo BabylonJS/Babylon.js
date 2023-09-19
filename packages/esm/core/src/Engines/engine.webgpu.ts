@@ -80,3 +80,11 @@ export function isWebGPU(engineState: IBaseEnginePublic): engineState is WebGPUE
 export function resetSnapshotRendering(engineState: IWebGPUEnginePublic) {
     (engineState as WebGPUEngineStateFull)._snapshotRendering.reset();
 }
+
+/**
+ * @internal
+ */
+export function _getUseSRGBBuffer(engineState: IWebGPUEnginePublic, useSRGBBuffer: boolean, noMipmap: boolean): boolean {
+    // Generating mipmaps for sRGB textures is not supported in WebGL1 so we must disable the support if mipmaps is enabled
+    return useSRGBBuffer && (engineState as WebGPUEngineState)._caps.supportSRGBBuffers && (isWebGPU(engineState) || noMipmap);
+}

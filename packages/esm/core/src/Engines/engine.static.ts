@@ -2,6 +2,8 @@
 import { Effect } from "core/Materials/effect";
 import type { IInternalTextureLoader } from "core/Materials/Textures/internalTextureLoader";
 import { IsWindowObjectExist } from "./runtimeEnvironment";
+import { SCALEMODE_CEILING, SCALEMODE_FLOOR, SCALEMODE_NEAREST } from "./engine.constants";
+import type { Nullable } from "core/types";
 
 // used to be WebGL only, a single array
 export const ExceptionList = {
@@ -67,6 +69,132 @@ export function QueueNewFrame(func: FrameRequestCallback, requester?: any): numb
     // fallback to the global `setTimeout`.
     // In most cases (aka in the browser), `window` is the global object, so instead of calling `window.setTimeout` we could call the global `setTimeout`.
     return setTimeout(func, 16) as unknown as number;
+}
+
+let _IsWebGLSupported: Nullable<boolean> = null;
+
+export function IsWebGPUSupported(): Promise<boolean> {
+    return !navigator.gpu
+        ? Promise.resolve(false)
+        : navigator.gpu
+              .requestAdapter()
+              .then(
+                  (adapter: GPUAdapter | undefined) => !!adapter,
+                  () => false
+              )
+              .catch(() => false);
+}
+
+/**
+ * Gets a boolean indicating if the engine can be instantiated (ie. if a webGL context can be found)
+ * @returns true if the engine can be created
+ */
+export function IsWebGLSupported(): boolean {
+    if (_HasMajorPerformanceCaveat !== null) {
+        return !_HasMajorPerformanceCaveat; // We know it is performant so WebGL is supported
+    }
+
+    if (_IsWebGLSupported === null) {
+        try {
+            const tempcanvas = _CreateCanvas(1, 1);
+            const gl = tempcanvas.getContext("webgl") || (tempcanvas as any).getContext("experimental-webgl");
+
+            _IsWebGLSupported = gl != null && !!window.WebGLRenderingContext;
+        } catch (e) {
+            _IsWebGLSupported = false;
+        }
+    }
+
+    return _IsWebGLSupported;
+}
+
+let _HasMajorPerformanceCaveat: Nullable<boolean> = null;
+
+/**
+ * Gets a boolean indicating if the engine can be instantiated on a performant device (ie. if a webGL context can be found and it does not use a slow implementation)
+ */
+export function HasMajorPerformanceCaveat(): boolean {
+    if (_HasMajorPerformanceCaveat === null) {
+        try {
+            const tempcanvas = _CreateCanvas(1, 1);
+            const gl =
+                tempcanvas.getContext("webgl", { failIfMajorPerformanceCaveat: true }) ||
+                (tempcanvas as any).getContext("experimental-webgl", { failIfMajorPerformanceCaveat: true });
+
+            _HasMajorPerformanceCaveat = !gl;
+        } catch (e) {
+            _HasMajorPerformanceCaveat = false;
+        }
+    }
+
+    return _HasMajorPerformanceCaveat;
+}
+
+/**
+ * Find the next highest power of two.
+ * @param x Number to start search from.
+ * @returns Next highest power of two.
+ */
+export function CeilingPOT(x: number): number {
+    x--;
+    x |= x >> 1;
+    x |= x >> 2;
+    x |= x >> 4;
+    x |= x >> 8;
+    x |= x >> 16;
+    x++;
+    return x;
+}
+
+/**
+ * Find the next lowest power of two.
+ * @param x Number to start search from.
+ * @returns Next lowest power of two.
+ */
+export function FloorPOT(x: number): number {
+    x = x | (x >> 1);
+    x = x | (x >> 2);
+    x = x | (x >> 4);
+    x = x | (x >> 8);
+    x = x | (x >> 16);
+    return x - (x >> 1);
+}
+
+/**
+ * Find the nearest power of two.
+ * @param x Number to start search from.
+ * @returns Next nearest power of two.
+ */
+export function NearestPOT(x: number): number {
+    const c = CeilingPOT(x);
+    const f = FloorPOT(x);
+    return c - x > x - f ? f : c;
+}
+
+/**
+ * Get the closest exponent of two
+ * @param value defines the value to approximate
+ * @param max defines the maximum value to return
+ * @param mode defines how to define the closest value
+ * @returns closest exponent of two of the given value
+ */
+export function GetExponentOfTwo(value: number, max: number, mode = SCALEMODE_NEAREST): number {
+    let pot;
+
+    switch (mode) {
+        case SCALEMODE_FLOOR:
+            pot = FloorPOT(value);
+            break;
+        case SCALEMODE_NEAREST:
+            pot = NearestPOT(value);
+            break;
+        case SCALEMODE_CEILING:
+        default:
+            pot = CeilingPOT(value);
+            break;
+    }
+
+    return Math.min(pot, max);
 }
 
 // TODO is this needed? this will allow `import Statics from "package/Engines"`.

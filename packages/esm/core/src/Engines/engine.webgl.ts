@@ -7,12 +7,18 @@ import {
     getRenderHeight as getRenderHeightBase,
     setViewport as setViewportBase,
     _viewport as _viewportBase,
+    _createTextureBase,
+    resetTextureCache,
 } from "./engine.base";
 import { WebGLShaderProcessor } from "core/Engines/WebGL/webGLShaderProcessors";
 import type { DataBuffer } from "core/Buffers/dataBuffer";
-import type { Effect } from "core/Materials/effect";
+import { Effect, IEffectCreationOptions } from "core/Materials/effect";
 import type { IColor4Like, IViewportLike } from "core/Maths/math.like";
 import {
+    ALPHA_ADD,
+    ALPHA_DISABLE,
+    DELAYLOADSTATE_NOTLOADED,
+    LEQUAL,
     MATERIAL_LineListDrawMode,
     MATERIAL_LineLoopDrawMode,
     MATERIAL_LineStripDrawMode,
@@ -22,22 +28,88 @@ import {
     MATERIAL_TriangleFillMode,
     MATERIAL_TriangleStripDrawMode,
     MATERIAL_WireFrameFillMode,
+    TEXTUREFORMAT_ALPHA,
+    TEXTUREFORMAT_COMPRESSED_RGB8_ETC2,
+    TEXTUREFORMAT_COMPRESSED_RGBA8_ETC2_EAC,
+    TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4,
+    TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM,
+    TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1,
+    TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5,
+    TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL,
+    TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1,
+    TEXTUREFORMAT_LUMINANCE,
+    TEXTUREFORMAT_LUMINANCE_ALPHA,
+    TEXTUREFORMAT_R,
+    TEXTUREFORMAT_RED,
     TEXTUREFORMAT_RED_INTEGER,
+    TEXTUREFORMAT_RG,
+    TEXTUREFORMAT_RGB,
+    TEXTUREFORMAT_RGBA,
     TEXTUREFORMAT_RGBA_INTEGER,
     TEXTUREFORMAT_RGB_INTEGER,
     TEXTUREFORMAT_RG_INTEGER,
+    TEXTURETYPE_BYTE,
+    TEXTURETYPE_FLOAT,
+    TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV,
+    TEXTURETYPE_HALF_FLOAT,
+    TEXTURETYPE_INT,
+    TEXTURETYPE_SHORT,
+    TEXTURETYPE_UNSIGNED_BYTE,
+    TEXTURETYPE_UNSIGNED_INT,
     TEXTURETYPE_UNSIGNED_INTEGER,
+    TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV,
+    TEXTURETYPE_UNSIGNED_INT_24_8,
+    TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV,
+    TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV,
     TEXTURETYPE_UNSIGNED_SHORT,
+    TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4,
+    TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1,
+    TEXTURETYPE_UNSIGNED_SHORT_5_6_5,
+    TEXTURE_BILINEAR_SAMPLINGMODE,
+    TEXTURE_CLAMP_ADDRESSMODE,
+    TEXTURE_CUBIC_MODE,
+    TEXTURE_LINEAR_LINEAR,
+    TEXTURE_LINEAR_LINEAR_MIPLINEAR,
+    TEXTURE_LINEAR_LINEAR_MIPNEAREST,
+    TEXTURE_LINEAR_NEAREST,
+    TEXTURE_LINEAR_NEAREST_MIPLINEAR,
+    TEXTURE_LINEAR_NEAREST_MIPNEAREST,
+    TEXTURE_MIRROR_ADDRESSMODE,
+    TEXTURE_NEAREST_LINEAR,
+    TEXTURE_NEAREST_LINEAR_MIPLINEAR,
+    TEXTURE_NEAREST_LINEAR_MIPNEAREST,
+    TEXTURE_NEAREST_NEAREST,
+    TEXTURE_NEAREST_NEAREST_MIPLINEAR,
+    TEXTURE_NEAREST_NEAREST_MIPNEAREST,
+    TEXTURE_NEAREST_SAMPLINGMODE,
+    TEXTURE_SKYBOX_MODE,
+    TEXTURE_TRILINEAR_SAMPLINGMODE,
+    TEXTURE_WRAP_ADDRESSMODE,
 } from "./engine.constants";
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import type { WebGLRenderTargetWrapper } from "core/Engines/WebGL/webGLRenderTargetWrapper";
 import * as _ from "lodash";
 import { WebGLDataBuffer } from "core/Meshes/WebGL/webGLDataBuffer";
-import type { WebGLPipelineContext } from "core/Engines/WebGL/webGLPipelineContext";
+import { WebGLPipelineContext } from "core/Engines/WebGL/webGLPipelineContext";
 import type { IPipelineContext } from "core/Engines/IPipelineContext";
 import type { VertexBuffer } from "core/Buffers/buffer";
 import type { InstancingAttributeInfo } from "core/Engines/instancingAttributeInfo";
-import type { InternalTexture } from "core/Materials/Textures/internalTexture";
+import { InternalTextureSource, InternalTexture } from "core/Materials/Textures/internalTexture";
+import { _reportDrawCall } from "./engine.tools";
+import type { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import type { ThinTexture } from "core/Materials/Textures/thinTexture";
+import type { VideoTexture } from "core/Materials/Textures/videoTexture";
+import type { ISceneLike } from "./engine.interfaces";
+import { GetExponentOfTwo } from "./engine.static";
+import type { Scene } from "core/scene";
+import type { InternalTextureCreationOptions, TextureSize } from "core/Materials/Textures/textureCreationOptions";
+import { Logger } from "core/Misc/logger";
+import type { HardwareTextureWrapper } from "core/Materials/Textures/hardwareTextureWrapper";
+import { WebGLHardwareTexture } from "core/Engines/WebGL/webGLHardwareTexture";
+import { Engine } from "core/Engines/engine";
+import { DrawWrapper } from "core/Materials/drawWrapper";
+import { IEffectFallbacks } from "core/Materials/iEffectFallbacks";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 const _TempClearColorUint32 = new Uint32Array(4);
 const _TempClearColorInt32 = new Int32Array(4);
@@ -72,6 +144,8 @@ interface IWebGLEnginePrivate {
     _maxSimultaneousTextures: number;
     _maxMSAASamplesOverride: Nullable<number>;
     _supportsHardwareTextureRescaling: boolean; // can probably be taken out of here!
+    _boundUniforms: { [key: string]: WebGLUniformLocation };
+    _unpackFlipYCached: Nullable<boolean>;
 }
 
 export interface IWebGLEngineProtected extends IBaseEngineProtected {
@@ -100,6 +174,7 @@ export interface IWebGLEngineInternals extends IBaseEngineInternals {
 export interface IWebGLEnginePublic extends IBaseEnginePublic {
     // duplicate of "version" in IBaseEnginePublic
     webGLVersion: number;
+    enableUnpackFlipYCached: boolean;
 }
 
 export type WebGLEngineState = IWebGLEnginePublic & IWebGLEngineInternals & IWebGLEngineProtected;
@@ -124,6 +199,7 @@ export function initWebGLEngineState(): WebGLEngineState {
 
     // private
     const ps = fes as WebGLEngineStateFull;
+    ps.enableUnpackFlipYCached = true;
     ps._uintIndicesCurrentlySet = false;
     ps._currentBoundBuffer = [];
     ps._currentFramebuffer = null;
@@ -135,6 +211,8 @@ export function initWebGLEngineState(): WebGLEngineState {
     ps._maxMSAASamplesOverride = null;
     ps._supportsHardwareTextureRescaling = false;
     ps._version = ps._webGLVersion;
+    ps._boundUniforms = {};
+    ps._unpackFlipYCached = null;
     return fes;
 }
 
@@ -1050,7 +1128,7 @@ export function disableInstanceAttributeByName(engineState: IWebGLEnginePublic, 
     }
 
     const attributeLocation = fes._currentEffect.getAttributeLocationByName(name);
-    disableInstanceAttribute(attributeLocation);
+    disableInstanceAttribute(engineState, attributeLocation);
 }
 
 /**
@@ -1126,7 +1204,7 @@ export function drawArraysType(engineState: IWebGLEnginePublic, fillMode: number
 
     _reportDrawCall(engineState);
 
-    const drawMode = _drawMode(engineState, fillMode);
+    const drawMode = _drawMode(fes._gl, fillMode);
     if (instancesCount) {
         fes._gl.drawArraysInstanced(drawMode, verticesStart, verticesCount, instancesCount);
     } else {
@@ -1134,47 +1212,2332 @@ export function drawArraysType(engineState: IWebGLEnginePublic, fillMode: number
     }
 }
 
-function _drawMode(engineState: IWebGLEnginePublic, fillMode: number): number {
-    const fes = engineState as WebGLEngineStateFull;
+function _drawMode(gl: IWebGLEngineInternals["_gl"], fillMode: number): number {
     switch (fillMode) {
         // Triangle views
         case MATERIAL_TriangleFillMode:
-            return fes._gl.TRIANGLES;
+            return gl.TRIANGLES;
         case MATERIAL_PointFillMode:
-            return fes._gl.POINTS;
+            return gl.POINTS;
         case MATERIAL_WireFrameFillMode:
-            return fes._gl.LINES;
+            return gl.LINES;
         // Draw modes
         case MATERIAL_PointListDrawMode:
-            return fes._gl.POINTS;
+            return gl.POINTS;
         case MATERIAL_LineListDrawMode:
-            return fes._gl.LINES;
+            return gl.LINES;
         case MATERIAL_LineLoopDrawMode:
-            return fes._gl.LINE_LOOP;
+            return gl.LINE_LOOP;
         case MATERIAL_LineStripDrawMode:
-            return fes._gl.LINE_STRIP;
+            return gl.LINE_STRIP;
         case MATERIAL_TriangleStripDrawMode:
-            return fes._gl.TRIANGLE_STRIP;
+            return gl.TRIANGLE_STRIP;
         case MATERIAL_TriangleFanDrawMode:
-            return fes._gl.TRIANGLE_FAN;
+            return gl.TRIANGLE_FAN;
         default:
-            return fes._gl.TRIANGLES;
+            return gl.TRIANGLES;
+    }
+}
+
+/** @internal */
+export function _getGlobalDefines(engineState: IWebGLEnginePublic, defines?: { [key: string]: string }): string | undefined {
+    if (defines) {
+        if (engineState.isNDCHalfZRange) {
+            defines["IS_NDC_HALF_ZRANGE"] = "";
+        } else {
+            delete defines["IS_NDC_HALF_ZRANGE"];
+        }
+        if (engineState.useReverseDepthBuffer) {
+            defines["USE_REVERSE_DEPTHBUFFER"] = "";
+        } else {
+            delete defines["USE_REVERSE_DEPTHBUFFER"];
+        }
+        if (engineState.useExactSrgbConversions) {
+            defines["USE_EXACT_SRGB_CONVERSIONS"] = "";
+        } else {
+            delete defines["USE_EXACT_SRGB_CONVERSIONS"];
+        }
+        return;
+    } else {
+        let s = "";
+        if (engineState.isNDCHalfZRange) {
+            s += "#define IS_NDC_HALF_ZRANGE";
+        }
+        if (engineState.useReverseDepthBuffer) {
+            if (s) {
+                s += "\n";
+            }
+            s += "#define USE_REVERSE_DEPTHBUFFER";
+        }
+        if (engineState.useExactSrgbConversions) {
+            if (s) {
+                s += "\n";
+            }
+            s += "#define USE_EXACT_SRGB_CONVERSIONS";
+        }
+        return s;
+    }
+}
+
+/**
+ * Create a new effect (used to store vertex/fragment shaders)
+ * @param baseName defines the base name of the effect (The name of file without .fragment.fx or .vertex.fx)
+ * @param attributesNamesOrOptions defines either a list of attribute names or an IEffectCreationOptions object
+ * @param uniformsNamesOrEngine defines either a list of uniform names or the engine to use
+ * @param samplers defines an array of string used to represent textures
+ * @param defines defines the string containing the defines to use to compile the shaders
+ * @param fallbacks defines the list of potential fallbacks to use if shader compilation fails
+ * @param onCompiled defines a function to call when the effect creation is successful
+ * @param onError defines a function to call when the effect creation has failed
+ * @param indexParameters defines an object containing the index values to use to compile shaders (like the maximum number of simultaneous lights)
+ * @param shaderLanguage the language the shader is written in (default: GLSL)
+ * @returns the new Effect
+ */
+export function createEffect(
+    engineState: IWebGLEnginePublic,
+    baseName: any,
+    attributesNamesOrOptions: string[] | IEffectCreationOptions,
+    uniformsNamesOrEngine: string[] | ThinEngine,
+    samplers?: string[],
+    defines?: string,
+    fallbacks?: IEffectFallbacks,
+    onCompiled?: Nullable<(effect: Effect) => void>,
+    onError?: Nullable<(effect: Effect, errors: string) => void>,
+    indexParameters?: any,
+    shaderLanguage = ShaderLanguage.GLSL
+): Effect {
+    const fes = engineState as WebGLEngineStateFull;
+    const vertex = baseName.vertexElement || baseName.vertex || baseName.vertexToken || baseName.vertexSource || baseName;
+    const fragment = baseName.fragmentElement || baseName.fragment || baseName.fragmentToken || baseName.fragmentSource || baseName;
+    const globalDefines = _getGlobalDefines()!;
+
+    let fullDefines = defines ?? (<IEffectCreationOptions>attributesNamesOrOptions).defines ?? "";
+
+    if (globalDefines) {
+        fullDefines += globalDefines;
+    }
+
+    const name = vertex + "+" + fragment + "@" + fullDefines;
+    if (fes._compiledEffects[name]) {
+        const compiledEffect = <Effect>fes._compiledEffects[name];
+        if (onCompiled && compiledEffect.isReady()) {
+            onCompiled(compiledEffect);
+        }
+
+        return compiledEffect;
+    }
+    const effect = new Effect(
+        baseName,
+        attributesNamesOrOptions,
+        uniformsNamesOrEngine,
+        samplers,
+        engineStore, // TODO
+        defines,
+        fallbacks,
+        onCompiled,
+        onError,
+        indexParameters,
+        name,
+        shaderLanguage
+    );
+    fes._compiledEffects[name] = effect;
+
+    return effect;
+}
+
+function _ConcatenateShader(source: string, defines: Nullable<string>, shaderVersion: string = ""): string {
+    return shaderVersion + (defines ? defines + "\n" : "") + source;
+}
+
+function _compileShader(gl: IWebGLEngineInternals["_gl"], source: string, type: string, defines: Nullable<string>, shaderVersion: string): WebGLShader {
+    return _compileRawShader(gl, _ConcatenateShader(source, defines, shaderVersion), type);
+}
+
+function _compileRawShader(gl: IWebGLEngineInternals["_gl"], source: string, type: string): WebGLShader {
+    const shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
+
+    if (!shader) {
+        let error: GLenum = gl.NO_ERROR;
+        let tempError: GLenum = gl.NO_ERROR;
+        while ((tempError = gl.getError()) !== gl.NO_ERROR) {
+            error = tempError;
+        }
+
+        throw new Error(
+            `Something went wrong while creating a gl ${type} shader object. gl error=${error}, gl isContextLost=${gl.isContextLost()}, _contextWasLost=${this._contextWasLost}`
+        );
+    }
+
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+
+    return shader;
+}
+
+/**
+ * @internal
+ */
+export function _getShaderSource(gl: IWebGLEngineInternals["_gl"], shader: WebGLShader): Nullable<string> {
+    return gl.getShaderSource(shader);
+}
+
+/**
+ * Directly creates a webGL program
+ * @param pipelineContext  defines the pipeline context to attach to
+ * @param vertexCode defines the vertex shader code to use
+ * @param fragmentCode defines the fragment shader code to use
+ * @param context defines the webGL context to use (if not set, the current one will be used)
+ * @param transformFeedbackVaryings defines the list of transform feedback varyings to use
+ * @returns the new webGL program
+ */
+export function createRawShaderProgram(
+    engineState: IWebGLEnginePublic,
+    pipelineContext: IPipelineContext,
+    vertexCode: string,
+    fragmentCode: string,
+    context?: WebGLRenderingContext,
+    transformFeedbackVaryings: Nullable<string[]> = null
+): WebGLProgram {
+    const fes = engineState as WebGLEngineState;
+    context = context || fes._gl;
+
+    const vertexShader = _compileRawShader(fes._gl, vertexCode, "vertex");
+    const fragmentShader = _compileRawShader(fes._gl, fragmentCode, "fragment");
+
+    return _createShaderProgram(fes, pipelineContext as WebGLPipelineContext, vertexShader, fragmentShader, context, transformFeedbackVaryings);
+}
+
+/**
+ * @internal
+ */
+export function _deletePipelineContext(engineState: IWebGLEnginePublic, pipelineContext: IPipelineContext): void {
+    const fes = engineState as WebGLEngineState;
+    const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
+    if (webGLPipelineContext && webGLPipelineContext.program) {
+        if (webGLPipelineContext.transformFeedback) {
+            deleteTransformFeedback(engineState, webGLPipelineContext.transformFeedback);
+            webGLPipelineContext.transformFeedback = null;
+        }
+        // TODO _Spector integration
+        webGLPipelineContext.program.__SPECTOR_rebuildProgram = null;
+
+        fes._gl.deleteProgram(webGLPipelineContext.program);
+    }
+}
+
+/**
+ * Creates a webGL program
+ * @param pipelineContext  defines the pipeline context to attach to
+ * @param vertexCode  defines the vertex shader code to use
+ * @param fragmentCode defines the fragment shader code to use
+ * @param defines defines the string containing the defines to use to compile the shaders
+ * @param context defines the webGL context to use (if not set, the current one will be used)
+ * @param transformFeedbackVaryings defines the list of transform feedback varyings to use
+ * @returns the new webGL program
+ */
+export function createThinShaderProgram(
+    engineState: IWebGLEnginePublic,
+    pipelineContext: IPipelineContext,
+    vertexCode: string,
+    fragmentCode: string,
+    defines: Nullable<string>,
+    context?: WebGLRenderingContext,
+    transformFeedbackVaryings: Nullable<string[]> = null
+): WebGLProgram {
+    const fes = engineState as WebGLEngineState;
+    context = context || fes._gl;
+
+    const shaderVersion = fes._webGLVersion > 1 ? "#version 300 es\n#define WEBGL2 \n" : "";
+    const vertexShader = _compileShader(fes, vertexCode, "vertex", defines, shaderVersion);
+    const fragmentShader = _compileShader(fes, fragmentCode, "fragment", defines, shaderVersion);
+
+    return _createShaderProgram(fes, pipelineContext as WebGLPipelineContext, vertexShader, fragmentShader, context, transformFeedbackVaryings);
+}
+
+export function createShaderProgram(
+    engineState: IWebGLEnginePublic,
+    pipelineContext: IPipelineContext,
+    vertexCode: string,
+    fragmentCode: string,
+    defines: Nullable<string>,
+    context?: WebGLRenderingContext,
+    transformFeedbackVaryings: Nullable<string[]> = null
+): WebGLProgram {
+    const fes = engineState as WebGLEngineState;
+    context = context || fes._gl;
+
+    fes.onBeforeShaderCompilationObservable.notifyObservers(fes);
+
+    const program = createThinShaderProgram(engineState, pipelineContext, vertexCode, fragmentCode, defines, context, transformFeedbackVaryings);
+    fes.onAfterShaderCompilationObservable.notifyObservers(fes);
+
+    return program;
+}
+
+/**
+ * Creates a new pipeline context
+ * @param shaderProcessingContext defines the shader processing context used during the processing if available
+ * @returns the new pipeline
+ */
+export function createPipelineContext(engineState: IWebGLEnginePublic, shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext {
+    const fes = engineState as WebGLEngineState;
+    const pipelineContext = new WebGLPipelineContext();
+    // TODO applying engine to pipeline context
+    pipelineContext.engine = engineState;
+
+    if (fes._caps.parallelShaderCompile) {
+        pipelineContext.isParallelCompiled = true;
+    }
+
+    return pipelineContext;
+}
+
+/**
+ * @internal
+ */
+export function _getUseSRGBBuffer(engineState: IWebGLEnginePublic, useSRGBBuffer: boolean, noMipmap: boolean): boolean {
+    // Generating mipmaps for sRGB textures is not supported in WebGL1 so we must disable the support if mipmaps is enabled
+    return useSRGBBuffer && (engineState as WebGLEngineState)._caps.supportSRGBBuffers && (engineState.webGLVersion > 1 || noMipmap);
+}
+
+function _createShaderProgram(
+    engineState: WebGLEngineState,
+    pipelineContext: WebGLPipelineContext,
+    vertexShader: WebGLShader,
+    fragmentShader: WebGLShader,
+    context: WebGLRenderingContext,
+    transformFeedbackVaryings: Nullable<string[]> = null
+): WebGLProgram {
+    // This was in thin engine!
+
+    // const shaderProgram = context.createProgram();
+    // pipelineContext.program = shaderProgram;
+
+    // if (!shaderProgram) {
+    //     throw new Error("Unable to create program");
+    // }
+
+    // context.attachShader(shaderProgram, vertexShader);
+    // context.attachShader(shaderProgram, fragmentShader);
+
+    // context.linkProgram(shaderProgram);
+
+    // pipelineContext.context = context;
+    // pipelineContext.vertexShader = vertexShader;
+    // pipelineContext.fragmentShader = fragmentShader;
+
+    // if (!pipelineContext.isParallelCompiled) {
+    //     _finalizePipelineContext(engineState, pipelineContext);
+    // }
+
+    // return shaderProgram;
+
+    const shaderProgram = context.createProgram();
+    pipelineContext.program = shaderProgram;
+
+    if (!shaderProgram) {
+        throw new Error("Unable to create program");
+    }
+
+    context.attachShader(shaderProgram, vertexShader);
+    context.attachShader(shaderProgram, fragmentShader);
+
+    if (engineState.webGLVersion > 1 && transformFeedbackVaryings) {
+        const transformFeedback = createTransformFeedback(engineState);
+
+        bindTransformFeedback(engineState, transformFeedback);
+        setTranformFeedbackVaryings(engineState, shaderProgram, transformFeedbackVaryings);
+        pipelineContext.transformFeedback = transformFeedback;
+    }
+
+    context.linkProgram(shaderProgram);
+
+    if (engineState.webGLVersion > 1 && transformFeedbackVaryings) {
+        bindTransformFeedback(engineState, null);
+    }
+
+    pipelineContext.context = context;
+    pipelineContext.vertexShader = vertexShader;
+    pipelineContext.fragmentShader = fragmentShader;
+
+    if (!pipelineContext.isParallelCompiled) {
+        _finalizePipelineContext(engineState, pipelineContext);
+    }
+
+    return shaderProgram;
+}
+
+function _finalizePipelineContext(engineState: WebGLEngineState, pipelineContext: WebGLPipelineContext) {
+    const context = pipelineContext.context!;
+    const vertexShader = pipelineContext.vertexShader!;
+    const fragmentShader = pipelineContext.fragmentShader!;
+    const program = pipelineContext.program!;
+
+    const linked = context.getProgramParameter(program, context.LINK_STATUS);
+    if (!linked) {
+        // Get more info
+        // Vertex
+        if (!engineState._gl.getShaderParameter(vertexShader, engineState._gl.COMPILE_STATUS)) {
+            const log = engineState._gl.getShaderInfoLog(vertexShader);
+            if (log) {
+                pipelineContext.vertexCompilationError = log;
+                throw new Error("VERTEX SHADER " + log);
+            }
+        }
+
+        // Fragment
+        if (!engineState._gl.getShaderParameter(fragmentShader, engineState._gl.COMPILE_STATUS)) {
+            const log = engineState._gl.getShaderInfoLog(fragmentShader);
+            if (log) {
+                pipelineContext.fragmentCompilationError = log;
+                throw new Error("FRAGMENT SHADER " + log);
+            }
+        }
+
+        const error = context.getProgramInfoLog(program);
+        if (error) {
+            pipelineContext.programLinkError = error;
+            throw new Error(error);
+        }
+    }
+
+    if (engineState.validateShaderPrograms) {
+        context.validateProgram(program);
+        const validated = context.getProgramParameter(program, context.VALIDATE_STATUS);
+
+        if (!validated) {
+            const error = context.getProgramInfoLog(program);
+            if (error) {
+                pipelineContext.programValidationError = error;
+                throw new Error(error);
+            }
+        }
+    }
+
+    context.deleteShader(vertexShader);
+    context.deleteShader(fragmentShader);
+
+    pipelineContext.vertexShader = undefined;
+    pipelineContext.fragmentShader = undefined;
+
+    if (pipelineContext.onCompiled) {
+        pipelineContext.onCompiled();
+        pipelineContext.onCompiled = undefined;
     }
 }
 
 /**
  * @internal
  */
-export function _deletePipelineContext(engineState: IWebGLEnginePublic,pipelineContext: IPipelineContext): void {
-    const fes = engineState as WebGLEngineStateFull;
-    const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
-    if (webGLPipelineContext && webGLPipelineContext.program) {
-        if (webGLPipelineContext.transformFeedback) {
-            deleteTransformFeedback(webGLPipelineContext.transformFeedback);
-            webGLPipelineContext.transformFeedback = null;
-        }
-        webGLPipelineContext.program.__SPECTOR_rebuildProgram = null;
+export function _preparePipelineContext(
+    engineState: IWebGLEnginePublic,
+    pipelineContext: IPipelineContext,
+    vertexSourceCode: string,
+    fragmentSourceCode: string,
+    createAsRaw: boolean,
+    rawVertexSourceCode: string,
+    rawFragmentSourceCode: string,
+    rebuildRebind: any,
+    defines: Nullable<string>,
+    transformFeedbackVaryings: Nullable<string[]>,
+    key: string
+) {
+    const webGLRenderingState = pipelineContext as WebGLPipelineContext;
 
-        fes._gl.deleteProgram(webGLPipelineContext.program);
+    if (createAsRaw) {
+        webGLRenderingState.program = createRawShaderProgram(engineState, webGLRenderingState, vertexSourceCode, fragmentSourceCode, undefined, transformFeedbackVaryings);
+    } else {
+        webGLRenderingState.program = createShaderProgram(engineState, webGLRenderingState, vertexSourceCode, fragmentSourceCode, defines, undefined, transformFeedbackVaryings);
     }
+
+    // TODO _Spector integration
+    webGLRenderingState.program.__SPECTOR_rebuildProgram = rebuildRebind;
+}
+
+/**
+ * @internal
+ */
+export function _isRenderingStateCompiled(engineState: IWebGLEnginePublic, pipelineContext: IPipelineContext): boolean {
+    const fes = engineState as WebGLEngineState;
+    const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
+    if (fes._isDisposed || webGLPipelineContext._isDisposed) {
+        return false;
+    }
+    if (fes._gl.getProgramParameter(webGLPipelineContext.program!, fes._caps.parallelShaderCompile!.COMPLETION_STATUS_KHR)) {
+        _finalizePipelineContext(engineState, webGLPipelineContext);
+        return true;
+    }
+
+    return false;
+}
+
+// This is actually a static function
+/**
+ * @internal
+ */
+export function _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void) {
+    const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
+
+    if (!webGLPipelineContext.isParallelCompiled) {
+        action();
+        return;
+    }
+
+    const oldHandler = webGLPipelineContext.onCompiled;
+
+    if (oldHandler) {
+        webGLPipelineContext.onCompiled = () => {
+            oldHandler!();
+            action();
+        };
+    } else {
+        webGLPipelineContext.onCompiled = action;
+    }
+}
+
+/**
+ * Gets the list of webGL uniform locations associated with a specific program based on a list of uniform names
+ * @param pipelineContext defines the pipeline context to use
+ * @param uniformsNames defines the list of uniform names
+ * @returns an array of webGL uniform locations
+ */
+export function getUniforms(engineState: IWebGLEnginePublic, pipelineContext: IPipelineContext, uniformsNames: string[]): Nullable<WebGLUniformLocation>[] {
+    const fes = engineState as WebGLEngineState;
+    const results = new Array<Nullable<WebGLUniformLocation>>();
+    const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
+
+    for (let index = 0; index < uniformsNames.length; index++) {
+        results.push(fes._gl.getUniformLocation(webGLPipelineContext.program!, uniformsNames[index]));
+    }
+
+    return results;
+}
+
+/**
+ * Gets the list of active attributes for a given webGL program
+ * @param pipelineContext defines the pipeline context to use
+ * @param attributesNames defines the list of attribute names to get
+ * @returns an array of indices indicating the offset of each attribute
+ */
+export function getAttributes(engineState: IWebGLEnginePublic, pipelineContext: IPipelineContext, attributesNames: string[]): number[] {
+    const fes = engineState as WebGLEngineState;
+    const results = [];
+    const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
+
+    for (let index = 0; index < attributesNames.length; index++) {
+        try {
+            results.push(fes._gl.getAttribLocation(webGLPipelineContext.program!, attributesNames[index]));
+        } catch (e) {
+            results.push(-1);
+        }
+    }
+
+    return results;
+}
+
+/**
+ * Activates an effect, making it the current one (ie. the one used for rendering)
+ * @param effect defines the effect to activate
+ */
+export function enableEffect(engineState: IWebGLEnginePublic, effect: Nullable<Effect | DrawWrapper>): void {
+    const fes = engineState as WebGLEngineState;
+    effect = effect !== null && DrawWrapper.IsWrapper(effect) ? effect.effect : effect; // get only the effect, we don't need a Wrapper in the WebGL engine
+
+    if (!effect || effect === fes._currentEffect) {
+        return;
+    }
+
+    fes._stencilStateComposer.stencilMaterial = undefined;
+
+    effect = effect as Effect;
+
+    // Use program
+    bindSamplers(engineState, effect);
+
+    fes._currentEffect = effect;
+
+    if (effect.onBind) {
+        effect.onBind(effect);
+    }
+    if (effect._onBindObservable) {
+        effect._onBindObservable.notifyObservers(effect);
+    }
+}
+
+/**
+ * Force the entire cache to be cleared
+ * You should not have to use this function unless your engine needs to share the webGL context with another engine
+ * @param bruteForce defines a boolean to force clearing ALL caches (including stencil, detoh and alpha states)
+ */
+export function wipeCaches(engineState: IWebGLEnginePublic, bruteForce?: boolean): void {
+    const fes = engineState as WebGLEngineState;
+    if (fes.preventCacheWipeBetweenFrames && !bruteForce) {
+        return;
+    }
+    fes._currentEffect = null;
+    fes._viewportCached.x = 0;
+    fes._viewportCached.y = 0;
+    fes._viewportCached.z = 0;
+    fes._viewportCached.w = 0;
+
+    // Done before in case we clean the attributes
+    _unbindVertexArrayObject(engineState);
+
+    if (bruteForce) {
+        fes._currentProgram = null;
+        resetTextureCache(engineState);
+
+        fes._stencilStateComposer.reset();
+
+        if (fes._depthCullingState) {
+            fes._depthCullingState.reset();
+            fes._depthCullingState.depthFunc = fes._gl.LEQUAL;
+        }
+
+        fes._alphaState.reset();
+        fes._alphaMode = ALPHA_ADD;
+        fes._alphaEquation = ALPHA_DISABLE;
+
+        fes._colorWrite = true;
+        fes._colorWriteChanged = true;
+
+        fes._unpackFlipYCached = null;
+
+        fes._gl.pixelStorei(fes._gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, fes._gl.NONE);
+        fes._gl.pixelStorei(fes._gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
+
+        fes._mustWipeVertexAttributes = true;
+        unbindAllAttributes(engineState);
+    }
+
+    _resetVertexBufferBinding(engineState);
+    fes._cachedIndexBuffer = null;
+    fes._cachedEffectForVertexBuffers = null;
+    bindIndexBuffer(engineState, null);
+}
+
+/**
+ * @internal
+ */
+export function _getSamplingParameters(engineState: WebGLEngineState, samplingMode: number, generateMipMaps: boolean): { min: number; mag: number } {
+    const gl = engineState._gl;
+    let magFilter: GLenum = gl.NEAREST;
+    let minFilter: GLenum = gl.NEAREST;
+
+    switch (samplingMode) {
+        case TEXTURE_LINEAR_LINEAR_MIPNEAREST:
+            magFilter = gl.LINEAR;
+            if (generateMipMaps) {
+                minFilter = gl.LINEAR_MIPMAP_NEAREST;
+            } else {
+                minFilter = gl.LINEAR;
+            }
+            break;
+        case TEXTURE_LINEAR_LINEAR_MIPLINEAR:
+            magFilter = gl.LINEAR;
+            if (generateMipMaps) {
+                minFilter = gl.LINEAR_MIPMAP_LINEAR;
+            } else {
+                minFilter = gl.LINEAR;
+            }
+            break;
+        case TEXTURE_NEAREST_NEAREST_MIPLINEAR:
+            magFilter = gl.NEAREST;
+            if (generateMipMaps) {
+                minFilter = gl.NEAREST_MIPMAP_LINEAR;
+            } else {
+                minFilter = gl.NEAREST;
+            }
+            break;
+        case TEXTURE_NEAREST_NEAREST_MIPNEAREST:
+            magFilter = gl.NEAREST;
+            if (generateMipMaps) {
+                minFilter = gl.NEAREST_MIPMAP_NEAREST;
+            } else {
+                minFilter = gl.NEAREST;
+            }
+            break;
+        case TEXTURE_NEAREST_LINEAR_MIPNEAREST:
+            magFilter = gl.NEAREST;
+            if (generateMipMaps) {
+                minFilter = gl.LINEAR_MIPMAP_NEAREST;
+            } else {
+                minFilter = gl.LINEAR;
+            }
+            break;
+        case TEXTURE_NEAREST_LINEAR_MIPLINEAR:
+            magFilter = gl.NEAREST;
+            if (generateMipMaps) {
+                minFilter = gl.LINEAR_MIPMAP_LINEAR;
+            } else {
+                minFilter = gl.LINEAR;
+            }
+            break;
+        case TEXTURE_NEAREST_LINEAR:
+            magFilter = gl.NEAREST;
+            minFilter = gl.LINEAR;
+            break;
+        case TEXTURE_NEAREST_NEAREST:
+            magFilter = gl.NEAREST;
+            minFilter = gl.NEAREST;
+            break;
+        case TEXTURE_LINEAR_NEAREST_MIPNEAREST:
+            magFilter = gl.LINEAR;
+            if (generateMipMaps) {
+                minFilter = gl.NEAREST_MIPMAP_NEAREST;
+            } else {
+                minFilter = gl.NEAREST;
+            }
+            break;
+        case TEXTURE_LINEAR_NEAREST_MIPLINEAR:
+            magFilter = gl.LINEAR;
+            if (generateMipMaps) {
+                minFilter = gl.NEAREST_MIPMAP_LINEAR;
+            } else {
+                minFilter = gl.NEAREST;
+            }
+            break;
+        case TEXTURE_LINEAR_LINEAR:
+            magFilter = gl.LINEAR;
+            minFilter = gl.LINEAR;
+            break;
+        case TEXTURE_LINEAR_NEAREST:
+            magFilter = gl.LINEAR;
+            minFilter = gl.NEAREST;
+            break;
+    }
+
+    return {
+        min: minFilter,
+        mag: magFilter,
+    };
+}
+
+/** @internal */
+function _createTexture(engineState: WebGLEngineState): WebGLTexture {
+    const texture = engineState._gl.createTexture();
+
+    if (!texture) {
+        throw new Error("Unable to create texture");
+    }
+
+    return texture;
+}
+
+/** @internal */
+export function _createHardwareTexture(engineState: WebGLEngineState): HardwareTextureWrapper {
+    return new WebGLHardwareTexture(_createTexture(engineState), engineState._gl);
+}
+
+/**
+ * Creates an internal texture without binding it to a framebuffer
+ * @internal
+ * @param size defines the size of the texture
+ * @param options defines the options used to create the texture
+ * @param _delayGPUTextureCreation true to delay the texture creation the first time it is really needed. false to create it right away
+ * @param source source type of the texture
+ * @returns a new internal texture
+ */
+export function _createInternalTexture(
+    engineState: IWebGLEnginePublic,
+    size: TextureSize,
+    options: boolean | InternalTextureCreationOptions,
+    _delayGPUTextureCreation = true,
+    source = InternalTextureSource.Unknown
+): InternalTexture {
+    const fes = engineState as WebGLEngineStateFull;
+    let generateMipMaps = false;
+    let type = TEXTURETYPE_UNSIGNED_INT;
+    let samplingMode = TEXTURE_TRILINEAR_SAMPLINGMODE;
+    let format = TEXTUREFORMAT_RGBA;
+    let useSRGBBuffer = false;
+    let samples = 1;
+    let label: string | undefined;
+    if (options !== undefined && typeof options === "object") {
+        generateMipMaps = !!options.generateMipMaps;
+        type = options.type === undefined ? TEXTURETYPE_UNSIGNED_INT : options.type;
+        samplingMode = options.samplingMode === undefined ? TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
+        format = options.format === undefined ? TEXTUREFORMAT_RGBA : options.format;
+        useSRGBBuffer = options.useSRGBBuffer === undefined ? false : options.useSRGBBuffer;
+        samples = options.samples ?? 1;
+        label = options.label;
+    } else {
+        generateMipMaps = !!options;
+    }
+
+    useSRGBBuffer &&= fes._caps.supportSRGBBuffers && fes.webGLVersion > 1;
+
+    if (type === TEXTURETYPE_FLOAT && !fes._caps.textureFloatLinearFiltering) {
+        // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
+        samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
+    } else if (type === TEXTURETYPE_HALF_FLOAT && !fes._caps.textureHalfFloatLinearFiltering) {
+        // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
+        samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
+    }
+    if (type === TEXTURETYPE_FLOAT && !fes._caps.textureFloat) {
+        type = TEXTURETYPE_UNSIGNED_INT;
+        Logger.Warn("Float textures are not supported. Type forced to TEXTURETYPE_UNSIGNED_BYTE");
+    }
+
+    const gl = fes._gl;
+    const texture = new InternalTexture(this, source);
+    const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
+    const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
+    const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
+    const filters = _getSamplingParameters(fes, samplingMode, generateMipMaps);
+    const target = layers !== 0 ? gl.TEXTURE_2D_ARRAY : gl.TEXTURE_2D;
+    const sizedFormat = _getRGBABufferInternalSizedFormat(fes, type, format, useSRGBBuffer);
+    const internalFormat = _getInternalFormat(fes, format);
+    const textureType = _getWebGLTextureType(fes, type);
+
+    // Bind
+    _bindTextureDirectly(fes, target, texture);
+
+    if (layers !== 0) {
+        texture.is2DArray = true;
+        gl.texImage3D(target, 0, sizedFormat, width, height, layers, 0, internalFormat, textureType, null);
+    } else {
+        gl.texImage2D(target, 0, sizedFormat, width, height, 0, internalFormat, textureType, null);
+    }
+
+    gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, filters.mag);
+    gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, filters.min);
+    gl.texParameteri(target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    // MipMaps
+    if (generateMipMaps) {
+        gl.generateMipmap(target);
+    }
+
+    _bindTextureDirectly(fes, target, null);
+
+    texture._useSRGBBuffer = useSRGBBuffer;
+    texture.baseWidth = width;
+    texture.baseHeight = height;
+    texture.width = width;
+    texture.height = height;
+    texture.depth = layers;
+    texture.isReady = true;
+    texture.samples = samples;
+    texture.generateMipMaps = generateMipMaps;
+    texture.samplingMode = samplingMode;
+    texture.type = type;
+    texture.format = format;
+    texture.label = label;
+
+    fes._internalTexturesCache.push(texture);
+
+    return texture;
+}
+
+/**
+ * Usually called from Texture.ts.
+ * Passed information to create a WebGLTexture
+ * @param url defines a value which contains one of the following:
+ * * A conventional http URL, e.g. 'http://...' or 'file://...'
+ * * A base64 string of in-line texture data, e.g. 'data:image/jpg;base64,/...'
+ * * An indicator that data being passed using the buffer parameter, e.g. 'data:mytexture.jpg'
+ * @param noMipmap defines a boolean indicating that no mipmaps shall be generated.  Ignored for compressed textures.  They must be in the file
+ * @param invertY when true, image is flipped when loaded.  You probably want true. Certain compressed textures may invert this if their default is inverted (eg. ktx)
+ * @param scene needed for loading to the correct scene
+ * @param samplingMode mode with should be used sample / access the texture (Default: Texture.TRILINEAR_SAMPLINGMODE)
+ * @param onLoad optional callback to be called upon successful completion
+ * @param onError optional callback to be called upon failure
+ * @param buffer a source of a file previously fetched as either a base64 string, an ArrayBuffer (compressed or image format), HTMLImageElement (image format), or a Blob
+ * @param fallback an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
+ * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
+ * @param forcedExtension defines the extension to use to pick the right loader
+ * @param mimeType defines an optional mime type
+ * @param loaderOptions options to be passed to the loader
+ * @param creationFlags specific flags to use when creating the texture (TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+ * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
+ * @returns a InternalTexture for assignment back into BABYLON.Texture
+ */
+export function createTexture(
+    engineState: IWebGLEnginePublic,
+    url: Nullable<string>,
+    noMipmap: boolean,
+    invertY: boolean,
+    scene: Nullable<ISceneLike>,
+    samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE,
+    onLoad: Nullable<(texture: InternalTexture) => void> = null,
+    onError: Nullable<(message: string, exception: any) => void> = null,
+    buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
+    fallback: Nullable<InternalTexture> = null,
+    format: Nullable<number> = null,
+    forcedExtension: Nullable<string> = null,
+    mimeType?: string,
+    loaderOptions?: any,
+    creationFlags?: number,
+    useSRGBBuffer?: boolean
+): InternalTexture {
+    const fes = engineState as WebGLEngineState;
+    return _createTextureBase(
+        fes,
+        url,
+        noMipmap,
+        invertY,
+        scene,
+        samplingMode,
+        onLoad,
+        onError,
+        this._prepareWebGLTexture.bind(this),
+        (potWidth, potHeight, img, extension, texture, continuationCallback) => {
+            const gl = fes._gl;
+            const isPot = img.width === potWidth && img.height === potHeight;
+
+            const internalFormat = format
+                ? _getInternalFormat(engineState, format, texture._useSRGBBuffer)
+                : extension === ".jpg" && !texture._useSRGBBuffer
+                ? gl.RGB
+                : texture._useSRGBBuffer
+                ? fes._glSRGBExtensionValues.SRGB8_ALPHA8
+                : gl.RGBA;
+            let texelFormat = format ? _getInternalFormat(engineState, format) : extension === ".jpg" && !texture._useSRGBBuffer ? gl.RGB : gl.RGBA;
+
+            if (texture._useSRGBBuffer && fes.webGLVersion === 1) {
+                texelFormat = internalFormat;
+            }
+
+            if (isPot) {
+                gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, texelFormat, gl.UNSIGNED_BYTE, img as any);
+                return false;
+            }
+
+            const maxTextureSize = fes._caps.maxTextureSize;
+
+            if (img.width > maxTextureSize || img.height > maxTextureSize || !this._supportsHardwareTextureRescaling) {
+                _prepareWorkingCanvas(fes);
+                if (!fes._workingCanvas || !fes._workingContext) {
+                    return false;
+                }
+
+                fes._workingCanvas.width = potWidth;
+                fes._workingCanvas.height = potHeight;
+
+                fes._workingContext.drawImage(img as any, 0, 0, img.width, img.height, 0, 0, potWidth, potHeight);
+                gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, texelFormat, gl.UNSIGNED_BYTE, this._workingCanvas as TexImageSource);
+
+                texture.width = potWidth;
+                texture.height = potHeight;
+
+                return false;
+            } else {
+                // Using shaders when possible to rescale because canvas.drawImage is lossy
+                const source = new InternalTexture(this, InternalTextureSource.Temp);
+                this._bindTextureDirectly(gl.TEXTURE_2D, source, true);
+                gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, texelFormat, gl.UNSIGNED_BYTE, img as any);
+
+                this._rescaleTexture(source, texture, scene, internalFormat, () => {
+                    this._releaseTexture(source);
+                    this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
+
+                    continuationCallback();
+                });
+            }
+
+            return true;
+        },
+        buffer,
+        fallback,
+        format,
+        forcedExtension,
+        mimeType,
+        loaderOptions,
+        useSRGBBuffer
+    );
+}
+
+/**
+ * @internal
+ * Rescales a texture
+ * @param source input texture
+ * @param destination destination texture
+ * @param scene scene to use to render the resize
+ * @param internalFormat format to use when resizing
+ * @param onComplete callback to be called when resize has completed
+ */
+export function _rescaleTexture(
+    engineState: WebGLEngineState,
+    source: InternalTexture,
+    destination: InternalTexture,
+    scene: Nullable<any>,
+    internalFormat: number,
+    onComplete: () => void
+): void {
+    engineState._gl.texParameteri(engineState._gl.TEXTURE_2D, engineState._gl.TEXTURE_MAG_FILTER, engineState._gl.LINEAR);
+    engineState._gl.texParameteri(engineState._gl.TEXTURE_2D, engineState._gl.TEXTURE_MIN_FILTER, engineState._gl.LINEAR);
+    engineState._gl.texParameteri(engineState._gl.TEXTURE_2D, engineState._gl.TEXTURE_WRAP_S, engineState._gl.CLAMP_TO_EDGE);
+    engineState._gl.texParameteri(engineState._gl.TEXTURE_2D, engineState._gl.TEXTURE_WRAP_T, engineState._gl.CLAMP_TO_EDGE);
+
+    const rtt = createRenderTargetTexture(
+        engineState,
+        {
+            width: destination.width,
+            height: destination.height,
+        },
+        {
+            generateMipMaps: false,
+            type: TEXTURETYPE_UNSIGNED_INT,
+            samplingMode: TEXTURE_BILINEAR_SAMPLINGMODE,
+            generateDepthBuffer: false,
+            generateStencilBuffer: false,
+        }
+    );
+
+    if (!engineState._rescalePostProcess && Engine._RescalePostProcessFactory) {
+        engineState._rescalePostProcess = Engine._RescalePostProcessFactory(this);
+    }
+
+    if (engineState._rescalePostProcess) {
+        engineState._rescalePostProcess.externalTextureSamplerBinding = true;
+        engineState._rescalePostProcess.getEffect().executeWhenCompiled(() => {
+            engineState._rescalePostProcess!.onApply = function (effect) {
+                effect._bindTexture("textureSampler", source);
+            };
+
+            let hostingScene: Scene = scene;
+
+            if (!hostingScene) {
+                hostingScene = engineState.scenes[engineState.scenes.length - 1];
+            }
+            hostingScene.postProcessManager.directRender([engineState._rescalePostProcess!], rtt, true);
+
+            _bindTextureDirectly(engineState, engineState._gl.TEXTURE_2D, destination, true);
+            engineState._gl.copyTexImage2D(engineState._gl.TEXTURE_2D, 0, internalFormat, 0, 0, destination.width, destination.height, 0);
+
+            unBindFramebuffer(engineState, rtt);
+            rtt.dispose();
+
+            if (onComplete) {
+                onComplete();
+            }
+        });
+    }
+}
+
+/**
+ * @internal
+ */
+export function _unpackFlipY(engineState: WebGLEngineState, value: boolean): void {
+    if (engineState._unpackFlipYCached !== value) {
+        engineState._gl.pixelStorei(engineState._gl.UNPACK_FLIP_Y_WEBGL, value ? 1 : 0);
+
+        if (engineState.enableUnpackFlipYCached) {
+            engineState._unpackFlipYCached = value;
+        }
+    }
+}
+
+/** @internal */
+export function _getUnpackAlignement(engineState: WebGLEngineState): number {
+    return engineState._gl.getParameter(engineState._gl.UNPACK_ALIGNMENT);
+}
+
+function _getTextureTarget(engineState: WebGLEngineState, texture: InternalTexture): number {
+    if (texture.isCube) {
+        return engineState._gl.TEXTURE_CUBE_MAP;
+    } else if (texture.is3D) {
+        return engineState._gl.TEXTURE_3D;
+    } else if (texture.is2DArray || texture.isMultiview) {
+        return engineState._gl.TEXTURE_2D_ARRAY;
+    }
+    return engineState._gl.TEXTURE_2D;
+}
+
+/**
+ * Update the sampling mode of a given texture
+ * @param samplingMode defines the required sampling mode
+ * @param texture defines the texture to update
+ * @param generateMipMaps defines whether to generate mipmaps for the texture
+ */
+export function updateTextureSamplingMode(engineState: IWebGLEnginePublic, samplingMode: number, texture: InternalTexture, generateMipMaps: boolean = false): void {
+    const fes = engineState as WebGLEngineState;
+    const target = _getTextureTarget(fes, texture);
+    const filters = _getSamplingParameters(fes, samplingMode, texture.useMipMaps || generateMipMaps);
+
+    _setTextureParameterInteger(fes, target, fes._gl.TEXTURE_MAG_FILTER, filters.mag, texture);
+    _setTextureParameterInteger(fes, target, fes._gl.TEXTURE_MIN_FILTER, filters.min);
+
+    if (generateMipMaps) {
+        texture.generateMipMaps = true;
+        fes._gl.generateMipmap(target);
+    }
+
+    _bindTextureDirectly(engineState, target, null);
+
+    texture.samplingMode = samplingMode;
+}
+
+/**
+ * Update the sampling mode of a given texture
+ * @param texture defines the texture to update
+ * @param wrapU defines the texture wrap mode of the u coordinates
+ * @param wrapV defines the texture wrap mode of the v coordinates
+ * @param wrapR defines the texture wrap mode of the r coordinates
+ */
+export function updateTextureWrappingMode(
+    engineState: IWebGLEnginePublic,
+    texture: InternalTexture,
+    wrapU: Nullable<number>,
+    wrapV: Nullable<number> = null,
+    wrapR: Nullable<number> = null
+): void {
+    const fes = engineState as WebGLEngineState;
+    const target = _getTextureTarget(engineState, texture);
+
+    if (wrapU !== null) {
+        _setTextureParameterInteger(fes, target, fes._gl.TEXTURE_WRAP_S, _getTextureWrapMode(fes, wrapU), texture);
+        texture._cachedWrapU = wrapU;
+    }
+    if (wrapV !== null) {
+        _setTextureParameterInteger(fes, target, fes._gl.TEXTURE_WRAP_T, _getTextureWrapMode(fes, wrapV), texture);
+        texture._cachedWrapV = wrapV;
+    }
+    if ((texture.is2DArray || texture.is3D) && wrapR !== null) {
+        _setTextureParameterInteger(fes, target, fes._gl.TEXTURE_WRAP_R, _getTextureWrapMode(fes, wrapR), texture);
+        texture._cachedWrapR = wrapR;
+    }
+
+    _bindTextureDirectly(engineState, target, null);
+}
+
+/**
+ * @internal
+ */
+export function _setupDepthStencilTexture(
+    engineState: IWebGLEnginePublic,
+    internalTexture: InternalTexture,
+    size: number | { width: number; height: number; layers?: number },
+    generateStencil: boolean,
+    bilinearFiltering: boolean,
+    comparisonFunction: number,
+    samples = 1
+): void {
+    const fes = engineState as WebGLEngineState;
+    const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
+    const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
+    const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
+
+    internalTexture.baseWidth = width;
+    internalTexture.baseHeight = height;
+    internalTexture.width = width;
+    internalTexture.height = height;
+    internalTexture.is2DArray = layers > 0;
+    internalTexture.depth = layers;
+    internalTexture.isReady = true;
+    internalTexture.samples = samples;
+    internalTexture.generateMipMaps = false;
+    internalTexture.samplingMode = bilinearFiltering ? TEXTURE_BILINEAR_SAMPLINGMODE : TEXTURE_NEAREST_SAMPLINGMODE;
+    internalTexture.type = TEXTURETYPE_UNSIGNED_INT;
+    internalTexture._comparisonFunction = comparisonFunction;
+
+    const gl = fes._gl;
+    const target = _getTextureTarget(engineState, internalTexture);
+    const samplingParameters = _getSamplingParameters(engineState, internalTexture.samplingMode, false);
+    gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, samplingParameters.mag);
+    gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, samplingParameters.min);
+    gl.texParameteri(target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    // TEXTURE_COMPARE_FUNC/MODE are only availble in WebGL2.
+    if (engineState.webGLVersion > 1) {
+        if (comparisonFunction === 0) {
+            gl.texParameteri(target, gl.TEXTURE_COMPARE_FUNC, LEQUAL);
+            gl.texParameteri(target, gl.TEXTURE_COMPARE_MODE, gl.NONE);
+        } else {
+            gl.texParameteri(target, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
+            gl.texParameteri(target, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
+        }
+    }
+}
+
+/**
+ * @internal
+ */
+export function _uploadCompressedDataToTextureDirectly(
+    engineState: IWebGLEnginePublic,
+    texture: InternalTexture,
+    internalFormat: number,
+    width: number,
+    height: number,
+    data: ArrayBufferView,
+    faceIndex: number = 0,
+    lod: number = 0
+) {
+    const fes = engineState as WebGLEngineState;
+    const gl = fes._gl;
+
+    let target: GLenum = gl.TEXTURE_2D;
+    if (texture.isCube) {
+        target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
+    }
+
+    if (texture._useSRGBBuffer) {
+        switch (internalFormat) {
+            case TEXTUREFORMAT_COMPRESSED_RGB8_ETC2:
+            case TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL:
+                // Note, if using ETC1 and sRGB is requested, this will use ETC2 if available.
+                if (fes._caps.etc2) {
+                    internalFormat = gl.COMPRESSED_SRGB8_ETC2;
+                } else {
+                    texture._useSRGBBuffer = false;
+                }
+                break;
+            case TEXTUREFORMAT_COMPRESSED_RGBA8_ETC2_EAC:
+                if (fes._caps.etc2) {
+                    internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ETC2_EAC;
+                } else {
+                    texture._useSRGBBuffer = false;
+                }
+                break;
+            case TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM:
+                internalFormat = gl.COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT;
+                break;
+            case TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4:
+                internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR;
+                break;
+            case TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1:
+                if (fes._caps.s3tc_srgb) {
+                    internalFormat = gl.COMPRESSED_SRGB_S3TC_DXT1_EXT;
+                } else {
+                    // S3TC sRGB extension not supported
+                    texture._useSRGBBuffer = false;
+                }
+                break;
+            case TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1:
+                if (fes._caps.s3tc_srgb) {
+                    internalFormat = gl.COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
+                } else {
+                    // S3TC sRGB extension not supported
+                    texture._useSRGBBuffer = false;
+                }
+                break;
+            case TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5:
+                if (fes._caps.s3tc_srgb) {
+                    internalFormat = gl.COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT;
+                } else {
+                    // S3TC sRGB extension not supported
+                    texture._useSRGBBuffer = false;
+                }
+                break;
+            default:
+                // We don't support a sRGB format corresponding to internalFormat, so revert to non sRGB format
+                texture._useSRGBBuffer = false;
+                break;
+        }
+    }
+
+    gl.compressedTexImage2D(target, lod, internalFormat, width, height, 0, <DataView>data);
+}
+
+/**
+ * @internal
+ */
+export function _uploadDataToTextureDirectly(
+    engineState: IWebGLEnginePublic,
+    texture: InternalTexture,
+    imageData: ArrayBufferView,
+    faceIndex: number = 0,
+    lod: number = 0,
+    babylonInternalFormat?: number,
+    useTextureWidthAndHeight = false
+): void {
+    const fes = engineState as WebGLEngineState;
+    const gl = fes._gl;
+
+    const textureType = _getWebGLTextureType(engineState, texture.type);
+    const format = _getInternalFormat(engineState, texture.format);
+    const internalFormat =
+        babylonInternalFormat === undefined
+            ? _getRGBABufferInternalSizedFormat(engineState, texture.type, texture.format, texture._useSRGBBuffer)
+            : _getInternalFormat(engineState, babylonInternalFormat, texture._useSRGBBuffer);
+
+    _unpackFlipY(engineState, texture.invertY);
+
+    let target: GLenum = gl.TEXTURE_2D;
+    if (texture.isCube) {
+        target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
+    }
+
+    const lodMaxWidth = Math.round(Math.log(texture.width) * Math.LOG2E);
+    const lodMaxHeight = Math.round(Math.log(texture.height) * Math.LOG2E);
+    const width = useTextureWidthAndHeight ? texture.width : Math.pow(2, Math.max(lodMaxWidth - lod, 0));
+    const height = useTextureWidthAndHeight ? texture.height : Math.pow(2, Math.max(lodMaxHeight - lod, 0));
+
+    gl.texImage2D(target, lod, internalFormat, width, height, 0, format, textureType, imageData);
+}
+
+/**
+ * Update a portion of an internal texture
+ * @param texture defines the texture to update
+ * @param imageData defines the data to store into the texture
+ * @param xOffset defines the x coordinates of the update rectangle
+ * @param yOffset defines the y coordinates of the update rectangle
+ * @param width defines the width of the update rectangle
+ * @param height defines the height of the update rectangle
+ * @param faceIndex defines the face index if texture is a cube (0 by default)
+ * @param lod defines the lod level to update (0 by default)
+ * @param generateMipMaps defines whether to generate mipmaps or not
+ */
+export function updateTextureData(
+    engineState: IWebGLEnginePublic,
+    texture: InternalTexture,
+    imageData: ArrayBufferView,
+    xOffset: number,
+    yOffset: number,
+    width: number,
+    height: number,
+    faceIndex: number = 0,
+    lod: number = 0,
+    generateMipMaps = false
+): void {
+    const fes = engineState as WebGLEngineState;
+    const gl = fes._gl;
+
+    const textureType = _getWebGLTextureType(engineState, texture.type);
+    const format = _getInternalFormat(engineState, texture.format);
+
+    _unpackFlipY(texture.invertY);
+
+    let targetForBinding: GLenum = gl.TEXTURE_2D;
+    let target: GLenum = gl.TEXTURE_2D;
+    if (texture.isCube) {
+        target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
+        targetForBinding = gl.TEXTURE_CUBE_MAP;
+    }
+
+    _bindTextureDirectly(engineState, targetForBinding, texture, true);
+
+    gl.texSubImage2D(target, lod, xOffset, yOffset, width, height, format, textureType, imageData);
+
+    if (generateMipMaps) {
+        gl.generateMipmap(target);
+    }
+
+    _bindTextureDirectly(engineState, targetForBinding, null);
+}
+
+/**
+ * @internal
+ */
+export function _uploadArrayBufferViewToTexture(
+    engineState: IWebGLEnginePublic,
+    texture: InternalTexture,
+    imageData: ArrayBufferView,
+    faceIndex: number = 0,
+    lod: number = 0
+): void {
+    const fes = engineState as WebGLEngineState;
+    const gl = fes._gl;
+    const bindTarget = texture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
+
+    _bindTextureDirectly(engineState, bindTarget, texture, true);
+
+    _uploadDataToTextureDirectly(engineState, texture, imageData, faceIndex, lod);
+
+    _bindTextureDirectly(engineState, bindTarget, null, true);
+}
+
+function _prepareWebGLTextureContinuation(
+    engineState: WebGLEngineState,
+    texture: InternalTexture,
+    scene: Nullable<ISceneLike>,
+    noMipmap: boolean,
+    isCompressed: boolean,
+    samplingMode: number
+): void {
+    const gl = engineState._gl;
+    if (!gl) {
+        return;
+    }
+
+    const filters = _getSamplingParameters(engineState, samplingMode, !noMipmap);
+
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
+
+    if (!noMipmap && !isCompressed) {
+        gl.generateMipmap(gl.TEXTURE_2D);
+    }
+
+    _bindTextureDirectly(engineState, gl.TEXTURE_2D, null);
+
+    // this.resetTextureCache();
+    if (scene) {
+        scene.removePendingData(texture);
+    }
+
+    texture.onLoadedObservable.notifyObservers(texture);
+    texture.onLoadedObservable.clear();
+}
+
+function _prepareWebGLTexture(
+    engineState: WebGLEngineStateFull,
+    texture: InternalTexture,
+    extension: string,
+    scene: Nullable<ISceneLike>,
+    img: HTMLImageElement | ImageBitmap | { width: number; height: number },
+    invertY: boolean,
+    noMipmap: boolean,
+    isCompressed: boolean,
+    processFunction: (
+        width: number,
+        height: number,
+        img: HTMLImageElement | ImageBitmap | { width: number; height: number },
+        extension: string,
+        texture: InternalTexture,
+        continuationCallback: () => void
+    ) => boolean,
+    samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE
+): void {
+    const maxTextureSize = engineState._caps.maxTextureSize;
+    const potWidth = Math.min(maxTextureSize, engineState.needPOTTextures ? GetExponentOfTwo(img.width, maxTextureSize) : img.width);
+    const potHeight = Math.min(maxTextureSize, engineState.needPOTTextures ? GetExponentOfTwo(img.height, maxTextureSize) : img.height);
+
+    const gl = engineState._gl;
+    if (!gl) {
+        return;
+    }
+
+    if (!texture._hardwareTexture) {
+        //  this.resetTextureCache();
+        if (scene) {
+            scene.removePendingData(texture);
+        }
+
+        return;
+    }
+
+    _bindTextureDirectly(engineState, gl.TEXTURE_2D, texture, true);
+    _unpackFlipY(engineState, invertY === undefined ? true : invertY ? true : false);
+
+    texture.baseWidth = img.width;
+    texture.baseHeight = img.height;
+    texture.width = potWidth;
+    texture.height = potHeight;
+    texture.isReady = true;
+
+    if (
+        processFunction(potWidth, potHeight, img, extension, texture, () => {
+            _prepareWebGLTextureContinuation(engineState, texture, scene, noMipmap, isCompressed, samplingMode);
+        })
+    ) {
+        // Returning as texture needs extra async steps
+        return;
+    }
+
+    _prepareWebGLTextureContinuation(engineState, texture, scene, noMipmap, isCompressed, samplingMode);
+}
+
+/**
+ * @internal
+ */
+export function _setupFramebufferDepthAttachments(
+    engineState: IWebGLEnginePublic,
+    generateStencilBuffer: boolean,
+    generateDepthBuffer: boolean,
+    width: number,
+    height: number,
+    samples = 1
+): Nullable<WebGLRenderbuffer> {
+    const fes = engineState as WebGLEngineState;
+    const gl = fes._gl;
+
+    // Create the depth/stencil buffer
+    if (generateStencilBuffer && generateDepthBuffer) {
+        return _createRenderBuffer(engineState, width, height, samples, gl.DEPTH_STENCIL, gl.DEPTH24_STENCIL8, gl.DEPTH_STENCIL_ATTACHMENT);
+    }
+    if (generateDepthBuffer) {
+        let depthFormat: GLenum = gl.DEPTH_COMPONENT16;
+        if (fes._webGLVersion > 1) {
+            depthFormat = gl.DEPTH_COMPONENT32F;
+        }
+
+        return _createRenderBuffer(engineState, width, height, samples, depthFormat, depthFormat, gl.DEPTH_ATTACHMENT);
+    }
+    if (generateStencilBuffer) {
+        return _createRenderBuffer(engineState, width, height, samples, gl.STENCIL_INDEX8, gl.STENCIL_INDEX8, gl.STENCIL_ATTACHMENT);
+    }
+
+    return null;
+}
+
+/**
+ * @internal
+ */
+export function _createRenderBuffer(
+    engineState: IWebGLEnginePublic,
+    width: number,
+    height: number,
+    samples: number,
+    internalFormat: number,
+    msInternalFormat: number,
+    attachment: number,
+    unbindBuffer = true
+): Nullable<WebGLRenderbuffer> {
+    const gl = (engineState as WebGLEngineState)._gl;
+    const renderBuffer = gl.createRenderbuffer();
+    return _updateRenderBuffer(engineState, renderBuffer, width, height, samples, internalFormat, msInternalFormat, attachment, unbindBuffer);
+}
+
+export function _updateRenderBuffer(
+    engineState: IWebGLEnginePublic,
+    renderBuffer: Nullable<WebGLRenderbuffer>,
+    width: number,
+    height: number,
+    samples: number,
+    internalFormat: number,
+    msInternalFormat: number,
+    attachment: number,
+    unbindBuffer = true
+): Nullable<WebGLRenderbuffer> {
+    const gl = (engineState as WebGLEngineState)._gl;
+
+    gl.bindRenderbuffer(gl.RENDERBUFFER, renderBuffer);
+
+    if (samples > 1 && gl.renderbufferStorageMultisample) {
+        gl.renderbufferStorageMultisample(gl.RENDERBUFFER, samples, msInternalFormat, width, height);
+    } else {
+        gl.renderbufferStorage(gl.RENDERBUFFER, internalFormat, width, height);
+    }
+
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, attachment, gl.RENDERBUFFER, renderBuffer);
+
+    if (unbindBuffer) {
+        gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+    }
+
+    return renderBuffer;
+}
+
+/**
+ * @internal
+ */
+export function _releaseTexture(engineState: IWebGLEnginePublic, texture: InternalTexture): void {
+    const fes = engineState as WebGLEngineState;
+    _deleteTexture(fes, texture._hardwareTexture?.underlyingResource);
+
+    // Unbind channels
+    unbindAllTextures(engineState);
+
+    const index = fes._internalTexturesCache.indexOf(texture);
+    if (index !== -1) {
+        fes._internalTexturesCache.splice(index, 1);
+    }
+
+    // Integrated fixed lod samplers.
+    if (texture._lodTextureHigh) {
+        texture._lodTextureHigh.dispose();
+    }
+    if (texture._lodTextureMid) {
+        texture._lodTextureMid.dispose();
+    }
+    if (texture._lodTextureLow) {
+        texture._lodTextureLow.dispose();
+    }
+
+    // Integrated irradiance map.
+    if (texture._irradianceTexture) {
+        texture._irradianceTexture.dispose();
+    }
+}
+
+/**
+ * @internal
+ */
+export function _releaseRenderTargetWrapper(engineState: IWebGLEnginePublic, rtWrapper: RenderTargetWrapper): void {
+    const fes = engineState as WebGLEngineState;
+    const index = fes._renderTargetWrapperCache.indexOf(rtWrapper);
+    if (index !== -1) {
+        fes._renderTargetWrapperCache.splice(index, 1);
+    }
+}
+
+function _deleteTexture(engineState: WebGLEngineState, texture: Nullable<WebGLTexture>): void {
+    if (texture) {
+        engineState._gl.deleteTexture(texture);
+    }
+}
+
+function _setProgram(engineState: WebGLEngineState, program: WebGLProgram): void {
+    if (engineState._currentProgram !== program) {
+        engineState._gl.useProgram(program);
+        engineState._currentProgram = program;
+    }
+}
+
+/**
+ * Binds an effect to the webGL context
+ * @param effect defines the effect to bind
+ */
+export function bindSamplers(engineState: IWebGLEnginePublic, effect: Effect): void {
+    const fes = engineState as WebGLEngineStateFull;
+    const webGLPipelineContext = effect.getPipelineContext() as WebGLPipelineContext;
+    _setProgram(fes, webGLPipelineContext.program!);
+    const samplers = effect.getSamplers();
+    for (let index = 0; index < samplers.length; index++) {
+        const uniform = effect.getUniform(samplers[index]);
+
+        if (uniform) {
+            fes._boundUniforms[index] = uniform;
+        }
+    }
+    fes._currentEffect = null;
+}
+
+/**
+ * @internal
+ */
+export function _bindTextureDirectly(engineState: IWebGLEnginePublic, target: number, texture: Nullable<InternalTexture>, forTextureDataUpdate = false, force = false): boolean {
+    const fes = engineState as WebGLEngineState;
+    let wasPreviouslyBound = false;
+    const isTextureForRendering = texture && texture._associatedChannel > -1;
+    if (forTextureDataUpdate && isTextureForRendering) {
+        fes._activeChannel = texture!._associatedChannel;
+    }
+
+    const currentTextureBound = fes._boundTexturesCache[fes._activeChannel];
+
+    if (currentTextureBound !== texture || force) {
+        _activateCurrentTexture(fes);
+
+        if (texture && texture.isMultiview) {
+            //this._gl.bindTexture(target, texture ? texture._colorTextureArray : null);
+            console.error(target, texture);
+            throw "_bindTextureDirectly called with a multiview texture!";
+        } else {
+            fes._gl.bindTexture(target, texture?._hardwareTexture?.underlyingResource ?? null);
+        }
+
+        fes._boundTexturesCache[fes._activeChannel] = texture;
+
+        if (texture) {
+            texture._associatedChannel = fes._activeChannel;
+        }
+    } else if (forTextureDataUpdate) {
+        wasPreviouslyBound = true;
+        _activateCurrentTexture(fes);
+    }
+
+    if (isTextureForRendering && !forTextureDataUpdate) {
+        _bindSamplerUniformToChannel(fes, texture!._associatedChannel, this._activeChannel);
+    }
+
+    return wasPreviouslyBound;
+}
+
+/**
+ * @internal
+ */
+export function _bindTexture(engineState: IWebGLEnginePublic, channel: number, texture: Nullable<InternalTexture>, name: string): void {
+    const fes = engineState as WebGLEngineStateFull;
+    if (channel === undefined) {
+        return;
+    }
+
+    if (texture) {
+        texture._associatedChannel = channel;
+    }
+
+    fes._activeChannel = channel;
+    const target = texture ? _getTextureTarget(fes, texture) : fes._gl.TEXTURE_2D;
+    _bindTextureDirectly(fes, target, texture);
+}
+
+/**
+ * Unbind all textures from the webGL context
+ */
+export function unbindAllTextures(engineState: IWebGLEnginePublic): void {
+    const fes = engineState as WebGLEngineStateFull;
+    for (let channel = 0; channel < fes._maxSimultaneousTextures; channel++) {
+        fes._activeChannel = channel;
+        _bindTextureDirectly(fes, fes._gl.TEXTURE_2D, null);
+        _bindTextureDirectly(fes, fes._gl.TEXTURE_CUBE_MAP, null);
+        if (fes._webGLVersion > 1) {
+            _bindTextureDirectly(fes, fes._gl.TEXTURE_3D, null);
+            _bindTextureDirectly(fes, fes._gl.TEXTURE_2D_ARRAY, null);
+        }
+    }
+}
+
+/**
+ * Sets a texture to the according uniform.
+ * @param channel The texture channel
+ * @param uniform The uniform to set
+ * @param texture The texture to apply
+ * @param name The name of the uniform in the effect
+ */
+export function setTexture(engineState: IWebGLEnginePublic, channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<ThinTexture>, name: string): void {
+    const fes = engineState as WebGLEngineState;
+    if (channel === undefined) {
+        return;
+    }
+
+    if (uniform) {
+        fes._boundUniforms[channel] = uniform;
+    }
+
+    _setTexture(fes, channel, texture);
+}
+
+function _bindSamplerUniformToChannel(engineState: WebGLEngineStateFull, sourceSlot: number, destination: number) {
+    const uniform = engineState._boundUniforms[sourceSlot];
+    if (!uniform || uniform._currentState === destination) {
+        return;
+    }
+    engineState._gl.uniform1i(uniform, destination);
+    uniform._currentState = destination;
+}
+
+function _getTextureWrapMode(engineState: WebGLEngineState, mode: number): number {
+    switch (mode) {
+        case TEXTURE_WRAP_ADDRESSMODE:
+            return engineState._gl.REPEAT;
+        case TEXTURE_CLAMP_ADDRESSMODE:
+            return engineState._gl.CLAMP_TO_EDGE;
+        case TEXTURE_MIRROR_ADDRESSMODE:
+            return engineState._gl.MIRRORED_REPEAT;
+    }
+    return engineState._gl.REPEAT;
+}
+
+function _setTexture(
+    engineState: WebGLEngineState,
+    channel: number,
+    texture: Nullable<ThinTexture>,
+    isPartOfTextureArray = false,
+    depthStencilTexture = false,
+    name = ""
+): boolean {
+    // Not ready?
+    if (!texture) {
+        if (engineState._boundTexturesCache[channel] != null) {
+            engineState._activeChannel = channel;
+            _bindTextureDirectly(engineState, engineState._gl.TEXTURE_2D, null);
+            _bindTextureDirectly(engineState, engineState._gl.TEXTURE_CUBE_MAP, null);
+            if (engineState.webGLVersion > 1) {
+                _bindTextureDirectly(engineState, engineState._gl.TEXTURE_3D, null);
+                _bindTextureDirectly(engineState, engineState._gl.TEXTURE_2D_ARRAY, null);
+            }
+        }
+        return false;
+    }
+
+    // Video
+    if ((<VideoTexture>texture).video) {
+        engineState._activeChannel = channel;
+        const videoInternalTexture = (<VideoTexture>texture).getInternalTexture();
+        if (videoInternalTexture) {
+            videoInternalTexture._associatedChannel = channel;
+        }
+        (<VideoTexture>texture).update();
+    } else if (texture.delayLoadState === DELAYLOADSTATE_NOTLOADED) {
+        // Delay loading
+        texture.delayLoad();
+        return false;
+    }
+
+    let internalTexture: InternalTexture;
+    if (depthStencilTexture) {
+        internalTexture = (<RenderTargetTexture>texture).depthStencilTexture!;
+    } else if (texture.isReady()) {
+        internalTexture = <InternalTexture>texture.getInternalTexture();
+    } else if (texture.isCube) {
+        internalTexture = this.emptyCubeTexture;
+    } else if (texture.is3D) {
+        internalTexture = this.emptyTexture3D;
+    } else if (texture.is2DArray) {
+        internalTexture = this.emptyTexture2DArray;
+    } else {
+        internalTexture = this.emptyTexture;
+    }
+
+    if (!isPartOfTextureArray && internalTexture) {
+        internalTexture._associatedChannel = channel;
+    }
+
+    let needToBind = true;
+    if (engineState._boundTexturesCache[channel] === internalTexture) {
+        if (!isPartOfTextureArray) {
+            _bindSamplerUniformToChannel(engineState, internalTexture._associatedChannel, channel);
+        }
+
+        needToBind = false;
+    }
+
+    engineState._activeChannel = channel;
+    const target = _getTextureTarget(engineState, internalTexture);
+    if (needToBind) {
+        _bindTextureDirectly(engineState, target, internalTexture, isPartOfTextureArray);
+    }
+
+    if (internalTexture && !internalTexture.isMultiview) {
+        // CUBIC_MODE and SKYBOX_MODE both require CLAMP_TO_EDGE.  All other modes use REPEAT.
+        if (internalTexture.isCube && internalTexture._cachedCoordinatesMode !== texture.coordinatesMode) {
+            internalTexture._cachedCoordinatesMode = texture.coordinatesMode;
+
+            const textureWrapMode =
+                texture.coordinatesMode !== TEXTURE_CUBIC_MODE && texture.coordinatesMode !== TEXTURE_SKYBOX_MODE ? TEXTURE_WRAP_ADDRESSMODE : TEXTURE_CLAMP_ADDRESSMODE;
+            texture.wrapU = textureWrapMode;
+            texture.wrapV = textureWrapMode;
+        }
+
+        if (internalTexture._cachedWrapU !== texture.wrapU) {
+            internalTexture._cachedWrapU = texture.wrapU;
+            _setTextureParameterInteger(engineState, target, engineState._gl.TEXTURE_WRAP_S, _getTextureWrapMode(engineState, texture.wrapU), internalTexture);
+        }
+
+        if (internalTexture._cachedWrapV !== texture.wrapV) {
+            internalTexture._cachedWrapV = texture.wrapV;
+            _setTextureParameterInteger(engineState, target, engineState._gl.TEXTURE_WRAP_T, _getTextureWrapMode(engineState, texture.wrapV), internalTexture);
+        }
+
+        if (internalTexture.is3D && internalTexture._cachedWrapR !== texture.wrapR) {
+            internalTexture._cachedWrapR = texture.wrapR;
+            _setTextureParameterInteger(engineState, target, this._gl.TEXTURE_WRAP_R, this._getTextureWrapMode(texture.wrapR), internalTexture);
+        }
+
+        _setAnisotropicLevel(engineState, target, internalTexture, texture.anisotropicFilteringLevel);
+    }
+
+    return true;
+}
+
+/**
+ * Sets an array of texture to the webGL context
+ * @param channel defines the channel where the texture array must be set
+ * @param uniform defines the associated uniform location
+ * @param textures defines the array of textures to bind
+ * @param name name of the channel
+ */
+export function setTextureArray(engineState: IWebGLEnginePublic, channel: number, uniform: Nullable<WebGLUniformLocation>, textures: ThinTexture[], name: string): void {
+    const fes = engineState as WebGLEngineState;
+    if (channel === undefined || !uniform) {
+        return;
+    }
+
+    if (!fes._textureUnits || fes._textureUnits.length !== textures.length) {
+        fes._textureUnits = new Int32Array(textures.length);
+    }
+    for (let i = 0; i < textures.length; i++) {
+        const texture = textures[i].getInternalTexture();
+
+        if (texture) {
+            fes._textureUnits[i] = channel + i;
+            texture._associatedChannel = channel + i;
+        } else {
+            fes._textureUnits[i] = -1;
+        }
+    }
+    fes._gl.uniform1iv(uniform, fes._textureUnits);
+
+    for (let index = 0; index < textures.length; index++) {
+        _setTexture(fes, fes._textureUnits[index], textures[index], true);
+    }
+}
+
+/**
+ * @internal
+ */
+export function _setAnisotropicLevel(engineState: IWebGLEnginePublic, target: number, internalTexture: InternalTexture, anisotropicFilteringLevel: number) {
+    const fes = engineState as WebGLEngineState;
+    const anisotropicFilterExtension = fes._caps.textureAnisotropicFilterExtension;
+    if (
+        internalTexture.samplingMode !== TEXTURE_LINEAR_LINEAR_MIPNEAREST &&
+        internalTexture.samplingMode !== TEXTURE_LINEAR_LINEAR_MIPLINEAR &&
+        internalTexture.samplingMode !== TEXTURE_LINEAR_LINEAR
+    ) {
+        anisotropicFilteringLevel = 1; // Forcing the anisotropic to 1 because else webgl will force filters to linear
+    }
+
+    if (anisotropicFilterExtension && internalTexture._cachedAnisotropicFilteringLevel !== anisotropicFilteringLevel) {
+        _setTextureParameterFloat(
+            fes,
+            target,
+            anisotropicFilterExtension.TEXTURE_MAX_ANISOTROPY_EXT,
+            Math.min(anisotropicFilteringLevel, fes._caps.maxAnisotropy),
+            internalTexture
+        );
+        internalTexture._cachedAnisotropicFilteringLevel = anisotropicFilteringLevel;
+    }
+}
+
+export function _setTextureParameterFloat(engineState: WebGLEngineState, target: number, parameter: number, value: number, texture: InternalTexture): void {
+    _bindTextureDirectly(engineState, target, texture, true, true);
+    engineState._gl.texParameterf(target, parameter, value);
+}
+
+export function _setTextureParameterInteger(engineState: WebGLEngineState, target: number, parameter: number, value: number, texture?: InternalTexture) {
+    if (texture) {
+        _bindTextureDirectly(engineState, target, texture, true, true);
+    }
+    engineState._gl.texParameteri(target, parameter, value);
+}
+
+/**
+ * Unbind all vertex attributes from the webGL context
+ */
+export function unbindAllAttributes(engineState: IWebGLEnginePublic) {
+    const fes = engineState as WebGLEngineState;
+    if (fes._mustWipeVertexAttributes) {
+        fes._mustWipeVertexAttributes = false;
+
+        for (let i = 0; i < fes._caps.maxVertexAttribs; i++) {
+            disableAttributeByIndex(engineState, i);
+        }
+        return;
+    }
+
+    for (let i = 0, ul = fes._vertexAttribArraysEnabled.length; i < ul; i++) {
+        if (i >= fes._caps.maxVertexAttribs || !fes._vertexAttribArraysEnabled[i]) {
+            continue;
+        }
+
+        disableAttributeByIndex(engineState, i);
+    }
+}
+
+/**
+ * Force the engine to release all cached effects. This means that next effect compilation will have to be done completely even if a similar effect was already compiled
+ */
+export function releaseEffects(engineState: IWebGLEnginePublic) {
+    const fes = engineState as WebGLEngineState;
+    for (const name in fes._compiledEffects) {
+        const webGLPipelineContext = fes._compiledEffects[name].getPipelineContext() as WebGLPipelineContext;
+        _deletePipelineContext(engineState, webGLPipelineContext);
+    }
+
+    fes._compiledEffects = {};
+}
+
+/**
+ * Attach a new callback raised when context lost event is fired
+ * @param callback defines the callback to call
+ */
+export function attachContextLostEvent(engineState: IWebGLEnginePublic, callback: (event: WebGLContextEvent) => void): void {
+    const fes = engineState as WebGLEngineState;
+    if (fes._renderingCanvas) {
+        fes._renderingCanvas.addEventListener("webglcontextlost", <any>callback, false);
+    }
+}
+
+/**
+ * Attach a new callback raised when context restored event is fired
+ * @param callback defines the callback to call
+ */
+export function attachContextRestoredEvent(engineState: IWebGLEnginePublic, callback: (event: WebGLContextEvent) => void): void {
+    const fes = engineState as WebGLEngineState;
+    if (fes._renderingCanvas) {
+        fes._renderingCanvas.addEventListener("webglcontextrestored", <any>callback, false);
+    }
+}
+
+/**
+ * Get the current error code of the webGL context
+ * @returns the error code
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getError
+ */
+export function getError(engineState: IWebGLEnginePublic): number {
+    return (engineState as WebGLEngineState)._gl.getError();
+}
+
+function _canRenderToFloatFramebuffer(engineState: IWebGLEnginePublic): boolean {
+    const fes = engineState as WebGLEngineState;
+    if (fes._webGLVersion > 1) {
+        return fes._caps.colorBufferFloat;
+    }
+    return _canRenderToFramebuffer(engineState, TEXTURETYPE_FLOAT);
+}
+
+function _canRenderToHalfFloatFramebuffer(engineState: IWebGLEnginePublic): boolean {
+    const fes = engineState as WebGLEngineState;
+    if (fes._webGLVersion > 1) {
+        return fes._caps.colorBufferFloat;
+    }
+    return _canRenderToFramebuffer(engineState, TEXTURETYPE_HALF_FLOAT);
+}
+
+// Thank you : http://stackoverflow.com/questions/28827511/webgl-ios-render-to-floating-point-texture
+function _canRenderToFramebuffer(engineState: IWebGLEnginePublic, type: number): boolean {
+    const fes = engineState as WebGLEngineState;
+    const gl = fes._gl;
+
+    //clear existing errors
+    // eslint-disable-next-line no-empty
+    while (gl.getError() !== gl.NO_ERROR) {}
+
+    let successful = true;
+
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, _getRGBABufferInternalSizedFormat(engineState, type), 1, 1, 0, gl.RGBA, _getWebGLTextureType(engineState, type), null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+
+    const fb = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+    const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+
+    successful = successful && status === gl.FRAMEBUFFER_COMPLETE;
+    successful = successful && gl.getError() === gl.NO_ERROR;
+
+    //try render by clearing frame buffer's color buffer
+    if (successful) {
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        successful = successful && gl.getError() === gl.NO_ERROR;
+    }
+
+    //try reading from frame to ensure render occurs (just creating the FBO is not sufficient to determine if rendering is supported)
+    if (successful) {
+        //in practice it's sufficient to just read from the backbuffer rather than handle potentially issues reading from the texture
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        const readFormat = gl.RGBA;
+        const readType = gl.UNSIGNED_BYTE;
+        const buffer = new Uint8Array(4);
+        gl.readPixels(0, 0, 1, 1, readFormat, readType, buffer);
+        successful = successful && gl.getError() === gl.NO_ERROR;
+    }
+
+    //clean up
+    gl.deleteTexture(texture);
+    gl.deleteFramebuffer(fb);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+    //clear accumulated errors
+    // eslint-disable-next-line no-empty
+    while (!successful && gl.getError() !== gl.NO_ERROR) {}
+
+    return successful;
+}
+
+/**
+ * @internal
+ */
+export function _getWebGLTextureType(engineState: IWebGLEnginePublic, type: number): number {
+    const fes = engineState as WebGLEngineState;
+    if (fes._webGLVersion === 1) {
+        switch (type) {
+            case TEXTURETYPE_FLOAT:
+                return fes._gl.FLOAT;
+            case TEXTURETYPE_HALF_FLOAT:
+                return fes._gl.HALF_FLOAT_OES;
+            case TEXTURETYPE_UNSIGNED_BYTE:
+                return fes._gl.UNSIGNED_BYTE;
+            case TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4:
+                return fes._gl.UNSIGNED_SHORT_4_4_4_4;
+            case TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1:
+                return fes._gl.UNSIGNED_SHORT_5_5_5_1;
+            case TEXTURETYPE_UNSIGNED_SHORT_5_6_5:
+                return fes._gl.UNSIGNED_SHORT_5_6_5;
+        }
+        return fes._gl.UNSIGNED_BYTE;
+    }
+
+    switch (type) {
+        case TEXTURETYPE_BYTE:
+            return fes._gl.BYTE;
+        case TEXTURETYPE_UNSIGNED_BYTE:
+            return fes._gl.UNSIGNED_BYTE;
+        case TEXTURETYPE_SHORT:
+            return fes._gl.SHORT;
+        case TEXTURETYPE_UNSIGNED_SHORT:
+            return fes._gl.UNSIGNED_SHORT;
+        case TEXTURETYPE_INT:
+            return fes._gl.INT;
+        case TEXTURETYPE_UNSIGNED_INTEGER: // Refers to UNSIGNED_INT
+            return fes._gl.UNSIGNED_INT;
+        case TEXTURETYPE_FLOAT:
+            return fes._gl.FLOAT;
+        case TEXTURETYPE_HALF_FLOAT:
+            return fes._gl.HALF_FLOAT;
+        case TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4:
+            return fes._gl.UNSIGNED_SHORT_4_4_4_4;
+        case TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1:
+            return fes._gl.UNSIGNED_SHORT_5_5_5_1;
+        case TEXTURETYPE_UNSIGNED_SHORT_5_6_5:
+            return fes._gl.UNSIGNED_SHORT_5_6_5;
+        case TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV:
+            return fes._gl.UNSIGNED_INT_2_10_10_10_REV;
+        case TEXTURETYPE_UNSIGNED_INT_24_8:
+            return fes._gl.UNSIGNED_INT_24_8;
+        case TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV:
+            return fes._gl.UNSIGNED_INT_10F_11F_11F_REV;
+        case TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV:
+            return fes._gl.UNSIGNED_INT_5_9_9_9_REV;
+        case TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV:
+            return fes._gl.FLOAT_32_UNSIGNED_INT_24_8_REV;
+    }
+
+    return fes._gl.UNSIGNED_BYTE;
+}
+
+/**
+ * @internal
+ */
+export function _getInternalFormat(engineState: IWebGLEnginePublic, format: number, useSRGBBuffer = false): number {
+    const fes = engineState as WebGLEngineState;
+    let internalFormat: GLenum = useSRGBBuffer ? fes._glSRGBExtensionValues.SRGB8_ALPHA8 : fes._gl.RGBA;
+
+    switch (format) {
+        case TEXTUREFORMAT_ALPHA:
+            internalFormat = fes._gl.ALPHA;
+            break;
+        case TEXTUREFORMAT_LUMINANCE:
+            internalFormat = fes._gl.LUMINANCE;
+            break;
+        case TEXTUREFORMAT_LUMINANCE_ALPHA:
+            internalFormat = fes._gl.LUMINANCE_ALPHA;
+            break;
+        case TEXTUREFORMAT_RED:
+            internalFormat = fes._gl.RED;
+            break;
+        case TEXTUREFORMAT_RG:
+            internalFormat = fes._gl.RG;
+            break;
+        case TEXTUREFORMAT_RGB:
+            internalFormat = useSRGBBuffer ? fes._glSRGBExtensionValues.SRGB : fes._gl.RGB;
+            break;
+        case TEXTUREFORMAT_RGBA:
+            internalFormat = useSRGBBuffer ? fes._glSRGBExtensionValues.SRGB8_ALPHA8 : fes._gl.RGBA;
+            break;
+    }
+
+    if (fes._webGLVersion > 1) {
+        switch (format) {
+            case TEXTUREFORMAT_RED_INTEGER:
+                internalFormat = fes._gl.RED_INTEGER;
+                break;
+            case TEXTUREFORMAT_RG_INTEGER:
+                internalFormat = fes._gl.RG_INTEGER;
+                break;
+            case TEXTUREFORMAT_RGB_INTEGER:
+                internalFormat = fes._gl.RGB_INTEGER;
+                break;
+            case TEXTUREFORMAT_RGBA_INTEGER:
+                internalFormat = fes._gl.RGBA_INTEGER;
+                break;
+        }
+    }
+
+    return internalFormat;
+}
+
+/**
+ * @internal
+ */
+export function _getRGBABufferInternalSizedFormat(engineState: IWebGLEnginePublic, type: number, format?: number, useSRGBBuffer = false): number {
+    const fes = engineState as WebGLEngineState;
+    if (fes._webGLVersion === 1) {
+        if (format !== undefined) {
+            switch (format) {
+                case TEXTUREFORMAT_ALPHA:
+                    return fes._gl.ALPHA;
+                case TEXTUREFORMAT_LUMINANCE:
+                    return fes._gl.LUMINANCE;
+                case TEXTUREFORMAT_LUMINANCE_ALPHA:
+                    return fes._gl.LUMINANCE_ALPHA;
+                case TEXTUREFORMAT_RGB:
+                    return useSRGBBuffer ? fes._glSRGBExtensionValues.SRGB : fes._gl.RGB;
+            }
+        }
+        return fes._gl.RGBA;
+    }
+
+    switch (type) {
+        case TEXTURETYPE_BYTE:
+            switch (format) {
+                case TEXTUREFORMAT_RED:
+                    return fes._gl.R8_SNORM;
+                case TEXTUREFORMAT_RG:
+                    return fes._gl.RG8_SNORM;
+                case TEXTUREFORMAT_RGB:
+                    return fes._gl.RGB8_SNORM;
+                case TEXTUREFORMAT_RED_INTEGER:
+                    return fes._gl.R8I;
+                case TEXTUREFORMAT_RG_INTEGER:
+                    return fes._gl.RG8I;
+                case TEXTUREFORMAT_RGB_INTEGER:
+                    return fes._gl.RGB8I;
+                case TEXTUREFORMAT_RGBA_INTEGER:
+                    return fes._gl.RGBA8I;
+                default:
+                    return fes._gl.RGBA8_SNORM;
+            }
+        case TEXTURETYPE_UNSIGNED_BYTE:
+            switch (format) {
+                case TEXTUREFORMAT_RED:
+                    return fes._gl.R8;
+                case TEXTUREFORMAT_RG:
+                    return fes._gl.RG8;
+                case TEXTUREFORMAT_RGB:
+                    return useSRGBBuffer ? fes._glSRGBExtensionValues.SRGB8 : fes._gl.RGB8; // By default. Other possibilities are RGB565, SRGB8.
+                case TEXTUREFORMAT_RGBA:
+                    return useSRGBBuffer ? fes._glSRGBExtensionValues.SRGB8_ALPHA8 : fes._gl.RGBA8; // By default. Other possibilities are RGB5_A1, RGBA4, SRGB8_ALPHA8.
+                case TEXTUREFORMAT_RED_INTEGER:
+                    return fes._gl.R8UI;
+                case TEXTUREFORMAT_RG_INTEGER:
+                    return fes._gl.RG8UI;
+                case TEXTUREFORMAT_RGB_INTEGER:
+                    return fes._gl.RGB8UI;
+                case TEXTUREFORMAT_RGBA_INTEGER:
+                    return fes._gl.RGBA8UI;
+                case TEXTUREFORMAT_ALPHA:
+                    return fes._gl.ALPHA;
+                case TEXTUREFORMAT_LUMINANCE:
+                    return fes._gl.LUMINANCE;
+                case TEXTUREFORMAT_LUMINANCE_ALPHA:
+                    return fes._gl.LUMINANCE_ALPHA;
+                default:
+                    return fes._gl.RGBA8;
+            }
+        case TEXTURETYPE_SHORT:
+            switch (format) {
+                case TEXTUREFORMAT_RED_INTEGER:
+                    return fes._gl.R16I;
+                case TEXTUREFORMAT_RG_INTEGER:
+                    return fes._gl.RG16I;
+                case TEXTUREFORMAT_RGB_INTEGER:
+                    return fes._gl.RGB16I;
+                case TEXTUREFORMAT_RGBA_INTEGER:
+                    return fes._gl.RGBA16I;
+                default:
+                    return fes._gl.RGBA16I;
+            }
+        case TEXTURETYPE_UNSIGNED_SHORT:
+            switch (format) {
+                case TEXTUREFORMAT_RED_INTEGER:
+                    return fes._gl.R16UI;
+                case TEXTUREFORMAT_RG_INTEGER:
+                    return fes._gl.RG16UI;
+                case TEXTUREFORMAT_RGB_INTEGER:
+                    return fes._gl.RGB16UI;
+                case TEXTUREFORMAT_RGBA_INTEGER:
+                    return fes._gl.RGBA16UI;
+                default:
+                    return fes._gl.RGBA16UI;
+            }
+        case TEXTURETYPE_INT:
+            switch (format) {
+                case TEXTUREFORMAT_RED_INTEGER:
+                    return fes._gl.R32I;
+                case TEXTUREFORMAT_RG_INTEGER:
+                    return fes._gl.RG32I;
+                case TEXTUREFORMAT_RGB_INTEGER:
+                    return fes._gl.RGB32I;
+                case TEXTUREFORMAT_RGBA_INTEGER:
+                    return fes._gl.RGBA32I;
+                default:
+                    return fes._gl.RGBA32I;
+            }
+        case TEXTURETYPE_UNSIGNED_INTEGER: // Refers to UNSIGNED_INT
+            switch (format) {
+                case TEXTUREFORMAT_RED_INTEGER:
+                    return fes._gl.R32UI;
+                case TEXTUREFORMAT_RG_INTEGER:
+                    return fes._gl.RG32UI;
+                case TEXTUREFORMAT_RGB_INTEGER:
+                    return fes._gl.RGB32UI;
+                case TEXTUREFORMAT_RGBA_INTEGER:
+                    return fes._gl.RGBA32UI;
+                default:
+                    return fes._gl.RGBA32UI;
+            }
+        case TEXTURETYPE_FLOAT:
+            switch (format) {
+                case TEXTUREFORMAT_RED:
+                    return fes._gl.R32F; // By default. Other possibility is R16F.
+                case TEXTUREFORMAT_RG:
+                    return fes._gl.RG32F; // By default. Other possibility is RG16F.
+                case TEXTUREFORMAT_RGB:
+                    return fes._gl.RGB32F; // By default. Other possibilities are RGB16F, R11F_G11F_B10F, RGB9_E5.
+                case TEXTUREFORMAT_RGBA:
+                    return fes._gl.RGBA32F; // By default. Other possibility is RGBA16F.
+                default:
+                    return fes._gl.RGBA32F;
+            }
+        case TEXTURETYPE_HALF_FLOAT:
+            switch (format) {
+                case TEXTUREFORMAT_RED:
+                    return fes._gl.R16F;
+                case TEXTUREFORMAT_RG:
+                    return fes._gl.RG16F;
+                case TEXTUREFORMAT_RGB:
+                    return fes._gl.RGB16F; // By default. Other possibilities are R11F_G11F_B10F, RGB9_E5.
+                case TEXTUREFORMAT_RGBA:
+                    return fes._gl.RGBA16F;
+                default:
+                    return fes._gl.RGBA16F;
+            }
+        case TEXTURETYPE_UNSIGNED_SHORT_5_6_5:
+            return fes._gl.RGB565;
+        case TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV:
+            return fes._gl.R11F_G11F_B10F;
+        case TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV:
+            return fes._gl.RGB9_E5;
+        case TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4:
+            return fes._gl.RGBA4;
+        case TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1:
+            return fes._gl.RGB5_A1;
+        case TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV:
+            switch (format) {
+                case TEXTUREFORMAT_RGBA:
+                    return fes._gl.RGB10_A2; // By default. Other possibility is RGB5_A1.
+                case TEXTUREFORMAT_RGBA_INTEGER:
+                    return fes._gl.RGB10_A2UI;
+                default:
+                    return fes._gl.RGB10_A2;
+            }
+    }
+
+    return useSRGBBuffer ? fes._glSRGBExtensionValues.SRGB8_ALPHA8 : fes._gl.RGBA8;
+}
+
+/**
+ * @internal
+ */
+export function _getRGBAMultiSampleBufferFormat(engineState: IWebGLEnginePublic, type: number, format = TEXTUREFORMAT_RGBA): number {
+    const fes = engineState as WebGLEngineState;
+    switch (type) {
+        case TEXTURETYPE_FLOAT:
+            switch (format) {
+                case TEXTUREFORMAT_R:
+                    return fes._gl.R32F;
+                default:
+                    return fes._gl.RGBA32F;
+            }
+        case TEXTURETYPE_HALF_FLOAT:
+            switch (format) {
+                case TEXTUREFORMAT_R:
+                    return fes._gl.R16F;
+                default:
+                    return fes._gl.RGBA16F;
+            }
+    }
+
+    return fes._gl.RGBA8;
+}
+
+/**
+ * Reads pixels from the current frame buffer. Please note that this function can be slow
+ * @param x defines the x coordinate of the rectangle where pixels must be read
+ * @param y defines the y coordinate of the rectangle where pixels must be read
+ * @param width defines the width of the rectangle where pixels must be read
+ * @param height defines the height of the rectangle where pixels must be read
+ * @param hasAlpha defines whether the output should have alpha or not (defaults to true)
+ * @param flushRenderer true to flush the renderer from the pending commands before reading the pixels
+ * @returns a ArrayBufferView promise (Uint8Array) containing RGBA colors
+ */
+export function readPixels(engineState: IWebGLEnginePublic, x: number, y: number, width: number, height: number, hasAlpha = true, flushRenderer = true): Promise<ArrayBufferView> {
+    const fes = engineState as WebGLEngineStateFull;
+    const numChannels = hasAlpha ? 4 : 3;
+    const format = hasAlpha ? fes._gl.RGBA : fes._gl.RGB;
+    const data = new Uint8Array(height * width * numChannels);
+    if (flushRenderer) {
+        flushFramebuffer(engineState);
+    }
+    fes._gl.readPixels(x, y, width, height, format, fes._gl.UNSIGNED_BYTE, data);
+    return Promise.resolve(data);
 }
