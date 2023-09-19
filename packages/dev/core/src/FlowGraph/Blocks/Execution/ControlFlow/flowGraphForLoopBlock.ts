@@ -1,8 +1,8 @@
-import type { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
-import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
+import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
+import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "core/FlowGraph/flowGraphWithOnDoneExecutionBlock";
-import type { FlowGraphContext } from "../../flowGraphContext";
-import { RichTypeNumber } from "../../flowGraphRichTypes";
+import type { FlowGraphContext } from "../../../flowGraphContext";
+import { RichTypeNumber } from "../../../flowGraphRichTypes";
 
 /**
  * @experimental

@@ -1,10 +1,10 @@
-import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import type { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
-import { AdvancedTimer } from "../../../Misc/timer";
-import type { FlowGraphContext } from "../../flowGraphContext";
-import { FlowGraphAsyncExecutionBlock } from "../../flowGraphAsyncExecutionBlock";
-import { RichTypeNumber } from "../../flowGraphRichTypes";
-import { Tools } from "../../../Misc/tools";
+import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
+import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
+import { AdvancedTimer } from "../../../../Misc/timer";
+import type { FlowGraphContext } from "../../../flowGraphContext";
+import { FlowGraphAsyncExecutionBlock } from "../../../flowGraphAsyncExecutionBlock";
+import { RichTypeNumber } from "../../../flowGraphRichTypes";
+import { Tools } from "../../../../Misc/tools";
 
 export interface IFlowGraphTimerBlockParameters {
     timeout?: number;
@@ -12,7 +12,6 @@ export interface IFlowGraphTimerBlockParameters {
 
 /**
  * @experimental
- * question: is this doc understandable enough? accepting suggestions
  * Block that provides two different output flows. One is started immediately once the block is executed,
  * and the other is executed after a set time. The timer for this block runs based on the scene's render loop.
  */
