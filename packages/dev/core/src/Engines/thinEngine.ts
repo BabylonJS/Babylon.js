@@ -4970,6 +4970,8 @@ export class ThinEngine {
         texture.width = potWidth;
         texture.height = potHeight;
         texture.isReady = true;
+        texture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        texture.format = extension === ".jpg" && !texture._useSRGBBuffer ? Constants.TEXTUREFORMAT_RGB : Constants.TEXTUREFORMAT_RGBA;
 
         if (
             processFunction(potWidth, potHeight, img, extension, texture, () => {

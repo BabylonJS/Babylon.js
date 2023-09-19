@@ -1,10 +1,10 @@
 import { DracoCompression } from "core/Meshes/Compression/dracoCompression";
 import type { Nullable } from "core/types";
 import { VertexBuffer } from "core/Buffers/buffer";
-import { Geometry } from "core/Meshes/geometry";
+import type { Geometry } from "core/Meshes/geometry";
 import type { Mesh } from "core/Meshes/mesh";
 
-import { MeshPrimitiveMode, AccessorComponentType } from "babylonjs-gltf2interface";
+import { MeshPrimitiveMode } from "babylonjs-gltf2interface";
 import type { IKHRDracoMeshCompression } from "babylonjs-gltf2interface";
 import type { IMeshPrimitive, IBufferView } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
@@ -68,43 +68,19 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
                 }
             }
 
-            const attributes: {
-                [kind: string]: number;
-            } = {};
-            const dividers: {
-                [kind: string]: number;
-            } = {};
+            const attributes: { [kind: string]: number } = {};
             const loadAttribute = (name: string, kind: string) => {
                 const uniqueId = extension.attributes[name];
-                if (uniqueId === undefined || primitive.attributes[name] === undefined) {
+                if (uniqueId == undefined) {
                     return;
-                }
-
-                attributes[kind] = uniqueId;
-                const accessor = ArrayItem.Get(`${context}/attributes/${name}`, this._loader.gltf.accessors, primitive.attributes[name]);
-                if (accessor.normalized && accessor.componentType !== AccessorComponentType.FLOAT) {
-                    let divider = 1;
-                    switch (accessor.componentType) {
-                        case AccessorComponentType.BYTE:
-                            divider = 127.0;
-                            break;
-                        case AccessorComponentType.UNSIGNED_BYTE:
-                            divider = 255.0;
-                            break;
-                        case AccessorComponentType.SHORT:
-                            divider = 32767.0;
-                            break;
-                        case AccessorComponentType.UNSIGNED_SHORT:
-                            divider = 65535.0;
-                            break;
-                    }
-                    dividers[kind] = divider;
                 }
 
                 babylonMesh._delayInfo = babylonMesh._delayInfo || [];
                 if (babylonMesh._delayInfo.indexOf(kind) === -1) {
                     babylonMesh._delayInfo.push(kind);
                 }
+
+                attributes[kind] = uniqueId;
             };
 
             loadAttribute("POSITION", VertexBuffer.PositionKind);
@@ -124,16 +100,9 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
             if (!bufferView._dracoBabylonGeometry) {
                 bufferView._dracoBabylonGeometry = this._loader.loadBufferViewAsync(`/bufferViews/${bufferView.index}`, bufferView).then((data) => {
                     const dracoCompression = this.dracoCompression || DracoCompression.Default;
-                    return dracoCompression
-                        .decodeMeshAsync(data, attributes, dividers)
-                        .then((babylonVertexData) => {
-                            const babylonGeometry = new Geometry(babylonMesh.name, this._loader.babylonScene);
-                            babylonVertexData.applyToGeometry(babylonGeometry);
-                            return babylonGeometry;
-                        })
-                        .catch((error) => {
-                            throw new Error(`${context}: ${error.message}`);
-                        });
+                    return dracoCompression.decodeMeshToGeometryAsync(babylonMesh.name, this._loader.babylonScene, data, attributes).catch((error) => {
+                        throw new Error(`${context}: ${error.message}`);
+                    });
                 });
             }
 
