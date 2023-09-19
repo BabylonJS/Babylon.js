@@ -1050,8 +1050,8 @@ export class GLTFLoader implements IGLTFLoader {
             );
         }
 
-        const loadAttribute = (attribute: string, kind: string, callback?: (accessor: IAccessor) => void) => {
-            if (attributes[attribute] == undefined) {
+        const loadAttribute = (name: string, kind: string, callback?: (accessor: IAccessor) => void) => {
+            if (attributes[name] == undefined) {
                 return;
             }
 
@@ -1060,7 +1060,7 @@ export class GLTFLoader implements IGLTFLoader {
                 babylonMesh._delayInfo.push(kind);
             }
 
-            const accessor = ArrayItem.Get(`${context}/attributes/${attribute}`, this._gltf.accessors, attributes[attribute]);
+            const accessor = ArrayItem.Get(`${context}/attributes/${name}`, this._gltf.accessors, attributes[name]);
             promises.push(
                 this._loadVertexAccessorAsync(`/accessors/${accessor.index}`, accessor, kind).then((babylonVertexBuffer) => {
                     if (babylonVertexBuffer.getKind() === VertexBuffer.PositionKind && !this.parent.alwaysComputeBoundingBox && !babylonMesh.skeleton) {

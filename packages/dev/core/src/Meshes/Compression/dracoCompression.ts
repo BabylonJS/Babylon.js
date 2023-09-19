@@ -9,6 +9,7 @@ import { VertexData } from "../mesh.vertexData";
 import type { ThinEngine } from "../../Engines/thinEngine";
 import { DracoDecoderModule } from "draco3dgltf";
 import type { DecoderModule, DecoderBuffer, Decoder, Mesh, PointCloud, Status } from "draco3dgltf";
+import { Logger } from "../../Misc/logger";
 
 declare let DracoDecoderModule: DracoDecoderModule;
 
@@ -441,8 +442,25 @@ export class DracoCompression implements IDisposable {
         return Promise.resolve();
     }
 
-    private _decodeMeshAsync(engine: Nullable<ThinEngine>, data: ArrayBuffer | ArrayBufferView, attributes?: { [kind: string]: number }): Promise<MeshData> {
+    private _decodeMeshAsync(
+        engine: Nullable<ThinEngine>,
+        data: ArrayBuffer | ArrayBufferView,
+        attributes?: { [kind: string]: number },
+        gltfNormalizedOverride?: { [kind: string]: boolean }
+    ): Promise<MeshData> {
         const dataView = data instanceof ArrayBuffer ? new Int8Array(data) : new Int8Array(data.buffer, data.byteOffset, data.byteLength);
+
+        const applyGltfNormalizedOverride = (kind: string, normalized: boolean): boolean => {
+            if (gltfNormalizedOverride && gltfNormalizedOverride[kind] !== undefined) {
+                if (normalized !== gltfNormalizedOverride[kind]) {
+                    Logger.Warn(`Normalized flag from Draco data (${normalized}) does not match normalized flag from glTF accessor (${gltfNormalizedOverride[kind]}). Using flag from glTF accessor.`);
+                }
+
+                return gltfNormalizedOverride[kind];
+            } else {
+                return normalized;
+            }
+        };
 
         if (this._workerPoolPromise) {
             return this._workerPoolPromise.then((workerPool) => {
@@ -485,7 +503,7 @@ export class DracoCompression implements IDisposable {
                                             message.offset,
                                             undefined,
                                             undefined,
-                                            message.normalized,
+                                            applyGltfNormalizedOverride(message.kind, message.normalized),
                                             true
                                         )
                                     );
@@ -517,7 +535,22 @@ export class DracoCompression implements IDisposable {
                         resultIndices = indices;
                     },
                     (kind, data, offset, stride, normalized) => {
-                        resultAttributes.push(new VertexBuffer(null, data, kind, false, undefined, stride, undefined, offset, undefined, undefined, normalized, true));
+                        resultAttributes.push(
+                            new VertexBuffer(
+                                null,
+                                data,
+                                kind,
+                                false,
+                                undefined,
+                                stride,
+                                undefined,
+                                offset,
+                                undefined,
+                                undefined,
+                                applyGltfNormalizedOverride(kind, normalized),
+                                true
+                            )
+                        );
                     }
                 );
 
@@ -538,6 +571,29 @@ export class DracoCompression implements IDisposable {
      */
     public decodeMeshToGeometryAsync(name: string, scene: Scene, data: ArrayBuffer | ArrayBufferView, attributes?: { [kind: string]: number }): Promise<Geometry> {
         return this._decodeMeshAsync(scene.getEngine(), data, attributes).then((meshData) => {
+            const geometry = new Geometry(name, scene);
+
+            if (meshData.indices) {
+                geometry.setIndices(meshData.indices);
+            }
+
+            for (const attribute of meshData.attributes) {
+                geometry.setVerticesBuffer(attribute);
+            }
+
+            return geometry;
+        });
+    }
+
+    /** @internal */
+    public _decodeMeshToGeometryForGltfAsync(
+        name: string,
+        scene: Scene,
+        data: ArrayBuffer | ArrayBufferView,
+        attributes: { [kind: string]: number },
+        gltfNormalizedOverride: { [kind: string]: boolean }
+    ): Promise<Geometry> {
+        return this._decodeMeshAsync(scene.getEngine(), data, attributes, gltfNormalizedOverride).then((meshData) => {
             const geometry = new Geometry(name, scene);
 
             if (meshData.indices) {
