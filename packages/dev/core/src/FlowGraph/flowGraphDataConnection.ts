@@ -2,7 +2,6 @@ import type { FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphConnection, FlowGraphConnectionType } from "./flowGraphConnection";
 import type { FlowGraphContext } from "./flowGraphContext";
 import type { RichType } from "./flowGraphRichTypes";
-
 /**
  * @experimental
  * Represents a connection point for data.
@@ -13,9 +12,9 @@ import type { RichType } from "./flowGraphRichTypes";
 export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlock, FlowGraphDataConnection<T>> {
     private _value: T;
 
-    public constructor(name: string, connectionType: FlowGraphConnectionType, ownerBlock: FlowGraphBlock, private _valueType: RichType<T>) {
+    public constructor(name: string, connectionType: FlowGraphConnectionType, ownerBlock: FlowGraphBlock, public richType: RichType<T>) {
         super(name, connectionType, ownerBlock);
-        this._value = this._valueType.defaultValueBuilder();
+        this._value = richType.defaultValueBuilder();
     }
 
     /**
