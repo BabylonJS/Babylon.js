@@ -16,17 +16,17 @@ export class FlowGraphThrottleBlock extends FlowGraphWithOnDoneExecutionBlock {
         this.timeRemaining = this._registerDataOutput("timeRemaining", RichTypeNumber);
     }
     public _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {
-        const lastActivatedTime = context._getExecutionVariable(this, "lastActivatedTime");
+        const lastExecutedTime = context._getExecutionVariable(this, "lastExecutedTime");
         const durationValue = this.duration.getValue(context);
         const currentTime = Date.now();
-        if (callingSignal === this.reset || lastActivatedTime === undefined || currentTime - lastActivatedTime > durationValue) {
+        if (callingSignal === this.reset || lastExecutedTime === undefined || currentTime - lastExecutedTime > durationValue) {
             //activate the output flow
             this.timeRemaining.value = 0;
             this.onDone._activateSignal(context);
+            context._setExecutionVariable(this, "lastExecutedTime", currentTime);
         } else {
             //activate the output flow after the remaining time
-            this.timeRemaining.value = durationValue - (currentTime - lastActivatedTime);
+            this.timeRemaining.value = durationValue - (currentTime - lastExecutedTime);
         }
-        context._setExecutionVariable(this, "lastActivatedTime", currentTime);
     }
 }
