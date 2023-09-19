@@ -1,6 +1,6 @@
 import { ErrorCodes, RuntimeError } from "core/Misc/error";
 import { Constants } from "../constants";
-import { INative } from "./nativeInterfaces";
+import type { INative } from "./nativeInterfaces";
 import { VertexBuffer } from "core/Buffers/buffer";
 
 declare const _native: INative;
