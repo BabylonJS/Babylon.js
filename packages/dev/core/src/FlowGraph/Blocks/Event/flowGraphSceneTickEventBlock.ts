@@ -3,7 +3,7 @@ import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 
 /**
  * @experimental
- * Block that triggers on scene tick.
+ * Block that triggers on scene tick (before each render).
  */
 export class FlowGraphSceneTickEventBlock extends FlowGraphEventBlock {
     /**
