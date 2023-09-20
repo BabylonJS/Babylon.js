@@ -1,8 +1,8 @@
-import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
-import { RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
-import type { FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection";
-import { FlowGraphWithOnDoneExecutionBlock } from "core/FlowGraph/flowGraphWithOnDoneExecutionBlock";
+import type { FlowGraphContext } from "../../../flowGraphContext";
+import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
+import { RichTypeNumber } from "../../../flowGraphRichTypes";
+import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
+import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneExecutionBlock";
 
 export class FlowGraphCounterBlock extends FlowGraphWithOnDoneExecutionBlock {
     public readonly count: FlowGraphDataConnection<number>;

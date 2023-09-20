@@ -1,4 +1,4 @@
-import { RandomGUID } from "core/Misc/guid";
+import { RandomGUID } from "../Misc/guid";
 
 /**
  * @experimental

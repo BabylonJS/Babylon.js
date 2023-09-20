@@ -1,4 +1,4 @@
-import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
+import type { FlowGraphContext } from "../../flowGraphContext";
 import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import type { RichType } from "../../flowGraphRichTypes";

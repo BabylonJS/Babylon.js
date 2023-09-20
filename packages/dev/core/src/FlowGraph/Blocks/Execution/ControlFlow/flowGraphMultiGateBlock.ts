@@ -1,8 +1,8 @@
-import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
-import { FlowGraphExecutionBlock } from "core/FlowGraph/flowGraphExecutionBlock";
-import { RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
-import type { FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection";
+import type { FlowGraphContext } from "../../../flowGraphContext";
+import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
+import { FlowGraphExecutionBlock } from "../../../flowGraphExecutionBlock";
+import { RichTypeNumber } from "../../../flowGraphRichTypes";
+import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 
 export interface IFlowGraphMultiGateBlockConfiguration {
     numberOutputFlows: number;

@@ -1,8 +1,8 @@
-import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
-import { FlowGraphExecutionBlock } from "core/FlowGraph/flowGraphExecutionBlock";
-import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
-import type { FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection";
+import type { FlowGraphContext } from "../../../flowGraphContext";
+import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
+import { FlowGraphExecutionBlock } from "../../../flowGraphExecutionBlock";
+import { RichTypeAny } from "../../../flowGraphRichTypes";
+import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 
 export interface IFlowGraphSwitchBlockConfiguration<T> {
     cases: T[];

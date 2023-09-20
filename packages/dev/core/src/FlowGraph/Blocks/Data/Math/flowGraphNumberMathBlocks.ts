@@ -4,7 +4,7 @@ import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock"
 import { FlowGraphConstantOperationBlock } from "../flowGraphConstantOperationBlock";
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
-import { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
+import type { FlowGraphContext } from "../../../flowGraphContext";
 
 /**
  * Module for all of the number math blocks.

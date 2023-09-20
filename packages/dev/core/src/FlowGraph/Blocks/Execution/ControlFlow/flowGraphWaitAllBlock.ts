@@ -1,6 +1,6 @@
-import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import type { FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection";
-import { FlowGraphWithOnDoneExecutionBlock } from "core/FlowGraph/flowGraphWithOnDoneExecutionBlock";
+import type { FlowGraphContext } from "../../../flowGraphContext";
+import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
+import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneExecutionBlock";
 
 export interface IFlowGraphWaitAllBlockConfiguration {
     numberInputFlows: number;
