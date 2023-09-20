@@ -252,12 +252,11 @@ const ProcessAsync = async (
         lodPostProcess = new PostProcess("lodCube", "lodCube", ["lod", "gamma"], null, 1.0, null, Texture.NEAREST_NEAREST_MIPNEAREST, engine, false, faceDefines[face]);
     }
 
-    let isPostProcessReady = lodPostProcess.getEffect().isReady();
-    while (!isPostProcessReady) {
-        isPostProcessReady = await new Promise((resolve) => {
-            setTimeout(() => {
-                resolve(lodPostProcess.getEffect().isReady());
-            }, 250);
+    if (!lodPostProcess.getEffect().isReady()) {
+        await new Promise((resolve) => {
+            lodPostProcess.getEffect().onCompileObservable.addOnce(() => {
+                resolve(0);
+            });
         });
     }
 

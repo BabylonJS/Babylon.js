@@ -56,7 +56,7 @@ export class TextureHelper {
             globalState.blockMutationUpdates = true;
         }
         try {
-            const data = await TextureTools.GetTextureDataAsync(texture, width, height, face, channels, lod);
+            const data = await TextureTools.GetTextureDataAsync(texture, width, height, face, lod);
             if (!channels.R || !channels.G || !channels.B || !channels.A) {
                 for (let i = 0; i < width * height * 4; i += 4) {
                     // If alpha is the only channel, just display alpha across all channels
