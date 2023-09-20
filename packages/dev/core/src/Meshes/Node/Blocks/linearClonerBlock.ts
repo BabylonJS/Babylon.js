@@ -5,7 +5,7 @@ import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConn
 import { Matrix, Quaternion, Vector3 } from "../../../Maths/math.vector";
 import { type NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import type { VertexData } from "core/Meshes/mesh.vertexData";
-import { Nullable } from "core/types";
+import { type Nullable } from "core/types";
 
 /**
  * Block used to clone geometry along a line
@@ -13,6 +13,7 @@ import { Nullable } from "core/types";
 export class LinearClonerBlock extends NodeGeometryBlock {
     private _vertexData: VertexData;
     private _currentIndex: number;
+    private _currentLoopIndex: number;
 
     /**
      * Gets the current index in the current flow
@@ -31,6 +32,14 @@ export class LinearClonerBlock extends NodeGeometryBlock {
     }
 
     /**
+     * Gets the current loop index in the current flow
+     * @returns the current loop index
+     */
+    public getExecutionLoopIndex(): number {
+        return this._currentLoopIndex;
+    }
+
+    /**
      * Create a new LinearClonerBlock
      * @param name defines the block name
      */
@@ -42,21 +51,12 @@ export class LinearClonerBlock extends NodeGeometryBlock {
 
         //Direction is magnitude per step, or total distance
         this.registerInput("direction", NodeGeometryBlockConnectionPointTypes.Vector3, true, new Vector3(1, 0, 0));
-        //Per step or total
-        this.registerInput("transformPerStepOrTotal", NodeGeometryBlockConnectionPointTypes.Int, true, 0, 0, 1);
 
         //rotation is magnitude per step, or total rotation
         this.registerInput("rotation", NodeGeometryBlockConnectionPointTypes.Vector3, true, new Vector3(0, 0, 0));
-        //Per step or total
-        this.registerInput("rotationPerStepOrTotal", NodeGeometryBlockConnectionPointTypes.Int, true, 0, 0, 1);
 
         //scale is magnitude per step, or total rotation
         this.registerInput("scale", NodeGeometryBlockConnectionPointTypes.Vector3, true, new Vector3(0, 0, 0));
-        //Per step or total
-        this.registerInput("scalePerStepOrTotal", NodeGeometryBlockConnectionPointTypes.Int, true, 0, 0, 1);
-
-        //Random culling
-        this.registerInput("scalePerStepOrTotal", NodeGeometryBlockConnectionPointTypes.Int, true, 0, 0, 1);
 
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Geometry);
     }
@@ -98,38 +98,17 @@ export class LinearClonerBlock extends NodeGeometryBlock {
     }
 
     /**
-     * Gets the transformPerStepOrTotal input component
-     */
-    public get transformPerStepOrTotal(): NodeGeometryConnectionPoint {
-        return this._inputs[4];
-    }
-
-    /**
      * Gets the rotation input component
      */
     public get rotation(): NodeGeometryConnectionPoint {
-        return this._inputs[5];
-    }
-
-    /**
-     * Gets the rotationPerStepOrTotal input component
-     */
-    public get rotationPerStepOrTotal(): NodeGeometryConnectionPoint {
-        return this._inputs[6];
+        return this._inputs[4];
     }
 
     /**
      * Gets the scale input component
      */
     public get scale(): NodeGeometryConnectionPoint {
-        return this._inputs[7];
-    }
-
-    /**
-     * Gets the scalePerStepOrTotal input component
-     */
-    public get scalePerStepOrTotal(): NodeGeometryConnectionPoint {
-        return this._inputs[8];
+        return this._inputs[5];
     }
 
     /**
@@ -140,14 +119,14 @@ export class LinearClonerBlock extends NodeGeometryBlock {
     }
 
     protected _buildBlock(state: NodeGeometryBuildState) {
-        state.executionContext = this;
+        state.pushExecutionContext(this);
 
         this._vertexData = this.geometry.getConnectedValue(state);
-        state.geometryContext = this._vertexData;
+        state.pushGeometryContext(this._vertexData);
 
         if (!this._vertexData || !this._vertexData.positions || !this.geometry.isConnected) {
-            state.executionContext = null;
-            state.geometryContext = null;
+            state.restoreExecutionContext();
+            state.restoreGeometryContext();
             this.output._storedValue = null;
             return;
         }
@@ -155,50 +134,36 @@ export class LinearClonerBlock extends NodeGeometryBlock {
 
         if (count <= 0) {
             this.output._storedValue = this._vertexData;
-            state.executionContext = null;
-            state.geometryContext = null;
+            state.restoreExecutionContext();
+            state.restoreGeometryContext();
         }
 
         const origin = this.origin.getConnectedValue(state) as Vector3;
         const direction = this.direction.getConnectedValue(state) as Vector3;
-        const transformPerStepOrTotal = this.transformPerStepOrTotal.getConnectedValue(state) as number;
-
         const rotation = this.rotation.getConnectedValue(state) as Vector3;
-        const rotationPerStepOrTotal = this.rotationPerStepOrTotal.getConnectedValue(state) as number;
-
         const scale = this.scale.getConnectedValue(state) as Vector3;
-        const scalePerStepOrTotal = this.scalePerStepOrTotal.getConnectedValue(state) as number;
 
-        const countVector = new Vector3(count - 1, count - 1, count - 1);
         const invertRadians = Math.PI / 180;
-
-        const transformMatrix = Matrix.Identity();
 
         const results = [];
 
         let rootData: Nullable<VertexData> = null;
 
+        const transformMatrix = Matrix.Identity();
+        const transformOffset = Vector3.Zero();
+        const rotationOffset = Vector3.Zero();
+        const scaleOffset = Vector3.Zero();
+
         for (this._currentIndex = 0; this._currentIndex < count; this._currentIndex++) {
             const clone = this._vertexData.clone();
 
-            let transformOffset = direction.clone().scale(this._currentIndex);
-            if (transformPerStepOrTotal == 1) {
-                const distanceStep = direction.divide(countVector).scale(this._currentIndex);
-                transformOffset = direction.clone().multiply(distanceStep);
-            }
+            transformOffset.copyFrom(direction.clone().scale(this._currentIndex));
             transformOffset.addInPlace(origin);
 
-            let rotationOffset = rotation.clone().scale(this._currentIndex);
-            if (rotationPerStepOrTotal == 1) {
-                const rotationStep = rotation.divide(countVector).scale(this._currentIndex);
-                rotationOffset = rotation.clone().multiply(rotationStep);
-            }
+            rotationOffset.copyFrom(rotation.clone().scale(this._currentIndex));
 
-            let scaleOffset = scale.clone().scale(this._currentIndex);
-            if (scalePerStepOrTotal == 1) {
-                const scaleStep = scale.divide(countVector).scale(this._currentIndex);
-                scaleOffset = scale.clone().multiply(scaleStep);
-            }
+            scaleOffset.copyFrom(scale.clone().scale(this._currentIndex));
+
             scaleOffset.addInPlace(new Vector3(1, 1, 1));
 
             Matrix.ComposeToRef(
@@ -207,6 +172,7 @@ export class LinearClonerBlock extends NodeGeometryBlock {
                 transformOffset,
                 transformMatrix
             );
+
             clone.transform(transformMatrix);
 
             if (!rootData) {
@@ -223,8 +189,8 @@ export class LinearClonerBlock extends NodeGeometryBlock {
 
         // Storage
         this.output._storedValue = this._vertexData;
-        state.executionContext = null;
-        state.geometryContext = null;
+        state.restoreExecutionContext();
+        state.restoreGeometryContext();
     }
 }
 
