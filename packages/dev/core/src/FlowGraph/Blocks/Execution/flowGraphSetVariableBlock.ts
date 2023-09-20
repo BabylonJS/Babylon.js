@@ -21,22 +21,17 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphWithOnDoneExecutionBl
      */
     public readonly input: FlowGraphDataConnection<T>;
 
-    constructor(params?: IFlowGraphSetVariableBlockParameter<T>) {
+    constructor(private _params?: IFlowGraphSetVariableBlockParameter<T>) {
         super();
 
         this.variableName = this._registerDataInput("variableName", RichTypeString);
-        if (params?.variableName !== undefined) {
-            this.variableName.value = params.variableName;
-        }
         this.input = this._registerDataInput("input", RichTypeAny);
-        if (params?.input !== undefined) {
-            this.input.value = params.input;
-        }
     }
 
     public _execute(context: FlowGraphContext): void {
-        const variableNameValue = this.variableName.getValue(context);
-        context.setVariable(variableNameValue, this.input.getValue(context));
+        const variableNameValue = this.variableName.getValue(context) ?? this._params?.variableName ?? "variable";
+        const inputValue = this.input.getValue(context) ?? this._params?.input;
+        context.setVariable(variableNameValue, inputValue);
         this.onDone._activateSignal(context);
     }
 }

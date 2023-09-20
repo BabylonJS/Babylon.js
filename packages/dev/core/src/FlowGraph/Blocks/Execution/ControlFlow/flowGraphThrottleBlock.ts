@@ -21,12 +21,13 @@ export class FlowGraphThrottleBlock extends FlowGraphWithOnDoneExecutionBlock {
         const currentTime = Date.now();
         if (callingSignal === this.reset || lastExecutedTime === undefined || currentTime - lastExecutedTime > durationValue) {
             //activate the output flow
-            this.timeRemaining.value = 0;
+            this.timeRemaining.setValue(0, context);
             this.onDone._activateSignal(context);
             context._setExecutionVariable(this, "lastExecutedTime", currentTime);
         } else {
             //activate the output flow after the remaining time
-            this.timeRemaining.value = durationValue - (currentTime - lastExecutedTime);
+            const remaining = durationValue - (currentTime - lastExecutedTime);
+            this.timeRemaining.setValue(remaining, context);
         }
     }
 }

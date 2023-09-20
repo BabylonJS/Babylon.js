@@ -22,11 +22,11 @@ export class FlowGraphDoNBlock extends FlowGraphWithOnDoneExecutionBlock {
 
     public _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {
         if (callingSignal === this.reset) {
-            this.currentCount.value = 0;
+            this.currentCount.setValue(0, context);
         } else {
             const currentCountValue = this.currentCount.getValue(context);
             if (currentCountValue < this.maxNumberOfExecutions.getValue(context)) {
-                this.currentCount.value = currentCountValue + 1;
+                this.currentCount.setValue(currentCountValue + 1, context);
                 this.onDone._activateSignal(context);
             }
         }

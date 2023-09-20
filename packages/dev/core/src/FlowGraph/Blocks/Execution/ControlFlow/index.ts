@@ -6,3 +6,5 @@ export * from "./flowGraphTimerBlock";
 export * from "./flowGraphMultiGateBlock";
 export * from "./flowGraphSwitchBlock";
 export * from "./flowGraphWaitAllBlock";
+export * from "./flowGraphCounterBlock";
+export * from "./flowGraphWhileLoopBlock";

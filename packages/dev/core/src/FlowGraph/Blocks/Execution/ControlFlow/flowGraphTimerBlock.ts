@@ -6,10 +6,6 @@ import { FlowGraphAsyncExecutionBlock } from "../../../flowGraphAsyncExecutionBl
 import { RichTypeNumber } from "../../../flowGraphRichTypes";
 import { Tools } from "../../../../Misc/tools";
 
-export interface IFlowGraphTimerBlockParameters {
-    timeout?: number;
-}
-
 /**
  * @experimental
  * Block that provides two different output flows. One is started immediately once the block is executed,
@@ -26,13 +22,10 @@ export class FlowGraphTimerBlock extends FlowGraphAsyncExecutionBlock {
      */
     public readonly onTimerDone: FlowGraphSignalConnection;
 
-    constructor(parameters?: IFlowGraphTimerBlockParameters) {
+    constructor() {
         super();
 
         this.timeout = this._registerDataInput("timeout", RichTypeNumber);
-        if (parameters?.timeout !== undefined) {
-            this.timeout.value = parameters.timeout;
-        }
         this.onTimerDone = this._registerSignalOutput("onTimerDone");
     }
 

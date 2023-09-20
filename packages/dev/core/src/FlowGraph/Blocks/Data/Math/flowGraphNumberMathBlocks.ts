@@ -4,6 +4,7 @@ import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock"
 import { FlowGraphConstantOperationBlock } from "../flowGraphConstantOperationBlock";
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
+import { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 
 /**
  * Module for all of the number math blocks.
@@ -386,7 +387,11 @@ export class FlowGraphMixNumberBlock extends FlowGraphBlock {
         this.resultOutput = this._registerDataOutput("resultOutput", RichTypeNumber);
     }
 
-    public _updateOutputs(): void {
-        this.resultOutput.value = this.leftInput.value + (this.rightInput.value - this.leftInput.value) * this.alphaInput.value;
+    public _updateOutputs(_context: FlowGraphContext): void {
+        const left = this.leftInput.getValue(_context);
+        const right = this.rightInput.getValue(_context);
+        const alpha = this.alphaInput.getValue(_context);
+        const mix = left + (right - left) * alpha;
+        this.resultOutput.setValue(mix, _context);
     }
 }

@@ -83,7 +83,7 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
         }
         context._setExecutionVariable(this, "unusedIndexes", unusedIndexes);
         context._setExecutionVariable(this, "currentIndex", nextIndex);
-        this.currentIndex.value = nextIndex;
+        this.currentIndex.setValue(nextIndex, context);
         this.outFlows[nextIndex]._activateSignal(context);
     }
 }

@@ -51,11 +51,9 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
         this.target = this._registerDataInput("target", RichTypeAny);
         this.animation = this._registerDataInput("animation", RichTypeAny);
         this.speed = this._registerDataInput("speed", RichTypeNumber);
-        this.speed.value = 1;
         this.loop = this._registerDataInput("loop", RichTypeBoolean);
         this.from = this._registerDataInput("from", RichTypeNumber);
         this.to = this._registerDataInput("to", RichTypeNumber);
-        this.to.value = 100;
 
         this.onAnimationEnd = this._registerSignalOutput("onAnimationEnd");
         this.runningAnimatable = this._registerDataOutput("runningAnimatable", RichTypeAny);
@@ -85,7 +83,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             this.speed.getValue(context),
             () => this._onAnimationEnd(animatable, context)
         );
-        this.runningAnimatable.value = animatable;
+        this.runningAnimatable.setValue(animatable, context);
         contextAnims.push(animatable);
 
         context._setExecutionVariable(this, "runningAnimatables", contextAnims);
