@@ -89,8 +89,10 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
                 attributes[kind] = uniqueId;
 
                 if (this.useNormalizedFlagFromAccessor) {
-                    const accessor = ArrayItem.Get(`${context}/attributes/${name}`, this._loader.gltf.accessors, primitive.attributes[name]);
-                    normalized[kind] = accessor.normalized || false;
+                    const accessor = ArrayItem.TryGet(this._loader.gltf.accessors, primitive.attributes[name]);
+                    if (accessor) {
+                        normalized[kind] = accessor.normalized || false;
+                    }
                 }
             };
 

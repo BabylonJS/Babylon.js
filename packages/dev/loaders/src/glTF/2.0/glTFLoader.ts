@@ -143,6 +143,20 @@ export class ArrayItem {
     }
 
     /**
+     * Gets an item from the given array or returns null if not available.
+     * @param array The array to get the item from
+     * @param index The index to the array
+     * @returns The array item or null
+     */
+    public static TryGet<T>(array: ArrayLike<T> | undefined, index: number | undefined): Nullable<T> {
+        if (!array || index == undefined || !array[index]) {
+            return null;
+        }
+
+        return array[index];
+    }
+
+    /**
      * Assign an `index` field to each item of the given array.
      * @param array The array of items
      */
