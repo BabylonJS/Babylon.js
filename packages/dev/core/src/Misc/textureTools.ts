@@ -307,14 +307,18 @@ const ProcessAsync = async (
  * @returns the 8-bit texture data
  */
 export async function GetTextureDataAsync(texture: BaseTexture, width: number, height: number, face: number = 0, lod: number = 0): Promise<Uint8Array> {
-    return new Promise((resolve, reject) => {
-        if (!texture.isReady() && texture._texture) {
+    if (!texture.isReady() && texture._texture) {
+        await new Promise((resolve, reject) => {
+            if (texture._texture === null) {
+                reject(0);
+                return;
+            }
             texture._texture.onLoadedObservable.addOnce(() => {
-                ProcessAsync(texture, width, height, face, lod, resolve, reject);
+                resolve(0);
             });
-            return;
-        }
-
+        });
+    }
+    return await new Promise((resolve, reject) => {
         ProcessAsync(texture, width, height, face, lod, resolve, reject);
     });
 }
