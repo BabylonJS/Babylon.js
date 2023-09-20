@@ -394,6 +394,13 @@ export class VideoTexture extends Texture {
     };
 
     /**
+     * Get the underlying external texture (if supported by the current engine, else null)
+     */
+    public get externalTexture(): Nullable<ExternalTexture> {
+        return this._externalTexture;
+    }
+
+    /**
      * Change video content. Changing video instance or setting multiple urls (as in constructor) is not supported.
      * @param url New url.
      */

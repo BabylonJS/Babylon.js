@@ -81,8 +81,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.props.globalState.onBuiltObservable.remove(this._onBuiltObserver);
     }
 
-    processInputBlockUpdate(ib: GeometryInputBlock) {
-        this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(ib);
+    processInputBlockUpdate() {
+        this.props.globalState.stateManager.onRebuildRequiredObservable.notifyObservers();
     }
 
     renderInputBlock(block: GeometryInputBlock) {
@@ -101,7 +101,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 target={block}
                                 isInteger={isInteger}
                                 propertyName="value"
-                                onChange={() => this.processInputBlockUpdate(block)}
+                                onChange={() => this.processInputBlockUpdate()}
                             />
                         )}
                         {!cantDisplaySlider && (
@@ -111,11 +111,11 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 label={block.name}
                                 target={block}
                                 propertyName="value"
-                                step={(isInteger ? 1 : block.max - block.min) / 100.0}
+                                step={isInteger ? 1 : Math.abs(block.max - block.min) / 100.0}
                                 decimalCount={isInteger ? 0 : 2}
                                 minimum={block.min}
                                 maximum={block.max}
-                                onChange={() => this.processInputBlockUpdate(block)}
+                                onChange={() => this.processInputBlockUpdate()}
                             />
                         )}
                     </div>
@@ -129,7 +129,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         label={block.name}
                         target={block}
                         propertyName="value"
-                        onChange={() => this.processInputBlockUpdate(block)}
+                        onChange={() => this.processInputBlockUpdate()}
                     />
                 );
             case NodeGeometryBlockConnectionPointTypes.Vector3:
@@ -140,7 +140,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         label={block.name}
                         target={block}
                         propertyName="value"
-                        onChange={() => this.processInputBlockUpdate(block)}
+                        onChange={() => this.processInputBlockUpdate()}
                     />
                 );
             case NodeGeometryBlockConnectionPointTypes.Vector4:
@@ -151,7 +151,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                         label={block.name}
                         target={block}
                         propertyName="value"
-                        onChange={() => this.processInputBlockUpdate(block)}
+                        onChange={() => this.processInputBlockUpdate()}
                     />
                 );
         }
@@ -287,6 +287,10 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             });
     }
 
+    exportAsGLB() {
+        this.props.globalState.onExportToGLBRequired.notifyObservers();
+    }
+
     render() {
         if (this.state.currentNode) {
             return (
@@ -420,6 +424,10 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             />
                         )}
                     </LineContainerComponent>
+                    <LineContainerComponent title="SYNC">
+                        {this.props.globalState.resyncHandler && <ButtonLineComponent label="Update mesh in scene" onClick={() => this.props.globalState.resyncHandler!()} />}
+                        <ButtonLineComponent label="Rebuild" onClick={() => this.props.globalState.stateManager.onRebuildRequiredObservable.notifyObservers()} />
+                    </LineContainerComponent>
                     <LineContainerComponent title="FILE">
                         <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
                         <ButtonLineComponent
@@ -447,6 +455,12 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             </>
                         )}
                         <FileButtonLineComponent label="Load Frame" uploadName={"frame-upload"} onClick={(file) => this.loadFrame(file)} accept=".json" />
+                        <ButtonLineComponent
+                            label="Export as GLB"
+                            onClick={() => {
+                                this.exportAsGLB();
+                            }}
+                        />
                     </LineContainerComponent>
                     {!this.props.globalState.customSave && (
                         <LineContainerComponent title="SNIPPET">

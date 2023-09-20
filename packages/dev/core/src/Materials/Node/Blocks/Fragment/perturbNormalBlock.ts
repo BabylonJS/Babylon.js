@@ -180,6 +180,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
         defines.setValue("BUMP", true);
         defines.setValue("PARALLAX", useParallax, true);
+        defines.setValue("PARALLAX_RHS", nodeMaterial.getScene().useRightHandedSystem, true);
         defines.setValue("PARALLAXOCCLUSION", this.useParallaxOcclusion, true);
         defines.setValue("OBJECTSPACE_NORMALMAP", this.useObjectSpaceNormalMap, true);
     }
@@ -201,9 +202,9 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         }
     }
 
-    public autoConfigure(material: NodeMaterial) {
+    public autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.uv.isConnected) {
-            let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "uv");
+            let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "uv" && additionalFilteringInfo(b));
 
             if (!uvInput) {
                 uvInput = new InputBlock("uv");

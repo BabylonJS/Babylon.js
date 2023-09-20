@@ -106,7 +106,7 @@ export class SoundTrack {
         if (Engine.audioEngine?.canUseWebAudio && this._outputAudioNode) {
             sound.connectToSoundTrackAudioNode(this._outputAudioNode);
         }
-        if (sound.soundTrackId) {
+        if (sound.soundTrackId !== undefined) {
             if (sound.soundTrackId === -1) {
                 this._scene.mainSoundTrack.removeSound(sound);
             } else if (this._scene.soundTracks) {

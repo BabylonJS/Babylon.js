@@ -26,7 +26,7 @@ export class DumpTools {
 
     private static _CreateDumpRenderer(): DumpToolsEngine {
         if (!DumpTools._DumpToolsEngine) {
-            let canvas: HTMLCanvasElement | OffscreenCanvas = new OffscreenCanvas(100, 100); // will be resized later
+            let canvas: HTMLCanvasElement | OffscreenCanvas;
             let engine: Nullable<ThinEngine> = null;
             const options = {
                 preserveDrawingBuffer: true,
@@ -38,9 +38,10 @@ export class DumpTools {
                 failIfMajorPerformanceCaveat: false,
             };
             try {
+                canvas = new OffscreenCanvas(100, 100); // will be resized later
                 engine = new ThinEngine(canvas, false, options);
             } catch (e) {
-                // The browser does not support WebGL context in OffscreenCanvas, fallback on a regular canvas
+                // The browser either does not support OffscreenCanvas or WebGL context in OffscreenCanvas, fallback on a regular canvas
                 canvas = document.createElement("canvas");
                 engine = new ThinEngine(canvas, false, options);
             }

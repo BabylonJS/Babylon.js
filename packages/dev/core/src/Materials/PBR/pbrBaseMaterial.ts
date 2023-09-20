@@ -137,6 +137,7 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public BUMPDIRECTUV = 0;
     public OBJECTSPACE_NORMALMAP = false;
     public PARALLAX = false;
+    public PARALLAX_RHS = false;
     public PARALLAXOCCLUSION = false;
     public NORMALXYSCALE = true;
 
@@ -183,6 +184,7 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public PREPASS_DEPTH_INDEX = -1;
     public PREPASS_NORMAL = false;
     public PREPASS_NORMAL_INDEX = -1;
+    public PREPASS_NORMAL_WORLDSPACE = false;
     public PREPASS_POSITION = false;
     public PREPASS_POSITION_INDEX = -1;
     public PREPASS_VELOCITY = false;
@@ -1280,6 +1282,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         if (defines.PARALLAX) {
             fallbacks.addFallback(fallbackRank, "PARALLAX");
         }
+        if (defines.PARALLAX_RHS) {
+            fallbacks.addFallback(fallbackRank, "PARALLAX_RHS");
+        }
         if (defines.PARALLAXOCCLUSION) {
             fallbacks.addFallback(fallbackRank++, "PARALLAXOCCLUSION");
         }
@@ -1670,7 +1675,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                         else if (reflectionTexture.isCube) {
                             defines.USESPHERICALFROMREFLECTIONMAP = true;
                             defines.USEIRRADIANCEMAP = false;
-                            if (this._forceIrradianceInFragment || this.realTimeFiltering || engine.getCaps().maxVaryingVectors <= 8) {
+                            if (this._forceIrradianceInFragment || this.realTimeFiltering || this._twoSidedLighting || engine.getCaps().maxVaryingVectors <= 8) {
                                 defines.USESPHERICALINVERTEX = false;
                             } else {
                                 defines.USESPHERICALINVERTEX = true;
@@ -1777,6 +1782,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                     if (this._useParallax && this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {
                         defines.PARALLAX = true;
+                        defines.PARALLAX_RHS = scene.useRightHandedSystem;
                         defines.PARALLAXOCCLUSION = !!this._useParallaxOcclusion;
                     } else {
                         defines.PARALLAX = false;
@@ -1786,6 +1792,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 } else {
                     defines.BUMP = false;
                     defines.PARALLAX = false;
+                    defines.PARALLAX_RHS = false;
                     defines.PARALLAXOCCLUSION = false;
                     defines.OBJECTSPACE_NORMALMAP = false;
                 }

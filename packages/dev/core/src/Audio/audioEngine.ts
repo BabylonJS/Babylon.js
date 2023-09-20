@@ -150,15 +150,29 @@ export class AudioEngine implements IAudioEngine {
      * This is helpful to resume play once browser policies have been satisfied.
      */
     public unlock() {
-        this._triggerRunningState();
+        if (this._audioContext?.state === "running") {
+            this._hideMuteButton();
+            return;
+        }
+
+        // On iOS, if the audio context resume request was sent from an event other than a `click` event, then
+        // the resume promise will never resolve and the only way to get the audio context unstuck is to
+        // suspend it and make another resume request.
+        if (this._tryToRun) {
+            this._audioContext?.suspend().then(() => {
+                this._tryToRun = false;
+                this._triggerRunningState();
+            });
+        } else {
+            this._triggerRunningState();
+        }
     }
 
     private _resumeAudioContext(): Promise<void> {
-        let result: Promise<void>;
-        if (this._audioContext!.resume !== undefined) {
-            result = this._audioContext!.resume();
+        if (this._audioContext?.resume) {
+            return this._audioContext.resume();
         }
-        return result! || Promise.resolve();
+        return Promise.resolve();
     }
 
     private _initializeAudioContext() {
@@ -251,7 +265,7 @@ export class AudioEngine implements IAudioEngine {
         this._muteButton.addEventListener(
             "click",
             () => {
-                this._triggerRunningState();
+                this.unlock();
             },
             true
         );

@@ -31,7 +31,7 @@ float getDynamicVisibility(float position) {
     if (floor(position + 0.5) == floor(position / majorGridFrequency + 0.5) * majorGridFrequency)
     {
         return 1.0;
-    }  
+    }
 
     return gridControl.z;
 }
@@ -44,27 +44,31 @@ float getAnisotropicAttenuation(float differentialLength) {
 float isPointOnLine(float position, float differentialLength) {
     float fractionPartOfPosition = position - floor(position + 0.5); // fract part around unit [-0.5; 0.5]
     fractionPartOfPosition /= differentialLength; // adapt to the screen space size it takes
+
+    #ifdef ANTIALIAS
     fractionPartOfPosition = clamp(fractionPartOfPosition, -1., 1.);
-    
     float result = 0.5 + 0.5 * cos(fractionPartOfPosition * PI); // Convert to 0-1 for antialiasing.
-    return result;    
+    return result;
+    #else
+    return abs(fractionPartOfPosition) < SQRT2 / 4. ? 1. : 0.;
+    #endif
 }
 
 float contributionOnAxis(float position) {
     float differentialLength = length(vec2(dFdx(position), dFdy(position)));
     differentialLength *= SQRT2;  // Multiply by SQRT2 for diagonal length
-    
+
     // Is the point on the line.
     float result = isPointOnLine(position, differentialLength);
 
     // Add dynamic visibility.
     float dynamicVisibility = getDynamicVisibility(position);
     result *= dynamicVisibility;
-    
+
     // Anisotropic filtering.
     float anisotropicAttenuation = getAnisotropicAttenuation(differentialLength);
     result *= anisotropicAttenuation;
-    
+
     return result;
 }
 
@@ -83,19 +87,19 @@ void main(void) {
     // Scale position to the requested ratio.
     float gridRatio = gridControl.x;
     vec3 gridPos = (vPosition + gridOffset.xyz) / gridRatio;
-    
+
     // Find the contribution of each coords.
     float x = contributionOnAxis(gridPos.x);
     float y = contributionOnAxis(gridPos.y);
     float z = contributionOnAxis(gridPos.z);
-    
+
     // Find the normal contribution.
     vec3 normal = normalize(vNormal);
     x *= normalImpactOnAxis(normal.x);
     y *= normalImpactOnAxis(normal.y);
     z *= normalImpactOnAxis(normal.z);
-    
-#ifdef MAX_LINE    
+
+#ifdef MAX_LINE
     // Create the grid value from the max axis.
     float grid = clamp(max(max(x, y), z), 0., 1.);
 #else
@@ -113,11 +117,11 @@ void main(void) {
     float opacity = 1.0;
 #ifdef TRANSPARENT
     opacity = clamp(grid, 0.08, gridControl.w * grid);
-#endif    
+#endif
 
 #ifdef OPACITY
 	opacity *= texture2D(opacitySampler, vOpacityUV).a;
-#endif    
+#endif
 
     // Apply the color.
     gl_FragColor = vec4(color.rgb, opacity * visibility);
@@ -126,7 +130,7 @@ void main(void) {
     #ifdef PREMULTIPLYALPHA
         gl_FragColor.rgb *= opacity;
     #endif
-#else    
+#else
 #endif
 
 #include<imageProcessingCompatibility>

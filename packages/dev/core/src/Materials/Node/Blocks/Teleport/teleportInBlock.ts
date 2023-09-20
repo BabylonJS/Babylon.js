@@ -59,6 +59,25 @@ export class NodeMaterialTeleportInBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Checks if the current block is an ancestor of a given block
+     * @param block defines the potential descendant block to check
+     * @returns true if block is a descendant
+     */
+    public isAnAncestorOf(block: NodeMaterialBlock): boolean {
+        for (const endpoint of this.endpoints) {
+            if (endpoint === block) {
+                return true;
+            }
+
+            if (endpoint.isAnAncestorOf(block)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Add an enpoint to this block
      * @param endpoint define the endpoint to attach to
      */
@@ -69,6 +88,7 @@ export class NodeMaterialTeleportInBlock extends NodeMaterialBlock {
         endpoint._entryPoint = this;
         endpoint._outputs[0]._typeConnectionSource = this._inputs[0];
         endpoint._tempEntryPointUniqueId = null;
+        endpoint.name = "> " + this.name;
     }
 
     /**

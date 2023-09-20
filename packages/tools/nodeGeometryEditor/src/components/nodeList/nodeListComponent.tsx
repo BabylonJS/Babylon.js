@@ -49,6 +49,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         UV6sBlock: "Contextual value pointing at the uvs6 array of the active geometry",
         VertexIDBlock: "Contextual value representing the vertex index of the current vertex of the active geometry",
         FaceIDBlock: "Contextual value representing the face index of the current face of the active geometry",
+        LoopIDBlock: "Contextual value representing the current loop index (within a clone or an instantiate block)",
+        InstanceIDBlock: "Contextual value representing the current instance index (within an instantiate block)",
         GeometryIDBlock: "Contextual value representing the identifier of the current active geometry",
         CollectionIDBlock: "Contextual value representing the collection ID associated with the current active geometry",
         EqualBlock: "Conditional block set to Equal",
@@ -77,14 +79,14 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         CeilingBlock: "Trigonometry block set to Ceiling",
         IntFloatConverterBlock: "Block used to convert from Int to Float or Float to Int",
         AbsBlock: "Trigonometry block set to Abs",
-        ArcCosBlock: "Trigonometry block set to Arc cos",
-        ArcSinBlock: "Trigonometry block set to Arc sin",
-        ArcTanBlock: "Trigonometry block set to Arc tan",
-        CosBlock: "Trigonometry block set to Cos",
-        ExpBlock: "Trigonometry block set to Exp",
-        LogBlock: "Trigonometry block set to Log",
-        SinBlock: "Trigonometry block set to Sin",
-        TanBlock: "Trigonometry block set to Tan",
+        ArcCosBlock: "Trigonometry block set to Arc cos (using radians)",
+        ArcSinBlock: "Trigonometry block set to Arc sin (using radians)",
+        ArcTanBlock: "Trigonometry block set to Arc tan (using radians)",
+        CosBlock: "Trigonometry block set to Cos (using radians)",
+        ExpBlock: "Trigonometry block set to Exp (using radians)",
+        LogBlock: "Trigonometry block set to Log (using radians)",
+        SinBlock: "Trigonometry block set to Sin (using radians)",
+        TanBlock: "Trigonometry block set to Tan (using radians)",
         ToDegreesBlock: "Conversion block used to convert radians to degree",
         ToRadiansBlock: "Conversion block used to convert degrees to radians",
         TransformBlock: "Apply a transform to a geometry or a vector",
@@ -99,6 +101,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         InstantiateOnVerticesBlock: "Instantiate a geometry on every vertex of a target geometry",
         InstantiateOnFacesBlock: "Instantiate a geometry on the faces of a target geometry",
         InstantiateOnVolumeBlock: "Instantiate a geometry inside a target geometry",
+        InstantiateBlock: "Instantiate a geometry with a loop count",
         ElbowBlock: "Passthrough block mostly used to organize your graph",
         TeleportInBlock: "Passthrough block mostly used to organize your graph (but without visible lines). It works like a teleportation point for the graph.",
         TeleportOutBlock: "Endpoint for a TeleportInBlock.",
@@ -119,6 +122,11 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         LinearClonerBlock: "Clone a geometry linearly",
         RadialClonerBlock: "Clone a geometry in a circle",
         GeometryInfoBlock: "Provides information about a geometry",
+        MappingBlock: "Generate uv coordinates based on mapping type",
+        MatrixComposeBlock: "Multiply two matrices together",
+        TextureBlock: "Provide a texture data source",
+        TextureFetchBlock: "Fetch a color from a texture data source",
+        BoundingBlock: "Compute the bounding box of a geometry",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -181,6 +189,10 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
     removeItem(value: string): void {
         const frameJson = localStorage.getItem("Custom-Frame-List");
         if (frameJson) {
+            const registeredIdx = NodeLedger.RegisteredNodeNames.indexOf(value);
+            if (registeredIdx !== -1) {
+                NodeLedger.RegisteredNodeNames.splice(registeredIdx, 1);
+            }
             const frameList = JSON.parse(frameJson);
             delete frameList[value];
             localStorage.removeItem(value);
@@ -214,6 +226,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "UV6sBlock",
                 "VertexIDBlock",
                 "FaceIDBlock",
+                "LoopIDBlock",
+                "InstanceIDBlock",
                 "GeometryIDBlock",
                 "CollectionIDBlock",
             ],
@@ -249,9 +263,9 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "ToDegreesBlock",
                 "ToRadiansBlock",
             ],
-            Math__Vector: ["TransformBlock", "VectorConverterBlock", "NormalizeBlock"],
-            Matrices: ["RotationXBlock", "RotationYBlock", "RotationZBlock", "ScalingBlock", "TranslationBlock", "AlignBlock"],
-            Instances: ["InstantiateOnVerticesBlock", "InstantiateOnFacesBlock", "InstantiateOnVolumeBlock"],
+            Math__Vector: ["TransformBlock", "VectorConverterBlock", "NormalizeBlock", "BoundingBlock"],
+            Matrices: ["RotationXBlock", "RotationYBlock", "RotationZBlock", "ScalingBlock", "TranslationBlock", "AlignBlock", "MatrixComposeBlock"],
+            Instances: ["InstantiateOnVerticesBlock", "InstantiateOnFacesBlock", "InstantiateOnVolumeBlock", "InstantiateBlock"],
             Misc: ["ElbowBlock", "DebugBlock", "TeleportInBlock", "TeleportOutBlock", "GeometryInfoBlock"],
             Updates: [
                 "SetColorsBlock",
@@ -264,9 +278,11 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "CollectionBlock",
                 "ComputeNormalsBlock",
                 "OptimizeBlock",
+                "MappingBlock",
             ],
             Noises: ["RandomBlock", "NoiseBlock"],
             Cloners: ["LinearClonerBlock", "RadialClonerBlock"],
+            Textures: ["TextureBlock", "TextureFetchBlock"],
             Output_Nodes: ["GeometryOutputBlock"],
         };
 
@@ -322,11 +338,24 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             for (const key in allBlocks) {
                 const blocks = allBlocks[key] as string[];
                 if (blocks.length) {
-                    ledger.push(...blocks);
+                    for (const block of blocks) {
+                        if (!ledger.includes(block)) {
+                            ledger.push(block);
+                        }
+                    }
                 }
             }
             NodeLedger.NameFormatter = (name) => {
-                return name.replace("Block", "");
+                let finalName = name;
+                // custom frame
+                if (name.endsWith("Custom")) {
+                    const nameIndex = name.lastIndexOf("Custom");
+                    finalName = name.substring(0, nameIndex);
+                    finalName += " [custom]";
+                } else {
+                    finalName = name.replace("Block", "");
+                }
+                return finalName;
             };
         }
 

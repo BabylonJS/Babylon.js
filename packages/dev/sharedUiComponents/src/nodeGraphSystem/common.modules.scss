@@ -7,6 +7,9 @@
     width: 20px;
     height: 20px;
     align-self: center;
+    display: grid;
+    grid-template-columns: 100%;
+    grid-template-rows: 100%;
 
     .img {
         width: 100%;

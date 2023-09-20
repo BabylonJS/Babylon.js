@@ -225,14 +225,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@6.17.0";
+        return "babylonjs@6.21.1";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "6.17.0";
+        return "6.21.1";
     }
 
     /**
@@ -4970,6 +4970,8 @@ export class ThinEngine {
         texture.width = potWidth;
         texture.height = potHeight;
         texture.isReady = true;
+        texture.type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
+        texture.format = extension === ".jpg" && !texture._useSRGBBuffer ? Constants.TEXTUREFORMAT_RGB : Constants.TEXTUREFORMAT_RGBA;
 
         if (
             processFunction(potWidth, potHeight, img, extension, texture, () => {

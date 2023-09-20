@@ -1,3 +1,4 @@
+import type { Nullable } from "core/types";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
@@ -21,6 +22,7 @@ export class TeleportInBlock extends NodeGeometryBlock {
      */
     public constructor(name: string) {
         super(name);
+        this._isTeleportIn = true;
 
         this.registerInput("input", NodeGeometryBlockConnectionPointTypes.AutoDetect);
     }
@@ -53,6 +55,65 @@ export class TeleportInBlock extends NodeGeometryBlock {
     }
 
     /**
+     * Checks if the current block is an ancestor of a given type
+     * @param type defines the potential type to check
+     * @returns true if block is a descendant
+     */
+    public isAnAncestorOfType(type: string): boolean {
+        if (this.getClassName() === type) {
+            return true;
+        }
+
+        for (const endpoint of this.endpoints) {
+            if (endpoint.isAnAncestorOfType(type)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks if the current block is an ancestor of a given block
+     * @param block defines the potential descendant block to check
+     * @returns true if block is a descendant
+     */
+    public isAnAncestorOf(block: NodeGeometryBlock): boolean {
+        for (const endpoint of this.endpoints) {
+            if (endpoint === block) {
+                return true;
+            }
+
+            if (endpoint.isAnAncestorOf(block)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Get the first descendant using a predicate
+     * @param predicate defines the predicate to check
+     * @returns descendant or null if none found
+     */
+    public getDescendantOfPredicate(predicate: (block: NodeGeometryBlock) => boolean): Nullable<NodeGeometryBlock> {
+        if (predicate(this)) {
+            return this;
+        }
+
+        for (const endpoint of this.endpoints) {
+            const descendant = endpoint.getDescendantOfPredicate(predicate);
+
+            if (descendant) {
+                return descendant;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Add an enpoint to this block
      * @param endpoint define the endpoint to attach to
      */
@@ -63,6 +124,7 @@ export class TeleportInBlock extends NodeGeometryBlock {
         endpoint._entryPoint = this;
         endpoint._outputs[0]._typeConnectionSource = this._inputs[0];
         endpoint._tempEntryPointUniqueId = null;
+        endpoint.name = "> " + this.name;
     }
 
     /**

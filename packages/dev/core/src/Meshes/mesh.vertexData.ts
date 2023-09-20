@@ -730,102 +730,104 @@ export class VertexData {
             } else {
                 if (!this.normals !== !other.normals) {
                     if (!this.normals) {
-                        this.normals = Array.from(other.normals!);
+                        this.normals = new Float32Array(this.positions!.length);
                     } else {
-                        other.normals = Array.from(this.normals);
+                        other.normals = new Float32Array(other.positions!.length);
                     }
                 }
 
                 if (!this.tangents !== !other.tangents) {
                     if (!this.tangents) {
-                        this.tangents = Array.from(other.tangents!);
+                        this.tangents = new Float32Array((this.positions!.length / 3) * 4);
                     } else {
-                        other.tangents = Array.from(this.tangents);
+                        other.tangents = new Float32Array((other.positions!.length / 3) * 4);
                     }
                 }
                 if (!this.uvs !== !other.uvs) {
                     if (!this.uvs) {
-                        this.uvs = Array.from(other.uvs!);
+                        this.uvs = new Float32Array((this.positions!.length / 3) * 2);
                     } else {
-                        other.uvs = Array.from(this.uvs);
+                        other.uvs = new Float32Array((other.positions!.length / 3) * 2);
                     }
                 }
 
                 if (!this.uvs2 !== !other.uvs2) {
                     if (!this.uvs2) {
-                        this.uvs2 = Array.from(other.uvs2!);
+                        this.uvs2 = new Float32Array((this.positions!.length / 3) * 2);
                     } else {
-                        other.uvs2 = Array.from(this.uvs2);
+                        other.uvs2 = new Float32Array((other.positions!.length / 3) * 2);
                     }
                 }
 
                 if (!this.uvs3 !== !other.uvs3) {
                     if (!this.uvs3) {
-                        this.uvs3 = Array.from(other.uvs3!);
+                        this.uvs3 = new Float32Array((this.positions!.length / 3) * 2);
                     } else {
-                        other.uvs3 = Array.from(this.uvs3);
+                        other.uvs3 = new Float32Array((other.positions!.length / 3) * 2);
                     }
                 }
 
                 if (!this.uvs4 !== !other.uvs4) {
                     if (!this.uvs4) {
-                        this.uvs4 = Array.from(other.uvs4!);
+                        this.uvs4 = new Float32Array((this.positions!.length / 3) * 2);
                     } else {
-                        other.uvs4 = Array.from(this.uvs4);
+                        other.uvs4 = new Float32Array((other.positions!.length / 3) * 2);
                     }
                 }
                 if (!this.uvs5 !== !other.uvs5) {
                     if (!this.uvs5) {
-                        this.uvs5 = Array.from(other.uvs5!);
+                        this.uvs5 = new Float32Array((this.positions!.length / 3) * 2);
                     } else {
-                        other.uvs5 = Array.from(this.uvs5);
+                        other.uvs5 = new Float32Array((other.positions!.length / 3) * 2);
                     }
                 }
 
                 if (!this.uvs6 !== !other.uvs6) {
                     if (!this.uvs6) {
-                        this.uvs6 = Array.from(other.uvs6!);
+                        this.uvs6 = new Float32Array((this.positions!.length / 3) * 2);
                     } else {
-                        other.uvs6 = Array.from(this.uvs6);
+                        other.uvs6 = new Float32Array((other.positions!.length / 3) * 2);
                     }
                 }
 
                 if (!this.colors !== !other.colors) {
                     if (!this.colors) {
-                        this.colors = Array.from(other.colors!);
+                        this.colors = new Float32Array((this.positions!.length / 3) * 4);
+                        this.colors.fill(1); // Set to white by default
                     } else {
-                        other.colors = Array.from(this.colors);
+                        other.colors = new Float32Array((other.positions!.length / 3) * 4);
+                        other.colors.fill(1); // Set to white by default
                     }
                 }
 
                 if (!this.matricesIndices !== !other.matricesIndices) {
                     if (!this.matricesIndices) {
-                        this.matricesIndices = Array.from(other.matricesIndices!);
+                        this.matricesIndices = new Float32Array((this.positions!.length / 3) * 4);
                     } else {
-                        other.matricesIndices = Array.from(this.matricesIndices);
+                        other.matricesIndices = new Float32Array((other.positions!.length / 3) * 4);
                     }
                 }
                 if (!this.matricesWeights !== !other.matricesWeights) {
                     if (!this.matricesWeights) {
-                        this.matricesWeights = Array.from(other.matricesWeights!);
+                        this.matricesWeights = new Float32Array((this.positions!.length / 3) * 4);
                     } else {
-                        other.matricesWeights = Array.from(this.matricesWeights);
+                        other.matricesWeights = new Float32Array((other.positions!.length / 3) * 4);
                     }
                 }
 
                 if (!this.matricesIndicesExtra !== !other.matricesIndicesExtra) {
                     if (!this.matricesIndicesExtra) {
-                        this.matricesIndicesExtra = Array.from(other.matricesIndicesExtra!);
+                        this.matricesIndicesExtra = new Float32Array((this.positions!.length / 3) * 4);
                     } else {
-                        other.matricesIndicesExtra = Array.from(this.matricesIndicesExtra);
+                        other.matricesIndicesExtra = new Float32Array((other.positions!.length / 3) * 4);
                     }
                 }
 
                 if (!this.matricesWeightsExtra !== !other.matricesWeightsExtra) {
                     if (!this.matricesWeightsExtra) {
-                        this.matricesWeightsExtra = Array.from(other.matricesWeightsExtra!);
+                        this.matricesWeightsExtra = new Float32Array((this.positions!.length / 3) * 4);
                     } else {
-                        other.matricesWeightsExtra = Array.from(this.matricesWeightsExtra);
+                        other.matricesWeightsExtra = new Float32Array((other.positions!.length / 3) * 4);
                     }
                 }
             }
@@ -845,9 +847,12 @@ export class VertexData {
                 vertexDataList.push({ vertexData: split, transform: transform });
             }
 
-            for (const vertexData of vertexDatas) {
-                for (const split of vertexData.vertexData.splitBasedOnMaterialID()) {
-                    vertexDataList.push({ vertexData: split, transform: vertexData.transform });
+            for (const data of vertexDatas) {
+                if (!data.vertexData) {
+                    continue;
+                }
+                for (const split of data.vertexData.splitBasedOnMaterialID()) {
+                    vertexDataList.push({ vertexData: split, transform: data.transform });
                 }
             }
 

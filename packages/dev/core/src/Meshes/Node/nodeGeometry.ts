@@ -33,6 +33,7 @@ export interface INodeGeometryEditorOptions {
     nodeGeometryEditorConfig?: {
         backgroundColor?: Color4;
         hostScene?: Scene;
+        hostMesh?: Mesh;
     };
 }
 
@@ -277,6 +278,28 @@ export class NodeGeometry {
         return mesh;
     }
 
+    /**
+     * Creates a mesh from the geometry blocks
+     * @param mesh the mesh to update
+     * @returns True if successfully updated
+     */
+    public updateMesh(mesh: Mesh) {
+        if (!this._buildWasSuccessful) {
+            this.build();
+        }
+
+        if (!this._vertexData) {
+            return false;
+        }
+
+        this._vertexData.applyToMesh(mesh);
+
+        mesh._internalMetadata = mesh._internalMetadata || {};
+        mesh._internalMetadata.nodeGeometry = this;
+
+        return mesh;
+    }
+
     private _initializeBlock(node: NodeGeometryBlock, autoConfigure = true) {
         node.initialize();
         if (autoConfigure) {
@@ -466,11 +489,11 @@ export class NodeGeometry {
         if (this.outputBlock) {
             // Connections
             alreadyDumped = [];
-            codeString += "\n`;// Connections\n`;";
+            codeString += "// Connections\n";
             codeString += this.outputBlock._dumpCodeForOutputConnections(alreadyDumped);
 
             // Output nodes
-            codeString += "\n`;// Output nodes\n`;";
+            codeString += "// Output nodes\n";
             codeString += `nodeGeometry.outputBlock = ${this.outputBlock._codeVariableName};\n`;
             codeString += `nodeGeometry.build();\n`;
         }

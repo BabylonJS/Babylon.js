@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Logger } from "../../../Misc/logger";
 import { serialize, SerializationHelper } from "../../../Misc/decorators";
-import { Vector3, TmpVectors } from "../../../Maths/math.vector";
+import { Vector3, TmpVectors, Vector2 } from "../../../Maths/math.vector";
 import { Camera } from "../../../Cameras/camera";
 import type { Effect } from "../../../Materials/effect";
 import { Texture } from "../../../Materials/Textures/texture";
-import { DynamicTexture } from "../../../Materials/Textures/dynamicTexture";
 import { PostProcess } from "../../../PostProcesses/postProcess";
 import { PostProcessRenderPipeline } from "../../../PostProcesses/RenderPipeline/postProcessRenderPipeline";
 import { PostProcessRenderEffect } from "../../../PostProcesses/RenderPipeline/postProcessRenderEffect";
@@ -18,6 +17,8 @@ import type { PrePassRenderer } from "../../../Rendering/prePassRenderer";
 import type { GeometryBufferRenderer } from "../../../Rendering/geometryBufferRenderer";
 import { Constants } from "../../../Engines/constants";
 import type { Nullable } from "../../../types";
+import { Scalar } from "../../../Maths/math.scalar";
+import { RawTexture } from "../../../Materials/Textures/rawTexture";
 
 import "../../../PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneComponent";
 
@@ -250,7 +251,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     }
 
     private _scene: Scene;
-    private _randomTexture: DynamicTexture;
+    private _randomTexture: Texture;
     private _originalColorPostProcess: PassPostProcess;
     private _ssaoPostProcess: PostProcess;
     private _blurHPostProcess: PostProcess;
@@ -633,36 +634,21 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     private _createRandomTexture(): void {
         const size = 128;
 
-        this._randomTexture = new DynamicTexture("SSAORandomTexture", size, this._scene, false, Texture.BILINEAR_SAMPLINGMODE);
-        this._randomTexture.wrapU = Texture.WRAP_ADDRESSMODE;
-        this._randomTexture.wrapV = Texture.WRAP_ADDRESSMODE;
-
-        const context = this._randomTexture.getContext();
-
-        const rand = (min: number, max: number) => {
-            return Math.random() * (max - min) + min;
-        };
-
-        const randVector = Vector3.Zero();
-
-        for (let x = 0; x < size; x++) {
-            for (let y = 0; y < size; y++) {
-                randVector.x = rand(0.0, 1.0);
-                randVector.y = rand(0.0, 1.0);
-                randVector.z = 0.0;
-
-                randVector.normalize();
-
-                randVector.scaleInPlace(255);
-                randVector.x = Math.floor(randVector.x);
-                randVector.y = Math.floor(randVector.y);
-
-                context.fillStyle = "rgb(" + randVector.x + ", " + randVector.y + ", " + randVector.z + ")";
-                context.fillRect(x, y, 1, 1);
-            }
+        const data = new Uint8Array(size * size * 4);
+        const randVector = Vector2.Zero();
+        for (let index = 0; index < data.length; ) {
+            randVector.set(Scalar.RandomRange(0, 1), Scalar.RandomRange(0, 1)).normalize().scaleInPlace(255);
+            data[index++] = Math.floor(randVector.x);
+            data[index++] = Math.floor(randVector.y);
+            data[index++] = 0;
+            data[index++] = 255;
         }
 
-        this._randomTexture.update(false);
+        const texture = RawTexture.CreateRGBATexture(data, size, size, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE);
+        texture.name = "SSAORandomTexture";
+        texture.wrapU = Texture.WRAP_ADDRESSMODE;
+        texture.wrapV = Texture.WRAP_ADDRESSMODE;
+        this._randomTexture = texture;
     }
 
     /**

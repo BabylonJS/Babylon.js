@@ -209,12 +209,12 @@ export class DirectionalLight extends ShadowLight {
             const tempVector3 = Vector3.Zero();
 
             this._orthoLeft = Number.MAX_VALUE;
-            this._orthoRight = Number.MIN_VALUE;
-            this._orthoTop = Number.MIN_VALUE;
+            this._orthoRight = -Number.MAX_VALUE;
+            this._orthoTop = -Number.MAX_VALUE;
             this._orthoBottom = Number.MAX_VALUE;
 
             let shadowMinZ = Number.MAX_VALUE;
-            let shadowMaxZ = Number.MIN_VALUE;
+            let shadowMaxZ = -Number.MAX_VALUE;
 
             for (let meshIndex = 0; meshIndex < renderList.length; meshIndex++) {
                 const mesh = renderList[meshIndex];

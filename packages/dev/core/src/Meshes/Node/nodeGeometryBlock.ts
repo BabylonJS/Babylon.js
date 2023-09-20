@@ -6,6 +6,7 @@ import { NodeGeometryConnectionPoint, NodeGeometryConnectionPointDirection } fro
 import type { NodeGeometryBuildState } from "./nodeGeometryBuildState";
 import { Observable } from "../../Misc/observable";
 import { PrecisionDate } from "../../Misc/precisionDate";
+import type { Nullable } from "../../types";
 
 /**
  * Defines a block that can be used inside a node based geometry
@@ -13,9 +14,10 @@ import { PrecisionDate } from "../../Misc/precisionDate";
 export class NodeGeometryBlock {
     private _name = "";
     private _buildId: number;
-    private _isInput = false;
-    private _isTeleportOut = false;
-    private _isTeleportIn = false;
+    protected _isInput = false;
+    protected _isTeleportOut = false;
+    protected _isTeleportIn = false;
+    protected _isDebug = false;
     protected _isUnique = false;
     private _buildExecutionTime: number = 0;
 
@@ -90,6 +92,13 @@ export class NodeGeometryBlock {
     }
 
     /**
+     * Gets a boolean indicating if this block is a debug block
+     */
+    public get isDebug(): boolean {
+        return this._isDebug;
+    }
+
+    /**
      * Gets a boolean indicating that this block can only be used once per NodeGeometry
      */
     public get isUnique() {
@@ -101,9 +110,6 @@ export class NodeGeometryBlock {
      */
     @serialize("comment")
     public comments: string;
-
-    /** Gets or sets a boolean indicating that this input can be edited in the Inspector (false by default) */
-    public visibleInInspector = false;
 
     /** Gets or sets a boolean indicating that this input can be edited from a collapsed frame */
     public visibleOnFrame = false;
@@ -150,7 +156,7 @@ export class NodeGeometryBlock {
 
     /**
      * Checks if the current block is an ancestor of a given type
-     * @param block defines the potential type to check
+     * @param type defines the potential type to check
      * @returns true if block is a descendant
      */
     public isAnAncestorOfType(type: string): boolean {
@@ -174,14 +180,38 @@ export class NodeGeometryBlock {
     }
 
     /**
+     * Get the first descendant using a predicate
+     * @param predicate defines the predicate to check
+     * @returns descendant or null if none found
+     */
+    public getDescendantOfPredicate(predicate: (block: NodeGeometryBlock) => boolean): Nullable<NodeGeometryBlock> {
+        if (predicate(this)) {
+            return this;
+        }
+
+        for (const output of this._outputs) {
+            if (!output.hasEndpoints) {
+                continue;
+            }
+
+            for (const endpoint of output.endpoints) {
+                const descendant = endpoint.ownerBlock.getDescendantOfPredicate(predicate);
+
+                if (descendant) {
+                    return descendant;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Creates a new NodeGeometryBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
         this._name = name;
-        this._isInput = this.getClassName() === "GeometryInputBlock";
-        this._isTeleportOut = this.getClassName() === "TeleportOutBlock";
-        this._isTeleportIn = this.getClassName() === "TeleportInBlock";
         this.uniqueId = UniqueIdGenerator.UniqueId;
     }
 
@@ -199,6 +229,7 @@ export class NodeGeometryBlock {
         const point = new NodeGeometryConnectionPoint(name, this, NodeGeometryConnectionPointDirection.Input);
         point.type = type;
         point.isOptional = isOptional;
+        point.defaultValue = value;
         point.value = value;
         point.valueMin = valueMin;
         point.valueMax = valueMax;
@@ -245,7 +276,7 @@ export class NodeGeometryBlock {
         }
 
         if (this._outputs.length > 0) {
-            if (!this._outputs.some((o) => o.hasEndpoints)) {
+            if (!this._outputs.some((o) => o.hasEndpoints) && !this.isDebug) {
                 return false;
             }
         }
@@ -379,7 +410,6 @@ export class NodeGeometryBlock {
     public _deserialize(serializationObject: any) {
         this._name = serializationObject.name;
         this.comments = serializationObject.comments;
-        this.visibleInInspector = !!serializationObject.visibleInInspector;
         this.visibleOnFrame = !!serializationObject.visibleOnFrame;
         this._deserializePortDisplayNamesAndExposedOnFrame(serializationObject);
     }
@@ -388,22 +418,28 @@ export class NodeGeometryBlock {
         const serializedInputs = serializationObject.inputs;
         const serializedOutputs = serializationObject.outputs;
         if (serializedInputs) {
-            serializedInputs.forEach((port: any, i: number) => {
+            serializedInputs.forEach((port: any) => {
+                const input = this.inputs.find((i) => i.name === port.name);
+
+                if (!input) {
+                    return;
+                }
+
                 if (port.displayName) {
-                    this.inputs[i].displayName = port.displayName;
+                    input.displayName = port.displayName;
                 }
                 if (port.isExposedOnFrame) {
-                    this.inputs[i].isExposedOnFrame = port.isExposedOnFrame;
-                    this.inputs[i].exposedPortPosition = port.exposedPortPosition;
+                    input.isExposedOnFrame = port.isExposedOnFrame;
+                    input.exposedPortPosition = port.exposedPortPosition;
                 }
                 if (port.value !== undefined && port.value !== null) {
                     if (port.valueType === "number") {
-                        this.inputs[i].value = port.value;
+                        input.value = port.value;
                     } else {
                         const valueType = GetClass(port.valueType);
 
                         if (valueType) {
-                            this.inputs[i].value = valueType.FromArray(port.value);
+                            input.value = valueType.FromArray(port.value);
                         }
                     }
                 }
@@ -424,7 +460,7 @@ export class NodeGeometryBlock {
 
     protected _dumpPropertiesCode() {
         const variableName = this._codeVariableName;
-        return `${variableName}.visibleInInspector = ${this.visibleInInspector};\n${variableName}.visibleOnFrame = ${this.visibleOnFrame};\n`;
+        return `${variableName}.visibleOnFrame = ${this.visibleOnFrame};\n`;
     }
 
     /**

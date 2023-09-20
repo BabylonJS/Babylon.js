@@ -43,6 +43,13 @@ export class MeshBlock extends NodeGeometryBlock {
     }
 
     /**
+     * Gets a boolean indicating if the block is using cached data
+     */
+    public get isUsingCachedData() {
+        return !this.mesh && !!this._cachedVertexData;
+    }
+
+    /**
      * Gets the geometry output component
      */
     public get geometry(): NodeGeometryConnectionPoint {
@@ -59,8 +66,12 @@ export class MeshBlock extends NodeGeometryBlock {
             return;
         }
 
-        this.geometry._storedValue = VertexData.ExtractFromMesh(this._mesh, false, true);
+        const vertexData = VertexData.ExtractFromMesh(this._mesh, false, true);
         this._cachedVertexData = null;
+
+        this.geometry._storedFunction = () => {
+            return vertexData.clone();
+        };
     }
 
     /**

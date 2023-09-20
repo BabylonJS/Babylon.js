@@ -19,6 +19,7 @@ WebGPUEngine.prototype.createRenderTargetCubeTexture = function (size: number, o
     };
     fullOptions.generateStencilBuffer = fullOptions.generateDepthBuffer && fullOptions.generateStencilBuffer;
 
+    rtWrapper.label = fullOptions.label ?? "RenderTargetWrapper";
     rtWrapper._generateDepthBuffer = fullOptions.generateDepthBuffer;
     rtWrapper._generateStencilBuffer = fullOptions.generateStencilBuffer;
 

@@ -48,6 +48,8 @@ export class PhysicsShape {
 
     private _isTrigger: boolean = false;
 
+    private _isDisposed = false;
+
     /**
      * Constructs a new physics shape.
      * @param options The options for the physics shape. These are:
@@ -255,7 +257,11 @@ export class PhysicsShape {
      * Dispose the shape and release its associated resources.
      */
     public dispose() {
+        if (this._isDisposed) {
+            return;
+        }
         this._physicsPlugin.disposeShape(this);
+        this._isDisposed = true;
     }
 }
 

@@ -51,11 +51,14 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _pointerWheelEvent = (evt: any) => {};
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _pointerBlurEvent = (evt: any) => {};
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    private _pointerMacOSChromeOutEvent = (evt: any) => {};
     private _wheelEventName: string;
     private _eventsAttached: boolean = false;
 
     private _mouseId = -1;
     private readonly _isUsingFirefox = IsNavigatorAvailable() && navigator.userAgent && navigator.userAgent.indexOf("Firefox") !== -1;
+    private readonly _isUsingChromium = IsNavigatorAvailable() && navigator.userAgent && navigator.userAgent.indexOf("Chrome") !== -1;
 
     // Array to store active Pointer ID values; prevents issues with negative pointerIds
     private _activeTouchIds: Array<number>;
@@ -70,6 +73,13 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
     private _eventPrefix: string;
 
+    /**
+     * Constructor for the WebDeviceInputSystem
+     * @param engine Engine to reference
+     * @param onDeviceConnected Callback to execute when device is connected
+     * @param onDeviceDisconnected Callback to execute when device is disconnected
+     * @param onInputChanged Callback to execute when input changes on device
+     */
     constructor(
         engine: Engine,
         onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void,
@@ -213,6 +223,9 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             this._elementToAttachTo.removeEventListener(this._eventPrefix + "up", this._pointerUpEvent);
             this._elementToAttachTo.removeEventListener(this._eventPrefix + "cancel", this._pointerCancelEvent);
             this._elementToAttachTo.removeEventListener(this._wheelEventName, this._pointerWheelEvent);
+            if (this._usingMacOS && this._isUsingChromium) {
+                this._elementToAttachTo.removeEventListener("lostpointercapture", this._pointerMacOSChromeOutEvent);
+            }
 
             // Gamepad Events
             window.removeEventListener("gamepadconnected", this._gamepadConnectedEvent);
@@ -764,6 +777,16 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 }
             }
         };
+
+        // Workaround for MacOS Chromium Browsers for lost pointer capture bug
+        if (this._usingMacOS && this._isUsingChromium) {
+            this._pointerMacOSChromeOutEvent = (evt) => {
+                if (evt.buttons > 1) {
+                    this._pointerCancelEvent(evt);
+                }
+            };
+            this._elementToAttachTo.addEventListener("lostpointercapture", this._pointerMacOSChromeOutEvent);
+        }
 
         this._elementToAttachTo.addEventListener(this._eventPrefix + "move", this._pointerMoveEvent);
         this._elementToAttachTo.addEventListener(this._eventPrefix + "down", this._pointerDownEvent);
