@@ -101,6 +101,10 @@ export class FlowGraphContext {
         this._executionVariables.delete(this._getBlockPrefixedName(block, name));
     }
 
+    public _hasExecutionVariable(block: FlowGraphBlock, name: string) {
+        return this._executionVariables.has(this._getBlockPrefixedName(block, name));
+    }
+
     /**
      * Get the graph set variables
      * @internal
