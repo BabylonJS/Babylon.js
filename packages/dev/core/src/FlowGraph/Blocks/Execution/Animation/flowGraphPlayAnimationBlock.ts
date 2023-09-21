@@ -75,10 +75,10 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
 
         const contextAnimatables = (context._getExecutionVariable(this, "runningAnimatables") as Animatable[]) ?? [];
 
-        // was an animation started on this target already?
+        // was an animation started on this target already and was just paused? if so, we can unpause it.
         const existingAnimatable = this.runningAnimatable.getValue(context);
-        if (existingAnimatable) {
-            // todo: continue existing animation
+        if (existingAnimatable && existingAnimatable.paused) {
+            existingAnimatable.restart();
         } else {
             const scene = context.graphVariables.scene;
             const animatable = scene.beginDirectAnimation(
