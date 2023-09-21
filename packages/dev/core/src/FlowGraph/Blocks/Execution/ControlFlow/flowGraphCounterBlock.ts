@@ -4,6 +4,10 @@ import { RichTypeNumber } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneExecutionBlock";
 
+/**
+ * @experimental
+ * A block that counts the number of times it has been called.
+ */
 export class FlowGraphCounterBlock extends FlowGraphWithOnDoneExecutionBlock {
     public readonly count: FlowGraphDataConnection<number>;
     public readonly reset: FlowGraphSignalConnection;

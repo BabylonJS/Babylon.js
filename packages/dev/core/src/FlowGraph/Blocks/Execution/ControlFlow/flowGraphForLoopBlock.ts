@@ -52,7 +52,7 @@ export class FlowGraphForLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
         if (index < endIndex) {
             this.index.setValue(index, context);
             this.onLoop._activateSignal(context);
-            const step = context._getExecutionVariableWithDefault(this, "step", 1);
+            const step = context._getExecutionVariable(this, "step", 1);
             index += step;
             context._setExecutionVariable(this, "index", index);
             this._executeLoop(context);

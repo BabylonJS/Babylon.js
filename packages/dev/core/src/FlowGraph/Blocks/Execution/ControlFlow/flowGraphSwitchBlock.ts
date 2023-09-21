@@ -4,10 +4,18 @@ import { FlowGraphExecutionBlock } from "../../../flowGraphExecutionBlock";
 import { RichTypeAny } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 
+/**
+ * @experimental
+ * Configuration for a switch block.
+ */
 export interface IFlowGraphSwitchBlockConfiguration<T> {
     cases: T[];
 }
 
+/**
+ * @experimental
+ * A block that executes a branch based on a selection.
+ */
 export class FlowGraphSwitchBlock<T> extends FlowGraphExecutionBlock {
     public readonly selection: FlowGraphDataConnection<T>;
     public readonly outputFlows: FlowGraphSignalConnection[] = [];

@@ -4,6 +4,10 @@ import { RichTypeNumber } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneExecutionBlock";
 
+/**
+ * @experimental
+ * A block that throttles the execution of its output flow.
+ */
 export class FlowGraphThrottleBlock extends FlowGraphWithOnDoneExecutionBlock {
     public readonly duration: FlowGraphDataConnection<number>;
     public readonly timeRemaining: FlowGraphDataConnection<number>;

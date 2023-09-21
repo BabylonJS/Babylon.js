@@ -20,6 +20,7 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
     public readonly reset: FlowGraphSignalConnection;
     public readonly outFlows: FlowGraphSignalConnection[] = [];
     public readonly currentIndex: FlowGraphDataConnection<number>;
+    private _cachedUnusedIndexes: number[] = [];
 
     constructor(config: IFlowGraphMultiGateBlockConfiguration) {
         super();
@@ -40,13 +41,17 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
     }
 
     private _getUnusedIndexes(context: FlowGraphContext): number[] {
-        let result = [];
+        const result = this._cachedUnusedIndexes;
+        result.length = 0;
         if (!context._hasExecutionVariable(this, "unusedIndexes")) {
             for (let i = 0; i < this._config.numberOutputFlows; i++) {
                 result.push(i);
             }
         } else {
-            result = context._getExecutionVariable(this, "unusedIndexes");
+            const contextUnusedIndexes = context._getExecutionVariable(this, "unusedIndexes");
+            for (let i = 0; i < contextUnusedIndexes.length; i++) {
+                result.push(contextUnusedIndexes[i]);
+            }
         }
         return result;
     }

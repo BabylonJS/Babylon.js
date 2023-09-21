@@ -2,13 +2,22 @@ import type { FlowGraphContext } from "../../../flowGraphContext";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneExecutionBlock";
 
+/**
+ * @experimental
+ * Configuration for the wait all block.
+ */
 export interface IFlowGraphWaitAllBlockConfiguration {
     numberInputFlows: number;
 }
 
+/**
+ * @experimental
+ * A block that waits for all input flows to be activated before activating its output flow.
+ */
 export class FlowGraphWaitAllBlock extends FlowGraphWithOnDoneExecutionBlock {
     public reset: FlowGraphSignalConnection;
     public readonly inFlows: FlowGraphSignalConnection[] = [];
+    private _cachedActivationState: boolean[] = [];
 
     constructor(private _config: IFlowGraphWaitAllBlockConfiguration) {
         super();
@@ -22,20 +31,23 @@ export class FlowGraphWaitAllBlock extends FlowGraphWithOnDoneExecutionBlock {
     }
 
     private _getCurrentActivationState(context: FlowGraphContext) {
-        let activationState = [];
+        const activationState = this._cachedActivationState;
+        activationState.length = 0;
         if (!context._hasExecutionVariable(this, "activationState")) {
             for (let i = 0; i < this._config.numberInputFlows; i++) {
                 activationState.push(false);
             }
         } else {
-            activationState = context._getExecutionVariable(this, "activationState");
+            const contextActivationState = context._getExecutionVariable(this, "activationState");
+            for (let i = 0; i < contextActivationState.length; i++) {
+                activationState.push(contextActivationState[i]);
+            }
         }
         return activationState;
     }
 
     public _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {
         const activationState = this._getCurrentActivationState(context);
-
         if (callingSignal === this.reset) {
             for (let i = 0; i < this._config.numberInputFlows; i++) {
                 activationState[i] = false;
@@ -49,7 +61,7 @@ export class FlowGraphWaitAllBlock extends FlowGraphWithOnDoneExecutionBlock {
             }
         }
 
-        context._setExecutionVariable(this, "activationState", activationState);
+        context._setExecutionVariable(this, "activationState", activationState.slice());
 
         if (activationState.every((value: boolean) => value)) {
             this.onDone._activateSignal(context);

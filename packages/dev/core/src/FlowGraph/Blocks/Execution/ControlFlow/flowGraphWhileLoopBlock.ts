@@ -4,10 +4,18 @@ import { RichTypeBoolean } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneExecutionBlock";
 
+/**
+ * @experimental
+ * Configuration for the while loop block.
+ */
 export interface IFlowGraphWhileLoopBlockConfiguration {
     isDo?: boolean;
 }
 
+/**
+ * @experimental
+ * A block that executes a branch while a condition is true.
+ */
 export class FlowGraphWhileLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
     public readonly condition: FlowGraphDataConnection<boolean>;
     public readonly loopBody: FlowGraphSignalConnection;

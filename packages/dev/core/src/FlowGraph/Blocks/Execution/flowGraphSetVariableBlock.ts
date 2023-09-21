@@ -3,10 +3,6 @@ import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
 
-export interface IFlowGraphSetVariableBlockParameter<T> {
-    variableName?: string;
-    input?: T;
-}
 /**
  * Block to set a variable.
  * @experimental
@@ -21,7 +17,7 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphWithOnDoneExecutionBl
      */
     public readonly input: FlowGraphDataConnection<T>;
 
-    constructor(private _params?: IFlowGraphSetVariableBlockParameter<T>) {
+    constructor() {
         super();
 
         this.variableName = this._registerDataInput("variableName", RichTypeString);
@@ -29,8 +25,8 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphWithOnDoneExecutionBl
     }
 
     public _execute(context: FlowGraphContext): void {
-        const variableNameValue = this.variableName.getValue(context) ?? this._params?.variableName ?? "variable";
-        const inputValue = this.input.getValue(context) ?? this._params?.input;
+        const variableNameValue = this.variableName.getValue(context);
+        const inputValue = this.input.getValue(context);
         context.setVariable(variableNameValue, inputValue);
         this.onDone._activateSignal(context);
     }

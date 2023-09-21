@@ -98,11 +98,7 @@ export class FlowGraphContext {
      * @param name
      * @returns
      */
-    public _getExecutionVariable(block: FlowGraphBlock, name: string): any {
-        return this._executionVariables.get(this._getUniqueIdPrefixedName(block, name));
-    }
-
-    public _getExecutionVariableWithDefault(block: FlowGraphBlock, name: string, defaultValue: any): any {
+    public _getExecutionVariable(block: FlowGraphBlock, name: string, defaultValue?: any): any {
         if (this._hasExecutionVariable(block, name)) {
             return this._executionVariables.get(this._getUniqueIdPrefixedName(block, name));
         } else {
