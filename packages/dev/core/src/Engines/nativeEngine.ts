@@ -610,7 +610,6 @@ export class NativeEngine extends Engine {
         }
 
         this._commandBufferEncoder.finishEncodingCommand();
-
         // }
     }
 
