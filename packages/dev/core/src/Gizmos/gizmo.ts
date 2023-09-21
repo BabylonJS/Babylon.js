@@ -249,7 +249,7 @@ export class Gizmo implements IGizmo {
         this._coordinatesMode = coordinatesMode;
         const local = coordinatesMode == GizmoCoordinatesMode.Local;
         this.updateGizmoRotationToMatchAttachedMesh = local;
-        this.updateGizmoPositionToMatchAttachedMesh = local;
+        this.updateGizmoPositionToMatchAttachedMesh = true;
     }
 
     public get coordinatesMode() {
