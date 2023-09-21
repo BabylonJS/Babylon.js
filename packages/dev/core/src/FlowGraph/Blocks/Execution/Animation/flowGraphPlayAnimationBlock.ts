@@ -1,9 +1,9 @@
-import type { FlowGraphContext } from "../../flowGraphContext";
-import type { Animatable, Animation, IAnimatable } from "../../../Animations";
-import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import type { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
-import { FlowGraphAsyncExecutionBlock } from "../../flowGraphAsyncExecutionBlock";
-import { RichTypeAny, RichTypeNumber, RichTypeBoolean } from "../../flowGraphRichTypes";
+import type { FlowGraphContext } from "../../../flowGraphContext";
+import type { Animatable, Animation, IAnimatable } from "../../../../Animations";
+import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
+import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
+import { FlowGraphAsyncExecutionBlock } from "../../../flowGraphAsyncExecutionBlock";
+import { RichTypeAny, RichTypeNumber, RichTypeBoolean } from "../../../flowGraphRichTypes";
 
 /**
  * @experimental
@@ -73,22 +73,28 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             throw new Error("Cannot play animation without target or animation");
         }
 
-        const contextAnims = (context._getExecutionVariable(this, "runningAnimatables") as Animatable[]) ?? [];
+        const contextAnimatables = (context._getExecutionVariable(this, "runningAnimatables") as Animatable[]) ?? [];
 
-        const scene = context.graphVariables.scene;
-        const animatable = scene.beginDirectAnimation(
-            targetValue,
-            [animationValue],
-            this.from.getValue(context),
-            this.to.getValue(context),
-            this.loop.getValue(context),
-            this.speed.getValue(context),
-            () => this._onAnimationEnd(animatable, context)
-        );
-        this.runningAnimatable.value = animatable;
-        contextAnims.push(animatable);
+        // was an animation started on this target already and was just paused? if so, we can unpause it.
+        const existingAnimatable = this.runningAnimatable.getValue(context);
+        if (existingAnimatable && existingAnimatable.paused) {
+            existingAnimatable.restart();
+        } else {
+            const scene = context.graphVariables.scene;
+            const animatable = scene.beginDirectAnimation(
+                targetValue,
+                [animationValue],
+                this.from.getValue(context),
+                this.to.getValue(context),
+                this.loop.getValue(context),
+                this.speed.getValue(context),
+                () => this._onAnimationEnd(animatable, context)
+            );
+            this.runningAnimatable.value = animatable;
+            contextAnimatables.push(animatable);
+        }
 
-        context._setExecutionVariable(this, "runningAnimatables", contextAnims);
+        context._setExecutionVariable(this, "runningAnimatables", contextAnimatables);
     }
 
     public _execute(context: FlowGraphContext): void {
