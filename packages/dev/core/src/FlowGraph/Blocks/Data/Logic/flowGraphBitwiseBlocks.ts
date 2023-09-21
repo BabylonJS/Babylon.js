@@ -1,4 +1,4 @@
-import { RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
+import { RichTypeNumber } from "../../flowGraphRichTypes";
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
 
