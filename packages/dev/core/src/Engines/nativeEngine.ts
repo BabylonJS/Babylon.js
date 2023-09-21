@@ -596,20 +596,20 @@ export class NativeEngine extends Engine {
         //     this._gl.drawElementsInstanced(drawMode, indexCount, indexFormat, indexStart * mult, instancesCount);
         // } else {
 
-        if (instancesCount === undefined || _native.Engine.COMMAND_DRAWINDEXEDINSTANCED === undefined) {
-            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAWINDEXED);
-            this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
-            this._commandBufferEncoder.encodeCommandArgAsUInt32(indexStart);
-            this._commandBufferEncoder.encodeCommandArgAsUInt32(indexCount);
-            this._commandBufferEncoder.finishEncodingCommand();
-        } else {
+        if (instancesCount && _native.Engine.COMMAND_DRAWINDEXEDINSTANCED) {
             this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAWINDEXEDINSTANCED);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(indexStart);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(indexCount);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(instancesCount);
-            this._commandBufferEncoder.finishEncodingCommand();
+        } else {
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAWINDEXED);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(indexStart);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(indexCount);
         }
+
+        this._commandBufferEncoder.finishEncodingCommand();
 
         // }
     }
