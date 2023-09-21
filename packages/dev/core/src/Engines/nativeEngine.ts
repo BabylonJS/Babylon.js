@@ -631,19 +631,19 @@ export class NativeEngine extends Engine {
         //     this._gl.drawArraysInstanced(drawMode, verticesStart, verticesCount, instancesCount);
         // } else {
 
-        if (instancesCount && _native.Engine.COMMAND_DRAWINDEXEDINSTANCED) {
-            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAW);
-            this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
-            this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesStart);
-            this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesCount);
-            this._commandBufferEncoder.finishEncodingCommand();
-        }
-        else{
+        if (instancesCount && _native.Engine.COMMAND_DRAWINSTANCED) {
             this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAWINSTANCED);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesStart);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesCount);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(instancesCount);
+            this._commandBufferEncoder.finishEncodingCommand();
+        }
+        else{
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAW);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesStart);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesCount);
             this._commandBufferEncoder.finishEncodingCommand();
         }
         // }
