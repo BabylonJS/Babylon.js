@@ -190,7 +190,7 @@ class CommandBufferEncoder {
 /** @internal */
 export class NativeEngine extends Engine {
     // This must match the protocol version in NativeEngine.cpp
-    private static readonly PROTOCOL_VERSION = 9;
+    private static readonly PROTOCOL_VERSION = 8;
 
     private readonly _engine: INativeEngine = new _native.Engine();
     private readonly _camera: Nullable<INativeCamera> = _native.Camera ? new _native.Camera() : null;
@@ -595,12 +595,22 @@ export class NativeEngine extends Engine {
         // if (instancesCount) {
         //     this._gl.drawElementsInstanced(drawMode, indexCount, indexFormat, indexStart * mult, instancesCount);
         // } else {
-        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAWINDEXED);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(indexStart);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(indexCount);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(instancesCount ? instancesCount : 0);
-        this._commandBufferEncoder.finishEncodingCommand();
+
+        if (instancesCount === undefined || _native.Engine.COMMAND_DRAWINDEXEDINSTANCED === undefined) {
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAWINDEXED);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(indexStart);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(indexCount);
+            this._commandBufferEncoder.finishEncodingCommand();
+        } else {
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAWINDEXEDINSTANCED);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(indexStart);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(indexCount);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(instancesCount);
+            this._commandBufferEncoder.finishEncodingCommand();
+        }
+
         // }
     }
 
@@ -620,12 +630,22 @@ export class NativeEngine extends Engine {
         // if (instancesCount) {
         //     this._gl.drawArraysInstanced(drawMode, verticesStart, verticesCount, instancesCount);
         // } else {
-        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAW);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesStart);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesCount);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(instancesCount ? instancesCount : 0);
-        this._commandBufferEncoder.finishEncodingCommand();
+
+        if (instancesCount === undefined || _native.Engine.COMMAND_DRAWINSTANCED === undefined) {
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAW);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesStart);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesCount);
+            this._commandBufferEncoder.finishEncodingCommand();
+        }
+        else{
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAWINSTANCED);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesStart);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesCount);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(instancesCount);
+            this._commandBufferEncoder.finishEncodingCommand();
+        }
         // }
     }
 
