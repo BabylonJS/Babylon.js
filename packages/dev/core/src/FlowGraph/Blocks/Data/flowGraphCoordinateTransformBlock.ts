@@ -2,7 +2,7 @@ import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { RichTypeAny, RichTypeVector3 } from "../../flowGraphRichTypes";
-import { Vector3 } from "../../../Maths";
+import { Vector3 } from "../../../Maths/math.vector";
 import type { TransformNode } from "../../../Meshes/transformNode";
 
 /**
