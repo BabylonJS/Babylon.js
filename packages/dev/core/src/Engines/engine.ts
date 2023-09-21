@@ -1709,7 +1709,13 @@ export class Engine extends ThinEngine {
      * @param height defines the height for the external texture (default: 0)
      * @returns the babylon internal texture
      */
-    public wrapWebGLTexture(texture: WebGLTexture, hasMipMaps: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE, width: number = 0, height: number = 0): InternalTexture {
+    public wrapWebGLTexture(
+        texture: WebGLTexture,
+        hasMipMaps: boolean = false,
+        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+        width: number = 0,
+        height: number = 0
+    ): InternalTexture {
         const hardwareTexture = new WebGLHardwareTexture(texture, this._gl);
         const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
         internalTexture._hardwareTexture = hardwareTexture;
