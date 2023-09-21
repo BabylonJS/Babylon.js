@@ -637,7 +637,7 @@ export class NativeEngine extends Engine {
             this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesStart);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesCount);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(instancesCount);
-        }  else {
+        } else {
             this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAW);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesStart);
