@@ -631,7 +631,7 @@ export class NativeEngine extends Engine {
         //     this._gl.drawArraysInstanced(drawMode, verticesStart, verticesCount, instancesCount);
         // } else {
 
-        if (instancesCount === undefined || _native.Engine.COMMAND_DRAWINSTANCED === undefined) {
+        if (instancesCount && _native.Engine.COMMAND_DRAWINDEXEDINSTANCED) {
             this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAW);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesStart);
