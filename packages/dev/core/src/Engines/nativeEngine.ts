@@ -600,7 +600,6 @@ export class NativeEngine extends Engine {
         }
 
         this._commandBufferEncoder.finishEncodingCommand();
-
         // }
     }
 
@@ -621,15 +620,14 @@ export class NativeEngine extends Engine {
             this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesStart);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesCount);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(instancesCount);
-            this._commandBufferEncoder.finishEncodingCommand();
-        }
-        else{
+        } else {
             this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAW);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesStart);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesCount);
-            this._commandBufferEncoder.finishEncodingCommand();
         }
+
+        this._commandBufferEncoder.finishEncodingCommand();
         // }
     }
 
