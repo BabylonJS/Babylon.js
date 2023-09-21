@@ -586,16 +586,6 @@ export class NativeEngine extends Engine {
         // Apply states
         this._drawCalls.addCount(1, false);
 
-        // TODO: Make this implementation more robust like core Engine version.
-
-        // Render
-        //var indexFormat = this._uintIndicesCurrentlySet ? this._gl.UNSIGNED_INT : this._gl.UNSIGNED_SHORT;
-
-        //var mult = this._uintIndicesCurrentlySet ? 4 : 2;
-        // if (instancesCount) {
-        //     this._gl.drawElementsInstanced(drawMode, indexCount, indexFormat, indexStart * mult, instancesCount);
-        // } else {
-
         if (instancesCount && _native.Engine.COMMAND_DRAWINDEXEDINSTANCED) {
             this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAWINDEXEDINSTANCED);
             this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
@@ -624,12 +614,6 @@ export class NativeEngine extends Engine {
     public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void {
         // Apply states
         this._drawCalls.addCount(1, false);
-
-        // TODO: Make this implementation more robust like core Engine version.
-
-        // if (instancesCount) {
-        //     this._gl.drawArraysInstanced(drawMode, verticesStart, verticesCount, instancesCount);
-        // } else {
 
         if (instancesCount && _native.Engine.COMMAND_DRAWINSTANCED) {
             this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAWINSTANCED);
