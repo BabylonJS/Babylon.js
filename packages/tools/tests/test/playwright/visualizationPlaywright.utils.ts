@@ -88,8 +88,6 @@ export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFile
             window.scene = null;
             window.engine = null;
         });
-        // await jestPuppeteer.debug();
-        // if (browser) await browser.close();
     });
 
     for (const testCase of tests) {
