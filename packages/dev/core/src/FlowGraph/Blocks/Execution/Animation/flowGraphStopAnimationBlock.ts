@@ -1,8 +1,8 @@
-import type { FlowGraphContext } from "../../flowGraphContext";
-import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
-import type { Animatable } from "../../../Animations";
-import { RichTypeAny } from "../../flowGraphRichTypes";
+import type { FlowGraphContext } from "../../../flowGraphContext";
+import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
+import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneExecutionBlock";
+import type { Animatable } from "../../../../Animations";
+import { RichTypeAny } from "../../../flowGraphRichTypes";
 
 /**
  * @experimental

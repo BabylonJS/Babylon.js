@@ -586,19 +586,19 @@ export class NativeEngine extends Engine {
         // Apply states
         this._drawCalls.addCount(1, false);
 
-        // TODO: Make this implementation more robust like core Engine version.
+        if (instancesCount && _native.Engine.COMMAND_DRAWINDEXEDINSTANCED) {
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAWINDEXEDINSTANCED);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(indexStart);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(indexCount);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(instancesCount);
+        } else {
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAWINDEXED);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(indexStart);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(indexCount);
+        }
 
-        // Render
-        //var indexFormat = this._uintIndicesCurrentlySet ? this._gl.UNSIGNED_INT : this._gl.UNSIGNED_SHORT;
-
-        //var mult = this._uintIndicesCurrentlySet ? 4 : 2;
-        // if (instancesCount) {
-        //     this._gl.drawElementsInstanced(drawMode, indexCount, indexFormat, indexStart * mult, instancesCount);
-        // } else {
-        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAWINDEXED);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(indexStart);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(indexCount);
         this._commandBufferEncoder.finishEncodingCommand();
         // }
     }
@@ -614,15 +614,19 @@ export class NativeEngine extends Engine {
         // Apply states
         this._drawCalls.addCount(1, false);
 
-        // TODO: Make this implementation more robust like core Engine version.
+        if (instancesCount && _native.Engine.COMMAND_DRAWINSTANCED) {
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAWINSTANCED);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesStart);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesCount);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(instancesCount);
+        } else {
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAW);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesStart);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesCount);
+        }
 
-        // if (instancesCount) {
-        //     this._gl.drawArraysInstanced(drawMode, verticesStart, verticesCount, instancesCount);
-        // } else {
-        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAW);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesStart);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesCount);
         this._commandBufferEncoder.finishEncodingCommand();
         // }
     }
@@ -1847,10 +1851,14 @@ export class NativeEngine extends Engine {
      * @param samplingMode defines the sampling mode for the external texture (default: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE)
      * @returns the babylon internal texture
      */
-    public wrapNativeTexture(texture: any, hasMipMaps: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE): InternalTexture {
+    public wrapNativeTexture(texture: NativeTexture, hasMipMaps: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE): InternalTexture {
         const hardwareTexture = new NativeHardwareTexture(texture, this._engine);
         const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
         internalTexture._hardwareTexture = hardwareTexture;
+        internalTexture.baseWidth = this._engine.getTextureWidth(texture);
+        internalTexture.baseHeight = this._engine.getTextureHeight(texture);
+        internalTexture.width = internalTexture.baseWidth;
+        internalTexture.height = internalTexture.baseHeight;
         internalTexture.isReady = true;
         internalTexture.useMipMaps = hasMipMaps;
         this.updateTextureSamplingMode(samplingMode, internalTexture);

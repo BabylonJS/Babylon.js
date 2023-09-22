@@ -325,7 +325,9 @@ interface INativeEngineConstructor {
     readonly COMMAND_UNBINDFRAMEBUFFER: NativeData;
     readonly COMMAND_DELETEFRAMEBUFFER: NativeData;
     readonly COMMAND_DRAWINDEXED: NativeData;
+    readonly COMMAND_DRAWINDEXEDINSTANCED?: NativeData;
     readonly COMMAND_DRAW: NativeData;
+    readonly COMMAND_DRAWINSTANCED?: NativeData;
     readonly COMMAND_CLEAR: NativeData;
     readonly COMMAND_SETSTENCIL: NativeData;
     readonly COMMAND_SETVIEWPORT: NativeData;
