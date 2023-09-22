@@ -1073,6 +1073,11 @@ interface XRFrame {
     getLightEstimate(xrLightProbe: XRLightProbe): XRLightEstimate;
 }
 
+// Plane detection
+interface XRSession {
+    initiateRoomCapture?(): Promise<void>;
+}
+
 type XREventType = keyof XRSessionEventMap;
 
 type XRImageTrackingState = "tracked" | "emulated";
