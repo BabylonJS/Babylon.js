@@ -153,23 +153,25 @@ export class EquiRectangularCubeTexture extends BaseTexture {
         if (!scene) {
             return;
         }
+        const faceDataArrays = callback();
+
         const texture = scene
             .getEngine()
             .createRawCubeTexture(
-                this._buffer,
-                scene,
+                faceDataArrays,
                 this._size,
                 Constants.TEXTUREFORMAT_RGB,
                 scene.getEngine().getCaps().textureFloat ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INTEGER,
                 this._noMipmap,
-                callback,
-                null,
-                this._onLoad,
-                this._onError
+                false,
+                Constants.TEXTURE_TRILINEAR_SAMPLINGMODE
             );
-        texture.url = url;
+        texture.url = this.url;
         scene.getEngine()._internalTexturesCache.push(texture);
         this._texture = texture;
+        if (this._onLoad) {
+            this._onLoad();
+        }
     }
 
     /**
