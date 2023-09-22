@@ -1,6 +1,210 @@
 {
-    "fromTag": "6.21.0",
+    "fromTag": "6.21.1",
     "changelog": {
+        "6.21.2": [
+            {
+                "pr": "14316",
+                "title": "Fixes and enhancements for gizmos",
+                "description": "Many small fixes/enhancements\r\n- https://forum.babylonjs.com/t/boundingboxgizmo-ishovered-always-false/44095\r\n- https://forum.babylonjs.com/t/boundingboxgizmo-scalebox-snapping/44060\r\n- https://forum.babylonjs.com/t/gizmo-position-doesnt-update-when-coordinates-mode-world/44331\r\n- https://forum.babylonjs.com/t/gizmos-misbehave-when-operating-on-child-objects-with-configured-pivot/42313\r\n- https://forum.babylonjs.com/t/unable-to-drag-position-gizmo-after-changing-pivot/44217\r\n- https://forum.babylonjs.com/t/gizmo-location-with-setpivotpoint/41271\r\n- https://forum.babylonjs.com/t/the-gizmo-uses-the-latest-cameras-in-inspector/31221",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/axisDragGizmo.ts",
+                    "packages/dev/core/src/Gizmos/axisScaleGizmo.ts",
+                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts",
+                    "packages/dev/core/src/Gizmos/gizmo.ts",
+                    "packages/dev/core/src/Gizmos/planeDragGizmo.ts",
+                    "packages/dev/core/src/Gizmos/planeRotationGizmo.ts",
+                    "packages/dev/core/src/Gizmos/scaleGizmo.ts",
+                    "packages/dev/inspector/src/components/globalState.ts",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/cameraTreeItemComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/lightTreeItemComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/sceneTreeItemComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/sceneExplorerComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/treeItemComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/treeItemSelectableComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/treeItemSpecializedComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "enhancement",
+                    "gizmos"
+                ]
+            },
+            {
+                "pr": "14338",
+                "title": "fix code doc torotationmatrix",
+                "description": "forum issue: https://forum.babylonjs.com/t/unexpected-quaternion-torotationmatrix-behavior/44361",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14330",
+                "title": "EquiRectangularCubeTexture: load from url only once",
+                "description": "https://forum.babylonjs.com/t/equirectangularcubetexture-loads-the-texture-twice/44319/1\r\n\r\nPlayground example:\r\n<https://playground.babylonjs.com/?snapshot=refs/pull/14330/merge#RY8LDL#53>\r\n![Playground screenshot](https://github.com/BabylonJS/Babylon.js/assets/120431159/b4414b2a-bf32-4dc6-b663-d03473b3cfde)\r\n",
+                "author": {
+                    "name": "kzhsw",
+                    "url": "https://github.com/kzhsw"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/equiRectangularCubeTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14336",
+                "title": "Fix PBR transmission in Webgl1",
+                "description": "This fixes https://playground.babylonjs.com/#IMXJ1I not rendering transmission in WebGL1",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "14335",
+                "title": "Texture loading: Fix regression with compressed textures not working anymore",
+                "description": "Fix a regression from #14314 .",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "14332",
+                "title": "Flow graph pause animation node",
+                "description": "# Changes\r\n- Move Play/Stop Animation blocks to its own subfolder\r\n- Add Pause Animation node\r\n- Update Play Animation logic to account for possibly paused animations\r\n\r\n# Example\r\nCar semaphore example with pause (yellow button): #GPPEUA#7",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPauseAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPlayAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphStopAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/index.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "flow graph"
+                ]
+            },
+            {
+                "pr": "14331",
+                "title": "Fix instance rendering issue in Babylon Native",
+                "description": "Babylon Native is currently not using the instanceCount information when performing instance rendering. This PR sends that information so Babylon Native can properly handle it. \r\n\r\nBabylon Native PR: https://github.com/BabylonJS/BabylonNative/pull/1290\r\n\r\nSince this changes Protocol version, this PR must be merged first and Babylon Native must than be updated to the latest version of Babylon.js otherwise it will fail validation test. \r\n\r\nForum issue: https://forum.babylonjs.com/t/react-native-unexpected-behaviour-of-instance-mesh-on-its-parent-movement/37001/2",
+                "author": {
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14126",
+                "title": "Auto compute texture size in wrapNativeTexture",
+                "description": "Not sure this should be done. There is no way to do the same with `wrapWebGLTexture` since there isn't a way to get the texture size from a WebGL texture. Maybe we should add width/height to the `wrapWebGLTexture` call?",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14329",
+                "title": "Add morph target names to gltf serializer",
+                "description": "By convention, GLTF includes moph target names in the \"extras\" field of the mesh. This PR adds the corresponding data to the serialized GLTF.\r\n\r\nhttps://github.com/KhronosGroup/glTF/issues/1036 ",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts"
+                ],
+                "tags": [
+                    "exporters",
+                    "glTF"
+                ]
+            },
+            {
+                "pr": "14328",
+                "title": "Fix lost value",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/buffer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14326",
+                "title": "STL loader: Fix out of memory when loading big stl files",
+                "description": "See https://forum.babylonjs.com/t/higher-file-size-model-load-issue/44214/6\r\n\r\n[...]\r\n\r\nI forgot to mention that the use of `TextDecoder` is ok because it is supported by all browsers except IE11, which we no longer support.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/loaders/src/STL/stlFileLoader.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "loaders"
+                ]
+            },
+            {
+                "pr": "14325",
+                "title": "Add an ugly flag to glTF draco loader extension",
+                "description": "There appears to be lots of files out there with invalid Draco data where the `normalized` flag in the data is marked `false` when it should be `true`. The glTF accessor info is correct. Draco data is supposed to be self-contained, so this is troubling. For now, adding this flag to read from the glTF accessor instead and log a warning when there is a mismatch.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Compression/dracoCompression.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_draco_mesh_compression.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
         "6.21.1": [
             {
                 "pr": "14301",
