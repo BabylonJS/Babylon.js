@@ -36,13 +36,18 @@ import type { ISceneLike } from "./engine.interfaces";
 import { EngineType } from "./engine.interfaces";
 import { IsDocumentAvailable, IsWindowObjectExist } from "./runtimeEnvironment";
 import { PerformanceConfigurator } from "core/Engines/performanceConfigurator";
-import { QueueNewFrame, _TextureLoaders } from "./engine.static";
+import { EngineStore, QueueNewFrame, _CreateCanvas, _TextureLoaders } from "./engine.static";
 import type { IPipelineContext } from "core/Engines/IPipelineContext";
 import type { IInternalTextureLoader } from "core/Materials/Textures/internalTextureLoader";
 import { Logger } from "core/Misc/logger";
 import type { IWebRequest } from "core/Misc/interfaces/iWebRequest";
 import { _loadFile } from "./engine.tools";
 import { LoadImage } from "core/Misc/fileTools";
+import type { ThinEngine } from "core/Engines/thinEngine";
+import { PerformanceMonitor } from "core/Misc/performanceMonitor";
+import type { StencilStateComposer } from "core/States/stencilStateComposer";
+import type { StencilState } from "core/States/stencilState";
+import type { Scene } from "core/scene";
 
 export interface IBaseEngineOptions {
     /**
@@ -123,11 +128,6 @@ interface IBaseEnginePrivate {
     _vertexAttribArraysEnabled: boolean[];
 
     // _vaoRecordInProgress // moved to webgl
-
-    _emptyTexture: Nullable<InternalTexture>;
-    _emptyCubeTexture: Nullable<InternalTexture>;
-    _emptyTexture3D: Nullable<InternalTexture>;
-    _emptyTexture2DArray: Nullable<InternalTexture>;
     _activeRequests: IFileRequest[]; // - moved to the scope of this file, privately. Maps object to IFileRequest.
     // _checkForMobile - moved to hostInformation
 }
@@ -150,8 +150,8 @@ export interface IBaseEngineProtected {
     _colorWriteChanged: boolean;
     // TODO - the following can be taken out of the engine completely. be state objects
     _depthCullingState: Nullable<DepthCullingState>;
-    // _stencilStateComposer: StencilStateComposer; // moved to the engine level
-    // _stencilState: StencilState; // moved to the engine level
+    _stencilStateComposer: Nullable<StencilStateComposer>;
+    _stencilState: Nullable<StencilState>;
     _activeChannel: number;
     _boundTexturesCache: { [key: string]: Nullable<InternalTexture> };
     _currentEffect: Nullable<Effect>;
@@ -162,6 +162,13 @@ export interface IBaseEngineProtected {
     _lastDevicePixelRatio: number;
     _shaderPlatformName: string; // feels redundant
     _viewportCached: { x: number; y: number; z: number; w: number };
+    _emptyTexture: Nullable<InternalTexture>;
+    _emptyCubeTexture: Nullable<InternalTexture>;
+    _emptyTexture3D: Nullable<InternalTexture>;
+    _emptyTexture2DArray: Nullable<InternalTexture>;
+    _performanceMonitor: Nullable<PerformanceMonitor>;
+    _fps: number;
+    _deltaTime: number;
 }
 
 export interface IBaseEngineInternals {
@@ -359,6 +366,31 @@ export interface IBaseEnginePublic {
      * Gets a boolean indicating if the exact sRGB conversions or faster approximations are used for converting to and from linear space.
      */
     readonly useExactSrgbConversions: boolean;
+
+    /**
+     * Observable raised when the engine begins a new frame
+     */
+    readonly onBeginFrameObservable: Observable<IBaseEnginePublic>;
+
+    /**
+     * Observable raised when the engine ends the current frame
+     */
+    readonly onEndFrameObservable: Observable<IBaseEnginePublic>;
+
+    /**
+     * Observable raised when the engine is about to compile a shader
+     */
+    readonly onBeforeShaderCompilationObservable: Observable<IBaseEnginePublic>;
+
+    /**
+     * Observable raised when the engine has just compiled a shader
+     */
+    readonly onAfterShaderCompilationObservable: Observable<IBaseEnginePublic>;
+
+    /**
+     * Gets the list of created scenes
+     */
+    readonly scenes: Scene[];
 }
 
 export type BaseEngineState<T extends IBaseEnginePublic = IBaseEnginePublic> = T & IBaseEngineInternals & IBaseEngineProtected;
@@ -454,6 +486,11 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
             return false;
         },
         useExactSrgbConversions: options.useExactSrgbConversions || false,
+        onBeginFrameObservable: new Observable<IBaseEnginePublic>(),
+        onEndFrameObservable: new Observable<IBaseEnginePublic>(),
+        onBeforeShaderCompilationObservable: new Observable<IBaseEnginePublic>(),
+        onAfterShaderCompilationObservable: new Observable<IBaseEnginePublic>(),
+        scenes: [],
 
         // internals
         _uniformBuffers: [],
@@ -495,6 +532,8 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
         _colorWrite: true,
         _colorWriteChanged: true,
         _depthCullingState: null,
+        _stencilStateComposer: null,
+        _stencilState: null,
         _currentEffect: null,
         _cachedViewport: null,
         _workingCanvas: null,
@@ -507,6 +546,9 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
         _dimensionsObject: null,
         _viewportCached: { x: 0, y: 0, z: 0, w: 0 },
         _activeRequests: [],
+        _performanceMonitor: null,
+        _fps: 60,
+        _deltaTime: 0,
     };
 
     // TODO is getOwnPropertyDescriptors supported in native? if it doesn't we will need to use getOwnPropertyNames
@@ -517,6 +559,21 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
     // populateBaseModule(engineState);
 
     return engineState;
+}
+
+export function getPerformanceMonitor(engineState: IBaseEnginePublic): PerformanceMonitor {
+    if (!(engineState as BaseEngineStateFull)._performanceMonitor) {
+        (engineState as BaseEngineStateFull)._performanceMonitor = new PerformanceMonitor();
+    }
+    return (engineState as BaseEngineStateFull)._performanceMonitor as PerformanceMonitor;
+}
+
+export function getFps(engineState: IBaseEnginePublic): number {
+    return (engineState as BaseEngineStateFull)._fps;
+}
+
+export function getDeltaTime(engineState: IBaseEnginePublic): number {
+    return (engineState as BaseEngineStateFull)._deltaTime;
 }
 
 /**
@@ -692,7 +749,7 @@ export function getEmptyTexture2DArray(
  * @param createRawCubeTexture defines a function used to create the raw cube texture from the rawTexture extension
  * @returns the default empty cube texture
  */
-export function getEmptyCubeTexture(engineState: IBaseEnginePublic, { createRawCubeTexture }: Pick<IRawTextureEngineExtension, "createRawCubeTexture">): Nullable<InternalTexture> {
+export function getEmptyCubeTexture(engineState: IBaseEnginePublic, { createRawCubeTexture }: Pick<IRawTextureEngineExtension, "createRawCubeTexture">): InternalTexture {
     if (!(engineState as BaseEngineStateFull)._emptyCubeTexture) {
         const faceData = new Uint8Array(4);
         const cubeData = [faceData, faceData, faceData, faceData, faceData, faceData];
@@ -707,7 +764,7 @@ export function getEmptyCubeTexture(engineState: IBaseEnginePublic, { createRawC
             TEXTURE_NEAREST_SAMPLINGMODE
         );
     }
-    return (engineState as BaseEngineStateFull)._emptyCubeTexture;
+    return (engineState as BaseEngineStateFull)._emptyCubeTexture as InternalTexture;
 }
 
 /**
@@ -913,6 +970,19 @@ export function getHostWindow(engineState: IBaseEnginePublic): Nullable<Window> 
 }
 
 /**
+ * Gets host document
+ * @returns the host document object
+ */
+export function getHostDocument(engineState: IBaseEnginePublic): Nullable<Document> {
+    const fes = engineState as BaseEngineState;
+    if (fes._renderingCanvas && fes._renderingCanvas.ownerDocument) {
+        return fes._renderingCanvas.ownerDocument;
+    }
+
+    return IsDocumentAvailable() ? document : null;
+}
+
+/**
  * Gets the current render width
  * @param engineState defines the engine state
  * @param useScreen defines if screen size must be used (or the current render target if any)
@@ -1102,8 +1172,15 @@ export function clearInternalTexturesCache(engineState: IBaseEnginePublic) {
     (engineState as BaseEngineStateFull)._internalTexturesCache.length = 0;
 }
 
-export function _createTextureBase(
-    engineState: IBaseEnginePublic,
+export function _createTextureBase<T extends IBaseEnginePublic = IBaseEnginePublic>(
+    {
+        getUseSRGBBuffer,
+        engineAdapter,
+    }: {
+        getUseSRGBBuffer: (engineState: T, useSRGBBuffer: boolean, noMipmap: boolean) => boolean;
+        engineAdapter?: ThinEngine;
+    },
+    engineState: T,
     url: Nullable<string>,
     noMipmap: boolean,
     invertY: boolean,
@@ -1145,13 +1222,17 @@ export function _createTextureBase(
     loaderOptions?: any,
     useSRGBBuffer?: boolean
 ): InternalTexture {
-    const fes = engineState as BaseEngineStateFull;
+    const fes = engineState as BaseEngineStateFull<T>;
     url = url || "";
     const fromData = url.substring(0, 5) === "data:";
     const fromBlob = url.substring(0, 5) === "blob:";
     const isBase64 = fromData && url.indexOf(";base64,") !== -1;
 
-    const texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Url);
+    if (!engineAdapter || !fallback) {
+        throw new Error("either engineAdapter or fallback are required");
+    }
+
+    const texture = fallback ? fallback : new InternalTexture(engineAdapter, InternalTextureSource.Url);
 
     if (texture !== fallback) {
         texture.label = url.substring(0, 60); // default label, can be overriden by the caller
@@ -1192,7 +1273,7 @@ export function _createTextureBase(
     texture.generateMipMaps = !noMipmap;
     texture.samplingMode = samplingMode;
     texture.invertY = invertY;
-    texture._useSRGBBuffer = _getUseSRGBBuffer(fes, !!useSRGBBuffer, noMipmap);
+    texture._useSRGBBuffer = getUseSRGBBuffer(engineState, !!useSRGBBuffer, noMipmap);
 
     if (!fes.doNotHandleContextLost) {
         // Keep a link to the buffer only if we plan to handle context lost
@@ -1220,7 +1301,11 @@ export function _createTextureBase(
 
             if (EngineStore.UseFallbackTexture) {
                 _createTextureBase(
-                    fes,
+                    {
+                        getUseSRGBBuffer,
+                        engineAdapter,
+                    },
+                    engineState,
                     EngineStore.FallbackTexture,
                     noMipmap,
                     texture.invertY,
@@ -1244,7 +1329,11 @@ export function _createTextureBase(
             // fall back to the original url if the transformed url fails to load
             Logger.Warn(`Failed to load ${url}, falling back to ${originalUrl}`);
             _createTextureBase(
-                fes,
+                {
+                    getUseSRGBBuffer,
+                    engineAdapter,
+                },
+                engineState,
                 originalUrl,
                 noMipmap,
                 texture.invertY,
@@ -1359,4 +1448,19 @@ export function _createTextureBase(
     }
 
     return texture;
+}
+
+/** @internal */
+export function _prepareWorkingCanvas(engineState: IBaseEnginePublic): void {
+    const fes = engineState as BaseEngineState;
+    if (fes._workingCanvas) {
+        return;
+    }
+
+    fes._workingCanvas = _CreateCanvas(1, 1);
+    const context = fes._workingCanvas.getContext("2d");
+
+    if (context) {
+        fes._workingContext = context;
+    }
 }

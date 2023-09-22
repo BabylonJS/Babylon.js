@@ -4,6 +4,49 @@ import type { IInternalTextureLoader } from "core/Materials/Textures/internalTex
 import { IsWindowObjectExist } from "./runtimeEnvironment";
 import { SCALEMODE_CEILING, SCALEMODE_FLOOR, SCALEMODE_NEAREST } from "./engine.constants";
 import type { Nullable } from "core/types";
+import type { IBaseEnginePublic } from "./engine.base";
+import type { Scene } from "core/scene";
+import { Observable } from "core/Misc/observable";
+import type { ICanvas } from "core/Engines/ICanvas";
+
+export const EngineStore: {
+    /** Gets the list of created engines */
+    Instances: Array<IBaseEnginePublic>;
+    /**
+     * Notifies when an engine was disposed.
+     * Mainly used for static/cache cleanup
+     */
+    OnEnginesDisposedObservable: Observable<IBaseEnginePublic>;
+    /**
+     * Gets the latest created engine
+     */
+    readonly LastCreatedEngine: Nullable<IBaseEnginePublic>;
+    /**
+     * Gets the latest created scene
+     */
+    LastCreatedScene: Nullable<Scene>;
+    /**
+     * Gets or sets a global variable indicating if fallback texture must be used when a texture cannot be loaded
+     */
+    UseFallbackTexture: boolean;
+    /**
+     * Texture content used if a texture cannot loaded
+     */
+    FallbackTexture: string;
+} = {
+    Instances: [] as Array<IBaseEnginePublic>,
+    get LastCreatedEngine(): Nullable<IBaseEnginePublic> {
+        if (this.Instances.length === 0) {
+            return null;
+        }
+
+        return EngineStore.Instances[EngineStore.Instances.length - 1];
+    },
+    LastCreatedScene: null as Nullable<Scene>,
+    UseFallbackTexture: true,
+    FallbackTexture: "",
+    OnEnginesDisposedObservable: new Observable(),
+};
 
 // used to be WebGL only, a single array
 export const ExceptionList = {
@@ -195,6 +238,16 @@ export function GetExponentOfTwo(value: number, max: number, mode = SCALEMODE_NE
     }
 
     return Math.min(pot, max);
+}
+
+export function _CreateCanvas(width: number, height: number): ICanvas {
+    if (typeof document === "undefined") {
+        return <ICanvas>(<any>new OffscreenCanvas(width, height));
+    }
+    const canvas = <ICanvas>(<any>document.createElement("canvas"));
+    canvas.width = width;
+    canvas.height = height;
+    return canvas;
 }
 
 // TODO is this needed? this will allow `import Statics from "package/Engines"`.
