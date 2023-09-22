@@ -120,6 +120,7 @@ export class Control implements IAnimatable {
     private _gradient: Nullable<BaseGradient> = null;
     /** @internal */
     protected _rebuildLayout = false;
+    private _onEnabledStateChangedObservable = new Observable<boolean>();
 
     /** @internal */
     public _customData: any = {};
@@ -1206,6 +1207,10 @@ export class Control implements IAnimatable {
         return this._currentMeasure.top + this._currentMeasure.height / 2;
     }
 
+    public get onEnabledStateChangedObservable(): Observable<boolean> {
+        return this._onEnabledStateChangedObservable;
+    }
+
     /** Gets or sets if control is Enabled */
     @serialize()
     public get isEnabled(): boolean {
@@ -1235,6 +1240,7 @@ export class Control implements IAnimatable {
             }
         };
         recursivelyFirePointerOut(this);
+        this._onEnabledStateChangedObservable.notifyObservers(value);
     }
     /** Gets or sets background color of control if it's disabled. Only applies to Button class. */
     @serialize()
