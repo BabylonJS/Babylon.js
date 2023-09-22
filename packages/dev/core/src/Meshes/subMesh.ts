@@ -240,7 +240,7 @@ export class SubMesh implements ICullable {
      * @returns current bounding info (or mesh's one if the submesh is global)
      */
     public getBoundingInfo(): BoundingInfo {
-        if (this.IsGlobal) {
+        if (this.IsGlobal || this._mesh.hasThinInstances) {
             return this._mesh.getBoundingInfo();
         }
 

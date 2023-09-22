@@ -1,12 +1,13 @@
 import type { Nullable, DataArray, FloatArray } from "../types";
 import type { ThinEngine } from "../Engines/thinEngine";
 import { DataBuffer } from "./dataBuffer";
+import type { Mesh } from "../Meshes/mesh";
 
 /**
  * Class used to store data that will be store in GPU memory
  */
 export class Buffer {
-    private _engine: ThinEngine;
+    private _engine: Nullable<ThinEngine>;
     private _buffer: Nullable<DataBuffer>;
     /** @internal */
     public _data: Nullable<DataArray>;
@@ -32,18 +33,18 @@ export class Buffer {
      * @param divisor sets an optional divisor for instances (1 by default)
      */
     constructor(
-        engine: any,
+        engine: Nullable<ThinEngine>,
         data: DataArray | DataBuffer,
         updatable: boolean,
         stride = 0,
-        postponeInternalCreation = false,
+        postponeInternalCreation = !engine,
         instanced = false,
         useBytes = false,
         divisor?: number
     ) {
-        if (engine.getScene) {
+        if (engine && (engine as unknown as Mesh).getScene) {
             // old versions of VertexBuffer accepted 'mesh' instead of 'engine'
-            this._engine = engine.getScene().getEngine();
+            this._engine = (engine as unknown as Mesh).getScene().getEngine();
         } else {
             this._engine = engine;
         }
@@ -155,6 +156,10 @@ export class Buffer {
             return;
         }
 
+        if (!this._engine) {
+            throw new Error("Engine must be provided in the buffer constructor in order to create");
+        }
+
         if (!this._buffer) {
             // create buffer
             if (this._updatable) {
@@ -197,6 +202,10 @@ export class Buffer {
         }
 
         if (this._updatable) {
+            if (!this._engine) {
+                throw new Error("Engine must be provided in the buffer constructor in order to update directly");
+            }
+
             // update buffer
             this._engine.updateDynamicVertexBuffer(
                 this._buffer,
@@ -234,9 +243,12 @@ export class Buffer {
         if (!this._buffer) {
             return;
         }
-        if (this._engine._releaseBuffer(this._buffer)) {
-            this._buffer = null;
-            this._data = null;
+
+        if (this._engine) {
+            if (this._engine._releaseBuffer(this._buffer)) {
+                this._buffer = null;
+                this._data = null;
+            }
         }
     }
 }

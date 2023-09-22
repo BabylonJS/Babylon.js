@@ -1722,10 +1722,16 @@ export class _Exporter {
                         meshPrimitive.material = materialIndex;
                     }
                     if (morphTargetManager) {
-                        let target;
+                        // By convention, morph target names are stored in the mesh extras.
+                        if (!mesh.extras) {
+                            mesh.extras = {};
+                        }
+                        mesh.extras.targetNames = [];
+
                         for (let i = 0; i < morphTargetManager.numTargets; ++i) {
-                            target = morphTargetManager.getTarget(i);
+                            const target = morphTargetManager.getTarget(i);
                             this._setMorphTargetAttributes(submesh, meshPrimitive, target, binaryWriter);
+                            mesh.extras.targetNames.push(target.name);
                         }
                     }
 
