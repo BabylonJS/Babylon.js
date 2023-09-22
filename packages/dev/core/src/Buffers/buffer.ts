@@ -15,6 +15,14 @@ export class Buffer {
     private _instanced: boolean;
     private _divisor: number;
     private _isAlreadyOwned = false;
+    private _isDisposed = false;
+
+    /**
+     * Gets a boolean indicating if the Buffer is disposed
+     */
+    public get isDisposed(): boolean {
+        return this._isDisposed;
+    }
 
     /**
      * Gets the byte stride.
@@ -245,9 +253,12 @@ export class Buffer {
         }
 
         if (this._engine) {
+            // The data buffer has an internal counter as this buffer can be used by several VertexBuffer objects
+            // This means that we only flag it as disposed when all references are released (when _releaseBuffer will return true)
             if (this._engine._releaseBuffer(this._buffer)) {
-                this._buffer = null;
+                this._isDisposed = true;
                 this._data = null;
+                this._buffer = null;
             }
         }
     }
@@ -268,6 +279,7 @@ export class VertexBuffer {
     private _ownsBuffer: boolean;
     private _instanced: boolean;
     private _instanceDivisor: number;
+    private _isDisposed = false;
 
     /**
      * The byte type.
@@ -303,6 +315,13 @@ export class VertexBuffer {
      * The float type.
      */
     public static readonly FLOAT = 5126;
+
+    /**
+     * Gets a boolean indicating if the Buffer is disposed
+     */
+    public get isDisposed(): boolean {
+        return this._isDisposed;
+    }
 
     /**
      * Gets or sets the instance divisor when in instanced mode
@@ -627,6 +646,8 @@ export class VertexBuffer {
         if (this._ownsBuffer) {
             this._buffer.dispose();
         }
+
+        this._isDisposed = true;
     }
 
     /**
