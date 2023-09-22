@@ -245,11 +245,11 @@ export class Buffer {
         }
 
         if (this._engine) {
-            this._engine._releaseBuffer(this._buffer);
+            if (this._engine._releaseBuffer(this._buffer)) {
+                this._buffer = null;
+                this._data = null;
+            }
         }
-
-        this._buffer = null;
-        this._data = null;
     }
 }
 

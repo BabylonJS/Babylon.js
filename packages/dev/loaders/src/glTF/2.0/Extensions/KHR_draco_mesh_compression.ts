@@ -36,6 +36,11 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
      */
     public enabled: boolean;
 
+    /**
+     * Defines whether to use the normalized flag from the glTF accessor instead of the Draco data. Defaults to true.
+     */
+    public useNormalizedFlagFromAccessor = true;
+
     private _loader: GLTFLoader;
 
     /**
@@ -69,6 +74,7 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
             }
 
             const attributes: { [kind: string]: number } = {};
+            const normalized: { [kind: string]: boolean } = {};
             const loadAttribute = (name: string, kind: string) => {
                 const uniqueId = extension.attributes[name];
                 if (uniqueId == undefined) {
@@ -81,6 +87,13 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
                 }
 
                 attributes[kind] = uniqueId;
+
+                if (this.useNormalizedFlagFromAccessor) {
+                    const accessor = ArrayItem.TryGet(this._loader.gltf.accessors, primitive.attributes[name]);
+                    if (accessor) {
+                        normalized[kind] = accessor.normalized || false;
+                    }
+                }
             };
 
             loadAttribute("POSITION", VertexBuffer.PositionKind);
@@ -100,7 +113,7 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
             if (!bufferView._dracoBabylonGeometry) {
                 bufferView._dracoBabylonGeometry = this._loader.loadBufferViewAsync(`/bufferViews/${bufferView.index}`, bufferView).then((data) => {
                     const dracoCompression = this.dracoCompression || DracoCompression.Default;
-                    return dracoCompression.decodeMeshToGeometryAsync(babylonMesh.name, this._loader.babylonScene, data, attributes).catch((error) => {
+                    return dracoCompression._decodeMeshToGeometryForGltfAsync(babylonMesh.name, this._loader.babylonScene, data, attributes, normalized).catch((error) => {
                         throw new Error(`${context}: ${error.message}`);
                     });
                 });
