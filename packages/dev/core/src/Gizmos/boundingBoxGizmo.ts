@@ -494,6 +494,10 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                             Quaternion.RotationYawPitchRollToRef(0, projectDist, 0, this._tmpQuaternion);
                         }
 
+                        // if using pivot, move anchor so mesh will be at relative (0,0,0) when parented
+                        if (this.attachedMesh.isUsingPivotMatrix()) {
+                            this._anchorMesh.position.copyFrom(this.attachedMesh.position);
+                        }
                         // Rotate around center of bounding box
                         this._anchorMesh.addChild(this.attachedMesh, Gizmo.PreserveScaling);
                         if (this._anchorMesh.getScene().useRightHandedSystem) {
