@@ -124,8 +124,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
                     onError(`${this.getClassName()} could not be loaded`, e);
                 }
             },
-            // From ThinEngine#createTexture
-            scene ? scene.offlineProvider : undefined
+            scene ? scene.offlineProvider : null
         );
     }
 
@@ -154,7 +153,6 @@ export class EquiRectangularCubeTexture extends BaseTexture {
         if (!scene) {
             return;
         }
-        // createRawCubeTextureFromUrl loads from url again
         const texture = scene
             .getEngine()
             .createRawCubeTexture(
@@ -169,7 +167,6 @@ export class EquiRectangularCubeTexture extends BaseTexture {
                 this._onLoad,
                 this._onError
             );
-        // Code from ThinEngine#createRawCubeTextureFromUrl
         texture.url = url;
         scene.getEngine()._internalTexturesCache.push(texture);
         this._texture = texture;
