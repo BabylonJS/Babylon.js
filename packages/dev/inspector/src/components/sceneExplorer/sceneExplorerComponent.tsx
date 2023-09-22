@@ -521,6 +521,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 />
                 <TreeItemComponent
                     globalState={this.props.globalState}
+                    gizmoCamera={this.props.gizmoCamera}
                     contextMenuItems={nodeContextMenus}
                     extensibilityGroups={this.props.extensibilityGroups}
                     selectedEntity={this.state.selectedEntity}

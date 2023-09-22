@@ -104,13 +104,13 @@ export class SceneTreeItemComponent extends React.Component<
                     manager.attachToMesh(entity);
                 } else if (className.indexOf("Light") !== -1) {
                     if (!this._selectedEntity.reservedDataStore || !this._selectedEntity.reservedDataStore.lightGizmo) {
-                        this.props.globalState.enableLightGizmo(this._selectedEntity, true);
+                        this.props.globalState.enableLightGizmo(this._selectedEntity, true, this.props.gizmoCamera);
                         this.forceUpdate();
                     }
                     manager.attachToNode(this._selectedEntity.reservedDataStore.lightGizmo.attachedNode);
                 } else if (className.indexOf("Camera") !== -1) {
                     if (!this._selectedEntity.reservedDataStore || !this._selectedEntity.reservedDataStore.cameraGizmo) {
-                        this.props.globalState.enableCameraGizmo(this._selectedEntity, true);
+                        this.props.globalState.enableCameraGizmo(this._selectedEntity, true, this.props.gizmoCamera);
                         this.forceUpdate();
                     }
                     manager.attachToNode(this._selectedEntity.reservedDataStore.cameraGizmo.attachedNode);
@@ -407,13 +407,13 @@ export class SceneTreeItemComponent extends React.Component<
                     manager.attachToMesh(this._selectedEntity);
                 } else if (className.indexOf("Light") !== -1) {
                     if (!this._selectedEntity.reservedDataStore || !this._selectedEntity.reservedDataStore.lightGizmo) {
-                        this.props.globalState.enableLightGizmo(this._selectedEntity, true);
+                        this.props.globalState.enableLightGizmo(this._selectedEntity, true, this.props.gizmoCamera);
                         this.forceUpdate();
                     }
                     manager.attachToNode(this._selectedEntity.reservedDataStore.lightGizmo.attachedNode);
                 } else if (className.indexOf("Camera") !== -1) {
                     if (!this._selectedEntity.reservedDataStore || !this._selectedEntity.reservedDataStore.cameraGizmo) {
-                        this.props.globalState.enableCameraGizmo(this._selectedEntity, true);
+                        this.props.globalState.enableCameraGizmo(this._selectedEntity, true, this.props.gizmoCamera);
                         this.forceUpdate();
                     }
                     manager.attachToNode(this._selectedEntity.reservedDataStore.cameraGizmo.attachedNode);

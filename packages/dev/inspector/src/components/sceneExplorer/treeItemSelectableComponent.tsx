@@ -1,4 +1,5 @@
 import type { Nullable } from "core/types";
+import type { Camera } from "core/Cameras/camera";
 import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 
 import { TreeItemSpecializedComponent } from "./treeItemSpecializedComponent";
@@ -15,6 +16,7 @@ export interface ITreeItemSelectableComponentProps {
     mustExpand?: boolean;
     offset: number;
     globalState: GlobalState;
+    gizmoCamera?: Camera;
     extensibilityGroups?: IExplorerExtensibilityGroup[];
     filter: Nullable<string>;
 }
@@ -98,6 +100,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
             return (
                 <TreeItemSelectableComponent
                     globalState={this.props.globalState}
+                    gizmoCamera={this.props.gizmoCamera}
                     mustExpand={this.props.mustExpand}
                     extensibilityGroups={this.props.extensibilityGroups}
                     selectedEntity={this.props.selectedEntity}
@@ -158,6 +161,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
                     )}
                     <TreeItemSpecializedComponent
                         globalState={this.props.globalState}
+                        gizmoCamera={this.props.gizmoCamera}
                         extensibilityGroups={this.props.extensibilityGroups}
                         label={entity.name}
                         entity={entity}
