@@ -449,6 +449,28 @@ export class Gizmo implements IGizmo {
                 transform.parent.getWorldMatrix().invertToRef(parentInv);
                 this._attachedNode.getWorldMatrix().multiplyToRef(parentInv, localMat);
                 localMat.decompose(TmpVectors.Vector3[0], TmpVectors.Quaternion[0], transform.position, Gizmo.PreserveScaling ? transform : undefined);
+                if (transform.isUsingPivotMatrix()) {
+                    // Calculate the local matrix without the translation.
+                    // Copied from TranslateNode.computeWorldMatrix
+                    const r = TmpVectors.Quaternion[1];
+                    Quaternion.RotationYawPitchRollToRef(transform.rotation.y, transform.rotation.x, transform.rotation.z, r);
+
+                    const scaleMatrix = TmpVectors.Matrix[2];
+                    Matrix.ScalingToRef(transform.scaling.x, transform.scaling.y, transform.scaling.z, scaleMatrix);
+
+                    const rotationMatrix = TmpVectors.Matrix[2];
+                    r.toRotationMatrix(rotationMatrix);
+
+                    const pivotMatrix = transform.getPivotMatrix();
+                    const invPivotMatrix = TmpVectors.Matrix[3];
+                    pivotMatrix.invertToRef(invPivotMatrix);
+
+                    const lm = pivotMatrix.multiply(scaleMatrix).multiply(rotationMatrix).multiply(invPivotMatrix);
+
+                    lm.getTranslationToRef(TmpVectors.Vector3[1]);
+
+                    transform.position.subtractInPlace(TmpVectors.Vector3[1]);
+                }
             } else {
                 this._attachedNode._worldMatrix.decompose(TmpVectors.Vector3[0], TmpVectors.Quaternion[0], transform.position, Gizmo.PreserveScaling ? transform : undefined);
             }
