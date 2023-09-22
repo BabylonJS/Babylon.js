@@ -175,17 +175,10 @@ export class EquiRectangularCubeTexture extends BaseTexture {
         if (!scene) {
             return;
         }
-
         const faceDataArrays = callback();
 
         const texture = this._texture!;
-        scene.getEngine().updateRawCubeTexture(
-            texture,
-            faceDataArrays,
-            texture.format,
-            texture.type,
-            texture.invertY
-        );
+        scene.getEngine().updateRawCubeTexture(texture, faceDataArrays, texture.format, texture.type, texture.invertY);
         texture.isReady = true;
         scene.removePendingData(texture);
 
