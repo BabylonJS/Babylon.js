@@ -112,8 +112,6 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
     protected _renderObserver: Nullable<Observer<Scene>> = null;
     protected _pointerObserver: Nullable<Observer<PointerInfo>> = null;
     protected _scaleDragSpeed = 0.2;
-    protected _scalingSnapDistance = 0;
-    protected _rotationSnapDistance = 0;
 
     private _tmpQuaternion = new Quaternion();
     private _tmpVector = new Vector3(0, 0, 0);
@@ -149,6 +147,14 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
      * The distance away from the object which the draggable meshes should appear world sized when fixedDragMeshScreenSize is set to true (default: 10)
      */
     public fixedDragMeshScreenSizeDistanceFactor = 10;
+    /**
+     * Drag distance in babylon units that the gizmo will snap scaling to when dragged
+     */
+    public scalingSnapDistance = 0;
+    /**
+     * Drag distance in babylon units that the gizmo will snap rotation to when dragged
+     */
+    public rotationSnapDistance = 0;
     /**
      * Fired when a rotation sphere or scale box is dragged
      */
@@ -227,38 +233,6 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
      */
     public get scaleDragSpeed(): number {
         return this._scaleDragSpeed;
-    }
-
-    /**
-     * Sets scaling snap distance
-     * @param value the scaling snap distance value
-     */
-    public set scalingSnapDistance(value: number) {
-        this._scalingSnapDistance = value;
-    }
-
-    /**
-     * Gets scaling snap distance
-     * @returns the scaling snap distance number
-     */
-    public get scalingSnapDistance(): number {
-        return this._scalingSnapDistance;
-    }
-
-    /**
-     * Sets rotation snap distance
-     * @param value the rotation snap distance value
-     */
-    public set rotationSnapDistance(value: number) {
-        this._rotationSnapDistance = value;
-    }
-
-    /**
-     * Gets rotation snap distance
-     * @returns the rotation snap distance number
-     */
-    public get rotationSnapDistance(): number {
-        return this._rotationSnapDistance;
     }
 
     /**
@@ -480,9 +454,9 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                     // Do not allow the object to turn more than a full circle
                     totalTurnAmountOfDrag += projectDist;
                     if (Math.abs(totalTurnAmountOfDrag) <= 2 * Math.PI) {
-                        if (this._rotationSnapDistance > 0) {
-                            const dragSteps = Math.floor(Math.abs(totalTurnAmountOfDrag) / this._rotationSnapDistance) * (totalTurnAmountOfDrag < 0 ? -1 : 1);
-                            const angle = this._rotationSnapDistance * dragSteps;
+                        if (this.rotationSnapDistance > 0) {
+                            const dragSteps = Math.floor(Math.abs(totalTurnAmountOfDrag) / this.rotationSnapDistance) * (totalTurnAmountOfDrag < 0 ? -1 : 1);
+                            const angle = this.rotationSnapDistance * dragSteps;
                             projectDist = angle - previousProjectDist;
                             previousProjectDist = angle;
                         }
@@ -566,9 +540,9 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                             PivotTools._RemoveAndStorePivotPoint(this.attachedMesh);
                             let relativeDragDistance = (event.dragDistance / this._boundingDimensions.length()) * this._anchorMesh.scaling.length();
                             totalRelativeDragDistance += relativeDragDistance;
-                            if (this._scalingSnapDistance > 0) {
-                                const dragSteps = Math.floor(Math.abs(totalRelativeDragDistance) / this._scalingSnapDistance) * (totalRelativeDragDistance < 0 ? -1 : 1);
-                                const scale = this._scalingSnapDistance * dragSteps;
+                            if (this.scalingSnapDistance > 0) {
+                                const dragSteps = Math.floor(Math.abs(totalRelativeDragDistance) / this.scalingSnapDistance) * (totalRelativeDragDistance < 0 ? -1 : 1);
+                                const scale = this.scalingSnapDistance * dragSteps;
                                 relativeDragDistance = scale - previousScale;
                                 previousScale = scale;
                             }

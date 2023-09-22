@@ -372,21 +372,6 @@ export class Gizmo implements IGizmo {
     }
 
     /**
-     * Handle position/translation when using an attached node using pivot
-     */
-    protected _handlePivot() {
-        const attachedNodeTransform = this._attachedNode as any;
-        // check there is an active pivot for the TransformNode attached
-        if (attachedNodeTransform.isUsingPivotMatrix && attachedNodeTransform.isUsingPivotMatrix() && attachedNodeTransform.position) {
-            // When a TransformNode has an active pivot, even without parenting,
-            // translation from the world matrix is different from TransformNode.position.
-            // Pivot works like a virtual parent that's using the node orientation.
-            // As the world matrix is transformed by the gizmo and then decomposed to TRS
-            // its translation part must be set to the Node's position.
-            attachedNodeTransform.getWorldMatrix().setTranslation(attachedNodeTransform.position);
-        }
-    }
-    /**
      * computes the rotation/scaling/position of the transform once the Node world matrix has changed.
      */
     protected _matrixChanged() {
@@ -465,9 +450,11 @@ export class Gizmo implements IGizmo {
                     const invPivotMatrix = TmpVectors.Matrix[3];
                     pivotMatrix.invertToRef(invPivotMatrix);
 
-                    const lm = pivotMatrix.multiply(scaleMatrix).multiply(rotationMatrix).multiply(invPivotMatrix);
+                    pivotMatrix.multiplyToRef(scaleMatrix, TmpVectors.Matrix[4]);
+                    TmpVectors.Matrix[4].multiplyToRef(rotationMatrix, TmpVectors.Matrix[5]);
+                    TmpVectors.Matrix[5].multiplyToRef(invPivotMatrix, TmpVectors.Matrix[6]);
 
-                    lm.getTranslationToRef(TmpVectors.Vector3[1]);
+                    TmpVectors.Matrix[6].getTranslationToRef(TmpVectors.Vector3[1]);
 
                     transform.position.subtractInPlace(TmpVectors.Vector3[1]);
                 }
