@@ -6,6 +6,7 @@ import { Matrix, Quaternion, Vector3 } from "../../../Maths/math.vector";
 import { type NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import type { VertexData } from "core/Meshes/mesh.vertexData";
 import { type Nullable } from "core/types";
+import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
 
 /**
  * Block used to clone geometry along a line
@@ -14,6 +15,13 @@ export class LinearClonerBlock extends NodeGeometryBlock {
     private _vertexData: VertexData;
     private _currentIndex: number;
     private _currentLoopIndex: number;
+
+    /**
+     * Gets or sets a boolean indicating that this block can evaluate context
+     * Build performance is improved when this value is set to false as the system will cache values instead of reevaluating everything per context change
+     */
+    @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { rebuild: true } })
+    public evaluateContext = true;
 
     /**
      * Gets the current index in the current flow
@@ -119,78 +127,86 @@ export class LinearClonerBlock extends NodeGeometryBlock {
     }
 
     protected _buildBlock(state: NodeGeometryBuildState) {
-        state.pushExecutionContext(this);
+        const func = (state: NodeGeometryBuildState) => {
+            state.pushExecutionContext(this);
 
-        this._vertexData = this.geometry.getConnectedValue(state);
-        state.pushGeometryContext(this._vertexData);
+            this._vertexData = this.geometry.getConnectedValue(state);
+            state.pushGeometryContext(this._vertexData);
 
-        if (!this._vertexData || !this._vertexData.positions || !this.geometry.isConnected) {
-            state.restoreExecutionContext();
-            state.restoreGeometryContext();
-            this.output._storedValue = null;
-            return;
-        }
-        const count = this.count.getConnectedValue(state) as number;
-
-        if (count <= 0) {
-            this.output._storedValue = this._vertexData;
-            state.restoreExecutionContext();
-            state.restoreGeometryContext();
-        }
-
-        const origin = this.origin.getConnectedValue(state) as Vector3;
-        const direction = this.direction.getConnectedValue(state) as Vector3;
-        const rotation = this.rotation.getConnectedValue(state) as Vector3;
-        const scale = this.scale.getConnectedValue(state) as Vector3;
-
-        const invertRadians = Math.PI / 180;
-
-        const results = [];
-
-        let rootData: Nullable<VertexData> = null;
-
-        const transformMatrix = Matrix.Identity();
-        const transformOffset = Vector3.Zero();
-        const rotationOffset = Vector3.Zero();
-        const scaleOffset = Vector3.Zero();
-
-        for (this._currentIndex = 0; this._currentIndex < count; this._currentIndex++) {
-            const clone = this._vertexData.clone();
-
-            transformOffset.copyFrom(direction.clone().scale(this._currentIndex));
-            transformOffset.addInPlace(origin);
-
-            rotationOffset.copyFrom(rotation.clone().scale(this._currentIndex));
-
-            scaleOffset.copyFrom(scale.clone().scale(this._currentIndex));
-
-            scaleOffset.addInPlace(new Vector3(1, 1, 1));
-
-            Matrix.ComposeToRef(
-                scaleOffset,
-                Quaternion.FromEulerAngles(rotationOffset.x * invertRadians, rotationOffset.y * invertRadians, rotationOffset.z * invertRadians),
-                transformOffset,
-                transformMatrix
-            );
-
-            clone.transform(transformMatrix);
-
-            if (!rootData) {
-                rootData = clone;
-            } else {
-                results.push(clone);
+            if (!this._vertexData || !this._vertexData.positions || !this.geometry.isConnected) {
+                state.restoreExecutionContext();
+                state.restoreGeometryContext();
+                this.output._storedValue = null;
+                return;
             }
-        }
+            const count = this.count.getConnectedValue(state) as number;
 
-        if (rootData) {
-            rootData.merge(results, false, false, true, true);
-            this._vertexData = rootData;
-        }
+            if (count <= 0) {
+                this.output._storedValue = this._vertexData;
+                state.restoreExecutionContext();
+                state.restoreGeometryContext();
+            }
 
-        // Storage
-        this.output._storedValue = this._vertexData;
-        state.restoreExecutionContext();
-        state.restoreGeometryContext();
+            const origin = this.origin.getConnectedValue(state) as Vector3;
+            const direction = this.direction.getConnectedValue(state) as Vector3;
+            const rotation = this.rotation.getConnectedValue(state) as Vector3;
+            const scale = this.scale.getConnectedValue(state) as Vector3;
+
+            const invertRadians = Math.PI / 180;
+
+            const results = [];
+
+            let rootData: Nullable<VertexData> = null;
+
+            const transformMatrix = Matrix.Identity();
+            const transformOffset = Vector3.Zero();
+            const rotationOffset = Vector3.Zero();
+            const scaleOffset = Vector3.Zero();
+
+            for (this._currentIndex = 0; this._currentIndex < count; this._currentIndex++) {
+                const clone = this._vertexData.clone();
+
+                transformOffset.copyFrom(direction.clone().scale(this._currentIndex));
+                transformOffset.addInPlace(origin);
+
+                rotationOffset.copyFrom(rotation.clone().scale(this._currentIndex));
+
+                scaleOffset.copyFrom(scale.clone().scale(this._currentIndex));
+
+                scaleOffset.addInPlace(new Vector3(1, 1, 1));
+
+                Matrix.ComposeToRef(
+                    scaleOffset,
+                    Quaternion.FromEulerAngles(rotationOffset.x * invertRadians, rotationOffset.y * invertRadians, rotationOffset.z * invertRadians),
+                    transformOffset,
+                    transformMatrix
+                );
+
+                clone.transform(transformMatrix);
+
+                if (!rootData) {
+                    rootData = clone;
+                } else {
+                    results.push(clone);
+                }
+            }
+
+            if (rootData) {
+                rootData.merge(results, false, false, true, true);
+                this._vertexData = rootData;
+            }
+            state.restoreExecutionContext();
+            state.restoreGeometryContext();
+            // Storage
+            return this._vertexData;
+        };
+
+        if (this.evaluateContext) {
+            this.output._storedFunction = func;
+        } else {
+            this.output._storedFunction = null;
+            this.output._storedValue = func(state);
+        }
     }
 }
 
