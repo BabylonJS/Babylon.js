@@ -596,6 +596,9 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                                 // Scale from the position of the opposite corner
                                 box.absolutePosition.subtractToRef(this._anchorMesh.position, this._tmpVector);
                                 this._anchorMesh.position.subtractInPlace(this._tmpVector);
+                                if (this.attachedMesh.isUsingPivotMatrix()) {
+                                    this._anchorMesh.position.subtractInPlace(this.attachedMesh.getPivotPoint());
+                                }
                             }
 
                             this._anchorMesh.addChild(this.attachedMesh, Gizmo.PreserveScaling);
