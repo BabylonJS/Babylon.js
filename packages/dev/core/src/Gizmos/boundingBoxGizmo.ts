@@ -94,6 +94,11 @@ export interface IBoundingBoxGizmo extends IGizmo {
     coloredMaterial: StandardMaterial;
     /** Material used to render when gizmo is hovered with mouse*/
     hoverMaterial: StandardMaterial;
+
+    /** Drag distance in babylon units that the gizmo will snap scaling to when dragged */
+    scalingSnapDistance: number;
+    /** Drag distance in babylon units that the gizmo will snap rotation to when dragged */
+    rotationSnapDistance: number;
 }
 
 /**
@@ -142,6 +147,14 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
      * The distance away from the object which the draggable meshes should appear world sized when fixedDragMeshScreenSize is set to true (default: 10)
      */
     public fixedDragMeshScreenSizeDistanceFactor = 10;
+    /**
+     * Drag distance in babylon units that the gizmo will snap scaling to when dragged
+     */
+    public scalingSnapDistance = 0;
+    /**
+     * Drag distance in babylon units that the gizmo will snap rotation to when dragged
+     */
+    public rotationSnapDistance = 0;
     /**
      * Fired when a rotation sphere or scale box is dragged
      */
@@ -394,9 +407,11 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
             sphere.addBehavior(_dragBehavior);
             const startingTurnDirection = new Vector3(1, 0, 0);
             let totalTurnAmountOfDrag = 0;
+            let previousProjectDist = 0;
             _dragBehavior.onDragStartObservable.add(() => {
                 startingTurnDirection.copyFrom(sphere.forward);
                 totalTurnAmountOfDrag = 0;
+                previousProjectDist = 0;
             });
             _dragBehavior.onDragObservable.add((event) => {
                 this.onRotationSphereDragObservable.notifyObservers({});
@@ -439,6 +454,12 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                     // Do not allow the object to turn more than a full circle
                     totalTurnAmountOfDrag += projectDist;
                     if (Math.abs(totalTurnAmountOfDrag) <= 2 * Math.PI) {
+                        if (this.rotationSnapDistance > 0) {
+                            const dragSteps = Math.floor(Math.abs(totalTurnAmountOfDrag) / this.rotationSnapDistance) * (totalTurnAmountOfDrag < 0 ? -1 : 1);
+                            const angle = this.rotationSnapDistance * dragSteps;
+                            projectDist = angle - previousProjectDist;
+                            previousProjectDist = angle;
+                        }
                         if (i >= 8) {
                             Quaternion.RotationYawPitchRollToRef(0, 0, projectDist, this._tmpQuaternion);
                         } else if (i >= 4) {
@@ -447,6 +468,10 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                             Quaternion.RotationYawPitchRollToRef(0, projectDist, 0, this._tmpQuaternion);
                         }
 
+                        // if using pivot, move anchor so mesh will be at relative (0,0,0) when parented
+                        if (this.attachedMesh.isUsingPivotMatrix()) {
+                            this._anchorMesh.position.copyFrom(this.attachedMesh.position);
+                        }
                         // Rotate around center of bounding box
                         this._anchorMesh.addChild(this.attachedMesh, Gizmo.PreserveScaling);
                         if (this._anchorMesh.getScene().useRightHandedSystem) {
@@ -501,6 +526,8 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                     const _dragBehavior = new PointerDragBehavior({ dragAxis: dragAxis });
                     _dragBehavior.updateDragPlane = false;
                     _dragBehavior.moveAttached = false;
+                    let totalRelativeDragDistance = 0;
+                    let previousScale = 0;
                     box.addBehavior(_dragBehavior);
                     _dragBehavior.onDragObservable.add((event) => {
                         this.onScaleBoxDragObservable.notifyObservers({});
@@ -511,7 +538,15 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                                 return;
                             }
                             PivotTools._RemoveAndStorePivotPoint(this.attachedMesh);
-                            const relativeDragDistance = (event.dragDistance / this._boundingDimensions.length()) * this._anchorMesh.scaling.length();
+                            let relativeDragDistance = (event.dragDistance / this._boundingDimensions.length()) * this._anchorMesh.scaling.length();
+                            totalRelativeDragDistance += relativeDragDistance;
+                            if (this.scalingSnapDistance > 0) {
+                                const dragSteps = Math.floor(Math.abs(totalRelativeDragDistance) / this.scalingSnapDistance) * (totalRelativeDragDistance < 0 ? -1 : 1);
+                                const scale = this.scalingSnapDistance * dragSteps;
+                                relativeDragDistance = scale - previousScale;
+                                previousScale = scale;
+                            }
+
                             const deltaScale = new Vector3(relativeDragDistance, relativeDragDistance, relativeDragDistance);
                             if (zeroAxisCount === 2) {
                                 // scale on 1 axis when using the anchor box in the face middle
@@ -535,6 +570,9 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                                 // Scale from the position of the opposite corner
                                 box.absolutePosition.subtractToRef(this._anchorMesh.position, this._tmpVector);
                                 this._anchorMesh.position.subtractInPlace(this._tmpVector);
+                                if (this.attachedMesh.isUsingPivotMatrix()) {
+                                    this._anchorMesh.position.subtractInPlace(this.attachedMesh.getPivotPoint());
+                                }
                             }
 
                             this._anchorMesh.addChild(this.attachedMesh, Gizmo.PreserveScaling);
@@ -553,6 +591,8 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                     _dragBehavior.onDragStartObservable.add(() => {
                         this.onDragStartObservable.notifyObservers({});
                         this._selectNode(box);
+                        totalRelativeDragDistance = 0;
+                        previousScale = 0;
                     });
                     _dragBehavior.onDragEndObservable.add((event) => {
                         this.onScaleBoxDragEndObservable.notifyObservers({});
@@ -578,12 +618,14 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                         if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh == mesh) {
                             pointerIds[(<IPointerEvent>pointerInfo.event).pointerId] = mesh;
                             mesh.material = this._hoverColoredMaterial;
+                            this._isHovered = true;
                         }
                     });
             } else {
                 if (pointerInfo.pickInfo && pointerInfo.pickInfo.pickedMesh != pointerIds[(<IPointerEvent>pointerInfo.event).pointerId]) {
                     pointerIds[(<IPointerEvent>pointerInfo.event).pointerId].material = this._coloredMaterial;
                     delete pointerIds[(<IPointerEvent>pointerInfo.event).pointerId];
+                    this._isHovered = false;
                 }
             }
         });
