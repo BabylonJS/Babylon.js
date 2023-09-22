@@ -1,49 +1,81 @@
-import { RichTypeNumber } from "../../flowGraphRichTypes";
+import { RichTypeNumber } from "../../../flowGraphRichTypes";
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
 
+/**
+ * @experimental
+ * Performs a bitwise AND operation on two numbers.
+ */
 export class FlowGraphBitwiseAndBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
     constructor() {
         super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left & right);
     }
 }
 
+/**
+ * @experimental
+ * Performs a bitwise OR operation on two numbers.
+ */
 export class FlowGraphBitwiseOrBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
     constructor() {
         super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left | right);
     }
 }
 
+/**
+ * @experimental
+ * Performs a bitwise XOR operation on two numbers.
+ */
 export class FlowGraphBitwiseXorBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
     constructor() {
         super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left ^ right);
     }
 }
 
+/**
+ * @experimental
+ * Performs a bitwise NOT operation on a number.
+ */
 export class FlowGraphBitwiseNotBlock extends FlowGraphUnaryOperationBlock<number, number> {
     constructor() {
         super(RichTypeNumber, RichTypeNumber, (value) => ~value);
     }
 }
 
+/**
+ * @experimental
+ * Left shifts a number by a specified amount.
+ */
 export class FlowGraphBitwiseLeftShiftBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
     constructor() {
         super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left << right);
     }
 }
 
+/**
+ * @experimental
+ * Right shifts a number by a specified amount.
+ */
 export class FlowGraphBitwiseRightShiftBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
     constructor() {
         super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left >> right);
     }
 }
 
+/**
+ * @experimental
+ * Counts the leading zero bits of a number
+ */
 export class FlowGraphCountLeadingZerosBlock extends FlowGraphUnaryOperationBlock<number, number> {
     constructor() {
         super(RichTypeNumber, RichTypeNumber, (value) => Math.clz32(value));
     }
 }
 
+/**
+ * @experimental
+ * Counts the trailing zero bits of a number
+ */
 export class FlowGraphCountTrailingZerosBlock extends FlowGraphUnaryOperationBlock<number, number> {
     // from: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/clz32#implementing_count_leading_ones_and_beyond
     private _ctrz(integer: number) {
