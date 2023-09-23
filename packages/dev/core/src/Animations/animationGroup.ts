@@ -380,6 +380,23 @@ export class AnimationGroup implements IDisposable {
     }
 
     /**
+     * Gets the length (in seconds) of the animation group
+     * This function assumes that all animations are played at the same framePerSecond speed!
+     * Note: you can only call this method after you've added at least one targeted animation!
+     * @param from Starting frame range (default is AnimationGroup.from)
+     * @param to Ending frame range (default is AnimationGroup.to)
+     * @returns The length in seconds
+     */
+    public getLength(from?: number, to?: number): number {
+        from = from ?? this._from;
+        to = to ?? this._to;
+
+        const fps = this.targetedAnimations[0].animation.framePerSecond * this._speedRatio;
+
+        return (to - from) / fps;
+    }
+
+    /**
      * Merge the array of animation groups into a new animation group
      * @param animationGroups List of animation groups to merge
      * @param disposeSource If true, animation groups will be disposed after being merged (default: true)
