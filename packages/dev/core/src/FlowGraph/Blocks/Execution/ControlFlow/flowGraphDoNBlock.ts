@@ -9,8 +9,17 @@ import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneE
  * @experimental
  */
 export class FlowGraphDoNBlock extends FlowGraphWithOnDoneExecutionBlock {
+    /**
+     * Input connection: Resets the counter
+     */
     public readonly reset: FlowGraphSignalConnection;
+    /**
+     * Input connection: The maximum number of times the block can be executed.
+     */
     public readonly maxNumberOfExecutions: FlowGraphDataConnection<number>;
+    /**
+     * Output connection: The number of times the block has been executed.
+     */
     public readonly currentCount: FlowGraphDataConnection<number>;
 
     constructor() {

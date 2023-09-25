@@ -9,9 +9,18 @@ import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneE
  * A block that throttles the execution of its output flow.
  */
 export class FlowGraphThrottleBlock extends FlowGraphWithOnDoneExecutionBlock {
+    /**
+     * Input connection: The duration of the throttle, in ms.
+     */
     public readonly duration: FlowGraphDataConnection<number>;
-    public readonly timeRemaining: FlowGraphDataConnection<number>;
+    /**
+     * Input connection: Resets the throttle.
+     */
     public readonly reset: FlowGraphSignalConnection;
+    /**
+     * Output connection: The time remaining before the throttle is done, in ms.
+     */
+    public readonly timeRemaining: FlowGraphDataConnection<number>;
 
     constructor() {
         super();

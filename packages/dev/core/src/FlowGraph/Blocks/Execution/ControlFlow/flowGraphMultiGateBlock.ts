@@ -4,10 +4,26 @@ import { FlowGraphExecutionBlock } from "../../../flowGraphExecutionBlock";
 import { RichTypeNumber } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 
+/**
+ * @experimental
+ * Configuration for the multi gate block.
+ */
 export interface IFlowGraphMultiGateBlockConfiguration {
+    /**
+     * The number of output flows.
+     */
     numberOutputFlows: number;
+    /**
+     * If the block should pick a random output flow from the ones that haven't been executed. Default to false.
+     */
     isRandom?: boolean;
+    /**
+     * If the block should loop back to the first output flow after executing the last one. Default to false.
+     */
     loop?: boolean;
+    /**
+     * The index of the output flow to start with. Default to 0.
+     */
     startIndex?: number;
 }
 /**
@@ -17,8 +33,17 @@ export interface IFlowGraphMultiGateBlockConfiguration {
  */
 export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
     private _config: IFlowGraphMultiGateBlockConfiguration;
+    /**
+     * Input connection: Resets the gate.
+     */
     public readonly reset: FlowGraphSignalConnection;
+    /**
+     * Output connections: The output flows.
+     */
     public readonly outFlows: FlowGraphSignalConnection[] = [];
+    /**
+     * Output connection: The index of the current output flow.
+     */
     public readonly currentIndex: FlowGraphDataConnection<number>;
     private _cachedUnusedIndexes: number[] = [];
 
@@ -69,17 +94,19 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
         const currentIndex = context._getExecutionVariable(this, "currentIndex") ?? this._config.startIndex! - 1;
         let unusedIndexes = this._getUnusedIndexes(context);
 
-        let nextIndex: number;
         if (callingSignal === this.reset) {
-            nextIndex = this._config.startIndex!;
-        } else {
-            nextIndex = this._getNextOutput(currentIndex, unusedIndexes);
-            if (nextIndex >= this._config.numberOutputFlows && this._config.loop) {
-                nextIndex = 0;
-            } else if (nextIndex >= this._config.numberOutputFlows && !this._config.loop) {
-                return;
-            }
+            context._deleteExecutionVariable(this, "currentIndex");
+            context._deleteExecutionVariable(this, "unusedIndexes");
+            return;
         }
+
+        let nextIndex = this._getNextOutput(currentIndex, unusedIndexes);
+        if (nextIndex >= this._config.numberOutputFlows && this._config.loop) {
+            nextIndex = 0;
+        } else if (nextIndex >= this._config.numberOutputFlows && !this._config.loop) {
+            return;
+        }
+
         unusedIndexes = unusedIndexes.filter((i) => i !== nextIndex);
         if (unusedIndexes.length === 0) {
             for (let i = 0; i < this._config.numberOutputFlows; i++) {

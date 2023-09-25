@@ -9,6 +9,9 @@ import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnecti
  * Configuration for a switch block.
  */
 export interface IFlowGraphSwitchBlockConfiguration<T> {
+    /**
+     * The possible values for the selection.
+     */
     cases: T[];
 }
 
@@ -17,7 +20,13 @@ export interface IFlowGraphSwitchBlockConfiguration<T> {
  * A block that executes a branch based on a selection.
  */
 export class FlowGraphSwitchBlock<T> extends FlowGraphExecutionBlock {
+    /**
+     * Input connection: The value of the selection.
+     */
     public readonly selection: FlowGraphDataConnection<T>;
+    /**
+     * Output connection: The output flows.
+     */
     public readonly outputFlows: FlowGraphSignalConnection[] = [];
 
     constructor(private _config: IFlowGraphSwitchBlockConfiguration<T>) {
@@ -30,7 +39,7 @@ export class FlowGraphSwitchBlock<T> extends FlowGraphExecutionBlock {
         }
     }
 
-    public _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {
+    public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
         const selectionValue = this.selection.getValue(context);
 
         for (let i = 0; i < this._config.cases.length; i++) {
