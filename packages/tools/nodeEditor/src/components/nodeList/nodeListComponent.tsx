@@ -599,7 +599,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         }
 
         return (
-            <div id="nodeList">
+            <div id="nmeNodeList">
                 <div className="panes">
                     <div className="pane">
                         <div className="filter">
