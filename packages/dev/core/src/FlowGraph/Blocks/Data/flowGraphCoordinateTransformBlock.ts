@@ -2,7 +2,7 @@ import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { RichTypeAny, RichTypeVector3 } from "../../flowGraphRichTypes";
-import { Vector3 } from "../../../Maths/math.vector";
+import { TmpVectors, Vector3 } from "../../../Maths/math.vector";
 import type { TransformNode } from "../../../Meshes/transformNode";
 
 /**
@@ -48,11 +48,13 @@ export class FlowGraphCoordinateTransformBlock extends FlowGraphBlock {
         const sourceWorld = sourceSystemValue.getWorldMatrix();
         // takes coordinates from destination space to world space
         const destinationWorld = destinationSystemValue.getWorldMatrix();
+        const destinationWorldInverse = TmpVectors.Matrix[0].copyFrom(destinationWorld);
         // takes coordinates from world space to destination space
-        const destinationWorldInverse = destinationWorld.invert();
+        destinationWorldInverse.invert();
 
+        const sourceToDestination = TmpVectors.Matrix[1];
         // takes coordinates from source space to world space to destination space
-        const sourceToDestination = destinationWorldInverse.multiply(sourceWorld);
+        destinationWorldInverse.multiplyToRef(sourceWorld, sourceToDestination);
         const outputCoordinatesValue = Vector3.TransformCoordinates(inputCoordinatesValue, sourceToDestination);
 
         this.outputCoordinates.value = outputCoordinatesValue;
