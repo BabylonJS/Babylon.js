@@ -121,6 +121,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
         texture.url = this.url;
         texture.isReady = false;
         scene.getEngine()._internalTexturesCache.push(texture);
+        this._texture = texture;
 
         const canvas = document.createElement("canvas");
         LoadImage(
