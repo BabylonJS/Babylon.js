@@ -848,7 +848,7 @@ export class VertexBuffer {
 
         if (type !== VertexBuffer.FLOAT || byteStride !== tightlyPackedByteStride) {
             const copy = new Float32Array(count);
-            VertexBuffer.ForEach(data, byteOffset, byteStride, size, type, count, normalized, (value, index) => copy[index] = value);
+            VertexBuffer.ForEach(data, byteOffset, byteStride, size, type, count, normalized, (value, index) => (copy[index] = value));
             return copy;
         }
 
