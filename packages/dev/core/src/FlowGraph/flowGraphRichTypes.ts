@@ -68,6 +68,11 @@ export const RichTypeColor4: RichType<Color4> = {
     defaultValueBuilder: () => new Color4(0, 0, 0, 0),
 };
 
+/**
+ * Given a value, try to deduce its rich type.
+ * @param value the value to deduce the rich type from
+ * @returns the value's rich type, or RichTypeAny if the type could not be deduced.
+ */
 export function getRichTypeFromValue<T>(value: T): RichType<T> {
     switch (typeof value) {
         case "string":

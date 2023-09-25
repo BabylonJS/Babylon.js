@@ -10,11 +10,26 @@ import type { TransformNode } from "../../../Meshes/transformNode";
  * This blocks transforms a vector from one coordinate system to another.
  */
 export class FlowGraphCoordinateTransformBlock extends FlowGraphBlock {
+    /**
+     * Input connection: The source coordinate system.
+     */
     public readonly sourceSystem: FlowGraphDataConnection<TransformNode>;
+    /**
+     * Input connection: The destination coordinate system.
+     */
     public readonly destinationSystem: FlowGraphDataConnection<TransformNode>;
+    /**
+     * Input connection: The coordinates to transform.
+     */
     public readonly inputCoordinates: FlowGraphDataConnection<Vector3>;
+    /**
+     * Output connection: The transformed coordinates.
+     */
     public readonly outputCoordinates: FlowGraphDataConnection<Vector3>;
 
+    /**
+     * Creates a new FlowGraphCoordinateTransformBlock
+     */
     constructor() {
         super();
 
