@@ -106,22 +106,53 @@ export class FlowGraphContext {
         }
     }
 
+    /**
+     * Delete an internal execution variable
+     * @internal
+     * @param block
+     * @param name
+     */
     public _deleteExecutionVariable(block: FlowGraphBlock, name: string) {
         this._executionVariables.delete(this._getUniqueIdPrefixedName(block, name));
     }
 
+    /**
+     * Check if an internal execution variable is defined
+     * @internal
+     * @param block
+     * @param name
+     * @returns
+     */
     public _hasExecutionVariable(block: FlowGraphBlock, name: string) {
         return this._executionVariables.has(this._getUniqueIdPrefixedName(block, name));
     }
 
+    /**
+     * Check if a connection value is defined
+     * @internal
+     * @param connectionPoint
+     * @returns
+     */
     public _hasConnectionValue(connectionPoint: FlowGraphDataConnection<any>) {
         return this._connectionValues.has(connectionPoint.uniqueId);
     }
 
+    /**
+     * Set a connection value
+     * @internal
+     * @param connectionPoint
+     * @param value
+     */
     public _setConnectionValue<T>(connectionPoint: FlowGraphDataConnection<T>, value: T) {
         this._connectionValues.set(connectionPoint.uniqueId, value);
     }
 
+    /**
+     * Get a connection value
+     * @internal
+     * @param connectionPoint
+     * @returns
+     */
     public _getConnectionValue<T>(connectionPoint: FlowGraphDataConnection<T>): T {
         return this._connectionValues.get(connectionPoint.uniqueId);
     }

@@ -26,6 +26,9 @@ export interface IConnectable {
 export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> implements IConnectable {
     /** @internal */
     public _connectedPoint: Array<ConnectedToT> = [];
+    /**
+     * A uniquely identifying string for the connection.
+     */
     public uniqueId = RandomGUID();
 
     public constructor(public name: string, /** @internal */ public _connectionType: FlowGraphConnectionType, protected _ownerBlock: BlockT) {}
