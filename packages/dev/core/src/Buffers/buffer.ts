@@ -7,7 +7,7 @@ import type { Mesh } from "../Meshes/mesh";
  * Class used to store data that will be store in GPU memory
  */
 export class Buffer {
-    private _engine: Nullable<ThinEngine>;
+    private _engine: ThinEngine;
     private _buffer: Nullable<DataBuffer>;
     /** @internal */
     public _data: Nullable<DataArray>;
@@ -41,7 +41,7 @@ export class Buffer {
      * @param divisor sets an optional divisor for instances (1 by default)
      */
     constructor(
-        engine: Nullable<ThinEngine>,
+        engine: ThinEngine,
         data: DataArray | DataBuffer,
         updatable: boolean,
         stride = 0,
@@ -164,10 +164,6 @@ export class Buffer {
             return;
         }
 
-        if (!this._engine) {
-            throw new Error("Engine must be provided in the buffer constructor in order to create");
-        }
-
         if (!this._buffer) {
             // create buffer
             if (this._updatable) {
@@ -210,10 +206,6 @@ export class Buffer {
         }
 
         if (this._updatable) {
-            if (!this._engine) {
-                throw new Error("Engine must be provided in the buffer constructor in order to update directly");
-            }
-
             // update buffer
             this._engine.updateDynamicVertexBuffer(
                 this._buffer,
@@ -252,14 +244,12 @@ export class Buffer {
             return;
         }
 
-        if (this._engine) {
-            // The data buffer has an internal counter as this buffer can be used by several VertexBuffer objects
-            // This means that we only flag it as disposed when all references are released (when _releaseBuffer will return true)
-            if (this._engine._releaseBuffer(this._buffer)) {
-                this._isDisposed = true;
-                this._data = null;
-                this._buffer = null;
-            }
+        // The data buffer has an internal counter as this buffer can be used by several VertexBuffer objects
+        // This means that we only flag it as disposed when all references are released (when _releaseBuffer will return true)
+        if (this._engine._releaseBuffer(this._buffer)) {
+            this._isDisposed = true;
+            this._data = null;
+            this._buffer = null;
         }
     }
 }
@@ -389,7 +379,7 @@ export class VertexBuffer {
      * @param takeBufferOwnership defines if the buffer should be released when the vertex buffer is disposed
      */
     constructor(
-        engine: any,
+        engine: ThinEngine,
         data: DataArray | Buffer | DataBuffer,
         kind: string,
         updatable: boolean,
@@ -417,20 +407,7 @@ export class VertexBuffer {
 
         if (type == undefined) {
             const vertexData = this.getData();
-            this.type = VertexBuffer.FLOAT;
-            if (vertexData instanceof Int8Array) {
-                this.type = VertexBuffer.BYTE;
-            } else if (vertexData instanceof Uint8Array) {
-                this.type = VertexBuffer.UNSIGNED_BYTE;
-            } else if (vertexData instanceof Int16Array) {
-                this.type = VertexBuffer.SHORT;
-            } else if (vertexData instanceof Uint16Array) {
-                this.type = VertexBuffer.UNSIGNED_SHORT;
-            } else if (vertexData instanceof Int32Array) {
-                this.type = VertexBuffer.INT;
-            } else if (vertexData instanceof Uint32Array) {
-                this.type = VertexBuffer.UNSIGNED_INT;
-            }
+            this.type = vertexData ? VertexBuffer.GetDataType(vertexData) : VertexBuffer.FLOAT;
         } else {
             this.type = type;
         }
@@ -513,48 +490,7 @@ export class VertexBuffer {
             return null;
         }
 
-        const tightlyPackedByteStride = this.getSize() * VertexBuffer.GetTypeByteLength(this.type);
-        const count = totalVertices * this.getSize();
-
-        if (this.type !== VertexBuffer.FLOAT || this.byteStride !== tightlyPackedByteStride) {
-            const copy = new Float32Array(count);
-            this.forEach(count, (value, index) => (copy[index] = value));
-            return copy;
-        }
-
-        if (!(data instanceof Array || data instanceof Float32Array) || this.byteOffset !== 0 || data.length !== count) {
-            if (data instanceof Array) {
-                const offset = this.byteOffset / 4;
-                return data.slice(offset, offset + count);
-            } else if (data instanceof ArrayBuffer) {
-                return new Float32Array(data, this.byteOffset, count);
-            } else {
-                let offset = data.byteOffset + this.byteOffset;
-                if (forceCopy) {
-                    const result = new Float32Array(count);
-                    const source = new Float32Array(data.buffer, offset, count);
-
-                    result.set(source);
-
-                    return result;
-                }
-
-                // Protect against bad data
-                const remainder = offset % 4;
-
-                if (remainder) {
-                    offset = Math.max(0, offset - remainder);
-                }
-
-                return new Float32Array(data.buffer, offset, count);
-            }
-        }
-
-        if (forceCopy) {
-            return data.slice();
-        }
-
-        return data;
+        return VertexBuffer.GetFloatData(data, this._size, this.type, this.byteOffset, this.byteStride, this.normalized, totalVertices, forceCopy);
     }
 
     /**
@@ -751,6 +687,29 @@ export class VertexBuffer {
     }
 
     /**
+     * Gets the vertex buffer type of the given data array.
+     * @param data the data array
+     * @returns the vertex buffer type
+     */
+    public static GetDataType(data: DataArray): number {
+        if (data instanceof Int8Array) {
+            return VertexBuffer.BYTE;
+        } else if (data instanceof Uint8Array) {
+            return VertexBuffer.UNSIGNED_BYTE;
+        } else if (data instanceof Int16Array) {
+            return VertexBuffer.SHORT;
+        } else if (data instanceof Uint16Array) {
+            return VertexBuffer.UNSIGNED_SHORT;
+        } else if (data instanceof Int32Array) {
+            return VertexBuffer.INT;
+        } else if (data instanceof Uint32Array) {
+            return VertexBuffer.UNSIGNED_INT;
+        } else {
+            return VertexBuffer.FLOAT;
+        }
+    }
+
+    /**
      * Gets the byte length of the given type.
      * @param type the type
      * @returns the number of bytes
@@ -860,5 +819,71 @@ export class VertexBuffer {
                 throw new Error(`Invalid component type ${type}`);
             }
         }
+    }
+
+    /**
+     * Gets the given data array as a float array. Float data is constructed if the data array cannot be returned directly.
+     * @param data the input data array
+     * @param size the number of components
+     * @param type the component type
+     * @param byteOffset the byte offset of the data
+     * @param byteStride the byte stride of the data
+     * @param normalized whether the data is normalized
+     * @param totalVertices number of vertices in the buffer to take into account
+     * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
+     * @returns a float array containing vertex data
+     */
+    public static GetFloatData(
+        data: DataArray,
+        size: number,
+        type: number,
+        byteOffset: number,
+        byteStride: number,
+        normalized: boolean,
+        totalVertices: number,
+        forceCopy?: boolean
+    ): FloatArray {
+        const tightlyPackedByteStride = size * VertexBuffer.GetTypeByteLength(type);
+        const count = totalVertices * size;
+
+        if (type !== VertexBuffer.FLOAT || byteStride !== tightlyPackedByteStride) {
+            const copy = new Float32Array(count);
+            VertexBuffer.ForEach(data, byteOffset, byteStride, size, type, count, normalized, (value, index) => copy[index] = value);
+            return copy;
+        }
+
+        if (!(data instanceof Array || data instanceof Float32Array) || byteOffset !== 0 || data.length !== count) {
+            if (data instanceof Array) {
+                const offset = byteOffset / 4;
+                return data.slice(offset, offset + count);
+            } else if (data instanceof ArrayBuffer) {
+                return new Float32Array(data, byteOffset, count);
+            } else {
+                let offset = data.byteOffset + byteOffset;
+                if (forceCopy) {
+                    const result = new Float32Array(count);
+                    const source = new Float32Array(data.buffer, offset, count);
+
+                    result.set(source);
+
+                    return result;
+                }
+
+                // Protect against bad data
+                const remainder = offset % 4;
+
+                if (remainder) {
+                    offset = Math.max(0, offset - remainder);
+                }
+
+                return new Float32Array(data.buffer, offset, count);
+            }
+        }
+
+        if (forceCopy) {
+            return data.slice();
+        }
+
+        return data;
     }
 }
