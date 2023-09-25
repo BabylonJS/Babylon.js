@@ -378,6 +378,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         let customBlockData: any;
 
+        // Dropped something that is not a block
+        if (blockType === "") {
+            return;
+        }
         if (blockType.indexOf("CustomBlock") > -1) {
             const storageData = localStorage.getItem(blockType);
             if (!storageData) {
