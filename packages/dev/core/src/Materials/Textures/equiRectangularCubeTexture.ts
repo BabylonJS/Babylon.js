@@ -100,6 +100,29 @@ export class EquiRectangularCubeTexture extends BaseTexture {
      * @param onError
      */
     private _loadImage(loadTextureCallback: () => void, onError: Nullable<(message?: string, exception?: any) => void>): void {
+        const scene = this.getScene();
+        if (!scene) {
+            return;
+        }
+
+        // Create texture before loading
+        const texture = scene
+            .getEngine()
+            .createRawCubeTexture(
+                null,
+                this._size,
+                Constants.TEXTUREFORMAT_RGB,
+                scene.getEngine().getCaps().textureFloat ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INTEGER,
+                this._noMipmap,
+                false,
+                Constants.TEXTURE_TRILINEAR_SAMPLINGMODE
+            );
+        scene.addPendingData(texture);
+        texture.url = this.url;
+        texture.isReady = false;
+        scene.getEngine()._internalTexturesCache.push(texture);
+        this._texture = texture;
+
         const canvas = document.createElement("canvas");
         LoadImage(
             this.url,
@@ -119,11 +142,12 @@ export class EquiRectangularCubeTexture extends BaseTexture {
                 loadTextureCallback();
             },
             (_, e) => {
+                scene.removePendingData(texture);
                 if (onError) {
                     onError(`${this.getClassName()} could not be loaded`, e);
                 }
             },
-            null
+            scene ? scene.offlineProvider : null
         );
     }
 
@@ -132,7 +156,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
      */
     private _loadTexture(): void {
         const scene = this.getScene();
-        const callback = (): Nullable<ArrayBufferView[]> => {
+        const callback = (): ArrayBufferView[] => {
             const imageData = this._getFloat32ArrayFromArrayBuffer(this._buffer);
 
             // Extract the raw linear data.
@@ -152,20 +176,19 @@ export class EquiRectangularCubeTexture extends BaseTexture {
         if (!scene) {
             return;
         }
-        this._texture = scene
-            .getEngine()
-            .createRawCubeTextureFromUrl(
-                this.url,
-                scene,
-                this._size,
-                Constants.TEXTUREFORMAT_RGB,
-                scene.getEngine().getCaps().textureFloat ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INTEGER,
-                this._noMipmap,
-                callback,
-                null,
-                this._onLoad,
-                this._onError
-            );
+        const faceDataArrays = callback();
+
+        const texture = this._texture!;
+        scene.getEngine().updateRawCubeTexture(texture, faceDataArrays, texture.format, texture.type, texture.invertY);
+        texture.isReady = true;
+        scene.removePendingData(texture);
+
+        texture.onLoadedObservable.notifyObservers(texture);
+        texture.onLoadedObservable.clear();
+
+        if (this._onLoad) {
+            this._onLoad();
+        }
     }
 
     /**

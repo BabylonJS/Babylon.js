@@ -4377,7 +4377,7 @@ export class Quaternion {
      * Updates the given rotation matrix with the current quaternion values
      * Example Playground https://playground.babylonjs.com/#L49EJ7#67
      * @param result defines the target matrix
-     * @returns the current unchanged quaternion
+     * @returns the updated matrix with the rotation
      */
     public toRotationMatrix<T extends Matrix>(result: T): T {
         Matrix.FromQuaternionToRef(this, result);

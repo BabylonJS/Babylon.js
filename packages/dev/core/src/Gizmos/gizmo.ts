@@ -249,7 +249,7 @@ export class Gizmo implements IGizmo {
         this._coordinatesMode = coordinatesMode;
         const local = coordinatesMode == GizmoCoordinatesMode.Local;
         this.updateGizmoRotationToMatchAttachedMesh = local;
-        this.updateGizmoPositionToMatchAttachedMesh = local;
+        this.updateGizmoPositionToMatchAttachedMesh = true;
     }
 
     public get coordinatesMode() {
@@ -372,21 +372,6 @@ export class Gizmo implements IGizmo {
     }
 
     /**
-     * Handle position/translation when using an attached node using pivot
-     */
-    protected _handlePivot() {
-        const attachedNodeTransform = this._attachedNode as any;
-        // check there is an active pivot for the TransformNode attached
-        if (attachedNodeTransform.isUsingPivotMatrix && attachedNodeTransform.isUsingPivotMatrix() && attachedNodeTransform.position) {
-            // When a TransformNode has an active pivot, even without parenting,
-            // translation from the world matrix is different from TransformNode.position.
-            // Pivot works like a virtual parent that's using the node orientation.
-            // As the world matrix is transformed by the gizmo and then decomposed to TRS
-            // its translation part must be set to the Node's position.
-            attachedNodeTransform.getWorldMatrix().setTranslation(attachedNodeTransform.position);
-        }
-    }
-    /**
      * computes the rotation/scaling/position of the transform once the Node world matrix has changed.
      */
     protected _matrixChanged() {
@@ -449,6 +434,30 @@ export class Gizmo implements IGizmo {
                 transform.parent.getWorldMatrix().invertToRef(parentInv);
                 this._attachedNode.getWorldMatrix().multiplyToRef(parentInv, localMat);
                 localMat.decompose(TmpVectors.Vector3[0], TmpVectors.Quaternion[0], transform.position, Gizmo.PreserveScaling ? transform : undefined);
+                if (transform.isUsingPivotMatrix()) {
+                    // Calculate the local matrix without the translation.
+                    // Copied from TranslateNode.computeWorldMatrix
+                    const r = TmpVectors.Quaternion[1];
+                    Quaternion.RotationYawPitchRollToRef(transform.rotation.y, transform.rotation.x, transform.rotation.z, r);
+
+                    const scaleMatrix = TmpVectors.Matrix[2];
+                    Matrix.ScalingToRef(transform.scaling.x, transform.scaling.y, transform.scaling.z, scaleMatrix);
+
+                    const rotationMatrix = TmpVectors.Matrix[2];
+                    r.toRotationMatrix(rotationMatrix);
+
+                    const pivotMatrix = transform.getPivotMatrix();
+                    const invPivotMatrix = TmpVectors.Matrix[3];
+                    pivotMatrix.invertToRef(invPivotMatrix);
+
+                    pivotMatrix.multiplyToRef(scaleMatrix, TmpVectors.Matrix[4]);
+                    TmpVectors.Matrix[4].multiplyToRef(rotationMatrix, TmpVectors.Matrix[5]);
+                    TmpVectors.Matrix[5].multiplyToRef(invPivotMatrix, TmpVectors.Matrix[6]);
+
+                    TmpVectors.Matrix[6].getTranslationToRef(TmpVectors.Vector3[1]);
+
+                    transform.position.subtractInPlace(TmpVectors.Vector3[1]);
+                }
             } else {
                 this._attachedNode._worldMatrix.decompose(TmpVectors.Vector3[0], TmpVectors.Quaternion[0], transform.position, Gizmo.PreserveScaling ? transform : undefined);
             }

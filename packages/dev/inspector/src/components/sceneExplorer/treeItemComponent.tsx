@@ -9,6 +9,7 @@ import { TreeItemSelectableComponent } from "./treeItemSelectableComponent";
 import { Tools } from "../../tools";
 import type { GlobalState } from "../globalState";
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
+import type { Camera } from "core/Cameras/camera";
 
 interface ITreeItemExpandableHeaderComponentProps {
     isExpanded: boolean;
@@ -76,6 +77,7 @@ export interface ITreeItemComponentProps {
     filter: Nullable<string>;
     forceSubitems?: boolean;
     globalState: GlobalState;
+    gizmoCamera?: Camera;
     entity?: any;
     selectedEntity: any;
     extensibilityGroups?: IExplorerExtensibilityGroup[];
@@ -210,6 +212,7 @@ export class TreeItemComponent extends React.Component<ITreeItemComponentProps, 
                             selectedEntity={this.props.selectedEntity}
                             entity={item}
                             globalState={this.props.globalState}
+                            gizmoCamera={this.props.gizmoCamera}
                             filter={this.props.filter}
                         />
                     );

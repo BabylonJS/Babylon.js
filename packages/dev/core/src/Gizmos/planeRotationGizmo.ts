@@ -266,7 +266,6 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                 const nodeScale = new Vector3(1, 1, 1);
                 const nodeQuaternion = new Quaternion(0, 0, 0, 1);
                 const nodeTranslation = new Vector3(0, 0, 0);
-                this._handlePivot();
 
                 this.attachedNode.getWorldMatrix().decompose(nodeScale, nodeQuaternion, nodeTranslation);
                 // uniform scaling of absolute value of components
