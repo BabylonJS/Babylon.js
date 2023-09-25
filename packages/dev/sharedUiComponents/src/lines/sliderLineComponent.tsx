@@ -50,7 +50,7 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
             return true;
         }
 
-        if(nextProps.label !== this.props.label) {
+        if (nextProps.label !== this.props.label) {
             return true;
         }
 
