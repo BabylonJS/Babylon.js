@@ -1,7 +1,9 @@
 import type { InternalTexture } from "core/Materials/Textures/internalTexture";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
-import type { IBaseEnginePublic } from "../engine.base";
+import type { BaseEngineState, IBaseEngineInternals, IBaseEnginePublic } from "../engine.base";
+import { EngineExtensions, getEngineExtensions } from "./engine.extensions";
+import { EngineType } from "../engine.interfaces";
 
 /**
  * Defines the extension for the engine to create additional internal texture formats
@@ -316,4 +318,9 @@ export interface IRawTextureEngineExtension {
         compression: Nullable<string>,
         textureType: number
     ): void;
+}
+
+export function registerRawTextureExtension(engineState: IBaseEnginePublic, rawTextureExtensionImplementation: IRawTextureEngineExtension): void {
+    const extensions = getEngineExtensions(engineState);
+    extensions[EngineExtensions.RAW_TEXTURE] = rawTextureExtensionImplementation;
 }

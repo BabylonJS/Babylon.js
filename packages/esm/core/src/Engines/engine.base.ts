@@ -30,7 +30,7 @@ import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import type { IViewportLike } from "core/Maths/math.like";
 import type { ICanvas, ICanvasRenderingContext } from "core/Engines/ICanvas";
 import type { IFileRequest } from "core/Misc/fileRequest";
-import type { IRawTextureEngineExtension } from "./Extensions/engine.rawTexture";
+import type { IRawTextureEngineExtension } from "./Extensions/engine.rawTexture.base";
 import type { Texture } from "core/Materials/Textures/texture";
 import type { ISceneLike } from "./engine.interfaces";
 import { EngineType } from "./engine.interfaces";
@@ -177,7 +177,6 @@ export interface IBaseEngineInternals {
     _frameId: number;
     _uniformBuffers: Array<UniformBuffer>;
     _storageBuffers: Array<StorageBuffer>;
-    _uniqueId: number;
     _shouldUseHighPrecisionShader: boolean;
     _badOS?: boolean;
     _badDesktopOS?: boolean;
@@ -207,9 +206,9 @@ export interface IBaseEngineInternals {
  */
 export interface IBaseEnginePublic {
     /**
-     * The base functionality of this engine. Can be overwritten or populated by other init functions.
+     * Gets the current engine unique identifier
      */
-    // module: Partial<IEngineModule>;
+    uniqueId: number;
     /**
      * Returns a string describing the current engine
      */
@@ -416,7 +415,7 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
 
     const engineState: BaseEngineStateFull = {
         // module: {},
-        _uniqueId: engineCounter++,
+        uniqueId: engineCounter++,
         _type: EngineType.BASE,
         description: "Babylon.js Base Engine",
         name: "Base",

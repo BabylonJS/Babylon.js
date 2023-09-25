@@ -117,7 +117,9 @@ import { getEngineAdapter } from "./engine.adapters";
 import { StencilStateComposer } from "core/States/stencilStateComposer";
 import { DepthCullingState } from "core/States/depthCullingState";
 import { StencilState } from "core/States/stencilState";
-import { ThinEngine } from "core/Engines/thinEngine";
+import type { ThinEngine } from "core/Engines/thinEngine";
+import { EngineExtensions, getEngineExtension } from "./Extensions/engine.extensions";
+import { ITransformFeedbackEngineExtension } from "./Extensions/transformFeedback/transformFeedback.base";
 
 const _TempClearColorUint32 = new Uint32Array(4);
 const _TempClearColorInt32 = new Int32Array(4);
@@ -1360,9 +1362,9 @@ export function createEffect(
         getHostDocument,
         _getShaderProcessor: (engineState: IWebGLEnginePublic) => (engineState as WebGLEngineState)._shaderProcessor,
         _loadFile,
-        createPipelineContext
+        createPipelineContext,
     });
-    
+
     const effect = new Effect(
         baseName,
         attributesNamesOrOptions,
@@ -1452,7 +1454,8 @@ export function _deletePipelineContext(engineState: IWebGLEnginePublic, pipeline
     const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
     if (webGLPipelineContext && webGLPipelineContext.program) {
         if (webGLPipelineContext.transformFeedback) {
-            deleteTransformFeedback(engineState, webGLPipelineContext.transformFeedback);
+            const extension = getEngineExtension(engineState, EngineExtensions.TRANSFORM_FEEDBACK) as ITransformFeedbackEngineExtension;
+            extension.deleteTransformFeedback(engineState, webGLPipelineContext.transformFeedback);
             webGLPipelineContext.transformFeedback = null;
         }
         webGLPipelineContext.program.__SPECTOR_rebuildProgram = null;
@@ -1582,17 +1585,19 @@ function _createShaderProgram(
     context.attachShader(shaderProgram, fragmentShader);
 
     if (engineState.webGLVersion > 1 && transformFeedbackVaryings) {
-        const transformFeedback = createTransformFeedback(engineState);
-
-        bindTransformFeedback(engineState, transformFeedback);
-        setTranformFeedbackVaryings(engineState, shaderProgram, transformFeedbackVaryings);
+        const extension = getEngineExtension(engineState, EngineExtensions.TRANSFORM_FEEDBACK) as ITransformFeedbackEngineExtension;
+        const transformFeedback = extension.createTransformFeedback(engineState);
+        
+        extension.bindTransformFeedback(engineState, transformFeedback);
+        extension.setTranformFeedbackVaryings(engineState, shaderProgram, transformFeedbackVaryings);
         pipelineContext.transformFeedback = transformFeedback;
     }
-
+    
     context.linkProgram(shaderProgram);
-
+    
     if (engineState.webGLVersion > 1 && transformFeedbackVaryings) {
-        bindTransformFeedback(engineState, null);
+        const extension = getEngineExtension(engineState, EngineExtensions.TRANSFORM_FEEDBACK) as ITransformFeedbackEngineExtension;
+        extension.bindTransformFeedback(engineState, null);
     }
 
     pipelineContext.context = context;
@@ -2164,7 +2169,7 @@ export function createTexture(
 
             const maxTextureSize = fes._caps.maxTextureSize;
 
-            if (img.width > maxTextureSize || img.height > maxTextureSize || !this._supportsHardwareTextureRescaling) {
+            if (img.width > maxTextureSize || img.height > maxTextureSize || !fes._supportsHardwareTextureRescaling) {
                 _prepareWorkingCanvas(fes);
                 if (!fes._workingCanvas || !fes._workingContext) {
                     return false;
@@ -2174,7 +2179,7 @@ export function createTexture(
                 fes._workingCanvas.height = potHeight;
 
                 fes._workingContext.drawImage(img as any, 0, 0, img.width, img.height, 0, 0, potWidth, potHeight);
-                gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, texelFormat, gl.UNSIGNED_BYTE, this._workingCanvas as TexImageSource);
+                gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, texelFormat, gl.UNSIGNED_BYTE, fes._workingCanvas as TexImageSource);
 
                 texture.width = potWidth;
                 texture.height = potHeight;
