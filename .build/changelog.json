@@ -1,6 +1,24 @@
 {
-    "fromTag": "6.21.2",
+    "fromTag": "6.21.3",
     "changelog": {
+        "6.21.4": [
+            {
+                "pr": "14360",
+                "title": "Texture cache fix",
+                "description": "follow up on equi rect changes.",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/equiRectangularCubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/texture.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
         "6.21.3": [
             {
                 "pr": "14355",
