@@ -9,8 +9,17 @@ import { FlowGraphWithOnDoneExecutionBlock } from "core/FlowGraph/flowGraphWithO
  * This block debounces the execution of a input, i.e. ensures that the input is only executed once every X times
  */
 export class FlowGraphDebounceBlock extends FlowGraphWithOnDoneExecutionBlock {
+    /**
+     * Input: The number of times the input must be executed before the onDone signal is activated
+     */
     public readonly count: FlowGraphDataConnection<number>;
+    /**
+     * Input: Resets the debounce counter
+     */
     public readonly reset: FlowGraphSignalConnection;
+    /**
+     * Output: The current count of the debounce counter
+     */
     public readonly currentCount: FlowGraphDataConnection<number>;
 
     constructor() {
