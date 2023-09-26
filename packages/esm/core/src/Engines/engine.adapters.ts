@@ -3,8 +3,6 @@ import type { ThinEngine } from "core/Engines/thinEngine";
 import type * as BaseTypes from "./engine.base";
 import type * as WebGLTypes from "./engine.webgl";
 
-const engineAdaptersMap: ThinEngine[] = [];
-
 type PickMatching<T, V> = { [K in keyof T as T[K] extends V ? K : never]: T[K] };
 type ExtractMethods<T> = PickMatching<T, Function>;
 
@@ -14,26 +12,23 @@ type BaseThinEngineUnionMethods<T extends ThinEngine, E> = PickMatching<EngineMe
 export type BaseEngineMethods = ExtractMethods<typeof BaseTypes>;
 export type WebGLEngineMethods = ExtractMethods<typeof WebGLTypes>;
 
-export function getEngineAdapter<T extends ThinEngine, E = BaseEngineMethods | WebGLEngineMethods>(
+export function augmentEngineState<T extends ThinEngine, E = BaseEngineMethods | WebGLEngineMethods>(
     engineState: IBaseEnginePublic,
     injectedMethods?: Partial<E>,
     force?: boolean
 ): T {
-    const engineAdapter: T = (engineAdaptersMap[engineState.uniqueId] as T) || {};
-    Object.defineProperties(engineAdapter, Object.getOwnPropertyDescriptors(engineState)) as T;
     if (injectedMethods) {
         Object.keys(injectedMethods).forEach((key) => {
             const injectedMethod = injectedMethods[key as keyof typeof injectedMethods];
             if (typeof injectedMethod === "function") {
                 const functionName: keyof BaseThinEngineUnionMethods<T, E> = key as keyof BaseThinEngineUnionMethods<T, E>;
-                if (force || !engineAdapter[functionName as keyof BaseThinEngineUnionMethods<T, E>]) {
-                    engineAdapter[functionName] = injectedMethod.bind(null, engineAdapter);
+                if (force || !(engineState as unknown as T)[functionName as keyof BaseThinEngineUnionMethods<T, E>]) {
+                    (engineState as unknown as T)[functionName] = injectedMethod.bind(null, engineState);
                 }
             }
         });
     }
-    engineAdaptersMap[engineState.uniqueId] = engineAdapter;
-    return engineAdapter as T;
+    return engineState as unknown as T;
 }
 
 // export function generateInternalTextureThinEngineAdapter(

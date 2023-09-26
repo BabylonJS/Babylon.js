@@ -19,14 +19,15 @@ import {
     TEXTURE_NEAREST_SAMPLINGMODE,
     TEXTURE_TRILINEAR_SAMPLINGMODE,
 } from "../../engine.constants";
-import { getEngineAdapter } from "../../engine.adapters";
+import { augmentEngineState } from "../../engine.adapters";
 import { Logger } from "core/Misc/logger";
 import { Tools } from "core/Misc/tools";
 import type { Scene } from "core/scene";
 import type { IWebRequest } from "core/Misc/interfaces/iWebRequest";
 import { _loadFile } from "../../engine.tools";
+import type { IRawTextureEngineExtension } from "../engine.rawTexture.base";
 
-export function updateRawTexture(
+export const updateRawTexture: IRawTextureEngineExtension["updateRawTexture"] = function (
     engineState: IWebGLEnginePublic,
     texture: Nullable<InternalTexture>,
     data: Nullable<ArrayBufferView>,
@@ -73,9 +74,9 @@ export function updateRawTexture(
     _bindTextureDirectly(fes, fes._gl.TEXTURE_2D, null);
     //  this.resetTextureCache();
     texture.isReady = true;
-}
+};
 
-export function createRawTexture(
+export const createRawTexture: IRawTextureEngineExtension["createRawTexture"] = function (
     engineState: IWebGLEnginePublic,
     data: Nullable<ArrayBufferView>,
     width: number,
@@ -91,7 +92,7 @@ export function createRawTexture(
     useSRGBBuffer = false
 ): InternalTexture {
     const fes = engineState as WebGLEngineStateFull;
-    const adapter = getEngineAdapter(fes);
+    const adapter = augmentEngineState(fes);
     const texture = new InternalTexture(adapter, InternalTextureSource.Raw);
     texture.baseWidth = width;
     texture.baseHeight = height;
@@ -127,9 +128,9 @@ export function createRawTexture(
     fes._internalTexturesCache.push(texture);
 
     return texture;
-}
+};
 
-export function createRawCubeTexture(
+export const createRawCubeTexture: IRawTextureEngineExtension["createRawCubeTexture"] = function (
     engineState: IWebGLEnginePublic,
     data: Nullable<ArrayBufferView[]>,
     size: number,
@@ -141,7 +142,7 @@ export function createRawCubeTexture(
     compression: Nullable<string> = null
 ): InternalTexture {
     const fes = engineState as WebGLEngineStateFull;
-    const adapter = getEngineAdapter(fes);
+    const adapter = augmentEngineState(fes);
     const gl = fes._gl;
     const texture = new InternalTexture(adapter, InternalTextureSource.CubeRaw);
     texture.isCube = true;
@@ -229,9 +230,9 @@ export function createRawCubeTexture(
     texture.isReady = true;
 
     return texture;
-}
+};
 
-export function updateRawCubeTexture(
+export const updateRawCubeTexture: IRawTextureEngineExtension["updateRawCubeTexture"] = function (
     engineState: IWebGLEnginePublic,
     texture: InternalTexture,
     data: ArrayBufferView[],
@@ -287,9 +288,9 @@ export function updateRawCubeTexture(
     _bindTextureDirectly(fes, fes._gl.TEXTURE_CUBE_MAP, null);
 
     texture.isReady = true;
-}
+};
 
-export function createRawCubeTextureFromUrl(
+export const createRawCubeTextureFromUrl: IRawTextureEngineExtension["createRawCubeTextureFromUrl"] = function (
     engineState: IWebGLEnginePublic,
     url: string,
     scene: Nullable<Scene>,
@@ -384,7 +385,7 @@ export function createRawCubeTextureFromUrl(
     );
 
     return texture;
-}
+};
 
 /**
  * @internal
@@ -445,7 +446,7 @@ function _makeCreateRawTextureFunction(
     const fes = engineState as WebGLEngineStateFull;
     const target = is3D ? fes._gl.TEXTURE_3D : fes._gl.TEXTURE_2D_ARRAY;
     const source = is3D ? InternalTextureSource.Raw3D : InternalTextureSource.Raw2DArray;
-    const adapter = getEngineAdapter(fes);
+    const adapter = augmentEngineState(fes);
     const texture = new InternalTexture(adapter, source);
     texture.baseWidth = width;
     texture.baseHeight = height;
@@ -586,3 +587,15 @@ export const updateRawTexture3D: (
     compression?: Nullable<string>,
     textureType?: number
 ) => void = _makeUpdateRawTextureFunction.bind(null, true);
+
+export default {
+    createRawTexture,
+    createRawCubeTexture,
+    createRawCubeTextureFromUrl,
+    createRawTexture2DArray,
+    createRawTexture3D,
+    updateRawTexture,
+    updateRawCubeTexture,
+    updateRawTexture2DArray,
+    updateRawTexture3D,
+};

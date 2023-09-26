@@ -113,13 +113,15 @@ import { Engine } from "core/Engines/engine";
 import { DrawWrapper } from "core/Materials/drawWrapper";
 import type { IEffectFallbacks } from "core/Materials/iEffectFallbacks";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { getEngineAdapter } from "./engine.adapters";
+import { augmentEngineState } from "./engine.adapters";
 import { StencilStateComposer } from "core/States/stencilStateComposer";
 import { DepthCullingState } from "core/States/depthCullingState";
 import { StencilState } from "core/States/stencilState";
 import type { ThinEngine } from "core/Engines/thinEngine";
 import { EngineExtensions, getEngineExtension } from "./Extensions/engine.extensions";
-import { ITransformFeedbackEngineExtension } from "./Extensions/transformFeedback/transformFeedback.base";
+import type { ITransformFeedbackEngineExtension } from "./Extensions/transformFeedback/engine.transformFeedback.base";
+import type { ShaderProcessingContext } from "core/Engines/Processors/shaderProcessingOptions";
+import { IRenderTargetEngineExtension } from "./Extensions/renderTarget/renderTarget.base";
 
 const _TempClearColorUint32 = new Uint32Array(4);
 const _TempClearColorInt32 = new Int32Array(4);
@@ -500,7 +502,7 @@ export function _viewport(engineState: IWebGLEnginePublic, x: number, y: number,
 /**
  * @internal
  */
-function _bindUnboundFramebuffer(engineState: IWebGLEnginePublic, framebuffer: Nullable<WebGLFramebuffer>) {
+export function _bindUnboundFramebuffer(engineState: IWebGLEnginePublic, framebuffer: Nullable<WebGLFramebuffer>) {
     const fes = engineState as WebGLEngineStateFull;
     if (fes._currentFramebuffer !== framebuffer) {
         fes._gl.bindFramebuffer(fes._gl.FRAMEBUFFER, framebuffer);
@@ -1358,7 +1360,7 @@ export function createEffect(
         return compiledEffect;
     }
 
-    const engineAdapter = getEngineAdapter(engineState, {
+    const engineAdapter = augmentEngineState(engineState, {
         getHostDocument,
         _getShaderProcessor: (engineState: IWebGLEnginePublic) => (engineState as WebGLEngineState)._shaderProcessor,
         _loadFile,
@@ -1522,7 +1524,7 @@ export function createPipelineContext(engineState: IWebGLEnginePublic, shaderPro
     const fes = engineState as WebGLEngineState;
     const pipelineContext = new WebGLPipelineContext();
     // TODO applying engine to pipeline context
-    const engineAdapter = getEngineAdapter(engineState, {
+    const engineAdapter = augmentEngineState(engineState, {
         // This needs to include all the functions that are used in the shader processing context
     });
     pipelineContext.engine = engineAdapter;
@@ -2024,7 +2026,7 @@ export function _createInternalTexture(
     }
 
     const gl = fes._gl;
-    const engineAdapter = getEngineAdapter(engineState, {
+    const engineAdapter = augmentEngineState(engineState, {
         _releaseTexture,
         getLoadedTexturesCache: (_engineState: IWebGLEnginePublic) => {
             return (_engineState as WebGLEngineState)._internalTexturesCache;
@@ -2124,7 +2126,7 @@ export function createTexture(
     useSRGBBuffer?: boolean
 ): InternalTexture {
     const fes = engineState as WebGLEngineState;
-    const engineAdapter = getEngineAdapter(engineState, {
+    const engineAdapter = augmentEngineState(engineState, {
         _releaseTexture,
         getLoadedTexturesCache: (_engineState: IWebGLEnginePublic) => {
             return (_engineState as WebGLEngineState)._internalTexturesCache;
@@ -2232,8 +2234,8 @@ export function _rescaleTexture(
     engineState._gl.texParameteri(engineState._gl.TEXTURE_2D, engineState._gl.TEXTURE_MIN_FILTER, engineState._gl.LINEAR);
     engineState._gl.texParameteri(engineState._gl.TEXTURE_2D, engineState._gl.TEXTURE_WRAP_S, engineState._gl.CLAMP_TO_EDGE);
     engineState._gl.texParameteri(engineState._gl.TEXTURE_2D, engineState._gl.TEXTURE_WRAP_T, engineState._gl.CLAMP_TO_EDGE);
-
-    const rtt = createRenderTargetTexture(
+    const extension = getEngineExtension(engineState, EngineExtensions.RENDER_TARGET) as IRenderTargetEngineExtension;
+    const rtt = extension.createRenderTargetTexture(
         engineState,
         {
             width: destination.width,

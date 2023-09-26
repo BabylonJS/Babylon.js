@@ -31,12 +31,26 @@ export function endTransformFeedback(engineState: IWebGLEnginePublic): void {
     gl.endTransformFeedback();
 }
 
-export function setTranformFeedbackVaryings(engineState: IWebGLEnginePublic, program: WebGLProgram, value: string[]): void {
+export function setTransformFeedbackVaryings(engineState: IWebGLEnginePublic, program: WebGLProgram, value: string[]): void {
     const gl = (engineState as WebGLEngineState)._gl;
     gl.transformFeedbackVaryings(program, value, gl.INTERLEAVED_ATTRIBS);
 }
+
+// back compat
+export const setTranformFeedbackVaryings = setTransformFeedbackVaryings;
 
 export function bindTransformFeedbackBuffer(engineState: IWebGLEnginePublic, value: Nullable<DataBuffer>): void {
     const gl = (engineState as WebGLEngineState)._gl;
     gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, value ? value.underlyingResource : null);
 }
+
+export default {
+    createTransformFeedback,
+    deleteTransformFeedback,
+    bindTransformFeedback,
+    beginTransformFeedback,
+    endTransformFeedback,
+    setTransformFeedbackVaryings,
+    bindTransformFeedbackBuffer,
+    setTranformFeedbackVaryings,
+};

@@ -3,6 +3,8 @@ import type { Nullable } from "core/types";
 import type { IBaseEnginePublic } from "../../engine.base";
 import { EngineExtensions, getEngineExtensions } from "../engine.extensions";
 
+export const name = "transformFeedback";
+
 export interface ITransformFeedbackEngineExtension {
     /**
      * Creates a webGL transform feedback object
@@ -46,9 +48,4 @@ export interface ITransformFeedbackEngineExtension {
      * @param value defines the webGL buffer to bind
      */
     bindTransformFeedbackBuffer(engineState: IBaseEnginePublic, value: Nullable<DataBuffer>): void;
-}
-
-export function registerTransformFeedbackExtension(engineState: IBaseEnginePublic, extensionImplementation: ITransformFeedbackEngineExtension): void {
-    const extensions = getEngineExtensions(engineState);
-    extensions[EngineExtensions.TRANSFORM_FEEDBACK] = extensionImplementation;
 }
