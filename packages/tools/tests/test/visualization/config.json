@@ -499,8 +499,19 @@
             "referenceImage": "customRTT.png"
         },
         {
-            "title": "Draco Mesh Compression",
+            "title": "Draco Mesh Compression (decodeMeshAsync, numWorkers = 1)",
             "playgroundId": "#22MFU2#4",
+            "referenceImage": "draco.png"
+        },
+        {
+            "title": "Draco Mesh Compression (decodeMeshToGeometryAsync, numWorkers = 0)",
+            "playgroundId": "#22MFU2#65",
+            "referenceImage": "draco.png"
+        },
+        {
+            "title": "Draco Mesh Compression (decodeMeshToGeometryAsync, numWorkers = 1)",
+            "playgroundId": "#22MFU2#65",
+            "replace": "numWorkers = 0, numWorkers = 1",
             "referenceImage": "draco.png"
         },
         {

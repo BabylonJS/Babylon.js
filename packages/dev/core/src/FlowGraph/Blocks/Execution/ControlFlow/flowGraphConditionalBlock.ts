@@ -1,14 +1,14 @@
-import { RichTypeBoolean } from "../../flowGraphRichTypes";
-import type { FlowGraphContext } from "../../flowGraphContext";
-import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import { FlowGraphExecutionBlock } from "../../flowGraphExecutionBlock";
-import type { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
+import { RichTypeBoolean } from "../../../flowGraphRichTypes";
+import type { FlowGraphContext } from "../../../flowGraphContext";
+import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
+import { FlowGraphExecutionBlock } from "../../../flowGraphExecutionBlock";
+import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 
 /**
  * @experimental
  * A block that evaluates a condition and executes one of two branches.
  */
-export class FlowGraphConditionalBlock extends FlowGraphExecutionBlock {
+export class FlowGraphBranchBlock extends FlowGraphExecutionBlock {
     /**
      * Input connection: The condition to evaluate.
      */

@@ -1,3 +1,4 @@
+import type { FlowGraphContext } from "../../flowGraphContext";
 import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import type { RichType } from "../../flowGraphRichTypes";
@@ -14,7 +15,7 @@ export class FlowGraphConstantOperationBlock<ResultT> extends FlowGraphBlock {
         this.output = this._registerDataOutput("output", richType);
     }
 
-    public _updateOutputs(): void {
-        this.output.value = this._operation();
+    public _updateOutputs(context: FlowGraphContext): void {
+        this.output.setValue(this._operation(), context);
     }
 }

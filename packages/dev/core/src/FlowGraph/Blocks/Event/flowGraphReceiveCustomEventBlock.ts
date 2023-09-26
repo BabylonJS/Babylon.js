@@ -34,7 +34,7 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
     public _preparePendingTasks(context: FlowGraphContext): void {
         const observable = context.graphVariables.eventCoordinator.getCustomEventObservable(this._params.eventId);
         this._eventObserver = observable.add((event) => {
-            this.eventData.value = event;
+            this.eventData.setValue(event?.data, context);
             this._execute(context);
         });
     }

@@ -18,6 +18,6 @@ export class FlowGraphUnaryOperationBlock<InputT, ResultT> extends FlowGraphBloc
     }
 
     public _updateOutputs(_context: FlowGraphContext): void {
-        this.output.value = this._operation(this.input.getValue(_context));
+        this.output.setValue(this._operation(this.input.getValue(_context)), _context);
     }
 }
