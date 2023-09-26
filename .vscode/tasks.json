@@ -71,7 +71,7 @@
         },
         {
             "label": "Run visualization tests (Dev)",
-            "dependsOn": ["CDN Serve (Dev)"],
+            "dependsOn": ["CDN Serve and watch (Dev)"],
             "type": "shell",
             "command": "npm",
             "runOptions": {
@@ -91,7 +91,7 @@
         },
         {
             "label": "Run visualization tests headless (Dev)",
-            "dependsOn": ["CDN Serve (Dev)"],
+            "dependsOn": ["CDN Serve and watch (Dev)"],
             "type": "shell",
             "command": "npm",
             "runOptions": {
@@ -235,7 +235,7 @@
             "label": "Playground Serve (Dev)",
             "type": "shell",
             "command": "npm",
-            "dependsOn": "CDN Serve (Dev)",
+            "dependsOn": "CDN Serve and watch (Dev)",
             "runOptions": {
                 "instanceLimit": 1
             },
@@ -253,7 +253,7 @@
             "label": "Playground Serve (LTS)",
             "type": "shell",
             "command": "npm",
-            "dependsOn": "CDN Serve (LTS)",
+            "dependsOn": "CDN Serve and watch (LTS)",
             "runOptions": {
                 "instanceLimit": 1
             },
@@ -289,7 +289,7 @@
             "label": "Sandbox Serve (Dev)",
             "type": "shell",
             "command": "npm",
-            "dependsOn": "CDN Serve (Dev)",
+            "dependsOn": "CDN Serve and watch (Dev)",
             "runOptions": {
                 "instanceLimit": 1
             },
@@ -325,7 +325,7 @@
             "label": "GUI Editor Serve (Dev)",
             "type": "shell",
             "command": "npm",
-            "dependsOn": "CDN Serve (Dev)",
+            "dependsOn": "CDN Serve and watch (Dev)",
             "runOptions": {
                 "instanceLimit": 1
             },
@@ -361,7 +361,7 @@
             "label": "Node Editor Serve (Dev)",
             "type": "shell",
             "command": "npm",
-            "dependsOn": "CDN Serve (Dev)",
+            "dependsOn": "CDN Serve and watch (Dev)",
             "runOptions": {
                 "instanceLimit": 1
             },
@@ -397,7 +397,7 @@
             "label": "Node Geometry Editor Serve (Dev)",
             "type": "shell",
             "command": "npm",
-            "dependsOn": "CDN Serve (Dev)",
+            "dependsOn": "CDN Serve and watch (Dev)",
             "runOptions": {
                 "instanceLimit": 1
             },
@@ -433,7 +433,7 @@
             "label": "VSM Serve (Dev)",
             "type": "shell",
             "command": "npm",
-            "dependsOn": "CDN Serve (Dev)",
+            "dependsOn": "CDN Serve and watch (Dev)",
             "runOptions": {
                 "instanceLimit": 1
             },
