@@ -1,11 +1,10 @@
-/* eslint-disable @typescript-eslint/consistent-type-imports */
 import { Matrix, Quaternion, Vector3 } from "../../../../Maths/math.vector";
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
 import { RichTypeMatrix, RichTypeNumber, RichTypeQuaternion, RichTypeVector3 } from "../../../flowGraphRichTypes";
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
 import { FlowGraphBlock } from "../../../flowGraphBlock";
-import { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
-import { FlowGraphContext } from "../../../flowGraphContext";
+import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
+import type { FlowGraphContext } from "../../../flowGraphContext";
 
 /**
  * Adds two matrices together.
