@@ -6,22 +6,37 @@ import { FlowGraphEventCoordinator } from "./flowGraphEventCoordinator";
  * @experimental
  * Parameters used to create a flow graph engine.
  */
-export class IFlowGraphEngineConfiguration {
+export class IFlowGraphCoordinatorConfiguration {
     /**
      * The scene that the flow graph engine belongs to.
      */
     scene: Scene;
 }
 /**
- * The FlowGraphEngine class holds all of the existing flow graphs and is responsible for creating new ones.
- * It also handles communication between them through an Event Coordinator
+ * This class holds all of the existing flow graphs and is responsible for creating new ones.
+ * It also handles starting/stopping multiple graphs and communication between them through an Event Coordinator
  */
-export class FlowGraphEngine {
+export class FlowGraphCoordinator {
+    /**
+     * @internal
+     * A list of all the coordinators per scene. Will be used by the inspector
+     */
+    public static readonly SceneCoordinators: Map<Scene, FlowGraphCoordinator[]> = new Map();
+
     private readonly _eventCoordinator: FlowGraphEventCoordinator;
     private readonly _flowGraphs: FlowGraph[] = [];
 
-    constructor(private _config: IFlowGraphEngineConfiguration) {
+    constructor(private _config: IFlowGraphCoordinatorConfiguration) {
         this._eventCoordinator = new FlowGraphEventCoordinator();
+
+        // When the scene is disposed, dispose all graphs currently running on it.
+        this._config.scene.onDisposeObservable.add(() => {
+            this.dispose();
+        });
+
+        // Add itself to the SceneCoordinators list for the Inspector.
+        const coordinators = FlowGraphCoordinator.SceneCoordinators.get(this._config.scene) ?? [];
+        coordinators.push(this);
     }
 
     /**
@@ -59,5 +74,12 @@ export class FlowGraphEngine {
     dispose() {
         this._flowGraphs.forEach((graph) => graph.dispose());
         this._flowGraphs.length = 0;
+
+        // Remove itself from the SceneCoordinators list for the Inspector.
+        const coordinators = FlowGraphCoordinator.SceneCoordinators.get(this._config.scene) ?? [];
+        const index = coordinators.indexOf(this);
+        if (index !== -1) {
+            coordinators.splice(index, 1);
+        }
     }
 }
