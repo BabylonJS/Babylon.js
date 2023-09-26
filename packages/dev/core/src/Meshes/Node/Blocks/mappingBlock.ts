@@ -68,7 +68,7 @@ export class MappingBlock extends NodeGeometryBlock {
      */
     public get normal(): NodeGeometryConnectionPoint {
         return this._inputs[1];
-    }    
+    }
 
     /**
      * Gets the center input component
@@ -93,8 +93,8 @@ export class MappingBlock extends NodeGeometryBlock {
         const tempDirection = Vector3.Zero();
 
         const func = (state: NodeGeometryBuildState) => {
-            const position = this.position.getConnectedValue(state) as Vector3 || Vector3.Zero();
-            const normal = this.normal.getConnectedValue(state) as Vector3 || Vector3.Zero();
+            const position = (this.position.getConnectedValue(state) as Vector3) || Vector3.Zero();
+            const normal = (this.normal.getConnectedValue(state) as Vector3) || Vector3.Zero();
             const center = this.center.getConnectedValue(state) as Vector3;
             const uv = Vector2.Zero();
 
@@ -125,7 +125,6 @@ export class MappingBlock extends NodeGeometryBlock {
                     const absY = Math.abs(normal.y);
                     const absZ = Math.abs(normal.z);
                     const maxDim = Math.max(Math.abs(position.x), Math.abs(position.y), Math.abs(position.z));
- 
 
                     let u = 0,
                         v = 0;
@@ -142,7 +141,7 @@ export class MappingBlock extends NodeGeometryBlock {
                     }
 
                     uv.x = (u + 1) / 2;
-                    uv.y = (v + 1) / 2;   
+                    uv.y = (v + 1) / 2;
                 }
             }
             return uv;
