@@ -25,7 +25,7 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
      * @internal
      * Executes the flow graph execution block.
      */
-    public abstract _execute(context: FlowGraphContext): void;
+    public abstract _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void;
 
     protected _registerSignalInput(name: string): FlowGraphSignalConnection {
         const input = new FlowGraphSignalConnection(name, FlowGraphConnectionType.Input, this);
