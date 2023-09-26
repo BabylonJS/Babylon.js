@@ -1,9 +1,9 @@
-import { Sound } from "core/Audio";
-import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
-import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
-import type { FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection";
-import { FlowGraphWithOnDoneExecutionBlock } from "core/FlowGraph/flowGraphWithOnDoneExecutionBlock";
+import { Sound } from "../../../../Audio/sound";
+import type { FlowGraphContext } from "../../../flowGraphContext";
+import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
+import { RichTypeAny } from "../../../flowGraphRichTypes";
+import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
+import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneExecutionBlock";
 
 /**
  * @experimental
