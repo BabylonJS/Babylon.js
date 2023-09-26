@@ -33,7 +33,7 @@ export interface TextureChannelsToDisplay {
  */
 export class TextureHelper {
     /**
-     * Gets the data of the specified texture by rendering it to an intermediate RGBA texture and retreiving the bytes from it.
+     * Gets the data of the specified texture by rendering it to an intermediate RGBA texture and retrieving the bytes from it.
      * This is convienent to get 8-bit RGBA values for a texture in a GPU compressed format.
      * @param texture the source texture
      * @param width the width of the result, which does not have to match the source texture width

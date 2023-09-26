@@ -231,15 +231,7 @@ export function FromHalfFloat(value: number): number {
     return (s ? -1 : 1) * Math.pow(2, e - 15) * (1 + f / Math.pow(2, 10));
 }
 
-const ProcessAsync = async (
-    texture: BaseTexture,
-    width: number,
-    height: number,
-    face: number,
-    lod: number,
-    resolve: (result: Uint8Array) => void,
-    reject: () => void
-): Promise<void> => {
+const ProcessAsync = async (texture: BaseTexture, width: number, height: number, face: number, lod: number): Promise<Uint8Array> => {
     const scene = texture.getScene()!;
     const engine = scene.getEngine();
 
@@ -268,34 +260,37 @@ const ProcessAsync = async (
 
     const internalTexture = texture.getInternalTexture();
 
-    if (rtt.renderTarget && internalTexture) {
-        const samplingMode = internalTexture.samplingMode;
-        if (lod !== 0) {
-            texture.updateSamplingMode(Texture.NEAREST_NEAREST_MIPNEAREST);
+    try {
+        if (rtt.renderTarget && internalTexture) {
+            const samplingMode = internalTexture.samplingMode;
+            if (lod !== 0) {
+                texture.updateSamplingMode(Texture.NEAREST_NEAREST_MIPNEAREST);
+            } else {
+                texture.updateSamplingMode(Texture.NEAREST_NEAREST);
+            }
+
+            scene.postProcessManager.directRender([lodPostProcess], rtt.renderTarget, true);
+            texture.updateSamplingMode(samplingMode);
+
+            //Reading datas from WebGL
+            const bufferView = await engine.readPixels(0, 0, width, height);
+            const data = new Uint8Array(bufferView.buffer, 0, bufferView.byteLength);
+
+            // Unbind
+            engine.unBindFramebuffer(rtt.renderTarget);
+
+            return data;
         } else {
-            texture.updateSamplingMode(Texture.NEAREST_NEAREST);
+            throw Error("Render to texture failed.");
         }
-
-        scene.postProcessManager.directRender([lodPostProcess], rtt.renderTarget, true);
-        texture.updateSamplingMode(samplingMode);
-
-        //Reading datas from WebGL
-        const bufferView = await engine.readPixels(0, 0, width, height);
-        const data = new Uint8Array(bufferView.buffer, 0, bufferView.byteLength);
-        resolve(data);
-
-        // Unbind
-        engine.unBindFramebuffer(rtt.renderTarget);
-    } else {
-        reject();
+    } finally {
+        rtt.dispose();
+        lodPostProcess.dispose();
     }
-
-    rtt.dispose();
-    lodPostProcess.dispose();
 };
 
 /**
- * Gets the data of the specified texture by rendering it to an intermediate RGBA texture and retreiving the bytes from it.
+ * Gets the data of the specified texture by rendering it to an intermediate RGBA texture and retrieving the bytes from it.
  * This is convienent to get 8-bit RGBA values for a texture in a GPU compressed format.
  * @param texture the source texture
  * @param width the width of the result, which does not have to match the source texture width
@@ -316,9 +311,7 @@ export async function GetTextureDataAsync(texture: BaseTexture, width: number, h
             });
         });
     }
-    return await new Promise((resolve, reject) => {
-        ProcessAsync(texture, width, height, face, lod, resolve, reject);
-    });
+    return await ProcessAsync(texture, width, height, face, lod);
 }
 
 /**
@@ -361,7 +354,7 @@ export const TextureTools = {
     FromHalfFloat,
 
     /**
-     * Gets the data of the specified texture by rendering it to an intermediate RGBA texture and retreiving the bytes from it.
+     * Gets the data of the specified texture by rendering it to an intermediate RGBA texture and retrieving the bytes from it.
      * This is convienent to get 8-bit RGBA values for a texture in a GPU compressed format.
      * @param texture the source texture
      * @param width the width of the result, which does not have to match the source texture width
