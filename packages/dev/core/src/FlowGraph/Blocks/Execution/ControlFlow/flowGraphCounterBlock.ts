@@ -9,7 +9,13 @@ import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneE
  * A block that counts the number of times it has been called.
  */
 export class FlowGraphCounterBlock extends FlowGraphWithOnDoneExecutionBlock {
+    /**
+     * Output connection: The number of times the block has been called.
+     */
     public readonly count: FlowGraphDataConnection<number>;
+    /**
+     * Input connection: Resets the counter.
+     */
     public readonly reset: FlowGraphSignalConnection;
 
     constructor() {
@@ -20,12 +26,13 @@ export class FlowGraphCounterBlock extends FlowGraphWithOnDoneExecutionBlock {
     }
 
     public _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {
-        let countValue = context._getExecutionVariable(this, "count") ?? 0;
         if (callingSignal === this.reset) {
-            countValue = 0;
-        } else {
-            countValue++;
+            context._setExecutionVariable(this, "count", 0);
+            this.count.setValue(0, context);
+            return;
         }
+        const countValue = (context._getExecutionVariable(this, "count") ?? 0) + 1;
+
         context._setExecutionVariable(this, "count", countValue);
         this.count.setValue(countValue, context);
         this.onDone._activateSignal(context);

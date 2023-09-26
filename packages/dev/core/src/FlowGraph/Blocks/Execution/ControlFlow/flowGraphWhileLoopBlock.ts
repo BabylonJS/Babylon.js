@@ -9,6 +9,9 @@ import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneE
  * Configuration for the while loop block.
  */
 export interface IFlowGraphWhileLoopBlockConfiguration {
+    /**
+     * If true, the loop body will be executed at least once.
+     */
     isDo?: boolean;
 }
 
@@ -17,7 +20,13 @@ export interface IFlowGraphWhileLoopBlockConfiguration {
  * A block that executes a branch while a condition is true.
  */
 export class FlowGraphWhileLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
+    /**
+     * Input connection: The condition to evaluate.
+     */
     public readonly condition: FlowGraphDataConnection<boolean>;
+    /**
+     * Output connection: The loop body.
+     */
     public readonly loopBody: FlowGraphSignalConnection;
 
     constructor(private _config?: IFlowGraphWhileLoopBlockConfiguration) {
@@ -27,20 +36,15 @@ export class FlowGraphWhileLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
         this.loopBody = this._registerSignalOutput("loopBody");
     }
 
-    public _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {
-        let lastEvaluated = context._getExecutionVariable(this, "lastEvaluated") ?? true;
-        if (this._config?.isDo && lastEvaluated) {
+    public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
+        let conditionValue = this.condition.getValue(context);
+        if (this._config?.isDo && !conditionValue) {
             this.loopBody._activateSignal(context);
-        } else {
-            this.onDone._activateSignal(context);
         }
-        lastEvaluated = this.condition.getValue(context);
-        if (!this._config?.isDo && lastEvaluated) {
+        while (conditionValue) {
             this.loopBody._activateSignal(context);
-        } else {
-            this.onDone._activateSignal(context);
+            conditionValue = this.condition.getValue(context);
         }
-
-        context._setExecutionVariable(this, "lastEvaluated", lastEvaluated);
+        this.onDone._activateSignal(context);
     }
 }

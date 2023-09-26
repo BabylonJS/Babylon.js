@@ -310,7 +310,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             this._shadowMaxZ = value;
             return;
         }
-        if (this._shadowMaxZ === value || value < camera.minZ || value > camera.maxZ) {
+        if (this._shadowMaxZ === value || value < camera.minZ || (value > camera.maxZ && camera.maxZ !== 0)) {
             return;
         }
         this._shadowMaxZ = value;

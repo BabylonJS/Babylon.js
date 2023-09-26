@@ -7,6 +7,9 @@ import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneE
  * Configuration for the wait all block.
  */
 export interface IFlowGraphWaitAllBlockConfiguration {
+    /**
+     * The number of input flows.
+     */
     numberInputFlows: number;
 }
 
@@ -15,7 +18,13 @@ export interface IFlowGraphWaitAllBlockConfiguration {
  * A block that waits for all input flows to be activated before activating its output flow.
  */
 export class FlowGraphWaitAllBlock extends FlowGraphWithOnDoneExecutionBlock {
+    /**
+     * Input connection: Resets the block.
+     */
     public reset: FlowGraphSignalConnection;
+    /**
+     * Input connection: The 2nd to nth input flows (the first is named onStart)
+     */
     public readonly inFlows: FlowGraphSignalConnection[] = [];
     private _cachedActivationState: boolean[] = [];
 

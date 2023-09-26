@@ -6,8 +6,8 @@ import { Vector3 } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { CreatePolyhedron } from "../Meshes/Builders/polyhedronBuilder";
-import type { GizmoAnchorPoint, GizmoCoordinatesMode, GizmoAxisCache, IGizmo } from "./gizmo";
-import { Gizmo } from "./gizmo";
+import type { GizmoAnchorPoint, GizmoAxisCache, IGizmo } from "./gizmo";
+import { GizmoCoordinatesMode, Gizmo } from "./gizmo";
 import type { IAxisScaleGizmo } from "./axisScaleGizmo";
 import { AxisScaleGizmo } from "./axisScaleGizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
@@ -266,8 +266,11 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
      * In that case, setting the coordinate system will change `updateGizmoRotationToMatchAttachedMesh` and `updateGizmoPositionToMatchAttachedMesh`
      */
     public set coordinatesMode(coordinatesMode: GizmoCoordinatesMode) {
+        if (coordinatesMode == GizmoCoordinatesMode.World) {
+            Logger.Warn("Setting coordinates Mode to world on scaling gizmo is not supported.");
+        }
         [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
-            gizmo.coordinatesMode = coordinatesMode;
+            gizmo.coordinatesMode = GizmoCoordinatesMode.Local;
         });
     }
 

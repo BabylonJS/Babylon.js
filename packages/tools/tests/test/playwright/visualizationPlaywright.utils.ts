@@ -7,6 +7,8 @@ import { getGlobalConfig } from "@tools/test-tools";
 export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFileName = "config", debug = false, debugWait = false, logToConsole = true, logToFile = false) => {
     debug = process.env.DEBUG === "true" || debug;
 
+    const timeout = process.env.TIMEOUT ? +process.env.TIMEOUT : 100000;
+
     if (process.env.TEST_FILENAME) {
         testFileName = process.env.TEST_FILENAME;
     }
@@ -44,11 +46,11 @@ export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFile
         }
     }
 
-    test.beforeEach(async ({ page }) => {    
+    test.beforeEach(async ({ page }) => {
         page.on("console", (msg) => {
             log(msg);
         });
-    
+
         page.setViewportSize({ width: 600, height: 400 });
         page.setDefaultTimeout(0);
         await page.goto(getGlobalConfig({ root: config.root }).baseUrl + `/empty.html`, {
@@ -59,7 +61,7 @@ export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFile
         await page.waitForFunction(() => {
             return window.BABYLON;
         });
-    
+
         await page.evaluate(() => {
             if (window.scene && window.scene.dispose) {
                 // run the dispose function here
@@ -69,7 +71,7 @@ export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFile
                 window.engine = null;
             }
         });
-    
+
         const rendererData = await page.evaluate(evaluateInitEngineForVisualization, {
             engineName: engineType,
             useReverseDepthBuffer: "false",
@@ -79,26 +81,24 @@ export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFile
 
         log(rendererData.renderer);
     });
-    
+
     test.afterEach(async ({ page }) => {
         await page.evaluate(() => {
             window.engine && window.engine.dispose();
             window.scene = null;
             window.engine = null;
         });
-        // await jestPuppeteer.debug();
-        // if (browser) await browser.close();
     });
 
     for (const testCase of tests) {
-        if(testCase.excludeFromAutomaticTesting) {
+        if (testCase.excludeFromAutomaticTesting) {
             continue;
         }
-        if(testCase.excludedEngines && testCase.excludedEngines.indexOf(engineType) !== -1) {
+        if (testCase.excludedEngines && testCase.excludedEngines.indexOf(engineType) !== -1) {
             continue;
         }
         test(testCase.title, async ({ page }) => {
-            test.setTimeout(100000);
+            test.setTimeout(timeout);
             await page.evaluate(evaluatePrepareScene, {
                 sceneMetadata: testCase,
                 globalConfig: getGlobalConfig({ root: config.root }),
@@ -114,11 +114,10 @@ export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFile
                 // omitBackground: true,
                 threshold: 0.1,
                 maxDiffPixelRatio: (testCase.errorRatio || 3) / 100,
-
             });
         });
     }
-}
+};
 
 /* eslint-disable @typescript-eslint/naming-convention */
 declare const BABYLON: typeof window.BABYLON;
@@ -130,8 +129,8 @@ export const evaluateInitEngineForVisualization = async ({
     baseUrl,
 }: {
     engineName: string;
-    useReverseDepthBuffer: string;
-    useNonCompatibilityMode: string;
+    useReverseDepthBuffer: string | number;
+    useNonCompatibilityMode: string | number;
     baseUrl: string;
 }) => {
     engineName = engineName ? engineName.toLowerCase() : "webgl2";
