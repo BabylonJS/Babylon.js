@@ -11,6 +11,12 @@ import type { RichType } from "./flowGraphRichTypes";
  */
 export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlock, FlowGraphDataConnection<T>> {
     /**
+     * Verifies if the connection has had a value set or not, either through a connection or by
+     * setting it directly.
+     */
+    private _isSet: boolean = false;
+
+    /**
      * Create a new data connection point.
      * @param name
      * @param connectionType
@@ -35,7 +41,13 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
      * @param context the context to which the value is set
      */
     public setValue(value: T, context: FlowGraphContext): void {
+        this._isSet = true;
         context._setConnectionValue(this, value);
+    }
+
+    public connectTo(point: FlowGraphDataConnection<T>): void {
+        super.connectTo(point);
+        this._isSet = true;
     }
 
     private _getValueOrDefault(context: FlowGraphContext): T {
@@ -62,5 +74,13 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
         } else {
             return this._connectedPoint[0].getValue(context);
         }
+    }
+
+    /**
+     * Verifies if the connection has had a value set or not, either through a connection or by
+     * setting it directly.
+     */
+    public get isSet(): boolean {
+        return this._isSet;
     }
 }
