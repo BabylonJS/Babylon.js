@@ -1,5 +1,6 @@
-import { RichTypeNumber, RichTypeVector3 } from "core/FlowGraph/flowGraphRichTypes";
+import { RichTypeMatrix, RichTypeNumber, RichTypeVector3 } from "core/FlowGraph/flowGraphRichTypes";
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
+import type { Matrix } from "../../../../Maths/math.vector";
 import { Quaternion, Vector3 } from "../../../../Maths/math.vector";
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
 import { FlowGraphBlock } from "../../../flowGraphBlock";
@@ -209,5 +210,16 @@ export class FlowGraphRotate3dVector3Block extends FlowGraphBlock {
         const input = this.input.getValue(_context);
         const output = this.output.getValue(_context);
         input.applyRotationQuaternionToRef(rot, output);
+    }
+}
+
+/**
+ * Transforms a vector by a given matrix.
+ * @experimental
+ */
+export class FlowGraphTransformVector3Block extends FlowGraphBinaryOperationBlock<Matrix, Vector3, Vector3> {
+    private _cachedResult: Vector3 = Vector3.Zero();
+    constructor() {
+        super(RichTypeMatrix, RichTypeVector3, RichTypeVector3, (left, right) => Vector3.TransformCoordinatesToRef(right, left, this._cachedResult));
     }
 }

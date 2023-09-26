@@ -1,10 +1,11 @@
-import { Matrix, Quaternion, Vector3 } from "../../../../Maths/math.vector";
+import { Matrix, Quaternion, TmpVectors, Vector3 } from "../../../../Maths/math.vector";
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
-import { RichTypeMatrix, RichTypeNumber, RichTypeQuaternion, RichTypeVector3 } from "../../../flowGraphRichTypes";
+import { RichTypeAny, RichTypeMatrix, RichTypeNumber, RichTypeQuaternion, RichTypeVector3 } from "../../../flowGraphRichTypes";
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
 import { FlowGraphBlock } from "../../../flowGraphBlock";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import type { FlowGraphContext } from "../../../flowGraphContext";
+import type { TransformNode } from "../../../../Meshes/transformNode";
 
 /**
  * Adds two matrices together.
@@ -38,8 +39,9 @@ export class FlowGraphAddMatrixAndNumberBlock extends FlowGraphBinaryOperationBl
  * @experimental
  */
 export class FlowGraphSubtractMatrixBlock extends FlowGraphBinaryOperationBlock<Matrix, Matrix, Matrix> {
+    private _cachedMatrix: Matrix = Matrix.Zero();
     constructor() {
-        super(RichTypeMatrix, RichTypeMatrix, RichTypeMatrix, (left, right) => left.add(right.scale(-1)));
+        super(RichTypeMatrix, RichTypeMatrix, RichTypeMatrix, (left, right) => left.addToRef(right.scale(-1), this._cachedMatrix));
     }
 }
 
@@ -65,8 +67,9 @@ export class FlowGraphSubtractMatrixAndNumberBlock extends FlowGraphBinaryOperat
  * @experimental
  */
 export class FlowGraphMultiplyMatrixBlock extends FlowGraphBinaryOperationBlock<Matrix, Matrix, Matrix> {
+    private _cachedMatrix: Matrix = Matrix.Zero();
     constructor() {
-        super(RichTypeMatrix, RichTypeMatrix, RichTypeMatrix, (left, right) => left.multiply(right));
+        super(RichTypeMatrix, RichTypeMatrix, RichTypeMatrix, (left, right) => left.multiplyToRef(right, this._cachedMatrix));
     }
 }
 
@@ -75,8 +78,9 @@ export class FlowGraphMultiplyMatrixBlock extends FlowGraphBinaryOperationBlock<
  * @experimental
  */
 export class FlowGraphDivideMatrixBlock extends FlowGraphBinaryOperationBlock<Matrix, Matrix, Matrix> {
+    private _cachedResultMatrix: Matrix = Matrix.Zero();
     constructor() {
-        super(RichTypeMatrix, RichTypeMatrix, RichTypeMatrix, (left, right) => left.multiply(right.invert()));
+        super(RichTypeMatrix, RichTypeMatrix, RichTypeMatrix, (left, right) => left.multiplyToRef(right.invertToRef(TmpVectors.Matrix[0]), this._cachedResultMatrix));
     }
 }
 
@@ -251,5 +255,23 @@ export class FlowGraphQuaternionToRotationMatrixBlock extends FlowGraphUnaryOper
     private _cachedMatrix = new Matrix();
     constructor() {
         super(RichTypeQuaternion, RichTypeMatrix, (value) => Matrix.FromQuaternionToRef(value, this._cachedMatrix));
+    }
+}
+
+/**
+ * Given the Transform Nodes A and B, gives the matrix required
+ * to transform coordinates from A's local space to B's local space.
+ */
+export class FlowGraphGetTransformationMatrixBlock extends FlowGraphBinaryOperationBlock<TransformNode, TransformNode, Matrix> {
+    private _cachedResult: Matrix = Matrix.Zero();
+    constructor() {
+        super(RichTypeAny, RichTypeAny, RichTypeMatrix, (left: TransformNode, right: TransformNode) => {
+            const aMatrix = left.getWorldMatrix();
+            const bMatrix = right.getWorldMatrix();
+
+            const inverseB = bMatrix.invertToRef(TmpVectors.Matrix[0]);
+            const result = inverseB.multiplyToRef(aMatrix, this._cachedResult);
+            return result;
+        });
     }
 }
