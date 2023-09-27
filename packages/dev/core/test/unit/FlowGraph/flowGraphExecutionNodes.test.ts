@@ -5,10 +5,13 @@ import type { FlowGraphContext, FlowGraph } from "core/FlowGraph";
 import {
     FlowGraphCoordinator,
     FlowGraphDoNBlock,
+    FlowGraphFlipFlopBlock,
     FlowGraphForLoopBlock,
     FlowGraphMultiGateBlock,
     FlowGraphSceneReadyEventBlock,
+    FlowGraphSceneTickEventBlock,
     FlowGraphSwitchBlock,
+    FlowGraphThrottleBlock,
     FlowGraphTimerBlock,
 } from "core/FlowGraph";
 import { FlowGraphBranchBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphBranchBlock";
@@ -210,6 +213,57 @@ describe("Flow Graph Execution Nodes", () => {
 
         expect(customImmediateFunction).toHaveBeenCalledTimes(1);
         expect(customTimeoutFunction).toHaveBeenCalledTimes(1);
+    });
+
+    it("Flip Flop Block", () => {
+        const cam = new ArcRotateCamera("cam", 0, 0, 0, new Vector3(0, 0, 0), scene);
+
+        const sceneTick = new FlowGraphSceneTickEventBlock();
+        flowGraph.addEventBlock(sceneTick);
+
+        const flipFlop = new FlowGraphFlipFlopBlock();
+        sceneTick.onDone.connectTo(flipFlop.onStart);
+
+        const onTrueFn = jest.fn();
+        const onTrue = new FlowGraphCustomFunctionBlock({ customFunction: onTrueFn });
+        flipFlop.onOn.connectTo(onTrue.onStart);
+        const onFalseFn = jest.fn();
+        const onFalse = new FlowGraphCustomFunctionBlock({ customFunction: onFalseFn });
+        flipFlop.onOff.connectTo(onFalse.onStart);
+
+        flowGraph.start();
+        scene.render();
+
+        expect(onTrueFn).toHaveBeenCalledTimes(1);
+        expect(onFalseFn).toHaveBeenCalledTimes(0);
+
+        scene.render();
+        expect(onTrueFn).toHaveBeenCalledTimes(1);
+        expect(onFalseFn).toHaveBeenCalledTimes(1);
+    });
+
+    it("Throttle Block", () => {
+        const cam = new ArcRotateCamera("cam", 0, 0, 0, new Vector3(0, 0, 0), scene);
+
+        const sceneTick = new FlowGraphSceneTickEventBlock();
+        flowGraph.addEventBlock(sceneTick);
+
+        const throttle = new FlowGraphThrottleBlock();
+        throttle.duration.setValue(1000, flowGraphContext);
+        sceneTick.onDone.connectTo(throttle.onStart);
+
+        const customFn = jest.fn();
+        const customFunction = new FlowGraphCustomFunctionBlock({ customFunction: customFn });
+        throttle.onDone.connectTo(customFunction.onStart);
+
+        flowGraph.start();
+        scene.render();
+
+        expect(customFn).toHaveBeenCalledTimes(1);
+
+        // Check if the execution is throttled
+        scene.render();
+        expect(customFn).toHaveBeenCalledTimes(1);
     });
 
     afterEach(() => {
