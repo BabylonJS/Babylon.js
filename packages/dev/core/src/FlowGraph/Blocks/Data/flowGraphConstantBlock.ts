@@ -29,7 +29,7 @@ export class FlowGraphConstantBlock<T> extends FlowGraphBlock {
         this.output = this._registerDataOutput("output", getRichTypeFromValue(_config.value));
     }
 
-    public _updateOutputs(_context: FlowGraphContext): void {
-        this.output.value = this._config.value;
+    public _updateOutputs(context: FlowGraphContext): void {
+        this.output.setValue(this._config.value, context);
     }
 }
