@@ -8,3 +8,5 @@ export * from "./flowGraphSwitchBlock";
 export * from "./flowGraphWaitAllBlock";
 export * from "./flowGraphCounterBlock";
 export * from "./flowGraphWhileLoopBlock";
+export * from "./flowGraphDebounceBlock";
+export * from "./flowGraphFlipFlopBlock";

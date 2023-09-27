@@ -1,6 +1,303 @@
 {
-    "fromTag": "6.21.1",
+    "fromTag": "6.21.3",
     "changelog": {
+        "6.21.4": [
+            {
+                "pr": "14360",
+                "title": "Texture cache fix",
+                "description": "follow up on equi rect changes.",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/equiRectangularCubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/texture.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "6.21.3": [
+            {
+                "pr": "14355",
+                "title": "Flow graph control flow blocks 2",
+                "description": "# Changes\r\n\r\n- Add debounce and flip flop blocks\r\n- About debounce: I'm not 100% sure the implementation should work this way, feedback is appreciated 🙂 \r\n\r\n# Examples:\r\n- #RKQX23#11: Debounce, only every 2 clicks on the sphere are registered\r\n- #J1N2GP#7: Flip flop, click on the sphere to open and close the door",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphDebounceBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphFlipFlopBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/index.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "flow graph"
+                ]
+            },
+            {
+                "pr": "14359",
+                "title": "switch all dependencies to CDN Serve and Watch",
+                "description": "This way tasks can be reused when running more than one server (sandbox + playground, or vis-tests)",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".vscode/launch.json",
+                    ".vscode/tasks.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14354",
+                "title": "Fix a typo",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/materials/src/custom/pbrCustomMaterial.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14351",
+                "title": "Better fix for recent Draco changes",
+                "description": "See forum: https://forum.babylonjs.com/t/setting-the-value-0-to-the-defaultnumworkers-from-dracocompression-throw-an-engine-error-since-6-21-1-version/44323\r\n\r\n- Undo changes to vertex buffer so that engine is no longer nullable.\r\n- Factor out GetFloatData function so that it can be used in DracoCompression.\r\n- Update DracoCompression code to use VertexBuffer only when it's necessary.\r\n",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/buffer.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCompression.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14349",
+                "title": "Fix to styling of NME and NGE",
+                "description": "Trying to separate the class names more so one doesn't contaminate the other\r\nFix #14347\r\nFix #14348",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeList.scss",
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/propertyTab.scss",
+                    "packages/tools/nodeEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeEditor/src/main.scss",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeList.scss",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/propertyTab.scss",
+                    "packages/tools/nodeGeometryEditor/src/graphEditor.tsx",
+                    "packages/tools/nodeGeometryEditor/src/main.scss"
+                ],
+                "tags": [
+                    "bug",
+                    "nme",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "14327",
+                "title": "Flow graph control flow nodes - 1",
+                "description": "# Changes\r\n- Add the following Control Flow nodes (lifted from: https://docs.google.com/document/d/1MT7gL-IEn_PUw-4XGBazMxsyqsxqgAVGYcNeC4Cj_9Q/edit#heading=h.m04l33f79oe5)\r\n -  Counter\r\n - DoN\r\n - MultiGate\r\n - Switch\r\n - Throttle\r\n - WaitAll\r\n - WhileLoop\r\n\r\n- Move some nodes to the Control Flow directory:\r\n - ForLoop\r\n - Timer\r\n - Conditional\r\n\r\n- To set a value on a FlowGraphDataConnection point, now you need to specify a context. This is because, if we have the same graph running with multiple contexts, the value of a data connection can be different between them. I wasn't differentiating them before, which was an oversight.\r\n\r\n- When a block executes, it now knows which of its input signals activated the block. This is needed for blocks that have a \"reset\" input, such as some of the conditional blocks added.\r\n\r\n# Example PGs\r\n \r\n- #RKQX23#10: DoN - Click on the sphere to log a message max 5 times, click on the box to reset the DoN counter\r\n- #BWRXG9#2: Throttle - Log a message every 3 seconds using onTick event and Throttle, click on the sphere to reset the throttle\r\n- #RKQX23#7: Multigate - without looping, click on the sphere to log the number of execution\r\n- #RKQX23#8: Multigate - with looping, click on the sphere to log the number of execution\r\n- #RKQX23#9: Multigate - with looping and randomizing, click on the sphere to log the number of execution\r\n- #RKQX23#6: Switch - Change the switch's value on the code\r\n- #J1N2GP#5: Wait all - Click on the 3 spheres to open the door, click on the box to reset the wait all count\r\n- #9C7VK6#1: Counter - Log the value on the counter after a delay, explore the value in two different contexts \r\n- #5JFH79#7: While loop - Logs from 1 to 5",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphNumberMathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphBinaryOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphConditionalDataBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphConstantOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphGetVariableBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphUnaryOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphReceiveCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPlayAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphConditionalBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphCounterBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphDoNBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphForLoopBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphMultiGateBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphSwitchBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphThrottleBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphTimerBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphWaitAllBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphWhileLoopBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphLogBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetVariableBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/index.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphConnection.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphContext.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphDataConnection.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphExecutionBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphSignalConnection.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "flow graph"
+                ]
+            },
+            {
+                "pr": "14346",
+                "title": "Update component if the label has changed",
+                "description": "The inspector doesn't update the labels under certain conditions.\r\nThis will refresh the component if the label has changed.\r\n\r\nInfluences the inspector.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/lines/sliderLineComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "14334",
+                "title": "Add bitwise blocks to Flow Graph",
+                "description": "Source: https://docs.google.com/spreadsheets/d/17wdC8ML3VzdLLM5t-4HwFcEqnhRgc_8XTuVrF0ynAiI/edit#gid=0",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Logic/flowGraphBitwiseBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Logic/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/index.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "flow graph"
+                ]
+            },
+            {
+                "pr": "14345",
+                "title": "EquiRectangularCubeTexture: fix load",
+                "description": "Missing from https://github.com/BabylonJS/Babylon.js/pull/14330\r\nExample: <https://playground.babylonjs.com/?snapshot=refs/pull/14345/merge#RY8LDL#32>",
+                "author": {
+                    "name": "kzhsw",
+                    "url": "https://github.com/kzhsw"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/equiRectangularCubeTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14344",
+                "title": "Animations: Add some animation getter helpers",
+                "description": "I need them for my PoC!",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animatable.ts",
+                    "packages/dev/core/src/Animations/animationGroup.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "14343",
+                "title": "CascadedShadowGenerator: Fix shadowMaxZ upper bound checking when using an infinite far camera plane",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/Shadows/cascadedShadowGenerator.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "shadows"
+                ]
+            },
+            {
+                "pr": "14342",
+                "title": "comments!!",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/buffer.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14339",
+                "title": "Playwright test timeout configuration",
+                "description": "Will be better to handle errors",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/tests/test/playwright/visualizationPlaywright.utils.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14341",
+                "title": "initiateRoomCapture added to plane detection feature",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/webxr.d.ts",
+                    "packages/dev/core/src/XR/features/WebXRPlaneDetector.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "VR/AR/XR"
+                ]
+            },
+            {
+                "pr": "14340",
+                "title": "Use LoadFile only if needed",
+                "description": "Forum discussion here - https://forum.babylonjs.com/t/filetools-why-loadimage-loads-the-image-as-blob/44324\n\nThe idea is that if there are no WebRequest modifiers there is no need to use filetools. ",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/fileTools.ts",
+                    "packages/dev/core/src/Misc/webRequest.ts"
+                ],
+                "tags": []
+            }
+        ],
         "6.21.2": [
             {
                 "pr": "14316",

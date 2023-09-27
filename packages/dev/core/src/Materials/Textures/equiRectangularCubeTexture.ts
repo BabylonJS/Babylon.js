@@ -117,6 +117,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
                 false,
                 Constants.TEXTURE_TRILINEAR_SAMPLINGMODE
             );
+        texture.generateMipMaps = !this._noMipmap;
         scene.addPendingData(texture);
         texture.url = this.url;
         texture.isReady = false;

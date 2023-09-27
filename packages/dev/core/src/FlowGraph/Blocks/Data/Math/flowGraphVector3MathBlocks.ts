@@ -119,6 +119,8 @@ export class FlowGraphCreateVector3Block extends FlowGraphBlock {
      */
     public readonly vector: FlowGraphDataConnection<Vector3>;
 
+    private _cachedVector: Vector3 = Vector3.Zero();
+
     constructor() {
         super();
 
@@ -129,10 +131,10 @@ export class FlowGraphCreateVector3Block extends FlowGraphBlock {
     }
 
     public _updateOutputs(_context: FlowGraphContext): void {
-        const x = this.x.getValue(_context);
-        const y = this.y.getValue(_context);
-        const z = this.z.getValue(_context);
-        this.vector.setValue(new Vector3(x, y, z), _context);
+        this._cachedVector.x = this.x.getValue(_context);
+        this._cachedVector.y = this.y.getValue(_context);
+        this._cachedVector.z = this.z.getValue(_context);
+        this.vector.setValue(this._cachedVector, _context);
     }
 }
 

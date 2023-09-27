@@ -97,6 +97,8 @@ export class FlowGraphCreateVector2Block extends FlowGraphBlock {
      */
     public readonly vector: FlowGraphDataConnection<Vector2>;
 
+    private _cachedVector: Vector2 = Vector2.Zero();
+
     constructor() {
         super();
 
@@ -106,9 +108,9 @@ export class FlowGraphCreateVector2Block extends FlowGraphBlock {
     }
 
     public _updateOutputs(_context: FlowGraphContext): void {
-        const x = this.x.getValue(_context);
-        const y = this.y.getValue(_context);
-        this.vector.setValue(new Vector2(x, y), _context);
+        this._cachedVector.x = this.x.getValue(_context);
+        this._cachedVector.y = this.y.getValue(_context);
+        this.vector.setValue(this._cachedVector, _context);
     }
 }
 
@@ -161,6 +163,8 @@ export class FlowGraphRotate2dVector2Block extends FlowGraphBlock {
      */
     public readonly output: FlowGraphDataConnection<Vector2>;
 
+    private _cachedVector: Vector2 = Vector2.Zero();
+
     constructor() {
         super();
         this.input = this._registerDataInput("input", RichTypeVector2);
@@ -171,8 +175,8 @@ export class FlowGraphRotate2dVector2Block extends FlowGraphBlock {
     public _updateOutputs(_context: FlowGraphContext): void {
         const input = this.input.getValue(_context);
         const angle = this.angle.getValue(_context);
-        const x = input.x * Math.cos(angle) - input.y * Math.sin(angle);
-        const y = input.x * Math.sin(angle) + input.y * Math.cos(angle);
-        this.output.setValue(new Vector2(x, y), _context);
+        this._cachedVector.x = input.x * Math.cos(angle) - input.y * Math.sin(angle);
+        this._cachedVector.y = input.x * Math.sin(angle) + input.y * Math.cos(angle);
+        this.output.setValue(this._cachedVector, _context);
     }
 }

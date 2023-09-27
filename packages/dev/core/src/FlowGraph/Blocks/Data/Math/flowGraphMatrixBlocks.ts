@@ -41,7 +41,7 @@ export class FlowGraphAddMatrixAndNumberBlock extends FlowGraphBinaryOperationBl
 export class FlowGraphSubtractMatrixBlock extends FlowGraphBinaryOperationBlock<Matrix, Matrix, Matrix> {
     private _cachedMatrix: Matrix = Matrix.Zero();
     constructor() {
-        super(RichTypeMatrix, RichTypeMatrix, RichTypeMatrix, (left, right) => left.addToRef(right.scale(-1), this._cachedMatrix));
+        super(RichTypeMatrix, RichTypeMatrix, RichTypeMatrix, (left, right) => left.addToRef(right.scaleToRef(-1, TmpVectors.Matrix[0]), this._cachedMatrix));
     }
 }
 
@@ -106,8 +106,9 @@ export class FlowGraphDivideMatrixAndNumberBlock extends FlowGraphBinaryOperatio
  * @experimental
  */
 export class FlowGraphScaleMatrixBlock extends FlowGraphBinaryOperationBlock<Matrix, number, Matrix> {
+    private _cachedMatrix = Matrix.Zero();
     constructor() {
-        super(RichTypeMatrix, RichTypeNumber, RichTypeMatrix, (left, right) => left.scale(right));
+        super(RichTypeMatrix, RichTypeNumber, RichTypeMatrix, (left, right) => left.scaleToRef(right, this._cachedMatrix));
     }
 }
 

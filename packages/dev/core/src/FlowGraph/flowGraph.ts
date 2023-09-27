@@ -6,6 +6,17 @@ import { FlowGraphVariableDefinitions } from "./flowGraphVariableDefinitions";
 import type { FlowGraphContext } from "./flowGraphContext";
 import type { FlowGraphEventCoordinator } from "./flowGraphEventCoordinator";
 
+export enum FlowGraphState {
+    /**
+     * The graph is stopped
+     */
+    Stopped,
+    /**
+     * The graph is running
+     */
+    Started,
+}
+
 /**
  * @experimental
  * Parameters used to create a flow graph.
@@ -43,6 +54,11 @@ export class FlowGraph {
     private _executionContexts: FlowGraphContext[] = [];
 
     /**
+     * The state of the graph
+     */
+    state: FlowGraphState = FlowGraphState.Stopped;
+
+    /**
      * Construct a Flow Graph
      * @param params construction parameters. currently only the scene
      */
@@ -75,6 +91,10 @@ export class FlowGraph {
      * Starts the flow graph. Initializes the event blocks and starts listening to events.
      */
     public start() {
+        if (this.state === FlowGraphState.Started) {
+            return;
+        }
+        this.state = FlowGraphState.Started;
         if (this._executionContexts.length === 0) {
             this.createContext();
         }
@@ -89,6 +109,10 @@ export class FlowGraph {
      * Disposes of the flow graph. Cancels any pending tasks and removes all event listeners.
      */
     public dispose() {
+        if (this.state === FlowGraphState.Stopped) {
+            return;
+        }
+        this.state = FlowGraphState.Stopped;
         for (const context of this._executionContexts) {
             context._clearPendingBlocks();
         }
