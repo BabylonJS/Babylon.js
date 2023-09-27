@@ -1,5 +1,7 @@
-import { Engine, NullEngine } from "core/Engines";
-import type { FlowGraphContext } from "core/FlowGraph";
+import { ArcRotateCamera } from "core/Cameras";
+import type { Engine } from "core/Engines";
+import { NullEngine } from "core/Engines";
+import type { FlowGraphContext, FlowGraph } from "core/FlowGraph";
 import {
     FlowGraphCoordinator,
     FlowGraphDoNBlock,
@@ -7,12 +9,11 @@ import {
     FlowGraphMultiGateBlock,
     FlowGraphSceneReadyEventBlock,
     FlowGraphSwitchBlock,
-    FlowGraphWaitAllBlock,
-    FlowGraph,
     FlowGraphTimerBlock,
 } from "core/FlowGraph";
 import { FlowGraphBranchBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphBranchBlock";
 import { FlowGraphCustomFunctionBlock } from "core/FlowGraph/Blocks/Execution/flowGraphCustomFunctionBlock";
+import { Vector3 } from "core/Maths/math.vector";
 import { Scene } from "core/scene";
 
 describe("Flow Graph Execution Nodes", () => {
@@ -183,6 +184,32 @@ describe("Flow Graph Execution Nodes", () => {
         switchBlock.selection.setValue(3, flowGraphContext);
         scene.onReadyObservable.notifyObservers(scene);
         expect(customFunction3).toHaveBeenCalledTimes(1);
+    });
+
+    it("Timer Block", () => {
+        const cam = new ArcRotateCamera("cam", 0, 0, 0, new Vector3(0, 0, 0), scene);
+
+        const sceneReady = new FlowGraphSceneReadyEventBlock();
+        flowGraph.addEventBlock(sceneReady);
+
+        const timer = new FlowGraphTimerBlock();
+        sceneReady.onDone.connectTo(timer.onStart);
+        timer.timeout.setValue(0, flowGraphContext);
+
+        const customImmediateFunction = jest.fn();
+        const customFunctionBlock = new FlowGraphCustomFunctionBlock({ customFunction: customImmediateFunction });
+        timer.onDone.connectTo(customFunctionBlock.onStart);
+
+        const customTimeoutFunction = jest.fn();
+        const customFunctionBlock2 = new FlowGraphCustomFunctionBlock({ customFunction: customTimeoutFunction });
+        timer.onTimerDone.connectTo(customFunctionBlock2.onStart);
+
+        flowGraph.start();
+        // this will run the onReadyObservable and the onBeforeRenderObservable
+        scene.render();
+
+        expect(customImmediateFunction).toHaveBeenCalledTimes(1);
+        expect(customTimeoutFunction).toHaveBeenCalledTimes(1);
     });
 
     afterEach(() => {
