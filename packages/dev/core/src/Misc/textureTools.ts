@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
@@ -230,6 +231,89 @@ export function FromHalfFloat(value: number): number {
     return (s ? -1 : 1) * Math.pow(2, e - 15) * (1 + f / Math.pow(2, 10));
 }
 
+const ProcessAsync = async (texture: BaseTexture, width: number, height: number, face: number, lod: number): Promise<Uint8Array> => {
+    const scene = texture.getScene()!;
+    const engine = scene.getEngine();
+
+    let lodPostProcess: PostProcess;
+
+    if (!texture.isCube) {
+        lodPostProcess = new PostProcess("lod", "lod", ["lod", "gamma"], null, 1.0, null, Texture.NEAREST_NEAREST_MIPNEAREST, engine);
+    } else {
+        const faceDefines = ["#define POSITIVEX", "#define NEGATIVEX", "#define POSITIVEY", "#define NEGATIVEY", "#define POSITIVEZ", "#define NEGATIVEZ"];
+        lodPostProcess = new PostProcess("lodCube", "lodCube", ["lod", "gamma"], null, 1.0, null, Texture.NEAREST_NEAREST_MIPNEAREST, engine, false, faceDefines[face]);
+    }
+
+    await new Promise((resolve) => {
+        lodPostProcess.getEffect().executeWhenCompiled(() => {
+            resolve(0);
+        });
+    });
+
+    const rtt = new RenderTargetTexture("temp", { width: width, height: height }, scene, false);
+
+    lodPostProcess.onApply = function (effect) {
+        effect.setTexture("textureSampler", texture);
+        effect.setFloat("lod", lod);
+        effect.setBool("gamma", texture.gammaSpace);
+    };
+
+    const internalTexture = texture.getInternalTexture();
+
+    try {
+        if (rtt.renderTarget && internalTexture) {
+            const samplingMode = internalTexture.samplingMode;
+            if (lod !== 0) {
+                texture.updateSamplingMode(Texture.NEAREST_NEAREST_MIPNEAREST);
+            } else {
+                texture.updateSamplingMode(Texture.NEAREST_NEAREST);
+            }
+
+            scene.postProcessManager.directRender([lodPostProcess], rtt.renderTarget, true);
+            texture.updateSamplingMode(samplingMode);
+
+            //Reading datas from WebGL
+            const bufferView = await engine.readPixels(0, 0, width, height);
+            const data = new Uint8Array(bufferView.buffer, 0, bufferView.byteLength);
+
+            // Unbind
+            engine.unBindFramebuffer(rtt.renderTarget);
+
+            return data;
+        } else {
+            throw Error("Render to texture failed.");
+        }
+    } finally {
+        rtt.dispose();
+        lodPostProcess.dispose();
+    }
+};
+
+/**
+ * Gets the data of the specified texture by rendering it to an intermediate RGBA texture and retrieving the bytes from it.
+ * This is convienent to get 8-bit RGBA values for a texture in a GPU compressed format.
+ * @param texture the source texture
+ * @param width the width of the result, which does not have to match the source texture width
+ * @param height the height of the result, which does not have to match the source texture height
+ * @param face if the texture has multiple faces, the face index to use for the source
+ * @param lod if the texture has multiple LODs, the lod index to use for the source
+ * @returns the 8-bit texture data
+ */
+export async function GetTextureDataAsync(texture: BaseTexture, width: number, height: number, face: number = 0, lod: number = 0): Promise<Uint8Array> {
+    if (!texture.isReady() && texture._texture) {
+        await new Promise((resolve, reject) => {
+            if (texture._texture === null) {
+                reject(0);
+                return;
+            }
+            texture._texture.onLoadedObservable.addOnce(() => {
+                resolve(0);
+            });
+        });
+    }
+    return await ProcessAsync(texture, width, height, face, lod);
+}
+
 /**
  * Class used to host texture specific utilities
  */
@@ -268,4 +352,17 @@ export const TextureTools = {
      * @returns converted half float
      */
     FromHalfFloat,
+
+    /**
+     * Gets the data of the specified texture by rendering it to an intermediate RGBA texture and retrieving the bytes from it.
+     * This is convienent to get 8-bit RGBA values for a texture in a GPU compressed format.
+     * @param texture the source texture
+     * @param width the width of the result, which does not have to match the source texture width
+     * @param height the height of the result, which does not have to match the source texture height
+     * @param face if the texture has multiple faces, the face index to use for the source
+     * @param channels a filter for which of the RGBA channels to return in the result
+     * @param lod if the texture has multiple LODs, the lod index to use for the source
+     * @returns the 8-bit texture data
+     */
+    GetTextureDataAsync,
 };
