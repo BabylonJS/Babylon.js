@@ -129,6 +129,9 @@ export class GeometryCollectionBlock extends NodeGeometryBlock {
     private _storeGeometry(input: NodeGeometryConnectionPoint, state: NodeGeometryBuildState, index: number, availables: VertexData[]) {
         if (input.isConnected) {
             const vertexData = input.getConnectedValue(state) as VertexData;
+            if (!vertexData) {
+                return;
+            }
             vertexData.metadata = vertexData.metadata || {};
             vertexData.metadata.collectionId = index;
             availables.push(vertexData);
