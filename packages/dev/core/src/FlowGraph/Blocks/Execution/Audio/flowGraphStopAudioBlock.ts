@@ -20,6 +20,7 @@ export class FlowGraphStopAudioBlock extends FlowGraphWithOnDoneExecutionBlock {
 
         this.audio = this._registerDataInput("audio", RichTypeAny);
     }
+
     public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
         const audioValue = this.audio.getValue(context);
         if (audioValue instanceof Sound) {
