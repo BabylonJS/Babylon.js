@@ -1,7 +1,11 @@
-import { RichTypeNumber, RichTypeVector3 } from "core/FlowGraph/flowGraphRichTypes";
+import { RichTypeMatrix, RichTypeNumber, RichTypeVector3 } from "core/FlowGraph/flowGraphRichTypes";
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
-import { Vector3 } from "../../../../Maths/math.vector";
+import type { Matrix } from "../../../../Maths/math.vector";
+import { Quaternion, Vector3 } from "../../../../Maths/math.vector";
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
+import { FlowGraphBlock } from "../../../flowGraphBlock";
+import type { FlowGraphContext } from "../../../flowGraphContext";
+import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 
 /**
  * Add two vectors together.
@@ -90,5 +94,134 @@ export class FlowGraphDotVector3Block extends FlowGraphBinaryOperationBlock<Vect
 export class FlowGraphCrossVector3Block extends FlowGraphBinaryOperationBlock<Vector3, Vector3, Vector3> {
     constructor() {
         super(RichTypeVector3, RichTypeVector3, RichTypeVector3, (left, right) => Vector3.Cross(left, right));
+    }
+}
+
+/**
+ * Create a vector from its components.
+ * @experimental
+ */
+export class FlowGraphCreateVector3Block extends FlowGraphBlock {
+    /**
+     * Input connection: The x component of the vector.
+     */
+    public readonly x: FlowGraphDataConnection<number>;
+    /**
+     * Input connection: The y component of the vector.
+     */
+    public readonly y: FlowGraphDataConnection<number>;
+    /**
+     * Input connection: The z component of the vector.
+     */
+    public readonly z: FlowGraphDataConnection<number>;
+    /**
+     * Output connection: The created vector.
+     */
+    public readonly vector: FlowGraphDataConnection<Vector3>;
+
+    private _cachedVector: Vector3 = Vector3.Zero();
+
+    constructor() {
+        super();
+
+        this.x = this._registerDataInput("x", RichTypeNumber);
+        this.y = this._registerDataInput("y", RichTypeNumber);
+        this.z = this._registerDataInput("y", RichTypeNumber);
+        this.vector = this._registerDataOutput("vector", RichTypeVector3);
+    }
+
+    public _updateOutputs(_context: FlowGraphContext): void {
+        this._cachedVector.x = this.x.getValue(_context);
+        this._cachedVector.y = this.y.getValue(_context);
+        this._cachedVector.z = this.z.getValue(_context);
+        this.vector.setValue(this._cachedVector, _context);
+    }
+}
+
+/**
+ * Split a vector into its components.
+ * @experimental
+ */
+export class FlowGraphSplitVector3Block extends FlowGraphBlock {
+    /**
+     * Input connection: The vector to split.
+     */
+    public readonly vector: FlowGraphDataConnection<Vector3>;
+    /**
+     * Output connection: The x component of the vector.
+     */
+    public readonly x: FlowGraphDataConnection<number>;
+    /**
+     * Output connection: The y component of the vector.
+     */
+    public readonly y: FlowGraphDataConnection<number>;
+    /**
+     * Input connection: The z component of the vector.
+     */
+    public readonly z: FlowGraphDataConnection<number>;
+
+    constructor() {
+        super();
+
+        this.vector = this._registerDataInput("vector", RichTypeVector3);
+        this.x = this._registerDataOutput("x", RichTypeNumber);
+        this.y = this._registerDataOutput("y", RichTypeNumber);
+        this.z = this._registerDataOutput("z", RichTypeNumber);
+    }
+
+    public _updateOutputs(_context: FlowGraphContext): void {
+        const vector = this.vector.getValue(_context);
+        this.x.setValue(vector.x, _context);
+        this.y.setValue(vector.y, _context);
+        this.z.setValue(vector.z, _context);
+    }
+}
+
+/**
+ * Rotates a vector by a given angle.
+ */
+export class FlowGraphRotate3dVector3Block extends FlowGraphBlock {
+    /**
+     * Input connection: The vector to rotate.
+     */
+    public readonly input: FlowGraphDataConnection<Vector3>;
+    /**
+     * Input connection: The axis to rotate around.
+     */
+    public readonly axis: FlowGraphDataConnection<Vector3>;
+    /**
+     * Input connection: The angle to rotate by.
+     */
+    public readonly angle: FlowGraphDataConnection<number>;
+    /**
+     * Output connection: The rotated vector.
+     */
+    public readonly output: FlowGraphDataConnection<Vector3>;
+
+    private _cachedQuaternion = new Quaternion();
+
+    constructor() {
+        super();
+        this.input = this._registerDataInput("input", RichTypeVector3);
+        this.angle = this._registerDataInput("angle", RichTypeNumber);
+        this.output = this._registerDataOutput("output", RichTypeVector3);
+    }
+
+    public _updateOutputs(_context: FlowGraphContext): void {
+        const rot = Quaternion.RotationAxisToRef(this.axis.getValue(_context), this.angle.getValue(_context), this._cachedQuaternion);
+        const input = this.input.getValue(_context);
+        const output = this.output.getValue(_context);
+        input.applyRotationQuaternionToRef(rot, output);
+    }
+}
+
+/**
+ * Transforms a vector by a given matrix.
+ * @experimental
+ */
+export class FlowGraphTransformVector3Block extends FlowGraphBinaryOperationBlock<Matrix, Vector3, Vector3> {
+    private _cachedResult: Vector3 = Vector3.Zero();
+    constructor() {
+        super(RichTypeMatrix, RichTypeVector3, RichTypeVector3, (left, right) => Vector3.TransformCoordinatesToRef(right, left, this._cachedResult));
     }
 }
