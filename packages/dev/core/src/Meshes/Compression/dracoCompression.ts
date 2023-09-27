@@ -6,16 +6,24 @@ import type { IDisposable, Scene } from "../../scene";
 import { Geometry } from "../geometry";
 import { VertexBuffer } from "../buffer";
 import { VertexData } from "../mesh.vertexData";
-import type { ThinEngine } from "../../Engines/thinEngine";
 import { DracoDecoderModule } from "draco3dgltf";
 import type { DecoderModule, DecoderBuffer, Decoder, Mesh, PointCloud, Status } from "draco3dgltf";
 import { Logger } from "../../Misc/logger";
 
 declare let DracoDecoderModule: DracoDecoderModule;
 
+interface AttributeData {
+    kind: string;
+    data: ArrayBufferView;
+    size: number;
+    byteOffset: number;
+    byteStride: number;
+    normalized: boolean;
+}
+
 interface MeshData {
     indices?: Uint16Array | Uint32Array;
-    attributes: Array<VertexBuffer>;
+    attributes: Array<AttributeData>;
     totalVertices: number;
 }
 
@@ -33,13 +41,8 @@ interface IndicesMessage {
     data: Uint16Array | Uint32Array;
 }
 
-interface AttributeMessage {
+interface AttributeMessage extends AttributeData {
     id: "attribute";
-    kind: string;
-    data: ArrayBufferView;
-    offset: number;
-    stride: number;
-    normalized: boolean;
 }
 
 type Message = InitDoneMessage | DecodeMeshDoneMessage | IndicesMessage | AttributeMessage;
@@ -61,7 +64,7 @@ function decodeMesh(
     data: Int8Array,
     attributes: { [kind: string]: number } | undefined,
     onIndicesData: (indices: Uint16Array | Uint32Array) => void,
-    onAttributeData: (kind: string, data: ArrayBufferView, offset: number, stride: number, normalized: boolean) => void
+    onAttributeData: (kind: string, data: ArrayBufferView, size: number, offset: number, stride: number, normalized: boolean) => void
 ): number {
     let decoder: Nullable<Decoder> = null;
     let buffer: Nullable<DecoderBuffer> = null;
@@ -146,7 +149,7 @@ function decodeMesh(
             try {
                 decoder.GetAttributeDataArrayForAllPoints(geometry, attribute, dataType, byteLength, ptr);
                 const data = new info.typedArrayConstructor(info.heap.buffer, ptr, numValues);
-                onAttributeData(kind, data.slice(), byteOffset, byteStride, normalized);
+                onAttributeData(kind, data.slice(), numComponents, byteOffset, byteStride, normalized);
             } finally {
                 decoderModule._free(ptr);
             }
@@ -221,8 +224,8 @@ function worker(): void {
                         (indices) => {
                             postMessage({ id: "indices", data: indices }, [indices.buffer]);
                         },
-                        (kind, data, offset, stride, normalized) => {
-                            postMessage({ id: "attribute", kind, data, offset, stride, normalized }, [data.buffer]);
+                        (kind, data, size, offset, stride, normalized) => {
+                            postMessage({ id: "attribute", kind, data, size, byteOffset: offset, byteStride: stride, normalized }, [data.buffer]);
                         }
                     );
                     postMessage({ id: "decodeMeshDone", totalVertices: numPoints });
@@ -443,7 +446,6 @@ export class DracoCompression implements IDisposable {
     }
 
     private _decodeMeshAsync(
-        engine: Nullable<ThinEngine>,
         data: ArrayBuffer | ArrayBufferView,
         attributes?: { [kind: string]: number },
         gltfNormalizedOverride?: { [kind: string]: boolean }
@@ -469,7 +471,7 @@ export class DracoCompression implements IDisposable {
                 return new Promise<MeshData>((resolve, reject) => {
                     workerPool.push((worker, onComplete) => {
                         let resultIndices: Nullable<Uint16Array | Uint32Array> = null;
-                        const resultAttributes: Array<VertexBuffer> = [];
+                        const resultAttributes: Array<AttributeData> = [];
 
                         const onError = (error: ErrorEvent) => {
                             worker.removeEventListener("error", onError);
@@ -493,22 +495,14 @@ export class DracoCompression implements IDisposable {
                                     break;
                                 }
                                 case "attribute": {
-                                    resultAttributes.push(
-                                        new VertexBuffer(
-                                            engine,
-                                            message.data,
-                                            message.kind,
-                                            false,
-                                            undefined,
-                                            message.stride,
-                                            undefined,
-                                            message.offset,
-                                            undefined,
-                                            undefined,
-                                            applyGltfNormalizedOverride(message.kind, message.normalized),
-                                            true
-                                        )
-                                    );
+                                    resultAttributes.push({
+                                        kind: message.kind,
+                                        data: message.data,
+                                        size: message.size,
+                                        byteOffset: message.byteOffset,
+                                        byteStride: message.byteStride,
+                                        normalized: applyGltfNormalizedOverride(message.kind, message.normalized),
+                                    });
                                     break;
                                 }
                             }
@@ -527,7 +521,7 @@ export class DracoCompression implements IDisposable {
         if (this._decoderModulePromise) {
             return this._decoderModulePromise.then((decoder) => {
                 let resultIndices: Nullable<Uint16Array | Uint32Array> = null;
-                const resultAttributes: Array<VertexBuffer> = [];
+                const resultAttributes: Array<AttributeData> = [];
 
                 const numPoints = decodeMesh(
                     decoder.module,
@@ -536,23 +530,15 @@ export class DracoCompression implements IDisposable {
                     (indices) => {
                         resultIndices = indices;
                     },
-                    (kind, data, offset, stride, normalized) => {
-                        resultAttributes.push(
-                            new VertexBuffer(
-                                null,
-                                data,
-                                kind,
-                                false,
-                                undefined,
-                                stride,
-                                undefined,
-                                offset,
-                                undefined,
-                                undefined,
-                                applyGltfNormalizedOverride(kind, normalized),
-                                true
-                            )
-                        );
+                    (kind, data, size, byteOffset, byteStride, normalized) => {
+                        resultAttributes.push({
+                            kind,
+                            data,
+                            size,
+                            byteOffset,
+                            byteStride,
+                            normalized,
+                        });
                     }
                 );
 
@@ -572,7 +558,7 @@ export class DracoCompression implements IDisposable {
      * @returns A promise that resolves with the decoded geometry
      */
     public decodeMeshToGeometryAsync(name: string, scene: Scene, data: ArrayBuffer | ArrayBufferView, attributes?: { [kind: string]: number }): Promise<Geometry> {
-        return this._decodeMeshAsync(scene.getEngine(), data, attributes).then((meshData) => {
+        return this._decodeMeshAsync(data, attributes).then((meshData) => {
             const geometry = new Geometry(name, scene);
 
             if (meshData.indices) {
@@ -580,7 +566,23 @@ export class DracoCompression implements IDisposable {
             }
 
             for (const attribute of meshData.attributes) {
-                geometry.setVerticesBuffer(attribute);
+                geometry.setVerticesBuffer(
+                    new VertexBuffer(
+                        scene.getEngine(),
+                        attribute.data,
+                        attribute.kind,
+                        false,
+                        undefined,
+                        attribute.byteStride,
+                        undefined,
+                        attribute.byteOffset,
+                        attribute.size,
+                        undefined,
+                        attribute.normalized,
+                        true
+                    ),
+                    meshData.totalVertices
+                );
             }
 
             return geometry;
@@ -595,7 +597,7 @@ export class DracoCompression implements IDisposable {
         attributes: { [kind: string]: number },
         gltfNormalizedOverride: { [kind: string]: boolean }
     ): Promise<Geometry> {
-        return this._decodeMeshAsync(scene.getEngine(), data, attributes, gltfNormalizedOverride).then((meshData) => {
+        return this._decodeMeshAsync(data, attributes, gltfNormalizedOverride).then((meshData) => {
             const geometry = new Geometry(name, scene);
 
             if (meshData.indices) {
@@ -603,7 +605,23 @@ export class DracoCompression implements IDisposable {
             }
 
             for (const attribute of meshData.attributes) {
-                geometry.setVerticesBuffer(attribute);
+                geometry.setVerticesBuffer(
+                    new VertexBuffer(
+                        scene.getEngine(),
+                        attribute.data,
+                        attribute.kind,
+                        false,
+                        undefined,
+                        attribute.byteStride,
+                        undefined,
+                        attribute.byteOffset,
+                        attribute.size,
+                        undefined,
+                        attribute.normalized,
+                        true
+                    ),
+                    meshData.totalVertices
+                );
             }
 
             return geometry;
@@ -618,7 +636,7 @@ export class DracoCompression implements IDisposable {
      * @deprecated Use {@link decodeMeshToGeometryAsync} for better performance in some cases
      */
     public decodeMeshAsync(data: ArrayBuffer | ArrayBufferView, attributes?: { [kind: string]: number }): Promise<VertexData> {
-        return this._decodeMeshAsync(null, data, attributes).then((meshData) => {
+        return this._decodeMeshAsync(data, attributes).then((meshData) => {
             const vertexData = new VertexData();
 
             if (meshData.indices) {
@@ -626,7 +644,17 @@ export class DracoCompression implements IDisposable {
             }
 
             for (const attribute of meshData.attributes) {
-                vertexData.set(attribute.getFloatData(meshData.totalVertices)!, attribute.getKind());
+                const floatData = VertexBuffer.GetFloatData(
+                    attribute.data,
+                    attribute.size,
+                    VertexBuffer.GetDataType(attribute.data),
+                    attribute.byteOffset,
+                    attribute.byteStride,
+                    attribute.normalized,
+                    meshData.totalVertices
+                );
+
+                vertexData.set(floatData, attribute.kind);
             }
 
             return vertexData;

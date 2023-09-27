@@ -55,8 +55,8 @@ export class FlowGraphCoordinateTransformBlock extends FlowGraphBlock {
         const sourceToDestination = TmpVectors.Matrix[1];
         // takes coordinates from source space to world space to destination space
         destinationWorldInverse.multiplyToRef(sourceWorld, sourceToDestination);
-        const outputCoordinatesValue = Vector3.TransformCoordinates(inputCoordinatesValue, sourceToDestination);
+        const outputCoordinatesValue = this.outputCoordinates.getValue(_context);
 
-        this.outputCoordinates.value = outputCoordinatesValue;
+        Vector3.TransformCoordinatesToRef(inputCoordinatesValue, sourceToDestination, outputCoordinatesValue);
     }
 }
