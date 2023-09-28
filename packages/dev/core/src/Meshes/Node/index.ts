@@ -58,3 +58,4 @@ export * from "./Blocks/Teleport/teleportOutBlock";
 export * from "./Blocks/Textures/geometryTextureBlock";
 export * from "./Blocks/Textures/geometryTextureFetchBlock";
 export * from "./Blocks/boundingBlock";
+export * from "./Blocks/booleanGeometryBlock";

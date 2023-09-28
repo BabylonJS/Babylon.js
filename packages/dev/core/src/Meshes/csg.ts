@@ -8,6 +8,7 @@ import { Mesh } from "../Meshes/mesh";
 import type { Material } from "../Materials/material";
 import { Color4 } from "../Maths/math.color";
 import { Constants } from "../Engines/constants";
+import { VertexData } from "./mesh.vertexData";
 /**
  * Unique ID when we import meshes from Babylon to CSG
  */
@@ -446,6 +447,61 @@ export class CSG {
     public scaling: Vector3;
 
     /**
+     * Convert a VertexData to CSG
+     * @param mesh defines the VertexData to convert to CSG
+     * @returns the new CSG
+     */
+    public static FromVertexData(data: VertexData): CSG {
+        let vertex: Vertex, polygon: Polygon, vertices: Vertex[];
+        const polygons = new Array<Polygon>();
+
+        const indices = data.indices;
+        const positions = data.positions;
+        const normals = data.normals;
+        const uvs = data.uvs;
+        const vertColors = data.colors;
+
+        if (!indices || !positions) {
+            throw "BABYLON.CSG: VertexData must at least contain positions and indices";
+        }
+
+        for (let i = 0; i < indices.length; i += 3) {
+            vertices = [];
+            for (let j = 0; j < 3; j++) {
+                const indexIndices = i + j;
+                const offset = indices[indexIndices];
+
+                const normal = normals ? Vector3.FromArray(normals, offset * 3) : Vector3.Zero();
+                const uv = uvs ? Vector2.FromArray(uvs, offset * 2) : undefined;
+                const vertColor = vertColors ? Color4.FromArray(vertColors, offset * 4) : undefined;
+
+                const position = Vector3.FromArray(positions, offset * 3);
+
+                vertex = new Vertex(position, normal, uv, vertColor);
+                vertices.push(vertex);
+            }
+
+            polygon = new Polygon(vertices, { subMeshId: 0, meshId: currentCSGMeshId, materialIndex: 0 });
+
+            // To handle the case of degenerated triangle
+            // polygon.plane == null <=> the polygon does not represent 1 single plane <=> the triangle is degenerated
+            if (polygon.plane) {
+                polygons.push(polygon);
+            }
+        }
+
+        const csg = CSG._FromPolygons(polygons);
+        csg.matrix = Matrix.Identity();
+        csg.position = Vector3.Zero();
+        csg.rotation = Vector3.Zero();
+        csg.scaling = Vector3.One();
+        csg.rotationQuaternion = Quaternion.Identity();
+        currentCSGMeshId++;
+
+        return csg;
+    }
+
+    /**
      * Convert the Mesh to CSG
      * @param mesh The Mesh to convert to CSG
      * @param absolute If true, the final (local) matrix transformation is set to the identity and not to that of `mesh`. It can help when dealing with right-handed meshes (default: false)
@@ -458,7 +514,7 @@ export class CSG {
             position: Vector3,
             vertColor: Color4 | undefined = undefined,
             polygon: Polygon,
-            vertices;
+            vertices: Vertex[];
         const polygons = new Array<Polygon>();
         let matrix: Matrix,
             meshPosition: Vector3,
@@ -707,18 +763,15 @@ export class CSG {
     }
 
     /**
-     * Build Raw mesh from CSG
+     * Build vertex data from CSG
      * Coordinates here are in world space
-     * @param name The name of the mesh geometry
-     * @param scene The Scene
-     * @param keepSubMeshes Specifies if the submeshes should be kept
-     * @returns A new Mesh
+     * @returns the final vertex data
      */
-    public buildMeshGeometry(name: string, scene?: Scene, keepSubMeshes?: boolean): Mesh {
+    public toVertexData(onBeforePolygonProcessing: Nullable<(polygon: Polygon) => void> = null, onAfterPolygonProcessing: Nullable<() => void> = null): VertexData {
         const matrix = this.matrix.clone();
         matrix.invert();
 
-        const mesh = new Mesh(name, scene);
+        const polygons = this._polygons;
         const vertices = [];
         const indices = [];
         const normals = [];
@@ -728,41 +781,16 @@ export class CSG {
         const normal = Vector3.Zero();
         const uv = Vector2.Zero();
         const vertColor = new Color4(0, 0, 0, 0);
-        const polygons = this._polygons;
         const polygonIndices = [0, 0, 0];
-        let polygon;
         const vertice_dict = {};
         let vertex_idx;
-        let currentIndex = 0;
-        const subMeshDict = {};
-        let subMeshObj;
-
-        if (keepSubMeshes) {
-            // Sort Polygons, since subMeshes are indices range
-            polygons.sort((a, b) => {
-                if (a.shared.meshId === b.shared.meshId) {
-                    return a.shared.subMeshId - b.shared.subMeshId;
-                } else {
-                    return a.shared.meshId - b.shared.meshId;
-                }
-            });
-        }
 
         for (let i = 0, il = polygons.length; i < il; i++) {
-            polygon = polygons[i];
+            const polygon = polygons[i];
 
-            // Building SubMeshes
-            if (!(<any>subMeshDict)[polygon.shared.meshId]) {
-                (<any>subMeshDict)[polygon.shared.meshId] = {};
+            if (onBeforePolygonProcessing) {
+                onBeforePolygonProcessing(polygon);
             }
-            if (!(<any>subMeshDict)[polygon.shared.meshId][polygon.shared.subMeshId]) {
-                (<any>subMeshDict)[polygon.shared.meshId][polygon.shared.subMeshId] = {
-                    indexStart: +Infinity,
-                    indexEnd: -Infinity,
-                    materialIndex: polygon.shared.materialIndex,
-                };
-            }
-            subMeshObj = (<any>subMeshDict)[polygon.shared.meshId][polygon.shared.subMeshId];
 
             for (let j = 2, jl = polygon.vertices.length; j < jl; j++) {
                 polygonIndices[0] = 0;
@@ -834,22 +862,80 @@ export class CSG {
 
                     indices.push(vertex_idx);
 
-                    subMeshObj.indexStart = Math.min(currentIndex, subMeshObj.indexStart);
-                    subMeshObj.indexEnd = Math.max(currentIndex, subMeshObj.indexEnd);
-                    currentIndex++;
+                    if (onAfterPolygonProcessing) {
+                        onAfterPolygonProcessing();
+                    }
                 }
             }
         }
 
-        mesh.setVerticesData(VertexBuffer.PositionKind, vertices);
-        mesh.setVerticesData(VertexBuffer.NormalKind, normals);
+        const result = new VertexData();
+        result.positions = vertices;
+        result.normals = normals;
         if (uvs) {
-            mesh.setVerticesData(VertexBuffer.UVKind, uvs);
+            result.uvs = uvs;
         }
         if (vertColors) {
-            mesh.setVerticesData(VertexBuffer.ColorKind, vertColors);
+            result.colors = vertColors;
         }
-        mesh.setIndices(indices, null);
+        result.indices = indices;
+
+        return result;
+    }
+
+    /**
+     * Build Raw mesh from CSG
+     * Coordinates here are in world space
+     * @param name The name of the mesh geometry
+     * @param scene The Scene
+     * @param keepSubMeshes Specifies if the submeshes should be kept
+     * @returns A new Mesh
+     */
+    public buildMeshGeometry(name: string, scene?: Scene, keepSubMeshes?: boolean): Mesh {
+        const mesh = new Mesh(name, scene);
+        const polygons = this._polygons;
+        let currentIndex = 0;
+        const subMeshDict = {};
+        let subMeshObj: {
+            materialIndex: number;
+            indexStart: number;
+            indexEnd: number;
+        };
+
+        if (keepSubMeshes) {
+            // Sort Polygons, since subMeshes are indices range
+            polygons.sort((a, b) => {
+                if (a.shared.meshId === b.shared.meshId) {
+                    return a.shared.subMeshId - b.shared.subMeshId;
+                } else {
+                    return a.shared.meshId - b.shared.meshId;
+                }
+            });
+        }
+
+        const vertexData = this.toVertexData(
+            (polygon) => {
+                // Building SubMeshes
+                if (!(<any>subMeshDict)[polygon.shared.meshId]) {
+                    (<any>subMeshDict)[polygon.shared.meshId] = {};
+                }
+                if (!(<any>subMeshDict)[polygon.shared.meshId][polygon.shared.subMeshId]) {
+                    (<any>subMeshDict)[polygon.shared.meshId][polygon.shared.subMeshId] = {
+                        indexStart: +Infinity,
+                        indexEnd: -Infinity,
+                        materialIndex: polygon.shared.materialIndex,
+                    };
+                }
+                subMeshObj = (<any>subMeshDict)[polygon.shared.meshId][polygon.shared.subMeshId];
+            },
+            () => {
+                subMeshObj.indexStart = Math.min(currentIndex, subMeshObj.indexStart);
+                subMeshObj.indexEnd = Math.max(currentIndex, subMeshObj.indexEnd);
+                currentIndex++;
+            }
+        );
+
+        vertexData.applyToMesh(mesh);
 
         if (keepSubMeshes) {
             // We offset the materialIndex by the previous number of materials in the CSG mixed meshes

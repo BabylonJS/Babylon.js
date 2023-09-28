@@ -53,10 +53,13 @@ import { MatrixComposeBlock } from "core/Meshes/Node/Blocks/matrixComposeBlock";
 import { GeometryTextureBlock } from "core/Meshes/Node/Blocks/Textures/geometryTextureBlock";
 import { GeometryTextureFetchBlock } from "core/Meshes/Node/Blocks/Textures/geometryTextureFetchBlock";
 import { BoundingBlock } from "core/Meshes/Node/Blocks/boundingBlock";
+import { BooleanGeometryBlock } from "core/Meshes/Node/Blocks/booleanGeometryBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "BooleanBlock":
+                return new BooleanGeometryBlock("Boolean");
             case "TextureFetchBlock":
                 return new GeometryTextureFetchBlock("Texture Fetch");
             case "TextureBlock":
