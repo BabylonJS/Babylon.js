@@ -768,7 +768,7 @@ export class CSG {
      * @returns the final vertex data
      */
     public toVertexData(onBeforePolygonProcessing: Nullable<(polygon: Polygon) => void> = null, onAfterPolygonProcessing: Nullable<() => void> = null): VertexData {
-        const matrix = this.matrix.clone();        
+        const matrix = this.matrix.clone();
         matrix.invert();
 
         const polygons = this._polygons;
