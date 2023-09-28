@@ -1,4 +1,4 @@
-export * from "./flowGraphConditionalBlock";
+export * from "./flowGraphBranchBlock";
 export * from "./flowGraphDoNBlock";
 export * from "./flowGraphForLoopBlock";
 export * from "./flowGraphThrottleBlock";
