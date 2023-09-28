@@ -63,4 +63,8 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
             return this._connectedPoint[0].getValue(context);
         }
     }
+
+    public getClassName(): string {
+        return "FlowGraphDataConnection";
+    }
 }

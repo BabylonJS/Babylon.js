@@ -1,3 +1,4 @@
+import { serialize } from "..";
 import { RandomGUID } from "../Misc/guid";
 
 /**
@@ -13,6 +14,7 @@ export enum FlowGraphConnectionType {
  * @experimental
  */
 export interface IConnectable {
+    uniqueId: string;
     _connectedPoint: Array<IConnectable>;
     _isSingularConnection(): boolean;
     _connectionType: FlowGraphConnectionType;
@@ -29,9 +31,25 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
     /**
      * A uniquely identifying string for the connection.
      */
+    @serialize()
     public uniqueId = RandomGUID();
 
-    public constructor(public name: string, /** @internal */ public _connectionType: FlowGraphConnectionType, protected _ownerBlock: BlockT) {}
+    /**
+     * The name of the connection.
+     */
+    @serialize()
+    public name: string;
+
+    /**
+     * @internal
+     */
+    @serialize()
+    public _connectionType: FlowGraphConnectionType;
+
+    public constructor(name: string, _connectionType: FlowGraphConnectionType, protected _ownerBlock: BlockT) {
+        this.name = name;
+        this._connectionType = _connectionType;
+    }
 
     /**
      * The type of the connection
@@ -69,5 +87,22 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
         }
         this._connectedPoint.push(point);
         point._connectedPoint.push(this);
+    }
+
+    /**
+     * Saves the connection to a JSON object.
+     */
+    public serialize(serializationObject: any = {}) {
+        serializationObject.uniqueId = this.uniqueId;
+        serializationObject.name = this.name;
+        serializationObject._connectionType = this._connectionType;
+        serializationObject.connectedPoint = [];
+        for (const point of this._connectedPoint) {
+            serializationObject.connectedPoint.push(point.uniqueId);
+        }
+    }
+
+    public getClassName(): string {
+        return "FlowGraphConnection";
     }
 }
