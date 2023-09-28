@@ -1,7 +1,8 @@
+import { RegisterClass } from "../Misc/typeStore";
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphConnection, FlowGraphConnectionType } from "./flowGraphConnection";
 import type { FlowGraphContext } from "./flowGraphContext";
-import type { RichType } from "./flowGraphRichTypes";
+import { RichType } from "./flowGraphRichTypes";
 /**
  * @experimental
  * Represents a connection point for data.
@@ -42,7 +43,7 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
         if (context._hasConnectionValue(this)) {
             return context._getConnectionValue(this);
         } else {
-            return this.richType.defaultValueBuilder();
+            return this.richType.defaultValue;
         }
     }
 
@@ -67,4 +68,18 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
     public getClassName(): string {
         return "FlowGraphDataConnection";
     }
+
+    public serialize(serializationObject: any = {}) {
+        super.serialize(serializationObject);
+        serializationObject.richType = {};
+        this.richType.serialize(serializationObject.richType);
+    }
+
+    public static Parse(serializationObject: any, ownerBlock: FlowGraphBlock): FlowGraphDataConnection<any> {
+        const obj = super.Parse(serializationObject, ownerBlock);
+        obj.richType = RichType.Parse(serializationObject.richType);
+        return obj;
+    }
 }
+
+RegisterClass("FlowGraphDataConnection", FlowGraphDataConnection);

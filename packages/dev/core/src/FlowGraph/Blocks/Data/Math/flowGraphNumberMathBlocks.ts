@@ -17,7 +17,7 @@ import type { FlowGraphContext } from "../../../flowGraphContext";
  */
 export class FlowGraphAddNumberBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left + right);
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left + right, "FlowGraphAddNumberBlock");
     }
 }
 
@@ -27,7 +27,7 @@ export class FlowGraphAddNumberBlock extends FlowGraphBinaryOperationBlock<numbe
  */
 export class FlowGraphSubtractNumberBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left - right);
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left - right, "FlowGraphSubtractNumberBlock");
     }
 }
 
@@ -37,7 +37,7 @@ export class FlowGraphSubtractNumberBlock extends FlowGraphBinaryOperationBlock<
  */
 export class FlowGraphMultiplyNumberBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left * right);
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left * right, "FlowGraphMultiplyNumberBlock");
     }
 }
 
@@ -47,7 +47,7 @@ export class FlowGraphMultiplyNumberBlock extends FlowGraphBinaryOperationBlock<
  */
 export class FlowGraphDivideNumberBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left / right);
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left / right, "FlowGraphDivideNumberBlock");
     }
 }
 
@@ -57,7 +57,7 @@ export class FlowGraphDivideNumberBlock extends FlowGraphBinaryOperationBlock<nu
  */
 export class FlowGraphModNumberBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left % right);
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left % right, "FlowGraphModNumberBlock");
     }
 }
 
@@ -67,7 +67,7 @@ export class FlowGraphModNumberBlock extends FlowGraphBinaryOperationBlock<numbe
  */
 export class FlowGraphPowNumberBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => Math.pow(left, right));
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => Math.pow(left, right), "FlowGraphPowNumberBlock");
     }
 }
 
@@ -77,7 +77,7 @@ export class FlowGraphPowNumberBlock extends FlowGraphBinaryOperationBlock<numbe
  */
 export class FlowGraphIsNaNNumberBlock extends FlowGraphUnaryOperationBlock<number, boolean> {
     constructor() {
-        super(RichTypeNumber, RichTypeBoolean, (input) => isNaN(input));
+        super(RichTypeNumber, RichTypeBoolean, (input) => isNaN(input), "FlowGraphIsNaNNumberBlock");
     }
 }
 
@@ -87,7 +87,7 @@ export class FlowGraphIsNaNNumberBlock extends FlowGraphUnaryOperationBlock<numb
  */
 export class FlowGraphIsInfinityNumberBlock extends FlowGraphUnaryOperationBlock<number, boolean> {
     constructor() {
-        super(RichTypeNumber, RichTypeBoolean, (input) => !isFinite(input));
+        super(RichTypeNumber, RichTypeBoolean, (input) => !isFinite(input), "FlowGraphIsInfinityNumberBlock");
     }
 }
 
@@ -97,7 +97,7 @@ export class FlowGraphIsInfinityNumberBlock extends FlowGraphUnaryOperationBlock
  */
 export class FlowGraphSqrtNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.sqrt(input));
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.sqrt(input), "FlowGraphSqrtNumberBlock");
     }
 }
 
@@ -107,7 +107,7 @@ export class FlowGraphSqrtNumberBlock extends FlowGraphUnaryOperationBlock<numbe
  */
 export class FlowGraphAbsNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.abs(input));
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.abs(input), "FlowGraphAbsNumberBlock");
     }
 }
 
@@ -117,7 +117,7 @@ export class FlowGraphAbsNumberBlock extends FlowGraphUnaryOperationBlock<number
  */
 export class FlowGraphNegateNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => -input);
+        super(RichTypeNumber, RichTypeNumber, (input) => -input, "FlowGraphNegateNumberBlock");
     }
 }
 
@@ -127,7 +127,7 @@ export class FlowGraphNegateNumberBlock extends FlowGraphUnaryOperationBlock<num
  */
 export class FlowGraphFloorNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.floor(input));
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.floor(input), "FlowGraphFloorNumberBlock");
     }
 }
 
@@ -137,7 +137,7 @@ export class FlowGraphFloorNumberBlock extends FlowGraphUnaryOperationBlock<numb
  */
 export class FlowGraphCeilNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.ceil(input));
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.ceil(input), "FlowGraphCeilNumberBlock");
     }
 }
 
@@ -148,7 +148,7 @@ export class FlowGraphCeilNumberBlock extends FlowGraphUnaryOperationBlock<numbe
  */
 export class FlowGraphRoundNumberBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (input, digits) => Math.round(input / Math.pow(10, digits)) / Math.pow(10, digits));
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (input, digits) => Math.round(input / Math.pow(10, digits)) / Math.pow(10, digits), "FlowGraphRoundNumberBlock");
     }
 }
 
@@ -158,7 +158,7 @@ export class FlowGraphRoundNumberBlock extends FlowGraphBinaryOperationBlock<num
  */
 export class FlowGraphTruncNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.trunc(input));
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.trunc(input), "FlowGraphTruncNumberBlock");
     }
 }
 
@@ -168,7 +168,7 @@ export class FlowGraphTruncNumberBlock extends FlowGraphUnaryOperationBlock<numb
  */
 export class FlowGraphExpNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.exp(input));
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.exp(input), "FlowGraphExpNumberBlock");
     }
 }
 
@@ -178,7 +178,7 @@ export class FlowGraphExpNumberBlock extends FlowGraphUnaryOperationBlock<number
  */
 export class FlowGraphLog10NumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.log10(input));
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.log10(input), "FlowGraphLog10NumberBlock");
     }
 }
 
@@ -188,7 +188,7 @@ export class FlowGraphLog10NumberBlock extends FlowGraphUnaryOperationBlock<numb
  */
 export class FlowGraphLogNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.log(input));
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.log(input), "FlowGraphLogNumberBlock");
     }
 }
 
@@ -198,7 +198,7 @@ export class FlowGraphLogNumberBlock extends FlowGraphUnaryOperationBlock<number
  */
 export class FlowGraphLnNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.log(input) / Math.LN2);
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.log(input) / Math.LN2, "FlowGraphLnNumberBlock");
     }
 }
 
@@ -208,7 +208,7 @@ export class FlowGraphLnNumberBlock extends FlowGraphUnaryOperationBlock<number,
  */
 export class FlowGraphSinNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.sin(input));
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.sin(input), "FlowGraphSinNumberBlock");
     }
 }
 
@@ -218,7 +218,7 @@ export class FlowGraphSinNumberBlock extends FlowGraphUnaryOperationBlock<number
  */
 export class FlowGraphCosNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.cos(input));
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.cos(input), "FlowGraphCosNumberBlock");
     }
 }
 
@@ -228,7 +228,7 @@ export class FlowGraphCosNumberBlock extends FlowGraphUnaryOperationBlock<number
  */
 export class FlowGraphTanNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.tan(input));
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.tan(input), "FlowGraphTanNumberBlock");
     }
 }
 
@@ -238,7 +238,7 @@ export class FlowGraphTanNumberBlock extends FlowGraphUnaryOperationBlock<number
  */
 export class FlowGraphASinNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.asin(input));
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.asin(input), "FlowGraphASinNumberBlock");
     }
 }
 
@@ -248,7 +248,7 @@ export class FlowGraphASinNumberBlock extends FlowGraphUnaryOperationBlock<numbe
  */
 export class FlowGraphACosNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.acos(input));
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.acos(input), "FlowGraphACosNumberBlock");
     }
 }
 
@@ -258,7 +258,7 @@ export class FlowGraphACosNumberBlock extends FlowGraphUnaryOperationBlock<numbe
  */
 export class FlowGraphATanNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.atan(input));
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.atan(input), "FlowGraphATanNumberBlock");
     }
 }
 
@@ -288,7 +288,7 @@ export class FlowGraphPiNumberBlock extends FlowGraphConstantOperationBlock<numb
  */
 export class FlowGraphATan2NumberBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => Math.atan2(left, right));
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => Math.atan2(left, right), "FlowGraphATan2NumberBlock");
     }
 }
 
@@ -298,7 +298,7 @@ export class FlowGraphATan2NumberBlock extends FlowGraphBinaryOperationBlock<num
  */
 export class FlowGraphRandomNumberBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left + Math.random() * (right - left));
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left + Math.random() * (right - left), "FlowGraphRandomNumberBlock");
     }
 }
 
@@ -308,7 +308,7 @@ export class FlowGraphRandomNumberBlock extends FlowGraphBinaryOperationBlock<nu
  */
 export class FlowGraphMinNumberBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => Math.min(left, right));
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => Math.min(left, right), "FlowGraphMinNumberBlock");
     }
 }
 
@@ -318,7 +318,7 @@ export class FlowGraphMinNumberBlock extends FlowGraphBinaryOperationBlock<numbe
  */
 export class FlowGraphMaxNumberBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => Math.max(left, right));
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => Math.max(left, right), "FlowGraphMaxNumberBlock");
     }
 }
 
@@ -328,7 +328,7 @@ export class FlowGraphMaxNumberBlock extends FlowGraphBinaryOperationBlock<numbe
  */
 export class FlowGraphEqualsNumberBlock extends FlowGraphBinaryOperationBlock<number, number, boolean> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeBoolean, (left, right) => left === right);
+        super(RichTypeNumber, RichTypeNumber, RichTypeBoolean, (left, right) => left === right, "FlowGraphEqualsNumberBlock");
     }
 }
 
@@ -337,7 +337,7 @@ export class FlowGraphEqualsNumberBlock extends FlowGraphBinaryOperationBlock<nu
  */
 export class FlowGraphGreaterThanNumberBlock extends FlowGraphBinaryOperationBlock<number, number, boolean> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeBoolean, (left, right) => left > right);
+        super(RichTypeNumber, RichTypeNumber, RichTypeBoolean, (left, right) => left > right, "FlowGraphGreaterThanNumberBlock");
     }
 }
 
@@ -346,7 +346,7 @@ export class FlowGraphGreaterThanNumberBlock extends FlowGraphBinaryOperationBlo
  */
 export class FlowGraphGreaterThanOrEqualsNumberBlock extends FlowGraphBinaryOperationBlock<number, number, boolean> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeBoolean, (left, right) => left >= right);
+        super(RichTypeNumber, RichTypeNumber, RichTypeBoolean, (left, right) => left >= right, "FlowGraphGreaterThanOrEqualsNumberBlock");
     }
 }
 
@@ -355,7 +355,7 @@ export class FlowGraphGreaterThanOrEqualsNumberBlock extends FlowGraphBinaryOper
  */
 export class FlowGraphLessThanNumberBlock extends FlowGraphBinaryOperationBlock<number, number, boolean> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeBoolean, (left, right) => left < right);
+        super(RichTypeNumber, RichTypeNumber, RichTypeBoolean, (left, right) => left < right, "FlowGraphLessThanNumberBlock");
     }
 }
 
@@ -364,7 +364,7 @@ export class FlowGraphLessThanNumberBlock extends FlowGraphBinaryOperationBlock<
  */
 export class FlowGraphLessThanOrEqualsNumberBlock extends FlowGraphBinaryOperationBlock<number, number, boolean> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeBoolean, (left, right) => left <= right);
+        super(RichTypeNumber, RichTypeNumber, RichTypeBoolean, (left, right) => left <= right, "FlowGraphLessThanOrEqualsNumberBlock");
     }
 }
 

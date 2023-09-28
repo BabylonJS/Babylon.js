@@ -13,7 +13,13 @@ export class FlowGraphBinaryOperationBlock<LeftT, RightT, ResultT> extends FlowG
     rightInput: FlowGraphDataConnection<RightT>;
     output: FlowGraphDataConnection<ResultT>;
 
-    constructor(leftRichType: RichType<LeftT>, rightRichType: RichType<RightT>, resultRichType: RichType<ResultT>, private _operation: (left: LeftT, right: RightT) => ResultT) {
+    constructor(
+        leftRichType: RichType<LeftT>,
+        rightRichType: RichType<RightT>,
+        resultRichType: RichType<ResultT>,
+        private _operation: (left: LeftT, right: RightT) => ResultT,
+        private _className: string
+    ) {
         super();
         this.leftInput = this._registerDataInput("leftInput", leftRichType);
         this.rightInput = this._registerDataInput("rightInput", rightRichType);
@@ -22,5 +28,9 @@ export class FlowGraphBinaryOperationBlock<LeftT, RightT, ResultT> extends FlowG
 
     public _updateOutputs(_context: FlowGraphContext): void {
         this.output.setValue(this._operation(this.leftInput.getValue(_context), this.rightInput.getValue(_context)), _context);
+    }
+
+    public getClassName(): string {
+        return this._className;
     }
 }

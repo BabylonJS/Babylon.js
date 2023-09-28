@@ -9,7 +9,7 @@ import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
  */
 export class FlowGraphAddVector3Block extends FlowGraphBinaryOperationBlock<Vector3, Vector3, Vector3> {
     constructor() {
-        super(RichTypeVector3, RichTypeVector3, RichTypeVector3, (left, right) => left.add(right));
+        super(RichTypeVector3, RichTypeVector3, RichTypeVector3, (left, right) => left.add(right), "FlowGraphAddVector3Block");
     }
 }
 
@@ -19,7 +19,7 @@ export class FlowGraphAddVector3Block extends FlowGraphBinaryOperationBlock<Vect
  */
 export class FlowGraphSubtractVector3Block extends FlowGraphBinaryOperationBlock<Vector3, Vector3, Vector3> {
     constructor() {
-        super(RichTypeVector3, RichTypeVector3, RichTypeVector3, (left, right) => left.subtract(right));
+        super(RichTypeVector3, RichTypeVector3, RichTypeVector3, (left, right) => left.subtract(right), "FlowGraphSubtractVector3Block");
     }
 }
 
@@ -29,7 +29,7 @@ export class FlowGraphSubtractVector3Block extends FlowGraphBinaryOperationBlock
  */
 export class FlowGraphMultiplyVector3Block extends FlowGraphBinaryOperationBlock<Vector3, Vector3, Vector3> {
     constructor() {
-        super(RichTypeVector3, RichTypeVector3, RichTypeVector3, (left, right) => left.multiply(right));
+        super(RichTypeVector3, RichTypeVector3, RichTypeVector3, (left, right) => left.multiply(right), "FlowGraphMultiplyVector3Block");
     }
 }
 
@@ -39,7 +39,7 @@ export class FlowGraphMultiplyVector3Block extends FlowGraphBinaryOperationBlock
  */
 export class FlowGraphDivideVector3Block extends FlowGraphBinaryOperationBlock<Vector3, Vector3, Vector3> {
     constructor() {
-        super(RichTypeVector3, RichTypeVector3, RichTypeVector3, (left, right) => left.divide(right));
+        super(RichTypeVector3, RichTypeVector3, RichTypeVector3, (left, right) => left.divide(right), "FlowGraphDivideVector3Block");
     }
 }
 
@@ -49,7 +49,7 @@ export class FlowGraphDivideVector3Block extends FlowGraphBinaryOperationBlock<V
  */
 export class FlowGraphScaleVector3Block extends FlowGraphBinaryOperationBlock<Vector3, number, Vector3> {
     constructor() {
-        super(RichTypeVector3, RichTypeNumber, RichTypeVector3, (left, right) => left.scale(right));
+        super(RichTypeVector3, RichTypeNumber, RichTypeVector3, (left, right) => left.scale(right), "FlowGraphScaleVector3Block");
     }
 }
 
@@ -59,7 +59,7 @@ export class FlowGraphScaleVector3Block extends FlowGraphBinaryOperationBlock<Ve
  */
 export class FlowGraphLengthVector3Block extends FlowGraphUnaryOperationBlock<Vector3, number> {
     constructor() {
-        super(RichTypeVector3, RichTypeNumber, (value) => value.length());
+        super(RichTypeVector3, RichTypeNumber, (value) => value.length(), "FlowGraphLengthVector3Block");
     }
 }
 
@@ -69,7 +69,7 @@ export class FlowGraphLengthVector3Block extends FlowGraphUnaryOperationBlock<Ve
  */
 export class FlowGraphNormalizeVector3Block extends FlowGraphUnaryOperationBlock<Vector3, Vector3> {
     constructor() {
-        super(RichTypeVector3, RichTypeVector3, (value) => value.normalizeToNew());
+        super(RichTypeVector3, RichTypeVector3, (value) => value.normalizeToNew(), "FlowGraphNormalizeVector3Block");
     }
 }
 
@@ -79,7 +79,7 @@ export class FlowGraphNormalizeVector3Block extends FlowGraphUnaryOperationBlock
  */
 export class FlowGraphDotVector3Block extends FlowGraphBinaryOperationBlock<Vector3, Vector3, number> {
     constructor() {
-        super(RichTypeVector3, RichTypeVector3, RichTypeNumber, (left, right) => Vector3.Dot(left, right));
+        super(RichTypeVector3, RichTypeVector3, RichTypeNumber, (left, right) => Vector3.Dot(left, right), "FlowGraphDotVector3Block");
     }
 }
 
@@ -89,6 +89,6 @@ export class FlowGraphDotVector3Block extends FlowGraphBinaryOperationBlock<Vect
  */
 export class FlowGraphCrossVector3Block extends FlowGraphBinaryOperationBlock<Vector3, Vector3, Vector3> {
     constructor() {
-        super(RichTypeVector3, RichTypeVector3, RichTypeVector3, (left, right) => Vector3.Cross(left, right));
+        super(RichTypeVector3, RichTypeVector3, RichTypeVector3, (left, right) => Vector3.Cross(left, right), "FlowGraphCrossVector3Block");
     }
 }

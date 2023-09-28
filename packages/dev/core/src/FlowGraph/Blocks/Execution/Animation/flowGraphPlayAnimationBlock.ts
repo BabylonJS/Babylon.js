@@ -4,6 +4,7 @@ import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import { FlowGraphAsyncExecutionBlock } from "../../../flowGraphAsyncExecutionBlock";
 import { RichTypeAny, RichTypeNumber, RichTypeBoolean } from "../../../flowGraphRichTypes";
+import { RegisterClass } from "core/Misc";
 
 /**
  * @experimental
@@ -78,7 +79,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
         if (existingAnimatable && existingAnimatable.paused) {
             existingAnimatable.restart();
         } else {
-            const scene = context.graphVariables.scene;
+            const scene = context.configuration.scene;
             const animatable = scene.beginDirectAnimation(
                 targetValue,
                 [animationValue],
@@ -122,4 +123,10 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
         }
         context._deleteExecutionVariable(this, "runningAnimatables");
     }
+
+    public getClassName(): string {
+        return "FlowGraphPlayAnimationBlock";
+    }
 }
+
+RegisterClass("FlowGraphPlayAnimationBlock", FlowGraphPlayAnimationBlock);

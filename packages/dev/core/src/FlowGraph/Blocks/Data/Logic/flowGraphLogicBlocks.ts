@@ -8,7 +8,7 @@ import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
  */
 export class FlowGraphLogicAndBlock extends FlowGraphBinaryOperationBlock<boolean, boolean, boolean> {
     constructor() {
-        super(RichTypeBoolean, RichTypeBoolean, RichTypeBoolean, (left, right) => left && right);
+        super(RichTypeBoolean, RichTypeBoolean, RichTypeBoolean, (left, right) => left && right, "FlowGraphLogicAndBlock");
     }
 }
 
@@ -18,7 +18,7 @@ export class FlowGraphLogicAndBlock extends FlowGraphBinaryOperationBlock<boolea
  */
 export class FlowGraphLogicOrBlock extends FlowGraphBinaryOperationBlock<boolean, boolean, boolean> {
     constructor() {
-        super(RichTypeBoolean, RichTypeBoolean, RichTypeBoolean, (left, right) => left || right);
+        super(RichTypeBoolean, RichTypeBoolean, RichTypeBoolean, (left, right) => left || right, "FlowGraphLogicOrBlock");
     }
 }
 
@@ -28,6 +28,6 @@ export class FlowGraphLogicOrBlock extends FlowGraphBinaryOperationBlock<boolean
  */
 export class FlowGraphLogicNotBlock extends FlowGraphUnaryOperationBlock<boolean, boolean> {
     constructor() {
-        super(RichTypeBoolean, RichTypeBoolean, (value) => !value);
+        super(RichTypeBoolean, RichTypeBoolean, (value) => !value, "FlowGraphLogicNotBlock");
     }
 }

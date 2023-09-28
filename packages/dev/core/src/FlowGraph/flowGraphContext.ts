@@ -1,3 +1,5 @@
+import { serialize } from "core/Misc/decorators";
+import { RandomGUID } from "../Misc/guid";
 import type { Scene } from "../scene";
 import type { FlowGraphAsyncExecutionBlock } from "./flowGraphAsyncExecutionBlock";
 import type { FlowGraphBlock } from "./flowGraphBlock";
@@ -8,7 +10,7 @@ import type { FlowGraphEventCoordinator } from "./flowGraphEventCoordinator";
  * Construction parameters for the context.
  * @experimental
  */
-export interface IFlowGraphGraphVariables {
+export interface IFlowGraphContextConfiguration {
     /**
      * The scene that the flow graph context belongs to.
      */
@@ -27,6 +29,11 @@ export interface IFlowGraphGraphVariables {
  */
 export class FlowGraphContext {
     /**
+     * A randomly generated GUID for each context.
+     */
+    @serialize()
+    public uniqueId = RandomGUID();
+    /**
      * These are the variables defined by a user.
      */
     private _userVariables: Map<string, any> = new Map();
@@ -41,14 +48,14 @@ export class FlowGraphContext {
     /**
      * These are the variables set by the graph.
      */
-    private readonly _graphVariables: IFlowGraphGraphVariables;
+    private readonly _configuration: IFlowGraphContextConfiguration;
     /**
      * These are blocks that have currently pending tasks/listeners that need to be cleaned up.
      */
     private _pendingBlocks: FlowGraphAsyncExecutionBlock[] = [];
 
-    constructor(params: IFlowGraphGraphVariables) {
-        this._graphVariables = params;
+    constructor(params: IFlowGraphContextConfiguration) {
+        this._configuration = params;
     }
 
     /**
@@ -158,13 +165,13 @@ export class FlowGraphContext {
     }
 
     /**
-     * Get the graph set variables
+     * Get the configuration
      * @internal
      * @param name
      * @param value
      */
-    public get graphVariables() {
-        return this._graphVariables;
+    public get configuration() {
+        return this._configuration;
     }
 
     /**
@@ -197,5 +204,37 @@ export class FlowGraphContext {
             block._cancelPendingTasks(this);
         }
         this._pendingBlocks.length = 0;
+    }
+
+    public serialize(serializationObject: any = {}) {
+        serializationObject.uniqueId = this.uniqueId;
+        serializationObject._userVariables = {};
+        console.log("user variables", this._userVariables);
+        for (const [key, value] of this._userVariables) {
+            console.log("serialize", key, value, "user var");
+            serializationObject._userVariables[key] = value;
+        }
+        serializationObject._connectionValues = {};
+        for (const [key, value] of this._connectionValues) {
+            serializationObject._connectionValues[key] = value;
+        }
+    }
+
+    public getClassName() {
+        return "FlowGraphContext";
+    }
+
+    public static Parse(serializationObject: any = {}, configuration: IFlowGraphContextConfiguration): FlowGraphContext {
+        const result = new FlowGraphContext(configuration);
+
+        result.uniqueId = serializationObject.uniqueId;
+        for (const key in serializationObject._userVariables) {
+            result._userVariables.set(key, serializationObject._userVariables[key]);
+        }
+        for (const key in serializationObject._connectionValues) {
+            result._connectionValues.set(key, serializationObject._connectionValues[key]);
+        }
+
+        return result;
     }
 }

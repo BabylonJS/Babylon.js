@@ -9,7 +9,7 @@ import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
  */
 export class FlowGraphAddVector2Block extends FlowGraphBinaryOperationBlock<Vector2, Vector2, Vector2> {
     constructor() {
-        super(RichTypeVector2, RichTypeVector2, RichTypeVector2, (left, right) => left.add(right));
+        super(RichTypeVector2, RichTypeVector2, RichTypeVector2, (left, right) => left.add(right), "FlowGraphAddVector2Block");
     }
 }
 
@@ -19,7 +19,7 @@ export class FlowGraphAddVector2Block extends FlowGraphBinaryOperationBlock<Vect
  */
 export class FlowGraphSubtractVector2Block extends FlowGraphBinaryOperationBlock<Vector2, Vector2, Vector2> {
     constructor() {
-        super(RichTypeVector2, RichTypeVector2, RichTypeVector2, (left, right) => left.subtract(right));
+        super(RichTypeVector2, RichTypeVector2, RichTypeVector2, (left, right) => left.subtract(right), "FlowGraphSubtractVector2Block");
     }
 }
 
@@ -29,7 +29,7 @@ export class FlowGraphSubtractVector2Block extends FlowGraphBinaryOperationBlock
  */
 export class FlowGraphMultiplyVector2Block extends FlowGraphBinaryOperationBlock<Vector2, Vector2, Vector2> {
     constructor() {
-        super(RichTypeVector2, RichTypeVector2, RichTypeVector2, (left, right) => left.multiply(right));
+        super(RichTypeVector2, RichTypeVector2, RichTypeVector2, (left, right) => left.multiply(right), "FlowGraphMultiplyVector2Block");
     }
 }
 
@@ -39,7 +39,7 @@ export class FlowGraphMultiplyVector2Block extends FlowGraphBinaryOperationBlock
  */
 export class FlowGraphDivideVector2Block extends FlowGraphBinaryOperationBlock<Vector2, Vector2, Vector2> {
     constructor() {
-        super(RichTypeVector2, RichTypeVector2, RichTypeVector2, (left, right) => left.divide(right));
+        super(RichTypeVector2, RichTypeVector2, RichTypeVector2, (left, right) => left.divide(right), "FlowGraphDivideVector2Block");
     }
 }
 
@@ -49,7 +49,7 @@ export class FlowGraphDivideVector2Block extends FlowGraphBinaryOperationBlock<V
  */
 export class FlowGraphScaleVector2Block extends FlowGraphBinaryOperationBlock<Vector2, number, Vector2> {
     constructor() {
-        super(RichTypeVector2, RichTypeNumber, RichTypeVector2, (left, right) => left.scale(right));
+        super(RichTypeVector2, RichTypeNumber, RichTypeVector2, (left, right) => left.scale(right), "FlowGraphScaleVector2Block");
     }
 }
 
@@ -59,7 +59,7 @@ export class FlowGraphScaleVector2Block extends FlowGraphBinaryOperationBlock<Ve
  */
 export class FlowGraphLengthVector2Block extends FlowGraphUnaryOperationBlock<Vector2, number> {
     constructor() {
-        super(RichTypeVector2, RichTypeNumber, (value) => value.length());
+        super(RichTypeVector2, RichTypeNumber, (value) => value.length(), "FlowGraphLengthVector2Block");
     }
 }
 
@@ -69,10 +69,15 @@ export class FlowGraphLengthVector2Block extends FlowGraphUnaryOperationBlock<Ve
  */
 export class FlowGraphNormalizeVector2Block extends FlowGraphUnaryOperationBlock<Vector2, Vector2> {
     constructor() {
-        super(RichTypeVector2, RichTypeVector2, (value: Vector2) => {
-            const copy: Vector2 = value.clone();
-            copy.normalize();
-            return copy;
-        });
+        super(
+            RichTypeVector2,
+            RichTypeVector2,
+            (value: Vector2) => {
+                const copy: Vector2 = value.clone();
+                copy.normalize();
+                return copy;
+            },
+            "FlowGraphNormalizeVector2Block"
+        );
     }
 }

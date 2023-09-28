@@ -8,7 +8,7 @@ import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
  */
 export class FlowGraphBitwiseAndBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left & right);
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left & right, "FlowGraphBitwiseAndBlock");
     }
 }
 
@@ -18,7 +18,7 @@ export class FlowGraphBitwiseAndBlock extends FlowGraphBinaryOperationBlock<numb
  */
 export class FlowGraphBitwiseOrBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left | right);
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left | right, "FlowGraphBitwiseOrBlock");
     }
 }
 
@@ -28,7 +28,7 @@ export class FlowGraphBitwiseOrBlock extends FlowGraphBinaryOperationBlock<numbe
  */
 export class FlowGraphBitwiseXorBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left ^ right);
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left ^ right, "FlowGraphBitwiseXorBlock");
     }
 }
 
@@ -38,7 +38,7 @@ export class FlowGraphBitwiseXorBlock extends FlowGraphBinaryOperationBlock<numb
  */
 export class FlowGraphBitwiseNotBlock extends FlowGraphUnaryOperationBlock<number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, (value) => ~value);
+        super(RichTypeNumber, RichTypeNumber, (value) => ~value, "FlowGraphBitwiseNotBlock");
     }
 }
 
@@ -48,7 +48,7 @@ export class FlowGraphBitwiseNotBlock extends FlowGraphUnaryOperationBlock<numbe
  */
 export class FlowGraphBitwiseLeftShiftBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left << right);
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left << right, "FlowGraphBitwiseLeftShiftBlock");
     }
 }
 
@@ -58,7 +58,7 @@ export class FlowGraphBitwiseLeftShiftBlock extends FlowGraphBinaryOperationBloc
  */
 export class FlowGraphBitwiseRightShiftBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left >> right);
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left >> right, "FlowGraphBitwiseRightShiftBlock");
     }
 }
 
@@ -68,7 +68,7 @@ export class FlowGraphBitwiseRightShiftBlock extends FlowGraphBinaryOperationBlo
  */
 export class FlowGraphCountLeadingZerosBlock extends FlowGraphUnaryOperationBlock<number, number> {
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, (value) => Math.clz32(value));
+        super(RichTypeNumber, RichTypeNumber, (value) => Math.clz32(value), "FlowGraphCountLeadingZerosBlock");
     }
 }
 
@@ -89,6 +89,6 @@ export class FlowGraphCountTrailingZerosBlock extends FlowGraphUnaryOperationBlo
     }
 
     constructor() {
-        super(RichTypeNumber, RichTypeNumber, (value) => this._ctrz(value));
+        super(RichTypeNumber, RichTypeNumber, (value) => this._ctrz(value), "FlowGraphCountTrailingZerosBlock");
     }
 }

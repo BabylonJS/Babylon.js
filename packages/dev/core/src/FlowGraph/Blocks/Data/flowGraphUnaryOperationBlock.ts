@@ -11,7 +11,7 @@ export class FlowGraphUnaryOperationBlock<InputT, ResultT> extends FlowGraphBloc
     input: FlowGraphDataConnection<InputT>;
     output: FlowGraphDataConnection<ResultT>;
 
-    constructor(inputRichType: RichType<InputT>, resultRichType: RichType<ResultT>, private _operation: (input: InputT) => ResultT) {
+    constructor(inputRichType: RichType<InputT>, resultRichType: RichType<ResultT>, private _operation: (input: InputT) => ResultT, private _className: string) {
         super();
         this.input = this._registerDataInput("input", inputRichType);
         this.output = this._registerDataOutput("resultOutput", resultRichType);
@@ -19,5 +19,9 @@ export class FlowGraphUnaryOperationBlock<InputT, ResultT> extends FlowGraphBloc
 
     public _updateOutputs(_context: FlowGraphContext): void {
         this.output.setValue(this._operation(this.input.getValue(_context)), _context);
+    }
+
+    public getClassName(): string {
+        return this._className;
     }
 }

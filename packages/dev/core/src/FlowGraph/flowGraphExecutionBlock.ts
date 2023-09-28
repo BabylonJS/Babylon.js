@@ -14,8 +14,8 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
      */
     public readonly onStart: FlowGraphSignalConnection;
 
-    private readonly _signalInputs: FlowGraphSignalConnection[] = [];
-    private readonly _signalOutputs: FlowGraphSignalConnection[] = [];
+    public readonly signalInputs: FlowGraphSignalConnection[] = [];
+    public readonly signalOutputs: FlowGraphSignalConnection[] = [];
 
     protected constructor() {
         super();
@@ -29,13 +29,44 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
 
     protected _registerSignalInput(name: string): FlowGraphSignalConnection {
         const input = new FlowGraphSignalConnection(name, FlowGraphConnectionType.Input, this);
-        this._signalInputs.push(input);
+        this.signalInputs.push(input);
         return input;
     }
 
     protected _registerSignalOutput(name: string): FlowGraphSignalConnection {
         const output = new FlowGraphSignalConnection(name, FlowGraphConnectionType.Output, this);
-        this._signalOutputs.push(output);
+        this.signalOutputs.push(output);
         return output;
+    }
+
+    public serialize(serializationObject: any = {}) {
+        super.serialize(serializationObject);
+        serializationObject.signalInputs = [];
+        serializationObject.signalOutputs = [];
+        for (const input of this.signalInputs) {
+            const serializedInput: any = {};
+            input.serialize(serializedInput);
+            serializationObject.signalInputs.push(serializedInput);
+        }
+        for (const output of this.signalOutputs) {
+            const serializedOutput: any = {};
+            output.serialize(serializedOutput);
+            serializationObject.signalOutputs.push(serializedOutput);
+        }
+    }
+
+    public getClassName(): string {
+        return "FlowGraphExecutionBlock";
+    }
+
+    public static Parse(serializationObject: any = {}) {
+        const block = super.Parse(serializationObject) as FlowGraphExecutionBlock;
+        for (let i = 0; i < serializationObject.signalInputs.length; i++) {
+            block.signalInputs[i].uniqueId = serializationObject.signalInputs[i].uniqueId;
+        }
+        for (let i = 0; i < serializationObject.signalOutputs.length; i++) {
+            block.signalOutputs[i].uniqueId = serializationObject.signalOutputs[i].uniqueId;
+        }
+        return block;
     }
 }

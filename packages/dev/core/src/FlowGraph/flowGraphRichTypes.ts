@@ -6,67 +6,38 @@ import { Color3, Color4 } from "../Maths/math.color";
  * such as its name and a default value constructor.
  * @experimental
  */
-export interface RichType<T> {
-    /**
-     * Name of the type
-     */
-    typeName: string;
-    /**
-     * Constructor for the default value
-     * @returns the default value
-     */
-    defaultValueBuilder: () => T;
+export class RichType<T> {
+    constructor(public typeName: string, public defaultValue: T) {}
+
+    serialize(serializationObject: any) {
+        serializationObject.typeName = this.typeName;
+        serializationObject.defaultValue = this.defaultValue;
+    }
+
+    static Parse(serializationObject: any): RichType<any> {
+        return new RichType(serializationObject.typeName, serializationObject.defaultValue);
+    }
 }
 
-export const RichTypeAny: RichType<any> = {
-    typeName: "any",
-    defaultValueBuilder: () => undefined,
-};
+export const RichTypeAny: RichType<any> = new RichType("any", undefined);
 
-export const RichTypeString: RichType<string> = {
-    typeName: "string",
-    defaultValueBuilder: () => "",
-};
+export const RichTypeString: RichType<string> = new RichType("string", "");
 
-export const RichTypeNumber: RichType<number> = {
-    typeName: "number",
-    defaultValueBuilder: () => 0,
-};
+export const RichTypeNumber: RichType<number> = new RichType("number", 0);
 
-export const RichTypeBoolean: RichType<boolean> = {
-    typeName: "boolean",
-    defaultValueBuilder: () => false,
-};
+export const RichTypeBoolean: RichType<boolean> = new RichType("boolean", false);
 
-export const RichTypeVector2: RichType<Vector2> = {
-    typeName: "Vector2",
-    defaultValueBuilder: () => Vector2.Zero(),
-};
+export const RichTypeVector2: RichType<Vector2> = new RichType("Vector2", Vector2.Zero());
 
-export const RichTypeVector3: RichType<Vector3> = {
-    typeName: "Vector3",
-    defaultValueBuilder: () => Vector3.Zero(),
-};
+export const RichTypeVector3: RichType<Vector3> = new RichType("Vector3", Vector3.Zero());
 
-export const RichTypeVector4: RichType<Vector4> = {
-    typeName: "Vector4",
-    defaultValueBuilder: () => Vector4.Zero(),
-};
+export const RichTypeVector4: RichType<Vector4> = new RichType("Vector4", Vector4.Zero());
 
-export const RichTypeMatrix: RichType<Matrix> = {
-    typeName: "Matrix",
-    defaultValueBuilder: () => Matrix.Identity(),
-};
+export const RichTypeMatrix: RichType<Matrix> = new RichType("Matrix", Matrix.Identity());
 
-export const RichTypeColor3: RichType<Color3> = {
-    typeName: "Color3",
-    defaultValueBuilder: () => Color3.Black(),
-};
+export const RichTypeColor3: RichType<Color3> = new RichType("Color3", Color3.Black());
 
-export const RichTypeColor4: RichType<Color4> = {
-    typeName: "Color4",
-    defaultValueBuilder: () => new Color4(0, 0, 0, 0),
-};
+export const RichTypeColor4: RichType<Color4> = new RichType("Color4", new Color4(0, 0, 0, 0));
 
 /**
  * Given a value, try to deduce its rich type.

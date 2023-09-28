@@ -1,5 +1,7 @@
-import { serialize } from "..";
+import { Tools } from "core/Misc/tools";
+import { serialize } from "../Misc/decorators";
 import { RandomGUID } from "../Misc/guid";
+import type { FlowGraphBlock } from "./flowGraphBlock";
 
 /**
  * @experimental
@@ -45,6 +47,14 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
      */
     @serialize()
     public _connectionType: FlowGraphConnectionType;
+
+    /**
+     * Used for parsing connections.
+     * @internal
+     */
+    // disable warning as this is used for parsing
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public _waitingConnectedPoint: any[] = [];
 
     public constructor(name: string, _connectionType: FlowGraphConnectionType, protected _ownerBlock: BlockT) {
         this.name = name;
@@ -97,6 +107,7 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
         serializationObject.name = this.name;
         serializationObject._connectionType = this._connectionType;
         serializationObject.connectedPoint = [];
+        serializationObject.className = this.getClassName();
         for (const point of this._connectedPoint) {
             serializationObject.connectedPoint.push(point.uniqueId);
         }
@@ -104,5 +115,13 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
 
     public getClassName(): string {
         return "FlowGraphConnection";
+    }
+
+    public static Parse(serializationObject: any = {}, ownerBlock: FlowGraphBlock) {
+        const type = Tools.Instantiate(serializationObject.className);
+        const connection = new type(serializationObject.name, serializationObject._connectionType, ownerBlock);
+        connection.uniqueId = serializationObject.uniqueId;
+        connection._waitingConnectedPoint = serializationObject.connectedPoint;
+        return connection;
     }
 }

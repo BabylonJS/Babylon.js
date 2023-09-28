@@ -27,7 +27,7 @@ export class FlowGraphSendCustomEventBlock extends FlowGraphWithOnDoneExecutionB
         const eventId = this.eventId.getValue(context);
         const eventData = this.eventData.getValue(context);
 
-        context.graphVariables.eventCoordinator.notifyCustomEvent(eventId, eventData);
+        context.configuration.eventCoordinator.notifyCustomEvent(eventId, eventData);
 
         this.onDone._activateSignal(context);
     }
