@@ -2,14 +2,27 @@ import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
-import type { VertexData } from "../../../Meshes/mesh.vertexData";
+import type { VertexData } from "../../mesh.vertexData";
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
+import { CSG } from "core/Meshes/csg";
 
 /**
- * Block used to merge several geometries
+ * Operations supported by the boolean block
  */
-export class MergeGeometryBlock extends NodeGeometryBlock {
+export enum BooleanGeometryOperations {
+    /** Intersect */
+    Intersect,
+    /** Subtract */
+    Subtract,
+    /** Union */
+    Union,
+}
+
+/**
+ * Block used to apply a boolean operation between 2 geometries
+ */
+export class BooleanGeometryBlock extends NodeGeometryBlock {
     /**
      * Gets or sets a boolean indicating that this block can evaluate context
      * Build performance is improved when this value is set to false as the system will cache values instead of reevaluating everything per context change
@@ -18,17 +31,27 @@ export class MergeGeometryBlock extends NodeGeometryBlock {
     public evaluateContext = false;
 
     /**
-     * Create a new MergeGeometryBlock
+     * Gets or sets the operation applied by the block
+     */
+    @editableInPropertyPage("Operation", PropertyTypeForEdition.List, "ADVANCED", {
+        notifiers: { rebuild: true },
+        options: [
+            { label: "Intersect", value: BooleanGeometryOperations.Intersect },
+            { label: "Subtract", value: BooleanGeometryOperations.Subtract },
+            { label: "Union", value: BooleanGeometryOperations.Union },
+        ],
+    })
+    public operation = BooleanGeometryOperations.Intersect;
+
+    /**
+     * Create a new BooleanGeometryBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
         super(name);
 
         this.registerInput("geometry0", NodeGeometryBlockConnectionPointTypes.Geometry);
-        this.registerInput("geometry1", NodeGeometryBlockConnectionPointTypes.Geometry, true);
-        this.registerInput("geometry2", NodeGeometryBlockConnectionPointTypes.Geometry, true);
-        this.registerInput("geometry3", NodeGeometryBlockConnectionPointTypes.Geometry, true);
-        this.registerInput("geometry4", NodeGeometryBlockConnectionPointTypes.Geometry, true);
+        this.registerInput("geometry1", NodeGeometryBlockConnectionPointTypes.Geometry);
 
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Geometry);
     }
@@ -38,7 +61,7 @@ export class MergeGeometryBlock extends NodeGeometryBlock {
      * @returns the class name
      */
     public getClassName() {
-        return "MergeGeometryBlock";
+        return "BooleanGeometryBlock";
     }
 
     /**
@@ -56,27 +79,6 @@ export class MergeGeometryBlock extends NodeGeometryBlock {
     }
 
     /**
-     * Gets the geometry2 input component
-     */
-    public get geometry2(): NodeGeometryConnectionPoint {
-        return this._inputs[2];
-    }
-
-    /**
-     * Gets the geometry3 input component
-     */
-    public get geometry3(): NodeGeometryConnectionPoint {
-        return this._inputs[3];
-    }
-
-    /**
-     * Gets the geometry4 input component
-     */
-    public get geometry4(): NodeGeometryConnectionPoint {
-        return this._inputs[4];
-    }
-
-    /**
      * Gets the geometry output component
      */
     public get output(): NodeGeometryConnectionPoint {
@@ -85,26 +87,31 @@ export class MergeGeometryBlock extends NodeGeometryBlock {
 
     protected _buildBlock(state: NodeGeometryBuildState) {
         const func = (state: NodeGeometryBuildState) => {
-            let vertexData = this.geometry0.getConnectedValue(state) as VertexData;
-            const additionalVertexData: VertexData[] = [];
+            const vertexData0 = this.geometry0.getConnectedValue(state) as VertexData;
+            const vertexData1 = this.geometry1.getConnectedValue(state) as VertexData;
 
-            if (this.geometry1.isConnected) {
-                additionalVertexData.push(this.geometry1.getConnectedValue(state));
-            }
-            if (this.geometry2.isConnected) {
-                additionalVertexData.push(this.geometry2.getConnectedValue(state));
-            }
-            if (this.geometry3.isConnected) {
-                additionalVertexData.push(this.geometry3.getConnectedValue(state));
-            }
-            if (this.geometry4.isConnected) {
-                additionalVertexData.push(this.geometry4.getConnectedValue(state));
+            if (!vertexData0 || !vertexData1) {
+                return null;
             }
 
-            if (additionalVertexData.length && vertexData) {
-                vertexData = vertexData.merge(additionalVertexData, true, false, true, true);
+            const CSG0 = CSG.FromVertexData(vertexData0);
+            const CSG1 = CSG.FromVertexData(vertexData1);
+
+            let boolCSG: CSG;
+
+            switch (this.operation) {
+                case BooleanGeometryOperations.Intersect:
+                    boolCSG = CSG0.intersect(CSG1);
+                    break;
+                case BooleanGeometryOperations.Subtract:
+                    boolCSG = CSG0.subtract(CSG1);
+                    break;
+                case BooleanGeometryOperations.Union:
+                    boolCSG = CSG0.union(CSG1);
+                    break;
             }
-            return vertexData;
+
+            return boolCSG.toVertexData();
         };
 
         if (this.evaluateContext) {
@@ -116,7 +123,8 @@ export class MergeGeometryBlock extends NodeGeometryBlock {
     }
 
     protected _dumpPropertiesCode() {
-        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.evaluateContext = ${this.evaluateContext ? "true" : "false"};\n`;
+        let codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.evaluateContext = ${this.evaluateContext ? "true" : "false"};\n`;
+        codeString += `${this._codeVariableName}.operation = BABYLON.BooleanGeometryOperations.${BooleanGeometryOperations[this.operation]};\n`;
         return codeString;
     }
 
@@ -128,6 +136,7 @@ export class MergeGeometryBlock extends NodeGeometryBlock {
         const serializationObject = super.serialize();
 
         serializationObject.evaluateContext = this.evaluateContext;
+        serializationObject.operation = this.operation;
 
         return serializationObject;
     }
@@ -136,7 +145,10 @@ export class MergeGeometryBlock extends NodeGeometryBlock {
         super._deserialize(serializationObject);
 
         this.evaluateContext = serializationObject.evaluateContext;
+        if (serializationObject.operation) {
+            this.operation = serializationObject.operation;
+        }
     }
 }
 
-RegisterClass("BABYLON.MergeGeometryBlock", MergeGeometryBlock);
+RegisterClass("BABYLON.BooleanGeometryBlock", BooleanGeometryBlock);
