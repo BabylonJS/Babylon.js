@@ -768,7 +768,9 @@ export class CSG {
      * @returns the final vertex data
      */
     public toVertexData(onBeforePolygonProcessing: Nullable<(polygon: Polygon) => void> = null, onAfterPolygonProcessing: Nullable<() => void> = null): VertexData {
-        const matrix = this.matrix.clone();
+        const matrix = this.matrix.clone();        
+        matrix.invert();
+
         const polygons = this._polygons;
         const vertices = [];
         const indices = [];
@@ -890,9 +892,6 @@ export class CSG {
      * @returns A new Mesh
      */
     public buildMeshGeometry(name: string, scene?: Scene, keepSubMeshes?: boolean): Mesh {
-        const matrix = this.matrix.clone();
-        matrix.invert();
-
         const mesh = new Mesh(name, scene);
         const polygons = this._polygons;
         let currentIndex = 0;
