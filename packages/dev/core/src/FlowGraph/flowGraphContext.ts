@@ -209,15 +209,13 @@ export class FlowGraphContext {
     public serialize(serializationObject: any = {}) {
         serializationObject.uniqueId = this.uniqueId;
         serializationObject._userVariables = {};
-        console.log("user variables", this._userVariables);
-        for (const [key, value] of this._userVariables) {
-            console.log("serialize", key, value, "user var");
+        this._userVariables.forEach((value, key) => {
             serializationObject._userVariables[key] = value;
-        }
+        });
         serializationObject._connectionValues = {};
-        for (const [key, value] of this._connectionValues) {
+        this._connectionValues.forEach((value, key) => {
             serializationObject._connectionValues[key] = value;
-        }
+        });
     }
 
     public getClassName() {

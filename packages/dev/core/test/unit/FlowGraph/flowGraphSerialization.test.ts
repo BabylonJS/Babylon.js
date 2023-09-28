@@ -90,14 +90,13 @@ describe("Flow Graph Serialization", () => {
 
         const serialized: any = {};
         context.serialize(serialized);
-        console.log("serialized context", serialized);
 
         expect(serialized._userVariables.test).toEqual(42);
         expect(serialized._connectionValues[flowGraphAddBlock.leftInput.uniqueId]).toEqual(1);
         expect(serialized._connectionValues[flowGraphAddBlock.rightInput.uniqueId]).toEqual(2);
 
         const parsed = FlowGraphContext.Parse(serialized, { scene, eventCoordinator: coordinator.eventCoordinator });
-        console.log("parsed context", parsed);
+
         expect(parsed.uniqueId).toEqual(context.uniqueId);
         expect(parsed.getClassName()).toEqual("FlowGraphContext");
         expect(parsed.getVariable("test")).toEqual(42);
