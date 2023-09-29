@@ -79,6 +79,7 @@ export class AnimationGroup implements IDisposable {
     private _playOrder = 0;
     private _enableBlending: Nullable<boolean> = null;
     private _blendingSpeed: Nullable<number> = null;
+    private _numActiveAnimatables = 0;
 
     /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
@@ -135,13 +136,17 @@ export class AnimationGroup implements IDisposable {
      */
     public syncWithMask() {
         if (!this.mask) {
+            this._numActiveAnimatables = this._targetedAnimations.length;
             return;
         }
+
+        this._numActiveAnimatables = 0;
 
         for (let i = 0; i < this._animatables.length; ++i) {
             const animatable = this._animatables[i];
 
             if (this.mask.retainsTarget(animatable.target.name)) {
+                this._numActiveAnimatables++;
                 if (animatable.paused) {
                     animatable.restart();
                 }
@@ -579,7 +584,7 @@ export class AnimationGroup implements IDisposable {
             this._animationLoopFlags[index] = true;
 
             this._animationLoopCount++;
-            if (this._animationLoopCount === this._targetedAnimations.length) {
+            if (this._animationLoopCount === this._numActiveAnimatables) {
                 this.onAnimationGroupLoopObservable.notifyObservers(this);
                 this._animationLoopCount = 0;
                 this._animationLoopFlags.length = 0;
