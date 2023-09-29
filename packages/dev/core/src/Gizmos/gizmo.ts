@@ -332,6 +332,7 @@ export class Gizmo implements IGizmo {
                     effectiveNode.getClassName() === "InstancedMesh";
                 const transformNode = supportedNode ? (effectiveNode as TransformNode) : undefined;
                 effectiveNode.getWorldMatrix().decompose(undefined, this._rootMesh.rotationQuaternion!, undefined, Gizmo.PreserveScaling ? transformNode : undefined);
+                this._rootMesh.rotationQuaternion!.normalize();
             } else {
                 if (this._customRotationQuaternion) {
                     this._rootMesh.rotationQuaternion!.copyFrom(this._customRotationQuaternion);
@@ -433,7 +434,8 @@ export class Gizmo implements IGizmo {
                 const localMat = TmpVectors.Matrix[1];
                 transform.parent.getWorldMatrix().invertToRef(parentInv);
                 this._attachedNode.getWorldMatrix().multiplyToRef(parentInv, localMat);
-                localMat.decompose(TmpVectors.Vector3[0], TmpVectors.Quaternion[0], transform.position, Gizmo.PreserveScaling ? transform : undefined);
+                localMat.decompose(TmpVectors.Vector3[0], TmpVectors.Quaternion[0], transform.position);
+                TmpVectors.Quaternion[0].normalize();
                 if (transform.isUsingPivotMatrix()) {
                     // Calculate the local matrix without the translation.
                     // Copied from TranslateNode.computeWorldMatrix
