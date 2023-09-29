@@ -342,6 +342,7 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                 if (this.updateGizmoRotationToMatchAttachedMesh) {
                     // Rotate selected mesh quaternion over fixed axis
                     nodeQuaternion.multiplyToRef(amountToRotate, nodeQuaternion);
+                    nodeQuaternion.normalize();
                     // recompose matrix
                     Matrix.ComposeToRef(nodeScale, nodeQuaternion, nodeTranslation, this.attachedNode.getWorldMatrix());
                 } else {
