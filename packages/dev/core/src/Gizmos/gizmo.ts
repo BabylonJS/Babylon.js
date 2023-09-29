@@ -332,7 +332,7 @@ export class Gizmo implements IGizmo {
                     effectiveNode.getClassName() === "InstancedMesh";
                 const transformNode = supportedNode ? (effectiveNode as TransformNode) : undefined;
                 effectiveNode.getWorldMatrix().decompose(undefined, this._rootMesh.rotationQuaternion!, undefined, Gizmo.PreserveScaling ? transformNode : undefined);
-                this._rootMesh.rotationQuaternion?.normalize();
+                this._rootMesh.rotationQuaternion!.normalize();
             } else {
                 if (this._customRotationQuaternion) {
                     this._rootMesh.rotationQuaternion!.copyFrom(this._customRotationQuaternion);
