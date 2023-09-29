@@ -1,5 +1,12 @@
 # Changelog
 
+## 6.22.1
+
+### Core
+
+- Gizmos fixes and small improvements - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#14365](https://github.com/BabylonJS/Babylon.js/pull/14365))
+- OIT: Fix viewport not set correctly - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14367](https://github.com/BabylonJS/Babylon.js/pull/14367))
+
 ## 6.22.0
 
 ### Core

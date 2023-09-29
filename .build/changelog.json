@@ -1,21 +1,100 @@
 {
-    "fromTag": "6.21.4",
+    "fromTag": "6.22.0",
     "changelog": {
-        "6.21.4": [
+        "6.22.1": [
             {
-                "pr": "14360",
-                "title": "Texture cache fix",
-                "description": "follow up on equi rect changes.",
+                "pr": "14365",
+                "title": "Gizmos fixes and small improvements",
+                "description": "fixes for :\r\n- https://forum.babylonjs.com/t/gizmos-ondragobservable-outdated-docs/44455\r\n- https://forum.babylonjs.com/t/boundingboxgizmo-attach-to-child-node-with-a-wrong-boundingbox/31082/19\r\n- https://forum.babylonjs.com/t/gizmo-rotation-validation-does-not-work/44543/3\r\n- https://forum.babylonjs.com/t/gizmo-use-tmpparent-but-do-not-preserve-scaling-sign/29270/52\r\n\r\nfixes #12718 ",
                 "author": {
-                    "name": "sebavan",
-                    "url": "https://github.com/sebavan"
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
                 },
                 "files": [
-                    "packages/dev/core/src/Materials/Textures/equiRectangularCubeTexture.ts",
-                    "packages/dev/core/src/Materials/Textures/texture.ts"
+                    "packages/dev/core/src/Behaviors/Meshes/pointerDragBehavior.ts",
+                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts",
+                    "packages/dev/core/src/Gizmos/gizmo.ts",
+                    "packages/dev/core/src/Gizmos/planeRotationGizmo.ts",
+                    "packages/dev/core/src/Gizmos/positionGizmo.ts",
+                    "packages/dev/core/src/Gizmos/rotationGizmo.ts",
+                    "packages/dev/core/src/Gizmos/scaleGizmo.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts"
                 ],
                 "tags": [
-                    "skip changelog"
+                    "enhancement",
+                    "gizmos"
+                ]
+            },
+            {
+                "pr": "14368",
+                "title": "New boolean block for NGE",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/booleanGeometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/mergeGeometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/dev/core/src/Meshes/csg.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "14367",
+                "title": "OIT: Fix viewport not set correctly",
+                "description": "See https://forum.babylonjs.com/t/bug-in-order-independent-transparency-rendering-with-multiple-cameras/44481/6",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/depthPeelingRenderer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14366",
+                "title": "Update to havok 1.2.0",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/babylonServer/public/havok/HavokPhysics.wasm"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14364",
+                "title": "Initial flow graph unit tests",
+                "description": null,
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphReceiveCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphBranchBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphCustomFunctionBlock.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphDataNodes.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphEventNodes.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphExecutionNodes.test.ts"
+                ],
+                "tags": [
+                    "skip changelog",
+                    "flow graph"
                 ]
             }
         ],
@@ -157,6 +236,24 @@
                     "packages/dev/serializers/src/glTF/2.0/Extensions/EXT_mesh_gpu_instancing.ts"
                 ],
                 "tags": []
+            }
+        ],
+        "6.21.4": [
+            {
+                "pr": "14360",
+                "title": "Texture cache fix",
+                "description": "follow up on equi rect changes.",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/equiRectangularCubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/texture.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
             }
         ],
         "6.21.3": [
