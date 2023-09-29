@@ -306,6 +306,11 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                     angle = -angle;
                 }
 
+                TmpVectors.Vector3[0].set(angle, 0, 0);
+                if (!this.dragBehavior.validateDrag(TmpVectors.Vector3[0])) {
+                    angle = 0;
+                }
+
                 // Snapping logic
                 let snapped = false;
                 if (this.snapDistance != 0) {
