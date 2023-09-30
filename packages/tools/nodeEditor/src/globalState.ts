@@ -33,6 +33,7 @@ export class GlobalState {
     onIsLoadingChanged = new Observable<boolean>();
     onPreviewCommandActivated = new Observable<boolean>();
     onLightUpdated = new Observable<void>();
+    onBackgroundHDRUpdated = new Observable<void>();
     onPreviewBackgroundChanged = new Observable<void>();
     onBackFaceCullingChanged = new Observable<void>();
     onDepthPrePassChanged = new Observable<void>();
@@ -53,6 +54,7 @@ export class GlobalState {
     hemisphericLight: boolean;
     directionalLight0: boolean;
     directionalLight1: boolean;
+    backgroundHDR: boolean;
     controlCamera: boolean;
     _mode: NodeMaterialModes;
     pointerOverCanvas: boolean = false;
@@ -80,6 +82,7 @@ export class GlobalState {
         this.hemisphericLight = DataStorage.ReadBoolean("HemisphericLight", true);
         this.directionalLight0 = DataStorage.ReadBoolean("DirectionalLight0", false);
         this.directionalLight1 = DataStorage.ReadBoolean("DirectionalLight1", false);
+        this.backgroundHDR = DataStorage.ReadBoolean("backgroundHDR", false);
         this.controlCamera = DataStorage.ReadBoolean("ControlCamera", true);
         this._mode = DataStorage.ReadNumber("Mode", NodeMaterialModes.Material);
         this.stateManager = new StateManager();
