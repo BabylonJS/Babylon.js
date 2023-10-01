@@ -21,9 +21,9 @@
     }
 
     #define inline
-    float computeShadowCube(vec3 lightPosition, samplerCube shadowSampler, float darkness, vec2 depthValues)
+    float computeShadowCube(vec3 worldPos, vec3 lightPosition, samplerCube shadowSampler, float darkness, vec2 depthValues)
     {
-        vec3 directionToLight = vPositionW - lightPosition;
+        vec3 directionToLight = worldPos - lightPosition;
         float depth = length(directionToLight);
         depth = (depth + depthValues.x) / (depthValues.y);
         depth = clamp(depth, 0., 1.0);
@@ -41,9 +41,9 @@
     }
 
     #define inline
-    float computeShadowWithPoissonSamplingCube(vec3 lightPosition, samplerCube shadowSampler, float mapSize, float darkness, vec2 depthValues)
+    float computeShadowWithPoissonSamplingCube(vec3 worldPos, vec3 lightPosition, samplerCube shadowSampler, float mapSize, float darkness, vec2 depthValues)
     {
-        vec3 directionToLight = vPositionW - lightPosition;
+        vec3 directionToLight = worldPos - lightPosition;
         float depth = length(directionToLight);
         depth = (depth + depthValues.x) / (depthValues.y);
         depth = clamp(depth, 0., 1.0);
@@ -77,9 +77,9 @@
     }
 
     #define inline
-    float computeShadowWithESMCube(vec3 lightPosition, samplerCube shadowSampler, float darkness, float depthScale, vec2 depthValues)
+    float computeShadowWithESMCube(vec3 worldPos, vec3 lightPosition, samplerCube shadowSampler, float darkness, float depthScale, vec2 depthValues)
     {
-        vec3 directionToLight = vPositionW - lightPosition;
+        vec3 directionToLight = worldPos - lightPosition;
         float depth = length(directionToLight);
         depth = (depth + depthValues.x) / (depthValues.y);
         float shadowPixelDepth = clamp(depth, 0., 1.0);
@@ -93,21 +93,21 @@
             float shadowMapSample = textureCube(shadowSampler, directionToLight).x;
         #endif
 
-        float esm = 1.0 - clamp(exp(min(87., depthScale * shadowPixelDepth)) * shadowMapSample, 0., 1. - darkness);	
+        float esm = 1.0 - clamp(exp(min(87., depthScale * shadowPixelDepth)) * shadowMapSample, 0., 1. - darkness);
         return esm;
     }
 
     #define inline
-    float computeShadowWithCloseESMCube(vec3 lightPosition, samplerCube shadowSampler, float darkness, float depthScale, vec2 depthValues)
+    float computeShadowWithCloseESMCube(vec3 worldPos, vec3 lightPosition, samplerCube shadowSampler, float darkness, float depthScale, vec2 depthValues)
     {
-        vec3 directionToLight = vPositionW - lightPosition;
+        vec3 directionToLight = worldPos - lightPosition;
         float depth = length(directionToLight);
         depth = (depth + depthValues.x) / (depthValues.y);
         float shadowPixelDepth = clamp(depth, 0., 1.0);
 
         directionToLight = normalize(directionToLight);
         directionToLight.y = -directionToLight.y;
-        
+
         #ifndef SHADOWFLOAT
             float shadowMapSample = unpack(textureCube(shadowSampler, directionToLight));
         #else
@@ -299,7 +299,7 @@
 
             // Equation resolved to fit in a 3*3 distribution like 
             // 1 2 1
-            // 2 4 2 
+            // 2 4 2
             // 1 2 1
             vec2 uvw0 = 3. - 2. * st;
             vec2 uvw1 = 1. + 2. * st;
@@ -421,7 +421,7 @@
                 return computeFallOff(shadow, clipSpace.xy, frustumEdgeFalloff);
             }
         }
-        
+
         // Shadow PCF kernel 5*5 in only 9 taps (high quality)
         // This uses a well distributed taps to allow a gaussian distribution covering a 5*5 kernel
         // https://mynameismjp.wordpress.com/2013/09/10/shadow-maps/
@@ -504,38 +504,38 @@
             vec3(-0.04661255, 0.7995201, 0.),
             vec3(0.4402924, 0.3640312, 0.),
 
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.),
-            vec3(0., 0., 0.)
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.),
+            vec3(0.)
         );
 
         const vec3 PoissonSamplers64[64] = vec3[64](
