@@ -88,6 +88,10 @@ export class ScreenSpaceCurvaturePostProcess extends PostProcess {
             // Geometry buffer renderer is not supported. So, work as a passthrough.
             Logger.Error("Multiple Render Target support needed for screen space curvature post process. Please use IsSupported test first.");
         } else {
+            if (this._geometryBufferRenderer.generateNormalsInWorldSpace) {
+                console.error("ScreenSpaceCurvaturePostProcess does not support generateNormalsInWorldSpace=true for the geometry buffer renderer!");
+            }
+
             // Geometry buffer renderer is supported.
             this.onApply = (effect: Effect) => {
                 effect.setFloat("curvature_ridge", 0.5 / Math.max(this.ridge * this.ridge, 1e-4));
