@@ -3,6 +3,8 @@ import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnec
 import { FlowGraphExecutionBlock } from "core/FlowGraph/flowGraphExecutionBlock";
 import { RichTypeBoolean } from "core/FlowGraph/flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 
 /**
  * @experimental
@@ -22,8 +24,8 @@ export class FlowGraphFlipFlopBlock extends FlowGraphExecutionBlock {
      */
     public readonly isOn: FlowGraphDataConnection<boolean>;
 
-    constructor() {
-        super();
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(config);
 
         this.onOn = this._registerSignalOutput("onOn");
         this.onOff = this._registerSignalOutput("onOff");
@@ -42,4 +44,9 @@ export class FlowGraphFlipFlopBlock extends FlowGraphExecutionBlock {
             this.onOff._activateSignal(context);
         }
     }
+
+    public getClassName(): string {
+        return "FlowGraphFlipFlopBlock";
+    }
 }
+RegisterClass("FlowGraphFlipFlopBlock", FlowGraphFlipFlopBlock);

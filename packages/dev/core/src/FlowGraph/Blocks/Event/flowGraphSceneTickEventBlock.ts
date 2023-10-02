@@ -1,6 +1,6 @@
 import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-
+import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * @experimental
  * Block that triggers on scene tick (before each render).
@@ -28,4 +28,9 @@ export class FlowGraphSceneTickEventBlock extends FlowGraphEventBlock {
         scene.onBeforeRenderObservable.remove(contextObserver);
         context._deleteExecutionVariable(this, "sceneBeforeRender");
     }
+
+    public getClassName(): string {
+        return "FlowGraphSceneTickEventBlock";
+    }
 }
+RegisterClass("FlowGraphSceneTickEventBlock", FlowGraphSceneTickEventBlock);

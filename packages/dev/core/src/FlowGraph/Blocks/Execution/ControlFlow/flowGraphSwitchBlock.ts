@@ -3,12 +3,13 @@ import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import { FlowGraphExecutionBlock } from "../../../flowGraphExecutionBlock";
 import { RichTypeAny } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
-
+import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import { RegisterClass } from "../../../../Misc/typeStore";
 /**
  * @experimental
  * Configuration for a switch block.
  */
-export interface IFlowGraphSwitchBlockConfiguration<T> {
+export interface IFlowGraphSwitchBlockConfiguration<T> extends IFlowGraphBlockConfiguration {
     /**
      * The possible values for the selection.
      */
@@ -29,12 +30,14 @@ export class FlowGraphSwitchBlock<T> extends FlowGraphExecutionBlock {
      */
     public readonly outputFlows: FlowGraphSignalConnection[] = [];
 
-    constructor(private _config: IFlowGraphSwitchBlockConfiguration<T>) {
-        super();
+    constructor(public config: IFlowGraphSwitchBlockConfiguration<T>) {
+        super(config);
 
         this.selection = this._registerDataInput("selection", RichTypeAny);
+    }
 
-        for (let i = 0; i <= this._config.cases.length; i++) {
+    public configure(): void {
+        for (let i = 0; i <= this.config.cases.length; i++) {
             this.outputFlows.push(this._registerSignalOutput(`out${i}`));
         }
     }
@@ -42,8 +45,8 @@ export class FlowGraphSwitchBlock<T> extends FlowGraphExecutionBlock {
     public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
         const selectionValue = this.selection.getValue(context);
 
-        for (let i = 0; i < this._config.cases.length; i++) {
-            if (selectionValue === this._config.cases[i]) {
+        for (let i = 0; i < this.config.cases.length; i++) {
+            if (selectionValue === this.config.cases[i]) {
                 this.outputFlows[i]._activateSignal(context);
                 return;
             }
@@ -52,4 +55,9 @@ export class FlowGraphSwitchBlock<T> extends FlowGraphExecutionBlock {
         // default case
         this.outputFlows[this.outputFlows.length - 1]._activateSignal(context);
     }
+
+    public getClassName(): string {
+        return "FlowGraphSwitchBlock";
+    }
 }
+RegisterClass("FlowGraphSwitchBlock", FlowGraphSwitchBlock);

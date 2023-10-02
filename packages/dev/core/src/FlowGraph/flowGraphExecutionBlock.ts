@@ -1,3 +1,4 @@
+import type { IFlowGraphBlockConfiguration } from "./flowGraphBlock";
 import { FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphConnectionType } from "./flowGraphConnection";
 import type { FlowGraphContext } from "./flowGraphContext";
@@ -14,13 +15,20 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
      */
     public readonly onStart: FlowGraphSignalConnection;
 
-    public readonly signalInputs: FlowGraphSignalConnection[] = [];
-    public readonly signalOutputs: FlowGraphSignalConnection[] = [];
+    public signalInputs: FlowGraphSignalConnection[];
+    public signalOutputs: FlowGraphSignalConnection[];
 
-    protected constructor() {
-        super();
+    protected constructor(config: IFlowGraphBlockConfiguration = {}) {
+        super(config);
         this.onStart = this._registerSignalInput("onStart");
     }
+
+    public configure() {
+        super.configure();
+        this.signalInputs = [];
+        this.signalOutputs = [];
+    }
+
     /**
      * @internal
      * Executes the flow graph execution block.
@@ -62,10 +70,10 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
     public static Parse(serializationObject: any = {}) {
         const block = super.Parse(serializationObject) as FlowGraphExecutionBlock;
         for (let i = 0; i < serializationObject.signalInputs.length; i++) {
-            block.signalInputs[i].uniqueId = serializationObject.signalInputs[i].uniqueId;
+            block.signalInputs[i].parse(serializationObject.signalInputs[i]);
         }
         for (let i = 0; i < serializationObject.signalOutputs.length; i++) {
-            block.signalOutputs[i].uniqueId = serializationObject.signalOutputs[i].uniqueId;
+            block.signalOutputs[i].parse(serializationObject.signalOutputs[i]);
         }
         return block;
     }

@@ -3,6 +3,8 @@ import type { FlowGraphContext } from "../../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import { FlowGraphExecutionBlock } from "../../../flowGraphExecutionBlock";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 
 /**
  * @experimental
@@ -22,8 +24,8 @@ export class FlowGraphBranchBlock extends FlowGraphExecutionBlock {
      */
     public readonly onFalse: FlowGraphSignalConnection;
 
-    constructor() {
-        super();
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(config);
 
         this.condition = this._registerDataInput("condition", RichTypeBoolean);
 
@@ -38,4 +40,9 @@ export class FlowGraphBranchBlock extends FlowGraphExecutionBlock {
             this.onFalse._activateSignal(context);
         }
     }
+
+    public getClassName(): string {
+        return "FlowGraphBranchBlock";
+    }
 }
+RegisterClass("FlowGraphBranchBlock", FlowGraphBranchBlock);

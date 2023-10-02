@@ -20,4 +20,17 @@ export class FlowGraphVariableDefinitions {
         });
         return context;
     }
+
+    public serialize(serializationObject: any) {
+        this._definitions.forEach((value, key) => {
+            serializationObject[key] = value;
+        });
+    }
+
+    public parse(serializationObject: any) {
+        this._definitions.clear();
+        for (const key in serializationObject) {
+            this._definitions.set(key, serializationObject[key]);
+        }
+    }
 }

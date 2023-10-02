@@ -7,6 +7,7 @@ import {
     FlowGraphDoNBlock,
     FlowGraphFlipFlopBlock,
     FlowGraphForLoopBlock,
+    FlowGraphLogBlock,
     FlowGraphMultiGateBlock,
     FlowGraphSceneReadyEventBlock,
     FlowGraphSceneTickEventBlock,
@@ -15,7 +16,6 @@ import {
     FlowGraphTimerBlock,
 } from "core/FlowGraph";
 import { FlowGraphBranchBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphBranchBlock";
-import { FlowGraphCustomFunctionBlock } from "core/FlowGraph/Blocks/Execution/flowGraphCustomFunctionBlock";
 import { Vector3 } from "core/Maths/math.vector";
 import { Scene } from "core/scene";
 
@@ -27,6 +27,7 @@ describe("Flow Graph Execution Nodes", () => {
     let flowGraphContext: FlowGraphContext;
 
     beforeEach(() => {
+        console.log = jest.fn();
         engine = new NullEngine({
             renderHeight: 256,
             renderWidth: 256,
@@ -42,40 +43,37 @@ describe("Flow Graph Execution Nodes", () => {
     });
 
     it("Branch Block", () => {
-        const customFunctionTrue = jest.fn();
-        const customFunctionFalse = jest.fn();
-
-        const sceneReady = new FlowGraphSceneReadyEventBlock();
+        const sceneReady = new FlowGraphSceneReadyEventBlock({ name: "SceneReady" });
         flowGraph.addEventBlock(sceneReady);
 
         const branch = new FlowGraphBranchBlock();
         sceneReady.onDone.connectTo(branch.onStart);
         branch.condition.setValue(true, flowGraphContext); // will execute onTrue
 
-        const onTrue = new FlowGraphCustomFunctionBlock({ customFunction: customFunctionTrue });
+        const onTrue = new FlowGraphLogBlock();
+        onTrue.message.setValue("onTrue", flowGraphContext);
         branch.onTrue.connectTo(onTrue.onStart);
-        const onFalse = new FlowGraphCustomFunctionBlock({ customFunction: customFunctionFalse });
+        const onFalse = new FlowGraphLogBlock();
+        onFalse.message.setValue("onFalse", flowGraphContext);
         branch.onFalse.connectTo(onFalse.onStart);
 
         flowGraph.start();
         scene.onReadyObservable.notifyObservers(scene);
 
-        expect(customFunctionTrue).toHaveBeenCalled();
-        expect(customFunctionFalse).not.toHaveBeenCalled();
+        expect(console.log).toHaveBeenCalledTimes(1);
+        expect(console.log).toHaveBeenCalledWith("onTrue");
     });
 
     it("DoN Block", () => {
-        const customFunction = jest.fn();
-
         const sceneReady = new FlowGraphSceneReadyEventBlock();
         flowGraph.addEventBlock(sceneReady);
 
         const doN = new FlowGraphDoNBlock();
         sceneReady.onDone.connectTo(doN.onStart);
 
-        const nIsDone = new FlowGraphCustomFunctionBlock({ customFunction });
+        const nIsDone = new FlowGraphLogBlock();
         doN.onDone.connectTo(nIsDone.onStart);
-        doN.currentCount.connectTo(nIsDone.input);
+        doN.currentCount.connectTo(nIsDone.message);
 
         flowGraph.start();
 
@@ -88,13 +86,10 @@ describe("Flow Graph Execution Nodes", () => {
             scene.onReadyObservable.notifyObservers(scene);
         }
 
-        expect(customFunction).toHaveBeenCalledTimes(numCalls);
+        expect(console.log).toHaveBeenCalledTimes(numCalls);
     });
 
     it("ForLoop Block", () => {
-        const customFunction = jest.fn();
-        const customFunctionDone = jest.fn();
-
         const sceneReady = new FlowGraphSceneReadyEventBlock();
         flowGraph.addEventBlock(sceneReady);
 
@@ -104,40 +99,39 @@ describe("Flow Graph Execution Nodes", () => {
         forLoop.endIndex.setValue(7, flowGraphContext);
         forLoop.step.setValue(2, flowGraphContext);
 
-        const loop = new FlowGraphCustomFunctionBlock({ customFunction });
+        const loop = new FlowGraphLogBlock();
         forLoop.onLoop.connectTo(loop.onStart);
-        forLoop.index.connectTo(loop.input);
+        forLoop.index.connectTo(loop.message);
 
-        const done = new FlowGraphCustomFunctionBlock({ customFunction: customFunctionDone });
+        const done = new FlowGraphLogBlock();
         forLoop.onDone.connectTo(done.onStart);
+        done.message.setValue("done", flowGraphContext);
 
         flowGraph.start();
         scene.onReadyObservable.notifyObservers(scene);
 
-        expect(customFunction).toHaveBeenCalledTimes(3);
-        expect(customFunction).toHaveBeenNthCalledWith(1, 1);
-        expect(customFunction).toHaveBeenNthCalledWith(2, 3);
-        expect(customFunction).toHaveBeenNthCalledWith(3, 5);
-
-        expect(customFunctionDone).toHaveBeenCalledTimes(1);
+        expect(console.log).toHaveBeenCalledTimes(4);
+        expect(console.log).toHaveBeenNthCalledWith(1, 1);
+        expect(console.log).toHaveBeenNthCalledWith(2, 3);
+        expect(console.log).toHaveBeenNthCalledWith(3, 5);
+        expect(console.log).toHaveBeenNthCalledWith(4, "done");
     });
 
     it("MultiGate Block", () => {
         const sceneReady = new FlowGraphSceneReadyEventBlock();
         flowGraph.addEventBlock(sceneReady);
 
-        const custom1 = jest.fn();
-        const custom2 = jest.fn();
-        const custom3 = jest.fn();
-
         const multiGate = new FlowGraphMultiGateBlock({ numberOutputFlows: 3, loop: true });
         sceneReady.onDone.connectTo(multiGate.onStart);
 
-        const customFunction1 = new FlowGraphCustomFunctionBlock({ customFunction: custom1 });
+        const customFunction1 = new FlowGraphLogBlock();
+        customFunction1.message.setValue("custom1", flowGraphContext);
         multiGate.outFlows[0].connectTo(customFunction1.onStart);
-        const customFunction2 = new FlowGraphCustomFunctionBlock({ customFunction: custom2 });
+        const customFunction2 = new FlowGraphLogBlock();
+        customFunction2.message.setValue("custom2", flowGraphContext);
         multiGate.outFlows[1].connectTo(customFunction2.onStart);
-        const customFunction3 = new FlowGraphCustomFunctionBlock({ customFunction: custom3 });
+        const customFunction3 = new FlowGraphLogBlock();
+        customFunction3.message.setValue("custom3", flowGraphContext);
         multiGate.outFlows[2].connectTo(customFunction3.onStart);
 
         flowGraph.start();
@@ -145,17 +139,16 @@ describe("Flow Graph Execution Nodes", () => {
         // notify twice so two of the multi gate blocks will be activated
         scene.onReadyObservable.notifyObservers(scene);
         scene.onReadyObservable.notifyObservers(scene);
-        expect(custom1).toHaveBeenCalledTimes(1);
-        expect(custom2).toHaveBeenCalledTimes(1);
-        expect(custom3).toHaveBeenCalledTimes(0);
+        expect(console.log).toHaveBeenNthCalledWith(1, "custom1");
+        expect(console.log).toHaveBeenNthCalledWith(2, "custom2");
 
         // activate the third gate
         scene.onReadyObservable.notifyObservers(scene);
-        expect(custom3).toHaveBeenCalledTimes(1);
+        expect(console.log).toHaveBeenNthCalledWith(3, "custom3");
 
         // activate the first gate again
         scene.onReadyObservable.notifyObservers(scene);
-        expect(custom1).toHaveBeenCalledTimes(2);
+        expect(console.log).toHaveBeenNthCalledWith(4, "custom1");
     });
 
     it("Switch Block", () => {
@@ -166,27 +159,24 @@ describe("Flow Graph Execution Nodes", () => {
         sceneReady.onDone.connectTo(switchBlock.onStart);
         switchBlock.selection.setValue(2, flowGraphContext);
 
-        const customFunction1 = jest.fn();
-        const customFunction2 = jest.fn();
-        const customFunction3 = jest.fn();
-
-        const customFunctionBlock1 = new FlowGraphCustomFunctionBlock({ customFunction: customFunction1 });
+        const customFunctionBlock1 = new FlowGraphLogBlock();
+        customFunctionBlock1.message.setValue("custom1", flowGraphContext);
         switchBlock.outputFlows[0].connectTo(customFunctionBlock1.onStart);
-        const customFunctionBlock2 = new FlowGraphCustomFunctionBlock({ customFunction: customFunction2 });
+        const customFunctionBlock2 = new FlowGraphLogBlock();
+        customFunctionBlock2.message.setValue("custom2", flowGraphContext);
         switchBlock.outputFlows[1].connectTo(customFunctionBlock2.onStart);
-        const customFunctionBlock3 = new FlowGraphCustomFunctionBlock({ customFunction: customFunction3 });
+        const customFunctionBlock3 = new FlowGraphLogBlock();
+        customFunctionBlock3.message.setValue("custom3", flowGraphContext);
         switchBlock.outputFlows[2].connectTo(customFunctionBlock3.onStart);
 
         flowGraph.start();
         scene.onReadyObservable.notifyObservers(scene);
 
-        expect(customFunction1).toHaveBeenCalledTimes(0);
-        expect(customFunction2).toHaveBeenCalledTimes(1);
-        expect(customFunction3).toHaveBeenCalledTimes(0);
+        expect(console.log).toHaveBeenNthCalledWith(1, "custom2");
 
         switchBlock.selection.setValue(3, flowGraphContext);
         scene.onReadyObservable.notifyObservers(scene);
-        expect(customFunction3).toHaveBeenCalledTimes(1);
+        expect(console.log).toHaveBeenNthCalledWith(2, "custom3");
     });
 
     it("Timer Block", () => {
@@ -199,20 +189,20 @@ describe("Flow Graph Execution Nodes", () => {
         sceneReady.onDone.connectTo(timer.onStart);
         timer.timeout.setValue(0, flowGraphContext);
 
-        const customImmediateFunction = jest.fn();
-        const customFunctionBlock = new FlowGraphCustomFunctionBlock({ customFunction: customImmediateFunction });
+        const customFunctionBlock = new FlowGraphLogBlock();
+        customFunctionBlock.message.setValue("custom", flowGraphContext);
         timer.onDone.connectTo(customFunctionBlock.onStart);
 
-        const customTimeoutFunction = jest.fn();
-        const customFunctionBlock2 = new FlowGraphCustomFunctionBlock({ customFunction: customTimeoutFunction });
+        const customFunctionBlock2 = new FlowGraphLogBlock();
+        customFunctionBlock2.message.setValue("custom2", flowGraphContext);
         timer.onTimerDone.connectTo(customFunctionBlock2.onStart);
 
         flowGraph.start();
         // this will run the onReadyObservable and the onBeforeRenderObservable
         scene.render();
 
-        expect(customImmediateFunction).toHaveBeenCalledTimes(1);
-        expect(customTimeoutFunction).toHaveBeenCalledTimes(1);
+        expect(console.log).toHaveBeenNthCalledWith(1, "custom");
+        expect(console.log).toHaveBeenNthCalledWith(2, "custom2");
     });
 
     it("Flip Flop Block", () => {
@@ -224,22 +214,20 @@ describe("Flow Graph Execution Nodes", () => {
         const flipFlop = new FlowGraphFlipFlopBlock();
         sceneTick.onDone.connectTo(flipFlop.onStart);
 
-        const onTrueFn = jest.fn();
-        const onTrue = new FlowGraphCustomFunctionBlock({ customFunction: onTrueFn });
+        const onTrue = new FlowGraphLogBlock();
+        onTrue.message.setValue("onTrue", flowGraphContext);
         flipFlop.onOn.connectTo(onTrue.onStart);
-        const onFalseFn = jest.fn();
-        const onFalse = new FlowGraphCustomFunctionBlock({ customFunction: onFalseFn });
+        const onFalse = new FlowGraphLogBlock();
+        onFalse.message.setValue("onFalse", flowGraphContext);
         flipFlop.onOff.connectTo(onFalse.onStart);
 
         flowGraph.start();
         scene.render();
 
-        expect(onTrueFn).toHaveBeenCalledTimes(1);
-        expect(onFalseFn).toHaveBeenCalledTimes(0);
+        expect(console.log).toHaveBeenNthCalledWith(1, "onTrue");
 
         scene.render();
-        expect(onTrueFn).toHaveBeenCalledTimes(1);
-        expect(onFalseFn).toHaveBeenCalledTimes(1);
+        expect(console.log).toHaveBeenNthCalledWith(2, "onFalse");
     });
 
     it("Throttle Block", () => {
@@ -252,18 +240,17 @@ describe("Flow Graph Execution Nodes", () => {
         throttle.duration.setValue(1000, flowGraphContext);
         sceneTick.onDone.connectTo(throttle.onStart);
 
-        const customFn = jest.fn();
-        const customFunction = new FlowGraphCustomFunctionBlock({ customFunction: customFn });
+        const customFunction = new FlowGraphLogBlock();
         throttle.onDone.connectTo(customFunction.onStart);
 
         flowGraph.start();
         scene.render();
 
-        expect(customFn).toHaveBeenCalledTimes(1);
+        expect(console.log).toHaveBeenCalledTimes(1);
 
         // Check if the execution is throttled
         scene.render();
-        expect(customFn).toHaveBeenCalledTimes(1);
+        expect(console.log).toHaveBeenCalledTimes(1);
     });
 
     afterEach(() => {

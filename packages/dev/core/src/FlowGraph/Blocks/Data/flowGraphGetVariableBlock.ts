@@ -2,6 +2,7 @@ import type { FlowGraphContext } from "../../flowGraphContext";
 import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { RichTypeString, RichTypeAny } from "../../flowGraphRichTypes";
+import { RegisterClass } from "core/Misc";
 
 /**
  * A block that gets the value of a variable.
@@ -37,4 +38,9 @@ export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
             this.output.setValue(context.getVariable(variableNameValue), context);
         }
     }
+
+    public getClassName(): string {
+        return "FlowGraphGetVariableBlock";
+    }
 }
+RegisterClass("FlowGraphGetVariableBlock", FlowGraphGetVariableBlock);

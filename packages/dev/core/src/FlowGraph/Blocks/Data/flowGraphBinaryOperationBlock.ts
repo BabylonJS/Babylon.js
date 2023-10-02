@@ -2,7 +2,7 @@ import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { RichType } from "../../flowGraphRichTypes";
 import type { FlowGraphContext } from "../../flowGraphContext";
-
+import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 /**
  * @experimental
  * The base block for all binary operation blocks. Receives an input of type
@@ -14,13 +14,14 @@ export class FlowGraphBinaryOperationBlock<LeftT, RightT, ResultT> extends FlowG
     output: FlowGraphDataConnection<ResultT>;
 
     constructor(
+        public config: IFlowGraphBlockConfiguration,
         leftRichType: RichType<LeftT>,
         rightRichType: RichType<RightT>,
         resultRichType: RichType<ResultT>,
         private _operation: (left: LeftT, right: RightT) => ResultT,
         private _className: string
     ) {
-        super();
+        super(config);
         this.leftInput = this._registerDataInput("leftInput", leftRichType);
         this.rightInput = this._registerDataInput("rightInput", rightRichType);
         this.output = this._registerDataOutput("Output", resultRichType);

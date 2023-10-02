@@ -5,6 +5,7 @@ import type { FlowGraphAsyncExecutionBlock } from "./flowGraphAsyncExecutionBloc
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import type { FlowGraphEventCoordinator } from "./flowGraphEventCoordinator";
+import type { FlowGraph } from "./flowGraph";
 
 /**
  * Construction parameters for the context.
@@ -222,16 +223,19 @@ export class FlowGraphContext {
         return "FlowGraphContext";
     }
 
-    public static Parse(serializationObject: any = {}, configuration: IFlowGraphContextConfiguration): FlowGraphContext {
-        const result = new FlowGraphContext(configuration);
-
-        result.uniqueId = serializationObject.uniqueId;
+    public parse(serializationObject: any) {
+        this.uniqueId = serializationObject.uniqueId;
         for (const key in serializationObject._userVariables) {
-            result._userVariables.set(key, serializationObject._userVariables[key]);
+            this._userVariables.set(key, serializationObject._userVariables[key]);
         }
         for (const key in serializationObject._connectionValues) {
-            result._connectionValues.set(key, serializationObject._connectionValues[key]);
+            this._connectionValues.set(key, serializationObject._connectionValues[key]);
         }
+    }
+
+    public static Parse(serializationObject: any = {}, graph: FlowGraph): FlowGraphContext {
+        const result = graph.createContext();
+        result.parse(serializationObject);
 
         return result;
     }

@@ -54,9 +54,9 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
      */
     // disable warning as this is used for parsing
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public _waitingConnectedPoint: any[] = [];
+    public connectedPointIds: any[] = [];
 
-    public constructor(name: string, _connectionType: FlowGraphConnectionType, protected _ownerBlock: BlockT) {
+    public constructor(name: string, _connectionType: FlowGraphConnectionType, /* @internal */ public _ownerBlock: BlockT) {
         this.name = name;
         this._connectionType = _connectionType;
     }
@@ -106,22 +106,29 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
         serializationObject.uniqueId = this.uniqueId;
         serializationObject.name = this.name;
         serializationObject._connectionType = this._connectionType;
-        serializationObject.connectedPoint = [];
+        serializationObject.connectedPointIds = [];
         serializationObject.className = this.getClassName();
         for (const point of this._connectedPoint) {
-            serializationObject.connectedPoint.push(point.uniqueId);
+            serializationObject.connectedPointIds.push(point.uniqueId);
         }
+        // console.log("serialization connected point ids", serializationObject.connectedPointIds);
     }
 
     public getClassName(): string {
         return "FlowGraphConnection";
     }
 
+    parse(serializationObject: any) {
+        this.uniqueId = serializationObject.uniqueId;
+        this.name = serializationObject.name;
+        this._connectionType = serializationObject._connectionType;
+        this.connectedPointIds = serializationObject.connectedPointIds;
+    }
+
     public static Parse(serializationObject: any = {}, ownerBlock: FlowGraphBlock) {
         const type = Tools.Instantiate(serializationObject.className);
         const connection = new type(serializationObject.name, serializationObject._connectionType, ownerBlock);
-        connection.uniqueId = serializationObject.uniqueId;
-        connection._waitingConnectedPoint = serializationObject.connectedPoint;
+        connection.parse(serializationObject);
         return connection;
     }
 }

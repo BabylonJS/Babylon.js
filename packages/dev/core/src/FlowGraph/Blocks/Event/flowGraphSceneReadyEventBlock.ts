@@ -1,6 +1,6 @@
 import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-
+import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * @experimental
  * Block that triggers when a scene is ready.
@@ -28,4 +28,9 @@ export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
         scene.onReadyObservable.remove(contextObserver);
         context._deleteExecutionVariable(this, "sceneReadyObserver");
     }
+
+    public getClassName() {
+        return "FlowGraphSceneReadyEventBlock";
+    }
 }
+RegisterClass("FlowGraphSceneReadyEventBlock", FlowGraphSceneReadyEventBlock);

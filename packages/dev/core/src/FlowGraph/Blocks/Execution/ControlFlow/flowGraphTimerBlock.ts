@@ -5,7 +5,8 @@ import type { FlowGraphContext } from "../../../flowGraphContext";
 import { FlowGraphAsyncExecutionBlock } from "../../../flowGraphAsyncExecutionBlock";
 import { RichTypeNumber } from "../../../flowGraphRichTypes";
 import { Tools } from "../../../../Misc/tools";
-
+import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import { RegisterClass } from "../../../../Misc/typeStore";
 /**
  * @experimental
  * Block that provides two different output flows. One is started immediately once the block is executed,
@@ -22,8 +23,8 @@ export class FlowGraphTimerBlock extends FlowGraphAsyncExecutionBlock {
      */
     public readonly onTimerDone: FlowGraphSignalConnection;
 
-    constructor() {
-        super();
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(config);
 
         this.timeout = this._registerDataInput("timeout", RichTypeNumber);
         this.onTimerDone = this._registerSignalOutput("onTimerDone");
@@ -74,4 +75,9 @@ export class FlowGraphTimerBlock extends FlowGraphAsyncExecutionBlock {
         }
         context._deleteExecutionVariable(this, "runningTimers");
     }
+
+    public getClassName(): string {
+        return "FlowGraphTimerBlock";
+    }
 }
+RegisterClass("FlowGraphTimerBlock", FlowGraphTimerBlock);

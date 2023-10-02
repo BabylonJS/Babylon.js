@@ -4,7 +4,8 @@ import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { RichTypeAny, RichTypeVector3 } from "../../flowGraphRichTypes";
 import { TmpVectors, Vector3 } from "../../../Maths/math.vector";
 import type { TransformNode } from "../../../Meshes/transformNode";
-
+import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
+import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * @experimental
  * This blocks transforms a vector from one coordinate system to another.
@@ -30,8 +31,8 @@ export class FlowGraphCoordinateTransformBlock extends FlowGraphBlock {
     /**
      * Creates a new FlowGraphCoordinateTransformBlock
      */
-    constructor() {
-        super();
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(config);
 
         this.sourceSystem = this._registerDataInput("sourceSystem", RichTypeAny);
         this.destinationSystem = this._registerDataInput("destinationSystem", RichTypeAny);
@@ -59,4 +60,9 @@ export class FlowGraphCoordinateTransformBlock extends FlowGraphBlock {
 
         Vector3.TransformCoordinatesToRef(inputCoordinatesValue, sourceToDestination, outputCoordinatesValue);
     }
+
+    public getClassName(): string {
+        return "FlowGraphCoordinateTransformBlock";
+    }
 }
+RegisterClass("FlowGraphCoordinateTransformBlock", FlowGraphCoordinateTransformBlock);

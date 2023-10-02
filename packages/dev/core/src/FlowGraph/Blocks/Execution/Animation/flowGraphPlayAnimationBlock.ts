@@ -5,7 +5,7 @@ import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnecti
 import { FlowGraphAsyncExecutionBlock } from "../../../flowGraphAsyncExecutionBlock";
 import { RichTypeAny, RichTypeNumber, RichTypeBoolean } from "../../../flowGraphRichTypes";
 import { RegisterClass } from "core/Misc";
-
+import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 /**
  * @experimental
  * A block that plays an animation on an animatable object.
@@ -46,8 +46,8 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      */
     public readonly runningAnimatable: FlowGraphDataConnection<Animatable>;
 
-    public constructor() {
-        super();
+    public constructor(config?: IFlowGraphBlockConfiguration) {
+        super(config);
 
         this.target = this._registerDataInput("target", RichTypeAny);
         this.animation = this._registerDataInput("animation", RichTypeAny);

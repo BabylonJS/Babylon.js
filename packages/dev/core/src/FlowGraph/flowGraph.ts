@@ -1,10 +1,15 @@
 import type { Observer } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
-import type { FlowGraphEventBlock } from "./flowGraphEventBlock";
+import { FlowGraphEventBlock } from "./flowGraphEventBlock";
 import { FlowGraphVariableDefinitions } from "./flowGraphVariableDefinitions";
-import type { FlowGraphContext } from "./flowGraphContext";
+import { FlowGraphContext } from "./flowGraphContext";
 import type { FlowGraphEventCoordinator } from "./flowGraphEventCoordinator";
+import { FlowGraphBlock } from "./flowGraphBlock";
+import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
+import type { FlowGraphCoordinator } from "./flowGraphCoordinator";
+import type { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
+import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
 
 export enum FlowGraphState {
     /**
@@ -44,7 +49,8 @@ export class FlowGraph {
      */
     public variableDefinitions: FlowGraphVariableDefinitions = new FlowGraphVariableDefinitions();
 
-    private _eventBlocks: FlowGraphEventBlock[] = [];
+    /** @internal */
+    public _eventBlocks: FlowGraphEventBlock[] = [];
     private _sceneDisposeObserver: Nullable<Observer<Scene>>;
     /**
      * @internal
@@ -120,5 +126,120 @@ export class FlowGraph {
         this._eventBlocks.length = 0;
         this._scene.onDisposeObservable.remove(this._sceneDisposeObserver);
         this._sceneDisposeObserver = null;
+    }
+
+    public visitAllBlocks(visitor: (block: FlowGraphBlock) => void) {
+        const visitList: FlowGraphBlock[] = [];
+        const idsAddedToVisitList = new Set<string>();
+        for (const block of this._eventBlocks) {
+            visitList.push(block);
+            idsAddedToVisitList.add(block.uniqueId);
+        }
+
+        while (visitList.length > 0) {
+            const block = visitList.pop()!;
+            visitor(block);
+
+            for (const dataIn of block.dataInputs) {
+                for (const connection of dataIn._connectedPoint) {
+                    if (!idsAddedToVisitList.has(connection._ownerBlock.uniqueId)) {
+                        visitList.push(connection._ownerBlock);
+                        idsAddedToVisitList.add(connection._ownerBlock.uniqueId);
+                    }
+                }
+            }
+            if (block instanceof FlowGraphExecutionBlock) {
+                for (const signalOut of block.signalOutputs) {
+                    for (const connection of signalOut._connectedPoint) {
+                        if (!idsAddedToVisitList.has(connection._ownerBlock.uniqueId)) {
+                            visitList.push(connection._ownerBlock);
+                            idsAddedToVisitList.add(connection._ownerBlock.uniqueId);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public serialize(serializationObject: any = {}) {
+        serializationObject.state = this.state;
+        serializationObject.variableDefinitions = {};
+        this.variableDefinitions.serialize(serializationObject.variableDefinitions);
+        serializationObject.allBlocks = [];
+        this.visitAllBlocks((block) => {
+            const serializedBlock: any = {};
+            block.serialize(serializedBlock);
+            serializationObject.allBlocks.push(serializedBlock);
+        });
+        serializationObject.executionContexts = [];
+        for (const context of this._executionContexts) {
+            const serializedContext: any = {};
+            context.serialize(serializedContext);
+            serializationObject.executionContexts.push(serializedContext);
+        }
+    }
+
+    public parse(serializationObject: any) {
+        this.state = serializationObject.state;
+        this.variableDefinitions.parse(serializationObject.variableDefinitions);
+        const blocks: FlowGraphBlock[] = [];
+        // Parse all blocks
+        for (const serializedBlock of serializationObject.allBlocks) {
+            const block = FlowGraphBlock.Parse(serializedBlock);
+            blocks.push(block);
+            if (block instanceof FlowGraphEventBlock) {
+                this.addEventBlock(block);
+            }
+        }
+        // After parsing all blocks, connect them
+        for (const block of blocks) {
+            for (const dataIn of block.dataInputs) {
+                for (const serializedConnection of dataIn.connectedPointIds) {
+                    const connection = FlowGraph.GetDataOutConnectionByUniqueId(blocks, serializedConnection);
+                    dataIn.connectTo(connection);
+                }
+            }
+            if (block instanceof FlowGraphExecutionBlock) {
+                for (const signalOut of block.signalOutputs) {
+                    for (const serializedConnection of signalOut.connectedPointIds) {
+                        const connection = FlowGraph.GetSignalInConnectionByUniqueId(blocks, serializedConnection);
+                        signalOut.connectTo(connection);
+                    }
+                }
+            }
+        }
+        for (const serializedContext of serializationObject.executionContexts) {
+            FlowGraphContext.Parse(serializedContext, this);
+        }
+    }
+
+    public static GetDataOutConnectionByUniqueId(blocks: FlowGraphBlock[], uniqueId: string): FlowGraphDataConnection<any> {
+        for (const block of blocks) {
+            for (const dataOut of block.dataOutputs) {
+                if (dataOut.uniqueId === uniqueId) {
+                    return dataOut;
+                }
+            }
+        }
+        throw new Error("Could not find data out connection with unique id " + uniqueId);
+    }
+
+    public static GetSignalInConnectionByUniqueId(blocks: FlowGraphBlock[], uniqueId: string): FlowGraphSignalConnection {
+        for (const block of blocks) {
+            if (block instanceof FlowGraphExecutionBlock) {
+                for (const signalIn of block.signalInputs) {
+                    if (signalIn.uniqueId === uniqueId) {
+                        return signalIn;
+                    }
+                }
+            }
+        }
+        throw new Error("Could not find signal in connection with unique id " + uniqueId);
+    }
+
+    public static Parse(serializationObject: any, coordinator: FlowGraphCoordinator): FlowGraph {
+        const graph = coordinator.createGraph();
+        graph.parse(serializationObject);
+        return graph;
     }
 }

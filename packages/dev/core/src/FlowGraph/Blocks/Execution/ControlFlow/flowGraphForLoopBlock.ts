@@ -3,7 +3,8 @@ import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "core/FlowGraph/flowGraphWithOnDoneExecutionBlock";
 import type { FlowGraphContext } from "../../../flowGraphContext";
 import { RichTypeNumber } from "../../../flowGraphRichTypes";
-
+import { RegisterClass } from "../../../../Misc/typeStore";
+import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 /**
  * @experimental
  * Block that executes an action in a loop.
@@ -34,8 +35,8 @@ export class FlowGraphForLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
      */
     public readonly onDone: FlowGraphSignalConnection;
 
-    public constructor() {
-        super();
+    public constructor(config?: IFlowGraphBlockConfiguration) {
+        super(config);
 
         this.startIndex = this._registerDataInput("startIndex", RichTypeNumber);
         this.endIndex = this._registerDataInput("endIndex", RichTypeNumber);
@@ -73,4 +74,9 @@ export class FlowGraphForLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
         context._setExecutionVariable(this, "step", step);
         this._executeLoop(context);
     }
+
+    public getClassName(): string {
+        return "FlowGraphForLoopBlock";
+    }
 }
+RegisterClass("FlowGraphForLoopBlock", FlowGraphForLoopBlock);
