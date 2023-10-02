@@ -114,7 +114,10 @@ export class ProceduralTexture extends Texture {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/proceduralTextures
      * @param name  Define the name of the texture
      * @param size Define the size of the texture to create
-     * @param fragment Define the fragment shader to use to generate the texture or null if it is defined later
+     * @param fragment Define the fragment shader to use to generate the texture or null if it is defined later:
+     *  * object: \{ fragmentElement: "fragmentShaderCode" \}, used with shader code in script tags
+     *  * object: \{ fragmentSource: "fragment shader code string" \}, the string contains the shader code
+     *  * string: the string contains a name "XXX" to lookup in Effect.ShadersStore["XXXFragmentShader"]
      * @param scene Define the scene the texture belongs to
      * @param fallbackTexture Define a fallback texture in case there were issues to create the custom texture
      * @param generateMipMaps Define if the texture should creates mip maps or not
@@ -277,7 +280,6 @@ export class ProceduralTexture extends Texture {
      */
     public isReady(): boolean {
         const engine = this._fullEngine;
-        let shaders;
 
         if (this.nodeMaterialSource) {
             return this._drawWrapper.effect!.isReady();
@@ -300,11 +302,12 @@ export class ProceduralTexture extends Texture {
             return true;
         }
 
-        if (this._fragment.fragmentElement !== undefined) {
-            shaders = { vertex: "procedural", fragmentElement: this._fragment.fragmentElement };
-        } else {
-            shaders = { vertex: "procedural", fragment: this._fragment };
-        }
+        const shaders = {
+            vertex: "procedural",
+            fragmentElement: this._fragment.fragmentElement,
+            fragmentSource: this._fragment.fragmentSource,
+            fragment: typeof this._fragment === "string" ? this._fragment : undefined,
+        };
 
         if (this._cachedDefines !== defines) {
             this._cachedDefines = defines;
