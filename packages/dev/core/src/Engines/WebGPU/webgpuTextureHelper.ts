@@ -242,6 +242,7 @@ const shadersForPipelineType = [
 
 /**
  * Map a (renderable) texture format (GPUTextureFormat) to an index for fast lookup (in caches for eg)
+ * The number of entries should not go over 64! Else, the code in WebGPUCacheRenderPipeline.setMRT should be updated
  */
 export const renderableTextureFormatToIndex: { [name: string]: number } = {
     "": 0,
@@ -269,23 +270,24 @@ export const renderableTextureFormatToIndex: { [name: string]: number } = {
     bgra8unorm: 20,
     "bgra8unorm-srgb": 21,
 
-    rgb10a2unorm: 22,
+    rgb10a2uint: 22,
+    rgb10a2unorm: 23,
+    /* rg11b10ufloat: this entry is dynamically added if the "RG11B10UFloatRenderable" extension is supported */
 
-    rg32uint: 23,
-    rg32sint: 24,
-    rg32float: 25,
-    rgba16uint: 26,
-    rgba16sint: 27,
-    rgba16float: 28,
+    rg32uint: 24,
+    rg32sint: 25,
+    rg32float: 26,
+    rgba16uint: 27,
+    rgba16sint: 28,
+    rgba16float: 29,
 
-    rgba32uint: 29,
-    rgba32sint: 30,
-    rgba32float: 31,
+    rgba32uint: 30,
+    rgba32sint: 31,
+    rgba32float: 32,
 
-    stencil8: 32,
-    depth16unorm: 33,
-    depth24plus: 34,
-    "depth24plus-stencil8": 35,
+    stencil8: 33,
+    depth16unorm: 34,
+    depth24plus: 35,
     depth32float: 36,
 
     "depth32float-stencil8": 37,
@@ -474,10 +476,10 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.RGBA8Sint:
             case WebGPUConstants.TextureFormat.BGRA8Unorm:
             case WebGPUConstants.TextureFormat.BGRA8UnormSRGB:
+            case WebGPUConstants.TextureFormat.RGB10A2UINT: // composite format - let's say it's byte...
             case WebGPUConstants.TextureFormat.RGB10A2Unorm: // composite format - let's say it's byte...
             case WebGPUConstants.TextureFormat.RGB9E5UFloat: // composite format - let's say it's byte...
             case WebGPUConstants.TextureFormat.RG11B10UFloat: // composite format - let's say it's byte...
-            case WebGPUConstants.TextureFormat.Depth24UnormStencil8: // composite format - let's say it's byte...
             case WebGPUConstants.TextureFormat.Depth32FloatStencil8: // composite format - let's say it's byte...
             case WebGPUConstants.TextureFormat.BC7RGBAUnorm:
             case WebGPUConstants.TextureFormat.BC7RGBAUnormSRGB:
@@ -608,6 +610,7 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.BGRA8Unorm:
             case WebGPUConstants.TextureFormat.BGRA8UnormSRGB:
             case WebGPUConstants.TextureFormat.RGB9E5UFloat:
+            case WebGPUConstants.TextureFormat.RGB10A2UINT:
             case WebGPUConstants.TextureFormat.RGB10A2Unorm:
             case WebGPUConstants.TextureFormat.RG11B10UFloat:
                 return { width: 1, height: 1, length: 4 };
@@ -637,8 +640,6 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.Depth24PlusStencil8:
                 throw "No fixed size for Depth24PlusStencil8 format!";
             case WebGPUConstants.TextureFormat.Depth32Float:
-                return { width: 1, height: 1, length: 4 };
-            case WebGPUConstants.TextureFormat.Depth24UnormStencil8:
                 return { width: 1, height: 1, length: 4 };
             case WebGPUConstants.TextureFormat.Depth32FloatStencil8:
                 return { width: 1, height: 1, length: 5 };
@@ -818,8 +819,6 @@ export class WebGPUTextureHelper {
                 return WebGPUConstants.TextureFormat.Depth24PlusStencil8;
             case Constants.TEXTUREFORMAT_DEPTH32_FLOAT:
                 return WebGPUConstants.TextureFormat.Depth32Float;
-            case Constants.TEXTUREFORMAT_DEPTH24UNORM_STENCIL8:
-                return WebGPUConstants.TextureFormat.Depth24UnormStencil8;
             case Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8:
                 return WebGPUConstants.TextureFormat.Depth32FloatStencil8;
             case Constants.TEXTUREFORMAT_STENCIL8:
@@ -1003,7 +1002,7 @@ export class WebGPUTextureHelper {
                     case Constants.TEXTUREFORMAT_RGBA:
                         return WebGPUConstants.TextureFormat.RGB10A2Unorm;
                     case Constants.TEXTUREFORMAT_RGBA_INTEGER:
-                        throw "TEXTUREFORMAT_RGBA_INTEGER format not supported in WebGPU when type is TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV";
+                        return WebGPUConstants.TextureFormat.RGB10A2UINT;
                     default:
                         return WebGPUConstants.TextureFormat.RGB10A2Unorm;
                 }
@@ -1038,8 +1037,7 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.RG8Snorm:
             case WebGPUConstants.TextureFormat.RG8Uint:
             case WebGPUConstants.TextureFormat.RG8Sint:
-            case WebGPUConstants.TextureFormat.Depth24UnormStencil8: // composite format - let's say it's byte...
-            case WebGPUConstants.TextureFormat.Depth32FloatStencil8: // composite format - let's say it's byte...
+            case WebGPUConstants.TextureFormat.Depth32FloatStencil8:
             case WebGPUConstants.TextureFormat.BC5RGUnorm:
             case WebGPUConstants.TextureFormat.BC5RGSnorm:
             case WebGPUConstants.TextureFormat.RG16Uint:
@@ -1053,8 +1051,8 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.EACRG11Snorm:
                 return 2;
 
-            case WebGPUConstants.TextureFormat.RGB9E5UFloat: // composite format - let's say it's byte...
-            case WebGPUConstants.TextureFormat.RG11B10UFloat: // composite format - let's say it's byte...
+            case WebGPUConstants.TextureFormat.RGB9E5UFloat:
+            case WebGPUConstants.TextureFormat.RG11B10UFloat:
             case WebGPUConstants.TextureFormat.BC6HRGBUFloat:
             case WebGPUConstants.TextureFormat.BC6HRGBFloat:
             case WebGPUConstants.TextureFormat.ETC2RGB8Unorm:
@@ -1068,7 +1066,8 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.RGBA8Sint:
             case WebGPUConstants.TextureFormat.BGRA8Unorm:
             case WebGPUConstants.TextureFormat.BGRA8UnormSRGB:
-            case WebGPUConstants.TextureFormat.RGB10A2Unorm: // composite format - let's say it's byte...
+            case WebGPUConstants.TextureFormat.RGB10A2UINT:
+            case WebGPUConstants.TextureFormat.RGB10A2Unorm:
             case WebGPUConstants.TextureFormat.BC7RGBAUnorm:
             case WebGPUConstants.TextureFormat.BC7RGBAUnormSRGB:
             case WebGPUConstants.TextureFormat.BC3RGBAUnorm:
@@ -1124,7 +1123,6 @@ export class WebGPUTextureHelper {
     public static HasStencilAspect(format: GPUTextureFormat): boolean {
         switch (format) {
             case WebGPUConstants.TextureFormat.Stencil8:
-            case WebGPUConstants.TextureFormat.Depth24UnormStencil8:
             case WebGPUConstants.TextureFormat.Depth32FloatStencil8:
             case WebGPUConstants.TextureFormat.Depth24PlusStencil8:
                 return true;
@@ -1135,7 +1133,6 @@ export class WebGPUTextureHelper {
 
     public static HasDepthAndStencilAspects(format: GPUTextureFormat): boolean {
         switch (format) {
-            case WebGPUConstants.TextureFormat.Depth24UnormStencil8:
             case WebGPUConstants.TextureFormat.Depth32FloatStencil8:
             case WebGPUConstants.TextureFormat.Depth24PlusStencil8:
                 return true;
@@ -1151,8 +1148,6 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.Depth24Plus:
                 return WebGPUConstants.TextureFormat.Depth24Plus;
             case WebGPUConstants.TextureFormat.Depth24PlusStencil8:
-                return WebGPUConstants.TextureFormat.Depth24Plus;
-            case WebGPUConstants.TextureFormat.Depth24UnormStencil8:
                 return WebGPUConstants.TextureFormat.Depth24Plus;
             case WebGPUConstants.TextureFormat.Depth32Float:
                 return WebGPUConstants.TextureFormat.Depth32Float;

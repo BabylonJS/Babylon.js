@@ -323,7 +323,7 @@ export abstract class WebGPUCacheRenderPipeline {
         textureCount = textureCount ?? textureArray.length;
         if (textureCount > 10) {
             // If we want more than 10 attachments we need to change this method (and the StatePosition enum) but 10 seems plenty: note that WebGPU only supports 8 at the time (2021/12/13)!
-            // As we need 39 different values we are using 6 bits to encode a texture format, meaning we can encode 5 texture formats in 32 bits
+            // As we need ~39 different values we are using 6 bits to encode a texture format, meaning we can encode 5 texture formats in 32 bits
             // We are using 2x32 bit values to handle 10 textures
             throw "Can't handle more than 10 attachments for a MRT in cache render pipeline!";
         }
@@ -922,7 +922,7 @@ export abstract class WebGPUCacheRenderPipeline {
             if (!(currentGPUBuffer && currentGPUAttributes && currentGPUBuffer === buffer) || invalidOffsetRange) {
                 const vertexBufferDescriptor: GPUVertexBufferLayout = {
                     arrayStride: vertexBuffer.byteStride,
-                    stepMode: vertexBuffer.getIsInstanced() ? WebGPUConstants.InputStepMode.Instance : WebGPUConstants.InputStepMode.Vertex,
+                    stepMode: vertexBuffer.getIsInstanced() ? WebGPUConstants.VertexStepMode.Instance : WebGPUConstants.VertexStepMode.Vertex,
                     attributes: [],
                 };
 
