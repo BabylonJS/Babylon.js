@@ -94,6 +94,27 @@ export class BooleanGeometryBlock extends NodeGeometryBlock {
                 return null;
             }
 
+            const vertexCount = vertexData0.positions!.length / 3;
+            // Ensure that all the fields are filled to avoid problems later on in the graph
+            if (!vertexData0.normals && vertexData1.normals) {
+                vertexData0.normals = new Array<number>(vertexData0.positions!.length);
+            }
+            if (!vertexData1.normals && vertexData0.normals) {
+                vertexData1.normals = new Array<number>(vertexData1.positions!.length);
+            }
+            if (!vertexData0.uvs && vertexData1.uvs) {
+                vertexData0.uvs = new Array<number>(vertexCount * 2);
+            }
+            if (!vertexData1.uvs && vertexData0.uvs) {
+                vertexData1.uvs = new Array<number>(vertexCount * 2);
+            }
+            if (!vertexData0.colors && vertexData1.colors) {
+                vertexData0.colors = new Array<number>(vertexCount * 4);
+            }
+            if (!vertexData1.colors && vertexData0.colors) {
+                vertexData1.colors = new Array<number>(vertexCount * 4);
+            }
+
             const CSG0 = CSG.FromVertexData(vertexData0);
             const CSG1 = CSG.FromVertexData(vertexData1);
 
