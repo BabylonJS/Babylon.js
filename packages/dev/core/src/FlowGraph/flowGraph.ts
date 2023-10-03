@@ -162,7 +162,6 @@ export class FlowGraph {
     }
 
     public serialize(serializationObject: any = {}) {
-        serializationObject.state = this.state;
         serializationObject.variableDefinitions = {};
         this.variableDefinitions.serialize(serializationObject.variableDefinitions);
         serializationObject.allBlocks = [];
@@ -180,7 +179,6 @@ export class FlowGraph {
     }
 
     public parse(serializationObject: any) {
-        this.state = serializationObject.state;
         this.variableDefinitions.parse(serializationObject.variableDefinitions);
         const blocks: FlowGraphBlock[] = [];
         // Parse all blocks

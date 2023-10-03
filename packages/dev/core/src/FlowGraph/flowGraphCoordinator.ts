@@ -85,4 +85,22 @@ export class FlowGraphCoordinator {
             coordinators.splice(index, 1);
         }
     }
+
+    serialize(serializationObject: any) {
+        serializationObject._flowGraphs = [];
+        this._flowGraphs.forEach((graph) => {
+            const serializedGraph = {};
+            graph.serialize(serializedGraph);
+            serializationObject._flowGraphs.push(serializedGraph);
+        });
+    }
+
+    public static Parse(serializedObject: any, scene: Scene) {
+        const coordinator = new FlowGraphCoordinator({ scene });
+        serializedObject._flowGraphs?.forEach((serializedGraph: any) => {
+            const graph = coordinator.createGraph();
+            graph.parse(serializedGraph);
+        });
+        return coordinator;
+    }
 }
