@@ -52,11 +52,12 @@ export function isAccessibleElement(item: AccessibilityEntity): boolean {
 export function hasAccessibleElement(item: AccessibilityEntity): boolean {
     let result = false;
     const directChildren = getDirectChildrenOf(item);
+    console.log("children of node", item.name, directChildren);
     for (const child of directChildren) {
         result ||= hasAccessibleElement(child);
     }
     result ||= !!isAccessibleElement(item);
-    // console.log("node", item.name, "has accessible element", result);
+    console.log("node", item.name, "has accessible element", result);
     return result;
 }
 
