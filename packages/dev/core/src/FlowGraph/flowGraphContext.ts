@@ -7,6 +7,25 @@ import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import type { FlowGraphEventCoordinator } from "./flowGraphEventCoordinator";
 import type { FlowGraph } from "./flowGraph";
 
+function defaultValueSerializationFunction(key: string, value: any, serializationObject: any) {
+    if (!value.getClassName || (value.getClassName && value.getClassName().startsWith("Vector"))) {
+        serializationObject[key] = value;
+    } else {
+        serializationObject[key] = value.name;
+    }
+}
+
+function defaultValueParseFunction(key: string, serializationObject: any, scene: Scene) {
+    const value = serializationObject[key];
+    let finalValue;
+    if (!value.getClassName || (value.getClassName && value.getClassName().startsWith("Vector"))) {
+        finalValue = value;
+    } else {
+        finalValue = scene.getMeshByName(value);
+    }
+    return finalValue;
+}
+
 /**
  * Construction parameters for the context.
  * @experimental
@@ -207,15 +226,15 @@ export class FlowGraphContext {
         this._pendingBlocks.length = 0;
     }
 
-    public serialize(serializationObject: any = {}) {
+    public serialize(serializationObject: any = {}, valueSerializationFunction: (key: string, value: any, serializationObject: any) => void = defaultValueSerializationFunction) {
         serializationObject.uniqueId = this.uniqueId;
         serializationObject._userVariables = {};
         this._userVariables.forEach((value, key) => {
-            serializationObject._userVariables[key] = value;
+            valueSerializationFunction(key, value, serializationObject._userVariables);
         });
         serializationObject._connectionValues = {};
         this._connectionValues.forEach((value, key) => {
-            serializationObject._connectionValues[key] = value;
+            valueSerializationFunction(key, value, serializationObject._connectionValues);
         });
     }
 
@@ -223,13 +242,15 @@ export class FlowGraphContext {
         return "FlowGraphContext";
     }
 
-    public parse(serializationObject: any) {
+    public parse(serializationObject: any, valueParseFunction: (key: string, serializationObject: any, scene: Scene) => any = defaultValueParseFunction) {
         this.uniqueId = serializationObject.uniqueId;
         for (const key in serializationObject._userVariables) {
-            this._userVariables.set(key, serializationObject._userVariables[key]);
+            const value = valueParseFunction(key, serializationObject._userVariables, this._configuration.scene);
+            this._userVariables.set(key, value);
         }
         for (const key in serializationObject._connectionValues) {
-            this._connectionValues.set(key, serializationObject._connectionValues[key]);
+            const value = valueParseFunction(key, serializationObject._userVariables, this._configuration.scene);
+            this._connectionValues.set(key, value);
         }
     }
 
