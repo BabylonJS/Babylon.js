@@ -244,7 +244,7 @@ class TransmissionHelper {
      * @returns
      */
     public _isRenderTargetValid() {
-        return !!this._opaqueRenderTarget?._buffer;
+        return this._opaqueRenderTarget?.getInternalTexture() !== null;
     }
 
     /**
