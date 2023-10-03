@@ -948,7 +948,7 @@ export class ArcRotateCamera extends TargetCamera {
             // make sure we're not panning in the y direction
             if (this.mapPanning) {
                 const up = this.upVector;
-                const right = Vector3.Cross(this._transformedDirection, up);
+                const right = Vector3.CrossToRef(this._transformedDirection, up, this._transformedDirection);
                 Vector3.CrossToRef(up, right, this._transformedDirection);
             } else if (!this.panningAxis.y) {
                 this._transformedDirection.y = 0;
