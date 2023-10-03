@@ -1310,7 +1310,12 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * @internal
      */
-    public _calculateLowerRadiusFromModelBoundingSphere(minimumWorld: Vector3, maximumWorld: Vector3, frustumSlope: Vector2 = this._getFrustumSlope(), radiusScale: number = 1): number {
+    public _calculateLowerRadiusFromModelBoundingSphere(
+        minimumWorld: Vector3,
+        maximumWorld: Vector3,
+        frustumSlope: Vector2 = this._getFrustumSlope(),
+        radiusScale: number = 1
+    ): number {
         const size = maximumWorld.subtract(minimumWorld);
         const boxVectorGlobalDiagonal = size.length();
 

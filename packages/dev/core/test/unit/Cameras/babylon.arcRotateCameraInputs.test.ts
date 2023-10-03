@@ -122,7 +122,7 @@ describe("ArcRotateCameraMouseInput", () => {
         scene?.onPointerObservable.notifyObservers(movePI1);
         scene?.onPointerObservable.notifyObservers(movePI2);
         scene?.render();
-        expect (camera!.radius).toBeGreaterThan(radius);
+        expect(camera!.radius).toBeGreaterThan(radius);
 
         radius = camera!.radius;
 
@@ -165,7 +165,7 @@ describe("ArcRotateCameraMouseInput", () => {
 
         if (camera && scene && StandardMaterial) {
             // Create box to check zoomOn against
-            const box = MeshBuilder.CreateBox("box", {height: 1, width: 2, depth: 1}, scene);
+            const box = MeshBuilder.CreateBox("box", { height: 1, width: 2, depth: 1 }, scene);
             // Set angles such that the box's mix/max points are not technically
             // the farthest points in screen/camera space
             camera.alpha = Math.PI / 3;
@@ -188,7 +188,7 @@ describe("ArcRotateCameraMouseInput", () => {
                     outOfBoundsPoints++;
                 }
             }
-            
+
             scene.render();
             camera.zoomOn([box]);
             scene.render();
