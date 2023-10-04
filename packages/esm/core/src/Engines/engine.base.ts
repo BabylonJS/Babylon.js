@@ -1,5 +1,5 @@
 /* eslint-disable jsdoc/require-jsdoc */
-import type { Effect } from "core/Materials/effect";
+import { Effect } from "core/Materials/effect";
 import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import type { Nullable } from "core/types";
 import type { IShaderProcessor } from "core/Engines/Processors/iShaderProcessor";
@@ -221,7 +221,7 @@ export interface IBaseEngineInternals {
     // _currentDrawContext: IDrawContext;
     // _currentMaterialContext: IMaterialContext;
     _currentRenderTarget: Nullable<RenderTargetWrapper>;
-    _boundRenderFunction: FrameRequestCallback;
+    _boundRenderFunction: Nullable<FrameRequestCallback>;
     _frameHandler: number;
     _transformTextureUrl: Nullable<(url: string) => string>; // can move out?
     // replacing _framebufferDimensionsObject
@@ -458,6 +458,11 @@ export interface IBaseEnginePublic {
      * Gets a boolean indicating if the pointer is currently locked
      */
     isPointerLock: boolean;
+
+    /**
+     * Returns true if the stencil buffer has been enabled through the creation option of the context.
+     */
+    isStencilEnable: boolean;
 }
 
 export type BaseEngineState<T extends IBaseEnginePublic = IBaseEnginePublic> = T & IBaseEngineInternals & IBaseEngineProtected;
@@ -566,6 +571,9 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
         disableContextMenu: true,
         disablePerformanceMonitorInBackground: false,
         isPointerLock: false,
+        get isStencilEnable(): boolean {
+            return engineState._isStencilEnable;
+        },
 
         // internals
         _uniformBuffers: [],
@@ -636,6 +644,8 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
 
     // TODO - this actually prevents tree shaking. Should be done by the dev, apart from the most basic functions.
     // populateBaseModule(engineState);
+
+    EngineStore.Instances.push(engineState);
 
     return engineState;
 }
@@ -899,7 +909,7 @@ export function runRenderLoop(
         fes._renderingQueueLaunched = true;
         _renderLoop({ beginFrameFunc, endFrameFunc, queueNewFrameFunc }, engineState);
         fes._boundRenderFunction = _renderLoop.bind(null, engineState, { beginFrameFunc, endFrameFunc, queueNewFrameFunc });
-        fes._frameHandler = queueNewFrameFunc(fes._boundRenderFunction, getHostWindow(engineState));
+        fes._frameHandler = queueNewFrameFunc(fes._boundRenderFunction!, getHostWindow(engineState));
     }
 }
 
@@ -988,7 +998,7 @@ export function _renderLoop(
         }
     }
 
-    if (fes._activeRenderLoops.length > 0) {
+    if (fes._activeRenderLoops.length > 0 && fes._boundRenderFunction) {
         fes._frameHandler = queueNewFrameFunc(fes._boundRenderFunction, getHostWindow(engineState));
     } else {
         fes._renderingQueueLaunched = false;
@@ -1530,6 +1540,40 @@ export function _setupMobileChecks(engineState: IBaseEnginePublic): void {
     if (IsWindowObjectExist()) {
         window.addEventListener("resize", fes._checkForMobile);
     }
+}
+
+/**
+ * Dispose and release all associated resources
+ */
+export function dispose(engineState: IBaseEnginePublic): void {
+    const fes = engineState as BaseEngineStateFull;
+    fes._isDisposed = true;
+    stopRenderLoop(engineState);
+
+    // Clear observables
+    if (engineState.onBeforeTextureInitObservable) {
+        engineState.onBeforeTextureInitObservable.clear();
+    }
+
+    if (IsWindowObjectExist()) {
+        if (fes._checkForMobile) {
+            window.removeEventListener("resize", fes._checkForMobile);
+        }
+    }
+
+    fes._workingCanvas = null;
+    fes._workingContext = null;
+    fes._renderingCanvas = null;
+
+    Effect.ResetCache();
+
+    // Abort active requests
+    for (const request of fes._activeRequests) {
+        request.abort();
+    }
+
+    fes.onDisposeObservable.notifyObservers(fes);
+    fes.onDisposeObservable.clear();
 }
 
 // From Engine

@@ -10,6 +10,7 @@ import {
     getRenderHeight as getRenderHeightBase,
     setViewport as setViewportBase,
     _viewport as _viewportBase,
+    dispose as disposeBase,
     _createTextureBase,
     resetTextureCache,
     _prepareWorkingCanvas,
@@ -129,6 +130,7 @@ import type { IRenderTargetEngineExtension } from "./Extensions/renderTarget/ren
 import type { IMultiRenderEngineExtension } from "./Extensions/multiRender/multiRender.base";
 import type { PostProcess } from "core/PostProcesses/postProcess";
 import type { IShaderProcessor } from "core/Engines/Processors/iShaderProcessor";
+import { IsWindowObjectExist } from "./runtimeEnvironment";
 
 const _TempClearColorUint32 = new Uint32Array(4);
 const _TempClearColorInt32 = new Int32Array(4);
@@ -551,14 +553,11 @@ export function _restoreEngineAfterContextLost(engineState: IWebGLEnginePublic, 
  * @returns an object containing the vendor, the renderer and the version of the current webGL context
  */
 export function getGlInfo(engineState: IWebGLEnginePublic) {
-    const gl = (engineState as WebGLEngineState)._gl;
-    const glVersion = gl.getParameter(gl.VERSION);
-    const glRenderer = gl.getParameter(gl.RENDERER);
-    const glVendor = gl.getParameter(gl.VENDOR);
+    const fes = engineState as WebGLEngineStateFull;
     return {
-        glVersion,
-        glRenderer,
-        glVendor,
+        glVersion: fes._glVersion,
+        glRenderer: fes._glRenderer,
+        glVendor: fes._glVendor,
     };
 }
 
@@ -4658,6 +4657,51 @@ export function setFloat4(engineState: IWebGLEnginePublic, uniform: Nullable<Web
     (engineState as WebGLEngineStateFull)._gl.uniform4f(uniform, x, y, z, w);
 
     return true;
+}
+
+/**
+ * Dispose and release all associated resources
+ */
+export function dispose(engineState: IWebGLEnginePublic): void {
+    const fes = engineState as WebGLEngineStateFull;
+
+    // Empty texture
+    if (fes._emptyTexture) {
+        _releaseTexture(fes, fes._emptyTexture);
+        fes._emptyTexture = null;
+    }
+    if (fes._emptyCubeTexture) {
+        _releaseTexture(fes, fes._emptyCubeTexture);
+        fes._emptyCubeTexture = null;
+    }
+
+    if (fes._dummyFramebuffer) {
+        fes._gl.deleteFramebuffer(fes._dummyFramebuffer);
+    }
+
+    // Release effects
+    releaseEffects(fes);
+    // releaseComputeEffects?.(fes); // TODO - this is WebGPU only
+
+    // Unbind
+    unbindAllAttributes(fes);
+    fes._boundUniforms = {};
+
+    // Events
+    if (IsWindowObjectExist()) {
+        if (fes._renderingCanvas) {
+            if (!fes.doNotHandleContextLost) {
+                fes._renderingCanvas.removeEventListener("webglcontextlost", fes._onContextLost!);
+                fes._renderingCanvas.removeEventListener("webglcontextrestored", fes._onContextRestored!);
+            }
+        }
+    }
+
+    fes._currentBufferPointers.length = 0;
+    fes._currentProgram = null;
+    fes._boundRenderFunction = null;
+
+    disposeBase(fes);
 }
 
 // From Engine
