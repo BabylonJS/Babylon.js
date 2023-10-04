@@ -1,20 +1,21 @@
-import { NodeGeometryBlock } from "../nodeGeometryBlock";
-import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
-import { RegisterClass } from "../../../Misc/typeStore";
-import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
-import { Matrix, Quaternion, Vector3 } from "../../../Maths/math.vector";
-import { type NodeGeometryBuildState } from "../nodeGeometryBuildState";
+import { NodeGeometryBlock } from "../../nodeGeometryBlock";
+import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
+import { Matrix, Quaternion, Vector3 } from "../../../../Maths/math.vector";
+import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import type { VertexData } from "core/Meshes/mesh.vertexData";
-import { type Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
+import type { INodeGeometryExecutionContext } from "../../Interfaces/nodeGeometryExecutionContext";
+import type { INodeGeometryInstancingContext } from "../../Interfaces/nodeGeometryInstancingContext";
 
 /**
  * Block used to clone geometry along a line
  */
-export class LinearClonerBlock extends NodeGeometryBlock {
+export class InstantiateLinearBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext, INodeGeometryInstancingContext {
     private _vertexData: VertexData;
     private _currentIndex: number;
-    private _currentLoopIndex: number;
 
     /**
      * Gets or sets a boolean indicating that this block can evaluate context
@@ -44,11 +45,19 @@ export class LinearClonerBlock extends NodeGeometryBlock {
      * @returns the current loop index
      */
     public getExecutionLoopIndex(): number {
-        return this._currentLoopIndex;
+        return this._currentIndex;
     }
 
     /**
-     * Create a new LinearClonerBlock
+     * Gets the current instance index in the current flow
+     * @returns the current instance index
+     */
+    public getInstanceIndex(): number {
+        return this._currentIndex;
+    }
+
+    /**
+     * Create a new Instantiate Linear Block
      * @param name defines the block name
      */
     public constructor(name: string) {
@@ -65,6 +74,7 @@ export class LinearClonerBlock extends NodeGeometryBlock {
 
         //scale is magnitude per step, or total rotation
         this.registerInput("scale", NodeGeometryBlockConnectionPointTypes.Vector3, true, new Vector3(0, 0, 0));
+        this.scale.acceptedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Float);
 
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Geometry);
     }
@@ -74,7 +84,7 @@ export class LinearClonerBlock extends NodeGeometryBlock {
      * @returns the class name
      */
     public getClassName() {
-        return "LinearClonerBlock";
+        return "InstantiateLinearBlock";
     }
 
     /**
@@ -145,12 +155,13 @@ export class LinearClonerBlock extends NodeGeometryBlock {
                 this.output._storedValue = this._vertexData;
                 state.restoreExecutionContext();
                 state.restoreGeometryContext();
+                return this._vertexData;
             }
 
             const origin = this.origin.getConnectedValue(state) as Vector3;
             const direction = this.direction.getConnectedValue(state) as Vector3;
             const rotation = this.rotation.getConnectedValue(state) as Vector3;
-            const scale = this.scale.getConnectedValue(state) as Vector3;
+            const scale = state.adaptInput(this.scale, NodeGeometryBlockConnectionPointTypes.Vector3, Vector3.OneReadOnly);
 
             const invertRadians = Math.PI / 180;
 
@@ -210,4 +221,4 @@ export class LinearClonerBlock extends NodeGeometryBlock {
     }
 }
 
-RegisterClass("BABYLON.LinearClonerBlock", LinearClonerBlock);
+RegisterClass("BABYLON.InstantiateLinearBlock", InstantiateLinearBlock);

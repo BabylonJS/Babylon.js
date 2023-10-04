@@ -18,7 +18,13 @@ interface INodeListComponentProps {
     globalState: GlobalState;
 }
 
-export class NodeListComponent extends React.Component<INodeListComponentProps, { filter: string }> {
+/**
+ *
+ */
+export class NodeListComponent extends React.Component<INodeListComponentProps, { /**
+ *
+ */
+filter: string }> {
     private _onResetRequiredObserver: Nullable<Observer<boolean>>;
 
     private static _Tooltips: { [key: string]: string } = {
@@ -119,8 +125,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         GeometryOutputBlock: "Output block used to gather the final geometry",
         NullBlock: "Generate an empty geometry",
         OptimizeBlock: "Eliminate vertices that share positions with another vertex",
-        LinearClonerBlock: "Clone a geometry linearly",
-        RadialClonerBlock: "Clone a geometry in a circle",
+        InstantiateLinearBlock: "Clone a geometry linearly",
+        InstantiateRadialBlock: "Clone a geometry in a circle",
         GeometryInfoBlock: "Provides information about a geometry",
         MappingBlock: "Generate uv coordinates based on mapping type",
         MatrixComposeBlock: "Multiply two matrices together",
@@ -265,7 +271,14 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             ],
             Math__Vector: ["TransformBlock", "VectorConverterBlock", "NormalizeBlock", "BoundingBlock"],
             Matrices: ["RotationXBlock", "RotationYBlock", "RotationZBlock", "ScalingBlock", "TranslationBlock", "AlignBlock", "MatrixComposeBlock"],
-            Instances: ["InstantiateOnVerticesBlock", "InstantiateOnFacesBlock", "InstantiateOnVolumeBlock", "InstantiateBlock"],
+            Instances: [
+                "InstantiateOnVerticesBlock",
+                "InstantiateOnFacesBlock",
+                "InstantiateOnVolumeBlock",
+                "InstantiateBlock",
+                "InstantiateLinearBlock",
+                "InstantiateRadialBlock",
+            ],
             Misc: ["ElbowBlock", "DebugBlock", "TeleportInBlock", "TeleportOutBlock", "GeometryInfoBlock"],
             Updates: [
                 "SetColorsBlock",
@@ -281,7 +294,6 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "MappingBlock",
             ],
             Noises: ["RandomBlock", "NoiseBlock"],
-            Cloners: ["LinearClonerBlock", "RadialClonerBlock"],
             Textures: ["TextureBlock", "TextureFetchBlock"],
             Output_Nodes: ["GeometryOutputBlock"],
         };

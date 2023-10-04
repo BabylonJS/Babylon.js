@@ -46,8 +46,8 @@ import { MapRangeBlock } from "core/Meshes/Node/Blocks/mapRangeBlock";
 import { GeometryOptimizeBlock } from "core/Meshes/Node/Blocks/geometryOptimizeBlock";
 import { IntFloatConverterBlock } from "core/Meshes/Node/Blocks/intFloatConverterBlock";
 import { ConditionBlock, ConditionBlockTests } from "core/Meshes/Node/Blocks/conditionBlock";
-import { LinearClonerBlock } from "core/Meshes/Node/Blocks/linearClonerBlock";
-import { RadialClonerBlock } from "core/Meshes/Node/Blocks/radialClonerBlock";
+import { InstantiateLinearBlock } from "core/Meshes/Node/Blocks//Instances/instantiateLinearBlock";
+import { InstantiateRadialBlock } from "core/Meshes/Node/Blocks/Instances/instantiateRadialBlock";
 import { GeometryCollectionBlock } from "core/Meshes/Node/Blocks/geometryCollectionBlock";
 import { GeometryInfoBlock } from "core/Meshes/Node/Blocks/geometryInfoBlock";
 import { MappingBlock } from "core/Meshes/Node/Blocks/mappingBlock";
@@ -410,11 +410,11 @@ export class BlockTools {
                 block.operation = MathBlockOperations.Max;
                 return block;
             }
-            case "LinearClonerBlock": {
-                return new LinearClonerBlock("Linear Cloner");
+            case "InstantiateLinearBlock": {
+                return new InstantiateLinearBlock("Instantiate Linear");
             }
-            case "RadialClonerBlock": {
-                return new RadialClonerBlock("Radial Cloner");
+            case "InstantiateRadialBlock": {
+                return new InstantiateRadialBlock("Instantiate Radial");
             }
         }
 
