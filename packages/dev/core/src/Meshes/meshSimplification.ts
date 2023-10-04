@@ -37,7 +37,7 @@ export interface ISimplificationSettings {
     /**
      * Gets an already optimized mesh
      */
-    optimizeMesh?: boolean;
+    optimizeMesh?: boolean | undefined;
 }
 
 /**

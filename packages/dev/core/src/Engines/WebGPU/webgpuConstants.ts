@@ -116,6 +116,7 @@ export enum TextureFormat {
     BGRA8UnormSRGB = "bgra8unorm-srgb", // Blue, green, red, and alpha channels. 8 bit integer per channel. Srgb-color [0, 255] converted to/from linear-color float [0, 1] in shader.
     // Packed 32-bit formats
     RGB9E5UFloat = "rgb9e5ufloat", // Packed unsigned float with 9 bits mantisa for each RGB component, then a common 5 bits exponent
+    RGB10A2UINT = "rgb10a2uint", // Red, green, blue, and alpha channels. 10 bit integer for RGB channels, 2 bit integer for alpha channel. [0, 1023] ([0, 3] for alpha).
     RGB10A2Unorm = "rgb10a2unorm", // Red, green, blue, and alpha channels. 10 bit integer for RGB channels, 2 bit integer for alpha channel. [0, 1023] ([0, 3] for alpha) converted to/from float [0, 1] in shader.
     RG11B10UFloat = "rg11b10ufloat", // Red, green, and blue channels. 11 bit float with no sign bit for RG channels. 10 bit float with no sign bit for blue channel. Float in shader.
 
@@ -199,9 +200,6 @@ export enum TextureFormat {
     ASTC12x10UnormSRGB = "astc-12x10-unorm-srgb", // 12x10 block compressed texture. 16 bytes per block (1.07 bit/px). Complex pallet. 8 bit integer RGBA.
     ASTC12x12Unorm = "astc-12x12-unorm", // 12x12 block compressed texture. 16 bytes per block (0.89 bit/px). Complex pallet. 8 bit integer RGBA.
     ASTC12x12UnormSRGB = "astc-12x12-unorm-srgb", // 12x12 block compressed texture. 16 bytes per block (0.89 bit/px). Complex pallet. 8 bit integer RGBA.
-
-    // "depth24unorm-stencil8" feature
-    Depth24UnormStencil8 = "depth24unorm-stencil8",
 
     // "depth32float-stencil8" feature
     Depth32FloatStencil8 = "depth32float-stencil8",
@@ -314,7 +312,7 @@ export enum CullMode {
 }
 
 /** @internal */
-export enum ColorWriteFlags {
+export enum ColorWrite {
     Red = 1,
     Green = 2,
     Blue = 4,
@@ -398,10 +396,11 @@ export enum VertexFormat {
     Sint32x2 = "sint32x2",
     Sint32x3 = "sint32x3",
     Sint32x4 = "sint32x4",
+    UNORM10x10x10x2 = "unorm10-10-10-2",
 }
 
 /** @internal */
-export enum InputStepMode {
+export enum VertexStepMode {
     Vertex = "vertex",
     Instance = "instance",
 }

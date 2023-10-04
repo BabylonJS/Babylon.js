@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable, IndicesArray, DataArray } from "../types";
 import { Engine } from "../Engines/engine";
-import { VertexBuffer } from "../Buffers/buffer";
+import type { VertexBuffer } from "../Buffers/buffer";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import type { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
 import { Texture } from "../Materials/Textures/texture";
@@ -35,11 +35,21 @@ import type { RenderTargetWrapper } from "./renderTargetWrapper";
 import type { NativeData } from "./Native/nativeDataStream";
 import { NativeDataStream } from "./Native/nativeDataStream";
 import type { INative, INativeCamera, INativeEngine, NativeFramebuffer, NativeProgram, NativeTexture, NativeUniform, NativeVertexArrayObject } from "./Native/nativeInterfaces";
-import { RuntimeError, ErrorCodes } from "../Misc/error";
 import { NativePipelineContext } from "./Native/nativePipelineContext";
 import { NativeRenderTargetWrapper } from "./Native/nativeRenderTargetWrapper";
 import { NativeHardwareTexture } from "./Native/nativeHardwareTexture";
 import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
+import {
+    getNativeAlphaMode,
+    getNativeAttribType,
+    getNativeSamplingMode,
+    getNativeTextureFormat,
+    getNativeStencilDepthFail,
+    getNativeStencilDepthPass,
+    getNativeStencilFunc,
+    getNativeStencilOpFail,
+    getNativeAddressMode,
+} from "./Native/nativeHelpers";
 
 declare const _native: INative;
 
@@ -281,7 +291,7 @@ export class NativeEngine extends Engine {
             basisNeedsPOT: false,
             support3DTextures: false,
             needTypeSuffixInShaderConstants: false,
-            supportMSAA: false,
+            supportMSAA: true,
             supportSSAO2: false,
             supportExtendedTextureFormats: false,
             supportSwitchCaseInShader: false,
@@ -514,7 +524,7 @@ export class NativeEngine extends Engine {
                             vertexBuffer.byteOffset,
                             vertexBuffer.byteStride,
                             vertexBuffer.getSize(),
-                            this._getNativeAttribType(vertexBuffer.type),
+                            getNativeAttribType(vertexBuffer.type),
                             vertexBuffer.normalized,
                             vertexBuffer.getInstanceDivisor()
                         );
@@ -576,19 +586,19 @@ export class NativeEngine extends Engine {
         // Apply states
         this._drawCalls.addCount(1, false);
 
-        // TODO: Make this implementation more robust like core Engine version.
+        if (instancesCount && _native.Engine.COMMAND_DRAWINDEXEDINSTANCED) {
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAWINDEXEDINSTANCED);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(indexStart);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(indexCount);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(instancesCount);
+        } else {
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAWINDEXED);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(indexStart);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(indexCount);
+        }
 
-        // Render
-        //var indexFormat = this._uintIndicesCurrentlySet ? this._gl.UNSIGNED_INT : this._gl.UNSIGNED_SHORT;
-
-        //var mult = this._uintIndicesCurrentlySet ? 4 : 2;
-        // if (instancesCount) {
-        //     this._gl.drawElementsInstanced(drawMode, indexCount, indexFormat, indexStart * mult, instancesCount);
-        // } else {
-        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAWINDEXED);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(indexStart);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(indexCount);
         this._commandBufferEncoder.finishEncodingCommand();
         // }
     }
@@ -604,15 +614,19 @@ export class NativeEngine extends Engine {
         // Apply states
         this._drawCalls.addCount(1, false);
 
-        // TODO: Make this implementation more robust like core Engine version.
+        if (instancesCount && _native.Engine.COMMAND_DRAWINSTANCED) {
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAWINSTANCED);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesStart);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesCount);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(instancesCount);
+        } else {
+            this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAW);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesStart);
+            this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesCount);
+        }
 
-        // if (instancesCount) {
-        //     this._gl.drawArraysInstanced(drawMode, verticesStart, verticesCount, instancesCount);
-        // } else {
-        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DRAW);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(fillMode);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesStart);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(verticesCount);
         this._commandBufferEncoder.finishEncodingCommand();
         // }
     }
@@ -1003,10 +1017,10 @@ export class NativeEngine extends Engine {
     private applyStencil(): void {
         this._setStencil(
             this._stencilMask,
-            this._getStencilOpFail(this._stencilOpStencilFail),
-            this._getStencilDepthFail(this._stencilOpDepthFail),
-            this._getStencilDepthPass(this._stencilOpStencilDepthPass),
-            this._getStencilFunc(this._stencilFunc),
+            getNativeStencilOpFail(this._stencilOpStencilFail),
+            getNativeStencilDepthFail(this._stencilOpDepthFail),
+            getNativeStencilDepthPass(this._stencilOpStencilDepthPass),
+            getNativeStencilFunc(this._stencilFunc),
             this._stencilFuncRef
         );
     }
@@ -1190,7 +1204,7 @@ export class NativeEngine extends Engine {
             return;
         }
 
-        const nativeMode = this._getNativeAlphaMode(mode);
+        const nativeMode = getNativeAlphaMode(mode);
 
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETBLENDMODE);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(nativeMode);
@@ -1566,7 +1580,7 @@ export class NativeEngine extends Engine {
 
         if (texture._hardwareTexture) {
             const webGLTexture = texture._hardwareTexture.underlyingResource;
-            const filter = this._getNativeSamplingMode(samplingMode);
+            const filter = getNativeSamplingMode(samplingMode);
             this._setTextureSampling(webGLTexture, filter);
         }
 
@@ -1602,9 +1616,9 @@ export class NativeEngine extends Engine {
 
         if (texture._hardwareTexture) {
             const nativeTexture = texture._hardwareTexture.underlyingResource;
-            this._engine.loadRawTexture2DArray(nativeTexture, data, width, height, depth, this._getNativeTextureFormat(format, textureType), generateMipMaps, invertY);
+            this._engine.loadRawTexture2DArray(nativeTexture, data, width, height, depth, getNativeTextureFormat(format, textureType), generateMipMaps, invertY);
 
-            const filter = this._getNativeSamplingMode(samplingMode);
+            const filter = getNativeSamplingMode(samplingMode);
             this._setTextureSampling(nativeTexture, filter);
         }
 
@@ -1634,7 +1648,7 @@ export class NativeEngine extends Engine {
                 bufferView,
                 texture.width,
                 texture.height,
-                this._getNativeTextureFormat(format, type),
+                getNativeTextureFormat(format, type),
                 texture.generateMipMaps,
                 texture.invertY
             );
@@ -1783,7 +1797,7 @@ export class NativeEngine extends Engine {
                         texture.height = texture.baseHeight;
                         texture.isReady = true;
 
-                        const filter = this._getNativeSamplingMode(samplingMode);
+                        const filter = getNativeSamplingMode(samplingMode);
                         this._setTextureSampling(underlyingResource, filter);
 
                         if (scene) {
@@ -1837,10 +1851,14 @@ export class NativeEngine extends Engine {
      * @param samplingMode defines the sampling mode for the external texture (default: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE)
      * @returns the babylon internal texture
      */
-    public wrapNativeTexture(texture: any, hasMipMaps: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE): InternalTexture {
+    public wrapNativeTexture(texture: NativeTexture, hasMipMaps: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE): InternalTexture {
         const hardwareTexture = new NativeHardwareTexture(texture, this._engine);
         const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
         internalTexture._hardwareTexture = hardwareTexture;
+        internalTexture.baseWidth = this._engine.getTextureWidth(texture);
+        internalTexture.baseHeight = this._engine.getTextureHeight(texture);
+        internalTexture.width = internalTexture.baseWidth;
+        internalTexture.height = internalTexture.baseHeight;
         internalTexture.isReady = true;
         internalTexture.useMipMaps = hasMipMaps;
         this.updateTextureSamplingMode(samplingMode, internalTexture);
@@ -2139,10 +2157,10 @@ export class NativeEngine extends Engine {
         }
 
         const nativeTexture = texture._hardwareTexture!.underlyingResource;
-        const nativeTextureFormat = this._getNativeTextureFormat(format, type);
+        const nativeTextureFormat = getNativeTextureFormat(format, type);
         // REVIEW: We are always setting the renderTarget flag as we don't know whether the texture will be used as a render target.
         this._engine.initializeTexture(nativeTexture, width, height, generateMipMaps, nativeTextureFormat, true, useSRGBBuffer, samples);
-        this._setTextureSampling(nativeTexture, this._getNativeSamplingMode(samplingMode));
+        this._setTextureSampling(nativeTexture, getNativeSamplingMode(samplingMode));
 
         texture._useSRGBBuffer = useSRGBBuffer;
         texture.baseWidth = width;
@@ -2209,7 +2227,7 @@ export class NativeEngine extends Engine {
 
     public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
         if (texture._hardwareTexture) {
-            const filter = this._getNativeSamplingMode(samplingMode);
+            const filter = getNativeSamplingMode(samplingMode);
             this._setTextureSampling(texture._hardwareTexture.underlyingResource, filter);
         }
 
@@ -2322,9 +2340,9 @@ export class NativeEngine extends Engine {
 
         this._setTextureWrapMode(
             internalTexture._hardwareTexture.underlyingResource,
-            this._getAddressMode(texture.wrapU),
-            this._getAddressMode(texture.wrapV),
-            this._getAddressMode(texture.wrapR)
+            getNativeAddressMode(texture.wrapU),
+            getNativeAddressMode(texture.wrapV),
+            getNativeAddressMode(texture.wrapR)
         );
         this._updateAnisotropicLevel(texture);
 
@@ -2374,20 +2392,6 @@ export class NativeEngine extends Engine {
             this._commandBufferEncoder.encodeCommandArgAsUInt32(value);
             this._commandBufferEncoder.finishEncodingCommand();
             internalTexture._cachedAnisotropicFilteringLevel = value;
-        }
-    }
-
-    // Returns a NativeAddressMode.XXX value.
-    private _getAddressMode(wrapMode: number): number {
-        switch (wrapMode) {
-            case Constants.TEXTURE_WRAP_ADDRESSMODE:
-                return _native.Engine.ADDRESS_MODE_WRAP;
-            case Constants.TEXTURE_CLAMP_ADDRESSMODE:
-                return _native.Engine.ADDRESS_MODE_CLAMP;
-            case Constants.TEXTURE_MIRROR_ADDRESSMODE:
-                return _native.Engine.ADDRESS_MODE_MIRROR;
-            default:
-                throw new Error("Unexpected wrap mode: " + wrapMode + ".");
         }
     }
 
@@ -2509,191 +2513,6 @@ export class NativeEngine extends Engine {
      */
     public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex: number = 0, lod: number = 0) {
         throw new Error("_uploadArrayBufferViewToTexture not implemented.");
-    }
-
-    // JavaScript-to-Native conversion helper functions.
-
-    private _getNativeSamplingMode(samplingMode: number): number {
-        switch (samplingMode) {
-            case Constants.TEXTURE_NEAREST_NEAREST:
-                return _native.Engine.TEXTURE_NEAREST_NEAREST;
-            case Constants.TEXTURE_LINEAR_LINEAR:
-                return _native.Engine.TEXTURE_LINEAR_LINEAR;
-            case Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR:
-                return _native.Engine.TEXTURE_LINEAR_LINEAR_MIPLINEAR;
-            case Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
-                return _native.Engine.TEXTURE_NEAREST_NEAREST_MIPNEAREST;
-            case Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
-                return _native.Engine.TEXTURE_NEAREST_LINEAR_MIPNEAREST;
-            case Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
-                return _native.Engine.TEXTURE_NEAREST_LINEAR_MIPLINEAR;
-            case Constants.TEXTURE_NEAREST_LINEAR:
-                return _native.Engine.TEXTURE_NEAREST_LINEAR;
-            case Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR:
-                return _native.Engine.TEXTURE_NEAREST_NEAREST_MIPLINEAR;
-            case Constants.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
-                return _native.Engine.TEXTURE_LINEAR_NEAREST_MIPNEAREST;
-            case Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
-                return _native.Engine.TEXTURE_LINEAR_NEAREST_MIPLINEAR;
-            case Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST:
-                return _native.Engine.TEXTURE_LINEAR_LINEAR_MIPNEAREST;
-            case Constants.TEXTURE_LINEAR_NEAREST:
-                return _native.Engine.TEXTURE_LINEAR_NEAREST;
-            default:
-                throw new Error(`Unsupported sampling mode: ${samplingMode}.`);
-        }
-    }
-
-    private _getStencilFunc(func: number): number {
-        switch (func) {
-            case Constants.LESS:
-                return _native.Engine.STENCIL_TEST_LESS;
-            case Constants.LEQUAL:
-                return _native.Engine.STENCIL_TEST_LEQUAL;
-            case Constants.EQUAL:
-                return _native.Engine.STENCIL_TEST_EQUAL;
-            case Constants.GEQUAL:
-                return _native.Engine.STENCIL_TEST_GEQUAL;
-            case Constants.GREATER:
-                return _native.Engine.STENCIL_TEST_GREATER;
-            case Constants.NOTEQUAL:
-                return _native.Engine.STENCIL_TEST_NOTEQUAL;
-            case Constants.NEVER:
-                return _native.Engine.STENCIL_TEST_NEVER;
-            case Constants.ALWAYS:
-                return _native.Engine.STENCIL_TEST_ALWAYS;
-            default:
-                throw new Error(`Unsupported stencil func mode: ${func}.`);
-        }
-    }
-
-    private _getStencilOpFail(opFail: number): number {
-        switch (opFail) {
-            case Constants.KEEP:
-                return _native.Engine.STENCIL_OP_FAIL_S_KEEP;
-            case Constants.ZERO:
-                return _native.Engine.STENCIL_OP_FAIL_S_ZERO;
-            case Constants.REPLACE:
-                return _native.Engine.STENCIL_OP_FAIL_S_REPLACE;
-            case Constants.INCR:
-                return _native.Engine.STENCIL_OP_FAIL_S_INCR;
-            case Constants.DECR:
-                return _native.Engine.STENCIL_OP_FAIL_S_DECR;
-            case Constants.INVERT:
-                return _native.Engine.STENCIL_OP_FAIL_S_INVERT;
-            case Constants.INCR_WRAP:
-                return _native.Engine.STENCIL_OP_FAIL_S_INCRSAT;
-            case Constants.DECR_WRAP:
-                return _native.Engine.STENCIL_OP_FAIL_S_DECRSAT;
-            default:
-                throw new Error(`Unsupported stencil OpFail mode: ${opFail}.`);
-        }
-    }
-
-    private _getStencilDepthFail(depthFail: number): number {
-        switch (depthFail) {
-            case Constants.KEEP:
-                return _native.Engine.STENCIL_OP_FAIL_Z_KEEP;
-            case Constants.ZERO:
-                return _native.Engine.STENCIL_OP_FAIL_Z_ZERO;
-            case Constants.REPLACE:
-                return _native.Engine.STENCIL_OP_FAIL_Z_REPLACE;
-            case Constants.INCR:
-                return _native.Engine.STENCIL_OP_FAIL_Z_INCR;
-            case Constants.DECR:
-                return _native.Engine.STENCIL_OP_FAIL_Z_DECR;
-            case Constants.INVERT:
-                return _native.Engine.STENCIL_OP_FAIL_Z_INVERT;
-            case Constants.INCR_WRAP:
-                return _native.Engine.STENCIL_OP_FAIL_Z_INCRSAT;
-            case Constants.DECR_WRAP:
-                return _native.Engine.STENCIL_OP_FAIL_Z_DECRSAT;
-            default:
-                throw new Error(`Unsupported stencil depthFail mode: ${depthFail}.`);
-        }
-    }
-
-    private _getStencilDepthPass(opPass: number): number {
-        switch (opPass) {
-            case Constants.KEEP:
-                return _native.Engine.STENCIL_OP_PASS_Z_KEEP;
-            case Constants.ZERO:
-                return _native.Engine.STENCIL_OP_PASS_Z_ZERO;
-            case Constants.REPLACE:
-                return _native.Engine.STENCIL_OP_PASS_Z_REPLACE;
-            case Constants.INCR:
-                return _native.Engine.STENCIL_OP_PASS_Z_INCR;
-            case Constants.DECR:
-                return _native.Engine.STENCIL_OP_PASS_Z_DECR;
-            case Constants.INVERT:
-                return _native.Engine.STENCIL_OP_PASS_Z_INVERT;
-            case Constants.INCR_WRAP:
-                return _native.Engine.STENCIL_OP_PASS_Z_INCRSAT;
-            case Constants.DECR_WRAP:
-                return _native.Engine.STENCIL_OP_PASS_Z_DECRSAT;
-            default:
-                throw new Error(`Unsupported stencil opPass mode: ${opPass}.`);
-        }
-    }
-
-    private _getNativeTextureFormat(format: number, type: number): number {
-        if (format == Constants.TEXTUREFORMAT_RGB && type == Constants.TEXTURETYPE_UNSIGNED_INT) {
-            return _native.Engine.TEXTURE_FORMAT_RGB8;
-        } else if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_UNSIGNED_INT) {
-            return _native.Engine.TEXTURE_FORMAT_RGBA8;
-        } else if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_HALF_FLOAT) {
-            return _native.Engine.TEXTURE_FORMAT_RGBA16F;
-        } else if (format == Constants.TEXTUREFORMAT_RGBA && type == Constants.TEXTURETYPE_FLOAT) {
-            return _native.Engine.TEXTURE_FORMAT_RGBA32F;
-        } else {
-            throw new RuntimeError(`Unsupported texture format or type: format ${format}, type ${type}.`, ErrorCodes.UnsupportedTextureError);
-        }
-    }
-
-    private _getNativeAlphaMode(mode: number): number {
-        switch (mode) {
-            case Constants.ALPHA_DISABLE:
-                return _native.Engine.ALPHA_DISABLE;
-            case Constants.ALPHA_ADD:
-                return _native.Engine.ALPHA_ADD;
-            case Constants.ALPHA_COMBINE:
-                return _native.Engine.ALPHA_COMBINE;
-            case Constants.ALPHA_SUBTRACT:
-                return _native.Engine.ALPHA_SUBTRACT;
-            case Constants.ALPHA_MULTIPLY:
-                return _native.Engine.ALPHA_MULTIPLY;
-            case Constants.ALPHA_MAXIMIZED:
-                return _native.Engine.ALPHA_MAXIMIZED;
-            case Constants.ALPHA_ONEONE:
-                return _native.Engine.ALPHA_ONEONE;
-            case Constants.ALPHA_PREMULTIPLIED:
-                return _native.Engine.ALPHA_PREMULTIPLIED;
-            case Constants.ALPHA_PREMULTIPLIED_PORTERDUFF:
-                return _native.Engine.ALPHA_PREMULTIPLIED_PORTERDUFF;
-            case Constants.ALPHA_INTERPOLATE:
-                return _native.Engine.ALPHA_INTERPOLATE;
-            case Constants.ALPHA_SCREENMODE:
-                return _native.Engine.ALPHA_SCREENMODE;
-            default:
-                throw new Error(`Unsupported alpha mode: ${mode}.`);
-        }
-    }
-
-    private _getNativeAttribType(type: number): number {
-        switch (type) {
-            case VertexBuffer.BYTE:
-                return _native.Engine.ATTRIB_TYPE_INT8;
-            case VertexBuffer.UNSIGNED_BYTE:
-                return _native.Engine.ATTRIB_TYPE_UINT8;
-            case VertexBuffer.SHORT:
-                return _native.Engine.ATTRIB_TYPE_INT16;
-            case VertexBuffer.UNSIGNED_SHORT:
-                return _native.Engine.ATTRIB_TYPE_UINT16;
-            case VertexBuffer.FLOAT:
-                return _native.Engine.ATTRIB_TYPE_FLOAT;
-            default:
-                throw new Error(`Unsupported attribute type: ${type}.`);
-        }
     }
 
     public getFontOffset(font: string): { ascent: number; height: number; descent: number } {

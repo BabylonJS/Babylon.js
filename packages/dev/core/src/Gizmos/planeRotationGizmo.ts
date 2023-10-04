@@ -266,7 +266,6 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                 const nodeScale = new Vector3(1, 1, 1);
                 const nodeQuaternion = new Quaternion(0, 0, 0, 1);
                 const nodeTranslation = new Vector3(0, 0, 0);
-                this._handlePivot();
 
                 this.attachedNode.getWorldMatrix().decompose(nodeScale, nodeQuaternion, nodeTranslation);
                 // uniform scaling of absolute value of components
@@ -307,6 +306,11 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                     angle = -angle;
                 }
 
+                TmpVectors.Vector3[0].set(angle, 0, 0);
+                if (!this.dragBehavior.validateDrag(TmpVectors.Vector3[0])) {
+                    angle = 0;
+                }
+
                 // Snapping logic
                 let snapped = false;
                 if (this.snapDistance != 0) {
@@ -343,6 +347,7 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                 if (this.updateGizmoRotationToMatchAttachedMesh) {
                     // Rotate selected mesh quaternion over fixed axis
                     nodeQuaternion.multiplyToRef(amountToRotate, nodeQuaternion);
+                    nodeQuaternion.normalize();
                     // recompose matrix
                     Matrix.ComposeToRef(nodeScale, nodeQuaternion, nodeTranslation, this.attachedNode.getWorldMatrix());
                 } else {

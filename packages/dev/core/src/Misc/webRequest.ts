@@ -35,6 +35,14 @@ export class WebRequest implements IWebRequest {
 
     public static SkipRequestModificationForBabylonCDN = true;
 
+    /**
+     * This function can be called to check if there are request modifiers for network requests
+     * @returns true if there are any custom requests available
+     */
+    public static get IsCustomRequestAvailable(): boolean {
+        return Object.keys(WebRequest.CustomRequestHeaders).length > 0 || WebRequest.CustomRequestModifiers.length > 0;
+    }
+
     private _requestURL: string = "";
 
     private _injectCustomRequestHeaders(): void {

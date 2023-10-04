@@ -113,6 +113,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         SetUVsBlock: "Block used to update one of the uvs attribute of a geometry",
         SetMaterialIDBlock: "Block used to associate a material ID with a geometry",
         MergeBlock: "Block used to merge up to 5 geometries",
+        BooleanBlock: "Block used to apply a boolean operation between two geometries",
         computeNormalsBlock: "Block used to compute the normals of a geometry",
         RandomBlock: "Block used to generate a random value within a range",
         NoiseBlock: "Generate a value using Perlin noise algorithm",
@@ -122,6 +123,9 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         GeometryInfoBlock: "Provides information about a geometry",
         MappingBlock: "Generate uv coordinates based on mapping type",
         MatrixComposeBlock: "Multiply two matrices together",
+        TextureBlock: "Provide a texture data source",
+        TextureFetchBlock: "Fetch a color from a texture data source",
+        BoundingBlock: "Compute the bounding box of a geometry",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -258,7 +262,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "ToDegreesBlock",
                 "ToRadiansBlock",
             ],
-            Math__Vector: ["TransformBlock", "VectorConverterBlock", "NormalizeBlock"],
+            Math__Vector: ["TransformBlock", "VectorConverterBlock", "NormalizeBlock", "BoundingBlock"],
             Matrices: ["RotationXBlock", "RotationYBlock", "RotationZBlock", "ScalingBlock", "TranslationBlock", "AlignBlock", "MatrixComposeBlock"],
             Instances: ["InstantiateOnVerticesBlock", "InstantiateOnFacesBlock", "InstantiateOnVolumeBlock", "InstantiateBlock"],
             Misc: ["ElbowBlock", "DebugBlock", "TeleportInBlock", "TeleportOutBlock", "GeometryInfoBlock"],
@@ -270,12 +274,14 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "SetUVsBlock",
                 "SetMaterialIDBlock",
                 "MergeBlock",
+                "BooleanBlock",
                 "CollectionBlock",
                 "ComputeNormalsBlock",
                 "OptimizeBlock",
                 "MappingBlock",
             ],
             Noises: ["RandomBlock", "NoiseBlock"],
+            Textures: ["TextureBlock", "TextureFetchBlock"],
             Output_Nodes: ["GeometryOutputBlock"],
         };
 
@@ -353,7 +359,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         }
 
         return (
-            <div id="nodeList">
+            <div id="ngeNodeList">
                 <div className="panes">
                     <div className="pane">
                         <div className="filter">

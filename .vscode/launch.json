@@ -370,7 +370,7 @@
             "port": 9229,
             // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
             // "envFile": "${workspaceRoot}/.env",
-            "preLaunchTask": "CDN Serve (Dev)"
+            "preLaunchTask": "CDN Serve and watch (Dev)"
         },
         {
             /*
@@ -386,7 +386,7 @@
             "port": 9229,
             // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
             // "envFile": "${workspaceRoot}/.env",
-            "preLaunchTask": "CDN Serve (Dev)"
+            "preLaunchTask": "CDN Serve and watch (Dev)"
         },
         {
             /*
@@ -402,7 +402,7 @@
             "port": 9229,
             // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
             // "envFile": "${workspaceRoot}/.env",
-            "preLaunchTask": "CDN Serve (Dev)"
+            "preLaunchTask": "CDN Serve and watch (Dev)"
         },
         {
             /*
@@ -418,7 +418,7 @@
             "port": 9229,
             // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
             // "envFile": "${workspaceRoot}/.env",
-            "preLaunchTask": "CDN Serve (Dev)"
+            "preLaunchTask": "CDN Serve and watch (Dev)"
         },
         {
             /*
@@ -437,7 +437,7 @@
             },
             // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
             // "envFile": "${workspaceRoot}/.env",
-            "preLaunchTask": "CDN Serve (Dev)"
+            "preLaunchTask": "CDN Serve and watch (Dev)"
         },
         {
             /*
@@ -451,7 +451,7 @@
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
             "port": 9229,
-            "preLaunchTask": "CDN Serve (Dev)"
+            "preLaunchTask": "CDN Serve and watch (Dev)"
         },
         {
             /*

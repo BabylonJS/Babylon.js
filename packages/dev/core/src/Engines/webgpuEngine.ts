@@ -2052,7 +2052,8 @@ export class WebGPUEngine extends Engine {
                 texture.baseHeight = imageBitmap.height;
                 texture.width = imageBitmap.width;
                 texture.height = imageBitmap.height;
-                texture.format = format ?? -1;
+                texture.format = texture.format !== -1 ? texture.format : format ?? Constants.TEXTUREFORMAT_RGBA;
+                texture.type = texture.type !== -1 ? texture.type : Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
                 processFunction(texture.width, texture.height, imageBitmap, extension, texture, () => {});
 

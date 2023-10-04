@@ -50,10 +50,22 @@ import { GeometryCollectionBlock } from "core/Meshes/Node/Blocks/geometryCollect
 import { GeometryInfoBlock } from "core/Meshes/Node/Blocks/geometryInfoBlock";
 import { MappingBlock } from "core/Meshes/Node/Blocks/mappingBlock";
 import { MatrixComposeBlock } from "core/Meshes/Node/Blocks/matrixComposeBlock";
+import { GeometryTextureBlock } from "core/Meshes/Node/Blocks/Textures/geometryTextureBlock";
+import { GeometryTextureFetchBlock } from "core/Meshes/Node/Blocks/Textures/geometryTextureFetchBlock";
+import { BoundingBlock } from "core/Meshes/Node/Blocks/boundingBlock";
+import { BooleanGeometryBlock } from "core/Meshes/Node/Blocks/booleanGeometryBlock";
 
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "BooleanBlock":
+                return new BooleanGeometryBlock("Boolean");
+            case "TextureFetchBlock":
+                return new GeometryTextureFetchBlock("Texture Fetch");
+            case "TextureBlock":
+                return new GeometryTextureBlock("Texture");
+            case "BoundingBlock":
+                return new BoundingBlock("Bounding");
             case "MatrixComposeBlock":
                 return new MatrixComposeBlock("Matrix Compose");
             case "GeometryInfoBlock":
@@ -424,6 +436,9 @@ export class BlockTools {
                 break;
             case NodeGeometryBlockConnectionPointTypes.Geometry:
                 color = "#84995c";
+                break;
+            case NodeGeometryBlockConnectionPointTypes.Texture:
+                color = "#f28e0a";
                 break;
         }
 

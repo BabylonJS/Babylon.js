@@ -22,7 +22,7 @@ export class FlowGraphSignalConnection extends FlowGraphConnection<FlowGraphExec
      */
     public _activateSignal(context: FlowGraphContext): void {
         if (this.connectionType === FlowGraphConnectionType.Input) {
-            this._ownerBlock._execute(context);
+            this._ownerBlock._execute(context, this);
         } else {
             this._connectedPoint[0]?._activateSignal(context);
         }

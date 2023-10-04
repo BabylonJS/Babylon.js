@@ -424,11 +424,10 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             />
                         )}
                     </LineContainerComponent>
-                    {this.props.globalState.resyncHandler && (
-                        <LineContainerComponent title="SYNC">
-                            <ButtonLineComponent label="Update mesh in scene" onClick={() => this.props.globalState.resyncHandler!()} />
-                        </LineContainerComponent>
-                    )}
+                    <LineContainerComponent title="SYNC">
+                        {this.props.globalState.resyncHandler && <ButtonLineComponent label="Update mesh in scene" onClick={() => this.props.globalState.resyncHandler!()} />}
+                        <ButtonLineComponent label="Rebuild" onClick={() => this.props.globalState.stateManager.onRebuildRequiredObservable.notifyObservers()} />
+                    </LineContainerComponent>
                     <LineContainerComponent title="FILE">
                         <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
                         <ButtonLineComponent

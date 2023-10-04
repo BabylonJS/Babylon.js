@@ -1705,12 +1705,24 @@ export class Engine extends ThinEngine {
      * @param texture defines the external texture
      * @param hasMipMaps defines whether the external texture has mip maps (default: false)
      * @param samplingMode defines the sampling mode for the external texture (default: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE)
+     * @param width defines the width for the external texture (default: 0)
+     * @param height defines the height for the external texture (default: 0)
      * @returns the babylon internal texture
      */
-    public wrapWebGLTexture(texture: WebGLTexture, hasMipMaps: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE): InternalTexture {
+    public wrapWebGLTexture(
+        texture: WebGLTexture,
+        hasMipMaps: boolean = false,
+        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+        width: number = 0,
+        height: number = 0
+    ): InternalTexture {
         const hardwareTexture = new WebGLHardwareTexture(texture, this._gl);
         const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
         internalTexture._hardwareTexture = hardwareTexture;
+        internalTexture.baseWidth = width;
+        internalTexture.baseHeight = height;
+        internalTexture.width = width;
+        internalTexture.height = height;
         internalTexture.isReady = true;
         internalTexture.useMipMaps = hasMipMaps;
         this.updateTextureSamplingMode(samplingMode, internalTexture);

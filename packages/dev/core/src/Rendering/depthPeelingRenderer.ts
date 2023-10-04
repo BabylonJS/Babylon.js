@@ -424,6 +424,10 @@ export class DepthPeelingRenderer {
             return this._excludedSubMeshes;
         }
 
+        if (this._scene.activeCamera) {
+            this._engine.setViewport(this._scene.activeCamera.viewport);
+        }
+
         for (let i = 0; i < transparentSubMeshes.length; i++) {
             const subMesh = transparentSubMeshes.data[i];
             const material = subMesh.getMaterial();
@@ -507,6 +511,10 @@ export class DepthPeelingRenderer {
 
             if (this._useRenderPasses) {
                 this._engine.currentRenderPassId = this._renderPassIds[i + 1];
+            }
+
+            if (this._scene.activeCamera) {
+                this._engine.setViewport(this._scene.activeCamera.viewport);
             }
 
             // Clears

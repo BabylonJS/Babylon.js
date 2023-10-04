@@ -1,6 +1,7 @@
 import type { Scene } from "../scene";
 import type { FlowGraphAsyncExecutionBlock } from "./flowGraphAsyncExecutionBlock";
 import type { FlowGraphBlock } from "./flowGraphBlock";
+import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import type { FlowGraphEventCoordinator } from "./flowGraphEventCoordinator";
 
 /**
@@ -33,6 +34,10 @@ export class FlowGraphContext {
      * These are the variables set by the blocks.
      */
     private _executionVariables: Map<string, any> = new Map();
+    /**
+     * These are the values for the data connection points
+     */
+    private _connectionValues: Map<string, any> = new Map();
     /**
      * These are the variables set by the graph.
      */
@@ -73,8 +78,8 @@ export class FlowGraphContext {
         return this._userVariables.get(name);
     }
 
-    private _getBlockPrefixedName(block: FlowGraphBlock, name: string): string {
-        return `${block.uniqueId}_${name}`;
+    private _getUniqueIdPrefixedName(obj: FlowGraphBlock, name: string): string {
+        return `${obj.uniqueId}_${name}`;
     }
 
     /**
@@ -84,7 +89,7 @@ export class FlowGraphContext {
      * @param value
      */
     public _setExecutionVariable(block: FlowGraphBlock, name: string, value: any) {
-        this._executionVariables.set(this._getBlockPrefixedName(block, name), value);
+        this._executionVariables.set(this._getUniqueIdPrefixedName(block, name), value);
     }
 
     /**
@@ -93,12 +98,63 @@ export class FlowGraphContext {
      * @param name
      * @returns
      */
-    public _getExecutionVariable(block: FlowGraphBlock, name: string): any {
-        return this._executionVariables.get(this._getBlockPrefixedName(block, name));
+    public _getExecutionVariable(block: FlowGraphBlock, name: string, defaultValue?: any): any {
+        if (this._hasExecutionVariable(block, name)) {
+            return this._executionVariables.get(this._getUniqueIdPrefixedName(block, name));
+        } else {
+            return defaultValue;
+        }
     }
 
+    /**
+     * Delete an internal execution variable
+     * @internal
+     * @param block
+     * @param name
+     */
     public _deleteExecutionVariable(block: FlowGraphBlock, name: string) {
-        this._executionVariables.delete(this._getBlockPrefixedName(block, name));
+        this._executionVariables.delete(this._getUniqueIdPrefixedName(block, name));
+    }
+
+    /**
+     * Check if an internal execution variable is defined
+     * @internal
+     * @param block
+     * @param name
+     * @returns
+     */
+    public _hasExecutionVariable(block: FlowGraphBlock, name: string) {
+        return this._executionVariables.has(this._getUniqueIdPrefixedName(block, name));
+    }
+
+    /**
+     * Check if a connection value is defined
+     * @internal
+     * @param connectionPoint
+     * @returns
+     */
+    public _hasConnectionValue(connectionPoint: FlowGraphDataConnection<any>) {
+        return this._connectionValues.has(connectionPoint.uniqueId);
+    }
+
+    /**
+     * Set a connection value
+     * @internal
+     * @param connectionPoint
+     * @param value
+     */
+    public _setConnectionValue<T>(connectionPoint: FlowGraphDataConnection<T>, value: T) {
+        this._connectionValues.set(connectionPoint.uniqueId, value);
+    }
+
+    /**
+     * Get a connection value
+     * @internal
+     * @param connectionPoint
+     * @returns
+     */
+    public _getConnectionValue<T>(connectionPoint: FlowGraphDataConnection<T>): T {
+        return this._connectionValues.get(connectionPoint.uniqueId);
     }
 
     /**

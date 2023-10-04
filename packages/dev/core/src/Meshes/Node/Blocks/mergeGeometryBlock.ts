@@ -31,9 +31,6 @@ export class MergeGeometryBlock extends NodeGeometryBlock {
         this.registerInput("geometry4", NodeGeometryBlockConnectionPointTypes.Geometry, true);
 
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Geometry);
-
-        this._outputs[0]._typeConnectionSource = this._inputs[0];
-        this._linkConnectionTypes(0, 1);
     }
 
     /**

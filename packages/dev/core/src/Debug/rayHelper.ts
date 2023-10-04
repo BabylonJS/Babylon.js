@@ -16,7 +16,7 @@ import type { Observer } from "../Misc/observable";
  */
 export class RayHelper {
     /**
-     * Defines the ray we are currently tryin to visualize.
+     * Defines the ray we are currently trying to visualize.
      */
     public ray: Nullable<Ray>;
 
@@ -33,7 +33,7 @@ export class RayHelper {
 
     /**
      * Helper function to create a colored helper in a scene in one line.
-     * @param ray Defines the ray we are currently tryin to visualize
+     * @param ray Defines the ray we are currently trying to visualize
      * @param scene Defines the scene the ray is used in
      * @param color Defines the color we want to see the ray in
      * @returns The newly created ray helper.
@@ -51,7 +51,7 @@ export class RayHelper {
      * As raycast might be hard to debug, the RayHelper can help rendering the different rays
      * in order to better appreciate the issue one might have.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/interactions/picking_collisions#debugging
-     * @param ray Defines the ray we are currently tryin to visualize
+     * @param ray Defines the ray we are currently trying to visualize
      */
     constructor(ray: Ray) {
         this.ray = ray;

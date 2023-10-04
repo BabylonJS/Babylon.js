@@ -378,6 +378,10 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
 
         let customBlockData: any;
 
+        // Dropped something that is not a block
+        if (blockType === "") {
+            return;
+        }
         if (blockType.indexOf("CustomBlock") > -1) {
             const storageData = localStorage.getItem(blockType);
             if (!storageData) {
@@ -552,7 +556,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         parentControl.style.display = "grid";
         parentControl.style.gridTemplateRows = "40px auto";
         parentControl.id = "node-editor-graph-root";
-        parentControl.className = "right-panel popup";
+        parentControl.className = "nme-right-panel popup";
 
         popupWindow.document.body.appendChild(parentControl);
 
@@ -691,7 +695,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
                     ></div>
 
                     {/* Property tab */}
-                    <div className="right-panel">
+                    <div className="nme-right-panel">
                         <PropertyTabComponent lockObject={this.props.globalState.lockObject} globalState={this.props.globalState} />
                         {!this.state.showPreviewPopUp ? <PreviewMeshControlComponent globalState={this.props.globalState} togglePreviewAreaComponent={this.handlePopUp} /> : null}
                         {!this.state.showPreviewPopUp ? <PreviewAreaComponent globalState={this.props.globalState} width={this._rightWidth} /> : null}

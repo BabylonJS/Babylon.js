@@ -1,0 +1,25 @@
+.texture-block {
+    margin-top: 30px;
+    grid-row: 2;
+    height: 140px;
+    width: 140px;
+    overflow: hidden;
+    border-bottom-left-radius: 7px;
+    border: black 4px solid;
+    border-left: 0px;
+    border-bottom: 0px;
+
+    img {
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+
+        &.empty {
+            display: none;
+        }
+    }
+}
+
+.empty {
+    display: none;
+}

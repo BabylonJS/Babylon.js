@@ -111,16 +111,16 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
     }
 
     /**
-     * Gets the matrix input component
+     * Gets the count input component
      */
-    public get matrix(): NodeGeometryConnectionPoint {
+    public get count(): NodeGeometryConnectionPoint {
         return this._inputs[2];
     }
 
     /**
-     * Gets the count input component
+     * Gets the matrix input component
      */
-    public get count(): NodeGeometryConnectionPoint {
+    public get matrix(): NodeGeometryConnectionPoint {
         return this._inputs[3];
     }
 
