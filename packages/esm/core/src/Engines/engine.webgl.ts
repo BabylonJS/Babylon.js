@@ -1,5 +1,8 @@
+/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable jsdoc/require-jsdoc */
+/* eslint-disable babylonjs/available */
 import type { DataArray, IndicesArray, Nullable } from "core/types";
-import type { IBaseEngineProtected, IBaseEnginePublic, IBaseEngineInternals } from "./engine.base";
+import type { IBaseEngineProtected, IBaseEnginePublic, IBaseEngineInternals, IBaseEngineOptions } from "./engine.base";
 import {
     initBaseEngineState,
     endFrame as endFrameBase,
@@ -11,7 +14,9 @@ import {
     resetTextureCache,
     _prepareWorkingCanvas,
     getHostDocument,
-} from "./engine.base";
+    resize,
+    _setupMobileChecks,
+} from "./engine.base.js";
 import { WebGLShaderProcessor } from "core/Engines/WebGL/webGLShaderProcessors";
 import type { DataBuffer } from "core/Buffers/dataBuffer";
 import type { IEffectCreationOptions } from "core/Materials/effect";
@@ -88,7 +93,7 @@ import {
     TEXTURE_SKYBOX_MODE,
     TEXTURE_TRILINEAR_SAMPLINGMODE,
     TEXTURE_WRAP_ADDRESSMODE,
-} from "./engine.constants";
+} from "./engine.constants.js";
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import type { WebGLRenderTargetWrapper } from "core/Engines/WebGL/webGLRenderTargetWrapper";
 import * as _ from "lodash";
@@ -98,18 +103,17 @@ import type { IPipelineContext } from "core/Engines/IPipelineContext";
 import type { VertexBuffer } from "core/Buffers/buffer";
 import type { InstancingAttributeInfo } from "core/Engines/instancingAttributeInfo";
 import { InternalTextureSource, InternalTexture } from "core/Materials/Textures/internalTexture";
-import { _loadFile, _reportDrawCall } from "./engine.tools";
+import { _loadFile, _reportDrawCall } from "./engine.tools.js";
 import type { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import type { ThinTexture } from "core/Materials/Textures/thinTexture";
 import type { VideoTexture } from "core/Materials/Textures/videoTexture";
-import type { ISceneLike } from "./engine.interfaces";
-import { GetExponentOfTwo } from "./engine.static";
+import type { ISceneLike } from "./engine.interfaces.js";
+import { ExceptionList, GetExponentOfTwo, Version } from "./engine.static";
 import type { Scene } from "core/scene";
 import type { InternalTextureCreationOptions, TextureSize } from "core/Materials/Textures/textureCreationOptions";
 import { Logger } from "core/Misc/logger";
 import type { HardwareTextureWrapper } from "core/Materials/Textures/hardwareTextureWrapper";
 import { WebGLHardwareTexture } from "core/Engines/WebGL/webGLHardwareTexture";
-import { Engine } from "core/Engines/engine";
 import { DrawWrapper } from "core/Materials/drawWrapper";
 import type { IEffectFallbacks } from "core/Materials/iEffectFallbacks";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
@@ -118,10 +122,13 @@ import { StencilStateComposer } from "core/States/stencilStateComposer";
 import { DepthCullingState } from "core/States/depthCullingState";
 import { StencilState } from "core/States/stencilState";
 import type { ThinEngine } from "core/Engines/thinEngine";
-import { EngineExtensions, getEngineExtension } from "./Extensions/engine.extensions";
-import type { ITransformFeedbackEngineExtension } from "./Extensions/transformFeedback/engine.transformFeedback.base";
+import { EngineExtensions, getEngineExtension } from "./Extensions/engine.extensions.js";
+import type { ITransformFeedbackEngineExtension } from "./Extensions/transformFeedback/engine.transformFeedback.base.js";
 import type { ShaderProcessingContext } from "core/Engines/Processors/shaderProcessingOptions";
-import { IRenderTargetEngineExtension } from "./Extensions/renderTarget/renderTarget.base";
+import type { IRenderTargetEngineExtension } from "./Extensions/renderTarget/renderTarget.base";
+import type { IMultiRenderEngineExtension } from "./Extensions/multiRender/multiRender.base";
+import type { PostProcess } from "core/PostProcesses/postProcess";
+import type { IShaderProcessor } from "core/Engines/Processors/iShaderProcessor";
 
 const _TempClearColorUint32 = new Uint32Array(4);
 const _TempClearColorInt32 = new Int32Array(4);
@@ -160,6 +167,9 @@ interface IWebGLEnginePrivate {
     _unpackFlipYCached: Nullable<boolean>;
     _vertexAttribArraysEnabled: boolean[];
     _currentTextureChannel: number;
+    _rescalePostProcess: Nullable<PostProcess>;
+    _onContextLost?: (evt: Event) => void;
+    _onContextRestored?: (evt: Event) => void;
 }
 
 interface IWebGLEngineProtected extends IBaseEngineProtected {
@@ -172,6 +182,7 @@ interface IWebGLEngineProtected extends IBaseEngineProtected {
     _depthCullingState: DepthCullingState;
     _stencilStateComposer: StencilStateComposer;
     _stencilState: StencilState;
+    _creationOptions: IWebGLEngineOptions;
 }
 
 export interface IWebGLEngineInternals extends IBaseEngineInternals {
@@ -195,22 +206,47 @@ export interface IWebGLEnginePublic extends IBaseEnginePublic {
     enableUnpackFlipYCached: boolean;
 }
 
+export interface IWebGLEngineOptions extends IBaseEngineOptions, WebGLContextAttributes {
+    /**
+     * If sRGB Buffer support is not set during construction, use this value to force a specific state
+     * This is added due to an issue when processing textures in chrome/edge/firefox
+     * This will not influence NativeEngine and WebGPUEngine which set the behavior to true during construction.
+     */
+    forceSRGBBufferSupportState?: boolean;
+    /**
+     * Defines that engine should compile shaders with high precision floats (if supported). True by default
+     */
+    useHighPrecisionFloats?: boolean;
+
+    /**
+     * Defines if webgl2 should be turned off even if supported
+     * @see https://doc.babylonjs.com/setup/support/webGL2
+     */
+    disableWebGL2Support?: boolean;
+}
+
 export type WebGLEngineState = IWebGLEnginePublic & IWebGLEngineInternals & IWebGLEngineProtected;
 export type WebGLEngineStateFull = WebGLEngineState & IWebGLEnginePrivate;
 
-export function initWebGLEngineState(): WebGLEngineState {
-    const baseEngineState = initBaseEngineState({
-        name: "WebGL",
-        description: "Babylon.js WebGL Engine",
-        isNDCHalfZRange: true,
-        hasOriginBottomLeft: false,
-        get supportsUniformBuffers() {
-            return (baseEngineState as WebGLEngineStateFull)._webGLVersion > 1 && !baseEngineState.disableUniformBuffers;
+export function initWebGLEngineState(
+    canvasOrContext: Nullable<HTMLCanvasElement | OffscreenCanvas | WebGLRenderingContext | WebGL2RenderingContext>,
+    options: IWebGLEngineOptions = {}
+): WebGLEngineState {
+    const baseEngineState = initBaseEngineState(
+        {
+            name: "WebGL",
+            description: "Babylon.js WebGL Engine",
+            isNDCHalfZRange: true,
+            hasOriginBottomLeft: false,
+            get supportsUniformBuffers() {
+                return (baseEngineState as WebGLEngineStateFull)._webGLVersion > 1 && !baseEngineState.disableUniformBuffers;
+            },
+            get needPOTTextures(): boolean {
+                return (baseEngineState as WebGLEngineStateFull)._webGLVersion < 2 || baseEngineState.forcePOTTextures;
+            },
         },
-        get needPOTTextures(): boolean {
-            return (baseEngineState as WebGLEngineStateFull)._webGLVersion < 2 || baseEngineState.forcePOTTextures;
-        },
-    });
+        options
+    );
     // public and protected
     const fes = baseEngineState as WebGLEngineState;
     fes._shaderProcessor = new WebGLShaderProcessor();
@@ -236,7 +272,277 @@ export function initWebGLEngineState(): WebGLEngineState {
     ps._stencilStateComposer = new StencilStateComposer();
     ps._depthCullingState = new DepthCullingState();
     ps._stencilState = new StencilState();
+    ps._rescalePostProcess = null;
+    ps._currentBufferPointers = [];
+
+    ps._stencilStateComposer.stencilGlobal = ps._stencilState;
+
+    let canvas: Nullable<HTMLCanvasElement> = null;
+
+    if ((canvasOrContext as any).getContext) {
+        canvas = <HTMLCanvasElement>canvasOrContext;
+        ps._renderingCanvas = canvas;
+
+        if (options.preserveDrawingBuffer === undefined) {
+            options.preserveDrawingBuffer = false;
+        }
+
+        // Exceptions
+        if (navigator && navigator.userAgent) {
+            _setupMobileChecks(fes);
+
+            const ua = navigator.userAgent;
+            for (const exception of ExceptionList.webgl) {
+                const key = exception.key;
+                const targets = exception.targets;
+                const check = new RegExp(key);
+
+                if (check.test(ua)) {
+                    if (exception.capture && exception.captureConstraint) {
+                        const capture = exception.capture;
+                        const constraint = exception.captureConstraint;
+
+                        const regex = new RegExp(capture);
+                        const matches = regex.exec(ua);
+
+                        if (matches && matches.length > 0) {
+                            const capturedValue = parseInt(matches[matches.length - 1]);
+                            if (capturedValue >= constraint) {
+                                continue;
+                            }
+                        }
+                    }
+
+                    for (const target of targets) {
+                        switch (target) {
+                            case "uniformBuffer":
+                                ps.disableUniformBuffers = true;
+                                break;
+                            case "vao":
+                                ps.disableVertexArrayObjects = true;
+                                break;
+                            case "antialias":
+                                options.antialias = false;
+                                break;
+                            case "maxMSAASamples":
+                                ps._maxMSAASamplesOverride = 1;
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Context lost
+        if (!ps.doNotHandleContextLost) {
+            ps._onContextLost = (evt: Event) => {
+                evt.preventDefault();
+                ps._contextWasLost = true;
+                Logger.Warn("WebGL context lost.");
+
+                ps.onContextLostObservable.notifyObservers(ps);
+            };
+
+            ps._onContextRestored = () => {
+                _restoreEngineAfterContextLost(ps, _initGLContext.bind(null, ps));
+            };
+
+            canvas.addEventListener("webglcontextlost", ps._onContextLost, false);
+            canvas.addEventListener("webglcontextrestored", ps._onContextRestored, false);
+
+            options.powerPreference = options.powerPreference || "high-performance";
+        }
+
+        // Detect if we are running on a faulty buggy desktop OS.
+        ps._badDesktopOS = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        // if (ps._badDesktopOS) {
+        //     options.xrCompatible = false;
+        // }
+
+        // GL
+        if (!options.disableWebGL2Support) {
+            try {
+                ps._gl = <any>(canvas.getContext("webgl2", options) || canvas.getContext("experimental-webgl2", options));
+                if (ps._gl) {
+                    ps._webGLVersion = 2.0;
+                    ps._shaderPlatformName = "WEBGL2";
+
+                    // Prevent weird browsers to lie (yeah that happens!)
+                    if (!ps._gl.deleteQuery) {
+                        ps._webGLVersion = 1.0;
+                        ps._shaderPlatformName = "WEBGL1";
+                    }
+                }
+            } catch (e) {
+                // Do nothing
+            }
+        }
+
+        if (!ps._gl) {
+            if (!canvas) {
+                throw new Error("The provided canvas is null or undefined.");
+            }
+            try {
+                ps._gl = <WebGL2RenderingContext>(canvas.getContext("webgl", options) || canvas.getContext("experimental-webgl", options));
+            } catch (e) {
+                throw new Error("WebGL not supported");
+            }
+        }
+
+        if (!ps._gl) {
+            throw new Error("WebGL not supported");
+        }
+    } else {
+        ps._gl = <WebGL2RenderingContext>canvasOrContext;
+        ps._renderingCanvas = ps._gl.canvas as HTMLCanvasElement;
+
+        if ((ps._gl as any).renderbufferStorageMultisample) {
+            ps._webGLVersion = 2.0;
+            ps._shaderPlatformName = "WEBGL2";
+        } else {
+            ps._shaderPlatformName = "WEBGL1";
+        }
+
+        const attributes = ps._gl.getContextAttributes();
+        if (attributes) {
+            options.stencil = attributes.stencil;
+        }
+    }
+
+    // Ensures a consistent color space unpacking of textures cross browser.
+    ps._gl.pixelStorei(ps._gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, ps._gl.NONE);
+
+    if (options.useHighPrecisionFloats !== undefined) {
+        ps._highPrecisionShadersAllowed = options.useHighPrecisionFloats;
+    }
+
+    resize(ps);
+
+    _initGLContext(ps);
+    _initFeatures(ps);
+
+    // Prepare buffer pointers
+    for (let i = 0; i < ps._caps.maxVertexAttribs; i++) {
+        ps._currentBufferPointers[i] = new BufferPointer();
+    }
+
+    // Detect if we are running on a faulty buggy OS.
+    ps._badOS = /iPad/i.test(navigator.userAgent) || /iPhone/i.test(navigator.userAgent);
+
+    // Starting with iOS 14, we can trust the browser
+    // let matches = navigator.userAgent.match(/Version\/(\d+)/);
+
+    // if (matches && matches.length === 2) {
+    //     if (parseInt(matches[1]) >= 14) {
+    //         this._badOS = false;
+    //     }
+    // }
+
+    const versionToLog = `Babylon.js v${Version}`;
+    console.log(versionToLog + ` - ${ps.description}`);
+
+    // Check setAttribute in case of workers
+    if (ps._renderingCanvas && ps._renderingCanvas.setAttribute) {
+        ps._renderingCanvas.setAttribute("data-engine", versionToLog);
+    }
+
     return fes;
+}
+
+function _rebuildInternalTextures(engineState: IWebGLEnginePublic): void {
+    const fes = engineState as WebGLEngineState;
+    const currentState = fes._internalTexturesCache.slice(); // Do a copy because the rebuild will add proxies
+
+    for (const internalTexture of currentState) {
+        internalTexture._rebuild();
+    }
+}
+
+function _rebuildRenderTargetWrappers(engineState: IWebGLEnginePublic): void {
+    const fes = engineState as WebGLEngineState;
+    const currentState = fes._renderTargetWrapperCache.slice(); // Do a copy because the rebuild will add proxies
+
+    for (const renderTargetWrapper of currentState) {
+        renderTargetWrapper._rebuild();
+    }
+}
+
+function _rebuildEffects(engineState: IWebGLEnginePublic): void {
+    const fes = engineState as WebGLEngineState;
+    for (const key in fes._compiledEffects) {
+        const effect = <Effect>fes._compiledEffects[key];
+
+        effect._pipelineContext = null; // because _prepareEffect will try to dispose this pipeline before recreating it and that would lead to webgl errors
+        effect._wasPreviouslyReady = false;
+        effect._prepareEffect();
+    }
+
+    Effect.ResetCache();
+}
+
+export function _getShaderProcessor(engineState: IWebGLEnginePublic, _shaderLanguage: ShaderLanguage): Nullable<IShaderProcessor> {
+    const fes = engineState as WebGLEngineState;
+    return fes._shaderProcessor;
+}
+
+function _rebuildBuffers(engineState: IWebGLEnginePublic): void {
+    const fes = engineState as WebGLEngineState;
+    // Uniforms
+    for (const uniformBuffer of fes._uniformBuffers) {
+        uniformBuffer._rebuild();
+    }
+    // Storage buffers
+    for (const storageBuffer of fes._storageBuffers) {
+        storageBuffer._rebuild();
+    }
+}
+
+export function _restoreEngineAfterContextLost(engineState: IWebGLEnginePublic, initEngine: () => void): void {
+    const fes = engineState as WebGLEngineStateFull;
+    // Adding a timeout to avoid race condition at browser level
+    setTimeout(async () => {
+        fes._dummyFramebuffer = null;
+
+        const depthTest = fes._depthCullingState.depthTest; // backup those values because the call to initEngine / wipeCaches will reset them
+        const depthFunc = fes._depthCullingState.depthFunc;
+        const depthMask = fes._depthCullingState.depthMask;
+        const stencilTest = fes._stencilState.stencilTest;
+
+        // Rebuild context
+        initEngine();
+
+        // Ensure webgl and engine states are matching
+        wipeCaches(fes, true);
+
+        // Rebuild effects
+        _rebuildEffects(fes);
+
+        // TODO - this is from an extension!
+        // _rebuildComputeEffects?.(fes);
+
+        // Note:
+        //  The call to _rebuildBuffers must be made before the call to _rebuildInternalTextures because in the process of _rebuildBuffers the buffers used by the post process managers will be rebuilt
+        //  and we may need to use the post process manager of the scene during _rebuildInternalTextures (in WebGL1, non-POT textures are rescaled using a post process + post process manager of the scene)
+
+        // Rebuild buffers
+        _rebuildBuffers(fes);
+        // Rebuild textures
+        _rebuildInternalTextures(fes);
+        // Rebuild textures
+        _rebuildRenderTargetWrappers(fes);
+
+        // Reset engine states after all the buffer/textures/... have been rebuilt
+        wipeCaches(fes, true);
+
+        fes._depthCullingState.depthTest = depthTest;
+        fes._depthCullingState.depthFunc = depthFunc;
+        fes._depthCullingState.depthMask = depthMask;
+        fes._stencilState.stencilTest = stencilTest;
+
+        Logger.Warn(fes.name + " context successfully restored.");
+        fes.onContextRestoredObservable.notifyObservers(fes);
+        fes._contextWasLost = false;
+    }, 0);
 }
 
 /**
@@ -309,6 +615,7 @@ export function endFrame(engineState: IWebGLEnginePublic): void {
 
 /**
  * Clear the current render buffer or the current render target (if any is set up)
+ * @param engineState defines the engine state
  * @param color defines the color to use
  * @param backBuffer defines if the back buffer must be cleared
  * @param depth defines if the depth buffer must be cleared
@@ -400,7 +707,6 @@ export function flushFramebuffer(engineState: IWebGLEnginePublic): void {
     fes._gl.flush();
 }
 
-// This can be solved using `bind`, but bind is not type-safe.
 const setViewportInjectedMethods = {
     viewportChangedFunc: _viewport,
     getRenderHeightFunc: getRenderHeight,
@@ -492,11 +798,11 @@ export function bindFramebuffer(
  * @internal
  */
 export function _viewport(engineState: IWebGLEnginePublic, x: number, y: number, width: number, height: number): void {
-    _viewportBase(engineState, x, y, width, height);
     const fes = engineState as WebGLEngineStateFull;
     if (x !== fes._viewportCached.x || y !== fes._viewportCached.y || width !== fes._viewportCached.z || height !== fes._viewportCached.w) {
         fes._gl.viewport(x, y, width, height);
     }
+    _viewportBase(engineState, x, y, width, height);
 }
 
 /**
@@ -526,8 +832,9 @@ export function unBindFramebuffer(engineState: IWebGLEnginePublic, texture: Rend
     const gl = fes._gl;
     if (webglRTWrapper._MSAAFramebuffer) {
         if (texture.isMulti) {
+            const extension = getEngineExtension<IMultiRenderEngineExtension>(engineState, EngineExtensions.MULTI_RENDER);
             // This texture is part of a MRT texture, we need to treat all attachments
-            unBindMultiColorAttachmentFramebuffer(texture, disableGenerateMipMaps, onBeforeUnbind);
+            extension.unBindMultiColorAttachmentFramebuffer(engineState, texture, disableGenerateMipMaps, onBeforeUnbind);
             return;
         }
         gl.bindFramebuffer(gl.READ_FRAMEBUFFER, webglRTWrapper._MSAAFramebuffer);
@@ -1390,11 +1697,12 @@ function _ConcatenateShader(source: string, defines: Nullable<string>, shaderVer
     return shaderVersion + (defines ? defines + "\n" : "") + source;
 }
 
-function _compileShader(gl: IWebGLEngineInternals["_gl"], source: string, type: string, defines: Nullable<string>, shaderVersion: string): WebGLShader {
-    return _compileRawShader(gl, _ConcatenateShader(source, defines, shaderVersion), type);
+function _compileShader(engineState: WebGLEngineStateFull, source: string, type: string, defines: Nullable<string>, shaderVersion: string): WebGLShader {
+    return _compileRawShader(engineState, _ConcatenateShader(source, defines, shaderVersion), type);
 }
 
-function _compileRawShader(gl: IWebGLEngineInternals["_gl"], source: string, type: string): WebGLShader {
+function _compileRawShader(engineState: WebGLEngineStateFull, source: string, type: string): WebGLShader {
+    const gl = engineState._gl;
     const shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
 
     if (!shader) {
@@ -1405,7 +1713,9 @@ function _compileRawShader(gl: IWebGLEngineInternals["_gl"], source: string, typ
         }
 
         throw new Error(
-            `Something went wrong while creating a gl ${type} shader object. gl error=${error}, gl isContextLost=${gl.isContextLost()}, _contextWasLost=${this._contextWasLost}`
+            `Something went wrong while creating a gl ${type} shader object. gl error=${error}, gl isContextLost=${gl.isContextLost()}, _contextWasLost=${
+                engineState._contextWasLost
+            }`
         );
     }
 
@@ -1439,11 +1749,11 @@ export function createRawShaderProgram(
     context?: WebGLRenderingContext,
     transformFeedbackVaryings: Nullable<string[]> = null
 ): WebGLProgram {
-    const fes = engineState as WebGLEngineState;
+    const fes = engineState as WebGLEngineStateFull;
     context = context || fes._gl;
 
-    const vertexShader = _compileRawShader(fes._gl, vertexCode, "vertex");
-    const fragmentShader = _compileRawShader(fes._gl, fragmentCode, "fragment");
+    const vertexShader = _compileRawShader(fes, vertexCode, "vertex");
+    const fragmentShader = _compileRawShader(fes, fragmentCode, "fragment");
 
     return _createShaderProgram(fes, pipelineContext as WebGLPipelineContext, vertexShader, fragmentShader, context, transformFeedbackVaryings);
 }
@@ -1456,7 +1766,7 @@ export function _deletePipelineContext(engineState: IWebGLEnginePublic, pipeline
     const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
     if (webGLPipelineContext && webGLPipelineContext.program) {
         if (webGLPipelineContext.transformFeedback) {
-            const extension = getEngineExtension(engineState, EngineExtensions.TRANSFORM_FEEDBACK) as ITransformFeedbackEngineExtension;
+            const extension = getEngineExtension<ITransformFeedbackEngineExtension>(engineState, EngineExtensions.TRANSFORM_FEEDBACK);
             extension.deleteTransformFeedback(engineState, webGLPipelineContext.transformFeedback);
             webGLPipelineContext.transformFeedback = null;
         }
@@ -1485,12 +1795,12 @@ export function createThinShaderProgram(
     context?: WebGLRenderingContext,
     transformFeedbackVaryings: Nullable<string[]> = null
 ): WebGLProgram {
-    const fes = engineState as WebGLEngineState;
+    const fes = engineState as WebGLEngineStateFull;
     context = context || fes._gl;
 
     const shaderVersion = fes._webGLVersion > 1 ? "#version 300 es\n#define WEBGL2 \n" : "";
-    const vertexShader = _compileShader(fes._gl, vertexCode, "vertex", defines, shaderVersion);
-    const fragmentShader = _compileShader(fes._gl, fragmentCode, "fragment", defines, shaderVersion);
+    const vertexShader = _compileShader(fes, vertexCode, "vertex", defines, shaderVersion);
+    const fragmentShader = _compileShader(fes, fragmentCode, "fragment", defines, shaderVersion);
 
     return _createShaderProgram(fes, pipelineContext as WebGLPipelineContext, vertexShader, fragmentShader, context, transformFeedbackVaryings);
 }
@@ -1589,14 +1899,14 @@ function _createShaderProgram(
     if (engineState.webGLVersion > 1 && transformFeedbackVaryings) {
         const extension = getEngineExtension(engineState, EngineExtensions.TRANSFORM_FEEDBACK) as ITransformFeedbackEngineExtension;
         const transformFeedback = extension.createTransformFeedback(engineState);
-        
+
         extension.bindTransformFeedback(engineState, transformFeedback);
         extension.setTranformFeedbackVaryings(engineState, shaderProgram, transformFeedbackVaryings);
         pipelineContext.transformFeedback = transformFeedback;
     }
-    
+
     context.linkProgram(shaderProgram);
-    
+
     if (engineState.webGLVersion > 1 && transformFeedbackVaryings) {
         const extension = getEngineExtension(engineState, EngineExtensions.TRANSFORM_FEEDBACK) as ITransformFeedbackEngineExtension;
         extension.bindTransformFeedback(engineState, null);
@@ -2125,13 +2435,14 @@ export function createTexture(
     creationFlags?: number,
     useSRGBBuffer?: boolean
 ): InternalTexture {
-    const fes = engineState as WebGLEngineState;
+    const fes = engineState as WebGLEngineStateFull;
     const engineAdapter = augmentEngineState(engineState, {
         _releaseTexture,
         getLoadedTexturesCache: (_engineState: IWebGLEnginePublic) => {
             return (_engineState as WebGLEngineState)._internalTexturesCache;
         },
         createTexture,
+        _createHardwareTexture,
     });
     return _createTextureBase(
         {
@@ -2223,7 +2534,7 @@ export function createTexture(
  * @param onComplete callback to be called when resize has completed
  */
 export function _rescaleTexture(
-    engineState: WebGLEngineState,
+    engineState: WebGLEngineStateFull,
     source: InternalTexture,
     destination: InternalTexture,
     scene: Nullable<any>,
@@ -2250,9 +2561,10 @@ export function _rescaleTexture(
         }
     );
 
-    if (!engineState._rescalePostProcess && Engine._RescalePostProcessFactory) {
-        engineState._rescalePostProcess = Engine._RescalePostProcessFactory(this);
-    }
+    // TODO - need to move the definition to EngineStore
+    // if (!engineState._rescalePostProcess && Engine._RescalePostProcessFactory) {
+    //     engineState._rescalePostProcess = Engine._RescalePostProcessFactory(augmentEngineState<Engine>(engineState));
+    // }
 
     if (engineState._rescalePostProcess) {
         engineState._rescalePostProcess.externalTextureSamplerBinding = true;
@@ -2878,7 +3190,7 @@ export function _bindTextureDirectly(engineState: IWebGLEnginePublic, target: nu
         _activateCurrentTexture(fes);
 
         if (texture && texture.isMultiview) {
-            //this._gl.bindTexture(target, texture ? texture._colorTextureArray : null);
+            //(engineState as WebGLEngineStateFull)._gl.bindTexture(target, texture ? texture._colorTextureArray : null);
             console.error(target, texture);
             throw "_bindTextureDirectly called with a multiview texture!";
         } else {
@@ -3215,6 +3527,298 @@ export function attachContextRestoredEvent(engineState: IWebGLEnginePublic, call
  */
 export function getError(engineState: IWebGLEnginePublic): number {
     return (engineState as WebGLEngineState)._gl.getError();
+}
+
+export function _initGLContext(engineState: IWebGLEnginePublic): void {
+    const fes = engineState as WebGLEngineStateFull;
+    // Caps
+    fes._caps = {
+        maxTexturesImageUnits: fes._gl.getParameter(fes._gl.MAX_TEXTURE_IMAGE_UNITS),
+        maxCombinedTexturesImageUnits: fes._gl.getParameter(fes._gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS),
+        maxVertexTextureImageUnits: fes._gl.getParameter(fes._gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS),
+        maxTextureSize: fes._gl.getParameter(fes._gl.MAX_TEXTURE_SIZE),
+        maxSamples: fes._webGLVersion > 1 ? fes._gl.getParameter(fes._gl.MAX_SAMPLES) : 1,
+        maxCubemapTextureSize: fes._gl.getParameter(fes._gl.MAX_CUBE_MAP_TEXTURE_SIZE),
+        maxRenderTextureSize: fes._gl.getParameter(fes._gl.MAX_RENDERBUFFER_SIZE),
+        maxVertexAttribs: fes._gl.getParameter(fes._gl.MAX_VERTEX_ATTRIBS),
+        maxVaryingVectors: fes._gl.getParameter(fes._gl.MAX_VARYING_VECTORS),
+        maxFragmentUniformVectors: fes._gl.getParameter(fes._gl.MAX_FRAGMENT_UNIFORM_VECTORS),
+        maxVertexUniformVectors: fes._gl.getParameter(fes._gl.MAX_VERTEX_UNIFORM_VECTORS),
+        parallelShaderCompile: fes._gl.getExtension("KHR_parallel_shader_compile") || undefined,
+        standardDerivatives: fes._webGLVersion > 1 || fes._gl.getExtension("OES_standard_derivatives") !== null,
+        maxAnisotropy: 1,
+        astc: fes._gl.getExtension("WEBGL_compressed_texture_astc") || fes._gl.getExtension("WEBKIT_WEBGL_compressed_texture_astc"),
+        bptc: fes._gl.getExtension("EXT_texture_compression_bptc") || fes._gl.getExtension("WEBKIT_EXT_texture_compression_bptc"),
+        s3tc: fes._gl.getExtension("WEBGL_compressed_texture_s3tc") || fes._gl.getExtension("WEBKIT_WEBGL_compressed_texture_s3tc"),
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        s3tc_srgb: fes._gl.getExtension("WEBGL_compressed_texture_s3tc_srgb") || fes._gl.getExtension("WEBKIT_WEBGL_compressed_texture_s3tc_srgb"),
+        pvrtc: fes._gl.getExtension("WEBGL_compressed_texture_pvrtc") || fes._gl.getExtension("WEBKIT_WEBGL_compressed_texture_pvrtc"),
+        etc1: fes._gl.getExtension("WEBGL_compressed_texture_etc1") || fes._gl.getExtension("WEBKIT_WEBGL_compressed_texture_etc1"),
+        etc2:
+            fes._gl.getExtension("WEBGL_compressed_texture_etc") ||
+            fes._gl.getExtension("WEBKIT_WEBGL_compressed_texture_etc") ||
+            fes._gl.getExtension("WEBGL_compressed_texture_es3_0"), // also a requirement of OpenGL ES 3
+        textureAnisotropicFilterExtension:
+            fes._gl.getExtension("EXT_texture_filter_anisotropic") ||
+            fes._gl.getExtension("WEBKIT_EXT_texture_filter_anisotropic") ||
+            fes._gl.getExtension("MOZ_EXT_texture_filter_anisotropic"),
+        uintIndices: fes._webGLVersion > 1 || fes._gl.getExtension("OES_element_index_uint") !== null,
+        fragmentDepthSupported: fes._webGLVersion > 1 || fes._gl.getExtension("EXT_frag_depth") !== null,
+        highPrecisionShaderSupported: false,
+        timerQuery: fes._gl.getExtension("EXT_disjoint_timer_query_webgl2") || fes._gl.getExtension("EXT_disjoint_timer_query"),
+        supportOcclusionQuery: fes._webGLVersion > 1,
+        canUseTimestampForTimerQuery: false,
+        drawBuffersExtension: false,
+        maxMSAASamples: 1,
+        colorBufferFloat: !!(fes._webGLVersion > 1 && fes._gl.getExtension("EXT_color_buffer_float")),
+        colorBufferHalfFloat: !!(fes._webGLVersion > 1 && fes._gl.getExtension("EXT_color_buffer_half_float")),
+        textureFloat: fes._webGLVersion > 1 || fes._gl.getExtension("OES_texture_float") ? true : false,
+        textureHalfFloat: fes._webGLVersion > 1 || fes._gl.getExtension("OES_texture_half_float") ? true : false,
+        textureHalfFloatRender: false,
+        textureFloatLinearFiltering: false,
+        textureFloatRender: false,
+        textureHalfFloatLinearFiltering: false,
+        vertexArrayObject: false,
+        instancedArrays: false,
+        textureLOD: fes._webGLVersion > 1 || fes._gl.getExtension("EXT_shader_texture_lod") ? true : false,
+        texelFetch: fes._webGLVersion !== 1,
+        blendMinMax: false,
+        multiview: fes._gl.getExtension("OVR_multiview2"),
+        oculusMultiview: fes._gl.getExtension("OCULUS_multiview"),
+        depthTextureExtension: false,
+        canUseGLInstanceID: fes._webGLVersion > 1,
+        canUseGLVertexID: fes._webGLVersion > 1,
+        supportComputeShaders: false,
+        supportSRGBBuffers: false,
+        supportTransformFeedbacks: fes._webGLVersion > 1,
+        textureMaxLevel: fes._webGLVersion > 1,
+        texture2DArrayMaxLayerCount: fes._webGLVersion > 1 ? fes._gl.getParameter(fes._gl.MAX_ARRAY_TEXTURE_LAYERS) : 128,
+        disableMorphTargetTexture: false,
+    };
+
+    // Infos
+    fes._glVersion = fes._gl.getParameter(fes._gl.VERSION);
+
+    const rendererInfo: any = fes._gl.getExtension("WEBGL_debug_renderer_info");
+    if (rendererInfo != null) {
+        fes._glRenderer = fes._gl.getParameter(rendererInfo.UNMASKED_RENDERER_WEBGL);
+        fes._glVendor = fes._gl.getParameter(rendererInfo.UNMASKED_VENDOR_WEBGL);
+    }
+
+    if (!fes._glVendor) {
+        fes._glVendor = fes._gl.getParameter(fes._gl.VENDOR) || "Unknown vendor";
+    }
+
+    if (!fes._glRenderer) {
+        fes._glRenderer = fes._gl.getParameter(fes._gl.RENDERER) || "Unknown renderer";
+    }
+
+    // Constants
+    if (fes._gl.HALF_FLOAT_OES !== 0x8d61) {
+        fes._gl.HALF_FLOAT_OES = 0x8d61; // Half floating-point type (16-bit).
+    }
+    if (fes._gl.RGBA16F !== 0x881a) {
+        fes._gl.RGBA16F = 0x881a; // RGBA 16-bit floating-point color-renderable internal sized format.
+    }
+    if (fes._gl.RGBA32F !== 0x8814) {
+        fes._gl.RGBA32F = 0x8814; // RGBA 32-bit floating-point color-renderable internal sized format.
+    }
+    if (fes._gl.DEPTH24_STENCIL8 !== 35056) {
+        fes._gl.DEPTH24_STENCIL8 = 35056;
+    }
+
+    // Extensions
+    if (fes._caps.timerQuery) {
+        if (fes._webGLVersion === 1) {
+            fes._gl.getQuery = (<any>fes._caps.timerQuery).getQueryEXT.bind(fes._caps.timerQuery);
+        }
+        // WebGLQuery casted to number to avoid TS error
+        fes._caps.canUseTimestampForTimerQuery = ((fes._gl.getQuery(fes._caps.timerQuery.TIMESTAMP_EXT, fes._caps.timerQuery.QUERY_COUNTER_BITS_EXT) as number) ?? 0) > 0;
+    }
+
+    fes._caps.maxAnisotropy = fes._caps.textureAnisotropicFilterExtension ? fes._gl.getParameter(fes._caps.textureAnisotropicFilterExtension.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
+    fes._caps.textureFloatLinearFiltering = fes._caps.textureFloat && fes._gl.getExtension("OES_texture_float_linear") ? true : false;
+    fes._caps.textureFloatRender = fes._caps.textureFloat && _canRenderToFloatFramebuffer(fes) ? true : false;
+    fes._caps.textureHalfFloatLinearFiltering = fes._webGLVersion > 1 || (fes._caps.textureHalfFloat && fes._gl.getExtension("OES_texture_half_float_linear")) ? true : false;
+
+    // Compressed formats
+    if (fes._caps.astc) {
+        fes._gl.COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR = fes._caps.astc.COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR;
+    }
+    if (fes._caps.bptc) {
+        fes._gl.COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT = fes._caps.bptc.COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT;
+    }
+    if (fes._caps.s3tc_srgb) {
+        fes._gl.COMPRESSED_SRGB_S3TC_DXT1_EXT = fes._caps.s3tc_srgb.COMPRESSED_SRGB_S3TC_DXT1_EXT;
+        fes._gl.COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT = fes._caps.s3tc_srgb.COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
+        fes._gl.COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT = fes._caps.s3tc_srgb.COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT;
+    }
+    if (fes._caps.etc2) {
+        fes._gl.COMPRESSED_SRGB8_ETC2 = fes._caps.etc2.COMPRESSED_SRGB8_ETC2;
+        fes._gl.COMPRESSED_SRGB8_ALPHA8_ETC2_EAC = fes._caps.etc2.COMPRESSED_SRGB8_ALPHA8_ETC2_EAC;
+    }
+
+    // Checks if some of the format renders first to allow the use of webgl inspector.
+    if (fes._webGLVersion > 1) {
+        if (fes._gl.HALF_FLOAT_OES !== 0x140b) {
+            fes._gl.HALF_FLOAT_OES = 0x140b;
+        }
+    }
+    fes._caps.textureHalfFloatRender = fes._caps.textureHalfFloat && _canRenderToHalfFloatFramebuffer(fes);
+    // Draw buffers
+    if (fes._webGLVersion > 1) {
+        fes._caps.drawBuffersExtension = true;
+        fes._caps.maxMSAASamples = fes._maxMSAASamplesOverride !== null ? fes._maxMSAASamplesOverride : fes._gl.getParameter(fes._gl.MAX_SAMPLES);
+    } else {
+        const drawBuffersExtension = fes._gl.getExtension("WEBGL_draw_buffers");
+
+        if (drawBuffersExtension !== null) {
+            fes._caps.drawBuffersExtension = true;
+            fes._gl.drawBuffers = drawBuffersExtension.drawBuffersWEBGL.bind(drawBuffersExtension);
+            (fes._gl.DRAW_FRAMEBUFFER as any) = fes._gl.FRAMEBUFFER;
+
+            for (let i = 0; i < 16; i++) {
+                (<any>fes._gl)["COLOR_ATTACHMENT" + i + "_WEBGL"] = (<any>drawBuffersExtension)["COLOR_ATTACHMENT" + i + "_WEBGL"];
+            }
+        }
+    }
+
+    // Depth Texture
+    if (fes._webGLVersion > 1) {
+        fes._caps.depthTextureExtension = true;
+    } else {
+        const depthTextureExtension = fes._gl.getExtension("WEBGL_depth_texture");
+
+        if (depthTextureExtension != null) {
+            fes._caps.depthTextureExtension = true;
+            fes._gl.UNSIGNED_INT_24_8 = depthTextureExtension.UNSIGNED_INT_24_8_WEBGL;
+        }
+    }
+
+    // Vertex array object
+    if (fes.disableVertexArrayObjects) {
+        fes._caps.vertexArrayObject = false;
+    } else if (fes._webGLVersion > 1) {
+        fes._caps.vertexArrayObject = true;
+    } else {
+        const vertexArrayObjectExtension = fes._gl.getExtension("OES_vertex_array_object");
+
+        if (vertexArrayObjectExtension != null) {
+            fes._caps.vertexArrayObject = true;
+            fes._gl.createVertexArray = vertexArrayObjectExtension.createVertexArrayOES.bind(vertexArrayObjectExtension);
+            fes._gl.bindVertexArray = vertexArrayObjectExtension.bindVertexArrayOES.bind(vertexArrayObjectExtension);
+            fes._gl.deleteVertexArray = vertexArrayObjectExtension.deleteVertexArrayOES.bind(vertexArrayObjectExtension);
+        }
+    }
+
+    // Instances count
+    if (fes._webGLVersion > 1) {
+        fes._caps.instancedArrays = true;
+    } else {
+        const instanceExtension = <ANGLE_instanced_arrays>fes._gl.getExtension("ANGLE_instanced_arrays");
+
+        if (instanceExtension != null) {
+            fes._caps.instancedArrays = true;
+            fes._gl.drawArraysInstanced = instanceExtension.drawArraysInstancedANGLE.bind(instanceExtension);
+            fes._gl.drawElementsInstanced = instanceExtension.drawElementsInstancedANGLE.bind(instanceExtension);
+            fes._gl.vertexAttribDivisor = instanceExtension.vertexAttribDivisorANGLE.bind(instanceExtension);
+        } else {
+            fes._caps.instancedArrays = false;
+        }
+    }
+
+    if (fes._gl.getShaderPrecisionFormat) {
+        const vertexhighp = fes._gl.getShaderPrecisionFormat(fes._gl.VERTEX_SHADER, fes._gl.HIGH_FLOAT);
+        const fragmenthighp = fes._gl.getShaderPrecisionFormat(fes._gl.FRAGMENT_SHADER, fes._gl.HIGH_FLOAT);
+
+        if (vertexhighp && fragmenthighp) {
+            fes._caps.highPrecisionShaderSupported = vertexhighp.precision !== 0 && fragmenthighp.precision !== 0;
+        }
+    }
+
+    if (fes._webGLVersion > 1) {
+        fes._caps.blendMinMax = true;
+    } else {
+        const blendMinMaxExtension = fes._gl.getExtension("EXT_blend_minmax");
+        if (blendMinMaxExtension != null) {
+            fes._caps.blendMinMax = true;
+            fes._gl.MAX = blendMinMaxExtension.MAX_EXT as typeof WebGL2RenderingContext.MAX;
+            fes._gl.MIN = blendMinMaxExtension.MIN_EXT as typeof WebGL2RenderingContext.MIN;
+        }
+    }
+
+    // sRGB buffers
+    // only run this if not already set to true (in the constructor, for example)
+    if (!fes._caps.supportSRGBBuffers) {
+        if (fes._webGLVersion > 1) {
+            fes._caps.supportSRGBBuffers = true;
+            fes._glSRGBExtensionValues = {
+                SRGB: WebGL2RenderingContext.SRGB,
+                SRGB8: WebGL2RenderingContext.SRGB8,
+                SRGB8_ALPHA8: WebGL2RenderingContext.SRGB8_ALPHA8,
+            };
+        } else {
+            const sRGBExtension = fes._gl.getExtension("EXT_sRGB");
+
+            if (sRGBExtension != null) {
+                fes._caps.supportSRGBBuffers = true;
+                fes._glSRGBExtensionValues = {
+                    SRGB: sRGBExtension.SRGB_EXT as typeof WebGL2RenderingContext.SRGB | EXT_sRGB["SRGB_EXT"],
+                    SRGB8: sRGBExtension.SRGB_ALPHA_EXT as typeof WebGL2RenderingContext.SRGB8 | EXT_sRGB["SRGB_ALPHA_EXT"],
+                    SRGB8_ALPHA8: sRGBExtension.SRGB_ALPHA_EXT as typeof WebGL2RenderingContext.SRGB8_ALPHA8 | EXT_sRGB["SRGB8_ALPHA8_EXT"],
+                };
+            }
+        }
+        // take into account the forced state that was provided in options
+        // When the issue in angle/chrome is fixed the flag should be taken into account only when it is explicitly defined
+        fes._caps.supportSRGBBuffers = fes._caps.supportSRGBBuffers && !!(fes._creationOptions && fes._creationOptions.forceSRGBBufferSupportState);
+    }
+
+    // Depth buffer
+    fes._depthCullingState.depthTest = true;
+    fes._depthCullingState.depthFunc = fes._gl.LEQUAL;
+    fes._depthCullingState.depthMask = true;
+
+    // Texture maps
+    fes._maxSimultaneousTextures = fes._caps.maxCombinedTexturesImageUnits;
+    for (let slot = 0; slot < fes._maxSimultaneousTextures; slot++) {
+        fes._nextFreeTextureSlots.push(slot);
+    }
+
+    if (fes._glRenderer === "Mali-G72") {
+        // Overcome a bug when using a texture to store morph targets on Mali-G72
+        fes._caps.disableMorphTargetTexture = true;
+    }
+}
+
+export function _initFeatures(engineState: IWebGLEnginePublic): void {
+    const fes = engineState as WebGLEngineStateFull;
+    fes._features = {
+        forceBitmapOverHTMLImageElement: false,
+        supportRenderAndCopyToLodForFloatTextures: fes._webGLVersion !== 1,
+        supportDepthStencilTexture: fes._webGLVersion !== 1,
+        supportShadowSamplers: fes._webGLVersion !== 1,
+        uniformBufferHardCheckMatrix: false,
+        allowTexturePrefiltering: fes._webGLVersion !== 1,
+        trackUbosInFrame: false,
+        checkUbosContentBeforeUpload: false,
+        supportCSM: fes._webGLVersion !== 1,
+        basisNeedsPOT: fes._webGLVersion === 1,
+        support3DTextures: fes._webGLVersion !== 1,
+        needTypeSuffixInShaderConstants: fes._webGLVersion !== 1,
+        supportMSAA: fes._webGLVersion !== 1,
+        supportSSAO2: fes._webGLVersion !== 1,
+        supportExtendedTextureFormats: fes._webGLVersion !== 1,
+        supportSwitchCaseInShader: fes._webGLVersion !== 1,
+        supportSyncTextureRead: true,
+        needsInvertingBitmap: true,
+        useUBOBindingCache: true,
+        needShaderCodeInlining: false,
+        needToAlwaysBindUniformBuffers: false,
+        supportRenderPasses: false,
+        supportSpriteInstancing: true,
+        _collectUbosUpdatedInFrame: false,
+    };
 }
 
 function _canRenderToFloatFramebuffer(engineState: IWebGLEnginePublic): boolean {
@@ -3614,4 +4218,463 @@ export function readPixels(engineState: IWebGLEnginePublic, x: number, y: number
     }
     fes._gl.readPixels(x, y, width, height, format, fes._gl.UNSIGNED_BYTE, data);
     return Promise.resolve(data);
+}
+
+/**
+ * Set the value of an uniform to a number (int)
+ * @param uniform defines the webGL uniform location where to store the value
+ * @param value defines the int number to store
+ * @returns true if the value was set
+ */
+export function setInt(engineState: IWebGLEnginePublic, uniform: Nullable<WebGLUniformLocation>, value: number): boolean {
+    if (!uniform) {
+        return false;
+    }
+
+    (engineState as WebGLEngineStateFull)._gl.uniform1i(uniform, value);
+
+    return true;
+}
+
+/**
+ * Set the value of an uniform to a int2
+ * @param uniform defines the webGL uniform location where to store the value
+ * @param x defines the 1st component of the value
+ * @param y defines the 2nd component of the value
+ * @returns true if the value was set
+ */
+export function setInt2(engineState: IWebGLEnginePublic, uniform: Nullable<WebGLUniformLocation>, x: number, y: number): boolean {
+    if (!uniform) {
+        return false;
+    }
+
+    (engineState as WebGLEngineStateFull)._gl.uniform2i(uniform, x, y);
+
+    return true;
+}
+
+/**
+ * Set the value of an uniform to a int3
+ * @param uniform defines the webGL uniform location where to store the value
+ * @param x defines the 1st component of the value
+ * @param y defines the 2nd component of the value
+ * @param z defines the 3rd component of the value
+ * @returns true if the value was set
+ */
+export function setInt3(engineState: IWebGLEnginePublic, uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number): boolean {
+    if (!uniform) {
+        return false;
+    }
+
+    (engineState as WebGLEngineStateFull)._gl.uniform3i(uniform, x, y, z);
+
+    return true;
+}
+
+/**
+ * Set the value of an uniform to a int4
+ * @param uniform defines the webGL uniform location where to store the value
+ * @param x defines the 1st component of the value
+ * @param y defines the 2nd component of the value
+ * @param z defines the 3rd component of the value
+ * @param w defines the 4th component of the value
+ * @returns true if the value was set
+ */
+export function setInt4(engineState: IWebGLEnginePublic, uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number): boolean {
+    if (!uniform) {
+        return false;
+    }
+
+    (engineState as WebGLEngineStateFull)._gl.uniform4i(uniform, x, y, z, w);
+
+    return true;
+}
+
+/**
+ * Set the value of an uniform to an array of int32
+ * @param uniform defines the webGL uniform location where to store the value
+ * @param array defines the array of int32 to store
+ * @returns true if the value was set
+ */
+export function setIntArray(engineState: IWebGLEnginePublic, uniform: Nullable<WebGLUniformLocation>, array: Int32Array): boolean {
+    if (!uniform) {
+        return false;
+    }
+
+    (engineState as WebGLEngineStateFull)._gl.uniform1iv(uniform, array);
+
+    return true;
+}
+
+/**
+ * Set the value of an uniform to an array of int32 (stored as vec2)
+ * @param uniform defines the webGL uniform location where to store the value
+ * @param array defines the array of int32 to store
+ * @returns true if the value was set
+ */
+export function setIntArray2(engineState: IWebGLEnginePublic, uniform: Nullable<WebGLUniformLocation>, array: Int32Array): boolean {
+    if (!uniform || array.length % 2 !== 0) {
+        return false;
+    }
+
+    (engineState as WebGLEngineStateFull)._gl.uniform2iv(uniform, array);
+    return true;
+}
+
+/**
+ * Set the value of an uniform to an array of int32 (stored as vec3)
+ * @param uniform defines the webGL uniform location where to store the value
+ * @param array defines the array of int32 to store
+ * @returns true if the value was set
+ */
+export function setIntArray3(engineState: IWebGLEnginePublic, uniform: Nullable<WebGLUniformLocation>, array: Int32Array): boolean {
+    if (!uniform || array.length % 3 !== 0) {
+        return false;
+    }
+
+    (engineState as WebGLEngineStateFull)._gl.uniform3iv(uniform, array);
+    return true;
+}
+
+/**
+ * Set the value of an uniform to an array of int32 (stored as vec4)
+ * @param uniform defines the webGL uniform location where to store the value
+ * @param array defines the array of int32 to store
+ * @returns true if the value was set
+ */
+export function setIntArray4(engineState: IWebGLEnginePublic, uniform: Nullable<WebGLUniformLocation>, array: Int32Array): boolean {
+    if (!uniform || array.length % 4 !== 0) {
+        return false;
+    }
+
+    (engineState as WebGLEngineStateFull)._gl.uniform4iv(uniform, array);
+    return true;
+}
+
+/**
+ * Set the value of an uniform to a number (unsigned int)
+ * @param uniform defines the webGL uniform location where to store the value
+ * @param value defines the unsigned int number to store
+ * @returns true if the value was set
+ */
+export function setUInt(engineState: IWebGLEnginePublic, uniform: Nullable<WebGLUniformLocation>, value: number): boolean {
+    if (!uniform) {
+        return false;
+    }
+
+    (engineState as WebGLEngineStateFull)._gl.uniform1ui(uniform, value);
+
+    return true;
+}
+
+/**
+ * Set the value of an uniform to a unsigned int2
+ * @param uniform defines the webGL uniform location where to store the value
+ * @param x defines the 1st component of the value
+ * @param y defines the 2nd component of the value
+ * @returns true if the value was set
+ */
+export function setUInt2(engineState: IWebGLEnginePublic, uniform: Nullable<WebGLUniformLocation>, x: number, y: number): boolean {
+    if (!uniform) {
+        return false;
+    }
+
+    (engineState as WebGLEngineStateFull)._gl.uniform2ui(uniform, x, y);
+
+    return true;
+}
+
+/**
+ * Set the value of an uniform to a unsigned int3
+ * @param uniform defines the webGL uniform location where to store the value
+ * @param x defines the 1st component of the value
+ * @param y defines the 2nd component of the value
+ * @param z defines the 3rd component of the value
+ * @returns true if the value was set
+ */
+export function setUInt3(engineState: IWebGLEnginePublic, uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number): boolean {
+    if (!uniform) {
+        return false;
+    }
+
+    (engineState as WebGLEngineStateFull)._gl.uniform3ui(uniform, x, y, z);
+
+    return true;
+}
+
+/**
+ * Set the value of an uniform to a unsigned int4
+ * @param uniform defines the webGL uniform location where to store the value
+ * @param x defines the 1st component of the value
+ * @param y defines the 2nd component of the value
+ * @param z defines the 3rd component of the value
+ * @param w defines the 4th component of the value
+ * @returns true if the value was set
+ */
+export function setUInt4(engineState: IWebGLEnginePublic, uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number): boolean {
+    if (!uniform) {
+        return false;
+    }
+
+    (engineState as WebGLEngineStateFull)._gl.uniform4ui(uniform, x, y, z, w);
+
+    return true;
+}
+
+/**
+ * Set the value of an uniform to an array of unsigned int32
+ * @param uniform defines the webGL uniform location where to store the value
+ * @param array defines the array of unsigned int32 to store
+ * @returns true if the value was set
+ */
+export function setUIntArray(engineState: IWebGLEnginePublic, uniform: Nullable<WebGLUniformLocation>, array: Uint32Array): boolean {
+    if (!uniform) {
+        return false;
+    }
+
+    (engineState as WebGLEngineStateFull)._gl.uniform1uiv(uniform, array);
+
+    return true;
+}
+
+/**
+ * Set the value of an uniform to an array of unsigned int32 (stored as vec2)
+ * @param uniform defines the webGL uniform location where to store the value
+ * @param array defines the array of unsigned int32 to store
+ * @returns true if the value was set
+ */
+export function setUIntArray2(engineState: IWebGLEnginePublic, uniform: Nullable<WebGLUniformLocation>, array: Uint32Array): boolean {
+    if (!uniform || array.length % 2 !== 0) {
+        return false;
+    }
+
+    (engineState as WebGLEngineStateFull)._gl.uniform2uiv(uniform, array);
+    return true;
+}
+
+/**
+ * Set the value of an uniform to an array of unsigned int32 (stored as vec3)
+ * @param uniform defines the webGL uniform location where to store the value
+ * @param array defines the array of unsigned int32 to store
+ * @returns true if the value was set
+ */
+export function setUIntArray3(engineState: IWebGLEnginePublic, uniform: Nullable<WebGLUniformLocation>, array: Uint32Array): boolean {
+    if (!uniform || array.length % 3 !== 0) {
+        return false;
+    }
+
+    (engineState as WebGLEngineStateFull)._gl.uniform3uiv(uniform, array);
+    return true;
+}
+
+/**
+ * Set the value of an uniform to an array of unsigned int32 (stored as vec4)
+ * @param uniform defines the webGL uniform location where to store the value
+ * @param array defines the array of unsigned int32 to store
+ * @returns true if the value was set
+ */
+export function setUIntArray4(engineState: IWebGLEnginePublic, uniform: Nullable<WebGLUniformLocation>, array: Uint32Array): boolean {
+    if (!uniform || array.length % 4 !== 0) {
+        return false;
+    }
+
+    (engineState as WebGLEngineStateFull)._gl.uniform4uiv(uniform, array);
+    return true;
+}
+
+/**
+ * Set the value of an uniform to an array of number
+ * @param uniform defines the webGL uniform location where to store the value
+ * @param array defines the array of number to store
+ * @returns true if the value was set
+ */
+export function setArray(engineState: IWebGLEnginePublic, uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): boolean {
+    if (!uniform) {
+        return false;
+    }
+
+    if (array.length < 1) {
+        return false;
+    }
+    (engineState as WebGLEngineStateFull)._gl.uniform1fv(uniform, array);
+    return true;
+}
+
+/**
+ * Set the value of an uniform to an array of number (stored as vec2)
+ * @param uniform defines the webGL uniform location where to store the value
+ * @param array defines the array of number to store
+ * @returns true if the value was set
+ */
+export function setArray2(engineState: IWebGLEnginePublic, uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): boolean {
+    if (!uniform || array.length % 2 !== 0) {
+        return false;
+    }
+
+    (engineState as WebGLEngineStateFull)._gl.uniform2fv(uniform, <any>array);
+    return true;
+}
+
+/**
+ * Set the value of an uniform to an array of number (stored as vec3)
+ * @param uniform defines the webGL uniform location where to store the value
+ * @param array defines the array of number to store
+ * @returns true if the value was set
+ */
+export function setArray3(engineState: IWebGLEnginePublic, uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): boolean {
+    if (!uniform || array.length % 3 !== 0) {
+        return false;
+    }
+
+    (engineState as WebGLEngineStateFull)._gl.uniform3fv(uniform, <any>array);
+    return true;
+}
+
+/**
+ * Set the value of an uniform to an array of number (stored as vec4)
+ * @param uniform defines the webGL uniform location where to store the value
+ * @param array defines the array of number to store
+ * @returns true if the value was set
+ */
+export function setArray4(engineState: IWebGLEnginePublic, uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): boolean {
+    if (!uniform || array.length % 4 !== 0) {
+        return false;
+    }
+
+    (engineState as WebGLEngineStateFull)._gl.uniform4fv(uniform, <any>array);
+    return true;
+}
+
+/**
+ * Set the value of an uniform to an array of float32 (stored as matrices)
+ * @param uniform defines the webGL uniform location where to store the value
+ * @param matrices defines the array of float32 to store
+ * @returns true if the value was set
+ */
+export function setMatrices(engineState: IWebGLEnginePublic, uniform: Nullable<WebGLUniformLocation>, matrices: Float32Array): boolean {
+    if (!uniform) {
+        return false;
+    }
+
+    (engineState as WebGLEngineStateFull)._gl.uniformMatrix4fv(uniform, false, matrices);
+    return true;
+}
+
+/**
+ * Set the value of an uniform to a matrix (3x3)
+ * @param uniform defines the webGL uniform location where to store the value
+ * @param matrix defines the Float32Array representing the 3x3 matrix to store
+ * @returns true if the value was set
+ */
+export function setMatrix3x3(engineState: IWebGLEnginePublic, uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): boolean {
+    if (!uniform) {
+        return false;
+    }
+
+    (engineState as WebGLEngineStateFull)._gl.uniformMatrix3fv(uniform, false, matrix);
+    return true;
+}
+
+/**
+ * Set the value of an uniform to a matrix (2x2)
+ * @param uniform defines the webGL uniform location where to store the value
+ * @param matrix defines the Float32Array representing the 2x2 matrix to store
+ * @returns true if the value was set
+ */
+export function setMatrix2x2(engineState: IWebGLEnginePublic, uniform: Nullable<WebGLUniformLocation>, matrix: Float32Array): boolean {
+    if (!uniform) {
+        return false;
+    }
+
+    (engineState as WebGLEngineStateFull)._gl.uniformMatrix2fv(uniform, false, matrix);
+    return true;
+}
+
+/**
+ * Set the value of an uniform to a number (float)
+ * @param uniform defines the webGL uniform location where to store the value
+ * @param value defines the float number to store
+ * @returns true if the value was transferred
+ */
+export function setFloat(engineState: IWebGLEnginePublic, uniform: Nullable<WebGLUniformLocation>, value: number): boolean {
+    if (!uniform) {
+        return false;
+    }
+
+    (engineState as WebGLEngineStateFull)._gl.uniform1f(uniform, value);
+
+    return true;
+}
+
+/**
+ * Set the value of an uniform to a vec2
+ * @param uniform defines the webGL uniform location where to store the value
+ * @param x defines the 1st component of the value
+ * @param y defines the 2nd component of the value
+ * @returns true if the value was set
+ */
+export function setFloat2(engineState: IWebGLEnginePublic, uniform: Nullable<WebGLUniformLocation>, x: number, y: number): boolean {
+    if (!uniform) {
+        return false;
+    }
+
+    (engineState as WebGLEngineStateFull)._gl.uniform2f(uniform, x, y);
+
+    return true;
+}
+
+/**
+ * Set the value of an uniform to a vec3
+ * @param uniform defines the webGL uniform location where to store the value
+ * @param x defines the 1st component of the value
+ * @param y defines the 2nd component of the value
+ * @param z defines the 3rd component of the value
+ * @returns true if the value was set
+ */
+export function setFloat3(engineState: IWebGLEnginePublic, uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number): boolean {
+    if (!uniform) {
+        return false;
+    }
+
+    (engineState as WebGLEngineStateFull)._gl.uniform3f(uniform, x, y, z);
+
+    return true;
+}
+
+/**
+ * Set the value of an uniform to a vec4
+ * @param uniform defines the webGL uniform location where to store the value
+ * @param x defines the 1st component of the value
+ * @param y defines the 2nd component of the value
+ * @param z defines the 3rd component of the value
+ * @param w defines the 4th component of the value
+ * @returns true if the value was set
+ */
+export function setFloat4(engineState: IWebGLEnginePublic, uniform: Nullable<WebGLUniformLocation>, x: number, y: number, z: number, w: number): boolean {
+    if (!uniform) {
+        return false;
+    }
+
+    (engineState as WebGLEngineStateFull)._gl.uniform4f(uniform, x, y, z, w);
+
+    return true;
+}
+
+// From Engine
+
+/**
+ * Force the mipmap generation for the given render target texture
+ * @param texture defines the render target texture to use
+ * @param unbind defines whether or not to unbind the texture after generation. Defaults to true.
+ */
+export function generateMipMapsForCubemap(engineState: IWebGLEnginePublic, texture: InternalTexture, unbind = true) {
+    const fes = engineState as WebGLEngineStateFull;
+    if (texture.generateMipMaps) {
+        const gl = fes._gl;
+        _bindTextureDirectly(fes, gl.TEXTURE_CUBE_MAP, texture, true);
+        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+        if (unbind) {
+            _bindTextureDirectly(fes, gl.TEXTURE_CUBE_MAP, null);
+        }
+    }
 }

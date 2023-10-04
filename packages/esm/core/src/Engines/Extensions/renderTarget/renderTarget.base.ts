@@ -2,7 +2,7 @@ import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import type { InternalTexture } from "core/Materials/Textures/internalTexture";
 import type { DepthTextureCreationOptions, RenderTargetCreationOptions, TextureSize } from "core/Materials/Textures/textureCreationOptions";
 import type { Nullable } from "core/types";
-import type { IBaseEnginePublic } from "../../engine.base";
+import type { IBaseEnginePublic } from "../../engine.base.js";
 
 export interface IRenderTargetEngineExtension {
     /**

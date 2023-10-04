@@ -1,5 +1,5 @@
 import { PerfCounter } from "core/Misc/perfCounter";
-import type { BaseEngineState, BaseEngineStateFull, IBaseEnginePublic } from "./engine.base";
+import type { BaseEngineState, BaseEngineStateFull, IBaseEnginePublic } from "./engine.base.js";
 import type { IOfflineProvider } from "core/Offline/IOfflineProvider";
 import type { IWebRequest } from "core/Misc/interfaces/iWebRequest";
 import type { IFileRequest } from "core/Misc/fileRequest";

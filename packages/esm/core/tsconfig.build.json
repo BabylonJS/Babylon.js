@@ -7,7 +7,7 @@
         "rootDir": "./src",
         "skipLibCheck": true,
         "paths": {
-            "core/*": ["esm/core/src/*"],
+            "core/*": ["dev/core/dist/*"],
         }
     },
 

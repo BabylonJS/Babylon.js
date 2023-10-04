@@ -1,7 +1,11 @@
-import { IEngineInitOptions, IEnginePublic, EngineType } from "./engine.state";
+// The public API of the engine extension
+export {
+    initBaseEngineState,
+    areAllEffectsReady,
+    clearInternalTexturesCache,
+    draw,
+    drawPointClouds,
+    drawUnIndexed
+} from "./engine.base";
 
-export { IEngineInitOptions, IEnginePublic as IEngineState, EngineType };
-
-export function initEngine(options: IEngineInitOptions): IEnginePublic {
-    return initEngine(options);
-}
+export * as Constants from "./engine.constants";

@@ -1,5 +1,5 @@
 import type { DataBuffer } from "core/Buffers/dataBuffer";
-import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl";
+import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl.js";
 import type { Nullable } from "core/types";
 
 export function createTransformFeedback(engineState: IWebGLEnginePublic): WebGLTransformFeedback {

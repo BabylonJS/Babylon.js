@@ -23,6 +23,7 @@
         "compile:assets": "build-tools -c process-assets --isCore"
     },
     "sideEffects": false,
+    "type": "module",
     "devDependencies": {
         "@dev/build-tools": "^1.0.0"
     }

@@ -1,6 +1,9 @@
+/* eslint-disable jsdoc/require-jsdoc */
 import { augmentEngineState } from "../engine.adapters";
 import type { IBaseEnginePublic } from "../engine.base";
-import type { IRawTextureEngineExtension } from "./engine.rawTexture.base";
+import type { ICubeTextureEngineExtension } from "./cubeTexture/cubeTexture.base";
+import type { IRawTextureEngineExtension } from "./rawTexture/engine.rawTexture.base";
+import type { IMultiRenderEngineExtension } from "./multiRender/multiRender.base";
 import type { IRenderTargetEngineExtension } from "./renderTarget/renderTarget.base";
 import type { ITransformFeedbackEngineExtension } from "./transformFeedback/engine.transformFeedback.base";
 
@@ -8,12 +11,16 @@ export const enum EngineExtensions {
     RAW_TEXTURE = 0,
     TRANSFORM_FEEDBACK = 1,
     RENDER_TARGET = 2,
+    MULTI_RENDER = 3,
+    CUBE_TEXTURE = 4,
 }
 
 export interface IEngineExtensions {
     [EngineExtensions.RAW_TEXTURE]: IRawTextureEngineExtension;
     [EngineExtensions.TRANSFORM_FEEDBACK]: ITransformFeedbackEngineExtension;
     [EngineExtensions.RENDER_TARGET]: IRenderTargetEngineExtension;
+    [EngineExtensions.MULTI_RENDER]: IMultiRenderEngineExtension;
+    [EngineExtensions.CUBE_TEXTURE]: ICubeTextureEngineExtension;
 }
 
 export type IEngineExtension = IEngineExtensions[EngineExtensions];
@@ -28,8 +35,8 @@ export function getEngineExtensions(engineState: IBaseEnginePublic): IEngineExte
     return engineExtensions[engineState.uniqueId];
 }
 
-export function getEngineExtension(engineState: IBaseEnginePublic, type: EngineExtensions) {
-    return getEngineExtensions(engineState)[type];
+export function getEngineExtension<T>(engineState: IBaseEnginePublic, type: EngineExtensions): T {
+    return getEngineExtensions(engineState)[type] as T;
 }
 
 export function setExtension<T extends IEngineExtension>(engineState: IBaseEnginePublic, type: EngineExtensions, extension: T) {

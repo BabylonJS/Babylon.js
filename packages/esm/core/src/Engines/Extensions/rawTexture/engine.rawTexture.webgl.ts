@@ -10,7 +10,7 @@ import {
     _unpackFlipY,
     type IWebGLEnginePublic,
     type WebGLEngineStateFull,
-} from "../../engine.webgl";
+} from "../../engine.webgl.js";
 import {
     TEXTURETYPE_FLOAT,
     TEXTURETYPE_HALF_FLOAT,
@@ -18,14 +18,14 @@ import {
     TEXTURETYPE_UNSIGNED_INTEGER,
     TEXTURE_NEAREST_SAMPLINGMODE,
     TEXTURE_TRILINEAR_SAMPLINGMODE,
-} from "../../engine.constants";
-import { augmentEngineState } from "../../engine.adapters";
+} from "../../engine.constants.js";
+import { augmentEngineState } from "../../engine.adapters.js";
 import { Logger } from "core/Misc/logger";
 import { Tools } from "core/Misc/tools";
 import type { Scene } from "core/scene";
 import type { IWebRequest } from "core/Misc/interfaces/iWebRequest";
-import { _loadFile } from "../../engine.tools";
-import type { IRawTextureEngineExtension } from "../engine.rawTexture.base";
+import { _loadFile } from "../../engine.tools.js";
+import type { IRawTextureEngineExtension } from "../rawTexture/engine.rawTexture.base.js";
 
 export const updateRawTexture: IRawTextureEngineExtension["updateRawTexture"] = function (
     engineState: IWebGLEnginePublic,

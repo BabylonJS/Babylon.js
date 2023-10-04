@@ -1,7 +1,6 @@
 import type { DataBuffer } from "core/Buffers/dataBuffer";
 import type { Nullable } from "core/types";
-import type { IBaseEnginePublic } from "../../engine.base";
-import { EngineExtensions, getEngineExtensions } from "../engine.extensions";
+import type { IBaseEnginePublic } from "../../engine.base.js";
 
 export const name = "transformFeedback";
 

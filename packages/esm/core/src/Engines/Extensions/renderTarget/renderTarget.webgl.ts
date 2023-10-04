@@ -5,7 +5,7 @@ import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import type { TextureSize, RenderTargetCreationOptions, DepthTextureCreationOptions } from "core/Materials/Textures/textureCreationOptions";
 import type { Nullable } from "core/types";
-import { augmentEngineState } from "../../engine.adapters";
+import { augmentEngineState } from "../../engine.adapters.js";
 import {
     _bindTextureDirectly,
     _bindUnboundFramebuffer,
@@ -16,9 +16,10 @@ import {
     _setupFramebufferDepthAttachments,
     type IWebGLEnginePublic,
     type WebGLEngineStateFull,
-} from "../../engine.webgl";
+} from "../../engine.webgl.js";
 import { Logger } from "core/Misc/logger";
-import type { IRenderTargetEngineExtension } from "./renderTarget.base";
+import type { IRenderTargetEngineExtension } from "./renderTarget.base.js";
+import { _createDepthStencilCubeTexture } from "../cubeTexture/cubeTexture.webgl.js";
 
 export const _createHardwareRenderTargetWrapper: IRenderTargetEngineExtension["_createHardwareRenderTargetWrapper"] = function (
     engineState: IWebGLEnginePublic,
@@ -126,6 +127,7 @@ export const createDepthStencilTexture: IRenderTargetEngineExtension["createDept
                     height: number;
                 }
             >size).width || <number>size;
+        // TODO this is from another extension
         return _createDepthStencilCubeTexture(engineState, width, options, rtWrapper);
     } else {
         return _createDepthStencilTexture(engineState, size, options, rtWrapper);

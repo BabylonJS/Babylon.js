@@ -1,7 +1,6 @@
-import type { IBaseEnginePublic } from "./engine.base";
 import type { ThinEngine } from "core/Engines/thinEngine";
-import type * as BaseTypes from "./engine.base";
-import type * as WebGLTypes from "./engine.webgl";
+import type * as BaseTypes from "./engine.base.js";
+import type * as WebGLTypes from "./engine.webgl.js";
 
 type PickMatching<T, V> = { [K in keyof T as T[K] extends V ? K : never]: T[K] };
 type ExtractMethods<T> = PickMatching<T, Function>;
@@ -12,8 +11,16 @@ type BaseThinEngineUnionMethods<T extends ThinEngine, E> = PickMatching<EngineMe
 export type BaseEngineMethods = ExtractMethods<typeof BaseTypes>;
 export type WebGLEngineMethods = ExtractMethods<typeof WebGLTypes>;
 
+/**
+ * Augment an engineState object with methods to simulate a real engine object
+ *
+ * @param engineState the engineState object to augment
+ * @param injectedMethods The methods that will be injected to the engineState
+ * @param force Should we force re-injecting the methods
+ * @returns The engineState cased to the requested engine type
+ */
 export function augmentEngineState<T extends ThinEngine, E = BaseEngineMethods | WebGLEngineMethods>(
-    engineState: IBaseEnginePublic,
+    engineState: BaseTypes.IBaseEnginePublic,
     injectedMethods?: Partial<E>,
     force?: boolean
 ): T {

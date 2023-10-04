@@ -1,5 +1,5 @@
-import { Effect } from "core/Materials/effect";
-import type { ShaderLanguage } from "core/Materials/shaderLanguage";
+/* eslint-disable jsdoc/require-jsdoc */
+import type { Effect } from "core/Materials/effect";
 import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
 import type { Nullable } from "core/types";
 import type { IShaderProcessor } from "core/Engines/Processors/iShaderProcessor";
@@ -18,7 +18,7 @@ import {
     TEXTURETYPE_UNSIGNED_INT,
     TEXTURE_NEAREST_SAMPLINGMODE,
     TEXTURE_TRILINEAR_SAMPLINGMODE,
-} from "./engine.constants";
+} from "./engine.constants.js";
 import { PrecisionDate } from "core/Misc/precisionDate";
 import type { PerfCounter } from "core/Misc/perfCounter";
 import type { StorageBuffer } from "core/Buffers";
@@ -30,24 +30,35 @@ import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import type { IViewportLike } from "core/Maths/math.like";
 import type { ICanvas, ICanvasRenderingContext } from "core/Engines/ICanvas";
 import type { IFileRequest } from "core/Misc/fileRequest";
-import type { IRawTextureEngineExtension } from "./Extensions/engine.rawTexture.base";
+import type { IRawTextureEngineExtension } from "./Extensions/rawTexture/engine.rawTexture.base.js";
 import type { Texture } from "core/Materials/Textures/texture";
-import type { ISceneLike } from "./engine.interfaces";
-import { EngineType } from "./engine.interfaces";
-import { IsDocumentAvailable, IsWindowObjectExist } from "./runtimeEnvironment";
+import type { ISceneLike } from "./engine.interfaces.js";
+import { EngineType } from "./engine.interfaces.js";
+import { IsDocumentAvailable, IsWindowObjectExist, hostInformation } from "./runtimeEnvironment.js";
 import { PerformanceConfigurator } from "core/Engines/performanceConfigurator";
-import { EngineStore, QueueNewFrame, _CreateCanvas, _TextureLoaders } from "./engine.static";
+import { EngineStore, QueueNewFrame, _CreateCanvas, _RequestPointerlock, _TextureLoaders } from "./engine.static.js";
 import type { IPipelineContext } from "core/Engines/IPipelineContext";
 import type { IInternalTextureLoader } from "core/Materials/Textures/internalTextureLoader";
 import { Logger } from "core/Misc/logger";
 import type { IWebRequest } from "core/Misc/interfaces/iWebRequest";
-import { _loadFile } from "./engine.tools";
+import { _loadFile } from "./engine.tools.js";
 import { LoadImage } from "core/Misc/fileTools";
 import type { ThinEngine } from "core/Engines/thinEngine";
 import { PerformanceMonitor } from "core/Misc/performanceMonitor";
 import type { StencilStateComposer } from "core/States/stencilStateComposer";
 import type { StencilState } from "core/States/stencilState";
 import type { Scene } from "core/scene";
+import type { PostProcess } from "core/PostProcesses/postProcess";
+
+/**
+ * Defines the interface used by objects containing a viewport (like a camera)
+ */
+interface IViewportOwnerLike {
+    /**
+     * Gets or sets the viewport
+     */
+    viewport: IViewportLike;
+}
 
 export interface IBaseEngineOptions {
     /**
@@ -130,6 +141,20 @@ interface IBaseEnginePrivate {
     // _vaoRecordInProgress // moved to webgl
     _activeRequests: IFileRequest[]; // - moved to the scope of this file, privately. Maps object to IFileRequest.
     // _checkForMobile - moved to hostInformation
+
+    _onFocus?: () => void;
+    _onBlur?: () => void;
+    _onCanvasPointerOut?: (event: PointerEvent) => void;
+    _onCanvasBlur?: () => void;
+    _onCanvasFocus?: () => void;
+    _onCanvasContextMenu?: (evt: Event) => void;
+
+    _onFullscreenChange?: () => void;
+    _onPointerLockChange?: () => void;
+
+    _pointerLockRequested: boolean;
+
+    _checkForMobile?: () => void;
 }
 
 export interface IBaseEngineProtected {
@@ -169,6 +194,10 @@ export interface IBaseEngineProtected {
     _performanceMonitor: Nullable<PerformanceMonitor>;
     _fps: number;
     _deltaTime: number;
+    // Deterministic lockstepMaxSteps
+    _deterministicLockstep: boolean;
+    _lockstepMaxSteps: number;
+    _timeStep: number;
 }
 
 export interface IBaseEngineInternals {
@@ -390,6 +419,45 @@ export interface IBaseEnginePublic {
      * Gets the list of created scenes
      */
     readonly scenes: Scene[];
+
+    /**
+     * Gets the list of created postprocesses
+     */
+    readonly postProcesses: PostProcess[];
+
+    /**
+     * Observable event triggered each time the rendering canvas is resized
+     */
+    readonly onResizeObservable: Observable<IBaseEnginePublic>;
+
+    /**
+     * Observable event triggered each time the canvas loses focus
+     */
+    readonly onCanvasBlurObservable: Observable<IBaseEnginePublic>;
+
+    /**
+     * Observable event triggered each time the canvas gains focus
+     */
+    readonly onCanvasFocusObservable: Observable<IBaseEnginePublic>;
+
+    /**
+     * Observable event triggered each time the canvas receives pointerout event
+     */
+    readonly onCanvasPointerOutObservable: Observable<PointerEvent>;
+
+    /**
+     * Gets or sets a boolean to enable/disable the context menu (right-click) from appearing on the main canvas
+     */
+    disableContextMenu: boolean;
+
+    /**
+     * Turn this value on if you want to pause FPS computation when in background
+     */
+    disablePerformanceMonitorInBackground: boolean;
+    /**
+     * Gets a boolean indicating if the pointer is currently locked
+     */
+    isPointerLock: boolean;
 }
 
 export type BaseEngineState<T extends IBaseEnginePublic = IBaseEnginePublic> = T & IBaseEngineInternals & IBaseEngineProtected;
@@ -490,6 +558,14 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
         onBeforeShaderCompilationObservable: new Observable<IBaseEnginePublic>(),
         onAfterShaderCompilationObservable: new Observable<IBaseEnginePublic>(),
         scenes: [],
+        postProcesses: [],
+        onResizeObservable: new Observable<IBaseEnginePublic>(),
+        onCanvasBlurObservable: new Observable<IBaseEnginePublic>(),
+        onCanvasFocusObservable: new Observable<IBaseEnginePublic>(),
+        onCanvasPointerOutObservable: new Observable<PointerEvent>(),
+        disableContextMenu: true,
+        disablePerformanceMonitorInBackground: false,
+        isPointerLock: false,
 
         // internals
         _uniformBuffers: [],
@@ -548,6 +624,10 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
         _performanceMonitor: null,
         _fps: 60,
         _deltaTime: 0,
+        _pointerLockRequested: false,
+        _deterministicLockstep: false,
+        _lockstepMaxSteps: 4,
+        _timeStep: 1 / 60,
     };
 
     // TODO is getOwnPropertyDescriptors supported in native? if it doesn't we will need to use getOwnPropertyNames
@@ -642,42 +722,6 @@ export function setSize(engineState: IBaseEnginePublic, width: number, height: n
     fes._renderingCanvas.height = height;
 
     return true;
-}
-
-function _rebuildInternalTextures(engineState: IBaseEnginePublic): void {
-    const fes = engineState as BaseEngineState;
-    const currentState = fes._internalTexturesCache.slice(); // Do a copy because the rebuild will add proxies
-
-    for (const internalTexture of currentState) {
-        internalTexture._rebuild();
-    }
-}
-
-function _rebuildRenderTargetWrappers(engineState: IBaseEnginePublic): void {
-    const fes = engineState as BaseEngineState;
-    const currentState = fes._renderTargetWrapperCache.slice(); // Do a copy because the rebuild will add proxies
-
-    for (const renderTargetWrapper of currentState) {
-        renderTargetWrapper._rebuild();
-    }
-}
-
-function _rebuildEffects(engineState: IBaseEnginePublic): void {
-    const fes = engineState as BaseEngineState;
-    for (const key in fes._compiledEffects) {
-        const effect = <Effect>fes._compiledEffects[key];
-
-        effect._pipelineContext = null; // because _prepareEffect will try to dispose this pipeline before recreating it and that would lead to webgl errors
-        effect._wasPreviouslyReady = false;
-        effect._prepareEffect();
-    }
-
-    Effect.ResetCache();
-}
-
-function _getShaderProcessor(engineState: IBaseEnginePublic, _shaderLanguage: ShaderLanguage): Nullable<IShaderProcessor> {
-    const fes = engineState as BaseEngineState;
-    return fes._shaderProcessor;
 }
 
 /**
@@ -1227,11 +1271,11 @@ export function _createTextureBase<T extends IBaseEnginePublic = IBaseEnginePubl
     const fromBlob = url.substring(0, 5) === "blob:";
     const isBase64 = fromData && url.indexOf(";base64,") !== -1;
 
-    if (!engineAdapter || !fallback) {
+    if (!engineAdapter && !fallback) {
         throw new Error("either engineAdapter or fallback are required");
     }
 
-    const texture = fallback ? fallback : new InternalTexture(engineAdapter, InternalTextureSource.Url);
+    const texture = fallback ? fallback : new InternalTexture(engineAdapter!, InternalTextureSource.Url);
 
     if (texture !== fallback) {
         texture.label = url.substring(0, 60); // default label, can be overriden by the caller
@@ -1462,4 +1506,232 @@ export function _prepareWorkingCanvas(engineState: IBaseEnginePublic): void {
     if (context) {
         fes._workingContext = context;
     }
+}
+
+export function _setupMobileChecks(engineState: IBaseEnginePublic): void {
+    const fes = engineState as BaseEngineStateFull;
+    if (!(navigator && navigator.userAgent)) {
+        return;
+    }
+
+    // Function to check if running on mobile device
+    fes._checkForMobile = () => {
+        const currentUA = navigator.userAgent;
+        hostInformation.isMobile =
+            currentUA.indexOf("Mobile") !== -1 ||
+            // Needed for iOS 13+ detection on iPad (inspired by solution from https://stackoverflow.com/questions/9038625/detect-if-device-is-ios)
+            (currentUA.indexOf("Mac") !== -1 && IsDocumentAvailable() && "ontouchend" in document);
+    };
+
+    // Set initial isMobile value
+    fes._checkForMobile();
+
+    // Set up event listener to check when window is resized (used to get emulator activation to work properly)
+    if (IsWindowObjectExist()) {
+        window.addEventListener("resize", fes._checkForMobile);
+    }
+}
+
+// From Engine
+
+// createImageBitmap is just a proxy to the browser's native implementation
+// Should not be implemented
+
+/**
+ * Shared initialization across engines types.
+ * @param canvas The canvas associated with this instance of the engine.
+ */
+export function _sharedInit(engineState: IBaseEnginePublic, canvas: HTMLCanvasElement) {
+    const fes = engineState as BaseEngineStateFull;
+    // moved from thinEngine
+    fes._renderingCanvas = canvas;
+
+    fes._onCanvasFocus = () => {
+        fes.onCanvasFocusObservable.notifyObservers(engineState);
+    };
+
+    fes._onCanvasBlur = () => {
+        fes.onCanvasBlurObservable.notifyObservers(engineState);
+    };
+
+    fes._onCanvasContextMenu = (evt: Event) => {
+        if (fes.disableContextMenu) {
+            evt.preventDefault();
+        }
+    };
+
+    canvas.addEventListener("focus", fes._onCanvasFocus);
+    canvas.addEventListener("blur", fes._onCanvasBlur);
+    canvas.addEventListener("contextmenu", fes._onCanvasContextMenu);
+    const performanceMonitor = getPerformanceMonitor(engineState);
+    fes._onBlur = () => {
+        if (fes.disablePerformanceMonitorInBackground) {
+            performanceMonitor.disable();
+        }
+        fes._windowIsBackground = true;
+    };
+
+    fes._onFocus = () => {
+        if (fes.disablePerformanceMonitorInBackground) {
+            performanceMonitor.enable();
+        }
+        fes._windowIsBackground = false;
+    };
+
+    fes._onCanvasPointerOut = (ev) => {
+        // Check that the element at the point of the pointer out isn't the canvas and if it isn't, notify observers
+        // Note: This is a workaround for a bug with Safari
+        if (document.elementFromPoint(ev.clientX, ev.clientY) !== canvas) {
+            fes.onCanvasPointerOutObservable.notifyObservers(ev);
+        }
+    };
+
+    const hostWindow = getHostWindow(engineState); // it calls IsWindowObjectExist()
+    if (hostWindow && typeof hostWindow.addEventListener === "function") {
+        hostWindow.addEventListener("blur", fes._onBlur);
+        hostWindow.addEventListener("focus", fes._onFocus);
+    }
+
+    canvas.addEventListener("pointerout", fes._onCanvasPointerOut);
+
+    if (!fes._creationOptions.doNotHandleTouchAction) {
+        _disableTouchAction(fes);
+    }
+
+    // Create Audio Engine if needed.
+    // if (!Engine.audioEngine && fes._creationOptions.audioEngine && Engine.AudioEngineFactory) {
+    //     Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas(), this.getAudioContext(), this.getAudioDestination());
+    // }
+    if (IsDocumentAvailable()) {
+        // Fullscreen
+        fes._onFullscreenChange = () => {
+            fes.isFullscreen = !!document.fullscreenElement;
+
+            // Pointer lock
+            if (fes.isFullscreen && fes._pointerLockRequested && canvas) {
+                _RequestPointerlock(canvas);
+            }
+        };
+
+        document.addEventListener("fullscreenchange", fes._onFullscreenChange, false);
+        document.addEventListener("webkitfullscreenchange", fes._onFullscreenChange, false);
+
+        // Pointer lock
+        fes._onPointerLockChange = () => {
+            fes.isPointerLock = document.pointerLockElement === canvas;
+        };
+
+        document.addEventListener("pointerlockchange", fes._onPointerLockChange, false);
+        document.addEventListener("webkitpointerlockchange", fes._onPointerLockChange, false);
+    }
+
+    // fes.enableOfflineSupport = Engine.OfflineProviderFactory !== undefined;
+
+    fes._deterministicLockstep = !!fes._creationOptions.deterministicLockstep;
+    fes._lockstepMaxSteps = fes._creationOptions.lockstepMaxSteps || 0;
+    fes._timeStep = fes._creationOptions.timeStep || 1 / 60;
+}
+
+function _disableTouchAction(engineState: IBaseEnginePublic): void {
+    const fes = engineState as BaseEngineStateFull;
+    if (!fes._renderingCanvas || !fes._renderingCanvas.setAttribute) {
+        return;
+    }
+
+    fes._renderingCanvas.setAttribute("touch-action", "none");
+    fes._renderingCanvas.style.touchAction = "none";
+    (fes._renderingCanvas.style as any).webkitTapHighlightColor = "transparent";
+}
+
+/** @internal */
+export function _verifyPointerLock(engineState: IBaseEnginePublic): void {
+    (engineState as BaseEngineStateFull)._onPointerLockChange?.();
+}
+
+/**
+ * Gets current aspect ratio
+ * @param viewportOwner defines the camera to use to get the aspect ratio
+ * @param useScreen defines if screen size must be used (or the current render target if any)
+ * @returns a number defining the aspect ratio
+ */
+export function getAspectRatio<T extends IBaseEnginePublic = IBaseEnginePublic>(
+    {
+        getRenderWidthFunc = getRenderWidth,
+        getRenderHeightFunc = getRenderHeight,
+    }: {
+        getRenderWidthFunc?: typeof getRenderWidth<T>;
+        getRenderHeightFunc?: typeof getRenderHeight<T>;
+    },
+    engineState: T,
+    viewportOwner: IViewportOwnerLike,
+    useScreen = false
+): number {
+    const viewport = viewportOwner.viewport;
+    return (getRenderWidthFunc(engineState, useScreen) * viewport.width) / (getRenderHeightFunc(engineState, useScreen) * viewport.height);
+}
+
+/**
+ * Gets current screen aspect ratio
+ * @returns a number defining the aspect ratio
+ */
+export function getScreenAspectRatio<T extends IBaseEnginePublic = IBaseEnginePublic>(
+    {
+        getRenderWidthFunc = getRenderWidth,
+        getRenderHeightFunc = getRenderHeight,
+    }: {
+        getRenderWidthFunc?: typeof getRenderWidth<T>;
+        getRenderHeightFunc?: typeof getRenderHeight<T>;
+    },
+    engineState: T
+): number {
+    return getRenderWidthFunc(engineState, true) / getRenderHeightFunc(engineState, true);
+}
+
+/**
+ * Gets the client rect of the HTML canvas attached with the current webGL context
+ * @returns a client rectangle
+ */
+export function getRenderingCanvasClientRect(engineState: IBaseEnginePublic): Nullable<ClientRect> {
+    const fes = engineState as BaseEngineState;
+    if (!fes._renderingCanvas) {
+        return null;
+    }
+    return fes._renderingCanvas.getBoundingClientRect();
+}
+
+/**
+ * Gets the HTML element used to attach event listeners
+ * @returns a HTML element
+ */
+export function getInputElement(engineState: IBaseEnginePublic): Nullable<HTMLElement> {
+    return (engineState as BaseEngineState)._renderingCanvas;
+}
+
+/**
+ * Gets the client rect of the HTML element used for events
+ * @returns a client rectangle
+ */
+export function getInputElementClientRect(engineState: IBaseEnginePublic): Nullable<ClientRect> {
+    const fes = engineState as BaseEngineState;
+    if (!fes._renderingCanvas) {
+        return null;
+    }
+    return getInputElement(fes)!.getBoundingClientRect();
+}
+
+/**
+ * Gets the max steps when engine is running in deterministic lock step
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
+ * @returns the max steps
+ */
+export function getLockstepMaxSteps(engineState: IBaseEnginePublic): number {
+    return (engineState as BaseEngineState)._lockstepMaxSteps;
+}
+
+/**
+ * Returns the time in ms between steps when using deterministic lock step.
+ * @returns time step in (ms)
+ */
+export function getTimeStep(engineState: IBaseEnginePublic): number {
+    return (engineState as BaseEngineState)._timeStep * 1000;
 }

@@ -1,7 +1,7 @@
 import type { InternalTexture } from "core/Materials/Textures/internalTexture";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
-import type { IBaseEnginePublic } from "../../engine.base";
+import type { IBaseEnginePublic } from "../../engine.base.js";
 
 /**
  * Defines the extension for the engine to create additional internal texture formats

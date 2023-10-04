@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Effect } from "core/Materials/effect";
 import type { IInternalTextureLoader } from "core/Materials/Textures/internalTextureLoader";
-import { IsWindowObjectExist } from "./runtimeEnvironment";
-import { SCALEMODE_CEILING, SCALEMODE_FLOOR, SCALEMODE_NEAREST } from "./engine.constants";
+import { IsWindowObjectExist } from "./runtimeEnvironment.js";
+import { SCALEMODE_CEILING, SCALEMODE_FLOOR, SCALEMODE_NEAREST } from "./engine.constants.js";
 import type { Nullable } from "core/types";
-import type { IBaseEnginePublic } from "./engine.base";
+import type { IBaseEnginePublic } from "./engine.base.js";
 import type { Scene } from "core/scene";
 import { Observable } from "core/Misc/observable";
 import type { ICanvas } from "core/Engines/ICanvas";
+import type { Material } from "core/Materials/material";
 
 export const EngineStore: {
     /** Gets the list of created engines */
@@ -248,6 +249,98 @@ export function _CreateCanvas(width: number, height: number): ICanvas {
     canvas.width = width;
     canvas.height = height;
     return canvas;
+}
+
+/**
+ * Engine abstraction for loading and creating an image bitmap from a given source string.
+ * @internal
+ * @param imageSource source to load the image from.
+ * @param options An object that sets options for the image's extraction.
+ * @returns ImageBitmap.
+ */
+export async function _createImageBitmapFromSource(
+    {
+        createImageBitmap,
+    }: {
+        createImageBitmap: (image: ImageBitmapSource, options?: ImageBitmapOptions) => Promise<ImageBitmap>;
+    },
+    imageSource: string,
+    options?: ImageBitmapOptions
+): Promise<ImageBitmap> {
+    const promise = new Promise<ImageBitmap>((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => {
+            image.decode().then(() => {
+                createImageBitmap(image, options).then((imageBitmap) => {
+                    resolve(imageBitmap);
+                });
+            });
+        };
+        image.onerror = () => {
+            reject(`Error loading image ${image.src}`);
+        };
+
+        image.src = imageSource;
+    });
+
+    return promise;
+}
+
+/**
+ * Resize an image and returns the image data as an uint8array
+ * @param image image to resize
+ * @param bufferWidth destination buffer width
+ * @param bufferHeight destination buffer height
+ * @returns an uint8array containing RGBA values of bufferWidth * bufferHeight size
+ */
+export function resizeImageBitmap(
+    {
+        createCanvas,
+    }: {
+        createCanvas?: (width: number, height: number) => ICanvas;
+    },
+    image: HTMLImageElement | ImageBitmap,
+    bufferWidth: number,
+    bufferHeight: number
+): Uint8Array {
+    const canvas = (createCanvas ?? _CreateCanvas)(bufferWidth, bufferHeight);
+    const context = canvas.getContext("2d");
+
+    if (!context) {
+        throw new Error("Unable to get 2d context for resizeImageBitmap");
+    }
+
+    context.drawImage(image, 0, 0);
+
+    // Create VertexData from map data
+    // Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
+    const buffer = <Uint8Array>(<any>context.getImageData(0, 0, bufferWidth, bufferHeight).data);
+    return buffer;
+}
+
+export function MarkAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void {
+    for (let engineIndex = 0; engineIndex < EngineStore.Instances.length; engineIndex++) {
+        const engine = EngineStore.Instances[engineIndex];
+
+        for (let sceneIndex = 0; sceneIndex < engine.scenes.length; sceneIndex++) {
+            engine.scenes[sceneIndex].markAllMaterialsAsDirty(flag, predicate);
+        }
+    }
+}
+
+export function _RequestPointerlock(element: HTMLElement): void {
+    if (element.requestPointerLock) {
+        // In some browsers, requestPointerLock returns a promise.
+        // Handle possible rejections to avoid an unhandled top-level exception.
+        const promise: unknown = element.requestPointerLock();
+        if (promise instanceof Promise)
+            promise
+                .then(() => {
+                    element.focus();
+                })
+                .catch(() => {});
+        else element.focus();
+    }
 }
 
 // TODO is this needed? this will allow `import Statics from "package/Engines"`.
