@@ -1576,6 +1576,16 @@ export function dispose(engineState: IBaseEnginePublic): void {
     fes.onDisposeObservable.clear();
 }
 
+/**
+ * Gets the object containing all engine capabilities
+ * @param engineState defines the engine state
+ * @returns the EngineCapabilities object
+ */
+export function getCaps(engineState: IBaseEnginePublic): EngineCapabilities {
+    const fes = engineState as BaseEngineState;
+    return fes._caps;
+}
+
 // From Engine
 
 // createImageBitmap is just a proxy to the browser's native implementation
