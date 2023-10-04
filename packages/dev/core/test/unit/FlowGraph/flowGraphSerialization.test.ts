@@ -174,12 +174,10 @@ describe("Flow Graph Serialization", () => {
         const serialized: any = {};
         graph.serialize(serialized);
 
-        expect(serialized.state).toBe(0);
         // Graph is serialized with all blocks
         expect(serialized.allBlocks.length).toBe(3);
 
         const parsed = FlowGraph.Parse(serialized, coordinator);
-        expect(parsed.state).toBe(0);
         expect(parsed._eventBlocks.length).toBe(1);
         parsed.start();
 

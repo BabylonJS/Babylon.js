@@ -39,10 +39,7 @@ export const RichTypeColor3: RichType<Color3> = new RichType("Color3", Color3.Bl
 
 export const RichTypeColor4: RichType<Color4> = new RichType("Color4", new Color4(0, 0, 0, 0));
 
-export const RichTypeQuaternion: RichType<Quaternion> = {
-    typeName: "Quaternion",
-    defaultValueBuilder: () => Quaternion.Identity(),
-};
+export const RichTypeQuaternion: RichType<Quaternion> = new RichType("Quaternion", Quaternion.Identity());
 
 /**
  * Given a value, try to deduce its rich type.

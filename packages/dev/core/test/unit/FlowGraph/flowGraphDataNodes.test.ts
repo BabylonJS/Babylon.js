@@ -1,10 +1,10 @@
 import type { Engine } from "core/Engines";
 import { NullEngine } from "core/Engines";
 import type { FlowGraph, FlowGraphContext } from "core/FlowGraph";
-import { FlowGraphCoordinator, FlowGraphGetVariableBlock, FlowGraphSceneReadyEventBlock } from "core/FlowGraph";
+import { FlowGraphCoordinator, FlowGraphGetVariableBlock, FlowGraphSceneReadyEventBlock, FlowGraphLogBlock } from "core/FlowGraph";
 import { Scene } from "core/scene";
 
-describe("Flow Graph Event Nodes", () => {
+describe("Flow Graph Data Nodes", () => {
     let engine: Engine;
     let scene: Scene;
     let flowGraphCoordinator: FlowGraphCoordinator;

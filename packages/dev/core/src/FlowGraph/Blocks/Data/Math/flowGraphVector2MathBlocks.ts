@@ -15,10 +15,6 @@ export class FlowGraphAddVector2Block extends FlowGraphBinaryOperationBlock<Vect
     constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphAddVector2Block" }) {
         super(config, RichTypeVector2, RichTypeVector2, RichTypeVector2, (left, right) => left.add(right), "FlowGraphAddVector2Block");
     }
-
-    public getClassName(): string {
-        return "FlowGraphAddVector2Block";
-    }
 }
 RegisterClass("FlowGraphAddVector2Block", FlowGraphAddVector2Block);
 
@@ -30,10 +26,6 @@ export class FlowGraphSubtractVector2Block extends FlowGraphBinaryOperationBlock
     constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphSubtractVector2Block" }) {
         super(config, RichTypeVector2, RichTypeVector2, RichTypeVector2, (left, right) => left.subtract(right), "FlowGraphSubtractVector2Block");
     }
-
-    public getClassName(): string {
-        return "FlowGraphSubtractVector2Block";
-    }
 }
 RegisterClass("FlowGraphSubtractVector2Block", FlowGraphSubtractVector2Block);
 /**
@@ -43,10 +35,6 @@ RegisterClass("FlowGraphSubtractVector2Block", FlowGraphSubtractVector2Block);
 export class FlowGraphMultiplyVector2Block extends FlowGraphBinaryOperationBlock<Vector2, Vector2, Vector2> {
     constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphMultiplyVector2Block" }) {
         super(config, RichTypeVector2, RichTypeVector2, RichTypeVector2, (left, right) => left.multiply(right), "FlowGraphMultiplyVector2Block");
-    }
-
-    public getClassName(): string {
-        return "FlowGraphMultiplyVector2Block";
     }
 }
 RegisterClass("FlowGraphMultiplyVector2Block", FlowGraphMultiplyVector2Block);
@@ -58,10 +46,6 @@ export class FlowGraphDivideVector2Block extends FlowGraphBinaryOperationBlock<V
     constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphDivideVector2Block" }) {
         super(config, RichTypeVector2, RichTypeVector2, RichTypeVector2, (left, right) => left.divide(right), "FlowGraphDivideVector2Block");
     }
-
-    public getClassName(): string {
-        return "FlowGraphDivideVector2Block";
-    }
 }
 RegisterClass("FlowGraphDivideVector2Block", FlowGraphDivideVector2Block);
 /**
@@ -72,10 +56,6 @@ export class FlowGraphScaleVector2Block extends FlowGraphBinaryOperationBlock<Ve
     constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphScaleVector2Block" }) {
         super(config, RichTypeVector2, RichTypeNumber, RichTypeVector2, (left, right) => left.scale(right), "FlowGraphScaleVector2Block");
     }
-
-    public getClassName(): string {
-        return "FlowGraphScaleVector2Block";
-    }
 }
 RegisterClass("FlowGraphScaleVector2Block", FlowGraphScaleVector2Block);
 /**
@@ -85,10 +65,6 @@ RegisterClass("FlowGraphScaleVector2Block", FlowGraphScaleVector2Block);
 export class FlowGraphLengthVector2Block extends FlowGraphUnaryOperationBlock<Vector2, number> {
     constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphLengthVector2Block" }) {
         super(config, RichTypeVector2, RichTypeNumber, (value) => value.length(), "FlowGraphLengthVector2Block");
-    }
-
-    public getClassName(): string {
-        return "FlowGraphLengthVector2Block";
     }
 }
 RegisterClass("FlowGraphLengthVector2Block", FlowGraphLengthVector2Block);
@@ -110,10 +86,6 @@ export class FlowGraphNormalizeVector2Block extends FlowGraphUnaryOperationBlock
             },
             "FlowGraphNormalizeVector2Block"
         );
-    }
-
-    public getClassName(): string {
-        return "FlowGraphNormalizeVector2Block";
     }
 }
 RegisterClass("FlowGraphNormalizeVector2Block", FlowGraphNormalizeVector2Block);
@@ -150,10 +122,6 @@ export class FlowGraphCreateVector2Block extends FlowGraphBlock {
         this._cachedVector.y = this.y.getValue(_context);
         this.vector.setValue(this._cachedVector, _context);
     }
-
-    public getClassName(): string {
-        return "FlowGraphCreateVector2Block";
-    }
 }
 RegisterClass("FlowGraphCreateVector2Block", FlowGraphCreateVector2Block);
 
@@ -186,10 +154,6 @@ export class FlowGraphSplitVector2Block extends FlowGraphBlock {
         const vector = this.vector.getValue(_context);
         this.x.setValue(vector.x, _context);
         this.y.setValue(vector.y, _context);
-    }
-
-    public getClassName(): string {
-        return "FlowGraphSplitVector2Block";
     }
 }
 RegisterClass("FlowGraphSplitVector2Block", FlowGraphSplitVector2Block);
@@ -226,10 +190,6 @@ export class FlowGraphRotate2dVector2Block extends FlowGraphBlock {
         this._cachedVector.x = input.x * Math.cos(angle) - input.y * Math.sin(angle);
         this._cachedVector.y = input.x * Math.sin(angle) + input.y * Math.cos(angle);
         this.output.setValue(this._cachedVector, _context);
-    }
-
-    public getClassName(): string {
-        return "FlowGraphRotate2dVector2Block";
     }
 }
 RegisterClass("FlowGraphRotate2dVector2Block", FlowGraphRotate2dVector2Block);

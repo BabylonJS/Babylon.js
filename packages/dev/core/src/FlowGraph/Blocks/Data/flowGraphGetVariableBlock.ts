@@ -1,5 +1,6 @@
 import type { FlowGraphContext } from "../../flowGraphContext";
-import { FlowGraphBlock, IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
+import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
+import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { RichTypeString, RichTypeAny } from "../../flowGraphRichTypes";
 import { RegisterClass } from "../../../Misc/typeStore";

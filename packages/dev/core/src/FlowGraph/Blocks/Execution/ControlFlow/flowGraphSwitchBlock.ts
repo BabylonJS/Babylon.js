@@ -28,7 +28,7 @@ export class FlowGraphSwitchBlock<T> extends FlowGraphExecutionBlock {
     /**
      * Output connection: The output flows.
      */
-    public readonly outputFlows: FlowGraphSignalConnection[] = [];
+    public outputFlows: FlowGraphSignalConnection[];
 
     constructor(public config: IFlowGraphSwitchBlockConfiguration<T>) {
         super(config);
@@ -37,6 +37,8 @@ export class FlowGraphSwitchBlock<T> extends FlowGraphExecutionBlock {
     }
 
     public configure(): void {
+        super.configure();
+        this.outputFlows = [];
         for (let i = 0; i <= this.config.cases.length; i++) {
             this.outputFlows.push(this._registerSignalOutput(`out${i}`));
         }
