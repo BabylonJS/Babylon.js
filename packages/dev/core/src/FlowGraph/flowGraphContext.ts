@@ -1,4 +1,4 @@
-import { serialize } from "core/Misc/decorators";
+import { serialize } from "../Misc/decorators";
 import { RandomGUID } from "../Misc/guid";
 import type { Scene } from "../scene";
 import type { FlowGraphAsyncExecutionBlock } from "./flowGraphAsyncExecutionBlock";
@@ -8,13 +8,13 @@ import type { FlowGraphEventCoordinator } from "./flowGraphEventCoordinator";
 import type { FlowGraph } from "./flowGraph";
 
 function defaultValueSerializationFunction(key: string, value: any, serializationObject: any) {
-    if (!value || !value.getClassName || (value.getClassName && value.getClassName().startsWith("Vector"))) {
-        serializationObject[key] = value;
-    } else {
+    if (value?.getClassName && value?.getClassName() === "Mesh") {
         serializationObject[key] = {
             name: value.name,
             className: value.getClassName(),
         };
+    } else {
+        serializationObject[key] = value;
     }
 }
 

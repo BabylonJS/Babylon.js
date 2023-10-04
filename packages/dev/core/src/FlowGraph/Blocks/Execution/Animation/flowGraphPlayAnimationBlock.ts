@@ -4,7 +4,7 @@ import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import { FlowGraphAsyncExecutionBlock } from "../../../flowGraphAsyncExecutionBlock";
 import { RichTypeAny, RichTypeNumber, RichTypeBoolean } from "../../../flowGraphRichTypes";
-import { RegisterClass } from "core/Misc";
+import { RegisterClass } from "../../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 /**
  * @experimental

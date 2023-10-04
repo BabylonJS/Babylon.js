@@ -1,4 +1,4 @@
-import { Tools } from "core/Misc/tools";
+import { Tools } from "../Misc/tools";
 import { serialize } from "../Misc/decorators";
 import { RandomGUID } from "../Misc/guid";
 import type { FlowGraphBlock } from "./flowGraphBlock";
@@ -111,7 +111,6 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
         for (const point of this._connectedPoint) {
             serializationObject.connectedPointIds.push(point.uniqueId);
         }
-        // console.log("serialization connected point ids", serializationObject.connectedPointIds);
     }
 
     public getClassName(): string {

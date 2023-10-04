@@ -1,4 +1,4 @@
-import { RegisterClass } from "core/Misc";
+import { RegisterClass } from "../../../../Misc/typeStore";
 import type { FlowGraphContext } from "../../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import { FlowGraphExecutionBlock } from "../../../flowGraphExecutionBlock";
