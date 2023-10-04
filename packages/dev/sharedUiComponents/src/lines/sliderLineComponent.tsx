@@ -50,6 +50,10 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
             return true;
         }
 
+        if (nextProps.label !== this.props.label) {
+            return true;
+        }
+
         let currentState = nextProps.target![nextProps.propertyName!];
         if (currentState === undefined) {
             currentState = nextProps.maximum;

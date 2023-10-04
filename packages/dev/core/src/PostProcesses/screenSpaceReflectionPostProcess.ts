@@ -128,11 +128,18 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
                 if (geometryBufferRenderer.isSupported) {
                     geometryBufferRenderer.enablePosition = true;
                     geometryBufferRenderer.enableReflectivity = true;
+
+                    if (geometryBufferRenderer.generateNormalsInWorldSpace) {
+                        console.error("ScreenSpaceReflectionPostProcess does not support generateNormalsInWorldSpace=true for the geometry buffer renderer!");
+                    }
                 }
             }
         } else {
             const prePassRenderer = scene.enablePrePassRenderer();
             prePassRenderer?.markAsDirty();
+            if (prePassRenderer?.generateNormalsInWorldSpace) {
+                console.error("ScreenSpaceReflectionPostProcess does not support generateNormalsInWorldSpace=true for the prepass renderer!");
+            }
             this._prePassEffectConfiguration = new ScreenSpaceReflectionsConfiguration();
         }
 

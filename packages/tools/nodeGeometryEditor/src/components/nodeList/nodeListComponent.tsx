@@ -119,6 +119,7 @@ filter: string }> {
         SetUVsBlock: "Block used to update one of the uvs attribute of a geometry",
         SetMaterialIDBlock: "Block used to associate a material ID with a geometry",
         MergeBlock: "Block used to merge up to 5 geometries",
+        BooleanBlock: "Block used to apply a boolean operation between two geometries",
         computeNormalsBlock: "Block used to compute the normals of a geometry",
         RandomBlock: "Block used to generate a random value within a range",
         NoiseBlock: "Generate a value using Perlin noise algorithm",
@@ -288,6 +289,7 @@ filter: string }> {
                 "SetUVsBlock",
                 "SetMaterialIDBlock",
                 "MergeBlock",
+                "BooleanBlock",
                 "CollectionBlock",
                 "ComputeNormalsBlock",
                 "OptimizeBlock",
@@ -372,7 +374,7 @@ filter: string }> {
         }
 
         return (
-            <div id="nodeList">
+            <div id="ngeNodeList">
                 <div className="panes">
                     <div className="pane">
                         <div className="filter">

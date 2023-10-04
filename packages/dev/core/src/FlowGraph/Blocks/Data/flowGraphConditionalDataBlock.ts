@@ -40,6 +40,6 @@ export class FlowGraphConditionalDataBlock<T> extends FlowGraphBlock {
      * @internal
      */
     public _updateOutputs(context: FlowGraphContext): void {
-        this.output.value = this.condition.getValue(context) ? this.trueValue.getValue(context) : this.falseValue.getValue(context);
+        this.output.setValue(this.condition.getValue(context) ? this.trueValue.getValue(context) : this.falseValue.getValue(context), context);
     }
 }

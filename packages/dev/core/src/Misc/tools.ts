@@ -183,8 +183,6 @@ export class Tools {
         return count === value;
     }
 
-    private static _TmpFloatArray = new Float32Array(1);
-
     /**
      * Returns the nearest 32-bit single precision float representation of a Number
      * @param value A Number.  If the parameter is of a different type, it will get converted
@@ -192,11 +190,7 @@ export class Tools {
      * @returns number
      */
     public static FloatRound(value: number): number {
-        if (Math.fround) {
-            return Math.fround(value);
-        }
-
-        return (Tools._TmpFloatArray[0] = value), Tools._TmpFloatArray[0];
+        return Math.fround(value);
     }
 
     /**

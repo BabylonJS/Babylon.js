@@ -278,7 +278,7 @@ export const LoadImage = (
     const fromBlob = url.substring(0, 5) === "blob:";
     const fromData = url.substring(0, 5) === "data:";
     const noOfflineSupport = () => {
-        if (fromBlob || fromData) {
+        if (fromBlob || fromData || !WebRequest.IsCustomRequestAvailable) {
             img.src = url;
         } else {
             LoadFile(
@@ -293,7 +293,7 @@ export const LoadImage = (
                 undefined,
                 offlineProvider || undefined,
                 true,
-                (request, exception) => {
+                (_request, exception) => {
                     onErrorHandler(exception);
                 }
             );

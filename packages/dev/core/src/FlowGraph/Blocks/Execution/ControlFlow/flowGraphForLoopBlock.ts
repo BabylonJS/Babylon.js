@@ -1,8 +1,8 @@
-import type { FlowGraphSignalConnection } from "../../flowGraphSignalConnection";
-import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
+import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
+import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "core/FlowGraph/flowGraphWithOnDoneExecutionBlock";
-import type { FlowGraphContext } from "../../flowGraphContext";
-import { RichTypeNumber } from "../../flowGraphRichTypes";
+import type { FlowGraphContext } from "../../../flowGraphContext";
+import { RichTypeNumber } from "../../../flowGraphRichTypes";
 
 /**
  * @experimental
@@ -40,7 +40,6 @@ export class FlowGraphForLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
         this.startIndex = this._registerDataInput("startIndex", RichTypeNumber);
         this.endIndex = this._registerDataInput("endIndex", RichTypeNumber);
         this.step = this._registerDataInput("step", RichTypeNumber);
-        this.step.value = 1;
 
         this.index = this._registerDataOutput("index", RichTypeNumber);
         this.onLoop = this._registerSignalOutput("onLoop");
@@ -51,9 +50,9 @@ export class FlowGraphForLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
         let index = context._getExecutionVariable(this, "index");
         const endIndex = context._getExecutionVariable(this, "endIndex");
         if (index < endIndex) {
-            this.index.value = index;
+            this.index.setValue(index, context);
             this.onLoop._activateSignal(context);
-            const step = context._getExecutionVariable(this, "step");
+            const step = context._getExecutionVariable(this, "step", 1);
             index += step;
             context._setExecutionVariable(this, "index", index);
             this._executeLoop(context);

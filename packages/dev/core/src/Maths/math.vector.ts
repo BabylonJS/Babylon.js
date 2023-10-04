@@ -4377,7 +4377,7 @@ export class Quaternion {
      * Updates the given rotation matrix with the current quaternion values
      * Example Playground https://playground.babylonjs.com/#L49EJ7#67
      * @param result defines the target matrix
-     * @returns the current unchanged quaternion
+     * @returns the updated matrix with the rotation
      */
     public toRotationMatrix<T extends Matrix>(result: T): T {
         Matrix.FromQuaternionToRef(this, result);
@@ -5758,9 +5758,9 @@ export class Matrix {
         scale.z = Math.sqrt(m[8] * m[8] + m[9] * m[9] + m[10] * m[10]);
 
         if (preserveScalingNode) {
-            const signX = preserveScalingNode.scaling.x < 0 ? -1 : 1;
-            const signY = preserveScalingNode.scaling.y < 0 ? -1 : 1;
-            const signZ = preserveScalingNode.scaling.z < 0 ? -1 : 1;
+            const signX = preserveScalingNode.absoluteScaling.x < 0 ? -1 : 1;
+            const signY = preserveScalingNode.absoluteScaling.y < 0 ? -1 : 1;
+            const signZ = preserveScalingNode.absoluteScaling.z < 0 ? -1 : 1;
 
             scale.x *= signX;
             scale.y *= signY;

@@ -1,4 +1,4 @@
-import { Vector2, Vector3, Vector4, Matrix } from "../Maths/math.vector";
+import { Vector2, Vector3, Vector4, Matrix, Quaternion } from "../Maths/math.vector";
 import { Color3, Color4 } from "../Maths/math.color";
 
 /**
@@ -67,3 +67,42 @@ export const RichTypeColor4: RichType<Color4> = {
     typeName: "Color4",
     defaultValueBuilder: () => new Color4(0, 0, 0, 0),
 };
+
+export const RichTypeQuaternion: RichType<Quaternion> = {
+    typeName: "Quaternion",
+    defaultValueBuilder: () => Quaternion.Identity(),
+};
+
+/**
+ * Given a value, try to deduce its rich type.
+ * @param value the value to deduce the rich type from
+ * @returns the value's rich type, or RichTypeAny if the type could not be deduced.
+ */
+export function getRichTypeFromValue<T>(value: T): RichType<T> {
+    switch (typeof value) {
+        case "string":
+            return RichTypeString as RichType<T>;
+        case "number":
+            return RichTypeNumber as RichType<T>;
+        case "boolean":
+            return RichTypeBoolean as RichType<T>;
+        case "object":
+            if (value instanceof Vector2) {
+                return RichTypeVector2 as RichType<T>;
+            } else if (value instanceof Vector3) {
+                return RichTypeVector3 as RichType<T>;
+            } else if (value instanceof Vector4) {
+                return RichTypeVector4 as RichType<T>;
+            } else if (value instanceof Color3) {
+                return RichTypeColor3 as RichType<T>;
+            } else if (value instanceof Color4) {
+                return RichTypeColor4 as RichType<T>;
+            } else if (value instanceof Quaternion) {
+                return RichTypeQuaternion as RichType<T>;
+            } else {
+                return RichTypeAny as RichType<T>;
+            }
+        default:
+            return RichTypeAny as RichType<T>;
+    }
+}

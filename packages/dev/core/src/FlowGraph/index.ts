@@ -6,5 +6,6 @@ export * from "./flowGraphEventBlock";
 export * from "./flowGraphEventCoordinator";
 export * from "./flowGraphRichTypes";
 export * from "./flowGraphContext";
+export * from "./flowGraphCoordinator";
 // eslint-disable-next-line import/no-internal-modules
 export * from "./Blocks/index";
