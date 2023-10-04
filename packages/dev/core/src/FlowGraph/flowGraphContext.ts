@@ -8,20 +8,23 @@ import type { FlowGraphEventCoordinator } from "./flowGraphEventCoordinator";
 import type { FlowGraph } from "./flowGraph";
 
 function defaultValueSerializationFunction(key: string, value: any, serializationObject: any) {
-    if (!value.getClassName || (value.getClassName && value.getClassName().startsWith("Vector"))) {
+    if (!value || !value.getClassName || (value.getClassName && value.getClassName().startsWith("Vector"))) {
         serializationObject[key] = value;
     } else {
-        serializationObject[key] = value.name;
+        serializationObject[key] = {
+            name: value.name,
+            className: value.getClassName(),
+        };
     }
 }
 
 function defaultValueParseFunction(key: string, serializationObject: any, scene: Scene) {
     const value = serializationObject[key];
     let finalValue;
-    if (!value.getClassName || (value.getClassName && value.getClassName().startsWith("Vector"))) {
-        finalValue = value;
+    if (value?.className === "Mesh") {
+        finalValue = scene.getMeshByName(value.name);
     } else {
-        finalValue = scene.getMeshByName(value);
+        finalValue = value;
     }
     return finalValue;
 }
@@ -249,14 +252,14 @@ export class FlowGraphContext {
             this._userVariables.set(key, value);
         }
         for (const key in serializationObject._connectionValues) {
-            const value = valueParseFunction(key, serializationObject._userVariables, this._configuration.scene);
+            const value = valueParseFunction(key, serializationObject._connectionValues, this._configuration.scene);
             this._connectionValues.set(key, value);
         }
     }
 
-    public static Parse(serializationObject: any = {}, graph: FlowGraph): FlowGraphContext {
+    public static Parse(serializationObject: any = {}, graph: FlowGraph, valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any): FlowGraphContext {
         const result = graph.createContext();
-        result.parse(serializationObject);
+        result.parse(serializationObject, valueParseFunction);
 
         return result;
     }

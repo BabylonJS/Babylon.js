@@ -86,20 +86,20 @@ export class FlowGraphCoordinator {
         }
     }
 
-    serialize(serializationObject: any) {
+    serialize(serializationObject: any, valueSerializeFunction?: (key: string, value: any, serializationObject: any) => void) {
         serializationObject._flowGraphs = [];
         this._flowGraphs.forEach((graph) => {
             const serializedGraph = {};
-            graph.serialize(serializedGraph);
+            graph.serialize(serializedGraph, valueSerializeFunction);
             serializationObject._flowGraphs.push(serializedGraph);
         });
     }
 
-    public static Parse(serializedObject: any, scene: Scene) {
+    public static Parse(serializedObject: any, scene: Scene, valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any) {
         const coordinator = new FlowGraphCoordinator({ scene });
         serializedObject._flowGraphs?.forEach((serializedGraph: any) => {
             const graph = coordinator.createGraph();
-            graph.parse(serializedGraph);
+            graph.parse(serializedGraph, valueParseFunction);
         });
         return coordinator;
     }

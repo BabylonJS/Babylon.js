@@ -22,6 +22,7 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
     }
 
     public configure() {
+        super.configure();
         this._meshVariableName = this.config.meshVariableName;
     }
 

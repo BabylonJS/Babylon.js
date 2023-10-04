@@ -161,7 +161,7 @@ export class FlowGraph {
         }
     }
 
-    public serialize(serializationObject: any = {}) {
+    public serialize(serializationObject: any = {}, valueSerializeFunction?: (key: string, value: any, serializationObject: any) => void) {
         serializationObject.variableDefinitions = {};
         this.variableDefinitions.serialize(serializationObject.variableDefinitions);
         serializationObject.allBlocks = [];
@@ -173,12 +173,12 @@ export class FlowGraph {
         serializationObject.executionContexts = [];
         for (const context of this._executionContexts) {
             const serializedContext: any = {};
-            context.serialize(serializedContext);
+            context.serialize(serializedContext, valueSerializeFunction);
             serializationObject.executionContexts.push(serializedContext);
         }
     }
 
-    public parse(serializationObject: any) {
+    public parse(serializationObject: any, valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any) {
         this.variableDefinitions.parse(serializationObject.variableDefinitions);
         const blocks: FlowGraphBlock[] = [];
         // Parse all blocks
@@ -207,7 +207,7 @@ export class FlowGraph {
             }
         }
         for (const serializedContext of serializationObject.executionContexts) {
-            FlowGraphContext.Parse(serializedContext, this);
+            FlowGraphContext.Parse(serializedContext, this, valueParseFunction);
         }
     }
 
@@ -235,9 +235,9 @@ export class FlowGraph {
         throw new Error("Could not find signal in connection with unique id " + uniqueId);
     }
 
-    public static Parse(serializationObject: any, coordinator: FlowGraphCoordinator): FlowGraph {
+    public static Parse(serializationObject: any, coordinator: FlowGraphCoordinator, valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any): FlowGraph {
         const graph = coordinator.createGraph();
-        graph.parse(serializationObject);
+        graph.parse(serializationObject, valueParseFunction);
         return graph;
     }
 }
