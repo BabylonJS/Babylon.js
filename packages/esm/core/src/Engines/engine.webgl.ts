@@ -897,7 +897,7 @@ export function bindArrayBuffer(engineState: IWebGLEnginePublic, buffer: Nullabl
 }
 
 /** @internal */
-function _resetVertexBufferBinding(engineState: IWebGLEnginePublic): void {
+export function _resetVertexBufferBinding(engineState: IWebGLEnginePublic): void {
     const fes = engineState as WebGLEngineState;
     bindArrayBuffer(engineState, null);
     fes._cachedVertexBuffers = null;
