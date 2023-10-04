@@ -2,22 +2,31 @@ import { getAccessibleTexture, hasAccessibleElement, isVisible } from "./htmlTwi
 import type { AccessibilityEntity } from "./htmlTwinItem";
 import { HTMLTwinAccessibilityNode } from "./htmlTwinAccessibilityNode";
 import { HTMLTwinAccessibilityLeaf } from "./htmlTwinAccessibilityLeaf";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { SceneContext } from "./htmlTwinSceneContext";
 
 export function HTMLTwinAccessibilityAdaptor(props: { node: AccessibilityEntity }) {
     const [isVisibleState, setIsVisibleState] = useState(isVisible(props.node));
-    // console.log("run adapter for node", props.node.name, "is visible", isVisibleState);
+    const sceneContext = useContext(SceneContext);
     useEffect(() => {
         const observable = (props.node as any).onEnabledStateChangedObservable;
-        // console.log("observer", props.node.name, (props.node as any).onEnabledStateChangedObservable);
         const observer = observable.add((value: boolean) => {
-            // console.log("node", props.node.name, "is visible", value);
             setIsVisibleState(value);
         });
         return () => {
             observable.remove(observer);
         };
     }, []);
+    useEffect(() => {
+        const observable = (props.node as any).onDisposeObservable;
+        const observer = observable.add(() => {
+            sceneContext.updateScene();
+        });
+        return () => {
+            observable.remove(observer);
+        };
+    }, []);
+    // console.log("node", props.node.name, "has update scene", sceneContext.updateScene);
     if (isVisibleState) {
         const accessibleTexture = getAccessibleTexture(props.node);
         if (accessibleTexture) {
