@@ -5758,9 +5758,9 @@ export class Matrix {
         scale.z = Math.sqrt(m[8] * m[8] + m[9] * m[9] + m[10] * m[10]);
 
         if (preserveScalingNode) {
-            const signX = preserveScalingNode.scaling.x < 0 ? -1 : 1;
-            const signY = preserveScalingNode.scaling.y < 0 ? -1 : 1;
-            const signZ = preserveScalingNode.scaling.z < 0 ? -1 : 1;
+            const signX = preserveScalingNode.absoluteScaling.x < 0 ? -1 : 1;
+            const signY = preserveScalingNode.absoluteScaling.y < 0 ? -1 : 1;
+            const signZ = preserveScalingNode.absoluteScaling.z < 0 ? -1 : 1;
 
             scale.x *= signX;
             scale.y *= signY;

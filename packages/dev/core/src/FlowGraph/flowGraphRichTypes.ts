@@ -1,4 +1,4 @@
-import { Vector2, Vector3, Vector4, Matrix } from "../Maths/math.vector";
+import { Vector2, Vector3, Vector4, Matrix, Quaternion } from "../Maths/math.vector";
 import { Color3, Color4 } from "../Maths/math.color";
 
 /**
@@ -39,6 +39,11 @@ export const RichTypeColor3: RichType<Color3> = new RichType("Color3", Color3.Bl
 
 export const RichTypeColor4: RichType<Color4> = new RichType("Color4", new Color4(0, 0, 0, 0));
 
+export const RichTypeQuaternion: RichType<Quaternion> = {
+    typeName: "Quaternion",
+    defaultValueBuilder: () => Quaternion.Identity(),
+};
+
 /**
  * Given a value, try to deduce its rich type.
  * @param value the value to deduce the rich type from
@@ -63,6 +68,8 @@ export function getRichTypeFromValue<T>(value: T): RichType<T> {
                 return RichTypeColor3 as RichType<T>;
             } else if (value instanceof Color4) {
                 return RichTypeColor4 as RichType<T>;
+            } else if (value instanceof Quaternion) {
+                return RichTypeQuaternion as RichType<T>;
             } else {
                 return RichTypeAny as RichType<T>;
             }

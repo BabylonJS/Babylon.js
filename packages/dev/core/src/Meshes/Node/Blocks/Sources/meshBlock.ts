@@ -5,6 +5,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Mesh } from "../../../../Meshes/mesh";
 import { VertexData } from "../../../../Meshes/mesh.vertexData";
 import type { Nullable } from "../../../../types";
+import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
 
 /**
  * Defines a block used to generate a user defined mesh geometry data
@@ -12,6 +13,12 @@ import type { Nullable } from "../../../../types";
 export class MeshBlock extends NodeGeometryBlock {
     private _mesh: Nullable<Mesh>;
     private _cachedVertexData: Nullable<VertexData> = null;
+
+    /**
+     * Gets or sets a boolean indicating that winding order needs to be reserved
+     */
+    @editableInPropertyPage("reverseWindingOrder", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { rebuild: true } })
+    public reverseWindingOrder = false;
 
     /**
      * Gets or sets the mesh to use to get vertex data
@@ -69,6 +76,14 @@ export class MeshBlock extends NodeGeometryBlock {
         const vertexData = VertexData.ExtractFromMesh(this._mesh, false, true);
         this._cachedVertexData = null;
 
+        if (this.reverseWindingOrder && vertexData.indices) {
+            for (let index = 0; index < vertexData.indices.length; index += 3) {
+                const tmp = vertexData.indices[index];
+                vertexData.indices[index] = vertexData.indices[index + 2];
+                vertexData.indices[index + 2] = tmp;
+            }
+        }
+
         this.geometry._storedFunction = () => {
             return vertexData.clone();
         };
@@ -90,6 +105,8 @@ export class MeshBlock extends NodeGeometryBlock {
             }
         }
 
+        serializationObject.reverseWindingOrder = this.reverseWindingOrder;
+
         return serializationObject;
     }
 
@@ -99,6 +116,8 @@ export class MeshBlock extends NodeGeometryBlock {
         if (serializationObject.cachedVertexData) {
             this._cachedVertexData = VertexData.Parse(serializationObject.cachedVertexData);
         }
+
+        this.reverseWindingOrder = serializationObject.reverseWindingOrder;
     }
 }
 

@@ -1,6 +1,243 @@
 {
-    "fromTag": "6.21.3",
+    "fromTag": "6.22.0",
     "changelog": {
+        "6.22.1": [
+            {
+                "pr": "14365",
+                "title": "Gizmos fixes and small improvements",
+                "description": "fixes for :\r\n- https://forum.babylonjs.com/t/gizmos-ondragobservable-outdated-docs/44455\r\n- https://forum.babylonjs.com/t/boundingboxgizmo-attach-to-child-node-with-a-wrong-boundingbox/31082/19\r\n- https://forum.babylonjs.com/t/gizmo-rotation-validation-does-not-work/44543/3\r\n- https://forum.babylonjs.com/t/gizmo-use-tmpparent-but-do-not-preserve-scaling-sign/29270/52\r\n\r\nfixes #12718 ",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Meshes/pointerDragBehavior.ts",
+                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts",
+                    "packages/dev/core/src/Gizmos/gizmo.ts",
+                    "packages/dev/core/src/Gizmos/planeRotationGizmo.ts",
+                    "packages/dev/core/src/Gizmos/positionGizmo.ts",
+                    "packages/dev/core/src/Gizmos/rotationGizmo.ts",
+                    "packages/dev/core/src/Gizmos/scaleGizmo.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "gizmos"
+                ]
+            },
+            {
+                "pr": "14368",
+                "title": "New boolean block for NGE",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/booleanGeometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/mergeGeometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/dev/core/src/Meshes/csg.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "14367",
+                "title": "OIT: Fix viewport not set correctly",
+                "description": "See https://forum.babylonjs.com/t/bug-in-order-independent-transparency-rendering-with-multiple-cameras/44481/6",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/depthPeelingRenderer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14366",
+                "title": "Update to havok 1.2.0",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/babylonServer/public/havok/HavokPhysics.wasm"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14364",
+                "title": "Initial flow graph unit tests",
+                "description": null,
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphReceiveCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphBranchBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphCustomFunctionBlock.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphDataNodes.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphEventNodes.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphExecutionNodes.test.ts"
+                ],
+                "tags": [
+                    "skip changelog",
+                    "flow graph"
+                ]
+            }
+        ],
+        "6.22.0": [
+            {
+                "pr": "14357",
+                "title": "flow graphs vector and matrix math",
+                "description": null,
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphMatrixBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphVector2MathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphVector3MathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphVector4MathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/index.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphDataConnection.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphRichTypes.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "flow graph"
+                ]
+            },
+            {
+                "pr": "14333",
+                "title": "Add coordinate transform and constant value blocks",
+                "description": "# Changes:\r\n- New Node: Coordinate Transform (same as Node Space to Node Space from: https://docs.google.com/document/d/1MT7gL-IEn_PUw-4XGBazMxsyqsxqgAVGYcNeC4Cj_9Q/edit#heading=h.vz8ooowh7xqb)\r\n- Constant Value\r\n\r\n# Examples:\r\nTransform a point from box1's space to box2's space: #EMA2AF",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphConstantBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphCoordinateTransformBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/index.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphRichTypes.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "flow graph"
+                ]
+            },
+            {
+                "pr": "14363",
+                "title": "fix: correct the comment for resizeToFit",
+                "description": "According to the actual effect of `resizeToFit()`, I think it would be better to change the comment to `to fit it's content` rather `to fit container`.\r\n\r\nThe `TextBlock` will always be resized to fit it's content whether the text is too long or too large. Any excess beyond the container, like a plane attached the texture with one `TextBlock`,  will not be displayed.\r\n\r\nIn the meanwhile, when I set the `fontSize`, `width` and `resizeToFit` simultaneously, it's `width` to fit `fontSize`, rather `fontSize` to fit `width`.\r\n\r\n```\r\nlet text = new BABYLON.GUI.TextBlock();\r\ntext.text = \"Hello world\";\r\ntext.fontSize = 50;\r\ntext.width = 0.5\r\ntext.resizeToFit = true\r\n```\r\n\r\n**It's all about the content.** There's nothing about the `container` or `to fit container`.\r\n\r\nAs far as I'm concerned, the original version is kind of ambiguous to understand. And I think it might be better to make this modification for better clarity.\r\n\r\nThanks.\r\n",
+                "author": {
+                    "name": "wy-luke",
+                    "url": "https://github.com/wy-luke"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/textBlock.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14358",
+                "title": "Fix mapping block",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/mappingBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14362",
+                "title": "Fix crash bug when no mesh data is provided",
+                "description": "Fix #14361 ",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryCollectionBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14356",
+                "title": "flow graph audio blocks",
+                "description": "# Changes\r\n- Added Play/Stop audio blocks, these are pretty simple\r\n\r\n# Examples\r\n- #GPPEUA#9",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Audio/flowGraphPlayAudioBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Audio/flowGraphStopAudioBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Audio/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/index.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "flow graph"
+                ]
+            },
+            {
+                "pr": "14350",
+                "title": "add FlowGraphEngine class",
+                "description": "@sebavan I think you were waiting for this one 😉 \r\n\r\nSmall change, but it will be useful in situations where we create more than one graph. The engine currently holds a list of graphs and a common event coordinator for all those graphs.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/flowGraph.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphCoordinator.ts",
+                    "packages/dev/core/src/FlowGraph/index.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "flow graph"
+                ]
+            },
+            {
+                "pr": "14312",
+                "title": "Move GetTextureDataAsync from inspector to core",
+                "description": "This is a refactor that will eventually enable a serializer like GLTFExporter to use the now core-based `GetTextureDataAsync` in order to serialize textures that are not directly retrievable as RGBA e.g., GPU-compressed formats.\r\n\r\nFor more discussion on that point, see #12257. The part that is missing to ultimately solve this is some sort of function or BaseTexture-property that can tell whether the texture uses a GPU compressed format. Once that exists, then it should be easy to do something like this... from `glTFMaterialExporter.ts`:\r\n\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/20366429/21df00fc-a5b4-4ed5-a735-5f9d984bb54a)\r\n\r\n",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.path.ts",
+                    "packages/dev/core/src/Misc/textureTools.ts",
+                    "packages/dev/inspector/src/textureHelper.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/EXT_mesh_gpu_instancing.ts"
+                ],
+                "tags": []
+            }
+        ],
         "6.21.4": [
             {
                 "pr": "14360",

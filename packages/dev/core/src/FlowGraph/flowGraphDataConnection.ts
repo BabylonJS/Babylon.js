@@ -39,6 +39,10 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
         context._setConnectionValue(this, value);
     }
 
+    public connectTo(point: FlowGraphDataConnection<T>): void {
+        super.connectTo(point);
+    }
+
     private _getValueOrDefault(context: FlowGraphContext): T {
         if (context._hasConnectionValue(this)) {
             return context._getConnectionValue(this);

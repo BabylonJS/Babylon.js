@@ -31,6 +31,8 @@ export interface IScaleGizmo extends IGizmo {
     uniformScaleGizmo: IAxisScaleGizmo;
     /** Fires an event when any of it's sub gizmos are dragged */
     onDragStartObservable: Observable<unknown>;
+    /** Fires an event when any of it's sub gizmos are being dragged */
+    onDragObservable: Observable<unknown>;
     /** Fires an event when any of it's sub gizmos are released from dragging */
     onDragEndObservable: Observable<unknown>;
     /** Drag distance in babylon units that the gizmo will snap to when dragged */
@@ -104,6 +106,8 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
     }
     /** Fires an event when any of it's sub gizmos are dragged */
     public onDragStartObservable = new Observable();
+    /** Fires an event when any of it's sub gizmos are being dragged */
+    public onDragObservable = new Observable();
     /** Fires an event when any of it's sub gizmos are released from dragging */
     public onDragEndObservable = new Observable();
 
@@ -175,6 +179,9 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
         [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
             gizmo.dragBehavior.onDragStartObservable.add(() => {
                 this.onDragStartObservable.notifyObservers({});
+            });
+            gizmo.dragBehavior.onDragObservable.add(() => {
+                this.onDragObservable.notifyObservers({});
             });
             gizmo.dragBehavior.onDragEndObservable.add(() => {
                 this.onDragEndObservable.notifyObservers({});
@@ -341,6 +348,7 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
             this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(obs);
         });
         this.onDragStartObservable.clear();
+        this.onDragObservable.clear();
         this.onDragEndObservable.clear();
         [this._uniformScalingMesh, this._octahedron].forEach((msh) => {
             if (msh) {
