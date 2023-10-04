@@ -2,6 +2,7 @@ import { StandardMaterial } from "core/Materials/standardMaterial";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { Node } from "core/node";
 import type { Scene } from "core/scene";
+import type { Nullable } from "core/types";
 import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 import { Button } from "gui/2D/controls/button";
 import { Container } from "gui/2D/controls/container";
@@ -61,6 +62,10 @@ export function hasAccessibleElement(item: AccessibilityEntity): boolean {
     return result;
 }
 
+export function hasChildren(item: AccessibilityEntity) {
+    return getDirectChildrenOf(item).length > 0;
+}
+
 export function getDirectChildrenOf(item: AccessibilityEntity): AccessibilityEntity[] {
     if (item instanceof Node) {
         return item.getDescendants(true);
@@ -96,13 +101,21 @@ export function getDescriptionFromNode(node: AccessibilityEntity): string | unde
     }
 }
 
-export function getAccessibleItemFromNode(node: AccessibilityEntity): ReactElement | undefined {
+/**
+ *
+ */
+export function getAccessibleItemFromNode(node: AccessibilityEntity): Nullable<ReactElement> {
+    const isAccessible = isAccessibleElement(node);
     const accessibleDescription = getDescriptionFromNode(node);
     const isClickableNode = isClickable(node);
-    if (isClickableNode) {
-        return <button>{accessibleDescription}</button>;
+    if (isAccessible) {
+        if (isClickableNode) {
+            return <button>{accessibleDescription}</button>;
+        } else {
+            return <div>{accessibleDescription}</div>;
+        }
     } else {
-        return <div>{accessibleDescription}</div>;
+        return null;
     }
 }
 

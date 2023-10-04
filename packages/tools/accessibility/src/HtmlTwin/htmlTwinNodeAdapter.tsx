@@ -1,4 +1,4 @@
-import { getAccessibleTexture, hasAccessibleElement, isVisible } from "./htmlTwinItem";
+import { getAccessibleTexture, hasAccessibleElement, hasChildren, isVisible } from "./htmlTwinItem";
 import type { AccessibilityEntity } from "./htmlTwinItem";
 import { HTMLTwinAccessibilityNode } from "./htmlTwinAccessibilityNode";
 import { HTMLTwinAccessibilityLeaf } from "./htmlTwinAccessibilityLeaf";
@@ -30,8 +30,9 @@ export function HTMLTwinAccessibilityAdaptor(props: { node: AccessibilityEntity 
     if (isVisibleState) {
         const accessibleTexture = getAccessibleTexture(props.node);
         if (accessibleTexture) {
-            return <HTMLTwinAccessibilityAdaptor node={accessibleTexture.rootContainer} />;
-        } else if (hasAccessibleElement(props.node)) {
+            return <HTMLTwinAccessibilityNode node={accessibleTexture.rootContainer} />;
+            // } else if (hasAccessibleElement(props.node)) {
+        } else if (hasChildren(props.node)) {
             return <HTMLTwinAccessibilityNode {...props} />;
         } else {
             return <HTMLTwinAccessibilityLeaf {...props} />;
