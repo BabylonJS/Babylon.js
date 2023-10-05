@@ -10,7 +10,7 @@ import { PointerEventTypes } from "../../Events/pointerEvents";
 import { PrecisionDate } from "../../Misc/precisionDate";
 
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Vector3, Vector2 } from "../../Maths/math.vector";
+import { Vector3 } from "../../Maths/math.vector";
 import type { Animatable } from "../../Animations/animatable";
 import { Animation } from "../../Animations/animation";
 
@@ -401,7 +401,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
             return 0;
         }
 
-        let distance = camera._calculateLowerRadiusFromModelBoundingSphere(minimumWorld, maximumWorld, this._getFrustumSlope(), this._radiusScale);
+        let distance = camera._calculateLowerRadiusFromModelBoundingSphere(minimumWorld, maximumWorld, this._radiusScale);
         if (camera.lowerRadiusLimit && this._mode === FramingBehavior.IgnoreBoundsSizeMode) {
             // Don't exceed the requested limit
             distance = distance < camera.lowerRadiusLimit ? camera.lowerRadiusLimit : distance;
@@ -457,20 +457,6 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
                 this._animatables.push(animatabe);
             }
         }
-    }
-
-    /**
-     * Returns the frustum slope based on the canvas ratio and camera FOV
-     * @returns The frustum slope represented as a Vector2 with X and Y slopes
-     */
-    private _getFrustumSlope(): Vector2 {
-        const camera = this._attachedCamera;
-
-        if (!camera) {
-            return Vector2.Zero();
-        }
-
-        return camera._getFrustumSlope();
     }
 
     /**

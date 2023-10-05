@@ -1216,8 +1216,7 @@ export class ArcRotateCamera extends TargetCamera {
         let distance = this._calculateLowerRadiusFromModelBoundingSphere(minMaxVector.min, minMaxVector.max);
 
         // If there are defined limits, we need to take them into account
-        distance = Math.max(distance, this.lowerRadiusLimit ?? 0);
-        distance = Math.min(distance, this.upperRadiusLimit ?? Number.MAX_VALUE);
+        distance = Math.max(Math.min(distance, this.upperRadiusLimit || Number.MAX_VALUE), this.lowerRadiusLimit || 0);
         this.radius = distance * this.zoomOnFactor;
 
         this.focusOn({ min: minMaxVector.min, max: minMaxVector.max, distance: distance }, doNotUpdateMaxZ);
@@ -1316,14 +1315,15 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * @internal
      */
-    public _calculateLowerRadiusFromModelBoundingSphere(
-        minimumWorld: Vector3,
-        maximumWorld: Vector3,
-        frustumSlope: Vector2 = this._getFrustumSlope(),
-        radiusScale: number = 1
-    ): number {
+    public _calculateLowerRadiusFromModelBoundingSphere(minimumWorld: Vector3, maximumWorld: Vector3, radiusScale: number = 1): number {
         const size = maximumWorld.subtract(minimumWorld);
         const boxVectorGlobalDiagonal = size.length();
+
+        // Get aspect ratio in order to calculate frustum slope
+        const engine = this.getScene().getEngine();
+        const aspectRatio = engine.getAspectRatio(this);
+        const frustumSlopeY = Math.tan(this.fov / 2);
+        const frustumSlopeX = frustumSlopeY * aspectRatio;
 
         // Formula for setting distance
         // (Good explanation: http://stackoverflow.com/questions/2866350/move-camera-to-fit-3d-scene)
@@ -1331,30 +1331,9 @@ export class ArcRotateCamera extends TargetCamera {
 
         // Horizon distance
         const radius = radiusWithoutFraming * radiusScale;
-        const distanceForHorizontalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlope.x * frustumSlope.x));
-        const distanceForVerticalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlope.y * frustumSlope.y));
+        const distanceForHorizontalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlopeX * frustumSlopeX));
+        const distanceForVerticalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlopeY * frustumSlopeY));
         return Math.max(distanceForHorizontalFrustum, distanceForVerticalFrustum);
-    }
-
-    /**
-     * @internal
-     */
-    public _getFrustumSlope(): Vector2 {
-        // Calculate the viewport ratio
-        // Aspect Ratio is Height/Width.
-        const engine = this.getScene().getEngine();
-        const aspectRatio = engine.getAspectRatio(this);
-
-        // Camera FOV is the vertical field of view (top-bottom) in radians.
-        // Slope of the frustum top/bottom planes in view space, relative to the forward vector.
-        const frustumSlopeY = Math.tan(this.fov / 2);
-
-        // Slope of the frustum left/right planes in view space, relative to the forward vector.
-        // Provides the amount that one side (e.g. left) of the frustum gets wider for every unit
-        // along the forward vector.
-        const frustumSlopeX = frustumSlopeY * aspectRatio;
-
-        return new Vector2(frustumSlopeX, frustumSlopeY);
     }
 
     /**
