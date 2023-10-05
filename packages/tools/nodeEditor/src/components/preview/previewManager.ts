@@ -30,13 +30,14 @@ import { ParticleTextureBlock } from "core/Materials/Node/Blocks/Particle/partic
 import { ReadFile } from "core/Misc/fileTools";
 import type { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import type { StandardMaterial } from "core/Materials/standardMaterial";
+import { HDRCubeTexture } from "core/Materials/Textures/hdrCubeTexture";
 import { Layer } from "core/Layers/layer";
 import { DataStorage } from "core/Misc/dataStorage";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { CreateTorus } from "core/Meshes/Builders/torusBuilder";
 import type { TextureBlock } from "core/Materials/Node/Blocks/Dual/textureBlock";
 import { FilesInput } from "core/Misc/filesInput";
-
+import "core/Helpers/sceneHelpers";
 import "core/Rendering/depthRendererSceneComponent";
 
 const dontSerializeTextureContent = true;
@@ -52,6 +53,7 @@ export class PreviewManager {
     private _onBackFaceCullingChangedObserver: Nullable<Observer<void>>;
     private _onDepthPrePassChangedObserver: Nullable<Observer<void>>;
     private _onLightUpdatedObserver: Nullable<Observer<void>>;
+    private _onBackgroundHDRUpdatedObserver: Nullable<Observer<void>>;
     private _engine: Engine;
     private _scene: Scene;
     private _meshes: AbstractMesh[];
@@ -124,6 +126,9 @@ export class PreviewManager {
 
         this._onLightUpdatedObserver = globalState.onLightUpdated.add(() => {
             this._prepareLights();
+        });
+        this._onBackgroundHDRUpdatedObserver = globalState.onBackgroundHDRUpdated.add(() => {
+            this._prepareBackgroundHDR();
         });
 
         this._onUpdateRequiredObserver = globalState.stateManager.onUpdateRequiredObservable.add(() => {
@@ -283,13 +288,32 @@ export class PreviewManager {
             dir1.parent = this._lightParent;
         }
     }
+    private _hdrSkyBox: Mesh;
+    private _hdrTexture: HDRCubeTexture;
+    private _prepareBackgroundHDR() {
+        if (this._hdrTexture == null) {
+            this._hdrTexture = new HDRCubeTexture("room.hdr", this._scene, 512);
+        }
+        console.error(this._globalState.backgroundHDR);
+        if (this._globalState.backgroundHDR) {
+            this._scene.environmentTexture = this._hdrTexture;
+            this._hdrSkyBox = this._scene.createDefaultSkybox(this._hdrTexture) as Mesh;
+        } else {
+            this._scene.environmentTexture = null;
+            if (this._hdrSkyBox) {
+                this._scene.removeMesh(this._hdrSkyBox);
+            }
+        }
 
+        this._updatePreview();
+    }
     private _prepareScene() {
         this._camera.useFramingBehavior = this._globalState.mode === NodeMaterialModes.Material;
-
         switch (this._globalState.mode) {
             case NodeMaterialModes.Material: {
+                this._globalState.backgroundHDR = false;
                 this._prepareLights();
+                this._prepareBackgroundHDR();
 
                 const framingBehavior = this._camera.getBehaviorByName("Framing") as FramingBehavior;
 
@@ -329,7 +353,7 @@ export class PreviewManager {
                 break;
             }
         }
-
+        
         // Material
         this._updatePreview();
     }
@@ -647,6 +671,7 @@ export class PreviewManager {
         this._globalState.onBackFaceCullingChanged.remove(this._onBackFaceCullingChangedObserver);
         this._globalState.onDepthPrePassChanged.remove(this._onDepthPrePassChangedObserver);
         this._globalState.onLightUpdated.remove(this._onLightUpdatedObserver);
+        this._globalState.onBackgroundHDRUpdated.remove(this._onBackgroundHDRUpdatedObserver);
 
         if (this._material) {
             this._material.dispose(false, true);
