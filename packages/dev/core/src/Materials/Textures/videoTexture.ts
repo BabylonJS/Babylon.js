@@ -9,7 +9,7 @@ import type { ExternalTexture } from "./externalTexture";
 
 import "../../Engines/Extensions/engine.videoTexture";
 import "../../Engines/Extensions/engine.dynamicTexture";
-import { SerializationHelper, serialize } from "core/Misc/decorators";
+import { serialize } from "core/Misc/decorators";
 import { RegisterClass } from "core/Misc/typeStore";
 
 function removeSource(video: HTMLVideoElement): void {
