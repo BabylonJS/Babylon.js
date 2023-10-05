@@ -711,10 +711,14 @@ const setViewportInjectedMethods = {
     getRenderHeightFunc: getRenderHeight,
     getRenderWidthFunc: getRenderWidth,
 };
-export const setViewport: (engineState: IWebGLEnginePublic, viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number) => void = setViewportBase.bind(
-    null,
-    setViewportInjectedMethods
-);
+export const setViewport: (engineState: IWebGLEnginePublic, viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number) => void = (
+    engineState: IWebGLEnginePublic,
+    viewport: IViewportLike,
+    requiredWidth?: number,
+    requiredHeight?: number
+) => {
+    setViewportBase(setViewportInjectedMethods, engineState, viewport, requiredWidth, requiredHeight);
+};
 
 /**
  * Binds the frame buffer to the specified texture.

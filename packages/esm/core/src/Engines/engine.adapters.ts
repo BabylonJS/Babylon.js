@@ -30,7 +30,7 @@ export function augmentEngineState<T extends ThinEngine, E = BaseEngineMethods |
             if (typeof injectedMethod === "function") {
                 const functionName: keyof BaseThinEngineUnionMethods<T, E> = key as keyof BaseThinEngineUnionMethods<T, E>;
                 if (force || !(engineState as unknown as T)[functionName as keyof BaseThinEngineUnionMethods<T, E>]) {
-                    (engineState as unknown as T)[functionName] = injectedMethod.bind(null, engineState);
+                    (engineState as unknown as T)[functionName] = ((...args: any) => injectedMethod(engineState, ...args)) as T[keyof PickMatching<PickMatching<T, Function>, E>];
                 }
             }
         });
