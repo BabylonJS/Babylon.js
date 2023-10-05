@@ -20,6 +20,7 @@ import type { CubeTexture } from "../../Materials/Textures/cubeTexture";
 import type { MirrorTexture } from "../../Materials/Textures/mirrorTexture";
 import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import type { Scene } from "../../scene";
+import type { VideoTexture, VideoTextureSettings } from "./videoTexture";
 
 /**
  * Defines the available options when creating a texture
@@ -110,6 +111,20 @@ export class Texture extends BaseTexture {
     public static _CreateRenderTargetTexture = (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean, creationFlags?: number): RenderTargetTexture => {
         throw _WarnImport("RenderTargetTexture");
     };
+
+    public static _CreateVideoTexture(
+        name: Nullable<string>,
+        src: string | string[] | HTMLVideoElement,
+        scene: Nullable<Scene>,
+        generateMipMaps = false,
+        invertY = false,
+        samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
+        settings: Partial<VideoTextureSettings> = {},
+        onError?: Nullable<(message?: string, exception?: any) => void>,
+        format: number = Constants.TEXTUREFORMAT_RGBA
+    ): VideoTexture {
+        throw _WarnImport("VideoTexture");
+    }
 
     /** nearest is mag = nearest and min = nearest and no mip */
     public static readonly NEAREST_SAMPLINGMODE = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
@@ -1029,6 +1044,18 @@ export class Texture extends BaseTexture {
                     }
                     onLoaded(renderTargetTexture);
                     return renderTargetTexture;
+                } else if (parsedTexture.isVideo) {
+                    const texture = Texture._CreateVideoTexture(
+                        rootUrl + (parsedTexture.url || parsedTexture.name),
+                        rootUrl + (parsedTexture.src || parsedTexture.url),
+                        scene,
+                        generateMipMaps,
+                        parsedTexture.invertY,
+                        parsedTexture.samplingMode,
+                        parsedTexture.settings || {}
+                    );
+                    onLoaded(texture);
+                    return texture;
                 } else {
                     let texture: Texture;
 

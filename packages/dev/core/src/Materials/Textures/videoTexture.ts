@@ -9,6 +9,7 @@ import type { ExternalTexture } from "./externalTexture";
 
 import "../../Engines/Extensions/engine.videoTexture";
 import "../../Engines/Extensions/engine.dynamicTexture";
+import { SerializationHelper, serialize } from "core/Misc/decorators";
 
 function removeSource(video: HTMLVideoElement): void {
     // Remove any <source> elements, etc.
@@ -100,12 +101,20 @@ export class VideoTexture extends Texture {
     private _generateMipMaps: boolean;
     private _stillImageCaptured = false;
     private _displayingPosterTexture = false;
+    @serialize("settings")
     private _settings: VideoTextureSettings;
     private _createInternalTextureOnEvent: string;
     private _frameId = -1;
+    @serialize("src")
     private _currentSrc: Nullable<string | string[] | HTMLVideoElement> = null;
     private _onError?: Nullable<(message?: string, exception?: any) => void>;
     private _errorFound = false;
+
+    /**
+     * Serialize the flag to define this texture as a video texture
+     */
+    @serialize()
+    public readonly isVideo = true;
 
     private _processError(reason: any) {
         this._errorFound = true;
@@ -440,6 +449,33 @@ export class VideoTexture extends Texture {
         }
 
         this._externalTexture?.dispose();
+    }
+
+    /**
+     * Parses text to create a cube texture
+     * @param parsedTexture define the serialized text to read from
+     * @param scene defines the hosting scene
+     * @param rootUrl defines the root url of the cube texture
+     * @returns a cube texture
+     */
+    public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): VideoTexture {
+        const texture = SerializationHelper.Parse(
+            () => {
+                return new VideoTexture(
+                    rootUrl + (parsedTexture.url || parsedTexture.name),
+                    rootUrl + (parsedTexture.src || parsedTexture.url),
+                    scene,
+                    !!parsedTexture.generateMipMaps,
+                    parsedTexture.invertY,
+                    parsedTexture.samplingMode,
+                    parsedTexture.settings || {}
+                );
+            },
+            parsedTexture,
+            scene
+        );
+
+        return texture;
     }
 
     /**
