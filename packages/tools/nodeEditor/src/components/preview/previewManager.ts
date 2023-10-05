@@ -353,7 +353,7 @@ export class PreviewManager {
                 break;
             }
         }
-        
+
         // Material
         this._updatePreview();
     }
