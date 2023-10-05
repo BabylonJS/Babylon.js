@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable babylonjs/available */
+/* eslint-disable jsdoc/require-jsdoc */
 import type { Nullable } from "../../types";
 import type { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 import type { WebGPUBufferDescription } from "./webgpuShaderProcessingContext";
@@ -53,7 +55,10 @@ const gpuTextureViewDimensionByWebGPUTextureFunction: { [key: string]: Nullable<
 
 /** @internal */
 export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
+    protected _attributesInputWGSL: string[];
     protected _attributesWGSL: string[];
+    protected _attributesConversionCodeWGSL: string[];
+    protected _hasNonFloatAttribute: boolean;
     protected _varyingsWGSL: string[];
     protected _varyingNamesWGSL: string[];
     protected _stridedUniformArrays: string[];
@@ -89,7 +94,10 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
     public initializeShaders(processingContext: Nullable<ShaderProcessingContext>): void {
         this._webgpuProcessingContext = processingContext as WebGPUShaderProcessingContext;
 
+        this._attributesInputWGSL = [];
         this._attributesWGSL = [];
+        this._attributesConversionCodeWGSL = [];
+        this._hasNonFloatAttribute = false;
         this._varyingsWGSL = [];
         this._varyingNamesWGSL = [];
         this._stridedUniformArrays = [];
@@ -137,7 +145,22 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             this._webgpuProcessingContext.availableAttributes[name] = location;
             this._webgpuProcessingContext.orderedAttributes[location] = name;
 
-            this._attributesWGSL.push(`@location(${location}) ${name} : ${attributeType},`);
+            const numComponents = this.vertexBufferKindToNumberOfComponents[name];
+            if (numComponents !== undefined) {
+                // Special case for an int/ivecX vertex buffer that is used as a float/vecX attribute in the shader.
+                const newType =
+                    numComponents < 0 ? (numComponents === -1 ? "i32" : "vec" + -numComponents + "<i32>") : numComponents === 1 ? "u32" : "vec" + numComponents + "<u32>";
+                const newName = `_int_${name}_`;
+
+                this._attributesInputWGSL.push(`@location(${location}) ${newName} : ${newType},`);
+                this._attributesWGSL.push(`${name} : ${attributeType},`);
+                this._attributesConversionCodeWGSL.push(`vertexInputs.${name} = ${attributeType}(vertexInputs_.${newName});`);
+                this._hasNonFloatAttribute = true;
+            } else {
+                this._attributesInputWGSL.push(`@location(${location}) ${name} : ${attributeType},`);
+                this._attributesWGSL.push(`${name} : ${attributeType},`);
+                this._attributesConversionCodeWGSL.push(`vertexInputs.${name} = vertexInputs_.${name};`);
+            }
             attribute = "";
         }
         return attribute;
@@ -249,10 +272,15 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         vertexCode = this._processStridedUniformArrays(vertexCode);
 
         let vertexInputs = "struct VertexInputs {\n  @builtin(vertex_index) vertexIndex : u32,\n  @builtin(instance_index) instanceIndex : u32,\n";
-        if (this._attributesWGSL.length > 0) {
-            vertexInputs += this._attributesWGSL.join("\n");
+        if (this._attributesInputWGSL.length > 0) {
+            vertexInputs += this._attributesInputWGSL.join("\n");
         }
-        vertexInputs += "\n};\nvar<private> vertexInputs : VertexInputs;\n";
+        vertexInputs += "\n};\nvar<private> vertexInputs" + (this._hasNonFloatAttribute ? "_" : "") + " : VertexInputs;\n";
+        if (this._hasNonFloatAttribute) {
+            vertexInputs += "struct VertexInputs_ {\n  vertexIndex : u32, instanceIndex : u32,\n";
+            vertexInputs += this._attributesWGSL.join("\n");
+            vertexInputs += "\n};\nvar<private> vertexInputs : VertexInputs_;\n";
+        }
 
         let vertexOutputs = "struct FragmentInputs {\n  @builtin(position) position : vec4<f32>,\n";
         if (this._varyingsWGSL.length > 0) {
@@ -262,7 +290,12 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
         vertexCode = vertexInputs + vertexOutputs + vertexCode;
 
-        const vertexMainStartingCode = `\n  vertexInputs = input;\n`;
+        let vertexMainStartingCode = `\n  vertexInputs${this._hasNonFloatAttribute ? "_" : ""} = input;\n`;
+        if (this._hasNonFloatAttribute) {
+            vertexMainStartingCode += "vertexInputs.vertexIndex = vertexInputs_.vertexIndex;\nvertexInputs.instanceIndex = vertexInputs_.instanceIndex;\n";
+            vertexMainStartingCode += this._attributesConversionCodeWGSL.join("\n");
+            vertexMainStartingCode += "\n";
+        }
         const vertexMainEndingCode = `  vertexOutputs.position.y = vertexOutputs.position.y * internals.yFactor_;\n  return vertexOutputs;`;
 
         vertexCode = this._injectStartingAndEndingCode(vertexCode, "fn main", vertexMainStartingCode, vertexMainEndingCode);
@@ -314,6 +347,8 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
         this._collectBindingNames();
         this._preCreateBindGroupEntries();
+
+        this.vertexBufferKindToNumberOfComponents = {};
 
         return { vertexCode, fragmentCode };
     }

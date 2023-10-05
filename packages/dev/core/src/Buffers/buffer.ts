@@ -16,6 +16,7 @@ export class Buffer {
     private _divisor: number;
     private _isAlreadyOwned = false;
     private _isDisposed = false;
+    private _label?: string;
 
     /**
      * Gets a boolean indicating if the Buffer is disposed
@@ -39,6 +40,7 @@ export class Buffer {
      * @param instanced whether the buffer is instanced (optional)
      * @param useBytes set to true if the stride in in bytes (optional)
      * @param divisor sets an optional divisor for instances (1 by default)
+     * @param label defines the label of the buffer (for debug purpose)
      */
     constructor(
         engine: ThinEngine,
@@ -48,7 +50,8 @@ export class Buffer {
         postponeInternalCreation = !engine,
         instanced = false,
         useBytes = false,
-        divisor?: number
+        divisor?: number,
+        label?: string
     ) {
         if (engine && (engine as unknown as Mesh).getScene) {
             // old versions of VertexBuffer accepted 'mesh' instead of 'engine'
@@ -60,6 +63,7 @@ export class Buffer {
         this._updatable = updatable;
         this._instanced = instanced;
         this._divisor = divisor || 1;
+        this._label = label;
 
         if (data instanceof DataBuffer) {
             this._data = null;
@@ -167,10 +171,10 @@ export class Buffer {
         if (!this._buffer) {
             // create buffer
             if (this._updatable) {
-                this._buffer = this._engine.createDynamicVertexBuffer(data);
+                this._buffer = this._engine.createDynamicVertexBuffer(data, this._label);
                 this._data = data;
             } else {
-                this._buffer = this._engine.createVertexBuffer(data);
+                this._buffer = this._engine.createVertexBuffer(data, this._label);
             }
         } else if (this._updatable) {
             // update buffer
@@ -377,6 +381,7 @@ export class VertexBuffer {
      * @param useBytes set to true if stride and offset are in bytes (optional)
      * @param divisor defines the instance divisor to use (1 by default)
      * @param takeBufferOwnership defines if the buffer should be released when the vertex buffer is disposed
+     * @param label defines the label of the buffer (for debug purpose). Only used if the "data" parameter is a DataArray
      */
     constructor(
         engine: ThinEngine,
@@ -392,13 +397,14 @@ export class VertexBuffer {
         normalized = false,
         useBytes = false,
         divisor = 1,
-        takeBufferOwnership = false
+        takeBufferOwnership = false,
+        label?: string
     ) {
         if (data instanceof Buffer) {
             this._buffer = data;
             this._ownsBuffer = takeBufferOwnership;
         } else {
-            this._buffer = new Buffer(engine, data, updatable, stride, postponeInternalCreation, instanced, useBytes);
+            this._buffer = new Buffer(engine, data, updatable, stride, postponeInternalCreation, instanced, useBytes, divisor, label);
             this._ownsBuffer = true;
         }
 
@@ -675,6 +681,7 @@ export class VertexBuffer {
             case VertexBuffer.PositionKind:
                 return 3;
             case VertexBuffer.ColorKind:
+            case VertexBuffer.ColorInstanceKind:
             case VertexBuffer.MatricesIndicesKind:
             case VertexBuffer.MatricesIndicesExtraKind:
             case VertexBuffer.MatricesWeightsKind:
@@ -726,6 +733,27 @@ export class VertexBuffer {
             case VertexBuffer.UNSIGNED_INT:
             case VertexBuffer.FLOAT:
                 return 4;
+            default:
+                throw new Error(`Invalid type '${type}'`);
+        }
+    }
+
+    /**
+     * Returns true if the type is a signed type, false otherwise.
+     * @param type the type
+     * @returns true or false depending on whether the type is signed or not
+     */
+    public static IsSignedType(type: number): boolean {
+        switch (type) {
+            case VertexBuffer.BYTE:
+            case VertexBuffer.SHORT:
+            case VertexBuffer.INT:
+            case VertexBuffer.FLOAT:
+                return true;
+            case VertexBuffer.UNSIGNED_BYTE:
+            case VertexBuffer.UNSIGNED_SHORT:
+            case VertexBuffer.UNSIGNED_INT:
+                return false;
             default:
                 throw new Error(`Invalid type '${type}'`);
         }

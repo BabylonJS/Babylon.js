@@ -68,11 +68,11 @@ export class WebGPUTintWASM {
     }
 
     public convertSpirV2WGSL(code: Uint32Array, disableUniformityAnalysis = false): string {
-        const ccode = WebGPUTintWASM._twgsl.convertSpirV2WGSL(code);
+        const ccode = WebGPUTintWASM._twgsl.convertSpirV2WGSL(code, WebGPUTintWASM.DisableUniformityAnalysis || disableUniformityAnalysis);
         if (WebGPUTintWASM.ShowWGSLShaderCode) {
             console.log(ccode);
             console.log("***********************************************");
         }
-        return WebGPUTintWASM.DisableUniformityAnalysis || disableUniformityAnalysis ? "diagnostic(off, derivative_uniformity);\n" + ccode : ccode;
+        return ccode;
     }
 }
