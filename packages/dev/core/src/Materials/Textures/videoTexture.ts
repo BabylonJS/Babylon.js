@@ -10,6 +10,7 @@ import type { ExternalTexture } from "./externalTexture";
 import "../../Engines/Extensions/engine.videoTexture";
 import "../../Engines/Extensions/engine.dynamicTexture";
 import { SerializationHelper, serialize } from "core/Misc/decorators";
+import { RegisterClass } from "core/Misc/typeStore";
 
 function removeSource(video: HTMLVideoElement): void {
     // Remove any <source> elements, etc.
@@ -452,33 +453,6 @@ export class VideoTexture extends Texture {
     }
 
     /**
-     * Parses text to create a cube texture
-     * @param parsedTexture define the serialized text to read from
-     * @param scene defines the hosting scene
-     * @param rootUrl defines the root url of the cube texture
-     * @returns a cube texture
-     */
-    public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): VideoTexture {
-        const texture = SerializationHelper.Parse(
-            () => {
-                return new VideoTexture(
-                    rootUrl + (parsedTexture.url || parsedTexture.name),
-                    rootUrl + (parsedTexture.src || parsedTexture.url),
-                    scene,
-                    !!parsedTexture.generateMipMaps,
-                    parsedTexture.invertY,
-                    parsedTexture.samplingMode,
-                    parsedTexture.settings || {}
-                );
-            },
-            parsedTexture,
-            scene
-        );
-
-        return texture;
-    }
-
-    /**
      * Creates a video texture straight from a stream.
      * @param scene Define the scene the texture should be created in
      * @param stream Define the stream the texture should be created from
@@ -610,3 +584,19 @@ export class VideoTexture extends Texture {
             });
     }
 }
+
+Texture._CreateVideoTexture = (
+    name: Nullable<string>,
+    src: string | string[] | HTMLVideoElement,
+    scene: Nullable<Scene>,
+    generateMipMaps = false,
+    invertY = false,
+    samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
+    settings: Partial<VideoTextureSettings> = {},
+    onError?: Nullable<(message?: string, exception?: any) => void>,
+    format: number = Constants.TEXTUREFORMAT_RGBA
+) => {
+    return new VideoTexture(name, src, scene, generateMipMaps, invertY, samplingMode, settings, onError, format);
+};
+// Some exporters relies on Tools.Instantiate
+RegisterClass("BABYLON.VideoTexture", VideoTexture);
