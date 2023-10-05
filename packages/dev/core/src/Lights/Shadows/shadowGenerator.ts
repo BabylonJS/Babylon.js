@@ -954,7 +954,12 @@ export class ShadowGenerator implements IShadowGenerator {
         }
 
         // Custom render function.
-        this._shadowMap.customRenderFunction = this._renderForShadowMap.bind(this);
+        this._shadowMap.customRenderFunction = (
+            opaqueSubMeshes: SmartArray<SubMesh>,
+            alphaTestSubMeshes: SmartArray<SubMesh>,
+            transparentSubMeshes: SmartArray<SubMesh>,
+            depthOnlySubMeshes: SmartArray<SubMesh>
+        ) => this._renderForShadowMap(opaqueSubMeshes, alphaTestSubMeshes, transparentSubMeshes, depthOnlySubMeshes);
 
         // Force the mesh is ready function to true as we are double checking it
         // in the custom render function. Also it prevents side effects and useless

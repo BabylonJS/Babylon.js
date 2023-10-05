@@ -39,5 +39,5 @@ export class StereoscopicGamepadCamera extends GamepadCamera {
         return "StereoscopicGamepadCamera";
     }
 
-    protected _setRigMode = setStereoscopicRigMode.bind(null, this);
+    protected _setRigMode = () => setStereoscopicRigMode(this);
 }

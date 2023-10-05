@@ -42,5 +42,5 @@ export class StereoscopicArcRotateCamera extends ArcRotateCamera {
         return "StereoscopicArcRotateCamera";
     }
 
-    protected _setRigMode = setStereoscopicRigMode.bind(null, this);
+    protected _setRigMode = () => setStereoscopicRigMode(this);
 }

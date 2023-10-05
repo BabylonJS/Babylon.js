@@ -147,11 +147,10 @@ export class OctreeSceneComponent {
         }
         this.scene = scene;
 
-        this.scene.getActiveMeshCandidates = this.getActiveMeshCandidates.bind(this);
-
-        this.scene.getActiveSubMeshCandidates = this.getActiveSubMeshCandidates.bind(this);
-        this.scene.getCollidingSubMeshCandidates = this.getCollidingSubMeshCandidates.bind(this);
-        this.scene.getIntersectingSubMeshCandidates = this.getIntersectingSubMeshCandidates.bind(this);
+        this.scene.getActiveMeshCandidates = () => this.getActiveMeshCandidates();
+        this.scene.getActiveSubMeshCandidates = (mesh: AbstractMesh) => this.getActiveSubMeshCandidates(mesh);
+        this.scene.getCollidingSubMeshCandidates = (mesh: AbstractMesh, collider: Collider) => this.getCollidingSubMeshCandidates(mesh, collider);
+        this.scene.getIntersectingSubMeshCandidates = (mesh: AbstractMesh, localRay: Ray) => this.getIntersectingSubMeshCandidates(mesh, localRay);
     }
 
     /**

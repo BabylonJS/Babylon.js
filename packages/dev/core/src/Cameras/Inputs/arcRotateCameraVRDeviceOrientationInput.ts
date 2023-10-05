@@ -48,13 +48,13 @@ export class ArcRotateCameraVRDeviceOrientationInput implements ICameraInput<Arc
     private _gamma = 0;
     private _dirty = false;
 
-    private _deviceOrientationHandler: () => void;
+    private _deviceOrientationHandler: (evt: DeviceOrientationEvent) => void;
 
     /**
      * Instantiate a new ArcRotateCameraVRDeviceOrientationInput.
      */
     constructor() {
-        this._deviceOrientationHandler = this._onOrientationEvent.bind(this);
+        this._deviceOrientationHandler = (evt: DeviceOrientationEvent) => this._onOrientationEvent(evt);
     }
 
     /**
