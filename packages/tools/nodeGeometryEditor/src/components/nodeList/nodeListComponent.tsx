@@ -18,13 +18,7 @@ interface INodeListComponentProps {
     globalState: GlobalState;
 }
 
-/**
- *
- */
-export class NodeListComponent extends React.Component<INodeListComponentProps, { /**
- *
- */
-filter: string }> {
+export class NodeListComponent extends React.Component<INodeListComponentProps, { filter: string }> {
     private _onResetRequiredObserver: Nullable<Observer<boolean>>;
 
     private static _Tooltips: { [key: string]: string } = {
