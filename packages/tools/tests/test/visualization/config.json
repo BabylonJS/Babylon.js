@@ -782,6 +782,11 @@
             "referenceImage": "gltfBuggyDraco.png"
         },
         {
+            "title": "GLTF Box with bad Draco normalized flag",
+            "playgroundId": "#8KJJH9",
+            "referenceImage": "gltfBadDraco.png"
+        },
+        {
             "title": "GLTF Buggy with Meshopt Compression",
             "playgroundId": "#CIYTF6#0",
             "referenceImage": "gltfBuggyMeshopt.png",
