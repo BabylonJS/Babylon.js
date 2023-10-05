@@ -908,7 +908,7 @@ export class ThinEngine {
                 };
 
                 this._onContextRestored = () => {
-                    this._restoreEngineAfterContextLost(this._initGLContext.bind(this));
+                    this._restoreEngineAfterContextLost(() => this._initGLContext());
                 };
 
                 canvas.addEventListener("webglcontextlost", this._onContextLost, false);
@@ -1708,7 +1708,7 @@ export class ThinEngine {
 
         if (!this._renderingQueueLaunched) {
             this._renderingQueueLaunched = true;
-            this._boundRenderFunction = this._renderLoop.bind(this);
+            this._boundRenderFunction = () => this._renderLoop();
             this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
         }
     }

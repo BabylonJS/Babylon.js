@@ -1742,11 +1742,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * and getCollidingSubMeshCandidates to their default function
      */
     public setDefaultCandidateProviders(): void {
-        this.getActiveMeshCandidates = this._getDefaultMeshCandidates.bind(this);
-
-        this.getActiveSubMeshCandidates = this._getDefaultSubMeshCandidates.bind(this);
-        this.getIntersectingSubMeshCandidates = this._getDefaultSubMeshCandidates.bind(this);
-        this.getCollidingSubMeshCandidates = this._getDefaultSubMeshCandidates.bind(this);
+        this.getActiveMeshCandidates = () => this._getDefaultMeshCandidates();
+        this.getActiveSubMeshCandidates = (mesh: AbstractMesh) => this._getDefaultSubMeshCandidates(mesh);
+        this.getIntersectingSubMeshCandidates = (mesh: AbstractMesh, localRay: Ray) => this._getDefaultSubMeshCandidates(mesh);
+        this.getCollidingSubMeshCandidates = (mesh: AbstractMesh, collider: Collider) => this._getDefaultSubMeshCandidates(mesh);
     }
 
     /**

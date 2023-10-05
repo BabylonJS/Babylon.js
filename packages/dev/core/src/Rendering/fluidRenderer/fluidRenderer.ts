@@ -230,7 +230,7 @@ export class FluidRenderer {
     public addParticleSystem(ps: IParticleSystem, generateDiffuseTexture?: boolean, targetRenderer?: FluidRenderingTargetRenderer, camera?: Camera): IFluidRenderingRenderObject {
         const object = new FluidRenderingObjectParticleSystem(this._scene, ps);
 
-        object.onParticleSizeChanged.add(this._setParticleSizeForRenderTargets.bind(this));
+        object.onParticleSizeChanged.add(() => this._setParticleSizeForRenderTargets());
 
         if (!targetRenderer) {
             targetRenderer = new FluidRenderingTargetRenderer(this._scene, camera);
@@ -238,7 +238,7 @@ export class FluidRenderer {
         }
 
         if (!targetRenderer._onUseVelocityChanged.hasObservers()) {
-            targetRenderer._onUseVelocityChanged.add(this._setUseVelocityForRenderObject.bind(this));
+            targetRenderer._onUseVelocityChanged.add(() => this._setUseVelocityForRenderObject());
         }
 
         if (generateDiffuseTexture !== undefined) {
@@ -274,7 +274,7 @@ export class FluidRenderer {
     ): IFluidRenderingRenderObject {
         const object = new FluidRenderingObjectCustomParticles(this._scene, buffers, numParticles);
 
-        object.onParticleSizeChanged.add(this._setParticleSizeForRenderTargets.bind(this));
+        object.onParticleSizeChanged.add(() => this._setParticleSizeForRenderTargets());
 
         if (!targetRenderer) {
             targetRenderer = new FluidRenderingTargetRenderer(this._scene, camera);
@@ -282,7 +282,7 @@ export class FluidRenderer {
         }
 
         if (!targetRenderer._onUseVelocityChanged.hasObservers()) {
-            targetRenderer._onUseVelocityChanged.add(this._setUseVelocityForRenderObject.bind(this));
+            targetRenderer._onUseVelocityChanged.add(() => this._setUseVelocityForRenderObject());
         }
 
         if (generateDiffuseTexture !== undefined) {

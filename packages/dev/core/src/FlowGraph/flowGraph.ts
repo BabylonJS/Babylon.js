@@ -65,7 +65,7 @@ export class FlowGraph {
     public constructor(params: FlowGraphParams) {
         this._scene = params.scene;
         this._eventCoordinator = params.eventCoordinator;
-        this._sceneDisposeObserver = this._scene.onDisposeObservable.add(this.dispose.bind(this));
+        this._sceneDisposeObserver = this._scene.onDisposeObservable.add(() => this.dispose());
     }
 
     /**

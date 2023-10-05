@@ -36,5 +36,5 @@ export class AnaglyphUniversalCamera extends UniversalCamera {
         return "AnaglyphUniversalCamera";
     }
 
-    protected _setRigMode = setStereoscopicAnaglyphRigMode.bind(null, this);
+    protected _setRigMode = () => setStereoscopicAnaglyphRigMode(this);
 }

@@ -647,7 +647,7 @@ export class WebGPUEngine extends Engine {
                             this._contextWasLost = true;
                             Logger.Warn("WebGPU context lost. " + info);
                             this.onContextLostObservable.notifyObservers(this);
-                            this._restoreEngineAfterContextLost(this.initAsync.bind(this));
+                            this._restoreEngineAfterContextLost(() => this.initAsync());
                         });
                     }
                 },

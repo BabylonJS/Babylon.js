@@ -297,7 +297,7 @@ export class PhysicsViewer {
             this._meshes[this._numMeshes] = debugMesh;
 
             if (this._numMeshes === 0) {
-                this._renderFunction = this._updateDebugMeshes.bind(this);
+                this._renderFunction = () => this._updateDebugMeshes();
                 this._scene.registerBeforeRender(this._renderFunction);
             }
 
@@ -334,7 +334,7 @@ export class PhysicsViewer {
             this._bodyMeshes[this._numBodies] = debugMesh;
 
             if (this._numBodies === 0) {
-                this._renderFunction = this._updateDebugMeshes.bind(this);
+                this._renderFunction = () => this._updateDebugMeshes();
                 this._scene.registerBeforeRender(this._renderFunction);
             }
 
@@ -365,7 +365,7 @@ export class PhysicsViewer {
             this._inertiaMeshes[this._numInertiaBodies] = debugMesh;
 
             if (this._numInertiaBodies === 0) {
-                this._inertiaRenderFunction = this._updateInertiaMeshes.bind(this);
+                this._inertiaRenderFunction = () => this._updateInertiaMeshes();
                 this._scene.registerBeforeRender(this._inertiaRenderFunction);
             }
 
@@ -397,7 +397,7 @@ export class PhysicsViewer {
             this._constraintMeshes[this._numConstraints] = debugMesh;
 
             if (this._numConstraints === 0) {
-                this._constraintRenderFunction = this._updateDebugConstraints.bind(this);
+                this._constraintRenderFunction = () => this._updateDebugConstraints();
                 this._scene.registerBeforeRender(this._constraintRenderFunction);
             }
 

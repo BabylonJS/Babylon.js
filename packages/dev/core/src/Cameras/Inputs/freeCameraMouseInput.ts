@@ -48,7 +48,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
 
     private _currentActiveButton: number = -1;
     private _activePointerId: number = -1;
-    private _contextMenuBind: () => void;
+    private _contextMenuBind: (evt: MouseEvent) => void;
 
     /**
      * Manage the mouse inputs to control the movement of a free camera.
@@ -197,7 +197,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
             ._inputManager._addCameraPointerObserver(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
 
         if (element) {
-            this._contextMenuBind = this.onContextMenu.bind(this);
+            this._contextMenuBind = (evt: MouseEvent) => this.onContextMenu(evt as PointerEvent);
             element.addEventListener("contextmenu", this._contextMenuBind, false); // TODO: We need to figure out how to handle this for Native
         }
     }

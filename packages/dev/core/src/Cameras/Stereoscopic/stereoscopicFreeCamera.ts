@@ -39,5 +39,5 @@ export class StereoscopicFreeCamera extends FreeCamera {
         return "StereoscopicFreeCamera";
     }
 
-    protected _setRigMode = setStereoscopicRigMode.bind(null, this);
+    protected _setRigMode = () => setStereoscopicRigMode(this);
 }
