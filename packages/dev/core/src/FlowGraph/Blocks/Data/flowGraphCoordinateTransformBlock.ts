@@ -31,7 +31,7 @@ export class FlowGraphCoordinateTransformBlock extends FlowGraphBlock {
     /**
      * Creates a new FlowGraphCoordinateTransformBlock
      */
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphCoordinateTransformBlock" }) {
+    constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
         this.sourceSystem = this._registerDataInput("sourceSystem", RichTypeAny);

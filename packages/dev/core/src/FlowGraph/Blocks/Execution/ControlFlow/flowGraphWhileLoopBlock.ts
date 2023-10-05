@@ -30,7 +30,7 @@ export class FlowGraphWhileLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
      */
     public readonly loopBody: FlowGraphSignalConnection;
 
-    constructor(public config: IFlowGraphWhileLoopBlockConfiguration = { isDo: false, name: "FlowGraphWhileLoopBlock" }) {
+    constructor(public config?: IFlowGraphWhileLoopBlockConfiguration) {
         super(config);
 
         this.condition = this._registerDataInput("condition", RichTypeBoolean);
@@ -39,7 +39,7 @@ export class FlowGraphWhileLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
 
     public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
         let conditionValue = this.condition.getValue(context);
-        if (this.config.isDo && !conditionValue) {
+        if (this.config?.isDo && !conditionValue) {
             this.loopBody._activateSignal(context);
         }
         while (conditionValue) {

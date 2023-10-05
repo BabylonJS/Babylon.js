@@ -7,76 +7,86 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import type { FlowGraphContext } from "../../../flowGraphContext";
 
+const ADDNAME = "FlowGraphAddVector2Block";
 /**
  * Adds two vectors together.
  * @experimental
  */
 export class FlowGraphAddVector2Block extends FlowGraphBinaryOperationBlock<Vector2, Vector2, Vector2> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphAddVector2Block" }) {
-        super(config, RichTypeVector2, RichTypeVector2, RichTypeVector2, (left, right) => left.add(right), "FlowGraphAddVector2Block");
+    constructor(config: IFlowGraphBlockConfiguration) {
+        super(RichTypeVector2, RichTypeVector2, RichTypeVector2, (left, right) => left.add(right), ADDNAME, config);
     }
 }
-RegisterClass("FlowGraphAddVector2Block", FlowGraphAddVector2Block);
+RegisterClass(ADDNAME, FlowGraphAddVector2Block);
 
+const SUBNAME = "FlowGraphSubtractVector2Block";
 /**
  * Subtracts two vectors.
  * @experimental
  */
 export class FlowGraphSubtractVector2Block extends FlowGraphBinaryOperationBlock<Vector2, Vector2, Vector2> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphSubtractVector2Block" }) {
-        super(config, RichTypeVector2, RichTypeVector2, RichTypeVector2, (left, right) => left.subtract(right), "FlowGraphSubtractVector2Block");
+    constructor(config: IFlowGraphBlockConfiguration) {
+        super(RichTypeVector2, RichTypeVector2, RichTypeVector2, (left, right) => left.subtract(right), SUBNAME, config);
     }
 }
-RegisterClass("FlowGraphSubtractVector2Block", FlowGraphSubtractVector2Block);
+RegisterClass(SUBNAME, FlowGraphSubtractVector2Block);
+
+const MULNAME = "FlowGraphMultiplyVector2Block";
 /**
  * Multiplies two vectors together.
  * @experimental
  */
 export class FlowGraphMultiplyVector2Block extends FlowGraphBinaryOperationBlock<Vector2, Vector2, Vector2> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphMultiplyVector2Block" }) {
-        super(config, RichTypeVector2, RichTypeVector2, RichTypeVector2, (left, right) => left.multiply(right), "FlowGraphMultiplyVector2Block");
+    constructor(config: IFlowGraphBlockConfiguration) {
+        super(RichTypeVector2, RichTypeVector2, RichTypeVector2, (left, right) => left.multiply(right), MULNAME, config);
     }
 }
-RegisterClass("FlowGraphMultiplyVector2Block", FlowGraphMultiplyVector2Block);
+RegisterClass(MULNAME, FlowGraphMultiplyVector2Block);
+
+const DIVNAME = "FlowGraphDivideVector2Block";
 /**
  * Divides two vectors.
  * @experimental
  */
 export class FlowGraphDivideVector2Block extends FlowGraphBinaryOperationBlock<Vector2, Vector2, Vector2> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphDivideVector2Block" }) {
-        super(config, RichTypeVector2, RichTypeVector2, RichTypeVector2, (left, right) => left.divide(right), "FlowGraphDivideVector2Block");
+    constructor(config: IFlowGraphBlockConfiguration) {
+        super(RichTypeVector2, RichTypeVector2, RichTypeVector2, (left, right) => left.divide(right), DIVNAME, config);
     }
 }
-RegisterClass("FlowGraphDivideVector2Block", FlowGraphDivideVector2Block);
+RegisterClass(DIVNAME, FlowGraphDivideVector2Block);
+
+const SCALENAME = "FlowGraphScaleVector2Block";
 /**
- * Scales a vector by a number.
+ * Scales a vector by a given factor.
  * @experimental
  */
 export class FlowGraphScaleVector2Block extends FlowGraphBinaryOperationBlock<Vector2, number, Vector2> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphScaleVector2Block" }) {
-        super(config, RichTypeVector2, RichTypeNumber, RichTypeVector2, (left, right) => left.scale(right), "FlowGraphScaleVector2Block");
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeVector2, RichTypeNumber, RichTypeVector2, (left, right) => left.scale(right), SCALENAME, config);
     }
 }
-RegisterClass("FlowGraphScaleVector2Block", FlowGraphScaleVector2Block);
+RegisterClass(SCALENAME, FlowGraphScaleVector2Block);
+
+const LENNAME = "FlowGraphLengthVector2Block";
 /**
  * Gets the length of a vector.
  * @experimental
  */
 export class FlowGraphLengthVector2Block extends FlowGraphUnaryOperationBlock<Vector2, number> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphLengthVector2Block" }) {
-        super(config, RichTypeVector2, RichTypeNumber, (value) => value.length(), "FlowGraphLengthVector2Block");
+    constructor(config: IFlowGraphBlockConfiguration) {
+        super(RichTypeVector2, RichTypeNumber, (value) => value.length(), LENNAME, config);
     }
 }
-RegisterClass("FlowGraphLengthVector2Block", FlowGraphLengthVector2Block);
+RegisterClass(LENNAME, FlowGraphLengthVector2Block);
 
+const NORMALIZENAME = "FlowGraphNormalizeVector2Block";
 /**
  * Normalizes a vector.
  * @experimental
  */
 export class FlowGraphNormalizeVector2Block extends FlowGraphUnaryOperationBlock<Vector2, Vector2> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphNormalizeVector2Block" }) {
+    constructor(config: IFlowGraphBlockConfiguration) {
         super(
-            config,
             RichTypeVector2,
             RichTypeVector2,
             (value: Vector2) => {
@@ -84,12 +94,14 @@ export class FlowGraphNormalizeVector2Block extends FlowGraphUnaryOperationBlock
                 copy.normalize();
                 return copy;
             },
-            "FlowGraphNormalizeVector2Block"
+            NORMALIZENAME,
+            config
         );
     }
 }
-RegisterClass("FlowGraphNormalizeVector2Block", FlowGraphNormalizeVector2Block);
+RegisterClass(NORMALIZENAME, FlowGraphNormalizeVector2Block);
 
+const CREATENAME = "FlowGraphCreateVector2Block";
 /**
  * Creates a vector from two components.
  */
@@ -109,7 +121,7 @@ export class FlowGraphCreateVector2Block extends FlowGraphBlock {
 
     private _cachedVector: Vector2 = Vector2.Zero();
 
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphCreateVector2Block" }) {
+    constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
         this.x = this._registerDataInput("x", RichTypeNumber);
@@ -123,8 +135,9 @@ export class FlowGraphCreateVector2Block extends FlowGraphBlock {
         this.vector.setValue(this._cachedVector, _context);
     }
 }
-RegisterClass("FlowGraphCreateVector2Block", FlowGraphCreateVector2Block);
+RegisterClass(CREATENAME, FlowGraphCreateVector2Block);
 
+const SPLITNAME = "FlowGraphSplitVector2Block";
 /**
  * Split a vector into its components.
  */
@@ -142,7 +155,7 @@ export class FlowGraphSplitVector2Block extends FlowGraphBlock {
      */
     public readonly y: FlowGraphDataConnection<number>;
 
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphSplitVector2Block" }) {
+    constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
         this.vector = this._registerDataInput("vector", RichTypeVector2);
@@ -156,8 +169,9 @@ export class FlowGraphSplitVector2Block extends FlowGraphBlock {
         this.y.setValue(vector.y, _context);
     }
 }
-RegisterClass("FlowGraphSplitVector2Block", FlowGraphSplitVector2Block);
+RegisterClass(SPLITNAME, FlowGraphSplitVector2Block);
 
+const ROTATENAME = "FlowGraphRotate2dVector2Block";
 /**
  * Rotates a vector by a given angle.
  */
@@ -177,7 +191,7 @@ export class FlowGraphRotate2dVector2Block extends FlowGraphBlock {
 
     private _cachedVector: Vector2 = Vector2.Zero();
 
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphRotate2dVector2Block" }) {
+    constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
         this.input = this._registerDataInput("input", RichTypeVector2);
         this.angle = this._registerDataInput("angle", RichTypeNumber);
@@ -192,4 +206,4 @@ export class FlowGraphRotate2dVector2Block extends FlowGraphBlock {
         this.output.setValue(this._cachedVector, _context);
     }
 }
-RegisterClass("FlowGraphRotate2dVector2Block", FlowGraphRotate2dVector2Block);
+RegisterClass(ROTATENAME, FlowGraphRotate2dVector2Block);

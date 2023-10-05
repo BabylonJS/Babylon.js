@@ -18,7 +18,7 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
     public signalInputs: FlowGraphSignalConnection[];
     public signalOutputs: FlowGraphSignalConnection[];
 
-    protected constructor(config: IFlowGraphBlockConfiguration = {}) {
+    protected constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
         this.onStart = this._registerSignalInput("onStart");
     }

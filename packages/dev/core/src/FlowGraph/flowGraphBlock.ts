@@ -35,13 +35,13 @@ export class FlowGraphBlock {
     public dataOutputs: FlowGraphDataConnection<any>[];
 
     /** Constructor is protected so only subclasses can be instantiated */
-    protected constructor(public config: IFlowGraphBlockConfiguration = {}) {
+    protected constructor(public config?: IFlowGraphBlockConfiguration) {
         this.configure();
     }
 
     public configure() {
         // overriden in child classes, uses config
-        this.name = this.config.name ?? this.getClassName();
+        this.name = this.config?.name ?? this.getClassName();
         this.dataInputs = [];
         this.dataOutputs = [];
     }

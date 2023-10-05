@@ -23,7 +23,7 @@ export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
      * Construct a FlowGraphGetVariableBlock.
      * @param params optional construction parameters
      */
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphGetVariableBlock" }) {
+    constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
         this.variableName = this._registerDataInput("variableName", RichTypeString);

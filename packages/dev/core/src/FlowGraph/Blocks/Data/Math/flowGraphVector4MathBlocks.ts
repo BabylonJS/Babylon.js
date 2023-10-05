@@ -7,78 +7,86 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import type { FlowGraphContext } from "../../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 
+const ADDNAME = "FlowGraphAddVector4Block";
 /**
  * Add two vectors together.
  * @experimental
  */
 export class FlowGraphAddVector4Block extends FlowGraphBinaryOperationBlock<Vector4, Vector4, Vector4> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphAddVector4Block" }) {
-        super(config, RichTypeVector4, RichTypeVector4, RichTypeVector4, (left, right) => left.add(right), "FlowGraphAddVector4Block");
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeVector4, RichTypeVector4, RichTypeVector4, (left, right) => left.add(right), ADDNAME, config);
     }
 }
-RegisterClass("FlowGraphAddVector4Block", FlowGraphAddVector4Block);
+RegisterClass(ADDNAME, FlowGraphAddVector4Block);
 
+const SUBNAME = "FlowGraphSubtractVector4Block";
 /**
  * Subtract two vectors.
  * @experimental
  */
 export class FlowGraphSubtractVector4Block extends FlowGraphBinaryOperationBlock<Vector4, Vector4, Vector4> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphSubtractVector4Block" }) {
-        super(config, RichTypeVector4, RichTypeVector4, RichTypeVector4, (left, right) => left.subtract(right), "FlowGraphSubtractVector4Block");
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeVector4, RichTypeVector4, RichTypeVector4, (left, right) => left.subtract(right), SUBNAME, config);
     }
 }
-RegisterClass("FlowGraphSubtractVector4Block", FlowGraphSubtractVector4Block);
+RegisterClass(SUBNAME, FlowGraphSubtractVector4Block);
+
+const MULNAME = "FlowGraphMultiplyVector4Block";
 /**
  * Multiply two vectors together.
  * @experimental
  */
 export class FlowGraphMultiplyVector4Block extends FlowGraphBinaryOperationBlock<Vector4, Vector4, Vector4> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphMultiplyVector4Block" }) {
-        super(config, RichTypeVector4, RichTypeVector4, RichTypeVector4, (left, right) => left.multiply(right), "FlowGraphMultiplyVector4Block");
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeVector4, RichTypeVector4, RichTypeVector4, (left, right) => left.multiply(right), MULNAME, config);
     }
 }
-RegisterClass("FlowGraphMultiplyVector4Block", FlowGraphMultiplyVector4Block);
+RegisterClass(MULNAME, FlowGraphMultiplyVector4Block);
+
+const DIVNAME = "FlowGraphDivideVector4Block";
 /**
  * Divide two vectors.
  * @experimental
  */
 export class FlowGraphDivideVector4Block extends FlowGraphBinaryOperationBlock<Vector4, Vector4, Vector4> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphDivideVector4Block" }) {
-        super(config, RichTypeVector4, RichTypeVector4, RichTypeVector4, (left, right) => left.divide(right), "FlowGraphDivideVector4Block");
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeVector4, RichTypeVector4, RichTypeVector4, (left, right) => left.divide(right), DIVNAME, config);
     }
 }
-RegisterClass("FlowGraphDivideVector4Block", FlowGraphDivideVector4Block);
+RegisterClass(DIVNAME, FlowGraphDivideVector4Block);
 
+const SCALNAME = "FlowGraphScaleVector4Block";
 /**
  * Scale a vector by a number.
  * @experimental
  */
 export class FlowGraphScaleVector4Block extends FlowGraphBinaryOperationBlock<Vector4, number, Vector4> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphScaleVector4Block" }) {
-        super(config, RichTypeVector4, RichTypeNumber, RichTypeVector4, (left, right) => left.scale(right), "FlowGraphScaleVector4Block");
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeVector4, RichTypeNumber, RichTypeVector4, (left, right) => left.scale(right), SCALNAME, config);
     }
 }
-RegisterClass("FlowGraphScaleVector4Block", FlowGraphScaleVector4Block);
+RegisterClass(SCALNAME, FlowGraphScaleVector4Block);
 
+const LENGTHNAME = "FlowGraphLengthVector4Block";
 /**
  * Get the length of a vector.
  * @experimental
  */
 export class FlowGraphLengthVector4Block extends FlowGraphUnaryOperationBlock<Vector4, number> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphLengthVector4Block" }) {
-        super(config, RichTypeVector4, RichTypeNumber, (value) => value.length(), "FlowGraphLengthVector4Block");
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeVector4, RichTypeNumber, (value) => value.length(), LENGTHNAME, config);
     }
 }
-RegisterClass("FlowGraphLengthVector4Block", FlowGraphLengthVector4Block);
+RegisterClass(LENGTHNAME, FlowGraphLengthVector4Block);
 
+const NORMALIZENAME = "FlowGraphNormalizeVector4Block";
 /**
  * Normalize a vector.
  * @experimental
  */
 export class FlowGraphNormalizeVector4Block extends FlowGraphUnaryOperationBlock<Vector4, Vector4> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphNormalizeVector4Block" }) {
+    constructor(config?: IFlowGraphBlockConfiguration) {
         super(
-            config,
             RichTypeVector4,
             RichTypeVector4,
             (value: Vector4) => {
@@ -86,16 +94,18 @@ export class FlowGraphNormalizeVector4Block extends FlowGraphUnaryOperationBlock
                 clone.normalize();
                 return clone;
             },
-            "FlowGraphNormalizeVector4Block"
+            NORMALIZENAME,
+            config
         );
     }
 
     public getClassName(): string {
-        return "FlowGraphNormalizeVector4Block";
+        return NORMALIZENAME;
     }
 }
-RegisterClass("FlowGraphNormalizeVector4Block", FlowGraphNormalizeVector4Block);
+RegisterClass(NORMALIZENAME, FlowGraphNormalizeVector4Block);
 
+const CREATENAME = "FlowGraphCreateVector4Block";
 /**
  * Create a vector from its components.
  * @experimental
@@ -124,7 +134,7 @@ export class FlowGraphCreateVector4Block extends FlowGraphBlock {
 
     private _cachedVector: Vector4 = Vector4.Zero();
 
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphCreateVector4Block" }) {
+    constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
         this.x = this._registerDataInput("x", RichTypeNumber);
@@ -143,11 +153,12 @@ export class FlowGraphCreateVector4Block extends FlowGraphBlock {
     }
 
     public getClassName(): string {
-        return "FlowGraphCreateVector4Block";
+        return CREATENAME;
     }
 }
-RegisterClass("FlowGraphCreateVector4Block", FlowGraphCreateVector4Block);
+RegisterClass(CREATENAME, FlowGraphCreateVector4Block);
 
+const SPLITNAME = "FlowGraphSplitVector4Block";
 /**
  * Split a vector into its components.
  * @experimental
@@ -174,7 +185,7 @@ export class FlowGraphSplitVector4Block extends FlowGraphBlock {
      */
     public readonly w: FlowGraphDataConnection<number>;
 
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphSplitVector4Block" }) {
+    constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
         this.vector = this._registerDataInput("vector", RichTypeVector4);
@@ -193,7 +204,7 @@ export class FlowGraphSplitVector4Block extends FlowGraphBlock {
     }
 
     public getClassName(): string {
-        return "FlowGraphSplitVector4Block";
+        return SPLITNAME;
     }
 }
-RegisterClass("FlowGraphSplitVector4Block", FlowGraphSplitVector4Block);
+RegisterClass(SPLITNAME, FlowGraphSplitVector4Block);

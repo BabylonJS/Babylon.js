@@ -8,100 +8,115 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import type { FlowGraphContext } from "../../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 
+const ADDNAME = "FlowGraphAddVector3Block";
 /**
  * Add two vectors together.
  * @experimental
  */
 export class FlowGraphAddVector3Block extends FlowGraphBinaryOperationBlock<Vector3, Vector3, Vector3> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphAddVector3Block" }) {
-        super(config, RichTypeVector3, RichTypeVector3, RichTypeVector3, (left, right) => left.add(right), "FlowGraphAddVector3Block");
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeVector3, RichTypeVector3, RichTypeVector3, (left, right) => left.add(right), ADDNAME, config);
     }
 }
-RegisterClass("FlowGraphAddVector3Block", FlowGraphAddVector3Block);
+RegisterClass(ADDNAME, FlowGraphAddVector3Block);
 
+const SUBNAME = "FlowGraphSubtractVector3Block";
 /**
  * Subtract two vectors.
  * @experimental
  */
 export class FlowGraphSubtractVector3Block extends FlowGraphBinaryOperationBlock<Vector3, Vector3, Vector3> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphSubtractVector3Block" }) {
-        super(config, RichTypeVector3, RichTypeVector3, RichTypeVector3, (left, right) => left.subtract(right), "FlowGraphSubtractVector3Block");
+    constructor(config: IFlowGraphBlockConfiguration) {
+        super(RichTypeVector3, RichTypeVector3, RichTypeVector3, (left, right) => left.subtract(right), SUBNAME, config);
     }
 }
-RegisterClass("FlowGraphSubtractVector3Block", FlowGraphSubtractVector3Block);
+RegisterClass(SUBNAME, FlowGraphSubtractVector3Block);
 
+const MULNAME = "FlowGraphMultiplyVector3Block";
 /**
  * Multiply two vectors together.
  * @experimental
  */
 export class FlowGraphMultiplyVector3Block extends FlowGraphBinaryOperationBlock<Vector3, Vector3, Vector3> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphMultiplyVector3Block" }) {
-        super(config, RichTypeVector3, RichTypeVector3, RichTypeVector3, (left, right) => left.multiply(right), "FlowGraphMultiplyVector3Block");
+    constructor(config: IFlowGraphBlockConfiguration) {
+        super(RichTypeVector3, RichTypeVector3, RichTypeVector3, (left, right) => left.multiply(right), MULNAME, config);
     }
 }
-RegisterClass("FlowGraphMultiplyVector3Block", FlowGraphMultiplyVector3Block);
+RegisterClass(MULNAME, FlowGraphMultiplyVector3Block);
+
+const DIVNAME = "FlowGraphDivideVector3Block";
 /**
  * Divide two vectors.
  * @experimental
  */
 export class FlowGraphDivideVector3Block extends FlowGraphBinaryOperationBlock<Vector3, Vector3, Vector3> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphDivideVector3Block" }) {
-        super(config, RichTypeVector3, RichTypeVector3, RichTypeVector3, (left, right) => left.divide(right), "FlowGraphDivideVector3Block");
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeVector3, RichTypeVector3, RichTypeVector3, (left, right) => left.divide(right), DIVNAME, config);
     }
 }
-RegisterClass("FlowGraphDivideVector3Block", FlowGraphDivideVector3Block);
+RegisterClass(DIVNAME, FlowGraphDivideVector3Block);
+
+const SCALNAME = "FlowGraphScaleVector3Block";
 /**
  * Scale a vector by a number.
  * @experimental
  */
 export class FlowGraphScaleVector3Block extends FlowGraphBinaryOperationBlock<Vector3, number, Vector3> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphScaleVector3Block" }) {
-        super(config, RichTypeVector3, RichTypeNumber, RichTypeVector3, (left, right) => left.scale(right), "FlowGraphScaleVector3Block");
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeVector3, RichTypeNumber, RichTypeVector3, (left, right) => left.scale(right), SCALNAME, config);
     }
 }
-RegisterClass("FlowGraphScaleVector3Block", FlowGraphScaleVector3Block);
+RegisterClass(SCALNAME, FlowGraphScaleVector3Block);
+
+const LENNAME = "FlowGraphLengthVector3Block";
 /**
  * Get the length of a vector.
  * @experimental
  */
 export class FlowGraphLengthVector3Block extends FlowGraphUnaryOperationBlock<Vector3, number> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphLengthVector3Block" }) {
-        super(config, RichTypeVector3, RichTypeNumber, (value) => value.length(), "FlowGraphLengthVector3Block");
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeVector3, RichTypeNumber, (value) => value.length(), LENNAME, config);
     }
 }
-RegisterClass("FlowGraphLengthVector3Block", FlowGraphLengthVector3Block);
+RegisterClass(LENNAME, FlowGraphLengthVector3Block);
+
+const NORMNAME = "FlowGraphNormalizeVector3Block";
 /**
  * Normalize a vector.
  * @experimental
  */
 export class FlowGraphNormalizeVector3Block extends FlowGraphUnaryOperationBlock<Vector3, Vector3> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphNormalizeVector3Block" }) {
-        super(config, RichTypeVector3, RichTypeVector3, (value) => value.normalizeToNew(), "FlowGraphNormalizeVector3Block");
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeVector3, RichTypeVector3, (value) => value.normalizeToNew(), NORMNAME, config);
     }
 }
-RegisterClass("FlowGraphNormalizeVector3Block", FlowGraphNormalizeVector3Block);
+RegisterClass(NORMNAME, FlowGraphNormalizeVector3Block);
 
+const DOTNAME = "FlowGraphDotVector3Block";
 /**
  * Get the dot product of two vectors.
  * @experimental
  */
 export class FlowGraphDotVector3Block extends FlowGraphBinaryOperationBlock<Vector3, Vector3, number> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphDotVector3Block" }) {
-        super(config, RichTypeVector3, RichTypeVector3, RichTypeNumber, (left, right) => Vector3.Dot(left, right), "FlowGraphDotVector3Block");
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeVector3, RichTypeVector3, RichTypeNumber, (left, right) => Vector3.Dot(left, right), DOTNAME, config);
     }
 }
-RegisterClass("FlowGraphDotVector3Block", FlowGraphDotVector3Block);
+RegisterClass(DOTNAME, FlowGraphDotVector3Block);
+
+const CROSSNAME = "FlowGraphCrossVector3Block";
 /**
  * Get the cross product of two vectors.
  * @experimental
  */
 export class FlowGraphCrossVector3Block extends FlowGraphBinaryOperationBlock<Vector3, Vector3, Vector3> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphCrossVector3Block" }) {
-        super(config, RichTypeVector3, RichTypeVector3, RichTypeVector3, (left, right) => Vector3.Cross(left, right), "FlowGraphCrossVector3Block");
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeVector3, RichTypeVector3, RichTypeVector3, (left, right) => Vector3.Cross(left, right), CROSSNAME, config);
     }
 }
-RegisterClass("FlowGraphCrossVector3Block", FlowGraphCrossVector3Block);
+RegisterClass(CROSSNAME, FlowGraphCrossVector3Block);
 
+const CREATENAME = "FlowGraphCreateVector3Block";
 /**
  * Create a vector from its components.
  * @experimental
@@ -126,7 +141,7 @@ export class FlowGraphCreateVector3Block extends FlowGraphBlock {
 
     private _cachedVector: Vector3 = Vector3.Zero();
 
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphCreateVector3Block" }) {
+    constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
         this.x = this._registerDataInput("x", RichTypeNumber);
@@ -143,11 +158,12 @@ export class FlowGraphCreateVector3Block extends FlowGraphBlock {
     }
 
     public getClassName(): string {
-        return "FlowGraphCreateVector3Block";
+        return CREATENAME;
     }
 }
-RegisterClass("FlowGraphCreateVector3Block", FlowGraphCreateVector3Block);
+RegisterClass(CREATENAME, FlowGraphCreateVector3Block);
 
+const SPLITNAME = "FlowGraphSplitVector3Block";
 /**
  * Split a vector into its components.
  * @experimental
@@ -170,7 +186,7 @@ export class FlowGraphSplitVector3Block extends FlowGraphBlock {
      */
     public readonly z: FlowGraphDataConnection<number>;
 
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphSplitVector3Block" }) {
+    constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
         this.vector = this._registerDataInput("vector", RichTypeVector3);
@@ -187,11 +203,12 @@ export class FlowGraphSplitVector3Block extends FlowGraphBlock {
     }
 
     public getClassName(): string {
-        return "FlowGraphSplitVector3Block";
+        return SPLITNAME;
     }
 }
-RegisterClass("FlowGraphSplitVector3Block", FlowGraphSplitVector3Block);
+RegisterClass(SPLITNAME, FlowGraphSplitVector3Block);
 
+const ROTATENAME = "FlowGraphRotateVector3Block";
 /**
  * Rotates a vector by a given angle.
  */
@@ -215,7 +232,7 @@ export class FlowGraphRotate3dVector3Block extends FlowGraphBlock {
 
     private _cachedQuaternion = new Quaternion();
 
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphRotate3dVector3Block" }) {
+    constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
         this.input = this._registerDataInput("input", RichTypeVector3);
         this.angle = this._registerDataInput("angle", RichTypeNumber);
@@ -230,26 +247,20 @@ export class FlowGraphRotate3dVector3Block extends FlowGraphBlock {
     }
 
     public getClassName(): string {
-        return "FlowGraphRotate3dVector3Block";
+        return ROTATENAME;
     }
 }
-RegisterClass("FlowGraphRotate3dVector3Block", FlowGraphRotate3dVector3Block);
+RegisterClass(ROTATENAME, FlowGraphRotate3dVector3Block);
 
+const TRANSFORMNAME = "FlowGraphTransformVector3Block";
 /**
  * Transforms a vector by a given matrix.
  * @experimental
  */
 export class FlowGraphTransformVector3Block extends FlowGraphBinaryOperationBlock<Matrix, Vector3, Vector3> {
     private _cachedResult: Vector3 = Vector3.Zero();
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphTransformVector3Block" }) {
-        super(
-            config,
-            RichTypeMatrix,
-            RichTypeVector3,
-            RichTypeVector3,
-            (left, right) => Vector3.TransformCoordinatesToRef(right, left, this._cachedResult),
-            "FlowGraphTransformVector3Block"
-        );
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeMatrix, RichTypeVector3, RichTypeVector3, (left, right) => Vector3.TransformCoordinatesToRef(right, left, this._cachedResult), TRANSFORMNAME, config);
     }
 }
-RegisterClass("FlowGraphTransformVector3Block", FlowGraphTransformVector3Block);
+RegisterClass(TRANSFORMNAME, FlowGraphTransformVector3Block);

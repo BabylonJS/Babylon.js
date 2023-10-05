@@ -9,17 +9,20 @@ import type { FlowGraphContext } from "../../../flowGraphContext";
 import type { TransformNode } from "../../../../Meshes/transformNode";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
+const ADDNAME = "FlowGraphAddMatrixBlock";
 /**
  * Adds two matrices together.
  * @experimental
  */
 export class FlowGraphAddMatrixBlock extends FlowGraphBinaryOperationBlock<Matrix, Matrix, Matrix> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphAddMatrixBlock" }) {
-        super(config, RichTypeMatrix, RichTypeMatrix, RichTypeMatrix, (left, right) => left.add(right), "FlowGraphAddMatrixBlock");
+    private _cachedMatrix: Matrix = Matrix.Zero();
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeMatrix, RichTypeMatrix, RichTypeMatrix, (left, right) => left.addToRef(right, this._cachedMatrix), ADDNAME, config);
     }
 }
-RegisterClass("FlowGraphAddMatrixBlock", FlowGraphAddMatrixBlock);
+RegisterClass(ADDNAME, FlowGraphAddMatrixBlock);
 
+const ADDNUMBERNAME = "FlowGraphAddMatrixAndNumberBlock";
 /**
  * Adds a matrix and a number together.
  * @experimental
@@ -27,9 +30,8 @@ RegisterClass("FlowGraphAddMatrixBlock", FlowGraphAddMatrixBlock);
 export class FlowGraphAddMatrixAndNumberBlock extends FlowGraphBinaryOperationBlock<Matrix, number, Matrix> {
     private _cachedArray: Float32Array = new Float32Array(16);
     private _cachedMatrix: Matrix = Matrix.Zero();
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphAddMatrixAndNumberBlock" }) {
+    constructor(config?: IFlowGraphBlockConfiguration) {
         super(
-            config,
             RichTypeMatrix,
             RichTypeNumber,
             RichTypeMatrix,
@@ -39,29 +41,27 @@ export class FlowGraphAddMatrixAndNumberBlock extends FlowGraphBinaryOperationBl
                 }
                 return Matrix.FromArrayToRef(this._cachedArray, 0, this._cachedMatrix);
             },
-            "FlowGraphAddMatrixAndNumberBlock"
+            ADDNUMBERNAME,
+            config
         );
     }
 }
-RegisterClass("FlowGraphAddMatrixAndNumberBlock", FlowGraphAddMatrixAndNumberBlock);
+RegisterClass(ADDNUMBERNAME, FlowGraphAddMatrixAndNumberBlock);
+
+const SUBNAME = "FlowGraphSubtractMatrixBlock";
 /**
  * Subtracts two matrices.
  * @experimental
  */
 export class FlowGraphSubtractMatrixBlock extends FlowGraphBinaryOperationBlock<Matrix, Matrix, Matrix> {
     private _cachedMatrix: Matrix = Matrix.Zero();
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphSubtractMatrixBlock" }) {
-        super(
-            config,
-            RichTypeMatrix,
-            RichTypeMatrix,
-            RichTypeMatrix,
-            (left, right) => left.addToRef(right.scaleToRef(-1, TmpVectors.Matrix[0]), this._cachedMatrix),
-            "FlowGraphSubtractMatrixBlock"
-        );
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeMatrix, RichTypeMatrix, RichTypeMatrix, (left, right) => left.addToRef(right.scaleToRef(-1, TmpVectors.Matrix[0]), this._cachedMatrix), SUBNAME, config);
     }
 }
-RegisterClass("FlowGraphSubtractMatrixBlock", FlowGraphSubtractMatrixBlock);
+RegisterClass(SUBNAME, FlowGraphSubtractMatrixBlock);
+
+const SUBNUMBERNAME = "FlowGraphSubtractMatrixAndNumberBlock";
 /**
  * Subtracts a matrix and a number together.
  * @experimental
@@ -69,9 +69,8 @@ RegisterClass("FlowGraphSubtractMatrixBlock", FlowGraphSubtractMatrixBlock);
 export class FlowGraphSubtractMatrixAndNumberBlock extends FlowGraphBinaryOperationBlock<Matrix, number, Matrix> {
     private _cachedArray: Float32Array = new Float32Array(16);
     private _cachedMatrix: Matrix = Matrix.Zero();
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphSubtractMatrixAndNumberBlock" }) {
+    constructor(config?: IFlowGraphBlockConfiguration) {
         super(
-            config,
             RichTypeMatrix,
             RichTypeNumber,
             RichTypeMatrix,
@@ -81,40 +80,47 @@ export class FlowGraphSubtractMatrixAndNumberBlock extends FlowGraphBinaryOperat
                 }
                 return Matrix.FromArrayToRef(this._cachedArray, 0, this._cachedMatrix);
             },
-            "FlowGraphSubtractMatrixAndNumberBlock"
+            SUBNUMBERNAME,
+            config
         );
     }
 }
-RegisterClass("FlowGraphSubtractMatrixAndNumberBlock", FlowGraphSubtractMatrixAndNumberBlock);
+RegisterClass(SUBNUMBERNAME, FlowGraphSubtractMatrixAndNumberBlock);
+
+const MULNAME = "FlowGraphMultiplyMatrixBlock";
 /**
  * Multiplies two matrices together.
  * @experimental
  */
 export class FlowGraphMultiplyMatrixBlock extends FlowGraphBinaryOperationBlock<Matrix, Matrix, Matrix> {
     private _cachedMatrix: Matrix = Matrix.Zero();
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphMultiplyMatrixBlock" }) {
-        super(config, RichTypeMatrix, RichTypeMatrix, RichTypeMatrix, (left, right) => left.multiplyToRef(right, this._cachedMatrix), "FlowGraphMultiplyMatrixBlock");
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeMatrix, RichTypeMatrix, RichTypeMatrix, (left, right) => left.multiplyToRef(right, this._cachedMatrix), MULNAME, config);
     }
 }
-RegisterClass("FlowGraphMultiplyMatrixBlock", FlowGraphMultiplyMatrixBlock);
+RegisterClass(MULNAME, FlowGraphMultiplyMatrixBlock);
+
+const DIVIDENAME = "FlowGraphDivideMatrixBlock";
 /**
  * Divides two matrices.
  * @experimental
  */
 export class FlowGraphDivideMatrixBlock extends FlowGraphBinaryOperationBlock<Matrix, Matrix, Matrix> {
     private _cachedResultMatrix: Matrix = Matrix.Zero();
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphDivideMatrixBlock" }) {
+    constructor(config?: IFlowGraphBlockConfiguration) {
         super(
-            config,
             RichTypeMatrix,
             RichTypeMatrix,
             RichTypeMatrix,
             (left, right) => left.multiplyToRef(right.invertToRef(TmpVectors.Matrix[0]), this._cachedResultMatrix),
-            "FlowGraphDivideMatrixBlock"
+            DIVIDENAME,
+            config
         );
     }
 }
-RegisterClass("FlowGraphDivideMatrixBlock", FlowGraphDivideMatrixBlock);
+RegisterClass(DIVIDENAME, FlowGraphDivideMatrixBlock);
+
+const DIVIDENUMBERNAME = "FlowGraphDivideMatrixAndNumberBlock";
 /**
  * Divides a matrix and a number together.
  * @experimental
@@ -122,9 +128,8 @@ RegisterClass("FlowGraphDivideMatrixBlock", FlowGraphDivideMatrixBlock);
 export class FlowGraphDivideMatrixAndNumberBlock extends FlowGraphBinaryOperationBlock<Matrix, number, Matrix> {
     private _cachedArray: Float32Array = new Float32Array(16);
     private _cachedMatrix: Matrix = Matrix.Zero();
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphDivideMatrixAndNumberBlock" }) {
+    constructor(config?: IFlowGraphBlockConfiguration) {
         super(
-            config,
             RichTypeMatrix,
             RichTypeNumber,
             RichTypeMatrix,
@@ -134,22 +139,27 @@ export class FlowGraphDivideMatrixAndNumberBlock extends FlowGraphBinaryOperatio
                 }
                 return Matrix.FromArrayToRef(this._cachedArray, 0, this._cachedMatrix);
             },
-            "FlowGraphDivideMatrixAndNumberBlock"
+            DIVIDENUMBERNAME,
+            config
         );
     }
 }
-RegisterClass("FlowGraphDivideMatrixAndNumberBlock", FlowGraphDivideMatrixAndNumberBlock);
+RegisterClass(DIVIDENUMBERNAME, FlowGraphDivideMatrixAndNumberBlock);
+
+const SCALENAME = "FlowGraphScaleMatrixBlock";
 /**
  * Scales a matrix by a number.
  * @experimental
  */
 export class FlowGraphScaleMatrixBlock extends FlowGraphBinaryOperationBlock<Matrix, number, Matrix> {
     private _cachedMatrix = Matrix.Zero();
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphScaleMatrixBlock" }) {
-        super(config, RichTypeMatrix, RichTypeNumber, RichTypeMatrix, (left, right) => left.scaleToRef(right, this._cachedMatrix), "FlowGraphScaleMatrixBlock");
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeMatrix, RichTypeNumber, RichTypeMatrix, (left, right) => left.scaleToRef(right, this._cachedMatrix), SCALENAME, config);
     }
 }
-RegisterClass("FlowGraphScaleMatrixBlock", FlowGraphScaleMatrixBlock);
+RegisterClass(SCALENAME, FlowGraphScaleMatrixBlock);
+
+const CLAMPNAME = "FlowGraphClampMatrixBlock";
 /**
  * Clamps each value in a matrix between a minimum and maximum value.
  * @experimental
@@ -173,7 +183,7 @@ export class FlowGraphClampMatrixBlock extends FlowGraphBlock {
     public readonly max: FlowGraphDataConnection<number>;
     private _cachedArray: Float32Array = new Float32Array(16);
     private _cachedMatrix: Matrix = Matrix.Identity();
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphClampMatrixBlock" }) {
+    constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
         this.input = this._registerDataInput("input", RichTypeMatrix);
@@ -196,10 +206,12 @@ export class FlowGraphClampMatrixBlock extends FlowGraphBlock {
     }
 
     public getClassName(): string {
-        return "FlowGraphClampMatrixBlock";
+        return CLAMPNAME;
     }
 }
-RegisterClass("FlowGraphClampMatrixBlock", FlowGraphClampMatrixBlock);
+RegisterClass(CLAMPNAME, FlowGraphClampMatrixBlock);
+
+const DECOMPOSENAME = "FlowGraphDecomposeMatrixBlock";
 /**
  * Decomposes a matrix into its translation, rotation and scale components.
  * @experimental
@@ -226,7 +238,7 @@ export class FlowGraphDecomposeMatrixBlock extends FlowGraphBlock {
     private _cachedRotation = new Quaternion();
     private _cachedScale = new Vector3();
 
-    public constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphDecomposeMatrixBlock" }) {
+    public constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
         this.input = this._registerDataInput("input", RichTypeMatrix);
@@ -246,12 +258,14 @@ export class FlowGraphDecomposeMatrixBlock extends FlowGraphBlock {
     }
 
     public getClassName(): string {
-        return "FlowGraphDecomposeMatrixBlock";
+        return DECOMPOSENAME;
     }
 }
-RegisterClass("FlowGraphDecomposeMatrixBlock", FlowGraphDecomposeMatrixBlock);
+RegisterClass(DECOMPOSENAME, FlowGraphDecomposeMatrixBlock);
+
+const COMPOSENAME = "FlowGraphComposeMatrixBlock";
 /**
- * Decomposes a matrix into its translation, rotation and scale components.
+ * Composes a matrix from its translation, rotation and scale components.
  * @experimental
  */
 export class FlowGraphComposeMatrixBlock extends FlowGraphBlock {
@@ -274,7 +288,7 @@ export class FlowGraphComposeMatrixBlock extends FlowGraphBlock {
 
     private _cachedMatrix = new Matrix();
 
-    public constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphComposeMatrixBlock" }) {
+    public constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
         this.output = this._registerDataOutput("input", RichTypeMatrix);
@@ -294,30 +308,33 @@ export class FlowGraphComposeMatrixBlock extends FlowGraphBlock {
     }
 
     public getClassName(): string {
-        return "FlowGraphComposeMatrixBlock";
+        return COMPOSENAME;
     }
 }
-RegisterClass("FlowGraphComposeMatrixBlock", FlowGraphComposeMatrixBlock);
+RegisterClass(COMPOSENAME, FlowGraphComposeMatrixBlock);
+
+const QUATERNIONTOROTNAME = "FlowGraphQuaternionToRotationMatrixBlock";
 /**
  * Converts a quaternion to a rotation matrix.
  * @experimental
  */
 export class FlowGraphQuaternionToRotationMatrixBlock extends FlowGraphUnaryOperationBlock<Quaternion, Matrix> {
     private _cachedMatrix = new Matrix();
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphQuaternionToRotationMatrixBlock" }) {
-        super(config, RichTypeQuaternion, RichTypeMatrix, (value) => Matrix.FromQuaternionToRef(value, this._cachedMatrix), "FlowGraphQuaternionToRotationMatrixBlock");
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeQuaternion, RichTypeMatrix, (value) => Matrix.FromQuaternionToRef(value, this._cachedMatrix), QUATERNIONTOROTNAME, config);
     }
 }
-RegisterClass("FlowGraphQuaternionToRotationMatrixBlock", FlowGraphQuaternionToRotationMatrixBlock);
+RegisterClass(QUATERNIONTOROTNAME, FlowGraphQuaternionToRotationMatrixBlock);
+
+const GETTRANSFORMNAME = "FlowGraphGetTransformationMatrixBlock";
 /**
  * Given the Transform Nodes A and B, gives the matrix required
  * to transform coordinates from A's local space to B's local space.
  */
 export class FlowGraphGetTransformationMatrixBlock extends FlowGraphBinaryOperationBlock<TransformNode, TransformNode, Matrix> {
     private _cachedResult: Matrix = Matrix.Zero();
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphGetTransformationMatrixBlock" }) {
+    constructor(config?: IFlowGraphBlockConfiguration) {
         super(
-            config,
             RichTypeAny,
             RichTypeAny,
             RichTypeMatrix,
@@ -329,8 +346,9 @@ export class FlowGraphGetTransformationMatrixBlock extends FlowGraphBinaryOperat
                 const result = inverseB.multiplyToRef(aMatrix, this._cachedResult);
                 return result;
             },
-            "FlowGraphGetTransformationMatrixBlock"
+            GETTRANSFORMNAME,
+            config
         );
     }
 }
-RegisterClass("FlowGraphGetTransformationMatrixBlock", FlowGraphGetTransformationMatrixBlock);
+RegisterClass(GETTRANSFORMNAME, FlowGraphGetTransformationMatrixBlock);

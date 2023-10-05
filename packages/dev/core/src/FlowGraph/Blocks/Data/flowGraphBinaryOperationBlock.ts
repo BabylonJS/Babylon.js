@@ -14,12 +14,12 @@ export class FlowGraphBinaryOperationBlock<LeftT, RightT, ResultT> extends FlowG
     output: FlowGraphDataConnection<ResultT>;
 
     constructor(
-        public config: IFlowGraphBlockConfiguration,
         leftRichType: RichType<LeftT>,
         rightRichType: RichType<RightT>,
         resultRichType: RichType<ResultT>,
         private _operation: (left: LeftT, right: RightT) => ResultT,
-        private _className: string
+        private _className: string,
+        config?: IFlowGraphBlockConfiguration
     ) {
         super(config);
         this.leftInput = this._registerDataInput("leftInput", leftRichType);

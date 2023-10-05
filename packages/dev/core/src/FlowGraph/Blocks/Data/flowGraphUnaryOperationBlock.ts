@@ -13,11 +13,11 @@ export class FlowGraphUnaryOperationBlock<InputT, ResultT> extends FlowGraphBloc
     output: FlowGraphDataConnection<ResultT>;
 
     constructor(
-        public config: IFlowGraphBlockConfiguration,
         inputRichType: RichType<InputT>,
         resultRichType: RichType<ResultT>,
         private _operation: (input: InputT) => ResultT,
-        private _className: string
+        private _className: string,
+        config?: IFlowGraphBlockConfiguration
     ) {
         super(config);
         this.input = this._registerDataInput("input", inputRichType);
