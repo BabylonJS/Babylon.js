@@ -2153,10 +2153,11 @@ export class ThinEngine {
     /**
      * Creates a vertex buffer
      * @param data the data for the vertex buffer
+     * @param _updatable whether the buffer should be created as updatable
      * @param _label defines the label of the buffer (for debug purpose)
      * @returns the new WebGL static buffer
      */
-    public createVertexBuffer(data: DataArray, _label?: string): DataBuffer {
+    public createVertexBuffer(data: DataArray, _updatable?: boolean, _label?: string): DataBuffer {
         return this._createVertexBuffer(data, this._gl.STATIC_DRAW);
     }
 

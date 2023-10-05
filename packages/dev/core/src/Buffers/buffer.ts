@@ -174,7 +174,7 @@ export class Buffer {
                 this._buffer = this._engine.createDynamicVertexBuffer(data, this._label);
                 this._data = data;
             } else {
-                this._buffer = this._engine.createVertexBuffer(data, this._label);
+                this._buffer = this._engine.createVertexBuffer(data, undefined, this._label);
             }
         } else if (this._updatable) {
             // update buffer

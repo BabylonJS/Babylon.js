@@ -1390,10 +1390,11 @@ export class WebGPUEngine extends Engine {
     /**
      * Creates a vertex buffer
      * @param data the data for the vertex buffer
+     * @param _updatable whether the buffer should be created as updatable
      * @param label defines the label of the buffer (for debug purpose)
      * @returns the new buffer
      */
-    public createVertexBuffer(data: DataArray, label?: string): DataBuffer {
+    public createVertexBuffer(data: DataArray, _updatable?: boolean, label?: string): DataBuffer {
         let view: ArrayBufferView;
 
         if (data instanceof Array) {
@@ -1415,7 +1416,7 @@ export class WebGPUEngine extends Engine {
      * @returns the new buffer
      */
     public createDynamicVertexBuffer(data: DataArray, label?: string): DataBuffer {
-        return this.createVertexBuffer(data, label);
+        return this.createVertexBuffer(data, undefined, label);
     }
 
     /**
