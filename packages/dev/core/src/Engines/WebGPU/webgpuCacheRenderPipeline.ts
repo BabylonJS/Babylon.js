@@ -140,6 +140,22 @@ export abstract class WebGPUCacheRenderPipeline {
     private _textureState: number;
     private _useTextureStage: boolean;
 
+    private static _IsSignedType(type: number): boolean {
+        switch (type) {
+            case VertexBuffer.BYTE:
+            case VertexBuffer.SHORT:
+            case VertexBuffer.INT:
+            case VertexBuffer.FLOAT:
+                return true;
+            case VertexBuffer.UNSIGNED_BYTE:
+            case VertexBuffer.UNSIGNED_SHORT:
+            case VertexBuffer.UNSIGNED_INT:
+                return false;
+            default:
+                throw new Error(`Invalid type '${type}'`);
+        }
+    }
+
     constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer, useTextureStage: boolean) {
         this._device = device;
         this._useTextureStage = useTextureStage;
@@ -989,7 +1005,7 @@ export abstract class WebGPUCacheRenderPipeline {
                 webgpuPipelineContext.vertexBufferKindToType[kind] = currentVertexBufferType;
                 if (currentVertexBufferType !== VertexBuffer.FLOAT) {
                     webgpuShaderProcessor.vertexBufferKindToNumberOfComponents[kind] = VertexBuffer.DeduceStride(kind);
-                    if (VertexBuffer.IsSignedType(currentVertexBufferType)) {
+                    if (WebGPUCacheRenderPipeline._IsSignedType(currentVertexBufferType)) {
                         webgpuShaderProcessor.vertexBufferKindToNumberOfComponents[kind] *= -1;
                     }
                 }

@@ -838,27 +838,6 @@ export class VertexBuffer {
     }
 
     /**
-     * Returns true if the type is a signed type, false otherwise.
-     * @param type the type
-     * @returns true or false depending on whether the type is signed or not
-     */
-    public static IsSignedType(type: number): boolean {
-        switch (type) {
-            case VertexBuffer.BYTE:
-            case VertexBuffer.SHORT:
-            case VertexBuffer.INT:
-            case VertexBuffer.FLOAT:
-                return true;
-            case VertexBuffer.UNSIGNED_BYTE:
-            case VertexBuffer.UNSIGNED_SHORT:
-            case VertexBuffer.UNSIGNED_INT:
-                return false;
-            default:
-                throw new Error(`Invalid type '${type}'`);
-        }
-    }
-
-    /**
      * Enumerates each value of the given parameters as numbers.
      * @param data the data to enumerate
      * @param byteOffset the byte offset of the data
