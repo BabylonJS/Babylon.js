@@ -8,7 +8,6 @@ import type { Nullable } from "../types";
 import type { Matrix } from "../Maths/math.vector";
 import { EngineStore } from "../Engines/engineStore";
 import { SubMesh } from "../Meshes/subMesh";
-import type { Geometry } from "../Meshes/geometry";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { UniformBuffer } from "./uniformBuffer";
 import type { Effect } from "./effect";
@@ -1828,13 +1827,15 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private releaseVertexArrayObject(mesh: AbstractMesh, forceDisposeEffect?: boolean) {
-        if ((<Mesh>mesh).geometry) {
-            const geometry = <Geometry>(<Mesh>mesh).geometry;
+        const geometry = (<Mesh>mesh).geometry;
+        if (geometry) {
             if (this._storeEffectOnSubMeshes) {
-                for (const subMesh of mesh.subMeshes) {
-                    geometry._releaseVertexArrayObject(subMesh.effect);
-                    if (forceDisposeEffect && subMesh.effect) {
-                        subMesh.effect.dispose();
+                if (mesh.subMeshes) {
+                    for (const subMesh of mesh.subMeshes) {
+                        geometry._releaseVertexArrayObject(subMesh.effect);
+                        if (forceDisposeEffect && subMesh.effect) {
+                            subMesh.effect.dispose();
+                        }
                     }
                 }
             } else {
