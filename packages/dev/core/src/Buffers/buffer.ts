@@ -259,6 +259,60 @@ export class Buffer {
 }
 
 /**
+ * Options to be used when creating a vertex buffer
+ */
+export interface IVertexBufferOptions {
+    /**
+     * whether the data is updatable (default: false)
+     */
+    updatable?: boolean;
+    /**
+     * whether to postpone creating the internal WebGL buffer (default: false)
+     */
+    postponeInternalCreation?: boolean;
+    /**
+     * the stride (will be automatically computed from the kind parameter if not specified)
+     */
+    stride?: number;
+    /**
+     * whether the buffer is instanced (default: false)
+     */
+    instanced?: boolean;
+    /**
+     * the offset of the data (default: 0)
+     */
+    offset?: number;
+    /**
+     * the number of components (will be automatically computed from the kind parameter if not specified)
+     */
+    size?: number;
+    /**
+     * the type of the component (will be deduce from the data parameter if not specified)
+     */
+    type?: number;
+    /**
+     * whether the data contains normalized data (default: false)
+     */
+    normalized?: boolean;
+    /**
+     * set to true if stride and offset are in bytes (default: false)
+     */
+    useBytes?: boolean;
+    /**
+     * defines the instance divisor to use (default: 1, only used if instanced is true)
+     */
+    divisor?: number;
+    /**
+     * defines if the buffer should be released when the vertex buffer is disposed (default: false)
+     */
+    takeBufferOwnership?: boolean;
+    /**
+     * label to use for this vertex buffer (debugging purpose)
+     */
+    label?: string;
+}
+
+/**
  * Specialized buffer used to store vertex data
  */
 export class VertexBuffer {
@@ -381,7 +435,6 @@ export class VertexBuffer {
      * @param useBytes set to true if stride and offset are in bytes (optional)
      * @param divisor defines the instance divisor to use (1 by default)
      * @param takeBufferOwnership defines if the buffer should be released when the vertex buffer is disposed
-     * @param label defines the label of the buffer (for debug purpose). Only used if the "data" parameter is a DataArray
      */
     constructor(
         engine: ThinEngine,
@@ -394,12 +447,58 @@ export class VertexBuffer {
         offset?: number,
         size?: number,
         type?: number,
+        normalized?: boolean,
+        useBytes?: boolean,
+        divisor?: number,
+        takeBufferOwnership?: boolean
+    );
+
+    /**
+     * Constructor
+     * @param engine the engine
+     * @param data the data to use for this vertex buffer
+     * @param kind the vertex buffer kind
+     * @param options defines the rest of the options used to create the buffer
+     */
+    constructor(engine: ThinEngine, data: DataArray | Buffer | DataBuffer, kind: string, options?: IVertexBufferOptions);
+
+    /** @internal */
+    constructor(
+        engine: ThinEngine,
+        data: DataArray | Buffer | DataBuffer,
+        kind: string,
+        updatableOrOptions?: boolean | IVertexBufferOptions,
+        postponeInternalCreation?: boolean,
+        stride?: number,
+        instanced?: boolean,
+        offset?: number,
+        size?: number,
+        type?: number,
         normalized = false,
         useBytes = false,
         divisor = 1,
-        takeBufferOwnership = false,
-        label?: string
+        takeBufferOwnership = false
     ) {
+        let updatable = false;
+        let label: string | undefined;
+
+        if (typeof updatableOrOptions === "object" && updatableOrOptions !== null) {
+            updatable = updatableOrOptions.updatable ?? false;
+            postponeInternalCreation = updatableOrOptions.postponeInternalCreation;
+            stride = updatableOrOptions.stride;
+            instanced = updatableOrOptions.instanced;
+            offset = updatableOrOptions.offset;
+            size = updatableOrOptions.size;
+            type = updatableOrOptions.type;
+            normalized = updatableOrOptions.normalized ?? false;
+            useBytes = updatableOrOptions.useBytes ?? false;
+            divisor = updatableOrOptions.divisor ?? 1;
+            takeBufferOwnership = updatableOrOptions.takeBufferOwnership ?? false;
+            label = updatableOrOptions.label;
+        } else {
+            updatable = !!updatableOrOptions;
+        }
+
         if (data instanceof Buffer) {
             this._buffer = data;
             this._ownsBuffer = takeBufferOwnership;
@@ -411,7 +510,7 @@ export class VertexBuffer {
         this.uniqueId = VertexBuffer._Counter++;
         this._kind = kind;
 
-        if (type == undefined) {
+        if (type === undefined) {
             const vertexData = this.getData();
             this.type = vertexData ? VertexBuffer.GetDataType(vertexData) : VertexBuffer.FLOAT;
         } else {

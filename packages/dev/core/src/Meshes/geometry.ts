@@ -252,23 +252,12 @@ export class Geometry implements IGetSetVerticesData {
             // to avoid converting to Float32Array at each draw call in engine.updateDynamicVertexBuffer, we make the conversion a single time here
             data = new Float32Array(data);
         }
-        const buffer = new VertexBuffer(
-            this._engine,
-            data,
-            kind,
+        const buffer = new VertexBuffer(this._engine, data, kind, {
             updatable,
-            this._meshes.length === 0,
+            postponeInternalCreation: this._meshes.length === 0,
             stride,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            "Geometry_" + this.id + "_" + kind
-        );
+            label: "Geometry_" + this.id + "_" + kind,
+        });
         this.setVerticesBuffer(buffer);
     }
 
