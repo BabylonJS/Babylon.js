@@ -1,3 +1,5 @@
+/* eslint-disable babylonjs/available */
+/* eslint-disable jsdoc/require-jsdoc */
 import type { IPipelineContext } from "../IPipelineContext";
 import type { Nullable } from "../../types";
 import type { WebGPUEngine } from "../webgpuEngine";
@@ -20,6 +22,9 @@ export class WebGPUPipelineContext implements IPipelineContext {
     public shaderProcessingContext: WebGPUShaderProcessingContext;
 
     protected _leftOverUniformsByName: { [name: string]: string };
+
+    // Property used to handle vertex buffers with int values when the shader code expect float values.
+    public vertexBufferKindToType: { [kind: string]: number };
 
     public sources: {
         vertex: string;
@@ -61,6 +66,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
         this.shaderProcessingContext = shaderProcessingContext;
         this._leftOverUniformsByName = {};
         this.engine = engine;
+        this.vertexBufferKindToType = {};
     }
 
     public _handlesSpectorRebuildCallback(): void {

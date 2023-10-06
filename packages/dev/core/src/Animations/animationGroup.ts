@@ -1007,7 +1007,7 @@ export class AnimationGroup implements IDisposable {
     /**
      * Convert the keyframes for all animations belonging to the group to be relative to a given reference frame.
      * @param sourceAnimationGroup defines the AnimationGroup containing animations to convert
-     * @param options defines the options to use when converting ey keyframes
+     * @param options defines the options to use when converting keyframes
      * @returns a new AnimationGroup if options.cloneOriginalAnimationGroup is true or the original AnimationGroup if options.cloneOriginalAnimationGroup is false
      */
     public static MakeAnimationAdditive(sourceAnimationGroup: AnimationGroup, options?: IMakeAnimationGroupAdditiveOptions): AnimationGroup;

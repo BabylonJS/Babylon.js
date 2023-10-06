@@ -468,7 +468,7 @@ export class NativeEngine extends Engine {
         this._commandBufferEncoder.finishEncodingCommand();
     }
 
-    public createIndexBuffer(indices: IndicesArray, updateable?: boolean): NativeDataBuffer {
+    public createIndexBuffer(indices: IndicesArray, updateable?: boolean, _label?: string): NativeDataBuffer {
         const data = this._normalizeIndexData(indices);
         const buffer = new NativeDataBuffer();
         buffer.references = 1;
@@ -479,7 +479,7 @@ export class NativeEngine extends Engine {
         return buffer;
     }
 
-    public createVertexBuffer(vertices: DataArray, updateable?: boolean): NativeDataBuffer {
+    public createVertexBuffer(vertices: DataArray, updateable?: boolean, _label?: string): NativeDataBuffer {
         const data = ArrayBuffer.isView(vertices) ? vertices : new Float32Array(vertices);
         const buffer = new NativeDataBuffer();
         buffer.references = 1;

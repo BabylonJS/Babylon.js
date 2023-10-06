@@ -252,7 +252,12 @@ export class Geometry implements IGetSetVerticesData {
             // to avoid converting to Float32Array at each draw call in engine.updateDynamicVertexBuffer, we make the conversion a single time here
             data = new Float32Array(data);
         }
-        const buffer = new VertexBuffer(this._engine, data, kind, updatable, this._meshes.length === 0, stride);
+        const buffer = new VertexBuffer(this._engine, data, kind, {
+            updatable,
+            postponeInternalCreation: this._meshes.length === 0,
+            stride,
+            label: "Geometry_" + this.id + "_" + kind,
+        });
         this.setVerticesBuffer(buffer);
     }
 
@@ -297,7 +302,8 @@ export class Geometry implements IGetSetVerticesData {
                 this._totalVertices = totalVertices;
             } else {
                 if (data != null) {
-                    this._totalVertices = data.length / (buffer.type === VertexBuffer.BYTE ? buffer.byteStride : buffer.byteStride / 4);
+                    this._totalVertices =
+                        data.length / (buffer.type === VertexBuffer.BYTE || buffer.type === VertexBuffer.UNSIGNED_BYTE ? buffer.byteStride : buffer.byteStride / 4);
                 }
             }
 
