@@ -1828,13 +1828,15 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private releaseVertexArrayObject(mesh: AbstractMesh, forceDisposeEffect?: boolean) {
-        if ((<Mesh>mesh).geometry) {
-            const geometry = <Geometry>(<Mesh>mesh).geometry;
+        const geometry = <Geometry>(<Mesh>mesh).geometry;
+        if (geometry) {
             if (this._storeEffectOnSubMeshes) {
-                for (const subMesh of mesh.subMeshes) {
-                    geometry._releaseVertexArrayObject(subMesh.effect);
-                    if (forceDisposeEffect && subMesh.effect) {
-                        subMesh.effect.dispose();
+                if (mesh.subMeshes) {
+                    for (const subMesh of mesh.subMeshes) {
+                        geometry._releaseVertexArrayObject(subMesh.effect);
+                        if (forceDisposeEffect && subMesh.effect) {
+                            subMesh.effect.dispose();
+                        }
                     }
                 }
             } else {
