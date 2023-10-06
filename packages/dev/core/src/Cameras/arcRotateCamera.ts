@@ -1316,8 +1316,7 @@ export class ArcRotateCamera extends TargetCamera {
      * @internal
      */
     public _calculateLowerRadiusFromModelBoundingSphere(minimumWorld: Vector3, maximumWorld: Vector3, radiusScale: number = 1): number {
-        const size = maximumWorld.subtract(minimumWorld);
-        const boxVectorGlobalDiagonal = size.length();
+        const boxVectorGlobalDiagonal = Vector3.Distance(minimumWorld, maximumWorld);
 
         // Get aspect ratio in order to calculate frustum slope
         const engine = this.getScene().getEngine();
