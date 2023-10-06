@@ -311,7 +311,6 @@ export class PreviewManager {
             case NodeMaterialModes.Material: {
                 this._prepareLights();
                 if (!this._globalState.envFile) {
-                    console.error("!!!!!!!!!!!!!!!!");
                     this._globalState.backgroundHDR = false;
                 }
                 this._prepareBackgroundHDR();
