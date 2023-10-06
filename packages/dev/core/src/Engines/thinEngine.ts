@@ -225,14 +225,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@6.22.1";
+        return "babylonjs@6.23.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "6.22.1";
+        return "6.23.0";
     }
 
     /**
@@ -908,7 +908,7 @@ export class ThinEngine {
                 };
 
                 this._onContextRestored = () => {
-                    this._restoreEngineAfterContextLost(this._initGLContext.bind(this));
+                    this._restoreEngineAfterContextLost(() => this._initGLContext());
                 };
 
                 canvas.addEventListener("webglcontextlost", this._onContextLost, false);
@@ -1708,7 +1708,7 @@ export class ThinEngine {
 
         if (!this._renderingQueueLaunched) {
             this._renderingQueueLaunched = true;
-            this._boundRenderFunction = this._renderLoop.bind(this);
+            this._boundRenderFunction = () => this._renderLoop();
             this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
         }
     }

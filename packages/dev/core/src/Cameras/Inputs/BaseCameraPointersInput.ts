@@ -232,7 +232,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
             this.onLostFocus();
         };
 
-        this._contextMenuBind = this.onContextMenu.bind(this);
+        this._contextMenuBind = (evt: Event) => this.onContextMenu(evt as PointerEvent);
 
         element && element.addEventListener("contextmenu", this._contextMenuBind, false);
 

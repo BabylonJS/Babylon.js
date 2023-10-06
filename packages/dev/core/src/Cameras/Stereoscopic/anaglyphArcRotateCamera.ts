@@ -38,5 +38,5 @@ export class AnaglyphArcRotateCamera extends ArcRotateCamera {
         return "AnaglyphArcRotateCamera";
     }
 
-    protected _setRigMode = setStereoscopicAnaglyphRigMode.bind(null, this);
+    protected _setRigMode = () => setStereoscopicAnaglyphRigMode(this);
 }

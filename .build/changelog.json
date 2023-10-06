@@ -1,5 +1,5 @@
 {
-    "fromTag": "6.22.0",
+    "fromTag": "6.22.1",
     "changelog": {
         "6.22.1": [
             {
@@ -95,6 +95,225 @@
                 "tags": [
                     "skip changelog",
                     "flow graph"
+                ]
+            }
+        ],
+        "6.23.0": [
+            {
+                "pr": "14352",
+                "title": "ArcRotateCamera: Modify mapPanning to account for upVector",
+                "description": "This PR contains a change to the logic for `mapPanning` so that the X/Z panning will happen with respect to whatever the current upVector is, rather than against the absolute X/Z axes.\r\n\r\nRelated forum link: https://forum.babylonjs.com/t/arcrotatecamera-mappanning-does-not-take-upvector-into-account/43820/3\r\n\r\nExample PR to test in future: https://playground.babylonjs.com/#YSVLLN#1",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "14386",
+                "title": "Reverse winding order flag for MeshBlock in NGE",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/meshBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "14383",
+                "title": "recreate opaqueRenderTarget if it's needed again for transmission",
+                "description": "Fix #14382\r\nAdding @sebavan and @Popov72 to see if this solution makes sense 😛 ",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_transmission.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14385",
+                "title": "Fix missing data when using booleans",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/booleanGeometryBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "14384",
+                "title": "WebGPU: Sync with the spec",
+                "description": "A render target format has been removed by mistake in #14378, making the highlight layer (and probably other things!) fail.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureHelper.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "14378",
+                "title": "WebGPU: Sync with the spec",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheRenderPipeline.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuConstants.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureHelper.ts",
+                    "packages/dev/core/src/LibDeclarations/webgpu.d.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14379",
+                "title": "Geometry buffer renderer: Add an option to generate normals in world space",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/screenSpaceCurvaturePostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/screenSpaceReflectionPostProcess.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Shaders/geometry.fragment.fx",
+                    "packages/dev/core/src/Shaders/geometry.vertex.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14378",
+                "title": "WebGPU: Sync with the spec",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheRenderPipeline.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuConstants.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureHelper.ts",
+                    "packages/dev/core/src/LibDeclarations/webgpu.d.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14377",
+                "title": "Procedural texture: Allow to pass shader code when creating a procedural texture",
+                "description": "See https://forum.babylonjs.com/t/create-proceduraltexture-from-shader-source-string/44610\r\n\r\nThis PG will work once the PR is merged:\r\n\r\nhttps://playground.babylonjs.com/#24C4KC#64",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/Procedurals/proceduralTexture.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "14376",
+                "title": "Inspector tweaks for CSM and removing an implicit varying from shadowsFragmentFunctions.fx",
+                "description": "* Allow for editing shadow max Z in CSM inspector when camera is using an infinite far plane (i.e. camera.maxZ = 0)\r\n* Add 4K shadow map option to CSM inspector\r\n* Replace implicit usages vPositionW with a function parameter (worldPos) which allows shadowsFragmentFunctions.fx to be included in shaders that don't have a vPositionW varying.\r\n* Other minor cleanup in shadowsFragmentFunctions.fx",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/shadowsFragmentFunctions.fx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/lights/commonShadowLightPropertyGridComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14373",
+                "title": "Fix stupid bug",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVolumeBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "14372",
+                "title": "AnimationGroup: Fix onAnimationGroupLoop observable not triggered when mask is not empty",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animationGroup.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "14371",
+                "title": "Mesh: Add a helper method to draw a mesh given a render pass id",
+                "description": "I've added `Mesh.renderWithRenderPassId` to make it easier to render an entire mesh without having to loop through sub-meshes by hand. If you provide a render pass ID, this is a useful method for rendering a mesh multiple times in a frame.\r\n\r\nIn the past, I used to reply to forum posts, when a specific rendering effect required a mesh to be rendered multiple times per frame, that the mesh needed to be cloned. In fact, using render pass IDs solves the problem neatly: simply create a new render pass ID and use it to assign the material you want to use to render your mesh a second time! The helper method simplifies this scheme by allowing you to perform the additional rendering in a single call.\r\n\r\nFor example\r\n* Mesh cloning: https://playground.babylonjs.com/#QDAZ80#207\r\n* Use of a render pass id + helper method: https://playground.babylonjs.com/#QDAZ80#506\r\n\r\nI'd have preferred to call it `render`, but this method already exists (and draws a sub-mesh)...\r\n\r\nThis PR also makes a small change to `Tools.FloatRound`. I've checked that `Math.fround` is supported by all the browsers we're targeting (it wasn't supported by IE11 only, for which we dropped support some time ago), so it's a small performance improvement to remove the `if` condition.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/uniformBuffer.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Misc/tools.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
                 ]
             }
         ],

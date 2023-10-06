@@ -751,7 +751,12 @@ export class Effect implements IDisposable {
             this._pipelineContext = engine.createPipelineContext(this._processingContext);
             this._pipelineContext._name = this._key;
 
-            const rebuildRebind = this._rebuildProgram.bind(this);
+            const rebuildRebind = (
+                vertexSourceCode: string,
+                fragmentSourceCode: string,
+                onCompiled: (pipelineContext: IPipelineContext) => void,
+                onError: (message: string) => void
+            ) => this._rebuildProgram(vertexSourceCode, fragmentSourceCode, onCompiled, onError);
             if (this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride) {
                 engine._preparePipelineContext(
                     this._pipelineContext,

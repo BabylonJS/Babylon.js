@@ -565,7 +565,7 @@ class PhysicsGravitationalFieldEvent {
     constructor(private _physicsHelper: PhysicsHelper, private _scene: Scene, private _origin: Vector3, private _options: PhysicsRadialExplosionEventOptions) {
         this._options = { ...new PhysicsRadialExplosionEventOptions(), ...this._options };
 
-        this._tickCallback = this._tick.bind(this);
+        this._tickCallback = () => this._tick();
 
         this._options.strength = this._options.strength * -1;
     }
@@ -658,7 +658,7 @@ class PhysicsUpdraftEvent {
             this._originDirection = this._origin.subtract(this._originTop).normalize();
         }
 
-        this._tickCallback = this._tick.bind(this);
+        this._tickCallback = () => this._tick();
 
         if (this._physicsEngine.getPluginVersion() === 1) {
             this._prepareCylinder();
@@ -838,7 +838,7 @@ class PhysicsVortexEvent {
         this._origin.addToRef(new Vector3(0, this._options.height / 2, 0), this._cylinderPosition);
         this._origin.addToRef(new Vector3(0, this._options.height, 0), this._originTop);
 
-        this._tickCallback = this._tick.bind(this);
+        this._tickCallback = () => this._tick();
 
         if (this._physicsEngine.getPluginVersion() === 1) {
             this._prepareCylinder();

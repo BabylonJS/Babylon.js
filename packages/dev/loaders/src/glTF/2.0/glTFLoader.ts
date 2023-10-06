@@ -1979,35 +1979,28 @@ export class GLTFLoader implements IGLTFLoader {
 
         const engine = this._babylonScene.getEngine();
 
-        if (accessor.sparse) {
-            accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync(context, accessor).then((data) => {
-                return new VertexBuffer(engine, data, kind, false);
-            });
-        }
-        // Load joint indices as a float array since the shaders expect float data but glTF uses unsigned byte/short.
-        // This prevents certain platforms (e.g. D3D) from having to convert the data to float on the fly.
-        else if (kind === VertexBuffer.MatricesIndicesKind || kind === VertexBuffer.MatricesIndicesExtraKind) {
+        if (accessor.sparse || accessor.bufferView == undefined) {
             accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync(context, accessor).then((data) => {
                 return new VertexBuffer(engine, data, kind, false);
             });
         } else {
             const bufferView = ArrayItem.Get(`${context}/bufferView`, this._gltf.bufferViews, accessor.bufferView);
             accessor._babylonVertexBuffer[kind] = this._loadVertexBufferViewAsync(bufferView).then((babylonBuffer) => {
-                const size = GLTFLoader._GetNumComponents(context, accessor.type);
+                const numComponents = GLTFLoader._GetNumComponents(context, accessor.type);
                 return new VertexBuffer(
                     engine,
                     babylonBuffer,
                     kind,
                     false,
-                    false,
+                    undefined,
                     bufferView.byteStride,
-                    false,
+                    undefined,
                     accessor.byteOffset,
-                    size,
+                    numComponents,
                     accessor.componentType,
                     accessor.normalized,
                     true,
-                    1,
+                    undefined,
                     true
                 );
             });

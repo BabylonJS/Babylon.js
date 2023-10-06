@@ -81,7 +81,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
 
         if (!this._texture) {
             if (!scene.useDelayedTextureLoading) {
-                this._loadImage(this._loadTexture.bind(this), this._onError);
+                this._loadImage(() => this._loadTexture(), this._onError);
             } else {
                 this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
             }
