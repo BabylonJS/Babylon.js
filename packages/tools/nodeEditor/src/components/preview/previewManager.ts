@@ -362,7 +362,7 @@ export class PreviewManager {
                 this._hdrTexture = CubeTexture.CreateFromPrefilteredData("textures/room.env", this._scene);
                 this._prepareBackgroundHDR();
                 break;
-            case PreviewType.Custom:{
+            case PreviewType.Custom: {
                 const blob = new Blob([this._globalState.envFile], { type: "octet/stream" });
                 const reader = new FileReader();
                 reader.onload = (evt) => {
