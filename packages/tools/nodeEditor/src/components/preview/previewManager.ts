@@ -30,7 +30,7 @@ import { ParticleTextureBlock } from "core/Materials/Node/Blocks/Particle/partic
 import { ReadFile } from "core/Misc/fileTools";
 import type { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import type { StandardMaterial } from "core/Materials/standardMaterial";
-import { HDRCubeTexture } from "core/Materials/Textures/hdrCubeTexture";
+import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Layer } from "core/Layers/layer";
 import { DataStorage } from "core/Misc/dataStorage";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
@@ -289,12 +289,11 @@ export class PreviewManager {
         }
     }
     private _hdrSkyBox: Mesh;
-    private _hdrTexture: HDRCubeTexture;
+    private _hdrTexture: CubeTexture;
     private _prepareBackgroundHDR() {
         if (this._hdrTexture == null) {
-            this._hdrTexture = new HDRCubeTexture("room.hdr", this._scene, 512);
+            this._hdrTexture = CubeTexture.CreateFromPrefilteredData("room.env", this._scene);
         }
-        console.error(this._globalState.backgroundHDR);
         if (this._globalState.backgroundHDR) {
             this._scene.environmentTexture = this._hdrTexture;
             this._hdrSkyBox = this._scene.createDefaultSkybox(this._hdrTexture) as Mesh;
