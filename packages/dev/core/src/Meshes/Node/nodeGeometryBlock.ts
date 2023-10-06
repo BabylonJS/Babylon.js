@@ -14,9 +14,10 @@ import type { Nullable } from "../../types";
 export class NodeGeometryBlock {
     private _name = "";
     private _buildId: number;
-    private _isInput = false;
-    private _isTeleportOut = false;
-    private _isTeleportIn = false;
+    protected _isInput = false;
+    protected _isTeleportOut = false;
+    protected _isTeleportIn = false;
+    protected _isDebug = false;
     protected _isUnique = false;
     private _buildExecutionTime: number = 0;
 
@@ -88,6 +89,13 @@ export class NodeGeometryBlock {
      */
     public get isTeleportIn(): boolean {
         return this._isTeleportIn;
+    }
+
+    /**
+     * Gets a boolean indicating if this block is a debug block
+     */
+    public get isDebug(): boolean {
+        return this._isDebug;
     }
 
     /**
@@ -204,9 +212,6 @@ export class NodeGeometryBlock {
      */
     public constructor(name: string) {
         this._name = name;
-        this._isInput = this.getClassName() === "GeometryInputBlock";
-        this._isTeleportOut = this.getClassName() === "TeleportOutBlock";
-        this._isTeleportIn = this.getClassName() === "TeleportInBlock";
         this.uniqueId = UniqueIdGenerator.UniqueId;
     }
 
@@ -271,7 +276,7 @@ export class NodeGeometryBlock {
         }
 
         if (this._outputs.length > 0) {
-            if (!this._outputs.some((o) => o.hasEndpoints)) {
+            if (!this._outputs.some((o) => o.hasEndpoints) && !this.isDebug) {
                 return false;
             }
         }
@@ -413,22 +418,28 @@ export class NodeGeometryBlock {
         const serializedInputs = serializationObject.inputs;
         const serializedOutputs = serializationObject.outputs;
         if (serializedInputs) {
-            serializedInputs.forEach((port: any, i: number) => {
+            serializedInputs.forEach((port: any) => {
+                const input = this.inputs.find((i) => i.name === port.name);
+
+                if (!input) {
+                    return;
+                }
+
                 if (port.displayName) {
-                    this.inputs[i].displayName = port.displayName;
+                    input.displayName = port.displayName;
                 }
                 if (port.isExposedOnFrame) {
-                    this.inputs[i].isExposedOnFrame = port.isExposedOnFrame;
-                    this.inputs[i].exposedPortPosition = port.exposedPortPosition;
+                    input.isExposedOnFrame = port.isExposedOnFrame;
+                    input.exposedPortPosition = port.exposedPortPosition;
                 }
                 if (port.value !== undefined && port.value !== null) {
                     if (port.valueType === "number") {
-                        this.inputs[i].value = port.value;
+                        input.value = port.value;
                     } else {
                         const valueType = GetClass(port.valueType);
 
                         if (valueType) {
-                            this.inputs[i].value = valueType.FromArray(port.value);
+                            input.value = valueType.FromArray(port.value);
                         }
                     }
                 }

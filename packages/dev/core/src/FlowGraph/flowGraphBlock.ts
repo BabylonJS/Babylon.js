@@ -1,6 +1,8 @@
-import type { FlowGraph } from "./flowGraph";
+import { RandomGUID } from "../Misc/guid";
 import { FlowGraphConnectionType } from "./flowGraphConnection";
+import type { FlowGraphContext } from "./flowGraphContext";
 import { FlowGraphDataConnection } from "./flowGraphDataConnection";
+import type { RichType } from "./flowGraphRichTypes";
 
 /**
  * @experimental
@@ -10,9 +12,9 @@ import { FlowGraphDataConnection } from "./flowGraphDataConnection";
  */
 export class FlowGraphBlock {
     /**
-     * The name of the block.
+     * A randomly generated GUID for each block.
      */
-    public name: string;
+    public uniqueId = RandomGUID();
     /**
      * The data inputs of the block.
      */
@@ -21,31 +23,25 @@ export class FlowGraphBlock {
      * The data outputs of the block.
      */
     public readonly dataOutputs: FlowGraphDataConnection<any>[] = [];
-    /**
-     * The graph that this block belongs to.
-     */
-    private _graph: FlowGraph;
 
-    protected constructor(graph: FlowGraph) {
-        this._graph = graph;
-        this._graph._addBlock(this);
-    }
+    /** Constructor is protected so only subclasses can be instantiated */
+    protected constructor() {}
 
     /**
      * @internal
      */
-    public _updateOutputs(): void {
+    public _updateOutputs(_context: FlowGraphContext): void {
         // empty by default, overriden in data blocks
     }
 
-    protected _registerDataInput<T>(name: string, defaultValue: T): FlowGraphDataConnection<T> {
-        const input = new FlowGraphDataConnection<T>(name, FlowGraphConnectionType.Input, this, defaultValue);
+    protected _registerDataInput<T>(name: string, className: RichType<T>): FlowGraphDataConnection<T> {
+        const input = new FlowGraphDataConnection(name, FlowGraphConnectionType.Input, this, className);
         this.dataInputs.push(input);
         return input;
     }
 
-    protected _registerDataOutput<T>(name: string, defaultValue: T): FlowGraphDataConnection<T> {
-        const output = new FlowGraphDataConnection<T>(name, FlowGraphConnectionType.Output, this, defaultValue);
+    protected _registerDataOutput<T>(name: string, className: RichType<T>): FlowGraphDataConnection<T> {
+        const output = new FlowGraphDataConnection(name, FlowGraphConnectionType.Output, this, className);
         this.dataOutputs.push(output);
         return output;
     }

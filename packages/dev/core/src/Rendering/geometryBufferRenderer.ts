@@ -105,6 +105,11 @@ export class GeometryBufferRenderer {
     /** Gets or sets a boolean indicating if transparent meshes should be rendered */
     public renderTransparentMeshes = true;
 
+    /**
+     * Gets or sets a boolean indicating if normals should be generated in world space (default: false, meaning normals are generated in view space)
+     */
+    public generateNormalsInWorldSpace = false;
+
     private _scene: Scene;
     private _resizeObserver: Nullable<Observer<Engine>> = null;
     private _multiRenderTarget: MultiRenderTarget;
@@ -554,6 +559,10 @@ export class GeometryBufferRenderer {
         if (this._enableReflectivity) {
             defines.push("#define REFLECTIVITY");
             defines.push("#define REFLECTIVITY_INDEX " + this._reflectivityIndex);
+        }
+
+        if (this.generateNormalsInWorldSpace) {
+            defines.push("#define NORMAL_WORLDSPACE");
         }
 
         // Bones

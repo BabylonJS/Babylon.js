@@ -394,6 +394,7 @@ export class MaterialHelper {
         if (scene.prePassRenderer && scene.prePassRenderer.enabled && canRenderToMRT) {
             defines.PREPASS = true;
             defines.SCENE_MRT_COUNT = scene.prePassRenderer.mrtCount;
+            defines.PREPASS_NORMAL_WORLDSPACE = scene.prePassRenderer.generateNormalsInWorldSpace;
 
             for (let i = 0; i < texturesList.length; i++) {
                 const index = scene.prePassRenderer.getIndex(texturesList[i].type);

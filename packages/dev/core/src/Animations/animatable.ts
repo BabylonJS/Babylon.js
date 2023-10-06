@@ -106,6 +106,13 @@ export class Animatable {
     }
 
     /**
+     * Gets the elapsed time since the animatable started in milliseconds
+     */
+    public get elapsedTime(): number {
+        return this._localDelayOffset === null ? 0 : this._scene._animationTime - this._localDelayOffset;
+    }
+
+    /**
      * Creates a new Animatable
      * @param scene defines the hosting scene
      * @param target defines the target object

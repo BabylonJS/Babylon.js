@@ -167,7 +167,7 @@ export class GlobalState {
 
     // Light gizmos
     public lightGizmos: Array<LightGizmo> = [];
-    public enableLightGizmo(light: Light, enable = true) {
+    public enableLightGizmo(light: Light, enable = true, gizmoCamera: Nullable<Camera> = null) {
         if (enable) {
             if (!light.reservedDataStore) {
                 light.reservedDataStore = {};
@@ -177,6 +177,9 @@ export class GlobalState {
                 this.lightGizmos.push(light.reservedDataStore.lightGizmo);
                 light.reservedDataStore.lightGizmo.light = light;
                 light.reservedDataStore.lightGizmo.material.reservedDataStore = { hidden: true };
+                if (gizmoCamera) {
+                    light.reservedDataStore.lightGizmo.gizmoLayer.setRenderCamera(gizmoCamera);
+                }
             }
         } else if (light.reservedDataStore && light.reservedDataStore.lightGizmo) {
             this.lightGizmos.splice(this.lightGizmos.indexOf(light.reservedDataStore.lightGizmo), 1);
@@ -186,7 +189,7 @@ export class GlobalState {
     }
     // Camera gizmos
     public cameraGizmos: Array<CameraGizmo> = [];
-    public enableCameraGizmo(camera: Camera, enable = true) {
+    public enableCameraGizmo(camera: Camera, enable = true, gizmoCamera: Nullable<Camera> = null) {
         if (enable) {
             if (!camera.reservedDataStore) {
                 camera.reservedDataStore = {};
@@ -196,6 +199,9 @@ export class GlobalState {
                 this.cameraGizmos.push(camera.reservedDataStore.cameraGizmo);
                 camera.reservedDataStore.cameraGizmo.camera = camera;
                 camera.reservedDataStore.cameraGizmo.material.reservedDataStore = { hidden: true };
+                if (gizmoCamera) {
+                    camera.reservedDataStore.cameraGizmo.gizmoLayer.setRenderCamera(gizmoCamera);
+                }
             }
         } else if (camera.reservedDataStore && camera.reservedDataStore.cameraGizmo) {
             this.cameraGizmos.splice(this.cameraGizmos.indexOf(camera.reservedDataStore.cameraGizmo), 1);

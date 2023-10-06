@@ -6,11 +6,39 @@ import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { GeometryInputBlock } from "./geometryInputBlock";
 import { Vector2, Vector3, Vector4 } from "../../../Maths/math.vector";
 import type { Nullable } from "../../../types";
+import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
+import { NodeGeometryContextualSources } from "../Enums/nodeGeometryContextualSources";
+
+/**
+ * Locks supported by the random block
+ */
+export enum RandomBlockLocks {
+    /** None */
+    None,
+    /** LoopID */
+    LoopID,
+    /** InstanceID */
+    InstanceID,
+}
 
 /**
  * Block used to get a random number
  */
 export class RandomBlock extends NodeGeometryBlock {
+    private _currentLockId = -1;
+    /**
+     * Gets or sets a value indicating if that block will lock its value for a specific duration
+     */
+    @editableInPropertyPage("LockMode", PropertyTypeForEdition.List, "ADVANCED", {
+        notifiers: { rebuild: true },
+        options: [
+            { label: "None", value: RandomBlockLocks.None },
+            { label: "LoopID", value: RandomBlockLocks.LoopID },
+            { label: "InstanceID", value: RandomBlockLocks.InstanceID },
+        ],
+    })
+    public lockMode = RandomBlockLocks.None;
+
     /**
      * Create a new RandomBlock
      * @param name defines the block name
@@ -25,8 +53,10 @@ export class RandomBlock extends NodeGeometryBlock {
 
         this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Matrix);
         this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Geometry);
+        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Texture);
         this._inputs[1].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Matrix);
         this._inputs[1].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Geometry);
+        this._inputs[1].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Texture);
 
         this._outputs[0]._typeConnectionSource = this._inputs[0];
         this._linkConnectionTypes(0, 1);
@@ -77,6 +107,7 @@ export class RandomBlock extends NodeGeometryBlock {
 
     protected _buildBlock() {
         let func: Nullable<(state: NodeGeometryBuildState) => any> = null;
+        this._currentLockId = -1;
 
         switch (this.min.type) {
             case NodeGeometryBlockConnectionPointTypes.Int:
@@ -119,7 +150,51 @@ export class RandomBlock extends NodeGeometryBlock {
             }
         }
 
-        this.output._storedFunction = func;
+        if (this.lockMode === RandomBlockLocks.None || !func) {
+            this.output._storedFunction = func;
+        } else {
+            this.output._storedFunction = (state) => {
+                let lockId = 0;
+
+                switch (this.lockMode) {
+                    case RandomBlockLocks.InstanceID:
+                        lockId = state.getContextualValue(NodeGeometryContextualSources.InstanceID, true) || 0;
+                        break;
+                    case RandomBlockLocks.LoopID:
+                        lockId = state.getContextualValue(NodeGeometryContextualSources.LoopID, true) || 0;
+                        break;
+                }
+
+                if (this._currentLockId !== lockId) {
+                    this._currentLockId = lockId;
+                    this.output._storedValue = func!(state);
+                }
+                return this.output._storedValue;
+            };
+        }
+    }
+
+    protected _dumpPropertiesCode() {
+        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.lockMode = BABYLON.RandomBlockLocks.${RandomBlockLocks[this.lockMode]};\n`;
+        return codeString;
+    }
+
+    /**
+     * Serializes this block in a JSON representation
+     * @returns the serialized block object
+     */
+    public serialize(): any {
+        const serializationObject = super.serialize();
+
+        serializationObject.lockMode = this.lockMode;
+
+        return serializationObject;
+    }
+
+    public _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
+
+        this.lockMode = serializationObject.lockMode;
     }
 }
 

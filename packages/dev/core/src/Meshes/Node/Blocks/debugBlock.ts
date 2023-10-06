@@ -2,6 +2,7 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../nodeGeometryBlockConnectionPoint";
+import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 
 /**
  * Defines a block used to debug values going through it
@@ -19,11 +20,14 @@ export class DebugBlock extends NodeGeometryBlock {
     public constructor(name: string) {
         super(name);
 
+        this._isDebug = true;
+
         this.registerInput("input", NodeGeometryBlockConnectionPointTypes.AutoDetect);
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.BasedOnInput);
 
         this._outputs[0]._typeConnectionSource = this._inputs[0];
         this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Geometry);
+        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Texture);
     }
 
     /**
@@ -55,7 +59,7 @@ export class DebugBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock() {
+    protected _buildBlock(state: NodeGeometryBuildState) {
         if (!this.input.isConnected) {
             this.output._storedFunction = null;
             this.output._storedValue = null;
@@ -63,13 +67,24 @@ export class DebugBlock extends NodeGeometryBlock {
         }
 
         this.log = [];
-        this.output._storedFunction = (state) => {
+        const func = (state: NodeGeometryBuildState) => {
             const input = this.input.getConnectedValue(state);
 
-            this.log.push(input !== undefined && input !== null ? input.toString() : "null");
+            if (input === null || input === undefined) {
+                this.log.push("null");
+                return input;
+            }
+
+            this.log.push(input.toString());
 
             return input;
         };
+
+        if (this.output.isConnected) {
+            this.output._storedFunction = func;
+        } else {
+            this.output._storedValue = func(state);
+        }
     }
 }
 

@@ -2203,6 +2203,43 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
+     * Triggers the draw call for the mesh (or a submesh), for a specific render pass id
+     * @param renderPassId defines the render pass id to use to draw the mesh / submesh. If not provided, use the current renderPassId of the engine.
+     * @param enableAlphaMode defines if alpha mode can be changed (default: false)
+     * @param effectiveMeshReplacement defines an optional mesh used to provide info for the rendering (default: undefined)
+     * @param subMesh defines the subMesh to render. If not provided, draw all mesh submeshes (default: undefined)
+     * @param checkFrustumCulling defines if frustum culling must be checked (default: true). If you know the mesh is in the frustum (or if you don't care!), you can pass false to optimize.
+     * @returns the current mesh
+     */
+    public renderWithRenderPassId(renderPassId?: number, enableAlphaMode?: boolean, effectiveMeshReplacement?: AbstractMesh, subMesh?: SubMesh, checkFrustumCulling = true) {
+        const engine = this._scene.getEngine();
+        const currentRenderPassId = engine.currentRenderPassId;
+
+        if (renderPassId !== undefined) {
+            engine.currentRenderPassId = renderPassId;
+        }
+
+        if (subMesh) {
+            if (!checkFrustumCulling || (checkFrustumCulling && subMesh.isInFrustum(this._scene._frustumPlanes))) {
+                this.render(subMesh, !!enableAlphaMode, effectiveMeshReplacement);
+            }
+        } else {
+            for (let s = 0; s < this.subMeshes.length; s++) {
+                const subMesh = this.subMeshes[s];
+                if (!checkFrustumCulling || (checkFrustumCulling && subMesh.isInFrustum(this._scene._frustumPlanes))) {
+                    this.render(subMesh, !!enableAlphaMode, effectiveMeshReplacement);
+                }
+            }
+        }
+
+        if (renderPassId !== undefined) {
+            engine.currentRenderPassId = currentRenderPassId;
+        }
+
+        return this;
+    }
+
+    /**
      * Triggers the draw call for the mesh. Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager
      * @param subMesh defines the subMesh to render
      * @param enableAlphaMode defines if alpha mode can be changed
@@ -2218,7 +2255,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this._internalAbstractMeshDataInfo._isActive = false;
         }
 
-        if (this._checkOcclusionQuery() && !this._occlusionDataStorage.forceRenderingWhenOccluded) {
+        const numActiveCameras = scene.activeCameras?.length ?? 0;
+        const canCheckOcclusionQuery = (numActiveCameras > 1 && scene.activeCamera === scene.activeCameras![0]) || numActiveCameras <= 1;
+
+        if (canCheckOcclusionQuery && this._checkOcclusionQuery() && !this._occlusionDataStorage.forceRenderingWhenOccluded) {
             return this;
         }
 

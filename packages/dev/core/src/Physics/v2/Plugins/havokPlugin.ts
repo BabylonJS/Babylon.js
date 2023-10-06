@@ -8,7 +8,14 @@ import {
     PhysicsConstraintAxisLimitMode,
     PhysicsEventType,
 } from "../IPhysicsEnginePlugin";
-import type { PhysicsShapeParameters, IPhysicsEnginePluginV2, PhysicsMassProperties, IPhysicsCollisionEvent, IBasePhysicsCollisionEvent } from "../IPhysicsEnginePlugin";
+import type {
+    PhysicsShapeParameters,
+    IPhysicsEnginePluginV2,
+    PhysicsMassProperties,
+    IPhysicsCollisionEvent,
+    IBasePhysicsCollisionEvent,
+    ConstrainedBodyPair,
+} from "../IPhysicsEnginePlugin";
 import type { IRaycastQuery, PhysicsRaycastResult } from "../../physicsRaycastResult";
 import { Logger } from "../../../Misc/logger";
 import type { PhysicsBody } from "../physicsBody";
@@ -278,6 +285,8 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     private _bodies = new Map<bigint, { body: PhysicsBody; index: number }>();
     private _bodyBuffer: number;
     private _bodyCollisionObservable = new Map<bigint, Observable<IPhysicsCollisionEvent>>();
+    // Map from constraint id to the pair of bodies, where the first is the parent and the second is the child
+    private _constraintToBodyIdPair = new Map<bigint, [bigint, bigint]>();
     private _bodyCollisionEndedObservable = new Map<bigint, Observable<IBasePhysicsCollisionEvent>>();
     /**
      * Observable for collision started and collision continued events
@@ -418,11 +427,13 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             for (const instance of body._pluginDataInstances) {
                 this._bodyCollisionObservable.delete(instance.hpBodyId[0]);
                 this._hknp.HP_World_RemoveBody(this.world, instance.hpBodyId);
+                this._bodies.delete(instance.hpBodyId[0]);
             }
         }
         if (body._pluginData) {
             this._bodyCollisionObservable.delete(body._pluginData.hpBodyId[0]);
             this._hknp.HP_World_RemoveBody(this.world, body._pluginData.hpBodyId);
+            this._bodies.delete(body._pluginData.hpBodyId[0]);
         }
     }
 
@@ -1400,6 +1411,8 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         this._hknp.HP_Constraint_SetParentBody(jointId, bodyA);
         this._hknp.HP_Constraint_SetChildBody(jointId, bodyB);
 
+        this._constraintToBodyIdPair.set(jointId[0], [bodyA[0], bodyB[0]]);
+
         // anchors
         const pivotA = options.pivotA ? this._bVecToV3(options.pivotA) : this._bVecToV3(Vector3.Zero());
         const axisA = options.axisA ?? new Vector3(1, 0, 0);
@@ -1419,6 +1432,19 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             axisB.getNormalToRef(perpAxisB);
         }
         this._hknp.HP_Constraint_SetAnchorInChild(jointId, pivotB, this._bVecToV3(axisB), this._bVecToV3(perpAxisB));
+
+        // Save the options that were used for initializing the constraint for debugging purposes
+        // Check first to avoid copying the same options multiple times
+        if (!constraint._initOptions) {
+            constraint._initOptions = {
+                axisA: axisA.clone(),
+                axisB: axisB.clone(),
+                perpAxisA: perpAxisA.clone(),
+                perpAxisB: perpAxisB.clone(),
+                pivotA: new Vector3(pivotA[0], pivotA[1], pivotA[2]),
+                pivotB: new Vector3(pivotB[0], pivotB[1], pivotB[2]),
+            };
+        }
 
         if (type == PhysicsConstraintType.LOCK) {
             this._hknp.HP_Constraint_SetAxisMode(jointId, this._hknp.ConstraintAxis.LINEAR_X, this._hknp.ConstraintAxisLimitMode.LOCKED);
@@ -1485,6 +1511,26 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         const collisionEnabled = !!options.collision;
         this._hknp.HP_Constraint_SetCollisionsEnabled(jointId, collisionEnabled);
         this._hknp.HP_Constraint_SetEnabled(jointId, true);
+    }
+
+    /**
+     * Get a list of all the pairs of bodies that are connected by this constraint.
+     * @param constraint the constraint to search from
+     * @returns a list of parent, child pairs
+     */
+    getBodiesUsingConstraint(constraint: PhysicsConstraint): ConstrainedBodyPair[] {
+        const pairs: ConstrainedBodyPair[] = [];
+        for (const jointId of constraint._pluginData) {
+            const bodyIds = this._constraintToBodyIdPair.get(jointId[0]);
+            if (bodyIds) {
+                const parentBodyInfo = this._bodies.get(bodyIds[0]);
+                const childBodyInfo = this._bodies.get(bodyIds[1]);
+                if (parentBodyInfo && childBodyInfo) {
+                    pairs.push({ parentBody: parentBodyInfo.body, parentBodyIndex: parentBodyInfo.index, childBody: childBodyInfo.body, childBodyIndex: childBodyInfo.index });
+                }
+            }
+        }
+        return pairs;
     }
 
     /**
@@ -1882,17 +1928,20 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         while (eventAddress) {
             TriggerEvent.readToRef(this._hknp.HEAPU8.buffer, eventAddress, event);
 
-            const bodyInfoA = this._bodies.get(event.bodyIdA)!;
-            const bodyInfoB = this._bodies.get(event.bodyIdB)!;
+            const bodyInfoA = this._bodies.get(event.bodyIdA);
+            const bodyInfoB = this._bodies.get(event.bodyIdB);
 
-            const triggerCollisionInfo: IBasePhysicsCollisionEvent = {
-                collider: bodyInfoA.body,
-                colliderIndex: bodyInfoA.index,
-                collidedAgainst: bodyInfoB.body,
-                collidedAgainstIndex: bodyInfoB.index,
-                type: this._nativeTriggerCollisionValueToCollisionType(event.type),
-            };
-            this.onTriggerCollisionObservable.notifyObservers(triggerCollisionInfo);
+            // Bodies may have been disposed between events. Check both still exist.
+            if (bodyInfoA && bodyInfoB) {
+                const triggerCollisionInfo: IBasePhysicsCollisionEvent = {
+                    collider: bodyInfoA.body,
+                    colliderIndex: bodyInfoA.index,
+                    collidedAgainst: bodyInfoB.body,
+                    collidedAgainstIndex: bodyInfoB.index,
+                    type: this._nativeTriggerCollisionValueToCollisionType(event.type),
+                };
+                this.onTriggerCollisionObservable.notifyObservers(triggerCollisionInfo);
+            }
 
             eventAddress = this._hknp.HP_World_GetNextTriggerEvent(this.world, eventAddress);
         }
@@ -1907,58 +1956,62 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         const worldAddr = Number(this.world);
         while (eventAddress) {
             CollisionEvent.readToRef(this._hknp.HEAPU8.buffer, eventAddress, event);
-            const bodyInfoA = this._bodies.get(event.contactOnA.bodyId)!;
-            const bodyInfoB = this._bodies.get(event.contactOnB.bodyId)!;
-            const collisionInfo: any = {
-                collider: bodyInfoA.body,
-                colliderIndex: bodyInfoA.index,
-                collidedAgainst: bodyInfoB.body,
-                collidedAgainstIndex: bodyInfoB.index,
-                type: this._nativeCollisionValueToCollisionType(event.type),
-            };
-            if (collisionInfo.type === PhysicsEventType.COLLISION_FINISHED) {
-                this.onCollisionEndedObservable.notifyObservers(collisionInfo);
-            } else {
-                event.contactOnB.position.subtractToRef(event.contactOnA.position, this._tmpVec3[0]);
-                const distance = Vector3.Dot(this._tmpVec3[0], event.contactOnA.normal);
-                collisionInfo.point = event.contactOnA.position;
-                collisionInfo.distance = distance;
-                collisionInfo.impulse = event.impulseApplied;
-                collisionInfo.normal = event.contactOnA.normal;
-                this.onCollisionObservable.notifyObservers(collisionInfo);
-            }
+            const bodyInfoA = this._bodies.get(event.contactOnA.bodyId);
+            const bodyInfoB = this._bodies.get(event.contactOnB.bodyId);
 
-            if (this._bodyCollisionObservable.size && collisionInfo.type !== PhysicsEventType.COLLISION_FINISHED) {
-                const observableA = this._bodyCollisionObservable.get(event.contactOnA.bodyId);
-                const observableB = this._bodyCollisionObservable.get(event.contactOnB.bodyId);
-
-                if (observableA) {
-                    observableA.notifyObservers(collisionInfo);
-                } else if (observableB) {
-                    //<todo This seems like it would give unexpected results when both bodies have observers?
-                    // Flip collision info:
-                    collisionInfo.collider = bodyInfoB.body;
-                    collisionInfo.colliderIndex = bodyInfoB.index;
-                    collisionInfo.collidedAgainst = bodyInfoA.body;
-                    collisionInfo.collidedAgainstIndex = bodyInfoA.index;
-                    collisionInfo.normal = event.contactOnB.normal;
-                    observableB.notifyObservers(collisionInfo);
+            // Bodies may have been disposed between events. Check both still exist.
+            if (bodyInfoA && bodyInfoB) {
+                const collisionInfo: any = {
+                    collider: bodyInfoA.body,
+                    colliderIndex: bodyInfoA.index,
+                    collidedAgainst: bodyInfoB.body,
+                    collidedAgainstIndex: bodyInfoB.index,
+                    type: this._nativeCollisionValueToCollisionType(event.type),
+                };
+                if (collisionInfo.type === PhysicsEventType.COLLISION_FINISHED) {
+                    this.onCollisionEndedObservable.notifyObservers(collisionInfo);
+                } else {
+                    event.contactOnB.position.subtractToRef(event.contactOnA.position, this._tmpVec3[0]);
+                    const distance = Vector3.Dot(this._tmpVec3[0], event.contactOnA.normal);
+                    collisionInfo.point = event.contactOnA.position;
+                    collisionInfo.distance = distance;
+                    collisionInfo.impulse = event.impulseApplied;
+                    collisionInfo.normal = event.contactOnA.normal;
+                    this.onCollisionObservable.notifyObservers(collisionInfo);
                 }
-            } else if (this._bodyCollisionEndedObservable.size) {
-                const observableA = this._bodyCollisionEndedObservable.get(event.contactOnA.bodyId);
-                const observableB = this._bodyCollisionEndedObservable.get(event.contactOnB.bodyId);
 
-                if (observableA) {
-                    observableA.notifyObservers(collisionInfo);
-                } else if (observableB) {
-                    //<todo This seems like it would give unexpected results when both bodies have observers?
-                    // Flip collision info:
-                    collisionInfo.collider = bodyInfoB.body;
-                    collisionInfo.colliderIndex = bodyInfoB.index;
-                    collisionInfo.collidedAgainst = bodyInfoA.body;
-                    collisionInfo.collidedAgainstIndex = bodyInfoA.index;
-                    collisionInfo.normal = event.contactOnB.normal;
-                    observableB.notifyObservers(collisionInfo);
+                if (this._bodyCollisionObservable.size && collisionInfo.type !== PhysicsEventType.COLLISION_FINISHED) {
+                    const observableA = this._bodyCollisionObservable.get(event.contactOnA.bodyId);
+                    const observableB = this._bodyCollisionObservable.get(event.contactOnB.bodyId);
+
+                    if (observableA) {
+                        observableA.notifyObservers(collisionInfo);
+                    } else if (observableB) {
+                        //<todo This seems like it would give unexpected results when both bodies have observers?
+                        // Flip collision info:
+                        collisionInfo.collider = bodyInfoB.body;
+                        collisionInfo.colliderIndex = bodyInfoB.index;
+                        collisionInfo.collidedAgainst = bodyInfoA.body;
+                        collisionInfo.collidedAgainstIndex = bodyInfoA.index;
+                        collisionInfo.normal = event.contactOnB.normal;
+                        observableB.notifyObservers(collisionInfo);
+                    }
+                } else if (this._bodyCollisionEndedObservable.size) {
+                    const observableA = this._bodyCollisionEndedObservable.get(event.contactOnA.bodyId);
+                    const observableB = this._bodyCollisionEndedObservable.get(event.contactOnB.bodyId);
+
+                    if (observableA) {
+                        observableA.notifyObservers(collisionInfo);
+                    } else if (observableB) {
+                        //<todo This seems like it would give unexpected results when both bodies have observers?
+                        // Flip collision info:
+                        collisionInfo.collider = bodyInfoB.body;
+                        collisionInfo.colliderIndex = bodyInfoB.index;
+                        collisionInfo.collidedAgainst = bodyInfoA.body;
+                        collisionInfo.collidedAgainstIndex = bodyInfoA.index;
+                        collisionInfo.normal = event.contactOnB.normal;
+                        observableB.notifyObservers(collisionInfo);
+                    }
                 }
             }
 

@@ -236,9 +236,13 @@ export class ReflectionProbe {
         return this._renderTargetTexture;
     }
 
-    /** Gets the list of meshes to render */
+    /** Gets or sets the list of meshes to render */
     public get renderList(): Nullable<AbstractMesh[]> {
         return this._renderTargetTexture.renderList;
+    }
+
+    public set renderList(value: Nullable<AbstractMesh[]>) {
+        this._renderTargetTexture.renderList = value;
     }
 
     /**

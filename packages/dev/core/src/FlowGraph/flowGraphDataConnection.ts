@@ -1,6 +1,7 @@
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphConnection, FlowGraphConnectionType } from "./flowGraphConnection";
-
+import type { FlowGraphContext } from "./flowGraphContext";
+import type { RichType } from "./flowGraphRichTypes";
 /**
  * @experimental
  * Represents a connection point for data.
@@ -9,24 +10,77 @@ import { FlowGraphConnection, FlowGraphConnectionType } from "./flowGraphConnect
  * if the point belongs to a "function" node, the node will run its function to update the value.
  */
 export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlock, FlowGraphDataConnection<T>> {
-    public constructor(name: string, type: FlowGraphConnectionType, ownerBlock: FlowGraphBlock, private _value: T) {
-        super(name, type, ownerBlock);
+    /**
+     * Verifies if the connection has had a value set or not, either through a connection or by
+     * setting it directly.
+     */
+    private _isSet: boolean = false;
+
+    /**
+     * Create a new data connection point.
+     * @param name
+     * @param connectionType
+     * @param ownerBlock
+     * @param richType
+     */
+    public constructor(name: string, connectionType: FlowGraphConnectionType, ownerBlock: FlowGraphBlock, public richType: RichType<T>) {
+        super(name, connectionType, ownerBlock);
     }
 
-    public set value(value: T) {
-        this._value = value;
+    /**
+     * An output data block can connect to multiple input data blocks,
+     * but an input data block can only connect to one output data block.
+     */
+    public _isSingularConnection(): boolean {
+        return this.connectionType === FlowGraphConnectionType.Input;
     }
 
-    public get value(): T {
-        if (this.type === FlowGraphConnectionType.Output) {
-            this._ownerBlock._updateOutputs();
-            return this._value;
-        }
+    /**
+     * Set the value of the connection in a specific context.
+     * @param value the value to set
+     * @param context the context to which the value is set
+     */
+    public setValue(value: T, context: FlowGraphContext): void {
+        this._isSet = true;
+        context._setConnectionValue(this, value);
+    }
 
-        if (!this._connectedPoint) {
-            return this._value;
+    public connectTo(point: FlowGraphDataConnection<T>): void {
+        super.connectTo(point);
+        this._isSet = true;
+    }
+
+    private _getValueOrDefault(context: FlowGraphContext): T {
+        if (context._hasConnectionValue(this)) {
+            return context._getConnectionValue(this);
         } else {
-            return this._connectedPoint.value;
+            return this.richType.defaultValueBuilder();
         }
+    }
+
+    /**
+     * Gets the value of the connection in a specific context.
+     * @param context the context from which the value is retrieved
+     * @returns the value of the connection
+     */
+    public getValue(context: FlowGraphContext): T {
+        if (this.connectionType === FlowGraphConnectionType.Output) {
+            this._ownerBlock._updateOutputs(context);
+            return this._getValueOrDefault(context);
+        }
+
+        if (!this.isConnected()) {
+            return this._getValueOrDefault(context);
+        } else {
+            return this._connectedPoint[0].getValue(context);
+        }
+    }
+
+    /**
+     * Verifies if the connection has had a value set or not, either through a connection or by
+     * setting it directly.
+     */
+    public get isSet(): boolean {
+        return this._isSet;
     }
 }

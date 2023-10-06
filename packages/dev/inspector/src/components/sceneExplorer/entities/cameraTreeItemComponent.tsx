@@ -16,6 +16,7 @@ interface ICameraTreeItemComponentProps {
     extensibilityGroups?: IExplorerExtensibilityGroup[];
     onClick: () => void;
     globalState: GlobalState;
+    gizmoCamera?: Camera;
 }
 
 export class CameraTreeItemComponent extends React.Component<ICameraTreeItemComponentProps, { isActive: boolean; isGizmoEnabled: boolean }> {
@@ -78,7 +79,7 @@ export class CameraTreeItemComponent extends React.Component<ICameraTreeItemComp
             this.props.globalState.enableCameraGizmo(camera, false);
             this.setState({ isGizmoEnabled: false });
         } else {
-            this.props.globalState.enableCameraGizmo(camera, true);
+            this.props.globalState.enableCameraGizmo(camera, true, this.props.gizmoCamera);
             this.setState({ isGizmoEnabled: true });
         }
     }

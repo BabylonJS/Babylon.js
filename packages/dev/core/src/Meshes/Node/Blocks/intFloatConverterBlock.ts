@@ -81,10 +81,10 @@ export class IntFloatConverterBlock extends NodeGeometryBlock {
 
         this.intOut._storedFunction = (state) => {
             if (this.floatIn.isConnected) {
-                return this.floatIn.getConnectedValue(state) | 0;
+                return Math.floor(this.floatIn.getConnectedValue(state));
             }
             if (this.intIn.isConnected) {
-                return this.intIn.getConnectedValue(state) | 0;
+                return Math.floor(this.intIn.getConnectedValue(state));
             }
 
             return 0;

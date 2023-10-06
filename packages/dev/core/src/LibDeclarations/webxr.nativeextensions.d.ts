@@ -65,7 +65,7 @@ interface XRSession {
 }
 
 interface XRFrame {
-    featurePointCloud?: Array<number>;
+    featurePointCloud?: Array<number> | undefined;
 }
 
 type XRMeshSet = Set<XRMesh>;

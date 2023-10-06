@@ -7,11 +7,12 @@ import type { INodeGeometryExecutionContext } from "../../Interfaces/nodeGeometr
 import type { VertexData } from "../../../mesh.vertexData";
 import { Vector3 } from "../../../../Maths/math.vector";
 import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
+import type { INodeGeometryInstancingContext } from "../../Interfaces/nodeGeometryInstancingContext";
 
 /**
  * Block used to instantiate a geometry inside a loop
  */
-export class InstantiateBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext {
+export class InstantiateBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext, INodeGeometryInstancingContext {
     private _vertexData: VertexData;
     private _currentIndex: number;
 
@@ -31,13 +32,21 @@ export class InstantiateBlock extends NodeGeometryBlock implements INodeGeometry
 
         this.registerInput("instance", NodeGeometryBlockConnectionPointTypes.Geometry, true);
         this.registerInput("count", NodeGeometryBlockConnectionPointTypes.Int, true, 1);
+        this.registerInput("matrix", NodeGeometryBlockConnectionPointTypes.Matrix, true);
         this.registerInput("position", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.Zero());
         this.registerInput("rotation", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.Zero());
         this.registerInput("scaling", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.One());
-        this.registerInput("matrix", NodeGeometryBlockConnectionPointTypes.Matrix, true);
 
         this.scaling.acceptedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Float);
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Geometry);
+    }
+
+    /**
+     * Gets the current instance index in the current flow
+     * @returns the current index
+     */
+    public getInstanceIndex(): number {
+        return this._currentIndex;
     }
 
     /**
@@ -87,30 +96,30 @@ export class InstantiateBlock extends NodeGeometryBlock implements INodeGeometry
     }
 
     /**
+     * Gets the matrix input component
+     */
+    public get matrix(): NodeGeometryConnectionPoint {
+        return this._inputs[2];
+    }
+
+    /**
      * Gets the position input component
      */
     public get position(): NodeGeometryConnectionPoint {
-        return this._inputs[2];
+        return this._inputs[3];
     }
 
     /**
      * Gets the rotation input component
      */
     public get rotation(): NodeGeometryConnectionPoint {
-        return this._inputs[3];
+        return this._inputs[4];
     }
 
     /**
      * Gets the scaling input component
      */
     public get scaling(): NodeGeometryConnectionPoint {
-        return this._inputs[4];
-    }
-
-    /**
-     * Gets the matrix input component
-     */
-    public get matrix(): NodeGeometryConnectionPoint {
         return this._inputs[5];
     }
 
@@ -123,7 +132,8 @@ export class InstantiateBlock extends NodeGeometryBlock implements INodeGeometry
 
     protected _buildBlock(state: NodeGeometryBuildState) {
         const func = (state: NodeGeometryBuildState) => {
-            state.executionContext = this;
+            state.pushExecutionContext(this);
+            state.pushInstancingContext(this);
 
             // Processing
             const iterationCount = this.count.getConnectedValue(state);
@@ -161,6 +171,9 @@ export class InstantiateBlock extends NodeGeometryBlock implements INodeGeometry
                     this._vertexData = main.merge(additionalVertexData, true, false, true, true);
                 }
             }
+
+            state.restoreExecutionContext();
+            state.restoreInstancingContext();
             return this._vertexData;
         };
 
@@ -169,6 +182,7 @@ export class InstantiateBlock extends NodeGeometryBlock implements INodeGeometry
         if (this.evaluateContext) {
             this.output._storedFunction = func;
         } else {
+            this.output._storedFunction = null;
             this.output._storedValue = func(state);
         }
     }
@@ -193,7 +207,9 @@ export class InstantiateBlock extends NodeGeometryBlock implements INodeGeometry
     public _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 
-        this.evaluateContext = serializationObject.evaluateContext;
+        if (serializationObject.evaluateContext !== undefined) {
+            this.evaluateContext = serializationObject.evaluateContext;
+        }
     }
 }
 

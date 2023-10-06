@@ -118,7 +118,9 @@ export class CapsuleBlock extends NodeGeometryBlock {
         if (this.evaluateContext) {
             this.geometry._storedFunction = func;
         } else {
-            this.geometry._storedValue = func(state);
+            this.geometry._storedFunction = () => {
+                return func(state).clone();
+            };
         }
     }
 

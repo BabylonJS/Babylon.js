@@ -647,7 +647,7 @@ export class WebGPUEngine extends Engine {
                             this._contextWasLost = true;
                             Logger.Warn("WebGPU context lost. " + info);
                             this.onContextLostObservable.notifyObservers(this);
-                            this._restoreEngineAfterContextLost(this.initAsync.bind(this));
+                            this._restoreEngineAfterContextLost(() => this.initAsync());
                         });
                     }
                 },
@@ -941,6 +941,7 @@ export class WebGPUEngine extends Engine {
         };
 
         this._mainRenderPassWrapper.renderPassDescriptor = {
+            label: "MainRenderPass",
             colorAttachments: mainColorAttachments,
             depthStencilAttachment: mainDepthAttachment,
         };
@@ -2051,7 +2052,8 @@ export class WebGPUEngine extends Engine {
                 texture.baseHeight = imageBitmap.height;
                 texture.width = imageBitmap.width;
                 texture.height = imageBitmap.height;
-                texture.format = format ?? -1;
+                texture.format = texture.format !== -1 ? texture.format : format ?? Constants.TEXTUREFORMAT_RGBA;
+                texture.type = texture.type !== -1 ? texture.type : Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
                 processFunction(texture.width, texture.height, imageBitmap, extension, texture, () => {});
 
@@ -2775,6 +2777,7 @@ export class WebGPUEngine extends Engine {
         this._debugPushGroup?.("render target pass", 1);
 
         this._rttRenderPassWrapper.renderPassDescriptor = {
+            label: (renderTargetWrapper.label ?? "RTT") + "RenderPass",
             colorAttachments,
             depthStencilAttachment:
                 depthStencilTexture && gpuDepthStencilTexture

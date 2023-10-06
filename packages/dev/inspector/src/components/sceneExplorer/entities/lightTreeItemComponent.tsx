@@ -1,5 +1,6 @@
 import type { IExplorerExtensibilityGroup } from "core/Debug/debugLayer";
 import type { Light } from "core/Lights/light";
+import type { Camera } from "core/Cameras/camera";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLightbulb, faEye } from "@fortawesome/free-solid-svg-icons";
@@ -14,6 +15,7 @@ interface ILightTreeItemComponentProps {
     extensibilityGroups?: IExplorerExtensibilityGroup[];
     onClick: () => void;
     globalState: GlobalState;
+    gizmoCamera?: Camera;
 }
 
 export class LightTreeItemComponent extends React.Component<ILightTreeItemComponentProps, { isEnabled: boolean; isGizmoEnabled: boolean }> {
@@ -43,7 +45,7 @@ export class LightTreeItemComponent extends React.Component<ILightTreeItemCompon
             this.props.globalState.enableLightGizmo(light, false);
             this.setState({ isGizmoEnabled: false });
         } else {
-            this.props.globalState.enableLightGizmo(light, true);
+            this.props.globalState.enableLightGizmo(light, true, this.props.gizmoCamera);
             this.setState({ isGizmoEnabled: true });
         }
     }

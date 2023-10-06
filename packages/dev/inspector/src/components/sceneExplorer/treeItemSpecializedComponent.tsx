@@ -48,6 +48,7 @@ interface ITreeItemSpecializedComponentProps {
     entity?: any;
     extensibilityGroups?: IExplorerExtensibilityGroup[];
     globalState: GlobalState;
+    gizmoCamera?: Camera;
     onClick?: () => void;
 }
 
@@ -103,6 +104,7 @@ export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpeci
                 return (
                     <CameraTreeItemComponent
                         globalState={this.props.globalState}
+                        gizmoCamera={this.props.gizmoCamera}
                         extensibilityGroups={this.props.extensibilityGroups}
                         camera={entity as Camera}
                         onClick={() => this.onClick()}
@@ -114,6 +116,7 @@ export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpeci
                 return (
                     <LightTreeItemComponent
                         globalState={this.props.globalState}
+                        gizmoCamera={this.props.gizmoCamera}
                         extensibilityGroups={this.props.extensibilityGroups}
                         light={entity as Light}
                         onClick={() => this.onClick()}

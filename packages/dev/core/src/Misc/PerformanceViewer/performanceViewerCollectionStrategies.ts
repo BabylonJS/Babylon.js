@@ -84,7 +84,7 @@ export class PerfCollectionStrategy {
 
             wrapper.onPressureChanged.add((update) => {
                 for (const record of update) {
-                    if ((factor && record.factors.includes(factor)) || (!factor && record.factors.length === 0)) {
+                    if ((factor && record.factors.includes(factor)) || (!factor && (record.factors?.length ?? 0) === 0)) {
                         // Let s consider each step being 25% of the total pressure.
                         switch (record.state) {
                             case "nominal":

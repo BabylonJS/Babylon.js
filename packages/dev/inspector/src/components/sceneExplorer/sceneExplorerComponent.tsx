@@ -29,6 +29,7 @@ import { SpriteManager } from "core/Sprites/spriteManager";
 import type { TargetCamera } from "core/Cameras/targetCamera";
 import type { Camera } from "core/Cameras/camera";
 import type { PostProcessRenderPipeline } from "core/PostProcesses";
+import { NodeGeometry } from "core/Meshes/Node/nodeGeometry";
 
 // side effects
 import "core/Sprites/spriteSceneComponent";
@@ -343,6 +344,17 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 this.props.globalState.onSelectionChangedObservable.notifyObservers(newFreeCamera);
             },
         });
+        defaultMenuItems.push({
+            label: "Add new mesh from Node Geometry",
+            action: () => {
+                const ng = new NodeGeometry("Node Geometry");
+                ng.setToDefault();
+                ng.build();
+                const newMesh = ng.createMesh("Node geometry mesh", scene);
+
+                this.props.globalState.onSelectionChangedObservable.notifyObservers(newMesh);
+            },
+        });
 
         const customMenuItems = this.props.contextMenu?.node || [];
         const useDefaults = !this.props.contextMenuOverride?.includes("node");
@@ -509,6 +521,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 />
                 <TreeItemComponent
                     globalState={this.props.globalState}
+                    gizmoCamera={this.props.gizmoCamera}
                     contextMenuItems={nodeContextMenus}
                     extensibilityGroups={this.props.extensibilityGroups}
                     selectedEntity={this.state.selectedEntity}

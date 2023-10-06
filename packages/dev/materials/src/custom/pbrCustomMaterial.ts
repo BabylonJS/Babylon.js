@@ -9,7 +9,7 @@ import { RegisterClass } from "core/Misc/typeStore";
 import { ShaderCodeInliner } from "core/Engines/Processors/shaderCodeInliner";
 import type { ICustomShaderNameResolveOptions } from "core/Materials/material";
 
-export class ShaderAlebdoParts {
+export class ShaderAlbedoParts {
     constructor() {}
 
     public Fragment_Begin: string;
@@ -51,9 +51,14 @@ export class ShaderAlebdoParts {
     public Vertex_MainEnd: string;
 }
 
+/**
+ * @deprecated use ShaderAlbedoParts instead.
+ */
+export const ShaderAlebdoParts = ShaderAlbedoParts;
+
 export class PBRCustomMaterial extends PBRMaterial {
     public static ShaderIndexer = 1;
-    public CustomParts: ShaderAlebdoParts;
+    public CustomParts: ShaderAlbedoParts;
     _isCreatedShader: boolean;
     _createdShaderName: string;
     _customUniform: string[];
@@ -214,7 +219,7 @@ export class PBRCustomMaterial extends PBRMaterial {
 
     constructor(name: string, scene?: Scene) {
         super(name, scene);
-        this.CustomParts = new ShaderAlebdoParts();
+        this.CustomParts = new ShaderAlbedoParts();
         this.customShaderNameResolve = this.Builder;
 
         this.FragmentShader = Effect.ShadersStore["pbrPixelShader"];

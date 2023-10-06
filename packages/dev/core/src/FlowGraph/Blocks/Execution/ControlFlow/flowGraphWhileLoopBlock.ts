@@ -1,0 +1,50 @@
+import type { FlowGraphContext } from "../../../flowGraphContext";
+import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
+import { RichTypeBoolean } from "../../../flowGraphRichTypes";
+import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
+import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneExecutionBlock";
+
+/**
+ * @experimental
+ * Configuration for the while loop block.
+ */
+export interface IFlowGraphWhileLoopBlockConfiguration {
+    /**
+     * If true, the loop body will be executed at least once.
+     */
+    isDo?: boolean;
+}
+
+/**
+ * @experimental
+ * A block that executes a branch while a condition is true.
+ */
+export class FlowGraphWhileLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
+    /**
+     * Input connection: The condition to evaluate.
+     */
+    public readonly condition: FlowGraphDataConnection<boolean>;
+    /**
+     * Output connection: The loop body.
+     */
+    public readonly loopBody: FlowGraphSignalConnection;
+
+    constructor(private _config?: IFlowGraphWhileLoopBlockConfiguration) {
+        super();
+
+        this.condition = this._registerDataInput("condition", RichTypeBoolean);
+        this.loopBody = this._registerSignalOutput("loopBody");
+    }
+
+    public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
+        let conditionValue = this.condition.getValue(context);
+        if (this._config?.isDo && !conditionValue) {
+            this.loopBody._activateSignal(context);
+        }
+        while (conditionValue) {
+            this.loopBody._activateSignal(context);
+            conditionValue = this.condition.getValue(context);
+        }
+        this.onDone._activateSignal(context);
+    }
+}
