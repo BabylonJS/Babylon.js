@@ -8,7 +8,6 @@ import type { Nullable } from "../types";
 import type { Matrix } from "../Maths/math.vector";
 import { EngineStore } from "../Engines/engineStore";
 import { SubMesh } from "../Meshes/subMesh";
-import type { Geometry } from "../Meshes/geometry";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { UniformBuffer } from "./uniformBuffer";
 import type { Effect } from "./effect";
