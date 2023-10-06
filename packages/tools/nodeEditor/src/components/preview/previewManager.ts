@@ -200,7 +200,6 @@ export class PreviewManager {
             };
             canvas.addEventListener("drop", onDrop, false);
         }
-
         this._refreshPreviewMesh();
 
         this._engine.runRenderLoop(() => {
