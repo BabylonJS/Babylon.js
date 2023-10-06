@@ -943,8 +943,14 @@ export class ArcRotateCamera extends TargetCamera {
             this._viewMatrix.invertToRef(this._cameraTransformMatrix);
             localDirection.multiplyInPlace(this.panningAxis);
             Vector3.TransformNormalToRef(localDirection, this._cameraTransformMatrix, this._transformedDirection);
-            // Eliminate y if mapPanning is enabled
-            if (this.mapPanning || !this.panningAxis.y) {
+
+            // If mapPanning is enabled, we need to take the upVector into account and
+            // make sure we're not panning in the y direction
+            if (this.mapPanning) {
+                const up = this.upVector;
+                const right = Vector3.CrossToRef(this._transformedDirection, up, this._transformedDirection);
+                Vector3.CrossToRef(up, right, this._transformedDirection);
+            } else if (!this.panningAxis.y) {
                 this._transformedDirection.y = 0;
             }
 

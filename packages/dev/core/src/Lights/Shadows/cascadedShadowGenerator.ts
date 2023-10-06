@@ -134,7 +134,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         }
 
         if (!this._freezeShadowCastersBoundingInfoObservable && !freeze) {
-            this._freezeShadowCastersBoundingInfoObservable = this._scene.onBeforeRenderObservable.add(this._computeShadowCastersBoundingInfo.bind(this));
+            this._freezeShadowCastersBoundingInfoObservable = this._scene.onBeforeRenderObservable.add(() => this._computeShadowCastersBoundingInfo());
         }
 
         this._freezeShadowCastersBoundingInfo = freeze;

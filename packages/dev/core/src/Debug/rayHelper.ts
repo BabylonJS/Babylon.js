@@ -66,7 +66,7 @@ export class RayHelper {
         if (!this._renderFunction && this.ray) {
             const ray = this.ray;
 
-            this._renderFunction = this._render.bind(this);
+            this._renderFunction = () => this._render();
             this._scene = scene;
             this._renderPoints = [ray.origin, ray.origin.add(ray.direction.scale(ray.length))];
             this._renderLine = CreateLines("ray", { points: this._renderPoints, updatable: true }, scene);

@@ -133,9 +133,9 @@ export class VideoRecorder {
         }
 
         this._mediaRecorder = new MediaRecorder(stream, { mimeType: this._options.mimeType });
-        this._mediaRecorder.ondataavailable = this._handleDataAvailable.bind(this);
-        this._mediaRecorder.onerror = this._handleError.bind(this);
-        this._mediaRecorder.onstop = this._handleStop.bind(this);
+        this._mediaRecorder.ondataavailable = (evt: Event) => this._handleDataAvailable(evt);
+        this._mediaRecorder.onerror = (evt: ErrorEvent) => this._handleError(evt);
+        this._mediaRecorder.onstop = () => this._handleStop();
     }
 
     /**
