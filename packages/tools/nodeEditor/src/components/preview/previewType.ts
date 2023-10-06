@@ -18,5 +18,5 @@ export enum PreviewType {
     Custom,
 
     // Env
-    Room
+    Room,
 }
