@@ -381,6 +381,10 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.props.globalState.mode = value as NodeMaterialModes;
 
         this.props.globalState.onResetRequiredObservable.notifyObservers(true);
+        // Env
+        (this.props.globalState.envFile as any) = undefined;
+
+        DataStorage.WriteNumber("EnvType", this.props.globalState.envType);
 
         return true;
     }
