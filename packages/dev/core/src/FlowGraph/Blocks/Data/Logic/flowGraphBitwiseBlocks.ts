@@ -3,107 +3,122 @@ import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock"
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
+
+const BLOCK_NAME_PREFIX = "FlowGraphBitwise";
+const BLOCK_NAME_AND = "AndBlock";
+const BLOCK_NAME_OR = "OrBlock";
+const BLOCK_NAME_XOR = "XorBlock";
+const BLOCK_NAME_NOT = "NotBlock";
+const BLOCK_NAME_LEFT_SHIFT = "LeftShiftBlock";
+const BLOCK_NAME_RIGHT_SHIFT = "RightShiftBlock";
+const BLOCK_NAME_COUNT_LEADING_ZEROS = "CountLeadingZerosBlock";
+const BLOCK_NAME_COUNT_TRAILING_ZEROS = "CountTrailingZerosBlock";
+
 /**
  * @experimental
  * Performs a bitwise AND operation on two numbers.
  */
 export class FlowGraphBitwiseAndBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphBitwiseAndBlock" }) {
-        super(config, RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left & right, "FlowGraphBitwiseAndBlock");
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left & right, `${BLOCK_NAME_PREFIX}${BLOCK_NAME_AND}`, config);
     }
 
     public getClassName(): string {
-        return "FlowGraphBitwiseAndBlock";
+        return `${BLOCK_NAME_PREFIX}${BLOCK_NAME_AND}`;
     }
 }
-RegisterClass("FlowGraphBitwiseAndBlock", FlowGraphBitwiseAndBlock);
+RegisterClass(`${BLOCK_NAME_PREFIX}${BLOCK_NAME_AND}`, FlowGraphBitwiseAndBlock);
 
 /**
  * @experimental
  * Performs a bitwise OR operation on two numbers.
  */
 export class FlowGraphBitwiseOrBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphBitwiseOrBlock" }) {
-        super(config, RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left | right, "FlowGraphBitwiseOrBlock");
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left | right, `${BLOCK_NAME_PREFIX}${BLOCK_NAME_OR}`, config);
     }
 
     public getClassName(): string {
-        return "FlowGraphBitwiseOrBlock";
+        return `${BLOCK_NAME_PREFIX}${BLOCK_NAME_OR}`;
     }
 }
-RegisterClass("FlowGraphBitwiseOrBlock", FlowGraphBitwiseOrBlock);
+RegisterClass(`${BLOCK_NAME_PREFIX}${BLOCK_NAME_OR}`, FlowGraphBitwiseOrBlock);
 
 /**
  * @experimental
  * Performs a bitwise XOR operation on two numbers.
  */
 export class FlowGraphBitwiseXorBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphBitwiseXorBlock" }) {
-        super(config, RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left ^ right, "FlowGraphBitwiseXorBlock");
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left ^ right, `${BLOCK_NAME_PREFIX}${BLOCK_NAME_XOR}`, config);
     }
 
     public getClassName(): string {
-        return "FlowGraphBitwiseXorBlock";
+        return `${BLOCK_NAME_PREFIX}${BLOCK_NAME_XOR}`;
     }
 }
-RegisterClass("FlowGraphBitwiseXorBlock", FlowGraphBitwiseXorBlock);
+RegisterClass(`${BLOCK_NAME_PREFIX}${BLOCK_NAME_XOR}`, FlowGraphBitwiseXorBlock);
 
 /**
  * @experimental
  * Performs a bitwise NOT operation on a number.
  */
 export class FlowGraphBitwiseNotBlock extends FlowGraphUnaryOperationBlock<number, number> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphBitwiseNotBlock" }) {
-        super(config, RichTypeNumber, RichTypeNumber, (value) => ~value, "FlowGraphBitwiseNotBlock");
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, (value) => ~value, `${BLOCK_NAME_PREFIX}${BLOCK_NAME_NOT}`, config);
     }
 
     public getClassName(): string {
-        return "FlowGraphBitwiseNotBlock";
+        return `${BLOCK_NAME_PREFIX}${BLOCK_NAME_NOT}`;
     }
 }
-RegisterClass("FlowGraphBitwiseNotBlock", FlowGraphBitwiseNotBlock);
+RegisterClass(`${BLOCK_NAME_PREFIX}${BLOCK_NAME_NOT}`, FlowGraphBitwiseNotBlock);
+
 /**
  * @experimental
  * Left shifts a number by a specified amount.
  */
 export class FlowGraphBitwiseLeftShiftBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphBitwiseLeftShiftBlock" }) {
-        super(config, RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left << right, "FlowGraphBitwiseLeftShiftBlock");
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left << right, `${BLOCK_NAME_PREFIX}${BLOCK_NAME_LEFT_SHIFT}`, config);
     }
 
     public getClassName(): string {
-        return "FlowGraphBitwiseLeftShiftBlock";
+        return `${BLOCK_NAME_PREFIX}${BLOCK_NAME_LEFT_SHIFT}`;
     }
 }
-RegisterClass("FlowGraphBitwiseLeftShiftBlock", FlowGraphBitwiseLeftShiftBlock);
+RegisterClass(`${BLOCK_NAME_PREFIX}${BLOCK_NAME_LEFT_SHIFT}`, FlowGraphBitwiseLeftShiftBlock);
+
 /**
  * @experimental
  * Right shifts a number by a specified amount.
  */
 export class FlowGraphBitwiseRightShiftBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphBitwiseRightShiftBlock" }) {
-        super(config, RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left >> right, "FlowGraphBitwiseRightShiftBlock");
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left >> right, `${BLOCK_NAME_PREFIX}${BLOCK_NAME_RIGHT_SHIFT}`, config);
     }
 
     public getClassName(): string {
-        return "FlowGraphBitwiseRightShiftBlock";
+        return `${BLOCK_NAME_PREFIX}${BLOCK_NAME_RIGHT_SHIFT}`;
     }
 }
-RegisterClass("FlowGraphBitwiseRightShiftBlock", FlowGraphBitwiseRightShiftBlock);
+RegisterClass(`${BLOCK_NAME_PREFIX}${BLOCK_NAME_RIGHT_SHIFT}`, FlowGraphBitwiseRightShiftBlock);
+
 /**
  * @experimental
  * Counts the leading zero bits of a number
  */
 export class FlowGraphCountLeadingZerosBlock extends FlowGraphUnaryOperationBlock<number, number> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphCountLeadingZerosBlock" }) {
-        super(config, RichTypeNumber, RichTypeNumber, (value) => Math.clz32(value), "FlowGraphCountLeadingZerosBlock");
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, (value) => Math.clz32(value), `${BLOCK_NAME_PREFIX}${BLOCK_NAME_COUNT_LEADING_ZEROS}`, config);
     }
 
     public getClassName(): string {
-        return "FlowGraphCountLeadingZerosBlock";
+        return `${BLOCK_NAME_PREFIX}${BLOCK_NAME_COUNT_LEADING_ZEROS}`;
     }
 }
-RegisterClass("FlowGraphCountLeadingZerosBlock", FlowGraphCountLeadingZerosBlock);
+RegisterClass(`${BLOCK_NAME_PREFIX}${BLOCK_NAME_COUNT_LEADING_ZEROS}`, FlowGraphCountLeadingZerosBlock);
+
 /**
  * @experimental
  * Counts the trailing zero bits of a number
@@ -120,12 +135,12 @@ export class FlowGraphCountTrailingZerosBlock extends FlowGraphUnaryOperationBlo
         return 31 - Math.clz32(integer);
     }
 
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphCountTrailingZerosBlock" }) {
-        super(config, RichTypeNumber, RichTypeNumber, (value) => this._ctrz(value), "FlowGraphCountTrailingZerosBlock");
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, (value) => this._ctrz(value), `${BLOCK_NAME_PREFIX}${BLOCK_NAME_COUNT_TRAILING_ZEROS}`, config);
     }
 
     public getClassName(): string {
-        return "FlowGraphCountTrailingZerosBlock";
+        return `${BLOCK_NAME_PREFIX}${BLOCK_NAME_COUNT_TRAILING_ZEROS}`;
     }
 }
-RegisterClass("FlowGraphCountTrailingZerosBlock", FlowGraphCountTrailingZerosBlock);
+RegisterClass(`${BLOCK_NAME_PREFIX}${BLOCK_NAME_COUNT_TRAILING_ZEROS}`, FlowGraphCountTrailingZerosBlock);

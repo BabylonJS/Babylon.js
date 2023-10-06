@@ -1,3 +1,4 @@
+import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { FlowGraphBlock } from "../../../flowGraphBlock";
 import { RichTypeBoolean, RichTypeNumber } from "../../../flowGraphRichTypes";
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
@@ -17,8 +18,8 @@ const ADDNAME = "FlowGraphAddNumberBlock";
  * @experimental
  */
 export class FlowGraphAddNumberBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left + right, ADDNAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left + right, ADDNAME, config);
     }
 }
 RegisterClass(ADDNAME, FlowGraphAddNumberBlock);
@@ -29,8 +30,8 @@ const SUBNAME = "FlowGraphSubtractNumberBlock";
  * @experimental
  */
 export class FlowGraphSubtractNumberBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left - right, SUBNAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left - right, SUBNAME, config);
     }
 }
 RegisterClass(SUBNAME, FlowGraphSubtractNumberBlock);
@@ -41,8 +42,8 @@ const MULTIPLYNAME = "FlowGraphMultiplyNumberBlock";
  * @experimental
  */
 export class FlowGraphMultiplyNumberBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left * right, MULTIPLYNAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left * right, MULTIPLYNAME, config);
     }
 }
 RegisterClass(MULTIPLYNAME, FlowGraphMultiplyNumberBlock);
@@ -53,8 +54,8 @@ const DIVIDENAME = "FlowGraphDivideNumberBlock";
  * @experimental
  */
 export class FlowGraphDivideNumberBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left / right, DIVIDENAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left / right, DIVIDENAME, config);
     }
 }
 RegisterClass(DIVIDENAME, FlowGraphDivideNumberBlock);
@@ -65,8 +66,8 @@ const MODNAME = "FlowGraphModNumberBlock";
  * @experimental
  */
 export class FlowGraphModNumberBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left % right, MODNAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left % right, MODNAME, config);
     }
 }
 RegisterClass(MODNAME, FlowGraphModNumberBlock);
@@ -77,8 +78,8 @@ const POWNAME = "FlowGraphPowNumberBlock";
  * @experimental
  */
 export class FlowGraphPowNumberBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => Math.pow(left, right), POWNAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => Math.pow(left, right), POWNAME, config);
     }
 }
 RegisterClass(POWNAME, FlowGraphPowNumberBlock);
@@ -89,8 +90,8 @@ const ISNANNAME = "FlowGraphIsNaNNumberBlock";
  * @experimental
  */
 export class FlowGraphIsNaNNumberBlock extends FlowGraphUnaryOperationBlock<number, boolean> {
-    constructor() {
-        super(RichTypeNumber, RichTypeBoolean, (input) => isNaN(input), ISNANNAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeBoolean, (input) => isNaN(input), ISNANNAME, config);
     }
 }
 RegisterClass(ISNANNAME, FlowGraphIsNaNNumberBlock);
@@ -101,8 +102,8 @@ const ISINFINITENAME = "FlowGraphIsInfinityNumberBlock";
  * @experimental
  */
 export class FlowGraphIsInfinityNumberBlock extends FlowGraphUnaryOperationBlock<number, boolean> {
-    constructor() {
-        super(RichTypeNumber, RichTypeBoolean, (input) => !isFinite(input), ISINFINITENAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeBoolean, (input) => !isFinite(input), ISINFINITENAME, config);
     }
 }
 RegisterClass(ISINFINITENAME, FlowGraphIsInfinityNumberBlock);
@@ -113,8 +114,8 @@ const SQRTNAME = "FlowGraphSqrtNumberBlock";
  * @experimental
  */
 export class FlowGraphSqrtNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.sqrt(input), SQRTNAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.sqrt(input), SQRTNAME, config);
     }
 }
 RegisterClass(SQRTNAME, FlowGraphSqrtNumberBlock);
@@ -125,8 +126,8 @@ const ABSNAME = "FlowGraphAbsNumberBlock";
  * @experimental
  */
 export class FlowGraphAbsNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.abs(input), ABSNAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.abs(input), ABSNAME, config);
     }
 }
 RegisterClass(ABSNAME, FlowGraphAbsNumberBlock);
@@ -137,8 +138,8 @@ const NEGNAME = "FlowGraphNegateNumberBlock";
  * @experimental
  */
 export class FlowGraphNegateNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => -input, NEGNAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, (input) => -input, NEGNAME, config);
     }
 }
 RegisterClass(NEGNAME, FlowGraphNegateNumberBlock);
@@ -149,10 +150,11 @@ const FLOORNAME = "FlowGraphFloorNumberBlock";
  * @experimental
  */
 export class FlowGraphFloorNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.floor(input), FLOORNAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.floor(input), FLOORNAME, config);
     }
 }
+
 RegisterClass(FLOORNAME, FlowGraphFloorNumberBlock);
 
 const CEILNAME = "FlowGraphCeilNumberBlock";
@@ -161,8 +163,8 @@ const CEILNAME = "FlowGraphCeilNumberBlock";
  * @experimental
  */
 export class FlowGraphCeilNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.ceil(input), CEILNAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.ceil(input), CEILNAME, config);
     }
 }
 RegisterClass(CEILNAME, FlowGraphCeilNumberBlock);
@@ -174,8 +176,8 @@ const ROUNDNAME = "FlowGraphRoundNumberBlock";
  * @experimental
  */
 export class FlowGraphRoundNumberBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (input, digits) => Math.round(input / Math.pow(10, digits)) / Math.pow(10, digits), ROUNDNAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (input, digits) => Math.round(input / Math.pow(10, digits)) / Math.pow(10, digits), ROUNDNAME, config);
     }
 }
 RegisterClass(ROUNDNAME, FlowGraphRoundNumberBlock);
@@ -186,8 +188,8 @@ const TRUNCNAME = "FlowGraphTruncNumberBlock";
  * @experimental
  */
 export class FlowGraphTruncNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.trunc(input), TRUNCNAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.trunc(input), TRUNCNAME, config);
     }
 }
 RegisterClass(TRUNCNAME, FlowGraphTruncNumberBlock);
@@ -198,8 +200,8 @@ const EXPNAME = "FlowGraphExpNumberBlock";
  * @experimental
  */
 export class FlowGraphExpNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.exp(input), EXPNAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.exp(input), EXPNAME, config);
     }
 }
 RegisterClass(EXPNAME, FlowGraphExpNumberBlock);
@@ -210,8 +212,8 @@ const LOG10NAME = "FlowGraphLog10NumberBlock";
  * @experimental
  */
 export class FlowGraphLog10NumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.log10(input), LOG10NAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.log10(input), LOG10NAME, config);
     }
 }
 RegisterClass(LOG10NAME, FlowGraphLog10NumberBlock);
@@ -222,8 +224,8 @@ const LOGNAME = "FlowGraphLogNumberBlock";
  * @experimental
  */
 export class FlowGraphLogNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.log(input), LOGNAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.log(input), LOGNAME, config);
     }
 }
 RegisterClass(LOGNAME, FlowGraphLogNumberBlock);
@@ -234,8 +236,8 @@ const LNNAME = "FlowGraphLnNumberBlock";
  * @experimental
  */
 export class FlowGraphLnNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.log(input) / Math.LN2, LNNAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.log(input) / Math.LN2, LNNAME, config);
     }
 }
 RegisterClass(LNNAME, FlowGraphLnNumberBlock);
@@ -246,8 +248,8 @@ const SINENAME = "FlowGraphSineNumberBlock";
  * @experimental
  */
 export class FlowGraphSinNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.sin(input), SINENAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.sin(input), SINENAME, config);
     }
 }
 RegisterClass(SINENAME, FlowGraphSinNumberBlock);
@@ -258,8 +260,8 @@ const COSNAME = "FlowGraphCosNumberBlock";
  * @experimental
  */
 export class FlowGraphCosNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.cos(input), COSNAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.cos(input), COSNAME, config);
     }
 }
 RegisterClass(COSNAME, FlowGraphCosNumberBlock);
@@ -270,8 +272,8 @@ const TANNAME = "FlowGraphTanNumberBlock";
  * @experimental
  */
 export class FlowGraphTanNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.tan(input), TANNAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.tan(input), TANNAME, config);
     }
 }
 RegisterClass(TANNAME, FlowGraphTanNumberBlock);
@@ -282,8 +284,8 @@ const ASINENAME = "FlowGraphASineNumberBlock";
  * @experimental
  */
 export class FlowGraphASinNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.asin(input), ASINENAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.asin(input), ASINENAME, config);
     }
 }
 RegisterClass(ASINENAME, FlowGraphASinNumberBlock);
@@ -294,8 +296,8 @@ const ACOSNAME = "FlowGraphACosNumberBlock";
  * @experimental
  */
 export class FlowGraphACosNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.acos(input), ACOSNAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.acos(input), ACOSNAME, config);
     }
 }
 RegisterClass(ACOSNAME, FlowGraphACosNumberBlock);
@@ -306,8 +308,8 @@ const ATANNAME = "FlowGraphATanNumberBlock";
  * @experimental
  */
 export class FlowGraphATanNumberBlock extends FlowGraphUnaryOperationBlock<number, number> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, (input) => Math.atan(input), ATANNAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, (input) => Math.atan(input), ATANNAME, config);
     }
 }
 RegisterClass(ATANNAME, FlowGraphATanNumberBlock);
@@ -318,8 +320,8 @@ const ENAME = "FlowGraphENumberBlock";
  * @experimental
  */
 export class FlowGraphENumberBlock extends FlowGraphConstantOperationBlock<number> {
-    constructor() {
-        super(RichTypeNumber, () => Math.E, ENAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, () => Math.E, ENAME, config);
     }
 }
 RegisterClass(ENAME, FlowGraphENumberBlock);
@@ -330,8 +332,8 @@ const PINAME = "FlowGraphPiNumberBlock";
  * @experimental
  */
 export class FlowGraphPiNumberBlock extends FlowGraphConstantOperationBlock<number> {
-    constructor() {
-        super(RichTypeNumber, () => Math.PI, PINAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, () => Math.PI, PINAME, config);
     }
 }
 RegisterClass(PINAME, FlowGraphPiNumberBlock);
@@ -342,8 +344,8 @@ const ATAN2NAME = "FlowGraphATan2NumberBlock";
  * @experimental
  */
 export class FlowGraphATan2NumberBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => Math.atan2(left, right), ATAN2NAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => Math.atan2(left, right), ATAN2NAME, config);
     }
 }
 RegisterClass(ATAN2NAME, FlowGraphATan2NumberBlock);
@@ -354,8 +356,8 @@ const RNDNAME = "FlowGraphRandomNumberBlock";
  * Outputs a number between left and right.
  */
 export class FlowGraphRandomNumberBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left + Math.random() * (right - left), RNDNAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left + Math.random() * (right - left), RNDNAME, config);
     }
 }
 RegisterClass(RNDNAME, FlowGraphRandomNumberBlock);
@@ -366,8 +368,8 @@ const MINNAME = "FlowGraphMinNumberBlock";
  * @experimental
  */
 export class FlowGraphMinNumberBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => Math.min(left, right), MINNAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => Math.min(left, right), MINNAME, config);
     }
 }
 RegisterClass(MINNAME, FlowGraphMinNumberBlock);
@@ -378,8 +380,8 @@ const MAXNAME = "FlowGraphMaxNumberBlock";
  * @experimental
  */
 export class FlowGraphMaxNumberBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => Math.max(left, right), MAXNAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => Math.max(left, right), MAXNAME, config);
     }
 }
 RegisterClass(MAXNAME, FlowGraphMaxNumberBlock);
@@ -390,8 +392,8 @@ const EQUALSNAME = "FlowGraphEqualsNumberBlock";
  * @experimental
  */
 export class FlowGraphEqualsNumberBlock extends FlowGraphBinaryOperationBlock<number, number, boolean> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeBoolean, (left, right) => left === right, EQUALSNAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, RichTypeBoolean, (left, right) => left === right, EQUALSNAME, config);
     }
 }
 RegisterClass(EQUALSNAME, FlowGraphEqualsNumberBlock);
@@ -401,8 +403,8 @@ const GREATERTHANNAME = "FlowGraphGreaterThanNumberBlock";
  * Outputs true if left is greater than right, false otherwise.
  */
 export class FlowGraphGreaterThanNumberBlock extends FlowGraphBinaryOperationBlock<number, number, boolean> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeBoolean, (left, right) => left > right, GREATERTHANNAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, RichTypeBoolean, (left, right) => left > right, GREATERTHANNAME, config);
     }
 }
 RegisterClass(GREATERTHANNAME, FlowGraphGreaterThanNumberBlock);
@@ -412,8 +414,8 @@ const GREATEROREQUALNAME = "FlowGraphGreaterThanOrEqualsNumberBlock";
  * Outputs true if left is greater than or equal to right, false otherwise.
  */
 export class FlowGraphGreaterThanOrEqualsNumberBlock extends FlowGraphBinaryOperationBlock<number, number, boolean> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeBoolean, (left, right) => left >= right, GREATEROREQUALNAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, RichTypeBoolean, (left, right) => left >= right, GREATEROREQUALNAME, config);
     }
 }
 RegisterClass(GREATEROREQUALNAME, FlowGraphGreaterThanOrEqualsNumberBlock);
@@ -423,8 +425,8 @@ const LESSTHANNAME = "FlowGraphLessThanNumberBlock";
  * Outputs true if left is less than right, false otherwise.
  */
 export class FlowGraphLessThanNumberBlock extends FlowGraphBinaryOperationBlock<number, number, boolean> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeBoolean, (left, right) => left < right, LESSTHANNAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, RichTypeBoolean, (left, right) => left < right, LESSTHANNAME, config);
     }
 }
 RegisterClass(LESSTHANNAME, FlowGraphLessThanNumberBlock);
@@ -434,8 +436,8 @@ const LESSOREQUALNAME = "FlowGraphLessThanOrEqualsNumberBlock";
  * Outputs true if left is less than or equal to right, false otherwise.
  */
 export class FlowGraphLessThanOrEqualsNumberBlock extends FlowGraphBinaryOperationBlock<number, number, boolean> {
-    constructor() {
-        super(RichTypeNumber, RichTypeNumber, RichTypeBoolean, (left, right) => left <= right, LESSOREQUALNAME);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, RichTypeBoolean, (left, right) => left <= right, LESSOREQUALNAME, config);
     }
 }
 RegisterClass(LESSOREQUALNAME, FlowGraphLessThanOrEqualsNumberBlock);
@@ -452,8 +454,8 @@ export class FlowGraphMixNumberBlock extends FlowGraphBlock {
 
     public resultOutput: FlowGraphDataConnection<number>;
 
-    constructor() {
-        super();
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(config);
         this.leftInput = this._registerDataInput("leftInput", RichTypeNumber);
         this.rightInput = this._registerDataInput("rightInput", RichTypeNumber);
         this.alphaInput = this._registerDataInput("alphaInput", RichTypeNumber);

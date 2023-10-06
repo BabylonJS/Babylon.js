@@ -3,13 +3,14 @@ import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock"
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
+
 /**
  * Performs an AND operation on two boolean values.
  * @experimental
  */
 export class FlowGraphLogicAndBlock extends FlowGraphBinaryOperationBlock<boolean, boolean, boolean> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphLogicAndBlock" }) {
-        super(config, RichTypeBoolean, RichTypeBoolean, RichTypeBoolean, (left, right) => left && right, "FlowGraphLogicAndBlock");
+    constructor(config: IFlowGraphBlockConfiguration) {
+        super(RichTypeBoolean, RichTypeBoolean, RichTypeBoolean, (left, right) => left && right, "FlowGraphLogicAndBlock", config);
     }
 
     public getClassName(): string {
@@ -23,8 +24,8 @@ RegisterClass("FlowGraphLogicAndBlock", FlowGraphLogicAndBlock);
  * @experimental
  */
 export class FlowGraphLogicOrBlock extends FlowGraphBinaryOperationBlock<boolean, boolean, boolean> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphLogicOrBlock" }) {
-        super(config, RichTypeBoolean, RichTypeBoolean, RichTypeBoolean, (left, right) => left || right, "FlowGraphLogicOrBlock");
+    constructor(config: IFlowGraphBlockConfiguration) {
+        super(RichTypeBoolean, RichTypeBoolean, RichTypeBoolean, (left, right) => left || right, "FlowGraphLogicOrBlock", config);
     }
 
     public getClassName(): string {
@@ -32,13 +33,14 @@ export class FlowGraphLogicOrBlock extends FlowGraphBinaryOperationBlock<boolean
     }
 }
 RegisterClass("FlowGraphLogicOrBlock", FlowGraphLogicOrBlock);
+
 /**
  * Performs a NOT operation on a boolean value
  * @experimental
  */
 export class FlowGraphLogicNotBlock extends FlowGraphUnaryOperationBlock<boolean, boolean> {
-    constructor(config: IFlowGraphBlockConfiguration = { name: "FlowGraphLogicNotBlock" }) {
-        super(config, RichTypeBoolean, RichTypeBoolean, (value) => !value, "FlowGraphLogicNotBlock");
+    constructor(config: IFlowGraphBlockConfiguration) {
+        super(RichTypeBoolean, RichTypeBoolean, (value) => !value, "FlowGraphLogicNotBlock", config);
     }
 
     public getClassName(): string {
