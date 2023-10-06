@@ -201,7 +201,6 @@ export class PreviewManager {
             canvas.addEventListener("drop", onDrop, false);
         }
         this._refreshPreviewMesh();
-
         this._engine.runRenderLoop(() => {
             this._engine.resize();
             this._scene.render();
