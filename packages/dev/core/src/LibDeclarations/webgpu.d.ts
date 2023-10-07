@@ -68,7 +68,7 @@ declare class GPU {
     requestAdapter(options?: GPURequestAdapterOptions): Promise<GPUAdapter | undefined>;
     getPreferredCanvasFormat(): GPUTextureFormat;
 
-    readonly WGSLLanguageFeatures: wgslLanguageFeatures;
+    readonly WGSLLanguageFeatures: WGSLLanguageFeatures;
 }
 
 interface GPURequestAdapterOptions {
