@@ -19,9 +19,16 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
         this.registerInput("viewDepth", NodeMaterialBlockConnectionPointTypes.Float, true);
         this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
         this.registerInput("viewNormal", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
+        this.registerInput("reflectivity", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
 
         this.inputs[1].addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4);
         this.inputs[2].addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4);
+        this.inputs[3].addExcludedConnectionPointFromAllowedTypes(
+            NodeMaterialBlockConnectionPointTypes.Vector3 |
+                NodeMaterialBlockConnectionPointTypes.Vector4 |
+                NodeMaterialBlockConnectionPointTypes.Color3 |
+                NodeMaterialBlockConnectionPointTypes.Color4
+        );
     }
 
     /**
@@ -53,12 +60,20 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
         return this._inputs[2];
     }
 
+    /**
+     * Gets the reflectivity component
+     */
+    public get reflectivity(): NodeMaterialConnectionPoint {
+        return this._inputs[3];
+    }
+
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const worldPosition = this.worldPosition;
         const viewNormal = this.viewNormal;
         const viewDepth = this.viewDepth;
+        const reflectivity = this.reflectivity;
 
         state.sharedData.blocksWithDefines.push(this);
 
@@ -92,6 +107,16 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
         } else {
             // We have to write something on the normal output or it will raise a gl error
             state.compilationString += ` gl_FragData[PREPASS_NORMAL_INDEX] = vec4(0.0, 0.0, 0.0, 0.0);\r\n`;
+        }
+        state.compilationString += `#endif\r\n`;
+        state.compilationString += `#ifdef PREPASS_REFLECTIVITY\r\n`;
+        if (reflectivity.connectedPoint) {
+            state.compilationString += ` gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(${reflectivity.associatedVariableName}.rgb, ${
+                reflectivity.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4 ? reflectivity.associatedVariableName + ".a" : "1.0"
+            });\r\n`;
+        } else {
+            // We have to write something on the reflectivity output or it will raise a gl error
+            state.compilationString += ` gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(0.0, 0.0, 0.0, 1.0);\r\n`;
         }
         state.compilationString += `#endif\r\n`;
         state.compilationString += `#endif\r\n`;
