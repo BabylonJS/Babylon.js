@@ -4379,7 +4379,7 @@ export class ThinEngine {
                 const gl = this._gl;
                 const isPot = img.width === potWidth && img.height === potHeight;
 
-                const tip = this._getTexImageParametersForCreateTexture(format, extension, texture._useSRGBBuffer); 
+                const tip = this._getTexImageParametersForCreateTexture(format, extension, texture._useSRGBBuffer);
                 if (isPot) {
                     gl.texImage2D(gl.TEXTURE_2D, 0, tip.sizedFormat, tip.internalFormat, tip.type, img as any);
                     return false;
@@ -4440,18 +4440,16 @@ export class ThinEngine {
      */
     public _getTexImageParametersForCreateTexture(format: Nullable<number>, fileExtension: string, useSRGBBuffer: boolean): TexImageParameters {
         if (format === undefined || format === null) {
-            format = (fileExtension === ".jpg" && !useSRGBBuffer)
-            ? Constants.TEXTUREFORMAT_RGB
-            : Constants.TEXTUREFORMAT_RGBA;
+            format = fileExtension === ".jpg" && !useSRGBBuffer ? Constants.TEXTUREFORMAT_RGB : Constants.TEXTUREFORMAT_RGBA;
         }
 
         const internalFormat = this._getInternalFormat(format, useSRGBBuffer);
         const sizedFormat = this._getRGBABufferInternalSizedFormat(Constants.TEXTURETYPE_UNSIGNED_BYTE, format, useSRGBBuffer);
-        
+
         return {
             sizedFormat,
             internalFormat,
-            type: this._gl.UNSIGNED_BYTE
+            type: this._gl.UNSIGNED_BYTE,
         };
     }
 
