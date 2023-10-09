@@ -4381,7 +4381,7 @@ export class ThinEngine {
 
                 const tip = this._getTexImageParametersForCreateTexture(format, extension, texture._useSRGBBuffer);
                 if (isPot) {
-                    gl.texImage2D(gl.TEXTURE_2D, 0, tip.sizedFormat, tip.internalFormat, tip.type, img as any);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, tip.internalFormat, tip.format, tip.type, img as any);
                     return false;
                 }
 
@@ -4397,7 +4397,7 @@ export class ThinEngine {
                     this._workingCanvas.height = potHeight;
 
                     this._workingContext.drawImage(img as any, 0, 0, img.width, img.height, 0, 0, potWidth, potHeight);
-                    gl.texImage2D(gl.TEXTURE_2D, 0, tip.sizedFormat, tip.internalFormat, tip.type, this._workingCanvas as TexImageSource);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, tip.internalFormat, tip.format, tip.type, this._workingCanvas as TexImageSource);
 
                     texture.width = potWidth;
                     texture.height = potHeight;
@@ -4407,9 +4407,9 @@ export class ThinEngine {
                     // Using shaders when possible to rescale because canvas.drawImage is lossy
                     const source = new InternalTexture(this, InternalTextureSource.Temp);
                     this._bindTextureDirectly(gl.TEXTURE_2D, source, true);
-                    gl.texImage2D(gl.TEXTURE_2D, 0, tip.sizedFormat, tip.internalFormat, tip.type, img as any);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, tip.internalFormat, tip.format, tip.type, img as any);
 
-                    this._rescaleTexture(source, texture, scene, tip.internalFormat, () => {
+                    this._rescaleTexture(source, texture, scene, tip.format, () => {
                         this._releaseTexture(source);
                         this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
 
@@ -4431,24 +4431,25 @@ export class ThinEngine {
 
     /**
      * Calls to the GL texImage2D and texImage3D functions require three arguments describing the pixel format of the texture.
-     * createTexture derives these from the format and useSRGBBuffer arguments and also the file extension of the URL it's working with.
+     * createTexture derives these from the babylonFormat and useSRGBBuffer arguments and also the file extension of the URL it's working with.
      * This function encapsulates that derivation for easy unit testing.
-     * @param format Babylon's format enum, as specified in ITextureCreationOptions.
+     * @param babylonFormat Babylon's format enum, as specified in ITextureCreationOptions.
      * @param fileExtension The file extension including the dot, e.g. .jpg.
      * @param useSRGBBuffer Use SRGB not linear.
      * @returns The options to pass to texImage2D or texImage3D calls.
+     * @internal
      */
-    public _getTexImageParametersForCreateTexture(format: Nullable<number>, fileExtension: string, useSRGBBuffer: boolean): TexImageParameters {
-        if (format === undefined || format === null) {
-            format = fileExtension === ".jpg" && !useSRGBBuffer ? Constants.TEXTUREFORMAT_RGB : Constants.TEXTUREFORMAT_RGBA;
+    public _getTexImageParametersForCreateTexture(babylonFormat: Nullable<number>, fileExtension: string, useSRGBBuffer: boolean): TexImageParameters {
+        if (babylonFormat === undefined || babylonFormat === null) {
+            babylonFormat = fileExtension === ".jpg" && !useSRGBBuffer ? Constants.TEXTUREFORMAT_RGB : Constants.TEXTUREFORMAT_RGBA;
         }
 
-        const internalFormat = this._getInternalFormat(format, useSRGBBuffer);
-        const sizedFormat = this._getRGBABufferInternalSizedFormat(Constants.TEXTURETYPE_UNSIGNED_BYTE, format, useSRGBBuffer);
+        const format = this._getInternalFormat(babylonFormat, useSRGBBuffer);
+        const internalFormat = this._getRGBABufferInternalSizedFormat(Constants.TEXTURETYPE_UNSIGNED_BYTE, babylonFormat, useSRGBBuffer);
 
         return {
-            sizedFormat,
             internalFormat,
+            format,
             type: this._gl.UNSIGNED_BYTE,
         };
     }
@@ -6163,7 +6164,7 @@ export class ThinEngine {
 }
 
 interface TexImageParameters {
-    sizedFormat: number;
     internalFormat: number;
+    format: number;
     type: number;
 }

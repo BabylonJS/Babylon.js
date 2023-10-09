@@ -24,8 +24,8 @@ describe("ThinEngine", () => {
                 "TEXTUREFORMAT_RGB",
                 "TEXTUREFORMAT_RGBA"
             ], `
-Babylon format                Ext. SRGB  Sized format    Int. format     Type
-==============                ==== ====  ============    ===========     ====
+Babylon format                Ext. SRGB  Int. format     Format          Type
+==============                ==== ====  ===========     ======          ====
 <undefined>                   .jpg false RGB             RGB             UNSIGNED_BYTE
 <undefined>                   .jpg true  RGBA            SRGB8_ALPHA8    UNSIGNED_BYTE
 <undefined>                   .png false RGBA            RGBA            UNSIGNED_BYTE
@@ -70,8 +70,8 @@ TEXTUREFORMAT_RGBA            .png true  RGBA            SRGB8_ALPHA8    UNSIGNE
                 "TEXTUREFORMAT_RGB_INTEGER",
                 "TEXTUREFORMAT_RGBA_INTEGER"
             ], `
-Babylon format                Ext. SRGB  Sized format    Int. format     Type
-==============                ==== ====  ============    ===========     ====
+Babylon format                Ext. SRGB  Int. format     Format          Type
+==============                ==== ====  ===========     ======          ====
 <undefined>                   .jpg false RGB8            RGB             UNSIGNED_BYTE
 <undefined>                   .jpg true  SRGB8_ALPHA8    SRGB8_ALPHA8    UNSIGNED_BYTE
 <undefined>                   .png false RGBA8           RGBA            UNSIGNED_BYTE
@@ -132,8 +132,8 @@ TEXTUREFORMAT_RGBA_INTEGER    .png true  RGBA8UI         RGBA_INTEGER    UNSIGNE
 
         function test(formatStrs: string[], expected: string) {
             const results = [
-                "Babylon format                Ext. SRGB  Sized format    Int. format     Type",
-                "==============                ==== ====  ============    ===========     ===="
+                "Babylon format                Ext. SRGB  Int. format     Format          Type",
+                "==============                ==== ====  ===========     ======          ===="
             ];
             for (const formatStr of formatStrs) {
                 const format = formatStr === "<undefined>" ? undefined : (Engine as any)[formatStr];
@@ -144,8 +144,8 @@ TEXTUREFORMAT_RGBA_INTEGER    .png true  RGBA8UI         RGBA_INTEGER    UNSIGNE
                             formatStr.padEnd(30) +
                             fileExtension.padEnd(5) +
                             useSRGBBuffer.toString().padEnd(6) +
-                            (texImageParams.sizedFormat as any).padEnd(16) +
                             (texImageParams.internalFormat as any).padEnd(16) +
+                            (texImageParams.format as any).padEnd(16) +
                             texImageParams.type
                         );
                     }
