@@ -178,39 +178,6 @@ export class FlowGraph {
         }
     }
 
-    public parse(serializationObject: any, valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any) {
-        this.variableDefinitions.parse(serializationObject.variableDefinitions);
-        const blocks: FlowGraphBlock[] = [];
-        // Parse all blocks
-        for (const serializedBlock of serializationObject.allBlocks) {
-            const block = FlowGraphBlock.Parse(serializedBlock);
-            blocks.push(block);
-            if (block instanceof FlowGraphEventBlock) {
-                this.addEventBlock(block);
-            }
-        }
-        // After parsing all blocks, connect them
-        for (const block of blocks) {
-            for (const dataIn of block.dataInputs) {
-                for (const serializedConnection of dataIn.connectedPointIds) {
-                    const connection = FlowGraph.GetDataOutConnectionByUniqueId(blocks, serializedConnection);
-                    dataIn.connectTo(connection);
-                }
-            }
-            if (block instanceof FlowGraphExecutionBlock) {
-                for (const signalOut of block.signalOutputs) {
-                    for (const serializedConnection of signalOut.connectedPointIds) {
-                        const connection = FlowGraph.GetSignalInConnectionByUniqueId(blocks, serializedConnection);
-                        signalOut.connectTo(connection);
-                    }
-                }
-            }
-        }
-        for (const serializedContext of serializationObject.executionContexts) {
-            FlowGraphContext.Parse(serializedContext, this, valueParseFunction);
-        }
-    }
-
     public static GetDataOutConnectionByUniqueId(blocks: FlowGraphBlock[], uniqueId: string): FlowGraphDataConnection<any> {
         for (const block of blocks) {
             for (const dataOut of block.dataOutputs) {
@@ -237,7 +204,36 @@ export class FlowGraph {
 
     public static Parse(serializationObject: any, coordinator: FlowGraphCoordinator, valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any): FlowGraph {
         const graph = coordinator.createGraph();
-        graph.parse(serializationObject, valueParseFunction);
+        graph.variableDefinitions.parse(serializationObject.variableDefinitions);
+        const blocks: FlowGraphBlock[] = [];
+        // Parse all blocks
+        for (const serializedBlock of serializationObject.allBlocks) {
+            const block = FlowGraphBlock.Parse(serializedBlock);
+            blocks.push(block);
+            if (block instanceof FlowGraphEventBlock) {
+                graph.addEventBlock(block);
+            }
+        }
+        // After parsing all blocks, connect them
+        for (const block of blocks) {
+            for (const dataIn of block.dataInputs) {
+                for (const serializedConnection of dataIn.connectedPointIds) {
+                    const connection = FlowGraph.GetDataOutConnectionByUniqueId(blocks, serializedConnection);
+                    dataIn.connectTo(connection);
+                }
+            }
+            if (block instanceof FlowGraphExecutionBlock) {
+                for (const signalOut of block.signalOutputs) {
+                    for (const serializedConnection of signalOut.connectedPointIds) {
+                        const connection = FlowGraph.GetSignalInConnectionByUniqueId(blocks, serializedConnection);
+                        signalOut.connectTo(connection);
+                    }
+                }
+            }
+        }
+        for (const serializedContext of serializationObject.executionContexts) {
+            FlowGraphContext.Parse(serializedContext, graph, valueParseFunction);
+        }
         return graph;
     }
 }

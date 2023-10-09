@@ -28,5 +28,9 @@ export class FlowGraphStopAudioBlock extends FlowGraphWithOnDoneExecutionBlock {
             audioValue.stop();
         }
     }
+
+    public getClassName(): string {
+        return "FGStopAudioBlock";
+    }
 }
-RegisterClass("FlowGraphStopAudioBlock", FlowGraphStopAudioBlock);
+RegisterClass("FGStopAudioBlock", FlowGraphStopAudioBlock);

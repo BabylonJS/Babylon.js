@@ -45,7 +45,7 @@ export class FlowGraphThrottleBlock extends FlowGraphWithOnDoneExecutionBlock {
         }
     }
     public getClassName(): string {
-        return "FlowGraphThrottleBlock";
+        return "FGThrottleBlock";
     }
 }
-RegisterClass("FlowGraphThrottleBlock", FlowGraphThrottleBlock);
+RegisterClass("FGThrottleBlock", FlowGraphThrottleBlock);

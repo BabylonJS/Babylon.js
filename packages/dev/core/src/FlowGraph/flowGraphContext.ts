@@ -242,24 +242,24 @@ export class FlowGraphContext {
     }
 
     public getClassName() {
-        return "FlowGraphContext";
+        return "FGContext";
     }
 
-    public parse(serializationObject: any, valueParseFunction: (key: string, serializationObject: any, scene: Scene) => any = defaultValueParseFunction) {
-        this.uniqueId = serializationObject.uniqueId;
+    public static Parse(
+        serializationObject: any = {},
+        graph: FlowGraph,
+        valueParseFunction: (key: string, serializationObject: any, scene: Scene) => any = defaultValueParseFunction
+    ): FlowGraphContext {
+        const result = graph.createContext();
+        result.uniqueId = serializationObject.uniqueId;
         for (const key in serializationObject._userVariables) {
-            const value = valueParseFunction(key, serializationObject._userVariables, this._configuration.scene);
-            this._userVariables.set(key, value);
+            const value = valueParseFunction(key, serializationObject._userVariables, result._configuration.scene);
+            result._userVariables.set(key, value);
         }
         for (const key in serializationObject._connectionValues) {
-            const value = valueParseFunction(key, serializationObject._connectionValues, this._configuration.scene);
-            this._connectionValues.set(key, value);
+            const value = valueParseFunction(key, serializationObject._connectionValues, result._configuration.scene);
+            result._connectionValues.set(key, value);
         }
-    }
-
-    public static Parse(serializationObject: any = {}, graph: FlowGraph, valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any): FlowGraphContext {
-        const result = graph.createContext();
-        result.parse(serializationObject, valueParseFunction);
 
         return result;
     }

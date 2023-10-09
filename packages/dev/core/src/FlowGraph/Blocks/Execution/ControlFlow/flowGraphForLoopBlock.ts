@@ -76,7 +76,7 @@ export class FlowGraphForLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
     }
 
     public getClassName(): string {
-        return "FlowGraphForLoopBlock";
+        return "FGForLoopBlock";
     }
 }
-RegisterClass("FlowGraphForLoopBlock", FlowGraphForLoopBlock);
+RegisterClass("FGForLoopBlock", FlowGraphForLoopBlock);

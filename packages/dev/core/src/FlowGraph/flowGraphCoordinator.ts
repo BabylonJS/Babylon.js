@@ -98,8 +98,7 @@ export class FlowGraphCoordinator {
     public static Parse(serializedObject: any, scene: Scene, valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any) {
         const coordinator = new FlowGraphCoordinator({ scene });
         serializedObject._flowGraphs?.forEach((serializedGraph: any) => {
-            const graph = coordinator.createGraph();
-            graph.parse(serializedGraph, valueParseFunction);
+            FlowGraph.Parse(serializedGraph, coordinator, valueParseFunction);
         });
         return coordinator;
     }

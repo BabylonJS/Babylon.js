@@ -64,7 +64,7 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
     }
 
     public getClassName(): string {
-        return "FlowGraphExecutionBlock";
+        return "FGExecutionBlock";
     }
 
     public static Parse(serializationObject: any = {}) {

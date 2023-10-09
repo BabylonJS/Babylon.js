@@ -49,7 +49,7 @@ export class FlowGraphDebounceBlock extends FlowGraphWithOnDoneExecutionBlock {
     }
 
     public getClassName(): string {
-        return "FlowGraphDebounceBlock";
+        return "FGDebounceBlock";
     }
 }
-RegisterClass("FlowGraphDebounceBlock", FlowGraphDebounceBlock);
+RegisterClass("FGDebounceBlock", FlowGraphDebounceBlock);

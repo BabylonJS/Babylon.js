@@ -118,7 +118,7 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
     }
 
     public getClassName(): string {
-        return "FlowGraphMultiGateBlock";
+        return "FGMultiGateBlock";
     }
 }
-RegisterClass("FlowGraphMultiGateBlock", FlowGraphMultiGateBlock);
+RegisterClass("FGMultiGateBlock", FlowGraphMultiGateBlock);

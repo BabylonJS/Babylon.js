@@ -42,7 +42,7 @@ export class FlowGraphBranchBlock extends FlowGraphExecutionBlock {
     }
 
     public getClassName(): string {
-        return "FlowGraphBranchBlock";
+        return "FGBranchBlock";
     }
 }
-RegisterClass("FlowGraphBranchBlock", FlowGraphBranchBlock);
+RegisterClass("FGBranchBlock", FlowGraphBranchBlock);

@@ -7,7 +7,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import type { FlowGraphContext } from "../../../flowGraphContext";
 
-const ADDNAME = "FlowGraphAddVector2Block";
+const ADDNAME = "FGAddVector2Block";
 /**
  * Adds two vectors together.
  * @experimental
@@ -19,7 +19,7 @@ export class FlowGraphAddVector2Block extends FlowGraphBinaryOperationBlock<Vect
 }
 RegisterClass(ADDNAME, FlowGraphAddVector2Block);
 
-const SUBNAME = "FlowGraphSubtractVector2Block";
+const SUBNAME = "FGSubtractVector2Block";
 /**
  * Subtracts two vectors.
  * @experimental
@@ -31,7 +31,7 @@ export class FlowGraphSubtractVector2Block extends FlowGraphBinaryOperationBlock
 }
 RegisterClass(SUBNAME, FlowGraphSubtractVector2Block);
 
-const MULNAME = "FlowGraphMultiplyVector2Block";
+const MULNAME = "FGMultiplyVector2Block";
 /**
  * Multiplies two vectors together.
  * @experimental
@@ -43,7 +43,7 @@ export class FlowGraphMultiplyVector2Block extends FlowGraphBinaryOperationBlock
 }
 RegisterClass(MULNAME, FlowGraphMultiplyVector2Block);
 
-const DIVNAME = "FlowGraphDivideVector2Block";
+const DIVNAME = "FGDivideVector2Block";
 /**
  * Divides two vectors.
  * @experimental
@@ -55,7 +55,7 @@ export class FlowGraphDivideVector2Block extends FlowGraphBinaryOperationBlock<V
 }
 RegisterClass(DIVNAME, FlowGraphDivideVector2Block);
 
-const SCALENAME = "FlowGraphScaleVector2Block";
+const SCALENAME = "FGScaleVector2Block";
 /**
  * Scales a vector by a given factor.
  * @experimental
@@ -67,7 +67,7 @@ export class FlowGraphScaleVector2Block extends FlowGraphBinaryOperationBlock<Ve
 }
 RegisterClass(SCALENAME, FlowGraphScaleVector2Block);
 
-const LENNAME = "FlowGraphLengthVector2Block";
+const LENNAME = "FGLengthVector2Block";
 /**
  * Gets the length of a vector.
  * @experimental
@@ -79,7 +79,7 @@ export class FlowGraphLengthVector2Block extends FlowGraphUnaryOperationBlock<Ve
 }
 RegisterClass(LENNAME, FlowGraphLengthVector2Block);
 
-const NORMALIZENAME = "FlowGraphNormalizeVector2Block";
+const NORMALIZENAME = "FGNormalizeVector2Block";
 /**
  * Normalizes a vector.
  * @experimental
@@ -101,7 +101,7 @@ export class FlowGraphNormalizeVector2Block extends FlowGraphUnaryOperationBlock
 }
 RegisterClass(NORMALIZENAME, FlowGraphNormalizeVector2Block);
 
-const CREATENAME = "FlowGraphCreateVector2Block";
+const CREATENAME = "FGCreateVector2Block";
 /**
  * Creates a vector from two components.
  */
@@ -137,7 +137,7 @@ export class FlowGraphCreateVector2Block extends FlowGraphBlock {
 }
 RegisterClass(CREATENAME, FlowGraphCreateVector2Block);
 
-const SPLITNAME = "FlowGraphSplitVector2Block";
+const SPLITNAME = "FGSplitVector2Block";
 /**
  * Split a vector into its components.
  */
@@ -171,7 +171,7 @@ export class FlowGraphSplitVector2Block extends FlowGraphBlock {
 }
 RegisterClass(SPLITNAME, FlowGraphSplitVector2Block);
 
-const ROTATENAME = "FlowGraphRotate2dVector2Block";
+const ROTATENAME = "FGRotate2dVector2Block";
 /**
  * Rotates a vector by a given angle.
  */

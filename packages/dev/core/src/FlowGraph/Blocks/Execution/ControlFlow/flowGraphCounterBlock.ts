@@ -40,7 +40,7 @@ export class FlowGraphCounterBlock extends FlowGraphWithOnDoneExecutionBlock {
     }
 
     public getClassName(): string {
-        return "FlowGraphCounterBlock";
+        return "FGCounterBlock";
     }
 }
-RegisterClass("FlowGraphCounterBlock", FlowGraphCounterBlock);
+RegisterClass("FGCounterBlock", FlowGraphCounterBlock);

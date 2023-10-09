@@ -9,7 +9,7 @@ import type { FlowGraphContext } from "../../../flowGraphContext";
 import type { TransformNode } from "../../../../Meshes/transformNode";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
-const ADDNAME = "FlowGraphAddMatrixBlock";
+const ADDNAME = "FGAddMatrixBlock";
 /**
  * Adds two matrices together.
  * @experimental
@@ -22,7 +22,7 @@ export class FlowGraphAddMatrixBlock extends FlowGraphBinaryOperationBlock<Matri
 }
 RegisterClass(ADDNAME, FlowGraphAddMatrixBlock);
 
-const ADDNUMBERNAME = "FlowGraphAddMatrixAndNumberBlock";
+const ADDNUMBERNAME = "FGAddMatrixAndNumberBlock";
 /**
  * Adds a matrix and a number together.
  * @experimental
@@ -48,7 +48,7 @@ export class FlowGraphAddMatrixAndNumberBlock extends FlowGraphBinaryOperationBl
 }
 RegisterClass(ADDNUMBERNAME, FlowGraphAddMatrixAndNumberBlock);
 
-const SUBNAME = "FlowGraphSubtractMatrixBlock";
+const SUBNAME = "FGSubtractMatrixBlock";
 /**
  * Subtracts two matrices.
  * @experimental
@@ -61,7 +61,7 @@ export class FlowGraphSubtractMatrixBlock extends FlowGraphBinaryOperationBlock<
 }
 RegisterClass(SUBNAME, FlowGraphSubtractMatrixBlock);
 
-const SUBNUMBERNAME = "FlowGraphSubtractMatrixAndNumberBlock";
+const SUBNUMBERNAME = "FGSubtractMatrixAndNumberBlock";
 /**
  * Subtracts a matrix and a number together.
  * @experimental
@@ -87,7 +87,7 @@ export class FlowGraphSubtractMatrixAndNumberBlock extends FlowGraphBinaryOperat
 }
 RegisterClass(SUBNUMBERNAME, FlowGraphSubtractMatrixAndNumberBlock);
 
-const MULNAME = "FlowGraphMultiplyMatrixBlock";
+const MULNAME = "FGMultiplyMatrixBlock";
 /**
  * Multiplies two matrices together.
  * @experimental
@@ -100,7 +100,7 @@ export class FlowGraphMultiplyMatrixBlock extends FlowGraphBinaryOperationBlock<
 }
 RegisterClass(MULNAME, FlowGraphMultiplyMatrixBlock);
 
-const DIVIDENAME = "FlowGraphDivideMatrixBlock";
+const DIVIDENAME = "FGDivideMatrixBlock";
 /**
  * Divides two matrices.
  * @experimental
@@ -120,7 +120,7 @@ export class FlowGraphDivideMatrixBlock extends FlowGraphBinaryOperationBlock<Ma
 }
 RegisterClass(DIVIDENAME, FlowGraphDivideMatrixBlock);
 
-const DIVIDENUMBERNAME = "FlowGraphDivideMatrixAndNumberBlock";
+const DIVIDENUMBERNAME = "FGDivideMatrixAndNumberBlock";
 /**
  * Divides a matrix and a number together.
  * @experimental
@@ -146,7 +146,7 @@ export class FlowGraphDivideMatrixAndNumberBlock extends FlowGraphBinaryOperatio
 }
 RegisterClass(DIVIDENUMBERNAME, FlowGraphDivideMatrixAndNumberBlock);
 
-const SCALENAME = "FlowGraphScaleMatrixBlock";
+const SCALENAME = "FGScaleMatrixBlock";
 /**
  * Scales a matrix by a number.
  * @experimental
@@ -159,7 +159,7 @@ export class FlowGraphScaleMatrixBlock extends FlowGraphBinaryOperationBlock<Mat
 }
 RegisterClass(SCALENAME, FlowGraphScaleMatrixBlock);
 
-const CLAMPNAME = "FlowGraphClampMatrixBlock";
+const CLAMPNAME = "FGClampMatrixBlock";
 /**
  * Clamps each value in a matrix between a minimum and maximum value.
  * @experimental
@@ -211,7 +211,7 @@ export class FlowGraphClampMatrixBlock extends FlowGraphBlock {
 }
 RegisterClass(CLAMPNAME, FlowGraphClampMatrixBlock);
 
-const DECOMPOSENAME = "FlowGraphDecomposeMatrixBlock";
+const DECOMPOSENAME = "FGDecomposeMatrixBlock";
 /**
  * Decomposes a matrix into its translation, rotation and scale components.
  * @experimental
@@ -263,7 +263,7 @@ export class FlowGraphDecomposeMatrixBlock extends FlowGraphBlock {
 }
 RegisterClass(DECOMPOSENAME, FlowGraphDecomposeMatrixBlock);
 
-const COMPOSENAME = "FlowGraphComposeMatrixBlock";
+const COMPOSENAME = "FGComposeMatrixBlock";
 /**
  * Composes a matrix from its translation, rotation and scale components.
  * @experimental
@@ -313,7 +313,7 @@ export class FlowGraphComposeMatrixBlock extends FlowGraphBlock {
 }
 RegisterClass(COMPOSENAME, FlowGraphComposeMatrixBlock);
 
-const QUATERNIONTOROTNAME = "FlowGraphQuaternionToRotationMatrixBlock";
+const QUATERNIONTOROTNAME = "FGQuaternionToRotationMatrixBlock";
 /**
  * Converts a quaternion to a rotation matrix.
  * @experimental
@@ -326,7 +326,7 @@ export class FlowGraphQuaternionToRotationMatrixBlock extends FlowGraphUnaryOper
 }
 RegisterClass(QUATERNIONTOROTNAME, FlowGraphQuaternionToRotationMatrixBlock);
 
-const GETTRANSFORMNAME = "FlowGraphGetTransformationMatrixBlock";
+const GETTRANSFORMNAME = "FGGetTransformationMatrixBlock";
 /**
  * Given the Transform Nodes A and B, gives the matrix required
  * to transform coordinates from A's local space to B's local space.

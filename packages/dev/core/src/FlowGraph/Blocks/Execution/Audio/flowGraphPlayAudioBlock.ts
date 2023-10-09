@@ -31,7 +31,7 @@ export class FlowGraphPlayAudioBlock extends FlowGraphWithOnDoneExecutionBlock {
     }
 
     public getClassName(): string {
-        return "FlowGraphPlayAudioBlock";
+        return "FGPlayAudioBlock";
     }
 }
-RegisterClass("FlowGraphPlayAudioBlock", FlowGraphPlayAudioBlock);
+RegisterClass("FGPlayAudioBlock", FlowGraphPlayAudioBlock);

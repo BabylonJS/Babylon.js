@@ -4,15 +4,15 @@ import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
-const BLOCK_NAME_PREFIX = "FlowGraphBitwise";
-const BLOCK_NAME_AND = "AndBlock";
-const BLOCK_NAME_OR = "OrBlock";
-const BLOCK_NAME_XOR = "XorBlock";
-const BLOCK_NAME_NOT = "NotBlock";
-const BLOCK_NAME_LEFT_SHIFT = "LeftShiftBlock";
-const BLOCK_NAME_RIGHT_SHIFT = "RightShiftBlock";
-const BLOCK_NAME_COUNT_LEADING_ZEROS = "CountLeadingZerosBlock";
-const BLOCK_NAME_COUNT_TRAILING_ZEROS = "CountTrailingZerosBlock";
+const PREFIX = "FGBitwise";
+const AND = "AndBlock";
+const OR = "OrBlock";
+const XOR = "XorBlock";
+const NOT = "NotBlock";
+const LSHIFT = "LeftShiftBlock";
+const RSHIFT = "RightShiftBlock";
+const CLZ = "CountLeadingZerosBlock";
+const CTZ = "CountTrailingZerosBlock";
 
 /**
  * @experimental
@@ -20,14 +20,10 @@ const BLOCK_NAME_COUNT_TRAILING_ZEROS = "CountTrailingZerosBlock";
  */
 export class FlowGraphBitwiseAndBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left & right, `${BLOCK_NAME_PREFIX}${BLOCK_NAME_AND}`, config);
-    }
-
-    public getClassName(): string {
-        return `${BLOCK_NAME_PREFIX}${BLOCK_NAME_AND}`;
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left & right, `${PREFIX}${AND}`, config);
     }
 }
-RegisterClass(`${BLOCK_NAME_PREFIX}${BLOCK_NAME_AND}`, FlowGraphBitwiseAndBlock);
+RegisterClass(`${PREFIX}${AND}`, FlowGraphBitwiseAndBlock);
 
 /**
  * @experimental
@@ -35,14 +31,10 @@ RegisterClass(`${BLOCK_NAME_PREFIX}${BLOCK_NAME_AND}`, FlowGraphBitwiseAndBlock)
  */
 export class FlowGraphBitwiseOrBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left | right, `${BLOCK_NAME_PREFIX}${BLOCK_NAME_OR}`, config);
-    }
-
-    public getClassName(): string {
-        return `${BLOCK_NAME_PREFIX}${BLOCK_NAME_OR}`;
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left | right, `${PREFIX}${OR}`, config);
     }
 }
-RegisterClass(`${BLOCK_NAME_PREFIX}${BLOCK_NAME_OR}`, FlowGraphBitwiseOrBlock);
+RegisterClass(`${PREFIX}${OR}`, FlowGraphBitwiseOrBlock);
 
 /**
  * @experimental
@@ -50,14 +42,10 @@ RegisterClass(`${BLOCK_NAME_PREFIX}${BLOCK_NAME_OR}`, FlowGraphBitwiseOrBlock);
  */
 export class FlowGraphBitwiseXorBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left ^ right, `${BLOCK_NAME_PREFIX}${BLOCK_NAME_XOR}`, config);
-    }
-
-    public getClassName(): string {
-        return `${BLOCK_NAME_PREFIX}${BLOCK_NAME_XOR}`;
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left ^ right, `${PREFIX}${XOR}`, config);
     }
 }
-RegisterClass(`${BLOCK_NAME_PREFIX}${BLOCK_NAME_XOR}`, FlowGraphBitwiseXorBlock);
+RegisterClass(`${PREFIX}${XOR}`, FlowGraphBitwiseXorBlock);
 
 /**
  * @experimental
@@ -65,14 +53,10 @@ RegisterClass(`${BLOCK_NAME_PREFIX}${BLOCK_NAME_XOR}`, FlowGraphBitwiseXorBlock)
  */
 export class FlowGraphBitwiseNotBlock extends FlowGraphUnaryOperationBlock<number, number> {
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeNumber, RichTypeNumber, (value) => ~value, `${BLOCK_NAME_PREFIX}${BLOCK_NAME_NOT}`, config);
-    }
-
-    public getClassName(): string {
-        return `${BLOCK_NAME_PREFIX}${BLOCK_NAME_NOT}`;
+        super(RichTypeNumber, RichTypeNumber, (value) => ~value, `${PREFIX}${NOT}`, config);
     }
 }
-RegisterClass(`${BLOCK_NAME_PREFIX}${BLOCK_NAME_NOT}`, FlowGraphBitwiseNotBlock);
+RegisterClass(`${PREFIX}${NOT}`, FlowGraphBitwiseNotBlock);
 
 /**
  * @experimental
@@ -80,14 +64,10 @@ RegisterClass(`${BLOCK_NAME_PREFIX}${BLOCK_NAME_NOT}`, FlowGraphBitwiseNotBlock)
  */
 export class FlowGraphBitwiseLeftShiftBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left << right, `${BLOCK_NAME_PREFIX}${BLOCK_NAME_LEFT_SHIFT}`, config);
-    }
-
-    public getClassName(): string {
-        return `${BLOCK_NAME_PREFIX}${BLOCK_NAME_LEFT_SHIFT}`;
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left << right, `${PREFIX}${LSHIFT}`, config);
     }
 }
-RegisterClass(`${BLOCK_NAME_PREFIX}${BLOCK_NAME_LEFT_SHIFT}`, FlowGraphBitwiseLeftShiftBlock);
+RegisterClass(`${PREFIX}${LSHIFT}`, FlowGraphBitwiseLeftShiftBlock);
 
 /**
  * @experimental
@@ -95,14 +75,10 @@ RegisterClass(`${BLOCK_NAME_PREFIX}${BLOCK_NAME_LEFT_SHIFT}`, FlowGraphBitwiseLe
  */
 export class FlowGraphBitwiseRightShiftBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left >> right, `${BLOCK_NAME_PREFIX}${BLOCK_NAME_RIGHT_SHIFT}`, config);
-    }
-
-    public getClassName(): string {
-        return `${BLOCK_NAME_PREFIX}${BLOCK_NAME_RIGHT_SHIFT}`;
+        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left >> right, `${PREFIX}${RSHIFT}`, config);
     }
 }
-RegisterClass(`${BLOCK_NAME_PREFIX}${BLOCK_NAME_RIGHT_SHIFT}`, FlowGraphBitwiseRightShiftBlock);
+RegisterClass(`${PREFIX}${RSHIFT}`, FlowGraphBitwiseRightShiftBlock);
 
 /**
  * @experimental
@@ -110,14 +86,10 @@ RegisterClass(`${BLOCK_NAME_PREFIX}${BLOCK_NAME_RIGHT_SHIFT}`, FlowGraphBitwiseR
  */
 export class FlowGraphCountLeadingZerosBlock extends FlowGraphUnaryOperationBlock<number, number> {
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeNumber, RichTypeNumber, (value) => Math.clz32(value), `${BLOCK_NAME_PREFIX}${BLOCK_NAME_COUNT_LEADING_ZEROS}`, config);
-    }
-
-    public getClassName(): string {
-        return `${BLOCK_NAME_PREFIX}${BLOCK_NAME_COUNT_LEADING_ZEROS}`;
+        super(RichTypeNumber, RichTypeNumber, (value) => Math.clz32(value), `${PREFIX}${CLZ}`, config);
     }
 }
-RegisterClass(`${BLOCK_NAME_PREFIX}${BLOCK_NAME_COUNT_LEADING_ZEROS}`, FlowGraphCountLeadingZerosBlock);
+RegisterClass(`${PREFIX}${CLZ}`, FlowGraphCountLeadingZerosBlock);
 
 /**
  * @experimental
@@ -136,11 +108,7 @@ export class FlowGraphCountTrailingZerosBlock extends FlowGraphUnaryOperationBlo
     }
 
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeNumber, RichTypeNumber, (value) => this._ctrz(value), `${BLOCK_NAME_PREFIX}${BLOCK_NAME_COUNT_TRAILING_ZEROS}`, config);
-    }
-
-    public getClassName(): string {
-        return `${BLOCK_NAME_PREFIX}${BLOCK_NAME_COUNT_TRAILING_ZEROS}`;
+        super(RichTypeNumber, RichTypeNumber, (value) => this._ctrz(value), `${PREFIX}${CTZ}`, config);
     }
 }
-RegisterClass(`${BLOCK_NAME_PREFIX}${BLOCK_NAME_COUNT_TRAILING_ZEROS}`, FlowGraphCountTrailingZerosBlock);
+RegisterClass(`${PREFIX}${CTZ}`, FlowGraphCountTrailingZerosBlock);

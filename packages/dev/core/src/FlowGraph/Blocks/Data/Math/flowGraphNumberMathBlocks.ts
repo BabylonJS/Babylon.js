@@ -12,7 +12,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
  * @see https://docs.google.com/spreadsheets/d/1wSFUFLPpRFVlL-va3YtYC6sepNvPapVawG1-nzoTF34/edit#gid=0
  */
 
-const ADDNAME = "FlowGraphAddNumberBlock";
+const ADDNAME = "FGAddNumberBlock";
 /**
  * Outputs the addition of the left and right inputs.
  * @experimental
@@ -24,7 +24,7 @@ export class FlowGraphAddNumberBlock extends FlowGraphBinaryOperationBlock<numbe
 }
 RegisterClass(ADDNAME, FlowGraphAddNumberBlock);
 
-const SUBNAME = "FlowGraphSubtractNumberBlock";
+const SUBNAME = "FGSubtractNumberBlock";
 /**
  * Outputs the subtraction of the left and right inputs.
  * @experimental
@@ -36,7 +36,7 @@ export class FlowGraphSubtractNumberBlock extends FlowGraphBinaryOperationBlock<
 }
 RegisterClass(SUBNAME, FlowGraphSubtractNumberBlock);
 
-const MULTIPLYNAME = "FlowGraphMultiplyNumberBlock";
+const MULTIPLYNAME = "FGMultiplyNumberBlock";
 /**
  * Outputs the multiplication of the left and right inputs.
  * @experimental
@@ -48,7 +48,7 @@ export class FlowGraphMultiplyNumberBlock extends FlowGraphBinaryOperationBlock<
 }
 RegisterClass(MULTIPLYNAME, FlowGraphMultiplyNumberBlock);
 
-const DIVIDENAME = "FlowGraphDivideNumberBlock";
+const DIVIDENAME = "FGDivideNumberBlock";
 /**
  * Ouputs the division of the left and right inputs.
  * @experimental
@@ -60,7 +60,7 @@ export class FlowGraphDivideNumberBlock extends FlowGraphBinaryOperationBlock<nu
 }
 RegisterClass(DIVIDENAME, FlowGraphDivideNumberBlock);
 
-const MODNAME = "FlowGraphModNumberBlock";
+const MODNAME = "FGModNumberBlock";
 /**
  * Outputs the modulo of the left and right inputs.
  * @experimental
@@ -72,7 +72,7 @@ export class FlowGraphModNumberBlock extends FlowGraphBinaryOperationBlock<numbe
 }
 RegisterClass(MODNAME, FlowGraphModNumberBlock);
 
-const POWNAME = "FlowGraphPowNumberBlock";
+const POWNAME = "FGPowNumberBlock";
 /**
  * Outputs left to the power of right.
  * @experimental
@@ -84,7 +84,7 @@ export class FlowGraphPowNumberBlock extends FlowGraphBinaryOperationBlock<numbe
 }
 RegisterClass(POWNAME, FlowGraphPowNumberBlock);
 
-const ISNANNAME = "FlowGraphIsNaNNumberBlock";
+const ISNANNAME = "FGIsNaNNumberBlock";
 /**
  * Outputs true if the number is NaN, false otherwise.
  * @experimental
@@ -96,7 +96,7 @@ export class FlowGraphIsNaNNumberBlock extends FlowGraphUnaryOperationBlock<numb
 }
 RegisterClass(ISNANNAME, FlowGraphIsNaNNumberBlock);
 
-const ISINFINITENAME = "FlowGraphIsInfinityNumberBlock";
+const ISINFINITENAME = "FGIsInfinityNumberBlock";
 /**
  * Outputs true if the number is infinite, false otherwise.
  * @experimental
@@ -108,7 +108,7 @@ export class FlowGraphIsInfinityNumberBlock extends FlowGraphUnaryOperationBlock
 }
 RegisterClass(ISINFINITENAME, FlowGraphIsInfinityNumberBlock);
 
-const SQRTNAME = "FlowGraphSqrtNumberBlock";
+const SQRTNAME = "FGSqrtNumberBlock";
 /**
  * Outputs the square root of the input.
  * @experimental
@@ -120,7 +120,7 @@ export class FlowGraphSqrtNumberBlock extends FlowGraphUnaryOperationBlock<numbe
 }
 RegisterClass(SQRTNAME, FlowGraphSqrtNumberBlock);
 
-const ABSNAME = "FlowGraphAbsNumberBlock";
+const ABSNAME = "FGAbsNumberBlock";
 /**
  * Outputs the absolute value of the input.
  * @experimental
@@ -132,7 +132,7 @@ export class FlowGraphAbsNumberBlock extends FlowGraphUnaryOperationBlock<number
 }
 RegisterClass(ABSNAME, FlowGraphAbsNumberBlock);
 
-const NEGNAME = "FlowGraphNegateNumberBlock";
+const NEGNAME = "FGNegateNumberBlock";
 /**
  * Negates the input.
  * @experimental
@@ -144,7 +144,7 @@ export class FlowGraphNegateNumberBlock extends FlowGraphUnaryOperationBlock<num
 }
 RegisterClass(NEGNAME, FlowGraphNegateNumberBlock);
 
-const FLOORNAME = "FlowGraphFloorNumberBlock";
+const FLOORNAME = "FGFloorNumberBlock";
 /**
  * Outputs the floor of the input.
  * @experimental
@@ -157,7 +157,7 @@ export class FlowGraphFloorNumberBlock extends FlowGraphUnaryOperationBlock<numb
 
 RegisterClass(FLOORNAME, FlowGraphFloorNumberBlock);
 
-const CEILNAME = "FlowGraphCeilNumberBlock";
+const CEILNAME = "FGCeilNumberBlock";
 /**
  * Outputs the ceiling of the input.
  * @experimental
@@ -169,7 +169,7 @@ export class FlowGraphCeilNumberBlock extends FlowGraphUnaryOperationBlock<numbe
 }
 RegisterClass(CEILNAME, FlowGraphCeilNumberBlock);
 
-const ROUNDNAME = "FlowGraphRoundNumberBlock";
+const ROUNDNAME = "FGRoundNumberBlock";
 /**
  * Rounds the left input to right digits of precision.
  * @see rounding function from: https://docs.google.com/spreadsheets/d/1wSFUFLPpRFVlL-va3YtYC6sepNvPapVawG1-nzoTF34/edit#gid=0
@@ -182,7 +182,7 @@ export class FlowGraphRoundNumberBlock extends FlowGraphBinaryOperationBlock<num
 }
 RegisterClass(ROUNDNAME, FlowGraphRoundNumberBlock);
 
-const TRUNCNAME = "FlowGraphTruncNumberBlock";
+const TRUNCNAME = "FGTruncNumberBlock";
 /**
  * Truncates the input.
  * @experimental
@@ -194,7 +194,7 @@ export class FlowGraphTruncNumberBlock extends FlowGraphUnaryOperationBlock<numb
 }
 RegisterClass(TRUNCNAME, FlowGraphTruncNumberBlock);
 
-const EXPNAME = "FlowGraphExpNumberBlock";
+const EXPNAME = "FGExpNumberBlock";
 /**
  * Outputs the exponential of the input.
  * @experimental
@@ -206,7 +206,7 @@ export class FlowGraphExpNumberBlock extends FlowGraphUnaryOperationBlock<number
 }
 RegisterClass(EXPNAME, FlowGraphExpNumberBlock);
 
-const LOG10NAME = "FlowGraphLog10NumberBlock";
+const LOG10NAME = "FGLog10NumberBlock";
 /**
  * Outputs the base 10 logarithm of the input.
  * @experimental
@@ -218,7 +218,7 @@ export class FlowGraphLog10NumberBlock extends FlowGraphUnaryOperationBlock<numb
 }
 RegisterClass(LOG10NAME, FlowGraphLog10NumberBlock);
 
-const LOGNAME = "FlowGraphLogNumberBlock";
+const LOGNAME = "FGLogNumberBlock";
 /**
  * Outputs the natural logarithm of the input.
  * @experimental
@@ -230,7 +230,7 @@ export class FlowGraphLogNumberBlock extends FlowGraphUnaryOperationBlock<number
 }
 RegisterClass(LOGNAME, FlowGraphLogNumberBlock);
 
-const LNNAME = "FlowGraphLnNumberBlock";
+const LNNAME = "FGLnNumberBlock";
 /**
  * Outputs the base 2 logarithm of the input.
  * @experimental
@@ -242,7 +242,7 @@ export class FlowGraphLnNumberBlock extends FlowGraphUnaryOperationBlock<number,
 }
 RegisterClass(LNNAME, FlowGraphLnNumberBlock);
 
-const SINENAME = "FlowGraphSineNumberBlock";
+const SINENAME = "FGSineNumberBlock";
 /**
  * Outputs the sine of the input.
  * @experimental
@@ -254,7 +254,7 @@ export class FlowGraphSinNumberBlock extends FlowGraphUnaryOperationBlock<number
 }
 RegisterClass(SINENAME, FlowGraphSinNumberBlock);
 
-const COSNAME = "FlowGraphCosNumberBlock";
+const COSNAME = "FGCosNumberBlock";
 /**
  * Outputs the cosine of the input.
  * @experimental
@@ -266,7 +266,7 @@ export class FlowGraphCosNumberBlock extends FlowGraphUnaryOperationBlock<number
 }
 RegisterClass(COSNAME, FlowGraphCosNumberBlock);
 
-const TANNAME = "FlowGraphTanNumberBlock";
+const TANNAME = "FGTanNumberBlock";
 /**
  * Outputs the tangent of the input.
  * @experimental
@@ -278,7 +278,7 @@ export class FlowGraphTanNumberBlock extends FlowGraphUnaryOperationBlock<number
 }
 RegisterClass(TANNAME, FlowGraphTanNumberBlock);
 
-const ASINENAME = "FlowGraphASineNumberBlock";
+const ASINENAME = "FGASineNumberBlock";
 /**
  * Outputs the arcsine of the input.
  * @experimental
@@ -290,7 +290,7 @@ export class FlowGraphASinNumberBlock extends FlowGraphUnaryOperationBlock<numbe
 }
 RegisterClass(ASINENAME, FlowGraphASinNumberBlock);
 
-const ACOSNAME = "FlowGraphACosNumberBlock";
+const ACOSNAME = "FGACosNumberBlock";
 /**
  * Outputs the arccosine of the input.
  * @experimental
@@ -302,7 +302,7 @@ export class FlowGraphACosNumberBlock extends FlowGraphUnaryOperationBlock<numbe
 }
 RegisterClass(ACOSNAME, FlowGraphACosNumberBlock);
 
-const ATANNAME = "FlowGraphATanNumberBlock";
+const ATANNAME = "FGATanNumberBlock";
 /**
  * Outputs the arctangent of the input.
  * @experimental
@@ -314,7 +314,7 @@ export class FlowGraphATanNumberBlock extends FlowGraphUnaryOperationBlock<numbe
 }
 RegisterClass(ATANNAME, FlowGraphATanNumberBlock);
 
-const ENAME = "FlowGraphENumberBlock";
+const ENAME = "FGENumberBlock";
 /**
  * Outputs the number E.
  * @experimental
@@ -326,7 +326,7 @@ export class FlowGraphENumberBlock extends FlowGraphConstantOperationBlock<numbe
 }
 RegisterClass(ENAME, FlowGraphENumberBlock);
 
-const PINAME = "FlowGraphPiNumberBlock";
+const PINAME = "FGPiNumberBlock";
 /**
  * Outputs the number PI.
  * @experimental
@@ -338,7 +338,7 @@ export class FlowGraphPiNumberBlock extends FlowGraphConstantOperationBlock<numb
 }
 RegisterClass(PINAME, FlowGraphPiNumberBlock);
 
-const ATAN2NAME = "FlowGraphATan2NumberBlock";
+const ATAN2NAME = "FGATan2NumberBlock";
 /**
  * Outputs the arctan2 of the left and right inputs.
  * @experimental
@@ -350,7 +350,7 @@ export class FlowGraphATan2NumberBlock extends FlowGraphBinaryOperationBlock<num
 }
 RegisterClass(ATAN2NAME, FlowGraphATan2NumberBlock);
 
-const RNDNAME = "FlowGraphRandomNumberBlock";
+const RNDNAME = "FGRandomNumberBlock";
 /**
  * @experimental
  * Outputs a number between left and right.
@@ -362,7 +362,7 @@ export class FlowGraphRandomNumberBlock extends FlowGraphBinaryOperationBlock<nu
 }
 RegisterClass(RNDNAME, FlowGraphRandomNumberBlock);
 
-const MINNAME = "FlowGraphMinNumberBlock";
+const MINNAME = "FGMinNumberBlock";
 /**
  * Outputs the minimum of the left and right inputs.
  * @experimental
@@ -374,7 +374,7 @@ export class FlowGraphMinNumberBlock extends FlowGraphBinaryOperationBlock<numbe
 }
 RegisterClass(MINNAME, FlowGraphMinNumberBlock);
 
-const MAXNAME = "FlowGraphMaxNumberBlock";
+const MAXNAME = "FGMaxNumberBlock";
 /**
  * Outputs the maximum of the left and right inputs.
  * @experimental
@@ -386,7 +386,7 @@ export class FlowGraphMaxNumberBlock extends FlowGraphBinaryOperationBlock<numbe
 }
 RegisterClass(MAXNAME, FlowGraphMaxNumberBlock);
 
-const EQUALSNAME = "FlowGraphEqualsNumberBlock";
+const EQUALSNAME = "FGEqualsNumberBlock";
 /**
  * Outputs true if left is equal to right, false otherwise.
  * @experimental
@@ -398,7 +398,7 @@ export class FlowGraphEqualsNumberBlock extends FlowGraphBinaryOperationBlock<nu
 }
 RegisterClass(EQUALSNAME, FlowGraphEqualsNumberBlock);
 
-const GREATERTHANNAME = "FlowGraphGreaterThanNumberBlock";
+const GREATERTHANNAME = "FGGreaterThanNumberBlock";
 /**
  * Outputs true if left is greater than right, false otherwise.
  */
@@ -409,7 +409,7 @@ export class FlowGraphGreaterThanNumberBlock extends FlowGraphBinaryOperationBlo
 }
 RegisterClass(GREATERTHANNAME, FlowGraphGreaterThanNumberBlock);
 
-const GREATEROREQUALNAME = "FlowGraphGreaterThanOrEqualsNumberBlock";
+const GREATEROREQUALNAME = "FGGreaterThanOrEqualsNumberBlock";
 /**
  * Outputs true if left is greater than or equal to right, false otherwise.
  */
@@ -420,7 +420,7 @@ export class FlowGraphGreaterThanOrEqualsNumberBlock extends FlowGraphBinaryOper
 }
 RegisterClass(GREATEROREQUALNAME, FlowGraphGreaterThanOrEqualsNumberBlock);
 
-const LESSTHANNAME = "FlowGraphLessThanNumberBlock";
+const LESSTHANNAME = "FGLessThanNumberBlock";
 /**
  * Outputs true if left is less than right, false otherwise.
  */
@@ -431,7 +431,7 @@ export class FlowGraphLessThanNumberBlock extends FlowGraphBinaryOperationBlock<
 }
 RegisterClass(LESSTHANNAME, FlowGraphLessThanNumberBlock);
 
-const LESSOREQUALNAME = "FlowGraphLessThanOrEqualsNumberBlock";
+const LESSOREQUALNAME = "FGLessThanOrEqualsNumberBlock";
 /**
  * Outputs true if left is less than or equal to right, false otherwise.
  */
@@ -442,7 +442,7 @@ export class FlowGraphLessThanOrEqualsNumberBlock extends FlowGraphBinaryOperati
 }
 RegisterClass(LESSOREQUALNAME, FlowGraphLessThanOrEqualsNumberBlock);
 
-const MIXNAME = "FlowGraphMixNumberBlock";
+const MIXNAME = "FGMixNumberBlock";
 /**
  * Outputs a mix of left and right based on alpha.
  * @experimental

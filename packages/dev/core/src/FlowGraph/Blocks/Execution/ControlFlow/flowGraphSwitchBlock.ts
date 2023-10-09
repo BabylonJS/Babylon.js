@@ -59,7 +59,7 @@ export class FlowGraphSwitchBlock<T> extends FlowGraphExecutionBlock {
     }
 
     public getClassName(): string {
-        return "FlowGraphSwitchBlock";
+        return "FGSwitchBlock";
     }
 }
-RegisterClass("FlowGraphSwitchBlock", FlowGraphSwitchBlock);
+RegisterClass("FGSwitchBlock", FlowGraphSwitchBlock);

@@ -35,7 +35,7 @@ export class FlowGraphConstantBlock<T> extends FlowGraphBlock {
     }
 
     public getClassName(): string {
-        return "FlowGraphConstantBlock";
+        return "FGConstantBlock";
     }
 }
-RegisterClass("FlowGraphConstantBlock", FlowGraphConstantBlock);
+RegisterClass("FGConstantBlock", FlowGraphConstantBlock);

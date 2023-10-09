@@ -49,7 +49,7 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
     }
 
     public getClassName(): string {
-        return "FlowGraphReceiveCustomEventBlock";
+        return "FGReceiveCustomEventBlock";
     }
 }
-RegisterClass("FlowGraphReceiveCustomEventBlock", FlowGraphReceiveCustomEventBlock);
+RegisterClass("FGReceiveCustomEventBlock", FlowGraphReceiveCustomEventBlock);

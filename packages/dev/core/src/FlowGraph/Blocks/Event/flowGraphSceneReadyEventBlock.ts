@@ -30,7 +30,7 @@ export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
     }
 
     public getClassName() {
-        return "FlowGraphSceneReadyEventBlock";
+        return "FGSceneReadyEventBlock";
     }
 }
-RegisterClass("FlowGraphSceneReadyEventBlock", FlowGraphSceneReadyEventBlock);
+RegisterClass("FGSceneReadyEventBlock", FlowGraphSceneReadyEventBlock);

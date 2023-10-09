@@ -41,7 +41,7 @@ export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
     }
 
     public getClassName(): string {
-        return "FlowGraphGetVariableBlock";
+        return "FGGetVariableBlock";
     }
 }
-RegisterClass("FlowGraphGetVariableBlock", FlowGraphGetVariableBlock);
+RegisterClass("FGGetVariableBlock", FlowGraphGetVariableBlock);

@@ -27,7 +27,7 @@ export class FlowGraphStopAnimationBlock extends FlowGraphWithOnDoneExecutionBlo
     }
 
     public getClassName(): string {
-        return "FlowGraphStopAnimationBlock";
+        return "FGStopAnimationBlock";
     }
 }
-RegisterClass("FlowGraphStopAnimationBlock", FlowGraphStopAnimationBlock);
+RegisterClass("FGStopAnimationBlock", FlowGraphStopAnimationBlock);

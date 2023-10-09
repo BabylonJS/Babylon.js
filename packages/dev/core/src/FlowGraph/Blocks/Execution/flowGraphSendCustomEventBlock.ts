@@ -35,7 +35,7 @@ export class FlowGraphSendCustomEventBlock extends FlowGraphWithOnDoneExecutionB
     }
 
     public getClassName(): string {
-        return "FlowGraphSendCustomEventBlock";
+        return "FGSendCustomEventBlock";
     }
 }
-RegisterClass("FlowGraphSendCustomEventBlock", FlowGraphSendCustomEventBlock);
+RegisterClass("FGSendCustomEventBlock", FlowGraphSendCustomEventBlock);

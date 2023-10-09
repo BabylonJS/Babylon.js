@@ -84,7 +84,7 @@ export class FlowGraphBlock {
     }
 
     public getClassName() {
-        return "FlowGraphBlock";
+        return "FGBlock";
     }
 
     public static Parse(serializationObject: any): FlowGraphBlock {

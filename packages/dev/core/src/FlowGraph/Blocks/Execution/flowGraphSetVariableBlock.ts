@@ -34,7 +34,7 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphWithOnDoneExecutionBl
     }
 
     public getClassName(): string {
-        return "FlowGraphSetVariableBlock";
+        return "FGSetVariableBlock";
     }
 }
-RegisterClass("FlowGraphSetVariableBlock", FlowGraphSetVariableBlock);
+RegisterClass("FGSetVariableBlock", FlowGraphSetVariableBlock);

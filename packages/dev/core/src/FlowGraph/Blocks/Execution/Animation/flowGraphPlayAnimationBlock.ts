@@ -125,8 +125,8 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     }
 
     public getClassName(): string {
-        return "FlowGraphPlayAnimationBlock";
+        return "FGPlayAnimationBlock";
     }
 }
 
-RegisterClass("FlowGraphPlayAnimationBlock", FlowGraphPlayAnimationBlock);
+RegisterClass("FGPlayAnimationBlock", FlowGraphPlayAnimationBlock);

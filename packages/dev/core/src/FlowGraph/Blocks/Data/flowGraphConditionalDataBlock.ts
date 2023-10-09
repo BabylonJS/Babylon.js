@@ -45,7 +45,7 @@ export class FlowGraphConditionalDataBlock<T> extends FlowGraphBlock {
     }
 
     public getClassName(): string {
-        return "FlowGraphConditionalDataBlock";
+        return "FGConditionalDataBlock";
     }
 }
-RegisterClass("FlowGraphConditionalDataBlock", FlowGraphConditionalDataBlock);
+RegisterClass("FGConditionalDataBlock", FlowGraphConditionalDataBlock);

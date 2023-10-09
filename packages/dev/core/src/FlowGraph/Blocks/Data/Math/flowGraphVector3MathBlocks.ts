@@ -8,7 +8,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import type { FlowGraphContext } from "../../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 
-const ADDNAME = "FlowGraphAddVector3Block";
+const ADDNAME = "FGAddVector3Block";
 /**
  * Add two vectors together.
  * @experimental
@@ -20,7 +20,7 @@ export class FlowGraphAddVector3Block extends FlowGraphBinaryOperationBlock<Vect
 }
 RegisterClass(ADDNAME, FlowGraphAddVector3Block);
 
-const SUBNAME = "FlowGraphSubtractVector3Block";
+const SUBNAME = "FGSubtractVector3Block";
 /**
  * Subtract two vectors.
  * @experimental
@@ -32,7 +32,7 @@ export class FlowGraphSubtractVector3Block extends FlowGraphBinaryOperationBlock
 }
 RegisterClass(SUBNAME, FlowGraphSubtractVector3Block);
 
-const MULNAME = "FlowGraphMultiplyVector3Block";
+const MULNAME = "FGMultiplyVector3Block";
 /**
  * Multiply two vectors together.
  * @experimental
@@ -44,7 +44,7 @@ export class FlowGraphMultiplyVector3Block extends FlowGraphBinaryOperationBlock
 }
 RegisterClass(MULNAME, FlowGraphMultiplyVector3Block);
 
-const DIVNAME = "FlowGraphDivideVector3Block";
+const DIVNAME = "FGDivideVector3Block";
 /**
  * Divide two vectors.
  * @experimental
@@ -56,7 +56,7 @@ export class FlowGraphDivideVector3Block extends FlowGraphBinaryOperationBlock<V
 }
 RegisterClass(DIVNAME, FlowGraphDivideVector3Block);
 
-const SCALNAME = "FlowGraphScaleVector3Block";
+const SCALNAME = "FGScaleVector3Block";
 /**
  * Scale a vector by a number.
  * @experimental
@@ -68,7 +68,7 @@ export class FlowGraphScaleVector3Block extends FlowGraphBinaryOperationBlock<Ve
 }
 RegisterClass(SCALNAME, FlowGraphScaleVector3Block);
 
-const LENNAME = "FlowGraphLengthVector3Block";
+const LENNAME = "FGLengthVector3Block";
 /**
  * Get the length of a vector.
  * @experimental
@@ -80,7 +80,7 @@ export class FlowGraphLengthVector3Block extends FlowGraphUnaryOperationBlock<Ve
 }
 RegisterClass(LENNAME, FlowGraphLengthVector3Block);
 
-const NORMNAME = "FlowGraphNormalizeVector3Block";
+const NORMNAME = "FGNormalizeVector3Block";
 /**
  * Normalize a vector.
  * @experimental
@@ -92,7 +92,7 @@ export class FlowGraphNormalizeVector3Block extends FlowGraphUnaryOperationBlock
 }
 RegisterClass(NORMNAME, FlowGraphNormalizeVector3Block);
 
-const DOTNAME = "FlowGraphDotVector3Block";
+const DOTNAME = "FGDotVector3Block";
 /**
  * Get the dot product of two vectors.
  * @experimental
@@ -104,7 +104,7 @@ export class FlowGraphDotVector3Block extends FlowGraphBinaryOperationBlock<Vect
 }
 RegisterClass(DOTNAME, FlowGraphDotVector3Block);
 
-const CROSSNAME = "FlowGraphCrossVector3Block";
+const CROSSNAME = "FGCrossVector3Block";
 /**
  * Get the cross product of two vectors.
  * @experimental
@@ -116,7 +116,7 @@ export class FlowGraphCrossVector3Block extends FlowGraphBinaryOperationBlock<Ve
 }
 RegisterClass(CROSSNAME, FlowGraphCrossVector3Block);
 
-const CREATENAME = "FlowGraphCreateVector3Block";
+const CREATENAME = "FGCreateVector3Block";
 /**
  * Create a vector from its components.
  * @experimental
@@ -163,7 +163,7 @@ export class FlowGraphCreateVector3Block extends FlowGraphBlock {
 }
 RegisterClass(CREATENAME, FlowGraphCreateVector3Block);
 
-const SPLITNAME = "FlowGraphSplitVector3Block";
+const SPLITNAME = "FGSplitVector3Block";
 /**
  * Split a vector into its components.
  * @experimental
@@ -208,7 +208,7 @@ export class FlowGraphSplitVector3Block extends FlowGraphBlock {
 }
 RegisterClass(SPLITNAME, FlowGraphSplitVector3Block);
 
-const ROTATENAME = "FlowGraphRotateVector3Block";
+const ROTATENAME = "FGRotateVector3Block";
 /**
  * Rotates a vector by a given angle.
  */
@@ -252,7 +252,7 @@ export class FlowGraphRotate3dVector3Block extends FlowGraphBlock {
 }
 RegisterClass(ROTATENAME, FlowGraphRotate3dVector3Block);
 
-const TRANSFORMNAME = "FlowGraphTransformVector3Block";
+const TRANSFORMNAME = "FGTransformVector3Block";
 /**
  * Transforms a vector by a given matrix.
  * @experimental

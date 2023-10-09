@@ -70,7 +70,7 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
     }
 
     public getClassName(): string {
-        return "FlowGraphDataConnection";
+        return "FGDataConnection";
     }
 
     public serialize(serializationObject: any = {}) {
@@ -86,4 +86,4 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
     }
 }
 
-RegisterClass("FlowGraphDataConnection", FlowGraphDataConnection);
+RegisterClass("FGDataConnection", FlowGraphDataConnection);

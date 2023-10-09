@@ -50,7 +50,7 @@ export class FlowGraphWhileLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
     }
 
     public getClassName(): string {
-        return "FlowGraphWhileLoopBlock";
+        return "FGWhileLoopBlock";
     }
 }
-RegisterClass("FlowGraphWhileLoopBlock", FlowGraphWhileLoopBlock);
+RegisterClass("FGWhileLoopBlock", FlowGraphWhileLoopBlock);

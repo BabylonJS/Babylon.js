@@ -59,7 +59,7 @@ export class FlowGraphSetPropertyBlock<TargetT, ValueT> extends FlowGraphWithOnD
     }
 
     public getClassName(): string {
-        return "FlowGraphSetPropertyBlock";
+        return "FGSetPropertyBlock";
     }
 }
-RegisterClass("FlowGraphSetPropertyBlock", FlowGraphSetPropertyBlock);
+RegisterClass("FGSetPropertyBlock", FlowGraphSetPropertyBlock);

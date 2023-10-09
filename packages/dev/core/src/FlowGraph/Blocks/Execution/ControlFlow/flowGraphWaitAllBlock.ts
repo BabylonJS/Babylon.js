@@ -84,7 +84,7 @@ export class FlowGraphWaitAllBlock extends FlowGraphWithOnDoneExecutionBlock {
     }
 
     public getClassName(): string {
-        return "FlowGraphWaitAllBlock";
+        return "FGWaitAllBlock";
     }
 }
-RegisterClass("FlowGraphWaitAllBlock", FlowGraphWaitAllBlock);
+RegisterClass("FGWaitAllBlock", FlowGraphWaitAllBlock);

@@ -62,7 +62,7 @@ export class FlowGraphCoordinateTransformBlock extends FlowGraphBlock {
     }
 
     public getClassName(): string {
-        return "FlowGraphCoordinateTransformBlock";
+        return "FGCoordinateTransformBlock";
     }
 }
-RegisterClass("FlowGraphCoordinateTransformBlock", FlowGraphCoordinateTransformBlock);
+RegisterClass("FGCoordinateTransformBlock", FlowGraphCoordinateTransformBlock);

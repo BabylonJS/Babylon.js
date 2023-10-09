@@ -65,7 +65,7 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
     }
 
     public getClassName(): string {
-        return "FlowGraphMeshPickEventBlock";
+        return "FGMeshPickEventBlock";
     }
 }
-RegisterClass("FlowGraphMeshPickEventBlock", FlowGraphMeshPickEventBlock);
+RegisterClass("FGMeshPickEventBlock", FlowGraphMeshPickEventBlock);

@@ -1,5 +1,4 @@
 import { Tools } from "../Misc/tools";
-import { serialize } from "../Misc/decorators";
 import { RandomGUID } from "../Misc/guid";
 import type { FlowGraphBlock } from "./flowGraphBlock";
 
@@ -33,19 +32,16 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
     /**
      * A uniquely identifying string for the connection.
      */
-    @serialize()
     public uniqueId = RandomGUID();
 
     /**
      * The name of the connection.
      */
-    @serialize()
     public name: string;
 
     /**
      * @internal
      */
-    @serialize()
     public _connectionType: FlowGraphConnectionType;
 
     /**
@@ -114,7 +110,7 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
     }
 
     public getClassName(): string {
-        return "FlowGraphConnection";
+        return "FGConnection";
     }
 
     parse(serializationObject: any) {
