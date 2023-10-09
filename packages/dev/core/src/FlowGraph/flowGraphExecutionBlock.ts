@@ -70,10 +70,10 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
     public static Parse(serializationObject: any = {}) {
         const block = super.Parse(serializationObject) as FlowGraphExecutionBlock;
         for (let i = 0; i < serializationObject.signalInputs.length; i++) {
-            block.signalInputs[i].parse(serializationObject.signalInputs[i]);
+            block.signalInputs[i].deserialize(serializationObject.signalInputs[i]);
         }
         for (let i = 0; i < serializationObject.signalOutputs.length; i++) {
-            block.signalOutputs[i].parse(serializationObject.signalOutputs[i]);
+            block.signalOutputs[i].deserialize(serializationObject.signalOutputs[i]);
         }
         return block;
     }

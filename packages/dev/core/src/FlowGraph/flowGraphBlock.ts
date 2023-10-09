@@ -99,10 +99,10 @@ export class FlowGraphBlock {
         }
         if (obj instanceof FlowGraphExecutionBlock) {
             for (let i = 0; i < serializationObject.signalInputs.length; i++) {
-                obj.signalInputs[i].parse(serializationObject.signalInputs[i]);
+                obj.signalInputs[i].deserialize(serializationObject.signalInputs[i]);
             }
             for (let i = 0; i < serializationObject.signalOutputs.length; i++) {
-                obj.signalOutputs[i].parse(serializationObject.signalOutputs[i]);
+                obj.signalOutputs[i].deserialize(serializationObject.signalOutputs[i]);
             }
         }
         return obj;

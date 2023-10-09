@@ -113,7 +113,7 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
         return "FGConnection";
     }
 
-    parse(serializationObject: any) {
+    deserialize(serializationObject: any) {
         this.uniqueId = serializationObject.uniqueId;
         this.name = serializationObject.name;
         this._connectionType = serializationObject._connectionType;
