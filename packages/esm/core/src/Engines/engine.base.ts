@@ -908,7 +908,7 @@ export function runRenderLoop(
     if (!fes._renderingQueueLaunched) {
         fes._renderingQueueLaunched = true;
         _renderLoop({ beginFrameFunc, endFrameFunc, queueNewFrameFunc }, engineState);
-        fes._boundRenderFunction = _renderLoop.bind(null, engineState, { beginFrameFunc, endFrameFunc, queueNewFrameFunc });
+        fes._boundRenderFunction = () => _renderLoop({ beginFrameFunc, endFrameFunc, queueNewFrameFunc }, engineState);
         fes._frameHandler = queueNewFrameFunc(fes._boundRenderFunction!, getHostWindow(engineState));
     }
 }
