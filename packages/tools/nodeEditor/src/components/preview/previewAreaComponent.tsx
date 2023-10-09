@@ -157,7 +157,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
                                 <img src={directionalLeft} alt="" />
                             </div>
                             <div
-                                title="Turn on/off background"
+                                title="Turn on/off environment"
                                 onClick={() => {
                                     this.props.globalState.backgroundHDR = !this.props.globalState.backgroundHDR;
                                     DataStorage.WriteBoolean("backgroundHDR", this.props.globalState.backgroundHDR);
