@@ -907,8 +907,13 @@ export function runRenderLoop(
 
     if (!fes._renderingQueueLaunched) {
         fes._renderingQueueLaunched = true;
-        _renderLoop({ beginFrameFunc, endFrameFunc, queueNewFrameFunc }, engineState);
-        fes._boundRenderFunction = () => _renderLoop({ beginFrameFunc, endFrameFunc, queueNewFrameFunc }, engineState);
+        const renderLoopInjection = {
+            beginFrameFunc,
+            endFrameFunc,
+            queueNewFrameFunc,
+        }
+        _renderLoop(renderLoopInjection, engineState);
+        fes._boundRenderFunction = () => _renderLoop(renderLoopInjection, engineState);
         fes._frameHandler = queueNewFrameFunc(fes._boundRenderFunction!, getHostWindow(engineState));
     }
 }
