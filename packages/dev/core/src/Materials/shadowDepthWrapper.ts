@@ -105,6 +105,7 @@ export class ShadowDepthWrapper {
         // to create the depth effect later on
         this._onEffectCreatedObserver = this._baseMaterial.onEffectCreatedObservable.add((params: { effect: Effect; subMesh: Nullable<SubMesh> }) => {
             const mesh = params.subMesh?.getMesh();
+            const engine = this._scene.getEngine();
 
             if (mesh && !this._meshes.has(mesh)) {
                 // Register for mesh onDispose to clean up our internal maps when a mesh is disposed
@@ -116,7 +117,17 @@ export class ShadowDepthWrapper {
                             const subMesh = key.value;
                             if (subMesh?.getMesh() === (mesh as AbstractMesh)) {
                                 this._subMeshToEffect.delete(subMesh);
-                                this._subMeshToDepthWrapper.mm.delete(subMesh);
+                                const depthWrapperEntries = this._subMeshToDepthWrapper.mm.get(subMesh)
+                                if (depthWrapperEntries) {
+                                    for (const entry of depthWrapperEntries.entries()) {
+                                        const effect = entry[1].mainDrawWrapper.effect;
+                                        if (effect) {
+                                            engine._releaseEffect(effect);
+                                            effect.dispose();
+                                        }
+                                    }
+                                    this._subMeshToDepthWrapper.mm.delete(subMesh);
+                                }
                             }
                         }
                     })
@@ -124,7 +135,18 @@ export class ShadowDepthWrapper {
             }
 
             this._subMeshToEffect.set(params.subMesh, [params.effect, this._scene.getEngine().currentRenderPassId]);
-            this._subMeshToDepthWrapper.mm.delete(params.subMesh); // trigger a depth effect recreation
+            const depthWrapperEntries = this._subMeshToDepthWrapper.mm.get(params.subMesh)
+            if (depthWrapperEntries) {
+                // find and release the previous depth effect
+                for (const entry of depthWrapperEntries.entries()) {
+                    const effect = entry[1].mainDrawWrapper.effect;
+                    if (effect) {
+                        engine._releaseEffect(effect);
+                        effect.dispose();
+                    }
+                }
+                this._subMeshToDepthWrapper.mm.delete(params.subMesh); // trigger a depth effect recreation
+            }
         });
     }
 
