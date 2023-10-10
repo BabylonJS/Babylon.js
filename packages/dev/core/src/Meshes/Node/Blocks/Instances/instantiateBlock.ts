@@ -13,8 +13,8 @@ import type { INodeGeometryInstancingContext } from "../../Interfaces/nodeGeomet
  * Block used to instantiate a geometry inside a loop
  */
 export class InstantiateBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext, INodeGeometryInstancingContext {
-    private _vertexData: VertexData;
-    private _currentIndex: number;
+    protected _vertexData: VertexData;
+    protected _currentIndex: number;
 
     /**
      * Gets or sets a boolean indicating that this block can evaluate context
