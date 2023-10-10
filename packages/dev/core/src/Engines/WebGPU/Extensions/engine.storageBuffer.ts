@@ -14,8 +14,9 @@ declare module "../../../Materials/effect" {
          * Sets a storage buffer on the engine to be used in the shader.
          * @param name Name of the storage buffer variable.
          * @param buffer Storage buffer to set.
+         * @param label defines the label of the buffer (for debug purpose)
          */
-        setStorageBuffer(name: string, buffer: Nullable<StorageBuffer>): void;
+        setStorageBuffer(name: string, buffer: Nullable<StorageBuffer>, label?: string): void;
     }
 }
 
@@ -23,8 +24,8 @@ Effect.prototype.setStorageBuffer = function (name: string, buffer: Nullable<Sto
     this._engine.setStorageBuffer(name, buffer);
 };
 
-WebGPUEngine.prototype.createStorageBuffer = function (data: DataArray | number, creationFlags: number): DataBuffer {
-    return this._createBuffer(data, creationFlags | Constants.BUFFER_CREATIONFLAG_STORAGE);
+WebGPUEngine.prototype.createStorageBuffer = function (data: DataArray | number, creationFlags: number, label?: string): DataBuffer {
+    return this._createBuffer(data, creationFlags | Constants.BUFFER_CREATIONFLAG_STORAGE, label);
 };
 
 WebGPUEngine.prototype.updateStorageBuffer = function (buffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
@@ -59,7 +60,7 @@ WebGPUEngine.prototype.updateStorageBuffer = function (buffer: DataBuffer, data:
 WebGPUEngine.prototype.readFromStorageBuffer = function (storageBuffer: DataBuffer, offset?: number, size?: number, buffer?: ArrayBufferView): Promise<ArrayBufferView> {
     size = size || storageBuffer.capacity;
 
-    const gpuBuffer = this._bufferManager.createRawBuffer(size, WebGPUConstants.BufferUsage.MapRead | WebGPUConstants.BufferUsage.CopyDst);
+    const gpuBuffer = this._bufferManager.createRawBuffer(size, WebGPUConstants.BufferUsage.MapRead | WebGPUConstants.BufferUsage.CopyDst, undefined, "TempReadFromStorageBuffer");
 
     this._renderTargetEncoder.copyBufferToBuffer(storageBuffer.underlyingResource, offset ?? 0, gpuBuffer, 0, size);
 

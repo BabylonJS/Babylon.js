@@ -15,13 +15,29 @@ export class WebGPUBufferManager {
         return (buffer as DataBuffer).underlyingResource === undefined;
     }
 
+    private static _FlagsToString(flags: GPUBufferUsageFlags, suffix = "") {
+        let result = suffix;
+
+        for (let i = 0; i <= 9; ++i) {
+            if (flags & (1 << i)) {
+                if (result) {
+                    result += "_";
+                }
+                result += WebGPUConstants.BufferUsage[1 << i];
+            }
+        }
+
+        return result;
+    }
+
     constructor(device: GPUDevice) {
         this._device = device;
     }
 
-    public createRawBuffer(viewOrSize: ArrayBufferView | number, flags: GPUBufferUsageFlags, mappedAtCreation = false): GPUBuffer {
+    public createRawBuffer(viewOrSize: ArrayBufferView | number, flags: GPUBufferUsageFlags, mappedAtCreation = false, label?: string): GPUBuffer {
         const alignedLength = (viewOrSize as ArrayBufferView).byteLength !== undefined ? ((viewOrSize as ArrayBufferView).byteLength + 3) & ~3 : ((viewOrSize as number) + 3) & ~3; // 4 bytes alignments (because of the upload which requires this)
         const verticesBufferDescriptor = {
+            label: WebGPUBufferManager._FlagsToString(flags, label ?? "Buffer") + "_size" + alignedLength,
             mappedAtCreation,
             size: alignedLength,
             usage: flags,
@@ -30,9 +46,9 @@ export class WebGPUBufferManager {
         return this._device.createBuffer(verticesBufferDescriptor);
     }
 
-    public createBuffer(viewOrSize: ArrayBufferView | number, flags: GPUBufferUsageFlags): WebGPUDataBuffer {
+    public createBuffer(viewOrSize: ArrayBufferView | number, flags: GPUBufferUsageFlags, label?: string): WebGPUDataBuffer {
         const isView = (viewOrSize as ArrayBufferView).byteLength !== undefined;
-        const buffer = this.createRawBuffer(viewOrSize, flags);
+        const buffer = this.createRawBuffer(viewOrSize, flags, undefined, label);
         const dataBuffer = new WebGPUDataBuffer(buffer);
         dataBuffer.references = 1;
         dataBuffer.capacity = isView ? (viewOrSize as ArrayBufferView).byteLength : (viewOrSize as number);

@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable babylonjs/available */
+/* eslint-disable jsdoc/require-jsdoc */
 // License for the mipmap generation code:
 //
 // Copyright 2020 Brandon Jones
@@ -331,7 +333,11 @@ export class WebGPUTextureHelper {
 
         this._mipmapSampler = device.createSampler({ minFilter: WebGPUConstants.FilterMode.Linear });
         this._videoSampler = device.createSampler({ minFilter: WebGPUConstants.FilterMode.Linear });
-        this._ubCopyWithOfst = this._bufferManager.createBuffer(4 * 4, WebGPUConstants.BufferUsage.Uniform | WebGPUConstants.BufferUsage.CopyDst).underlyingResource;
+        this._ubCopyWithOfst = this._bufferManager.createBuffer(
+            4 * 4,
+            WebGPUConstants.BufferUsage.Uniform | WebGPUConstants.BufferUsage.CopyDst,
+            "UBCopyWithOffset"
+        ).underlyingResource;
 
         this._getPipeline(WebGPUConstants.TextureFormat.RGBA8Unorm);
         this._getVideoPipeline(WebGPUConstants.TextureFormat.RGBA8Unorm);
@@ -1870,7 +1876,12 @@ export class WebGPUTextureHelper {
             if (aligned) {
                 const commandEncoder = this._device.createCommandEncoder({});
 
-                const buffer = this._bufferManager.createRawBuffer(imageBitmap.byteLength, WebGPUConstants.BufferUsage.MapWrite | WebGPUConstants.BufferUsage.CopySrc, true);
+                const buffer = this._bufferManager.createRawBuffer(
+                    imageBitmap.byteLength,
+                    WebGPUConstants.BufferUsage.MapWrite | WebGPUConstants.BufferUsage.CopySrc,
+                    true,
+                    "TempBufferForUpdateTexture" + (gpuTexture ? "_" + gpuTexture.label : "")
+                );
 
                 const arrayBuffer = buffer.getMappedRange();
 
@@ -2036,7 +2047,12 @@ export class WebGPUTextureHelper {
 
         const size = bytesPerRowAligned * height;
 
-        const gpuBuffer = this._bufferManager.createRawBuffer(size, WebGPUConstants.BufferUsage.MapRead | WebGPUConstants.BufferUsage.CopyDst);
+        const gpuBuffer = this._bufferManager.createRawBuffer(
+            size,
+            WebGPUConstants.BufferUsage.MapRead | WebGPUConstants.BufferUsage.CopyDst,
+            undefined,
+            "TempBufferForReadPixels" + (texture.label ? "_" + texture.label : "")
+        );
 
         const commandEncoder = this._device.createCommandEncoder({});
 
