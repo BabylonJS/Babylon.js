@@ -1,4 +1,4 @@
-import type { WebGLRenderTargetWrapper } from "core/Engines/WebGL/webGLRenderTargetWrapper";
+import type { WebGLRenderTargetWrapper } from "@babylonjs/core/Engines/WebGL/webGLRenderTargetWrapper.js";
 import {
     _bindTextureDirectly,
     _bindUnboundFramebuffer,
@@ -13,15 +13,15 @@ import {
     type WebGLEngineStateFull,
 } from "../../engine.webgl.js";
 import type { IMultiRenderEngineExtension } from "./multiRender.base.js";
-import type { WebGLHardwareTexture } from "core/Engines/WebGL/webGLHardwareTexture";
-import { Constants } from "core/Engines/constants";
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
-import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
-import type { IMultiRenderTargetOptions } from "core/Materials/Textures/multiRenderTarget";
-import type { TextureSize } from "core/Materials/Textures/textureCreationOptions";
-import type { Nullable } from "core/types";
+import type { WebGLHardwareTexture } from "@babylonjs/core/Engines/WebGL/webGLHardwareTexture.js";
+import { Constants } from "@babylonjs/core/Engines/constants.js";
+import type { RenderTargetWrapper } from "@babylonjs/core/Engines/renderTargetWrapper.js";
+import { InternalTexture, InternalTextureSource } from "@babylonjs/core/Materials/Textures/internalTexture.js";
+import type { IMultiRenderTargetOptions } from "@babylonjs/core/Materials/Textures/multiRenderTarget.js";
+import type { TextureSize } from "@babylonjs/core/Materials/Textures/textureCreationOptions.js";
+import type { Nullable } from "@babylonjs/core/types.js";
 import { _createHardwareRenderTargetWrapper } from "../renderTarget/renderTarget.webgl.js";
-import { Logger } from "core/Misc/logger";
+import { Logger } from "@babylonjs/core/Misc/logger.js";
 import { augmentEngineState } from "../../engine.adapters.js";
 import { resetTextureCache } from "../../engine.base.js";
 

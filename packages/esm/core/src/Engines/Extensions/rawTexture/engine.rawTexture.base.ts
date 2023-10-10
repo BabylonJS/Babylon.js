@@ -1,6 +1,6 @@
-import type { InternalTexture } from "core/Materials/Textures/internalTexture";
-import type { Scene } from "core/scene";
-import type { Nullable } from "core/types";
+import type { InternalTexture } from "@babylonjs/core/Materials/Textures/internalTexture.js";
+import type { Scene } from "@babylonjs/core/scene.js";
+import type { Nullable } from "@babylonjs/core/types.js";
 import type { IBaseEnginePublic } from "../../engine.base.js";
 
 /**

@@ -1,5 +1,5 @@
-import type { DataBuffer } from "core/Buffers/dataBuffer";
-import type { DataArray, IndicesArray } from "core/types";
+import type { DataBuffer } from "@babylonjs/core/Buffers/dataBuffer.js";
+import type { DataArray, IndicesArray } from "@babylonjs/core/types.js";
 import type { IBaseEnginePublic } from "../../engine.base.js";
 
 export interface IDynamicBufferEngineExtension {

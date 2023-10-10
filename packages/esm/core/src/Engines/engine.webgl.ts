@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable jsdoc/require-jsdoc */
 /* eslint-disable babylonjs/available */
-import type { DataArray, IndicesArray, Nullable } from "core/types";
-import type { IBaseEngineProtected, IBaseEnginePublic, IBaseEngineInternals, IBaseEngineOptions } from "./engine.base";
+import type { DataArray, IndicesArray, Nullable } from "@babylonjs/core/types.js";
+import type { IBaseEngineProtected, IBaseEnginePublic, IBaseEngineInternals, IBaseEngineOptions } from "./engine.base.js";
 import {
     initBaseEngineState,
     endFrame as endFrameBase,
@@ -18,11 +18,11 @@ import {
     resize,
     _setupMobileChecks,
 } from "./engine.base.js";
-import { WebGLShaderProcessor } from "core/Engines/WebGL/webGLShaderProcessors";
-import type { DataBuffer } from "core/Buffers/dataBuffer";
-import type { IEffectCreationOptions } from "core/Materials/effect";
-import { Effect } from "core/Materials/effect";
-import type { IColor4Like, IViewportLike } from "core/Maths/math.like";
+import { WebGLShaderProcessor } from "@babylonjs/core/Engines/WebGL/webGLShaderProcessors.js";
+import type { DataBuffer } from "@babylonjs/core/Buffers/dataBuffer.js";
+import type { IEffectCreationOptions } from "@babylonjs/core/Materials/effect.js";
+import { Effect } from "@babylonjs/core/Materials/effect.js";
+import type { IColor4Like, IViewportLike } from "@babylonjs/core/Maths/math.like.js";
 import {
     ALPHA_ADD,
     ALPHA_DISABLE,
@@ -95,42 +95,42 @@ import {
     TEXTURE_TRILINEAR_SAMPLINGMODE,
     TEXTURE_WRAP_ADDRESSMODE,
 } from "./engine.constants.js";
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
-import type { WebGLRenderTargetWrapper } from "core/Engines/WebGL/webGLRenderTargetWrapper";
+import type { RenderTargetWrapper } from "@babylonjs/core/Engines/renderTargetWrapper.js";
+import type { WebGLRenderTargetWrapper } from "@babylonjs/core/Engines/WebGL/webGLRenderTargetWrapper.js";
 import * as _ from "lodash";
-import { WebGLDataBuffer } from "core/Meshes/WebGL/webGLDataBuffer";
-import { WebGLPipelineContext } from "core/Engines/WebGL/webGLPipelineContext";
-import type { IPipelineContext } from "core/Engines/IPipelineContext";
-import type { VertexBuffer } from "core/Buffers/buffer";
-import type { InstancingAttributeInfo } from "core/Engines/instancingAttributeInfo";
-import { InternalTextureSource, InternalTexture } from "core/Materials/Textures/internalTexture";
+import { WebGLDataBuffer } from "@babylonjs/core/Meshes/WebGL/webGLDataBuffer.js";
+import { WebGLPipelineContext } from "@babylonjs/core/Engines/WebGL/webGLPipelineContext.js";
+import type { IPipelineContext } from "@babylonjs/core/Engines/IPipelineContext.js";
+import type { VertexBuffer } from "@babylonjs/core/Buffers/buffer.js";
+import type { InstancingAttributeInfo } from "@babylonjs/core/Engines/instancingAttributeInfo.js";
+import { InternalTextureSource, InternalTexture } from "@babylonjs/core/Materials/Textures/internalTexture.js";
 import { _loadFile, _reportDrawCall } from "./engine.tools.js";
-import type { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
-import type { ThinTexture } from "core/Materials/Textures/thinTexture";
-import type { VideoTexture } from "core/Materials/Textures/videoTexture";
+import type { RenderTargetTexture } from "@babylonjs/core/Materials/Textures/renderTargetTexture.js";
+import type { ThinTexture } from "@babylonjs/core/Materials/Textures/thinTexture.js";
+import type { VideoTexture } from "@babylonjs/core/Materials/Textures/videoTexture.js";
 import type { ISceneLike } from "./engine.interfaces.js";
-import { ExceptionList, GetExponentOfTwo, Version } from "./engine.static";
-import type { Scene } from "core/scene";
-import type { InternalTextureCreationOptions, TextureSize } from "core/Materials/Textures/textureCreationOptions";
-import { Logger } from "core/Misc/logger";
-import type { HardwareTextureWrapper } from "core/Materials/Textures/hardwareTextureWrapper";
-import { WebGLHardwareTexture } from "core/Engines/WebGL/webGLHardwareTexture";
-import { DrawWrapper } from "core/Materials/drawWrapper";
-import type { IEffectFallbacks } from "core/Materials/iEffectFallbacks";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { augmentEngineState } from "./engine.adapters";
-import { StencilStateComposer } from "core/States/stencilStateComposer";
-import { DepthCullingState } from "core/States/depthCullingState";
-import { StencilState } from "core/States/stencilState";
-import type { ThinEngine } from "core/Engines/thinEngine";
+import { ExceptionList, GetExponentOfTwo, Version } from "./engine.static.js";
+import type { Scene } from "@babylonjs/core/scene.js";
+import type { InternalTextureCreationOptions, TextureSize } from "@babylonjs/core/Materials/Textures/textureCreationOptions.js";
+import { Logger } from "@babylonjs/core/Misc/logger.js";
+import type { HardwareTextureWrapper } from "@babylonjs/core/Materials/Textures/hardwareTextureWrapper.js";
+import { WebGLHardwareTexture } from "@babylonjs/core/Engines/WebGL/webGLHardwareTexture.js";
+import { DrawWrapper } from "@babylonjs/core/Materials/drawWrapper.js";
+import type { IEffectFallbacks } from "@babylonjs/core/Materials/iEffectFallbacks.js";
+import { ShaderLanguage } from "@babylonjs/core/Materials/shaderLanguage.js";
+import { augmentEngineState } from "./engine.adapters.js";
+import { StencilStateComposer } from "@babylonjs/core/States/stencilStateComposer.js";
+import { DepthCullingState } from "@babylonjs/core/States/depthCullingState.js";
+import { StencilState } from "@babylonjs/core/States/stencilState.js";
+import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine.js";
 import { EngineExtensions, getEngineExtension } from "./Extensions/engine.extensions.js";
 import type { ITransformFeedbackEngineExtension } from "./Extensions/transformFeedback/engine.transformFeedback.base.js";
-import type { ShaderProcessingContext } from "core/Engines/Processors/shaderProcessingOptions";
-import type { IRenderTargetEngineExtension } from "./Extensions/renderTarget/renderTarget.base";
-import type { IMultiRenderEngineExtension } from "./Extensions/multiRender/multiRender.base";
-import type { PostProcess } from "core/PostProcesses/postProcess";
-import type { IShaderProcessor } from "core/Engines/Processors/iShaderProcessor";
-import { IsWindowObjectExist } from "./runtimeEnvironment";
+import type { ShaderProcessingContext } from "@babylonjs/core/Engines/Processors/shaderProcessingOptions.js";
+import type { IRenderTargetEngineExtension } from "./Extensions/renderTarget/renderTarget.base.js";
+import type { IMultiRenderEngineExtension } from "./Extensions/multiRender/multiRender.base.js";
+import type { PostProcess } from "@babylonjs/core/PostProcesses/postProcess.js";
+import type { IShaderProcessor } from "@babylonjs/core/Engines/Processors/iShaderProcessor.js";
+import { IsWindowObjectExist } from "./runtimeEnvironment.js";
 
 const _TempClearColorUint32 = new Uint32Array(4);
 const _TempClearColorInt32 = new Int32Array(4);
@@ -402,6 +402,7 @@ export function initWebGLEngineState(
             ps._webGLVersion = 2.0;
             ps._shaderPlatformName = "WEBGL2";
         } else {
+            ps._webGLVersion = 1.0;
             ps._shaderPlatformName = "WEBGL1";
         }
 
@@ -1731,8 +1732,8 @@ function _compileRawShader(engineState: WebGLEngineStateFull, source: string, ty
 /**
  * @internal
  */
-export function _getShaderSource(gl: IWebGLEngineInternals["_gl"], shader: WebGLShader): Nullable<string> {
-    return gl.getShaderSource(shader);
+export function _getShaderSource(engineState: IWebGLEnginePublic, shader: WebGLShader): Nullable<string> {
+    return (engineState as WebGLEngineStateFull)._gl.getShaderSource(shader);
 }
 
 /**
@@ -2034,7 +2035,7 @@ export function _isRenderingStateCompiled(engineState: IWebGLEnginePublic, pipel
 /**
  * @internal
  */
-export function _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void) {
+export function _executeWhenRenderingStateIsCompiled(_engineState: IWebGLEnginePublic, pipelineContext: IPipelineContext, action: () => void) {
     const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
 
     if (!webGLPipelineContext.isParallelCompiled) {

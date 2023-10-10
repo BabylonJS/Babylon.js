@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Effect } from "core/Materials/effect";
-import type { IInternalTextureLoader } from "core/Materials/Textures/internalTextureLoader";
+import { Effect } from "@babylonjs/core/Materials/effect.js";
+import type { IInternalTextureLoader } from "@babylonjs/core/Materials/Textures/internalTextureLoader.js";
 import { IsWindowObjectExist } from "./runtimeEnvironment.js";
 import { SCALEMODE_CEILING, SCALEMODE_FLOOR, SCALEMODE_NEAREST } from "./engine.constants.js";
-import type { Nullable } from "core/types";
+import type { Nullable } from "@babylonjs/core/types.js";
 import type { IBaseEnginePublic } from "./engine.base.js";
-import type { Scene } from "core/scene";
-import { Observable } from "core/Misc/observable";
-import type { ICanvas } from "core/Engines/ICanvas";
-import type { Material } from "core/Materials/material";
+import type { Scene } from "@babylonjs/core/scene.js";
+import { Observable } from "@babylonjs/core/Misc/observable.js";
+import type { ICanvas } from "@babylonjs/core/Engines/ICanvas.js";
+import type { Material } from "@babylonjs/core/Materials/material.js";
 
 export const EngineStore: {
     /** Gets the list of created engines */

@@ -1,5 +1,5 @@
 // TODO move it here?
-import type { ICanvas } from "core/Engines/ICanvas";
+import type { ICanvas } from "@babylonjs/core/Engines/ICanvas.js";
 
 export interface HostInformation {
     /**

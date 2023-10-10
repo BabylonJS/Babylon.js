@@ -1,4 +1,4 @@
-import type { ThinEngine } from "core/Engines/thinEngine";
+import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine.js";
 import type * as BaseTypes from "./engine.base.js";
 import type * as WebGLTypes from "./engine.webgl.js";
 

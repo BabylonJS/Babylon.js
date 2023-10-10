@@ -1,5 +1,5 @@
-import type { ICanvas, IImage } from "core/Engines/ICanvas";
-import type { INative } from "core/Engines/Native/nativeInterfaces";
+import type { ICanvas, IImage } from "@babylonjs/core/Engines/ICanvas.js";
+import type { INative } from "@babylonjs/core/Engines/Native/nativeInterfaces.js";
 
 // the global native environment injected here
 declare const _native: INative;

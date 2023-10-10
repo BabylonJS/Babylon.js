@@ -1,5 +1,5 @@
-import type { DataBuffer } from "core/Buffers/dataBuffer";
-import type { Nullable } from "core/types";
+import type { DataBuffer } from "@babylonjs/core/Buffers/dataBuffer.js";
+import type { Nullable } from "@babylonjs/core/types.js";
 import type { IBaseEnginePublic } from "../../engine.base.js";
 
 export const name = "transformFeedback";

@@ -1,11 +1,11 @@
 /* eslint-disable jsdoc/require-jsdoc */
-import { Effect } from "core/Materials/effect";
-import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
-import type { Nullable } from "core/types";
-import type { IShaderProcessor } from "core/Engines/Processors/iShaderProcessor";
-import type { UniformBuffer } from "core/Materials/uniformBuffer";
-import type { Observer } from "core/Misc/observable";
-import { Observable } from "core/Misc/observable";
+import { Effect } from "@babylonjs/core/Materials/effect.js";
+import { InternalTexture, InternalTextureSource } from "@babylonjs/core/Materials/Textures/internalTexture.js";
+import type { Nullable } from "@babylonjs/core/types.js";
+import type { IShaderProcessor } from "@babylonjs/core/Engines/Processors/iShaderProcessor.js";
+import type { UniformBuffer } from "@babylonjs/core/Materials/uniformBuffer.js";
+import type { Observer } from "@babylonjs/core/Misc/observable.js";
+import { Observable } from "@babylonjs/core/Misc/observable.js";
 import {
     ALPHA_ADD,
     ALPHA_DISABLE,
@@ -19,36 +19,36 @@ import {
     TEXTURE_NEAREST_SAMPLINGMODE,
     TEXTURE_TRILINEAR_SAMPLINGMODE,
 } from "./engine.constants.js";
-import { PrecisionDate } from "core/Misc/precisionDate";
-import type { PerfCounter } from "core/Misc/perfCounter";
-import type { StorageBuffer } from "core/Buffers";
-import type { EngineCapabilities } from "core/Engines/engineCapabilities";
-import type { EngineFeatures } from "core/Engines/engineFeatures";
-import type { DepthCullingState } from "core/States/depthCullingState";
-import { AlphaState } from "core/States/alphaCullingState";
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
-import type { IViewportLike } from "core/Maths/math.like";
-import type { ICanvas, ICanvasRenderingContext } from "core/Engines/ICanvas";
-import type { IFileRequest } from "core/Misc/fileRequest";
+import { PrecisionDate } from "@babylonjs/core/Misc/precisionDate.js";
+import type { PerfCounter } from "@babylonjs/core/Misc/perfCounter.js";
+import type { StorageBuffer } from "@babylonjs/core/Buffers/storageBuffer.js";
+import type { EngineCapabilities } from "@babylonjs/core/Engines/engineCapabilities.js";
+import type { EngineFeatures } from "@babylonjs/core/Engines/engineFeatures.js";
+import type { DepthCullingState } from "@babylonjs/core/States/depthCullingState.js";
+import { AlphaState } from "@babylonjs/core/States/alphaCullingState.js";
+import type { RenderTargetWrapper } from "@babylonjs/core/Engines/renderTargetWrapper.js";
+import type { IViewportLike } from "@babylonjs/core/Maths/math.like.js";
+import type { ICanvas, ICanvasRenderingContext } from "@babylonjs/core/Engines/ICanvas.js";
+import type { IFileRequest } from "@babylonjs/core/Misc/fileRequest.js";
 import type { IRawTextureEngineExtension } from "./Extensions/rawTexture/engine.rawTexture.base.js";
-import type { Texture } from "core/Materials/Textures/texture";
+import type { Texture } from "@babylonjs/core/Materials/Textures/texture.js";
 import type { ISceneLike } from "./engine.interfaces.js";
 import { EngineType } from "./engine.interfaces.js";
 import { IsDocumentAvailable, IsWindowObjectExist, hostInformation } from "./runtimeEnvironment.js";
-import { PerformanceConfigurator } from "core/Engines/performanceConfigurator";
+import { PerformanceConfigurator } from "@babylonjs/core/Engines/performanceConfigurator.js";
 import { EngineStore, QueueNewFrame, _CreateCanvas, _RequestPointerlock, _TextureLoaders } from "./engine.static.js";
-import type { IPipelineContext } from "core/Engines/IPipelineContext";
-import type { IInternalTextureLoader } from "core/Materials/Textures/internalTextureLoader";
-import { Logger } from "core/Misc/logger";
-import type { IWebRequest } from "core/Misc/interfaces/iWebRequest";
+import type { IPipelineContext } from "@babylonjs/core/Engines/IPipelineContext.js";
+import type { IInternalTextureLoader } from "@babylonjs/core/Materials/Textures/internalTextureLoader.js";
+import { Logger } from "@babylonjs/core/Misc/logger.js";
+import type { IWebRequest } from "@babylonjs/core/Misc/interfaces/iWebRequest.js";
 import { _loadFile } from "./engine.tools.js";
-import { LoadImage } from "core/Misc/fileTools";
-import type { ThinEngine } from "core/Engines/thinEngine";
-import { PerformanceMonitor } from "core/Misc/performanceMonitor";
-import type { StencilStateComposer } from "core/States/stencilStateComposer";
-import type { StencilState } from "core/States/stencilState";
-import type { Scene } from "core/scene";
-import type { PostProcess } from "core/PostProcesses/postProcess";
+import { LoadImage } from "@babylonjs/core/Misc/fileTools.js";
+import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine.js";
+import { PerformanceMonitor } from "@babylonjs/core/Misc/performanceMonitor.js";
+import type { StencilStateComposer } from "@babylonjs/core/States/stencilStateComposer.js";
+import type { StencilState } from "@babylonjs/core/States/stencilState.js";
+import type { Scene } from "@babylonjs/core/scene.js";
+import type { PostProcess } from "@babylonjs/core/PostProcesses/postProcess.js";
 
 /**
  * Defines the interface used by objects containing a viewport (like a camera)

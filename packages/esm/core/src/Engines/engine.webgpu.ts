@@ -1,13 +1,13 @@
-import type { IShaderProcessor } from "core/Engines/Processors/iShaderProcessor";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import type { Nullable } from "core/types";
-import { WebGPUShaderProcessorWGSL } from "core/Engines/WebGPU/webgpuShaderProcessorsWGSL";
-import { WebGPUShaderProcessorGLSL } from "core/Engines/WebGPU/webgpuShaderProcessorsGLSL";
+import type { IShaderProcessor } from "@babylonjs/core/Engines/Processors/iShaderProcessor.js";
+import { ShaderLanguage } from "@babylonjs/core/Materials/shaderLanguage.js";
+import type { Nullable } from "@babylonjs/core/types.js";
+import { WebGPUShaderProcessorWGSL } from "@babylonjs/core/Engines/WebGPU/webgpuShaderProcessorsWGSL.js";
+import { WebGPUShaderProcessorGLSL } from "@babylonjs/core/Engines/WebGPU/webgpuShaderProcessorsGLSL.js";
 import type { IBaseEngineProtected, IBaseEnginePublic, IBaseEngineInternals } from "./engine.base.js";
 import { initBaseEngineState } from "./engine.base.js";
-import type { WebGPUSnapshotRendering } from "core/Engines/WebGPU/webgpuSnapshotRendering";
-import type { IDrawContext } from "core/Engines/IDrawContext";
-import type { IMaterialContext } from "core/Engines/IMaterialContext";
+import type { WebGPUSnapshotRendering } from "@babylonjs/core/Engines/WebGPU/webgpuSnapshotRendering.js";
+import type { IDrawContext } from "@babylonjs/core/Engines/IDrawContext.js";
+import type { IMaterialContext } from "@babylonjs/core/Engines/IMaterialContext.js";
 
 interface IWebGPUEnginePrivate {
     _shaderProcessorWGSL: Nullable<IShaderProcessor>;

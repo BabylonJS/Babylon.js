@@ -1,5 +1,5 @@
-import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
-import type { Nullable } from "core/types";
+import { InternalTexture, InternalTextureSource } from "@babylonjs/core/Materials/Textures/internalTexture.js";
+import type { Nullable } from "@babylonjs/core/types.js";
 import {
     _bindTextureDirectly,
     _getInternalFormat,
@@ -20,10 +20,10 @@ import {
     TEXTURE_TRILINEAR_SAMPLINGMODE,
 } from "../../engine.constants.js";
 import { augmentEngineState } from "../../engine.adapters.js";
-import { Logger } from "core/Misc/logger";
-import { Tools } from "core/Misc/tools";
-import type { Scene } from "core/scene";
-import type { IWebRequest } from "core/Misc/interfaces/iWebRequest";
+import { Logger } from "@babylonjs/core/Misc/logger.js";
+import { Tools } from "@babylonjs/core/Misc/tools.js";
+import type { Scene } from "@babylonjs/core/scene.js";
+import type { IWebRequest } from "@babylonjs/core/Misc/interfaces/iWebRequest.js";
 import { _loadFile } from "../../engine.tools.js";
 import type { IRawTextureEngineExtension } from "../rawTexture/engine.rawTexture.base.js";
 
