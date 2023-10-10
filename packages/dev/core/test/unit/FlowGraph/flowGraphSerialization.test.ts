@@ -47,7 +47,7 @@ describe("Flow Graph Serialization", () => {
         expect(serialized.name).toEqual("test");
         expect(serialized._connectionType).toEqual(FlowGraphConnectionType.Input);
         expect(serialized.connectedPointIds).toEqual([]);
-        expect(serialized.className).toEqual("FlowGraphDataConnection");
+        expect(serialized.className).toEqual("FGDataConnection");
         expect(serialized.richType.typeName).toEqual("number");
         expect(serialized.richType.defaultValue).toEqual(0);
 
@@ -55,7 +55,7 @@ describe("Flow Graph Serialization", () => {
         expect(parsed.uniqueId).toEqual(connection.uniqueId);
         expect(parsed.name).toEqual("test");
         expect(parsed._connectionType).toEqual(FlowGraphConnectionType.Input);
-        expect(parsed.getClassName()).toEqual("FlowGraphDataConnection");
+        expect(parsed.getClassName()).toEqual("FGDataConnection");
         expect(parsed.richType.typeName).toEqual("number");
         expect(parsed.richType.defaultValue).toEqual(0);
 
@@ -97,11 +97,11 @@ describe("Flow Graph Serialization", () => {
         expect(serialized.signalOutputs.length).toEqual(2);
         expect(serialized.dataInputs.length).toEqual(6);
         expect(serialized.dataOutputs.length).toEqual(1);
-        expect(serialized.className).toEqual("FlowGraphPlayAnimationBlock");
+        expect(serialized.className).toEqual("FGPlayAnimationBlock");
 
         const parsed = FlowGraphBlock.Parse(serialized);
         expect(parsed.uniqueId).toEqual(block.uniqueId);
-        expect(parsed.getClassName()).toEqual("FlowGraphPlayAnimationBlock");
+        expect(parsed.getClassName()).toEqual("FGPlayAnimationBlock");
         expect(parsed.dataInputs.length).toEqual(6);
         expect(parsed.dataOutputs.length).toEqual(1);
         expect((parsed as FlowGraphExecutionBlock).signalInputs.length).toEqual(1);
@@ -143,7 +143,7 @@ describe("Flow Graph Serialization", () => {
         const parsed = FlowGraphContext.Parse(serialized, graph);
 
         expect(parsed.uniqueId).toEqual(context.uniqueId);
-        expect(parsed.getClassName()).toEqual("FlowGraphContext");
+        expect(parsed.getClassName()).toEqual("FGContext");
         expect(parsed.getVariable("test")).toEqual(42);
         expect(parsed.getVariable("test2")).toEqual("hello");
         expect(parsed.getVariable("test3").x).toEqual(1);

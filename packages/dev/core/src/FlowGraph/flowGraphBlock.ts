@@ -92,10 +92,10 @@ export class FlowGraphBlock {
         const obj = new classType(serializationObject.config);
         obj.uniqueId = serializationObject.uniqueId;
         for (let i = 0; i < serializationObject.dataInputs.length; i++) {
-            obj.dataInputs[i].parse(serializationObject.dataInputs[i]);
+            obj.dataInputs[i].deserialize(serializationObject.dataInputs[i]);
         }
         for (let i = 0; i < serializationObject.dataOutputs.length; i++) {
-            obj.dataOutputs[i].parse(serializationObject.dataOutputs[i]);
+            obj.dataOutputs[i].deserialize(serializationObject.dataOutputs[i]);
         }
         if (obj instanceof FlowGraphExecutionBlock) {
             for (let i = 0; i < serializationObject.signalInputs.length; i++) {

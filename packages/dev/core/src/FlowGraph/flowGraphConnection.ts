@@ -123,7 +123,7 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
     public static Parse(serializationObject: any = {}, ownerBlock: FlowGraphBlock) {
         const type = Tools.Instantiate(serializationObject.className);
         const connection = new type(serializationObject.name, serializationObject._connectionType, ownerBlock);
-        connection.parse(serializationObject);
+        connection.deserialize(serializationObject);
         return connection;
     }
 }
