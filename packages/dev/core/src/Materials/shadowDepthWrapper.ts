@@ -117,7 +117,7 @@ export class ShadowDepthWrapper {
                             const subMesh = key.value;
                             if (subMesh?.getMesh() === (mesh as AbstractMesh)) {
                                 this._subMeshToEffect.delete(subMesh);
-                                const depthWrapperEntries = this._subMeshToDepthWrapper.mm.get(subMesh)
+                                const depthWrapperEntries = this._subMeshToDepthWrapper.mm.get(subMesh);
                                 if (depthWrapperEntries) {
                                     for (const entry of depthWrapperEntries.entries()) {
                                         const effect = entry[1].mainDrawWrapper.effect;
@@ -135,7 +135,7 @@ export class ShadowDepthWrapper {
             }
 
             this._subMeshToEffect.set(params.subMesh, [params.effect, this._scene.getEngine().currentRenderPassId]);
-            const depthWrapperEntries = this._subMeshToDepthWrapper.mm.get(params.subMesh)
+            const depthWrapperEntries = this._subMeshToDepthWrapper.mm.get(params.subMesh);
             if (depthWrapperEntries) {
                 // find and release the previous depth effect
                 for (const entry of depthWrapperEntries.entries()) {
