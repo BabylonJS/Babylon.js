@@ -360,7 +360,7 @@ export class PreviewManager {
     }
 
     /**
-     * Environment Texture CDN Url
+     * Default Environment URL
      */
     public static DefaultEnvironmentURL = "https://assets.babylonjs.com/environments/environmentSpecular.env";
 
