@@ -1,3 +1,5 @@
+/* eslint-disable babylonjs/available */
+/* eslint-disable jsdoc/require-jsdoc */
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 import type { Nullable } from "../../types";
 import type { IShaderProcessor } from "../Processors/iShaderProcessor";
@@ -82,6 +84,10 @@ export abstract class WebGPUShaderProcessor implements IShaderProcessor {
     };
 
     public shaderLanguage = ShaderLanguage.GLSL;
+
+    // this object is populated only with vertex kinds known by the engine (position, uv, ...) and only if the type of the corresponding vertex buffer is an integer type)
+    // if the type is a signed type, the value is negated
+    public vertexBufferKindToNumberOfComponents: { [kind: string]: number } = {};
 
     protected _webgpuProcessingContext: WebGPUShaderProcessingContext;
 

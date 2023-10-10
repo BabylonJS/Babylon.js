@@ -2153,9 +2153,11 @@ export class ThinEngine {
     /**
      * Creates a vertex buffer
      * @param data the data for the vertex buffer
+     * @param _updatable whether the buffer should be created as updatable
+     * @param _label defines the label of the buffer (for debug purpose)
      * @returns the new WebGL static buffer
      */
-    public createVertexBuffer(data: DataArray): DataBuffer {
+    public createVertexBuffer(data: DataArray, _updatable?: boolean, _label?: string): DataBuffer {
         return this._createVertexBuffer(data, this._gl.STATIC_DRAW);
     }
 
@@ -2184,9 +2186,10 @@ export class ThinEngine {
     /**
      * Creates a dynamic vertex buffer
      * @param data the data for the dynamic vertex buffer
+     * @param _label defines the label of the buffer (for debug purpose)
      * @returns the new WebGL dynamic buffer
      */
-    public createDynamicVertexBuffer(data: DataArray): DataBuffer {
+    public createDynamicVertexBuffer(data: DataArray, _label?: string): DataBuffer {
         return this._createVertexBuffer(data, this._gl.DYNAMIC_DRAW);
     }
 
@@ -2199,9 +2202,10 @@ export class ThinEngine {
      * Creates a new index buffer
      * @param indices defines the content of the index buffer
      * @param updatable defines if the index buffer must be updatable
+     * @param _label defines the label of the buffer (for debug purpose)
      * @returns a new webGL buffer
      */
-    public createIndexBuffer(indices: IndicesArray, updatable?: boolean): DataBuffer {
+    public createIndexBuffer(indices: IndicesArray, updatable?: boolean, _label?: string): DataBuffer {
         const vbo = this._gl.createBuffer();
         const dataBuffer = new WebGLDataBuffer(vbo!);
 
