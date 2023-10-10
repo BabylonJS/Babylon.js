@@ -9,7 +9,7 @@ import type { INodeGeometryInstancingContext } from "../../Interfaces/nodeGeomet
 /**
  * Block used as a base for InstantiateXXX blocks
  */
-export class InstantiateBaseBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext, INodeGeometryInstancingContext {
+export abstract class InstantiateBaseBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext, INodeGeometryInstancingContext {
     protected _vertexData: VertexData;
     protected _currentIndex: number;
 
