@@ -359,9 +359,9 @@ export class PreviewManager {
     private _refreshPreviewMesh(force?: boolean) {
         switch (this._globalState.envType) {
             case PreviewType.Room:
-               this._hdrTexture = new CubeTexture("https://assets.babylonjs.com/environments/environmentSpecular.env", this._scene);
-               if( this._hdrTexture){             
-                  this._prepareBackgroundHDR();
+                this._hdrTexture = new CubeTexture("https://assets.babylonjs.com/environments/environmentSpecular.env", this._scene);
+                if (this._hdrTexture) {
+                    this._prepareBackgroundHDR();
                 }
                 break;
             case PreviewType.Custom: {
