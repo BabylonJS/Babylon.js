@@ -362,12 +362,12 @@ export class PreviewManager {
     /**
      * Environment Texture CDN Url
      */
-    public static EnvironmentTextureCDNUrl = "https://assets.babylonjs.com/environments/environmentSpecular.env";
+    public static DefaultEnvironmentURL = "https://assets.babylonjs.com/environments/environmentSpecular.env";
 
     private _refreshPreviewMesh(force?: boolean) {
         switch (this._globalState.envType) {
             case PreviewType.Room:
-                this._hdrTexture = new CubeTexture(PreviewManager.EnvironmentTextureCDNUrl, this._scene);
+                this._hdrTexture = new CubeTexture(PreviewManager.DefaultEnvironmentURL, this._scene);
                 if (this._hdrTexture) {
                     this._prepareBackgroundHDR();
                 }
