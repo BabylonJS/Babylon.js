@@ -73,6 +73,6 @@ export class WebGPUTintWASM {
             console.log(ccode);
             console.log("***********************************************");
         }
-        return ccode;
+        return WebGPUTintWASM.DisableUniformityAnalysis || disableUniformityAnalysis ? "diagnostic(off, derivative_uniformity);\n" + ccode : ccode;
     }
 }
