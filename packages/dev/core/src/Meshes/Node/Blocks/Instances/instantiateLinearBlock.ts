@@ -1,4 +1,4 @@
-import { NodeGeometryBlock } from "../../nodeGeometryBlock";
+import { InstantiateBlock } from "./instantiateBlock";
 import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
@@ -13,48 +13,13 @@ import type { INodeGeometryInstancingContext } from "../../Interfaces/nodeGeomet
 /**
  * Block used to clone geometry along a line
  */
-export class InstantiateLinearBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext, INodeGeometryInstancingContext {
-    private _vertexData: VertexData;
-    private _currentIndex: number;
-
+export class InstantiateLinearBlock extends InstantiateBlock implements INodeGeometryExecutionContext, INodeGeometryInstancingContext {
     /**
      * Gets or sets a boolean indicating that this block can evaluate context
      * Build performance is improved when this value is set to false as the system will cache values instead of reevaluating everything per context change
      */
     @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { rebuild: true } })
     public evaluateContext = true;
-
-    /**
-     * Gets the current index in the current flow
-     * @returns the current index
-     */
-    public getExecutionIndex(): number {
-        return this._currentIndex;
-    }
-
-    /**
-     * Gets the current face index in the current flow
-     * @returns the current face index
-     */
-    public getExecutionFaceIndex(): number {
-        return 0;
-    }
-
-    /**
-     * Gets the current loop index in the current flow
-     * @returns the current loop index
-     */
-    public getExecutionLoopIndex(): number {
-        return this._currentIndex;
-    }
-
-    /**
-     * Gets the current instance index in the current flow
-     * @returns the current instance index
-     */
-    public getInstanceIndex(): number {
-        return this._currentIndex;
-    }
 
     /**
      * Create a new Instantiate Linear Block
