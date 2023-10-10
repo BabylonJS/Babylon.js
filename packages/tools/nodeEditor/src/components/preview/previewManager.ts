@@ -42,6 +42,9 @@ import "core/Rendering/depthRendererSceneComponent";
 
 const dontSerializeTextureContent = true;
 
+/**
+ *
+ */
 export class PreviewManager {
     private _nodeMaterial: NodeMaterial;
     private _onBuildObserver: Nullable<Observer<NodeMaterial>>;
@@ -356,10 +359,15 @@ export class PreviewManager {
         this._updatePreview();
     }
 
+    /**
+     * Environment Texture CDN Url
+     */
+    public static EnvironmentTextureCDNUrl = "https://assets.babylonjs.com/environments/environmentSpecular.env";
+
     private _refreshPreviewMesh(force?: boolean) {
         switch (this._globalState.envType) {
             case PreviewType.Room:
-                this._hdrTexture = new CubeTexture("https://assets.babylonjs.com/environments/environmentSpecular.env", this._scene);
+                this._hdrTexture = new CubeTexture(PreviewManager.EnvironmentTextureCDNUrl, this._scene);
                 if (this._hdrTexture) {
                     this._prepareBackgroundHDR();
                 }
