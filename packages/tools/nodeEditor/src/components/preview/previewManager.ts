@@ -359,8 +359,8 @@ export class PreviewManager {
     private _refreshPreviewMesh(force?: boolean) {
         switch (this._globalState.envType) {
             case PreviewType.Room:
-                this._hdrTexture = CubeTexture.CreateFromPrefilteredData("textures/room.env", this._scene);
-                this._prepareBackgroundHDR();
+               this._hdrTexture = new CubeTexture("https://assets.babylonjs.com/environments/environmentSpecular.env", this._scene);
+               this._prepareBackgroundHDR();
                 break;
             case PreviewType.Custom: {
                 const blob = new Blob([this._globalState.envFile], { type: "octet/stream" });
