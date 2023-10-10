@@ -360,7 +360,9 @@ export class PreviewManager {
         switch (this._globalState.envType) {
             case PreviewType.Room:
                this._hdrTexture = new CubeTexture("https://assets.babylonjs.com/environments/environmentSpecular.env", this._scene);
-               this._prepareBackgroundHDR();
+               if( this._hdrTexture){             
+                  this._prepareBackgroundHDR();
+                }
                 break;
             case PreviewType.Custom: {
                 const blob = new Blob([this._globalState.envFile], { type: "octet/stream" });
