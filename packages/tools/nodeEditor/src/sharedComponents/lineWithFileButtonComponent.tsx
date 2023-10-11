@@ -24,7 +24,9 @@ export class LineWithFileButtonComponent extends React.Component<ILineWithFileBu
     onChange(evt: any) {
         const files: File[] = evt.target.files;
         if (files && files.length) {
-            this.props.onIconClick(files[0]);
+            for (const file of files) {
+                this.props.onIconClick(file);
+            }
         }
         evt.target.value = "";
     }
@@ -48,6 +50,7 @@ export class LineWithFileButtonComponent extends React.Component<ILineWithFileBu
                         ref={this._uploadRef}
                         id={this.props.uploadName ? this.props.uploadName : "file-upload"}
                         type="file"
+                        multiple
                         accept={this.props.accept}
                         onChange={(evt) => this.onChange(evt)}
                     />
