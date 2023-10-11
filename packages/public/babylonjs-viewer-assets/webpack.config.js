@@ -4,7 +4,7 @@ module.exports = (env) => {
     const commonConfig = {
         mode: env.production ? "production" : "development",
         entry: "./src/index.ts",
-        devtool: env.production ? "source-map" : "eval-cheap-module-source-map",
+        devtool: env.production ? "source-map" : "inline-cheap-module-source-map",
         output: {
             path: path.resolve(__dirname, "dist"),
             filename: "babylon.viewer.assets.js",

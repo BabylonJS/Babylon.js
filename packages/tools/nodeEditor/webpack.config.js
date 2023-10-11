@@ -6,7 +6,7 @@ module.exports = (env) => {
     const commonConfig = {
         mode: production ? "production" : "development",
         entry: "./src/legacy/legacy.ts",
-        devtool: production ? "source-map" : "eval-cheap-module-source-map",
+        devtool: production ? "source-map" : "inline-cheap-module-source-map",
         output: {
             path: path.resolve(__dirname, "dist"),
             filename: "babylon.nodeEditor.js",

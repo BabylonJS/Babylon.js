@@ -7,7 +7,7 @@ module.exports = (env) => {
     const production = env.mode === "production" || process.env.NODE_ENV === "production";
     const commonConfig = {
         mode: env.mode === "production" ? "production" : "development",
-        devtool: production ? "source-map" : "eval-cheap-module-source-map",
+        devtool: production ? "source-map" : "inline-cheap-module-source-map",
         entry: "./src/index.ts",
         output: {
             path: path.resolve(__dirname, "dist"),

@@ -26,7 +26,7 @@ module.exports = (env) => {
     const production = env.mode === "production" || process.env.NODE_ENV === "production";
     const commonConfig = {
         mode: production ? "production" : "development",
-        devtool: production ? "source-map" : "eval-cheap-module-source-map",
+        devtool: production ? "source-map" : "inline-cheap-module-source-map",
         entry: {
             sceneTs: "./src/sceneTs.ts",
             sceneJs: "./src/sceneJs.js",

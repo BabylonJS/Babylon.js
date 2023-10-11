@@ -11,7 +11,7 @@ module.exports = (env) => {
     const production = env.mode === "production";
     return {
         mode: production ? "production" : "development",
-        devtool: production ? "source-map" : "eval-cheap-module-source-map",
+        devtool: production ? "source-map" : "inline-cheap-module-source-map",
         entry: {
             viewer: "./src/index.ts",
             renderOnlyViewer: "./src/renderOnlyIndex.ts",

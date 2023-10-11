@@ -13,7 +13,7 @@ module.exports = (env) => {
             thinEngineOnly: "./src/thinEngineOnly.ts",
             sceneWithInspector: "./src/sceneWithInspector.ts"
         },
-        devtool: production ? false : "eval-cheap-module-source-map",
+        devtool: production ? false : "inline-cheap-module-source-map",
         output: {
             path: path.resolve(__dirname, "dist"),
             filename: "[name].js",
