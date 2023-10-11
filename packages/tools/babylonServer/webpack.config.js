@@ -69,8 +69,10 @@ module.exports = (env) => {
     });
     const production = env.mode === "production" || process.env.NODE_ENV === "production";
     const commonConfig = {
-        mode: production ? "production" : "development",
-        devtool: production ? "source-map" : "eval-cheap-module-source-map",
+        ...buildTools.webpackTools.commonDevWebpackConfiguration({
+            mode: env.mode,
+            outputFilename: "[name].js",
+        }),
         entry: {
             sceneTs: "./src/sceneTs.ts",
             sceneJs: "./src/sceneJs.js",
@@ -88,11 +90,6 @@ module.exports = (env) => {
             "accessibility/babylon.accessibility.min": `./src/accessibility/index.ts`,
             "babylon.ktx2Decoder": `./src/ktx2Decoder/index.ts`,
             // "babylonjs-gltf2interface": `./src/babylon.glTF2Interface.d.ts`,
-        },
-        output: {
-            path: path.resolve(__dirname, "dist"),
-            filename: "[name].js",
-            devtoolModuleFilenameTemplate: production ? "webpack://[namespace]/[resource-path]?[loaders]" : "file:///[absolute-resource-path]",
         },
         resolve: {
             extensions: [".js", ".ts", ".tsx"],
