@@ -2405,7 +2405,15 @@ export class ThinEngine {
 
                 const buffer = vertexBuffer.getBuffer();
                 if (buffer) {
-                    this._vertexAttribPointer(buffer, order, vertexBuffer.getSize(), vertexBuffer.type, vertexBuffer.normalized, vertexBuffer.effectiveByteStride, vertexBuffer.effectiveByteOffset);
+                    this._vertexAttribPointer(
+                        buffer,
+                        order,
+                        vertexBuffer.getSize(),
+                        vertexBuffer.type,
+                        vertexBuffer.normalized,
+                        vertexBuffer.effectiveByteStride,
+                        vertexBuffer.effectiveByteOffset
+                    );
 
                     if (vertexBuffer.getIsInstanced()) {
                         this._gl.vertexAttribDivisor(order, vertexBuffer.getInstanceDivisor());
