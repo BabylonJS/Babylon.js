@@ -618,6 +618,17 @@ export class Tools {
     }
 
     /**
+     * Function used to determine if we are on a little or big endian platform
+     * @returns True if we are on a little endian platform
+     */
+    public static IsLittleEndian(): boolean {
+        const array = new Uint8Array(4);
+        const view = new Uint32Array(array.buffer);
+
+        return !!((view[0] = 1) & array[0]);
+    }
+
+    /**
      * Dumps the current bound framebuffer
      * @param width defines the rendering width
      * @param height defines the rendering height

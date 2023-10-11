@@ -2,6 +2,7 @@ import type { Nullable, DataArray, FloatArray } from "../types";
 import type { ThinEngine } from "../Engines/thinEngine";
 import { DataBuffer } from "./dataBuffer";
 import type { Mesh } from "../Meshes/mesh";
+import { Tools } from "core/Misc/tools";
 
 /**
  * Class used to store data that will be store in GPU memory
@@ -762,44 +763,66 @@ export class VertexBuffer {
         const totalByteLength = totalVertices * alignedByteStride;
         const totalLength = totalByteLength / typeByteLength;
 
-        const sourceDataTypeByteLength = VertexBuffer.GetTypeByteLength(VertexBuffer.GetDataType(data));
-        const sourceData: Int8Array | Uint8Array | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array = Array.isArray(data)
-            ? new Float32Array(new Float32Array(data).buffer, this.byteOffset, data.length - this.byteOffset / 4)
-            : data instanceof ArrayBuffer
-            ? new Float32Array(data, this.byteOffset, (data.byteLength - this.byteOffset) / 4)
-            : new (data.constructor as any)(data.buffer, data.byteOffset + this.byteOffset, (data.byteLength - this.byteOffset) / sourceDataTypeByteLength);
+        let sourceData: DataView;
 
-        // We reinterpret the source data according to the type of the vertex buffer (instead of just using sourceData) before copying it to the aligned buffer because that's what WebGL does
-        let reinterpretedSourceData: Int8Array | Uint8Array | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array;
+        if (Array.isArray(data)) {
+            const sourceDataAsFloat = new Float32Array(data);
+            sourceData = new DataView(sourceDataAsFloat.buffer, sourceDataAsFloat.byteOffset, sourceDataAsFloat.byteLength);
+        } else if (data instanceof ArrayBuffer) {
+            sourceData = new DataView(data, 0, data.byteLength);
+        } else {
+            sourceData = new DataView(data.buffer, data.byteOffset, data.byteLength);
+        }
+
         let alignedData: Int8Array | Uint8Array | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array;
 
         if (this.type === VertexBuffer.BYTE) {
             alignedData = new Int8Array(totalLength);
-            reinterpretedSourceData = new Int8Array(sourceData.buffer, sourceData.byteOffset, sourceData.byteLength);
         } else if (this.type === VertexBuffer.UNSIGNED_BYTE) {
             alignedData = new Uint8Array(totalLength);
-            reinterpretedSourceData = new Uint8Array(sourceData.buffer, sourceData.byteOffset, sourceData.byteLength);
         } else if (this.type === VertexBuffer.SHORT) {
             alignedData = new Int16Array(totalLength);
-            reinterpretedSourceData = new Int16Array(sourceData.buffer, sourceData.byteOffset, sourceData.byteLength / 2);
         } else if (this.type === VertexBuffer.UNSIGNED_SHORT) {
             alignedData = new Uint16Array(totalLength);
-            reinterpretedSourceData = new Uint16Array(sourceData.buffer, sourceData.byteOffset, sourceData.byteLength / 2);
         } else if (this.type === VertexBuffer.INT) {
             alignedData = new Int32Array(totalLength);
-            reinterpretedSourceData = new Int32Array(sourceData.buffer, sourceData.byteOffset, sourceData.byteLength / 4);
         } else if (this.type === VertexBuffer.UNSIGNED_INT) {
             alignedData = new Uint32Array(totalLength);
-            reinterpretedSourceData = new Uint32Array(sourceData.buffer, sourceData.byteOffset, sourceData.byteLength / 4);
         } else {
             alignedData = new Float32Array(totalLength);
-            reinterpretedSourceData = new Float32Array(sourceData.buffer, sourceData.byteOffset, sourceData.byteLength / 4);
         }
+
+        const isLittleEndian = Tools.IsLittleEndian();
+
+        let sourceOffset = this.byteOffset;
 
         for (let i = 0; i < totalVertices; ++i) {
             for (let j = 0; j < this._size; ++j) {
-                alignedData[i * alignedSize + j] = reinterpretedSourceData[i * this._size + j];
+                switch (this.type) {
+                    case VertexBuffer.BYTE:
+                        alignedData[i * alignedSize + j] = sourceData.getInt8(sourceOffset + j);
+                        break;
+                    case VertexBuffer.UNSIGNED_BYTE:
+                        alignedData[i * alignedSize + j] = sourceData.getUint8(sourceOffset + j);
+                        break;
+                    case VertexBuffer.SHORT:
+                        alignedData[i * alignedSize + j] = sourceData.getInt16(sourceOffset + j * 2, isLittleEndian);
+                        break;
+                    case VertexBuffer.UNSIGNED_SHORT:
+                        alignedData[i * alignedSize + j] = sourceData.getUint16(sourceOffset + j * 2, isLittleEndian);
+                        break;
+                    case VertexBuffer.INT:
+                        alignedData[i * alignedSize + j] = sourceData.getInt32(sourceOffset + j * 4, isLittleEndian);
+                        break;
+                    case VertexBuffer.UNSIGNED_INT:
+                        alignedData[i * alignedSize + j] = sourceData.getUint32(sourceOffset + j * 4, isLittleEndian);
+                        break;
+                    case VertexBuffer.FLOAT:
+                        alignedData[i * alignedSize + j] = sourceData.getFloat32(sourceOffset + j * 4, isLittleEndian);
+                        break;
+                }
             }
+            sourceOffset += this.byteStride;
         }
 
         this._alignedBuffer?.dispose();
