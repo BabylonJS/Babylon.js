@@ -14,6 +14,7 @@ import type { AnimationEvent } from "./animationEvent";
 import { Node } from "../node";
 import type { IAnimatable } from "./animatable.interface";
 import { Size } from "../Maths/math.size";
+import { BezierCurve } from "../Maths/math.path";
 import { WebRequest } from "../Misc/webRequest";
 import { Constants } from "../Engines/constants";
 
@@ -781,6 +782,20 @@ export class Animation {
     }
 
     /**
+     * Interpolates a scalar cubically from control points
+     * @param startValue Start value of the animation curve
+     * @param outTangent End tangent of the animation
+     * @param endValue End value of the animation curve
+     * @param inTangent Start tangent of the animation curve
+     * @param gradient Scalar amount to interpolate
+     * @returns Interpolated scalar value
+     */
+    public floatInterpolateFunctionWithControlPoints(startValue: number, outTangent: Vector2, endValue: number, inTangent: Vector2, gradient: number): number {
+        const weight = BezierCurve.Interpolate(gradient, outTangent.x, outTangent.y, inTangent.x, inTangent.y);
+        return startValue * (1 - weight) + endValue * weight;
+    }
+
+    /**
      * Interpolates a quaternion using a spherical linear interpolation
      * @param startValue Start value of the animation curve
      * @param endValue End value of the animation curve
@@ -802,6 +817,28 @@ export class Animation {
      */
     public quaternionInterpolateFunctionWithTangents(startValue: Quaternion, outTangent: Quaternion, endValue: Quaternion, inTangent: Quaternion, gradient: number): Quaternion {
         return Quaternion.Hermite(startValue, outTangent, endValue, inTangent, gradient).normalize();
+    }
+    
+    /**
+     * Interpolates a quaternion cubically from control points
+     * @param startValue Start value of the animation curve
+     * @param outTangent End tangent of the animation curve
+     * @param endValue End value of the animation curve
+     * @param inTangent Start tangent of the animation curve
+     * @param gradient Scalar amount to interpolate
+     * @returns Interpolated quaternion value
+     */
+    public quaternionInterpolateFunctionWithControlPoints(startValue: Quaternion, outTangent: [Vector2, Vector2, Vector2, Vector2], endValue: Quaternion, inTangent: [Vector2, Vector2, Vector2, Vector2], gradient: number): Quaternion {
+        const weightX = BezierCurve.Interpolate(gradient, outTangent[0].x, outTangent[0].y, inTangent[0].x, inTangent[0].y);
+        const weightY = BezierCurve.Interpolate(gradient, outTangent[1].x, outTangent[1].y, inTangent[1].x, inTangent[1].y);
+        const weightZ = BezierCurve.Interpolate(gradient, outTangent[2].x, outTangent[2].y, inTangent[2].x, inTangent[2].y);
+        const weightW = BezierCurve.Interpolate(gradient, outTangent[3].x, outTangent[3].y, inTangent[3].x, inTangent[3].y);
+        return new Quaternion(
+            startValue.x * (1 - weightX) + endValue.x * weightX,
+            startValue.y * (1 - weightY) + endValue.y * weightY,
+            startValue.z * (1 - weightZ) + endValue.z * weightZ,
+            startValue.w * (1 - weightW) + endValue.w * weightW
+        );
     }
 
     /**
@@ -829,6 +866,26 @@ export class Animation {
     }
 
     /**
+     * Interpolates a Vector3 cubically from control points
+     * @param startValue Start value of the animation curve
+     * @param outTangent End tangent of the animation
+     * @param endValue End value of the animation curve
+     * @param inTangent Start tangent of the animation curve
+     * @param gradient Scalar amount to interpolate (value between 0 and 1)
+     * @returns InterpolatedVector3 value
+     */
+    public vector3InterpolateFunctionWithControlPoints(startValue: Vector3, outTangent: [Vector2, Vector2, Vector2], endValue: Vector3, inTangent: [Vector2, Vector2, Vector2], gradient: number): Vector3 {
+        const weightX = BezierCurve.Interpolate(gradient, outTangent[0].x, outTangent[0].y, inTangent[0].x, inTangent[0].y);
+        const weightY = BezierCurve.Interpolate(gradient, outTangent[1].x, outTangent[1].y, inTangent[1].x, inTangent[1].y);
+        const weightZ = BezierCurve.Interpolate(gradient, outTangent[2].x, outTangent[2].y, inTangent[2].x, inTangent[2].y);
+        return new Vector3(
+            startValue.x * (1 - weightX) + endValue.x * weightX,
+            startValue.y * (1 - weightY) + endValue.y * weightY,
+            startValue.z * (1 - weightZ) + endValue.z * weightZ
+        );
+    }
+
+    /**
      * Interpolates a Vector2 linearly
      * @param startValue Start value of the animation curve
      * @param endValue End value of the animation curve
@@ -850,6 +907,24 @@ export class Animation {
      */
     public vector2InterpolateFunctionWithTangents(startValue: Vector2, outTangent: Vector2, endValue: Vector2, inTangent: Vector2, gradient: number): Vector2 {
         return Vector2.Hermite(startValue, outTangent, endValue, inTangent, gradient);
+    }
+    
+    /**
+     * Interpolates a Vector2 cubically from control points
+     * @param startValue Start value of the animation curve
+     * @param outTangent End tangent of the animation
+     * @param endValue End value of the animation curve
+     * @param inTangent Start tangent of the animation curve
+     * @param gradient Scalar amount to interpolate (value between 0 and 1)
+     * @returns Interpolated Vector2 value
+     */
+    public vector2InterpolateFunctionWithControlPoints(startValue: Vector2, outTangent: [Vector2, Vector2], endValue: Vector2, inTangent: [Vector2, Vector2], gradient: number): Vector2 {
+        const weightX = BezierCurve.Interpolate(gradient, outTangent[0].x, outTangent[0].y, inTangent[0].x, inTangent[0].y);
+        const weightY = BezierCurve.Interpolate(gradient, outTangent[1].x, outTangent[1].y, inTangent[1].x, inTangent[1].y);
+        return new Vector2(
+            startValue.x * (1 - weightX) + endValue.x * weightX,
+            startValue.y * (1 - weightY) + endValue.y * weightY
+        );
     }
 
     /**
@@ -888,6 +963,26 @@ export class Animation {
     }
 
     /**
+     * Interpolates a Color3 cubically from control points
+     * @param startValue Start value of the animation curve
+     * @param outTangent End tangent of the animation
+     * @param endValue End value of the animation curve
+     * @param inTangent Start tangent of the animation curve
+     * @param gradient Scalar amount to interpolate
+     * @returns interpolated value
+     */
+    public color3InterpolateFunctionWithControlPoints(startValue: Color3, outTangent: [Vector2, Vector2, Vector2], endValue: Color3, inTangent: [Vector2, Vector2, Vector2], gradient: number): Color3 {
+        const weightX = BezierCurve.Interpolate(gradient, outTangent[0].x, outTangent[0].y, inTangent[0].x, inTangent[0].y);
+        const weightY = BezierCurve.Interpolate(gradient, outTangent[1].x, outTangent[1].y, inTangent[1].x, inTangent[1].y);
+        const weightZ = BezierCurve.Interpolate(gradient, outTangent[2].x, outTangent[2].y, inTangent[2].x, inTangent[2].y);
+        return new Color3(
+            startValue.r * (1 - weightX) + endValue.r * weightX,
+            startValue.g * (1 - weightY) + endValue.g * weightY,
+            startValue.b * (1 - weightZ) + endValue.b * weightZ
+        );
+    }
+
+    /**
      * Interpolates a Color4 linearly
      * @param startValue Start value of the animation curve
      * @param endValue End value of the animation curve
@@ -909,6 +1004,28 @@ export class Animation {
      */
     public color4InterpolateFunctionWithTangents(startValue: Color4, outTangent: Color4, endValue: Color4, inTangent: Color4, gradient: number): Color4 {
         return Color4.Hermite(startValue, outTangent, endValue, inTangent, gradient);
+    }
+
+    /**
+     * Interpolates a Color4 cubically from control points
+     * @param startValue Start value of the animation curve
+     * @param outTangent End tangent of the animation
+     * @param endValue End value of the animation curve
+     * @param inTangent Start tangent of the animation curve
+     * @param gradient Scalar amount to interpolate
+     * @returns interpolated value
+     */
+    public color4InterpolateFunctionWithControlPoints(startValue: Color4, outTangent: [Vector2, Vector2, Vector2, Vector2], endValue: Color4, inTangent: [Vector2, Vector2, Vector2, Vector2], gradient: number): Color4 {
+        const weightX = BezierCurve.Interpolate(gradient, outTangent[0].x, outTangent[0].y, inTangent[0].x, inTangent[0].y);
+        const weightY = BezierCurve.Interpolate(gradient, outTangent[1].x, outTangent[1].y, inTangent[1].x, inTangent[1].y);
+        const weightZ = BezierCurve.Interpolate(gradient, outTangent[2].x, outTangent[2].y, inTangent[2].x, inTangent[2].y);
+        const weightW = BezierCurve.Interpolate(gradient, outTangent[3].x, outTangent[3].y, inTangent[3].x, inTangent[3].y);
+        return new Color4(
+            startValue.r * (1 - weightX) + endValue.r * weightX,
+            startValue.g * (1 - weightY) + endValue.g * weightY,
+            startValue.b * (1 - weightZ) + endValue.b * weightZ,
+            startValue.a * (1 - weightW) + endValue.a * weightW
+        );
     }
 
     /**
@@ -990,107 +1107,76 @@ export class Animation {
             gradient = easingFunction.ease(gradient);
         }
 
+        let interpolatedValue;
         switch (this.dataType) {
             // Float
             case Animation.ANIMATIONTYPE_FLOAT: {
-                const floatValue = useTangent
-                    ? this.floatInterpolateFunctionWithTangents(startValue, startKey.outTangent * frameDelta, endValue, endKey.inTangent * frameDelta, gradient)
-                    : this.floatInterpolateFunction(startValue, endValue, gradient);
-                switch (state.loopMode) {
-                    case Animation.ANIMATIONLOOPMODE_CYCLE:
-                    case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                    case Animation.ANIMATIONLOOPMODE_YOYO:
-                        return floatValue;
-                    case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                        return state.offsetValue * state.repeatCount + floatValue;
+                if (!useTangent) {
+                    interpolatedValue = this.floatInterpolateFunction(startValue, endValue, gradient);
+                } else if (startKey.interpolation === AnimationKeyInterpolation.NONE) {
+                    interpolatedValue = this.floatInterpolateFunctionWithTangents(startValue, startKey.outTangent, endValue, endKey.inTangent, gradient);
+                } else if (startKey.interpolation === AnimationKeyInterpolation.BEZIER) {
+                    interpolatedValue = this.floatInterpolateFunctionWithControlPoints(startValue, startKey.outTangent, endValue, endKey.inTangent, gradient);
                 }
                 break;
             }
             // Quaternion
             case Animation.ANIMATIONTYPE_QUATERNION: {
-                const quatValue = useTangent
-                    ? this.quaternionInterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient)
-                    : this.quaternionInterpolateFunction(startValue, endValue, gradient);
-                switch (state.loopMode) {
-                    case Animation.ANIMATIONLOOPMODE_CYCLE:
-                    case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                    case Animation.ANIMATIONLOOPMODE_YOYO:
-                        return quatValue;
-                    case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                        return quatValue.addInPlace(state.offsetValue.scale(state.repeatCount));
+                if (!useTangent) {
+                    interpolatedValue = this.quaternionInterpolateFunction(startValue, endValue, gradient);
+                } else if (startKey.interpolation === AnimationKeyInterpolation.NONE) {
+                    interpolatedValue = this.quaternionInterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient);
+                } else if (startKey.interpolation === AnimationKeyInterpolation.BEZIER) {
+                    interpolatedValue = this.quaternionInterpolateFunctionWithControlPoints(startValue, startKey.outTangent, endValue, endKey.inTangent, gradient);
                 }
-
-                return quatValue;
+                break;
             }
             // Vector3
             case Animation.ANIMATIONTYPE_VECTOR3: {
-                const vec3Value = useTangent
-                    ? this.vector3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient)
-                    : this.vector3InterpolateFunction(startValue, endValue, gradient);
-                switch (state.loopMode) {
-                    case Animation.ANIMATIONLOOPMODE_CYCLE:
-                    case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                    case Animation.ANIMATIONLOOPMODE_YOYO:
-                        return vec3Value;
-                    case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                        return vec3Value.add(state.offsetValue.scale(state.repeatCount));
+                if (!useTangent) {
+                    interpolatedValue = this.vector3InterpolateFunction(startValue, endValue, gradient);
+                } else if (startKey.interpolation === AnimationKeyInterpolation.NONE) {
+                    interpolatedValue = this.vector3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient);
+                } else if (startKey.interpolation === AnimationKeyInterpolation.BEZIER) {
+                    interpolatedValue = this.vector3InterpolateFunctionWithControlPoints(startValue, startKey.outTangent, endValue, endKey.inTangent, gradient);
                 }
                 break;
             }
             // Vector2
             case Animation.ANIMATIONTYPE_VECTOR2: {
-                const vec2Value = useTangent
-                    ? this.vector2InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient)
-                    : this.vector2InterpolateFunction(startValue, endValue, gradient);
-                switch (state.loopMode) {
-                    case Animation.ANIMATIONLOOPMODE_CYCLE:
-                    case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                    case Animation.ANIMATIONLOOPMODE_YOYO:
-                        return vec2Value;
-                    case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                        return vec2Value.add(state.offsetValue.scale(state.repeatCount));
+                if (!useTangent) {
+                    interpolatedValue = this.vector2InterpolateFunction(startValue, endValue, gradient);
+                } else if (startKey.interpolation === AnimationKeyInterpolation.NONE) {
+                    interpolatedValue = this.vector2InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient);
+                } else if (startKey.interpolation === AnimationKeyInterpolation.BEZIER) {
+                    interpolatedValue = this.vector2InterpolateFunctionWithControlPoints(startValue, startKey.outTangent, endValue, endKey.inTangent, gradient);
                 }
                 break;
             }
             // Size
             case Animation.ANIMATIONTYPE_SIZE: {
-                switch (state.loopMode) {
-                    case Animation.ANIMATIONLOOPMODE_CYCLE:
-                    case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                    case Animation.ANIMATIONLOOPMODE_YOYO:
-                        return this.sizeInterpolateFunction(startValue, endValue, gradient);
-                    case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                        return this.sizeInterpolateFunction(startValue, endValue, gradient).add(state.offsetValue.scale(state.repeatCount));
-                }
+                interpolatedValue = this.sizeInterpolateFunction(startValue, endValue, gradient);
                 break;
             }
             // Color3
             case Animation.ANIMATIONTYPE_COLOR3: {
-                const color3Value = useTangent
-                    ? this.color3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient)
-                    : this.color3InterpolateFunction(startValue, endValue, gradient);
-                switch (state.loopMode) {
-                    case Animation.ANIMATIONLOOPMODE_CYCLE:
-                    case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                    case Animation.ANIMATIONLOOPMODE_YOYO:
-                        return color3Value;
-                    case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                        return color3Value.add(state.offsetValue.scale(state.repeatCount));
+                if (!useTangent) {
+                    interpolatedValue = this.color3InterpolateFunction(startValue, endValue, gradient);
+                } else if (startKey.interpolation === AnimationKeyInterpolation.NONE) {
+                    interpolatedValue = this.color3InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient);
+                } else if (startKey.interpolation === AnimationKeyInterpolation.BEZIER) {
+                    interpolatedValue = this.color3InterpolateFunctionWithControlPoints(startValue, startKey.outTangent, endValue, endKey.inTangent, gradient);
                 }
                 break;
             }
             // Color4
             case Animation.ANIMATIONTYPE_COLOR4: {
-                const color4Value = useTangent
-                    ? this.color4InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient)
-                    : this.color4InterpolateFunction(startValue, endValue, gradient);
-                switch (state.loopMode) {
-                    case Animation.ANIMATIONLOOPMODE_CYCLE:
-                    case Animation.ANIMATIONLOOPMODE_CONSTANT:
-                    case Animation.ANIMATIONLOOPMODE_YOYO:
-                        return color4Value;
-                    case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                        return color4Value.add(state.offsetValue.scale(state.repeatCount));
+                if (!useTangent) {
+                    interpolatedValue = this.color4InterpolateFunction(startValue, endValue, gradient);
+                } else if (startKey.interpolation === AnimationKeyInterpolation.NONE) {
+                    interpolatedValue = this.color4InterpolateFunctionWithTangents(startValue, startKey.outTangent.scale(frameDelta), endValue, endKey.inTangent.scale(frameDelta), gradient);
+                } else if (startKey.interpolation === AnimationKeyInterpolation.BEZIER) {
+                    interpolatedValue = this.color4InterpolateFunctionWithControlPoints(startValue, startKey.outTangent, endValue, endKey.inTangent, gradient);
                 }
                 break;
             }
@@ -1108,6 +1194,97 @@ export class Animation {
                     case Animation.ANIMATIONLOOPMODE_RELATIVE: {
                         return startValue;
                     }
+                }
+                break;
+            }
+        }
+
+        // fallback for unknown interpolation types
+        if (!interpolatedValue) interpolatedValue = startValue;
+        
+        switch (this.dataType) {
+            // Float
+            case Animation.ANIMATIONTYPE_FLOAT: {
+                switch (state.loopMode) {
+                    case Animation.ANIMATIONLOOPMODE_CYCLE:
+                    case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                    case Animation.ANIMATIONLOOPMODE_YOYO:
+                        return interpolatedValue;
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE:
+                        return state.offsetValue * state.repeatCount + interpolatedValue;
+                }
+                break;
+            }
+            // Quaternion
+            case Animation.ANIMATIONTYPE_QUATERNION: {
+                switch (state.loopMode) {
+                    case Animation.ANIMATIONLOOPMODE_CYCLE:
+                    case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                    case Animation.ANIMATIONLOOPMODE_YOYO:
+                        return interpolatedValue;
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE:
+                        return interpolatedValue.addInPlace(state.offsetValue.scale(state.repeatCount));
+                }
+
+                return interpolatedValue;
+            }
+            // Vector3
+            case Animation.ANIMATIONTYPE_VECTOR3: {
+                switch (state.loopMode) {
+                    case Animation.ANIMATIONLOOPMODE_CYCLE:
+                    case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                    case Animation.ANIMATIONLOOPMODE_YOYO:
+                        return interpolatedValue;
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE:
+                        return interpolatedValue.add(state.offsetValue.scale(state.repeatCount));
+                }
+                break;
+            }
+            // Vector2
+            case Animation.ANIMATIONTYPE_VECTOR2: {
+                switch (state.loopMode) {
+                    case Animation.ANIMATIONLOOPMODE_CYCLE:
+                    case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                    case Animation.ANIMATIONLOOPMODE_YOYO:
+                        return interpolatedValue;
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE:
+                        return interpolatedValue.add(state.offsetValue.scale(state.repeatCount));
+                }
+                break;
+            }
+            // Size
+            case Animation.ANIMATIONTYPE_SIZE: {
+                switch (state.loopMode) {
+                    case Animation.ANIMATIONLOOPMODE_CYCLE:
+                    case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                    case Animation.ANIMATIONLOOPMODE_YOYO:
+                        return interpolatedValue;
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE:
+                        return interpolatedValue.add(state.offsetValue.scale(state.repeatCount));
+                }
+                break;
+            }
+            // Color3
+            case Animation.ANIMATIONTYPE_COLOR3: {
+                switch (state.loopMode) {
+                    case Animation.ANIMATIONLOOPMODE_CYCLE:
+                    case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                    case Animation.ANIMATIONLOOPMODE_YOYO:
+                        return interpolatedValue;
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE:
+                        return interpolatedValue.add(state.offsetValue.scale(state.repeatCount));
+                }
+                break;
+            }
+            // Color4
+            case Animation.ANIMATIONTYPE_COLOR4: {
+                switch (state.loopMode) {
+                    case Animation.ANIMATIONLOOPMODE_CYCLE:
+                    case Animation.ANIMATIONLOOPMODE_CONSTANT:
+                    case Animation.ANIMATIONLOOPMODE_YOYO:
+                        return interpolatedValue;
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE:
+                        return interpolatedValue.add(state.offsetValue.scale(state.repeatCount));
                 }
                 break;
             }

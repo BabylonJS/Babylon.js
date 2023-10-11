@@ -11,11 +11,11 @@ export interface IAnimationKey {
      */
     value: any;
     /**
-     * The input tangent for the cubic hermite spline
+     * The input tangent for the cubic hermite spline / bezier curve
      */
     inTangent?: any;
     /**
-     * The output tangent for the cubic hermite spline
+     * The output tangent for the cubic hermite spline / bezier curve
      */
     outTangent?: any;
     /**
@@ -40,4 +40,8 @@ export enum AnimationKeyInterpolation {
      * Do not interpolate between keys and use the start key value only. Tangents are ignored
      */
     STEP = 1,
+    /**
+     * Use normalized bezier control points to interpolate between start and end values.
+     */
+    BEZIER = 2,
 }
