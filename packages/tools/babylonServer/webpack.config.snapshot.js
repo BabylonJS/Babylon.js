@@ -1,7 +1,7 @@
 const path = require("path");
 const outputDirectoryForAliases = "dist";
 const buildTools = require("@dev/build-tools");
-const externalsFunction = buildTools.webpackTools.externalsFunction;
+const webpackTools = buildTools.webpackTools;
 
 // option - min files or max files, but it is just the filenames. all will have sourcemaps
 
@@ -22,7 +22,6 @@ env: {
 module.exports = (env) => {
     const source = env.source || process.env.SOURCE || "dev"; // || "lts";
     const basePathForSources = path.resolve(__dirname, "../../", source);
-    const production = env.mode === "production" || process.env.NODE_ENV === "production";
     const commonConfig = {
         entry: {
             sceneTs: "./src/sceneTs.ts",

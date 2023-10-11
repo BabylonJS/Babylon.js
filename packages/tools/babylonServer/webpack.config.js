@@ -69,7 +69,7 @@ module.exports = (env) => {
     });
     const production = env.mode === "production" || process.env.NODE_ENV === "production";
     const commonConfig = {
-        ...webpackTools.commonDevWebpackConfiguration({
+        ...buildTools.webpackTools.commonDevWebpackConfiguration({
             mode: env.mode,
             outputFilename: "[name].js",
         }),
