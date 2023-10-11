@@ -32,6 +32,8 @@ babylon {
 
 ### CDN
 
+> ⚠️ WARNING: The CDN should not be used in production environments. Please use self-hosting for production.
+
 Compiled js files are offered on our public CDN here:
 
 * https://viewer.babylonjs.com/viewer.js (minified)

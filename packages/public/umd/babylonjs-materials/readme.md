@@ -7,6 +7,8 @@ For usage documentation please visit https://doc.babylonjs.com/extensions and ch
 
 ## CDN
 
+> ⚠️ WARNING: The CDN should not be used in production environments. Please use self-hosting for production.
+
 Compiled js files (minified and source) are offered on our public CDN here:
 
 * https://preview.babylonjs.com/materialsLibrary/babylonjs.materials.js

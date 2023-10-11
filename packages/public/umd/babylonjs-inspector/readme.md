@@ -11,6 +11,8 @@ If you wish however to use a different version of the inspector or host it on yo
 
 ## CDN
 
+> ⚠️ WARNING: The CDN should not be used in production environments. Please use self-hosting for production.
+
 The latest compiled js file is offered on our public CDN here:
 
 * https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js

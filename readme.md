@@ -14,6 +14,8 @@ Getting started? Play directly with the Babylon.js API using our [playground](ht
 
 ## CDN
 
+> ⚠️ WARNING: The CDN should not be used in production environments. Please use self-hosting for production.
+
 - <https://cdn.babylonjs.com/babylon.js>
 - <https://cdn.babylonjs.com/babylon.max.js>
 
