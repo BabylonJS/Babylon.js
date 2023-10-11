@@ -225,14 +225,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@6.23.0";
+        return "babylonjs@6.23.1";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "6.23.0";
+        return "6.23.1";
     }
 
     /**
@@ -1441,6 +1441,7 @@ export class ThinEngine {
             needToAlwaysBindUniformBuffers: false,
             supportRenderPasses: false,
             supportSpriteInstancing: true,
+            forceVertexBufferStrideMultiple4Bytes: false,
             _collectUbosUpdatedInFrame: false,
         };
     }
@@ -2404,7 +2405,7 @@ export class ThinEngine {
 
                 const buffer = vertexBuffer.getBuffer();
                 if (buffer) {
-                    this._vertexAttribPointer(buffer, order, vertexBuffer.getSize(), vertexBuffer.type, vertexBuffer.normalized, vertexBuffer.byteStride, vertexBuffer.byteOffset);
+                    this._vertexAttribPointer(buffer, order, vertexBuffer.getSize(), vertexBuffer.type, vertexBuffer.normalized, vertexBuffer.effectiveByteStride, vertexBuffer.effectiveByteOffset);
 
                     if (vertexBuffer.getIsInstanced()) {
                         this._gl.vertexAttribDivisor(order, vertexBuffer.getInstanceDivisor());

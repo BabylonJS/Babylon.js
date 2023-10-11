@@ -823,10 +823,12 @@ export abstract class WebGPUCacheRenderPipeline {
             // However, there are some constraints in the attribute.offset value range, so we must check for them before being able to reuse the same GPUVertexBufferLayout
             // See _getVertexInputDescriptor() below
             if (vertexBuffer._validOffsetRange === undefined) {
-                const offset = vertexBuffer.byteOffset;
+                const offset = vertexBuffer.effectiveByteOffset;
                 const formatSize = vertexBuffer.getSize(true);
-                const byteStride = vertexBuffer.byteStride;
-                vertexBuffer._validOffsetRange = offset <= this._kMaxVertexBufferStride - formatSize && (byteStride === 0 || offset + formatSize <= byteStride);
+                const byteStride = vertexBuffer.effectiveByteStride;
+
+                vertexBuffer._validOffsetRange =
+                    (offset + formatSize <= this._kMaxVertexBufferStride && byteStride === 0) || (byteStride !== 0 && offset + formatSize <= byteStride);
             }
 
             if (!(currentGPUBuffer && currentGPUBuffer === buffer && vertexBuffer._validOffsetRange)) {
@@ -953,11 +955,11 @@ export abstract class WebGPUCacheRenderPipeline {
             let buffer = vertexBuffer.getBuffer()?.underlyingResource;
 
             // We reuse the same GPUVertexBufferLayout for all attributes that use the same underlying GPU buffer (and for attributes that follow each other in the attributes array)
-            let offset = vertexBuffer.byteOffset;
+            let offset = vertexBuffer.effectiveByteOffset;
             const invalidOffsetRange = !vertexBuffer._validOffsetRange;
             if (!(currentGPUBuffer && currentGPUAttributes && currentGPUBuffer === buffer) || invalidOffsetRange) {
                 const vertexBufferDescriptor: GPUVertexBufferLayout = {
-                    arrayStride: vertexBuffer.byteStride,
+                    arrayStride: vertexBuffer.effectiveByteStride,
                     stepMode: vertexBuffer.getIsInstanced() ? WebGPUConstants.VertexStepMode.Instance : WebGPUConstants.VertexStepMode.Vertex,
                     attributes: [],
                 };

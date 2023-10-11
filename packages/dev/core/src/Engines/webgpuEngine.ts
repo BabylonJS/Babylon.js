@@ -689,9 +689,9 @@ export class WebGPUEngine extends Engine {
                 this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
                 this._renderTargetEncoder = this._device.createCommandEncoder(this._renderTargetEncoderDescriptor);
 
-                this._emptyVertexBuffer = new VertexBuffer(this, [0], "", false, false, 1, false, 0, 1);
-
                 this._initializeLimits();
+
+                this._emptyVertexBuffer = new VertexBuffer(this, [0], "", false, false, 1, false, 0, 1);
 
                 this._cacheRenderPipeline = new WebGPUCacheRenderPipelineTree(this._device, this._emptyVertexBuffer, !this._caps.textureFloatLinearFiltering);
 
@@ -837,6 +837,7 @@ export class WebGPUEngine extends Engine {
             needToAlwaysBindUniformBuffers: true,
             supportRenderPasses: true,
             supportSpriteInstancing: true,
+            forceVertexBufferStrideMultiple4Bytes: true,
             _collectUbosUpdatedInFrame: false,
         };
     }

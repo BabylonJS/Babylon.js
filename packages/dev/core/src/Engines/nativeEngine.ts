@@ -302,6 +302,7 @@ export class NativeEngine extends Engine {
             needToAlwaysBindUniformBuffers: false,
             supportRenderPasses: true,
             supportSpriteInstancing: false,
+            forceVertexBufferStrideMultiple4Bytes: true,
             _collectUbosUpdatedInFrame: false,
         };
 
@@ -838,6 +839,9 @@ export class NativeEngine extends Engine {
     public setState(culling: boolean, zOffset: number = 0, force?: boolean, reverseSide = false, cullBackFaces?: boolean, stencil?: IStencilState, zOffsetUnits: number = 0): void {
         this._zOffset = zOffset;
         this._zOffsetUnits = zOffsetUnits;
+        if (this._zOffset !== 0) {
+            Tools.Warn("zOffset is not supported in Native engine.");
+        }
 
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETSTATE);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(culling ? 1 : 0);

@@ -26,6 +26,13 @@ export class Buffer {
     }
 
     /**
+     * Gets the engine associated with the buffer
+     */
+    public get engine() {
+        return this._engine;
+    }
+
+    /**
      * Gets the byte stride.
      */
     public readonly byteStride: number;
@@ -328,6 +335,8 @@ export class VertexBuffer {
     private _instanced: boolean;
     private _instanceDivisor: number;
     private _isDisposed = false;
+    private _label?: string;
+    private _alignedBuffer?: Buffer;
 
     /**
      * The byte type.
@@ -394,9 +403,25 @@ export class VertexBuffer {
     public readonly byteStride: number;
 
     /**
+     * Gets the effective byte stride, that is the byte stride of the buffer that is actually sent to the GPU.
+     * It could be different from VertexBuffer.byteStride if a new buffer must be created under the hood because of the forceVertexBufferStrideMultiple4Bytes engine flag.
+     */
+    public get effectiveByteStride() {
+        return this._alignedBuffer?.byteStride ?? this.byteStride;
+    }
+
+    /**
      * Gets the byte offset.
      */
     public readonly byteOffset: number;
+
+    /**
+     * Gets the effective byte offset, that is the byte offset of the buffer that is actually sent to the GPU.
+     * It could be different from VertexBuffer.byteOffset if a new buffer must be created under the hood because of the forceVertexBufferStrideMultiple4Bytes engine flag.
+     */
+    public get effectiveByteOffset() {
+        return this._alignedBuffer ? 0 : this.byteOffset;
+    }
 
     /**
      * Gets whether integer data values should be normalized into a certain range when being casted to a float.
@@ -418,6 +443,23 @@ export class VertexBuffer {
      * All buffers with the same format will have the same hash code
      */
     public readonly hashCode: number;
+
+    /**
+     * Gets the number of vertices in the buffer
+     */
+    public get totalVertices() {
+        const data = this.getData();
+        if (!data) {
+            return 0;
+        }
+
+        if (Array.isArray(data)) {
+            // data is a regular number[] with float values
+            return data.length / (this.byteStride / 4) - this.byteOffset / 4;
+        }
+
+        return (data.byteLength - this.byteOffset) / this.byteStride;
+    }
 
     /**
      * Constructor
@@ -480,7 +522,6 @@ export class VertexBuffer {
         takeBufferOwnership = false
     ) {
         let updatable = false;
-        let label: string | undefined;
 
         if (typeof updatableOrOptions === "object" && updatableOrOptions !== null) {
             updatable = updatableOrOptions.updatable ?? false;
@@ -494,7 +535,7 @@ export class VertexBuffer {
             useBytes = updatableOrOptions.useBytes ?? false;
             divisor = updatableOrOptions.divisor ?? 1;
             takeBufferOwnership = updatableOrOptions.takeBufferOwnership ?? false;
-            label = updatableOrOptions.label;
+            this._label = updatableOrOptions.label;
         } else {
             updatable = !!updatableOrOptions;
         }
@@ -503,7 +544,7 @@ export class VertexBuffer {
             this._buffer = data;
             this._ownsBuffer = takeBufferOwnership;
         } else {
-            this._buffer = new Buffer(engine, data, updatable, stride, postponeInternalCreation, instanced, useBytes, divisor, label);
+            this._buffer = new Buffer(engine, data, updatable, stride, postponeInternalCreation, instanced, useBytes, divisor, this._label);
             this._ownsBuffer = true;
         }
 
@@ -534,6 +575,7 @@ export class VertexBuffer {
         this._instanced = instanced !== undefined ? instanced : false;
         this._instanceDivisor = instanced ? divisor : 0;
 
+        this._alignBuffer();
         this._computeHashCode();
     }
 
@@ -550,11 +592,8 @@ export class VertexBuffer {
 
     /** @internal */
     public _rebuild(): void {
-        if (!this._buffer) {
-            return;
-        }
-
-        this._buffer._rebuild();
+        this._buffer?._rebuild();
+        this._alignedBuffer?._rebuild();
     }
 
     /**
@@ -589,11 +628,13 @@ export class VertexBuffer {
      * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
      * @returns a float array containing vertex data
      */
-    public getFloatData(totalVertices: number, forceCopy?: boolean): Nullable<FloatArray> {
+    public getFloatData(totalVertices?: number, forceCopy?: boolean): Nullable<FloatArray> {
         const data = this.getData();
         if (!data) {
             return null;
         }
+
+        totalVertices = totalVertices ?? this.totalVertices;
 
         return VertexBuffer.GetFloatData(data, this._size, this.type, this.byteOffset, this.byteStride, this.normalized, totalVertices, forceCopy);
     }
@@ -603,7 +644,7 @@ export class VertexBuffer {
      * @returns underlying native buffer
      */
     public getBuffer(): Nullable<DataBuffer> {
-        return this._buffer.getBuffer();
+        return this._alignedBuffer?.getBuffer() ?? this._buffer.getBuffer();
     }
 
     /**
@@ -658,6 +699,7 @@ export class VertexBuffer {
      */
     public create(data?: DataArray): void {
         this._buffer.create(data);
+        this._alignBuffer();
     }
 
     /**
@@ -667,6 +709,7 @@ export class VertexBuffer {
      */
     public update(data: DataArray): void {
         this._buffer.update(data);
+        this._alignBuffer();
     }
 
     /**
@@ -678,6 +721,7 @@ export class VertexBuffer {
      */
     public updateDirectly(data: DataArray, offset: number, useBytes: boolean = false): void {
         this._buffer.updateDirectly(data, offset, undefined, useBytes);
+        this._alignBuffer();
     }
 
     /**
@@ -687,6 +731,9 @@ export class VertexBuffer {
         if (this._ownsBuffer) {
             this._buffer.dispose();
         }
+
+        this._alignedBuffer?.dispose();
+        this._alignedBuffer = undefined;
 
         this._isDisposed = true;
     }
@@ -698,6 +745,65 @@ export class VertexBuffer {
      */
     public forEach(count: number, callback: (value: number, index: number) => void): void {
         VertexBuffer.ForEach(this._buffer.getData()!, this.byteOffset, this.byteStride, this._size, this.type, count, this.normalized, callback);
+    }
+
+    protected _alignBuffer() {
+        const engine = this._buffer.engine;
+        const data = this._buffer.getData();
+
+        if (!engine._features.forceVertexBufferStrideMultiple4Bytes || this.byteStride % 4 === 0 || !data) {
+            return;
+        }
+
+        const typeByteLength = VertexBuffer.GetTypeByteLength(this.type);
+        const alignedByteStride = (this.byteStride + 3) & ~3;
+        const alignedSize = alignedByteStride / typeByteLength;
+        const totalVertices = this.totalVertices;
+        const totalByteLength = totalVertices * alignedByteStride;
+        const totalLength = totalByteLength / typeByteLength;
+
+        const sourceDataTypeByteLength = VertexBuffer.GetTypeByteLength(VertexBuffer.GetDataType(data));
+        const sourceData: Int8Array | Uint8Array | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array = Array.isArray(data)
+            ? new Float32Array(new Float32Array(data).buffer, this.byteOffset, data.length - this.byteOffset / 4)
+            : data instanceof ArrayBuffer
+            ? new Float32Array(data, this.byteOffset, (data.byteLength - this.byteOffset) / 4)
+            : new (data.constructor as any)(data.buffer, data.byteOffset + this.byteOffset, (data.byteLength - this.byteOffset) / sourceDataTypeByteLength);
+
+        // We reinterpret the source data according to the type of the vertex buffer (instead of just using sourceData) before copying it to the aligned buffer because that's what WebGL does
+        let reinterpretedSourceData: Int8Array | Uint8Array | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array;
+        let alignedData: Int8Array | Uint8Array | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array;
+
+        if (this.type === VertexBuffer.BYTE) {
+            alignedData = new Int8Array(totalLength);
+            reinterpretedSourceData = new Int8Array(sourceData.buffer, sourceData.byteOffset, sourceData.byteLength);
+        } else if (this.type === VertexBuffer.UNSIGNED_BYTE) {
+            alignedData = new Uint8Array(totalLength);
+            reinterpretedSourceData = new Uint8Array(sourceData.buffer, sourceData.byteOffset, sourceData.byteLength);
+        } else if (this.type === VertexBuffer.SHORT) {
+            alignedData = new Int16Array(totalLength);
+            reinterpretedSourceData = new Int16Array(sourceData.buffer, sourceData.byteOffset, sourceData.byteLength / 2);
+        } else if (this.type === VertexBuffer.UNSIGNED_SHORT) {
+            alignedData = new Uint16Array(totalLength);
+            reinterpretedSourceData = new Uint16Array(sourceData.buffer, sourceData.byteOffset, sourceData.byteLength / 2);
+        } else if (this.type === VertexBuffer.INT) {
+            alignedData = new Int32Array(totalLength);
+            reinterpretedSourceData = new Int32Array(sourceData.buffer, sourceData.byteOffset, sourceData.byteLength / 4);
+        } else if (this.type === VertexBuffer.UNSIGNED_INT) {
+            alignedData = new Uint32Array(totalLength);
+            reinterpretedSourceData = new Uint32Array(sourceData.buffer, sourceData.byteOffset, sourceData.byteLength / 4);
+        } else {
+            alignedData = new Float32Array(totalLength);
+            reinterpretedSourceData = new Float32Array(sourceData.buffer, sourceData.byteOffset, sourceData.byteLength / 4);
+        }
+
+        for (let i = 0; i < totalVertices; ++i) {
+            for (let j = 0; j < this._size; ++j) {
+                alignedData[i * alignedSize + j] = reinterpretedSourceData[i * this._size + j];
+            }
+        }
+
+        this._alignedBuffer?.dispose();
+        this._alignedBuffer = new Buffer(engine, alignedData, false, alignedByteStride, false, this._instanced, true, this._instanceDivisor, this._label + "_aligned");
     }
 
     // Enums

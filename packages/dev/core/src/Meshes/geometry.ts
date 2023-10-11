@@ -297,22 +297,18 @@ export class Geometry implements IGetSetVerticesData {
         const numOfMeshes = meshes.length;
 
         if (kind === VertexBuffer.PositionKind) {
-            const data = <FloatArray>buffer.getData();
-            if (totalVertices != null) {
-                this._totalVertices = totalVertices;
-            } else {
-                if (data != null) {
-                    this._totalVertices =
-                        data.length / (buffer.type === VertexBuffer.BYTE || buffer.type === VertexBuffer.UNSIGNED_BYTE ? buffer.byteStride : buffer.byteStride / 4);
-                }
-            }
+            this._totalVertices = totalVertices ?? buffer.totalVertices;
 
-            this._updateExtend(data);
+            this._updateExtend(buffer.getFloatData());
             this._resetPointsArrayCache();
+
+            // this._extend can be empty if buffer.getFloatData() returned null
+            const minimum = this._extend?.minimum ?? new Vector3(-1, -1, -1);
+            const maximum = this._extend?.maximum ?? new Vector3(1, 1, 1);
 
             for (let index = 0; index < numOfMeshes; index++) {
                 const mesh = meshes[index];
-                mesh.buildBoundingInfo(this._extend.minimum, this._extend.maximum);
+                mesh.buildBoundingInfo(minimum, maximum);
                 mesh._createGlobalSubMesh(mesh.isUnIndexed);
                 mesh.computeWorldMatrix(true);
                 mesh.synchronizeInstances();

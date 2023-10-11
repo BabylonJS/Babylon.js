@@ -16,4 +16,7 @@ export enum PreviewType {
     Fire,
 
     Custom,
+
+    // Env
+    Room,
 }
