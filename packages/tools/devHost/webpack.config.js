@@ -6,17 +6,11 @@ module.exports = (env) => {
     const source = env.source || process.env.SOURCE || "dev";
     const production = env.mode === "production" || process.env.NODE_ENV === "production";
     const commonConfig = {
-        mode: env.mode === "production" ? "production" : "development",
-        devtool: production ? "source-map" : "inline-cheap-module-source-map",
         entry: "./src/index.ts",
-        output: {
-            path: path.resolve(__dirname, "dist"),
-            filename: "main.js",
-            // library: { type: "module" },
-            // environment: { module: true },
-            // module: true,
-            devtoolModuleFilenameTemplate: production ? "webpack://[namespace]/[resource-path]?[loaders]" : "file:///[absolute-resource-path]",
-        },
+        ...webpackTools.commonDevWebpackConfiguration({
+            mode: env.mode,
+            outputFilename: "main.js",
+        }),
         resolve: {
             extensions: [".ts", ".js"],
             alias: {

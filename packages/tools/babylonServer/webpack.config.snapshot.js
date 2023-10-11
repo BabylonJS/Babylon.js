@@ -22,20 +22,16 @@ env: {
 module.exports = (env) => {
     const source = env.source || process.env.SOURCE || "dev"; // || "lts";
     const basePathForSources = path.resolve(__dirname, "../../", source);
-    const externals = externalsFunction();
     const production = env.mode === "production" || process.env.NODE_ENV === "production";
     const commonConfig = {
-        mode: production ? "production" : "development",
-        devtool: production ? "source-map" : "inline-cheap-module-source-map",
         entry: {
             sceneTs: "./src/sceneTs.ts",
             sceneJs: "./src/sceneJs.js",
         },
-        output: {
-            path: path.resolve(__dirname, "dist"),
-            filename: "[name].js",
-            devtoolModuleFilenameTemplate: production ? "webpack://[namespace]/[resource-path]?[loaders]" : "file:///[absolute-resource-path]",
-        },
+        ...webpackTools.commonDevWebpackConfiguration({
+            mode: env.mode,
+            outputFilename: "[name].js",
+        }),
         resolve: {
             extensions: [".js", ".ts"],
             alias: {

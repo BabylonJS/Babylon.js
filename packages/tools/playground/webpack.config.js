@@ -5,14 +5,11 @@ const webpackTools = require("@dev/build-tools").webpackTools;
 module.exports = (env) => {
     const production = env.mode === "production" || process.env.NODE_ENV === "production";
     const commonConfig = {
-        mode: production ? "production" : "development",
         entry: "./src/legacy/legacy.ts",
-        devtool: production ? "source-map" : "inline-cheap-module-source-map",
-        output: {
-            path: path.resolve(__dirname, "dist"),
-            filename: "babylon.playground.js",
-            devtoolModuleFilenameTemplate: production ? "webpack://[namespace]/[resource-path]?[loaders]" : "file:///[absolute-resource-path]",
-        },
+        ...webpackTools.commonDevWebpackConfiguration({
+            mode: env.mode,
+            outputFilename: "babylon.playground.js",
+        }),
         resolve: {
             extensions: [".js", ".ts", ".tsx"],
         },

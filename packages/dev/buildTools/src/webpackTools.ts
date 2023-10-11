@@ -154,6 +154,19 @@ export const getRules = (
     return rules;
 };
 
+export const commonDevWebpackConfiguration = (env: { mode: "development" | "production" }, outputFilename: string) => {
+    const production = env.mode === "production" || process.env.NODE_ENV === "production";
+    return {
+        mode: production ? "production" : "development",
+        devtool: production ? "source-map" : "inline-cheap-module-source-map",
+        output: outputFilename ? {
+            path: path.resolve(__dirname, "dist"),
+            filename: outputFilename,
+            devtoolModuleFilenameTemplate: production ? "webpack://[namespace]/[resource-path]?[loaders]" : "file:///[absolute-resource-path]",
+        } : undefined,
+    };
+};
+
 export const commonUMDWebpackConfiguration = (options: {
     entryPoints?: { [name: string]: string };
     overrideFilename?: string | ((chunk: any) => string);
@@ -179,7 +192,7 @@ export const commonUMDWebpackConfiguration = (options: {
     }.js`;
     return {
         entry: options.entryPoints ?? "./src/index.ts",
-        devtool: "source-map",
+        devtool: options.mode === "production" ? "source-map" : "inline-cheap-module-source-map",
         mode: options.mode || "development",
         output: {
             path: options.outputPath || path.resolve("./dist"),

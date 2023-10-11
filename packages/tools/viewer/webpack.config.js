@@ -10,12 +10,13 @@ module.exports = (env) => {
     const source = env.source || "dev";
     const production = env.mode === "production";
     return {
-        mode: production ? "production" : "development",
-        devtool: production ? "source-map" : "inline-cheap-module-source-map",
         entry: {
             viewer: "./src/index.ts",
             renderOnlyViewer: "./src/renderOnlyIndex.ts",
         },
+        ...webpackTools.commonDevWebpackConfiguration({
+            mode: env.mode,
+        }),
         output: {
             path: path.resolve(__dirname, "dist"),
             filename: "[name].js",
@@ -44,10 +45,12 @@ module.exports = (env) => {
         ignoreWarnings: [/Failed to parse source map/],
         devServer: {
             client: {
-                overlay: process.env.DISABLE_DEV_OVERLAY ? false : {
-                    warnings: false,
-                    errors: true,
-                },
+                overlay: process.env.DISABLE_DEV_OVERLAY
+                    ? false
+                    : {
+                          warnings: false,
+                          errors: true,
+                      },
             },
             static: {
                 directory: path.join(__dirname, "public"),
