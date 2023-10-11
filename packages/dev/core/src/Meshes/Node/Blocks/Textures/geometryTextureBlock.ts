@@ -4,7 +4,7 @@ import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryC
 import type { INodeGeometryTextureData } from "../../Interfaces/nodeGeometryTextureData";
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
-import { Texture } from "core/Materials/Textures/texture";
+import type { Texture } from "core/Materials/Textures/texture";
 import { TextureTools } from "core/Misc";
 /**
  * Block used to load texture data
@@ -118,18 +118,29 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
      * @param url defines the url to load data from
      * @returns a promise fulfilled when image data is loaded
      */
-    public async extractFromTextureAsync(texture: Texture) {
-        const size = texture.getSize();
-        const data = await TextureTools.GetTextureDataAsync(texture, size.width, size.height);
+    public extractFromTextureAsync(texture: Texture) {
+        return new Promise<void>((resolve, reject) => {
+            if (!texture.isReady()) {
+                texture.onLoadObservable.addOnce(() => {
+                    return this.extractFromTextureAsync(texture).then(resolve).catch(reject);
+                });
+                return;
+            }
+            const size = texture.getSize();
+            TextureTools.GetTextureDataAsync(texture, size.width, size.height)
+                .then(async (data) => {
+                    const floatArray = new Float32Array(data.length);
 
-        const floatArray = new Float32Array(data.length);
-
-        for (let i = 0; i < data.length; i++) {
-            floatArray[i] = data[i] / 255.0;
-        }
-        this._data = floatArray;
-        this._width = size.width;
-        this._height = size.height;
+                    for (let i = 0; i < data.length; i++) {
+                        floatArray[i] = data[i] / 255.0;
+                    }
+                    this._data = floatArray;
+                    this._width = size.width;
+                    this._height = size.height;
+                    resolve();
+                })
+                .catch(reject);
+        });
     }
 
     protected _buildBlock() {
