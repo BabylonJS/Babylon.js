@@ -1934,13 +1934,7 @@ export class ThinEngine {
                     lodLevel
                 );
             } else if (webglRTWrapper._currentLOD != lodLevel) {
-                gl.framebufferTexture2D(
-                    gl.FRAMEBUFFER,
-                    gl.COLOR_ATTACHMENT0,
-                    gl.TEXTURE_2D,
-                    rtWrapper.texture!._hardwareTexture?.underlyingResource,
-                    lodLevel
-                );
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, rtWrapper.texture!._hardwareTexture?.underlyingResource, lodLevel);
                 webglRTWrapper._currentLOD = lodLevel;
             }
         }
