@@ -1743,6 +1743,11 @@
             "title": "SerializeScene and ImportMesh with MorphTargetManager",
             "playgroundId": "#HPV2TZ#378",
             "referenceImage": "SerializeScene-and-ImportMesh-with-MorphTargetManager.png"
+        },
+        {
+            "title": "Vertex buffers with non aligned strides",
+            "playgroundId": "#U1CZV3#32",
+            "referenceImage": "VertexBuffer-non-aligned-strides.png"
         }
     ]
 }
