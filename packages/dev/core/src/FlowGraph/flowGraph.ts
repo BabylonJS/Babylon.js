@@ -128,6 +128,10 @@ export class FlowGraph {
         this._sceneDisposeObserver = null;
     }
 
+    /**
+     * Executes a function in all blocks of a flow graph, starting with the event blocks.
+     * @param visitor the function to execute.
+     */
     public visitAllBlocks(visitor: (block: FlowGraphBlock) => void) {
         const visitList: FlowGraphBlock[] = [];
         const idsAddedToVisitList = new Set<string>();
@@ -161,6 +165,11 @@ export class FlowGraph {
         }
     }
 
+    /**
+     * Serializes a graph
+     * @param serializationObject the object to write the values in
+     * @param valueSerializeFunction a function to serialize complex values
+     */
     public serialize(serializationObject: any = {}, valueSerializeFunction?: (key: string, value: any, serializationObject: any) => void) {
         serializationObject.variableDefinitions = {};
         this.variableDefinitions.serialize(serializationObject.variableDefinitions);
@@ -178,6 +187,12 @@ export class FlowGraph {
         }
     }
 
+    /**
+     * Given a list of blocks, find an output data connection that has a specific unique id
+     * @param blocks
+     * @param uniqueId
+     * @returns
+     */
     public static GetDataOutConnectionByUniqueId(blocks: FlowGraphBlock[], uniqueId: string): FlowGraphDataConnection<any> {
         for (const block of blocks) {
             for (const dataOut of block.dataOutputs) {
@@ -189,6 +204,12 @@ export class FlowGraph {
         throw new Error("Could not find data out connection with unique id " + uniqueId);
     }
 
+    /**
+     * Given a list of blocks, find an input signal connection that has a specific unique id
+     * @param blocks
+     * @param uniqueId
+     * @returns
+     */
     public static GetSignalInConnectionByUniqueId(blocks: FlowGraphBlock[], uniqueId: string): FlowGraphSignalConnection {
         for (const block of blocks) {
             if (block instanceof FlowGraphExecutionBlock) {
@@ -202,9 +223,16 @@ export class FlowGraph {
         throw new Error("Could not find signal in connection with unique id " + uniqueId);
     }
 
+    /**
+     * Parses a graph from a given serialization object
+     * @param serializationObject the object where the values are written
+     * @param coordinator the flow graph coordinator
+     * @param valueParseFunction a function to parse complex values in a scene
+     * @returns
+     */
     public static Parse(serializationObject: any, coordinator: FlowGraphCoordinator, valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any): FlowGraph {
         const graph = coordinator.createGraph();
-        graph.variableDefinitions.parse(serializationObject.variableDefinitions);
+        graph.variableDefinitions.deserialize(serializationObject.variableDefinitions);
         const blocks: FlowGraphBlock[] = [];
         // Parse all blocks
         for (const serializedBlock of serializationObject.allBlocks) {

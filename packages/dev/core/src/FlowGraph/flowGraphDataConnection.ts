@@ -80,7 +80,7 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
     }
 
     public static Parse(serializationObject: any, ownerBlock: FlowGraphBlock): FlowGraphDataConnection<any> {
-        const obj = super.Parse(serializationObject, ownerBlock);
+        const obj = FlowGraphConnection.Parse(serializationObject, ownerBlock);
         obj.richType = RichType.Parse(serializationObject.richType);
         return obj;
     }

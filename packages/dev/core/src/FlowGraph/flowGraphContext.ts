@@ -7,8 +7,21 @@ import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import type { FlowGraphEventCoordinator } from "./flowGraphEventCoordinator";
 import type { FlowGraph } from "./flowGraph";
 
+function isMeshClassName(className: string) {
+    return (
+        className === "Mesh" ||
+        className === "AbstractMesh" ||
+        className === "GroundMesh" ||
+        className === "InstanceMesh" ||
+        className === "LinesMesh" ||
+        className === "GoldbergMesh" ||
+        className === "GreasedLineMesh" ||
+        className === "TrailMesh"
+    );
+}
+
 function defaultValueSerializationFunction(key: string, value: any, serializationObject: any) {
-    if (value?.getClassName && value?.getClassName() === "Mesh") {
+    if (value?.getClassName && isMeshClassName(value?.getClassName())) {
         serializationObject[key] = {
             name: value.name,
             className: value.getClassName(),
@@ -21,7 +34,8 @@ function defaultValueSerializationFunction(key: string, value: any, serializatio
 function defaultValueParseFunction(key: string, serializationObject: any, scene: Scene) {
     const value = serializationObject[key];
     let finalValue;
-    if (value?.className === "Mesh") {
+    const className = value?.className;
+    if (isMeshClassName(className)) {
         finalValue = scene.getMeshByName(value.name);
     } else {
         finalValue = value;
@@ -229,6 +243,11 @@ export class FlowGraphContext {
         this._pendingBlocks.length = 0;
     }
 
+    /**
+     * Serializes a context
+     * @param serializationObject the object to write the values in
+     * @param valueSerializationFunction a function to serialize complex values
+     */
     public serialize(serializationObject: any = {}, valueSerializationFunction: (key: string, value: any, serializationObject: any) => void = defaultValueSerializationFunction) {
         serializationObject.uniqueId = this.uniqueId;
         serializationObject._userVariables = {};
@@ -245,6 +264,13 @@ export class FlowGraphContext {
         return "FGContext";
     }
 
+    /**
+     * Parses a context
+     * @param serializationObject the object containing the context serialization values
+     * @param graph the graph to which the context should belong
+     * @param valueParseFunction a function to parse complex values
+     * @returns
+     */
     public static Parse(
         serializationObject: any = {},
         graph: FlowGraph,

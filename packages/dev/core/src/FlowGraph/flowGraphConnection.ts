@@ -113,6 +113,10 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
         return "FGConnection";
     }
 
+    /**
+     * Deserialize from a object into this
+     * @param serializationObject
+     */
     deserialize(serializationObject: any) {
         this.uniqueId = serializationObject.uniqueId;
         this.name = serializationObject.name;
@@ -120,6 +124,12 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
         this.connectedPointIds = serializationObject.connectedPointIds;
     }
 
+    /**
+     * Parses a connection from an object
+     * @param serializationObject
+     * @param ownerBlock
+     * @returns
+     */
     public static Parse(serializationObject: any = {}, ownerBlock: FlowGraphBlock) {
         const type = Tools.Instantiate(serializationObject.className);
         const connection = new type(serializationObject.name, serializationObject._connectionType, ownerBlock);
