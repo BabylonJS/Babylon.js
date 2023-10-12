@@ -191,6 +191,12 @@ export interface EngineOptions extends ThinEngineOptions, WebGLContextAttributes
      * This will not influence NativeEngine and WebGPUEngine which set the behavior to true during construction.
      */
     forceSRGBBufferSupportState?: boolean;
+
+    /**
+     * Defines if the gl context should be released.
+     * It's false by default for backward compatibility, but you should probably pass true (see https://registry.khronos.org/webgl/extensions/WEBGL_lose_context/)
+     */
+    loseContextOnDispose?: boolean;
 }
 
 /**
@@ -5520,6 +5526,10 @@ export class ThinEngine {
 
         this.onDisposeObservable.notifyObservers(this);
         this.onDisposeObservable.clear();
+
+        if (this._creationOptions.loseContextOnDispose) {
+            this._gl.getExtension("WEBGL_lose_context")?.loseContext();
+        }
     }
 
     /**
