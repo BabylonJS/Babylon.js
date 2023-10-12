@@ -13,6 +13,7 @@ module.exports = (env) => {
         ...webpackTools.commonDevWebpackConfiguration({
             mode: env.mode,
             outputFilename: "[name].js",
+            dirName: __dirname,
         }),
         resolve: {
             extensions: [".js", ".ts", ".tsx"],

@@ -8,6 +8,7 @@ module.exports = (env) => {
         ...webpackTools.commonDevWebpackConfiguration({
             mode: env.mode,
             outputFilename: "babylon.vsm.js",
+            dirName: __dirname,
         }),
         resolve: {
             extensions: [".js", ".ts", ".tsx", ".svg", "*.scss"],
