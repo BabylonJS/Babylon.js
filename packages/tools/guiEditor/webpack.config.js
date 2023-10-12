@@ -4,14 +4,11 @@ const webpackTools = require("@dev/build-tools").webpackTools;
 module.exports = (env) => {
     const production = env.mode === "production" || process.env.NODE_ENV === "production";
     const commonConfig = {
-        mode: production ? "production" : "development",
         entry: "./src/legacy/legacy.ts",
-        devtool: production ? "source-map" : "eval-cheap-module-source-map",
-        output: {
-            path: path.resolve(__dirname, "dist"),
-            filename: "babylon.guiEditor.js",
-            devtoolModuleFilenameTemplate: production ? "webpack://[namespace]/[resource-path]?[loaders]" : "file:///[absolute-resource-path]",
-        },
+        ...webpackTools.commonDevWebpackConfiguration({
+            mode: env.mode,
+            outputFilename: "babylon.guiEditor.js",
+        }),
         resolve: {
             extensions: [".js", ".ts", ".tsx", ".svg", "*.scss"],
             alias: {
@@ -40,17 +37,19 @@ module.exports = (env) => {
                 sideEffects: true,
                 tsOptions: {
                     compilerOptions: {
-                        "rootDir": "../../",
-                    }
-                }
+                        rootDir: "../../",
+                    },
+                },
             }),
         },
         devServer: {
             client: {
-                overlay: process.env.DISABLE_DEV_OVERLAY ? false : {
-                    warnings: false,
-                    errors: true,
-                },
+                overlay: process.env.DISABLE_DEV_OVERLAY
+                    ? false
+                    : {
+                          warnings: false,
+                          errors: true,
+                      },
             },
             static: {
                 directory: path.join(__dirname, "public"),

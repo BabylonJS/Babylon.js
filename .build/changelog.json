@@ -1,70 +1,273 @@
 {
-    "fromTag": "6.22.1",
+    "fromTag": "6.23.1",
     "changelog": {
-        "6.22.1": [
+        "6.24.0": [],
+        "6.23.1": [
             {
-                "pr": "14365",
-                "title": "Gizmos fixes and small improvements",
-                "description": "fixes for :\r\n- https://forum.babylonjs.com/t/gizmos-ondragobservable-outdated-docs/44455\r\n- https://forum.babylonjs.com/t/boundingboxgizmo-attach-to-child-node-with-a-wrong-boundingbox/31082/19\r\n- https://forum.babylonjs.com/t/gizmo-rotation-validation-does-not-work/44543/3\r\n- https://forum.babylonjs.com/t/gizmo-use-tmpparent-but-do-not-preserve-scaling-sign/29270/52\r\n\r\nfixes #12718 ",
+                "pr": "14411",
+                "title": "update dependencies and move to inline sourcemaps for dev",
+                "description": "Newer versions of VSCode seem to not follow the webpack-internal eval sourcemaps (like browsers are doing).\nApart from moving to inline sourcemaps i couldn't find a working solution.\nThere will be a slight change in compile time, but it is neglectable. Generated files (in development) will be larger, but memory consumption should be the same.",
                 "author": {
-                    "name": "CedricGuillemet",
-                    "url": "https://github.com/CedricGuillemet"
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    "packages/dev/core/src/Behaviors/Meshes/pointerDragBehavior.ts",
-                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts",
-                    "packages/dev/core/src/Gizmos/gizmo.ts",
-                    "packages/dev/core/src/Gizmos/planeRotationGizmo.ts",
-                    "packages/dev/core/src/Gizmos/positionGizmo.ts",
-                    "packages/dev/core/src/Gizmos/rotationGizmo.ts",
-                    "packages/dev/core/src/Gizmos/scaleGizmo.ts",
-                    "packages/dev/core/src/Maths/math.vector.ts"
+                    ".vscode/launch.json",
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/buildTools/src/webpackTools.ts",
+                    "packages/public/babylonjs-viewer-assets/webpack.config.js",
+                    "packages/tools/babylonServer/webpack.config.js",
+                    "packages/tools/babylonServer/webpack.config.snapshot.js",
+                    "packages/tools/devHost/webpack.config.js",
+                    "packages/tools/guiEditor/webpack.config.js",
+                    "packages/tools/nodeEditor/webpack.config.js",
+                    "packages/tools/nodeGeometryEditor/webpack.config.js",
+                    "packages/tools/playground/webpack.config.js",
+                    "packages/tools/reflector/webpack.config.js",
+                    "packages/tools/sandbox/webpack.config.js",
+                    "packages/tools/tests/webpack.config.js",
+                    "packages/tools/viewer/webpack.config.js",
+                    "packages/tools/vsm/webpack.config.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14408",
+                "title": "fix feedback from 14398",
+                "description": "reference to https://github.com/BabylonJS/Babylon.js/pull/14398",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/components/preview/svgs/icon-ibl.svg"
                 ],
                 "tags": [
-                    "enhancement",
-                    "gizmos"
+                    "skip changelog"
                 ]
             },
             {
-                "pr": "14368",
-                "title": "New boolean block for NGE",
+                "pr": "14407",
+                "title": "Reuse / fix maths / simplify",
                 "description": null,
                 "author": {
                     "name": "deltakosh",
                     "url": "https://github.com/deltakosh"
                 },
                 "files": [
-                    "packages/dev/core/src/Meshes/Node/Blocks/booleanGeometryBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/mergeGeometryBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/index.ts",
-                    "packages/dev/core/src/Meshes/csg.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateBaseBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateLinearBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateRadialBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14398",
+                "title": "add Env to NME Preview",
+                "description": "We can custom Env, Image and toggle Env / Background color now.",
+                "author": {
+                    "name": "onekit-boss",
+                    "url": "https://github.com/onekit-boss"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/components/preview/previewAreaComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/nodeEditor/src/components/preview/previewMeshControlComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/preview/previewType.ts",
+                    "packages/tools/nodeEditor/src/components/preview/svgs/envPicker.svg",
+                    "packages/tools/nodeEditor/src/components/preview/svgs/icon-ibl.svg",
+                    "packages/tools/nodeEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/globalState.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/preview/previewManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14172",
+                "title": "P8 NGE linear and radial cloner blocks",
+                "description": "https://forum.babylonjs.com/t/nge-linear-cloner/43369\r\n\r\nJust a simple linear cloner.\r\n\r\nOnly supports uv0 right now.\r\n\r\nProbably should add color support as well.",
+                "author": {
+                    "name": "Pryme8",
+                    "url": "https://github.com/Pryme8"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateLinearBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateRadialBlock.ts",
                     "packages/tools/nodeGeometryEditor/src/blockTools.ts",
                     "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx"
                 ],
                 "tags": [
-                    "skip changelog",
-                    "nge"
+                    "skip changelog"
                 ]
             },
             {
-                "pr": "14367",
-                "title": "OIT: Fix viewport not set correctly",
-                "description": "See https://forum.babylonjs.com/t/bug-in-order-independent-transparency-rendering-with-multiple-cameras/44481/6",
+                "pr": "14405",
+                "title": "Log warning in Native when zOffset is not 0",
+                "description": "Fix [#1053](https://github.com/BabylonJS/BabylonNative/issues/1053)",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14387",
+                "title": "ArcRotateCamera: Modified zoomOn to use same logic as FramingBehavior",
+                "description": "A user on the forum found that the `zoomOn` function was found to be incorrectly determining radius for zooming on provided meshes.  This PR contains a change that takes some of the logic used for the `ArcRotateCamera` framing behavior and uses that to determine how far to zoom.\r\n\r\nForum Link: https://forum.babylonjs.com/t/arcrotate-camera-zoomon-not-working-as-expected/38130/1",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Cameras/framingBehavior.ts",
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts",
+                    "packages/dev/core/test/unit/Cameras/babylon.arcRotateCameraInputs.test.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "14401",
+                "title": "WebGPU: fix uniform analysis deactivation",
+                "description": "Until we update `TintWASM` with the latest package, I have to re-add the js code that disables uniform analysis by injecting a special diagnostic line in the shader code.",
                 "author": {
                     "name": "Popov72",
                     "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/Rendering/depthPeelingRenderer.ts"
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTintWASM.ts"
                 ],
                 "tags": [
-                    "bug",
-                    "rendering engine"
+                    "WebGPU",
+                    "skip changelog"
                 ]
             },
             {
-                "pr": "14366",
-                "title": "Update to havok 1.2.0",
+                "pr": "14402",
+                "title": "NME: Add support for reflectivity to the PrePassOutput block",
+                "description": "See https://forum.babylonjs.com/t/if-ssr-suppport-nm-now/44744/2",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/prePassOutputBlock.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "14403",
+                "title": "Fix incorrect spelling of `wgslLanguageFeatures` (should be `WGSLLanguageFeatures`)",
+                "description": "Bug reproduction:\r\n\r\nInstall  `@babylonjs/core@6.23.0` and navigate to `node_modules/@babylonjs/core/Engines/engine.d.ts:1272`\r\n\r\nActual:\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/75621402/0a836870-948e-4d60-9049-71332f192fc8)\r\n\r\nError message:\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/75621402/608e3ca1-00f3-4225-ae98-6b2df9531bc4)\r\n\r\nExpected:\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/75621402/44565548-2650-4e1d-aba8-3c40d084027b)\r\n\r\nThe erroneous code is defined in [`packages/dev/core/src/LibDeclarations/webgpu.d.ts:71`](https://github.com/BabylonJS/Babylon.js/blob/6.23.0/packages/dev/core/src/LibDeclarations/webgpu.d.ts#L71)\r\n\r\n\r\n",
+                "author": {
+                    "name": "dr-vortex",
+                    "url": "https://github.com/dr-vortex"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/webgpu.d.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14397",
+                "title": "WebGPU: Add labels to buffers + support non float vertex buffers",
+                "description": "There are several updates in this PR:\r\n* add labels to buffers to help debugging\r\n* add support for non float buffers for the standard vertex buffer types (position, normal, uv, etc)\r\n* fix a bug in `Geometry.setVerticesBuffer` when computing the number of vertices when the type is UNSIGNED_BYTE\r\n* re-enable the \"GLTF Buggy with Meshopt Compression\" visualization test, now that non float vertex buffers are supported\r\n\r\nAfter the PR is merged, these PGs, which are using non float vertex buffers for position/normal/uv, will work:\r\n* Simple face: https://playground.babylonjs.com/?webgpu#U1CZV3#16\r\n* glTF Draco compression: https://playground.babylonjs.com/?webgpu#3RWEGG#7\r\n* WGSL custom shader: https://playground.babylonjs.com/?webgpu#6GFJNR#209\r\n\r\nRegarding TintWASM, I did not include the latest package in the PR because it went from 1.6Mb to 2.6Mb...",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animationGroup.ts",
+                    "packages/dev/core/src/Buffers/buffer.ts",
+                    "packages/dev/core/src/Buffers/storageBuffer.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.storageBuffer.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.uniformBuffer.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.storageBuffer.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.uniformBuffer.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuBufferManager.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheRenderPipeline.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuDrawContext.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuPipelineContext.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuQuerySet.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessingContext.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessor.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsGLSL.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureHelper.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTintWASM.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Materials/meshDebugPluginMaterial.ts",
+                    "packages/dev/core/src/Materials/uniformBuffer.ts",
+                    "packages/dev/core/src/Meshes/geometry.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/shadowsFragmentFunctions.fx",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "new feature",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "14399",
+                "title": "Prevent possible `Material.dispose()` uncaught exception",
+                "description": "Hi babylon folks,\r\n\r\nThis small PR is about preventing an exception when `Material.dispos()` is called while beeing assigned to a `Mesh` that has no subMesh  (in the function `Material.releaseVertexArrayObject` called within `Material.dispose()`).\r\n\r\nContext ; If a mesh is never assigned some valid `VertexData`, the `subMeshes` array is never created and remains to its default value, which is `undefined` for some reasons.\r\n\r\nThe third parameter of `Material.dispos()`, namely `notBoundToMesh`, could be is used to prevent the exception BUT it would require to track whether a mesh has subMeshes and it would not work is the case of a Material shared by several Meshes.\r\n\r\n\r\nHere is a simple playground that shows the error : https://playground.babylonjs.com/#43L9NF\r\n\r\n",
+                "author": {
+                    "name": "barroij",
+                    "url": "https://github.com/barroij"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/material.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14400",
+                "title": "Fix function assignment",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/webXRSessionManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14395",
+                "title": "Add gltf with bad draco test",
+                "description": "This is a follow up to #14311, #14325, and #14351 to make sure Draco is working properly.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfBadDraco.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14396",
+                "title": "update havok to 1.2.1",
                 "description": null,
                 "author": {
                     "name": "RaananW",
@@ -76,26 +279,102 @@
                 "tags": []
             },
             {
-                "pr": "14364",
-                "title": "Initial flow graph unit tests",
-                "description": null,
+                "pr": "14394",
+                "title": "move bind to Arrow functions",
+                "description": "This is a suggestion to move every bind(this) call to use arrow functions, as they are much faster.\n\nI especially want to move the render function binding in the engine to use arrow function.\n\nThis is just a suggestion, and of course can be discussed.\n\n",
                 "author": {
-                    "name": "carolhmj",
-                    "url": "https://github.com/carolhmj"
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphReceiveCustomEventBlock.ts",
-                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphBranchBlock.ts",
-                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/index.ts",
-                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphCustomFunctionBlock.ts",
-                    "packages/dev/core/test/unit/FlowGraph/flowGraphDataNodes.test.ts",
-                    "packages/dev/core/test/unit/FlowGraph/flowGraphEventNodes.test.ts",
-                    "packages/dev/core/test/unit/FlowGraph/flowGraphExecutionNodes.test.ts"
+                    "packages/dev/core/src/Cameras/Inputs/BaseCameraPointersInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/arcRotateCameraVRDeviceOrientationInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraMouseInput.ts",
+                    "packages/dev/core/src/Cameras/Stereoscopic/anaglyphArcRotateCamera.ts",
+                    "packages/dev/core/src/Cameras/Stereoscopic/anaglyphFreeCamera.ts",
+                    "packages/dev/core/src/Cameras/Stereoscopic/anaglyphGamepadCamera.ts",
+                    "packages/dev/core/src/Cameras/Stereoscopic/anaglyphUniversalCamera.ts",
+                    "packages/dev/core/src/Cameras/Stereoscopic/stereoscopicArcRotateCamera.ts",
+                    "packages/dev/core/src/Cameras/Stereoscopic/stereoscopicFreeCamera.ts",
+                    "packages/dev/core/src/Cameras/Stereoscopic/stereoscopicGamepadCamera.ts",
+                    "packages/dev/core/src/Cameras/Stereoscopic/stereoscopicUniversalCamera.ts",
+                    "packages/dev/core/src/Cameras/VR/vrDeviceOrientationArcRotateCamera.ts",
+                    "packages/dev/core/src/Cameras/VR/vrDeviceOrientationFreeCamera.ts",
+                    "packages/dev/core/src/Cameras/VR/vrDeviceOrientationGamepadCamera.ts",
+                    "packages/dev/core/src/Culling/Octrees/octreeSceneComponent.ts",
+                    "packages/dev/core/src/Debug/physicsViewer.ts",
+                    "packages/dev/core/src/Debug/rayHelper.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraph.ts",
+                    "packages/dev/core/src/Lights/Shadows/cascadedShadowGenerator.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Materials/Textures/equiRectangularCubeTexture.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Misc/videoRecorder.ts",
+                    "packages/dev/core/src/Physics/physicsHelper.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderer.ts",
+                    "packages/dev/core/src/XR/features/WebXRSpaceWarp.ts",
+                    "packages/dev/core/src/XR/webXRSessionManager.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14392",
+                "title": "Bump postcss from 8.4.27 to 8.4.31",
+                "description": "Bumps [postcss](https://github.com/postcss/postcss) from 8.4.27 to 8.4.31.\n<details>\n<summary>Release notes</summary>\n<p><em>Sourced from <a href=\"https://github.com/postcss/postcss/releases\">postcss's releases</a>.</em></p>\n<blockquote>\n<h2>8.4.31</h2>\n<ul>\n<li>Fixed <code>\\r</code> parsing to fix CVE-2023-44270.</li>\n</ul>\n<h2>8.4.30</h2>\n<ul>\n<li>Improved source map performance (by <a href=\"https://github.com/romainmenke\"><code>@​romainmenke</code></a>).</li>\n</ul>\n<h2>8.4.29</h2>\n<ul>\n<li>Fixed <code>Node#source.offset</code> (by <a href=\"https://github.com/idoros\"><code>@​idoros</code></a>).</li>\n<li>Fixed docs (by <a href=\"https://github.com/coliff\"><code>@​coliff</code></a>).</li>\n</ul>\n<h2>8.4.28</h2>\n<ul>\n<li>Fixed <code>Root.source.end</code> for better source map (by <a href=\"https://github.com/romainmenke\"><code>@​romainmenke</code></a>).</li>\n<li>Fixed <code>Result.root</code> types when <code>process()</code> has no parser.</li>\n</ul>\n</blockquote>\n</details>\n<details>\n<summary>Changelog</summary>\n<p><em>Sourced from <a href=\"https://github.com/postcss/postcss/blob/main/CHANGELOG.md\">postcss's changelog</a>.</em></p>\n<blockquote>\n<h2>8.4.31</h2>\n<ul>\n<li>Fixed <code>\\r</code> parsing to fix CVE-2023-44270.</li>\n</ul>\n<h2>8.4.30</h2>\n<ul>\n<li>Improved source map performance (by Romain Menke).</li>\n</ul>\n<h2>8.4.29</h2>\n<ul>\n<li>Fixed <code>Node#source.offset</code> (by Ido Rosenthal).</li>\n<li>Fixed docs (by Christian Oliff).</li>\n</ul>\n<h2>8.4.28</h2>\n<ul>\n<li>Fixed <code>Root.source.end</code> for better source map (by Romain Menke).</li>\n<li>Fixed <code>Result.root</code> types when <code>process()</code> has no parser.</li>\n</ul>\n</blockquote>\n</details>\n<details>\n<summary>Commits</summary>\n<ul>\n<li><a href=\"https://github.com/postcss/postcss/commit/90208de8805dd762596c0028b8637ffbed23e371\"><code>90208de</code></a> Release 8.4.31 version</li>\n<li><a href=\"https://github.com/postcss/postcss/commit/58cc860b4c1707510c9cd1bc1fa30b423a9ad6c5\"><code>58cc860</code></a> Fix carrier return parsing</li>\n<li><a href=\"https://github.com/postcss/postcss/commit/4fff8e4cdc237619df1d73a444c0a8329701c1e2\"><code>4fff8e4</code></a> Improve pnpm test output</li>\n<li><a href=\"https://github.com/postcss/postcss/commit/cd43ed123274a92ebc13a1e8cccf1d65b8198f84\"><code>cd43ed1</code></a> Update dependencies</li>\n<li><a href=\"https://github.com/postcss/postcss/commit/caa916bdcbf66c51321574e2dde112ab13e8b306\"><code>caa916b</code></a> Update dependencies</li>\n<li><a href=\"https://github.com/postcss/postcss/commit/8972f76923e921a3c9655822382039b31b1c8e1a\"><code>8972f76</code></a> Typo</li>\n<li><a href=\"https://github.com/postcss/postcss/commit/11a5286f781d2a637f2c545c5e9cd661055acaab\"><code>11a5286</code></a> Typo</li>\n<li><a href=\"https://github.com/postcss/postcss/commit/45c55017776fc61f7815d1ea8e92d5291ca5d6c8\"><code>45c5501</code></a> Release 8.4.30 version</li>\n<li><a href=\"https://github.com/postcss/postcss/commit/bc3c341f589f9c15f1b56838a33d908374e537e0\"><code>bc3c341</code></a> Update linter</li>\n<li><a href=\"https://github.com/postcss/postcss/commit/b2be58a2eb788d12474ee1335f8ecdb9fa6225aa\"><code>b2be58a</code></a> Merge pull request <a href=\"https://redirect.github.com/postcss/postcss/issues/1881\">#1881</a> from romainmenke/improve-sourcemap-performance--phil...</li>\n<li>Additional commits viewable in <a href=\"https://github.com/postcss/postcss/compare/8.4.27...8.4.31\">compare view</a></li>\n</ul>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=postcss&package-manager=npm_and_yarn&previous-version=8.4.27&new-version=8.4.31)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot show <dependency name> ignore conditions` will show all of the ignore conditions of the specified dependency\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
+                "author": {
+                    "name": "dependabot[bot]",
+                    "url": "https://github.com/apps/dependabot"
+                },
+                "files": [
+                    "package-lock.json"
                 ],
                 "tags": [
-                    "skip changelog",
-                    "flow graph"
+                    "dependencies"
                 ]
+            },
+            {
+                "pr": "14390",
+                "title": "Allow undefined bufferViews in glTF accessors",
+                "description": "See https://github.com/KhronosGroup/glTF/issues/2169.\r\n\r\nAccording to the glTF spec, if accessors don't have a bufferView, they should be all zeroes.\r\n\r\nThis also removes the code to convert non-float joints to float as that is no longer necessary. It was originally for Babylon Native.\r\n\r\n- [x] Tested changes with Babylon Native master.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/buffer.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14393",
+                "title": "videoTexture serialization",
+                "description": "this adds the needed functionality to serialize and parse a video texture.\n\nsrc, isVideo and settings were missing. Until now VideoTexture was parsed as a regular source-less texture.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/texture.ts",
+                    "packages/dev/core/src/Materials/Textures/videoTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14388",
+                "title": "Remove bodyInfos when a body is removed from the plugin",
+                "description": "When removing a PhysicsBody from the havokPlugin, the body info wasn't being removed from the havokPlugin._bodies map, meaning it could grow forever. This removes the bodies from that map when they're removed from the world. Since a user can remove a body while they're iterating through events, and that body may have multiple events, we skip raising further events for bodies which had been destroyed (discussed with @carolhmj)",
+                "author": {
+                    "name": "eoineoineoin",
+                    "url": "https://github.com/eoineoineoin"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts"
+                ],
+                "tags": []
             }
         ],
         "6.23.0": [
@@ -314,6 +593,103 @@
                 "tags": [
                     "enhancement",
                     "rendering engine"
+                ]
+            }
+        ],
+        "6.22.1": [
+            {
+                "pr": "14365",
+                "title": "Gizmos fixes and small improvements",
+                "description": "fixes for :\r\n- https://forum.babylonjs.com/t/gizmos-ondragobservable-outdated-docs/44455\r\n- https://forum.babylonjs.com/t/boundingboxgizmo-attach-to-child-node-with-a-wrong-boundingbox/31082/19\r\n- https://forum.babylonjs.com/t/gizmo-rotation-validation-does-not-work/44543/3\r\n- https://forum.babylonjs.com/t/gizmo-use-tmpparent-but-do-not-preserve-scaling-sign/29270/52\r\n\r\nfixes #12718 ",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Meshes/pointerDragBehavior.ts",
+                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts",
+                    "packages/dev/core/src/Gizmos/gizmo.ts",
+                    "packages/dev/core/src/Gizmos/planeRotationGizmo.ts",
+                    "packages/dev/core/src/Gizmos/positionGizmo.ts",
+                    "packages/dev/core/src/Gizmos/rotationGizmo.ts",
+                    "packages/dev/core/src/Gizmos/scaleGizmo.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "gizmos"
+                ]
+            },
+            {
+                "pr": "14368",
+                "title": "New boolean block for NGE",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/booleanGeometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/mergeGeometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/dev/core/src/Meshes/csg.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "14367",
+                "title": "OIT: Fix viewport not set correctly",
+                "description": "See https://forum.babylonjs.com/t/bug-in-order-independent-transparency-rendering-with-multiple-cameras/44481/6",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/depthPeelingRenderer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14366",
+                "title": "Update to havok 1.2.0",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/babylonServer/public/havok/HavokPhysics.wasm"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14364",
+                "title": "Initial flow graph unit tests",
+                "description": null,
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphReceiveCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphBranchBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphCustomFunctionBlock.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphDataNodes.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphEventNodes.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphExecutionNodes.test.ts"
+                ],
+                "tags": [
+                    "skip changelog",
+                    "flow graph"
                 ]
             }
         ],
