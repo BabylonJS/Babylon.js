@@ -225,14 +225,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@6.23.0";
+        return "babylonjs@6.24.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "6.23.0";
+        return "6.24.0";
     }
 
     /**
@@ -1933,6 +1933,9 @@ export class ThinEngine {
                     rtWrapper.texture!._hardwareTexture?.underlyingResource,
                     lodLevel
                 );
+            } else if (webglRTWrapper._currentLOD !== lodLevel) {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, rtWrapper.texture!._hardwareTexture?.underlyingResource, lodLevel);
+                webglRTWrapper._currentLOD = lodLevel;
             }
         }
 

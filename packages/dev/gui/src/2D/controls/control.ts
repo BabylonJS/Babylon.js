@@ -1845,6 +1845,10 @@ export class Control implements IAnimatable {
         this._preMeasure(this._tempPaddingMeasure, context);
 
         this._measure();
+
+        // Let children take some post-measurement actions
+        this._postMeasure(this._tempPaddingMeasure, context);
+
         this._computeAlignment(this._tempPaddingMeasure, context);
 
         // Convert to int values
@@ -2007,6 +2011,13 @@ export class Control implements IAnimatable {
      * @internal
      */
     protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext): void {
+        // Do nothing
+    }
+
+    /**
+     * @internal
+     */
+    protected _postMeasure(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         // Do nothing
     }
 

@@ -21,6 +21,12 @@ export class MeshBlock extends NodeGeometryBlock {
     public reverseWindingOrder = false;
 
     /**
+     * Gets or sets a boolean indicating that this block should serialize its cached data
+     */
+    @editableInPropertyPage("Serialize cached data", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { rebuild: true } })
+    public serializedCachedData = false;
+
+    /**
      * Gets or sets the mesh to use to get vertex data
      */
     public get mesh() {
@@ -96,8 +102,9 @@ export class MeshBlock extends NodeGeometryBlock {
      */
     public serialize(saveMeshData?: boolean): any {
         const serializationObject = super.serialize();
+        serializationObject.serializedCachedData = this.serializedCachedData;
 
-        if (saveMeshData) {
+        if (saveMeshData || this.serializedCachedData) {
             if (this._mesh) {
                 serializationObject.cachedVertexData = VertexData.ExtractFromMesh(this._mesh, false, true).serialize();
             } else if (this._cachedVertexData) {
@@ -117,6 +124,7 @@ export class MeshBlock extends NodeGeometryBlock {
             this._cachedVertexData = VertexData.Parse(serializationObject.cachedVertexData);
         }
 
+        this.serializedCachedData = !!serializationObject.serializedCachedData;
         this.reverseWindingOrder = serializationObject.reverseWindingOrder;
     }
 }

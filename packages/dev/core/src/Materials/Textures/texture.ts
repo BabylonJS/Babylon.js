@@ -908,6 +908,7 @@ export class Texture extends BaseTexture {
         if (Texture._SerializeInternalTextureUniqueId) {
             serializationObject.internalTextureUniqueId = this._texture?.uniqueId ?? undefined;
         }
+        serializationObject.noMipmap = this._noMipmap;
 
         this.name = savedName;
 
