@@ -1441,7 +1441,6 @@ export class ThinEngine {
             needToAlwaysBindUniformBuffers: false,
             supportRenderPasses: false,
             supportSpriteInstancing: true,
-            forceVertexBufferStrideMultiple4Bytes: false,
             _collectUbosUpdatedInFrame: false,
         };
     }
@@ -2411,8 +2410,8 @@ export class ThinEngine {
                         vertexBuffer.getSize(),
                         vertexBuffer.type,
                         vertexBuffer.normalized,
-                        vertexBuffer.effectiveByteStride,
-                        vertexBuffer.effectiveByteOffset
+                        vertexBuffer.byteStride,
+                        vertexBuffer.byteOffset
                     );
 
                     if (vertexBuffer.getIsInstanced()) {

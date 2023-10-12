@@ -56,6 +56,8 @@ import { WebGPUSnapshotRendering } from "./WebGPU/webgpuSnapshotRendering";
 import type { WebGPUDataBuffer } from "../Meshes/WebGPU/webgpuDataBuffer";
 import type { WebGPURenderTargetWrapper } from "./WebGPU/webgpuRenderTargetWrapper";
 
+import "../Buffers/buffer.align";
+
 import "../ShadersWGSL/postprocess.vertex";
 
 declare function importScripts(...urls: string[]): void;
@@ -837,7 +839,6 @@ export class WebGPUEngine extends Engine {
             needToAlwaysBindUniformBuffers: true,
             supportRenderPasses: true,
             supportSpriteInstancing: true,
-            forceVertexBufferStrideMultiple4Bytes: true,
             _collectUbosUpdatedInFrame: false,
         };
     }
@@ -3359,7 +3360,7 @@ export class WebGPUEngine extends Engine {
         for (let index = 0; index < vertexBuffers.length; index++) {
             const vertexBuffer = vertexBuffers[index];
 
-            const buffer = vertexBuffer.getBuffer();
+            const buffer = vertexBuffer.effectiveBuffer;
             if (buffer) {
                 renderPass2.setVertexBuffer(index, buffer.underlyingResource, vertexBuffer._validOffsetRange ? 0 : vertexBuffer.byteOffset);
             }

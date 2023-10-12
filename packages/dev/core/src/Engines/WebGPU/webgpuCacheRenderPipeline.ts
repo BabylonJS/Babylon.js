@@ -817,7 +817,7 @@ export abstract class WebGPUCacheRenderPipeline {
                 vertexBuffer = this._emptyVertexBuffer;
             }
 
-            const buffer = vertexBuffer.getBuffer()?.underlyingResource;
+            const buffer = vertexBuffer.effectiveBuffer?.underlyingResource;
 
             // We optimize usage of GPUVertexBufferLayout: we will create a single GPUVertexBufferLayout for all the attributes which follow each other and which use the same GPU buffer
             // However, there are some constraints in the attribute.offset value range, so we must check for them before being able to reuse the same GPUVertexBufferLayout
@@ -952,7 +952,7 @@ export abstract class WebGPUCacheRenderPipeline {
                 vertexBuffer = this._emptyVertexBuffer;
             }
 
-            let buffer = vertexBuffer.getBuffer()?.underlyingResource;
+            let buffer = vertexBuffer.effectiveBuffer?.underlyingResource;
 
             // We reuse the same GPUVertexBufferLayout for all attributes that use the same underlying GPU buffer (and for attributes that follow each other in the attributes array)
             let offset = vertexBuffer.effectiveByteOffset;

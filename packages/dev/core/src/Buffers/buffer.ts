@@ -2,7 +2,6 @@ import type { Nullable, DataArray, FloatArray } from "../types";
 import type { ThinEngine } from "../Engines/thinEngine";
 import { DataBuffer } from "./dataBuffer";
 import type { Mesh } from "../Meshes/mesh";
-import { Tools } from "core/Misc/tools";
 
 /**
  * Class used to store data that will be store in GPU memory
@@ -24,13 +23,6 @@ export class Buffer {
      */
     public get isDisposed(): boolean {
         return this._isDisposed;
-    }
-
-    /**
-     * Gets the engine associated with the buffer
-     */
-    public get engine() {
-        return this._engine;
     }
 
     /**
@@ -336,8 +328,8 @@ export class VertexBuffer {
     private _instanced: boolean;
     private _instanceDivisor: number;
     private _isDisposed = false;
-    private _label?: string;
-    private _alignedBuffer?: Buffer;
+    /** @internal */
+    public _label?: string;
 
     /**
      * The byte type.
@@ -404,25 +396,9 @@ export class VertexBuffer {
     public readonly byteStride: number;
 
     /**
-     * Gets the effective byte stride, that is the byte stride of the buffer that is actually sent to the GPU.
-     * It could be different from VertexBuffer.byteStride if a new buffer must be created under the hood because of the forceVertexBufferStrideMultiple4Bytes engine flag.
-     */
-    public get effectiveByteStride() {
-        return this._alignedBuffer?.byteStride ?? this.byteStride;
-    }
-
-    /**
      * Gets the byte offset.
      */
     public readonly byteOffset: number;
-
-    /**
-     * Gets the effective byte offset, that is the byte offset of the buffer that is actually sent to the GPU.
-     * It could be different from VertexBuffer.byteOffset if a new buffer must be created under the hood because of the forceVertexBufferStrideMultiple4Bytes engine flag.
-     */
-    public get effectiveByteOffset() {
-        return this._alignedBuffer ? 0 : this.byteOffset;
-    }
 
     /**
      * Gets whether integer data values should be normalized into a certain range when being casted to a float.
@@ -444,6 +420,11 @@ export class VertexBuffer {
      * All buffers with the same format will have the same hash code
      */
     public readonly hashCode: number;
+
+    /**
+     * Gets the engine associated with the buffer
+     */
+    public readonly engine: ThinEngine;
 
     /**
      * Gets the number of vertices in the buffer
@@ -523,6 +504,8 @@ export class VertexBuffer {
         takeBufferOwnership = false
     ) {
         let updatable = false;
+
+        this.engine = engine;
 
         if (typeof updatableOrOptions === "object" && updatableOrOptions !== null) {
             updatable = updatableOrOptions.updatable ?? false;
@@ -645,7 +628,7 @@ export class VertexBuffer {
      * @returns underlying native buffer
      */
     public getBuffer(): Nullable<DataBuffer> {
-        return this._alignedBuffer?.getBuffer() ?? this._buffer.getBuffer();
+        return this._buffer.getBuffer();
     }
 
     /**
@@ -748,86 +731,8 @@ export class VertexBuffer {
         VertexBuffer.ForEach(this._buffer.getData()!, this.byteOffset, this.byteStride, this._size, this.type, count, this.normalized, callback);
     }
 
-    protected _alignBuffer() {
-        const engine = this._buffer.engine;
-        const data = this._buffer.getData();
-
-        if (!engine._features.forceVertexBufferStrideMultiple4Bytes || this.byteStride % 4 === 0 || !data) {
-            return;
-        }
-
-        const typeByteLength = VertexBuffer.GetTypeByteLength(this.type);
-        const alignedByteStride = (this.byteStride + 3) & ~3;
-        const alignedSize = alignedByteStride / typeByteLength;
-        const totalVertices = this.totalVertices;
-        const totalByteLength = totalVertices * alignedByteStride;
-        const totalLength = totalByteLength / typeByteLength;
-
-        let sourceData: DataView;
-
-        if (Array.isArray(data)) {
-            const sourceDataAsFloat = new Float32Array(data);
-            sourceData = new DataView(sourceDataAsFloat.buffer, sourceDataAsFloat.byteOffset, sourceDataAsFloat.byteLength);
-        } else if (data instanceof ArrayBuffer) {
-            sourceData = new DataView(data, 0, data.byteLength);
-        } else {
-            sourceData = new DataView(data.buffer, data.byteOffset, data.byteLength);
-        }
-
-        let alignedData: Int8Array | Uint8Array | Int16Array | Uint16Array | Int32Array | Uint32Array | Float32Array;
-
-        if (this.type === VertexBuffer.BYTE) {
-            alignedData = new Int8Array(totalLength);
-        } else if (this.type === VertexBuffer.UNSIGNED_BYTE) {
-            alignedData = new Uint8Array(totalLength);
-        } else if (this.type === VertexBuffer.SHORT) {
-            alignedData = new Int16Array(totalLength);
-        } else if (this.type === VertexBuffer.UNSIGNED_SHORT) {
-            alignedData = new Uint16Array(totalLength);
-        } else if (this.type === VertexBuffer.INT) {
-            alignedData = new Int32Array(totalLength);
-        } else if (this.type === VertexBuffer.UNSIGNED_INT) {
-            alignedData = new Uint32Array(totalLength);
-        } else {
-            alignedData = new Float32Array(totalLength);
-        }
-
-        const isLittleEndian = Tools.IsLittleEndian();
-
-        let sourceOffset = this.byteOffset;
-
-        for (let i = 0; i < totalVertices; ++i) {
-            for (let j = 0; j < this._size; ++j) {
-                switch (this.type) {
-                    case VertexBuffer.BYTE:
-                        alignedData[i * alignedSize + j] = sourceData.getInt8(sourceOffset + j);
-                        break;
-                    case VertexBuffer.UNSIGNED_BYTE:
-                        alignedData[i * alignedSize + j] = sourceData.getUint8(sourceOffset + j);
-                        break;
-                    case VertexBuffer.SHORT:
-                        alignedData[i * alignedSize + j] = sourceData.getInt16(sourceOffset + j * 2, isLittleEndian);
-                        break;
-                    case VertexBuffer.UNSIGNED_SHORT:
-                        alignedData[i * alignedSize + j] = sourceData.getUint16(sourceOffset + j * 2, isLittleEndian);
-                        break;
-                    case VertexBuffer.INT:
-                        alignedData[i * alignedSize + j] = sourceData.getInt32(sourceOffset + j * 4, isLittleEndian);
-                        break;
-                    case VertexBuffer.UNSIGNED_INT:
-                        alignedData[i * alignedSize + j] = sourceData.getUint32(sourceOffset + j * 4, isLittleEndian);
-                        break;
-                    case VertexBuffer.FLOAT:
-                        alignedData[i * alignedSize + j] = sourceData.getFloat32(sourceOffset + j * 4, isLittleEndian);
-                        break;
-                }
-            }
-            sourceOffset += this.byteStride;
-        }
-
-        this._alignedBuffer?.dispose();
-        this._alignedBuffer = new Buffer(engine, alignedData, false, alignedByteStride, false, this._instanced, true, this._instanceDivisor, this._label + "_aligned");
-    }
+    /** @internal */
+    public _alignBuffer() {}
 
     // Enums
     /**
