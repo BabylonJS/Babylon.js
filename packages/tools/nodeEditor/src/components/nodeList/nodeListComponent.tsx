@@ -537,6 +537,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                         key="add..."
                         title={"Add Custom Frame"}
                         closed={false}
+                        multiple={true}
                         label="Add..."
                         uploadName={"custom-frame-upload"}
                         iconImage={addButton}
@@ -553,6 +554,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                         key="add..."
                         title={"Add Custom Block"}
                         closed={false}
+                        multiple={true}
                         label="Add..."
                         uploadName={"custom-block-upload"}
                         iconImage={addButton}

@@ -4,6 +4,7 @@ import { DataStorage } from "core/Misc/dataStorage";
 interface ILineWithFileButtonComponentProps {
     title: string;
     closed?: boolean;
+    multiple?:boolean;
     label: string;
     iconImage: any;
     onIconClick: (file: File) => void;
@@ -50,7 +51,7 @@ export class LineWithFileButtonComponent extends React.Component<ILineWithFileBu
                         ref={this._uploadRef}
                         id={this.props.uploadName ? this.props.uploadName : "file-upload"}
                         type="file"
-                        multiple
+                        multiple={this.props.multiple}
                         accept={this.props.accept}
                         onChange={(evt) => this.onChange(evt)}
                     />
