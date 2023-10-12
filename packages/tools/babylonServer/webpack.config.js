@@ -72,6 +72,7 @@ module.exports = (env) => {
         ...buildTools.webpackTools.commonDevWebpackConfiguration({
             mode: env.mode,
             outputFilename: "[name].js",
+            dirName: __dirname,
         }),
         entry: {
             sceneTs: "./src/sceneTs.ts",
