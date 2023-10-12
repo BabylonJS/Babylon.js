@@ -55,7 +55,7 @@ Object.defineProperty(VertexBuffer.prototype, "effectiveByteOffset", {
 
 Object.defineProperty(VertexBuffer.prototype, "effectiveBuffer", {
     get: function (this: VertexBuffer) {
-        return this._alignedBuffer?.getBuffer() ?? this._buffer.getBuffer(); //(this._alignedBuffer && this._alignedBuffer.getBuffer()) || this._buffer.getBuffer();
+        return (this._alignedBuffer && this._alignedBuffer.getBuffer()) || this._buffer.getBuffer();
     },
     enumerable: true,
     configurable: true,
@@ -80,7 +80,7 @@ VertexBuffer.prototype.dispose = function (): void {
 VertexBuffer.prototype._alignBuffer = function (): void {
     const data = this._buffer.getData();
 
-    if (this.byteStride % 4 === 0 || !data) {
+    if (!this.engine._features.forceVertexBufferStrideMultiple4Bytes || this.byteStride % 4 === 0 || !data) {
         return;
     }
 
