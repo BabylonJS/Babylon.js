@@ -4,7 +4,7 @@ import { DataStorage } from "core/Misc/dataStorage";
 interface ILineWithFileButtonComponentProps {
     title: string;
     closed?: boolean;
-    multiple?:boolean;
+    multiple?: boolean;
     label: string;
     iconImage: any;
     onIconClick: (file: File) => void;
