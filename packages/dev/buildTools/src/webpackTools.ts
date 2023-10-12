@@ -154,14 +154,14 @@ export const getRules = (
     return rules;
 };
 
-export const commonDevWebpackConfiguration = (env: { mode: "development" | "production"; outputFilename: string }) => {
+export const commonDevWebpackConfiguration = (env: { mode: "development" | "production"; outputFilename: string; dirName: string }) => {
     const production = env.mode === "production" || process.env.NODE_ENV === "production";
     return {
         mode: production ? "production" : "development",
         devtool: production ? "source-map" : "inline-cheap-module-source-map",
         output: env.outputFilename
             ? {
-                  path: path.resolve(__dirname, "dist"),
+                  path: path.resolve(env.dirName, "dist"),
                   filename: env.outputFilename,
                   devtoolModuleFilenameTemplate: production ? "webpack://[namespace]/[resource-path]?[loaders]" : "file:///[absolute-resource-path]",
               }
