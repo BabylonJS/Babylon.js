@@ -324,10 +324,14 @@ export class VertexBuffer {
     public _validOffsetRange: boolean; // used internally by the engine
     private _kind: string;
     private _size: number;
-    private _ownsBuffer: boolean;
+    /** @internal */
+    public _ownsBuffer: boolean;
     private _instanced: boolean;
     private _instanceDivisor: number;
-    private _isDisposed = false;
+    /** @internal */
+    public _isDisposed = false;
+    /** @internal */
+    public _label?: string;
 
     /**
      * The byte type.
@@ -420,6 +424,28 @@ export class VertexBuffer {
     public readonly hashCode: number;
 
     /**
+     * Gets the engine associated with the buffer
+     */
+    public readonly engine: ThinEngine;
+
+    /**
+     * Gets the number of vertices in the buffer
+     */
+    public get totalVertices() {
+        const data = this.getData();
+        if (!data) {
+            return 0;
+        }
+
+        if (Array.isArray(data)) {
+            // data is a regular number[] with float values
+            return data.length / (this.byteStride / 4) - this.byteOffset / 4;
+        }
+
+        return (data.byteLength - this.byteOffset) / this.byteStride;
+    }
+
+    /**
      * Constructor
      * @param engine the engine
      * @param data the data to use for this vertex buffer
@@ -480,7 +506,8 @@ export class VertexBuffer {
         takeBufferOwnership = false
     ) {
         let updatable = false;
-        let label: string | undefined;
+
+        this.engine = engine;
 
         if (typeof updatableOrOptions === "object" && updatableOrOptions !== null) {
             updatable = updatableOrOptions.updatable ?? false;
@@ -494,7 +521,7 @@ export class VertexBuffer {
             useBytes = updatableOrOptions.useBytes ?? false;
             divisor = updatableOrOptions.divisor ?? 1;
             takeBufferOwnership = updatableOrOptions.takeBufferOwnership ?? false;
-            label = updatableOrOptions.label;
+            this._label = updatableOrOptions.label;
         } else {
             updatable = !!updatableOrOptions;
         }
@@ -503,7 +530,7 @@ export class VertexBuffer {
             this._buffer = data;
             this._ownsBuffer = takeBufferOwnership;
         } else {
-            this._buffer = new Buffer(engine, data, updatable, stride, postponeInternalCreation, instanced, useBytes, divisor, label);
+            this._buffer = new Buffer(engine, data, updatable, stride, postponeInternalCreation, instanced, useBytes, divisor, this._label);
             this._ownsBuffer = true;
         }
 
@@ -534,6 +561,7 @@ export class VertexBuffer {
         this._instanced = instanced !== undefined ? instanced : false;
         this._instanceDivisor = instanced ? divisor : 0;
 
+        this._alignBuffer();
         this._computeHashCode();
     }
 
@@ -550,11 +578,7 @@ export class VertexBuffer {
 
     /** @internal */
     public _rebuild(): void {
-        if (!this._buffer) {
-            return;
-        }
-
-        this._buffer._rebuild();
+        this._buffer?._rebuild();
     }
 
     /**
@@ -589,11 +613,13 @@ export class VertexBuffer {
      * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
      * @returns a float array containing vertex data
      */
-    public getFloatData(totalVertices: number, forceCopy?: boolean): Nullable<FloatArray> {
+    public getFloatData(totalVertices?: number, forceCopy?: boolean): Nullable<FloatArray> {
         const data = this.getData();
         if (!data) {
             return null;
         }
+
+        totalVertices = totalVertices ?? this.totalVertices;
 
         return VertexBuffer.GetFloatData(data, this._size, this.type, this.byteOffset, this.byteStride, this.normalized, totalVertices, forceCopy);
     }
@@ -658,6 +684,7 @@ export class VertexBuffer {
      */
     public create(data?: DataArray): void {
         this._buffer.create(data);
+        this._alignBuffer();
     }
 
     /**
@@ -667,6 +694,7 @@ export class VertexBuffer {
      */
     public update(data: DataArray): void {
         this._buffer.update(data);
+        this._alignBuffer();
     }
 
     /**
@@ -678,6 +706,7 @@ export class VertexBuffer {
      */
     public updateDirectly(data: DataArray, offset: number, useBytes: boolean = false): void {
         this._buffer.updateDirectly(data, offset, undefined, useBytes);
+        this._alignBuffer();
     }
 
     /**
@@ -699,6 +728,9 @@ export class VertexBuffer {
     public forEach(count: number, callback: (value: number, index: number) => void): void {
         VertexBuffer.ForEach(this._buffer.getData()!, this.byteOffset, this.byteStride, this._size, this.type, count, this.normalized, callback);
     }
+
+    /** @internal */
+    public _alignBuffer() {}
 
     // Enums
     /**

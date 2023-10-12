@@ -56,6 +56,8 @@ import { WebGPUSnapshotRendering } from "./WebGPU/webgpuSnapshotRendering";
 import type { WebGPUDataBuffer } from "../Meshes/WebGPU/webgpuDataBuffer";
 import type { WebGPURenderTargetWrapper } from "./WebGPU/webgpuRenderTargetWrapper";
 
+import "../Buffers/buffer.align";
+
 import "../ShadersWGSL/postprocess.vertex";
 
 declare function importScripts(...urls: string[]): void;
@@ -689,9 +691,9 @@ export class WebGPUEngine extends Engine {
                 this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
                 this._renderTargetEncoder = this._device.createCommandEncoder(this._renderTargetEncoderDescriptor);
 
-                this._emptyVertexBuffer = new VertexBuffer(this, [0], "", false, false, 1, false, 0, 1);
-
                 this._initializeLimits();
+
+                this._emptyVertexBuffer = new VertexBuffer(this, [0], "", false, false, 1, false, 0, 1);
 
                 this._cacheRenderPipeline = new WebGPUCacheRenderPipelineTree(this._device, this._emptyVertexBuffer, !this._caps.textureFloatLinearFiltering);
 
@@ -837,6 +839,7 @@ export class WebGPUEngine extends Engine {
             needToAlwaysBindUniformBuffers: true,
             supportRenderPasses: true,
             supportSpriteInstancing: true,
+            forceVertexBufferStrideMultiple4Bytes: true,
             _collectUbosUpdatedInFrame: false,
         };
     }
@@ -3358,7 +3361,7 @@ export class WebGPUEngine extends Engine {
         for (let index = 0; index < vertexBuffers.length; index++) {
             const vertexBuffer = vertexBuffers[index];
 
-            const buffer = vertexBuffer.getBuffer();
+            const buffer = vertexBuffer.effectiveBuffer;
             if (buffer) {
                 renderPass2.setVertexBuffer(index, buffer.underlyingResource, vertexBuffer._validOffsetRange ? 0 : vertexBuffer.byteOffset);
             }

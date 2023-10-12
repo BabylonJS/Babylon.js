@@ -1447,6 +1447,7 @@ export class ThinEngine {
             needToAlwaysBindUniformBuffers: false,
             supportRenderPasses: false,
             supportSpriteInstancing: true,
+            forceVertexBufferStrideMultiple4Bytes: false,
             _collectUbosUpdatedInFrame: false,
         };
     }
