@@ -303,8 +303,8 @@ export class Geometry implements IGetSetVerticesData {
             this._resetPointsArrayCache();
 
             // this._extend can be empty if buffer.getFloatData() returned null
-            const minimum = this._extend?.minimum ?? new Vector3(-1, -1, -1);
-            const maximum = this._extend?.maximum ?? new Vector3(1, 1, 1);
+            const minimum = (this._extend && this._extend.minimum) || new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+            const maximum = (this._extend && this._extend.maximum) || new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
 
             for (let index = 0; index < numOfMeshes; index++) {
                 const mesh = meshes[index];
