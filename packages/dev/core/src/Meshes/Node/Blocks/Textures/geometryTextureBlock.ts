@@ -5,7 +5,8 @@ import type { INodeGeometryTextureData } from "../../Interfaces/nodeGeometryText
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
 import type { Texture } from "core/Materials/Textures/texture";
-import { TextureTools } from "core/Misc";
+import { TextureTools } from "core/Misc/textureTools";
+import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
 /**
  * Block used to load texture data
  */
@@ -13,6 +14,12 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
     private _data: Nullable<Float32Array> = null;
     private _width: number;
     private _height: number;
+
+    /**
+     * Gets or sets a boolean indicating that this block should serialize its cached data
+     */
+    @editableInPropertyPage("Serialize cached data", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { rebuild: true } })
+    public serializedCachedData = false;
 
     /**
      * Gets the texture data
@@ -167,7 +174,8 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
 
         serializationObject.width = this._width;
         serializationObject.height = this._height;
-        if (this._data) {
+        serializationObject.serializedCachedData = this.serializedCachedData;
+        if (this._data && this.serializedCachedData) {
             serializationObject.data = Array.from(this._data);
         }
 
@@ -181,6 +189,9 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
         this._height = serializationObject.height;
         if (serializationObject.data) {
             this._data = new Float32Array(serializationObject.data);
+            this.serializedCachedData = true;
+        } else {
+            this.serializedCachedData = !!serializationObject.serializedCachedData;
         }
     }
 }
