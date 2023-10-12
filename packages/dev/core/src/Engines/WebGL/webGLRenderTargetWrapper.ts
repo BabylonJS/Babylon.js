@@ -36,6 +36,10 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
      * @internal
      */
     public _disposeOnlyFramebuffers = false;
+    /**
+     * @internal
+     */
+    public _currentLOD = 0;
 
     constructor(isMulti: boolean, isCube: boolean, size: TextureSize, engine: ThinEngine, context: WebGLRenderingContext) {
         super(isMulti, isCube, size, engine);
