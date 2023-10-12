@@ -66,6 +66,17 @@ VertexBuffer.prototype._rebuild = function (): void {
     this._alignedBuffer?._rebuild();
 };
 
+VertexBuffer.prototype.dispose = function (): void {
+    if (this._ownsBuffer) {
+        this._buffer.dispose();
+    }
+
+    this._alignedBuffer?.dispose();
+    this._alignedBuffer = undefined;
+
+    this._isDisposed = true;
+};
+
 VertexBuffer.prototype._alignBuffer = function (): void {
     const data = this._buffer.getData();
 

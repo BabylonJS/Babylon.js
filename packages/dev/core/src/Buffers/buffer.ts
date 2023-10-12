@@ -324,10 +324,12 @@ export class VertexBuffer {
     public _validOffsetRange: boolean; // used internally by the engine
     private _kind: string;
     private _size: number;
-    private _ownsBuffer: boolean;
+    /** @internal */
+    public _ownsBuffer: boolean;
     private _instanced: boolean;
     private _instanceDivisor: number;
-    private _isDisposed = false;
+    /** @internal */
+    public _isDisposed = false;
     /** @internal */
     public _label?: string;
 
@@ -577,7 +579,6 @@ export class VertexBuffer {
     /** @internal */
     public _rebuild(): void {
         this._buffer?._rebuild();
-        this._alignedBuffer?._rebuild();
     }
 
     /**
@@ -715,9 +716,6 @@ export class VertexBuffer {
         if (this._ownsBuffer) {
             this._buffer.dispose();
         }
-
-        this._alignedBuffer?.dispose();
-        this._alignedBuffer = undefined;
 
         this._isDisposed = true;
     }
