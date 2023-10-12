@@ -2,7 +2,8 @@ import type { FlowGraphContext } from "../../flowGraphContext";
 import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { RichTypeBoolean, RichTypeAny } from "../../flowGraphRichTypes";
-
+import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
+import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * @experimental
  * Block that returns a value based on a condition.
@@ -26,8 +27,8 @@ export class FlowGraphConditionalDataBlock<T> extends FlowGraphBlock {
      */
     public readonly output: FlowGraphDataConnection<T>;
 
-    constructor() {
-        super();
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(config);
 
         this.condition = this._registerDataInput("condition", RichTypeBoolean);
         this.trueValue = this._registerDataInput("trueValue", RichTypeAny);
@@ -42,4 +43,9 @@ export class FlowGraphConditionalDataBlock<T> extends FlowGraphBlock {
     public _updateOutputs(context: FlowGraphContext): void {
         this.output.setValue(this.condition.getValue(context) ? this.trueValue.getValue(context) : this.falseValue.getValue(context), context);
     }
+
+    public getClassName(): string {
+        return "FGConditionalDataBlock";
+    }
 }
+RegisterClass("FGConditionalDataBlock", FlowGraphConditionalDataBlock);

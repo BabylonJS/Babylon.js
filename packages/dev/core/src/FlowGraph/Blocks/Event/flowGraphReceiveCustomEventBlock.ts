@@ -6,12 +6,13 @@ import type { Nullable } from "../../../types";
 import { Tools } from "../../../Misc/tools";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { RichTypeAny } from "../../flowGraphRichTypes";
-
+import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
+import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * @experimental
  * Parameters used to create a FlowGraphReceiveCustomEventBlock.
  */
-export interface IFlowGraphReceiveCustomEventBlockParameters {
+export interface IFlowGraphReceiveCustomEventBlockConfiguration extends IFlowGraphBlockConfiguration {
     eventId: string;
 }
 
@@ -27,23 +28,28 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
      */
     public eventData: FlowGraphDataConnection<any>;
 
-    constructor(private _params: IFlowGraphReceiveCustomEventBlockParameters) {
-        super();
+    constructor(public config: IFlowGraphReceiveCustomEventBlockConfiguration) {
+        super(config);
         this.eventData = this._registerDataOutput("eventData", RichTypeAny);
     }
     public _preparePendingTasks(context: FlowGraphContext): void {
-        const observable = context.graphVariables.eventCoordinator.getCustomEventObservable(this._params.eventId);
+        const observable = context.configuration.eventCoordinator.getCustomEventObservable(this.config.eventId);
         this._eventObserver = observable.add((eventData) => {
             this.eventData.setValue(eventData, context);
             this._execute(context);
         });
     }
     public _cancelPendingTasks(context: FlowGraphContext): void {
-        const observable = context.graphVariables.eventCoordinator.getCustomEventObservable(this._params.eventId);
+        const observable = context.configuration.eventCoordinator.getCustomEventObservable(this.config.eventId);
         if (observable) {
             observable.remove(this._eventObserver);
         } else {
-            Tools.Warn(`FlowGraphReceiveCustomEventBlock: Missing observable for event ${this._params.eventId}`);
+            Tools.Warn(`FlowGraphReceiveCustomEventBlock: Missing observable for event ${this.config.eventId}`);
         }
     }
+
+    public getClassName(): string {
+        return "FGReceiveCustomEventBlock";
+    }
 }
+RegisterClass("FGReceiveCustomEventBlock", FlowGraphReceiveCustomEventBlock);

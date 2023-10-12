@@ -1,11 +1,10 @@
 import type { Engine } from "core/Engines";
 import { NullEngine } from "core/Engines";
 import type { FlowGraph, FlowGraphContext } from "core/FlowGraph";
-import { FlowGraphCoordinator, FlowGraphGetVariableBlock, FlowGraphReceiveCustomEventBlock, FlowGraphSceneReadyEventBlock, FlowGraphSendCustomEventBlock } from "core/FlowGraph";
-import { FlowGraphCustomFunctionBlock } from "core/FlowGraph/Blocks/Execution/flowGraphCustomFunctionBlock";
+import { FlowGraphCoordinator, FlowGraphGetVariableBlock, FlowGraphSceneReadyEventBlock, FlowGraphLogBlock } from "core/FlowGraph";
 import { Scene } from "core/scene";
 
-describe("Flow Graph Event Nodes", () => {
+describe("Flow Graph Data Nodes", () => {
     let engine: Engine;
     let scene: Scene;
     let flowGraphCoordinator: FlowGraphCoordinator;
@@ -13,6 +12,7 @@ describe("Flow Graph Event Nodes", () => {
     let flowGraphContext: FlowGraphContext;
 
     beforeEach(() => {
+        console.log = jest.fn();
         engine = new NullEngine({
             renderHeight: 256,
             renderWidth: 256,
@@ -28,19 +28,17 @@ describe("Flow Graph Event Nodes", () => {
     });
 
     it("Variable Block", () => {
-        const customFunction = jest.fn();
-
-        const sceneReady = new FlowGraphSceneReadyEventBlock();
+        const sceneReady = new FlowGraphSceneReadyEventBlock({ name: "SceneReady" });
         flowGraph.addEventBlock(sceneReady);
 
-        const runCustomFunction = new FlowGraphCustomFunctionBlock({ customFunction });
+        const runCustomFunction = new FlowGraphLogBlock({ name: "Log" });
         sceneReady.onDone.connectTo(runCustomFunction.onStart);
 
         const getVariable = new FlowGraphGetVariableBlock();
         getVariable.variableName.setValue("testVariable", flowGraphContext);
 
         flowGraphContext.setVariable("testVariable", 42);
-        runCustomFunction.input.connectTo(getVariable.output);
+        runCustomFunction.message.connectTo(getVariable.output);
 
         // Test in a different context
         const flowGraphContext2 = flowGraph.createContext();
@@ -50,7 +48,7 @@ describe("Flow Graph Event Nodes", () => {
         flowGraph.start();
         scene.onReadyObservable.notifyObservers(scene);
 
-        expect(customFunction).toHaveBeenCalledWith(42);
-        expect(customFunction).toHaveBeenCalledWith(43);
+        expect(console.log).toHaveBeenCalledWith(42);
+        expect(console.log).toHaveBeenCalledWith(43);
     });
 });

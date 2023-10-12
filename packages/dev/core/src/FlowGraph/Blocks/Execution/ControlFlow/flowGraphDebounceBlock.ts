@@ -3,6 +3,8 @@ import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnec
 import { RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "core/FlowGraph/flowGraphWithOnDoneExecutionBlock";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 
 /**
  * @experimental
@@ -22,8 +24,8 @@ export class FlowGraphDebounceBlock extends FlowGraphWithOnDoneExecutionBlock {
      */
     public readonly currentCount: FlowGraphDataConnection<number>;
 
-    constructor() {
-        super();
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(config);
         this.count = this._registerDataInput("count", RichTypeNumber);
         this.reset = this._registerSignalInput("reset");
         this.currentCount = this._registerDataOutput("currentCount", RichTypeNumber);
@@ -45,4 +47,9 @@ export class FlowGraphDebounceBlock extends FlowGraphWithOnDoneExecutionBlock {
             context._setExecutionVariable(this, "debounceCount", 0);
         }
     }
+
+    public getClassName(): string {
+        return "FGDebounceBlock";
+    }
 }
+RegisterClass("FGDebounceBlock", FlowGraphDebounceBlock);

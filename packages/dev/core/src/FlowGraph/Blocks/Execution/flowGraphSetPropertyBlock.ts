@@ -2,6 +2,8 @@ import { RichTypeString, RichTypeAny } from "../../flowGraphRichTypes";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
+import { RegisterClass } from "../../../Misc/typeStore";
+import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 
 /**
  * @experimental
@@ -23,8 +25,8 @@ export class FlowGraphSetPropertyBlock<TargetT, ValueT> extends FlowGraphWithOnD
      */
     public readonly value: FlowGraphDataConnection<ValueT>;
 
-    public constructor() {
-        super();
+    public constructor(config?: IFlowGraphBlockConfiguration) {
+        super(config);
 
         this.target = this._registerDataInput("target", RichTypeAny);
         this.property = this._registerDataInput("property", RichTypeString);
@@ -55,4 +57,9 @@ export class FlowGraphSetPropertyBlock<TargetT, ValueT> extends FlowGraphWithOnD
 
         this.onDone._activateSignal(context);
     }
+
+    public getClassName(): string {
+        return "FGSetPropertyBlock";
+    }
 }
+RegisterClass("FGSetPropertyBlock", FlowGraphSetPropertyBlock);

@@ -4,7 +4,8 @@ import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import { FlowGraphAsyncExecutionBlock } from "../../../flowGraphAsyncExecutionBlock";
 import { RichTypeAny, RichTypeNumber, RichTypeBoolean } from "../../../flowGraphRichTypes";
-
+import { RegisterClass } from "../../../../Misc/typeStore";
+import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 /**
  * @experimental
  * A block that plays an animation on an animatable object.
@@ -45,8 +46,8 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      */
     public readonly runningAnimatable: FlowGraphDataConnection<Animatable>;
 
-    public constructor() {
-        super();
+    public constructor(config?: IFlowGraphBlockConfiguration) {
+        super(config);
 
         this.target = this._registerDataInput("target", RichTypeAny);
         this.animation = this._registerDataInput("animation", RichTypeAny);
@@ -78,7 +79,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
         if (existingAnimatable && existingAnimatable.paused) {
             existingAnimatable.restart();
         } else {
-            const scene = context.graphVariables.scene;
+            const scene = context.configuration.scene;
             const animatable = scene.beginDirectAnimation(
                 targetValue,
                 [animationValue],
@@ -122,4 +123,10 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
         }
         context._deleteExecutionVariable(this, "runningAnimatables");
     }
+
+    public getClassName(): string {
+        return "FGPlayAnimationBlock";
+    }
 }
+
+RegisterClass("FGPlayAnimationBlock", FlowGraphPlayAnimationBlock);
