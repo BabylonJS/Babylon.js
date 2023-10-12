@@ -105,7 +105,7 @@ export async function takeSnapshotsLocal(options: RunOptions = {}): Promise<Brow
             const leaks = await findLeaks(await takeSnapshotsLocal({ scenario }));
             if (leaks.length > 0) {
                 // console.log(leaks);
-                throw new Error(leaks.length + " leak(s) found");
+                throw new Error(leaks.length + " leak(s) found @ " + playground);
             }
         };
     });
