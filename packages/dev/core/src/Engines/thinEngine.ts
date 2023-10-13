@@ -4444,7 +4444,7 @@ export class ThinEngine {
             babylonFormat = fileExtension === ".jpg" && !useSRGBBuffer ? Constants.TEXTUREFORMAT_RGB : Constants.TEXTUREFORMAT_RGBA;
         }
 
-        const format = this._getInternalFormat(babylonFormat, useSRGBBuffer);
+        const format = this._getInternalFormat(babylonFormat, false);
         const internalFormat = this._getRGBABufferInternalSizedFormat(Constants.TEXTURETYPE_UNSIGNED_BYTE, babylonFormat, useSRGBBuffer);
 
         return {
