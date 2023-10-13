@@ -27,9 +27,9 @@ describe("ThinEngine", () => {
 Babylon format                Ext. SRGB  Int. format     Format          Type
 ==============                ==== ====  ===========     ======          ====
 <undefined>                   .jpg false RGB             RGB             UNSIGNED_BYTE
-<undefined>                   .jpg true  RGBA            SRGB8_ALPHA8    UNSIGNED_BYTE
+<undefined>                   .jpg true  RGBA            RGBA            UNSIGNED_BYTE
 <undefined>                   .png false RGBA            RGBA            UNSIGNED_BYTE
-<undefined>                   .png true  RGBA            SRGB8_ALPHA8    UNSIGNED_BYTE
+<undefined>                   .png true  RGBA            RGBA            UNSIGNED_BYTE
 TEXTUREFORMAT_ALPHA           .jpg false ALPHA           ALPHA           UNSIGNED_BYTE
 TEXTUREFORMAT_ALPHA           .jpg true  ALPHA           ALPHA           UNSIGNED_BYTE
 TEXTUREFORMAT_ALPHA           .png false ALPHA           ALPHA           UNSIGNED_BYTE
@@ -43,13 +43,13 @@ TEXTUREFORMAT_LUMINANCE_ALPHA .jpg true  LUMINANCE_ALPHA LUMINANCE_ALPHA UNSIGNE
 TEXTUREFORMAT_LUMINANCE_ALPHA .png false LUMINANCE_ALPHA LUMINANCE_ALPHA UNSIGNED_BYTE
 TEXTUREFORMAT_LUMINANCE_ALPHA .png true  LUMINANCE_ALPHA LUMINANCE_ALPHA UNSIGNED_BYTE
 TEXTUREFORMAT_RGB             .jpg false RGB             RGB             UNSIGNED_BYTE
-TEXTUREFORMAT_RGB             .jpg true  SRGB            SRGB            UNSIGNED_BYTE
+TEXTUREFORMAT_RGB             .jpg true  SRGB            RGB             UNSIGNED_BYTE
 TEXTUREFORMAT_RGB             .png false RGB             RGB             UNSIGNED_BYTE
-TEXTUREFORMAT_RGB             .png true  SRGB            SRGB            UNSIGNED_BYTE
+TEXTUREFORMAT_RGB             .png true  SRGB            RGB             UNSIGNED_BYTE
 TEXTUREFORMAT_RGBA            .jpg false RGBA            RGBA            UNSIGNED_BYTE
-TEXTUREFORMAT_RGBA            .jpg true  RGBA            SRGB8_ALPHA8    UNSIGNED_BYTE
+TEXTUREFORMAT_RGBA            .jpg true  RGBA            RGBA            UNSIGNED_BYTE
 TEXTUREFORMAT_RGBA            .png false RGBA            RGBA            UNSIGNED_BYTE
-TEXTUREFORMAT_RGBA            .png true  RGBA            SRGB8_ALPHA8    UNSIGNED_BYTE`.trimStart());
+TEXTUREFORMAT_RGBA            .png true  RGBA            RGBA            UNSIGNED_BYTE`.trimStart());
         });
 
         it("gets tex image parameters for WebGL 2", () => {
@@ -73,9 +73,9 @@ TEXTUREFORMAT_RGBA            .png true  RGBA            SRGB8_ALPHA8    UNSIGNE
 Babylon format                Ext. SRGB  Int. format     Format          Type
 ==============                ==== ====  ===========     ======          ====
 <undefined>                   .jpg false RGB8            RGB             UNSIGNED_BYTE
-<undefined>                   .jpg true  SRGB8_ALPHA8    SRGB8_ALPHA8    UNSIGNED_BYTE
+<undefined>                   .jpg true  SRGB8_ALPHA8    RGBA            UNSIGNED_BYTE
 <undefined>                   .png false RGBA8           RGBA            UNSIGNED_BYTE
-<undefined>                   .png true  SRGB8_ALPHA8    SRGB8_ALPHA8    UNSIGNED_BYTE
+<undefined>                   .png true  SRGB8_ALPHA8    RGBA            UNSIGNED_BYTE
 TEXTUREFORMAT_ALPHA           .jpg false ALPHA           ALPHA           UNSIGNED_BYTE
 TEXTUREFORMAT_ALPHA           .jpg true  ALPHA           ALPHA           UNSIGNED_BYTE
 TEXTUREFORMAT_ALPHA           .png false ALPHA           ALPHA           UNSIGNED_BYTE
@@ -101,13 +101,13 @@ TEXTUREFORMAT_RG              .jpg true  RG8             RG              UNSIGNE
 TEXTUREFORMAT_RG              .png false RG8             RG              UNSIGNED_BYTE
 TEXTUREFORMAT_RG              .png true  RG8             RG              UNSIGNED_BYTE
 TEXTUREFORMAT_RGB             .jpg false RGB8            RGB             UNSIGNED_BYTE
-TEXTUREFORMAT_RGB             .jpg true  SRGB8           SRGB            UNSIGNED_BYTE
+TEXTUREFORMAT_RGB             .jpg true  SRGB8           RGB             UNSIGNED_BYTE
 TEXTUREFORMAT_RGB             .png false RGB8            RGB             UNSIGNED_BYTE
-TEXTUREFORMAT_RGB             .png true  SRGB8           SRGB            UNSIGNED_BYTE
+TEXTUREFORMAT_RGB             .png true  SRGB8           RGB             UNSIGNED_BYTE
 TEXTUREFORMAT_RGBA            .jpg false RGBA8           RGBA            UNSIGNED_BYTE
-TEXTUREFORMAT_RGBA            .jpg true  SRGB8_ALPHA8    SRGB8_ALPHA8    UNSIGNED_BYTE
+TEXTUREFORMAT_RGBA            .jpg true  SRGB8_ALPHA8    RGBA            UNSIGNED_BYTE
 TEXTUREFORMAT_RGBA            .png false RGBA8           RGBA            UNSIGNED_BYTE
-TEXTUREFORMAT_RGBA            .png true  SRGB8_ALPHA8    SRGB8_ALPHA8    UNSIGNED_BYTE
+TEXTUREFORMAT_RGBA            .png true  SRGB8_ALPHA8    RGBA            UNSIGNED_BYTE
 TEXTUREFORMAT_R_INTEGER       .jpg false R8UI            RED_INTEGER     UNSIGNED_BYTE
 TEXTUREFORMAT_R_INTEGER       .jpg true  R8UI            RED_INTEGER     UNSIGNED_BYTE
 TEXTUREFORMAT_R_INTEGER       .png false R8UI            RED_INTEGER     UNSIGNED_BYTE
