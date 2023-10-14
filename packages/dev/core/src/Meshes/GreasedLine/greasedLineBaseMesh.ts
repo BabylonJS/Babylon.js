@@ -1,13 +1,13 @@
-import type { Scene } from "../scene";
-import type { IGreasedLineMaterial } from "../Materials/greasedLineBaseMaterial";
-import { GreasedLinePluginMaterial } from "../Materials/greasedLinePluginMaterial";
-import { Mesh } from "./mesh";
-import { Buffer } from "../Buffers/buffer";
-import type { Vector3 } from "../Maths/math.vector";
-import { VertexData } from "./mesh.vertexData";
-import { DeepCopier } from "../Misc/deepCopier";
-import { GreasedLineSimpleMaterial } from "../Materials/greasedLineSimpleMaterial";
-import type { Engine } from "../Engines/engine";
+import type { Scene } from "../../scene";
+import type { IGreasedLineMaterial } from "../../Materials/GreasedLine/greasedLineMaterialInterfaces";
+import { GreasedLinePluginMaterial } from "../../Materials/GreasedLine/greasedLinePluginMaterial";
+import { Mesh } from "../mesh";
+import { Buffer } from "../../Buffers/buffer";
+import type { Vector3 } from "../../Maths/math.vector";
+import { VertexData } from "../mesh.vertexData";
+import { DeepCopier } from "../../Misc/deepCopier";
+import { GreasedLineSimpleMaterial } from "../../Materials/GreasedLine/greasedLineSimpleMaterial";
+import type { Engine } from "../../Engines/engine";
 
 export enum GreasedLineRibbonPointsMode {
     POINTS_MODE_POINTS = 0,

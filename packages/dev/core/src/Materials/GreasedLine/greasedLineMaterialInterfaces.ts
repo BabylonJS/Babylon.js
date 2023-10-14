@@ -1,10 +1,7 @@
-import type { Scene } from "../scene";
-import { Engine } from "../Engines/engine";
-import { RawTexture } from "../Materials/Textures/rawTexture";
-import type { Vector2 } from "../Maths/math.vector";
-import type { BaseTexture } from "../Materials/Textures/baseTexture";
-import type { Nullable } from "../types";
-import { Color3 } from "../Maths/math.color";
+import type { RawTexture } from "../Textures/rawTexture";
+import type { Vector2 } from "../../Maths/math.vector";
+import type { Nullable } from "../../types";
+import type { Color3 } from "../../Maths/math.color";
 /**
  * Interface which defines the available methods for a GreasedLineMaterial
  */
@@ -263,86 +260,4 @@ export interface GreasedLineMaterialOptions {
      * You can provide a colorsTexture to use instead of one generated from the 'colors' option
      */
     colorsTexture?: RawTexture;
-}
-
-/**
- * Base class for GreasedLine materials
- */
-export class GreasedLineBaseMaterial {
-    /**
-     * Default line color for newly created lines
-     */
-    public static DEFAULT_COLOR = Color3.White();
-    /**
-     * Default line width when sizeAttenuation is true
-     */
-    public static DEFAULT_WIDTH_ATTENUATED = 1;
-    /**
-     * Defaule line width
-     */
-    public static DEFAULT_WIDTH = 0.1;
-
-    /**
-     * Empty colors texture for WebGPU
-     */
-    public static EmptyColorsTexture: Nullable<BaseTexture>;
-
-    /**
-     * Converts an array of Color3 to Uint8Array
-     * @param colors Arrray of Color3
-     * @returns Uin8Array of colors [r, g, b, a, r, g, b, a, ...]
-     */
-    public static Color3toRGBAUint8(colors: Color3[]) {
-        const colorTable: Uint8Array = new Uint8Array(colors.length * 4);
-        for (let i = 0, j = 0; i < colors.length; i++) {
-            colorTable[j++] = colors[i].r * 255;
-            colorTable[j++] = colors[i].g * 255;
-            colorTable[j++] = colors[i].b * 255;
-            colorTable[j++] = 255;
-        }
-
-        return colorTable;
-    }
-
-    /**
-     * Creates a RawTexture from an RGBA color array and sets it on the plugin material instance.
-     * @param name name of the texture
-     * @param colors Uint8Array of colors
-     */
-    public static CreateColorsTexture(name: string, colors: Color3[], colorsSampling: number, scene: Scene) {
-        const colorsArray = GreasedLineBaseMaterial.Color3toRGBAUint8(colors);
-        const colorsTexture = new RawTexture(colorsArray, colors.length, 1, Engine.TEXTUREFORMAT_RGBA, scene, false, true, colorsSampling);
-        colorsTexture.name = name;
-        return colorsTexture;
-    }
-
-    /**
-     * A minimum size texture for the colors sampler2D when there is no colors texture defined yet.
-     * For fast switching using the useColors property without the need to use defines.
-     * @param scene Scene
-     */
-    public static PrepareEmptyColorsTexture(scene: Scene) {
-        if (!GreasedLineBaseMaterial.EmptyColorsTexture) {
-            const colorsArray = new Uint8Array(4);
-            GreasedLineBaseMaterial.EmptyColorsTexture = new RawTexture(colorsArray, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false, false, RawTexture.NEAREST_NEAREST);
-            GreasedLineBaseMaterial.EmptyColorsTexture.name = "grlEmptyColorsTexture";
-        }
-    }
-
-    /**
-     * Diposes the shared empty colors texture
-     */
-    public static DisposeEmptyColorsTexture() {
-        GreasedLineBaseMaterial.EmptyColorsTexture?.dispose();
-        GreasedLineBaseMaterial.EmptyColorsTexture = null;
-    }
-
-    /**
-     * Converts boolean to number.
-     * @param bool
-     * @returns 1 if true, 0 if false.
-     */
-    public static BooleanToNumber(bool?: boolean) {
-        return bool ? 1 : 0;
-    }
 }

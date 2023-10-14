@@ -1,14 +1,14 @@
-import type { Scene } from "../scene";
-import type { Matrix } from "../Maths/math.vector";
-import { Vector3 } from "../Maths/math.vector";
-import { Mesh } from "./mesh";
-import type { Ray, TrianglePickingPredicate } from "../Culling/ray";
-import { Buffer, VertexBuffer } from "../Buffers/buffer";
-import { PickingInfo } from "../Collisions/pickingInfo";
-import type { Nullable } from "../types";
-import type { Node } from "../node";
-import { DeepCopier } from "../Misc/deepCopier";
-import { GreasedLineTools } from "../Misc/greasedLineTools";
+import type { Scene } from "../../scene";
+import type { Matrix } from "../../Maths/math.vector";
+import { Vector3 } from "../../Maths/math.vector";
+import { Mesh } from "../mesh";
+import type { Ray, TrianglePickingPredicate } from "../../Culling/ray";
+import { Buffer, VertexBuffer } from "../../Buffers/buffer";
+import { PickingInfo } from "../../Collisions/pickingInfo";
+import type { Nullable } from "../../types";
+import type { Node } from "../../node";
+import { DeepCopier } from "../../Misc/deepCopier";
+import { GreasedLineTools } from "../../Misc/greasedLineTools";
 import { GreasedLineBaseMesh, type GreasedLineMeshOptions } from "./greasedLineBaseMesh";
 
 Mesh._GreasedLineMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
@@ -16,7 +16,8 @@ Mesh._GreasedLineMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
 };
 
 /**
- * GreasedLine
+ * GreasedLineMesh
+ * Use the GreasedLineBuilder.CreateGreasedLine function to create an instance of this class.
  */
 export class GreasedLineMesh extends GreasedLineBaseMesh {
     private _previousAndSide: number[];

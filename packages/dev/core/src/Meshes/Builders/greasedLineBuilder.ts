@@ -1,17 +1,18 @@
 import { StandardMaterial } from "./../../Materials/standardMaterial";
 import { PBRMaterial } from "../../Materials/PBR/pbrMaterial";
 import type { Nullable } from "../../types";
-import { GreasedLineMesh } from "../greasedLineMesh";
+import { GreasedLineMesh } from "../GreasedLine/greasedLineMesh";
 import type { Scene } from "../../scene";
 import { EngineStore } from "../../Engines/engineStore";
 import type { Color3 } from "../../Maths/math.color";
-import { GreasedLineSimpleMaterial } from "../../Materials/greasedLineSimpleMaterial";
+import { GreasedLineSimpleMaterial } from "../../Materials/GreasedLine/greasedLineSimpleMaterial";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
-import type { GreasedLineMeshOptions } from "../greasedLineBaseMesh";
-import { GreasedLineRibbonAutoDirectionMode, GreasedLineRibbonFacesMode, GreasedLineRibbonPointsMode } from "../greasedLineBaseMesh";
-import { GreasedLineRibbonMesh } from "../greasedLineRibbonMesh";
-import { GreasedLineMeshMaterialType, type GreasedLineMaterialOptions, GreasedLineBaseMaterial } from "../../Materials/greasedLineBaseMaterial";
-import { GreasedLinePluginMaterial } from "../../Materials/greasedLinePluginMaterial";
+import type { GreasedLineMeshOptions } from "../GreasedLine/greasedLineBaseMesh";
+import { GreasedLineRibbonAutoDirectionMode, GreasedLineRibbonFacesMode, GreasedLineRibbonPointsMode } from "../GreasedLine/greasedLineBaseMesh";
+import { GreasedLineRibbonMesh } from "../GreasedLine/greasedLineRibbonMesh";
+import { GreasedLineMeshMaterialType, type GreasedLineMaterialOptions } from "../../Materials/GreasedLine/greasedLineMaterialInterfaces";
+import { GreasedLinePluginMaterial } from "../../Materials/GreasedLine/greasedLinePluginMaterial";
+import { GreasedLineMaterialDefaults } from "core/Materials/GreasedLine/greasedLineMaterialDefaults";
 
 /**
  * How are the colors distributed along the color table
@@ -159,7 +160,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     }
 
     materialOptions = materialOptions ?? {
-        color: GreasedLineBaseMaterial.DEFAULT_COLOR,
+        color: GreasedLineMaterialDefaults.DEFAULT_COLOR,
     };
     materialOptions.createAndAssignMaterial = materialOptions.createAndAssignMaterial ?? true;
     materialOptions.colorDistribution = materialOptions?.colorDistribution ?? GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START;
@@ -174,14 +175,8 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
 
     const widths = CompleteGreasedLineWidthTable(length, options.widths ?? [], options.widthDistribution);
 
-    if (options.ribbonOptions) {
-        if (options.ribbonOptions.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS) {
-            // length *= 2;
-        }
-    }
-
     const colors = materialOptions?.colors
-        ? CompleteGreasedLineColorTable(length, materialOptions.colors, materialOptions.colorDistribution, materialOptions.color ?? GreasedLineBaseMaterial.DEFAULT_COLOR)
+        ? CompleteGreasedLineColorTable(length, materialOptions.colors, materialOptions.colorDistribution, materialOptions.color ?? GreasedLineMaterialDefaults.DEFAULT_COLOR)
         : undefined;
 
     // create new mesh if instance is not defined
@@ -197,7 +192,7 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
 
     if (initialGreasedLineOptions.ribbonOptions) {
         if (initialGreasedLineOptions.ribbonOptions.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS) {
-            initialGreasedLineOptions.ribbonOptions.width = materialOptions.width ?? initialGreasedLineOptions.ribbonOptions.width ?? GreasedLineBaseMaterial.DEFAULT_WIDTH;
+            initialGreasedLineOptions.ribbonOptions.width = materialOptions.width ?? initialGreasedLineOptions.ribbonOptions.width ?? GreasedLineMaterialDefaults.DEFAULT_WIDTH;
         }
     }
 

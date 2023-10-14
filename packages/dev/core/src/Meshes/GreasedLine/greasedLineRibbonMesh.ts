@@ -1,11 +1,11 @@
-import type { Scene } from "../scene";
-import { Quaternion, Vector3 } from "../Maths/math.vector";
-import { Mesh } from "./mesh";
-import { Buffer } from "../Buffers/buffer";
-import type { Nullable } from "../types";
-import type { Node } from "../node";
-import { DeepCopier } from "../Misc/deepCopier";
-import { GreasedLineTools } from "../Misc/greasedLineTools";
+import type { Scene } from "../../scene";
+import { Quaternion, Vector3 } from "../../Maths/math.vector";
+import { Mesh } from "../mesh";
+import { Buffer } from "../../Buffers/buffer";
+import type { Nullable } from "../../types";
+import type { Node } from "../../node";
+import { DeepCopier } from "../../Misc/deepCopier";
+import { GreasedLineTools } from "../../Misc/greasedLineTools";
 import type { GreasedLineMeshOptions, GreasedLineRibbonOptions } from "./greasedLineBaseMesh";
 import { GreasedLineBaseMesh, GreasedLineRibbonAutoDirectionMode, GreasedLineRibbonFacesMode, GreasedLineRibbonPointsMode } from "./greasedLineBaseMesh";
 
@@ -14,11 +14,12 @@ Mesh._GreasedLineRibbonMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
 };
 
 /**
- * GreasedLine
+ * GreasedLineRibbonMesh
+ * Use the GreasedLineBuilder.CreateGreasedLine function to create an instance of this class.
  */
 export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
     /**
-     * Defaule line width
+     * Default line width
      */
     public static DEFAULT_WIDTH = 0.1;
 
@@ -55,6 +56,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
      * @param name name of the mesh
      * @param scene the scene
      * @param _options mesh options
+     * @param _pathOptions used internaly when parsing a serialized GreasedLineRibbonMesh
      */
     constructor(public readonly name: string, scene: Scene, _options: GreasedLineMeshOptions, _pathOptions?: { options: GreasedLineMeshOptions; pathCount: number }[]) {
         super(name, scene, _options);
@@ -522,26 +524,6 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
     protected _createVertexBuffers() {
         this._uvs = this._options.uvs ?? this._uvs;
         const vertexData = super._createVertexBuffers(this._options.ribbonOptions?.smoothShading);
-
-        // if (this._options.ribbonOptions?.smoothShading && vertexData.normals) {
-        //     const frontUVs = undefined;
-        //     const backUVs = undefined;
-        //     const sideOrientation = this._options.ribbonOptions.facesMode === GreasedLineRibbonFacesMode.FACES_MODE_DOUBLE_SIDED ? VertexData.DOUBLESIDE : VertexData.DEFAULTSIDE;
-        //     VertexData._ComputeSides(sideOrientation, this._vertexPositions, this._indices, vertexData.normals, this._uvs, frontUVs, backUVs);
-        // }
-
-        console.log("vertices", this._vertexPositions);
-        console.log("indices", this._indices);
-        console.log("uvs", this._uvs);
-        console.log("counters", this._counters);
-        console.log("colorPointers", this._colorPointers);
-        console.log("slopes", this._slopes);
-        console.log("widths", this._widths);
-        console.log("ribbonWidths", this._ribbonWidths);
-        console.log("uSegmentLengths", this._uSegmentLengths);
-        console.log("vSegmentLengths", this._vSegmentLengths);
-        console.log("uTotalLengths", this._uTotalLengths);
-        console.log("vTotalLengths", this._vTotalLengths);
 
         const countersBuffer = new Buffer(this._engine, this._counters, this._updatable, 1);
         this.setVerticesBuffer(countersBuffer.createVertexBuffer("grl_counters", 0, 1));
