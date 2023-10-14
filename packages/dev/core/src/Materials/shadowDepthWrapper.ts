@@ -129,14 +129,12 @@ export class ShadowDepthWrapper {
     }
 
     private _deleteDepthWrapperEffect(subMesh: Nullable<SubMesh>) {
-        const engine = this._scene.getEngine();
         const depthWrapperEntries = this._subMeshToDepthWrapper.mm.get(subMesh);
         if (depthWrapperEntries) {
             // find and release the previous depth effect
             depthWrapperEntries.forEach((depthWrapper) => {
                 const effect = depthWrapper.mainDrawWrapper.effect;
                 if (effect) {
-                    engine._releaseEffect(effect);
                     effect.dispose();
                 }
             });
