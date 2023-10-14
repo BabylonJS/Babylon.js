@@ -252,7 +252,12 @@ export class Geometry implements IGetSetVerticesData {
             // to avoid converting to Float32Array at each draw call in engine.updateDynamicVertexBuffer, we make the conversion a single time here
             data = new Float32Array(data);
         }
-        const buffer = new VertexBuffer(this._engine, data, kind, updatable, this._meshes.length === 0, stride);
+        const buffer = new VertexBuffer(this._engine, data, kind, {
+            updatable,
+            postponeInternalCreation: this._meshes.length === 0,
+            stride,
+            label: "Geometry_" + this.id + "_" + kind,
+        });
         this.setVerticesBuffer(buffer);
     }
 
@@ -292,21 +297,18 @@ export class Geometry implements IGetSetVerticesData {
         const numOfMeshes = meshes.length;
 
         if (kind === VertexBuffer.PositionKind) {
-            const data = <FloatArray>buffer.getData();
-            if (totalVertices != null) {
-                this._totalVertices = totalVertices;
-            } else {
-                if (data != null) {
-                    this._totalVertices = data.length / (buffer.type === VertexBuffer.BYTE ? buffer.byteStride : buffer.byteStride / 4);
-                }
-            }
+            this._totalVertices = totalVertices ?? buffer.totalVertices;
 
-            this._updateExtend(data);
+            this._updateExtend(buffer.getFloatData());
             this._resetPointsArrayCache();
+
+            // this._extend can be empty if buffer.getFloatData() returned null
+            const minimum = (this._extend && this._extend.minimum) || new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+            const maximum = (this._extend && this._extend.maximum) || new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
 
             for (let index = 0; index < numOfMeshes; index++) {
                 const mesh = meshes[index];
-                mesh.buildBoundingInfo(this._extend.minimum, this._extend.maximum);
+                mesh.buildBoundingInfo(minimum, maximum);
                 mesh._createGlobalSubMesh(mesh.isUnIndexed);
                 mesh.computeWorldMatrix(true);
                 mesh.synchronizeInstances();

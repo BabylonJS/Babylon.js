@@ -23,11 +23,14 @@ export class FlowGraphCoordinator {
      */
     public static readonly SceneCoordinators: Map<Scene, FlowGraphCoordinator[]> = new Map();
 
-    private readonly _eventCoordinator: FlowGraphEventCoordinator;
+    /**
+     * The event coordinator used by the flow graph coordinator.
+     */
+    public readonly eventCoordinator: FlowGraphEventCoordinator;
     private readonly _flowGraphs: FlowGraph[] = [];
 
     constructor(private _config: IFlowGraphCoordinatorConfiguration) {
-        this._eventCoordinator = new FlowGraphEventCoordinator();
+        this.eventCoordinator = new FlowGraphEventCoordinator();
 
         // When the scene is disposed, dispose all graphs currently running on it.
         this._config.scene.onDisposeObservable.add(() => {
@@ -44,7 +47,7 @@ export class FlowGraphCoordinator {
      * @returns a new flow graph
      */
     createGraph(): FlowGraph {
-        const graph = new FlowGraph({ scene: this._config.scene, eventCoordinator: this._eventCoordinator });
+        const graph = new FlowGraph({ scene: this._config.scene, eventCoordinator: this.eventCoordinator });
         this._flowGraphs.push(graph);
         return graph;
     }
@@ -81,5 +84,22 @@ export class FlowGraphCoordinator {
         if (index !== -1) {
             coordinators.splice(index, 1);
         }
+    }
+
+    serialize(serializationObject: any, valueSerializeFunction?: (key: string, value: any, serializationObject: any) => void) {
+        serializationObject._flowGraphs = [];
+        this._flowGraphs.forEach((graph) => {
+            const serializedGraph = {};
+            graph.serialize(serializedGraph, valueSerializeFunction);
+            serializationObject._flowGraphs.push(serializedGraph);
+        });
+    }
+
+    public static Parse(serializedObject: any, scene: Scene, valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any) {
+        const coordinator = new FlowGraphCoordinator({ scene });
+        serializedObject._flowGraphs?.forEach((serializedGraph: any) => {
+            FlowGraph.Parse(serializedGraph, coordinator, valueParseFunction);
+        });
+        return coordinator;
     }
 }

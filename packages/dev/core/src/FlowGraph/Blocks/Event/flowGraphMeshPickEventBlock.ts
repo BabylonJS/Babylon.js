@@ -2,11 +2,12 @@ import type { AbstractMesh } from "../../../Meshes/abstractMesh";
 import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
 import { PointerEventTypes } from "../../../Events/pointerEvents";
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-
+import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
+import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * @experimental
  */
-export interface IFlowGraphMeshPickParams {
+export interface IFlowGraphMeshPickEventBlockConfiguration extends IFlowGraphBlockConfiguration {
     meshVariableName: string;
 }
 /**
@@ -16,9 +17,13 @@ export interface IFlowGraphMeshPickParams {
 export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
     private _meshVariableName: string;
 
-    public constructor(params: IFlowGraphMeshPickParams) {
-        super();
-        this._meshVariableName = params.meshVariableName;
+    public constructor(public config: IFlowGraphMeshPickEventBlockConfiguration) {
+        super(config);
+    }
+
+    public configure() {
+        super.configure();
+        this._meshVariableName = this.config.meshVariableName;
     }
 
     /**
@@ -58,4 +63,9 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
         context._deleteExecutionVariable(this, "meshPickObserver");
         context._deleteExecutionVariable(this, "meshDisposeObserver");
     }
+
+    public getClassName(): string {
+        return "FGMeshPickEventBlock";
+    }
 }
+RegisterClass("FGMeshPickEventBlock", FlowGraphMeshPickEventBlock);

@@ -9,6 +9,9 @@ import { Vector3 } from "core/Maths/math.vector";
 import { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 import { TestDeviceInputSystem } from "../DeviceInput/testDeviceInputSystem";
+import { MeshBuilder } from "core/Meshes/meshBuilder";
+import { Frustum } from "core/Maths";
+import { StandardMaterial } from "core/Materials";
 
 describe("ArcRotateCameraMouseInput", () => {
     let engine: Nullable<NullEngine> = null;
@@ -119,7 +122,7 @@ describe("ArcRotateCameraMouseInput", () => {
         scene?.onPointerObservable.notifyObservers(movePI1);
         scene?.onPointerObservable.notifyObservers(movePI2);
         scene?.render();
-        expect (camera!.radius).toBeGreaterThan(radius);
+        expect(camera!.radius).toBeGreaterThan(radius);
 
         radius = camera!.radius;
 
@@ -154,5 +157,55 @@ describe("ArcRotateCameraMouseInput", () => {
 
         expect(camera!.alpha).toBeGreaterThan(alpha);
         expect(camera!.beta).toBeGreaterThan(beta);
+    });
+
+    it("correctly zooms when zoomOn is called", () => {
+        let outOfBoundsPoints = 0;
+        let inBoundsPoints = 0;
+
+        if (camera && scene && StandardMaterial) {
+            // Create box to check zoomOn against
+            const box = MeshBuilder.CreateBox("box", { height: 1, width: 2, depth: 1 }, scene);
+            // Set angles such that the box's mix/max points are not technically
+            // the farthest points in screen/camera space
+            camera.alpha = Math.PI / 3;
+            camera.beta = Math.PI / 2.5;
+            camera.radius = 0.01;
+            box.position = new Vector3(0, 0.5, 0);
+            scene.render();
+
+            // Get frustum planes from camera transformation matrix
+            let transformMatrix = camera.getTransformationMatrix();
+            let frustumPlanes = Frustum.GetPlanes(transformMatrix);
+
+            // Get all bounding box points and check if they are in the frustum
+            // both before and after zoomOn
+            const pointsToCheck = box.getBoundingInfo().boundingBox.vectorsWorld;
+
+            // Before zoomOn
+            for (const point of pointsToCheck) {
+                if (!Frustum.IsPointInFrustum(point, frustumPlanes)) {
+                    outOfBoundsPoints++;
+                }
+            }
+
+            scene.render();
+            camera.zoomOn([box]);
+            scene.render();
+
+            // Update frustum planes and transformation matrix
+            transformMatrix = camera.getTransformationMatrix();
+            frustumPlanes = Frustum.GetPlanes(transformMatrix);
+
+            // After zoomOn
+            for (const point of pointsToCheck) {
+                if (Frustum.IsPointInFrustum(point, frustumPlanes)) {
+                    inBoundsPoints++;
+                }
+            }
+        }
+
+        expect(outOfBoundsPoints).toEqual(8);
+        expect(inBoundsPoints).toEqual(8);
     });
 });

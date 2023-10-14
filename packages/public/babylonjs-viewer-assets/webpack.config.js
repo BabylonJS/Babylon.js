@@ -1,10 +1,12 @@
 const path = require("path");
+const webpackTools = require("@dev/build-tools").webpackTools;
 
 module.exports = (env) => {
     const commonConfig = {
-        mode: env.production ? "production" : "development",
         entry: "./src/index.ts",
-        devtool: env.production ? "source-map" : "eval-cheap-module-source-map",
+        ...webpackTools.commonDevWebpackConfiguration({
+            mode: env.mode,
+        }),
         output: {
             path: path.resolve(__dirname, "dist"),
             filename: "babylon.viewer.assets.js",

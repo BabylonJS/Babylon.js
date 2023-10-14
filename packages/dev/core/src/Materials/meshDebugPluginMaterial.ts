@@ -484,7 +484,7 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
         if (this._isEnabled === value) {
             return;
         }
-        if (this._material.getScene().getEngine().webGLVersion == 1) {
+        if (!this._material.getScene().getEngine().isWebGPU && this._material.getScene().getEngine().webGLVersion == 1) {
             Logger.Error("MeshDebugPluginMaterial is not supported on WebGL 1.0.");
             this._isEnabled = false;
             return;

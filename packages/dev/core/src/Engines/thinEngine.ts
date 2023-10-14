@@ -53,7 +53,7 @@ import type { RenderTargetTexture } from "../Materials/Textures/renderTargetText
 import type { WebRequest } from "../Misc/webRequest";
 import type { LoadFileError } from "../Misc/fileTools";
 import type { Texture } from "../Materials/Textures/texture";
-import { PrecisionDate } from "core/Misc/precisionDate";
+import { PrecisionDate } from "../Misc/precisionDate";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -191,6 +191,12 @@ export interface EngineOptions extends ThinEngineOptions, WebGLContextAttributes
      * This will not influence NativeEngine and WebGPUEngine which set the behavior to true during construction.
      */
     forceSRGBBufferSupportState?: boolean;
+
+    /**
+     * Defines if the gl context should be released.
+     * It's false by default for backward compatibility, but you should probably pass true (see https://registry.khronos.org/webgl/extensions/WEBGL_lose_context/)
+     */
+    loseContextOnDispose?: boolean;
 }
 
 /**
@@ -225,14 +231,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@6.23.0";
+        return "babylonjs@6.24.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "6.23.0";
+        return "6.24.0";
     }
 
     /**
@@ -1441,6 +1447,7 @@ export class ThinEngine {
             needToAlwaysBindUniformBuffers: false,
             supportRenderPasses: false,
             supportSpriteInstancing: true,
+            forceVertexBufferStrideMultiple4Bytes: false,
             _collectUbosUpdatedInFrame: false,
         };
     }
@@ -1933,6 +1940,9 @@ export class ThinEngine {
                     rtWrapper.texture!._hardwareTexture?.underlyingResource,
                     lodLevel
                 );
+            } else if (webglRTWrapper._currentLOD !== lodLevel) {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, rtWrapper.texture!._hardwareTexture?.underlyingResource, lodLevel);
+                webglRTWrapper._currentLOD = lodLevel;
             }
         }
 
@@ -2153,9 +2163,11 @@ export class ThinEngine {
     /**
      * Creates a vertex buffer
      * @param data the data for the vertex buffer
+     * @param _updatable whether the buffer should be created as updatable
+     * @param _label defines the label of the buffer (for debug purpose)
      * @returns the new WebGL static buffer
      */
-    public createVertexBuffer(data: DataArray): DataBuffer {
+    public createVertexBuffer(data: DataArray, _updatable?: boolean, _label?: string): DataBuffer {
         return this._createVertexBuffer(data, this._gl.STATIC_DRAW);
     }
 
@@ -2184,9 +2196,10 @@ export class ThinEngine {
     /**
      * Creates a dynamic vertex buffer
      * @param data the data for the dynamic vertex buffer
+     * @param _label defines the label of the buffer (for debug purpose)
      * @returns the new WebGL dynamic buffer
      */
-    public createDynamicVertexBuffer(data: DataArray): DataBuffer {
+    public createDynamicVertexBuffer(data: DataArray, _label?: string): DataBuffer {
         return this._createVertexBuffer(data, this._gl.DYNAMIC_DRAW);
     }
 
@@ -2199,9 +2212,10 @@ export class ThinEngine {
      * Creates a new index buffer
      * @param indices defines the content of the index buffer
      * @param updatable defines if the index buffer must be updatable
+     * @param _label defines the label of the buffer (for debug purpose)
      * @returns a new webGL buffer
      */
-    public createIndexBuffer(indices: IndicesArray, updatable?: boolean): DataBuffer {
+    public createIndexBuffer(indices: IndicesArray, updatable?: boolean, _label?: string): DataBuffer {
         const vbo = this._gl.createBuffer();
         const dataBuffer = new WebGLDataBuffer(vbo!);
 
@@ -5516,6 +5530,10 @@ export class ThinEngine {
 
         this.onDisposeObservable.notifyObservers(this);
         this.onDisposeObservable.clear();
+
+        if (this._creationOptions.loseContextOnDispose) {
+            this._gl.getExtension("WEBGL_lose_context")?.loseContext();
+        }
     }
 
     /**

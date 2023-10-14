@@ -1,8 +1,7 @@
 import type { Engine } from "core/Engines";
 import { NullEngine } from "core/Engines";
 import type { FlowGraph, FlowGraphContext } from "core/FlowGraph";
-import { FlowGraphCoordinator, FlowGraphReceiveCustomEventBlock, FlowGraphSceneReadyEventBlock, FlowGraphSendCustomEventBlock } from "core/FlowGraph";
-import { FlowGraphCustomFunctionBlock } from "core/FlowGraph/Blocks/Execution/flowGraphCustomFunctionBlock";
+import { FlowGraphCoordinator, FlowGraphLogBlock, FlowGraphReceiveCustomEventBlock, FlowGraphSceneReadyEventBlock, FlowGraphSendCustomEventBlock } from "core/FlowGraph";
 import { Scene } from "core/scene";
 
 describe("Flow Graph Event Nodes", () => {
@@ -13,6 +12,7 @@ describe("Flow Graph Event Nodes", () => {
     let flowGraphContext: FlowGraphContext;
 
     beforeEach(() => {
+        console.log = jest.fn();
         engine = new NullEngine({
             renderHeight: 256,
             renderWidth: 256,
@@ -30,22 +30,20 @@ describe("Flow Graph Event Nodes", () => {
     it("Custom Event Block", () => {
         const receiverGraph = flowGraphCoordinator.createGraph();
 
-        const customFunction = jest.fn();
-
-        const sceneReady = new FlowGraphSceneReadyEventBlock();
+        const sceneReady = new FlowGraphSceneReadyEventBlock({ name: "SceneReady" });
         flowGraph.addEventBlock(sceneReady);
 
-        const sendEvent = new FlowGraphSendCustomEventBlock();
+        const sendEvent = new FlowGraphSendCustomEventBlock({ name: "SendEvent" });
         sendEvent.eventId.setValue("testEvent", flowGraphContext);
         sendEvent.eventData.setValue(42, flowGraphContext);
         sceneReady.onDone.connectTo(sendEvent.onStart);
 
-        const receiveEvent = new FlowGraphReceiveCustomEventBlock({ eventId: "testEvent" });
+        const receiveEvent = new FlowGraphReceiveCustomEventBlock({ eventId: "testEvent", name: "ReceiveEvent" });
         receiverGraph.addEventBlock(receiveEvent);
 
-        const runCustomFunction = new FlowGraphCustomFunctionBlock({ customFunction });
+        const runCustomFunction = new FlowGraphLogBlock({ name: "Log" });
         receiveEvent.onDone.connectTo(runCustomFunction.onStart);
-        receiveEvent.eventData.connectTo(runCustomFunction.input);
+        receiveEvent.eventData.connectTo(runCustomFunction.message);
 
         flowGraph.start();
         receiverGraph.start();
@@ -53,6 +51,6 @@ describe("Flow Graph Event Nodes", () => {
         // This will activate the sendEvent block and send the event to the receiverGraph
         scene.onReadyObservable.notifyObservers(scene);
 
-        expect(customFunction).toHaveBeenCalledWith(42);
+        expect(console.log).toHaveBeenCalledWith(42);
     });
 });

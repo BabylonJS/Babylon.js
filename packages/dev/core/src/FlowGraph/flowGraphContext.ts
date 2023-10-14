@@ -1,14 +1,53 @@
+import { serialize } from "../Misc/decorators";
+import { RandomGUID } from "../Misc/guid";
 import type { Scene } from "../scene";
 import type { FlowGraphAsyncExecutionBlock } from "./flowGraphAsyncExecutionBlock";
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import type { FlowGraphEventCoordinator } from "./flowGraphEventCoordinator";
+import type { FlowGraph } from "./flowGraph";
+
+function isMeshClassName(className: string) {
+    return (
+        className === "Mesh" ||
+        className === "AbstractMesh" ||
+        className === "GroundMesh" ||
+        className === "InstanceMesh" ||
+        className === "LinesMesh" ||
+        className === "GoldbergMesh" ||
+        className === "GreasedLineMesh" ||
+        className === "TrailMesh"
+    );
+}
+
+function defaultValueSerializationFunction(key: string, value: any, serializationObject: any) {
+    if (value?.getClassName && isMeshClassName(value?.getClassName())) {
+        serializationObject[key] = {
+            name: value.name,
+            className: value.getClassName(),
+        };
+    } else {
+        serializationObject[key] = value;
+    }
+}
+
+function defaultValueParseFunction(key: string, serializationObject: any, scene: Scene) {
+    const value = serializationObject[key];
+    let finalValue;
+    const className = value?.className;
+    if (isMeshClassName(className)) {
+        finalValue = scene.getMeshByName(value.name);
+    } else {
+        finalValue = value;
+    }
+    return finalValue;
+}
 
 /**
  * Construction parameters for the context.
  * @experimental
  */
-export interface IFlowGraphGraphVariables {
+export interface IFlowGraphContextConfiguration {
     /**
      * The scene that the flow graph context belongs to.
      */
@@ -27,6 +66,11 @@ export interface IFlowGraphGraphVariables {
  */
 export class FlowGraphContext {
     /**
+     * A randomly generated GUID for each context.
+     */
+    @serialize()
+    public uniqueId = RandomGUID();
+    /**
      * These are the variables defined by a user.
      */
     private _userVariables: Map<string, any> = new Map();
@@ -41,14 +85,14 @@ export class FlowGraphContext {
     /**
      * These are the variables set by the graph.
      */
-    private readonly _graphVariables: IFlowGraphGraphVariables;
+    private readonly _configuration: IFlowGraphContextConfiguration;
     /**
      * These are blocks that have currently pending tasks/listeners that need to be cleaned up.
      */
     private _pendingBlocks: FlowGraphAsyncExecutionBlock[] = [];
 
-    constructor(params: IFlowGraphGraphVariables) {
-        this._graphVariables = params;
+    constructor(params: IFlowGraphContextConfiguration) {
+        this._configuration = params;
     }
 
     /**
@@ -158,13 +202,13 @@ export class FlowGraphContext {
     }
 
     /**
-     * Get the graph set variables
+     * Get the configuration
      * @internal
      * @param name
      * @param value
      */
-    public get graphVariables() {
-        return this._graphVariables;
+    public get configuration() {
+        return this._configuration;
     }
 
     /**
@@ -197,5 +241,52 @@ export class FlowGraphContext {
             block._cancelPendingTasks(this);
         }
         this._pendingBlocks.length = 0;
+    }
+
+    /**
+     * Serializes a context
+     * @param serializationObject the object to write the values in
+     * @param valueSerializationFunction a function to serialize complex values
+     */
+    public serialize(serializationObject: any = {}, valueSerializationFunction: (key: string, value: any, serializationObject: any) => void = defaultValueSerializationFunction) {
+        serializationObject.uniqueId = this.uniqueId;
+        serializationObject._userVariables = {};
+        this._userVariables.forEach((value, key) => {
+            valueSerializationFunction(key, value, serializationObject._userVariables);
+        });
+        serializationObject._connectionValues = {};
+        this._connectionValues.forEach((value, key) => {
+            valueSerializationFunction(key, value, serializationObject._connectionValues);
+        });
+    }
+
+    public getClassName() {
+        return "FGContext";
+    }
+
+    /**
+     * Parses a context
+     * @param serializationObject the object containing the context serialization values
+     * @param graph the graph to which the context should belong
+     * @param valueParseFunction a function to parse complex values
+     * @returns
+     */
+    public static Parse(
+        serializationObject: any = {},
+        graph: FlowGraph,
+        valueParseFunction: (key: string, serializationObject: any, scene: Scene) => any = defaultValueParseFunction
+    ): FlowGraphContext {
+        const result = graph.createContext();
+        result.uniqueId = serializationObject.uniqueId;
+        for (const key in serializationObject._userVariables) {
+            const value = valueParseFunction(key, serializationObject._userVariables, result._configuration.scene);
+            result._userVariables.set(key, value);
+        }
+        for (const key in serializationObject._connectionValues) {
+            const value = valueParseFunction(key, serializationObject._connectionValues, result._configuration.scene);
+            result._connectionValues.set(key, value);
+        }
+
+        return result;
     }
 }

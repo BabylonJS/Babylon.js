@@ -56,6 +56,8 @@ import { WebGPUSnapshotRendering } from "./WebGPU/webgpuSnapshotRendering";
 import type { WebGPUDataBuffer } from "../Meshes/WebGPU/webgpuDataBuffer";
 import type { WebGPURenderTargetWrapper } from "./WebGPU/webgpuRenderTargetWrapper";
 
+import "../Buffers/buffer.align";
+
 import "../ShadersWGSL/postprocess.vertex";
 
 declare function importScripts(...urls: string[]): void;
@@ -667,8 +669,16 @@ export class WebGPUEngine extends Engine {
                 this._bundleListRenderTarget = new WebGPUBundleList(this._device);
                 this._snapshotRendering = new WebGPUSnapshotRendering(this, this._snapshotRenderingMode, this._bundleList, this._bundleListRenderTarget);
 
-                this._ubInvertY = this._bufferManager.createBuffer(new Float32Array([-1, 0]), WebGPUConstants.BufferUsage.Uniform | WebGPUConstants.BufferUsage.CopyDst);
-                this._ubDontInvertY = this._bufferManager.createBuffer(new Float32Array([1, 0]), WebGPUConstants.BufferUsage.Uniform | WebGPUConstants.BufferUsage.CopyDst);
+                this._ubInvertY = this._bufferManager.createBuffer(
+                    new Float32Array([-1, 0]),
+                    WebGPUConstants.BufferUsage.Uniform | WebGPUConstants.BufferUsage.CopyDst,
+                    "UBInvertY"
+                );
+                this._ubDontInvertY = this._bufferManager.createBuffer(
+                    new Float32Array([1, 0]),
+                    WebGPUConstants.BufferUsage.Uniform | WebGPUConstants.BufferUsage.CopyDst,
+                    "UBDontInvertY"
+                );
 
                 if (this.dbgVerboseLogsForFirstFrames) {
                     if ((this as any)._count === undefined) {
@@ -681,9 +691,9 @@ export class WebGPUEngine extends Engine {
                 this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
                 this._renderTargetEncoder = this._device.createCommandEncoder(this._renderTargetEncoderDescriptor);
 
-                this._emptyVertexBuffer = new VertexBuffer(this, [0], "", false, false, 1, false, 0, 1);
-
                 this._initializeLimits();
+
+                this._emptyVertexBuffer = new VertexBuffer(this, [0], "", false, false, 1, false, 0, 1);
 
                 this._cacheRenderPipeline = new WebGPUCacheRenderPipelineTree(this._device, this._emptyVertexBuffer, !this._caps.textureFloatLinearFiltering);
 
@@ -829,6 +839,7 @@ export class WebGPUEngine extends Engine {
             needToAlwaysBindUniformBuffers: true,
             supportRenderPasses: true,
             supportSpriteInstancing: true,
+            forceVertexBufferStrideMultiple4Bytes: true,
             _collectUbosUpdatedInFrame: false,
         };
     }
@@ -1382,9 +1393,11 @@ export class WebGPUEngine extends Engine {
     /**
      * Creates a vertex buffer
      * @param data the data for the vertex buffer
+     * @param _updatable whether the buffer should be created as updatable
+     * @param label defines the label of the buffer (for debug purpose)
      * @returns the new buffer
      */
-    public createVertexBuffer(data: DataArray): DataBuffer {
+    public createVertexBuffer(data: DataArray, _updatable?: boolean, label?: string): DataBuffer {
         let view: ArrayBufferView;
 
         if (data instanceof Array) {
@@ -1395,25 +1408,28 @@ export class WebGPUEngine extends Engine {
             view = data;
         }
 
-        const dataBuffer = this._bufferManager.createBuffer(view, WebGPUConstants.BufferUsage.Vertex | WebGPUConstants.BufferUsage.CopyDst);
+        const dataBuffer = this._bufferManager.createBuffer(view, WebGPUConstants.BufferUsage.Vertex | WebGPUConstants.BufferUsage.CopyDst, label);
         return dataBuffer;
     }
 
     /**
      * Creates a vertex buffer
      * @param data the data for the dynamic vertex buffer
+     * @param label defines the label of the buffer (for debug purpose)
      * @returns the new buffer
      */
-    public createDynamicVertexBuffer(data: DataArray): DataBuffer {
-        return this.createVertexBuffer(data);
+    public createDynamicVertexBuffer(data: DataArray, label?: string): DataBuffer {
+        return this.createVertexBuffer(data, undefined, label);
     }
 
     /**
      * Creates a new index buffer
      * @param indices defines the content of the index buffer
+     * @param updatable defines if the index buffer must be updatable
+     * @param label defines the label of the buffer (for debug purpose)
      * @returns a new buffer
      */
-    public createIndexBuffer(indices: IndicesArray): DataBuffer {
+    public createIndexBuffer(indices: IndicesArray, _updatable?: boolean, label?: string): DataBuffer {
         let is32Bits = true;
         let view: ArrayBufferView;
 
@@ -1431,7 +1447,7 @@ export class WebGPUEngine extends Engine {
             }
         }
 
-        const dataBuffer = this._bufferManager.createBuffer(view, WebGPUConstants.BufferUsage.Index | WebGPUConstants.BufferUsage.CopyDst);
+        const dataBuffer = this._bufferManager.createBuffer(view, WebGPUConstants.BufferUsage.Index | WebGPUConstants.BufferUsage.CopyDst, label);
         dataBuffer.is32Bits = is32Bits;
         return dataBuffer;
     }
@@ -1439,7 +1455,7 @@ export class WebGPUEngine extends Engine {
     /**
      * @internal
      */
-    public _createBuffer(data: DataArray | number, creationFlags: number): DataBuffer {
+    public _createBuffer(data: DataArray | number, creationFlags: number, label?: string): DataBuffer {
         let view: ArrayBufferView | number;
 
         if (data instanceof Array) {
@@ -1470,7 +1486,7 @@ export class WebGPUEngine extends Engine {
             flags |= WebGPUConstants.BufferUsage.Storage;
         }
 
-        return this._bufferManager.createBuffer(view, flags);
+        return this._bufferManager.createBuffer(view, flags, label);
     }
 
     /**
@@ -3345,7 +3361,7 @@ export class WebGPUEngine extends Engine {
         for (let index = 0; index < vertexBuffers.length; index++) {
             const vertexBuffer = vertexBuffers[index];
 
-            const buffer = vertexBuffer.getBuffer();
+            const buffer = vertexBuffer.effectiveBuffer;
             if (buffer) {
                 renderPass2.setVertexBuffer(index, buffer.underlyingResource, vertexBuffer._validOffsetRange ? 0 : vertexBuffer.byteOffset);
             }

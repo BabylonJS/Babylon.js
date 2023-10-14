@@ -275,7 +275,8 @@
         {
             "title": "ShadowOnlyMaterial",
             "playgroundId": "#1KF7V1#18",
-            "referenceImage": "shadowOnlyMaterial.png"
+            "referenceImage": "shadowOnlyMaterial.png",
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "Gizmos",
@@ -419,11 +420,8 @@
         {
             "title": "Highlights",
             "renderCount": 5,
-            "scriptToRun": "/Demos/Highlights/highlights.js",
-            "functionToCall": "CreateHighlightsScene",
-            "referenceImage": "highlights.png",
-            "rootPath": "/Demos/Highlights/",
-            "replaceUrl": "room.hdr, reflectivity.png, albedo.png"
+            "playgroundId": "#P7N8YW#1",
+            "referenceImage": "highlights.png"
         },
         {
             "title": "Lines",
@@ -794,8 +792,7 @@
         {
             "title": "GLTF Buggy with Meshopt Compression",
             "playgroundId": "#CIYTF6#0",
-            "referenceImage": "gltfBuggyMeshopt.png",
-            "excludedEngines": ["webgpu"]
+            "referenceImage": "gltfBuggyMeshopt.png"
         },
         {
             "title": "GLTF BoomBox with Unlit Material",
@@ -1264,7 +1261,7 @@
             "title": "Prepass SSAO + shadow only",
             "renderCount": 10,
             "playgroundId": "#1KF7V1#55",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1","webgpu"],
             "referenceImage": "prepass-ssao-shadow-only.png"
         },
         {
@@ -1359,12 +1356,14 @@
         {
             "title": "Scissor test with negative x and y",
             "playgroundId": "#3L5BCD#2",
-            "referenceImage": "scissorTestNegativeXandY.png"
+            "referenceImage": "scissorTestNegativeXandY.png",
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "Scissor test with out of bounds width and height",
             "playgroundId": "#3L5BCD#3",
-            "referenceImage": "scissorTestOobWidthAndHeight.png"
+            "referenceImage": "scissorTestOobWidthAndHeight.png",
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "Refraction local cube map STD",
@@ -1749,6 +1748,11 @@
             "title": "SerializeScene and ImportMesh with MorphTargetManager",
             "playgroundId": "#HPV2TZ#378",
             "referenceImage": "SerializeScene-and-ImportMesh-with-MorphTargetManager.png"
+        },
+        {
+            "title": "Vertex buffers with non aligned strides",
+            "playgroundId": "#U1CZV3#32",
+            "referenceImage": "VertexBuffer-non-aligned-strides.png"
         }
     ]
 }

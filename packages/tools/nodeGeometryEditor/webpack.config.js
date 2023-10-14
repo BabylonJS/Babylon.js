@@ -4,19 +4,17 @@ const webpackTools = require("@dev/build-tools").webpackTools;
 module.exports = (env) => {
     const production = env.mode === "production" || process.env.NODE_ENV === "production";
     const commonConfig = {
-        mode: production ? "production" : "development",
         entry: "./src/legacy/legacy.ts",
-        devtool: production ? "source-map" : "eval-cheap-module-source-map",
-        output: {
-            path: path.resolve(__dirname, "dist"),
-            filename: "babylon.nodeGeometryEditor.js",
-            devtoolModuleFilenameTemplate: production ? "webpack://[namespace]/[resource-path]?[loaders]" : "file:///[absolute-resource-path]",
-        },
+        ...webpackTools.commonDevWebpackConfiguration({
+            mode: env.mode,
+            outputFilename: "babylon.nodeGeometryEditor.js",
+            dirName: __dirname,
+        }),
         resolve: {
             extensions: [".js", ".ts", ".tsx", ".scss", "*.svg"],
             alias: {
                 "shared-ui-components": path.resolve("../../dev/sharedUiComponents/src"),
-                "serializers": path.resolve("../../dev/serializers/dist")
+                serializers: path.resolve("../../dev/serializers/dist"),
             },
         },
         externals: [

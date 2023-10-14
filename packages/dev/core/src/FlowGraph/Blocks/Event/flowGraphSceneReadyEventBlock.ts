@@ -1,6 +1,6 @@
 import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-
+import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * @experimental
  * Block that triggers when a scene is ready.
@@ -11,7 +11,7 @@ export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
      */
     public _preparePendingTasks(context: FlowGraphContext): void {
         if (!context._getExecutionVariable(this, "sceneReadyObserver")) {
-            const scene = context.graphVariables.scene;
+            const scene = context.configuration.scene;
             const contextObserver = scene.onReadyObservable.add(() => {
                 this._execute(context);
             });
@@ -24,8 +24,13 @@ export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
      */
     public _cancelPendingTasks(context: FlowGraphContext) {
         const contextObserver = context._getExecutionVariable(this, "sceneReadyObserver");
-        const scene = context.graphVariables.scene;
+        const scene = context.configuration.scene;
         scene.onReadyObservable.remove(contextObserver);
         context._deleteExecutionVariable(this, "sceneReadyObserver");
     }
+
+    public getClassName() {
+        return "FGSceneReadyEventBlock";
+    }
 }
+RegisterClass("FGSceneReadyEventBlock", FlowGraphSceneReadyEventBlock);

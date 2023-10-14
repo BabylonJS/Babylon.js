@@ -125,7 +125,6 @@ export class PreviewManager {
         this._matVertexColor.emissiveColor = Color3.White();
 
         this._light = new HemisphericLight("Hemispheric light", new Vector3(0, 1, 0), this._scene);
-
         this._refreshPreviewMesh(true);
 
         this._engine.runRenderLoop(() => {

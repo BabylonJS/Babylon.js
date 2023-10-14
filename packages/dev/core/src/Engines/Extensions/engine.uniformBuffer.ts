@@ -11,17 +11,19 @@ declare module "../../Engines/thinEngine" {
          * Create an uniform buffer
          * @see https://doc.babylonjs.com/setup/support/webGL2#uniform-buffer-objets
          * @param elements defines the content of the uniform buffer
+         * @param label defines a name for the buffer (for debugging purpose)
          * @returns the webGL uniform buffer
          */
-        createUniformBuffer(elements: FloatArray): DataBuffer;
+        createUniformBuffer(elements: FloatArray, label?: string): DataBuffer;
 
         /**
          * Create a dynamic uniform buffer
          * @see https://doc.babylonjs.com/setup/support/webGL2#uniform-buffer-objets
          * @param elements defines the content of the uniform buffer
+         * @param label defines a name for the buffer (for debugging purpose)
          * @returns the webGL uniform buffer
          */
-        createDynamicUniformBuffer(elements: FloatArray): DataBuffer;
+        createDynamicUniformBuffer(elements: FloatArray, label?: string): DataBuffer;
 
         /**
          * Update an existing uniform buffer
@@ -57,7 +59,7 @@ declare module "../../Engines/thinEngine" {
     }
 }
 
-ThinEngine.prototype.createUniformBuffer = function (elements: FloatArray): DataBuffer {
+ThinEngine.prototype.createUniformBuffer = function (elements: FloatArray, _label?: string): DataBuffer {
     const ubo = this._gl.createBuffer();
 
     if (!ubo) {
@@ -79,7 +81,7 @@ ThinEngine.prototype.createUniformBuffer = function (elements: FloatArray): Data
     return result;
 };
 
-ThinEngine.prototype.createDynamicUniformBuffer = function (elements: FloatArray): DataBuffer {
+ThinEngine.prototype.createDynamicUniformBuffer = function (elements: FloatArray, _label?: string): DataBuffer {
     const ubo = this._gl.createBuffer();
 
     if (!ubo) {

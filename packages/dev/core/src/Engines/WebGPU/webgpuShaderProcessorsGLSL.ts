@@ -1,3 +1,5 @@
+/* eslint-disable babylonjs/available */
+/* eslint-disable jsdoc/require-jsdoc */
 import type { Nullable } from "../../types";
 import type { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 import type { WebGPUBufferDescription } from "./webgpuShaderProcessingContext";
@@ -127,7 +129,16 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
             this._webgpuProcessingContext.availableAttributes[name] = location;
             this._webgpuProcessingContext.orderedAttributes[location] = name;
 
-            attribute = attribute.replace(match[0], `layout(location = ${location}) in ${attributeType} ${name};`);
+            const numComponents = this.vertexBufferKindToNumberOfComponents[name];
+            if (numComponents !== undefined) {
+                // Special case for an int/ivecX vertex buffer that is used as a float/vecX attribute in the shader.
+                const newType = numComponents < 0 ? (numComponents === -1 ? "int" : "ivec" + -numComponents) : numComponents === 1 ? "uint" : "uvec" + numComponents;
+                const newName = `_int_${name}_`;
+
+                attribute = attribute.replace(match[0], `layout(location = ${location}) in ${newType} ${newName}; ${attributeType} ${name} = ${attributeType}(${newName});`);
+            } else {
+                attribute = attribute.replace(match[0], `layout(location = ${location}) in ${attributeType} ${name};`);
+            }
         }
         return attribute;
     }
@@ -387,6 +398,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
         this._preCreateBindGroupEntries();
 
         this._preProcessors = null as any;
+        this.vertexBufferKindToNumberOfComponents = {};
 
         return { vertexCode, fragmentCode };
     }
