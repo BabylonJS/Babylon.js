@@ -510,6 +510,8 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
             true
         );
 
+        let avoidReentrancyAtConstructionTime = true;
+
         this._imageProcessingConfigurationObserver = this._scene.imageProcessingConfiguration.onUpdateParameters.add(() => {
             this.bloom._downscale._exposure = this._scene.imageProcessingConfiguration.exposure;
 
@@ -519,13 +521,19 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
                 // at the end of the constructor could end up triggering imageProcessingConfiguration.onUpdateParameters!
                 // Note that the pipeline could have been disposed before the deferred call was executed, but in that case
                 // _buildAllowed will have been set to false, preventing _buildPipeline from being executed.
-                Tools.SetImmediate(() => {
+                if (avoidReentrancyAtConstructionTime) {
+                    Tools.SetImmediate(() => {
+                        this._buildPipeline();
+                    });
+                } else {
                     this._buildPipeline();
-                });
+                }
             }
         });
 
         this._buildPipeline();
+
+        avoidReentrancyAtConstructionTime = false;
     }
 
     /**
