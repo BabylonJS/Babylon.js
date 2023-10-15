@@ -23,3 +23,4 @@ export class GreasedLineMaterialDefaults {
      */
     public static EmptyColorsTexture: Nullable<BaseTexture>;
 }
+
