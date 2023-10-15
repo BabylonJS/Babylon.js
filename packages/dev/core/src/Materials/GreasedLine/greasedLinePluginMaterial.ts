@@ -322,7 +322,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      */
     getCustomCode(shaderType: string): Nullable<{ [pointName: string]: string }> {
         if (shaderType === "vertex") {
-            return {
+            const obj: any = {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 CUSTOM_VERTEX_DEFINITIONS: `
                 attribute float grl_widths;
@@ -413,9 +413,9 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
                     grlCounters = grl_counters;
                 #endif
                 `,
-                // eslint-disable-next-line @typescript-eslint/naming-convention
-                "!gl_Position\\=viewProjection\\*worldPos;": "//", // remove
             };
+            this._cameraFacing && (obj["!gl_Position\\=viewProjection\\*worldPos;"] = "//"); // not needed for camera facing GRL
+            return obj;
         }
 
         if (shaderType === "fragment") {
