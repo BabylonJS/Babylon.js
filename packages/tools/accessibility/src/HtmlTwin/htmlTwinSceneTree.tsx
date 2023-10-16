@@ -13,7 +13,7 @@ function getSceneIds(scene: Scene) {
 
 export function HTMLTwinSceneTree(props: { scene: Scene }) {
     // const [count, setCount] = useState(0);
-    const [ids, setIds] = useState(new Set<number>());
+    const [meshIds, setMeshIds] = useState(new Set<number>());
     const nextFrameObserver = useRef<Nullable<Observer<Scene>>>(null);
     const sceneContext = useContext(SceneContext);
 
@@ -23,7 +23,7 @@ export function HTMLTwinSceneTree(props: { scene: Scene }) {
             if (!nextFrameObserver.current) {
                 nextFrameObserver.current = props.scene.onBeforeRenderObservable.addOnce(() => {
                     nextFrameObserver.current = null;
-                    setIds(getSceneIds(props.scene));
+                    setMeshIds(getSceneIds(props.scene));
                 });
             }
         });
@@ -35,7 +35,7 @@ export function HTMLTwinSceneTree(props: { scene: Scene }) {
     useEffect(() => {
         if (sceneContext) {
             sceneContext.updateScene = () => {
-                setIds(getSceneIds(props.scene));
+                setMeshIds(getSceneIds(props.scene));
             };
         }
     }, [sceneContext]);
