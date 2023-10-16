@@ -119,12 +119,15 @@ export class MaterialHelper {
         let changed = false;
 
         if (scene.activeCamera) {
+            const wasObliq = defines["CAMERA_OBLIQUE"] ? 1 : 0;
             const wasOrtho = defines["CAMERA_ORTHOGRAPHIC"] ? 1 : 0;
             const wasPersp = defines["CAMERA_PERSPECTIVE"] ? 1 : 0;
+            const isObliq = scene.activeCamera.mode === Camera.OBLIQUE_CAMERA ? 1 : 0;
             const isOrtho = scene.activeCamera.mode === Camera.ORTHOGRAPHIC_CAMERA ? 1 : 0;
             const isPersp = scene.activeCamera.mode === Camera.PERSPECTIVE_CAMERA ? 1 : 0;
 
-            if (wasOrtho ^ isOrtho || wasPersp ^ isPersp) {
+            if (wasObliq ^ isObliq || wasOrtho ^ isOrtho || wasPersp ^ isPersp) {
+                defines["CAMERA_OBLIQUE"] = isOrtho === 1;
                 defines["CAMERA_ORTHOGRAPHIC"] = isOrtho === 1;
                 defines["CAMERA_PERSPECTIVE"] = isPersp === 1;
                 changed = true;
@@ -1008,8 +1011,8 @@ export class MaterialHelper {
     public static BindLogDepth(defines: any, effect: Effect, scene: Scene): void {
         if (!defines || defines["LOGARITHMICDEPTH"] || (defines.indexOf && defines.indexOf("LOGARITHMICDEPTH") >= 0)) {
             const camera = <Camera>scene.activeCamera;
-            if (camera.mode === Camera.ORTHOGRAPHIC_CAMERA) {
-                Logger.Error("Logarithmic depth is not compatible with orthographic cameras!", 20);
+            if (camera.mode === Camera.ORTHOGRAPHIC_CAMERA || camera.mode === Camera.OBLIQUE_CAMERA) {
+                Logger.Error("Logarithmic depth is not compatible with orthographic or oblique cameras!", 20);
             }
             effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(camera.maxZ + 1.0) / Math.LN2));
         }

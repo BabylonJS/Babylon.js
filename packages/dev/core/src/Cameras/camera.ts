@@ -23,6 +23,7 @@ import type { RenderTargetTexture } from "../Materials/Textures/renderTargetText
 import type { FreeCamera } from "./freeCamera";
 import type { TargetCamera } from "./targetCamera";
 import type { Ray } from "../Culling/ray";
+import type { ArcRotateCamera } from "./arcRotateCamera";
 
 /**
  * This is the base class of all the camera used in the application.
@@ -48,6 +49,11 @@ export class Camera extends Node {
      * Orthographic is commonly used in engineering as a means to produce object specifications that communicate dimensions unambiguously, each line of 1 unit length (cm, meter..whatever) will appear to have the same length everywhere on the drawing. This allows the drafter to dimension only a subset of lines and let the reader know that other lines of that length on the drawing are also that length in reality. Every parallel line in the drawing is also parallel in the object.
      */
     public static readonly ORTHOGRAPHIC_CAMERA = Constants.ORTHOGRAPHIC_CAMERA;
+    /**
+     * This helps to create a camera that uses an oblique mode.
+     * Oblique is an orthrographic projection with a shear applied to it.
+     */
+    public static readonly OBLIQUE_CAMERA = Constants.OBLIQUE_CAMERA;
 
     /**
      * This is the default FOV mode for perspective cameras.
@@ -137,6 +143,20 @@ export class Camera extends Node {
     public get upVector() {
         return this._upVector;
     }
+
+    /**
+     * Length of skew
+     */
+    public obliqueLength: number = 0;
+    /**
+     * Angle of skew in radians
+     */
+    public obliqueAngle: number = 0;
+
+    /**
+     * Offset from camera target to front of meshes' bounding box
+     */
+    public obliqueOffset: number = 0;
 
     /**
      * The screen area in scene units squared
@@ -277,7 +297,7 @@ export class Camera extends Node {
     public inertia = 0.9;
 
     /**
-     * Define the mode of the camera (Camera.PERSPECTIVE_CAMERA or Camera.ORTHOGRAPHIC_CAMERA)
+     * Define the mode of the camera (Camera.PERSPECTIVE_CAMERA, Camera.ORTHOGRAPHIC_CAMERA, or Camera.OBLIQUE_CAMERA)
      */
     private _mode = Camera.PERSPECTIVE_CAMERA;
     set mode(mode: number) {
@@ -573,6 +593,9 @@ export class Camera extends Node {
         this._cache.orthoRight = undefined;
         this._cache.orthoBottom = undefined;
         this._cache.orthoTop = undefined;
+        this._cache.obliqueAngle = undefined;
+        this._cache.obliqueLength = undefined;
+        this._cache.obliqueOffset = undefined;
         this._cache.renderWidth = undefined;
         this._cache.renderHeight = undefined;
     }
@@ -625,6 +648,9 @@ export class Camera extends Node {
                 this._cache.orthoRight === this.orthoRight &&
                 this._cache.orthoBottom === this.orthoBottom &&
                 this._cache.orthoTop === this.orthoTop &&
+                this._cache.obliqueAngle === this.obliqueAngle &&
+                this._cache.obliqueLength === this.obliqueLength &&
+                this._cache.obliqueOffset === this.obliqueOffset &&
                 this._cache.renderWidth === engine.getRenderWidth() &&
                 this._cache.renderHeight === engine.getRenderHeight();
         }
@@ -821,6 +847,7 @@ export class Camera extends Node {
 
         this.updateCache();
         this._computedViewMatrix = this._getViewMatrix();
+
         this._currentRenderId = this.getScene().getRenderId();
         this._childUpdateId++;
 
@@ -922,36 +949,78 @@ export class Camera extends Node {
                 reverseDepth
             );
         } else {
+            const computeObliqueDistance = (camera: Camera) => {
+                return (
+                    ((camera as ArcRotateCamera).radius ||
+                        ((camera as TargetCamera).target ? Vector3.Distance(this.position, (camera as TargetCamera).target) : this.position.length())) + this.obliqueOffset
+                );
+            };
+
             const halfWidth = engine.getRenderWidth() / 2.0;
             const halfHeight = engine.getRenderHeight() / 2.0;
             if (scene.useRightHandedSystem) {
-                Matrix.OrthoOffCenterRHToRef(
-                    this.orthoLeft ?? -halfWidth,
-                    this.orthoRight ?? halfWidth,
-                    this.orthoBottom ?? -halfHeight,
-                    this.orthoTop ?? halfHeight,
-                    reverseDepth ? this.maxZ : this.minZ,
-                    reverseDepth ? this.minZ : this.maxZ,
-                    this._projectionMatrix,
-                    engine.isNDCHalfZRange
-                );
+                if (this.mode === Camera.OBLIQUE_CAMERA) {
+                    Matrix.ObliqueOffCenterRHToRef(
+                        this.orthoLeft ?? -halfWidth,
+                        this.orthoRight ?? halfWidth,
+                        this.orthoBottom ?? -halfHeight,
+                        this.orthoTop ?? halfHeight,
+                        reverseDepth ? this.maxZ : this.minZ,
+                        reverseDepth ? this.minZ : this.maxZ,
+                        this.obliqueLength,
+                        this.obliqueAngle,
+                        computeObliqueDistance(this),
+                        this._projectionMatrix,
+                        engine.isNDCHalfZRange
+                    );
+                } else {
+                    Matrix.OrthoOffCenterRHToRef(
+                        this.orthoLeft ?? -halfWidth,
+                        this.orthoRight ?? halfWidth,
+                        this.orthoBottom ?? -halfHeight,
+                        this.orthoTop ?? halfHeight,
+                        reverseDepth ? this.maxZ : this.minZ,
+                        reverseDepth ? this.minZ : this.maxZ,
+                        this._projectionMatrix,
+                        engine.isNDCHalfZRange
+                    );
+                }
             } else {
-                Matrix.OrthoOffCenterLHToRef(
-                    this.orthoLeft ?? -halfWidth,
-                    this.orthoRight ?? halfWidth,
-                    this.orthoBottom ?? -halfHeight,
-                    this.orthoTop ?? halfHeight,
-                    reverseDepth ? this.maxZ : this.minZ,
-                    reverseDepth ? this.minZ : this.maxZ,
-                    this._projectionMatrix,
-                    engine.isNDCHalfZRange
-                );
+                if (this.mode === Camera.OBLIQUE_CAMERA) {
+                    Matrix.ObliqueOffCenterLHToRef(
+                        this.orthoLeft ?? -halfWidth,
+                        this.orthoRight ?? halfWidth,
+                        this.orthoBottom ?? -halfHeight,
+                        this.orthoTop ?? halfHeight,
+                        reverseDepth ? this.maxZ : this.minZ,
+                        reverseDepth ? this.minZ : this.maxZ,
+                        this.obliqueLength,
+                        this.obliqueAngle,
+                        computeObliqueDistance(this),
+                        this._projectionMatrix,
+                        engine.isNDCHalfZRange
+                    );
+                } else {
+                    Matrix.OrthoOffCenterLHToRef(
+                        this.orthoLeft ?? -halfWidth,
+                        this.orthoRight ?? halfWidth,
+                        this.orthoBottom ?? -halfHeight,
+                        this.orthoTop ?? halfHeight,
+                        reverseDepth ? this.maxZ : this.minZ,
+                        reverseDepth ? this.minZ : this.maxZ,
+                        this._projectionMatrix,
+                        engine.isNDCHalfZRange
+                    );
+                }
             }
 
             this._cache.orthoLeft = this.orthoLeft;
             this._cache.orthoRight = this.orthoRight;
             this._cache.orthoBottom = this.orthoBottom;
             this._cache.orthoTop = this.orthoTop;
+            this._cache.obliqueAngle = this.obliqueAngle;
+            this._cache.obliqueLength = this.obliqueLength;
+            this._cache.obliqueOffset = this.obliqueOffset;
             this._cache.renderWidth = engine.getRenderWidth();
             this._cache.renderHeight = engine.getRenderHeight();
         }

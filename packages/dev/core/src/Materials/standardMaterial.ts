@@ -184,6 +184,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public MULTIVIEW = false;
     public ORDER_INDEPENDENT_TRANSPARENCY = false;
     public ORDER_INDEPENDENT_TRANSPARENCY_16BITS = false;
+    public CAMERA_OBLIQUE = false;
     public CAMERA_ORTHOGRAPHIC = false;
     public CAMERA_PERSPECTIVE = false;
 
