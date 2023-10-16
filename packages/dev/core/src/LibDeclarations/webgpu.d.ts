@@ -343,6 +343,44 @@ declare class GPUExternalTexture implements GPUObjectBase {
     label: string | undefined;
 }
 
+/** [MDN Reference](https://developer.mozilla.org/docs/Web/API/VideoFrame) */
+interface VideoFrame {
+    /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/VideoFrame/codedHeight) */
+    readonly codedHeight: number;
+    /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/VideoFrame/codedRect) */
+    readonly codedRect: DOMRectReadOnly | null;
+    /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/VideoFrame/codedWidth) */
+    readonly codedWidth: number;
+    /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/VideoFrame/colorSpace) */
+    readonly colorSpace: VideoColorSpace;
+    /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/VideoFrame/displayHeight) */
+    readonly displayHeight: number;
+    /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/VideoFrame/displayWidth) */
+    readonly displayWidth: number;
+    /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/VideoFrame/duration) */
+    readonly duration: number | null;
+    /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/VideoFrame/format) */
+    readonly format: VideoPixelFormat | null;
+    /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/VideoFrame/timestamp) */
+    readonly timestamp: number;
+    /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/VideoFrame/visibleRect) */
+    readonly visibleRect: DOMRectReadOnly | null;
+    /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/VideoFrame/allocationSize) */
+    allocationSize(options?: VideoFrameCopyToOptions): number;
+    /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/VideoFrame/clone) */
+    clone(): VideoFrame;
+    /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/VideoFrame/close) */
+    close(): void;
+    copyTo(destination: BufferSource, options?: VideoFrameCopyToOptions): Promise<PlaneLayout[]>;
+}
+
+// eslint-disable-next-line no-var
+declare var VideoFrame: {
+    prototype: VideoFrame;
+    new(image: CanvasImageSource, init?: VideoFrameInit): VideoFrame;
+    new(data: BufferSource, init: VideoFrameBufferInit): VideoFrame;
+};
+
 interface GPUExternalTextureDescriptor extends GPUObjectDescriptorBase {
     source: HTMLVideoElement | VideoFrame;
     colorSpace?: PredefinedColorSpace /* default="srgb" */;
