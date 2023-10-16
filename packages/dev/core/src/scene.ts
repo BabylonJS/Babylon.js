@@ -5216,7 +5216,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param list the list of objects to use
      * @param tagsQuery the query to use
      * @param forEach a predicate to filter for tags
-     * @returns 
+     * @returns
      */
     private _getByTags(list: any[], tagsQuery: string, forEach?: (item: any) => boolean): any[] {
         if (tagsQuery === undefined) {
