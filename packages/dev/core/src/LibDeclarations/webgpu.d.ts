@@ -377,8 +377,8 @@ interface VideoFrame {
 // eslint-disable-next-line no-var
 declare var VideoFrame: {
     prototype: VideoFrame;
-    new(image: CanvasImageSource, init?: VideoFrameInit): VideoFrame;
-    new(data: BufferSource, init: VideoFrameBufferInit): VideoFrame;
+    new (image: CanvasImageSource, init?: VideoFrameInit): VideoFrame;
+    new (data: BufferSource, init: VideoFrameBufferInit): VideoFrame;
 };
 
 interface GPUExternalTextureDescriptor extends GPUObjectDescriptorBase {
