@@ -70,10 +70,10 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         this._slopes = [];
         this._widths = _options.widths ?? [];
         this._ribbonWidths = [];
-        this._pathsOptions = [];
+        this._pathsOptions = _pathOptions ?? [];
 
         if (_options.points) {
-            this.addPoints(GreasedLineTools.ConvertPoints(_options.points), _options);
+            this.addPoints(GreasedLineTools.ConvertPoints(_options.points), _options, !!_pathOptions);
         }
     }
 
@@ -81,12 +81,14 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
      * Adds new points to the line. It doesn't rerenders the line if in lazy mode.
      * @param points points table
      */
-    public override addPoints(points: number[][], options: GreasedLineMeshOptions) {
+    public override addPoints(points: number[][], options: GreasedLineMeshOptions, hasPathOptions = false) {
         if (!options.ribbonOptions) {
             throw "addPoints() on GreasedLineRibbonMesh instance requires 'GreasedLineMeshOptions.ribbonOptions'.";
         }
 
-        this._pathsOptions.push({ options, pathCount: points.length });
+        if (!hasPathOptions) {
+            this._pathsOptions.push({ options, pathCount: points.length });
+        }
 
         super.addPoints(points, options);
     }

@@ -12,7 +12,7 @@ import { GreasedLineRibbonAutoDirectionMode, GreasedLineRibbonFacesMode, Greased
 import { GreasedLineRibbonMesh } from "../GreasedLine/greasedLineRibbonMesh";
 import { GreasedLineMeshMaterialType, type GreasedLineMaterialOptions } from "../../Materials/GreasedLine/greasedLineMaterialInterfaces";
 import { GreasedLinePluginMaterial } from "../../Materials/GreasedLine/greasedLinePluginMaterial";
-import { GreasedLineMaterialDefaults } from "core/Materials/GreasedLine/greasedLineMaterialDefaults";
+import { GreasedLineMaterialDefaults } from "../../Materials/GreasedLine/greasedLineMaterialDefaults";
 
 /**
  * How are the colors distributed along the color table
@@ -104,8 +104,8 @@ export interface GreasedLineMeshBuilderOptions extends GreasedLineMeshOptions {
     widthDistribution?: GreasedLineMeshWidthDistribution;
 }
 
-/**˝
- * Builder class for create GreasedLineMeshes
+/**
+ * Builder functions for creating GreasedLineMeshes
  */
 
 /**
