@@ -5211,8 +5211,14 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
-    // Tags
-    private _getByTags(list: any[], tagsQuery: string, forEach?: (item: any) => void): any[] {
+    /**
+     * Get from a list of objects by tags
+     * @param list the list of objects to use
+     * @param tagsQuery the query to use
+     * @param forEach a predicate to filter for tags
+     * @returns 
+     */
+    private _getByTags(list: any[], tagsQuery: string, forEach?: (item: any) => boolean): any[] {
         if (tagsQuery === undefined) {
             // returns the complete list (could be done with Tags.MatchesQuery but no need to have a for-loop here)
             return list;
@@ -5223,14 +5229,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         forEach =
             forEach ||
             ((item: any) => {
-                return;
+                return true;
             });
 
         for (const i in list) {
             const item = list[i];
-            if (Tags && Tags.MatchesQuery(item, tagsQuery)) {
+            if (Tags && Tags.MatchesQuery(item, tagsQuery) && (!forEach || forEach(item))) {
                 listByTags.push(item);
-                forEach(item);
             }
         }
 
@@ -5243,7 +5248,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param forEach defines a predicate used to filter results
      * @returns an array of Mesh
      */
-    public getMeshesByTags(tagsQuery: string, forEach?: (mesh: AbstractMesh) => void): Mesh[] {
+    public getMeshesByTags(tagsQuery: string, forEach?: (mesh: AbstractMesh) => boolean): Mesh[] {
         return this._getByTags(this.meshes, tagsQuery, forEach);
     }
 
@@ -5253,7 +5258,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param forEach defines a predicate used to filter results
      * @returns an array of Camera
      */
-    public getCamerasByTags(tagsQuery: string, forEach?: (camera: Camera) => void): Camera[] {
+    public getCamerasByTags(tagsQuery: string, forEach?: (camera: Camera) => boolean): Camera[] {
         return this._getByTags(this.cameras, tagsQuery, forEach);
     }
 
@@ -5263,7 +5268,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param forEach defines a predicate used to filter results
      * @returns an array of Light
      */
-    public getLightsByTags(tagsQuery: string, forEach?: (light: Light) => void): Light[] {
+    public getLightsByTags(tagsQuery: string, forEach?: (light: Light) => boolean): Light[] {
         return this._getByTags(this.lights, tagsQuery, forEach);
     }
 
@@ -5273,7 +5278,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param forEach defines a predicate used to filter results
      * @returns an array of Material
      */
-    public getMaterialByTags(tagsQuery: string, forEach?: (material: Material) => void): Material[] {
+    public getMaterialByTags(tagsQuery: string, forEach?: (material: Material) => boolean): Material[] {
         return this._getByTags(this.materials, tagsQuery, forEach).concat(this._getByTags(this.multiMaterials, tagsQuery, forEach));
     }
 
@@ -5283,7 +5288,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param forEach defines a predicate used to filter results
      * @returns an array of TransformNode
      */
-    public getTransformNodesByTags(tagsQuery: string, forEach?: (transform: TransformNode) => void): TransformNode[] {
+    public getTransformNodesByTags(tagsQuery: string, forEach?: (transform: TransformNode) => boolean): TransformNode[] {
         return this._getByTags(this.transformNodes, tagsQuery, forEach);
     }
 
