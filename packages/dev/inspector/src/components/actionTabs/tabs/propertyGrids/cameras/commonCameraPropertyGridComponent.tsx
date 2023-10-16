@@ -36,7 +36,7 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
         const modeOptions = [
             { label: "Perspective", value: Camera.PERSPECTIVE_CAMERA },
             { label: "Orthographic", value: Camera.ORTHOGRAPHIC_CAMERA },
-            { label: "Oblique", value: Camera.OBLIQUE_CAMERA},
+            { label: "Oblique", value: Camera.OBLIQUE_CAMERA },
         ];
 
         return (
@@ -150,28 +150,28 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
                     )}
                     {camera.mode === Camera.OBLIQUE_CAMERA && (
                         <SliderLineComponent
-                        lockObject={this.props.lockObject}
-                        label="Angle"
-                        useEuler={this.props.globalState.onlyUseEulers}
-                        target={camera}
-                        propertyName="obliqueAngle"
-                        minimum={0}
-                        maximum={2 * Math.PI}
-                        step={0.01}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            lockObject={this.props.lockObject}
+                            label="Angle"
+                            useEuler={this.props.globalState.onlyUseEulers}
+                            target={camera}
+                            propertyName="obliqueAngle"
+                            minimum={0}
+                            maximum={2 * Math.PI}
+                            step={0.01}
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
                     )}
                     {camera.mode === Camera.OBLIQUE_CAMERA && (
                         <SliderLineComponent
-                        lockObject={this.props.lockObject}
-                        label="Length"
-                        useEuler={this.props.globalState.onlyUseEulers}
-                        target={camera}
-                        propertyName="obliqueLength"
-                        minimum={0}
-                        maximum={1}
-                        step={0.01}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            lockObject={this.props.lockObject}
+                            label="Length"
+                            useEuler={this.props.globalState.onlyUseEulers}
+                            target={camera}
+                            propertyName="obliqueLength"
+                            minimum={0}
+                            maximum={1}
+                            step={0.01}
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
                     )}
                     <ButtonLineComponent

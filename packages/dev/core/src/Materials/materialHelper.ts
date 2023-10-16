@@ -127,7 +127,7 @@ export class MaterialHelper {
             const isPersp = scene.activeCamera.mode === Camera.PERSPECTIVE_CAMERA ? 1 : 0;
 
             if (wasObliq ^ isObliq || wasOrtho ^ isOrtho || wasPersp ^ isPersp) {
-                defines["CAMERA_OBLIQUE"] = isOrtho === 1;
+                defines["CAMERA_OBLIQUE"] = isObliq === 1;
                 defines["CAMERA_ORTHOGRAPHIC"] = isOrtho === 1;
                 defines["CAMERA_PERSPECTIVE"] = isPersp === 1;
                 changed = true;
