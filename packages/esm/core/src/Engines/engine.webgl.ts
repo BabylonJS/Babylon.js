@@ -579,7 +579,7 @@ export function getRenderWidth(engineState: IWebGLEnginePublic, useScreen = fals
  * @returns a number defining the current render height
  */
 export function getRenderHeight(engineState: IWebGLEnginePublic, useScreen = false): number {
-    return getRenderHeightBase(engineState, useScreen) || (engineState as WebGLEngineState)._gl.drawingBufferWidth;
+    return getRenderHeightBase(engineState, useScreen) || (engineState as WebGLEngineState)._gl.drawingBufferHeight;
 }
 
 function _measureFps(engineState: IWebGLEnginePublic): void {

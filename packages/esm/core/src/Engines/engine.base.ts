@@ -1067,7 +1067,7 @@ export function getRenderHeight<T extends IBaseEnginePublic = IBaseEnginePublic>
         return fes._currentRenderTarget.height;
     }
 
-    return fes._dimensionsObject ? fes._dimensionsObject.width : 0;
+    return fes._dimensionsObject ? fes._dimensionsObject.height : 0;
 }
 
 /**
