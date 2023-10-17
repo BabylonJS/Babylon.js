@@ -248,6 +248,10 @@ export class GeometryBufferRenderer {
                 return this._velocityIndex;
             case GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE:
                 return this._reflectivityIndex;
+            case GeometryBufferRenderer.DEPTH_TEXTURE_TYPE:
+                return this._linkedWithPrePass ? this._depthIndex : 0;
+            case GeometryBufferRenderer.NORMAL_TEXTURE_TYPE:
+                return this._linkedWithPrePass ? this._normalIndex : 1;
             default:
                 return -1;
         }
