@@ -365,11 +365,6 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
 
     /**
-     * When this is set, the GUI will attempt to follow the CSS spec, inheriting properties when they are not specified.
-     */
-    public strictCSSCompatibility: boolean = false;
-
-    /**
      * If set to true, every scene render will trigger a pointer event for the GUI
      * if it is linked to a mesh or has controls linked to a mesh. This will allow
      * you to catch the pointer moving around the GUI due to camera or mesh movements,

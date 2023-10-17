@@ -2391,19 +2391,14 @@ export class Control implements IAnimatable {
         return false;
     }
 
-    private _getFontStyle() {
-        return this._style?.fontStyle ?? this._fontStyle;
-    }
-
-    private _getFontWeight() {
-        return this._style?.fontWeight ?? this._fontWeight;
-    }
-
-    private _getFontFamily() {
-        if (!this._host.strictCSSCompatibility && !this._styleSet && !this._fontFamilySet) {
-            return "Arial";
+    private _getStyleProperty(propName: "fontStyle" | "fontWeight" | "fontFamily", defaultValue: string): string {
+        const prop = (this._style && this._style[propName]) ?? this[propName];
+        if (!prop && this.parent) {
+            return this.parent._getStyleProperty(propName, defaultValue);
+        } else if (!this.parent) {
+            return defaultValue;
         } else {
-            return this._style?.fontFamily ?? this._fontFamily;
+            return prop;
         }
     }
 
@@ -2412,7 +2407,14 @@ export class Control implements IAnimatable {
             return;
         }
 
-        this._font = this._getFontStyle() + " " + this._getFontWeight() + " " + this.fontSizeInPixels + "px " + this._getFontFamily();
+        this._font =
+            this._getStyleProperty("fontStyle", "") +
+            " " +
+            this._getStyleProperty("fontWeight", "") +
+            " " +
+            this.fontSizeInPixels +
+            "px " +
+            this._getStyleProperty("fontFamily", "Arial");
 
         this._fontOffset = Control._GetFontOffset(this._font);
 
