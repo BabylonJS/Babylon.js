@@ -9,19 +9,23 @@ import type { Scene } from "@babylonjs/core/scene.js";
 import { Observable } from "@babylonjs/core/Misc/observable.js";
 import type { ICanvas } from "@babylonjs/core/Engines/ICanvas.js";
 import type { Material } from "@babylonjs/core/Materials/material.js";
+import type { IOfflineProvider } from "public/@babylonjs/core/Offline/IOfflineProvider.js";
+import type { IAudioEngine } from "public/@babylonjs/core/Audio/Interfaces/IAudioEngine.js";
+import type { ILoadingScreen } from "public/@babylonjs/core/Loading/loadingScreen.js";
+import type { PostProcess } from "public/@babylonjs/core/PostProcesses/postProcess.js";
 
-export const EngineStore: {
+export interface IEngineStore<T extends IBaseEnginePublic = IBaseEnginePublic> {
     /** Gets the list of created engines */
     Instances: Array<IBaseEnginePublic>;
     /**
      * Notifies when an engine was disposed.
      * Mainly used for static/cache cleanup
      */
-    OnEnginesDisposedObservable: Observable<IBaseEnginePublic>;
+    OnEnginesDisposedObservable: Observable<T>;
     /**
      * Gets the latest created engine
      */
-    readonly LastCreatedEngine: Nullable<IBaseEnginePublic>;
+    readonly LastCreatedEngine: Nullable<T>;
     /**
      * Gets the latest created scene
      */
@@ -34,19 +38,61 @@ export const EngineStore: {
      * Texture content used if a texture cannot loaded
      */
     FallbackTexture: string;
-} = {
-    Instances: [] as Array<IBaseEnginePublic>,
-    get LastCreatedEngine(): Nullable<IBaseEnginePublic> {
+
+    /**
+     * Gets the audio engine
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
+     * @ignorenaming
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    audioEngine: Nullable<IAudioEngine>;
+
+    /**
+     * Default AudioEngine factory responsible of creating the Audio Engine.
+     * By default, this will create a BabylonJS Audio Engine if the workload has been embedded.
+     */
+    AudioEngineFactory?: (
+        hostElement: Nullable<HTMLElement>,
+        audioContext: Nullable<AudioContext>,
+        audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>
+    ) => IAudioEngine;
+
+    /**
+     * Default offline support factory responsible of creating a tool used to store data locally.
+     * By default, this will create a Database object if the workload has been embedded.
+     */
+    OfflineProviderFactory?: (urlToScene: string, callbackManifestChecked: (checked: boolean) => any, disableManifestCheck: boolean) => IOfflineProvider;
+
+    /**
+     * Method called to create the default loading screen.
+     * This can be overridden in your own app.
+     * @param canvas The rendering canvas element
+     * @returns The loading screen
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    DefaultLoadingScreenFactory?: (canvas: HTMLCanvasElement) => ILoadingScreen;
+
+    /**
+     * Method called to create the default rescale post process on each engine.
+     */
+    _RescalePostProcessFactory: Nullable<(engine: T) => PostProcess>;
+}
+
+export const EngineStore: IEngineStore = {
+    Instances: [],
+    get LastCreatedEngine() {
         if (this.Instances.length === 0) {
             return null;
         }
 
         return EngineStore.Instances[EngineStore.Instances.length - 1];
     },
-    LastCreatedScene: null as Nullable<Scene>,
+    LastCreatedScene: null,
     UseFallbackTexture: true,
     FallbackTexture: "",
     OnEnginesDisposedObservable: new Observable(),
+    audioEngine: null,
+    _RescalePostProcessFactory: null,
 };
 
 // used to be WebGL only, a single array
@@ -251,6 +297,38 @@ export function _CreateCanvas(width: number, height: number): ICanvas {
     return canvas;
 }
 
+// From Engine
+
+/**
+ * Will flag all materials in all scenes in all engines as dirty to trigger new shader compilation
+ * @param flag defines which part of the materials must be marked as dirty
+ * @param predicate defines a predicate used to filter which materials should be affected
+ */
+export function MarkAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void {
+    for (let engineIndex = 0; engineIndex < EngineStore.Instances.length; engineIndex++) {
+        const engine = EngineStore.Instances[engineIndex];
+
+        for (let sceneIndex = 0; sceneIndex < engine.scenes.length; sceneIndex++) {
+            engine.scenes[sceneIndex].markAllMaterialsAsDirty(flag, predicate);
+        }
+    }
+}
+
+export function _RequestPointerlock(element: HTMLElement): void {
+    if (element.requestPointerLock) {
+        // In some browsers, requestPointerLock returns a promise.
+        // Handle possible rejections to avoid an unhandled top-level exception.
+        const promise: unknown = element.requestPointerLock();
+        if (promise instanceof Promise)
+            promise
+                .then(() => {
+                    element.focus();
+                })
+                .catch(() => {});
+        else element.focus();
+    }
+}
+
 /**
  * Engine abstraction for loading and creating an image bitmap from a given source string.
  * @internal
@@ -316,31 +394,6 @@ export function resizeImageBitmap(
     // Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
     const buffer = <Uint8Array>(<any>context.getImageData(0, 0, bufferWidth, bufferHeight).data);
     return buffer;
-}
-
-export function MarkAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void {
-    for (let engineIndex = 0; engineIndex < EngineStore.Instances.length; engineIndex++) {
-        const engine = EngineStore.Instances[engineIndex];
-
-        for (let sceneIndex = 0; sceneIndex < engine.scenes.length; sceneIndex++) {
-            engine.scenes[sceneIndex].markAllMaterialsAsDirty(flag, predicate);
-        }
-    }
-}
-
-export function _RequestPointerlock(element: HTMLElement): void {
-    if (element.requestPointerLock) {
-        // In some browsers, requestPointerLock returns a promise.
-        // Handle possible rejections to avoid an unhandled top-level exception.
-        const promise: unknown = element.requestPointerLock();
-        if (promise instanceof Promise)
-            promise
-                .then(() => {
-                    element.focus();
-                })
-                .catch(() => {});
-        else element.focus();
-    }
 }
 
 // TODO is this needed? this will allow `import Statics from "package/Engines"`.

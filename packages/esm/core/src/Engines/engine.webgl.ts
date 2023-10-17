@@ -9,6 +9,7 @@ import {
     getRenderWidth as getRenderWidthBase,
     getRenderHeight as getRenderHeightBase,
     setViewport as setViewportBase,
+    setDirectViewport as setDirectViewportBase,
     _viewport as _viewportBase,
     dispose as disposeBase,
     _createTextureBase,
@@ -109,7 +110,7 @@ import type { RenderTargetTexture } from "@babylonjs/core/Materials/Textures/ren
 import type { ThinTexture } from "@babylonjs/core/Materials/Textures/thinTexture.js";
 import type { VideoTexture } from "@babylonjs/core/Materials/Textures/videoTexture.js";
 import type { ISceneLike } from "./engine.interfaces.js";
-import { ExceptionList, GetExponentOfTwo, Version } from "./engine.static.js";
+import { EngineStore, ExceptionList, GetExponentOfTwo, Version } from "./engine.static.js";
 import type { Scene } from "@babylonjs/core/scene.js";
 import type { InternalTextureCreationOptions, TextureSize } from "@babylonjs/core/Materials/Textures/textureCreationOptions.js";
 import { Logger } from "@babylonjs/core/Misc/logger.js";
@@ -131,6 +132,7 @@ import type { IMultiRenderEngineExtension } from "./Extensions/multiRender/multi
 import type { PostProcess } from "@babylonjs/core/PostProcesses/postProcess.js";
 import type { IShaderProcessor } from "@babylonjs/core/Engines/Processors/iShaderProcessor.js";
 import { IsWindowObjectExist } from "./runtimeEnvironment.js";
+import { PerfCounter } from "@babylonjs/core/Misc/perfCounter.js";
 
 const _TempClearColorUint32 = new Uint32Array(4);
 const _TempClearColorInt32 = new Int32Array(4);
@@ -200,6 +202,7 @@ export interface IWebGLEngineInternals extends IBaseEngineInternals {
     };
     _currentFramebuffer: Nullable<WebGLFramebuffer>;
     _dummyFramebuffer: Nullable<WebGLFramebuffer>;
+    _drawCalls: PerfCounter;
 }
 
 export interface IWebGLEnginePublic extends IBaseEnginePublic {
@@ -276,6 +279,7 @@ export function initWebGLEngineState(
     ps._stencilState = new StencilState();
     ps._rescalePostProcess = null;
     ps._currentBufferPointers = [];
+    ps._drawCalls = new PerfCounter();
 
     ps._stencilStateComposer.stencilGlobal = ps._stencilState;
 
@@ -2565,10 +2569,9 @@ export function _rescaleTexture(
         }
     );
 
-    // TODO - need to move the definition to EngineStore
-    // if (!engineState._rescalePostProcess && Engine._RescalePostProcessFactory) {
-    //     engineState._rescalePostProcess = Engine._RescalePostProcessFactory(augmentEngineState<Engine>(engineState));
-    // }
+    if (!engineState._rescalePostProcess && EngineStore._RescalePostProcessFactory) {
+        engineState._rescalePostProcess = EngineStore._RescalePostProcessFactory(engineState);
+    }
 
     if (engineState._rescalePostProcess) {
         engineState._rescalePostProcess.externalTextureSamplerBinding = true;
@@ -4725,5 +4728,147 @@ export function generateMipMapsForCubemap(engineState: IWebGLEnginePublic, textu
         if (unbind) {
             _bindTextureDirectly(fes, gl.TEXTURE_CUBE_MAP, null);
         }
+    }
+}
+
+/**
+ * Sets a boolean indicating if the dithering state is enabled or disabled
+ * @param value defines the dithering state
+ */
+export function setDitheringState(engineState: IWebGLEnginePublic, value: boolean): void {
+    const fes = engineState as WebGLEngineStateFull;
+    if (value) {
+        fes._gl.enable(fes._gl.DITHER);
+    } else {
+        fes._gl.disable(fes._gl.DITHER);
+    }
+}
+
+/**
+ * Sets a boolean indicating if the rasterizer state is enabled or disabled
+ * @param value defines the rasterizer state
+ */
+export function setRasterizerState(engineState: IWebGLEnginePublic, value: boolean): void {
+    const fes = engineState as WebGLEngineStateFull;
+    if (value) {
+        fes._gl.disable(fes._gl.RASTERIZER_DISCARD);
+    } else {
+        fes._gl.enable(fes._gl.RASTERIZER_DISCARD);
+    }
+}
+
+const setDirectViewportCache = {
+    viewportChangedFunc: _viewport,
+};
+
+/**
+ * Directly set the WebGL Viewport
+ * @param x defines the x coordinate of the viewport (in screen space)
+ * @param y defines the y coordinate of the viewport (in screen space)
+ * @param width defines the width of the viewport (in screen space)
+ * @param height defines the height of the viewport (in screen space)
+ * @returns the current viewport Object (if any) that is being replaced by this call. You can restore this viewport later on to go back to the original state
+ */
+export function setDirectViewport(engineState: IWebGLEnginePublic, x: number, y: number, width: number, height: number): Nullable<IViewportLike> {
+    return setDirectViewportBase(setDirectViewportCache, engineState, x, y, width, height);
+}
+
+/**
+ * Executes a scissor clear (ie. a clear on a specific portion of the screen)
+ * @param x defines the x-coordinate of the bottom left corner of the clear rectangle
+ * @param y defines the y-coordinate of the corner of the clear rectangle
+ * @param width defines the width of the clear rectangle
+ * @param height defines the height of the clear rectangle
+ * @param clearColor defines the clear color
+ */
+export function scissorClear(engineState: IWebGLEnginePublic, x: number, y: number, width: number, height: number, clearColor: IColor4Like): void {
+    enableScissor(engineState, x, y, width, height);
+    clear(engineState, clearColor, true, true, true);
+    disableScissor(engineState);
+}
+
+/**
+ * Enable scissor test on a specific rectangle (ie. render will only be executed on a specific portion of the screen)
+ * @param x defines the x-coordinate of the bottom left corner of the clear rectangle
+ * @param y defines the y-coordinate of the corner of the clear rectangle
+ * @param width defines the width of the clear rectangle
+ * @param height defines the height of the clear rectangle
+ */
+export function enableScissor(engineState: IWebGLEnginePublic, x: number, y: number, width: number, height: number): void {
+    const gl = (engineState as WebGLEngineStateFull)._gl;
+
+    // Change state
+    gl.enable(gl.SCISSOR_TEST);
+    gl.scissor(x, y, width, height);
+}
+
+/**
+ * Disable previously set scissor test rectangle
+ */
+export function disableScissor(engineState: IWebGLEnginePublic) {
+    const gl = (engineState as WebGLEngineStateFull)._gl;
+
+    (engineState as WebGLEngineStateFull)._gl.disable(gl.SCISSOR_TEST);
+}
+
+/**
+ * Gets the source code of the vertex shader associated with a specific webGL program
+ * @param program defines the program to use
+ * @returns a string containing the source code of the vertex shader associated with the program
+ */
+export function getVertexShaderSource(engineState: IWebGLEnginePublic, program: WebGLProgram): Nullable<string> {
+    const gl = (engineState as WebGLEngineStateFull)._gl;
+    const shaders = gl.getAttachedShaders(program);
+
+    if (!shaders) {
+        return null;
+    }
+
+    return gl.getShaderSource(shaders[0]);
+}
+
+/**
+ * Gets the source code of the fragment shader associated with a specific webGL program
+ * @param program defines the program to use
+ * @returns a string containing the source code of the fragment shader associated with the program
+ */
+export function getFragmentShaderSource(engineState: IWebGLEnginePublic, program: WebGLProgram): Nullable<string> {
+    const gl = (engineState as WebGLEngineStateFull)._gl;
+    const shaders = gl.getAttachedShaders(program);
+
+    if (!shaders) {
+        return null;
+    }
+
+    return gl.getShaderSource(shaders[1]);
+}
+
+/**
+ * Sets a depth stencil texture from a render target to the according uniform.
+ * @param channel The texture channel
+ * @param uniform The uniform to set
+ * @param texture The render target texture containing the depth stencil texture to apply
+ * @param name The texture name
+ */
+export function setDepthStencilTexture(
+    engineState: IWebGLEnginePublic,
+    channel: number,
+    uniform: Nullable<WebGLUniformLocation>,
+    texture: Nullable<RenderTargetTexture>,
+    name?: string
+): void {
+    if (channel === undefined) {
+        return;
+    }
+
+    const fes = engineState as WebGLEngineStateFull;
+    if (uniform) {
+        fes._boundUniforms[channel] = uniform;
+    }
+
+    if (!texture || !texture.depthStencilTexture) {
+        _setTexture(fes, channel, null, undefined, undefined, name);
+    } else {
+        _setTexture(fes, channel, texture, false, true, name);
     }
 }

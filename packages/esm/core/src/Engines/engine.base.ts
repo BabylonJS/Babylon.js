@@ -10,7 +10,9 @@ import {
     ALPHA_ADD,
     ALPHA_DISABLE,
     GEQUAL,
+    GREATER,
     LEQUAL,
+    LESS,
     MATERIAL_PointFillMode,
     MATERIAL_TriangleFillMode,
     MATERIAL_WireFrameFillMode,
@@ -49,6 +51,7 @@ import type { StencilStateComposer } from "@babylonjs/core/States/stencilStateCo
 import type { StencilState } from "@babylonjs/core/States/stencilState.js";
 import type { Scene } from "@babylonjs/core/scene.js";
 import type { PostProcess } from "@babylonjs/core/PostProcesses/postProcess.js";
+import type { ICustomAnimationFrameRequester } from "@babylonjs/core/Misc/customAnimationFrameRequester.js";
 
 /**
  * Defines the interface used by objects containing a viewport (like a camera)
@@ -155,6 +158,14 @@ interface IBaseEnginePrivate {
     _pointerLockRequested: boolean;
 
     _checkForMobile?: () => void;
+
+    _cachedStencilBuffer: boolean;
+    _cachedStencilFunction: number;
+    _cachedStencilMask: number;
+    _cachedStencilOperationPass: number;
+    _cachedStencilOperationFail: number;
+    _cachedStencilOperationDepthFail: number;
+    _cachedStencilReference: number;
 }
 
 export interface IBaseEngineProtected {
@@ -174,9 +185,9 @@ export interface IBaseEngineProtected {
     _colorWrite: boolean;
     _colorWriteChanged: boolean;
     // TODO - the following can be taken out of the engine completely. be state objects
-    _depthCullingState: Nullable<DepthCullingState>;
-    _stencilStateComposer: Nullable<StencilStateComposer>;
-    _stencilState: Nullable<StencilState>;
+    _depthCullingState?: DepthCullingState;
+    _stencilStateComposer?: StencilStateComposer;
+    _stencilState?: StencilState;
     _activeChannel: number;
     _boundTexturesCache: { [key: string]: Nullable<InternalTexture> };
     _currentEffect: Nullable<Effect>;
@@ -228,6 +239,7 @@ export interface IBaseEngineInternals {
     _renderWidthOverride: Nullable<{ width: number; height: number }>;
     _dimensionsObject: Nullable<{ width: number; height: number }>;
     _drawCalls?: PerfCounter;
+    _virtualScenes: Scene[];
 }
 
 /**
@@ -446,11 +458,6 @@ export interface IBaseEnginePublic {
     readonly onCanvasPointerOutObservable: Observable<PointerEvent>;
 
     /**
-     * Gets or sets a boolean to enable/disable the context menu (right-click) from appearing on the main canvas
-     */
-    disableContextMenu: boolean;
-
-    /**
      * Turn this value on if you want to pause FPS computation when in background
      */
     disablePerformanceMonitorInBackground: boolean;
@@ -463,6 +470,35 @@ export interface IBaseEnginePublic {
      * Returns true if the stencil buffer has been enabled through the creation option of the context.
      */
     isStencilEnable: boolean;
+
+    // From Engine
+    /**
+     * Gets or sets a boolean to enable/disable IndexedDB support and avoid XHR on .manifest
+     **/
+    enableOfflineSupport: boolean; // TODO - is that the best way to solve this?
+
+    /**
+     * Gets or sets a boolean to enable/disable checking manifest if IndexedDB support is enabled (js will always consider the database is up to date)
+     **/
+    disableManifestCheck: boolean;
+
+    /**
+     * Gets or sets a boolean to enable/disable the context menu (right-click) from appearing on the main canvas
+     */
+    disableContextMenu: boolean;
+
+    /**
+     * Event raised when a new scene is created
+     */
+    readonly onNewSceneAddedObservable: Observable<Scene>;
+
+    /**
+     * If set, will be used to request the next animation frame for the render loop
+     */
+    customAnimationFrameRequester: Nullable<ICustomAnimationFrameRequester>;
+
+    /** Gets or sets the tab index to set to the rendering canvas. 1 is the minimum value to set to be able to capture keyboard events */
+    canvasTabIndex: number;
 }
 
 export type BaseEngineState<T extends IBaseEnginePublic = IBaseEnginePublic> = T & IBaseEngineInternals & IBaseEngineProtected;
@@ -574,6 +610,11 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
         get isStencilEnable(): boolean {
             return engineState._isStencilEnable;
         },
+        enableOfflineSupport: false,
+        disableManifestCheck: false,
+        onNewSceneAddedObservable: new Observable<Scene>(),
+        customAnimationFrameRequester: null,
+        canvasTabIndex: 1,
 
         // internals
         _uniformBuffers: [],
@@ -598,6 +639,7 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
         _renderWidthOverride: null,
         _creationOptions: options,
         _isStencilEnable: !!options.stencil,
+        _virtualScenes: [],
 
         // Missing vars
         _shaderProcessor: null,
@@ -614,9 +656,9 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
         _highPrecisionShadersAllowed: true, // part of options, can be removed?
         _colorWrite: true,
         _colorWriteChanged: true,
-        _depthCullingState: null,
-        _stencilStateComposer: null,
-        _stencilState: null,
+        // _depthCullingState: null,
+        // _stencilStateComposer: null,
+        // _stencilState: null,
         _currentEffect: null,
         _cachedViewport: null,
         _workingCanvas: null,
@@ -911,7 +953,7 @@ export function runRenderLoop(
             beginFrameFunc,
             endFrameFunc,
             queueNewFrameFunc,
-        }
+        };
         _renderLoop(renderLoopInjection, engineState);
         fes._boundRenderFunction = () => _renderLoop(renderLoopInjection, engineState);
         fes._frameHandler = queueNewFrameFunc(fes._boundRenderFunction!, getHostWindow(engineState));
@@ -1779,6 +1821,15 @@ export function getInputElementClientRect(engineState: IBaseEnginePublic): Nulla
 }
 
 /**
+ * Gets a boolean indicating that the engine is running in deterministic lock step mode
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
+ * @returns true if engine is in deterministic lock step mode
+ */
+export function isDeterministicLockStep(engineState: IBaseEnginePublic): boolean {
+    return (engineState as BaseEngineState)._deterministicLockstep;
+}
+
+/**
  * Gets the max steps when engine is running in deterministic lock step
  * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
  * @returns the max steps
@@ -1793,4 +1844,250 @@ export function getLockstepMaxSteps(engineState: IBaseEnginePublic): number {
  */
 export function getTimeStep(engineState: IBaseEnginePublic): number {
     return (engineState as BaseEngineState)._timeStep * 1000;
+}
+
+/** States */
+
+/**
+ * Gets a boolean indicating if depth writing is enabled
+ * @returns the current depth writing state
+ */
+export function getDepthWrite(engineState: IBaseEnginePublic): boolean {
+    return (engineState as BaseEngineState)._depthCullingState!.depthMask;
+}
+
+/**
+ * Enable or disable depth writing
+ * @param enable defines the state to set
+ */
+export function setDepthWrite(engineState: IBaseEnginePublic, enable: boolean): void {
+    (engineState as BaseEngineState)._depthCullingState!.depthMask = enable;
+}
+
+/**
+ * Gets a boolean indicating if stencil buffer is enabled
+ * @returns the current stencil buffer state
+ */
+export function getStencilBuffer(engineState: IBaseEnginePublic): boolean {
+    return (engineState as BaseEngineState)._stencilState!.stencilTest;
+}
+
+/**
+ * Enable or disable the stencil buffer
+ * @param enable defines if the stencil buffer must be enabled or disabled
+ */
+export function setStencilBuffer(engineState: IBaseEnginePublic, enable: boolean): void {
+    (engineState as BaseEngineState)._stencilState!.stencilTest = enable;
+}
+
+/**
+ * Gets the current stencil mask
+ * @returns a number defining the new stencil mask to use
+ */
+export function getStencilMask(engineState: IBaseEnginePublic): number {
+    return (engineState as BaseEngineState)._stencilState!.stencilMask;
+}
+
+/**
+ * Sets the current stencil mask
+ * @param mask defines the new stencil mask to use
+ */
+export function setStencilMask(engineState: IBaseEnginePublic, mask: number): void {
+    (engineState as BaseEngineState)._stencilState!.stencilMask = mask;
+}
+
+/**
+ * Gets the current stencil function
+ * @returns a number defining the stencil function to use
+ */
+export function getStencilFunction(engineState: IBaseEnginePublic): number {
+    return (engineState as BaseEngineState)._stencilState!.stencilFunc;
+}
+
+/**
+ * Gets the current stencil reference value
+ * @returns a number defining the stencil reference value to use
+ */
+export function getStencilFunctionReference(engineState: IBaseEnginePublic): number {
+    return (engineState as BaseEngineState)._stencilState!.stencilFuncRef;
+}
+
+/**
+ * Gets the current stencil mask
+ * @returns a number defining the stencil mask to use
+ */
+export function getStencilFunctionMask(engineState: IBaseEnginePublic): number {
+    return (engineState as BaseEngineState)._stencilState!.stencilFuncMask;
+}
+
+/**
+ * Sets the current stencil function
+ * @param stencilFunc defines the new stencil function to use
+ */
+export function setStencilFunction(engineState: IBaseEnginePublic, stencilFunc: number) {
+    (engineState as BaseEngineState)._stencilState!.stencilFunc = stencilFunc;
+}
+
+/**
+ * Sets the current stencil reference
+ * @param reference defines the new stencil reference to use
+ */
+export function setStencilFunctionReference(engineState: IBaseEnginePublic, reference: number) {
+    (engineState as BaseEngineState)._stencilState!.stencilFuncRef = reference;
+}
+
+/**
+ * Sets the current stencil mask
+ * @param mask defines the new stencil mask to use
+ */
+export function setStencilFunctionMask(engineState: IBaseEnginePublic, mask: number) {
+    (engineState as BaseEngineState)._stencilState!.stencilFuncMask = mask;
+}
+
+/**
+ * Gets the current stencil operation when stencil fails
+ * @returns a number defining stencil operation to use when stencil fails
+ */
+export function getStencilOperationFail(engineState: IBaseEnginePublic): number {
+    return (engineState as BaseEngineState)._stencilState!.stencilOpStencilFail;
+}
+
+/**
+ * Gets the current stencil operation when depth fails
+ * @returns a number defining stencil operation to use when depth fails
+ */
+export function getStencilOperationDepthFail(engineState: IBaseEnginePublic): number {
+    return (engineState as BaseEngineState)._stencilState!.stencilOpDepthFail;
+}
+
+/**
+ * Gets the current stencil operation when stencil passes
+ * @returns a number defining stencil operation to use when stencil passes
+ */
+export function getStencilOperationPass(engineState: IBaseEnginePublic): number {
+    return (engineState as BaseEngineState)._stencilState!.stencilOpStencilDepthPass;
+}
+
+/**
+ * Sets the stencil operation to use when stencil fails
+ * @param operation defines the stencil operation to use when stencil fails
+ */
+export function setStencilOperationFail(engineState: IBaseEnginePublic, operation: number): void {
+    (engineState as BaseEngineState)._stencilState!.stencilOpStencilFail = operation;
+}
+
+/**
+ * Sets the stencil operation to use when depth fails
+ * @param operation defines the stencil operation to use when depth fails
+ */
+export function setStencilOperationDepthFail(engineState: IBaseEnginePublic, operation: number): void {
+    (engineState as BaseEngineState)._stencilState!.stencilOpDepthFail = operation;
+}
+
+/**
+ * Sets the stencil operation to use when stencil passes
+ * @param operation defines the stencil operation to use when stencil passes
+ */
+export function setStencilOperationPass(engineState: IBaseEnginePublic, operation: number): void {
+    (engineState as BaseEngineState)._stencilState!.stencilOpStencilDepthPass = operation;
+}
+
+/**
+ * Gets the current depth function
+ * @returns a number defining the depth function
+ */
+export function getDepthFunction(engineState: IBaseEnginePublic): Nullable<number> {
+    return (engineState as BaseEngineState)._depthCullingState!.depthFunc;
+}
+
+/**
+ * Sets the current depth function
+ * @param depthFunc defines the function to use
+ */
+export function setDepthFunction(engineState: IBaseEnginePublic, depthFunc: number) {
+    (engineState as BaseEngineState)._depthCullingState!.depthFunc = depthFunc;
+}
+
+/**
+ * Sets the current depth function to GREATER
+ */
+export function setDepthFunctionToGreater(engineState: IBaseEnginePublic): void {
+    setDepthFunction(engineState, GREATER);
+}
+
+/**
+ * Sets the current depth function to GEQUAL
+ */
+export function setDepthFunctionToGreaterOrEqual(engineState: IBaseEnginePublic): void {
+    setDepthFunction(engineState, GEQUAL);
+}
+
+/**
+ * Sets the current depth function to LESS
+ */
+export function setDepthFunctionToLess(engineState: IBaseEnginePublic): void {
+    setDepthFunction(engineState, LESS);
+}
+
+/**
+ * Sets the current depth function to LEQUAL
+ */
+export function setDepthFunctionToLessOrEqual(engineState: IBaseEnginePublic): void {
+    setDepthFunction(engineState, LEQUAL);
+}
+
+/**
+ * Caches the the state of the stencil buffer
+ */
+export function cacheStencilState(engineState: IBaseEnginePublic) {
+    const fes = engineState as BaseEngineStateFull;
+    fes._cachedStencilBuffer = getStencilBuffer(engineState);
+    fes._cachedStencilFunction = getStencilFunction(engineState);
+    fes._cachedStencilMask = getStencilMask(engineState);
+    fes._cachedStencilOperationPass = getStencilOperationPass(engineState);
+    fes._cachedStencilOperationFail = getStencilOperationFail(engineState);
+    fes._cachedStencilOperationDepthFail = getStencilOperationDepthFail(engineState);
+    fes._cachedStencilReference = getStencilFunctionReference(engineState);
+}
+
+/**
+ * Restores the state of the stencil buffer
+ */
+export function restoreStencilState(engineState: IBaseEnginePublic) {
+    const fes = engineState as BaseEngineStateFull;
+    setStencilFunction(engineState, fes._cachedStencilFunction);
+    setStencilMask(engineState, fes._cachedStencilMask);
+    setStencilBuffer(engineState, fes._cachedStencilBuffer);
+    setStencilOperationPass(engineState, fes._cachedStencilOperationPass);
+    setStencilOperationFail(engineState, fes._cachedStencilOperationFail);
+    setStencilOperationDepthFail(engineState, fes._cachedStencilOperationDepthFail);
+    setStencilFunctionReference(engineState, fes._cachedStencilReference);
+}
+
+/**
+ * Directly set the WebGL Viewport
+ * @param x defines the x coordinate of the viewport (in screen space)
+ * @param y defines the y coordinate of the viewport (in screen space)
+ * @param width defines the width of the viewport (in screen space)
+ * @param height defines the height of the viewport (in screen space)
+ * @returns the current viewport Object (if any) that is being replaced by this call. You can restore this viewport later on to go back to the original state
+ */
+export function setDirectViewport<T extends IBaseEnginePublic = IBaseEnginePublic>(
+    {
+        viewportChangedFunc = _viewport,
+    }: {
+        viewportChangedFunc: (engineState: T, x: number, y: number, width: number, height: number) => void;
+    },
+    engineState: T,
+    x: number,
+    y: number,
+    width: number,
+    height: number
+): Nullable<IViewportLike> {
+    const currentViewport = (engineState as BaseEngineState<T>)._cachedViewport;
+    (engineState as BaseEngineState<T>)._cachedViewport = null;
+
+    viewportChangedFunc(engineState, x, y, width, height);
+
+    return currentViewport;
 }
