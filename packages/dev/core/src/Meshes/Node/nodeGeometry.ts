@@ -564,11 +564,10 @@ export class NodeGeometry {
 
     /**
      * Serializes this geometry in a JSON representation
-     * @param saveMeshData defines a boolean indicating that mesh data must be saved as well
      * @param selectedBlocks defines the list of blocks to save (if null the whole geometry will be saved)
      * @returns the serialized geometry object
      */
-    public serialize(saveMeshData?: boolean, selectedBlocks?: NodeGeometryBlock[]): any {
+    public serialize(selectedBlocks?: NodeGeometryBlock[]): any {
         const serializationObject = selectedBlocks ? {} : SerializationHelper.Serialize(this);
         serializationObject.editorData = JSON.parse(JSON.stringify(this.editorData)); // Copy
 
@@ -587,7 +586,7 @@ export class NodeGeometry {
         serializationObject.blocks = [];
 
         for (const block of blocks) {
-            serializationObject.blocks.push(block.serialize(saveMeshData));
+            serializationObject.blocks.push(block.serialize());
         }
 
         if (!selectedBlocks) {
@@ -595,7 +594,7 @@ export class NodeGeometry {
                 if (blocks.indexOf(block) !== -1) {
                     continue;
                 }
-                serializationObject.blocks.push(block.serialize(saveMeshData));
+                serializationObject.blocks.push(block.serialize());
             }
         }
 

@@ -17,7 +17,6 @@ export class MeshBlock extends NodeGeometryBlock {
     /**
      * Gets or sets a boolean indicating that winding order needs to be reserved
      */
-    @editableInPropertyPage("reverseWindingOrder", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { rebuild: true } })
     public reverseWindingOrder = false;
 
     /**
@@ -69,6 +68,14 @@ export class MeshBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
+    /**
+     * Remove stored data
+     */
+    public cleanData() {
+        this._mesh = null;
+        this._cachedVertexData = null;
+    }
+
     protected _buildBlock() {
         if (!this._mesh) {
             if (this._cachedVertexData) {
@@ -97,14 +104,13 @@ export class MeshBlock extends NodeGeometryBlock {
 
     /**
      * Serializes this block in a JSON representation
-     * @param saveMeshData defines a boolean indicating that mesh data must be saved as well
      * @returns the serialized block object
      */
-    public serialize(saveMeshData?: boolean): any {
+    public serialize(): any {
         const serializationObject = super.serialize();
         serializationObject.serializedCachedData = this.serializedCachedData;
 
-        if (saveMeshData || this.serializedCachedData) {
+        if (this.serializedCachedData) {
             if (this._mesh) {
                 serializationObject.cachedVertexData = VertexData.ExtractFromMesh(this._mesh, false, true).serialize();
             } else if (this._cachedVertexData) {
