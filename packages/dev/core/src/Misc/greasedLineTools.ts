@@ -58,11 +58,64 @@ export class GreasedLineTools {
      * @param p1 point1 position of the face
      * @param p2 point2 position of the face
      * @param p3 point3 position of the face
-     * @returns
+     * @returns original points or null if any edge length is zero
      */
     public static OmitZeroLengthPredicate(p1: Vector3, p2: Vector3, p3: Vector3) {
-        return p1.lengthSquared() === 0 && p2.lengthSquared() === 0 && p3.lengthSquared() === 0;
+        const fileredPoints = [];
+        // edge1
+        if (p2.subtract(p1).lengthSquared() > 0) {
+            fileredPoints.push([p1, p2]);
+        }
+        // edge2
+        if (p3.subtract(p2).lengthSquared() > 0) {
+            fileredPoints.push([p2, p3]);
+        }
+        // edge3
+        if (p1.subtract(p3).lengthSquared() > 0) {
+            fileredPoints.push([p3, p1]);
+        }
+        return fileredPoints.length === 0 ? null : fileredPoints;
     }
+
+    /**
+     * Omit duplicate lines predicate for the MeshesToLines function
+     * @param p1 point1 position of the face
+     * @param p2 point2 position of the face
+     * @param p3 point3 position of the face
+     * @returns original points or null if any edge length is zero
+     */
+    public static OmitDuplicatesPredicate(p1: Vector3, p2: Vector3, p3: Vector3, points: Vector3[][]) {
+        const fileredPoints = [];
+        // edge1
+        if (!GreasedLineTools._SearchInPoints(p1, p2, points)) {
+            fileredPoints.push([p1, p2]);
+        }
+        // edge2
+        if (!GreasedLineTools._SearchInPoints(p2, p3, points)) {
+            fileredPoints.push([p2, p3]);
+        }
+        // edge3
+        if (!GreasedLineTools._SearchInPoints(p3, p1, points)) {
+            fileredPoints.push([p3, p1]);
+        }
+        return fileredPoints.length === 0 ? null : fileredPoints;
+    }
+
+    private static _SearchInPoints(p1: Vector3, p2: Vector3, points: Vector3[][]) {
+        for (const ps of points) {
+            for (let i = 0; i < ps.length; i++) {
+                if (ps[i]?.equals(p1)) {
+                    // find the first point
+                    // if it has a sibling of p2 the line already exists
+                    if (ps[i + 1]?.equals(p2) || ps[i - 1]?.equals(p2)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * Gets mesh triangles as line positions
      * @param meshes array of meshes
@@ -75,6 +128,7 @@ export class GreasedLineTools {
             p1: Vector3,
             p2: Vector3,
             p3: Vector3,
+            points: Vector3[][],
             indiceIndex: number,
             vertexIndex: number,
             mesh: AbstractMesh,
@@ -83,7 +137,7 @@ export class GreasedLineTools {
             indices: IndicesArray
         ) => Vector3[]
     ) {
-        const points: Vector3[][] = [];
+        let points: Vector3[][] = [];
 
         meshes.forEach((m, meshIndex) => {
             const vertices = m.getVerticesData(VertexBuffer.PositionKind);
@@ -99,10 +153,14 @@ export class GreasedLineTools {
                     const p3 = new Vector3(vertices[vi3], vertices[vi3 + 1], vertices[vi3 + 2]);
 
                     if (predicate) {
-                        const pointsFromPredicate = predicate(p1, p2, p3, i, vi1, m, meshIndex, vertices, indices);
-                        pointsFromPredicate && points.push(pointsFromPredicate);
+                        const pointsFromPredicate = predicate(p1, p2, p3, points, i, vi1, m, meshIndex, vertices, indices);
+                        pointsFromPredicate && (points = points.concat(pointsFromPredicate));
                     } else {
-                        points.push([p1, p2, p3, p1]);
+                        points = points.concat([
+                            [p1, p2],
+                            [p2, p3],
+                            [p3, p1],
+                        ]);
                     }
                 }
             }
