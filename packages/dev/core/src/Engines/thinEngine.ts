@@ -4444,8 +4444,20 @@ export class ThinEngine {
             babylonFormat = fileExtension === ".jpg" && !useSRGBBuffer ? Constants.TEXTUREFORMAT_RGB : Constants.TEXTUREFORMAT_RGBA;
         }
 
-        const format = this._getInternalFormat(babylonFormat, false);
-        const internalFormat = this._getRGBABufferInternalSizedFormat(Constants.TEXTURETYPE_UNSIGNED_BYTE, babylonFormat, useSRGBBuffer);
+        let format: number, internalFormat: number;
+        if (this.webGLVersion === 1) {
+            // In WebGL 1, format and internalFormat must be the same and taken from a limited set of values, see https://docs.gl/es2/glTexImage2D.
+            // The SRGB extension (https://developer.mozilla.org/en-US/docs/Web/API/EXT_sRGB) adds some extra values, hence passing useSRGBBuffer
+            // to getInternalFormat.
+            format = this._getInternalFormat(babylonFormat, useSRGBBuffer);
+            internalFormat = format;
+        } else {
+            // In WebGL 2, format has a wider range of values and internal format can be one of the sized formats, see
+            // https://registry.khronos.org/OpenGL-Refpages/es3.0/html/glTexImage2D.xhtml.
+            // SRGB is included in the sized format and should not be passed in "format", hence always passing useSRGBBuffer as false.
+            format = this._getInternalFormat(babylonFormat, false);
+            internalFormat = this._getRGBABufferInternalSizedFormat(Constants.TEXTURETYPE_UNSIGNED_BYTE, babylonFormat, useSRGBBuffer);
+        }
 
         return {
             internalFormat,
