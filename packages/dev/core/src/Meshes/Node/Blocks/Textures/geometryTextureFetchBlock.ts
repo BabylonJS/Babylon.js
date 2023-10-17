@@ -1,4 +1,4 @@
-import { Vector4, type Vector2 } from "core/Maths/math.vector";
+import { Vector4, type Vector2, Vector3 } from "core/Maths/math.vector";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import type { INodeGeometryTextureData } from "../../Interfaces/nodeGeometryTextureData";
@@ -135,27 +135,27 @@ export class GeometryTextureFetchBlock extends NodeGeometryBlock {
 
         this.rgb._storedFunction = (state) => {
             const color = func(state) as Vector4;
-            return color.toVector3();
+            return color ? color.toVector3() : null;
         };
 
         this.r._storedFunction = (state) => {
             const color = func(state) as Vector4;
-            return color.x;
+            return color ? color.x : null;
         };
 
         this.g._storedFunction = (state) => {
             const color = func(state) as Vector4;
-            return color.y;
+            return color ? color.y : null;
         };
 
         this.b._storedFunction = (state) => {
             const color = func(state) as Vector4;
-            return color.z;
+            return color ? color.z : null;
         };
 
         this.a._storedFunction = (state) => {
             const color = func(state) as Vector4;
-            return color.w;
+            return color ? color.w : null;
         };
     }
 
