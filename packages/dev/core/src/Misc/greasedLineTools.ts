@@ -135,9 +135,9 @@ export class GreasedLineTools {
             meshIndex: number,
             vertices: FloatArray,
             indices: IndicesArray
-        ) => Vector3[]
+        ) => Vector3[][]
     ) {
-        let points: Vector3[][] = [];
+        const points: Vector3[][] = [];
 
         meshes.forEach((m, meshIndex) => {
             const vertices = m.getVerticesData(VertexBuffer.PositionKind);
@@ -154,13 +154,13 @@ export class GreasedLineTools {
 
                     if (predicate) {
                         const pointsFromPredicate = predicate(p1, p2, p3, points, i, vi1, m, meshIndex, vertices, indices);
-                        pointsFromPredicate && (points = points.concat(pointsFromPredicate));
+                        if (pointsFromPredicate) {
+                            for (const p of pointsFromPredicate) {
+                                points.push(p);
+                            }
+                        }
                     } else {
-                        points = points.concat([
-                            [p1, p2],
-                            [p2, p3],
-                            [p3, p1],
-                        ]);
+                        points.push([p1, p2], [p2, p3], [p3, p1]);
                     }
                 }
             }
