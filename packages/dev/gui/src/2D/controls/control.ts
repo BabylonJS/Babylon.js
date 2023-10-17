@@ -48,7 +48,8 @@ export class Control implements IAnimatable {
     public _currentMeasure = Measure.Empty();
     /** @internal */
     public _tempPaddingMeasure = Measure.Empty();
-    private _fontFamily = "Arial";
+    private _fontFamily = "";
+    private _fontFamilySet = false;
     private _fontStyle = "";
     private _fontWeight = "";
     private _fontSize = new ValueAndUnit(18, ValueAndUnit.UNITMODE_PIXEL, false);
@@ -61,6 +62,7 @@ export class Control implements IAnimatable {
     protected _fontOffset: { ascent: number; height: number; descent: number };
     private _color = "";
     private _style: Nullable<Style> = null;
+    private _styleSet = false;
     private _styleObserver: Nullable<Observer<Style>>;
     /** @internal */
     protected _horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
@@ -707,6 +709,7 @@ export class Control implements IAnimatable {
     }
 
     public set fontFamily(value: string) {
+        this._fontFamilySet = true;
         if (this._fontFamily === value) {
             return;
         }
@@ -753,6 +756,7 @@ export class Control implements IAnimatable {
     }
 
     public set style(value: Nullable<Style>) {
+        this._styleSet = true;
         if (this._style) {
             this._style.onChangedObservable.remove(this._styleObserver);
             this._styleObserver = null;
@@ -2387,16 +2391,28 @@ export class Control implements IAnimatable {
         return false;
     }
 
+    private _getFontStyle() {
+        return this._style?.fontStyle ?? this._fontStyle;
+    }
+
+    private _getFontWeight() {
+        return this._style?.fontWeight ?? this._fontWeight;
+    }
+
+    private _getFontFamily() {
+        if (!this._host.strictCSSCompatibility && !this._styleSet && !this._fontFamilySet) {
+            return "Arial";
+        } else {
+            return this._style?.fontFamily ?? this._fontFamily;
+        }
+    }
+
     private _prepareFont() {
         if (!this._font && !this._fontSet) {
             return;
         }
 
-        if (this._style) {
-            this._font = this._style.fontStyle + " " + this._style.fontWeight + " " + this.fontSizeInPixels + "px " + this._style.fontFamily;
-        } else {
-            this._font = this._fontStyle + " " + this._fontWeight + " " + this.fontSizeInPixels + "px " + this._fontFamily;
-        }
+        this._font = this._getFontStyle() + " " + this._getFontWeight() + " " + this.fontSizeInPixels + "px " + this._getFontFamily();
 
         this._fontOffset = Control._GetFontOffset(this._font);
 
