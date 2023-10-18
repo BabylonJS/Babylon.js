@@ -772,11 +772,14 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         icon={addIcon}
                         isActive={false}
                         onClick={() => {
-                            let keyName = 'newKey'
+                            const input = prompt("Enter new key name for metadata value", "newKey")
+                            if (input === null) return;
+
+                            let keyName = input
                             let num = 1
-                            while(controls.some(x => keyName in x.metadata)) {
-                                num++
-                                keyName = `newKey${num}`
+                            while (controls.some(x => keyName in x.metadata)) {
+                                num++;
+                                keyName = input + num;
                             }
                             this._addOrUpdateMetadata({[keyName]: ""});
                         }}
@@ -800,7 +803,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                             disabled={true}
                                         />
                                         <TextInputLineComponent
-                                            numbersOnly={typeof value === "number"}
+                                            numbersOnly={false}
                                             lockObject={this.props.lockObject}
                                             label=":"
                                             delayInput={true}
