@@ -82,7 +82,5 @@ module.exports = (env) => {
         },
     };
 
-    console.log(commonConfig);
-
     return commonConfig;
 };
