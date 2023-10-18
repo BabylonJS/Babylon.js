@@ -365,6 +365,13 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
 
     /**
+     * If this is set, even when a control is pointer blocker, some events can still be passed through to the scene.
+     * Options from values are PointerEventTypes
+     * POINTERDOWN, POINTERUP, POINTERMOVE, POINTERWHEEL, POINTERPICK, POINTERTAP, POINTERDOUBLETAP
+     */
+    public skipBlockEvents = 0;
+
+    /**
      * If set to true, every scene render will trigger a pointer event for the GUI
      * if it is linked to a mesh or has controls linked to a mesh. This will allow
      * you to catch the pointer moving around the GUI due to camera or mesh movements,
@@ -924,7 +931,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             const pointerId = (pi.event as IPointerEvent).pointerId || this._defaultMousePointerId;
             this._doPicking(transformedX, transformedY, pi, pi.type, pointerId, pi.event.button, (<IWheelEvent>pi.event).deltaX, (<IWheelEvent>pi.event).deltaY);
             // Avoid overwriting a true skipOnPointerObservable to false
-            if (this._shouldBlockPointer || this._capturingControl[pointerId]) {
+            if ((this._shouldBlockPointer && !(pi.type & this.skipBlockEvents)) || this._capturingControl[pointerId]) {
                 pi.skipOnPointerObservable = true;
             }
         } else {
