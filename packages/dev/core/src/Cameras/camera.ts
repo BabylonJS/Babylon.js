@@ -90,10 +90,6 @@ export class Camera extends Node {
      */
     public static readonly RIG_MODE_VR = Constants.RIG_MODE_VR;
     /**
-     * Defines that both eyes of the camera should be renderered in a VR mode (webVR).
-     */
-    public static readonly RIG_MODE_WEBVR = Constants.RIG_MODE_WEBVR;
-    /**
      * Custom rig mode allowing rig cameras to be populated manually with any number of cameras
      */
     public static readonly RIG_MODE_CUSTOM = Constants.RIG_MODE_CUSTOM;
@@ -394,7 +390,6 @@ export class Camera extends Node {
     /** @internal */
     public _rigPostProcess: Nullable<PostProcess>;
 
-    protected _webvrViewMatrix = Matrix.Identity();
     /** @internal */
     public _skipRendering = false;
 
@@ -990,7 +985,7 @@ export class Camera extends Node {
      * Checks if a cullable object (mesh...) is in the camera frustum
      * This checks the bounding box center. See isCompletelyInFrustum for a full bounding check
      * @param target The object to check
-     * @param checkRigCameras If the rig cameras should be checked (eg. with webVR camera both eyes should be checked) (Default: false)
+     * @param checkRigCameras If the rig cameras should be checked (eg. with VR camera both eyes should be checked) (Default: false)
      * @returns true if the object is in frustum otherwise false
      */
     public isInFrustum(target: ICullable, checkRigCameras = false): boolean {
@@ -1237,32 +1232,6 @@ export class Camera extends Node {
         );
         this._cameraRigParams.vrWorkMatrix.multiplyToRef(this._cameraRigParams.vrHMatrix, this._projectionMatrix);
         return this._projectionMatrix;
-    }
-
-    protected _updateCameraRotationMatrix() {
-        //Here for WebVR
-    }
-
-    protected _updateWebVRCameraRotationMatrix() {
-        //Here for WebVR
-    }
-
-    /**
-     * This function MUST be overwritten by the different WebVR cameras available.
-     * The context in which it is running is the RIG camera. So 'this' is the TargetCamera, left or right.
-     * @internal
-     */
-    public _getWebVRProjectionMatrix(): Matrix {
-        return Matrix.Identity();
-    }
-
-    /**
-     * This function MUST be overwritten by the different WebVR cameras available.
-     * The context in which it is running is the RIG camera. So 'this' is the TargetCamera, left or right.
-     * @internal
-     */
-    public _getWebVRViewMatrix(): Matrix {
-        return Matrix.Identity();
     }
 
     /**

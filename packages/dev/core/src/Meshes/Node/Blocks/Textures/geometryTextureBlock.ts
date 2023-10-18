@@ -103,6 +103,13 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
     }
 
     /**
+     * Remove stored data
+     */
+    public cleanData() {
+        this._data = null;
+    }
+
+    /**
      * Load the texture data
      * @param imageFile defines the file to load data from
      * @returns a promise fulfilled when image data is loaded

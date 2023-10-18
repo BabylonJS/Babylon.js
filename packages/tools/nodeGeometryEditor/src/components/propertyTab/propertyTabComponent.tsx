@@ -189,7 +189,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     save() {
-        const json = SerializationTools.Serialize(this.props.globalState.nodeGeometry, true, this.props.globalState);
+        const json = SerializationTools.Serialize(this.props.globalState.nodeGeometry, this.props.globalState);
         StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "nodeGeometry.json");
     }
 
@@ -197,7 +197,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.setState({ uploadInProgress: true });
         this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Saving your geometry to Babylon.js snippet server...", false));
         this.props.globalState
-            .customSave!.action(SerializationTools.Serialize(this.props.globalState.nodeGeometry, false, this.props.globalState))
+            .customSave!.action(SerializationTools.Serialize(this.props.globalState.nodeGeometry, this.props.globalState))
             .then(() => {
                 this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Geometry saved successfully", false));
                 this.setState({ uploadInProgress: false });
@@ -212,7 +212,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         const geometry = this.props.globalState.nodeGeometry;
         const xmlHttp = new XMLHttpRequest();
 
-        const json = SerializationTools.Serialize(geometry, false, this.props.globalState);
+        const json = SerializationTools.Serialize(geometry, this.props.globalState);
 
         xmlHttp.onreadystatechange = () => {
             if (xmlHttp.readyState == 4) {

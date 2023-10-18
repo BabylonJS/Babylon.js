@@ -5,11 +5,17 @@ module.exports = (env) => {
     const production = env.mode === "production" || process.env.NODE_ENV === "production";
     const commonConfig = {
         entry: "./src/legacy/legacy.ts",
-        ...webpackTools.commonDevWebpackConfiguration({
-            mode: env.mode,
-            outputFilename: "babylon.nodeEditor.js",
-            dirName: __dirname,
-        }),
+        ...webpackTools.commonDevWebpackConfiguration(
+            {
+                ...env,
+                outputFilename: "babylon.nodeEditor.js",
+                dirName: __dirname,
+            },
+            {
+                static: ["public"],
+                port: process.env.NME_PORT || 1340,
+            }
+        ),
         resolve: {
             extensions: [".js", ".ts", ".tsx", ".scss", "*.svg"],
             alias: {
@@ -41,26 +47,6 @@ module.exports = (env) => {
                 },
                 mode: production ? "production" : "development",
             }),
-        },
-        devServer: {
-            client: {
-                overlay: process.env.DISABLE_DEV_OVERLAY ? false : {
-                    warnings: false,
-                    errors: true,
-                },
-            },
-            static: {
-                directory: path.join(__dirname, "public"),
-                watch: false,
-            },
-            // hot: true,
-            port: process.env.NME_PORT || 1340,
-            server: env.enableHttps !== undefined || process.env.ENABLE_HTTPS === "true" ? "https" : "http",
-            hot: (env.enableHotReload !== undefined || process.env.ENABLE_HOT_RELOAD === "true") && !production ? true : false,
-            liveReload: (env.enableLiveReload !== undefined || process.env.ENABLE_LIVE_RELOAD === "true") && !production ? true : false,
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-            },
         },
         plugins: [],
     };
