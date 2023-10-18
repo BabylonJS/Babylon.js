@@ -10,6 +10,7 @@ import { Control } from "gui/2D/controls/control";
 import { Image } from "gui/2D/controls/image";
 import { TextBlock } from "gui/2D/controls/textBlock";
 import type { ReactElement } from "react";
+import type { IHTMLTwinRendererOptions } from "./htmlTwinRenderer";
 
 export type AccessibilityEntity = Node | Control; // only these types have their html twin
 
@@ -142,7 +143,7 @@ export class HTMLTwinItem {
      * The text content displayed in HTML element.
      * Returns the description in accessibilityTag, if defined (returns "" by default).
      */
-    public get description(): string {
+    public getDescription(options: IHTMLTwinRendererOptions): string {
         return this.entity.accessibilityTag?.description ?? "";
     }
 

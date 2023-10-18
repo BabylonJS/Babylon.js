@@ -1,8 +1,13 @@
 import type { ReactElement } from "react";
 import type { HTMLTwinItem } from "./htmlTwinItem";
+export interface IHTMLTwinItemComponentProps {
+    description: string | undefined;
+    children: ReactElement[];
+    a11yItem: HTMLTwinItem;
+}
 
-function makeAccessibleItem(props: IHTMLTwinItemComponentProps) {
-    const { description, a11yItem } = props;
+export function HTMLTwinAccessibilityItem(props: IHTMLTwinItemComponentProps) {
+    const { description, a11yItem, children } = props;
     if (description && a11yItem) {
         if (a11yItem.isActionable) {
             return (
@@ -15,6 +20,7 @@ function makeAccessibleItem(props: IHTMLTwinItemComponentProps) {
                     {...a11yItem.entity.accessibilityTag?.aria}
                 >
                     {description}
+                    {children}
                 </button>
             );
         } else {
@@ -28,30 +34,11 @@ function makeAccessibleItem(props: IHTMLTwinItemComponentProps) {
                     {...a11yItem.entity.accessibilityTag?.aria}
                 >
                     {description}
+                    {children}
                 </div>
             );
         }
     } else {
-        return null;
-    }
-}
-
-export interface IHTMLTwinItemComponentProps {
-    description: string | undefined;
-    children: ReactElement[];
-    a11yItem: HTMLTwinItem;
-}
-
-export function HTMLTwinAccessibilityItem(props: IHTMLTwinItemComponentProps) {
-    const accessibleItem = makeAccessibleItem(props);
-    if (props.children.length > 0) {
-        return (
-            <div>
-                {accessibleItem}
-                <div>{props.children}</div>
-            </div>
-        );
-    } else {
-        return accessibleItem;
+        return <>{children}</>;
     }
 }

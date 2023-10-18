@@ -15,11 +15,6 @@ export class HTMLTwinNodeItem extends HTMLTwinItem {
      */
     public entity: Node;
 
-    /**
-     * The children of this item in the html twin tree.
-     */
-    public children: HTMLTwinItem[];
-
     constructor(entity: Node, scene: Scene) {
         super(entity, scene);
     }

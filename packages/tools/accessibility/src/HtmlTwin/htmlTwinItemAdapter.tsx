@@ -1,4 +1,4 @@
-import { isClickable, getAccessibleTexture, isVisible, getDirectChildrenOf } from "./htmlTwinItem";
+import { getAccessibleTexture, isVisible, getDirectChildrenOf } from "./htmlTwinItem";
 import type { AccessibilityEntity, HTMLTwinItem } from "./htmlTwinItem";
 import { useContext, useEffect, useState } from "react";
 import { SceneContext } from "./htmlTwinSceneContext";
@@ -9,6 +9,7 @@ import { Node } from "core/node";
 import { HTMLTwinNodeItem } from "./htmlTwinNodeItem";
 import type { Scene } from "core/scene";
 import { HTMLTwinGUIItem } from "./htmlTwinGUIItem";
+import type { IHTMLTwinRendererOptions } from "./htmlTwinRenderer";
 
 function getTwinItemFromNode(node: AccessibilityEntity, scene: Scene) {
     if (node instanceof Node) {
@@ -18,14 +19,15 @@ function getTwinItemFromNode(node: AccessibilityEntity, scene: Scene) {
     }
 }
 
-export function HTMLTwinItemAdapter(props: { node: AccessibilityEntity; scene: Scene }) {
-    const { node, scene } = props;
-
+export function HTMLTwinItemAdapter(props: { node: AccessibilityEntity; scene: Scene; options: IHTMLTwinRendererOptions }) {
+    const { node, scene, options } = props;
+    if (!node) {
+        return null;
+    }
     const [twinItem, setTwinItem] = useState<HTMLTwinItem>(getTwinItemFromNode(node, scene));
     useEffect(() => {
         setTwinItem(getTwinItemFromNode(node, scene));
     }, [node]);
-    // console.log("twin item", twinItem);
 
     const [isVisibleState, setIsVisibleState] = useState(isVisible(props.node));
     useEffect(() => {
@@ -49,11 +51,11 @@ export function HTMLTwinItemAdapter(props: { node: AccessibilityEntity; scene: S
         };
     }, [node]);
 
-    const [description, setDescription] = useState(twinItem?.description);
+    const [description, setDescription] = useState(twinItem?.getDescription(options));
     useEffect(() => {
         const observable = node.onAccessibilityTagChangedObservable;
         const observer = observable.add(() => {
-            setDescription(twinItem?.description);
+            setDescription(twinItem?.getDescription(options));
         });
         return () => {
             observable.remove(observer);
@@ -61,7 +63,7 @@ export function HTMLTwinItemAdapter(props: { node: AccessibilityEntity; scene: S
     }, [node]);
 
     useEffect(() => {
-        setDescription(twinItem?.description);
+        setDescription(twinItem?.getDescription(options));
     }, [twinItem]);
 
     const [children, setChildren] = useState(getDirectChildrenOf(props.node));
@@ -96,16 +98,15 @@ export function HTMLTwinItemAdapter(props: { node: AccessibilityEntity; scene: S
             };
         }, [node]);
     }
-
     if (isVisibleState) {
         const accessibleTexture = getAccessibleTexture(props.node);
         if (accessibleTexture) {
-            return <HTMLTwinItemAdapter node={accessibleTexture.rootContainer} scene={scene} />;
+            return <HTMLTwinItemAdapter node={accessibleTexture.rootContainer} scene={scene} options={options} />;
         } else {
             return (
                 <HTMLTwinAccessibilityItem description={description} a11yItem={twinItem}>
                     {children.map((child: AccessibilityEntity) => (
-                        <HTMLTwinItemAdapter node={child} key={child.uniqueId} scene={scene} />
+                        <HTMLTwinItemAdapter node={child} key={child.uniqueId} scene={scene} options={options} />
                     ))}
                 </HTMLTwinAccessibilityItem>
             );
