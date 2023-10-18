@@ -26,7 +26,7 @@ export function setVRRigMode(camera: Camera, rigParams: any) {
     camera._rigCameras[1]._cameraRigParams.vrPreViewMatrix = metrics.rightPreViewMatrix;
     camera._rigCameras[1].getProjectionMatrix = camera._rigCameras[1]._getVRProjectionMatrix;
 
-    // For multiview on a webVR camera
+    // For multiview camera
     // First multiview will be rendered to camera._multiviewTexture
     // Then this postprocess will run on each eye to copy the right texture to each eye
     if (metrics.multiviewEnabled) {

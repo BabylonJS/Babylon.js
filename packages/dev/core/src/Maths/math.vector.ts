@@ -7253,62 +7253,6 @@ export class Matrix {
     }
 
     /**
-     * Stores a perspective projection for WebVR info a given matrix
-     * Example Playground - https://playground.babylonjs.com/#AV9X17#92
-     * @param fov defines the field of view
-     * @param fov.upDegrees
-     * @param fov.downDegrees
-     * @param fov.leftDegrees
-     * @param fov.rightDegrees
-     * @param znear defines the near clip plane
-     * @param zfar defines the far clip plane
-     * @param result defines the target matrix
-     * @param rightHanded defines if the matrix must be in right-handed mode (false by default)
-     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
-     * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
-     * @returns result input
-     */
-    public static PerspectiveFovWebVRToRef<T extends Matrix>(
-        fov: { upDegrees: number; downDegrees: number; leftDegrees: number; rightDegrees: number },
-        znear: number,
-        zfar: number,
-        result: T,
-        rightHanded = false,
-        halfZRange?: boolean,
-        projectionPlaneTilt: number = 0
-    ): T {
-        const rightHandedFactor = rightHanded ? -1 : 1;
-
-        const upTan = Math.tan((fov.upDegrees * Math.PI) / 180.0);
-        const downTan = Math.tan((fov.downDegrees * Math.PI) / 180.0);
-        const leftTan = Math.tan((fov.leftDegrees * Math.PI) / 180.0);
-        const rightTan = Math.tan((fov.rightDegrees * Math.PI) / 180.0);
-        const xScale = 2.0 / (leftTan + rightTan);
-        const yScale = 2.0 / (upTan + downTan);
-        const rot = Math.tan(projectionPlaneTilt);
-
-        const m = result._m;
-        m[0] = xScale;
-        m[1] = m[2] = m[3] = m[4] = 0.0;
-        m[5] = yScale;
-        m[6] = 0.0;
-        m[7] = rot;
-        m[8] = (leftTan - rightTan) * xScale * 0.5;
-        m[9] = -((upTan - downTan) * yScale * 0.5);
-        m[10] = -zfar / (znear - zfar);
-        m[11] = 1.0 * rightHandedFactor;
-        m[12] = m[13] = m[15] = 0.0;
-        m[14] = -(2.0 * zfar * znear) / (zfar - znear);
-
-        if (halfZRange) {
-            result.multiplyToRef(mtxConvertNDCToHalfZRange, result);
-        }
-
-        result.markAsUpdated();
-        return result;
-    }
-
-    /**
      * Computes a complete transformation matrix
      * Example Playground - https://playground.babylonjs.com/#AV9X17#113
      * @param viewport defines the viewport to use

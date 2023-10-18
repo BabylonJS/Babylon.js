@@ -67,7 +67,6 @@ import type { AnimationGroup } from "./Animations/animationGroup";
 import type { Skeleton } from "./Bones/skeleton";
 import type { Bone } from "./Bones/bone";
 import type { Camera } from "./Cameras/camera";
-import type { WebVRFreeCamera } from "./Cameras/VR/webVRCamera";
 import type { Collider } from "./Collisions/collider";
 import type { Ray, TrianglePickingPredicate } from "./Culling/ray";
 import type { Light } from "./Lights/light";
@@ -936,7 +935,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             ? this._forcedViewPosition
             : this._mirroredCameraPosition
             ? this._mirroredCameraPosition
-            : this.activeCamera!.globalPosition ?? (this.activeCamera as WebVRFreeCamera).devicePosition;
+            : this.activeCamera!.globalPosition;
 
         const invertNormal = this.useRightHandedSystem === (this._mirroredCameraPosition != null);
 
