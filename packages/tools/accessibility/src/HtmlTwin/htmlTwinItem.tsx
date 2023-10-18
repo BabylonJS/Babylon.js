@@ -133,15 +133,9 @@ export class HTMLTwinItem {
      */
     public scene: Scene;
 
-    /**
-     * The children of this item in the html twin tree.
-     */
-    public children: HTMLTwinItem[];
-
-    constructor(entity: AccessibilityEntity, scene: Scene, children: HTMLTwinItem[]) {
+    constructor(entity: AccessibilityEntity, scene: Scene) {
         this.entity = entity;
         this.scene = scene;
-        this.children = children;
     }
 
     /**

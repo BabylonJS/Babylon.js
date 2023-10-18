@@ -1,5 +1,5 @@
 import type { Scene } from "core/scene";
-import { HTMLTwinAccessibilityAdaptor } from "./htmlTwinNodeAdapter";
+import { HTMLTwinItemAdapter } from "./htmlTwinItemAdapter";
 import { useContext, useEffect, useRef, useState } from "react";
 import type { Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
@@ -13,6 +13,8 @@ function getSceneIds(scene: Scene) {
 
 export function HTMLTwinSceneTree(props: { scene: Scene }) {
     // const [count, setCount] = useState(0);
+    const { scene } = props;
+
     const [meshIds, setMeshIds] = useState(new Set<number>());
     const nextFrameObserver = useRef<Nullable<Observer<Scene>>>(null);
     const sceneContext = useContext(SceneContext);
@@ -44,7 +46,7 @@ export function HTMLTwinSceneTree(props: { scene: Scene }) {
     return (
         <>
             {props.scene.rootNodes.map((node) => (
-                <HTMLTwinAccessibilityAdaptor key={node.uniqueId} node={node} />
+                <HTMLTwinItemAdapter key={node.uniqueId} node={node} scene={scene} />
             ))}
         </>
     );

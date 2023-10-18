@@ -21,8 +21,8 @@ export class HTMLTwinGUIItem extends HTMLTwinItem {
      */
     public children: HTMLTwinGUIItem[];
 
-    constructor(entity: Control, scene: Scene, children: HTMLTwinGUIItem[]) {
-        super(entity, scene, children);
+    constructor(entity: Control, scene: Scene) {
+        super(entity, scene);
     }
 
     /**

@@ -6,7 +6,7 @@ interface IHTMLTwinItemComponentProps {
     level: number;
 }
 
-export class HTMLTwinItemComponent extends React.Component<IHTMLTwinItemComponentProps> {
+/*export class HTMLTwinItemComponent extends React.Component<IHTMLTwinItemComponentProps> {
     constructor(props: IHTMLTwinItemComponentProps) {
         super(props);
     }
@@ -98,4 +98,4 @@ export class HTMLTwinItemComponent extends React.Component<IHTMLTwinItemComponen
             );
         });
     }
-}
+}*/

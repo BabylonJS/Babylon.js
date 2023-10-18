@@ -1,96 +1,114 @@
-import { isClickable, getAccessibleTexture, getDescriptionFromNode, hasAccessibleElement, hasChildren, isVisible, getDirectChildrenOf } from "./htmlTwinItem";
-import type { AccessibilityEntity } from "./htmlTwinItem";
-import { HTMLTwinAccessibilityNode } from "./htmlTwinAccessibilityNode";
-import { HTMLTwinAccessibilityLeaf } from "./htmlTwinAccessibilityLeaf";
+import { isClickable, getAccessibleTexture, isVisible, getDirectChildrenOf } from "./htmlTwinItem";
+import type { AccessibilityEntity, HTMLTwinItem } from "./htmlTwinItem";
 import { useContext, useEffect, useState } from "react";
 import { SceneContext } from "./htmlTwinSceneContext";
 import { HTMLTwinAccessibilityItem } from "./htmlTwinAccessibilityItem";
 import { Container } from "gui/2D/controls/container";
 import { Control } from "gui/2D/controls/control";
+import { Node } from "core/node";
+import { HTMLTwinNodeItem } from "./htmlTwinNodeItem";
+import type { Scene } from "core/scene";
+import { HTMLTwinGUIItem } from "./htmlTwinGUIItem";
 
-export function HTMLTwinAccessibilityAdaptor(props: { node: AccessibilityEntity }) {
-    const [isVisibleState, setIsVisibleState] = useState(isVisible(props.node));
-    const [description, setDescription] = useState(getDescriptionFromNode(props.node));
-    const [children, setChildren] = useState(getDirectChildrenOf(props.node));
-    const sceneContext = useContext(SceneContext);
-    const {node} = props;
+function getTwinItemFromNode(node: AccessibilityEntity, scene: Scene) {
+    if (node instanceof Node) {
+        return new HTMLTwinNodeItem(node, scene);
+    } else {
+        return new HTMLTwinGUIItem(node, scene);
+    }
+}
+
+export function HTMLTwinItemAdapter(props: { node: AccessibilityEntity; scene: Scene }) {
+    const { node, scene } = props;
+
+    const [twinItem, setTwinItem] = useState<HTMLTwinItem>(getTwinItemFromNode(node, scene));
     useEffect(() => {
-        const observable = (props.node as any).onEnabledStateChangedObservable;
+        setTwinItem(getTwinItemFromNode(node, scene));
+    }, [node]);
+    // console.log("twin item", twinItem);
+
+    const [isVisibleState, setIsVisibleState] = useState(isVisible(props.node));
+    useEffect(() => {
+        const observable = (node as any).onEnabledStateChangedObservable;
         const observer = observable.add((value: boolean) => {
             setIsVisibleState(value);
         });
         return () => {
             observable.remove(observer);
         };
-    }, []);
+    }, [node]);
+
+    const sceneContext = useContext(SceneContext);
     useEffect(() => {
-        const observable = (props.node as any).onDisposeObservable;
+        const observable = (node as any).onDisposeObservable;
         const observer = observable.add(() => {
             sceneContext.updateScene();
         });
         return () => {
             observable.remove(observer);
         };
-    }, []);
+    }, [node]);
+
+    const [description, setDescription] = useState(twinItem?.description);
     useEffect(() => {
-        const observable = props.node.onAccessibilityTagChangedObservable;
+        const observable = node.onAccessibilityTagChangedObservable;
         const observer = observable.add(() => {
-            setDescription(getDescriptionFromNode(props.node));
+            setDescription(twinItem?.description);
         });
         return () => {
             observable.remove(observer);
         };
-    }, []);
+    }, [node]);
+
+    useEffect(() => {
+        setDescription(twinItem?.description);
+    }, [twinItem]);
+
+    const [children, setChildren] = useState(getDirectChildrenOf(props.node));
     if (node instanceof Container) {
         useEffect(() => {
             const observable = node.onControlAddedObservable;
             const observer = observable.add(() => {
-                // console.log("control added to container", node.name);
                 setChildren([...getDirectChildrenOf(props.node)]);
             });
             return () => {
                 observable.remove(observer);
             };
-        }, []);
+        }, [node]);
         useEffect(() => {
             const observable = node.onControlRemovedObservable;
             const observer = observable.add(() => {
-                // console.log("control removed from container", node.name);
                 setChildren([...getDirectChildrenOf(props.node)]);
             });
             return () => {
                 observable.remove(observer);
             };
-        }, []);
+        }, [node]);
     }
     if (node instanceof Control) {
         useEffect(() => {
             const observable = node.onIsVisibleChangedObservable;
-            // console.log("adding visible observer for container", node.name);
             const observer = observable.add(() => {
-                // console.log("visibility changed for container", node.name);
                 setIsVisibleState(isVisible(props.node));
             });
             return () => {
                 observable.remove(observer);
             };
-        }, []);
+        }, [node]);
     }
-    // console.log('adaptor for node', node.name);
-    // console.log("node", props.node.name, "has update scene", sceneContext.updateScene);
-    // console.log('childrenof', children);
+
     if (isVisibleState) {
         const accessibleTexture = getAccessibleTexture(props.node);
         if (accessibleTexture) {
-            return <HTMLTwinAccessibilityAdaptor node={accessibleTexture.rootContainer} />;
+            return <HTMLTwinItemAdapter node={accessibleTexture.rootContainer} scene={scene} />;
         } else {
-            return <HTMLTwinAccessibilityItem 
-                        description={description} 
-                        isClickable={isClickable(props.node)}>
-                            {children.map((child: AccessibilityEntity) => (
-                                <HTMLTwinAccessibilityAdaptor node={child} key={child.uniqueId} />
-                            ))}
-                    </HTMLTwinAccessibilityItem>;
+            return (
+                <HTMLTwinAccessibilityItem description={description} isClickable={twinItem.isActionable} a11yItem={twinItem}>
+                    {children.map((child: AccessibilityEntity) => (
+                        <HTMLTwinItemAdapter node={child} key={child.uniqueId} scene={scene} />
+                    ))}
+                </HTMLTwinAccessibilityItem>
+            );
         }
     } else {
         return null;

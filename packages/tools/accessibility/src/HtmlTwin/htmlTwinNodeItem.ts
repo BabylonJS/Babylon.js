@@ -20,8 +20,8 @@ export class HTMLTwinNodeItem extends HTMLTwinItem {
      */
     public children: HTMLTwinItem[];
 
-    constructor(entity: Node, scene: Scene, children: HTMLTwinItem[]) {
-        super(entity, scene, children);
+    constructor(entity: Node, scene: Scene) {
+        super(entity, scene);
     }
 
     /**
