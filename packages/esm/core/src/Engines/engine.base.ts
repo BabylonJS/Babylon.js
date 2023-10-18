@@ -1052,11 +1052,15 @@ export function _renderLoop(
             // Start new frame
             beginFrameFunc?.(engineState);
 
-            for (let index = 0; index < fes._activeRenderLoops.length; index++) {
-                const renderFunction = fes._activeRenderLoops[index];
+            // TODO - this needs to be provided as well!
+            // Should come from an extension (views)
+            // if (!this._renderViews()) {
+                for (let index = 0; index < fes._activeRenderLoops.length; index++) {
+                    const renderFunction = fes._activeRenderLoops[index];
 
-                renderFunction();
-            }
+                    renderFunction();
+                }
+            // }
 
             // Present
             endFrameFunc(engineState);
