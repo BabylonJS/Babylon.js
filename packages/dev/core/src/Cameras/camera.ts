@@ -588,7 +588,9 @@ export class Camera extends Node {
         this._cache.orthoRight = undefined;
         this._cache.orthoBottom = undefined;
         this._cache.orthoTop = undefined;
-        this._cache.oblique = undefined;
+        this._cache.obliqueAngle = undefined;
+        this._cache.obliqueLength = undefined;
+        this._cache.obliqueOffset = undefined;
         this._cache.renderWidth = undefined;
         this._cache.renderHeight = undefined;
     }
@@ -636,21 +638,15 @@ export class Camera extends Node {
                 this._cache.aspectRatio === engine.getAspectRatio(this) &&
                 this._cache.projectionPlaneTilt === this.projectionPlaneTilt;
         } else {
-            if (this.oblique) {
-                check =
-                    this._cache.oblique === this.oblique ||
-                    (this._cache.oblique?.angle === this.oblique.angle &&
-                        this._cache.oblique?.length === this.oblique.length &&
-                        this._cache.oblique?.offset === this.oblique.offset);
-            }
             check =
-                check &&
                 this._cache.orthoLeft === this.orthoLeft &&
                 this._cache.orthoRight === this.orthoRight &&
                 this._cache.orthoBottom === this.orthoBottom &&
                 this._cache.orthoTop === this.orthoTop &&
-                this._cache.renderWidth === engine.getRenderWidth() &&
-                this._cache.renderHeight === engine.getRenderHeight();
+                this._cache.obliqueAngle === this.oblique?.angle &&
+                this._cache.obliqueLength === this.oblique?.length &&
+                this._cache.obliqueOffset === this.oblique?.offset;
+            this._cache.renderWidth === engine.getRenderWidth() && this._cache.renderHeight === engine.getRenderHeight();
         }
 
         return check;
@@ -1009,7 +1005,9 @@ export class Camera extends Node {
             this._cache.orthoRight = this.orthoRight;
             this._cache.orthoBottom = this.orthoBottom;
             this._cache.orthoTop = this.orthoTop;
-            this._cache.oblique = this.oblique;
+            this._cache.obliqueAngle = this.oblique?.angle;
+            this._cache.obliqueLength = this.oblique?.length;
+            this._cache.obliqueOffset = this.oblique?.offset;
             this._cache.renderWidth = engine.getRenderWidth();
             this._cache.renderHeight = engine.getRenderHeight();
         }
