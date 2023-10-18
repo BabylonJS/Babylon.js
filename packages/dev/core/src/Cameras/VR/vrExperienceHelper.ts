@@ -971,7 +971,6 @@ export class VRExperienceHelper {
      */
     public enableInteractions() {
         if (!this._interactionsEnabled) {
-
             // in XR it is enabled by default, but just to make sure, re-attach
             if (this.xr) {
                 if (this.xr.baseExperience.state === WebXRState.IN_XR) {
@@ -1059,7 +1058,6 @@ export class VRExperienceHelper {
      */
     public enableTeleportation(vrTeleportationOptions: VRTeleportationOptions = {}) {
         if (!this._teleportationInitialized) {
-
             this.enableInteractions();
 
             if (this.webVROptions.useXR && (vrTeleportationOptions.floorMeshes || vrTeleportationOptions.floorMeshName)) {
