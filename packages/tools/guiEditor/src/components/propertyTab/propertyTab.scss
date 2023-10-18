@@ -251,6 +251,11 @@
         grid-template-columns: auto 1fr;
         padding-top: 1px;
         padding-bottom: 1px;
+
+        > .textLine + .command-button {
+            margin-top: -3px;
+            grid-column: 5;
+        }
     }
     .ge-divider.double {
         display: grid;
@@ -263,6 +268,10 @@
             &:nth-of-type(2) {
                 grid-column: 4;
             }
+        }
+        > .command-button {
+            grid-column: 5;
+            margin-left: 5px;
         }
     }
     .ge-divider.quad {

@@ -41,6 +41,8 @@ import colorIcon from "shared-ui-components/imgs/colorIcon.svg";
 import fillColorIcon from "shared-ui-components/imgs/fillColorIcon.svg";
 import linkedMeshOffsetIcon from "shared-ui-components/imgs/linkedMeshOffsetIcon.svg";
 import visibleIcon from "../../../../imgs/visibilityActiveIcon.svg";
+import addIcon from "shared-ui-components/imgs/addGridElementDark.svg";
+import removeIcon from "shared-ui-components/imgs/deleteGridElementDark.svg";
 
 import hAlignCenterIcon from "shared-ui-components/imgs/hAlignCenterIcon.svg";
 import hAlignLeftIcon from "shared-ui-components/imgs/hAlignLeftIcon.svg";
@@ -215,6 +217,33 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 property: propertyName,
                 initialValue: initialValue,
                 value: (control as any)[propertyName],
+            });
+        }
+    }
+
+    private _addOrUpdateMetadata(options: {}) {
+        for (let control of this.props.controls) {
+            const initialValue = control.metadata
+            const newValue = Object.assign({}, control.metadata, options)
+            control.metadata = newValue
+            this.props.onPropertyChangedObservable?.notifyObservers({
+                object: control,
+                property: "metadata",
+                initialValue: initialValue,
+                value: newValue,
+            });
+        }
+    }
+
+    private _removeFromMetadata(key: string) {
+        for (let control of this.props.controls) {
+            const initialValue = Object.assign({}, control.metadata)
+            delete control.metadata[key]
+            this.props.onPropertyChangedObservable?.notifyObservers({
+                object: control,
+                property: "metadata",
+                initialValue: initialValue,
+                value: control.metadata,
             });
         }
     }
@@ -734,6 +763,63 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         </div>
                     </>
                 )}
+
+                <hr className="ge" />
+                <div className="ge-divider">
+                    <TextLineComponent tooltip="" label="METADATA" value=" " color="grey" />
+                    <CommandButtonComponent
+                        tooltip='Add'
+                        icon={addIcon}
+                        isActive={false}
+                        onClick={() => {
+                            let keyName = 'newKey'
+                            let num = 1
+                            while(controls.some(x => keyName in x.metadata)) {
+                                num++
+                                keyName = `newKey${num}`
+                            }
+                            this._addOrUpdateMetadata({[keyName]: ""});
+                        }}
+                    />
+                </div>
+                {controls.map((control, i) => {
+                    if(!control.metadata) return
+                    return (
+                        <div key={control.name + i.toString()}>
+                            {Object.entries(control.metadata).map(([key, value], i) => {
+                                if (key === 'guiEditor') return
+                                if (key.startsWith('_')) return
+                                return (
+                                    <div className="ge-divider double" key={key}>
+                                        <TextInputLineComponent
+                                            numbersOnly={false}
+                                            lockObject={this.props.lockObject}
+                                            label=""
+                                            delayInput={true}
+                                            value={key}
+                                            disabled={true}
+                                        />
+                                        <TextInputLineComponent
+                                            numbersOnly={typeof value === "number"}
+                                            lockObject={this.props.lockObject}
+                                            label=":"
+                                            delayInput={true}
+                                            disabled={typeof value === 'object'}
+                                            value={typeof value === 'string' ? value : JSON.stringify(value)}
+                                            onChange={(x) => this._addOrUpdateMetadata({[key]: x})}
+                                        />
+                                        <CommandButtonComponent
+                                            tooltip="Remove"
+                                            icon={removeIcon}
+                                            isActive={true}
+                                            onClick={() => this._removeFromMetadata(key)}
+                                        />
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    )
+                })}
             </div>
         );
     }
