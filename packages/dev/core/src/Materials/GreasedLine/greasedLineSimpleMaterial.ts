@@ -1,37 +1,22 @@
-import type { Scene } from "../scene";
-import { Engine } from "../Engines/engine";
-import { RawTexture } from "./Textures/rawTexture";
-import type { GreasedLineMaterialOptions, IGreasedLineMaterial } from "./greasedLinePluginMaterial";
-import { GreasedLineMeshColorMode, GreasedLineMeshColorDistributionType } from "./greasedLinePluginMaterial";
+import type { Scene } from "../../scene";
+import { RawTexture } from "../Textures/rawTexture";
 
-import { ShaderMaterial } from "./shaderMaterial";
-import type { Nullable } from "../types";
-import { Color3 } from "../Maths/math.color";
-import { Vector2 } from "../Maths/math.vector";
-import type { BaseTexture } from "./Textures/baseTexture";
+import { ShaderMaterial } from "../shaderMaterial";
+import type { Nullable } from "../../types";
+import { Color3 } from "../../Maths/math.color";
+import { Vector2 } from "../../Maths/math.vector";
 
-import "../Shaders/greasedLine.fragment";
-import "../Shaders/greasedLine.vertex";
+import "../../Shaders/greasedLine.fragment";
+import "../../Shaders/greasedLine.vertex";
+import type { GreasedLineMaterialOptions, IGreasedLineMaterial } from "./greasedLineMaterialInterfaces";
+import { GreasedLineMeshColorDistributionType, GreasedLineMeshColorMode } from "./greasedLineMaterialInterfaces";
+import { GreasedLineTools } from "../../Misc/greasedLineTools";
+import { GreasedLineMaterialDefaults } from "./greasedLineMaterialDefaults";
 
 /**
  * GreasedLineSimpleMaterial
  */
 export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGreasedLineMaterial {
-    /**
-     * Default line color for newly created lines
-     */
-    public static DEFAULT_COLOR = Color3.White();
-    /**
-     * Default line width when sizeAttenuation is true
-     */
-    public static DEFAULT_WIDTH_ATTENUATED = 1;
-    /**
-     * Defaule line width
-     */
-    public static DEFAULT_WIDTH = 0.1;
-
-    private static _EmptyColorsTexture: BaseTexture;
-
     private _visibility: number;
     private _width: number;
     private _useDash: boolean;
@@ -47,8 +32,8 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
     private _colorsSampling: number;
     private _resolution: Vector2;
     private _sizeAttenuation: boolean;
-    private _colorsTexture?: RawTexture;
-    private _engine: Engine;
+    private _colorsTexture: Nullable<RawTexture> = null;
+    private _cameraFacing: boolean;
 
     /**
      * GreasedLineSimple material constructor
@@ -57,6 +42,25 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
      * @param options material options
      */
     constructor(name: string, scene: Scene, options: GreasedLineMaterialOptions) {
+        const defines = [
+            `COLOR_DISTRIBUTION_TYPE_LINE ${GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_LINE}.`,
+            `COLOR_DISTRIBUTION_TYPE_SEGMENT ${GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_SEGMENT}.`,
+            `COLOR_MODE_SET ${GreasedLineMeshColorMode.COLOR_MODE_SET}.`,
+            `COLOR_MODE_ADD ${GreasedLineMeshColorMode.COLOR_MODE_ADD}.`,
+            `COLOR_MODE_MULTIPLY ${GreasedLineMeshColorMode.COLOR_MODE_MULTIPLY}.`,
+        ];
+        const attributes = ["position", "grl_widths", "grl_offsets", "grl_colorPointers"];
+
+        scene.useRightHandedSystem && defines.push("GREASED_LINE_RIGHT_HANDED_COORDINATE_SYSTEM");
+
+        if (options.cameraFacing) {
+            defines.push("GREASED_LINE_CAMERA_FACING");
+            attributes.push("grl_previousAndSide", "grl_nextAndCounters");
+        } else {
+            attributes.push("grl_slopes");
+            attributes.push("grl_counters");
+        }
+
         super(
             name,
             scene,
@@ -65,7 +69,7 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
                 fragment: "greasedLine",
             },
             {
-                attributes: ["position", "normal", "grl_previousAndSide", "grl_nextAndCounters", "grl_widths", "grl_offsets", "grl_colorPointers"],
+                attributes,
                 uniforms: [
                     "worldViewProjection",
                     "projection",
@@ -84,20 +88,25 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
                     "grlVisibility",
                 ],
                 samplers: ["grlColors"],
-                defines: scene.useRightHandedSystem ? ["GREASED_LNE_RIGHT_HANDED_COORDINATE_SYSTEM"] : [],
+                defines,
             }
         );
         options = options || {
-            color: GreasedLineSimpleMaterial.DEFAULT_COLOR,
+            color: GreasedLineMaterialDefaults.DEFAULT_COLOR,
         };
 
-        this._engine = scene.getEngine();
+        const engine = scene.getEngine();
+
         this.visibility = options.visibility ?? 1;
         this.useDash = options.useDash ?? false;
         this.dashRatio = options.dashRatio ?? 0.5;
         this.dashOffset = options.dashOffset ?? 0;
         this.dashCount = options.dashCount ?? 1; // calculate the _dashArray value, call the setter
-        this.width = options.width ? options.width : options.sizeAttenuation ? GreasedLineSimpleMaterial.DEFAULT_WIDTH_ATTENUATED : GreasedLineSimpleMaterial.DEFAULT_WIDTH;
+        this.width = options.width
+            ? options.width
+            : options.sizeAttenuation && options.cameraFacing
+            ? GreasedLineMaterialDefaults.DEFAULT_WIDTH_ATTENUATED
+            : GreasedLineMaterialDefaults.DEFAULT_WIDTH;
         this.sizeAttenuation = options.sizeAttenuation ?? false;
         this.color = options.color ?? Color3.White();
         this.useColors = options.useColors ?? false;
@@ -105,53 +114,20 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
         this.colorsSampling = options.colorsSampling ?? RawTexture.NEAREST_NEAREST;
         this.colorMode = options.colorMode ?? GreasedLineMeshColorMode.COLOR_MODE_SET;
         this._colors = options.colors ?? null;
+        this._cameraFacing = options.cameraFacing ?? true;
+        this.resolution = options.resolution ?? new Vector2(engine.getRenderWidth(), engine.getRenderHeight()); // calculate aspect call the setter
 
-        this.resolution = options.resolution ?? new Vector2(this._engine.getRenderWidth(), this._engine.getRenderHeight()); // calculate aspect call the setter
+        if (options.colorsTexture) {
+            this.colorsTexture = options.colorsTexture;
+        }
 
         if (this._colors) {
             this.setColors(this._colors);
         }
 
-        this._engine.onDisposeObservable.add(() => {
-            GreasedLineSimpleMaterial._EmptyColorsTexture?.dispose();
+        engine.onDisposeObservable.add(() => {
+            GreasedLineTools.DisposeEmptyColorsTexture();
         });
-    }
-
-    /**
-     * Converts boolean to number.
-     * @param bool
-     * @returns 1 if true, 0 if false.
-     */
-    private static _BooleanToNumber(bool?: boolean) {
-        return bool ? 1 : 0;
-    }
-
-    /**
-     * Converts an array of Color3 to Uint8Array
-     * @param colors Arrray of Color3
-     * @returns Uin8Array of colors [r, g, b, a, r, g, b, a, ...]
-     */
-    private static _Color3toRGBAUint8(colors: Color3[]) {
-        const colorTable: Uint8Array = new Uint8Array(colors.length * 4);
-        for (let i = 0, j = 0; i < colors.length; i++) {
-            colorTable[j++] = colors[i].r * 255;
-            colorTable[j++] = colors[i].g * 255;
-            colorTable[j++] = colors[i].b * 255;
-            colorTable[j++] = 255;
-        }
-
-        return colorTable;
-    }
-
-    /**
-     * Creates a RawTexture from an RGBA color array and sets it on the plugin material instance.
-     * @param name name of the texture
-     * @param colors Uint8Array of colors
-     */
-    private _createColorsTexture(name: string, colors: Color3[]) {
-        const colorsArray = GreasedLineSimpleMaterial._Color3toRGBAUint8(colors);
-        this._colorsTexture = new RawTexture(colorsArray, colors.length, 1, Engine.TEXTUREFORMAT_RGBA, this.getScene(), false, true, this._colorsSampling);
-        this._colorsTexture.name = name;
     }
 
     /**
@@ -211,17 +187,28 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
         }
 
         if (this._colorsTexture && origColorsCount === colors.length && !forceNewTexture) {
-            const colorArray = GreasedLineSimpleMaterial._Color3toRGBAUint8(colors);
+            const colorArray = GreasedLineTools.Color3toRGBAUint8(colors);
             this._colorsTexture.update(colorArray);
         } else {
             this._colorsTexture?.dispose();
-            this._createColorsTexture(`${this.name}-colors-texture`, colors);
+            this.colorsTexture = GreasedLineTools.CreateColorsTexture(`${this.name}-colors-texture`, colors, this.colorsSampling, this.getScene());
         }
+    }
 
-        if (this._colorsTexture) {
-            this.setFloat("grlColorsWidth", this._colorsTexture.getSize().width);
-            this.setTexture("grlColors", this._colorsTexture);
-        }
+    /**
+     * Gets the colors texture
+     */
+    get colorsTexture() {
+        return (this._colorsTexture as RawTexture) ?? null;
+    }
+
+    /**
+     * Sets the colorsTexture
+     */
+    set colorsTexture(value: RawTexture) {
+        this._colorsTexture = value;
+        this.setFloat("grlColorsWidth", this._colorsTexture.getSize().width);
+        this.setTexture("grlColors", this._colorsTexture);
     }
 
     /**
@@ -248,7 +235,7 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
 
     set useColors(value: boolean) {
         this._useColors = value;
-        this.setFloat("grlUseColors", GreasedLineSimpleMaterial._BooleanToNumber(value));
+        this.setFloat("grlUseColors", GreasedLineTools.BooleanToNumber(value));
     }
 
     /**
@@ -291,7 +278,7 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
      */
     set useDash(value: boolean) {
         this._useDash = value;
-        this.setFloat("grlUseDash", GreasedLineSimpleMaterial._BooleanToNumber(value));
+        this.setFloat("grlUseDash", GreasedLineTools.BooleanToNumber(value));
     }
 
     /**
@@ -353,7 +340,7 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
      */
     set sizeAttenuation(value: boolean) {
         this._sizeAttenuation = value;
-        this.setFloat("grlSizeAttenuation", GreasedLineSimpleMaterial._BooleanToNumber(value));
+        this.setFloat("grlSizeAttenuation", GreasedLineTools.BooleanToNumber(value));
     }
 
     /**
@@ -377,7 +364,7 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
      * @param value color
      */
     public setColor(value: Nullable<Color3>) {
-        value = value ?? GreasedLineSimpleMaterial.DEFAULT_COLOR;
+        value = value ?? GreasedLineMaterialDefaults.DEFAULT_COLOR;
         this._color = value;
         this.setColor3("grlColor", value);
     }
@@ -456,6 +443,7 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
             useDash: this._useDash,
             visibility: this._visibility,
             width: this._width,
+            cameraFacing: this._cameraFacing,
         };
 
         this._colors && (greasedLineMaterialOptions.colors = this._colors);
@@ -477,12 +465,6 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
 
         this._colorsTexture?.dispose();
 
-        if (greasedLineMaterialOptions.colors) {
-            this._createColorsTexture(`${this.name}-colors-texture`, greasedLineMaterialOptions.colors);
-        } else {
-            GreasedLineSimpleMaterial._PrepareEmptyColorsTexture(scene);
-        }
-
         greasedLineMaterialOptions.color && (this.color = greasedLineMaterialOptions.color);
         greasedLineMaterialOptions.colorDistributionType && (this.colorsDistributionType = greasedLineMaterialOptions.colorDistributionType);
         greasedLineMaterialOptions.colorsSampling && (this.colorsSampling = greasedLineMaterialOptions.colorsSampling);
@@ -496,18 +478,14 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
         greasedLineMaterialOptions.width && (this.width = greasedLineMaterialOptions.width);
         greasedLineMaterialOptions.sizeAttenuation && (this.sizeAttenuation = greasedLineMaterialOptions.sizeAttenuation);
         greasedLineMaterialOptions.resolution && (this.resolution = greasedLineMaterialOptions.resolution);
-    }
 
-    /**
-     * A minimum size texture for the colors sampler2D when there is no colors texture defined yet.
-     * For fast switching using the useColors property without the need to use defines.
-     * @param scene Scene
-     */
-    private static _PrepareEmptyColorsTexture(scene: Scene) {
-        if (!this._EmptyColorsTexture) {
-            const colorsArray = new Uint8Array(4);
-            GreasedLineSimpleMaterial._EmptyColorsTexture = new RawTexture(colorsArray, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false, false, RawTexture.NEAREST_NEAREST);
-            GreasedLineSimpleMaterial._EmptyColorsTexture.name = "grlEmptyColorsTexture";
+        if (greasedLineMaterialOptions.colors) {
+            this.colorsTexture = GreasedLineTools.CreateColorsTexture(`${this.name}-colors-texture`, greasedLineMaterialOptions.colors, this.colorsSampling, this.getScene());
+        } else {
+            GreasedLineTools.PrepareEmptyColorsTexture(scene);
         }
+
+        this._cameraFacing = greasedLineMaterialOptions.cameraFacing ?? true;
+        this.setDefine("GREASED_LINE_CAMERA_FACING", this._cameraFacing);
     }
 }
