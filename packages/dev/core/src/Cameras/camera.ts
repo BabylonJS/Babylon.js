@@ -645,8 +645,9 @@ export class Camera extends Node {
                 this._cache.orthoTop === this.orthoTop &&
                 this._cache.obliqueAngle === this.oblique?.angle &&
                 this._cache.obliqueLength === this.oblique?.length &&
-                this._cache.obliqueOffset === this.oblique?.offset;
-            this._cache.renderWidth === engine.getRenderWidth() && this._cache.renderHeight === engine.getRenderHeight();
+                this._cache.obliqueOffset === this.oblique?.offset &&
+                this._cache.renderWidth === engine.getRenderWidth() &&
+                this._cache.renderHeight === engine.getRenderHeight();
         }
 
         return check;
