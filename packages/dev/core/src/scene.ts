@@ -5215,10 +5215,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Get from a list of objects by tags
      * @param list the list of objects to use
      * @param tagsQuery the query to use
-     * @param forEach a predicate to filter for tags
+     * @param filter a predicate to filter for tags
      * @returns
      */
-    private _getByTags(list: any[], tagsQuery: string, forEach?: (item: any) => boolean): any[] {
+    private _getByTags(list: any[], tagsQuery: string, filter?: (item: any) => boolean): any[] {
         if (tagsQuery === undefined) {
             // returns the complete list (could be done with Tags.MatchesQuery but no need to have a for-loop here)
             return list;
@@ -5226,15 +5226,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         const listByTags = [];
 
-        forEach =
-            forEach ||
-            ((item: any) => {
-                return true;
-            });
-
         for (const i in list) {
             const item = list[i];
-            if (Tags && Tags.MatchesQuery(item, tagsQuery) && (!forEach || forEach(item))) {
+            if (Tags && Tags.MatchesQuery(item, tagsQuery) && (!filter || filter(item))) {
                 listByTags.push(item);
             }
         }
@@ -5245,51 +5239,51 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Get a list of meshes by tags
      * @param tagsQuery defines the tags query to use
-     * @param forEach defines a predicate used to filter results
+     * @param filter defines a predicate used to filter results
      * @returns an array of Mesh
      */
-    public getMeshesByTags(tagsQuery: string, forEach?: (mesh: AbstractMesh) => boolean): Mesh[] {
-        return this._getByTags(this.meshes, tagsQuery, forEach);
+    public getMeshesByTags(tagsQuery: string, filter?: (mesh: AbstractMesh) => boolean): Mesh[] {
+        return this._getByTags(this.meshes, tagsQuery, filter);
     }
 
     /**
      * Get a list of cameras by tags
      * @param tagsQuery defines the tags query to use
-     * @param forEach defines a predicate used to filter results
+     * @param filter defines a predicate used to filter results
      * @returns an array of Camera
      */
-    public getCamerasByTags(tagsQuery: string, forEach?: (camera: Camera) => boolean): Camera[] {
-        return this._getByTags(this.cameras, tagsQuery, forEach);
+    public getCamerasByTags(tagsQuery: string, filter?: (camera: Camera) => boolean): Camera[] {
+        return this._getByTags(this.cameras, tagsQuery, filter);
     }
 
     /**
      * Get a list of lights by tags
      * @param tagsQuery defines the tags query to use
-     * @param forEach defines a predicate used to filter results
+     * @param filter defines a predicate used to filter results
      * @returns an array of Light
      */
-    public getLightsByTags(tagsQuery: string, forEach?: (light: Light) => boolean): Light[] {
-        return this._getByTags(this.lights, tagsQuery, forEach);
+    public getLightsByTags(tagsQuery: string, filter?: (light: Light) => boolean): Light[] {
+        return this._getByTags(this.lights, tagsQuery, filter);
     }
 
     /**
      * Get a list of materials by tags
      * @param tagsQuery defines the tags query to use
-     * @param forEach defines a predicate used to filter results
+     * @param filter defines a predicate used to filter results
      * @returns an array of Material
      */
-    public getMaterialByTags(tagsQuery: string, forEach?: (material: Material) => boolean): Material[] {
-        return this._getByTags(this.materials, tagsQuery, forEach).concat(this._getByTags(this.multiMaterials, tagsQuery, forEach));
+    public getMaterialByTags(tagsQuery: string, filter?: (material: Material) => boolean): Material[] {
+        return this._getByTags(this.materials, tagsQuery, filter).concat(this._getByTags(this.multiMaterials, tagsQuery, filter));
     }
 
     /**
      * Get a list of transform nodes by tags
      * @param tagsQuery defines the tags query to use
-     * @param forEach defines a predicate used to filter results
+     * @param filter defines a predicate used to filter results
      * @returns an array of TransformNode
      */
-    public getTransformNodesByTags(tagsQuery: string, forEach?: (transform: TransformNode) => boolean): TransformNode[] {
-        return this._getByTags(this.transformNodes, tagsQuery, forEach);
+    public getTransformNodesByTags(tagsQuery: string, filter?: (transform: TransformNode) => boolean): TransformNode[] {
+        return this._getByTags(this.transformNodes, tagsQuery, filter);
     }
 
     /**
