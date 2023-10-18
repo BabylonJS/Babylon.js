@@ -885,6 +885,24 @@ export function areAllEffectsReady(engineState: IBaseEnginePublic): boolean {
  */
 export function _rebuildBuffers(engineState: IBaseEnginePublic): void {
     const fes = engineState as BaseEngineState;
+
+    // from Engine
+
+    // Index / Vertex
+    for (const scene of engineState.scenes) {
+        scene.resetCachedMaterial();
+        scene._rebuildGeometries();
+        scene._rebuildTextures();
+    }
+
+    for (const scene of fes._virtualScenes) {
+        scene.resetCachedMaterial();
+        scene._rebuildGeometries();
+        scene._rebuildTextures();
+    }
+
+    // From ThinEngine
+
     // Uniforms
     for (const uniformBuffer of fes._uniformBuffers) {
         uniformBuffer._rebuild();
@@ -1045,8 +1063,19 @@ export function _renderLoop(
         }
     }
 
-    if (fes._activeRenderLoops.length > 0 && fes._boundRenderFunction) {
-        fes._frameHandler = queueNewFrameFunc(fes._boundRenderFunction, getHostWindow(engineState));
+    if (fes._activeRenderLoops.length > 0) {
+        // Register new frame
+        if (fes.customAnimationFrameRequester) {
+            fes.customAnimationFrameRequester.requestID = queueNewFrameFunc(
+                fes.customAnimationFrameRequester.renderFunction || fes._boundRenderFunction!,
+                fes.customAnimationFrameRequester
+            );
+            fes._frameHandler = fes.customAnimationFrameRequester.requestID;
+        } else if (fes._boundRenderFunction) {
+            fes._frameHandler = queueNewFrameFunc(fes._boundRenderFunction, getHostWindow(engineState));
+        } else {
+            fes._renderingQueueLaunched = false;
+        }
     } else {
         fes._renderingQueueLaunched = false;
     }
@@ -2090,4 +2119,53 @@ export function setDirectViewport<T extends IBaseEnginePublic = IBaseEnginePubli
     viewportChangedFunc(engineState, x, y, width, height);
 
     return currentViewport;
+}
+
+/**
+ * Sets a texture to the webGL context from a postprocess
+ * @param channel defines the channel to use
+ * @param postProcess defines the source postprocess
+ * @param name name of the channel
+ */
+export function setTextureFromPostProcess<T extends IBaseEnginePublic = IBaseEnginePublic>(
+    {
+        bindTextureFunc,
+    }: {
+        bindTextureFunc: (engineState: T, channel: number, texture: Nullable<InternalTexture>, name: string) => void;
+    },
+    engineState: T,
+    channel: number,
+    postProcess: Nullable<PostProcess>,
+    name: string
+): void {
+    let postProcessInput = null;
+    if (postProcess) {
+        if (postProcess._forcedOutputTexture) {
+            postProcessInput = postProcess._forcedOutputTexture;
+        } else if (postProcess._textures.data[postProcess._currentRenderTextureInd]) {
+            postProcessInput = postProcess._textures.data[postProcess._currentRenderTextureInd];
+        }
+    }
+
+    bindTextureFunc(engineState, channel, postProcessInput?.texture ?? null, name);
+}
+
+/**
+ * Binds the output of the passed in post process to the texture channel specified
+ * @param channel The channel the texture should be bound to
+ * @param postProcess The post process which's output should be bound
+ * @param name name of the channel
+ */
+export function setTextureFromPostProcessOutput<T extends IBaseEnginePublic = IBaseEnginePublic>(
+    {
+        bindTextureFunc,
+    }: {
+        bindTextureFunc: (engineState: T, channel: number, texture: Nullable<InternalTexture>, name: string) => void;
+    },
+    engineState: T,
+    channel: number,
+    postProcess: Nullable<PostProcess>,
+    name: string
+): void {
+    bindTextureFunc(engineState, channel, postProcess?._outputTexture?.texture ?? null, name);
 }
