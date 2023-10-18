@@ -103,7 +103,7 @@ export function HTMLTwinItemAdapter(props: { node: AccessibilityEntity; scene: S
             return <HTMLTwinItemAdapter node={accessibleTexture.rootContainer} scene={scene} />;
         } else {
             return (
-                <HTMLTwinAccessibilityItem description={description} isClickable={twinItem.isActionable} a11yItem={twinItem}>
+                <HTMLTwinAccessibilityItem description={description} a11yItem={twinItem}>
                     {children.map((child: AccessibilityEntity) => (
                         <HTMLTwinItemAdapter node={child} key={child.uniqueId} scene={scene} />
                     ))}

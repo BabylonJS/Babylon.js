@@ -2,9 +2,9 @@ import type { ReactElement } from "react";
 import type { HTMLTwinItem } from "./htmlTwinItem";
 
 function makeAccessibleItem(props: IHTMLTwinItemComponentProps) {
-    const { description, isClickable, a11yItem } = props;
+    const { description, a11yItem } = props;
     if (description && a11yItem) {
-        if (isClickable) {
+        if (a11yItem.isActionable) {
             return (
                 <button
                     tabIndex={a11yItem.isFocusable ? 0 : -1}
@@ -38,7 +38,6 @@ function makeAccessibleItem(props: IHTMLTwinItemComponentProps) {
 
 export interface IHTMLTwinItemComponentProps {
     description: string | undefined;
-    isClickable: boolean;
     children: ReactElement[];
     a11yItem: HTMLTwinItem;
 }
