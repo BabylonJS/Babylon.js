@@ -188,7 +188,6 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                     return mesh.isVisible && mesh.isEnabled();
                 });
                 framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
-                camera.obliqueOffset = (worldExtends.min.z - worldExtends.max.z) / 2;
             }
 
             if (this.props.autoRotate) {

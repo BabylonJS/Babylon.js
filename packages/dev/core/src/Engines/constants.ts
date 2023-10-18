@@ -687,11 +687,6 @@ export class Constants {
      * Orthographic is commonly used in engineering as a means to produce object specifications that communicate dimensions unambiguously, each line of 1 unit length (cm, meter..whatever) will appear to have the same length everywhere on the drawing. This allows the drafter to dimension only a subset of lines and let the reader know that other lines of that length on the drawing are also that length in reality. Every parallel line in the drawing is also parallel in the object.
      */
     public static readonly ORTHOGRAPHIC_CAMERA = 1;
-    /**
-     * This helps to create a camera that uses an oblique mode.
-     * Oblique is an orthrographic projection with a shear applied to it.
-     */
-    public static readonly OBLIQUE_CAMERA = 2;
 
     /**
      * This is the default FOV mode for perspective cameras.

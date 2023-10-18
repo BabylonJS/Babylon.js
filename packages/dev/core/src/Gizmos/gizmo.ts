@@ -350,7 +350,7 @@ export class Gizmo implements IGizmo {
                 }
                 this._rootMesh.position.subtractToRef(cameraPosition, TmpVectors.Vector3[0]);
                 let scale = this.scaleRatio;
-                if (activeCamera.mode == Camera.ORTHOGRAPHIC_CAMERA || activeCamera.mode == Camera.OBLIQUE_CAMERA) {
+                if (activeCamera.mode == Camera.ORTHOGRAPHIC_CAMERA) {
                     if (activeCamera.orthoTop && activeCamera.orthoBottom) {
                         const orthoHeight = activeCamera.orthoTop - activeCamera.orthoBottom;
                         scale *= orthoHeight;

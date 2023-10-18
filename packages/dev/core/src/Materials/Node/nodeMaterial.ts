@@ -139,7 +139,6 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
 
     /** MISC. */
     public BUMPDIRECTUV = 0;
-    public CAMERA_OBLIQUE = false;
     public CAMERA_ORTHOGRAPHIC = false;
     public CAMERA_PERSPECTIVE = false;
 
