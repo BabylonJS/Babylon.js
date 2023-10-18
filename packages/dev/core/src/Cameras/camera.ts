@@ -962,7 +962,7 @@ export class Camera extends Node {
                         reverseDepth ? this.minZ : this.maxZ,
                         this.oblique.length,
                         this.oblique.angle,
-                        this._computeObliqueDistance(),
+                        this._computeObliqueDistance(this.oblique.offset),
                         this._projectionMatrix,
                         engine.isNDCHalfZRange
                     );
@@ -989,7 +989,7 @@ export class Camera extends Node {
                         reverseDepth ? this.minZ : this.maxZ,
                         this.oblique.length,
                         this.oblique.angle,
-                        this._computeObliqueDistance(),
+                        this._computeObliqueDistance(this.oblique.offset),
                         this._projectionMatrix,
                         engine.isNDCHalfZRange
                     );
@@ -1032,10 +1032,10 @@ export class Camera extends Node {
         return this._transformMatrix;
     }
 
-    private _computeObliqueDistance(): number {
-        const arcRotateCamera = this as unknown as ArcRotateCamera;
-        const targetCamera = this as unknown as TargetCamera;
-        return (arcRotateCamera.radius || (targetCamera.target ? Vector3.Distance(this.position, targetCamera.target) : this.position.length())) + this.oblique!.offset;
+    private _computeObliqueDistance(offset: number): number {
+        const arcRotateCamera = this as Camera as ArcRotateCamera;
+        const targetCamera = this as Camera as TargetCamera;
+        return (arcRotateCamera.radius || (targetCamera.target ? Vector3.Distance(this.position, targetCamera.target) : this.position.length())) + offset;
     }
 
     private _updateFrustumPlanes(): void {
