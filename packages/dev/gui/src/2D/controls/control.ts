@@ -49,7 +49,6 @@ export class Control implements IAnimatable {
     /** @internal */
     public _tempPaddingMeasure = Measure.Empty();
     private _fontFamily = "";
-    private _fontFamilySet = false;
     private _fontStyle = "";
     private _fontWeight = "";
     private _fontSize = new ValueAndUnit(18, ValueAndUnit.UNITMODE_PIXEL, false);
@@ -62,7 +61,6 @@ export class Control implements IAnimatable {
     protected _fontOffset: { ascent: number; height: number; descent: number };
     private _color = "";
     private _style: Nullable<Style> = null;
-    private _styleSet = false;
     private _styleObserver: Nullable<Observer<Style>>;
     /** @internal */
     protected _horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
@@ -709,7 +707,6 @@ export class Control implements IAnimatable {
     }
 
     public set fontFamily(value: string) {
-        this._fontFamilySet = true;
         if (this._fontFamily === value) {
             return;
         }
@@ -756,7 +753,6 @@ export class Control implements IAnimatable {
     }
 
     public set style(value: Nullable<Style>) {
-        this._styleSet = true;
         if (this._style) {
             this._style.onChangedObservable.remove(this._styleObserver);
             this._styleObserver = null;
