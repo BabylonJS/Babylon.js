@@ -640,10 +640,11 @@ export class Camera extends Node {
                 check =
                     this._cache.oblique === this.oblique ||
                     (this._cache.oblique?.angle === this.oblique.angle &&
-                    this._cache.oblique?.length === this.oblique.length &&
-                    this._cache.oblique?.offset === this.oblique.offset);
+                        this._cache.oblique?.length === this.oblique.length &&
+                        this._cache.oblique?.offset === this.oblique.offset);
             }
-            check = check &&
+            check =
+                check &&
                 this._cache.orthoLeft === this.orthoLeft &&
                 this._cache.orthoRight === this.orthoRight &&
                 this._cache.orthoBottom === this.orthoBottom &&
