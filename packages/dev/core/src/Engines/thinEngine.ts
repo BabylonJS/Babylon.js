@@ -161,11 +161,6 @@ export interface ThinEngineOptions {
 /** Interface defining initialization parameters for Engine class */
 export interface EngineOptions extends ThinEngineOptions, WebGLContextAttributes {
     /**
-     * Defines if webvr should be enabled automatically
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/webVRCamera
-     */
-    autoEnableWebVR?: boolean;
-    /**
      * Defines if webgl2 should be turned off even if supported
      * @see https://doc.babylonjs.com/setup/support/webGL2
      */

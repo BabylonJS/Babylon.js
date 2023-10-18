@@ -23,7 +23,6 @@ import { ShaderLanguage } from "../Materials/shaderLanguage";
 
 import type { Scene } from "../scene";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
-import type { WebVRFreeCamera } from "../Cameras/VR/webVRCamera";
 import type { Animation } from "../Animations/animation";
 import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 import type { PrePassEffectConfiguration } from "../Rendering/prePassEffectConfiguration";
@@ -696,14 +695,8 @@ export class PostProcess {
         const engine = scene.getEngine();
         const maxSize = engine.getCaps().maxTextureSize;
 
-        let requiredWidth = ((sourceTexture ? sourceTexture.width : this._engine.getRenderWidth(true)) * <number>this._options) | 0;
+        const requiredWidth = ((sourceTexture ? sourceTexture.width : this._engine.getRenderWidth(true)) * <number>this._options) | 0;
         const requiredHeight = ((sourceTexture ? sourceTexture.height : this._engine.getRenderHeight(true)) * <number>this._options) | 0;
-
-        // If rendering to a webvr camera's left or right eye only half the width should be used to avoid resize when rendered to screen
-        const webVRCamera = <WebVRFreeCamera>camera.parent;
-        if (webVRCamera && (webVRCamera.leftCamera == camera || webVRCamera.rightCamera == camera)) {
-            requiredWidth /= 2;
-        }
 
         let desiredWidth = (<PostProcessOptions>this._options).width || requiredWidth;
         let desiredHeight = (<PostProcessOptions>this._options).height || requiredHeight;

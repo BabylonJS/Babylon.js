@@ -77,10 +77,6 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                 const evt = <IPointerEvent>p.event;
                 const isTouch = evt.pointerType === "touch";
 
-                if (engine.isInVRExclusivePointerMode) {
-                    return;
-                }
-
                 if (!this.touchEnabled && isTouch) {
                     return;
                 }
@@ -170,10 +166,6 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
 
         this._onMouseMove = (evt) => {
             if (!engine.isPointerLock) {
-                return;
-            }
-
-            if (engine.isInVRExclusivePointerMode) {
                 return;
             }
 
