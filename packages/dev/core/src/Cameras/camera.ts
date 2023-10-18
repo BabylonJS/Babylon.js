@@ -623,34 +623,39 @@ export class Camera extends Node {
 
     /** @internal */
     public _isSynchronizedProjectionMatrix(): boolean {
-        let check = this._cache.mode === this.mode && this._cache.minZ === this.minZ && this._cache.maxZ === this.maxZ;
+        let isSynchronized = this._cache.mode === this.mode && this._cache.minZ === this.minZ && this._cache.maxZ === this.maxZ;
 
-        if (!check) {
+        if (!isSynchronized) {
             return false;
         }
 
         const engine = this.getEngine();
 
         if (this.mode === Camera.PERSPECTIVE_CAMERA) {
-            check =
+            isSynchronized =
                 this._cache.fov === this.fov &&
                 this._cache.fovMode === this.fovMode &&
                 this._cache.aspectRatio === engine.getAspectRatio(this) &&
                 this._cache.projectionPlaneTilt === this.projectionPlaneTilt;
         } else {
-            check =
+            isSynchronized =
                 this._cache.orthoLeft === this.orthoLeft &&
                 this._cache.orthoRight === this.orthoRight &&
                 this._cache.orthoBottom === this.orthoBottom &&
                 this._cache.orthoTop === this.orthoTop &&
-                this._cache.obliqueAngle === this.oblique?.angle &&
-                this._cache.obliqueLength === this.oblique?.length &&
-                this._cache.obliqueOffset === this.oblique?.offset &&
                 this._cache.renderWidth === engine.getRenderWidth() &&
                 this._cache.renderHeight === engine.getRenderHeight();
+
+            if (this.oblique) {
+                isSynchronized =
+                    isSynchronized &&
+                    this._cache.obliqueAngle === this.oblique.angle &&
+                    this._cache.obliqueLength === this.oblique.length &&
+                    this._cache.obliqueOffset === this.oblique.offset;
+            }
         }
 
-        return check;
+        return isSynchronized;
     }
 
     /**
