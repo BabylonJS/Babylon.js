@@ -931,11 +931,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @returns the computed eye position
      */
     public bindEyePosition(effect: Nullable<Effect>, variableName = "vEyePosition", isVector3 = false): Vector4 {
-        const eyePosition = this._forcedViewPosition
-            ? this._forcedViewPosition
-            : this._mirroredCameraPosition
-            ? this._mirroredCameraPosition
-            : this.activeCamera!.globalPosition;
+        const eyePosition = this._forcedViewPosition ? this._forcedViewPosition : this._mirroredCameraPosition ? this._mirroredCameraPosition : this.activeCamera!.globalPosition;
 
         const invertNormal = this.useRightHandedSystem === (this._mirroredCameraPosition != null);
 
