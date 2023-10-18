@@ -366,6 +366,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
 
     /**
      * If this is set, even when a control is pointer blocker, some events can still be passed through to the scene.
+     * Options from values are PointerEventTypes
+     * POINTERDOWN, POINTERUP, POINTERMOVE, POINTERWHEEL, POINTERPICK, POINTERTAP, POINTERDOUBLETAP
      */
     public skipBlockEvents = 0;
 
