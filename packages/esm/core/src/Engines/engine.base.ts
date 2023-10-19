@@ -1,26 +1,11 @@
 /* eslint-disable jsdoc/require-jsdoc */
 import { Effect } from "@babylonjs/core/Materials/effect.js";
-import { InternalTexture, InternalTextureSource } from "@babylonjs/core/Materials/Textures/internalTexture.js";
+import type { InternalTexture } from "@babylonjs/core/Materials/Textures/internalTexture.js";
 import type { Nullable } from "@babylonjs/core/types.js";
 import type { IShaderProcessor } from "@babylonjs/core/Engines/Processors/iShaderProcessor.js";
 import type { UniformBuffer } from "@babylonjs/core/Materials/uniformBuffer.js";
-import type { Observer } from "@babylonjs/core/Misc/observable.js";
 import { Observable } from "@babylonjs/core/Misc/observable.js";
-import {
-    ALPHA_ADD,
-    ALPHA_DISABLE,
-    GEQUAL,
-    GREATER,
-    LEQUAL,
-    LESS,
-    MATERIAL_PointFillMode,
-    MATERIAL_TriangleFillMode,
-    MATERIAL_WireFrameFillMode,
-    TEXTUREFORMAT_RGBA,
-    TEXTURETYPE_UNSIGNED_INT,
-    TEXTURE_NEAREST_SAMPLINGMODE,
-    TEXTURE_TRILINEAR_SAMPLINGMODE,
-} from "./engine.constants.js";
+import { ALPHA_ADD, ALPHA_DISABLE, GEQUAL, GREATER, LEQUAL, LESS, TEXTUREFORMAT_RGBA, TEXTURETYPE_UNSIGNED_INT, TEXTURE_NEAREST_SAMPLINGMODE } from "./engine.constants.js";
 import { PrecisionDate } from "@babylonjs/core/Misc/precisionDate.js";
 import type { PerfCounter } from "@babylonjs/core/Misc/perfCounter.js";
 import type { StorageBuffer } from "@babylonjs/core/Buffers/storageBuffer.js";
@@ -34,34 +19,16 @@ import type { ICanvas, ICanvasRenderingContext } from "@babylonjs/core/Engines/I
 import type { IFileRequest } from "@babylonjs/core/Misc/fileRequest.js";
 import type { IRawTextureEngineExtension } from "./Extensions/rawTexture/engine.rawTexture.base.js";
 import type { Texture } from "@babylonjs/core/Materials/Textures/texture.js";
-import type { ISceneLike } from "./engine.interfaces.js";
 import { EngineType } from "./engine.interfaces.js";
 import { IsDocumentAvailable, IsWindowObjectExist, hostInformation } from "./runtimeEnvironment.js";
 import { PerformanceConfigurator } from "@babylonjs/core/Engines/performanceConfigurator.js";
-import { EngineStore, QueueNewFrame, _CreateCanvas, _RequestPointerlock, _TextureLoaders } from "./engine.static.js";
-import type { IPipelineContext } from "@babylonjs/core/Engines/IPipelineContext.js";
-import type { IInternalTextureLoader } from "@babylonjs/core/Materials/Textures/internalTextureLoader.js";
-import { Logger } from "@babylonjs/core/Misc/logger.js";
-import type { IWebRequest } from "@babylonjs/core/Misc/interfaces/iWebRequest.js";
-import { _loadFile } from "./engine.tools.js";
-import { LoadImage } from "@babylonjs/core/Misc/fileTools.js";
-import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine.js";
+import { EngineStore, _CreateCanvas, _ExitFullscreen, _ExitPointerlock, _RequestFullscreen, _RequestPointerlock } from "./engine.static.js";
 import { PerformanceMonitor } from "@babylonjs/core/Misc/performanceMonitor.js";
 import type { StencilStateComposer } from "@babylonjs/core/States/stencilStateComposer.js";
 import type { StencilState } from "@babylonjs/core/States/stencilState.js";
 import type { Scene } from "@babylonjs/core/scene.js";
 import type { PostProcess } from "@babylonjs/core/PostProcesses/postProcess.js";
 import type { ICustomAnimationFrameRequester } from "@babylonjs/core/Misc/customAnimationFrameRequester.js";
-
-/**
- * Defines the interface used by objects containing a viewport (like a camera)
- */
-interface IViewportOwnerLike {
-    /**
-     * Gets or sets the viewport
-     */
-    viewport: IViewportLike;
-}
 
 export interface IBaseEngineOptions {
     /**
@@ -166,6 +133,7 @@ interface IBaseEnginePrivate {
     _cachedStencilOperationFail: number;
     _cachedStencilOperationDepthFail: number;
     _cachedStencilReference: number;
+    _renderPassNames: string[];
 }
 
 export interface IBaseEngineProtected {
@@ -499,6 +467,11 @@ export interface IBaseEnginePublic {
 
     /** Gets or sets the tab index to set to the rendering canvas. 1 is the minimum value to set to be able to capture keyboard events */
     canvasTabIndex: number;
+
+    /**
+     * Gets or sets the current render pass id
+     */
+    currentRenderPassId: number;
 }
 
 export type BaseEngineState<T extends IBaseEnginePublic = IBaseEnginePublic> = T & IBaseEngineInternals & IBaseEngineProtected;
@@ -615,6 +588,7 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
         onNewSceneAddedObservable: new Observable<Scene>(),
         customAnimationFrameRequester: null,
         canvasTabIndex: 1,
+        currentRenderPassId: 0,
 
         // internals
         _uniformBuffers: [],
@@ -678,6 +652,7 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
         _deterministicLockstep: false,
         _lockstepMaxSteps: 4,
         _timeStep: 1 / 60,
+        _renderPassNames: ["main"],
     };
 
     // TODO is getOwnPropertyDescriptors supported in native? if it doesn't we will need to use getOwnPropertyNames
@@ -928,6 +903,24 @@ export function resetTextureCache(engineState: IBaseEnginePublic): void {
     fes._currentTextureChannel = -1;
 }
 
+function _measureFps(engineState: IBaseEnginePublic): void {
+    const fes = engineState as BaseEngineStateFull;
+    if (fes._performanceMonitor) {
+        fes._performanceMonitor.sampleFrame();
+        fes._fps = fes._performanceMonitor.averageFPS;
+        fes._deltaTime = fes._performanceMonitor.instantaneousFrameTime || 0;
+    }
+}
+
+/**
+ * Begin a new frame
+ */
+export function beginFrame(engineState: IBaseEnginePublic): void {
+    _measureFps(engineState);
+
+    engineState.onBeginFrameObservable.notifyObservers(engineState);
+}
+
 /**
  * Defines the hardware scaling level.
  * By default the hardware scaling level is computed from the window device ratio.
@@ -938,44 +931,6 @@ export function setHardwareScalingLevel(engineState: IBaseEnginePublic, level: n
     const fes = engineState as BaseEngineStateFull;
     fes._hardwareScalingLevel = level;
     resize(engineState);
-}
-
-/**
- * Register and execute a render loop. The engine can have more than one render function
- * @param engineState defines the engine state
- * @param renderFunction defines the function to continuously execute
- */
-export function runRenderLoop(
-    {
-        beginFrameFunc,
-        endFrameFunc = endFrame,
-        queueNewFrameFunc = QueueNewFrame,
-    }: {
-        beginFrameFunc?: (engineState: IBaseEnginePublic) => void;
-        endFrameFunc: (engineState: IBaseEnginePublic) => void;
-        queueNewFrameFunc?: (func: FrameRequestCallback, requester?: any) => number;
-    },
-    engineState: IBaseEnginePublic,
-    renderFunction: () => void
-): void {
-    const fes = engineState as BaseEngineStateFull;
-    if (fes._activeRenderLoops.indexOf(renderFunction) !== -1) {
-        return;
-    }
-
-    fes._activeRenderLoops.push(renderFunction);
-
-    if (!fes._renderingQueueLaunched) {
-        fes._renderingQueueLaunched = true;
-        const renderLoopInjection = {
-            beginFrameFunc,
-            endFrameFunc,
-            queueNewFrameFunc,
-        };
-        _renderLoop(renderLoopInjection, engineState);
-        fes._boundRenderFunction = () => _renderLoop(renderLoopInjection, engineState);
-        fes._frameHandler = queueNewFrameFunc(fes._boundRenderFunction!, getHostWindow(engineState));
-    }
 }
 
 /**
@@ -1012,7 +967,13 @@ export function endFrame(engineState: IBaseEnginePublic): void {
 // Was protected, now passed as a variable
 function _cancelFrame(engineState: IBaseEnginePublic) {
     const fes = engineState as BaseEngineState;
-    if (fes._renderingQueueLaunched && fes._frameHandler) {
+    if (fes._renderingQueueLaunched && fes.customAnimationFrameRequester) {
+        fes._renderingQueueLaunched = false;
+        const { cancelAnimationFrame } = fes.customAnimationFrameRequester;
+        if (cancelAnimationFrame) {
+            cancelAnimationFrame(fes.customAnimationFrameRequester.requestID);
+        }
+    } else if (fes._renderingQueueLaunched && fes._frameHandler) {
         fes._renderingQueueLaunched = false;
         if (!IsWindowObjectExist()) {
             if (typeof cancelAnimationFrame === "function") {
@@ -1025,63 +986,6 @@ function _cancelFrame(engineState: IBaseEnginePublic) {
             }
         }
         return clearTimeout(fes._frameHandler);
-    }
-}
-
-/** @internal */
-export function _renderLoop(
-    {
-        queueNewFrameFunc = QueueNewFrame,
-        endFrameFunc = endFrame,
-        beginFrameFunc,
-    }: {
-        beginFrameFunc?: (engineState: IBaseEnginePublic) => void;
-        endFrameFunc?: typeof endFrame;
-        queueNewFrameFunc: typeof QueueNewFrame;
-    },
-    engineState: IBaseEnginePublic
-): void {
-    const fes = engineState as BaseEngineState;
-    if (!fes._contextWasLost) {
-        let shouldRender = true;
-        if (fes._isDisposed || (!fes.renderEvenInBackground && fes._windowIsBackground)) {
-            shouldRender = false;
-        }
-
-        if (shouldRender) {
-            // Start new frame
-            beginFrameFunc?.(engineState);
-
-            // TODO - this needs to be provided as well!
-            // Should come from an extension (views)
-            // if (!this._renderViews()) {
-                for (let index = 0; index < fes._activeRenderLoops.length; index++) {
-                    const renderFunction = fes._activeRenderLoops[index];
-
-                    renderFunction();
-                }
-            // }
-
-            // Present
-            endFrameFunc(engineState);
-        }
-    }
-
-    if (fes._activeRenderLoops.length > 0) {
-        // Register new frame
-        if (fes.customAnimationFrameRequester) {
-            fes.customAnimationFrameRequester.requestID = queueNewFrameFunc(
-                fes.customAnimationFrameRequester.renderFunction || fes._boundRenderFunction!,
-                fes.customAnimationFrameRequester
-            );
-            fes._frameHandler = fes.customAnimationFrameRequester.requestID;
-        } else if (fes._boundRenderFunction) {
-            fes._frameHandler = queueNewFrameFunc(fes._boundRenderFunction, getHostWindow(engineState));
-        } else {
-            fes._renderingQueueLaunched = false;
-        }
-    } else {
-        fes._renderingQueueLaunched = false;
     }
 }
 
@@ -1146,37 +1050,6 @@ export function getRenderHeight<T extends IBaseEnginePublic = IBaseEnginePublic>
 }
 
 /**
- * Set the WebGL's viewport
- * @param viewport defines the viewport element to be used
- * @param requiredWidth defines the width required for rendering. If not provided the rendering canvas' width is used
- * @param requiredHeight defines the height required for rendering. If not provided the rendering canvas' height is used
- */
-export function setViewport<T extends IBaseEnginePublic = IBaseEnginePublic>(
-    {
-        viewportChangedFunc = _viewport,
-        getRenderWidthFunc = getRenderWidth,
-        getRenderHeightFunc = getRenderHeight,
-    }: {
-        viewportChangedFunc: (engineState: T, x: number, y: number, width: number, height: number) => void;
-        getRenderWidthFunc?: typeof getRenderWidth<T>;
-        getRenderHeightFunc?: typeof getRenderHeight<T>;
-    },
-    engineState: T,
-    viewport: IViewportLike,
-    requiredWidth?: number,
-    requiredHeight?: number
-): void {
-    const width = requiredWidth || getRenderWidthFunc(engineState);
-    const height = requiredHeight || getRenderHeightFunc(engineState);
-    const x = viewport.x || 0;
-    const y = viewport.y || 0;
-
-    (engineState as BaseEngineState<T>)._cachedViewport = viewport;
-
-    viewportChangedFunc(engineState, x * width, y * height, width * viewport.width, height * viewport.height);
-}
-
-/**
  * @internal
  */
 export function _viewport(engineState: IBaseEnginePublic, x: number, y: number, width: number, height: number): void {
@@ -1185,76 +1058,6 @@ export function _viewport(engineState: IBaseEnginePublic, x: number, y: number, 
     fes._viewportCached.y = y;
     fes._viewportCached.z = width;
     fes._viewportCached.w = height;
-}
-
-/**
- * Send a draw order
- * @param useTriangles defines if triangles must be used to draw (else wireframe will be used)
- * @param indexStart defines the starting index
- * @param indexCount defines the number of index to draw
- * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
- */
-export function draw(
-    { drawElementsType }: { drawElementsType: (engineState: IBaseEnginePublic, fillMode: number, indexStart: number, indexCount: number, instancesCount?: number) => void },
-    engineState: IBaseEnginePublic,
-    useTriangles: boolean,
-    indexStart: number,
-    indexCount: number,
-    instancesCount?: number
-): void {
-    drawElementsType(engineState, useTriangles ? MATERIAL_TriangleFillMode : MATERIAL_WireFrameFillMode, indexStart, indexCount, instancesCount);
-}
-
-/**
- * Draw a list of points
- * @param verticesStart defines the index of first vertex to draw
- * @param verticesCount defines the count of vertices to draw
- * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
- */
-export function drawPointClouds(
-    { drawArraysType }: { drawArraysType: (engineState: IBaseEnginePublic, fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number) => void },
-    engineState: IBaseEnginePublic,
-    verticesStart: number,
-    verticesCount: number,
-    instancesCount?: number
-): void {
-    drawArraysType(engineState, MATERIAL_PointFillMode, verticesStart, verticesCount, instancesCount);
-}
-
-/**
- * Draw a list of unindexed primitives
- * @param useTriangles defines if triangles must be used to draw (else wireframe will be used)
- * @param verticesStart defines the index of first vertex to draw
- * @param verticesCount defines the count of vertices to draw
- * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
- */
-export function drawUnIndexed(
-    { drawArraysType }: { drawArraysType: (engineState: IBaseEnginePublic, fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number) => void },
-    engineState: IBaseEnginePublic,
-    useTriangles: boolean,
-    verticesStart: number,
-    verticesCount: number,
-    instancesCount?: number
-): void {
-    drawArraysType(engineState, useTriangles ? MATERIAL_TriangleFillMode : MATERIAL_WireFrameFillMode, verticesStart, verticesCount, instancesCount);
-}
-
-/**
- * @internal
- */
-export function _releaseEffect(
-    { _deletePipelineContext }: { _deletePipelineContext: (engineState: IBaseEnginePublic, pipelineContext: IPipelineContext) => void },
-    engineState: IBaseEnginePublic,
-    effect: Effect
-): void {
-    const fes = engineState as BaseEngineState;
-    if (fes._compiledEffects[effect._key]) {
-        delete fes._compiledEffects[effect._key];
-    }
-    const pipelineContext = effect.getPipelineContext();
-    if (pipelineContext) {
-        _deletePipelineContext(engineState, pipelineContext);
-    }
 }
 
 /** @internal */
@@ -1303,284 +1106,6 @@ export function _getGlobalDefines(engineState: IBaseEnginePublic, defines?: { [k
  */
 export function clearInternalTexturesCache(engineState: IBaseEnginePublic) {
     (engineState as BaseEngineStateFull)._internalTexturesCache.length = 0;
-}
-
-export function _createTextureBase<T extends IBaseEnginePublic = IBaseEnginePublic>(
-    {
-        getUseSRGBBuffer,
-        engineAdapter,
-    }: {
-        getUseSRGBBuffer: (engineState: T, useSRGBBuffer: boolean, noMipmap: boolean) => boolean;
-        engineAdapter?: ThinEngine;
-    },
-    engineState: T,
-    url: Nullable<string>,
-    noMipmap: boolean,
-    invertY: boolean,
-    scene: Nullable<ISceneLike>,
-    samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE,
-    onLoad: Nullable<(texture: InternalTexture) => void> = null,
-    onError: Nullable<(message: string, exception: any) => void> = null,
-    prepareTexture: (
-        texture: InternalTexture,
-        extension: string,
-        scene: Nullable<ISceneLike>,
-        img: HTMLImageElement | ImageBitmap | { width: number; height: number },
-        invertY: boolean,
-        noMipmap: boolean,
-        isCompressed: boolean,
-        processFunction: (
-            width: number,
-            height: number,
-            img: HTMLImageElement | ImageBitmap | { width: number; height: number },
-            extension: string,
-            texture: InternalTexture,
-            continuationCallback: () => void
-        ) => boolean,
-        samplingMode: number
-    ) => void,
-    prepareTextureProcessFunction: (
-        width: number,
-        height: number,
-        img: HTMLImageElement | ImageBitmap | { width: number; height: number },
-        extension: string,
-        texture: InternalTexture,
-        continuationCallback: () => void
-    ) => boolean,
-    buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
-    fallback: Nullable<InternalTexture> = null,
-    format: Nullable<number> = null,
-    forcedExtension: Nullable<string> = null,
-    mimeType?: string,
-    loaderOptions?: any,
-    useSRGBBuffer?: boolean
-): InternalTexture {
-    const fes = engineState as BaseEngineStateFull<T>;
-    url = url || "";
-    const fromData = url.substring(0, 5) === "data:";
-    const fromBlob = url.substring(0, 5) === "blob:";
-    const isBase64 = fromData && url.indexOf(";base64,") !== -1;
-
-    if (!engineAdapter && !fallback) {
-        throw new Error("either engineAdapter or fallback are required");
-    }
-
-    const texture = fallback ? fallback : new InternalTexture(engineAdapter!, InternalTextureSource.Url);
-
-    if (texture !== fallback) {
-        texture.label = url.substring(0, 60); // default label, can be overriden by the caller
-    }
-
-    const originalUrl = url;
-    if (fes._transformTextureUrl && !isBase64 && !fallback && !buffer) {
-        url = fes._transformTextureUrl(url);
-    }
-
-    if (originalUrl !== url) {
-        texture._originalUrl = originalUrl;
-    }
-
-    // establish the file extension, if possible
-    const lastDot = url.lastIndexOf(".");
-    let extension = forcedExtension ? forcedExtension : lastDot > -1 ? url.substring(lastDot).toLowerCase() : "";
-    let loader: Nullable<IInternalTextureLoader> = null;
-
-    // Remove query string
-    const queryStringIndex = extension.indexOf("?");
-
-    if (queryStringIndex > -1) {
-        extension = extension.split("?")[0];
-    }
-
-    for (const availableLoader of _TextureLoaders) {
-        if (availableLoader.canLoad(extension, mimeType)) {
-            loader = availableLoader;
-            break;
-        }
-    }
-
-    if (scene) {
-        scene.addPendingData(texture);
-    }
-    texture.url = url;
-    texture.generateMipMaps = !noMipmap;
-    texture.samplingMode = samplingMode;
-    texture.invertY = invertY;
-    texture._useSRGBBuffer = getUseSRGBBuffer(engineState, !!useSRGBBuffer, noMipmap);
-
-    if (!fes.doNotHandleContextLost) {
-        // Keep a link to the buffer only if we plan to handle context lost
-        texture._buffer = buffer;
-    }
-
-    let onLoadObserver: Nullable<Observer<InternalTexture>> = null;
-    if (onLoad && !fallback) {
-        onLoadObserver = texture.onLoadedObservable.add(onLoad);
-    }
-
-    if (!fallback) {
-        fes._internalTexturesCache.push(texture);
-    }
-
-    const onInternalError = (message?: string, exception?: any) => {
-        if (scene) {
-            scene.removePendingData(texture);
-        }
-
-        if (url === originalUrl) {
-            if (onLoadObserver) {
-                texture.onLoadedObservable.remove(onLoadObserver);
-            }
-
-            if (EngineStore.UseFallbackTexture) {
-                _createTextureBase(
-                    {
-                        getUseSRGBBuffer,
-                        engineAdapter,
-                    },
-                    engineState,
-                    EngineStore.FallbackTexture,
-                    noMipmap,
-                    texture.invertY,
-                    scene,
-                    samplingMode,
-                    null,
-                    onError,
-                    prepareTexture,
-                    prepareTextureProcessFunction,
-                    buffer,
-                    texture
-                );
-            }
-
-            message = (message || "Unknown error") + (EngineStore.UseFallbackTexture ? " - Fallback texture was used" : "");
-            texture.onErrorObservable.notifyObservers({ message, exception });
-            if (onError) {
-                onError(message, exception);
-            }
-        } else {
-            // fall back to the original url if the transformed url fails to load
-            Logger.Warn(`Failed to load ${url}, falling back to ${originalUrl}`);
-            _createTextureBase(
-                {
-                    getUseSRGBBuffer,
-                    engineAdapter,
-                },
-                engineState,
-                originalUrl,
-                noMipmap,
-                texture.invertY,
-                scene,
-                samplingMode,
-                onLoad,
-                onError,
-                prepareTexture,
-                prepareTextureProcessFunction,
-                buffer,
-                texture,
-                format,
-                forcedExtension,
-                mimeType,
-                loaderOptions,
-                useSRGBBuffer
-            );
-        }
-    };
-
-    // processing for non-image formats
-    if (loader) {
-        const callback = (data: ArrayBufferView) => {
-            loader!.loadData(
-                data,
-                texture,
-                (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed) => {
-                    if (loadFailed) {
-                        onInternalError("TextureLoader failed to load data");
-                    } else {
-                        prepareTexture(
-                            texture,
-                            extension,
-                            scene,
-                            { width, height },
-                            texture.invertY,
-                            !loadMipmap,
-                            isCompressed,
-                            () => {
-                                done();
-                                return false;
-                            },
-                            samplingMode
-                        );
-                    }
-                },
-                loaderOptions
-            );
-        };
-
-        if (!buffer) {
-            _loadFile(
-                engineState,
-                url,
-                (data) => callback(new Uint8Array(data as ArrayBuffer)),
-                undefined,
-                scene ? scene.offlineProvider : undefined,
-                true,
-                (request?: IWebRequest, exception?: any) => {
-                    onInternalError("Unable to load " + (request ? request.responseURL : url, exception));
-                }
-            );
-        } else {
-            if (buffer instanceof ArrayBuffer) {
-                callback(new Uint8Array(buffer));
-            } else if (ArrayBuffer.isView(buffer)) {
-                callback(buffer);
-            } else {
-                if (onError) {
-                    onError("Unable to load: only ArrayBuffer or ArrayBufferView is supported", null);
-                }
-            }
-        }
-    } else {
-        const onload = (img: HTMLImageElement | ImageBitmap) => {
-            if (fromBlob && !fes.doNotHandleContextLost) {
-                // We need to store the image if we need to rebuild the texture
-                // in case of a webgl context lost
-                texture._buffer = img;
-            }
-
-            prepareTexture(texture, extension, scene, img, texture.invertY, noMipmap, false, prepareTextureProcessFunction, samplingMode);
-        };
-        // According to the WebGL spec section 6.10, ImageBitmaps must be inverted on creation.
-        // So, we pass imageOrientation to _FileToolsLoadImage() as it may create an ImageBitmap.
-
-        if (!fromData || isBase64) {
-            if (buffer && (typeof (<HTMLImageElement>buffer).decoding === "string" || (<ImageBitmap>buffer).close)) {
-                onload(<HTMLImageElement>buffer);
-            } else {
-                LoadImage(
-                    url,
-                    onload,
-                    onInternalError,
-                    scene ? scene.offlineProvider : null,
-                    mimeType,
-                    texture.invertY && fes._features.needsInvertingBitmap ? { imageOrientation: "flipY" } : undefined
-                );
-            }
-        } else if (typeof buffer === "string" || buffer instanceof ArrayBuffer || ArrayBuffer.isView(buffer) || buffer instanceof Blob) {
-            LoadImage(
-                buffer,
-                onload,
-                onInternalError,
-                scene ? scene.offlineProvider : null,
-                mimeType,
-                texture.invertY && fes._features.needsInvertingBitmap ? { imageOrientation: "flipY" } : undefined
-            );
-        } else if (buffer) {
-            onload(buffer);
-        }
-    }
-
-    return texture;
 }
 
 /** @internal */
@@ -1780,45 +1305,6 @@ function _disableTouchAction(engineState: IBaseEnginePublic): void {
 /** @internal */
 export function _verifyPointerLock(engineState: IBaseEnginePublic): void {
     (engineState as BaseEngineStateFull)._onPointerLockChange?.();
-}
-
-/**
- * Gets current aspect ratio
- * @param viewportOwner defines the camera to use to get the aspect ratio
- * @param useScreen defines if screen size must be used (or the current render target if any)
- * @returns a number defining the aspect ratio
- */
-export function getAspectRatio<T extends IBaseEnginePublic = IBaseEnginePublic>(
-    {
-        getRenderWidthFunc = getRenderWidth,
-        getRenderHeightFunc = getRenderHeight,
-    }: {
-        getRenderWidthFunc?: typeof getRenderWidth<T>;
-        getRenderHeightFunc?: typeof getRenderHeight<T>;
-    },
-    engineState: T,
-    viewportOwner: IViewportOwnerLike,
-    useScreen = false
-): number {
-    const viewport = viewportOwner.viewport;
-    return (getRenderWidthFunc(engineState, useScreen) * viewport.width) / (getRenderHeightFunc(engineState, useScreen) * viewport.height);
-}
-
-/**
- * Gets current screen aspect ratio
- * @returns a number defining the aspect ratio
- */
-export function getScreenAspectRatio<T extends IBaseEnginePublic = IBaseEnginePublic>(
-    {
-        getRenderWidthFunc = getRenderWidth,
-        getRenderHeightFunc = getRenderHeight,
-    }: {
-        getRenderWidthFunc?: typeof getRenderWidth<T>;
-        getRenderHeightFunc?: typeof getRenderHeight<T>;
-    },
-    engineState: T
-): number {
-    return getRenderWidthFunc(engineState, true) / getRenderHeightFunc(engineState, true);
 }
 
 /**
@@ -2098,78 +1584,135 @@ export function restoreStencilState(engineState: IBaseEnginePublic) {
 }
 
 /**
- * Directly set the WebGL Viewport
- * @param x defines the x coordinate of the viewport (in screen space)
- * @param y defines the y coordinate of the viewport (in screen space)
- * @param width defines the width of the viewport (in screen space)
- * @param height defines the height of the viewport (in screen space)
- * @returns the current viewport Object (if any) that is being replaced by this call. You can restore this viewport later on to go back to the original state
+ * Toggle full screen mode
+ * @param requestPointerLock defines if a pointer lock should be requested from the user
  */
-export function setDirectViewport<T extends IBaseEnginePublic = IBaseEnginePublic>(
-    {
-        viewportChangedFunc = _viewport,
-    }: {
-        viewportChangedFunc: (engineState: T, x: number, y: number, width: number, height: number) => void;
-    },
-    engineState: T,
-    x: number,
-    y: number,
-    width: number,
-    height: number
-): Nullable<IViewportLike> {
-    const currentViewport = (engineState as BaseEngineState<T>)._cachedViewport;
-    (engineState as BaseEngineState<T>)._cachedViewport = null;
-
-    viewportChangedFunc(engineState, x, y, width, height);
-
-    return currentViewport;
+export function switchFullscreen(engineState: IBaseEnginePublic, requestPointerLock: boolean): void {
+    if (engineState.isFullscreen) {
+        exitFullscreen(engineState);
+    } else {
+        enterFullscreen(engineState, requestPointerLock);
+    }
 }
 
 /**
- * Sets a texture to the webGL context from a postprocess
- * @param channel defines the channel to use
- * @param postProcess defines the source postprocess
- * @param name name of the channel
+ * Enters full screen mode
+ * @param requestPointerLock defines if a pointer lock should be requested from the user
  */
-export function setTextureFromPostProcess<T extends IBaseEnginePublic = IBaseEnginePublic>(
-    {
-        bindTextureFunc,
-    }: {
-        bindTextureFunc: (engineState: T, channel: number, texture: Nullable<InternalTexture>, name: string) => void;
-    },
-    engineState: T,
-    channel: number,
-    postProcess: Nullable<PostProcess>,
-    name: string
-): void {
-    let postProcessInput = null;
-    if (postProcess) {
-        if (postProcess._forcedOutputTexture) {
-            postProcessInput = postProcess._forcedOutputTexture;
-        } else if (postProcess._textures.data[postProcess._currentRenderTextureInd]) {
-            postProcessInput = postProcess._textures.data[postProcess._currentRenderTextureInd];
+export function enterFullscreen(engineState: IBaseEnginePublic, requestPointerLock: boolean): void {
+    const fes = engineState as BaseEngineStateFull;
+    if (!engineState.isFullscreen) {
+        fes._pointerLockRequested = requestPointerLock;
+        if (fes._renderingCanvas) {
+            _RequestFullscreen(fes._renderingCanvas);
         }
     }
-
-    bindTextureFunc(engineState, channel, postProcessInput?.texture ?? null, name);
 }
 
 /**
- * Binds the output of the passed in post process to the texture channel specified
- * @param channel The channel the texture should be bound to
- * @param postProcess The post process which's output should be bound
- * @param name name of the channel
+ * Exits full screen mode
  */
-export function setTextureFromPostProcessOutput<T extends IBaseEnginePublic = IBaseEnginePublic>(
-    {
-        bindTextureFunc,
-    }: {
-        bindTextureFunc: (engineState: T, channel: number, texture: Nullable<InternalTexture>, name: string) => void;
-    },
-    engineState: T,
-    channel: number,
-    postProcess: Nullable<PostProcess>,
-    name: string
-): void {
-    bindTextureFunc(engineState, channel, postProcess?._outputTexture?.texture ?? null, name);
+export function exitFullscreen(engineState: IBaseEnginePublic): void {
+    if (engineState.isFullscreen) {
+        _ExitFullscreen();
+    }
+}
+
+/**
+ * Enters Pointerlock mode
+ */
+export function enterPointerlock(engineState: IBaseEnginePublic): void {
+    const fes = engineState as BaseEngineStateFull;
+    if (fes._renderingCanvas) {
+        _RequestPointerlock(fes._renderingCanvas);
+    }
+}
+
+/**
+ * // TODO - this is probably not needed...
+ * Exits Pointerlock mode
+ */
+export function exitPointerlock(engineState: IBaseEnginePublic): void {
+    _ExitPointerlock();
+}
+
+/**
+ * @internal
+ */
+export function _releaseRenderTargetWrapper(engineState: IBaseEnginePublic, rtWrapper: RenderTargetWrapper): void {
+    const fes = engineState as BaseEngineStateFull;
+    const index = fes._renderTargetWrapperCache.indexOf(rtWrapper);
+    if (index !== -1) {
+        fes._renderTargetWrapperCache.splice(index, 1);
+    }
+
+    // From Engine
+    // Set output texture of post process to null if the framebuffer has been released/disposed
+    fes.scenes.forEach((scene) => {
+        scene.postProcesses.forEach((postProcess) => {
+            if (postProcess._outputTexture === rtWrapper) {
+                postProcess._outputTexture = null;
+            }
+        });
+        scene.cameras.forEach((camera) => {
+            camera._postProcesses.forEach((postProcess) => {
+                if (postProcess) {
+                    if (postProcess._outputTexture === rtWrapper) {
+                        postProcess._outputTexture = null;
+                    }
+                }
+            });
+        });
+    });
+}
+
+let renderPassIdCounter = 0;
+
+/**
+ * Gets the names of the render passes that are currently created
+ * @returns list of the render pass names
+ */
+export function getRenderPassNames(engineState: IBaseEnginePublic): string[] {
+    return (engineState as BaseEngineStateFull)._renderPassNames;
+}
+
+/**
+ * Gets the name of the current render pass
+ * @returns name of the current render pass
+ */
+export function getCurrentRenderPassName(engineState: IBaseEnginePublic): string {
+    return (engineState as BaseEngineStateFull)._renderPassNames[(engineState as BaseEngineStateFull).currentRenderPassId];
+}
+
+/**
+ * Creates a render pass id
+ * @param name Name of the render pass (for debug purpose only)
+ * @returns the id of the new render pass
+ */
+export function createRenderPassId(engineState: IBaseEnginePublic, name?: string) {
+    // Note: render pass id == 0 is always for the main render pass
+    const id = ++renderPassIdCounter;
+    (engineState as BaseEngineStateFull)._renderPassNames[id] = name ?? "NONAME";
+    return id;
+}
+
+/**
+ * Releases a render pass id
+ * @param id id of the render pass to release
+ */
+export function releaseRenderPassId(engineState: IBaseEnginePublic, id: number): void {
+    (engineState as BaseEngineStateFull)._renderPassNames[id] = undefined as any;
+
+    for (let s = 0; s < engineState.scenes.length; ++s) {
+        const scene = engineState.scenes[s];
+        for (let m = 0; m < scene.meshes.length; ++m) {
+            const mesh = scene.meshes[m];
+            if (mesh.subMeshes) {
+                for (let b = 0; b < mesh.subMeshes.length; ++b) {
+                    const subMesh = mesh.subMeshes[b];
+                    subMesh._removeDrawWrapper(id);
+                }
+            }
+        }
+    }
 }

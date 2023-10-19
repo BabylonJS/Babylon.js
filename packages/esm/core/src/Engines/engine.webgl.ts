@@ -8,11 +8,9 @@ import {
     endFrame as endFrameBase,
     getRenderWidth as getRenderWidthBase,
     getRenderHeight as getRenderHeightBase,
-    setViewport as setViewportBase,
-    setDirectViewport as setDirectViewportBase,
+    setSize as setSizeBase,
     _viewport as _viewportBase,
     dispose as disposeBase,
-    _createTextureBase,
     resetTextureCache,
     _prepareWorkingCanvas,
     getHostDocument,
@@ -133,6 +131,14 @@ import type { PostProcess } from "@babylonjs/core/PostProcesses/postProcess.js";
 import type { IShaderProcessor } from "@babylonjs/core/Engines/Processors/iShaderProcessor.js";
 import { IsWindowObjectExist } from "./runtimeEnvironment.js";
 import { PerfCounter } from "@babylonjs/core/Misc/perfCounter.js";
+import {
+    _createTextureBase,
+    setDepthStencilTextureBase,
+    setDirectViewportBase,
+    setTextureFromPostProcessBase,
+    setTextureFromPostProcessOutputBase,
+    setViewportBase,
+} from "./engine.extendable.js";
 
 const _TempClearColorUint32 = new Uint32Array(4);
 const _TempClearColorInt32 = new Int32Array(4);
@@ -584,24 +590,6 @@ export function getRenderWidth(engineState: IWebGLEnginePublic, useScreen = fals
  */
 export function getRenderHeight(engineState: IWebGLEnginePublic, useScreen = false): number {
     return getRenderHeightBase(engineState, useScreen) || (engineState as WebGLEngineState)._gl.drawingBufferHeight;
-}
-
-function _measureFps(engineState: IWebGLEnginePublic): void {
-    const fes = engineState as WebGLEngineStateFull;
-    if (fes._performanceMonitor) {
-        fes._performanceMonitor.sampleFrame();
-        fes._fps = fes._performanceMonitor.averageFPS;
-        fes._deltaTime = fes._performanceMonitor.instantaneousFrameTime || 0;
-    }
-}
-
-/**
- * Begin a new frame
- */
-export function beginFrame(engineState: IWebGLEnginePublic): void {
-    _measureFps(engineState);
-
-    engineState.onBeginFrameObservable.notifyObservers(engineState);
 }
 
 /**
@@ -3130,17 +3118,6 @@ export function _releaseTexture(engineState: IWebGLEnginePublic, texture: Intern
     }
 }
 
-/**
- * @internal
- */
-export function _releaseRenderTargetWrapper(engineState: IWebGLEnginePublic, rtWrapper: RenderTargetWrapper): void {
-    const fes = engineState as WebGLEngineState;
-    const index = fes._renderTargetWrapperCache.indexOf(rtWrapper);
-    if (index !== -1) {
-        fes._renderTargetWrapperCache.splice(index, 1);
-    }
-}
-
 function _deleteTexture(engineState: WebGLEngineState, texture: Nullable<WebGLTexture>): void {
     if (texture) {
         engineState._gl.deleteTexture(texture);
@@ -4843,6 +4820,10 @@ export function getFragmentShaderSource(engineState: IWebGLEnginePublic, program
     return gl.getShaderSource(shaders[1]);
 }
 
+const setDepthStencilCache = {
+    _setTexture,
+};
+
 /**
  * Sets a depth stencil texture from a render target to the according uniform.
  * @param channel The texture channel
@@ -4866,9 +4847,113 @@ export function setDepthStencilTexture(
         fes._boundUniforms[channel] = uniform;
     }
 
-    if (!texture || !texture.depthStencilTexture) {
-        _setTexture(fes, channel, null, undefined, undefined, name);
-    } else {
-        _setTexture(fes, channel, texture, false, true, name);
+    setDepthStencilTextureBase(setDepthStencilCache, fes, channel, uniform, texture, name);
+}
+
+const bindTextureInjection = {
+    _bindTexture,
+};
+
+/**
+ * Sets a texture to the webGL context from a postprocess
+ * @param channel defines the channel to use
+ * @param postProcess defines the source postprocess
+ * @param name name of the channel
+ */
+export function setTextureFromPostProcess(engineState: IWebGLEnginePublic, channel: number, postProcess: Nullable<PostProcess>, name: string): void {
+    setTextureFromPostProcessBase(bindTextureInjection, engineState, channel, postProcess, name);
+}
+
+/**
+ * Binds the output of the passed in post process to the texture channel specified
+ * @param channel The channel the texture should be bound to
+ * @param postProcess The post process which's output should be bound
+ * @param name name of the channel
+ */
+export function setTextureFromPostProcessOutput(engineState: IWebGLEnginePublic, channel: number, postProcess: Nullable<PostProcess>, name: string): void {
+    setTextureFromPostProcessOutputBase(bindTextureInjection, engineState, channel, postProcess, name);
+}
+
+/**
+ * Force a specific size of the canvas
+ * @param width defines the new canvas' width
+ * @param height defines the new canvas' height
+ * @param forceSetSize true to force setting the sizes of the underlying canvas
+ * @returns true if the size was changed
+ */
+export function setSize(engineState: IWebGLEnginePublic, width: number, height: number, forceSetSize = false): boolean {
+    const fes = engineState as WebGLEngineStateFull;
+    if (!fes._renderingCanvas) {
+        return false;
     }
+
+    if (!setSizeBase(engineState, width, height, forceSetSize)) {
+        return false;
+    }
+
+    if (fes.scenes) {
+        for (let index = 0; index < fes.scenes.length; index++) {
+            const scene = fes.scenes[index];
+
+            for (let camIndex = 0; camIndex < scene.cameras.length; camIndex++) {
+                const cam = scene.cameras[camIndex];
+
+                cam._currentRenderId = 0;
+            }
+        }
+
+        if (fes.onResizeObservable.hasObservers()) {
+            fes.onResizeObservable.notifyObservers(fes);
+        }
+    }
+
+    return true;
+}
+
+/**
+ * Wraps an external web gl texture in a Babylon texture.
+ * @param texture defines the external texture
+ * @param hasMipMaps defines whether the external texture has mip maps (default: false)
+ * @param samplingMode defines the sampling mode for the external texture (default: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE)
+ * @returns the babylon internal texture
+ */
+export function wrapWebGLTexture(
+    engineState: IWebGLEnginePublic,
+    texture: WebGLTexture,
+    hasMipMaps: boolean = false,
+    samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE
+): InternalTexture {
+    const fes = engineState as WebGLEngineStateFull;
+    const hardwareTexture = new WebGLHardwareTexture(texture, fes._gl);
+    const internalTexture = new InternalTexture(augmentEngineState(engineState), InternalTextureSource.Unknown, true);
+    internalTexture._hardwareTexture = hardwareTexture;
+    internalTexture.isReady = true;
+    internalTexture.useMipMaps = hasMipMaps;
+    updateTextureSamplingMode(engineState, samplingMode, internalTexture);
+    return internalTexture;
+}
+
+/**
+ * @internal
+ */
+export function _uploadImageToTexture(engineState: IWebGLEnginePublic, texture: InternalTexture, image: HTMLImageElement | ImageBitmap, faceIndex: number = 0, lod: number = 0) {
+    const fes = engineState as WebGLEngineStateFull;
+    const gl = fes._gl;
+
+    const textureType = _getWebGLTextureType(engineState, texture.type);
+    const format = _getInternalFormat(engineState, texture.format);
+    const internalFormat = _getRGBABufferInternalSizedFormat(engineState, texture.type, format);
+
+    const bindTarget = texture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
+
+    _bindTextureDirectly(engineState, bindTarget, texture, true);
+    _unpackFlipY(fes, texture.invertY);
+
+    let target: GLenum = gl.TEXTURE_2D;
+    if (texture.isCube) {
+        target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
+    }
+
+    gl.texImage2D(target, lod, internalFormat, format, textureType, image);
+    _bindTextureDirectly(engineState, bindTarget, null, true);
 }

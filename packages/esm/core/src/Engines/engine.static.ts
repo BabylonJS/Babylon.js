@@ -329,6 +329,42 @@ export function _RequestPointerlock(element: HTMLElement): void {
     }
 }
 
+/** Pointerlock and fullscreen */
+
+/**
+ * Asks the browser to exit pointerlock mode
+ */
+export function _ExitPointerlock(): void {
+    if (document.exitPointerLock) {
+        document.exitPointerLock();
+    }
+}
+
+/**
+ * Ask the browser to promote the current element to fullscreen rendering mode
+ * @param element defines the DOM element to promote
+ */
+export function _RequestFullscreen(element: HTMLElement): void {
+    const requestFunction = element.requestFullscreen || (<any>element).webkitRequestFullscreen;
+    if (!requestFunction) {
+        return;
+    }
+    requestFunction.call(element);
+}
+
+/**
+ * Asks the browser to exit fullscreen mode
+ */
+export function _ExitFullscreen(): void {
+    const anyDoc = document as any;
+
+    if (document.exitFullscreen) {
+        document.exitFullscreen();
+    } else if (anyDoc.webkitCancelFullScreen) {
+        anyDoc.webkitCancelFullScreen();
+    }
+}
+
 /**
  * Engine abstraction for loading and creating an image bitmap from a given source string.
  * @internal
