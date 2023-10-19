@@ -222,10 +222,10 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
     }
 
     private _addOrUpdateMetadata(options: {}) {
-        for (let control of this.props.controls) {
-            const initialValue = control.metadata
-            const newValue = Object.assign({}, control.metadata, options)
-            control.metadata = newValue
+        for (const control of this.props.controls) {
+            const initialValue = control.metadata;
+            const newValue = Object.assign({}, control.metadata, options);
+            control.metadata = newValue;
             this.props.onPropertyChangedObservable?.notifyObservers({
                 object: control,
                 property: "metadata",
@@ -236,9 +236,9 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
     }
 
     private _removeFromMetadata(key: string) {
-        for (let control of this.props.controls) {
-            const initialValue = Object.assign({}, control.metadata)
-            delete control.metadata[key]
+        for (const control of this.props.controls) {
+            const initialValue = Object.assign({}, control.metadata);
+            delete control.metadata[key];
             this.props.onPropertyChangedObservable?.notifyObservers({
                 object: control,
                 property: "metadata",
@@ -249,14 +249,14 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
     }
 
     private _getCommonPropertyKeys(objects: {}[]) {
-        objects = objects.filter(x => !!x)
-        if (objects.length === 0) return []
+        objects = objects.filter((x) => !!x);
+        if (objects.length === 0) return [];
         if (objects.length === 1) {
-            return Object.keys(objects[0])
+            return Object.keys(objects[0]);
         }
         const [firstObject, ...restObjects] = objects;
-        return Object.keys(firstObject).filter(property => {
-            return restObjects.every(obj => property in obj);
+        return Object.keys(firstObject).filter((property) => {
+            return restObjects.every((obj) => property in obj);
         });
     }
 
@@ -780,70 +780,58 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 <div className="ge-divider">
                     <TextLineComponent tooltip="" label="METADATA" value=" " color="grey" />
                     <CommandButtonComponent
-                        tooltip='Add'
+                        tooltip="Add"
                         icon={addIcon}
                         isActive={false}
                         onClick={() => {
-                            const input = prompt("Enter new key name for metadata value", "newKey")
+                            const input = prompt("Enter new key name for metadata value", "newKey");
                             if (input === null) return;
 
-                            let keyName = input
-                            let num = 1
-                            while (controls.some(x => keyName in x.metadata)) {
+                            let keyName = input;
+                            let num = 1;
+                            while (controls.some((x) => keyName in x.metadata)) {
                                 num++;
                                 keyName = input + num;
                             }
-                            this._addOrUpdateMetadata({[keyName]: ""});
+                            this._addOrUpdateMetadata({ [keyName]: "" });
                         }}
                     />
                 </div>
-                {this._getCommonPropertyKeys(controls.map(x => x.metadata)).map(metaKey => {
-                    if (metaKey === 'guiEditor' || metaKey.startsWith('_')) {
-                        return
+                {this._getCommonPropertyKeys(controls.map((x) => x.metadata)).map((metaKey) => {
+                    if (metaKey === "guiEditor" || metaKey.startsWith("_")) {
+                        return;
                     }
 
-                    const firstControl = controls.find(x => !!x.metadata)
+                    const firstControl = controls.find((x) => !!x.metadata);
                     if (!firstControl) {
-                        return
+                        return;
                     }
 
-                    let value = firstControl.metadata[metaKey]
-                    const isNotEditableValue = typeof value === 'object'
+                    let value = firstControl.metadata[metaKey];
+                    const isNotEditableValue = typeof value === "object";
 
-                    const allValues = controls.map(x => x.metadata[metaKey])
-                    if (!allValues.every(x => x === value)) {
-                        value = conflictingValuesPlaceholder
+                    const allValues = controls.map((x) => x.metadata[metaKey]);
+                    if (!allValues.every((x) => x === value)) {
+                        value = conflictingValuesPlaceholder;
                     }
 
                     return (
                         <div key={metaKey}>
                             <div className="ge-divider double">
-                                <TextInputLineComponent
-                                    numbersOnly={false}
-                                    lockObject={this.props.lockObject}
-                                    label=""
-                                    delayInput={true}
-                                    value={metaKey}
-                                    disabled={true}
-                                />
+                                <TextInputLineComponent numbersOnly={false} lockObject={this.props.lockObject} label="" delayInput={true} value={metaKey} disabled={true} />
                                 <TextInputLineComponent
                                     numbersOnly={false}
                                     lockObject={this.props.lockObject}
                                     label=":"
                                     delayInput={true}
                                     disabled={isNotEditableValue}
-                                    value={typeof value === 'string' ? value : JSON.stringify(value)}
-                                    onChange={(x) => this._addOrUpdateMetadata({[metaKey]: x})}
+                                    value={typeof value === "string" ? value : JSON.stringify(value)}
+                                    onChange={(x) => this._addOrUpdateMetadata({ [metaKey]: x })}
                                 />
-                                <CommandButtonComponent
-                                    tooltip="Remove"
-                                    icon={removeIcon}
-                                    isActive={true}
-                                    onClick={() => this._removeFromMetadata(metaKey)}
-                                />
+                                <CommandButtonComponent tooltip="Remove" icon={removeIcon} isActive={true} onClick={() => this._removeFromMetadata(metaKey)} />
                             </div>
                         </div>
-                    )
+                    );
                 })}
             </div>
         );
