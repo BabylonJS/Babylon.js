@@ -221,13 +221,18 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         }
     }
 
-    private _addOrUpdateMetadata(options: {[key: string]: any}) {
+    private _addOrUpdateMetadata(options: { [key: string]: any }) {
         for (const control of this.props.controls) {
             const initialValue = control.metadata;
+            // Convert strings to their proper types
             for (const key in options) {
                 const v = options[key];
                 if (!isNaN(v) && !isNaN(parseFloat(v))) {
                     options[key] = parseFloat(v);
+                } else if (v.trim() === "true") {
+                    options[key] = true;
+                } else if (v.trim() === "false") {
+                    options[key] = false;
                 }
             }
             const newValue = Object.assign({}, control.metadata, options);
