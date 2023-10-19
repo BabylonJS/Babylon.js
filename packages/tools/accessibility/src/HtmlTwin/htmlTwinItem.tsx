@@ -8,8 +8,16 @@ import { Container } from "gui/2D/controls/container";
 import { Control } from "gui/2D/controls/control";
 import type { IHTMLTwinRendererOptions } from "./htmlTwinRenderer";
 
-export type AccessibilityEntity = Node | Control; // only these types have their html twin
+/**
+ * The BabylonJS entities that can be accessible. It can be a Node or a Control.
+ */
+export type AccessibilityEntity = Node | Control;
 
+/**
+ * Retrieve an instance of texture with accessible elements (AdvancedDynamicTexture)
+ * @param item the item to retrieve the texture from
+ * @returns an accessible texture if found, undefined otherwise
+ */
 export function getAccessibleTexture(item: AccessibilityEntity): AdvancedDynamicTexture | undefined {
     if (item instanceof AbstractMesh && item.material instanceof StandardMaterial) {
         const hasTexture = item.material.emissiveTexture || item.material.diffuseTexture;
@@ -23,6 +31,11 @@ export function getAccessibleTexture(item: AccessibilityEntity): AdvancedDynamic
     return undefined;
 }
 
+/**
+ * Get the direct children of an accessible item.
+ * @param item an accessible item
+ * @returns a list of accessible items
+ */
 export function getDirectChildrenOf(item: AccessibilityEntity): AccessibilityEntity[] {
     if (item instanceof Node) {
         return item.getDescendants(true);
@@ -32,6 +45,11 @@ export function getDirectChildrenOf(item: AccessibilityEntity): AccessibilityEnt
     return [];
 }
 
+/**
+ * Given an accessible item, return if it's visible or not.
+ * @param item an accessible item
+ * @returns its visibility status
+ */
 export function isVisible(item: AccessibilityEntity): boolean {
     if (item instanceof Node) {
         return item.isEnabled();
@@ -63,8 +81,9 @@ export class HTMLTwinItem {
     /**
      * The text content displayed in HTML element.
      * Returns the description in accessibilityTag, if defined (returns "" by default).
+     * @param _options - The options to render the HTML twin tree where this item is contained. Not used in this class, but in its children.
      */
-    public getDescription(options: IHTMLTwinRendererOptions): string {
+    public getDescription(_options: IHTMLTwinRendererOptions): string {
         return this.entity.accessibilityTag?.description ?? "";
     }
 

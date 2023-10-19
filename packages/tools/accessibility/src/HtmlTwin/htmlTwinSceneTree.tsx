@@ -24,6 +24,11 @@ function getGuiTextures(scene: Scene) {
     return textures;
 }
 
+/**
+ * The scene tree of the HTML twin. It contain all the top level nodes
+ * @param props
+ * @returns
+ */
 export function HTMLTwinSceneTree(props: { scene: Scene; options: IHTMLTwinRendererOptions }) {
     const { scene, options } = props;
 
@@ -33,7 +38,7 @@ export function HTMLTwinSceneTree(props: { scene: Scene; options: IHTMLTwinRende
     const sceneContext = useContext(SceneContext);
 
     useEffect(() => {
-        const observer = props.scene.onNewMeshAddedObservable.add(() => {
+        const newMeshAddedObserver = scene.onNewMeshAddedObservable.add(() => {
             if (!nextFrameObserver.current) {
                 nextFrameObserver.current = props.scene.onBeforeRenderObservable.addOnce(() => {
                     nextFrameObserver.current = null;
@@ -41,19 +46,14 @@ export function HTMLTwinSceneTree(props: { scene: Scene; options: IHTMLTwinRende
                 });
             }
         });
-        return () => {
-            props.scene.onNewMeshAddedObservable.remove(observer);
-        };
-    }, [scene]);
-
-    useEffect(() => {
-        const observer = scene.onNewTextureAddedObservable.add((texture: BaseTexture) => {
+        const newTextureAddedObserver = scene.onNewTextureAddedObservable.add((texture: BaseTexture) => {
             if (texture instanceof AdvancedDynamicTexture) {
                 setSceneGuiTextures((current) => [...current, texture]);
             }
         });
         return () => {
-            scene.onNewTextureAddedObservable.remove(observer);
+            scene.onNewMeshAddedObservable.remove(newMeshAddedObserver);
+            scene.onNewTextureAddedObservable.remove(newTextureAddedObserver);
         };
     }, [scene]);
 

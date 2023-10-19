@@ -10,6 +10,8 @@ import { HTMLTwinNodeItem } from "./htmlTwinNodeItem";
 import type { Scene } from "core/scene";
 import { HTMLTwinGUIItem } from "./htmlTwinGUIItem";
 import type { IHTMLTwinRendererOptions } from "./htmlTwinRenderer";
+import type { Observable, Observer } from "core/Misc/observable";
+import type { Nullable } from "core/types";
 
 function getTwinItemFromNode(node: AccessibilityEntity, scene: Scene) {
     if (node instanceof Node) {
@@ -19,6 +21,12 @@ function getTwinItemFromNode(node: AccessibilityEntity, scene: Scene) {
     }
 }
 
+/**
+ * An adapter that transforms a Accessible entity in a React element. Contains observables for the events that can
+ * change the state of the entity or the accesible tree.
+ * @param props the props of the adapter
+ * @returns
+ */
 export function HTMLTwinItemAdapter(props: { node: AccessibilityEntity; scene: Scene; options: IHTMLTwinRendererOptions }) {
     const { node, scene, options } = props;
     if (!node) {
@@ -30,74 +38,71 @@ export function HTMLTwinItemAdapter(props: { node: AccessibilityEntity; scene: S
     }, [node]);
 
     const [isVisibleState, setIsVisibleState] = useState(isVisible(props.node));
-    useEffect(() => {
-        const observable = (node as any).onEnabledStateChangedObservable;
-        const observer = observable.add((value: boolean) => {
-            setIsVisibleState(value);
-        });
-        return () => {
-            observable.remove(observer);
-        };
-    }, [node]);
-
     const sceneContext = useContext(SceneContext);
-    useEffect(() => {
-        const observable = (node as any).onDisposeObservable;
-        const observer = observable.add(() => {
-            sceneContext.updateScene();
-        });
-        return () => {
-            observable.remove(observer);
-        };
-    }, [node]);
-
     const [description, setDescription] = useState(twinItem?.getDescription(options));
-    useEffect(() => {
-        const observable = node.onAccessibilityTagChangedObservable;
-        const observer = observable.add(() => {
-            setDescription(twinItem?.getDescription(options));
-        });
-        return () => {
-            observable.remove(observer);
-        };
-    }, [node]);
+    const [children, setChildren] = useState(getDirectChildrenOf(props.node));
 
     useEffect(() => {
         setDescription(twinItem?.getDescription(options));
     }, [twinItem]);
 
-    const [children, setChildren] = useState(getDirectChildrenOf(props.node));
-    if (node instanceof Container) {
-        useEffect(() => {
-            const observable = node.onControlAddedObservable;
-            const observer = observable.add(() => {
-                setChildren([...getDirectChildrenOf(props.node)]);
-            });
-            return () => {
-                observable.remove(observer);
-            };
-        }, [node]);
-        useEffect(() => {
-            const observable = node.onControlRemovedObservable;
-            const observer = observable.add(() => {
-                setChildren([...getDirectChildrenOf(props.node)]);
-            });
-            return () => {
-                observable.remove(observer);
-            };
-        }, [node]);
-    }
-    if (node instanceof Control) {
-        useEffect(() => {
-            const observable = node.onIsVisibleChangedObservable;
-            const observer = observable.add(() => {
+    useEffect(() => {
+        // General observers for all the entities
+        const enabledObservable = node.onEnabledStateChangedObservable;
+        const enabledObserver = enabledObservable.add((value: boolean) => {
+            setIsVisibleState(value);
+        });
+
+        const disposeObservable = (node as any).onDisposeObservable;
+        const disposeObserver = disposeObservable.add(() => {
+            sceneContext.updateScene();
+        });
+
+        const accessibilityTagObservable = node.onAccessibilityTagChangedObservable;
+        const accessibilityTagObserver = accessibilityTagObservable.add(() => {
+            setDescription(twinItem?.getDescription(options));
+        });
+
+        // Specific observer for control only
+        let isVisibleChangedObservable: Observable<boolean>;
+        let isVisibleChangedObserver: Nullable<Observer<boolean>>;
+        if (node instanceof Control) {
+            isVisibleChangedObservable = node.onIsVisibleChangedObservable;
+            isVisibleChangedObserver = isVisibleChangedObservable.add(() => {
                 setIsVisibleState(isVisible(props.node));
             });
-            return () => {
-                observable.remove(observer);
-            };
-        }, [node]);
-    }
+        }
+
+        // specific observers for container only
+        let controlAddedObservable: Observable<Nullable<Control>>;
+        let controlAddedObserver: Nullable<Observer<Nullable<Control>>>;
+        let controlRemovedObservable: Observable<Nullable<Control>>;
+        let controlRemovedObserver: Nullable<Observer<Nullable<Control>>>;
+        if (node instanceof Container) {
+            controlAddedObservable = node.onControlAddedObservable;
+            controlAddedObserver = controlAddedObservable.add(() => {
+                setChildren(getDirectChildrenOf(props.node).slice(0));
+            });
+
+            controlRemovedObservable = node.onControlRemovedObservable;
+            controlRemovedObserver = controlRemovedObservable.add(() => {
+                setChildren(getDirectChildrenOf(props.node).slice(0));
+            });
+        }
+        return () => {
+            enabledObservable.remove(enabledObserver);
+            disposeObservable.remove(disposeObserver);
+            accessibilityTagObservable.remove(accessibilityTagObserver);
+            if (node instanceof Control) {
+                isVisibleChangedObservable.remove(isVisibleChangedObserver!);
+            }
+            if (node instanceof Container) {
+                controlAddedObservable.remove(controlAddedObserver);
+                controlRemovedObservable.remove(controlRemovedObserver);
+            }
+        };
+    }, [node]);
+
     if (isVisibleState) {
         const accessibleTexture = getAccessibleTexture(props.node);
         if (accessibleTexture) {
