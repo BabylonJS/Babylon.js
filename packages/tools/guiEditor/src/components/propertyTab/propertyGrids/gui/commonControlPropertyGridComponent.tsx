@@ -221,9 +221,15 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         }
     }
 
-    private _addOrUpdateMetadata(options: {}) {
+    private _addOrUpdateMetadata(options: {[key: string]: any}) {
         for (const control of this.props.controls) {
             const initialValue = control.metadata;
+            for (const key in options) {
+                const v = options[key];
+                if (!isNaN(v) && !isNaN(parseFloat(v))) {
+                    options[key] = parseFloat(v);
+                }
+            }
             const newValue = Object.assign({}, control.metadata, options);
             control.metadata = newValue;
             this.props.onPropertyChangedObservable?.notifyObservers({
