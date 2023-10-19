@@ -248,6 +248,18 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         }
     }
 
+    private _getCommonPropertyKeys(objects: {}[]) {
+        objects = objects.filter(x => !!x)
+        if (objects.length === 0) return []
+        if (objects.length === 1) {
+            return Object.keys(objects[0])
+        }
+        const [firstObject, ...restObjects] = objects;
+        return Object.keys(firstObject).filter(property => {
+            return restObjects.every(obj => property in obj);
+        });
+    }
+
     private _markChildrenAsDirty() {
         for (const control of this.props.controls) {
             if (control instanceof Container)
@@ -785,41 +797,51 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         }}
                     />
                 </div>
-                {controls.map((control, i) => {
-                    if(!control.metadata) return
+                {this._getCommonPropertyKeys(controls.map(x => x.metadata)).map(metaKey => {
+                    if (metaKey === 'guiEditor' || metaKey.startsWith('_')) {
+                        return
+                    }
+
+                    const firstControl = controls.find(x => !!x.metadata)
+                    if (!firstControl) {
+                        return
+                    }
+
+                    let value = firstControl.metadata[metaKey]
+                    const isNotEditableValue = typeof value === 'object'
+
+                    const allValues = controls.map(x => x.metadata[metaKey])
+                    if (!allValues.every(x => x === value)) {
+                        value = conflictingValuesPlaceholder
+                    }
+
                     return (
-                        <div key={control.name + i.toString()}>
-                            {Object.entries(control.metadata).map(([key, value], i) => {
-                                if (key === 'guiEditor') return
-                                if (key.startsWith('_')) return
-                                return (
-                                    <div className="ge-divider double" key={key}>
-                                        <TextInputLineComponent
-                                            numbersOnly={false}
-                                            lockObject={this.props.lockObject}
-                                            label=""
-                                            delayInput={true}
-                                            value={key}
-                                            disabled={true}
-                                        />
-                                        <TextInputLineComponent
-                                            numbersOnly={false}
-                                            lockObject={this.props.lockObject}
-                                            label=":"
-                                            delayInput={true}
-                                            disabled={typeof value === 'object'}
-                                            value={typeof value === 'string' ? value : JSON.stringify(value)}
-                                            onChange={(x) => this._addOrUpdateMetadata({[key]: x})}
-                                        />
-                                        <CommandButtonComponent
-                                            tooltip="Remove"
-                                            icon={removeIcon}
-                                            isActive={true}
-                                            onClick={() => this._removeFromMetadata(key)}
-                                        />
-                                    </div>
-                                )
-                            })}
+                        <div key={metaKey}>
+                            <div className="ge-divider double">
+                                <TextInputLineComponent
+                                    numbersOnly={false}
+                                    lockObject={this.props.lockObject}
+                                    label=""
+                                    delayInput={true}
+                                    value={metaKey}
+                                    disabled={true}
+                                />
+                                <TextInputLineComponent
+                                    numbersOnly={false}
+                                    lockObject={this.props.lockObject}
+                                    label=":"
+                                    delayInput={true}
+                                    disabled={isNotEditableValue}
+                                    value={typeof value === 'string' ? value : JSON.stringify(value)}
+                                    onChange={(x) => this._addOrUpdateMetadata({[metaKey]: x})}
+                                />
+                                <CommandButtonComponent
+                                    tooltip="Remove"
+                                    icon={removeIcon}
+                                    isActive={true}
+                                    onClick={() => this._removeFromMetadata(metaKey)}
+                                />
+                            </div>
                         </div>
                     )
                 })}
