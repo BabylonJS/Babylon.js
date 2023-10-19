@@ -839,7 +839,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                                     value={typeof value === "string" ? value : JSON.stringify(value)}
                                     onChange={(x) => this._addOrUpdateMetadata({ [metaKey]: x })}
                                 />
-                                <CommandButtonComponent tooltip="Remove" icon={removeIcon} isActive={true} onClick={() => this._removeFromMetadata(metaKey)} />
+                                <CommandButtonComponent tooltip="Remove" icon={removeIcon} isActive={false} onClick={() => this._removeFromMetadata(metaKey)} />
                             </div>
                         </div>
                     );
