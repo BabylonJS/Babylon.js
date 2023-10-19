@@ -89,7 +89,7 @@ export class WebXRDefaultExperienceOptions {
 }
 
 /**
- * Default experience which provides a similar setup to the previous webVRExperience
+ * Default experience for webxr
  */
 export class WebXRDefaultExperience {
     /**

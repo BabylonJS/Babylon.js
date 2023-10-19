@@ -1,6 +1,5 @@
 import type { Observer } from "../Misc/observable";
 import type { Nullable } from "../types";
-import type { WebVRFreeCamera } from "../Cameras/VR/webVRCamera";
 import type { Scene, IDisposable } from "../scene";
 import { Quaternion, Vector3, Matrix, TmpVectors } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
@@ -344,10 +343,7 @@ export class Gizmo implements IGizmo {
             // Scale
             if (this.updateScale) {
                 const activeCamera = this.gizmoLayer.utilityLayerScene.activeCamera!;
-                let cameraPosition = activeCamera.globalPosition;
-                if ((<WebVRFreeCamera>activeCamera).devicePosition) {
-                    cameraPosition = (<WebVRFreeCamera>activeCamera).devicePosition;
-                }
+                const cameraPosition = activeCamera.globalPosition;
                 this._rootMesh.position.subtractToRef(cameraPosition, TmpVectors.Vector3[0]);
                 let scale = this.scaleRatio;
                 if (activeCamera.mode == Camera.ORTHOGRAPHIC_CAMERA) {

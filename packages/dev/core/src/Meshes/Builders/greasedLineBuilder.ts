@@ -1,14 +1,18 @@
-import type { GreasedLineMaterialOptions } from "../../Materials/greasedLinePluginMaterial";
-import { GreasedLineMeshMaterialType, GreasedLinePluginMaterial } from "../../Materials/greasedLinePluginMaterial";
 import { StandardMaterial } from "./../../Materials/standardMaterial";
 import { PBRMaterial } from "../../Materials/PBR/pbrMaterial";
 import type { Nullable } from "../../types";
-import type { GreasedLineMeshOptions } from "../greasedLineMesh";
-import { GreasedLineMesh } from "../greasedLineMesh";
+import { GreasedLineMesh } from "../GreasedLine/greasedLineMesh";
 import type { Scene } from "../../scene";
 import { EngineStore } from "../../Engines/engineStore";
 import type { Color3 } from "../../Maths/math.color";
-import { GreasedLineSimpleMaterial } from "../../Materials/greasedLineSimpleMaterial";
+import { GreasedLineSimpleMaterial } from "../../Materials/GreasedLine/greasedLineSimpleMaterial";
+import { GreasedLineTools } from "../../Misc/greasedLineTools";
+import type { GreasedLineMeshOptions } from "../GreasedLine/greasedLineBaseMesh";
+import { GreasedLineRibbonAutoDirectionMode, GreasedLineRibbonFacesMode, GreasedLineRibbonPointsMode } from "../GreasedLine/greasedLineBaseMesh";
+import { GreasedLineRibbonMesh } from "../GreasedLine/greasedLineRibbonMesh";
+import { GreasedLineMeshMaterialType, type GreasedLineMaterialOptions } from "../../Materials/GreasedLine/greasedLineMaterialInterfaces";
+import { GreasedLinePluginMaterial } from "../../Materials/GreasedLine/greasedLinePluginMaterial";
+import { GreasedLineMaterialDefaults } from "../../Materials/GreasedLine/greasedLineMaterialDefaults";
 
 /**
  * How are the colors distributed along the color table
@@ -101,7 +105,7 @@ export interface GreasedLineMeshBuilderOptions extends GreasedLineMeshOptions {
 }
 
 /**
- * Builder class for create GreasedLineMeshes
+ * Builder functions for creating GreasedLineMeshes
  */
 
 /**
@@ -131,6 +135,7 @@ export function CreateGreasedLineMaterial(name: string, options: GreasedLineMate
 
     return material;
 }
+
 /**
  * Creates a GreasedLine mesh
  * @param name name of the mesh
@@ -143,7 +148,23 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     scene = <Scene>(scene ?? EngineStore.LastCreatedScene);
 
     let instance;
-    const allPoints = GreasedLineMesh.ConvertPoints(options.points);
+    const allPoints = GreasedLineTools.ConvertPoints(options.points);
+
+    options.widthDistribution = options.widthDistribution ?? GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START;
+    if (options.ribbonOptions) {
+        options.ribbonOptions.facesMode = options.ribbonOptions.facesMode ?? GreasedLineRibbonFacesMode.FACES_MODE_SINGLE_SIDED_NO_BACKFACE_CULLING;
+        options.ribbonOptions.pointsMode = options.ribbonOptions.pointsMode ?? GreasedLineRibbonPointsMode.POINTS_MODE_POINTS;
+        options.ribbonOptions.directionsAutoMode =
+            options.ribbonOptions.directionsAutoMode ??
+            (options.ribbonOptions.directions ? GreasedLineRibbonAutoDirectionMode.AUTO_DIRECTIONS_NONE : GreasedLineRibbonAutoDirectionMode.AUTO_DIRECTIONS_FROM_FIRST_SEGMENT);
+    }
+
+    materialOptions = materialOptions ?? {
+        color: GreasedLineMaterialDefaults.DEFAULT_COLOR,
+    };
+    materialOptions.createAndAssignMaterial = materialOptions.createAndAssignMaterial ?? true;
+    materialOptions.colorDistribution = materialOptions?.colorDistribution ?? GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START;
+    materialOptions.materialType = materialOptions.materialType ?? GreasedLineMeshMaterialType.MATERIAL_TYPE_STANDARD;
 
     let length = 0;
     if (Array.isArray(allPoints[0])) {
@@ -152,31 +173,33 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
         });
     }
 
-    options.widthDistribution = options.widthDistribution ?? GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START;
-
-    materialOptions = materialOptions ?? {
-        color: GreasedLinePluginMaterial.DEFAULT_COLOR,
-    };
-    materialOptions.createAndAssignMaterial = materialOptions.createAndAssignMaterial ?? true;
-    materialOptions.colorDistribution = materialOptions?.colorDistribution ?? GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START;
-    materialOptions.materialType = materialOptions.materialType ?? GreasedLineMeshMaterialType.MATERIAL_TYPE_STANDARD;
-
     const widths = CompleteGreasedLineWidthTable(length, options.widths ?? [], options.widthDistribution);
 
     const colors = materialOptions?.colors
-        ? CompleteGreasedLineColorTable(length, materialOptions.colors, materialOptions.colorDistribution, materialOptions.color ?? GreasedLinePluginMaterial.DEFAULT_COLOR)
+        ? CompleteGreasedLineColorTable(length, materialOptions.colors, materialOptions.colorDistribution, materialOptions.color ?? GreasedLineMaterialDefaults.DEFAULT_COLOR)
         : undefined;
 
     // create new mesh if instance is not defined
-    if (!options.instance) {
-        const initialGreasedLineOptions: GreasedLineMeshOptions = {
-            points: allPoints,
-            updatable: options.updatable,
-            widths,
-            lazy: options.lazy,
-        };
+    const initialGreasedLineOptions: GreasedLineMeshOptions = {
+        points: allPoints,
+        updatable: options.updatable,
+        widths,
+        lazy: options.lazy,
+        ribbonOptions: options.ribbonOptions,
+        uvs: options.uvs,
+        colorPointers: options.colorPointers,
+    };
 
-        instance = new GreasedLineMesh(name, scene, initialGreasedLineOptions);
+    if (initialGreasedLineOptions.ribbonOptions) {
+        if (initialGreasedLineOptions.ribbonOptions.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS) {
+            initialGreasedLineOptions.ribbonOptions.width = materialOptions.width ?? initialGreasedLineOptions.ribbonOptions.width ?? GreasedLineMaterialDefaults.DEFAULT_WIDTH;
+        }
+    }
+
+    if (!options.instance) {
+        instance = initialGreasedLineOptions.ribbonOptions
+            ? new GreasedLineRibbonMesh(name, scene, initialGreasedLineOptions)
+            : new GreasedLineMesh(name, scene, initialGreasedLineOptions);
 
         if (materialOptions) {
             const initialMaterialOptions: GreasedLineMaterialOptions = {
@@ -195,28 +218,38 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
                 colorsSampling: materialOptions.colorsSampling,
                 colorDistributionType: materialOptions.colorDistributionType,
                 colors,
+                cameraFacing: !options.ribbonOptions,
+                colorsTexture: materialOptions.colorsTexture,
             };
 
             if (materialOptions.createAndAssignMaterial) {
                 const material = CreateGreasedLineMaterial(name, initialMaterialOptions, scene);
                 instance.material = material;
+
+                if (options.ribbonOptions?.facesMode === GreasedLineRibbonFacesMode.FACES_MODE_SINGLE_SIDED_NO_BACKFACE_CULLING) {
+                    material.backFaceCulling = false;
+                }
             }
         }
     } else {
         // update the data on the mesh instance
         instance = options.instance;
-        const currentWidths = instance.widths;
-
-        if (currentWidths) {
-            const newWidths = currentWidths.slice();
-            for (const w of widths) {
-                newWidths.push(w);
-            }
-            instance.widths = newWidths;
+        if (instance instanceof GreasedLineRibbonMesh) {
+            instance.addPoints(allPoints, initialGreasedLineOptions);
         } else {
-            instance.widths = widths;
+            const currentWidths = instance.widths;
+
+            if (currentWidths) {
+                const newWidths = currentWidths.slice();
+                for (const w of widths) {
+                    newWidths.push(w);
+                }
+                instance.widths = newWidths;
+            } else {
+                instance.widths = widths;
+            }
+            instance.addPoints(allPoints);
         }
-        instance.addPoints(allPoints);
     }
 
     // add colors
@@ -267,6 +300,9 @@ export function CompleteGreasedLineWidthTable(
 
     // is the width table shorter than the point table?
     if (missingCount > 0) {
+        if (widths.length % 2 != 0) {
+            widths.push(defaultWidthUpper);
+        }
         // it is, fill in the missing elements
         if (widthsDistribution === GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START_END) {
             const halfCount = Math.floor(widths.length / 2);

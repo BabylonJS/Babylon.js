@@ -135,10 +135,6 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
         const camera = this.camera;
         const engine = camera.getEngine();
 
-        if (engine.isInVRExclusivePointerMode) {
-            return;
-        }
-
         if (!this.touchEnabled && e.pointerType === "touch") {
             return;
         }
@@ -221,7 +217,7 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
         const camera = this.camera;
         const engine = camera.getEngine();
 
-        if (!engine.isPointerLock || engine.isInVRExclusivePointerMode) {
+        if (!engine.isPointerLock) {
             return;
         }
 

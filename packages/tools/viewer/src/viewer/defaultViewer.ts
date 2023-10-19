@@ -407,18 +407,6 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
     };
 
     protected _initVR() {
-        this.engine.onVRDisplayChangedObservable.add(() => {
-            const viewerTemplate = this.templateManager.getTemplate("viewer");
-            const viewerElement = viewerTemplate && viewerTemplate.parent;
-
-            if (viewerElement) {
-                if (this.sceneManager.vrHelper!.isInVRMode) {
-                    viewerElement.classList.add("in-vr");
-                } else {
-                    viewerElement.classList.remove("in-vr");
-                }
-            }
-        });
         if (this.sceneManager.vrHelper) {
             // due to the way the experience helper is exisintg VR, this must be added.
             this.sceneManager.vrHelper.onExitingVR.add(() => {

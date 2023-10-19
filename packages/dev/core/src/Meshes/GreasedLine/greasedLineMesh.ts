@@ -1,86 +1,27 @@
-import type { Scene } from "../scene";
-import type { Matrix } from "../Maths/math.vector";
-import { Vector3 } from "../Maths/math.vector";
-import type { IGreasedLineMaterial } from "../Materials/greasedLinePluginMaterial";
-import { GreasedLinePluginMaterial } from "../Materials/greasedLinePluginMaterial";
-import { Mesh } from "./mesh";
-import type { Ray, TrianglePickingPredicate } from "../Culling/ray";
-import { Buffer, VertexBuffer } from "../Buffers/buffer";
-import { VertexData } from "./mesh.vertexData";
-import { PickingInfo } from "../Collisions/pickingInfo";
-import type { Nullable } from "../types";
-import type { Node } from "../node";
-import { DeepCopier } from "../Misc/deepCopier";
-import { GreasedLineTools } from "../Misc/greasedLineTools";
-import { GreasedLineSimpleMaterial } from "../Materials/greasedLineSimpleMaterial";
-
-export type GreasedLinePoints = Vector3[] | Vector3[][] | Float32Array | Float32Array[] | number[][] | number[];
-
-/**
- * Options for creating a GreasedLineMesh
- */
-export interface GreasedLineMeshOptions {
-    /**
-     * Points of the line.
-     */
-    points: GreasedLinePoints;
-    /**
-     * Each line segmment (from point to point) can have it's width multiplier. Final width = widths[segmentIdx] * width.
-     * Defaults to empty array.
-     */
-    widths?: number[];
-    /**
-     * If instance is specified, lines are added to the specified instance.
-     * Defaults to undefined.
-     */
-    instance?: GreasedLineMesh;
-    /**
-     * You can manually set the color pointers so you can control which segment/part
-     * will use which color from the colors material option
-     */
-    colorPointers?: number[];
-    /**
-     * UVs for the mesh
-     */
-    uvs?: number[];
-    /**
-     * If true, offsets and widths are updatable.
-     * Defaults to false.
-     */
-    updatable?: boolean;
-    /**
-     * Use when @see instance is specified.
-     * If true, the line will be rendered only after calling instance.updateLazy(). If false, line will be rerendered after every call to @see CreateGreasedLine
-     * Defaults to false.
-     */
-    lazy?: boolean;
-}
+import type { Scene } from "../../scene";
+import type { Matrix } from "../../Maths/math.vector";
+import { Vector3 } from "../../Maths/math.vector";
+import { Mesh } from "../mesh";
+import type { Ray, TrianglePickingPredicate } from "../../Culling/ray";
+import { Buffer, VertexBuffer } from "../../Buffers/buffer";
+import { PickingInfo } from "../../Collisions/pickingInfo";
+import type { Nullable } from "../../types";
+import type { Node } from "../../node";
+import { DeepCopier } from "../../Misc/deepCopier";
+import { GreasedLineTools } from "../../Misc/greasedLineTools";
+import { GreasedLineBaseMesh, type GreasedLineMeshOptions } from "./greasedLineBaseMesh";
 
 Mesh._GreasedLineMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
     return GreasedLineMesh.Parse(parsedMesh, scene);
 };
 
 /**
- * GreasedLine
+ * GreasedLineMesh
+ * Use the GreasedLineBuilder.CreateGreasedLine function to create an instance of this class.
  */
-export class GreasedLineMesh extends Mesh {
-    private _vertexPositions: number[];
+export class GreasedLineMesh extends GreasedLineBaseMesh {
     private _previousAndSide: number[];
     private _nextAndCounters: number[];
-
-    private _indices: number[];
-    private _uvs: number[];
-    private _points: number[][];
-    private _offsets: number[];
-    private _colorPointers: number[];
-    private _widths: number[];
-
-    private _offsetsBuffer?: Buffer;
-    private _widthsBuffer?: Buffer;
-    private _colorPointersBuffer?: Buffer;
-
-    private _lazy = false;
-    private _updatable = false;
 
     private static _V_START = new Vector3();
     private static _V_END = new Vector3();
@@ -92,24 +33,20 @@ export class GreasedLineMesh extends Mesh {
      */
     public intersectionThreshold = 0.1;
 
-    constructor(public readonly name: string, scene: Scene, private _options: GreasedLineMeshOptions) {
-        super(name, scene, null, null, false, false);
-
-        this._lazy = _options.lazy ?? false;
-        this._updatable = _options.updatable ?? false;
-
-        this._vertexPositions = [];
-        this._indices = [];
-        this._uvs = [];
-        this._points = [];
-        this._colorPointers = _options.colorPointers ?? [];
-        this._widths = _options.widths ?? new Array(_options.points.length).fill(1);
+    /**
+     * GreasedLineMesh
+     * @param name name of the mesh
+     * @param scene the scene
+     * @param _options mesh options
+     */
+    constructor(public readonly name: string, scene: Scene, _options: GreasedLineMeshOptions) {
+        super(name, scene, _options);
 
         this._previousAndSide = [];
         this._nextAndCounters = [];
 
         if (_options.points) {
-            this.addPoints(GreasedLineMesh.ConvertPoints(_options.points));
+            this.addPoints(GreasedLineTools.ConvertPoints(_options.points));
         }
     }
 
@@ -121,166 +58,11 @@ export class GreasedLineMesh extends Mesh {
         return "GreasedLineMesh";
     }
 
-    /**
-     * Converts GreasedLinePoints to number[][]
-     * @param points GreasedLinePoints
-     * @returns number[][] with x, y, z coordinates of the points, like [[x, y, z, x, y, z, ...], [x, y, z, ...]]
-     */
-    public static ConvertPoints(points: GreasedLinePoints): number[][] {
-        if (points.length && Array.isArray(points) && typeof points[0] === "number") {
-            return [<number[]>points];
-        } else if (points.length && Array.isArray(points[0]) && typeof points[0][0] === "number") {
-            return <number[][]>points;
-        } else if (points.length && !Array.isArray(points[0]) && points[0] instanceof Vector3) {
-            const positions: number[] = [];
-            for (let j = 0; j < points.length; j++) {
-                const p = points[j] as Vector3;
-                positions.push(p.x, p.y, p.z);
-            }
-            return [positions];
-        } else if (points.length > 0 && Array.isArray(points[0]) && points[0].length > 0 && points[0][0] instanceof Vector3) {
-            const positions: number[][] = [];
-            const vectorPoints = points as Vector3[][];
-            vectorPoints.forEach((p) => {
-                positions.push(p.flatMap((p2) => [p2.x, p2.y, p2.z]));
-            });
-            return positions;
-        } else if (points instanceof Float32Array) {
-            return [Array.from(points)];
-        } else if (points.length && points[0] instanceof Float32Array) {
-            const positions: number[][] = [];
-            points.forEach((p) => {
-                positions.push(Array.from(p as Float32Array));
-            });
-            return positions;
+    protected _updateColorPointers() {
+        if (this._options.colorPointers) {
+            return;
         }
 
-        return [];
-    }
-
-    /**
-     * Updated a lazy line. Rerenders the line and updates boundinfo as well.
-     */
-    public updateLazy() {
-        this._setPoints(this._points);
-        if (!this._options.colorPointers) {
-            this._updateColorPointers();
-        }
-        this._createVertexBuffers();
-        this.refreshBoundingInfo();
-
-        this.greasedLineMaterial?.updateLazy();
-    }
-
-    /**
-     * Dispose the line and it's resources
-     */
-    public dispose() {
-        super.dispose();
-    }
-
-    /**
-     *
-     * @returns true if the mesh was created in lazy mode
-     */
-    public isLazy(): boolean {
-        return this._lazy;
-    }
-
-    /**
-     * Return the the points offsets
-     */
-    get offsets() {
-        return this._offsets;
-    }
-
-    /**
-     * Sets point offests
-     * @param offsets offset table [x,y,z, x,y,z, ....]
-     */
-    set offsets(offsets: number[]) {
-        this._offsets = offsets;
-        if (!this._offsetsBuffer) {
-            this._createOffsetsBuffer(offsets);
-        } else {
-            this._offsetsBuffer && this._offsetsBuffer.update(offsets);
-        }
-    }
-
-    /**
-     * Gets widths at each line point like [widthLower, widthUpper, widthLower, widthUpper, ...]
-     */
-    get widths() {
-        return this._widths;
-    }
-
-    /**
-     * Sets widths at each line point
-     * @param widths width table [widthLower, widthUpper, widthLower, widthUpper ...]
-     */
-    set widths(widths: number[]) {
-        this._widths = widths;
-        if (!this._lazy) {
-            this._widthsBuffer && this._widthsBuffer.update(widths);
-        }
-    }
-
-    /**
-     * Gets the color pointer. Each vertex need a color pointer. These color pointers points to the colors in the color table @see colors
-     */
-    get colorPointers() {
-        return this._colorPointers;
-    }
-
-    /**
-     * Sets the color pointer
-     * @param colorPointers array of color pointer in the colors array. One pointer for every vertex is needed.
-     */
-    set colorPointers(colorPointers: number[]) {
-        this._colorPointers = colorPointers;
-        if (!this._lazy) {
-            this._colorPointersBuffer && this._colorPointersBuffer.update(colorPointers);
-        }
-    }
-
-    /**
-     * Gets the pluginMaterial associated with line
-     */
-    get greasedLineMaterial(): IGreasedLineMaterial | undefined {
-        if (this.material && this.material instanceof GreasedLineSimpleMaterial) {
-            return this.material;
-        }
-        const materialPlugin = this.material?.pluginManager?.getPlugin(GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME);
-        if (materialPlugin) {
-            return <GreasedLinePluginMaterial>materialPlugin;
-        }
-        return;
-    }
-
-    /**
-     * Return copy the points.
-     */
-    get points() {
-        const pointsCopy: number[][] = [];
-        DeepCopier.DeepCopy(this._points, pointsCopy);
-        return pointsCopy;
-    }
-
-    /**
-     * Adds new points to the line. It doesn't rerenders the line if in lazy mode.
-     * @param points points table
-     */
-    public addPoints(points: number[][]) {
-        for (const p of points) {
-            this._points.push(p);
-        }
-
-        if (!this._lazy) {
-            this.setPoints(this._points);
-        }
-    }
-
-    private _updateColorPointers() {
         let colorPointer = 0;
         this._colorPointers = [];
         this._points.forEach((p) => {
@@ -291,29 +73,11 @@ export class GreasedLineMesh extends Mesh {
         });
     }
 
-    private _updateWidths() {
-        let pointCount = 0;
-        for (const points of this._points) {
-            pointCount += points.length;
-        }
-        const countDiff = (pointCount / 3) * 2 - this._widths.length;
-        for (let i = 0; i < countDiff; i++) {
-            this._widths.push(1);
-        }
+    protected _updateWidths(): void {
+        super._updateWidthsWithValue(0);
     }
 
-    /**
-     * Sets line points and rerenders the line.
-     * @param points points table
-     */
-    public setPoints(points: number[][]) {
-        this._points = points;
-        this._updateWidths();
-        this._updateColorPointers();
-        this._setPoints(points);
-    }
-
-    private _setPoints(points: number[][]) {
+    protected _setPoints(points: number[][]) {
         this._points = points;
         this._options.points = points;
 
@@ -381,18 +145,6 @@ export class GreasedLineMesh extends Mesh {
         }
     }
 
-    private _createLineOptions() {
-        const lineOptions: GreasedLineMeshOptions = {
-            points: this._points,
-            colorPointers: this._colorPointers,
-            lazy: this._lazy,
-            updatable: this._updatable,
-            uvs: this._uvs,
-            widths: this._widths,
-        };
-        return lineOptions;
-    }
-
     /**
      * Clones the GreasedLineMesh.
      * @param name new line name
@@ -438,6 +190,12 @@ export class GreasedLineMesh extends Mesh {
         return result;
     }
 
+    protected _initGreasedLine() {
+        super._initGreasedLine();
+
+        this._previousAndSide = [];
+        this._nextAndCounters = [];
+    }
     /**
      * Checks whether a ray is intersecting this GreasedLineMesh
      * @param ray ray to check the intersection of this mesh with
@@ -538,14 +296,6 @@ export class GreasedLineMesh extends Mesh {
         return intersects;
     }
 
-    private _initGreasedLine() {
-        this._vertexPositions = [];
-        this._previousAndSide = [];
-        this._nextAndCounters = [];
-        this._indices = [];
-        this._uvs = [];
-    }
-
     private get _boundingSphere() {
         return this.getBoundingInfo().boundingSphere;
     }
@@ -612,12 +362,8 @@ export class GreasedLineMesh extends Mesh {
         };
     }
 
-    private _createVertexBuffers() {
-        const vertexData = new VertexData();
-        vertexData.positions = this._vertexPositions;
-        vertexData.indices = this._indices;
-        vertexData.uvs = this._uvs;
-        vertexData.applyToMesh(this, this._options.updatable);
+    protected _createVertexBuffers() {
+        const vertexData = super._createVertexBuffers();
 
         const engine = this._scene.getEngine();
 
@@ -634,13 +380,7 @@ export class GreasedLineMesh extends Mesh {
         const colorPointersBuffer = new Buffer(engine, this._colorPointers, this._updatable, 1);
         this.setVerticesBuffer(colorPointersBuffer.createVertexBuffer("grl_colorPointers", 0, 1));
         this._colorPointersBuffer = colorPointersBuffer;
-    }
 
-    private _createOffsetsBuffer(offsets: number[]) {
-        const engine = this._scene.getEngine();
-
-        const offsetBuffer = new Buffer(engine, offsets, this._updatable, 3);
-        this.setVerticesBuffer(offsetBuffer.createVertexBuffer("grl_offsets", 0, 3));
-        this._offsetsBuffer = offsetBuffer;
+        return vertexData;
     }
 }
