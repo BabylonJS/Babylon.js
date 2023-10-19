@@ -23,6 +23,16 @@ import type { RenderTargetTexture } from "../Materials/Textures/renderTargetText
 import type { FreeCamera } from "./freeCamera";
 import type { TargetCamera } from "./targetCamera";
 import type { Ray } from "../Culling/ray";
+import type { ArcRotateCamera } from "./arcRotateCamera";
+
+interface IObliqueParams {
+    /** The angle of the plane */
+    angle: number;
+    /** The length of the plane */
+    length: number;
+    /** The offset of the plane */
+    offset: number;
+}
 
 /**
  * This is the base class of all the camera used in the application.
@@ -133,6 +143,11 @@ export class Camera extends Node {
     public get upVector() {
         return this._upVector;
     }
+
+    /**
+     * Object containing oblique projection values (only used with ORTHOGRAPHIC_CAMERA)
+     */
+    public oblique: Nullable<IObliqueParams> = null;
 
     /**
      * The screen area in scene units squared
@@ -568,6 +583,9 @@ export class Camera extends Node {
         this._cache.orthoRight = undefined;
         this._cache.orthoBottom = undefined;
         this._cache.orthoTop = undefined;
+        this._cache.obliqueAngle = undefined;
+        this._cache.obliqueLength = undefined;
+        this._cache.obliqueOffset = undefined;
         this._cache.renderWidth = undefined;
         this._cache.renderHeight = undefined;
     }
@@ -600,31 +618,39 @@ export class Camera extends Node {
 
     /** @internal */
     public _isSynchronizedProjectionMatrix(): boolean {
-        let check = this._cache.mode === this.mode && this._cache.minZ === this.minZ && this._cache.maxZ === this.maxZ;
+        let isSynchronized = this._cache.mode === this.mode && this._cache.minZ === this.minZ && this._cache.maxZ === this.maxZ;
 
-        if (!check) {
+        if (!isSynchronized) {
             return false;
         }
 
         const engine = this.getEngine();
 
         if (this.mode === Camera.PERSPECTIVE_CAMERA) {
-            check =
+            isSynchronized =
                 this._cache.fov === this.fov &&
                 this._cache.fovMode === this.fovMode &&
                 this._cache.aspectRatio === engine.getAspectRatio(this) &&
                 this._cache.projectionPlaneTilt === this.projectionPlaneTilt;
         } else {
-            check =
+            isSynchronized =
                 this._cache.orthoLeft === this.orthoLeft &&
                 this._cache.orthoRight === this.orthoRight &&
                 this._cache.orthoBottom === this.orthoBottom &&
                 this._cache.orthoTop === this.orthoTop &&
                 this._cache.renderWidth === engine.getRenderWidth() &&
                 this._cache.renderHeight === engine.getRenderHeight();
+
+            if (this.oblique) {
+                isSynchronized =
+                    isSynchronized &&
+                    this._cache.obliqueAngle === this.oblique.angle &&
+                    this._cache.obliqueLength === this.oblique.length &&
+                    this._cache.obliqueOffset === this.oblique.offset;
+            }
         }
 
-        return check;
+        return isSynchronized;
     }
 
     /**
@@ -816,6 +842,7 @@ export class Camera extends Node {
 
         this.updateCache();
         this._computedViewMatrix = this._getViewMatrix();
+
         this._currentRenderId = this.getScene().getRenderId();
         this._childUpdateId++;
 
@@ -920,33 +947,68 @@ export class Camera extends Node {
             const halfWidth = engine.getRenderWidth() / 2.0;
             const halfHeight = engine.getRenderHeight() / 2.0;
             if (scene.useRightHandedSystem) {
-                Matrix.OrthoOffCenterRHToRef(
-                    this.orthoLeft ?? -halfWidth,
-                    this.orthoRight ?? halfWidth,
-                    this.orthoBottom ?? -halfHeight,
-                    this.orthoTop ?? halfHeight,
-                    reverseDepth ? this.maxZ : this.minZ,
-                    reverseDepth ? this.minZ : this.maxZ,
-                    this._projectionMatrix,
-                    engine.isNDCHalfZRange
-                );
+                if (this.oblique) {
+                    Matrix.ObliqueOffCenterRHToRef(
+                        this.orthoLeft ?? -halfWidth,
+                        this.orthoRight ?? halfWidth,
+                        this.orthoBottom ?? -halfHeight,
+                        this.orthoTop ?? halfHeight,
+                        reverseDepth ? this.maxZ : this.minZ,
+                        reverseDepth ? this.minZ : this.maxZ,
+                        this.oblique.length,
+                        this.oblique.angle,
+                        this._computeObliqueDistance(this.oblique.offset),
+                        this._projectionMatrix,
+                        engine.isNDCHalfZRange
+                    );
+                } else {
+                    Matrix.OrthoOffCenterRHToRef(
+                        this.orthoLeft ?? -halfWidth,
+                        this.orthoRight ?? halfWidth,
+                        this.orthoBottom ?? -halfHeight,
+                        this.orthoTop ?? halfHeight,
+                        reverseDepth ? this.maxZ : this.minZ,
+                        reverseDepth ? this.minZ : this.maxZ,
+                        this._projectionMatrix,
+                        engine.isNDCHalfZRange
+                    );
+                }
             } else {
-                Matrix.OrthoOffCenterLHToRef(
-                    this.orthoLeft ?? -halfWidth,
-                    this.orthoRight ?? halfWidth,
-                    this.orthoBottom ?? -halfHeight,
-                    this.orthoTop ?? halfHeight,
-                    reverseDepth ? this.maxZ : this.minZ,
-                    reverseDepth ? this.minZ : this.maxZ,
-                    this._projectionMatrix,
-                    engine.isNDCHalfZRange
-                );
+                if (this.oblique) {
+                    Matrix.ObliqueOffCenterLHToRef(
+                        this.orthoLeft ?? -halfWidth,
+                        this.orthoRight ?? halfWidth,
+                        this.orthoBottom ?? -halfHeight,
+                        this.orthoTop ?? halfHeight,
+                        reverseDepth ? this.maxZ : this.minZ,
+                        reverseDepth ? this.minZ : this.maxZ,
+                        this.oblique.length,
+                        this.oblique.angle,
+                        this._computeObliqueDistance(this.oblique.offset),
+                        this._projectionMatrix,
+                        engine.isNDCHalfZRange
+                    );
+                } else {
+                    Matrix.OrthoOffCenterLHToRef(
+                        this.orthoLeft ?? -halfWidth,
+                        this.orthoRight ?? halfWidth,
+                        this.orthoBottom ?? -halfHeight,
+                        this.orthoTop ?? halfHeight,
+                        reverseDepth ? this.maxZ : this.minZ,
+                        reverseDepth ? this.minZ : this.maxZ,
+                        this._projectionMatrix,
+                        engine.isNDCHalfZRange
+                    );
+                }
             }
 
             this._cache.orthoLeft = this.orthoLeft;
             this._cache.orthoRight = this.orthoRight;
             this._cache.orthoBottom = this.orthoBottom;
             this._cache.orthoTop = this.orthoTop;
+            this._cache.obliqueAngle = this.oblique?.angle;
+            this._cache.obliqueLength = this.oblique?.length;
+            this._cache.obliqueOffset = this.oblique?.offset;
             this._cache.renderWidth = engine.getRenderWidth();
             this._cache.renderHeight = engine.getRenderHeight();
         }
@@ -963,6 +1025,12 @@ export class Camera extends Node {
     public getTransformationMatrix(): Matrix {
         this._computedViewMatrix.multiplyToRef(this._projectionMatrix, this._transformMatrix);
         return this._transformMatrix;
+    }
+
+    private _computeObliqueDistance(offset: number): number {
+        const arcRotateCamera = this as Camera as ArcRotateCamera;
+        const targetCamera = this as Camera as TargetCamera;
+        return (arcRotateCamera.radius || (targetCamera.target ? Vector3.Distance(this.position, targetCamera.target) : this.position.length())) + offset;
     }
 
     private _updateFrustumPlanes(): void {

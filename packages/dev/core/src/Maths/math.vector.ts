@@ -6953,6 +6953,49 @@ export class Matrix {
     }
 
     /**
+     * Stores a left-handed oblique projection into a given matrix
+     * @param left defines the viewport left coordinate
+     * @param right defines the viewport right coordinate
+     * @param bottom defines the viewport bottom coordinate
+     * @param top defines the viewport top coordinate
+     * @param znear defines the near clip plane
+     * @param zfar defines the far clip plane
+     * @param angle Angle (along X/Y Plane) to apply shear
+     * @param length Length of the shear
+     * @param distance Distance from shear point
+     * @param result defines the target matrix
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
+     * @returns result input
+     */
+    public static ObliqueOffCenterLHToRef<T extends Matrix>(
+        left: number,
+        right: number,
+        bottom: number,
+        top: number,
+        znear: number,
+        zfar: number,
+        length: number,
+        angle: number,
+        distance: number,
+        result: T,
+        halfZRange?: boolean
+    ): T {
+        const a = -length * Math.cos(angle);
+        const b = -length * Math.sin(angle);
+
+        Matrix.TranslationToRef(0, 0, -distance, MathTmp.Matrix[1]);
+        Matrix.FromValuesToRef(1, 0, 0, 0, 0, 1, 0, 0, a, b, 1, 0, 0, 0, 0, 1, MathTmp.Matrix[0]);
+        MathTmp.Matrix[1].multiplyToRef(MathTmp.Matrix[0], MathTmp.Matrix[0]);
+        Matrix.TranslationToRef(0, 0, distance, MathTmp.Matrix[1]);
+        MathTmp.Matrix[0].multiplyToRef(MathTmp.Matrix[1], MathTmp.Matrix[0]);
+
+        Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, result, halfZRange);
+        MathTmp.Matrix[0].multiplyToRef(result, result);
+
+        return result;
+    }
+
+    /**
      * Creates a right-handed orthographic projection matrix
      * Example Playground - https://playground.babylonjs.com/#AV9X17#76
      * @param left defines the viewport left coordinate
@@ -6995,6 +7038,49 @@ export class Matrix {
     ): T {
         Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, result, halfZRange);
         result._m[10] *= -1; // No need to call markAsUpdated as previous function already called it and let _isIdentityDirty to true
+        return result;
+    }
+
+    /**
+     * Stores a right-handed oblique projection into a given matrix
+     * @param left defines the viewport left coordinate
+     * @param right defines the viewport right coordinate
+     * @param bottom defines the viewport bottom coordinate
+     * @param top defines the viewport top coordinate
+     * @param znear defines the near clip plane
+     * @param zfar defines the far clip plane
+     * @param angle Angle (along X/Y Plane) to apply shear
+     * @param length Length of the shear
+     * @param distance Distance from shear point
+     * @param result defines the target matrix
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
+     * @returns result input
+     */
+    public static ObliqueOffCenterRHToRef<T extends Matrix>(
+        left: number,
+        right: number,
+        bottom: number,
+        top: number,
+        znear: number,
+        zfar: number,
+        length: number,
+        angle: number,
+        distance: number,
+        result: T,
+        halfZRange?: boolean
+    ): T {
+        const a = length * Math.cos(angle);
+        const b = length * Math.sin(angle);
+
+        Matrix.TranslationToRef(0, 0, distance, MathTmp.Matrix[1]);
+        Matrix.FromValuesToRef(1, 0, 0, 0, 0, 1, 0, 0, a, b, 1, 0, 0, 0, 0, 1, MathTmp.Matrix[0]);
+        MathTmp.Matrix[1].multiplyToRef(MathTmp.Matrix[0], MathTmp.Matrix[0]);
+        Matrix.TranslationToRef(0, 0, -distance, MathTmp.Matrix[1]);
+        MathTmp.Matrix[0].multiplyToRef(MathTmp.Matrix[1], MathTmp.Matrix[0]);
+
+        Matrix.OrthoOffCenterRHToRef(left, right, bottom, top, znear, zfar, result, halfZRange);
+        MathTmp.Matrix[0].multiplyToRef(result, result);
+
         return result;
     }
 
