@@ -1,7 +1,559 @@
 {
-    "fromTag": "6.23.1",
+    "fromTag": "6.24.0",
     "changelog": {
         "6.24.0": [],
+        "6.25.0": [
+            {
+                "pr": "14428",
+                "title": "Oblique Camera Implementation",
+                "description": "This PR contains a new mode for handling camera projections, `OBLIQUE_CAMERA`.  This mode works just like `ORTHOGRAPHIC_CAMERA` but also adds three new variables: `obliqueAngle`, `obliqueLength`, and `obliqueOffset`.\r\n- `obliqueAngle`: This is the angle of the shear used (along X/Y plane, with respect to the Camera)\r\n- `obliqueLength`: The degree/amount of shearing\r\n- `obliqueOffset`: The offset from the camera's target (with respect to the Camera's z) to shear against\r\nThis PR also adds support for the new mode to cameras in the Inspector.",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/camera.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14191",
+                "title": "GRL - camera facing",
+                "description": "TODOs:\r\n\r\n- [x] Create base mesh class for camera facing and non camera facing greased line meshes\r\n- [x] Widths in instance modes\r\n- [x] Calculate correct UVs for non camera facing meshes\r\n- [x] Do not join ribbon paths in path_mode\r\n- [x] Set default values for the options, same as for the camera facing GRL\r\n- [x] Calculate slopes faster\r\n- [x] Widths in instance mode and different point modes\r\n- [x] Color tables in instance mode and different point modes\r\n- [x] Clone\r\n- [x] Serialize\r\n- [x] Parse\r\n- [x] Doublesided\r\n- [x] Closed paths\r\n- [x] Lazy mode\r\n- [x] Check UVs\r\n- [x] Offsets\r\n- [x] Add face modes in options (single, doublesided, single no culling). Remove doubleSided option.\r\n- [x] Check color pointers / move to base mesh\r\n- [x] Share color textures\r\n- [x] Calculate directions in points mode points if no direction is specified. Don't use default direction. Add auto calc modes.\r\n- [x] Visualization tests\r\n\r\nOPTIMALIZATIONS:\r\n\r\n- [x] Don't use ribbon builder class for building the mesh but create it manually in a more optimal way",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLineMaterialDefaults.ts",
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLineMaterialInterfaces.ts",
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLinePluginMaterial.ts",
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLineSimpleMaterial.ts",
+                    "packages/dev/core/src/Materials/index.ts",
+                    "packages/dev/core/src/Meshes/Builders/greasedLineBuilder.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineBaseMesh.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineMesh.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineRibbonMesh.ts",
+                    "packages/dev/core/src/Meshes/index.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Misc/deepCopier.ts",
+                    "packages/dev/core/src/Misc/greasedLineTools.ts",
+                    "packages/dev/core/src/Shaders/greasedLine.fragment.fx",
+                    "packages/dev/core/src/Shaders/greasedLine.vertex.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/greased-line-non-camera-facing.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14431",
+                "title": "font inheritance changes",
+                "description": "Fix #13130",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Childoverridingparentfontproperties.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Font-style-inheritance.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Fontsizeinheritance.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "14438",
+                "title": "Add flag on ADT to skip blocking certain events",
+                "description": "This PR adds a new flag to the ADT, skipBlockEvents, defined as 0 by default, to which can be added events that will NOT be blocked even if the control is defined as a pointer blocker. This allows, for example, for a pointer blocker button to still allow wheel events to pass through.\n\nExample PG: #XCPP9Y#19861",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts"
+                ],
+                "tags": [
+                    "gui",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14440",
+                "title": "Unification and allowedHosts in local dev",
+                "description": "I got a request to add allowedHosts to our dev server as an extra measure of security.\r\n\r\nThis PR unifies dev-server generation in all of our webpack configurations, and, of course, add allowedHosts as an optional environment variable.\r\n\r\nAfter this is merged you will need to run `npm install` to get everything to work correctly.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/buildTools/src/webpackTools.ts",
+                    "packages/public/babylonjs-viewer-assets/webpack.config.js",
+                    "packages/tools/babylonServer/webpack.config.js",
+                    "packages/tools/babylonServer/webpack.config.snapshot.js",
+                    "packages/tools/devHost/webpack.config.js",
+                    "packages/tools/guiEditor/webpack.config.js",
+                    "packages/tools/nodeEditor/webpack.config.js",
+                    "packages/tools/nodeGeometryEditor/webpack.config.js",
+                    "packages/tools/playground/webpack.config.js",
+                    "packages/tools/sandbox/webpack.config.js",
+                    "packages/tools/viewer/webpack.config.js",
+                    "packages/tools/vsm/webpack.config.js"
+                ],
+                "tags": [
+                    "enhancement",
+                    "build"
+                ]
+            },
+            {
+                "pr": "14434",
+                "title": "P8 Nine Patch clear fix",
+                "description": "I still need to test this, but here is the draft PR.",
+                "author": {
+                    "name": "Pryme8",
+                    "url": "https://github.com/Pryme8"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/image.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14436",
+                "title": "Fix createTexture for R and RG format textures",
+                "description": "I think I've found a bug in createTexture when the texture creation options pass format: Engine.TEXTUREFORMAT_R or _RG. Repro is in this playground https://playground.babylonjs.com/#YCY2IL#1861, I've also [posted to the forum](https://forum.babylonjs.com/t/bug-and-proposed-fix-createtexture-does-not-work-with-textureformat-r-or-rg-on-webgl2/44763) with some extra information.\r\n\r\nThis PR is my attempt to fix it by using _getRGBABufferInternalSizedFormat to get the sized format, similar to other forms of texture creation in thinEngine.ts.\r\n\r\n(This is a recreation of PR #14404. I realised I had committed with an email address I don't use for public repos so I've recreated the PR with exactly the same changes but a different committer email. I'm really sorry about the hassle.)",
+                "author": {
+                    "name": "djn24",
+                    "url": "https://github.com/djn24"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/test/unit/Engines/thinEngine.test.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "14429",
+                "title": "optimize EngineFactory",
+                "description": "1. The value can be returned directly in the then of the Promise, and there is no need to create a new Promise\r\n2. The optimized code is more concise and easy to read",
+                "author": {
+                    "name": "GuoBinyong",
+                    "url": "https://github.com/GuoBinyong"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engineFactory.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14439",
+                "title": "Remove deprecated WebVR",
+                "description": "This PR removes all traces of WebVR from the engine.\nThe only thing that was left is the VR Experience helper. This will prevent from old code using the experience helper to stop working, and WebXR will be used as a fallback.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/BaseCameraPointersInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/flyCameraMouseInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraMouseInput.ts",
+                    "packages/dev/core/src/Cameras/RigModes/index.ts",
+                    "packages/dev/core/src/Cameras/RigModes/vrRigMode.ts",
+                    "packages/dev/core/src/Cameras/RigModes/webVRRigMode.ts",
+                    "packages/dev/core/src/Cameras/VR/index.ts",
+                    "packages/dev/core/src/Cameras/VR/vrExperienceHelper.ts",
+                    "packages/dev/core/src/Cameras/VR/webVRCamera.ts",
+                    "packages/dev/core/src/Cameras/camera.ts",
+                    "packages/dev/core/src/Cameras/targetCamera.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.webVR.ts",
+                    "packages/dev/core/src/Engines/Extensions/index.ts",
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Gamepads/Controllers/daydreamController.ts",
+                    "packages/dev/core/src/Gamepads/Controllers/gearVRController.ts",
+                    "packages/dev/core/src/Gamepads/Controllers/genericController.ts",
+                    "packages/dev/core/src/Gamepads/Controllers/index.ts",
+                    "packages/dev/core/src/Gamepads/Controllers/oculusTouchController.ts",
+                    "packages/dev/core/src/Gamepads/Controllers/poseEnabledController.ts",
+                    "packages/dev/core/src/Gamepads/Controllers/viveController.ts",
+                    "packages/dev/core/src/Gamepads/Controllers/webVRController.ts",
+                    "packages/dev/core/src/Gamepads/Controllers/windowsMotionController.ts",
+                    "packages/dev/core/src/Gamepads/gamepadManager.ts",
+                    "packages/dev/core/src/Gamepads/index.ts",
+                    "packages/dev/core/src/Gizmos/gizmo.ts",
+                    "packages/dev/core/src/LibDeclarations/webvr.d.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/src/PostProcesses/postProcess.ts",
+                    "packages/dev/core/src/XR/webXRDefaultExperience.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/tools/viewer/src/managers/sceneManager.ts",
+                    "packages/tools/viewer/src/viewer/defaultViewer.ts"
+                ],
+                "tags": [
+                    "VR/AR/XR",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "14427",
+                "title": "proper use filter in getTags function",
+                "description": "Fix #14424",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/core/test/unit/Scene/babylon.scene.test.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "14435",
+                "title": "Remove crash",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Textures/geometryTextureFetchBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14433",
+                "title": "Add \"Remove\" buttons for data on Texture and Mesh in NGE",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/meshBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Textures/geometryTextureBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlock.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/meshNodePropertyComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/textureNodePropertyComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/registerExportData.ts",
+                    "packages/tools/nodeGeometryEditor/src/serializationTools.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14430",
+                "title": "GeometryBufferRenderer: Fix wrong index being returned for the depth and normal textures",
+                "description": "See https://forum.babylonjs.com/t/shader-and-motionblur/44953",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/motionBlurPostProcess.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14426",
+                "title": "Polyfill VideoFrame for older versions of typescript",
+                "description": "In typescript < 5.1 VideoFrame is undefined, which makes certain build configurations fail.\n\nThis is a direct copy from ts 5.1's DOM lib.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/webgpu.d.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14425",
+                "title": "DefaultRenderingPipeline: Fix pipeline reconstruction",
+                "description": "See https://forum.babylonjs.com/t/msaaframebuffer-undefined/44897\r\n\r\nIt seems my fix in #13535 was too broad, so I added code to only perform the deferred call during the construction of the `DefaultRenderingPipeline` object.\r\n\r\nHere's the PG that #13535 fixed: https://playground.babylonjs.com/#5CX9XL\r\n\r\nHere's a PG that fails with the fix from #13535 (look at the console) but works with the current PR: https://playground.babylonjs.com/#C43LFR#6\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "14413",
+                "title": "WebGPU: support vertex buffers with non multiple of 4 bytes strides",
+                "description": "I added the support as a whole and not to WebGPU specifically, this way it can benefit to any engine that requires that strides be a multiple of 4 bytes (like probably Native does).\r\n\r\nIf the stride is not a multiple of 4 bytes, each time you call `VertexBuffer.update()`, it will create a new GPU buffer. But calling `VertexBuffer.update()` is slow anyway, because we must create a new buffer on the js side to make space for padding data. So, I prefered not to handle this case and simply create a new GPU buffer instead of making the PR more complex. If necessary, we can update the docs to explain what happens with non aligned strides and how to handle it on the user side.\r\n\r\n[EDIT] Ready for review again!",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/buffer.align.ts",
+                    "packages/dev/core/src/Buffers/buffer.ts",
+                    "packages/dev/core/src/Buffers/index.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheRenderPipeline.ts",
+                    "packages/dev/core/src/Engines/engineFeatures.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/nullEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Meshes/geometry.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/VertexBuffer-non-aligned-strides.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "14421",
+                "title": "Fix a legacy issue with older ts versions",
+                "description": "type in an import is 100% correct, but fails if used with an older version of typescript.\n\nThe thinEngine change is just for consistency.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/prePassTextureBlock.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14422",
+                "title": "WebGL engine: Add a loseContextOnDispose option",
+                "description": "EAFP, so here's a tentative PR to allow the user to free WebGL resources when disposing the engine.\r\n\r\nSee https://forum.babylonjs.com/t/request-for-adding-canvas-webgl-context-cleanup-method/44749/11 for context and why I chose to add an option instead of a parameter to the `dispose` function.\r\n\r\nI can change it, but at least we got the ball rolling!",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14389",
+                "title": "Flow graphs serialization",
+                "description": "# Changes\r\n\r\n- This PR adds \"serialize\" and \"parse\" functions to the flow graph, which work similarly to the other serialization functions we have in the framework\r\n- It also standardizes the construction of the blocks, with a generic construction parameters interface (which has a name for all blocks), and a generic \"configure\" function that configures blocks according to its construction parameters. This is used, for example, in the \"multiGate\" block to configure how many outputs the block has.\r\n- It also adds a getClassName function for all blocks (and I'm very sorry for the size the PR ended up with 😢 )\r\n- It also adds all the blocks to the class register\r\n- Removed the CustomFunctionBlock since it's not on the spec and I was just using it for tests. Instead now I'm using the Log block and mocking the console.log function\r\n\r\n# Examples\r\n- Serialize: #KSTQJU#3\r\n- Parse: #CVDC94#2",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Logic/flowGraphBitwiseBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Logic/flowGraphLogicBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphMatrixBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphNumberMathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphVector2MathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphVector3MathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphVector4MathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphBinaryOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphConditionalDataBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphConstantBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphConstantOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphCoordinateTransformBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphGetVariableBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphUnaryOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphMeshPickEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphReceiveCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphSceneReadyEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphSceneTickEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPauseAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPlayAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphStopAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Audio/flowGraphPlayAudioBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Audio/flowGraphStopAudioBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphBranchBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphCounterBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphDebounceBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphDoNBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphFlipFlopBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphForLoopBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphMultiGateBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphSwitchBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphThrottleBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphTimerBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphWaitAllBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphWhileLoopBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphCustomFunctionBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphLogBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSendCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetPropertyBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetVariableBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraph.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphAsyncExecutionBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphConnection.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphContext.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphCoordinator.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphDataConnection.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphExecutionBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphRichTypes.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphSignalConnection.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphVariableDefinitions.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphWithOnDoneExecutionBlock.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphDataNodes.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphEventNodes.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphExecutionNodes.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphSerialization.test.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "flow graph"
+                ]
+            },
+            {
+                "pr": "14420",
+                "title": "WebGPU: Fix anisotropy usage when mipmap filtering is nearest",
+                "description": "Linear filtering was forced for min/mag/mip when anisotropy was enabled, even if mip filtering was nearest.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheSampler.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "14419",
+                "title": "Texture: Serialize the noMipmap property",
+                "description": "See https://forum.babylonjs.com/t/particle-editor-texture-props-spritesheet-order-particles/44837",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/texture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "14416",
+                "title": "Exploration of extracting scene texture data to use with node geometry",
+                "description": "This PG will work when merged: https://playground.babylonjs.com/#F825Q6",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Sources/meshBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Textures/geometryTextureBlock.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/propertyTabComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "14409",
+                "title": "NME: multiple-import Custom Block and Custom Frame",
+                "description": "allow user to multiple-import Custom Block and Custom Frame in NME",
+                "author": {
+                    "name": "onekit-boss",
+                    "url": "https://github.com/onekit-boss"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeEditor/src/sharedComponents/lineWithFileButtonComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14412",
+                "title": "Add _postMeasure method to GUI Control",
+                "description": "Adding `_postMeasure` method to GUI.Control to allow derived classes take some post-measurement actions. This is necessary if we want to change a property such top, after the `_measure()` action but before the `_computeAlignment() `call.\r\nSame should be obtained by overriding `_measure()` or `_computeAlignment()` into the derived class  \r\n\r\n```\r\n public _measure(): void {\r\n      super._measure();\r\n      this.top = this._i * this._currentMeasure.height ;\r\n }\r\n```\r\nbut this will not prevent regression later (as it is defined as prefixed _ private method) while the intend of `_postMeasure `is clear and should be maintened to serve child purposes\r\n\r\nso the above code may be replaced with\r\n```\r\nprotected _postMeasure(parentMeasure: Measure, context: ICanvasRenderingContext): void {\r\n     this.top = this._i * this._currentMeasure.height ;\r\n}\r\n```",
+                "author": {
+                    "name": "pandaGaume",
+                    "url": "https://github.com/pandaGaume"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/control.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14418",
+                "title": "Fix render to texture mips",
+                "description": "https://forum.babylonjs.com/t/render-to-mipmap-level/44540\r\n\r\nfix visible in https://playground.babylonjs.com/#T9J1HL",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGL/webGLRenderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "14415",
+                "title": "add reminders for cdn usage",
+                "description": null,
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/public/umd/babylonjs-gui/readme.md",
+                    "packages/public/umd/babylonjs-inspector/readme.md",
+                    "packages/public/umd/babylonjs-loaders/readme.md",
+                    "packages/public/umd/babylonjs-materials/readme.md",
+                    "packages/public/umd/babylonjs-post-process/readme.md",
+                    "packages/public/umd/babylonjs-procedural-textures/readme.md",
+                    "packages/public/umd/babylonjs-viewer/readme.md",
+                    "readme.md"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
         "6.23.1": [
             {
                 "pr": "14411",
