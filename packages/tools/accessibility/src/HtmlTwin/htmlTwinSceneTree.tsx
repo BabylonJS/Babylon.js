@@ -1,5 +1,5 @@
 import type { Scene } from "core/scene";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import type { Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
 import { SceneContext } from "./htmlTwinSceneContext";
@@ -14,10 +14,10 @@ function getSceneIds(scene: Scene) {
     return newSet;
 }
 
-function getGuiTextures(scene: Scene) {
+function getFullscreenGuiTextures(scene: Scene) {
     const textures = [];
     for (const texture of scene.textures) {
-        if (texture instanceof AdvancedDynamicTexture) {
+        if (texture instanceof AdvancedDynamicTexture && texture._isFullscreen) {
             textures.push(texture);
         }
     }
@@ -33,9 +33,22 @@ export function HTMLTwinSceneTree(props: { scene: Scene; options: IHTMLTwinRende
     const { scene, options } = props;
 
     const [, setMeshIds] = useState(new Set<number>());
-    const [sceneGuiTextures, setSceneGuiTextures] = useState<AdvancedDynamicTexture[]>(getGuiTextures(scene));
+    const [sceneGuiTextures, setSceneGuiTextures] = useState<AdvancedDynamicTexture[]>(getFullscreenGuiTextures(scene));
     const nextFrameObserver = useRef<Nullable<Observer<Scene>>>(null);
     const sceneContext = useContext(SceneContext);
+
+    const getChildren = useCallback(() => {
+        return (
+            <>
+                {scene.rootNodes.map((node) => (
+                    <HTMLTwinItemAdapter key={node.uniqueId} node={node} scene={scene} options={options} />
+                ))}
+                {sceneGuiTextures.map((texture) => (
+                    <HTMLTwinItemAdapter key={texture.uniqueId} node={texture.rootContainer} scene={scene} options={options} />
+                ))}
+            </>
+        );
+    }, [scene, sceneGuiTextures, options]);
 
     useEffect(() => {
         const newMeshAddedObserver = scene.onNewMeshAddedObservable.add(() => {
@@ -65,14 +78,5 @@ export function HTMLTwinSceneTree(props: { scene: Scene; options: IHTMLTwinRende
         }
     }, [sceneContext]);
 
-    return (
-        <>
-            {scene.rootNodes.map((node) => (
-                <HTMLTwinItemAdapter key={node.uniqueId} node={node} scene={scene} options={options} />
-            ))}
-            {sceneGuiTextures.map((texture) => (
-                <HTMLTwinItemAdapter key={texture.uniqueId} node={texture.rootContainer} scene={scene} options={options} />
-            ))}
-        </>
-    );
+    return getChildren();
 }

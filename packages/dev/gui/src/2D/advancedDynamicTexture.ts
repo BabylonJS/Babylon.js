@@ -78,7 +78,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     public _layerToDispose: Nullable<Layer>;
     /** @internal */
     public _linkedControls = new Array<Control>();
-    private _isFullscreen = false;
+    /** @internal */
+    public _isFullscreen = false;
     private _fullscreenViewport = new Viewport(0, 0, 1, 1);
     private _idealWidth = 0;
     private _idealHeight = 0;
