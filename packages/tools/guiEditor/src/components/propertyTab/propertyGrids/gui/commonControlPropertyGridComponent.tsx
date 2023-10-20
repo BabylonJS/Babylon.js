@@ -813,7 +813,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                     />
                 </div>
                 {this._getCommonPropertyKeys(controls.map((x) => x.metadata)).map((metaKey) => {
-                    if (metaKey === "guiEditor" || metaKey.startsWith("_")) {
+                    if (metaKey === "guiEditor" || metaKey.startsWith("_") || metaKey.startsWith("editorUniqueId")) {
                         return;
                     }
 
