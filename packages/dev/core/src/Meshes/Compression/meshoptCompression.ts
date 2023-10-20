@@ -55,7 +55,7 @@ export class MeshoptCompression implements IDisposable {
      */
     public static Configuration: IMeshoptCompressionConfiguration = {
         decoder: {
-            url: "https://preview.babylonjs.com/meshopt_decoder.js",
+            url: "meshopt_decoder.js",
         },
     };
 
@@ -78,7 +78,7 @@ export class MeshoptCompression implements IDisposable {
     constructor() {
         const decoder = MeshoptCompression.Configuration.decoder;
 
-        this._decoderModulePromise = Tools.LoadScriptAsync(Tools.GetAbsoluteUrl(decoder.url)).then(() => {
+        this._decoderModulePromise = Tools.LoadScriptAsync(Tools.GetScriptUrl(decoder.url, true)).then(() => {
             // Wait for WebAssembly compilation before resolving promise
             return MeshoptDecoder.ready;
         });

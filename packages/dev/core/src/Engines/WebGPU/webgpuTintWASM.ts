@@ -1,7 +1,4 @@
-import { IsWindowObjectExist } from "../../Misc/domManagement";
 import { Tools } from "../../Misc/tools";
-
-declare function importScripts(...urls: string[]): void;
 
 /**
  * Options to load the associated Twgsl library
@@ -25,8 +22,8 @@ export interface TwgslOptions {
 export class WebGPUTintWASM {
     // Default twgsl options.
     private static readonly _TWgslDefaultOptions: TwgslOptions = {
-        jsPath: "https://preview.babylonjs.com/twgsl/twgsl.js",
-        wasmPath: "https://preview.babylonjs.com/twgsl/twgsl.wasm",
+        jsPath: "twgsl/twgsl.js",
+        wasmPath: "twgsl/twgsl.wasm",
     };
 
     public static ShowWGSLShaderCode = false;
@@ -52,15 +49,11 @@ export class WebGPUTintWASM {
         }
 
         if (twgslOptions.jsPath && twgslOptions.wasmPath) {
-            if (IsWindowObjectExist()) {
-                await Tools.LoadScriptAsync(twgslOptions.jsPath);
-            } else {
-                importScripts(twgslOptions.jsPath);
-            }
+            await Tools.LoadScriptAsync(twgslOptions.jsPath);
         }
 
         if ((self as any).twgsl) {
-            WebGPUTintWASM._twgsl = await (self as any).twgsl(twgslOptions!.wasmPath);
+            WebGPUTintWASM._twgsl = await (self as any).twgsl(Tools.GetScriptUrl(twgslOptions!.wasmPath!));
             return Promise.resolve();
         }
 

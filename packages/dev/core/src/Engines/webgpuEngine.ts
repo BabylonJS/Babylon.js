@@ -1,5 +1,4 @@
 import { Logger } from "../Misc/logger";
-import { IsWindowObjectExist } from "../Misc/domManagement";
 import type { Nullable, DataArray, IndicesArray, Immutable } from "../types";
 import { Color4 } from "../Maths/math";
 import { Engine } from "../Engines/engine";
@@ -166,8 +165,8 @@ export interface WebGPUEngineOptions extends ThinEngineOptions, GPURequestAdapte
 export class WebGPUEngine extends Engine {
     // Default glslang options.
     private static readonly _GLSLslangDefaultOptions: GlslangOptions = {
-        jsPath: "https://preview.babylonjs.com/glslang/glslang.js",
-        wasmPath: "https://preview.babylonjs.com/glslang/glslang.wasm",
+        jsPath: "glslang/glslang.js",
+        wasmPath: "glslang/glslang.wasm",
     };
 
     /** true to enable using TintWASM to convert Spir-V to WGSL */
@@ -742,14 +741,9 @@ export class WebGPUEngine extends Engine {
         }
 
         if (glslangOptions.jsPath && glslangOptions.wasmPath) {
-            if (IsWindowObjectExist()) {
-                return Tools.LoadScriptAsync(glslangOptions.jsPath).then(() => {
-                    return (self as any).glslang(glslangOptions!.wasmPath);
-                });
-            } else {
-                importScripts(glslangOptions.jsPath);
-                return (self as any).glslang(glslangOptions!.wasmPath);
-            }
+            return Tools.LoadScriptAsync(glslangOptions.jsPath).then(() => {
+                return (self as any).glslang(Tools.GetScriptUrl(glslangOptions!.wasmPath!));
+            });
         }
 
         return Promise.reject("gslang is not available.");

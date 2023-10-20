@@ -76,6 +76,8 @@ export const FileToolsOptions: {
     BaseUrl: string;
     CorsBehavior: string | ((url: string | string[]) => string);
     PreprocessUrl: (url: string) => string;
+    ScriptBaseUrl: string;
+    ScriptPreprocessUrl: (url: string) => string;
 } = {
     /**
      * Gets or sets the retry strategy to apply when an error happens while loading an asset.
@@ -100,9 +102,19 @@ export const FileToolsOptions: {
      * Gets or sets a function used to pre-process url before using them to load assets
      * @param url
      */
-    PreprocessUrl: (url: string) => {
-        return url;
-    },
+    PreprocessUrl: (url: string) => url,
+
+    /**
+     * Gets or sets the base URL to use to load scripts
+     * Used for both JS and WASM
+     */
+    ScriptBaseUrl: "https://cdn.babylonjs.com/",
+    /**
+     * Gets or sets a function used to pre-process script url before using them to load.
+     * Used for both JS and WASM
+     * @param url defines the url to process
+     */
+    ScriptPreprocessUrl: (url: string) => url,
 };
 
 /**

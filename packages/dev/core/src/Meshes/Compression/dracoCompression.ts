@@ -308,9 +308,9 @@ export class DracoCompression implements IDisposable {
      */
     public static Configuration: IDracoCompressionConfiguration = {
         decoder: {
-            wasmUrl: "https://preview.babylonjs.com/draco_wasm_wrapper_gltf.js",
-            wasmBinaryUrl: "https://preview.babylonjs.com/draco_decoder_gltf.wasm",
-            fallbackUrl: "https://preview.babylonjs.com/draco_decoder_gltf.js",
+            wasmUrl: "draco_wasm_wrapper_gltf.js",
+            wasmBinaryUrl: "draco_decoder_gltf.wasm",
+            fallbackUrl: "draco_decoder_gltf.js",
         },
     };
 
@@ -359,11 +359,11 @@ export class DracoCompression implements IDisposable {
         const decoderInfo: { url: string | undefined; wasmBinaryPromise: Promise<ArrayBuffer | string | undefined> } =
             decoder.wasmUrl && decoder.wasmBinaryUrl && typeof WebAssembly === "object"
                 ? {
-                      url: Tools.GetAbsoluteUrl(decoder.wasmUrl),
-                      wasmBinaryPromise: Tools.LoadFileAsync(Tools.GetAbsoluteUrl(decoder.wasmBinaryUrl)),
+                      url: Tools.GetScriptUrl(decoder.wasmUrl, true),
+                      wasmBinaryPromise: Tools.LoadFileAsync(Tools.GetScriptUrl(decoder.wasmBinaryUrl, true)),
                   }
                 : {
-                      url: Tools.GetAbsoluteUrl(decoder.fallbackUrl!),
+                      url: Tools.GetScriptUrl(decoder.fallbackUrl!),
                       wasmBinaryPromise: Promise.resolve(undefined),
                   };
 
