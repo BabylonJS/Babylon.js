@@ -121,6 +121,11 @@ export class Control implements IAnimatable {
     /** @internal */
     protected _rebuildLayout = false;
 
+    /**
+     * Observable that fires when the control's enabled state changes
+     */
+    public onEnabledStateChangedObservable = new Observable<boolean>();
+
     /** @internal */
     public _customData: any = {};
 
@@ -1235,6 +1240,7 @@ export class Control implements IAnimatable {
             }
         };
         recursivelyFirePointerOut(this);
+        this.onEnabledStateChangedObservable.notifyObservers(value);
     }
     /** Gets or sets background color of control if it's disabled. Only applies to Button class. */
     @serialize()
