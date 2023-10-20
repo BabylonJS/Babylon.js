@@ -168,7 +168,7 @@ const _CreateWorkerAsync = () => {
             if (_Worker) {
                 res(_Worker);
             } else {
-                Tools.LoadFileAsync(Tools.GetScriptUrl(BasisToolsOptions.WasmModuleURL))
+                Tools.LoadFileAsync(Tools.GetBabylonScriptURL(BasisToolsOptions.WasmModuleURL))
                     .then((wasmBinary) => {
                         if (typeof URL !== "function") {
                             return reject("Basis transcoder requires an environment with a URL constructor");
@@ -185,7 +185,7 @@ const _CreateWorkerAsync = () => {
                             }
                         };
                         _Worker.addEventListener("message", initHandler);
-                        _Worker.postMessage({ action: "init", url: Tools.GetScriptUrl(BasisToolsOptions.JSModuleURL), wasmBinary: wasmBinary });
+                        _Worker.postMessage({ action: "init", url: Tools.GetBabylonScriptURL(BasisToolsOptions.JSModuleURL), wasmBinary: wasmBinary });
                     })
                     .catch(reject);
             }

@@ -454,13 +454,14 @@ export class Tools {
      * @param scriptUrl the script Url to process
      * @returns a modified URL to use
      */
-    public static GetScriptUrl(scriptUrl: Nullable<string>, forceAbsoluteUrl?: boolean): string {
+    public static GetBabylonScriptURL(scriptUrl: Nullable<string>, forceAbsoluteUrl?: boolean): string {
         if (!scriptUrl) {
             return "";
         }
         // check if the URL is absolute or relative. Otherwise, append the base URL
         if (!Tools.IsAbsoluteUrl(scriptUrl)) {
-            scriptUrl = Tools.ScriptBaseUrl + (scriptUrl[0] === "/" ? scriptUrl.substring(1) : scriptUrl);
+            const baseUrl = Tools.ScriptBaseUrl[Tools.ScriptBaseUrl.length - 1] === "/" ? Tools.ScriptBaseUrl : Tools.ScriptBaseUrl + "/";
+            scriptUrl = baseUrl + (scriptUrl[0] === "/" ? scriptUrl.substring(1) : scriptUrl);
         }
 
         // run the preprocessor
@@ -482,7 +483,7 @@ export class Tools {
      * @param scriptId defines the id of the script element
      */
     public static LoadBabylonScript(scriptUrl: string, onSuccess: () => void, onError?: (message?: string, exception?: any) => void, scriptId?: string) {
-        scriptUrl = Tools.GetScriptUrl(scriptUrl);
+        scriptUrl = Tools.GetBabylonScriptURL(scriptUrl);
         Tools.LoadScript(scriptUrl, onSuccess, onError);
     }
 
@@ -493,7 +494,7 @@ export class Tools {
      * @returns a promise request object
      */
     public static LoadBabylonScriptAsync(scriptUrl: string): Promise<void> {
-        scriptUrl = Tools.GetScriptUrl(scriptUrl);
+        scriptUrl = Tools.GetBabylonScriptURL(scriptUrl);
         return Tools.LoadScriptAsync(scriptUrl);
     }
 

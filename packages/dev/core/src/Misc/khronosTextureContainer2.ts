@@ -281,16 +281,16 @@ export class KhronosTextureContainer2 {
         }
 
         const urls = {
-            jsDecoderModule: Tools.GetScriptUrl(this.URLConfig.jsDecoderModule, true),
-            wasmUASTCToASTC: Tools.GetScriptUrl(this.URLConfig.wasmUASTCToASTC, true),
-            wasmUASTCToBC7: Tools.GetScriptUrl(this.URLConfig.wasmUASTCToBC7, true),
-            wasmUASTCToRGBA_UNORM: Tools.GetScriptUrl(this.URLConfig.wasmUASTCToRGBA_UNORM, true),
-            wasmUASTCToRGBA_SRGB: Tools.GetScriptUrl(this.URLConfig.wasmUASTCToRGBA_SRGB, true),
-            wasmUASTCToR8_UNORM: Tools.GetScriptUrl(this.URLConfig.wasmUASTCToR8_UNORM, true),
-            wasmUASTCToRG8_UNORM: Tools.GetScriptUrl(this.URLConfig.wasmUASTCToRG8_UNORM, true),
-            jsMSCTranscoder: Tools.GetScriptUrl(this.URLConfig.jsMSCTranscoder, true),
-            wasmMSCTranscoder: Tools.GetScriptUrl(this.URLConfig.wasmMSCTranscoder, true),
-            wasmZSTDDecoder: Tools.GetScriptUrl(this.URLConfig.wasmZSTDDecoder, true),
+            jsDecoderModule: Tools.GetBabylonScriptURL(this.URLConfig.jsDecoderModule, true),
+            wasmUASTCToASTC: Tools.GetBabylonScriptURL(this.URLConfig.wasmUASTCToASTC, true),
+            wasmUASTCToBC7: Tools.GetBabylonScriptURL(this.URLConfig.wasmUASTCToBC7, true),
+            wasmUASTCToRGBA_UNORM: Tools.GetBabylonScriptURL(this.URLConfig.wasmUASTCToRGBA_UNORM, true),
+            wasmUASTCToRGBA_SRGB: Tools.GetBabylonScriptURL(this.URLConfig.wasmUASTCToRGBA_SRGB, true),
+            wasmUASTCToR8_UNORM: Tools.GetBabylonScriptURL(this.URLConfig.wasmUASTCToR8_UNORM, true),
+            wasmUASTCToRG8_UNORM: Tools.GetBabylonScriptURL(this.URLConfig.wasmUASTCToRG8_UNORM, true),
+            jsMSCTranscoder: Tools.GetBabylonScriptURL(this.URLConfig.jsMSCTranscoder, true),
+            wasmMSCTranscoder: Tools.GetBabylonScriptURL(this.URLConfig.wasmMSCTranscoder, true),
+            wasmZSTDDecoder: Tools.GetBabylonScriptURL(this.URLConfig.wasmZSTDDecoder, true),
         };
 
         if (numWorkers && typeof Worker === "function" && typeof URL !== "undefined") {
