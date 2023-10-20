@@ -116,16 +116,29 @@ export class ShadowDepthWrapper {
                             const subMesh = key.value;
                             if (subMesh?.getMesh() === (mesh as AbstractMesh)) {
                                 this._subMeshToEffect.delete(subMesh);
-                                this._subMeshToDepthWrapper.mm.delete(subMesh);
+                                this._deleteDepthWrapperEffect(subMesh);
                             }
                         }
                     })
                 );
             }
 
-            this._subMeshToEffect.set(params.subMesh, [params.effect, this._scene.getEngine().currentRenderPassId]);
-            this._subMeshToDepthWrapper.mm.delete(params.subMesh); // trigger a depth effect recreation
+            if (this._subMeshToEffect.get(params.subMesh)?.[0] !== params.effect) {
+                this._subMeshToEffect.set(params.subMesh, [params.effect, this._scene.getEngine().currentRenderPassId]);
+                this._deleteDepthWrapperEffect(params.subMesh);
+            }
         });
+    }
+
+    private _deleteDepthWrapperEffect(subMesh: Nullable<SubMesh>): void {
+        const depthWrapperEntries = this._subMeshToDepthWrapper.mm.get(subMesh);
+        if (depthWrapperEntries) {
+            // find and release the previous depth effect
+            depthWrapperEntries.forEach((depthWrapper) => {
+                depthWrapper.mainDrawWrapper.effect?.dispose();
+            });
+            this._subMeshToDepthWrapper.mm.delete(subMesh); // trigger a depth effect recreation
+        }
     }
 
     /**
