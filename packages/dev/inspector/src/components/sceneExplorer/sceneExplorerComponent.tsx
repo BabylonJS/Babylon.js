@@ -208,7 +208,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         return false;
     }
 
-    processKeys(keyEvent: React.KeyboardEvent<HTMLDivElement>) {
+    processKeys(keyEvent: React.KeyboardEvent<HTMLDivElement>, allNodes: any[]) {
         if (!this.state.selectedEntity) {
             return;
         }
@@ -253,9 +253,9 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         keyEvent.preventDefault();
 
         const data = {};
-        if (!this.findSiblings(null, scene.rootNodes, this.state.selectedEntity, goNext, data)) {
-            if (!this.findSiblings(null, scene.materials, this.state.selectedEntity, goNext, data)) {
-                this.findSiblings(null, scene.textures, this.state.selectedEntity, goNext, data);
+        for (const nodeGroup of allNodes) {
+            if (this.findSiblings(null, nodeGroup, this.state.selectedEntity, goNext, data)) {
+                break;
             }
         }
     }
@@ -451,7 +451,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         return useDefaults ? [...defaultMenuItems, ...customMenuItems] : customMenuItems;
     }
 
-    renderContent() {
+    renderContent(allNodes: any[]) {
         const scene = this.state.scene;
 
         if (!scene) {
@@ -505,6 +505,23 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             if (mesh.parent && mesh.parent.getClassName() === "Bone") {
                 rootNodes.push(mesh);
             }
+        }
+
+        allNodes.push(
+            rootNodes,
+            scene.skeletons,
+            materials,
+            textures,
+            postProcesses,
+            pipelines,
+            scene.effectLayers,
+            scene.particleSystems,
+            scene.spriteManagers,
+            guiElements,
+            scene.animationGroups
+        );
+        if (scene.mainSoundTrack) {
+            allNodes.push(scene.mainSoundTrack.soundCollection);
         }
 
         return (
@@ -682,9 +699,11 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
     }
 
     render() {
+        const allNodes: any[] = [];
+
         if (this.props.popupMode) {
             return (
-                <div id="sceneExplorer" tabIndex={0} onKeyDown={(keyEvent) => this.processKeys(keyEvent)}>
+                <div id="sceneExplorer" tabIndex={0} onKeyDown={(keyEvent) => this.processKeys(keyEvent, allNodes)}>
                     {!this.props.noHeader && (
                         <HeaderComponent
                             title="SCENE EXPLORER"
@@ -695,7 +714,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                             onPopup={() => this.onPopup()}
                         />
                     )}
-                    {this.renderContent()}
+                    {this.renderContent(allNodes)}
                 </div>
             );
         }
@@ -722,7 +741,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 maxWidth={600}
                 minHeight="100%"
                 enable={{ top: false, right: true, bottom: false, left: false, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false }}
-                onKeyDown={(keyEvent) => this.processKeys(keyEvent)}
+                onKeyDown={(keyEvent) => this.processKeys(keyEvent, allNodes)}
             >
                 {!this.props.noHeader && (
                     <HeaderComponent
@@ -734,7 +753,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                         onPopup={() => this.onPopup()}
                     />
                 )}
-                {this.renderContent()}
+                {this.renderContent(allNodes)}
             </Resizable>
         );
     }
