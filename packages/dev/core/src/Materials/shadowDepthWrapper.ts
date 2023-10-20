@@ -67,6 +67,8 @@ export class ShadowDepthWrapper {
         { drawWrapper: Array<Nullable<DrawWrapper>>; mainDrawWrapper: DrawWrapper; depthDefines: string; token: string }
     >; // key is (subMesh + shadowGenerator)
     private _meshes: Map<AbstractMesh, Nullable<Observer<Node>>>;
+    private _disposeEffects: Array<[Effect, Effect]> = [];
+    private _tryDisposeEffectsPending = false;
 
     /** Gets the standalone status of the wrapper */
     public get standalone(): boolean {
@@ -124,23 +126,48 @@ export class ShadowDepthWrapper {
             }
 
             this._subMeshToEffect.set(params.subMesh, [params.effect, this._scene.getEngine().currentRenderPassId]);
-            this._deleteDepthWrapperEffect(params.subMesh);
+            this._deleteDepthWrapperEffect(params.subMesh, params.effect);
         });
     }
 
-    private _deleteDepthWrapperEffect(subMesh: Nullable<SubMesh>) {
-        const engine = this._scene.getEngine();
+    private _deleteDepthWrapperEffect(subMesh: Nullable<SubMesh>, newEffect: Nullable<Effect> = null): void {
         const depthWrapperEntries = this._subMeshToDepthWrapper.mm.get(subMesh);
         if (depthWrapperEntries) {
             // find and release the previous depth effect
             depthWrapperEntries.forEach((depthWrapper) => {
                 const effect = depthWrapper.mainDrawWrapper.effect;
                 if (effect) {
-                    engine._releaseEffect(effect);
-                    effect.dispose();
+                    if (newEffect) {
+                        // we may have to defer the release of effect because, when parallel shader compilation is enabled, the new effect will replace the old one only when it becomes ready
+                        this._disposeEffects.push([effect, newEffect]);
+                    } else {
+                        effect.dispose();
+                    }
                 }
             });
             this._subMeshToDepthWrapper.mm.delete(subMesh); // trigger a depth effect recreation
+            if (!this._tryDisposeEffectsPending && this._disposeEffects.length > 0) {
+                this._tryDisposeEffects();
+            }
+        }
+    }
+
+    private _tryDisposeEffects() {
+        for (let i = 0; i < this._disposeEffects.length; i++) {
+            const [effect, newEffect] = this._disposeEffects[i];
+            if (newEffect.isReady()) {
+                effect.dispose();
+                this._disposeEffects.splice(i, 1);
+                i--;
+            }
+        }
+
+        this._tryDisposeEffectsPending = this._disposeEffects.length > 0;
+
+        if (this._tryDisposeEffectsPending) {
+            setTimeout(() => {
+                this._tryDisposeEffects();
+            }, 16);
         }
     }
 
