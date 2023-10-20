@@ -15,6 +15,12 @@ export class Transcoder {
 
     public static Name = "Transcoder";
 
+    public static WasmBaseUrl = "https://preview.babylonjs.com/";
+
+    public static GetWasmUrl(wasmUrl: string) {
+        return `${Transcoder.WasmBaseUrl}${wasmUrl}`;
+    }
+
     public getName(): string {
         return Transcoder.Name;
     }
