@@ -58,7 +58,7 @@ import type { IInspectableOptions } from "core/Misc/iInspectable";
 
 import { WorkbenchComponent } from "../../../../diagram/workbench";
 import type { GlobalState } from "../../../../globalState";
-import {Popup} from "shared-ui-components/lines/popup";
+import { Popup } from "shared-ui-components/lines/popup";
 
 interface ICommonControlPropertyGridComponentProps {
     controls: Control[];
