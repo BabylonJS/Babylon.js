@@ -194,7 +194,7 @@ export class NodeGeometry {
                 const editorUrl = config && config.editorURL ? config.editorURL : NodeGeometry.EditorURL;
 
                 // Load editor and add it to the DOM
-                Tools.LoadScript(editorUrl, () => {
+                Tools.LoadBabylonScript(editorUrl, () => {
                     this.BJSNODEGEOMETRYEDITOR = this.BJSNODEGEOMETRYEDITOR || this._getGlobalNodeGeometryEditor();
                     this._createNodeEditor(config?.nodeGeometryEditorConfig);
                     resolve();

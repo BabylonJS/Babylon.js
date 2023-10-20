@@ -391,7 +391,7 @@ export class DebugLayer {
                 const inspectorUrl = config && config.inspectorURL ? config.inspectorURL : DebugLayer.InspectorURL;
 
                 // Load inspector and add it to the DOM
-                Tools.LoadScript(inspectorUrl, () => {
+                Tools.LoadBabylonScript(inspectorUrl, () => {
                     this._createInspector(config);
                     resolve(this);
                 });

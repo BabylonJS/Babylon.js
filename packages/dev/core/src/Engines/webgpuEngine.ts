@@ -741,7 +741,7 @@ export class WebGPUEngine extends Engine {
         }
 
         if (glslangOptions.jsPath && glslangOptions.wasmPath) {
-            return Tools.LoadScriptAsync(glslangOptions.jsPath).then(() => {
+            return Tools.LoadBabylonScriptAsync(glslangOptions.jsPath).then(() => {
                 return (self as any).glslang(Tools.GetScriptUrl(glslangOptions!.wasmPath!));
             });
         }

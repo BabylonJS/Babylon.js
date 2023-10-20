@@ -330,7 +330,7 @@ export class KhronosTextureContainer2 {
                 );
             });
         } else if (typeof KTX2DECODER === "undefined") {
-            KhronosTextureContainer2._DecoderModulePromise = Tools.LoadScriptAsync(urls.jsDecoderModule).then(() => {
+            KhronosTextureContainer2._DecoderModulePromise = Tools.LoadBabylonScriptAsync(urls.jsDecoderModule).then(() => {
                 KTX2DECODER.MSCTranscoder.UseFromWorkerThread = false;
                 KTX2DECODER.WASMMemoryManager.LoadBinariesFromCurrentThread = true;
                 applyConfig(urls);

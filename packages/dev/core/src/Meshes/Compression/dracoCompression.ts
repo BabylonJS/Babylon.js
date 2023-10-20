@@ -408,7 +408,7 @@ export class DracoCompression implements IDisposable {
                     throw new Error("Draco decoder module is not available");
                 }
 
-                return Tools.LoadScriptAsync(decoderInfo.url).then(() => {
+                return Tools.LoadBabylonScriptAsync(decoderInfo.url).then(() => {
                     return createDecoderAsync(decoderWasmBinary as ArrayBuffer);
                 });
             });

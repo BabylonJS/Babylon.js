@@ -474,7 +474,31 @@ export class Tools {
     }
 
     /**
-     * Load a script (identified by an url). When the url returns, the
+     * This function is used internally by babylon components to load a script (identified by an url). When the url returns, the
+     * content of this file is added into a new script element, attached to the DOM (body element)
+     * @param scriptUrl defines the url of the script to load
+     * @param onSuccess defines the callback called when the script is loaded
+     * @param onError defines the callback to call if an error occurs
+     * @param scriptId defines the id of the script element
+     */
+    public static LoadBabylonScript(scriptUrl: string, onSuccess: () => void, onError?: (message?: string, exception?: any) => void, scriptId?: string) {
+        scriptUrl = Tools.GetScriptUrl(scriptUrl);
+        Tools.LoadScript(scriptUrl, onSuccess, onError);
+    }
+
+    /**
+     * Load an asynchronous script (identified by an url). When the url returns, the
+     * content of this file is added into a new script element, attached to the DOM (body element)
+     * @param scriptUrl defines the url of the script to laod
+     * @returns a promise request object
+     */
+    public static LoadBabylonScriptAsync(scriptUrl: string): Promise<void> {
+        scriptUrl = Tools.GetScriptUrl(scriptUrl);
+        return Tools.LoadScriptAsync(scriptUrl);
+    }
+
+    /**
+     * This function is used internally by babylon components to load a script (identified by an url). When the url returns, the
      * content of this file is added into a new script element, attached to the DOM (body element)
      * @param scriptUrl defines the url of the script to load
      * @param onSuccess defines the callback called when the script is loaded
@@ -482,7 +506,7 @@ export class Tools {
      * @param scriptId defines the id of the script element
      */
     public static LoadScript(scriptUrl: string, onSuccess: () => void, onError?: (message?: string, exception?: any) => void, scriptId?: string) {
-        scriptUrl = Tools.GetScriptUrl(scriptUrl);
+        
 
         if (typeof importScripts === "function") {
             try {

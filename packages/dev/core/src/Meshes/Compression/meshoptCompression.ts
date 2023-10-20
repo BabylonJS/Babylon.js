@@ -78,7 +78,7 @@ export class MeshoptCompression implements IDisposable {
     constructor() {
         const decoder = MeshoptCompression.Configuration.decoder;
 
-        this._decoderModulePromise = Tools.LoadScriptAsync(Tools.GetScriptUrl(decoder.url, true)).then(() => {
+        this._decoderModulePromise = Tools.LoadBabylonScriptAsync(decoder.url).then(() => {
             // Wait for WebAssembly compilation before resolving promise
             return MeshoptDecoder.ready;
         });

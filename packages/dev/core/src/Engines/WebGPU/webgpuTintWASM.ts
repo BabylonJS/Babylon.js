@@ -49,7 +49,7 @@ export class WebGPUTintWASM {
         }
 
         if (twgslOptions.jsPath && twgslOptions.wasmPath) {
-            await Tools.LoadScriptAsync(twgslOptions.jsPath);
+            await Tools.LoadBabylonScriptAsync(twgslOptions.jsPath);
         }
 
         if ((self as any).twgsl) {
