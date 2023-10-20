@@ -234,7 +234,7 @@ export class PostProcessRenderPipeline {
     }
 
     /**
-     * Ensures that all post processes in the pipeline are the correct size according to the 
+     * Ensures that all post processes in the pipeline are the correct size according to the
      * the viewport's required size
      */
     protected _adaptPostProcessesToViewPort(): void {
