@@ -234,6 +234,22 @@ export class PostProcessRenderPipeline {
     }
 
     /**
+     * Ensures that all post processes in the pipeline are the correct size according to the 
+     * the viewport's required size
+     */
+    protected _adaptPostProcessesToViewPort(): void {
+        const effectKeys = Object.keys(this._renderEffects);
+        for (const effectKey of effectKeys) {
+            const postProcesses = this._renderEffects[effectKey].getPostProcesses();
+            if (postProcesses) {
+                for (const postProcess of postProcesses) {
+                    postProcess.adaptScaleToCurrentViewport = true;
+                }
+            }
+        }
+    }
+
+    /**
      * Sets the required values to the prepass renderer.
      * @param prePassRenderer defines the prepass renderer to setup.
      * @returns true if the pre pass is needed.
