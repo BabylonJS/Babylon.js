@@ -47,11 +47,12 @@ export class Tools {
 
     /**
      * This function checks whether a URL is absolute or not.
+     * It will also detect data and blob URLs
      * @param url the url to check
      * @returns is the url absolute or relative
      */
     public static IsAbsoluteUrl(url: string): boolean {
-        return url.indexOf("://") !== -1 || url.indexOf("//") === 0;
+        return url.indexOf("://") !== -1 || url.indexOf("//") === 0 || url.indexOf("data:") === 0 || url.indexOf("blob:") === 0;
     }
 
     /**
