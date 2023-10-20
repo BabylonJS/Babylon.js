@@ -516,7 +516,6 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             pipelines,
             scene.effectLayers,
             scene.particleSystems,
-            scene.particleSystems,
             scene.spriteManagers,
             guiElements,
             scene.animationGroups
