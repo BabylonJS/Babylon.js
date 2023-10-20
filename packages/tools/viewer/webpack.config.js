@@ -14,9 +14,15 @@ module.exports = (env) => {
             viewer: "./src/index.ts",
             renderOnlyViewer: "./src/renderOnlyIndex.ts",
         },
-        ...webpackTools.commonDevWebpackConfiguration({
-            mode: env.mode,
-        }),
+        ...webpackTools.commonDevWebpackConfiguration(
+            {
+                ...env,
+            },
+            {
+                static: ["public"],
+                port: process.env.VIEWER_PORT || 1338,
+            }
+        ),
         output: {
             path: path.resolve(__dirname, "dist"),
             filename: "[name].js",
@@ -43,27 +49,5 @@ module.exports = (env) => {
             }),
         },
         ignoreWarnings: [/Failed to parse source map/],
-        devServer: {
-            client: {
-                overlay: process.env.DISABLE_DEV_OVERLAY
-                    ? false
-                    : {
-                          warnings: false,
-                          errors: true,
-                      },
-            },
-            static: {
-                directory: path.join(__dirname, "public"),
-            },
-            compress: false,
-            //open: true,
-            port: 1338,
-            server: env.enableHttps !== undefined || process.env.ENABLE_HTTPS === "true" ? "https" : "http",
-            hot: (env.enableHotReload !== undefined || process.env.ENABLE_HOT_RELOAD === "true") && !production ? true : false,
-            liveReload: (env.enableLiveReload !== undefined || process.env.ENABLE_LIVE_RELOAD === "true") && !production ? true : false,
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-            },
-        },
     };
 };

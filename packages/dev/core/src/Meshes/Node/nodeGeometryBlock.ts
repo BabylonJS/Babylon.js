@@ -381,10 +381,9 @@ export class NodeGeometryBlock {
 
     /**
      * Serializes this block in a JSON representation
-     * @param _saveMeshData defines a boolean indicating that mesh data must be saved as well
      * @returns the serialized block object
      */
-    public serialize(_saveMeshData?: boolean): any {
+    public serialize(): any {
         const serializationObject: any = {};
         serializationObject.customType = "BABYLON." + this.getClassName();
         serializationObject.id = this.uniqueId;

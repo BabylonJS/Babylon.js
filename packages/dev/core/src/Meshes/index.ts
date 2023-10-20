@@ -25,7 +25,9 @@ export * from "./transformNode";
 export * from "./Builders/index";
 export * from "./WebGL/webGLDataBuffer";
 export * from "./WebGPU/webgpuDataBuffer";
-export * from "./greasedLineMesh";
+export * from "./GreasedLine/greasedLineMesh";
+export * from "./GreasedLine/greasedLineRibbonMesh";
+export * from "./GreasedLine/greasedLineBaseMesh";
 import "./thinInstanceMesh";
 // eslint-disable-next-line no-duplicate-imports
 export * from "./thinInstanceMesh";

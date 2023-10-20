@@ -1,5 +1,3 @@
-/* eslint-disable import/no-internal-modules */
-export * from "./Controllers/index";
 export * from "./gamepad";
 export * from "./gamepadManager";
 export * from "./gamepadSceneComponent";

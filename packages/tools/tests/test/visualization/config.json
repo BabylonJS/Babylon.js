@@ -1,10 +1,15 @@
 ﻿{
     "root": "https://cdn.babylonjs.com",
-    "tests": [                
+    "tests": [
         {
             "title": "Node geometry",
             "playgroundId": "#WGZLGJ#9152",
             "referenceImage": "nodeGeometry.png"
+        },
+        {
+            "title": "GreasedLine - non camera facing",
+            "playgroundId": "#FJRQ8N#138",
+            "referenceImage": "greased-line-non-camera-facing.png"
         },
         {
             "title": "GreasedLine - basic",
@@ -1256,7 +1261,7 @@
             "title": "Prepass SSAO + shadow only",
             "renderCount": 10,
             "playgroundId": "#1KF7V1#55",
-            "excludedEngines": ["webgl1","webgpu"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "prepass-ssao-shadow-only.png"
         },
         {
@@ -1748,6 +1753,21 @@
             "title": "Vertex buffers with non aligned strides",
             "playgroundId": "#U1CZV3#32",
             "referenceImage": "VertexBuffer-non-aligned-strides.png"
+        },
+        {
+            "title": "Font style inheritance",
+            "playgroundId": "#QFK9K4#26",
+            "referenceImage": "Font-style-inheritance.png"
+        },
+        {
+            "title": "Font size inheritance",
+            "playgroundId": "#QFK9K4#24",
+            "referenceImage": "Fontsizeinheritance.png"
+        },
+        {
+            "title": "Child overriding parent font properties",
+            "playgroundId": "#QFK9K4#25",
+            "referenceImage": "Childoverridingparentfontproperties.png"
         }
     ]
 }

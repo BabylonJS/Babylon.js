@@ -1,262 +1,20 @@
-import { Engine } from "../Engines/engine";
-import { RawTexture } from "./Textures/rawTexture";
-import { MaterialPluginBase } from "./materialPluginBase";
-import type { Scene } from "../scene";
-import type { UniformBuffer } from "./uniformBuffer";
-import { Vector2, TmpVectors } from "../Maths/math.vector";
-import { Color3 } from "../Maths/math.color";
-import type { Nullable } from "../types";
-import type { Material } from "./material";
-import { MaterialDefines } from "./materialDefines";
-import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { BaseTexture } from "./Textures/baseTexture";
-import { RegisterClass } from "../Misc/typeStore";
-
-/**
- * Interface which defines the available methods for a GreasedLineMaterial
- */
-export interface IGreasedLineMaterial {
-    /**
-     * Normalized value of how much of the line will be visible
-     * 0 - 0% of the line will be visible
-     * 1 - 100% of the line will be visible
-     */
-    visibility: number;
-
-    /**
-     * Line base width. At each point the line width is calculated by widths[pointIndex] * width
-     */
-    width: number;
-
-    /**
-     * Turns on/off dash mode
-     */
-    useDash: boolean;
-
-    /**
-     * @see GreasedLinePluginMaterial.setDashCount
-     * Number of dashes in the line.
-     * Defaults to 1.
-     */
-    dashCount: number;
-
-    /**
-     * Dash offset
-     */
-    dashOffset: number;
-
-    /**
-     * Length of the dash. 0 to 1. 0.5 means half empty, half drawn.
-     */
-    dashRatio: number;
-
-    /**
-     * Whether to use the colors option to colorize the line
-     */
-    useColors: boolean;
-
-    /**
-     * The mixing mode of the color paramater. Default value is GreasedLineMeshColorMode.SET.
-     * MATERIAL_TYPE_SIMPLE mixes the color and colors of the greased line material.
-     * MATERIAL_TYPE_STANDARD and MATERIAL_TYPE_PBR mixes the color from the base material with the color and/or colors of the greased line material.
-     * @see GreasedLineMeshColorMode
-     */
-    colorMode: GreasedLineMeshColorMode;
-
-    /**
-     * Colors of the line segments.
-     * Defaults to empty.
-     */
-    colors: Nullable<Color3[]>;
-
-    /**
-     * If false then width units = scene units. If true then line will width be reduced.
-     * Defaults to false.
-     */
-    sizeAttenuation: boolean;
-
-    /**
-     * Color of the line. Applies to all line segments.
-     * Defaults to White.
-     */
-    color: Nullable<Color3>;
-
-    /**
-     * The method used to distribute the colors along the line.
-     * You can use segment distribution when each segment will use on color from the color table.
-     * Or you can use line distribution when the colors are distributed evenly along the line ignoring the segments.
-     */
-    colorsDistributionType: GreasedLineMeshColorDistributionType;
-
-    /**
-     * Defaults to engine.getRenderWidth() and engine.getRenderHeight()
-     * Rendering resolution
-     */
-    resolution: Vector2;
-
-    /**
-     * Allows to change the color without marking the material dirty.
-     * MATERIAL_TYPE_STANDARD and MATERIAL_TYPE_PBR material's shaders will get recompiled if there was no color set and you set a color or when there was a color set and you set it to null.
-     * @param value the color
-     * @param doNotMarkDirty the flag
-     */
-    setColor(value: Nullable<Color3>, doNotMarkDirty?: boolean): void;
-
-    /**
-     *
-     * @param colors colors array
-     * @param lazy if true the colors texture will not be updated
-     * @param forceNewTexture forces to create a new colors texture
-     */
-    setColors(colors: Nullable<Color3[]>, lazy: boolean, forceNewTexture?: boolean): void;
-
-    /**
-     * Creates and sets the colors texture from the colors array which was created in lazy mode
-     */
-    updateLazy(): void;
-}
-
-/**
- * Material types for GreasedLine
- * {@link https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param/greased_line#materialtype}
- */
-export enum GreasedLineMeshMaterialType {
-    /**
-     * StandardMaterial
-     */
-    MATERIAL_TYPE_STANDARD = 0,
-    /**
-     * PBR Material
-     */
-    MATERIAL_TYPE_PBR = 1,
-    /**
-     * Simple and fast shader material not supporting lightning nor textures
-     */
-    MATERIAL_TYPE_SIMPLE = 2,
-}
-
-/**
- * Color blending mode of the @see GreasedLineMaterial and the base material
- * {@link https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param/greased_line#colormode}
- */
-export enum GreasedLineMeshColorMode {
-    /**
-     * Color blending mode SET
-     */
-    COLOR_MODE_SET = 0,
-    /**
-     * Color blending mode ADD
-     */
-    COLOR_MODE_ADD = 1,
-    /**
-     * Color blending mode ADD
-     */
-    COLOR_MODE_MULTIPLY = 2,
-}
-
-/**
- * Color distribution type of the @see colors.
- * {@link https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param/greased_line#colordistributiontype}
- *
- */
-export enum GreasedLineMeshColorDistributionType {
-    /**
-     * Colors distributed between segments of the line
-     */
-    COLOR_DISTRIBUTION_TYPE_SEGMENT = 0,
-    /**
-     * Colors distributed along the line ingoring the segments
-     */
-    COLOR_DISTRIBUTION_TYPE_LINE = 1,
-}
-
-/**
- * Options for GreasedLineMaterial
- */
-export interface GreasedLineMaterialOptions {
-    /**
-     * Line width. If sizeAttenuation os false scene units will be used for width.
-     * Defaults to 0.1 if @see sizeAttenuation is false, or to 1 if it's true.
-     */
-    width?: number;
-    /**
-     * If false then width units = scene units. If true then line will width be reduced.
-     * Defaults to false.
-     */
-    sizeAttenuation?: boolean;
-    /**
-     * Type of the material to use to render the line.
-     * Defaults to StandardMaterial.
-     */
-    materialType?: GreasedLineMeshMaterialType;
-    /**
-     * Color of the line. Applies to all line segments.
-     * Defaults to White.
-     */
-    color?: Color3;
-    /**
-     * Color mode of the line. Applies to all line segments.
-     * The pixel color from the material shader will be modified with the value of @see color using the colorMode.
-     * Defaults to @see GreasedLineMeshColorMode.SET
-     */
-    colorMode?: GreasedLineMeshColorMode;
-    /**
-     * Colors of the line segments.
-     * Defaults to empty.
-     */
-    colors?: Color3[];
-    /**
-     * If true, @see colors are used, otherwise they're ignored.
-     * Defaults to false.
-     */
-    useColors?: boolean;
-    /**
-     * Sampling type of the colors texture
-     * Defaults to NEAREST_NEAREST.
-     */
-    colorsSampling?: number;
-    /**
-     * The method used to distribute the colors along the line.
-     * You can use segment distribution when each segment will use on color from the color table.
-     * Or you can use line distribution when the colors are distributed evenly along the line ignoring the segments.
-     */
-    colorDistributionType?: GreasedLineMeshColorDistributionType;
-    /**
-     * If true, dashing is used.
-     * Defaults to false.
-     */
-    useDash?: boolean;
-    /**
-     * @see GreasedLinePluginMaterial.setDashCount
-     * Number of dashes in the line.
-     * Defaults to 1.
-     */
-    dashCount?: number;
-    /**
-     * Offset of the dashes along the line. 0 to 1.
-     * Defaults to 0.
-     * @see GreasedLinePluginMaterial.setDashOffset
-     */
-    dashOffset?: number;
-    /**
-     * Length of the dash. 0 to 1. 0.5 means half empty, half drawn.
-     * Defaults to 0.5.
-     * @see GreasedLinePluginMaterial.setDashRatio
-     */
-    dashRatio?: number;
-    /**
-     * Sets the line length visibility.
-     * 0 - 0% of the line will be visible.
-     * 1 - 100% of the line will be visible.
-     * @see GreasedLinePluginMaterial.setVisibility
-     */
-    visibility?: number;
-    /**
-     * Defaults to engine.getRenderWidth() and engine.getRenderHeight()
-     * Rendering resolution
-     */
-    resolution?: Vector2;
-}
+import type { Engine } from "../../Engines/engine";
+import { RawTexture } from "../Textures/rawTexture";
+import { MaterialPluginBase } from "../materialPluginBase";
+import type { Scene } from "../../scene";
+import type { UniformBuffer } from "../uniformBuffer";
+import { Vector2, TmpVectors } from "../../Maths/math.vector";
+import type { Color3 } from "../../Maths/math.color";
+import type { Nullable } from "../../types";
+import type { Material } from "../material";
+import { MaterialDefines } from "../materialDefines";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { BaseTexture } from "../Textures/baseTexture";
+import { RegisterClass } from "../../Misc/typeStore";
+import type { GreasedLineMaterialOptions, IGreasedLineMaterial } from "./greasedLineMaterialInterfaces";
+import { GreasedLineMeshColorDistributionType, GreasedLineMeshColorMode } from "./greasedLineMaterialInterfaces";
+import { GreasedLineMaterialDefaults } from "./greasedLineMaterialDefaults";
+import { GreasedLineTools } from "../../Misc/greasedLineTools";
 
 /**
  * @internal
@@ -281,32 +39,24 @@ export class MaterialGreasedLineDefines extends MaterialDefines {
      * True if scene is in right handed coordinate system.
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    GREASED_LNE_RIGHT_HANDED_COORDINATE_SYSTEM = false;
+    GREASED_LINE_RIGHT_HANDED_COORDINATE_SYSTEM = false;
+
+    /**
+     * True if the line is in camera facing mode
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    GREASED_LINE_CAMERA_FACING = true;
 }
 
 /**
- * GreasedLinePluginMaterial for GreasedLineMesh
+ * GreasedLinePluginMaterial for GreasedLineMesh/GreasedLineRibbonMesh.
+ * Use the GreasedLineBuilder.CreateGreasedLineMaterial function to create and instance of this class.
  */
 export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGreasedLineMaterial {
     /**
      * Plugin name
      */
     public static readonly GREASED_LINE_MATERIAL_NAME = "GreasedLinePluginMaterial";
-
-    /**
-     * Default line color for newly created lines
-     */
-    public static DEFAULT_COLOR = Color3.White();
-    /**
-     * Default line width when sizeAttenuation is true
-     */
-    public static DEFAULT_WIDTH_ATTENUATED = 1;
-    /**
-     * Defaule line width
-     */
-    public static DEFAULT_WIDTH = 0.1;
-
-    private static _EmptyColorsTexture: Nullable<BaseTexture>;
 
     /**
      * Whether to use the colors option to colorize the line
@@ -351,6 +101,11 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      */
     public colorMode: GreasedLineMeshColorMode;
 
+    /**
+     * You can provide a colorsTexture to use instead of one generated from the 'colors' option
+     */
+    public colorsTexture: Nullable<RawTexture> = null;
+
     private _scene: Scene;
     private _dashCount: number;
     private _dashArray: number;
@@ -361,30 +116,39 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
     private _aspect: number;
     private _sizeAttenuation: boolean;
 
-    private _colorsTexture?: RawTexture;
+    private _cameraFacing: boolean;
 
     private _engine: Engine;
 
+    /**
+     * Creates a new instance of the GreasedLinePluginMaterial
+     * @param material base material for the plugin
+     * @param scene the scene
+     * @param options plugin options
+     */
     constructor(material: Material, scene?: Scene, options?: GreasedLineMaterialOptions) {
         options = options || {
-            color: GreasedLinePluginMaterial.DEFAULT_COLOR,
+            color: GreasedLineMaterialDefaults.DEFAULT_COLOR,
         };
 
         const defines = new MaterialGreasedLineDefines();
-        defines.GREASED_LINE_HAS_COLOR = !!options.color;
+        defines.GREASED_LINE_HAS_COLOR = !!options.color && !options.useColors;
         defines.GREASED_LINE_SIZE_ATTENUATION = options.sizeAttenuation ?? false;
         defines.GREASED_LINE_COLOR_DISTRIBUTION_TYPE_LINE = options.colorDistributionType === GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_LINE;
-        defines.GREASED_LNE_RIGHT_HANDED_COORDINATE_SYSTEM = (scene ?? material.getScene()).useRightHandedSystem;
+        defines.GREASED_LINE_RIGHT_HANDED_COORDINATE_SYSTEM = (scene ?? material.getScene()).useRightHandedSystem;
+        defines.GREASED_LINE_CAMERA_FACING = options.cameraFacing ?? true;
         super(material, GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME, 200, defines);
 
         this._scene = scene ?? material.getScene();
         this._engine = this._scene.getEngine();
 
+        this._cameraFacing = options.cameraFacing ?? true;
+
         this.visibility = options.visibility ?? 1;
         this.useDash = options.useDash ?? false;
         this.dashRatio = options.dashRatio ?? 0.5;
         this.dashOffset = options.dashOffset ?? 0;
-        this.width = options.width ? options.width : options.sizeAttenuation ? GreasedLinePluginMaterial.DEFAULT_WIDTH_ATTENUATED : GreasedLinePluginMaterial.DEFAULT_WIDTH;
+        this.width = options.width ? options.width : options.sizeAttenuation ? GreasedLineMaterialDefaults.DEFAULT_WIDTH_ATTENUATED : GreasedLineMaterialDefaults.DEFAULT_WIDTH;
         this._sizeAttenuation = options.sizeAttenuation ?? false;
         this.colorMode = options.colorMode ?? GreasedLineMeshColorMode.COLOR_MODE_SET;
         this._color = options.color ?? null;
@@ -396,16 +160,19 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
         this.dashCount = options.dashCount ?? 1; // calculate the _dashArray value, call the setter
         this.resolution = options.resolution ?? new Vector2(this._engine.getRenderWidth(), this._engine.getRenderHeight()); // calculate aspect call the setter
 
-        if (this._colors) {
-            this._createColorsTexture(`${material.name}-colors-texture`, this._colors);
+        if (options.colorsTexture) {
+            this.colorsTexture = options.colorsTexture; // colorsTexture from options takes precedence
         } else {
-            this._color = this._color ?? GreasedLinePluginMaterial.DEFAULT_COLOR;
-            GreasedLinePluginMaterial._PrepareEmptyColorsTexture(this._scene);
+            if (this._colors) {
+                this.colorsTexture = GreasedLineTools.CreateColorsTexture(`${material.name}-colors-texture`, this._colors, this.colorsSampling, this._scene);
+            } else {
+                this._color = this._color ?? GreasedLineMaterialDefaults.DEFAULT_COLOR;
+                GreasedLineTools.PrepareEmptyColorsTexture(this._scene);
+            }
         }
 
         this._engine.onDisposeObservable.add(() => {
-            GreasedLinePluginMaterial._EmptyColorsTexture?.dispose();
-            GreasedLinePluginMaterial._EmptyColorsTexture = null;
+            GreasedLineTools.DisposeEmptyColorsTexture();
         });
 
         this._enable(true); // always enabled
@@ -417,10 +184,15 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      */
     getAttributes(attributes: string[]) {
         attributes.push("grl_offsets");
-        attributes.push("grl_previousAndSide");
-        attributes.push("grl_nextAndCounters");
         attributes.push("grl_widths");
         attributes.push("grl_colorPointers");
+        attributes.push("grl_counters");
+        if (this._cameraFacing) {
+            attributes.push("grl_previousAndSide");
+            attributes.push("grl_nextAndCounters");
+        } else {
+            attributes.push("grl_slopes");
+        }
     }
 
     /**
@@ -436,8 +208,8 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * @param activeTextures
      */
     public getActiveTextures(activeTextures: BaseTexture[]): void {
-        if (this._colorsTexture) {
-            activeTextures.push(this._colorsTexture);
+        if (this.colorsTexture) {
+            activeTextures.push(this.colorsTexture);
         }
     }
 
@@ -447,19 +219,22 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      */
     getUniforms() {
         const ubo = [
-            { name: "grl_projection", size: 16, type: "mat4" },
             { name: "grl_singleColor", size: 3, type: "vec3" },
-            { name: "grl_aspect_resolution_lineWidth", size: 4, type: "vec4" },
             { name: "grl_dashOptions", size: 4, type: "vec4" },
             { name: "grl_colorMode_visibility_colorsWidth_useColors", size: 4, type: "vec4" },
         ];
+        if (this._cameraFacing) {
+            ubo.push({ name: "grl_projection", size: 16, type: "mat4" }, { name: "grl_aspect_resolution_lineWidth", size: 4, type: "vec4" });
+        }
 
         return {
             ubo,
-            vertex: `
+            vertex: this._cameraFacing
+                ? `
                 uniform vec4 grl_aspect_resolution_lineWidth;
                 uniform mat4 grl_projection;
-                `,
+                `
+                : "",
             fragment: `
                 uniform vec4 grl_dashOptions;
                 uniform vec4 grl_colorMode_visibility_colorsWidth_useColors;
@@ -479,24 +254,26 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * @param uniformBuffer
      */
     bindForSubMesh(uniformBuffer: UniformBuffer) {
-        const activeCamera = this._scene.activeCamera;
+        if (this._cameraFacing) {
+            const activeCamera = this._scene.activeCamera;
 
-        if (activeCamera) {
-            const projection = activeCamera.getProjectionMatrix();
-            uniformBuffer.updateMatrix("grl_projection", projection);
-        } else {
-            throw Error("GreasedLinePluginMaterial requires an active camera.");
+            if (activeCamera) {
+                const projection = activeCamera.getProjectionMatrix();
+                uniformBuffer.updateMatrix("grl_projection", projection);
+            } else {
+                throw Error("GreasedLinePluginMaterial requires an active camera.");
+            }
+
+            const resolutionLineWidth = TmpVectors.Vector4[0];
+            resolutionLineWidth.x = this._aspect;
+            resolutionLineWidth.y = this._resolution.x;
+            resolutionLineWidth.z = this._resolution.y;
+            resolutionLineWidth.w = this.width;
+            uniformBuffer.updateVector4("grl_aspect_resolution_lineWidth", resolutionLineWidth);
         }
 
-        const resolutionLineWidth = TmpVectors.Vector4[0];
-        resolutionLineWidth.x = this._aspect;
-        resolutionLineWidth.y = this._resolution.x;
-        resolutionLineWidth.z = this._resolution.y;
-        resolutionLineWidth.w = this.width;
-        uniformBuffer.updateVector4("grl_aspect_resolution_lineWidth", resolutionLineWidth);
-
         const dashOptions = TmpVectors.Vector4[0];
-        dashOptions.x = GreasedLinePluginMaterial._BooleanToNumber(this.useDash);
+        dashOptions.x = GreasedLineTools.BooleanToNumber(this.useDash);
         dashOptions.y = this._dashArray;
         dashOptions.z = this.dashOffset;
         dashOptions.w = this.dashRatio;
@@ -505,15 +282,15 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
         const colorModeVisibilityColorsWidthUseColors = TmpVectors.Vector4[1];
         colorModeVisibilityColorsWidthUseColors.x = this.colorMode;
         colorModeVisibilityColorsWidthUseColors.y = this.visibility;
-        colorModeVisibilityColorsWidthUseColors.z = this._colorsTexture ? this._colorsTexture.getSize().width : 0;
-        colorModeVisibilityColorsWidthUseColors.w = GreasedLinePluginMaterial._BooleanToNumber(this.useColors);
+        colorModeVisibilityColorsWidthUseColors.z = this.colorsTexture ? this.colorsTexture.getSize().width : 0;
+        colorModeVisibilityColorsWidthUseColors.w = GreasedLineTools.BooleanToNumber(this.useColors);
         uniformBuffer.updateVector4("grl_colorMode_visibility_colorsWidth_useColors", colorModeVisibilityColorsWidthUseColors);
 
         if (this._color) {
             uniformBuffer.updateColor3("grl_singleColor", this._color);
         }
 
-        uniformBuffer.setTexture("grl_colors", this._colorsTexture ?? GreasedLinePluginMaterial._EmptyColorsTexture);
+        uniformBuffer.setTexture("grl_colors", this.colorsTexture ?? GreasedLineMaterialDefaults.EmptyColorsTexture);
     }
 
     /**
@@ -523,10 +300,11 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * @param _mesh
      */
     prepareDefines(defines: MaterialGreasedLineDefines, _scene: Scene, _mesh: AbstractMesh) {
-        defines.GREASED_LINE_HAS_COLOR = !!this._color;
-        defines.GREASED_LINE_SIZE_ATTENUATION = this._sizeAttenuation ?? false;
+        defines.GREASED_LINE_HAS_COLOR = !!this.color && !this.useColors;
+        defines.GREASED_LINE_SIZE_ATTENUATION = this._sizeAttenuation;
         defines.GREASED_LINE_COLOR_DISTRIBUTION_TYPE_LINE = this._colorsDistributionType === GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_LINE;
-        defines.GREASED_LNE_RIGHT_HANDED_COORDINATE_SYSTEM = _scene.useRightHandedSystem;
+        defines.GREASED_LINE_RIGHT_HANDED_COORDINATE_SYSTEM = _scene.useRightHandedSystem;
+        defines.GREASED_LINE_CAMERA_FACING = this._cameraFacing;
     }
 
     /**
@@ -544,36 +322,48 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      */
     getCustomCode(shaderType: string): Nullable<{ [pointName: string]: string }> {
         if (shaderType === "vertex") {
-            return {
+            const obj: any = {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 CUSTOM_VERTEX_DEFINITIONS: `
+                attribute float grl_widths;
+                attribute vec3 grl_offsets;
+                attribute float grl_colorPointers;
+
+                varying float grlCounters;
+                varying float grlColorPointer;
+
+                #ifdef GREASED_LINE_CAMERA_FACING
                     attribute vec4 grl_previousAndSide;
                     attribute vec4 grl_nextAndCounters;
-                    attribute float grl_widths;
-                    attribute vec3 grl_offsets;
-                    attribute float grl_colorPointers;
-
-                    varying float grlCounters;
-                    varying float grlColorPointer;
 
                     vec2 grlFix( vec4 i, float aspect ) {
                         vec2 res = i.xy / i.w;
                         res.x *= aspect;
                         return res;
                     }
+                #else
+                    attribute vec3 grl_slopes;
+                    attribute float grl_counters;
+                #endif
                 `,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 CUSTOM_VERTEX_UPDATE_POSITION: `
+                #ifdef GREASED_LINE_CAMERA_FACING
                     vec3 grlPositionOffset = grl_offsets;
                     positionUpdated += grlPositionOffset;
+                #else
+                    positionUpdated = (positionUpdated + grl_offsets) + (grl_slopes * grl_widths);
+                #endif
                 `,
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 CUSTOM_VERTEX_MAIN_END: `
+                grlColorPointer = grl_colorPointers;
+
+                #ifdef GREASED_LINE_CAMERA_FACING
 
                     float grlAspect = grl_aspect_resolution_lineWidth.x;
                     float grlBaseWidth = grl_aspect_resolution_lineWidth.w;
 
-                    grlColorPointer = grl_colorPointers;
 
                     vec3 grlPrevious = grl_previousAndSide.xyz;
                     float grlSide = grl_previousAndSide.w;
@@ -602,25 +392,30 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
                         grlDir = normalize( grlDir1 + grlDir2 );
                     }
                     vec4 grlNormal = vec4( -grlDir.y, grlDir.x, 0., 1. );
-                    #ifdef GREASED_LNE_RIGHT_HANDED_COORDINATE_SYSTEM
+                    #ifdef GREASED_LINE_RIGHT_HANDED_COORDINATE_SYSTEM
                         grlNormal.xy *= -.5 * grlWidth;
                     #else
                         grlNormal.xy *= .5 * grlWidth;
                     #endif
+
                     grlNormal *= grl_projection;
+
                     #ifdef GREASED_LINE_SIZE_ATTENUATION
                         grlNormal.xy *= grlFinalPosition.w;
                         grlNormal.xy /= ( vec4( grl_aspect_resolution_lineWidth.yz, 0., 1. ) * grl_projection ).xy;
                     #endif
+
                     grlFinalPosition.xy += grlNormal.xy * grlSide;
                     gl_Position = grlFinalPosition;
 
                     vPositionW = vec3(grlFinalPosition);
-
+                #else
+                    grlCounters = grl_counters;
+                #endif
                 `,
-                // eslint-disable-next-line @typescript-eslint/naming-convention
-                "!gl_Position\\=viewProjection\\*worldPos;": "//", // remove
             };
+            this._cameraFacing && (obj["!gl_Position\\=viewProjection\\*worldPos;"] = "//"); // not needed for camera facing GRL
+            return obj;
         }
 
         if (shaderType === "fragment") {
@@ -675,6 +470,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
                             }
                         }
                     #endif
+
                 `,
             };
         }
@@ -683,47 +479,10 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
     }
 
     /**
-     * Converts boolean to number.
-     * @param bool
-     * @returns 1 if true, 0 if false.
-     */
-    private static _BooleanToNumber(bool?: boolean) {
-        return bool ? 1 : 0;
-    }
-
-    /**
-     * Converts an array of Color3 to Uint8Array
-     * @param colors Arrray of Color3
-     * @returns Uin8Array of colors [r, g, b, a, r, g, b, a, ...]
-     */
-    private static _Color3toRGBAUint8(colors: Color3[]) {
-        const colorTable: Uint8Array = new Uint8Array(colors.length * 4);
-        for (let i = 0, j = 0; i < colors.length; i++) {
-            colorTable[j++] = colors[i].r * 255;
-            colorTable[j++] = colors[i].g * 255;
-            colorTable[j++] = colors[i].b * 255;
-            colorTable[j++] = 255;
-        }
-
-        return colorTable;
-    }
-
-    /**
-     * Creates a RawTexture from an RGBA color array and sets it on the plugin material instance.
-     * @param name name of the texture
-     * @param colors Uint8Array of colors
-     */
-    private _createColorsTexture(name: string, colors: Color3[]) {
-        const colorsArray = GreasedLinePluginMaterial._Color3toRGBAUint8(colors);
-        this._colorsTexture = new RawTexture(colorsArray, colors.length, 1, Engine.TEXTUREFORMAT_RGBA, this._scene, false, true, this.colorsSampling);
-        this._colorsTexture.name = name;
-    }
-
-    /**
      * Disposes the plugin material.
      */
     public dispose(): void {
-        this._colorsTexture?.dispose();
+        this.colorsTexture?.dispose();
         super.dispose();
     }
 
@@ -754,7 +513,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
         this._colors = colors;
 
         if (colors === null || colors.length === 0) {
-            this._colorsTexture?.dispose();
+            this.colorsTexture?.dispose();
             return;
         }
 
@@ -762,12 +521,12 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
             return;
         }
 
-        if (this._colorsTexture && origColorsCount === colors.length && !forceNewTexture) {
-            const colorArray = GreasedLinePluginMaterial._Color3toRGBAUint8(colors);
-            this._colorsTexture.update(colorArray);
+        if (this.colorsTexture && origColorsCount === colors.length && !forceNewTexture) {
+            const colorArray = GreasedLineTools.Color3toRGBAUint8(colors);
+            this.colorsTexture.update(colorArray);
         } else {
-            this._colorsTexture?.dispose();
-            this._createColorsTexture(`${this._material.name}-colors-texture`, colors);
+            this.colorsTexture?.dispose();
+            this.colorsTexture = GreasedLineTools.CreateColorsTexture(`${this._material.name}-colors-texture`, colors, this.colorsSampling, this._scene);
         }
     }
 
@@ -796,15 +555,17 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
     }
 
     /**
-     * False means 1 unit in width = 1 unit on scene, true means 1 unit in width is reduced on the screen to make better looking lines
+     * If set to true the line will be rendered always with the same width regardless how far it is located from the camera.
+     * Not supported for non camera facing lines.
      */
     get sizeAttenuation() {
         return this._sizeAttenuation;
     }
 
     /**
-     * Turn on/off attenuation of the width option and widths array.
-     * @param value false means 1 unit in width = 1 unit on scene, true means 1 unit in width is reduced on the screen to make better looking lines
+     * Turn on/off size attenuation of the width option and widths array.
+     * Not supported for non camera facing lines.
+     * @param value If set to true the line will be rendered always with the same width regardless how far it is located from the camera.
      */
     set sizeAttenuation(value: boolean) {
         this._sizeAttenuation = value;
@@ -912,16 +673,11 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
         super.parse(source, scene, rootUrl);
         const greasedLineMaterialOptions = <GreasedLineMaterialOptions>source.greasedLineMaterialOptions;
 
-        this._colorsTexture?.dispose();
-
-        if (greasedLineMaterialOptions.colors) {
-            this._createColorsTexture(`${this._material.name}-colors-texture`, greasedLineMaterialOptions.colors);
-        } else {
-            GreasedLinePluginMaterial._PrepareEmptyColorsTexture(scene);
-        }
+        this.colorsTexture?.dispose();
 
         greasedLineMaterialOptions.color && this.setColor(greasedLineMaterialOptions.color, true);
         greasedLineMaterialOptions.colorDistributionType && (this.colorsDistributionType = greasedLineMaterialOptions.colorDistributionType);
+        greasedLineMaterialOptions.colors && (this.colors = greasedLineMaterialOptions.colors);
         greasedLineMaterialOptions.colorsSampling && (this.colorsSampling = greasedLineMaterialOptions.colorsSampling);
         greasedLineMaterialOptions.colorMode && (this.colorMode = greasedLineMaterialOptions.colorMode);
         greasedLineMaterialOptions.useColors && (this.useColors = greasedLineMaterialOptions.useColors);
@@ -934,6 +690,12 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
         greasedLineMaterialOptions.sizeAttenuation && (this.sizeAttenuation = greasedLineMaterialOptions.sizeAttenuation);
         greasedLineMaterialOptions.resolution && (this.resolution = greasedLineMaterialOptions.resolution);
 
+        if (this.colors) {
+            this.colorsTexture = GreasedLineTools.CreateColorsTexture(`${this._material.name}-colors-texture`, this.colors, this.colorsSampling, scene);
+        } else {
+            GreasedLineTools.PrepareEmptyColorsTexture(scene);
+        }
+
         this.markAllDefinesAsDirty();
     }
 
@@ -944,10 +706,10 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
     public copyTo(plugin: MaterialPluginBase): void {
         const dest = plugin as GreasedLinePluginMaterial;
 
-        dest._colorsTexture?.dispose();
+        dest.colorsTexture?.dispose();
 
         if (this._colors) {
-            dest._createColorsTexture(`${dest._material.name}-colors-texture`, this._colors);
+            dest.colorsTexture = GreasedLineTools.CreateColorsTexture(`${dest._material.name}-colors-texture`, this._colors, dest.colorsSampling, this._scene);
         }
 
         dest.setColor(this.color, true);
@@ -965,19 +727,6 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
         dest.resolution = this.resolution;
 
         dest.markAllDefinesAsDirty();
-    }
-
-    /**
-     * A minimum size texture for the colors sampler2D when there is no colors texture defined yet.
-     * For fast switching using the useColors property without the need to use defines.
-     * @param scene Scene
-     */
-    private static _PrepareEmptyColorsTexture(scene: Scene) {
-        if (!this._EmptyColorsTexture) {
-            const colorsArray = new Uint8Array(4);
-            GreasedLinePluginMaterial._EmptyColorsTexture = new RawTexture(colorsArray, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false, false, RawTexture.NEAREST_NEAREST);
-            GreasedLinePluginMaterial._EmptyColorsTexture.name = "grlEmptyColorsTexture";
-        }
     }
 }
 

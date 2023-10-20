@@ -154,11 +154,50 @@ export const getRules = (
     return rules;
 };
 
-export const commonDevWebpackConfiguration = (env: { mode: "development" | "production"; outputFilename: string; dirName: string }) => {
+export const commonDevWebpackConfiguration = (
+    env: {
+        mode: "development" | "production";
+        outputFilename: string;
+        dirName: string;
+        enableHttps?: boolean;
+        enableHotReload?: boolean;
+        enableLiveReload?: boolean;
+    },
+    devServerConfig?: {
+        port: number;
+        static?: string[];
+        showBuildProgress?: boolean;
+    }
+) => {
     const production = env.mode === "production" || process.env.NODE_ENV === "production";
     return {
         mode: production ? "production" : "development",
         devtool: production ? "source-map" : "inline-cheap-module-source-map",
+        devServer: devServerConfig
+            ? {
+                  port: devServerConfig.port,
+                  static: devServerConfig.static ? devServerConfig.static.map((dir) => path.resolve(dir)) : undefined,
+                  webSocketServer: production ? false : "ws",
+                  compress: production,
+                  server: env.enableHttps !== undefined || process.env.ENABLE_HTTPS === "true" ? "https" : "http",
+                  hot: (env.enableHotReload !== undefined || process.env.ENABLE_HOT_RELOAD === "true") && !production ? true : false,
+                  liveReload: (env.enableLiveReload !== undefined || process.env.ENABLE_LIVE_RELOAD === "true") && !production ? true : false,
+                  headers: {
+                      "Access-Control-Allow-Origin": "*",
+                  },
+                  client: {
+                      overlay: process.env.DISABLE_DEV_OVERLAY
+                          ? false
+                          : {
+                                warnings: false,
+                                errors: true,
+                            },
+                      logging: production ? "error" : "info",
+                      progress: devServerConfig.showBuildProgress,
+                  },
+                  allowedHosts: process.env.ALLOWED_HOSTS ? process.env.ALLOWED_HOSTS.split(",") : undefined,
+              }
+            : undefined,
         output: env.outputFilename
             ? {
                   path: path.resolve(env.dirName, "dist"),

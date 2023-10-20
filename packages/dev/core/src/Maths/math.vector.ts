@@ -6953,6 +6953,49 @@ export class Matrix {
     }
 
     /**
+     * Stores a left-handed oblique projection into a given matrix
+     * @param left defines the viewport left coordinate
+     * @param right defines the viewport right coordinate
+     * @param bottom defines the viewport bottom coordinate
+     * @param top defines the viewport top coordinate
+     * @param znear defines the near clip plane
+     * @param zfar defines the far clip plane
+     * @param angle Angle (along X/Y Plane) to apply shear
+     * @param length Length of the shear
+     * @param distance Distance from shear point
+     * @param result defines the target matrix
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
+     * @returns result input
+     */
+    public static ObliqueOffCenterLHToRef<T extends Matrix>(
+        left: number,
+        right: number,
+        bottom: number,
+        top: number,
+        znear: number,
+        zfar: number,
+        length: number,
+        angle: number,
+        distance: number,
+        result: T,
+        halfZRange?: boolean
+    ): T {
+        const a = -length * Math.cos(angle);
+        const b = -length * Math.sin(angle);
+
+        Matrix.TranslationToRef(0, 0, -distance, MathTmp.Matrix[1]);
+        Matrix.FromValuesToRef(1, 0, 0, 0, 0, 1, 0, 0, a, b, 1, 0, 0, 0, 0, 1, MathTmp.Matrix[0]);
+        MathTmp.Matrix[1].multiplyToRef(MathTmp.Matrix[0], MathTmp.Matrix[0]);
+        Matrix.TranslationToRef(0, 0, distance, MathTmp.Matrix[1]);
+        MathTmp.Matrix[0].multiplyToRef(MathTmp.Matrix[1], MathTmp.Matrix[0]);
+
+        Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, result, halfZRange);
+        MathTmp.Matrix[0].multiplyToRef(result, result);
+
+        return result;
+    }
+
+    /**
      * Creates a right-handed orthographic projection matrix
      * Example Playground - https://playground.babylonjs.com/#AV9X17#76
      * @param left defines the viewport left coordinate
@@ -6995,6 +7038,49 @@ export class Matrix {
     ): T {
         Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, result, halfZRange);
         result._m[10] *= -1; // No need to call markAsUpdated as previous function already called it and let _isIdentityDirty to true
+        return result;
+    }
+
+    /**
+     * Stores a right-handed oblique projection into a given matrix
+     * @param left defines the viewport left coordinate
+     * @param right defines the viewport right coordinate
+     * @param bottom defines the viewport bottom coordinate
+     * @param top defines the viewport top coordinate
+     * @param znear defines the near clip plane
+     * @param zfar defines the far clip plane
+     * @param angle Angle (along X/Y Plane) to apply shear
+     * @param length Length of the shear
+     * @param distance Distance from shear point
+     * @param result defines the target matrix
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
+     * @returns result input
+     */
+    public static ObliqueOffCenterRHToRef<T extends Matrix>(
+        left: number,
+        right: number,
+        bottom: number,
+        top: number,
+        znear: number,
+        zfar: number,
+        length: number,
+        angle: number,
+        distance: number,
+        result: T,
+        halfZRange?: boolean
+    ): T {
+        const a = length * Math.cos(angle);
+        const b = length * Math.sin(angle);
+
+        Matrix.TranslationToRef(0, 0, distance, MathTmp.Matrix[1]);
+        Matrix.FromValuesToRef(1, 0, 0, 0, 0, 1, 0, 0, a, b, 1, 0, 0, 0, 0, 1, MathTmp.Matrix[0]);
+        MathTmp.Matrix[1].multiplyToRef(MathTmp.Matrix[0], MathTmp.Matrix[0]);
+        Matrix.TranslationToRef(0, 0, -distance, MathTmp.Matrix[1]);
+        MathTmp.Matrix[0].multiplyToRef(MathTmp.Matrix[1], MathTmp.Matrix[0]);
+
+        Matrix.OrthoOffCenterRHToRef(left, right, bottom, top, znear, zfar, result, halfZRange);
+        MathTmp.Matrix[0].multiplyToRef(result, result);
+
         return result;
     }
 
@@ -7249,62 +7335,6 @@ export class Matrix {
         }
 
         result._updateIdentityStatus(false);
-        return result;
-    }
-
-    /**
-     * Stores a perspective projection for WebVR info a given matrix
-     * Example Playground - https://playground.babylonjs.com/#AV9X17#92
-     * @param fov defines the field of view
-     * @param fov.upDegrees
-     * @param fov.downDegrees
-     * @param fov.leftDegrees
-     * @param fov.rightDegrees
-     * @param znear defines the near clip plane
-     * @param zfar defines the far clip plane
-     * @param result defines the target matrix
-     * @param rightHanded defines if the matrix must be in right-handed mode (false by default)
-     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
-     * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
-     * @returns result input
-     */
-    public static PerspectiveFovWebVRToRef<T extends Matrix>(
-        fov: { upDegrees: number; downDegrees: number; leftDegrees: number; rightDegrees: number },
-        znear: number,
-        zfar: number,
-        result: T,
-        rightHanded = false,
-        halfZRange?: boolean,
-        projectionPlaneTilt: number = 0
-    ): T {
-        const rightHandedFactor = rightHanded ? -1 : 1;
-
-        const upTan = Math.tan((fov.upDegrees * Math.PI) / 180.0);
-        const downTan = Math.tan((fov.downDegrees * Math.PI) / 180.0);
-        const leftTan = Math.tan((fov.leftDegrees * Math.PI) / 180.0);
-        const rightTan = Math.tan((fov.rightDegrees * Math.PI) / 180.0);
-        const xScale = 2.0 / (leftTan + rightTan);
-        const yScale = 2.0 / (upTan + downTan);
-        const rot = Math.tan(projectionPlaneTilt);
-
-        const m = result._m;
-        m[0] = xScale;
-        m[1] = m[2] = m[3] = m[4] = 0.0;
-        m[5] = yScale;
-        m[6] = 0.0;
-        m[7] = rot;
-        m[8] = (leftTan - rightTan) * xScale * 0.5;
-        m[9] = -((upTan - downTan) * yScale * 0.5);
-        m[10] = -zfar / (znear - zfar);
-        m[11] = 1.0 * rightHandedFactor;
-        m[12] = m[13] = m[15] = 0.0;
-        m[14] = -(2.0 * zfar * znear) / (zfar - znear);
-
-        if (halfZRange) {
-            result.multiplyToRef(mtxConvertNDCToHalfZRange, result);
-        }
-
-        result.markAsUpdated();
         return result;
     }
 

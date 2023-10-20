@@ -1,5 +1,4 @@
 import { Logger } from "../../Misc/logger";
-import type { Observer } from "../../Misc/observable";
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import type { Camera } from "../../Cameras/camera";
@@ -7,41 +6,33 @@ import { FreeCamera } from "../../Cameras/freeCamera";
 import { TargetCamera } from "../../Cameras/targetCamera";
 import { DeviceOrientationCamera } from "../../Cameras/deviceOrientationCamera";
 import { VRDeviceOrientationFreeCamera } from "../../Cameras/VR/vrDeviceOrientationFreeCamera";
-import type { WebVROptions } from "../../Cameras/VR/webVRCamera";
-import { WebVRFreeCamera } from "../../Cameras/VR/webVRCamera";
 import { PointerEventTypes } from "../../Events/pointerEvents";
 import type { Scene, IDisposable } from "../../scene";
 import { Quaternion, Matrix, Vector3 } from "../../Maths/math.vector";
 import { Color3, Color4 } from "../../Maths/math.color";
 import type { StickValues } from "../../Gamepads/gamepad";
 import { Gamepad } from "../../Gamepads/gamepad";
-import { PoseEnabledController, PoseEnabledControllerType } from "../../Gamepads/Controllers/poseEnabledController";
-import { WebVRController } from "../../Gamepads/Controllers/webVRController";
 import type { Xbox360Pad } from "../../Gamepads/xboxGamepad";
 import { Xbox360Button } from "../../Gamepads/xboxGamepad";
-import type { IDisplayChangedEventArgs } from "../../Engines/engine";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
-import type { TransformNode } from "../../Meshes/transformNode";
-import { Mesh } from "../../Meshes/mesh";
 import type { PickingInfo } from "../../Collisions/pickingInfo";
 import { Ray } from "../../Culling/ray";
 import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
 import { StandardMaterial } from "../../Materials/standardMaterial";
 import { DynamicTexture } from "../../Materials/Textures/dynamicTexture";
-import { ImageProcessingPostProcess } from "../../PostProcesses/imageProcessingPostProcess";
+import type { ImageProcessingPostProcess } from "../../PostProcesses/imageProcessingPostProcess";
 import { SineEase, EasingFunction, CircleEase } from "../../Animations/easing";
 import { Animation } from "../../Animations/animation";
-import { VRCameraMetrics } from "../../Cameras/VR/vrCameraMetrics";
+import type { VRCameraMetrics } from "../../Cameras/VR/vrCameraMetrics";
 import "../../Gamepads/gamepadSceneComponent";
 import "../../Animations/animatable";
-import { Axis } from "../../Maths/math.axis";
 import { WebXRSessionManager } from "../../XR/webXRSessionManager";
 import type { WebXRDefaultExperience } from "../../XR/webXRDefaultExperience";
 import { WebXRState } from "../../XR/webXRTypes";
-import { CreateCylinder } from "../../Meshes/Builders/cylinderBuilder";
-import { CreateTorus } from "../../Meshes/Builders/torusBuilder";
 import { CreateGround } from "../../Meshes/Builders/groundBuilder";
 import type { IPointerEvent } from "../../Events/deviceInputEvents";
+import type { Mesh } from "core/Meshes/mesh";
+import { CreateTorus } from "core/Meshes/Builders/torusBuilder";
 
 /**
  * Options to modify the vr teleportation behavior.
@@ -76,7 +67,7 @@ export interface VRTeleportationOptions {
 /**
  * Options to modify the vr experience helper's behavior.
  */
-export interface VRExperienceHelperOptions extends WebVROptions {
+export interface VRExperienceHelperOptions {
     /**
      * Create a DeviceOrientationCamera to be used as your out of vr camera. (default: true)
      */
@@ -98,7 +89,7 @@ export interface VRExperienceHelperOptions extends WebVROptions {
      */
     vrDeviceOrientationCameraMetrics?: VRCameraMetrics;
     /**
-     * Defines if WebXR should be used instead of WebVR (if available)
+     * Defines if WebXR should be used (if available)
      */
     useXR?: boolean;
 }
@@ -215,118 +206,6 @@ class VRExperienceHelperGazer implements IDisposable {
     }
 }
 
-class VRExperienceHelperControllerGazer extends VRExperienceHelperGazer {
-    private _laserPointer: Mesh;
-    private _meshAttachedObserver: Nullable<Observer<AbstractMesh>>;
-    constructor(public webVRController: WebVRController, scene: Scene, gazeTrackerToClone: Mesh) {
-        super(scene, gazeTrackerToClone);
-        // Laser pointer
-        this._laserPointer = CreateCylinder(
-            "laserPointer",
-            {
-                updatable: false,
-                height: 1,
-                diameterTop: 0.004,
-                diameterBottom: 0.0002,
-                tessellation: 20,
-                subdivisions: 1,
-            },
-            scene
-        );
-        const laserPointerMaterial = new StandardMaterial("laserPointerMat", scene);
-        laserPointerMaterial.emissiveColor = new Color3(0.7, 0.7, 0.7);
-        laserPointerMaterial.alpha = 0.6;
-        this._laserPointer.material = laserPointerMaterial;
-        this._laserPointer.rotation.x = Math.PI / 2;
-        this._laserPointer.position.z = -0.5;
-        this._laserPointer.isVisible = false;
-        this._laserPointer.isPickable = false;
-
-        if (!webVRController.mesh) {
-            // Create an empty mesh that is used prior to loading the high quality model
-            const preloadMesh = new Mesh("preloadControllerMesh", scene);
-            const preloadPointerPose = new Mesh(PoseEnabledController.POINTING_POSE, scene);
-            preloadPointerPose.rotation.x = -0.7;
-            preloadMesh.addChild(preloadPointerPose);
-            webVRController.attachToMesh(preloadMesh);
-        }
-
-        this._setLaserPointerParent(webVRController.mesh!);
-
-        this._meshAttachedObserver = webVRController._meshAttachedObservable.add((mesh) => {
-            this._setLaserPointerParent(mesh);
-        });
-    }
-
-    _getForwardRay(length: number): Ray {
-        return this.webVRController.getForwardRay(length);
-    }
-
-    /** @internal */
-    public _activatePointer() {
-        super._activatePointer();
-        this._laserPointer.isVisible = true;
-    }
-
-    /** @internal */
-    public _deactivatePointer() {
-        super._deactivatePointer();
-        this._laserPointer.isVisible = false;
-    }
-
-    /**
-     * @internal
-     */
-    public _setLaserPointerColor(color: Color3) {
-        (<StandardMaterial>this._laserPointer.material).emissiveColor = color;
-    }
-
-    /**
-     * @internal
-     */
-    public _setLaserPointerLightingDisabled(disabled: boolean) {
-        (<StandardMaterial>this._laserPointer.material).disableLighting = disabled;
-    }
-
-    /**
-     * @internal
-     */
-    public _setLaserPointerParent(mesh: AbstractMesh) {
-        const makeNotPick = (root: AbstractMesh) => {
-            root.isPickable = false;
-            root.getChildMeshes().forEach((c) => {
-                makeNotPick(c);
-            });
-        };
-        makeNotPick(mesh);
-        const meshChildren = mesh.getChildren(undefined, false);
-
-        let laserParent: TransformNode = mesh;
-        this.webVRController._pointingPoseNode = null;
-        for (let i = 0; i < meshChildren.length; i++) {
-            if (meshChildren[i].name && meshChildren[i].name.indexOf(PoseEnabledController.POINTING_POSE) >= 0) {
-                laserParent = <TransformNode>meshChildren[i];
-                this.webVRController._pointingPoseNode = laserParent;
-                break;
-            }
-        }
-        this._laserPointer.parent = laserParent;
-    }
-
-    public _updatePointerDistance(distance: number = 100) {
-        this._laserPointer.scaling.y = distance;
-        this._laserPointer.position.z = -distance / 2;
-    }
-
-    dispose() {
-        super.dispose();
-        this._laserPointer.dispose();
-        if (this._meshAttachedObserver) {
-            this.webVRController._meshAttachedObservable.remove(this._meshAttachedObserver);
-        }
-    }
-}
-
 class VRExperienceHelperCameraGazer extends VRExperienceHelperGazer {
     constructor(private _getCamera: () => Nullable<Camera>, scene: Scene) {
         super(scene);
@@ -355,7 +234,7 @@ export class OnAfterEnteringVRObservableEvent {
 /**
  * Helps to quickly add VR support to an existing scene.
  * See https://doc.babylonjs.com/features/featuresDeepDive/cameras/webVRHelper
- * @deprecated
+ * @deprecated Use WebXR instead!
  */
 export class VRExperienceHelper {
     private _scene: Scene;
@@ -363,14 +242,6 @@ export class VRExperienceHelper {
     private _btnVR: Nullable<HTMLButtonElement>;
     private _btnVRDisplayed: boolean;
 
-    // Can the system support WebVR, even if a headset isn't plugged in?
-    private _webVRsupported = false;
-    // If WebVR is supported, is a headset plugged in and are we ready to present?
-    private _webVRready = false;
-    // Are we waiting for the requestPresent callback to complete?
-    private _webVRrequesting = false;
-    // Are we presenting to the headset right now? (this is the vrDevice state)
-    private _webVRpresenting = false;
     // Have we entered VR? (this is the VRExperienceHelper state)
     private _hasEnteredVR: boolean;
 
@@ -378,16 +249,12 @@ export class VRExperienceHelper {
     private _fullscreenVRpresenting = false;
 
     private _inputElement: Nullable<HTMLElement>;
-    private _webVRCamera: WebVRFreeCamera;
     private _vrDeviceOrientationCamera: Nullable<VRDeviceOrientationFreeCamera>;
     private _deviceOrientationCamera: Nullable<DeviceOrientationCamera>;
     private _existingCamera: Camera;
 
     private _onKeyDown: (event: KeyboardEvent) => void;
     private _onVrDisplayPresentChangeBind: any;
-    private _onVRDisplayChangedBind: (eventArgs: IDisplayChangedEventArgs) => void;
-    private _onVRRequestPresentStart: () => void;
-    private _onVRRequestPresentComplete: (success: boolean) => void;
 
     /**
      * Gets or sets a boolean indicating that gaze can be enabled even if pointer lock is not engage (useful on iOS where fullscreen mode and pointer lock are not supported)
@@ -414,11 +281,6 @@ export class VRExperienceHelper {
      */
     public onExitingVRObservable = new Observable<VRExperienceHelper>();
 
-    /**
-     * Observable raised when controller mesh is loaded.
-     */
-    public onControllerMeshLoadedObservable = new Observable<WebVRController>();
-
     /** Return this.onEnteringVRObservable
      * Note: This one is for backward compatibility. Please use onEnteringVRObservable directly
      */
@@ -433,16 +295,7 @@ export class VRExperienceHelper {
         return this.onExitingVRObservable;
     }
 
-    /** Return this.onControllerMeshLoadedObservable
-     * Note: This one is for backward compatibility. Please use onControllerMeshLoadedObservable directly
-     */
-    public get onControllerMeshLoaded(): Observable<WebVRController> {
-        return this.onControllerMeshLoadedObservable;
-    }
-
-    private _rayLength: number;
     private _useCustomVRButton: boolean = false;
-    private _teleportationRequested: boolean = false;
     private _teleportActive = false;
     private _floorMeshName: string;
     private _floorMeshesCollection: Mesh[] = [];
@@ -463,11 +316,6 @@ export class VRExperienceHelper {
     private _padSensibilityUp = 0.65;
     private _padSensibilityDown = 0.35;
 
-    private _leftController: Nullable<VRExperienceHelperControllerGazer> = null;
-    private _rightController: Nullable<VRExperienceHelperControllerGazer> = null;
-
-    private _gazeColor: Color3 = new Color3(0.7, 0.7, 0.7);
-    private _laserColor: Color3 = new Color3(0.7, 0.7, 0.7);
     private _pickedLaserColor: Color3 = new Color3(0.2, 0.2, 1);
     private _pickedGazeColor: Color3 = new Color3(0, 0, 1);
 
@@ -475,12 +323,6 @@ export class VRExperienceHelper {
      * Observable raised when a new mesh is selected based on meshSelectionPredicate
      */
     public onNewMeshSelected = new Observable<AbstractMesh>();
-
-    /**
-     * Observable raised when a new mesh is selected based on meshSelectionPredicate.
-     * This observable will provide the mesh and the controller used to select the mesh
-     */
-    public onMeshSelectedWithController = new Observable<{ mesh: AbstractMesh; controller: WebVRController }>();
 
     /**
      * Observable raised when a new mesh is picked based on meshSelectionPredicate
@@ -524,7 +366,6 @@ export class VRExperienceHelper {
     private _defaultHeight: number;
     private _teleportationInitialized = false;
     private _interactionsEnabled = false;
-    private _interactionsRequested = false;
     private _displayGaze = true;
     private _displayLaserPointer = true;
 
@@ -561,12 +402,6 @@ export class VRExperienceHelper {
             if (this._cameraGazer._gazeTracker) {
                 this._cameraGazer._gazeTracker.dispose();
             }
-            if (this._leftController && this._leftController._gazeTracker) {
-                this._leftController._gazeTracker.dispose();
-            }
-            if (this._rightController && this._rightController._gazeTracker) {
-                this._rightController._gazeTracker.dispose();
-            }
 
             // Set and create gaze trackers on head and controllers
             this._cameraGazer._gazeTracker = value;
@@ -574,13 +409,6 @@ export class VRExperienceHelper {
             this._cameraGazer._gazeTracker.isPickable = false;
             this._cameraGazer._gazeTracker.isVisible = false;
             this._cameraGazer._gazeTracker.name = "gazeTracker";
-            if (this._leftController) {
-                this._leftController._gazeTracker = this._cameraGazer._gazeTracker.clone("gazeTracker") as Mesh;
-            }
-
-            if (this._rightController) {
-                this._rightController._gazeTracker = this._cameraGazer._gazeTracker.clone("gazeTracker") as Mesh;
-            }
         }
     }
 
@@ -598,26 +426,6 @@ export class VRExperienceHelper {
     public updateControllerLaserColor = true;
 
     /**
-     * The gaze tracking mesh corresponding to the left controller
-     */
-    public get leftControllerGazeTrackerMesh(): Nullable<Mesh> {
-        if (this._leftController) {
-            return this._leftController._gazeTracker;
-        }
-        return null;
-    }
-
-    /**
-     * The gaze tracking mesh corresponding to the right controller
-     */
-    public get rightControllerGazeTrackerMesh(): Nullable<Mesh> {
-        if (this._rightController) {
-            return this._rightController._gazeTracker;
-        }
-        return null;
-    }
-
-    /**
      * If the ray of the gaze should be displayed.
      */
     public get displayGaze(): boolean {
@@ -631,14 +439,6 @@ export class VRExperienceHelper {
         this._displayGaze = value;
         if (!value) {
             this._cameraGazer._gazeTracker.isVisible = false;
-
-            if (this._leftController) {
-                this._leftController._gazeTracker.isVisible = false;
-            }
-
-            if (this._rightController) {
-                this._rightController._gazeTracker.isVisible = false;
-            }
         }
     }
 
@@ -654,23 +454,6 @@ export class VRExperienceHelper {
      */
     public set displayLaserPointer(value: boolean) {
         this._displayLaserPointer = value;
-        if (!value) {
-            if (this._rightController) {
-                this._rightController._deactivatePointer();
-                this._rightController._gazeTracker.isVisible = false;
-            }
-            if (this._leftController) {
-                this._leftController._deactivatePointer();
-                this._leftController._gazeTracker.isVisible = false;
-            }
-        } else {
-            if (this._rightController) {
-                this._rightController._activatePointer();
-            }
-            if (this._leftController) {
-                this._leftController._activatePointer();
-            }
-        }
     }
 
     /**
@@ -684,18 +467,7 @@ export class VRExperienceHelper {
      * Based on the current WebVR support, returns the current VR camera used.
      */
     public get currentVRCamera(): Nullable<Camera> {
-        if (this._webVRready) {
-            return this._webVRCamera;
-        } else {
-            return this._scene.activeCamera;
-        }
-    }
-
-    /**
-     * The webVRCamera which is used when in VR.
-     */
-    public get webVRCamera(): WebVRFreeCamera {
-        return this._webVRCamera;
+        return this._scene.activeCamera;
     }
 
     /**
@@ -713,11 +485,7 @@ export class VRExperienceHelper {
     }
 
     private get _teleportationRequestInitiated(): boolean {
-        const result =
-            this._cameraGazer._teleportationRequestInitiated ||
-            (this._leftController !== null && this._leftController._teleportationRequestInitiated) ||
-            (this._rightController !== null && this._rightController._teleportationRequestInitiated);
-        return result;
+        return this._cameraGazer._teleportationRequestInitiated;
     }
 
     /**
@@ -771,24 +539,6 @@ export class VRExperienceHelper {
         }
         if (webVROptions.laserToggle === undefined) {
             webVROptions.laserToggle = true;
-        }
-        if (webVROptions.defaultHeight === undefined) {
-            webVROptions.defaultHeight = 1.7;
-        }
-        if (webVROptions.useCustomVRButton) {
-            this._useCustomVRButton = true;
-            if (webVROptions.customVRButton) {
-                this._btnVR = webVROptions.customVRButton;
-            }
-        }
-        if (webVROptions.rayLength) {
-            this._rayLength = webVROptions.rayLength;
-        }
-        this._defaultHeight = webVROptions.defaultHeight;
-
-        if (webVROptions.positionScale) {
-            this._rayLength *= webVROptions.positionScale;
-            this._defaultHeight *= webVROptions.positionScale;
         }
 
         this._hasEnteredVR = false;
@@ -889,12 +639,6 @@ export class VRExperienceHelper {
         this.xrTestDone = true;
         // Create VR cameras
         if (webVROptions.createFallbackVRDeviceOrientationFreeCamera) {
-            if (webVROptions.useMultiview) {
-                if (!webVROptions.vrDeviceOrientationCameraMetrics) {
-                    webVROptions.vrDeviceOrientationCameraMetrics = VRCameraMetrics.GetDefault();
-                }
-                webVROptions.vrDeviceOrientationCameraMetrics.multiviewEnabled = true;
-            }
             this._vrDeviceOrientationCamera = new VRDeviceOrientationFreeCamera(
                 "VRDeviceOrientationVRHelper",
                 this._position,
@@ -904,8 +648,6 @@ export class VRExperienceHelper {
             );
             this._vrDeviceOrientationCamera.angularSensibility = Number.MAX_VALUE;
         }
-        this._webVRCamera = new WebVRFreeCamera("WebVRHelper", this._position, this._scene, webVROptions);
-        this._webVRCamera.useStandingMatrix();
 
         this._cameraGazer = new VRExperienceHelperCameraGazer(() => {
             return this.currentVRCamera;
@@ -941,8 +683,6 @@ export class VRExperienceHelper {
             this._btnVR.addEventListener("click", () => {
                 if (!this.isInVRMode) {
                     this.enterVR();
-                } else {
-                    this._scene.getEngine().disableVR();
                 }
             });
         }
@@ -960,12 +700,6 @@ export class VRExperienceHelper {
         // Display vr button when headset is connected
         if (webVROptions.createFallbackVRDeviceOrientationFreeCamera) {
             this._displayVRButton();
-        } else {
-            this._scene.getEngine().onVRDisplayChangedObservable.add((e) => {
-                if (e.vrDisplay) {
-                    this._displayVRButton();
-                }
-            });
         }
 
         // Exiting VR mode using 'ESC' key on desktop
@@ -990,30 +724,9 @@ export class VRExperienceHelper {
             false
         );
 
-        // Listen for WebVR display changes
-        this._onVRDisplayChangedBind = (eventArgs: IDisplayChangedEventArgs) => this._onVRDisplayChanged(eventArgs);
-        this._onVrDisplayPresentChangeBind = () => this._onVrDisplayPresentChange();
-        this._onVRRequestPresentStart = () => {
-            this._webVRrequesting = true;
-            this._updateButtonVisibility();
-        };
-        this._onVRRequestPresentComplete = () => {
-            this._webVRrequesting = false;
-            this._updateButtonVisibility();
-        };
-        scene.getEngine().onVRDisplayChangedObservable.add(this._onVRDisplayChangedBind);
-        scene.getEngine().onVRRequestPresentStart.add(this._onVRRequestPresentStart);
-        scene.getEngine().onVRRequestPresentComplete.add(this._onVRRequestPresentComplete);
-        hostWindow.addEventListener("vrdisplaypresentchange", this._onVrDisplayPresentChangeBind);
-
         scene.onDisposeObservable.add(() => {
             this.dispose();
         });
-
-        // Gamepad connection events
-        this._webVRCamera.onControllerMeshLoadedObservable.add((webVRController) => this._onDefaultMeshLoaded(webVRController));
-        this._scene.gamepadManager.onGamepadConnectedObservable.add(this._onNewGamepadConnected);
-        this._scene.gamepadManager.onGamepadDisconnectedObservable.add(this._onNewGamepadDisconnected);
 
         this._updateButtonVisibility();
 
@@ -1040,31 +753,8 @@ export class VRExperienceHelper {
         }
     }
 
-    // Raised when one of the controller has loaded successfully its associated default mesh
-    private _onDefaultMeshLoaded(webVRController: WebVRController) {
-        if (this._leftController && this._leftController.webVRController == webVRController) {
-            if (webVRController.mesh) {
-                this._leftController._setLaserPointerParent(webVRController.mesh);
-            }
-        }
-        if (this._rightController && this._rightController.webVRController == webVRController) {
-            if (webVRController.mesh) {
-                this._rightController._setLaserPointerParent(webVRController.mesh);
-            }
-        }
-
-        try {
-            this.onControllerMeshLoadedObservable.notifyObservers(webVRController);
-        } catch (err) {
-            Logger.Warn("Error in your custom logic onControllerMeshLoaded: " + err);
-        }
-    }
-
     private _onResize = () => {
         this._moveButtonToBottomRight();
-        if (this._fullscreenVRpresenting && this._webVRready) {
-            this.exitVR();
-        }
     };
 
     private _onFullscreenChange = () => {
@@ -1084,31 +774,7 @@ export class VRExperienceHelper {
      * Gets a value indicating if we are currently in VR mode.
      */
     public get isInVRMode(): boolean {
-        return (this.xr && this.webVROptions.useXR && this.xr.baseExperience.state === WebXRState.IN_XR) || this._webVRpresenting || this._fullscreenVRpresenting;
-    }
-
-    private _onVrDisplayPresentChange() {
-        const vrDisplay = this._scene.getEngine().getVRDevice();
-        if (vrDisplay) {
-            const wasPresenting = this._webVRpresenting;
-            this._webVRpresenting = vrDisplay.isPresenting;
-
-            if (wasPresenting && !this._webVRpresenting) {
-                this.exitVR();
-            }
-        } else {
-            Logger.Warn("Detected VRDisplayPresentChange on an unknown VRDisplay. Did you can enterVR on the vrExperienceHelper?");
-        }
-
-        this._updateButtonVisibility();
-    }
-
-    private _onVRDisplayChanged(eventArgs: IDisplayChangedEventArgs) {
-        this._webVRsupported = eventArgs.vrSupported;
-        this._webVRready = !!eventArgs.vrDisplay;
-        this._webVRpresenting = eventArgs.vrDisplay && eventArgs.vrDisplay.isPresenting;
-
-        this._updateButtonVisibility();
+        return (this.xr && this.webVROptions.useXR && this.xr.baseExperience.state === WebXRState.IN_XR) || this._fullscreenVRpresenting;
     }
 
     private _moveButtonToBottomRight() {
@@ -1133,16 +799,6 @@ export class VRExperienceHelper {
         this._btnVR.className = "babylonVRicon";
         if (this.isInVRMode) {
             this._btnVR.className += " vrdisplaypresenting";
-        } else {
-            if (this._webVRready) {
-                this._btnVR.className += " vrdisplayready";
-            }
-            if (this._webVRsupported) {
-                this._btnVR.className += " vrdisplaysupported";
-            }
-            if (this._webVRrequesting) {
-                this._btnVR.className += " vrdisplayrequesting";
-            }
         }
     }
 
@@ -1171,13 +827,6 @@ export class VRExperienceHelper {
                 this.vrDeviceOrientationCamera.rotation = Quaternion.FromRotationMatrix(this._scene.activeCamera.getWorldMatrix().getRotationMatrix()).toEulerAngles();
                 this.vrDeviceOrientationCamera.angularSensibility = 2000;
             }
-            if (this.webVRCamera) {
-                const currentYRotation = this.webVRCamera.deviceRotationQuaternion.toEulerAngles().y;
-                const desiredYRotation = Quaternion.FromRotationMatrix(this._scene.activeCamera.getWorldMatrix().getRotationMatrix()).toEulerAngles().y;
-                const delta = desiredYRotation - currentYRotation;
-                const currentGlobalRotation = this.webVRCamera.rotationQuaternion.toEulerAngles().y;
-                this.webVRCamera.rotationQuaternion = Quaternion.FromEulerAngles(0, currentGlobalRotation + delta, 0);
-            }
 
             // make sure that we return to the last active camera
             this._existingCamera = this._scene.activeCamera;
@@ -1197,20 +846,8 @@ export class VRExperienceHelper {
             }
         }
 
-        if (this._webVRrequesting) {
-            return;
-        }
-
         // If WebVR is supported and a headset is connected
-        if (this._webVRready) {
-            if (!this._webVRpresenting) {
-                this._scene.getEngine().onVRRequestPresentComplete.addOnce((result) => {
-                    this.onAfterEnteringVRObservable.notifyObservers({ success: result });
-                });
-                this._webVRCamera.position = this._position;
-                this._scene.activeCamera = this._webVRCamera;
-            }
-        } else if (this._vrDeviceOrientationCamera) {
+        if (this._vrDeviceOrientationCamera) {
             this._vrDeviceOrientationCamera.position = this._position;
             if (this._scene.activeCamera) {
                 this._vrDeviceOrientationCamera.minZ = this._scene.activeCamera.minZ;
@@ -1231,14 +868,6 @@ export class VRExperienceHelper {
             this._scene.registerBeforeRender(this._beforeRender);
         }
 
-        if (this._displayLaserPointer) {
-            [this._leftController, this._rightController].forEach((controller) => {
-                if (controller) {
-                    controller._activatePointer();
-                }
-            });
-        }
-
         this._hasEnteredVR = true;
     }
 
@@ -1257,9 +886,6 @@ export class VRExperienceHelper {
                 } catch (err) {
                     Logger.Warn("Error in your custom logic onExitingVR: " + err);
                 }
-            }
-            if (this._webVRpresenting) {
-                this._scene.getEngine().disableVR();
             }
             if (this._scene.activeCamera) {
                 this._position = this._scene.activeCamera.position.clone();
@@ -1313,30 +939,12 @@ export class VRExperienceHelper {
             if (this._interactionsEnabled) {
                 this._scene.unregisterBeforeRender(this._beforeRender);
                 this._cameraGazer._gazeTracker.isVisible = false;
-                if (this._leftController) {
-                    this._leftController._gazeTracker.isVisible = false;
-                }
-                if (this._rightController) {
-                    this._rightController._gazeTracker.isVisible = false;
-                }
             }
 
             // resize to update width and height when exiting vr exits fullscreen
             this._scene.getEngine().resize();
 
-            [this._leftController, this._rightController].forEach((controller) => {
-                if (controller) {
-                    controller._deactivatePointer();
-                }
-            });
-
             this._hasEnteredVR = false;
-
-            // Update engine state to re enable non-vr camera input
-            const engine = this._scene.getEngine();
-            if (engine._onVrDisplayPresentChange) {
-                engine._onVrDisplayPresentChange();
-            }
         }
     }
 
@@ -1363,22 +971,12 @@ export class VRExperienceHelper {
      */
     public enableInteractions() {
         if (!this._interactionsEnabled) {
-            this._interactionsRequested = true;
-
             // in XR it is enabled by default, but just to make sure, re-attach
             if (this.xr) {
                 if (this.xr.baseExperience.state === WebXRState.IN_XR) {
                     this.xr.pointerSelection.attach();
                 }
                 return;
-            }
-
-            if (this._leftController) {
-                this._enableInteractionOnController(this._leftController);
-            }
-
-            if (this._rightController) {
-                this._enableInteractionOnController(this._rightController);
             }
 
             this.raySelectionPredicate = (mesh) => {
@@ -1403,21 +1001,9 @@ export class VRExperienceHelper {
         }
     }
 
-    private get _noControllerIsActive() {
-        return !(this._leftController && this._leftController._activePointer) && !(this._rightController && this._rightController._activePointer);
-    }
-
     private _beforeRender = () => {
-        if (this._leftController && this._leftController._activePointer) {
-            this._castRayAndSelectObject(this._leftController);
-        }
-
-        if (this._rightController && this._rightController._activePointer) {
-            this._castRayAndSelectObject(this._rightController);
-        }
-
-        if (this._noControllerIsActive && (this._scene.getEngine().isPointerLock || this.enableGazeEvenWhenNoPointerLock)) {
-            this._castRayAndSelectObject(this._cameraGazer);
+        if (this._scene.getEngine().isPointerLock || this.enableGazeEvenWhenNoPointerLock) {
+            // no-op
         } else {
             this._cameraGazer._gazeTracker.isVisible = false;
         }
@@ -1472,8 +1058,6 @@ export class VRExperienceHelper {
      */
     public enableTeleportation(vrTeleportationOptions: VRTeleportationOptions = {}) {
         if (!this._teleportationInitialized) {
-            this._teleportationRequested = true;
-
             this.enableInteractions();
 
             if (this.webVROptions.useXR && (vrTeleportationOptions.floorMeshes || vrTeleportationOptions.floorMeshName)) {
@@ -1530,35 +1114,15 @@ export class VRExperienceHelper {
                 this._teleportationEasing = vrTeleportationOptions.easingFunction;
             }
 
-            if (this._leftController != null) {
-                this._enableTeleportationOnController(this._leftController);
-            }
-            if (this._rightController != null) {
-                this._enableTeleportationOnController(this._rightController);
-            }
-
             // Creates an image processing post process for the vignette not relying
             // on the main scene configuration for image processing to reduce setup and spaces
             // (gamma/linear) conflicts.
             const imageProcessingConfiguration = new ImageProcessingConfiguration();
             imageProcessingConfiguration.vignetteColor = new Color4(0, 0, 0, 0);
             imageProcessingConfiguration.vignetteEnabled = true;
-            this._postProcessMove = new ImageProcessingPostProcess(
-                "postProcessMove",
-                1.0,
-                this._webVRCamera,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                imageProcessingConfiguration
-            );
-
-            this._webVRCamera.detachPostProcess(this._postProcessMove);
             this._teleportationInitialized = true;
             if (this._isDefaultTeleportationTarget) {
                 this._createTeleportationCircles();
-                this._teleportationTarget.scaling.scaleInPlace(this._webVRCamera.deviceScaleFactor);
             }
         }
     }
@@ -1569,13 +1133,8 @@ export class VRExperienceHelper {
                 gamepad.onleftstickchanged((stickValues) => {
                     if (this._teleportationInitialized && this.teleportationEnabled) {
                         // Listening to classic/xbox gamepad only if no VR controller is active
-                        if (
-                            (!this._leftController && !this._rightController) ||
-                            (this._leftController && !this._leftController._activePointer && this._rightController && !this._rightController._activePointer)
-                        ) {
-                            this._checkTeleportWithRay(stickValues, this._cameraGazer);
-                            this._checkTeleportBackwards(stickValues, this._cameraGazer);
-                        }
+                        this._checkTeleportWithRay(stickValues, this._cameraGazer);
+                        this._checkTeleportBackwards(stickValues, this._cameraGazer);
                     }
                 });
             }
@@ -1598,80 +1157,8 @@ export class VRExperienceHelper {
                     }
                 });
             }
-        } else {
-            const webVRController = <WebVRController>gamepad;
-            const controller = new VRExperienceHelperControllerGazer(webVRController, this._scene, this._cameraGazer._gazeTracker);
-
-            if (webVRController.hand === "right" || (this._leftController && this._leftController.webVRController != webVRController)) {
-                this._rightController = controller;
-            } else {
-                this._leftController = controller;
-            }
-
-            this._tryEnableInteractionOnController(controller);
         }
     };
-
-    // This only succeeds if the controller's mesh exists for the controller so this must be called whenever new controller is connected or when mesh is loaded
-    private _tryEnableInteractionOnController = (controller: VRExperienceHelperControllerGazer) => {
-        if (this._interactionsRequested && !controller._interactionsEnabled) {
-            this._enableInteractionOnController(controller);
-        }
-        if (this._teleportationRequested && !controller._teleportationEnabled) {
-            this._enableTeleportationOnController(controller);
-        }
-    };
-
-    private _onNewGamepadDisconnected = (gamepad: Gamepad) => {
-        if (gamepad instanceof WebVRController) {
-            if (gamepad.hand === "left" && this._leftController != null) {
-                this._leftController.dispose();
-                this._leftController = null;
-            }
-            if (gamepad.hand === "right" && this._rightController != null) {
-                this._rightController.dispose();
-                this._rightController = null;
-            }
-        }
-    };
-
-    private _enableInteractionOnController(controller: VRExperienceHelperControllerGazer) {
-        const controllerMesh = controller.webVRController.mesh;
-        if (controllerMesh) {
-            controller._interactionsEnabled = true;
-            if (this.isInVRMode && this._displayLaserPointer) {
-                controller._activatePointer();
-            }
-            if (this.webVROptions.laserToggle) {
-                controller.webVRController.onMainButtonStateChangedObservable.add((stateObject) => {
-                    // Enabling / disabling laserPointer
-                    if (this._displayLaserPointer && stateObject.value === 1) {
-                        if (controller._activePointer) {
-                            controller._deactivatePointer();
-                        } else {
-                            controller._activatePointer();
-                        }
-                        if (this.displayGaze) {
-                            controller._gazeTracker.isVisible = controller._activePointer;
-                        }
-                    }
-                });
-            }
-            controller.webVRController.onTriggerStateChangedObservable.add((stateObject) => {
-                let gazer: VRExperienceHelperGazer = controller;
-                if (this._noControllerIsActive) {
-                    gazer = this._cameraGazer;
-                }
-                if (!gazer._pointerDownOnMeshAsked) {
-                    if (stateObject.value > this._padSensibilityUp) {
-                        gazer._selectionPointerDown();
-                    }
-                } else if (stateObject.value < this._padSensibilityDown) {
-                    gazer._selectionPointerUp();
-                }
-            });
-        }
-    }
 
     private _checkTeleportWithRay(stateObject: StickValues, gazer: VRExperienceHelperGazer) {
         // Dont teleport if another gaze already requested teleportation
@@ -1739,14 +1226,8 @@ export class VRExperienceHelper {
                 }
 
                 // Get rotation and position of the current camera
-                let rotation = Quaternion.FromRotationMatrix(this.currentVRCamera.getWorldMatrix().getRotationMatrix());
-                let position = this.currentVRCamera.position;
-
-                // If the camera has device position, use that instead
-                if ((<WebVRFreeCamera>this.currentVRCamera).devicePosition && (<WebVRFreeCamera>this.currentVRCamera).deviceRotationQuaternion) {
-                    rotation = (<WebVRFreeCamera>this.currentVRCamera).deviceRotationQuaternion;
-                    position = (<WebVRFreeCamera>this.currentVRCamera).devicePosition;
-                }
+                const rotation = Quaternion.FromRotationMatrix(this.currentVRCamera.getWorldMatrix().getRotationMatrix());
+                const position = this.currentVRCamera.position;
 
                 // Get matrix with only the y rotation of the device rotation
                 rotation.toEulerAnglesToRef(this._workingVector);
@@ -1769,35 +1250,6 @@ export class VRExperienceHelper {
             }
         } else {
             gazer._teleportationBackRequestInitiated = false;
-        }
-    }
-
-    private _enableTeleportationOnController(controller: VRExperienceHelperControllerGazer) {
-        const controllerMesh = controller.webVRController.mesh;
-        if (controllerMesh) {
-            if (!controller._interactionsEnabled) {
-                this._enableInteractionOnController(controller);
-            }
-            controller._interactionsEnabled = true;
-            controller._teleportationEnabled = true;
-            if (controller.webVRController.controllerType === PoseEnabledControllerType.VIVE) {
-                controller._dpadPressed = false;
-                controller.webVRController.onPadStateChangedObservable.add((stateObject) => {
-                    controller._dpadPressed = stateObject.pressed;
-                    if (!controller._dpadPressed) {
-                        controller._rotationLeftAsked = false;
-                        controller._rotationRightAsked = false;
-                        controller._teleportationBackRequestInitiated = false;
-                    }
-                });
-            }
-            controller.webVRController.onPadValuesChangedObservable.add((stateObject) => {
-                if (this.teleportationEnabled) {
-                    this._checkTeleportBackwards(stateObject, controller);
-                    this._checkTeleportWithRay(stateObject, controller);
-                }
-                this._checkRotate(stateObject, controller);
-            });
         }
     }
 
@@ -1869,16 +1321,6 @@ export class VRExperienceHelper {
         this._scene.beginAnimation(torus, 0, 60, true);
 
         this._hideTeleportationTarget();
-    }
-
-    private _displayTeleportationTarget() {
-        this._teleportActive = true;
-        if (this._teleportationInitialized) {
-            this._teleportationTarget.isVisible = true;
-            if (this._isDefaultTeleportationTarget) {
-                (<Mesh>this._teleportationTarget.getChildren()[0]).isVisible = true;
-            }
-        }
     }
 
     private _hideTeleportationTarget() {
@@ -1969,30 +1411,9 @@ export class VRExperienceHelper {
         this._postProcessMove.imageProcessingConfiguration.vignetteWeight = 0;
         this._postProcessMove.imageProcessingConfiguration.vignetteStretch = 0;
         this._postProcessMove.samples = 4;
-        this._webVRCamera.attachPostProcess(this._postProcessMove);
-        this._scene.beginAnimation(this._postProcessMove, 0, 6, false, 1, () => {
-            this._webVRCamera.detachPostProcess(this._postProcessMove);
-        });
         this._scene.beginAnimation(this.currentVRCamera, 0, 6, false, 1);
     }
 
-    private _moveTeleportationSelectorTo(hit: PickingInfo, gazer: VRExperienceHelperGazer, ray: Ray) {
-        if (hit.pickedPoint) {
-            if (gazer._teleportationRequestInitiated) {
-                this._displayTeleportationTarget();
-                this._haloCenter.copyFrom(hit.pickedPoint);
-                this._teleportationTarget.position.copyFrom(hit.pickedPoint);
-            }
-
-            const pickNormal = this._convertNormalToDirectionOfRay(hit.getNormal(true, false), ray);
-            if (pickNormal) {
-                const axis1 = Vector3.Cross(Axis.Y, pickNormal);
-                const axis2 = Vector3.Cross(pickNormal, axis1);
-                Vector3.RotationFromAxisToRef(axis2, pickNormal, axis1, this._teleportationTarget.rotation);
-            }
-            this._teleportationTarget.position.y += 0.1;
-        }
-    }
     private _workingVector = Vector3.Zero();
     private _workingQuaternion = Quaternion.Identity();
     private _workingMatrix = Matrix.Identity();
@@ -2016,16 +1437,11 @@ export class VRExperienceHelper {
         }
         // Teleport the hmd to where the user is looking by moving the anchor to where they are looking minus the
         // offset of the headset from the anchor.
-        if (this.webVRCamera.leftCamera) {
-            this._workingVector.copyFrom(this.webVRCamera.leftCamera.globalPosition);
-            this._workingVector.subtractInPlace(this.webVRCamera.position);
-            location.subtractToRef(this._workingVector, this._workingVector);
-        } else {
-            this._workingVector.copyFrom(location);
-        }
+
+        this._workingVector.copyFrom(location);
         // Add height to account for user's height offset
         if (this.isInVRMode) {
-            this._workingVector.y += this.webVRCamera.deviceDistanceToRoomGround() * this._webVRCamera.deviceScaleFactor;
+            // no-op
         } else {
             this._workingVector.y += this._defaultHeight;
         }
@@ -2109,151 +1525,11 @@ export class VRExperienceHelper {
         this._postProcessMove.imageProcessingConfiguration.vignetteWeight = 0;
         this._postProcessMove.imageProcessingConfiguration.vignetteStretch = 0;
 
-        this._webVRCamera.attachPostProcess(this._postProcessMove);
-        this._scene.beginAnimation(this._postProcessMove, 0, lastFrame, false, speedRatio, () => {
-            this._webVRCamera.detachPostProcess(this._postProcessMove);
-        });
         this._scene.beginAnimation(this.currentVRCamera, 0, lastFrame, false, speedRatio, () => {
             this.onAfterCameraTeleport.notifyObservers(this._workingVector);
         });
 
         this._hideTeleportationTarget();
-    }
-
-    private _convertNormalToDirectionOfRay(normal: Nullable<Vector3>, ray: Ray) {
-        if (normal) {
-            const angle = Math.acos(Vector3.Dot(normal, ray.direction));
-            if (angle < Math.PI / 2) {
-                normal.scaleInPlace(-1);
-            }
-        }
-        return normal;
-    }
-
-    private _castRayAndSelectObject(gazer: VRExperienceHelperGazer) {
-        if (!(this.currentVRCamera instanceof FreeCamera)) {
-            return;
-        }
-
-        const ray = gazer._getForwardRay(this._rayLength);
-        const hit = this._scene.pickWithRay(ray, this._raySelectionPredicate);
-
-        if (hit) {
-            this._scene.simulatePointerMove(hit, { pointerId: gazer._id });
-        }
-        gazer._currentHit = hit;
-
-        // Moving the gazeTracker on the mesh face targetted
-        if (hit && hit.pickedPoint) {
-            if (this._displayGaze) {
-                let multiplier = 1;
-
-                gazer._gazeTracker.isVisible = true;
-
-                if (gazer._isActionableMesh) {
-                    multiplier = 3;
-                }
-                if (this.updateGazeTrackerScale) {
-                    gazer._gazeTracker.scaling.x = hit.distance * multiplier;
-                    gazer._gazeTracker.scaling.y = hit.distance * multiplier;
-                    gazer._gazeTracker.scaling.z = hit.distance * multiplier;
-                }
-
-                const pickNormal = this._convertNormalToDirectionOfRay(hit.getNormal(), ray);
-                // To avoid z-fighting
-                const deltaFighting = 0.002;
-
-                if (pickNormal) {
-                    const axis1 = Vector3.Cross(Axis.Y, pickNormal);
-                    const axis2 = Vector3.Cross(pickNormal, axis1);
-                    Vector3.RotationFromAxisToRef(axis2, pickNormal, axis1, gazer._gazeTracker.rotation);
-                }
-                gazer._gazeTracker.position.copyFrom(hit.pickedPoint);
-
-                if (gazer._gazeTracker.position.x < 0) {
-                    gazer._gazeTracker.position.x += deltaFighting;
-                } else {
-                    gazer._gazeTracker.position.x -= deltaFighting;
-                }
-                if (gazer._gazeTracker.position.y < 0) {
-                    gazer._gazeTracker.position.y += deltaFighting;
-                } else {
-                    gazer._gazeTracker.position.y -= deltaFighting;
-                }
-                if (gazer._gazeTracker.position.z < 0) {
-                    gazer._gazeTracker.position.z += deltaFighting;
-                } else {
-                    gazer._gazeTracker.position.z -= deltaFighting;
-                }
-            }
-
-            // Changing the size of the laser pointer based on the distance from the targetted point
-            gazer._updatePointerDistance(hit.distance);
-        } else {
-            gazer._updatePointerDistance();
-            gazer._gazeTracker.isVisible = false;
-        }
-
-        if (hit && hit.pickedMesh) {
-            // The object selected is the floor, we're in a teleportation scenario
-            if (this._teleportationInitialized && this._isTeleportationFloor(hit.pickedMesh) && hit.pickedPoint) {
-                // Moving the teleportation area to this targetted point
-
-                //Raise onSelectedMeshUnselected observable if ray collided floor mesh/meshes and a non floor mesh was previously selected
-                if (gazer._currentMeshSelected && !this._isTeleportationFloor(gazer._currentMeshSelected)) {
-                    this._notifySelectedMeshUnselected(gazer._currentMeshSelected);
-                }
-
-                gazer._currentMeshSelected = null;
-                if (gazer._teleportationRequestInitiated) {
-                    this._moveTeleportationSelectorTo(hit, gazer, ray);
-                }
-                return;
-            }
-            // If not, we're in a selection scenario
-            //this._teleportationAllowed = false;
-            if (hit.pickedMesh !== gazer._currentMeshSelected) {
-                if (this.meshSelectionPredicate(hit.pickedMesh)) {
-                    this.onNewMeshPicked.notifyObservers(hit);
-                    gazer._currentMeshSelected = hit.pickedMesh;
-                    if (hit.pickedMesh.isPickable && hit.pickedMesh.actionManager) {
-                        this.changeGazeColor(this._pickedGazeColor);
-                        this.changeLaserColor(this._pickedLaserColor);
-                        gazer._isActionableMesh = true;
-                    } else {
-                        this.changeGazeColor(this._gazeColor);
-                        this.changeLaserColor(this._laserColor);
-                        gazer._isActionableMesh = false;
-                    }
-                    try {
-                        this.onNewMeshSelected.notifyObservers(hit.pickedMesh);
-                        const gazerAsControllerGazer = gazer as VRExperienceHelperControllerGazer;
-                        if (gazerAsControllerGazer.webVRController) {
-                            this.onMeshSelectedWithController.notifyObservers({ mesh: hit.pickedMesh, controller: gazerAsControllerGazer.webVRController });
-                        }
-                    } catch (err) {
-                        Logger.Warn("Error while raising onNewMeshSelected or onMeshSelectedWithController: " + err);
-                    }
-                } else {
-                    this._notifySelectedMeshUnselected(gazer._currentMeshSelected);
-                    gazer._currentMeshSelected = null;
-                    this.changeGazeColor(this._gazeColor);
-                    this.changeLaserColor(this._laserColor);
-                }
-            }
-        } else {
-            this._notifySelectedMeshUnselected(gazer._currentMeshSelected);
-            gazer._currentMeshSelected = null;
-            //this._teleportationAllowed = false;
-            this.changeGazeColor(this._gazeColor);
-            this.changeLaserColor(this._laserColor);
-        }
-    }
-
-    private _notifySelectedMeshUnselected(mesh: Nullable<AbstractMesh>) {
-        if (mesh) {
-            this.onSelectedMeshUnselected.notifyObservers(mesh);
-        }
     }
 
     /**
@@ -2262,7 +1538,6 @@ export class VRExperienceHelper {
      * @param pickedColor the new laser color when picked mesh detected
      */
     public setLaserColor(color: Color3, pickedColor: Color3 = this._pickedLaserColor) {
-        this._laserColor = color;
         this._pickedLaserColor = pickedColor;
     }
 
@@ -2270,13 +1545,8 @@ export class VRExperienceHelper {
      * Set lighting enabled / disabled on the laser pointer of both controllers
      * @param enabled should the lighting be enabled on the laser pointer
      */
-    public setLaserLightingState(enabled: boolean = true) {
-        if (this._leftController) {
-            this._leftController._setLaserPointerLightingDisabled(!enabled);
-        }
-        if (this._rightController) {
-            this._rightController._setLaserPointerLightingDisabled(!enabled);
-        }
+    public setLaserLightingState(_enabled: boolean = true) {
+        // no-op
     }
 
     /**
@@ -2285,7 +1555,6 @@ export class VRExperienceHelper {
      * @param pickedColor the new gaze color when picked mesh detected
      */
     public setGazeColor(color: Color3, pickedColor: Color3 = this._pickedGazeColor) {
-        this._gazeColor = color;
         this._pickedGazeColor = pickedColor;
     }
 
@@ -2293,16 +1562,9 @@ export class VRExperienceHelper {
      * Sets the color of the laser ray from the vr controllers.
      * @param color new color for the ray.
      */
-    public changeLaserColor(color: Color3) {
+    public changeLaserColor(_color: Color3) {
         if (!this.updateControllerLaserColor) {
             return;
-        }
-
-        if (this._leftController) {
-            this._leftController._setLaserPointerColor(color);
-        }
-        if (this._rightController) {
-            this._rightController._setLaserPointerColor(color);
         }
     }
 
@@ -2318,12 +1580,6 @@ export class VRExperienceHelper {
             return;
         }
         (<StandardMaterial>this._cameraGazer._gazeTracker.material).emissiveColor = color;
-        if (this._leftController) {
-            (<StandardMaterial>this._leftController._gazeTracker.material).emissiveColor = color;
-        }
-        if (this._rightController) {
-            (<StandardMaterial>this._rightController._gazeTracker.material).emissiveColor = color;
-        }
     }
 
     /**
@@ -2338,9 +1594,6 @@ export class VRExperienceHelper {
             this._postProcessMove.dispose();
         }
 
-        if (this._webVRCamera) {
-            this._webVRCamera.dispose();
-        }
         if (this._vrDeviceOrientationCamera) {
             this._vrDeviceOrientationCamera.dispose();
         }
@@ -2354,12 +1607,6 @@ export class VRExperienceHelper {
 
         if (this._cameraGazer) {
             this._cameraGazer.dispose();
-        }
-        if (this._leftController) {
-            this._leftController.dispose();
-        }
-        if (this._rightController) {
-            this._rightController.dispose();
         }
 
         if (this._teleportationTarget) {
@@ -2378,12 +1625,7 @@ export class VRExperienceHelper {
         window.removeEventListener("resize", this._onResize);
         document.removeEventListener("fullscreenchange", this._onFullscreenChange);
 
-        this._scene.getEngine().onVRDisplayChangedObservable.removeCallback(this._onVRDisplayChangedBind);
-        this._scene.getEngine().onVRRequestPresentStart.removeCallback(this._onVRRequestPresentStart);
-        this._scene.getEngine().onVRRequestPresentComplete.removeCallback(this._onVRRequestPresentComplete);
-
         this._scene.gamepadManager.onGamepadConnectedObservable.removeCallback(this._onNewGamepadConnected);
-        this._scene.gamepadManager.onGamepadDisconnectedObservable.removeCallback(this._onNewGamepadDisconnected);
 
         this._scene.unregisterBeforeRender(this._beforeRender);
     }

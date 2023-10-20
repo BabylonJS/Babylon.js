@@ -78,7 +78,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     public _layerToDispose: Nullable<Layer>;
     /** @internal */
     public _linkedControls = new Array<Control>();
-    private _isFullscreen = false;
+    /** @internal */
+    public _isFullscreen = false;
     private _fullscreenViewport = new Viewport(0, 0, 1, 1);
     private _idealWidth = 0;
     private _idealHeight = 0;
@@ -363,6 +364,13 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     public set clipboardData(value: string) {
         this._clipboardData = value;
     }
+
+    /**
+     * If this is set, even when a control is pointer blocker, some events can still be passed through to the scene.
+     * Options from values are PointerEventTypes
+     * POINTERDOWN, POINTERUP, POINTERMOVE, POINTERWHEEL, POINTERPICK, POINTERTAP, POINTERDOUBLETAP
+     */
+    public skipBlockEvents = 0;
 
     /**
      * If set to true, every scene render will trigger a pointer event for the GUI
@@ -924,7 +932,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             const pointerId = (pi.event as IPointerEvent).pointerId || this._defaultMousePointerId;
             this._doPicking(transformedX, transformedY, pi, pi.type, pointerId, pi.event.button, (<IWheelEvent>pi.event).deltaX, (<IWheelEvent>pi.event).deltaY);
             // Avoid overwriting a true skipOnPointerObservable to false
-            if (this._shouldBlockPointer || this._capturingControl[pointerId]) {
+            if ((this._shouldBlockPointer && !(pi.type & this.skipBlockEvents)) || this._capturingControl[pointerId]) {
                 pi.skipOnPointerObservable = true;
             }
         } else {
