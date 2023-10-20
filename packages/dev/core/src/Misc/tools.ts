@@ -506,8 +506,6 @@ export class Tools {
      * @param scriptId defines the id of the script element
      */
     public static LoadScript(scriptUrl: string, onSuccess: () => void, onError?: (message?: string, exception?: any) => void, scriptId?: string) {
-        
-
         if (typeof importScripts === "function") {
             try {
                 importScripts(scriptUrl);
