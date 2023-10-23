@@ -4686,6 +4686,11 @@ export function dispose(engineState: IWebGLEnginePublic): void {
     fes._currentProgram = null;
     fes._boundRenderFunction = null;
 
+    // Rescale PP
+    if (fes._rescalePostProcess) {
+        fes._rescalePostProcess.dispose();
+    }
+
     disposeBase(fes);
 }
 
@@ -4956,4 +4961,134 @@ export function _uploadImageToTexture(engineState: IWebGLEnginePublic, texture: 
 
     gl.texImage2D(target, lod, internalFormat, format, textureType, image);
     _bindTextureDirectly(engineState, bindTarget, null, true);
+}
+
+/**
+ * Updates a depth texture Comparison Mode and Function.
+ * If the comparison Function is equal to 0, the mode will be set to none.
+ * Otherwise, this only works in webgl 2 and requires a shadow sampler in the shader.
+ * @param texture The texture to set the comparison function for
+ * @param comparisonFunction The comparison function to set, 0 if no comparison required
+ */
+export function updateTextureComparisonFunction(engineState: IWebGLEnginePublic, texture: InternalTexture, comparisonFunction: number): void {
+    if (engineState.webGLVersion === 1) {
+        Logger.Error("WebGL 1 does not support texture comparison.");
+        return;
+    }
+
+    const gl = (engineState as WebGLEngineState)._gl;
+
+    if (texture.isCube) {
+        _bindTextureDirectly(engineState, gl.TEXTURE_CUBE_MAP, texture, true);
+
+        if (comparisonFunction === 0) {
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_FUNC, LEQUAL);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_MODE, gl.NONE);
+        } else {
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
+        }
+
+        _bindTextureDirectly(engineState, gl.TEXTURE_CUBE_MAP, null);
+    } else {
+        _bindTextureDirectly(engineState, gl.TEXTURE_2D, texture, true);
+
+        if (comparisonFunction === 0) {
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, LEQUAL);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.NONE);
+        } else {
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
+        }
+
+        _bindTextureDirectly(engineState, gl.TEXTURE_2D, null);
+    }
+
+    texture._comparisonFunction = comparisonFunction;
+}
+
+/**
+ * Creates a webGL buffer to use with instantiation
+ * @param capacity defines the size of the buffer
+ * @returns the webGL buffer
+ */
+export function createInstancesBuffer(engineState: IWebGLEnginePublic, capacity: number): DataBuffer {
+    const gl = (engineState as WebGLEngineState)._gl;
+    const buffer = gl.createBuffer();
+
+    if (!buffer) {
+        throw new Error("Unable to create instance buffer");
+    }
+
+    const result = new WebGLDataBuffer(buffer);
+    result.capacity = capacity;
+
+    bindArrayBuffer(engineState, result);
+    gl.bufferData(gl.ARRAY_BUFFER, capacity, gl.DYNAMIC_DRAW);
+
+    result.references = 1;
+
+    return result;
+}
+
+/**
+ * Delete a webGL buffer used with instantiation
+ * @param buffer defines the webGL buffer to delete
+ */
+export function deleteInstancesBuffer(engineState: IWebGLEnginePublic, buffer: WebGLBuffer): void {
+    (engineState as WebGLEngineState)._gl.deleteBuffer(buffer);
+}
+
+function _clientWaitAsync(engineState: IWebGLEnginePublic, sync: WebGLSync, flags = 0, intervalms = 10): Promise<void> {
+    const gl = <WebGL2RenderingContext>((engineState as WebGLEngineState)._gl as any);
+    return new Promise((resolve, reject) => {
+        const check = () => {
+            const res = gl.clientWaitSync(sync, flags, 0);
+            if (res == gl.WAIT_FAILED) {
+                reject();
+                return;
+            }
+            if (res == gl.TIMEOUT_EXPIRED) {
+                setTimeout(check, intervalms);
+                return;
+            }
+            resolve();
+        };
+
+        check();
+    });
+}
+
+/**
+ * @internal
+ */
+export function _readPixelsAsync(engineState: IWebGLEnginePublic, x: number, y: number, w: number, h: number, format: number, type: number, outputBuffer: ArrayBufferView) {
+    if (engineState.webGLVersion < 2) {
+        throw new Error("_readPixelsAsync only work on WebGL2+");
+    }
+
+    const gl = <WebGL2RenderingContext>((engineState as WebGLEngineState)._gl as any);
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.PIXEL_PACK_BUFFER, buf);
+    gl.bufferData(gl.PIXEL_PACK_BUFFER, outputBuffer.byteLength, gl.STREAM_READ);
+    gl.readPixels(x, y, w, h, format, type, 0);
+    gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
+
+    const sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
+    if (!sync) {
+        return null;
+    }
+
+    gl.flush();
+
+    return _clientWaitAsync(engineState, sync, 0, 10).then(() => {
+        gl.deleteSync(sync);
+
+        gl.bindBuffer(gl.PIXEL_PACK_BUFFER, buf);
+        gl.getBufferSubData(gl.PIXEL_PACK_BUFFER, 0, outputBuffer);
+        gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
+        gl.deleteBuffer(buf);
+
+        return outputBuffer;
+    });
 }

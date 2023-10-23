@@ -29,6 +29,7 @@ import type { StencilState } from "@babylonjs/core/States/stencilState.js";
 import type { Scene } from "@babylonjs/core/scene.js";
 import type { PostProcess } from "@babylonjs/core/PostProcesses/postProcess.js";
 import type { ICustomAnimationFrameRequester } from "@babylonjs/core/Misc/customAnimationFrameRequester.js";
+import type { ILoadingScreen } from "public/@babylonjs/core/Loading/loadingScreen.js";
 
 export interface IBaseEngineOptions {
     /**
@@ -134,6 +135,8 @@ interface IBaseEnginePrivate {
     _cachedStencilOperationDepthFail: number;
     _cachedStencilReference: number;
     _renderPassNames: string[];
+
+    _loadingScreen?: ILoadingScreen;
 }
 
 export interface IBaseEngineProtected {
@@ -653,6 +656,13 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
         _lockstepMaxSteps: 4,
         _timeStep: 1 / 60,
         _renderPassNames: ["main"],
+        _cachedStencilBuffer: false,
+        _cachedStencilFunction: -1,
+        _cachedStencilMask: -1,
+        _cachedStencilOperationPass: -1,
+        _cachedStencilOperationFail: -1,
+        _cachedStencilOperationDepthFail: -1,
+        _cachedStencilReference: -1,
     };
 
     // TODO is getOwnPropertyDescriptors supported in native? if it doesn't we will need to use getOwnPropertyNames
@@ -1155,6 +1165,30 @@ export function dispose(engineState: IBaseEnginePublic): void {
     fes._isDisposed = true;
     stopRenderLoop(engineState);
 
+    hideLoadingUI(engineState);
+
+    engineState.onNewSceneAddedObservable.clear();
+
+    // Release postProcesses
+    while (engineState.postProcesses.length) {
+        engineState.postProcesses[0].dispose();
+    }
+
+    // Release scenes
+    while (fes.scenes.length) {
+        fes.scenes[0].dispose();
+    }
+
+    while (fes._virtualScenes.length) {
+        fes._virtualScenes[0].dispose();
+    }
+
+    // TODO Release audio engine
+    // if (EngineStore.Instances.length === 1 && Engine.audioEngine) {
+    //     Engine.audioEngine.dispose();
+    //     Engine.audioEngine = null;
+    // }
+
     // Clear observables
     if (engineState.onBeforeTextureInitObservable) {
         engineState.onBeforeTextureInitObservable.clear();
@@ -1163,6 +1197,35 @@ export function dispose(engineState: IBaseEnginePublic): void {
     if (IsWindowObjectExist()) {
         if (fes._checkForMobile) {
             window.removeEventListener("resize", fes._checkForMobile);
+        }
+    }
+
+    // Events
+    const hostWindow = getHostWindow(engineState); // it calls IsWindowObjectExist()
+    if (hostWindow && typeof hostWindow.removeEventListener === "function") {
+        fes._onBlur && hostWindow.removeEventListener("blur", fes._onBlur);
+        fes._onFocus && hostWindow.removeEventListener("focus", fes._onFocus);
+    }
+
+    if (fes._renderingCanvas) {
+        fes._onCanvasFocus && fes._renderingCanvas.removeEventListener("focus", fes._onCanvasFocus);
+        fes._onCanvasBlur && fes._renderingCanvas.removeEventListener("blur", fes._onCanvasBlur);
+        fes._onCanvasPointerOut && fes._renderingCanvas.removeEventListener("pointerout", fes._onCanvasPointerOut);
+        fes._onCanvasContextMenu && fes._renderingCanvas.removeEventListener("contextmenu", fes._onCanvasContextMenu);
+    }
+
+    if (IsDocumentAvailable()) {
+        if (fes._onFullscreenChange) {
+            document.removeEventListener("fullscreenchange", fes._onFullscreenChange);
+            document.removeEventListener("mozfullscreenchange", fes._onFullscreenChange);
+            document.removeEventListener("webkitfullscreenchange", fes._onFullscreenChange);
+            document.removeEventListener("msfullscreenchange", fes._onFullscreenChange);
+        }
+        if (fes._onPointerLockChange) {
+            document.removeEventListener("pointerlockchange", fes._onPointerLockChange);
+            document.removeEventListener("mspointerlockchange", fes._onPointerLockChange);
+            document.removeEventListener("mozpointerlockchange", fes._onPointerLockChange);
+            document.removeEventListener("webkitpointerlockchange", fes._onPointerLockChange);
         }
     }
 
@@ -1177,8 +1240,87 @@ export function dispose(engineState: IBaseEnginePublic): void {
         request.abort();
     }
 
+    // Remove from Instances
+    const index = EngineStore.Instances.indexOf(engineState);
+
+    if (index >= 0) {
+        EngineStore.Instances.splice(index, 1);
+    }
+
+    // no more engines left in the engine store? Notify!
+    if (!EngineStore.Instances.length) {
+        EngineStore.OnEnginesDisposedObservable.notifyObservers(engineState);
+    }
+
+    // Observables
+    engineState.onResizeObservable.clear();
+    engineState.onCanvasBlurObservable.clear();
+    engineState.onCanvasFocusObservable.clear();
+    engineState.onCanvasPointerOutObservable.clear();
+    engineState.onBeginFrameObservable.clear();
+    engineState.onEndFrameObservable.clear();
+
     fes.onDisposeObservable.notifyObservers(fes);
     fes.onDisposeObservable.clear();
+}
+
+// Loading screen
+
+/**
+ * Display the loading screen
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
+ */
+export function displayLoadingUI(engineState: IBaseEnginePublic): void {
+    if (!IsWindowObjectExist()) {
+        return;
+    }
+    const loadingScreen = getLoadingScreen(engineState);
+    if (loadingScreen) {
+        loadingScreen.displayLoadingUI();
+    }
+}
+
+/**
+ * Hide the loading screen
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
+ */
+export function hideLoadingUI(engineState: IBaseEnginePublic): void {
+    if (!IsWindowObjectExist()) {
+        return;
+    }
+    const loadingScreen = (engineState as BaseEngineStateFull)._loadingScreen;
+    if (loadingScreen) {
+        loadingScreen.hideLoadingUI();
+    }
+}
+
+/**
+ * Gets the current loading screen object
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
+ */
+export function getLoadingScreen(engineState: IBaseEnginePublic): ILoadingScreen {
+    const fes = engineState as BaseEngineStateFull;
+    if (!fes._loadingScreen && fes._renderingCanvas) {
+        fes._loadingScreen = EngineStore.DefaultLoadingScreenFactory?.(fes._renderingCanvas);
+    }
+    return fes._loadingScreen!;
+}
+
+/**
+ * Sets the current loading screen object
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
+ */
+export function setLoadingScreen(engineState: IBaseEnginePublic, loadingScreen: ILoadingScreen) {
+    (engineState as BaseEngineStateFull)._loadingScreen = loadingScreen;
+}
+
+/**
+ * creates and returns a new video element
+ * @param constraints video constraints
+ * @returns video element
+ */
+export function createVideoElement(_engineState: IBaseEnginePublic, _constraints: MediaTrackConstraints): any {
+    return document.createElement("video");
 }
 
 /**

@@ -314,6 +314,10 @@ export function MarkAllMaterialsAsDirty(flag: number, predicate?: (mat: Material
     }
 }
 
+/**
+ * Ask the browser to promote the current element to pointerlock mode
+ * @param element defines the DOM element to promote
+ */
 export function _RequestPointerlock(element: HTMLElement): void {
     if (element.requestPointerLock) {
         // In some browsers, requestPointerLock returns a promise.
@@ -363,6 +367,41 @@ export function _ExitFullscreen(): void {
     } else if (anyDoc.webkitCancelFullScreen) {
         anyDoc.webkitCancelFullScreen();
     }
+}
+
+/**
+ * Get Font size information
+ * @param font font name
+ * @returns an object containing ascent, height and descent
+ */
+export function getFontOffset(font: string): { ascent: number; height: number; descent: number } {
+    const text = document.createElement("span");
+    text.innerHTML = "Hg";
+    text.setAttribute("style", `font: ${font} !important`);
+
+    const block = document.createElement("div");
+    block.style.display = "inline-block";
+    block.style.width = "1px";
+    block.style.height = "0px";
+    block.style.verticalAlign = "bottom";
+
+    const div = document.createElement("div");
+    div.style.whiteSpace = "nowrap";
+    div.appendChild(text);
+    div.appendChild(block);
+
+    document.body.appendChild(div);
+
+    let fontAscent = 0;
+    let fontHeight = 0;
+    try {
+        fontHeight = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
+        block.style.verticalAlign = "baseline";
+        fontAscent = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
+    } finally {
+        document.body.removeChild(div);
+    }
+    return { ascent: fontAscent, height: fontHeight, descent: fontHeight - fontAscent };
 }
 
 /**
