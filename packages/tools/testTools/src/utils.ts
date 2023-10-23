@@ -62,36 +62,12 @@ export const evaluateInitEngine = async (engineName: string, baseUrl: string, pa
     window.gc && window.gc();
     engineName = engineName ? engineName.toLowerCase() : "webgl2";
 
-    if (BABYLON.DracoCompression) {
-        BABYLON.DracoCompression.Configuration.decoder = {
-            wasmUrl: baseUrl + "/draco_wasm_wrapper_gltf.js",
-            wasmBinaryUrl: baseUrl + "/draco_decoder_gltf.wasm",
-            fallbackUrl: baseUrl + "/draco_decoder_gltf.js",
-        };
-    }
-    if (BABYLON.MeshoptCompression) {
-        BABYLON.MeshoptCompression.Configuration.decoder = {
-            url: baseUrl + "/meshopt_decoder.js",
-        };
-    }
-
-    BABYLON.BasisToolsOptions.JSModuleURL = baseUrl + "/basisTranscoder/1/basis_transcoder.js";
-    BABYLON.BasisToolsOptions.WasmModuleURL = baseUrl + "/basisTranscoder/1/basis_transcoder.wasm";
+    BABYLON.Tools.ScriptBaseUrl = baseUrl;
 
     const canvas = document.getElementById("babylon-canvas") as HTMLCanvasElement;
     if (!canvas) return;
     window.canvas = canvas;
     if (engineName === "webgpu") {
-        const glslangOptions = {
-            jsPath: baseUrl + "/glslang/glslang.js",
-            wasmPath: baseUrl + "/glslang/glslang.wasm",
-        };
-
-        const twgslOptions = {
-            jsPath: baseUrl + "/twgsl/twgsl.js",
-            wasmPath: baseUrl + "/twgsl/twgsl.wasm",
-        };
-
         const options = {
             antialias: false,
         };
@@ -99,7 +75,7 @@ export const evaluateInitEngine = async (engineName: string, baseUrl: string, pa
         const engine = new BABYLON.WebGPUEngine(canvas, options);
         engine.enableOfflineSupport = false;
         window.engine = engine;
-        await engine.initAsync(glslangOptions, twgslOptions);
+        await engine.initAsync();
     } else {
         const engine = new BABYLON.Engine(canvas, true, {
             disableWebGL2Support: engineName === "webgl1" ? true : false,

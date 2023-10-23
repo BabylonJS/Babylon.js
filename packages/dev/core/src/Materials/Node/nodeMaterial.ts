@@ -201,7 +201,7 @@ export class NodeMaterial extends PushMaterial {
     private _animationFrame = -1;
 
     /** Define the Url to load node editor script */
-    public static EditorURL = `https://unpkg.com/babylonjs-node-editor@${Engine.Version}/babylon.nodeEditor.js`;
+    public static EditorURL = `nodeEditor/v${Engine.Version}/babylon.nodeEditor.js`;
 
     /** Define the Url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
@@ -1743,7 +1743,7 @@ export class NodeMaterial extends PushMaterial {
                 const editorUrl = config && config.editorURL ? config.editorURL : NodeMaterial.EditorURL;
 
                 // Load editor and add it to the DOM
-                Tools.LoadScript(editorUrl, () => {
+                Tools.LoadBabylonScript(editorUrl, () => {
                     this.BJSNODEMATERIALEDITOR = this.BJSNODEMATERIALEDITOR || this._getGlobalNodeMaterialEditor();
                     this._createNodeEditor(config?.nodeEditorConfig);
                     resolve();

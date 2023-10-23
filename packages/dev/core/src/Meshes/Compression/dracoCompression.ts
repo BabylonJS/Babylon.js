@@ -308,9 +308,9 @@ export class DracoCompression implements IDisposable {
      */
     public static Configuration: IDracoCompressionConfiguration = {
         decoder: {
-            wasmUrl: "https://preview.babylonjs.com/draco_wasm_wrapper_gltf.js",
-            wasmBinaryUrl: "https://preview.babylonjs.com/draco_decoder_gltf.wasm",
-            fallbackUrl: "https://preview.babylonjs.com/draco_decoder_gltf.js",
+            wasmUrl: "draco_wasm_wrapper_gltf.js",
+            wasmBinaryUrl: "draco_decoder_gltf.wasm",
+            fallbackUrl: "draco_decoder_gltf.js",
         },
     };
 
@@ -359,11 +359,11 @@ export class DracoCompression implements IDisposable {
         const decoderInfo: { url: string | undefined; wasmBinaryPromise: Promise<ArrayBuffer | string | undefined> } =
             decoder.wasmUrl && decoder.wasmBinaryUrl && typeof WebAssembly === "object"
                 ? {
-                      url: Tools.GetAbsoluteUrl(decoder.wasmUrl),
-                      wasmBinaryPromise: Tools.LoadFileAsync(Tools.GetAbsoluteUrl(decoder.wasmBinaryUrl)),
+                      url: Tools.GetBabylonScriptURL(decoder.wasmUrl, true),
+                      wasmBinaryPromise: Tools.LoadFileAsync(Tools.GetBabylonScriptURL(decoder.wasmBinaryUrl, true)),
                   }
                 : {
-                      url: Tools.GetAbsoluteUrl(decoder.fallbackUrl!),
+                      url: Tools.GetBabylonScriptURL(decoder.fallbackUrl!),
                       wasmBinaryPromise: Promise.resolve(undefined),
                   };
 
@@ -408,7 +408,7 @@ export class DracoCompression implements IDisposable {
                     throw new Error("Draco decoder module is not available");
                 }
 
-                return Tools.LoadScriptAsync(decoderInfo.url).then(() => {
+                return Tools.LoadBabylonScriptAsync(decoderInfo.url).then(() => {
                     return createDecoderAsync(decoderWasmBinary as ArrayBuffer);
                 });
             });

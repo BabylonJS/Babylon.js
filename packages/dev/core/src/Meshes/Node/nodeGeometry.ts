@@ -49,7 +49,7 @@ export class NodeGeometry {
     private _buildExecutionTime: number = 0;
 
     /** Define the Url to load node editor script */
-    public static EditorURL = `https://unpkg.com/babylonjs-node-geometry-editor@${Engine.Version}/babylon.nodeGeometryEditor.js`;
+    public static EditorURL = `nodeGeometryEditor/v${Engine.Version}/babylon.nodeGeometryEditor.js`;
 
     /** Define the Url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
@@ -194,7 +194,7 @@ export class NodeGeometry {
                 const editorUrl = config && config.editorURL ? config.editorURL : NodeGeometry.EditorURL;
 
                 // Load editor and add it to the DOM
-                Tools.LoadScript(editorUrl, () => {
+                Tools.LoadBabylonScript(editorUrl, () => {
                     this.BJSNODEGEOMETRYEDITOR = this.BJSNODEGEOMETRYEDITOR || this._getGlobalNodeGeometryEditor();
                     this._createNodeEditor(config?.nodeGeometryEditorConfig);
                     resolve();

@@ -46,6 +46,75 @@ export class Tools {
     }
 
     /**
+     * This function checks whether a URL is absolute or not.
+     * It will also detect data and blob URLs
+     * @param url the url to check
+     * @returns is the url absolute or relative
+     */
+    public static IsAbsoluteUrl(url: string): boolean {
+        // See https://stackoverflow.com/a/38979205.
+
+        // URL is protocol-relative (= absolute)
+        if (url.indexOf("//") === 0) {
+            return true;
+        }
+
+        // URL has no protocol (= relative)
+        if (url.indexOf("://") === -1) {
+            return false;
+        }
+
+        // URL does not contain a dot, i.e. no TLD (= relative, possibly REST)
+        if (url.indexOf(".") === -1) {
+            return false;
+        }
+
+        // URL does not contain a single slash (= relative)
+        if (url.indexOf("/") === -1) {
+            return false;
+        }
+
+        // The first colon comes after the first slash (= relative)
+        if (url.indexOf(":") > url.indexOf("/")) {
+            return false;
+        }
+
+        // Protocol is defined before first dot (= absolute)
+        if (url.indexOf("://") < url.indexOf(".")) {
+            return true;
+        }
+        if (url.indexOf("data:") === 0 || url.indexOf("blob:") === 0) {
+            return true;
+        }
+
+        // Anything else must be relative
+        return false;
+    }
+
+    /**
+     * Sets the base URL to use to load scripts
+     */
+    public static set ScriptBaseUrl(value: string) {
+        FileToolsOptions.ScriptBaseUrl = value;
+    }
+
+    public static get ScriptBaseUrl(): string {
+        return FileToolsOptions.ScriptBaseUrl;
+    }
+
+    /**
+     * Sets a preprocessing function to run on a source URL before importing it
+     * Note that this function will execute AFTER the base URL is appended to the URL
+     */
+    public static set ScriptPreprocessUrl(func: (source: string) => string) {
+        FileToolsOptions.ScriptPreprocessUrl = func;
+    }
+
+    public static get ScriptPreprocessUrl(): (source: string) => string {
+        return FileToolsOptions.ScriptPreprocessUrl;
+    }
+
+    /**
      * Enable/Disable Custom HTTP Request Headers globally.
      * default = false
      * @see CustomRequestHeaders
@@ -70,7 +139,7 @@ export class Tools {
     }
 
     /**
-     * Default behaviour for cors in the application.
+     * Default behavior for cors in the application.
      * It can be a string if the expected behavior is identical in the entire app.
      * Or a callback to be able to set it per url or on a group of them (in case of Video source for instance)
      */
@@ -417,9 +486,58 @@ export class Tools {
     }
 
     /**
-     * Load a script (identified by an url). When the url returns, the
+     * Get a script URL including preprocessing
+     * @param scriptUrl the script Url to process
+     * @returns a modified URL to use
+     */
+    public static GetBabylonScriptURL(scriptUrl: Nullable<string>, forceAbsoluteUrl?: boolean): string {
+        if (!scriptUrl) {
+            return "";
+        }
+        // check if the URL is absolute or relative. Otherwise, append the base URL
+        if (!Tools.IsAbsoluteUrl(scriptUrl)) {
+            const baseUrl = Tools.ScriptBaseUrl[Tools.ScriptBaseUrl.length - 1] === "/" ? Tools.ScriptBaseUrl : Tools.ScriptBaseUrl + "/";
+            scriptUrl = baseUrl + (scriptUrl[0] === "/" ? scriptUrl.substring(1) : scriptUrl);
+        }
+
+        // run the preprocessor
+        scriptUrl = Tools.ScriptPreprocessUrl(scriptUrl);
+
+        if (forceAbsoluteUrl) {
+            scriptUrl = Tools.GetAbsoluteUrl(scriptUrl);
+        }
+
+        return scriptUrl;
+    }
+
+    /**
+     * This function is used internally by babylon components to load a script (identified by an url). When the url returns, the
+     * content of this file is added into a new script element, attached to the DOM (body element)
+     * @param scriptUrl defines the url of the script to load
+     * @param onSuccess defines the callback called when the script is loaded
+     * @param onError defines the callback to call if an error occurs
+     * @param scriptId defines the id of the script element
+     */
+    public static LoadBabylonScript(scriptUrl: string, onSuccess: () => void, onError?: (message?: string, exception?: any) => void, scriptId?: string) {
+        scriptUrl = Tools.GetBabylonScriptURL(scriptUrl);
+        Tools.LoadScript(scriptUrl, onSuccess, onError);
+    }
+
+    /**
+     * Load an asynchronous script (identified by an url). When the url returns, the
      * content of this file is added into a new script element, attached to the DOM (body element)
      * @param scriptUrl defines the url of the script to laod
+     * @returns a promise request object
+     */
+    public static LoadBabylonScriptAsync(scriptUrl: string): Promise<void> {
+        scriptUrl = Tools.GetBabylonScriptURL(scriptUrl);
+        return Tools.LoadScriptAsync(scriptUrl);
+    }
+
+    /**
+     * This function is used internally by babylon components to load a script (identified by an url). When the url returns, the
+     * content of this file is added into a new script element, attached to the DOM (body element)
+     * @param scriptUrl defines the url of the script to load
      * @param onSuccess defines the callback called when the script is loaded
      * @param onError defines the callback to call if an error occurs
      * @param scriptId defines the id of the script element
