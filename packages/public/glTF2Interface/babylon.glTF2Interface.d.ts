@@ -1101,6 +1101,16 @@ declare module BABYLON.GLTF2 {
     }
 
     /**
+     * Interfaces from the KHR_materials_bump extension
+     */
+
+    /** @internal */
+    interface IKHRMaterialsBump extends IMaterialExtension {
+        bumpFactor?: number;
+        bumpTexture?: ITextureInfo;
+    }
+
+    /**
      * Interfaces from the KHR_materials_transmission extension
      */
 
