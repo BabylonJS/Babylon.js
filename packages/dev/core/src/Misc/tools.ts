@@ -52,7 +52,43 @@ export class Tools {
      * @returns is the url absolute or relative
      */
     public static IsAbsoluteUrl(url: string): boolean {
-        return url.indexOf("://") !== -1 || url.indexOf("//") === 0 || url.indexOf("data:") === 0 || url.indexOf("blob:") === 0;
+        // See https://stackoverflow.com/a/38979205.
+
+        // URL is protocol-relative (= absolute)
+        if (url.indexOf("//") === 0) {
+            return true;
+        }
+
+        // URL has no protocol (= relative)
+        if (url.indexOf("://") === -1) {
+            return false;
+        }
+
+        // URL does not contain a dot, i.e. no TLD (= relative, possibly REST)
+        if (url.indexOf(".") === -1) {
+            return false;
+        }
+
+        // URL does not contain a single slash (= relative)
+        if (url.indexOf("/") === -1) {
+            return false;
+        }
+
+        // The first colon comes after the first slash (= relative)
+        if (url.indexOf(":") > url.indexOf("/")) {
+            return false;
+        }
+
+        // Protocol is defined before first dot (= absolute)
+        if (url.indexOf("://") < url.indexOf(".")) {
+            return true;
+        }
+        if (url.indexOf("data:") === 0 || url.indexOf("blob:") === 0) {
+            return true;
+        }
+
+        // Anything else must be relative
+        return false;
     }
 
     /**
