@@ -17,7 +17,7 @@ export class FlowGraphBinaryOperationBlock<LeftT, RightT, ResultT> extends FlowG
         leftRichType: RichType<LeftT>,
         rightRichType: RichType<RightT>,
         resultRichType: RichType<ResultT>,
-        private _operation: (left: LeftT, right: RightT) => ResultT,
+        private _operation: (left: LeftT, right: RightT, context: FlowGraphContext) => ResultT,
         private _className: string,
         config?: IFlowGraphBlockConfiguration
     ) {
@@ -28,7 +28,7 @@ export class FlowGraphBinaryOperationBlock<LeftT, RightT, ResultT> extends FlowG
     }
 
     public _updateOutputs(_context: FlowGraphContext): void {
-        this.output.setValue(this._operation(this.leftInput.getValue(_context), this.rightInput.getValue(_context)), _context);
+        this.output.setValue(this._operation(this.leftInput.getValue(_context), this.rightInput.getValue(_context), _context), _context);
     }
 
     public getClassName(): string {

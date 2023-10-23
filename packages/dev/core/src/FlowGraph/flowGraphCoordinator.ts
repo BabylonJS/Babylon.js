@@ -1,5 +1,6 @@
 import type { Scene } from "../scene";
 import { FlowGraph } from "./flowGraph";
+import { FlowGraphContext } from "./flowGraphContext";
 import { FlowGraphEventCoordinator } from "./flowGraphEventCoordinator";
 
 /**
@@ -29,6 +30,8 @@ export class FlowGraphCoordinator {
     public readonly eventCoordinator: FlowGraphEventCoordinator;
     private readonly _flowGraphs: FlowGraph[] = [];
 
+    public static globalContext: FlowGraphContext;
+
     constructor(private _config: IFlowGraphCoordinatorConfiguration) {
         this.eventCoordinator = new FlowGraphEventCoordinator();
 
@@ -40,6 +43,10 @@ export class FlowGraphCoordinator {
         // Add itself to the SceneCoordinators list for the Inspector.
         const coordinators = FlowGraphCoordinator.SceneCoordinators.get(this._config.scene) ?? [];
         coordinators.push(this);
+
+        if (!FlowGraphCoordinator.globalContext) {
+            FlowGraphCoordinator.globalContext = new FlowGraphContext({ scene: this._config.scene, eventCoordinator: this.eventCoordinator });
+        }
     }
 
     /**

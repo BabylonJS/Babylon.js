@@ -6,6 +6,7 @@ import type { FlowGraphBlock } from "./flowGraphBlock";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import type { FlowGraphEventCoordinator } from "./flowGraphEventCoordinator";
 import type { FlowGraph } from "./flowGraph";
+import { FlowGraphEventBlock } from "./flowGraphEventBlock";
 
 function isMeshClassName(className: string) {
     return (
@@ -90,6 +91,16 @@ export class FlowGraphContext {
      * These are blocks that have currently pending tasks/listeners that need to be cleaned up.
      */
     private _pendingBlocks: FlowGraphAsyncExecutionBlock[] = [];
+    /**
+     * An monotonically increasing ID for each execution.
+     * Incremented every for every block executed.
+     */
+    private _executionId = 0;
+    /**
+     * @internal
+     * Corresponds to the block that fired execution of the context
+     */
+    public _firingBlock: FlowGraphEventBlock;
 
     constructor(params: IFlowGraphContextConfiguration) {
         this._configuration = params;
@@ -241,6 +252,17 @@ export class FlowGraphContext {
             block._cancelPendingTasks(this);
         }
         this._pendingBlocks.length = 0;
+    }
+
+    /**
+     * @internal
+     */
+    public _increaseExecutionId() {
+        this._executionId++;
+    }
+
+    public get executionId() {
+        return this._executionId;
     }
 
     /**

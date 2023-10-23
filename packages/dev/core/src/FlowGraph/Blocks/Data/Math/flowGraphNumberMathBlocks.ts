@@ -7,6 +7,7 @@ import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import type { FlowGraphContext } from "../../../flowGraphContext";
 import { RegisterClass } from "../../../../Misc/typeStore";
+import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 /**
  * Module for all of the number math blocks.
  * @see https://docs.google.com/spreadsheets/d/1wSFUFLPpRFVlL-va3YtYC6sepNvPapVawG1-nzoTF34/edit#gid=0
@@ -357,7 +358,26 @@ const RNDNAME = "FGRandomNumberBlock";
  */
 export class FlowGraphRandomNumberBlock extends FlowGraphBinaryOperationBlock<number, number, number> {
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeNumber, RichTypeNumber, RichTypeNumber, (left, right) => left + Math.random() * (right - left), RNDNAME, config);
+        super(
+            RichTypeNumber,
+            RichTypeNumber,
+            RichTypeNumber,
+            (left, right, context) => {
+                // Check if there is already a cached value for this execution id + unique id
+                const executionId = context.executionId;
+                const cachedValue = FlowGraphCoordinator.globalContext._getExecutionVariable(context._firingBlock, RNDNAME + executionId);
+                if (cachedValue !== undefined) {
+                    return cachedValue;
+                } else {
+                    const value = left + Math.random() * (right - left);
+                    // Cache the value for this execution id + unique id
+                    FlowGraphCoordinator.globalContext._setExecutionVariable(context._firingBlock, RNDNAME + executionId, value);
+                    return value;
+                }
+            },
+            RNDNAME,
+            config
+        );
     }
 }
 RegisterClass(RNDNAME, FlowGraphRandomNumberBlock);
