@@ -6,7 +6,7 @@ import type { FlowGraphBlock } from "./flowGraphBlock";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import type { FlowGraphEventCoordinator } from "./flowGraphEventCoordinator";
 import type { FlowGraph } from "./flowGraph";
-import { FlowGraphEventBlock } from "./flowGraphEventBlock";
+import type { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 
 function isMeshClassName(className: string) {
     return (
@@ -98,9 +98,9 @@ export class FlowGraphContext {
     private _executionId = 0;
     /**
      * @internal
-     * Corresponds to the block that fired execution of the context
+     * Corresponds to the currently executing block
      */
-    public _firingBlock: FlowGraphEventBlock;
+    public _currentExecutionBlock: FlowGraphExecutionBlock;
 
     constructor(params: IFlowGraphContextConfiguration) {
         this._configuration = params;

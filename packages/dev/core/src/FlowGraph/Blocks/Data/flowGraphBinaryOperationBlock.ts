@@ -17,7 +17,7 @@ export class FlowGraphBinaryOperationBlock<LeftT, RightT, ResultT> extends FlowG
         leftRichType: RichType<LeftT>,
         rightRichType: RichType<RightT>,
         resultRichType: RichType<ResultT>,
-        private _operation: (left: LeftT, right: RightT, context: FlowGraphContext) => ResultT,
+        private _operation: (left: LeftT, right: RightT) => ResultT,
         private _className: string,
         config?: IFlowGraphBlockConfiguration
     ) {
@@ -28,7 +28,15 @@ export class FlowGraphBinaryOperationBlock<LeftT, RightT, ResultT> extends FlowG
     }
 
     public _updateOutputs(_context: FlowGraphContext): void {
-        this.output.setValue(this._operation(this.leftInput.getValue(_context), this.rightInput.getValue(_context), _context), _context);
+        // Search for a cached value
+        const cachedValue = _context._getExecutionVariable(this, "cachedValue" + _context.executionId);
+        if (cachedValue !== undefined) {
+            this.output.setValue(cachedValue, _context);
+            return;
+        }
+        const calculatedValue = this._operation(this.leftInput.getValue(_context), this.rightInput.getValue(_context));
+        _context._setExecutionVariable(this, "cachedValue" + _context.executionId, calculatedValue);
+        this.output.setValue(calculatedValue, _context);
     }
 
     public getClassName(): string {
