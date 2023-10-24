@@ -1141,5 +1141,7 @@ export class AssetContainer extends AbstractScene {
                 }
             }
         }
+
+        this.populateRootNodes();
     }
 }
