@@ -5,7 +5,7 @@ import { TransformNode } from "./Meshes/transformNode";
 import type { Skeleton } from "./Bones/skeleton";
 import type { AnimationGroup } from "./Animations/animationGroup";
 import type { Animatable } from "./Animations/animatable";
-import type { AbstractMesh } from "./Meshes/abstractMesh";
+import { AbstractMesh } from "./Meshes/abstractMesh";
 import type { MultiMaterial } from "./Materials/multiMaterial";
 import type { Material } from "./Materials/material";
 import { Logger } from "./Misc/logger";
@@ -18,6 +18,7 @@ import { InstancedMesh } from "./Meshes/instancedMesh";
 import { Light } from "./Lights/light";
 import { Camera } from "./Cameras/camera";
 import { Tools } from "./Misc/tools";
+import { PBRMaterial, StandardMaterial } from "./Materials";
 
 /**
  * Set of assets to keep when moving a scene into an asset container.
@@ -694,7 +695,7 @@ export class AssetContainer extends AbstractScene {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.removeMesh(o);
+            this.scene.removeMesh(o, true);
         });
         this.skeletons.forEach((o) => {
             if (predicate && !predicate(o)) {
@@ -1049,5 +1050,96 @@ export class AssetContainer extends AbstractScene {
                 this.rootNodes.push(c);
             }
         });
+    }
+
+    private _checkAndAddTextureStandardMaterial(material: StandardMaterial, textureName: keyof StandardMaterial) {
+        if (material[textureName]) {
+            this.textures.push(material[textureName]);
+        }
+    }
+
+    private _checkAndAddTexturePBRMaterial(material: PBRMaterial, textureName: keyof PBRMaterial) {
+        if (material[textureName]) {
+            this.textures.push(material[textureName]);
+        }
+    }
+
+    /**
+     * @since
+     * Given a root asset, this method will traverse its hierarchy and add it, its children and any materials/skeletons/animation groups to the container.
+     * @param root
+     */
+    public addAllAssetsToContainer(root: Node) {
+        if (!root) {
+            return;
+        }
+
+        const nodesToVisit = new Array<Node>();
+        const visitedNodes = new Set<Node>();
+
+        nodesToVisit.push(root);
+
+        while (nodesToVisit.length > 0) {
+            const nodeToVisit = nodesToVisit.pop()!;
+            visitedNodes.add(nodeToVisit);
+
+            if (nodeToVisit instanceof Mesh) {
+                if (nodeToVisit.geometry) {
+                    this.geometries.push(nodeToVisit.geometry);
+                }
+                this.meshes.push(nodeToVisit);
+            } else if (nodeToVisit instanceof TransformNode) {
+                this.transformNodes.push(nodeToVisit);
+            } else if (nodeToVisit instanceof Light) {
+                this.lights.push(nodeToVisit);
+            } else if (nodeToVisit instanceof Camera) {
+                this.cameras.push(nodeToVisit);
+            }
+
+            if (nodeToVisit instanceof AbstractMesh) {
+                if (nodeToVisit.material) {
+                    this.materials.push(nodeToVisit.material);
+                    if (nodeToVisit.material instanceof StandardMaterial) {
+                        this._checkAndAddTextureStandardMaterial(nodeToVisit.material, "diffuseTexture");
+                        this._checkAndAddTextureStandardMaterial(nodeToVisit.material, "bumpTexture");
+                        this._checkAndAddTextureStandardMaterial(nodeToVisit.material, "ambientTexture");
+                        this._checkAndAddTextureStandardMaterial(nodeToVisit.material, "opacityTexture");
+                        this._checkAndAddTextureStandardMaterial(nodeToVisit.material, "reflectionTexture");
+                        this._checkAndAddTextureStandardMaterial(nodeToVisit.material, "emissiveTexture");
+                        this._checkAndAddTextureStandardMaterial(nodeToVisit.material, "specularTexture");
+                        this._checkAndAddTextureStandardMaterial(nodeToVisit.material, "lightmapTexture");
+                        this._checkAndAddTextureStandardMaterial(nodeToVisit.material, "refractionTexture");
+                    } else if (nodeToVisit.material instanceof PBRMaterial) {
+                        this._checkAndAddTexturePBRMaterial(nodeToVisit.material, "albedoTexture");
+                        this._checkAndAddTexturePBRMaterial(nodeToVisit.material, "ambientTexture");
+                        this._checkAndAddTexturePBRMaterial(nodeToVisit.material, "opacityTexture");
+                        this._checkAndAddTexturePBRMaterial(nodeToVisit.material, "reflectionTexture");
+                        this._checkAndAddTexturePBRMaterial(nodeToVisit.material, "emissiveTexture");
+                        this._checkAndAddTexturePBRMaterial(nodeToVisit.material, "metallicTexture");
+                        this._checkAndAddTexturePBRMaterial(nodeToVisit.material, "reflectivityTexture");
+                        this._checkAndAddTexturePBRMaterial(nodeToVisit.material, "bumpTexture");
+                        this._checkAndAddTexturePBRMaterial(nodeToVisit.material, "lightmapTexture");
+                        this._checkAndAddTexturePBRMaterial(nodeToVisit.material, "refractionTexture");
+                        this._checkAndAddTexturePBRMaterial(nodeToVisit.material, "microSurfaceTexture");
+                        this._checkAndAddTexturePBRMaterial(nodeToVisit.material, "metallicReflectanceTexture");
+                        this._checkAndAddTexturePBRMaterial(nodeToVisit.material, "reflectanceTexture");
+                    }
+                }
+
+                if (nodeToVisit.skeleton) {
+                    this.skeletons.push(nodeToVisit.skeleton);
+                }
+
+                if (nodeToVisit.morphTargetManager) {
+                    this.morphTargetManagers.push(nodeToVisit.morphTargetManager);
+                }
+            }
+
+            for (const child of nodeToVisit.getChildren()) {
+                if (!visitedNodes.has(child)) {
+                    nodesToVisit.push(child);
+                }
+            }
+        }
     }
 }
