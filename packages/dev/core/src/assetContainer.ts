@@ -18,7 +18,8 @@ import { InstancedMesh } from "./Meshes/instancedMesh";
 import { Light } from "./Lights/light";
 import { Camera } from "./Cameras/camera";
 import { Tools } from "./Misc/tools";
-import { PBRMaterial, StandardMaterial } from "./Materials";
+import { PBRMaterial } from "./Materials/PBR/pbrMaterial";
+import { StandardMaterial } from "./Materials/standardMaterial";
 
 /**
  * Set of assets to keep when moving a scene into an asset container.
