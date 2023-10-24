@@ -18,8 +18,6 @@ import { InstancedMesh } from "./Meshes/instancedMesh";
 import { Light } from "./Lights/light";
 import { Camera } from "./Cameras/camera";
 import { Tools } from "./Misc/tools";
-import { PBRMaterial } from "./Materials/PBR/pbrMaterial";
-import { StandardMaterial } from "./Materials/standardMaterial";
 
 /**
  * Set of assets to keep when moving a scene into an asset container.
@@ -1053,18 +1051,6 @@ export class AssetContainer extends AbstractScene {
         });
     }
 
-    private _checkAndAddTextureStandardMaterial(material: StandardMaterial, textureName: keyof StandardMaterial) {
-        if (material[textureName]) {
-            this.textures.push(material[textureName]);
-        }
-    }
-
-    private _checkAndAddTexturePBRMaterial(material: PBRMaterial, textureName: keyof PBRMaterial) {
-        if (material[textureName]) {
-            this.textures.push(material[textureName]);
-        }
-    }
-
     /**
      * @since
      * Given a root asset, this method will traverse its hierarchy and add it, its children and any materials/skeletons/animation groups to the container.
@@ -1100,31 +1086,7 @@ export class AssetContainer extends AbstractScene {
             if (nodeToVisit instanceof AbstractMesh) {
                 if (nodeToVisit.material) {
                     this.materials.push(nodeToVisit.material);
-                    if (nodeToVisit.material instanceof StandardMaterial) {
-                        this._checkAndAddTextureStandardMaterial(nodeToVisit.material, "diffuseTexture");
-                        this._checkAndAddTextureStandardMaterial(nodeToVisit.material, "bumpTexture");
-                        this._checkAndAddTextureStandardMaterial(nodeToVisit.material, "ambientTexture");
-                        this._checkAndAddTextureStandardMaterial(nodeToVisit.material, "opacityTexture");
-                        this._checkAndAddTextureStandardMaterial(nodeToVisit.material, "reflectionTexture");
-                        this._checkAndAddTextureStandardMaterial(nodeToVisit.material, "emissiveTexture");
-                        this._checkAndAddTextureStandardMaterial(nodeToVisit.material, "specularTexture");
-                        this._checkAndAddTextureStandardMaterial(nodeToVisit.material, "lightmapTexture");
-                        this._checkAndAddTextureStandardMaterial(nodeToVisit.material, "refractionTexture");
-                    } else if (nodeToVisit.material instanceof PBRMaterial) {
-                        this._checkAndAddTexturePBRMaterial(nodeToVisit.material, "albedoTexture");
-                        this._checkAndAddTexturePBRMaterial(nodeToVisit.material, "ambientTexture");
-                        this._checkAndAddTexturePBRMaterial(nodeToVisit.material, "opacityTexture");
-                        this._checkAndAddTexturePBRMaterial(nodeToVisit.material, "reflectionTexture");
-                        this._checkAndAddTexturePBRMaterial(nodeToVisit.material, "emissiveTexture");
-                        this._checkAndAddTexturePBRMaterial(nodeToVisit.material, "metallicTexture");
-                        this._checkAndAddTexturePBRMaterial(nodeToVisit.material, "reflectivityTexture");
-                        this._checkAndAddTexturePBRMaterial(nodeToVisit.material, "bumpTexture");
-                        this._checkAndAddTexturePBRMaterial(nodeToVisit.material, "lightmapTexture");
-                        this._checkAndAddTexturePBRMaterial(nodeToVisit.material, "refractionTexture");
-                        this._checkAndAddTexturePBRMaterial(nodeToVisit.material, "microSurfaceTexture");
-                        this._checkAndAddTexturePBRMaterial(nodeToVisit.material, "metallicReflectanceTexture");
-                        this._checkAndAddTexturePBRMaterial(nodeToVisit.material, "reflectanceTexture");
-                    }
+                    this.textures.push(...nodeToVisit.material.getActiveTextures());
                 }
 
                 if (nodeToVisit.skeleton) {
