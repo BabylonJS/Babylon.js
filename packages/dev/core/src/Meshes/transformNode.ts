@@ -906,12 +906,33 @@ export class TransformNode extends Node {
             this.rotationQuaternion.multiplyToRef(rotationQuaternion, this.rotationQuaternion);
         } else {
             if (this.parent) {
+                /**
+                 * Derivation of the calculation:
+                 *
+                 * If L is the local matrix of the mesh, W the world matrix of the parent and R the rotation we want to apply (in the world), the final matrix to apply to the mesh is L*W*R.
+                 * We want to find a matrix X that we can apply to L to do the same thing: L*X*W=L*W*R =\> X=W*R*W-1
+                 */
+                const parentWorldMatrix = this.parent.getWorldMatrix();
                 const invertParentWorldMatrix = TmpVectors.Matrix[0];
-                this.parent.getWorldMatrix().invertToRef(invertParentWorldMatrix);
-                axis = Vector3.TransformNormal(axis, invertParentWorldMatrix);
+
+                parentWorldMatrix.invertToRef(invertParentWorldMatrix);
+
+                const rotationWorld = TmpVectors.Matrix[1];
+                const rotationLocal = TmpVectors.Matrix[2];
+
+                Matrix.RotationAxisToRef(axis, amount, rotationWorld);
+
+                parentWorldMatrix.multiplyToRef(rotationWorld, rotationLocal).multiplyToRef(invertParentWorldMatrix, rotationLocal);
+
+                const finalLocal = TmpVectors.Matrix[3];
+
+                this._localMatrix.multiplyToRef(rotationLocal, finalLocal);
+
+                finalLocal.decompose(this.scaling, this.rotationQuaternion, this.position);
+            } else {
+                rotationQuaternion = Quaternion.RotationAxisToRef(axis, amount, TransformNode._RotationAxisCache);
+                rotationQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
             }
-            rotationQuaternion = Quaternion.RotationAxisToRef(axis, amount, TransformNode._RotationAxisCache);
-            rotationQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);
         }
         return this;
     }
