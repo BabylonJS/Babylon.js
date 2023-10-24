@@ -2,7 +2,7 @@ import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnect
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import { Matrix, Quaternion, Vector3 } from "../../../../Maths/math.vector";
-import { type NodeGeometryBuildState } from "../../nodeGeometryBuildState";
+import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import type { VertexData } from "core/Meshes/mesh.vertexData";
 import { InstantiateBaseBlock } from "./instantiateBaseBlock";
 

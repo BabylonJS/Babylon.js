@@ -9,7 +9,8 @@ import type { Nullable } from "../../types";
 import type { Node } from "../../node";
 import { DeepCopier } from "../../Misc/deepCopier";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
-import { GreasedLineBaseMesh, type GreasedLineMeshOptions } from "./greasedLineBaseMesh";
+import type { GreasedLineMeshOptions } from "./greasedLineBaseMesh";
+import { GreasedLineBaseMesh } from "./greasedLineBaseMesh";
 
 Mesh._GreasedLineMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
     return GreasedLineMesh.Parse(parsedMesh, scene);
