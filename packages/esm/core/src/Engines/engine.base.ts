@@ -5,7 +5,7 @@ import type { Nullable } from "@babylonjs/core/types.js";
 import type { IShaderProcessor } from "@babylonjs/core/Engines/Processors/iShaderProcessor.js";
 import type { UniformBuffer } from "@babylonjs/core/Materials/uniformBuffer.js";
 import { Observable } from "@babylonjs/core/Misc/observable.js";
-import { ALPHA_ADD, ALPHA_DISABLE, GEQUAL, GREATER, LEQUAL, LESS, TEXTUREFORMAT_RGBA, TEXTURETYPE_UNSIGNED_INT, TEXTURE_NEAREST_SAMPLINGMODE } from "./engine.constants.js";
+import { Constants } from "./engine.constants.js";
 import { PrecisionDate } from "@babylonjs/core/Misc/precisionDate.js";
 import type { PerfCounter } from "@babylonjs/core/Misc/perfCounter.js";
 import type { StorageBuffer } from "@babylonjs/core/Buffers/storageBuffer.js";
@@ -475,6 +475,11 @@ export interface IBaseEnginePublic {
      * Gets or sets the current render pass id
      */
     currentRenderPassId: number;
+
+    /**
+     * Gets the current alpha state object
+     */
+    readonly alphaState: AlphaState;
 }
 
 export type BaseEngineState<T extends IBaseEnginePublic = IBaseEnginePublic> = T & IBaseEngineInternals & IBaseEngineProtected;
@@ -527,9 +532,9 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
             engineState._useReverseDepthBuffer = useReverse;
             if (engineState._depthCullingState) {
                 if (useReverse) {
-                    engineState._depthCullingState.depthFunc = GEQUAL;
+                    engineState._depthCullingState.depthFunc = Constants.GEQUAL;
                 } else {
-                    engineState._depthCullingState.depthFunc = LEQUAL;
+                    engineState._depthCullingState.depthFunc = Constants.LEQUAL;
                 }
             }
         },
@@ -592,6 +597,9 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
         customAnimationFrameRequester: null,
         canvasTabIndex: 1,
         currentRenderPassId: 0,
+        get alphaState(): AlphaState {
+            return engineState._alphaState;
+        },
 
         // internals
         _uniformBuffers: [],
@@ -624,8 +632,8 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
         _caps: {} as EngineCapabilities,
         _features: {} as EngineFeatures,
         _alphaState: new AlphaState(),
-        _alphaMode: ALPHA_ADD,
-        _alphaEquation: ALPHA_DISABLE,
+        _alphaMode: Constants.ALPHA_ADD as number,
+        _alphaEquation: Constants.ALPHA_DISABLE as number,
         _currentRenderTarget: null,
         _boundRenderFunction: () => void 0,
         _frameHandler: -1,
@@ -769,7 +777,7 @@ export function setSize(engineState: IBaseEnginePublic, width: number, height: n
  */
 export function getEmptyTexture(engineState: IBaseEnginePublic, { createRawTexture }: Pick<IRawTextureEngineExtension, "createRawTexture">): Nullable<InternalTexture> {
     if (!(engineState as BaseEngineStateFull)._emptyTexture) {
-        (engineState as BaseEngineStateFull)._emptyTexture = createRawTexture(engineState, new Uint8Array(4), 1, 1, TEXTUREFORMAT_RGBA, false, false, TEXTURE_NEAREST_SAMPLINGMODE);
+        (engineState as BaseEngineStateFull)._emptyTexture = createRawTexture(engineState, new Uint8Array(4), 1, 1, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
     }
     return (engineState as BaseEngineStateFull)._emptyTexture;
 }
@@ -788,10 +796,10 @@ export function getEmptyTexture3D(engineState: IBaseEnginePublic, { createRawTex
             1,
             1,
             1,
-            TEXTUREFORMAT_RGBA,
+            Constants.TEXTUREFORMAT_RGBA,
             false,
             false,
-            TEXTURE_NEAREST_SAMPLINGMODE
+            Constants.TEXTURE_NEAREST_SAMPLINGMODE
         );
     }
     return (engineState as BaseEngineStateFull)._emptyTexture3D;
@@ -814,10 +822,10 @@ export function getEmptyTexture2DArray(
             1,
             1,
             1,
-            TEXTUREFORMAT_RGBA,
+            Constants.TEXTUREFORMAT_RGBA,
             false,
             false,
-            TEXTURE_NEAREST_SAMPLINGMODE
+            Constants.TEXTURE_NEAREST_SAMPLINGMODE
         );
     }
     return (engineState as BaseEngineStateFull)._emptyTexture2DArray;
@@ -837,11 +845,11 @@ export function getEmptyCubeTexture(engineState: IBaseEnginePublic, { createRawC
             engineState,
             cubeData,
             1,
-            TEXTUREFORMAT_RGBA,
-            TEXTURETYPE_UNSIGNED_INT,
+            Constants.TEXTUREFORMAT_RGBA,
+            Constants.TEXTURETYPE_UNSIGNED_INT,
             false,
             false,
-            TEXTURE_NEAREST_SAMPLINGMODE
+            Constants.TEXTURE_NEAREST_SAMPLINGMODE
         );
     }
     return (engineState as BaseEngineStateFull)._emptyCubeTexture as InternalTexture;
@@ -1673,28 +1681,28 @@ export function setDepthFunction(engineState: IBaseEnginePublic, depthFunc: numb
  * Sets the current depth function to GREATER
  */
 export function setDepthFunctionToGreater(engineState: IBaseEnginePublic): void {
-    setDepthFunction(engineState, GREATER);
+    setDepthFunction(engineState, Constants.GREATER);
 }
 
 /**
  * Sets the current depth function to GEQUAL
  */
 export function setDepthFunctionToGreaterOrEqual(engineState: IBaseEnginePublic): void {
-    setDepthFunction(engineState, GEQUAL);
+    setDepthFunction(engineState, Constants.GEQUAL);
 }
 
 /**
  * Sets the current depth function to LESS
  */
 export function setDepthFunctionToLess(engineState: IBaseEnginePublic): void {
-    setDepthFunction(engineState, LESS);
+    setDepthFunction(engineState, Constants.LESS);
 }
 
 /**
  * Sets the current depth function to LEQUAL
  */
 export function setDepthFunctionToLessOrEqual(engineState: IBaseEnginePublic): void {
-    setDepthFunction(engineState, LEQUAL);
+    setDepthFunction(engineState, Constants.LEQUAL);
 }
 
 /**

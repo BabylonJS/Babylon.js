@@ -11,14 +11,7 @@ import {
     type IWebGLEnginePublic,
     type WebGLEngineStateFull,
 } from "../../engine.webgl.js";
-import {
-    TEXTURETYPE_FLOAT,
-    TEXTURETYPE_HALF_FLOAT,
-    TEXTURETYPE_UNSIGNED_INT,
-    TEXTURETYPE_UNSIGNED_INTEGER,
-    TEXTURE_NEAREST_SAMPLINGMODE,
-    TEXTURE_TRILINEAR_SAMPLINGMODE,
-} from "../../engine.constants.js";
+import { Constants } from "../../engine.constants.js";
 import { augmentEngineState } from "../../engine.adapters.js";
 import { Logger } from "@babylonjs/core/Misc/logger.js";
 import { Tools } from "@babylonjs/core/Misc/tools.js";
@@ -34,7 +27,7 @@ export const updateRawTexture: IRawTextureEngineExtension["updateRawTexture"] = 
     format: number,
     invertY: boolean,
     compression: Nullable<string> = null,
-    type: number = TEXTURETYPE_UNSIGNED_INT,
+    type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
     useSRGBBuffer: boolean = false
 ): void {
     if (!texture) {
@@ -86,7 +79,7 @@ export const createRawTexture: IRawTextureEngineExtension["createRawTexture"] = 
     invertY: boolean,
     samplingMode: number,
     compression: Nullable<string> = null,
-    type: number = TEXTURETYPE_UNSIGNED_INT,
+    type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     creationFlags = 0,
     useSRGBBuffer = false
@@ -162,12 +155,14 @@ export const createRawCubeTexture: IRawTextureEngineExtension["createRawCubeText
     // Mipmap generation needs a sized internal format that is both color-renderable and texture-filterable
     if (textureType === gl.FLOAT && !fes._caps.textureFloatLinearFiltering) {
         generateMipMaps = false;
-        samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
-        Logger.Warn("Float texture filtering is not supported. Mipmap generation and sampling mode are forced to false and TEXTURE_NEAREST_SAMPLINGMODE, respectively.");
+        samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        Logger.Warn("Float texture filtering is not supported. Mipmap generation and sampling mode are forced to false and Constants.TEXTURE_NEAREST_SAMPLINGMODE, respectively.");
     } else if (textureType === fes._gl.HALF_FLOAT_OES && !fes._caps.textureHalfFloatLinearFiltering) {
         generateMipMaps = false;
-        samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
-        Logger.Warn("Half float texture filtering is not supported. Mipmap generation and sampling mode are forced to false and TEXTURE_NEAREST_SAMPLINGMODE, respectively.");
+        samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+        Logger.Warn(
+            "Half float texture filtering is not supported. Mipmap generation and sampling mode are forced to false and Constants.TEXTURE_NEAREST_SAMPLINGMODE, respectively."
+        );
     } else if (textureType === gl.FLOAT && !fes._caps.textureFloatRender) {
         generateMipMaps = false;
         Logger.Warn("Render to float textures is not supported. Mipmap generation forced to false.");
@@ -302,7 +297,7 @@ export const createRawCubeTextureFromUrl: IRawTextureEngineExtension["createRawC
     mipmapGenerator: Nullable<(faces: ArrayBufferView[]) => ArrayBufferView[][]>,
     onLoad: Nullable<() => void> = null,
     onError: Nullable<(message?: string, exception?: any) => void> = null,
-    samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE,
+    samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
     invertY: boolean = false
 ): InternalTexture {
     const fes = engineState as WebGLEngineStateFull;
@@ -394,12 +389,12 @@ function _convertRGBtoRGBATextureData(rgbData: any, width: number, height: numbe
     // Create new RGBA data container.
     let rgbaData: any;
     let val1 = 1;
-    if (textureType === TEXTURETYPE_FLOAT) {
+    if (textureType === Constants.TEXTURETYPE_FLOAT) {
         rgbaData = new Float32Array(width * height * 4);
-    } else if (textureType === TEXTURETYPE_HALF_FLOAT) {
+    } else if (textureType === Constants.TEXTURETYPE_HALF_FLOAT) {
         rgbaData = new Uint16Array(width * height * 4);
         val1 = 15360; // 15360 is the encoding of 1 in half float
-    } else if (textureType === TEXTURETYPE_UNSIGNED_INTEGER) {
+    } else if (textureType === Constants.TEXTURETYPE_UNSIGNED_INTEGER) {
         rgbaData = new Uint32Array(width * height * 4);
     } else {
         rgbaData = new Uint8Array(width * height * 4);
@@ -426,7 +421,7 @@ function _convertRGBtoRGBATextureData(rgbData: any, width: number, height: numbe
 
 /**
  * Create a function for createRawTexture3D/createRawTexture2DArray
- * @param is3D true for TEXTURE_3D and false for TEXTURE_2D_ARRAY
+ * @param is3D true for Constants.TEXTURE_3D and false for Constants.TEXTURE_2D_ARRAY
  * @internal
  */
 function _makeCreateRawTextureFunction(
@@ -441,7 +436,7 @@ function _makeCreateRawTextureFunction(
     invertY: boolean,
     samplingMode: number,
     compression: Nullable<string> = null,
-    textureType: number = TEXTURETYPE_UNSIGNED_INT
+    textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT
 ): InternalTexture {
     const fes = engineState as WebGLEngineStateFull;
     const target = is3D ? fes._gl.TEXTURE_3D : fes._gl.TEXTURE_2D_ARRAY;
@@ -521,7 +516,7 @@ export const createRawTexture3D: (
 
 /**
  * Create a function for updateRawTexture3D/updateRawTexture2DArray
- * @param is3D true for TEXTURE_3D and false for TEXTURE_2D_ARRAY
+ * @param is3D true for Constants.TEXTURE_3D and false for Constants.TEXTURE_2D_ARRAY
  * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -533,7 +528,7 @@ function _makeUpdateRawTextureFunction(
     format: number,
     invertY: boolean,
     compression: Nullable<string> = null,
-    textureType: number = TEXTURETYPE_UNSIGNED_INT
+    textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT
 ): void {
     const fes = engineState as WebGLEngineStateFull;
     const target = is3D ? fes._gl.TEXTURE_3D : fes._gl.TEXTURE_2D_ARRAY;

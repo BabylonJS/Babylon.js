@@ -1,6 +1,5 @@
 import type { WebGLHardwareTexture } from "@babylonjs/core/Engines/WebGL/webGLHardwareTexture.js";
 import { WebGLRenderTargetWrapper } from "@babylonjs/core/Engines/WebGL/webGLRenderTargetWrapper.js";
-import { Constants } from "@babylonjs/core/Engines/constants.js";
 import type { RenderTargetWrapper } from "@babylonjs/core/Engines/renderTargetWrapper.js";
 import { InternalTexture, InternalTextureSource } from "@babylonjs/core/Materials/Textures/internalTexture.js";
 import type { TextureSize, RenderTargetCreationOptions, DepthTextureCreationOptions } from "@babylonjs/core/Materials/Textures/textureCreationOptions.js";
@@ -20,6 +19,7 @@ import {
 import { Logger } from "@babylonjs/core/Misc/logger.js";
 import type { IRenderTargetEngineExtension } from "./renderTarget.base.js";
 import { _createDepthStencilCubeTexture } from "../cubeTexture/cubeTexture.webgl.js";
+import { Constants } from "../../engine.constants.js";
 
 export const _createHardwareRenderTargetWrapper: IRenderTargetEngineExtension["_createHardwareRenderTargetWrapper"] = function (
     engineState: IWebGLEnginePublic,

@@ -2,7 +2,7 @@
 import { Effect } from "@babylonjs/core/Materials/effect.js";
 import type { IInternalTextureLoader } from "@babylonjs/core/Materials/Textures/internalTextureLoader.js";
 import { IsWindowObjectExist } from "./runtimeEnvironment.js";
-import { SCALEMODE_CEILING, SCALEMODE_FLOOR, SCALEMODE_NEAREST } from "./engine.constants.js";
+import { Constants } from "./engine.constants.js";
 import type { Nullable } from "@babylonjs/core/types.js";
 import type { IBaseEnginePublic } from "./engine.base.js";
 import type { Scene } from "@babylonjs/core/scene.js";
@@ -268,17 +268,17 @@ export function NearestPOT(x: number): number {
  * @param mode defines how to define the closest value
  * @returns closest exponent of two of the given value
  */
-export function GetExponentOfTwo(value: number, max: number, mode = SCALEMODE_NEAREST): number {
+export function GetExponentOfTwo(value: number, max: number, mode = Constants.SCALEMODE_NEAREST): number {
     let pot;
 
     switch (mode) {
-        case SCALEMODE_FLOOR:
+        case Constants.SCALEMODE_FLOOR:
             pot = FloorPOT(value);
             break;
-        case SCALEMODE_NEAREST:
+        case Constants.SCALEMODE_NEAREST:
             pot = NearestPOT(value);
             break;
-        case SCALEMODE_CEILING:
+        case Constants.SCALEMODE_CEILING:
         default:
             pot = CeilingPOT(value);
             break;

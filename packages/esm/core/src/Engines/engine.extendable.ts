@@ -1,23 +1,23 @@
-import type { Nullable } from "@babylonjs/core/types";
-import type { BaseEngineState, BaseEngineStateFull, IBaseEnginePublic } from "./engine.base";
-import { _viewport, endFrame, getHostWindow, getRenderHeight, getRenderWidth } from "./engine.base";
-import { InternalTextureSource, InternalTexture } from "@babylonjs/core/Materials/Textures/internalTexture";
-import type { PostProcess } from "@babylonjs/core/PostProcesses/postProcess";
-import type { ThinTexture } from "@babylonjs/core/Materials/Textures/thinTexture";
-import type { RenderTargetTexture } from "@babylonjs/core/Materials/Textures/renderTargetTexture";
-import type { IViewportLike } from "@babylonjs/core/Maths/math.like";
-import { EngineStore, QueueNewFrame, _TextureLoaders } from "./engine.static";
-import type { IPipelineContext } from "@babylonjs/core/Engines/IPipelineContext";
-import type { Effect } from "@babylonjs/core/Materials/effect";
-import { MATERIAL_TriangleFillMode, MATERIAL_WireFrameFillMode, MATERIAL_PointFillMode, TEXTURE_TRILINEAR_SAMPLINGMODE } from "./engine.constants";
-import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine";
-import type { IInternalTextureLoader } from "@babylonjs/core/Materials/Textures/internalTextureLoader";
-import { LoadImage } from "@babylonjs/core/Misc/fileTools";
-import type { IWebRequest } from "@babylonjs/core/Misc/interfaces/iWebRequest";
-import type { Observer } from "@babylonjs/core/Misc/observable";
-import type { ISceneLike } from "./engine.interfaces";
-import { _loadFile } from "./engine.tools";
-import { Logger } from "@babylonjs/core/Misc/logger";
+import type { Nullable } from "@babylonjs/core/types.js";
+import type { BaseEngineState, BaseEngineStateFull, IBaseEnginePublic } from "./engine.base.js";
+import { _viewport, endFrame, getHostWindow, getRenderHeight, getRenderWidth } from "./engine.base.js";
+import { InternalTextureSource, InternalTexture } from "@babylonjs/core/Materials/Textures/internalTexture.js";
+import type { PostProcess } from "@babylonjs/core/PostProcesses/postProcess.js";
+import type { ThinTexture } from "@babylonjs/core/Materials/Textures/thinTexture.js";
+import type { RenderTargetTexture } from "@babylonjs/core/Materials/Textures/renderTargetTexture.js";
+import type { IViewportLike } from "@babylonjs/core/Maths/math.like.js";
+import { EngineStore, QueueNewFrame, _TextureLoaders } from "./engine.static.js";
+import type { IPipelineContext } from "@babylonjs/core/Engines/IPipelineContext.js";
+import type { Effect } from "@babylonjs/core/Materials/effect.js";
+import { Constants } from "./engine.constants.js";
+import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine.js";
+import type { IInternalTextureLoader } from "@babylonjs/core/Materials/Textures/internalTextureLoader.js";
+import { LoadImage } from "@babylonjs/core/Misc/fileTools.js";
+import type { IWebRequest } from "@babylonjs/core/Misc/interfaces/iWebRequest.js";
+import type { Observer } from "@babylonjs/core/Misc/observable.js";
+import type { ISceneLike } from "./engine.interfaces.js";
+import { _loadFile } from "./engine.tools.js";
+import { Logger } from "@babylonjs/core/Misc/logger.js";
 
 /**
  * Defines the interface used by objects containing a viewport (like a camera)
@@ -161,7 +161,7 @@ export function drawBase<T extends IBaseEnginePublic = IBaseEnginePublic>(
     indexCount: number,
     instancesCount?: number
 ): void {
-    drawElementsType(engineState, useTriangles ? MATERIAL_TriangleFillMode : MATERIAL_WireFrameFillMode, indexStart, indexCount, instancesCount);
+    drawElementsType(engineState, useTriangles ? Constants.MATERIAL_TriangleFillMode : Constants.MATERIAL_WireFrameFillMode, indexStart, indexCount, instancesCount);
 }
 
 /**
@@ -177,7 +177,7 @@ export function drawPointCloudsBase<T extends IBaseEnginePublic = IBaseEnginePub
     verticesCount: number,
     instancesCount?: number
 ): void {
-    drawArraysType(engineState, MATERIAL_PointFillMode, verticesStart, verticesCount, instancesCount);
+    drawArraysType(engineState, Constants.MATERIAL_PointFillMode, verticesStart, verticesCount, instancesCount);
 }
 
 /**
@@ -195,7 +195,7 @@ export function drawUnIndexedBase<T extends IBaseEnginePublic = IBaseEnginePubli
     verticesCount: number,
     instancesCount?: number
 ): void {
-    drawArraysType(engineState, useTriangles ? MATERIAL_TriangleFillMode : MATERIAL_WireFrameFillMode, verticesStart, verticesCount, instancesCount);
+    drawArraysType(engineState, useTriangles ? Constants.MATERIAL_TriangleFillMode : Constants.MATERIAL_WireFrameFillMode, verticesStart, verticesCount, instancesCount);
 }
 
 /**
@@ -229,7 +229,7 @@ export function _createTextureBase<T extends IBaseEnginePublic = IBaseEnginePubl
     noMipmap: boolean,
     invertY: boolean,
     scene: Nullable<ISceneLike>,
-    samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE,
+    samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
     onLoad: Nullable<(texture: InternalTexture) => void> = null,
     onError: Nullable<(message: string, exception: any) => void> = null,
     prepareTexture: (

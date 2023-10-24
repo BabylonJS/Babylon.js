@@ -22,78 +22,7 @@ import type { DataBuffer } from "@babylonjs/core/Buffers/dataBuffer.js";
 import type { IEffectCreationOptions } from "@babylonjs/core/Materials/effect.js";
 import { Effect } from "@babylonjs/core/Materials/effect.js";
 import type { IColor4Like, IViewportLike } from "@babylonjs/core/Maths/math.like.js";
-import {
-    ALPHA_ADD,
-    ALPHA_DISABLE,
-    DELAYLOADSTATE_NOTLOADED,
-    LEQUAL,
-    MATERIAL_LineListDrawMode,
-    MATERIAL_LineLoopDrawMode,
-    MATERIAL_LineStripDrawMode,
-    MATERIAL_PointFillMode,
-    MATERIAL_PointListDrawMode,
-    MATERIAL_TriangleFanDrawMode,
-    MATERIAL_TriangleFillMode,
-    MATERIAL_TriangleStripDrawMode,
-    MATERIAL_WireFrameFillMode,
-    TEXTUREFORMAT_ALPHA,
-    TEXTUREFORMAT_COMPRESSED_RGB8_ETC2,
-    TEXTUREFORMAT_COMPRESSED_RGBA8_ETC2_EAC,
-    TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4,
-    TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM,
-    TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1,
-    TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5,
-    TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL,
-    TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1,
-    TEXTUREFORMAT_LUMINANCE,
-    TEXTUREFORMAT_LUMINANCE_ALPHA,
-    TEXTUREFORMAT_R,
-    TEXTUREFORMAT_RED,
-    TEXTUREFORMAT_RED_INTEGER,
-    TEXTUREFORMAT_RG,
-    TEXTUREFORMAT_RGB,
-    TEXTUREFORMAT_RGBA,
-    TEXTUREFORMAT_RGBA_INTEGER,
-    TEXTUREFORMAT_RGB_INTEGER,
-    TEXTUREFORMAT_RG_INTEGER,
-    TEXTURETYPE_BYTE,
-    TEXTURETYPE_FLOAT,
-    TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV,
-    TEXTURETYPE_HALF_FLOAT,
-    TEXTURETYPE_INT,
-    TEXTURETYPE_SHORT,
-    TEXTURETYPE_UNSIGNED_BYTE,
-    TEXTURETYPE_UNSIGNED_INT,
-    TEXTURETYPE_UNSIGNED_INTEGER,
-    TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV,
-    TEXTURETYPE_UNSIGNED_INT_24_8,
-    TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV,
-    TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV,
-    TEXTURETYPE_UNSIGNED_SHORT,
-    TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4,
-    TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1,
-    TEXTURETYPE_UNSIGNED_SHORT_5_6_5,
-    TEXTURE_BILINEAR_SAMPLINGMODE,
-    TEXTURE_CLAMP_ADDRESSMODE,
-    TEXTURE_CUBIC_MODE,
-    TEXTURE_LINEAR_LINEAR,
-    TEXTURE_LINEAR_LINEAR_MIPLINEAR,
-    TEXTURE_LINEAR_LINEAR_MIPNEAREST,
-    TEXTURE_LINEAR_NEAREST,
-    TEXTURE_LINEAR_NEAREST_MIPLINEAR,
-    TEXTURE_LINEAR_NEAREST_MIPNEAREST,
-    TEXTURE_MIRROR_ADDRESSMODE,
-    TEXTURE_NEAREST_LINEAR,
-    TEXTURE_NEAREST_LINEAR_MIPLINEAR,
-    TEXTURE_NEAREST_LINEAR_MIPNEAREST,
-    TEXTURE_NEAREST_NEAREST,
-    TEXTURE_NEAREST_NEAREST_MIPLINEAR,
-    TEXTURE_NEAREST_NEAREST_MIPNEAREST,
-    TEXTURE_NEAREST_SAMPLINGMODE,
-    TEXTURE_SKYBOX_MODE,
-    TEXTURE_TRILINEAR_SAMPLINGMODE,
-    TEXTURE_WRAP_ADDRESSMODE,
-} from "./engine.constants.js";
+import { Constants } from "./engine.constants.js";
 import type { RenderTargetWrapper } from "@babylonjs/core/Engines/renderTargetWrapper.js";
 import type { WebGLRenderTargetWrapper } from "@babylonjs/core/Engines/WebGL/webGLRenderTargetWrapper.js";
 import * as _ from "lodash";
@@ -452,7 +381,7 @@ export function initWebGLEngineState(
     // }
 
     const versionToLog = `Babylon.js v${Version}`;
-    console.log(versionToLog + ` - ${ps.description}`);
+    Logger.Log(versionToLog + ` - ${ps.description}`);
 
     // Check setAttribute in case of workers
     if (ps._renderingCanvas && ps._renderingCanvas.setAttribute) {
@@ -628,13 +557,13 @@ export function clear(engineState: IWebGLEnginePublic, color: Nullable<IColor4Li
         if (fes._currentRenderTarget) {
             const textureFormat = fes._currentRenderTarget.texture?.format;
             if (
-                textureFormat === TEXTUREFORMAT_RED_INTEGER ||
-                textureFormat === TEXTUREFORMAT_RG_INTEGER ||
-                textureFormat === TEXTUREFORMAT_RGB_INTEGER ||
-                textureFormat === TEXTUREFORMAT_RGBA_INTEGER
+                textureFormat === Constants.TEXTUREFORMAT_RED_INTEGER ||
+                textureFormat === Constants.TEXTUREFORMAT_RG_INTEGER ||
+                textureFormat === Constants.TEXTUREFORMAT_RGB_INTEGER ||
+                textureFormat === Constants.TEXTUREFORMAT_RGBA_INTEGER
             ) {
                 const textureType = fes._currentRenderTarget.texture?.type;
-                if (textureType === TEXTURETYPE_UNSIGNED_INTEGER || textureType === TEXTURETYPE_UNSIGNED_SHORT) {
+                if (textureType === Constants.TEXTURETYPE_UNSIGNED_INTEGER || textureType === Constants.TEXTURETYPE_UNSIGNED_SHORT) {
                     _TempClearColorUint32[0] = color.r * 255;
                     _TempClearColorUint32[1] = color.g * 255;
                     _TempClearColorUint32[2] = color.b * 255;
@@ -1551,24 +1480,24 @@ export function drawArraysType(engineState: IWebGLEnginePublic, fillMode: number
 function _drawMode(gl: IWebGLEngineInternals["_gl"], fillMode: number): number {
     switch (fillMode) {
         // Triangle views
-        case MATERIAL_TriangleFillMode:
+        case Constants.MATERIAL_TriangleFillMode:
             return gl.TRIANGLES;
-        case MATERIAL_PointFillMode:
+        case Constants.MATERIAL_PointFillMode:
             return gl.POINTS;
-        case MATERIAL_WireFrameFillMode:
+        case Constants.MATERIAL_WireFrameFillMode:
             return gl.LINES;
         // Draw modes
-        case MATERIAL_PointListDrawMode:
+        case Constants.MATERIAL_PointListDrawMode:
             return gl.POINTS;
-        case MATERIAL_LineListDrawMode:
+        case Constants.MATERIAL_LineListDrawMode:
             return gl.LINES;
-        case MATERIAL_LineLoopDrawMode:
+        case Constants.MATERIAL_LineLoopDrawMode:
             return gl.LINE_LOOP;
-        case MATERIAL_LineStripDrawMode:
+        case Constants.MATERIAL_LineStripDrawMode:
             return gl.LINE_STRIP;
-        case MATERIAL_TriangleStripDrawMode:
+        case Constants.MATERIAL_TriangleStripDrawMode:
             return gl.TRIANGLE_STRIP;
-        case MATERIAL_TriangleFanDrawMode:
+        case Constants.MATERIAL_TriangleFanDrawMode:
             return gl.TRIANGLE_FAN;
         default:
             return gl.TRIANGLES;
@@ -2147,8 +2076,8 @@ export function wipeCaches(engineState: IWebGLEnginePublic, bruteForce?: boolean
         }
 
         fes._alphaState.reset();
-        fes._alphaMode = ALPHA_ADD;
-        fes._alphaEquation = ALPHA_DISABLE;
+        fes._alphaMode = Constants.ALPHA_ADD;
+        fes._alphaEquation = Constants.ALPHA_DISABLE;
 
         fes._colorWrite = true;
         fes._colorWriteChanged = true;
@@ -2177,7 +2106,7 @@ export function _getSamplingParameters(engineState: WebGLEngineState, samplingMo
     let minFilter: GLenum = gl.NEAREST;
 
     switch (samplingMode) {
-        case TEXTURE_LINEAR_LINEAR_MIPNEAREST:
+        case Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST:
             magFilter = gl.LINEAR;
             if (generateMipMaps) {
                 minFilter = gl.LINEAR_MIPMAP_NEAREST;
@@ -2185,7 +2114,7 @@ export function _getSamplingParameters(engineState: WebGLEngineState, samplingMo
                 minFilter = gl.LINEAR;
             }
             break;
-        case TEXTURE_LINEAR_LINEAR_MIPLINEAR:
+        case Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR:
             magFilter = gl.LINEAR;
             if (generateMipMaps) {
                 minFilter = gl.LINEAR_MIPMAP_LINEAR;
@@ -2193,7 +2122,7 @@ export function _getSamplingParameters(engineState: WebGLEngineState, samplingMo
                 minFilter = gl.LINEAR;
             }
             break;
-        case TEXTURE_NEAREST_NEAREST_MIPLINEAR:
+        case Constants.TEXTURE_NEAREST_NEAREST_MIPLINEAR:
             magFilter = gl.NEAREST;
             if (generateMipMaps) {
                 minFilter = gl.NEAREST_MIPMAP_LINEAR;
@@ -2201,7 +2130,7 @@ export function _getSamplingParameters(engineState: WebGLEngineState, samplingMo
                 minFilter = gl.NEAREST;
             }
             break;
-        case TEXTURE_NEAREST_NEAREST_MIPNEAREST:
+        case Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST:
             magFilter = gl.NEAREST;
             if (generateMipMaps) {
                 minFilter = gl.NEAREST_MIPMAP_NEAREST;
@@ -2209,7 +2138,7 @@ export function _getSamplingParameters(engineState: WebGLEngineState, samplingMo
                 minFilter = gl.NEAREST;
             }
             break;
-        case TEXTURE_NEAREST_LINEAR_MIPNEAREST:
+        case Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST:
             magFilter = gl.NEAREST;
             if (generateMipMaps) {
                 minFilter = gl.LINEAR_MIPMAP_NEAREST;
@@ -2217,7 +2146,7 @@ export function _getSamplingParameters(engineState: WebGLEngineState, samplingMo
                 minFilter = gl.LINEAR;
             }
             break;
-        case TEXTURE_NEAREST_LINEAR_MIPLINEAR:
+        case Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR:
             magFilter = gl.NEAREST;
             if (generateMipMaps) {
                 minFilter = gl.LINEAR_MIPMAP_LINEAR;
@@ -2225,15 +2154,15 @@ export function _getSamplingParameters(engineState: WebGLEngineState, samplingMo
                 minFilter = gl.LINEAR;
             }
             break;
-        case TEXTURE_NEAREST_LINEAR:
+        case Constants.TEXTURE_NEAREST_LINEAR:
             magFilter = gl.NEAREST;
             minFilter = gl.LINEAR;
             break;
-        case TEXTURE_NEAREST_NEAREST:
+        case Constants.TEXTURE_NEAREST_NEAREST:
             magFilter = gl.NEAREST;
             minFilter = gl.NEAREST;
             break;
-        case TEXTURE_LINEAR_NEAREST_MIPNEAREST:
+        case Constants.TEXTURE_LINEAR_NEAREST_MIPNEAREST:
             magFilter = gl.LINEAR;
             if (generateMipMaps) {
                 minFilter = gl.NEAREST_MIPMAP_NEAREST;
@@ -2241,7 +2170,7 @@ export function _getSamplingParameters(engineState: WebGLEngineState, samplingMo
                 minFilter = gl.NEAREST;
             }
             break;
-        case TEXTURE_LINEAR_NEAREST_MIPLINEAR:
+        case Constants.TEXTURE_LINEAR_NEAREST_MIPLINEAR:
             magFilter = gl.LINEAR;
             if (generateMipMaps) {
                 minFilter = gl.NEAREST_MIPMAP_LINEAR;
@@ -2249,11 +2178,11 @@ export function _getSamplingParameters(engineState: WebGLEngineState, samplingMo
                 minFilter = gl.NEAREST;
             }
             break;
-        case TEXTURE_LINEAR_LINEAR:
+        case Constants.TEXTURE_LINEAR_LINEAR:
             magFilter = gl.LINEAR;
             minFilter = gl.LINEAR;
             break;
-        case TEXTURE_LINEAR_NEAREST:
+        case Constants.TEXTURE_LINEAR_NEAREST:
             magFilter = gl.LINEAR;
             minFilter = gl.NEAREST;
             break;
@@ -2299,17 +2228,17 @@ export function _createInternalTexture(
 ): InternalTexture {
     const fes = engineState as WebGLEngineStateFull;
     let generateMipMaps = false;
-    let type = TEXTURETYPE_UNSIGNED_INT;
-    let samplingMode = TEXTURE_TRILINEAR_SAMPLINGMODE;
-    let format = TEXTUREFORMAT_RGBA;
+    let type = Constants.TEXTURETYPE_UNSIGNED_INT;
+    let samplingMode = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE;
+    let format = Constants.TEXTUREFORMAT_RGBA;
     let useSRGBBuffer = false;
     let samples = 1;
     let label: string | undefined;
     if (options !== undefined && typeof options === "object") {
         generateMipMaps = !!options.generateMipMaps;
-        type = options.type === undefined ? TEXTURETYPE_UNSIGNED_INT : options.type;
-        samplingMode = options.samplingMode === undefined ? TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
-        format = options.format === undefined ? TEXTUREFORMAT_RGBA : options.format;
+        type = options.type === undefined ? Constants.TEXTURETYPE_UNSIGNED_INT : options.type;
+        samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
+        format = options.format === undefined ? Constants.TEXTUREFORMAT_RGBA : options.format;
         useSRGBBuffer = options.useSRGBBuffer === undefined ? false : options.useSRGBBuffer;
         samples = options.samples ?? 1;
         label = options.label;
@@ -2319,16 +2248,16 @@ export function _createInternalTexture(
 
     useSRGBBuffer &&= fes._caps.supportSRGBBuffers && fes.webGLVersion > 1;
 
-    if (type === TEXTURETYPE_FLOAT && !fes._caps.textureFloatLinearFiltering) {
+    if (type === Constants.TEXTURETYPE_FLOAT && !fes._caps.textureFloatLinearFiltering) {
         // if floating point linear (gl.FLOAT) then force to NEAREST_SAMPLINGMODE
-        samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
-    } else if (type === TEXTURETYPE_HALF_FLOAT && !fes._caps.textureHalfFloatLinearFiltering) {
+        samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+    } else if (type === Constants.TEXTURETYPE_HALF_FLOAT && !fes._caps.textureHalfFloatLinearFiltering) {
         // if floating point linear (HALF_FLOAT) then force to NEAREST_SAMPLINGMODE
-        samplingMode = TEXTURE_NEAREST_SAMPLINGMODE;
+        samplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
     }
-    if (type === TEXTURETYPE_FLOAT && !fes._caps.textureFloat) {
-        type = TEXTURETYPE_UNSIGNED_INT;
-        Logger.Warn("Float textures are not supported. Type forced to TEXTURETYPE_UNSIGNED_BYTE");
+    if (type === Constants.TEXTURETYPE_FLOAT && !fes._caps.textureFloat) {
+        type = Constants.TEXTURETYPE_UNSIGNED_INT;
+        Logger.Warn("Float textures are not supported. Type forced to Constants.TEXTURETYPE_UNSIGNED_BYTE");
     }
 
     const gl = fes._gl;
@@ -2409,7 +2338,7 @@ export function _createInternalTexture(
  * @param forcedExtension defines the extension to use to pick the right loader
  * @param mimeType defines an optional mime type
  * @param loaderOptions options to be passed to the loader
- * @param creationFlags specific flags to use when creating the texture (TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+ * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
  * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
  * @returns a InternalTexture for assignment back into BABYLON.Texture
  */
@@ -2419,7 +2348,7 @@ export function createTexture(
     noMipmap: boolean,
     invertY: boolean,
     scene: Nullable<ISceneLike>,
-    samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE,
+    samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
     onLoad: Nullable<(texture: InternalTexture) => void> = null,
     onError: Nullable<(message: string, exception: any) => void> = null,
     buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
@@ -2550,8 +2479,8 @@ export function _rescaleTexture(
         },
         {
             generateMipMaps: false,
-            type: TEXTURETYPE_UNSIGNED_INT,
-            samplingMode: TEXTURE_BILINEAR_SAMPLINGMODE,
+            type: Constants.TEXTURETYPE_UNSIGNED_INT as number,
+            samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE as number,
             generateDepthBuffer: false,
             generateStencilBuffer: false,
         }
@@ -2700,8 +2629,8 @@ export function _setupDepthStencilTexture(
     internalTexture.isReady = true;
     internalTexture.samples = samples;
     internalTexture.generateMipMaps = false;
-    internalTexture.samplingMode = bilinearFiltering ? TEXTURE_BILINEAR_SAMPLINGMODE : TEXTURE_NEAREST_SAMPLINGMODE;
-    internalTexture.type = TEXTURETYPE_UNSIGNED_INT;
+    internalTexture.samplingMode = bilinearFiltering ? Constants.TEXTURE_BILINEAR_SAMPLINGMODE : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
+    internalTexture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
     internalTexture._comparisonFunction = comparisonFunction;
 
     const gl = fes._gl;
@@ -2712,10 +2641,10 @@ export function _setupDepthStencilTexture(
     gl.texParameteri(target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-    // TEXTURE_COMPARE_FUNC/MODE are only availble in WebGL2.
+    // Constants.TEXTURE_COMPARE_FUNC/MODE are only available in WebGL2.
     if (engineState.webGLVersion > 1) {
         if (comparisonFunction === 0) {
-            gl.texParameteri(target, gl.TEXTURE_COMPARE_FUNC, LEQUAL);
+            gl.texParameteri(target, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
             gl.texParameteri(target, gl.TEXTURE_COMPARE_MODE, gl.NONE);
         } else {
             gl.texParameteri(target, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
@@ -2747,8 +2676,8 @@ export function _uploadCompressedDataToTextureDirectly(
 
     if (texture._useSRGBBuffer) {
         switch (internalFormat) {
-            case TEXTUREFORMAT_COMPRESSED_RGB8_ETC2:
-            case TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL:
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGB8_ETC2:
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGB_ETC1_WEBGL:
                 // Note, if using ETC1 and sRGB is requested, this will use ETC2 if available.
                 if (fes._caps.etc2) {
                     internalFormat = gl.COMPRESSED_SRGB8_ETC2;
@@ -2756,20 +2685,20 @@ export function _uploadCompressedDataToTextureDirectly(
                     texture._useSRGBBuffer = false;
                 }
                 break;
-            case TEXTUREFORMAT_COMPRESSED_RGBA8_ETC2_EAC:
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA8_ETC2_EAC:
                 if (fes._caps.etc2) {
                     internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ETC2_EAC;
                 } else {
                     texture._useSRGBBuffer = false;
                 }
                 break;
-            case TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM:
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM:
                 internalFormat = gl.COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT;
                 break;
-            case TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4:
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_ASTC_4x4:
                 internalFormat = gl.COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR;
                 break;
-            case TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1:
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGB_S3TC_DXT1:
                 if (fes._caps.s3tc_srgb) {
                     internalFormat = gl.COMPRESSED_SRGB_S3TC_DXT1_EXT;
                 } else {
@@ -2777,7 +2706,7 @@ export function _uploadCompressedDataToTextureDirectly(
                     texture._useSRGBBuffer = false;
                 }
                 break;
-            case TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1:
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT1:
                 if (fes._caps.s3tc_srgb) {
                     internalFormat = gl.COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
                 } else {
@@ -2785,7 +2714,7 @@ export function _uploadCompressedDataToTextureDirectly(
                     texture._useSRGBBuffer = false;
                 }
                 break;
-            case TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5:
+            case Constants.TEXTUREFORMAT_COMPRESSED_RGBA_S3TC_DXT5:
                 if (fes._caps.s3tc_srgb) {
                     internalFormat = gl.COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT;
                 } else {
@@ -2961,7 +2890,7 @@ function _prepareWebGLTexture(
         texture: InternalTexture,
         continuationCallback: () => void
     ) => boolean,
-    samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE
+    samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE
 ): void {
     const maxTextureSize = engineState._caps.maxTextureSize;
     const potWidth = Math.min(maxTextureSize, engineState.needPOTTextures ? GetExponentOfTwo(img.width, maxTextureSize) : img.width);
@@ -3263,11 +3192,11 @@ function _bindSamplerUniformToChannel(engineState: WebGLEngineStateFull, sourceS
 
 function _getTextureWrapMode(engineState: WebGLEngineState, mode: number): number {
     switch (mode) {
-        case TEXTURE_WRAP_ADDRESSMODE:
+        case Constants.TEXTURE_WRAP_ADDRESSMODE:
             return engineState._gl.REPEAT;
-        case TEXTURE_CLAMP_ADDRESSMODE:
+        case Constants.TEXTURE_CLAMP_ADDRESSMODE:
             return engineState._gl.CLAMP_TO_EDGE;
-        case TEXTURE_MIRROR_ADDRESSMODE:
+        case Constants.TEXTURE_MIRROR_ADDRESSMODE:
             return engineState._gl.MIRRORED_REPEAT;
     }
     return engineState._gl.REPEAT;
@@ -3303,7 +3232,7 @@ function _setTexture(
             videoInternalTexture._associatedChannel = channel;
         }
         (<VideoTexture>texture).update();
-    } else if (texture.delayLoadState === DELAYLOADSTATE_NOTLOADED) {
+    } else if (texture.delayLoadState === Constants.DELAYLOADSTATE_NOTLOADED) {
         // Delay loading
         texture.delayLoad();
         return false;
@@ -3349,7 +3278,7 @@ function _setTexture(
             internalTexture._cachedCoordinatesMode = texture.coordinatesMode;
 
             const textureWrapMode =
-                texture.coordinatesMode !== TEXTURE_CUBIC_MODE && texture.coordinatesMode !== TEXTURE_SKYBOX_MODE ? TEXTURE_WRAP_ADDRESSMODE : TEXTURE_CLAMP_ADDRESSMODE;
+                texture.coordinatesMode !== Constants.TEXTURE_CUBIC_MODE && texture.coordinatesMode !== Constants.TEXTURE_SKYBOX_MODE ? Constants.TEXTURE_WRAP_ADDRESSMODE : Constants.TEXTURE_CLAMP_ADDRESSMODE;
             texture.wrapU = textureWrapMode;
             texture.wrapV = textureWrapMode;
         }
@@ -3415,9 +3344,9 @@ export function _setAnisotropicLevel(engineState: IWebGLEnginePublic, target: nu
     const fes = engineState as WebGLEngineState;
     const anisotropicFilterExtension = fes._caps.textureAnisotropicFilterExtension;
     if (
-        internalTexture.samplingMode !== TEXTURE_LINEAR_LINEAR_MIPNEAREST &&
-        internalTexture.samplingMode !== TEXTURE_LINEAR_LINEAR_MIPLINEAR &&
-        internalTexture.samplingMode !== TEXTURE_LINEAR_LINEAR
+        internalTexture.samplingMode !== Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST &&
+        internalTexture.samplingMode !== Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR &&
+        internalTexture.samplingMode !== Constants.TEXTURE_LINEAR_LINEAR
     ) {
         anisotropicFilteringLevel = 1; // Forcing the anisotropic to 1 because else webgl will force filters to linear
     }
@@ -3810,7 +3739,7 @@ function _canRenderToFloatFramebuffer(engineState: IWebGLEnginePublic): boolean 
     if (fes._webGLVersion > 1) {
         return fes._caps.colorBufferFloat;
     }
-    return _canRenderToFramebuffer(engineState, TEXTURETYPE_FLOAT);
+    return _canRenderToFramebuffer(engineState, Constants.TEXTURETYPE_FLOAT);
 }
 
 function _canRenderToHalfFloatFramebuffer(engineState: IWebGLEnginePublic): boolean {
@@ -3818,7 +3747,7 @@ function _canRenderToHalfFloatFramebuffer(engineState: IWebGLEnginePublic): bool
     if (fes._webGLVersion > 1) {
         return fes._caps.colorBufferFloat;
     }
-    return _canRenderToFramebuffer(engineState, TEXTURETYPE_HALF_FLOAT);
+    return _canRenderToFramebuffer(engineState, Constants.TEXTURETYPE_HALF_FLOAT);
 }
 
 // Thank you : http://stackoverflow.com/questions/28827511/webgl-ios-render-to-floating-point-texture
@@ -3882,54 +3811,54 @@ export function _getWebGLTextureType(engineState: IWebGLEnginePublic, type: numb
     const fes = engineState as WebGLEngineState;
     if (fes._webGLVersion === 1) {
         switch (type) {
-            case TEXTURETYPE_FLOAT:
+            case Constants.TEXTURETYPE_FLOAT:
                 return fes._gl.FLOAT;
-            case TEXTURETYPE_HALF_FLOAT:
+            case Constants.TEXTURETYPE_HALF_FLOAT:
                 return fes._gl.HALF_FLOAT_OES;
-            case TEXTURETYPE_UNSIGNED_BYTE:
+            case Constants.TEXTURETYPE_UNSIGNED_BYTE:
                 return fes._gl.UNSIGNED_BYTE;
-            case TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4:
+            case Constants.TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4:
                 return fes._gl.UNSIGNED_SHORT_4_4_4_4;
-            case TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1:
+            case Constants.TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1:
                 return fes._gl.UNSIGNED_SHORT_5_5_5_1;
-            case TEXTURETYPE_UNSIGNED_SHORT_5_6_5:
+            case Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5:
                 return fes._gl.UNSIGNED_SHORT_5_6_5;
         }
         return fes._gl.UNSIGNED_BYTE;
     }
 
     switch (type) {
-        case TEXTURETYPE_BYTE:
+        case Constants.TEXTURETYPE_BYTE:
             return fes._gl.BYTE;
-        case TEXTURETYPE_UNSIGNED_BYTE:
+        case Constants.TEXTURETYPE_UNSIGNED_BYTE:
             return fes._gl.UNSIGNED_BYTE;
-        case TEXTURETYPE_SHORT:
+        case Constants.TEXTURETYPE_SHORT:
             return fes._gl.SHORT;
-        case TEXTURETYPE_UNSIGNED_SHORT:
+        case Constants.TEXTURETYPE_UNSIGNED_SHORT:
             return fes._gl.UNSIGNED_SHORT;
-        case TEXTURETYPE_INT:
+        case Constants.TEXTURETYPE_INT:
             return fes._gl.INT;
-        case TEXTURETYPE_UNSIGNED_INTEGER: // Refers to UNSIGNED_INT
+        case Constants.TEXTURETYPE_UNSIGNED_INTEGER: // Refers to UNSIGNED_INT
             return fes._gl.UNSIGNED_INT;
-        case TEXTURETYPE_FLOAT:
+        case Constants.TEXTURETYPE_FLOAT:
             return fes._gl.FLOAT;
-        case TEXTURETYPE_HALF_FLOAT:
+        case Constants.TEXTURETYPE_HALF_FLOAT:
             return fes._gl.HALF_FLOAT;
-        case TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4:
+        case Constants.TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4:
             return fes._gl.UNSIGNED_SHORT_4_4_4_4;
-        case TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1:
+        case Constants.TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1:
             return fes._gl.UNSIGNED_SHORT_5_5_5_1;
-        case TEXTURETYPE_UNSIGNED_SHORT_5_6_5:
+        case Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5:
             return fes._gl.UNSIGNED_SHORT_5_6_5;
-        case TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV:
+        case Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV:
             return fes._gl.UNSIGNED_INT_2_10_10_10_REV;
-        case TEXTURETYPE_UNSIGNED_INT_24_8:
+        case Constants.TEXTURETYPE_UNSIGNED_INT_24_8:
             return fes._gl.UNSIGNED_INT_24_8;
-        case TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV:
+        case Constants.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV:
             return fes._gl.UNSIGNED_INT_10F_11F_11F_REV;
-        case TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV:
+        case Constants.TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV:
             return fes._gl.UNSIGNED_INT_5_9_9_9_REV;
-        case TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV:
+        case Constants.TEXTURETYPE_FLOAT_32_UNSIGNED_INT_24_8_REV:
             return fes._gl.FLOAT_32_UNSIGNED_INT_24_8_REV;
     }
 
@@ -3944,41 +3873,41 @@ export function _getInternalFormat(engineState: IWebGLEnginePublic, format: numb
     let internalFormat: GLenum = useSRGBBuffer ? fes._glSRGBExtensionValues.SRGB8_ALPHA8 : fes._gl.RGBA;
 
     switch (format) {
-        case TEXTUREFORMAT_ALPHA:
+        case Constants.TEXTUREFORMAT_ALPHA:
             internalFormat = fes._gl.ALPHA;
             break;
-        case TEXTUREFORMAT_LUMINANCE:
+        case Constants.TEXTUREFORMAT_LUMINANCE:
             internalFormat = fes._gl.LUMINANCE;
             break;
-        case TEXTUREFORMAT_LUMINANCE_ALPHA:
+        case Constants.TEXTUREFORMAT_LUMINANCE_ALPHA:
             internalFormat = fes._gl.LUMINANCE_ALPHA;
             break;
-        case TEXTUREFORMAT_RED:
+        case Constants.TEXTUREFORMAT_RED:
             internalFormat = fes._gl.RED;
             break;
-        case TEXTUREFORMAT_RG:
+        case Constants.TEXTUREFORMAT_RG:
             internalFormat = fes._gl.RG;
             break;
-        case TEXTUREFORMAT_RGB:
+        case Constants.TEXTUREFORMAT_RGB:
             internalFormat = useSRGBBuffer ? fes._glSRGBExtensionValues.SRGB : fes._gl.RGB;
             break;
-        case TEXTUREFORMAT_RGBA:
+        case Constants.TEXTUREFORMAT_RGBA:
             internalFormat = useSRGBBuffer ? fes._glSRGBExtensionValues.SRGB8_ALPHA8 : fes._gl.RGBA;
             break;
     }
 
     if (fes._webGLVersion > 1) {
         switch (format) {
-            case TEXTUREFORMAT_RED_INTEGER:
+            case Constants.TEXTUREFORMAT_RED_INTEGER:
                 internalFormat = fes._gl.RED_INTEGER;
                 break;
-            case TEXTUREFORMAT_RG_INTEGER:
+            case Constants.TEXTUREFORMAT_RG_INTEGER:
                 internalFormat = fes._gl.RG_INTEGER;
                 break;
-            case TEXTUREFORMAT_RGB_INTEGER:
+            case Constants.TEXTUREFORMAT_RGB_INTEGER:
                 internalFormat = fes._gl.RGB_INTEGER;
                 break;
-            case TEXTUREFORMAT_RGBA_INTEGER:
+            case Constants.TEXTUREFORMAT_RGBA_INTEGER:
                 internalFormat = fes._gl.RGBA_INTEGER;
                 break;
         }
@@ -3995,13 +3924,13 @@ export function _getRGBABufferInternalSizedFormat(engineState: IWebGLEnginePubli
     if (fes._webGLVersion === 1) {
         if (format !== undefined) {
             switch (format) {
-                case TEXTUREFORMAT_ALPHA:
+                case Constants.TEXTUREFORMAT_ALPHA:
                     return fes._gl.ALPHA;
-                case TEXTUREFORMAT_LUMINANCE:
+                case Constants.TEXTUREFORMAT_LUMINANCE:
                     return fes._gl.LUMINANCE;
-                case TEXTUREFORMAT_LUMINANCE_ALPHA:
+                case Constants.TEXTUREFORMAT_LUMINANCE_ALPHA:
                     return fes._gl.LUMINANCE_ALPHA;
-                case TEXTUREFORMAT_RGB:
+                case Constants.TEXTUREFORMAT_RGB:
                     return useSRGBBuffer ? fes._glSRGBExtensionValues.SRGB : fes._gl.RGB;
             }
         }
@@ -4009,145 +3938,145 @@ export function _getRGBABufferInternalSizedFormat(engineState: IWebGLEnginePubli
     }
 
     switch (type) {
-        case TEXTURETYPE_BYTE:
+        case Constants.TEXTURETYPE_BYTE:
             switch (format) {
-                case TEXTUREFORMAT_RED:
+                case Constants.TEXTUREFORMAT_RED:
                     return fes._gl.R8_SNORM;
-                case TEXTUREFORMAT_RG:
+                case Constants.TEXTUREFORMAT_RG:
                     return fes._gl.RG8_SNORM;
-                case TEXTUREFORMAT_RGB:
+                case Constants.TEXTUREFORMAT_RGB:
                     return fes._gl.RGB8_SNORM;
-                case TEXTUREFORMAT_RED_INTEGER:
+                case Constants.TEXTUREFORMAT_RED_INTEGER:
                     return fes._gl.R8I;
-                case TEXTUREFORMAT_RG_INTEGER:
+                case Constants.TEXTUREFORMAT_RG_INTEGER:
                     return fes._gl.RG8I;
-                case TEXTUREFORMAT_RGB_INTEGER:
+                case Constants.TEXTUREFORMAT_RGB_INTEGER:
                     return fes._gl.RGB8I;
-                case TEXTUREFORMAT_RGBA_INTEGER:
+                case Constants.TEXTUREFORMAT_RGBA_INTEGER:
                     return fes._gl.RGBA8I;
                 default:
                     return fes._gl.RGBA8_SNORM;
             }
-        case TEXTURETYPE_UNSIGNED_BYTE:
+        case Constants.TEXTURETYPE_UNSIGNED_BYTE:
             switch (format) {
-                case TEXTUREFORMAT_RED:
+                case Constants.TEXTUREFORMAT_RED:
                     return fes._gl.R8;
-                case TEXTUREFORMAT_RG:
+                case Constants.TEXTUREFORMAT_RG:
                     return fes._gl.RG8;
-                case TEXTUREFORMAT_RGB:
+                case Constants.TEXTUREFORMAT_RGB:
                     return useSRGBBuffer ? fes._glSRGBExtensionValues.SRGB8 : fes._gl.RGB8; // By default. Other possibilities are RGB565, SRGB8.
-                case TEXTUREFORMAT_RGBA:
+                case Constants.TEXTUREFORMAT_RGBA:
                     return useSRGBBuffer ? fes._glSRGBExtensionValues.SRGB8_ALPHA8 : fes._gl.RGBA8; // By default. Other possibilities are RGB5_A1, RGBA4, SRGB8_ALPHA8.
-                case TEXTUREFORMAT_RED_INTEGER:
+                case Constants.TEXTUREFORMAT_RED_INTEGER:
                     return fes._gl.R8UI;
-                case TEXTUREFORMAT_RG_INTEGER:
+                case Constants.TEXTUREFORMAT_RG_INTEGER:
                     return fes._gl.RG8UI;
-                case TEXTUREFORMAT_RGB_INTEGER:
+                case Constants.TEXTUREFORMAT_RGB_INTEGER:
                     return fes._gl.RGB8UI;
-                case TEXTUREFORMAT_RGBA_INTEGER:
+                case Constants.TEXTUREFORMAT_RGBA_INTEGER:
                     return fes._gl.RGBA8UI;
-                case TEXTUREFORMAT_ALPHA:
+                case Constants.TEXTUREFORMAT_ALPHA:
                     return fes._gl.ALPHA;
-                case TEXTUREFORMAT_LUMINANCE:
+                case Constants.TEXTUREFORMAT_LUMINANCE:
                     return fes._gl.LUMINANCE;
-                case TEXTUREFORMAT_LUMINANCE_ALPHA:
+                case Constants.TEXTUREFORMAT_LUMINANCE_ALPHA:
                     return fes._gl.LUMINANCE_ALPHA;
                 default:
                     return fes._gl.RGBA8;
             }
-        case TEXTURETYPE_SHORT:
+        case Constants.TEXTURETYPE_SHORT:
             switch (format) {
-                case TEXTUREFORMAT_RED_INTEGER:
+                case Constants.TEXTUREFORMAT_RED_INTEGER:
                     return fes._gl.R16I;
-                case TEXTUREFORMAT_RG_INTEGER:
+                case Constants.TEXTUREFORMAT_RG_INTEGER:
                     return fes._gl.RG16I;
-                case TEXTUREFORMAT_RGB_INTEGER:
+                case Constants.TEXTUREFORMAT_RGB_INTEGER:
                     return fes._gl.RGB16I;
-                case TEXTUREFORMAT_RGBA_INTEGER:
+                case Constants.TEXTUREFORMAT_RGBA_INTEGER:
                     return fes._gl.RGBA16I;
                 default:
                     return fes._gl.RGBA16I;
             }
-        case TEXTURETYPE_UNSIGNED_SHORT:
+        case Constants.TEXTURETYPE_UNSIGNED_SHORT:
             switch (format) {
-                case TEXTUREFORMAT_RED_INTEGER:
+                case Constants.TEXTUREFORMAT_RED_INTEGER:
                     return fes._gl.R16UI;
-                case TEXTUREFORMAT_RG_INTEGER:
+                case Constants.TEXTUREFORMAT_RG_INTEGER:
                     return fes._gl.RG16UI;
-                case TEXTUREFORMAT_RGB_INTEGER:
+                case Constants.TEXTUREFORMAT_RGB_INTEGER:
                     return fes._gl.RGB16UI;
-                case TEXTUREFORMAT_RGBA_INTEGER:
+                case Constants.TEXTUREFORMAT_RGBA_INTEGER:
                     return fes._gl.RGBA16UI;
                 default:
                     return fes._gl.RGBA16UI;
             }
-        case TEXTURETYPE_INT:
+        case Constants.TEXTURETYPE_INT:
             switch (format) {
-                case TEXTUREFORMAT_RED_INTEGER:
+                case Constants.TEXTUREFORMAT_RED_INTEGER:
                     return fes._gl.R32I;
-                case TEXTUREFORMAT_RG_INTEGER:
+                case Constants.TEXTUREFORMAT_RG_INTEGER:
                     return fes._gl.RG32I;
-                case TEXTUREFORMAT_RGB_INTEGER:
+                case Constants.TEXTUREFORMAT_RGB_INTEGER:
                     return fes._gl.RGB32I;
-                case TEXTUREFORMAT_RGBA_INTEGER:
+                case Constants.TEXTUREFORMAT_RGBA_INTEGER:
                     return fes._gl.RGBA32I;
                 default:
                     return fes._gl.RGBA32I;
             }
-        case TEXTURETYPE_UNSIGNED_INTEGER: // Refers to UNSIGNED_INT
+        case Constants.TEXTURETYPE_UNSIGNED_INTEGER: // Refers to UNSIGNED_INT
             switch (format) {
-                case TEXTUREFORMAT_RED_INTEGER:
+                case Constants.TEXTUREFORMAT_RED_INTEGER:
                     return fes._gl.R32UI;
-                case TEXTUREFORMAT_RG_INTEGER:
+                case Constants.TEXTUREFORMAT_RG_INTEGER:
                     return fes._gl.RG32UI;
-                case TEXTUREFORMAT_RGB_INTEGER:
+                case Constants.TEXTUREFORMAT_RGB_INTEGER:
                     return fes._gl.RGB32UI;
-                case TEXTUREFORMAT_RGBA_INTEGER:
+                case Constants.TEXTUREFORMAT_RGBA_INTEGER:
                     return fes._gl.RGBA32UI;
                 default:
                     return fes._gl.RGBA32UI;
             }
-        case TEXTURETYPE_FLOAT:
+        case Constants.TEXTURETYPE_FLOAT:
             switch (format) {
-                case TEXTUREFORMAT_RED:
+                case Constants.TEXTUREFORMAT_RED:
                     return fes._gl.R32F; // By default. Other possibility is R16F.
-                case TEXTUREFORMAT_RG:
+                case Constants.TEXTUREFORMAT_RG:
                     return fes._gl.RG32F; // By default. Other possibility is RG16F.
-                case TEXTUREFORMAT_RGB:
+                case Constants.TEXTUREFORMAT_RGB:
                     return fes._gl.RGB32F; // By default. Other possibilities are RGB16F, R11F_G11F_B10F, RGB9_E5.
-                case TEXTUREFORMAT_RGBA:
+                case Constants.TEXTUREFORMAT_RGBA:
                     return fes._gl.RGBA32F; // By default. Other possibility is RGBA16F.
                 default:
                     return fes._gl.RGBA32F;
             }
-        case TEXTURETYPE_HALF_FLOAT:
+        case Constants.TEXTURETYPE_HALF_FLOAT:
             switch (format) {
-                case TEXTUREFORMAT_RED:
+                case Constants.TEXTUREFORMAT_RED:
                     return fes._gl.R16F;
-                case TEXTUREFORMAT_RG:
+                case Constants.TEXTUREFORMAT_RG:
                     return fes._gl.RG16F;
-                case TEXTUREFORMAT_RGB:
+                case Constants.TEXTUREFORMAT_RGB:
                     return fes._gl.RGB16F; // By default. Other possibilities are R11F_G11F_B10F, RGB9_E5.
-                case TEXTUREFORMAT_RGBA:
+                case Constants.TEXTUREFORMAT_RGBA:
                     return fes._gl.RGBA16F;
                 default:
                     return fes._gl.RGBA16F;
             }
-        case TEXTURETYPE_UNSIGNED_SHORT_5_6_5:
+        case Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5:
             return fes._gl.RGB565;
-        case TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV:
+        case Constants.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV:
             return fes._gl.R11F_G11F_B10F;
-        case TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV:
+        case Constants.TEXTURETYPE_UNSIGNED_INT_5_9_9_9_REV:
             return fes._gl.RGB9_E5;
-        case TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4:
+        case Constants.TEXTURETYPE_UNSIGNED_SHORT_4_4_4_4:
             return fes._gl.RGBA4;
-        case TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1:
+        case Constants.TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1:
             return fes._gl.RGB5_A1;
-        case TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV:
+        case Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV:
             switch (format) {
-                case TEXTUREFORMAT_RGBA:
+                case Constants.TEXTUREFORMAT_RGBA:
                     return fes._gl.RGB10_A2; // By default. Other possibility is RGB5_A1.
-                case TEXTUREFORMAT_RGBA_INTEGER:
+                case Constants.TEXTUREFORMAT_RGBA_INTEGER:
                     return fes._gl.RGB10_A2UI;
                 default:
                     return fes._gl.RGB10_A2;
@@ -4160,19 +4089,19 @@ export function _getRGBABufferInternalSizedFormat(engineState: IWebGLEnginePubli
 /**
  * @internal
  */
-export function _getRGBAMultiSampleBufferFormat(engineState: IWebGLEnginePublic, type: number, format = TEXTUREFORMAT_RGBA): number {
+export function _getRGBAMultiSampleBufferFormat(engineState: IWebGLEnginePublic, type: number, format = Constants.TEXTUREFORMAT_RGBA): number {
     const fes = engineState as WebGLEngineState;
     switch (type) {
-        case TEXTURETYPE_FLOAT:
+        case Constants.TEXTURETYPE_FLOAT:
             switch (format) {
-                case TEXTUREFORMAT_R:
+                case Constants.TEXTUREFORMAT_R:
                     return fes._gl.R32F;
                 default:
                     return fes._gl.RGBA32F;
             }
-        case TEXTURETYPE_HALF_FLOAT:
+        case Constants.TEXTURETYPE_HALF_FLOAT:
             switch (format) {
-                case TEXTUREFORMAT_R:
+                case Constants.TEXTUREFORMAT_R:
                     return fes._gl.R16F;
                 default:
                     return fes._gl.RGBA16F;
@@ -4919,14 +4848,14 @@ export function setSize(engineState: IWebGLEnginePublic, width: number, height: 
  * Wraps an external web gl texture in a Babylon texture.
  * @param texture defines the external texture
  * @param hasMipMaps defines whether the external texture has mip maps (default: false)
- * @param samplingMode defines the sampling mode for the external texture (default: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE)
+ * @param samplingMode defines the sampling mode for the external texture (default: Constants.Constants.TEXTURE_TRILINEAR_SAMPLINGMODE)
  * @returns the babylon internal texture
  */
 export function wrapWebGLTexture(
     engineState: IWebGLEnginePublic,
     texture: WebGLTexture,
     hasMipMaps: boolean = false,
-    samplingMode: number = TEXTURE_TRILINEAR_SAMPLINGMODE
+    samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE
 ): InternalTexture {
     const fes = engineState as WebGLEngineStateFull;
     const hardwareTexture = new WebGLHardwareTexture(texture, fes._gl);
@@ -4982,7 +4911,7 @@ export function updateTextureComparisonFunction(engineState: IWebGLEnginePublic,
         _bindTextureDirectly(engineState, gl.TEXTURE_CUBE_MAP, texture, true);
 
         if (comparisonFunction === 0) {
-            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_FUNC, LEQUAL);
+            gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_MODE, gl.NONE);
         } else {
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
@@ -4994,7 +4923,7 @@ export function updateTextureComparisonFunction(engineState: IWebGLEnginePublic,
         _bindTextureDirectly(engineState, gl.TEXTURE_2D, texture, true);
 
         if (comparisonFunction === 0) {
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, LEQUAL);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.NONE);
         } else {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);

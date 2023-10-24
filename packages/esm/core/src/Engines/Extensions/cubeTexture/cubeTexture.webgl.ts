@@ -1,4 +1,3 @@
-import { Constants } from "@babylonjs/core/Engines/constants.js";
 import type { RenderTargetWrapper } from "@babylonjs/core/Engines/renderTargetWrapper.js";
 import { ThinEngine } from "@babylonjs/core/Engines/thinEngine.js";
 import { InternalTexture, InternalTextureSource } from "@babylonjs/core/Materials/Textures/internalTexture.js";
@@ -15,6 +14,7 @@ import { Logger } from "@babylonjs/core/Misc/logger.js";
 import { augmentEngineState } from "../../engine.adapters.js";
 import { _loadFile } from "../../engine.tools.js";
 import { _prepareWorkingCanvas } from "../../engine.base.js";
+import { Constants } from "../../engine.constants.js";
 
 export const _createDepthStencilCubeTexture: ICubeTextureEngineExtension["_createDepthStencilCubeTexture"] = function (
     engineState: IWebGLEnginePublic,

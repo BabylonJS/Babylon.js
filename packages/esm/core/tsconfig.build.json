@@ -6,6 +6,7 @@
         "outDir": "./dist",
         "rootDir": "./src",
         "skipLibCheck": true,
+        "preserveConstEnums": true,
         "paths": {
             "core/*": ["dev/core/dist/*"],
         }

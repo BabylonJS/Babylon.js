@@ -14,7 +14,6 @@ import {
 } from "../../engine.webgl.js";
 import type { IMultiRenderEngineExtension } from "./multiRender.base.js";
 import type { WebGLHardwareTexture } from "@babylonjs/core/Engines/WebGL/webGLHardwareTexture.js";
-import { Constants } from "@babylonjs/core/Engines/constants.js";
 import type { RenderTargetWrapper } from "@babylonjs/core/Engines/renderTargetWrapper.js";
 import { InternalTexture, InternalTextureSource } from "@babylonjs/core/Materials/Textures/internalTexture.js";
 import type { IMultiRenderTargetOptions } from "@babylonjs/core/Materials/Textures/multiRenderTarget.js";
@@ -24,6 +23,7 @@ import { _createHardwareRenderTargetWrapper } from "../renderTarget/renderTarget
 import { Logger } from "@babylonjs/core/Misc/logger.js";
 import { augmentEngineState } from "../../engine.adapters.js";
 import { resetTextureCache } from "../../engine.base.js";
+import { Constants } from "../../engine.constants.js";
 
 export const restoreSingleAttachment: IMultiRenderEngineExtension["restoreSingleAttachment"] = function (engineState: IWebGLEnginePublic): void {
     const fes = engineState as WebGLEngineStateFull;
