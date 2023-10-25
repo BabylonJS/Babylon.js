@@ -1,7 +1,230 @@
 {
-    "fromTag": "6.24.0",
+    "fromTag": "6.25.0",
     "changelog": {
-        "6.24.0": [],
+        "6.25.1": [
+            {
+                "pr": "14464",
+                "title": "Add mesh without vertex normals to SPS",
+                "description": "Fix https://github.com/BabylonJS/ThePirateCove/issues/571",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/solidParticleSystem.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/AddmeshwithoutvertexnormalstoSPS.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14456",
+                "title": "Fix instanced buffers of cloned meshes",
+                "description": "Forum issue: https://forum.babylonjs.com/t/error-after-cloning-mesh-with-instanced-buffer/45154\r\nAdding @Popov72 to check if this solution makes sense 😉 ",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/instancedMesh.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "14462",
+                "title": "incorrect CDN link for some packages",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/debugLayer.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/gui/guiTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14459",
+                "title": "Move type out of import clause",
+                "description": "TypeScript 4.5 introduces inline type imports. But for anyone who uses typescript < 4.5 the build will fail.\n\nThere is no lint rule to disallow that, as it is a perfectly correct syntax. I will keep on checking for that.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphVector2MathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphVector3MathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphVector4MathBlocks.ts",
+                    "packages/dev/core/src/Meshes/Builders/greasedLineBuilder.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineMesh.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateRadialBlock.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14452",
+                "title": "Fix stack panel giving a warning for children with resizeToFit.",
+                "description": "Forum issue: https://forum.babylonjs.com/t/control-is-using-height-in-percentage-mode-inside-a-vertical-stackpanel-warnings-after-update-to-6-25-0/45071",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/stackPanel.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "14455",
+                "title": "Fix an issue in the mesh parsing code",
+                "description": "Causes `overrideMaterialSideOrientation` to be `undefined`\r\n\r\nFixes #14445",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14447",
+                "title": "Change script loading architecture",
+                "description": "Scripts (js and wasm) should now be loaded using the Tools'  GetScriptUrl function.\r\n\r\nThis function will check if the URL is absolute or relative. if relative it will append the BaseScriptUrl defined in Tools to the URL. Otherwise it will run a preprocessor and will make sure, if requested, that the URL is absolute.\r\n\r\nThis one you can either define a new URL per module OR a new global base URL for the scripts and thus replace the babylon's CDN in one call.\r\n\r\nThe preprocessor can be defined by the devs themselves to modify the URL to whatever it needs to be. Checking if the URL is absolute (GetAbsoluteUrl) was kept for back-compat reasons.\r\n\r\nNotes\r\n\r\n* Tools.LoadScript will automatically use GetScriptUrl\r\n* It is possible to define a blob or data URL instead of a (relative) URL.\r\n* KTXDecoder has a different, simpler mechanism to change the base URL",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/debugLayer.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTintWASM.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCompression.ts",
+                    "packages/dev/core/src/Meshes/Compression/meshoptCompression.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
+                    "packages/dev/core/src/Misc/basis.ts",
+                    "packages/dev/core/src/Misc/fileTools.ts",
+                    "packages/dev/core/src/Misc/khronosTextureContainer2.ts",
+                    "packages/dev/core/src/Misc/tools.ts",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/gui/guiTools.ts",
+                    "packages/dev/loaders/src/glTF/glTFValidation.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_ASTC.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_BC7.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_R8_UNORM.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_RG8_UNORM.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_RGBA_SRGB.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_RGBA_UNORM.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/mscTranscoder.ts",
+                    "packages/tools/ktx2Decoder/src/transcoder.ts",
+                    "packages/tools/ktx2Decoder/src/zstddec.ts",
+                    "packages/tools/testTools/src/utils.ts",
+                    "packages/tools/testTools/src/visualizationUtils.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14449",
+                "title": "ShadowDepthWrapper: Fix a memory leak when new effects must be created",
+                "description": "This is the PR #14406 by @nonlinearthink with a fix for the Webgl warnings (see https://github.com/BabylonJS/Babylon.js/pull/14406#discussion_r1367293207).",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/shadowDepthWrapper.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "shadows"
+                ]
+            },
+            {
+                "pr": "14450",
+                "title": "Fix key navigation in scene explorer",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/sceneExplorer/sceneExplorerComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "14448",
+                "title": "Fix texture sampler precision for skinning and morph",
+                "description": "See https://forum.babylonjs.com/t/mesh-of-fingers-jitter-on-mobile/44760",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/bonesDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/morphTargetsVertexGlobalDeclaration.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14441",
+                "title": "Faster twin renderer",
+                "description": "This PR is a rearchitecture of the HTMLTwinRenderer, aiming to improve its speed. \r\n\r\nSome PGs I tested with:\r\nThe ones in: https://doc.babylonjs.com/toolsAndResources/accessibility/screenReaders\r\nStress test: #C9GZTF#43\r\nAddAllControls: #C9GZTF#49\r\nWeapons demo with accessibility: #I6V1ST#240",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts",
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinAccessibilityItem.tsx",
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinGUIItem.ts",
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinHostComponent.tsx",
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinItem.ts",
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinItem.tsx",
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinItemAdapter.tsx",
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinNodeItem.ts",
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinSceneContext.tsx",
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinSceneTree.tsx",
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinTreeComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "accessibility"
+                ]
+            },
+            {
+                "pr": "14442",
+                "title": "Gui editor metadata",
+                "description": "I added a section in the GUI editor's property tab for editing and viewing metadata of controls.\r\nIt only makes strings, numbers and booleans editable, but it will display objects as a JSON string.\r\n\r\nIt hides any metadata keys that start with an `_` or if the key is `guiEditor` (because all controls in the editor get that key).\r\n\r\nA good snippet to test with is `#CITCWC#52` because it has some pre-existing metadata items.",
+                "author": {
+                    "name": "vinhui",
+                    "url": "https://github.com/vinhui"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyTab.scss"
+                ],
+                "tags": []
+            }
+        ],
         "6.25.0": [
             {
                 "pr": "14428",
@@ -554,6 +777,7 @@
                 ]
             }
         ],
+        "6.24.0": [],
         "6.23.1": [
             {
                 "pr": "14411",
