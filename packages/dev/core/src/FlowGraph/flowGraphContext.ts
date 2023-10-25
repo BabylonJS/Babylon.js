@@ -91,7 +91,7 @@ export class FlowGraphContext {
      */
     private _pendingBlocks: FlowGraphAsyncExecutionBlock[] = [];
     /**
-     * An monotonically increasing ID for each execution.
+     * A monotonically increasing ID for each execution.
      * Incremented for every block executed.
      */
     private _executionId = 0;
