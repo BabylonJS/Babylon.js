@@ -71,6 +71,7 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
             {
                 attributes,
                 uniforms: [
+                    "world",
                     "viewProjection",
                     "view",
                     "projection",
