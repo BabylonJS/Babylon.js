@@ -1068,7 +1068,6 @@ export class AssetContainer extends AbstractScene {
 
         while (nodesToVisit.length > 0) {
             const nodeToVisit = nodesToVisit.pop()!;
-            visitedNodes.add(nodeToVisit);
 
             if (nodeToVisit instanceof Mesh) {
                 if (nodeToVisit.geometry) {
@@ -1103,6 +1102,8 @@ export class AssetContainer extends AbstractScene {
                     nodesToVisit.push(child);
                 }
             }
+
+            visitedNodes.add(nodeToVisit);
         }
 
         this.populateRootNodes();
