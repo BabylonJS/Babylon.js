@@ -49,7 +49,7 @@ export class NodeGeometry {
     private _buildExecutionTime: number = 0;
 
     /** Define the Url to load node editor script */
-    public static EditorURL = `nodeGeometryEditor/v${Engine.Version}/babylon.nodeGeometryEditor.js`;
+    public static EditorURL = `v${Engine.Version}/nodeGeometryEditor/babylon.nodeGeometryEditor.js`;
 
     /** Define the Url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
