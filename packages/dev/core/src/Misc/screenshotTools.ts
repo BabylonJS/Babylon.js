@@ -203,7 +203,7 @@ export function CreateScreenshotWithResizeAsync(engine: Engine, camera: Camera, 
  * @param enableStencilBuffer Whether the stencil buffer should be enabled or not (default: false)
  * @param useLayerMask if the camera's layer mask should be used to filter what should be rendered (default: true)
  * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
- * @param customizeTexture An optional callback that can be used to modify the render target texture before taking the screenshot. This can be used to, for instance, to enable camera post-processes before taking the screenshot.
+ * @param customizeTexture An optional callback that can be used to modify the render target texture before taking the screenshot. This can be used, for instance, to enable camera post-processes before taking the screenshot.
  */
 export function CreateScreenshotUsingRenderTarget(
     engine: Engine,
