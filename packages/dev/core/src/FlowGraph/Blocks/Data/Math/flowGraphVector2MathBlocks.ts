@@ -2,7 +2,8 @@ import { RichTypeNumber, RichTypeVector2 } from "core/FlowGraph/flowGraphRichTyp
 import { Vector2 } from "../../../../Maths/math.vector";
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
-import { FlowGraphBlock, type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import { FlowGraphBlock } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import type { FlowGraphContext } from "../../../flowGraphContext";

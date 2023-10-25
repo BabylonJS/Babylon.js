@@ -4008,7 +4008,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         mesh.checkCollisions = parsedMesh.checkCollisions;
-        mesh.overrideMaterialSideOrientation = parsedMesh.overrideMaterialSideOrientation;
+
+        if (parsedMesh.overrideMaterialSideOrientation !== undefined) {
+            mesh.overrideMaterialSideOrientation = parsedMesh.overrideMaterialSideOrientation;
+        }
 
         if (parsedMesh.isBlocker !== undefined) {
             mesh.isBlocker = parsedMesh.isBlocker;

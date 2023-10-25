@@ -3,7 +3,8 @@ import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock"
 import type { Matrix } from "../../../../Maths/math.vector";
 import { Quaternion, Vector3 } from "../../../../Maths/math.vector";
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
-import { FlowGraphBlock, type IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import { FlowGraphBlock } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { FlowGraphContext } from "../../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
