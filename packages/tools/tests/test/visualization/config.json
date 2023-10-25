@@ -1768,6 +1768,11 @@
             "title": "Child overriding parent font properties",
             "playgroundId": "#QFK9K4#25",
             "referenceImage": "Childoverridingparentfontproperties.png"
+        },
+        {
+            "title": "Add mesh without vertex normals to SPS",
+            "playgroundId": "#H1SEDF#1",
+            "referenceImage": "AddmeshwithoutvertexnormalstoSPS.png"
         }
     ]
 }
