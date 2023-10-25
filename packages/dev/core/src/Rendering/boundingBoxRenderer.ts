@@ -312,7 +312,9 @@ export class BoundingBoxRenderer implements ISceneComponent {
             const diff = max.subtract(min);
             const median = min.add(diff.scale(0.5));
 
-            const worldMatrix = Matrix.Scaling(diff.x, diff.y, diff.z).multiply(Matrix.Translation(median.x, median.y, median.z)).multiply(boundingBox.getWorldMatrix());
+            const worldMatrix = Matrix.Scaling(diff.x, diff.y, diff.z)
+                .multiply(Matrix.Translation(median.x, median.y, median.z))
+                .multiply(boundingBox.getWorldMatrix());
 
             const useReverseDepthBuffer = engine.useReverseDepthBuffer;
 
@@ -418,7 +420,9 @@ export class BoundingBoxRenderer implements ISceneComponent {
         const diff = max.subtract(min);
         const median = min.add(diff.scale(0.5));
 
-        const worldMatrix = Matrix.Scaling(diff.x, diff.y, diff.z).multiply(Matrix.Translation(median.x, median.y, median.z)).multiply(boundingBox.getWorldMatrix());
+        const worldMatrix = Matrix.Scaling(diff.x, diff.y, diff.z)
+            .multiply(Matrix.Translation(median.x, median.y, median.z))
+            .multiply(boundingBox.getWorldMatrix());
 
         const drawWrapper = subMesh._drawWrapper;
 

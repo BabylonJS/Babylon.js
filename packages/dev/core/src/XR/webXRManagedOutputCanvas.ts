@@ -78,7 +78,10 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
      * @param _xrSessionManager The XR Session manager
      * @param _options optional configuration for this canvas output. defaults will be used if not provided
      */
-    constructor(_xrSessionManager: WebXRSessionManager, private _options: WebXRManagedOutputCanvasOptions = WebXRManagedOutputCanvasOptions.GetDefaults()) {
+    constructor(
+        _xrSessionManager: WebXRSessionManager,
+        private _options: WebXRManagedOutputCanvasOptions = WebXRManagedOutputCanvasOptions.GetDefaults()
+    ) {
         this._engine = _xrSessionManager.scene.getEngine();
         this._engine.onDisposeObservable.addOnce(() => {
             this._engine = null;

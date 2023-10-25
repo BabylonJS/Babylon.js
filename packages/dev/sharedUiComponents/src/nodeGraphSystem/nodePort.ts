@@ -100,7 +100,12 @@ export class NodePort {
         this._stateManager.applyNodePortDesign(this.portData, this._element, this._img, this._pip);
     }
 
-    public constructor(portContainer: HTMLElement, public portData: IPortData, public node: GraphNode, stateManager: StateManager) {
+    public constructor(
+        portContainer: HTMLElement,
+        public portData: IPortData,
+        public node: GraphNode,
+        stateManager: StateManager
+    ) {
         this._element = portContainer.ownerDocument!.createElement("div");
         this._element.classList.add(commonStyles.port);
         portContainer.appendChild(this._element);

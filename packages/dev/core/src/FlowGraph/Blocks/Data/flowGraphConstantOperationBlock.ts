@@ -10,7 +10,12 @@ import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 export class FlowGraphConstantOperationBlock<ResultT> extends FlowGraphBlock {
     public output: FlowGraphDataConnection<ResultT>;
 
-    constructor(richType: RichType<ResultT>, private _operation: () => ResultT, private _className: string, config?: IFlowGraphBlockConfiguration) {
+    constructor(
+        richType: RichType<ResultT>,
+        private _operation: () => ResultT,
+        private _className: string,
+        config?: IFlowGraphBlockConfiguration
+    ) {
         super(config);
         this.output = this._registerDataOutput("output", richType);
     }
