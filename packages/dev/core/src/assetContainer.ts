@@ -1070,7 +1070,7 @@ export class AssetContainer extends AbstractScene {
             const nodeToVisit = nodesToVisit.pop()!;
 
             if (nodeToVisit instanceof Mesh) {
-                if (nodeToVisit.geometry) {
+                if (nodeToVisit.geometry && this.geometries.indexOf(nodeToVisit.geometry) === -1) {
                     this.geometries.push(nodeToVisit.geometry);
                 }
                 this.meshes.push(nodeToVisit);
@@ -1083,16 +1083,20 @@ export class AssetContainer extends AbstractScene {
             }
 
             if (nodeToVisit instanceof AbstractMesh) {
-                if (nodeToVisit.material) {
+                if (nodeToVisit.material && this.materials.indexOf(nodeToVisit.material) === -1) {
                     this.materials.push(nodeToVisit.material);
-                    this.textures.push(...nodeToVisit.material.getActiveTextures());
+                    for (const texture of nodeToVisit.material.getActiveTextures()) {
+                        if (this.textures.indexOf(texture) === -1) {
+                            this.textures.push(texture);
+                        }
+                    }
                 }
 
-                if (nodeToVisit.skeleton) {
+                if (nodeToVisit.skeleton && this.skeletons.indexOf(nodeToVisit.skeleton) === -1) {
                     this.skeletons.push(nodeToVisit.skeleton);
                 }
 
-                if (nodeToVisit.morphTargetManager) {
+                if (nodeToVisit.morphTargetManager && this.morphTargetManagers.indexOf(nodeToVisit.morphTargetManager) === -1) {
                     this.morphTargetManagers.push(nodeToVisit.morphTargetManager);
                 }
             }
