@@ -759,7 +759,7 @@ export class SolidParticleSystem implements IDisposable {
     /**
      * Adds some particles to the SPS from the model shape. Returns the shape id.
      * Please read the doc : https://doc.babylonjs.com/features/featuresDeepDive/particles/solid_particle_system/immutable_sps
-     * @param mesh is any Mesh object that will be used as a model for the solid particles.
+     * @param mesh is any Mesh object that will be used as a model for the solid particles. If the mesh does not have vertex normals, it will turn on the recomputeNormals attribute.
      * @param nb (positive integer) the number of particles to be created from this model
      * @param options {positionFunction} is an optional javascript function to called for each particle on SPS creation.
      * {vertexFunction} is an optional javascript function to called for each vertex of each particle on SPS creation
@@ -777,7 +777,7 @@ export class SolidParticleSystem implements IDisposable {
         const meshNor = <FloatArray>mesh.getVerticesData(VertexBuffer.NormalKind);
         this.recomputeNormals = meshNor ? false : true;
         const indices = Array.from(meshInd);
-        const shapeNormals = Array.from(meshNor);
+        const shapeNormals = meshNor ? Array.from(meshNor) : [];
         const shapeColors = meshCol ? Array.from(meshCol) : [];
         const storage = options && options.storage ? options.storage : null;
         let bbInfo: Nullable<BoundingInfo> = null;
