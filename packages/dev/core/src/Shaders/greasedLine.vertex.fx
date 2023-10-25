@@ -5,7 +5,7 @@ attribute float grl_widths;
 attribute vec3 grl_offsets;
 attribute float grl_colorPointers;
 attribute vec3 position;
-uniform mat4 worldViewProjection;
+uniform mat4 viewProjection;
 uniform mat4 projection;
 varying float grlCounters;
 varying float grlColorPointer;
