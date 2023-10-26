@@ -2,7 +2,6 @@ import type { Observer } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
 import { FlowGraphEventBlock } from "./flowGraphEventBlock";
-import { FlowGraphVariableDefinitions } from "./flowGraphVariableDefinitions";
 import { FlowGraphContext } from "./flowGraphContext";
 import type { FlowGraphEventCoordinator } from "./flowGraphEventCoordinator";
 import { FlowGraphBlock } from "./flowGraphBlock";
@@ -10,6 +9,7 @@ import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 import type { FlowGraphCoordinator } from "./flowGraphCoordinator";
 import type { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
+import type { ISerializedFlowGraph } from "./typeDefinitions";
 
 export enum FlowGraphState {
     /**
@@ -223,7 +223,11 @@ export class FlowGraph {
      * @param valueParseFunction a function to parse complex values in a scene
      * @returns
      */
-    public static Parse(serializationObject: any, coordinator: FlowGraphCoordinator, valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any): FlowGraph {
+    public static Parse(
+        serializationObject: ISerializedFlowGraph,
+        coordinator: FlowGraphCoordinator,
+        valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any
+    ): FlowGraph {
         const graph = coordinator.createGraph();
         const blocks: FlowGraphBlock[] = [];
         // Parse all blocks

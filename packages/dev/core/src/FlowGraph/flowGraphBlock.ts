@@ -8,6 +8,7 @@ import type { ISerializedFlowGraphBlock } from "./typeDefinitions";
 
 export interface IFlowGraphBlockConfiguration {
     name?: string;
+    [key: string]: any;
 }
 
 /**
@@ -33,6 +34,8 @@ export class FlowGraphBlock {
      * The data outputs of the block.
      */
     public dataOutputs: FlowGraphDataConnection<any>[];
+
+    public metadata: any;
 
     /** Constructor is protected so only subclasses can be instantiated */
     protected constructor(public config?: IFlowGraphBlockConfiguration) {
@@ -97,6 +100,7 @@ export class FlowGraphBlock {
         for (let i = 0; i < serializationObject.dataOutputs.length; i++) {
             obj.dataOutputs[i].deserialize(serializationObject.dataOutputs[i]);
         }
+        obj.metadata = serializationObject.metadata;
         return obj;
     }
 }

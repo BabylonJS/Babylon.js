@@ -202,7 +202,8 @@ export class GLTFLoader implements IGLTFLoader {
     private _uniqueRootUrl: Nullable<string> = null;
     private _gltf: IGLTF;
     private _bin: Nullable<IDataBuffer> = null;
-    private _babylonScene: Scene;
+    /** @internal */
+    public _babylonScene: Scene;
     private _rootBabylonMesh: Nullable<Mesh> = null;
     private _defaultBabylonMaterialData: { [drawMode: number]: Material } = {};
     private readonly _postSceneLoadActions = new Array<() => void>();

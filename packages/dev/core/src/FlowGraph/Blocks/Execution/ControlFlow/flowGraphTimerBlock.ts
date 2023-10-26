@@ -77,7 +77,9 @@ export class FlowGraphTimerBlock extends FlowGraphAsyncExecutionBlock {
     }
 
     public getClassName(): string {
-        return "FGTimerBlock";
+        return FlowGraphTimerBlock.ClassName;
     }
+
+    public static ClassName = "FGTimerBlock";
 }
 RegisterClass("FGTimerBlock", FlowGraphTimerBlock);

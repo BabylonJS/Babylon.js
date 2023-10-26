@@ -31,7 +31,9 @@ export class FlowGraphLogBlock extends FlowGraphWithOnDoneExecutionBlock {
     }
 
     public getClassName(): string {
-        return "FGLogBlock";
+        return FlowGraphLogBlock.ClassName;
     }
+
+    public static ClassName = "FGLogBlock";
 }
 RegisterClass("FGLogBlock", FlowGraphLogBlock);
