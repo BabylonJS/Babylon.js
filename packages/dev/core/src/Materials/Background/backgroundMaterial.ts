@@ -122,6 +122,11 @@ class BackgroundMaterialDefines extends MaterialDefines implements IImageProcess
      */
     public REFLECTIONBGR = false;
 
+    /**
+     * True if ground projection has been enabled.
+     */
+    public PROJECTED_GROUND = false;
+
     public IMAGEPROCESSING = false;
     public VIGNETTE = false;
     public VIGNETTEBLENDMODEMULTIPLY = false;
@@ -609,6 +614,26 @@ export class BackgroundMaterial extends PushMaterial {
      */
     public switchToBGR: boolean = false;
 
+    private _enableGroundProjection: boolean = false;
+    /**
+     * Enables the ground projection mode on the material.
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsMiscDirty")
+    public enableGroundProjection: boolean = false;
+
+    /**
+     * Defines the radius of the projected ground if enableGroundProjection is true.
+     */
+    @serialize()
+    public projectedGroundRadius = 1000;
+
+    /**
+     * Defines the height of the projected ground if enableGroundProjection is true.
+     */
+    @serialize()
+    public projectedGroundHeight = 10;
+
     // Temp values kept as cache in the material.
     private _renderTargets = new SmartArray<RenderTargetTexture>(16);
     private _reflectionControls = Vector4.Zero();
@@ -838,6 +863,15 @@ export class BackgroundMaterial extends PushMaterial {
             this._imageProcessingConfiguration.prepareDefines(defines);
         }
 
+        if (defines._areMiscDirty) {
+            if (defines.REFLECTIONMAP_3D && this._enableGroundProjection) {
+                defines.PROJECTED_GROUND = true;
+                defines.REFLECTIONMAP_SKYBOX = true;
+            } else {
+                defines.PROJECTED_GROUND = false;
+            }
+        }
+
         // Misc.
         MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
@@ -919,6 +953,8 @@ export class BackgroundMaterial extends PushMaterial {
 
                 "vDiffuseInfos",
                 "diffuseMatrix",
+
+                "projectedGroundInfos",
             ];
 
             addClipPlaneUniforms(uniforms);
@@ -1030,6 +1066,7 @@ export class BackgroundMaterial extends PushMaterial {
         this._uniformBuffer.addUniform("alpha", 1);
         this._uniformBuffer.addUniform("vBackgroundCenter", 3);
         this._uniformBuffer.addUniform("vReflectionControl", 4);
+        this._uniformBuffer.addUniform("projectedGroundInfos", 2);
 
         this._uniformBuffer.create();
     }
@@ -1158,6 +1195,10 @@ export class BackgroundMaterial extends PushMaterial {
                             this._reflectionControls.w
                         );
                     }
+                }
+
+                if (defines.PROJECTED_GROUND) {
+                    this._uniformBuffer.updateFloat2("projectedGroundInfos", this.projectedGroundRadius, this.projectedGroundHeight);
                 }
             }
 

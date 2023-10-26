@@ -26,5 +26,9 @@
 #endif
 
 #if defined(REFLECTIONMAP_SPHERICAL) || defined(REFLECTIONMAP_PROJECTION) || defined(REFRACTION)
-uniform mat4 view;
+    uniform mat4 view;
+#endif
+
+#ifdef PROJECTED_GROUND
+    uniform vec2 projectedGroundInfos;
 #endif
