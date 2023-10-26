@@ -7,7 +7,12 @@ import { FlowGraphCachedOperationBlock } from "./flowGraphCachedOperationBlock";
  * Block that outputs a value of type ResultT, resulting of an operation with no inputs.
  */
 export class FlowGraphConstantOperationBlock<ResultT> extends FlowGraphCachedOperationBlock<ResultT> {
-    constructor(richType: RichType<ResultT>, private _operation: () => ResultT, private _className: string, config?: IFlowGraphBlockConfiguration) {
+    constructor(
+        richType: RichType<ResultT>,
+        private _operation: () => ResultT,
+        private _className: string,
+        config?: IFlowGraphBlockConfiguration
+    ) {
         super(richType, config);
     }
 
