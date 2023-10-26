@@ -113,7 +113,7 @@ export class BackgroundMaterialPropertyGridComponent extends React.Component<IBa
                         propertyName="enableGroundProjection"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                    {(material.enableGroundProjection) && (
+                    {material.enableGroundProjection && (
                         <div className="fragment">
                             <SliderLineComponent
                                 lockObject={this.props.lockObject}
