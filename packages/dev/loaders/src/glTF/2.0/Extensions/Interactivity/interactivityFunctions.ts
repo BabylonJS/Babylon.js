@@ -1,6 +1,6 @@
 import type { IKHRInteractivity, IKHRInteractivity_Configuration, IKHRInteractivity_Node } from "babylonjs-gltf2interface";
 import type { IFlowGraphBlockConfiguration } from "core/FlowGraph";
-import { FlowGraphLogBlock, FlowGraphSceneReadyEventBlock, FlowGraphSendCustomEventBlock, FlowGraphTimerBlock } from "core/FlowGraph";
+import { FlowGraphLogBlock, FlowGraphSceneReadyEventBlock, FlowGraphSendCustomEventBlock, FlowGraphSequenceBlock, FlowGraphTimerBlock } from "core/FlowGraph";
 import type { ISerializedFlowGraph, ISerializedFlowGraphBlock, ISerializedFlowGraphConnection, ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
 import { RandomGUID } from "core/Misc";
 
@@ -9,6 +9,7 @@ const gltfToFlowGraphTypeMap: { [key: string]: string } = {
     log: FlowGraphLogBlock.ClassName,
     "flow/delay": FlowGraphTimerBlock.ClassName,
     "customEvent/send": FlowGraphSendCustomEventBlock.ClassName,
+    "flow/sequence": FlowGraphSequenceBlock.ClassName,
 };
 
 function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKHRInteractivity): IFlowGraphBlockConfiguration {

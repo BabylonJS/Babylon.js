@@ -1,3 +1,4 @@
+import { RegisterClass } from "core/Misc";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import type { FlowGraphContext } from "../../../flowGraphContext";
 import { FlowGraphExecutionBlock } from "../../../flowGraphExecutionBlock";
@@ -27,4 +28,11 @@ export class FlowGraphSequenceBlock extends FlowGraphExecutionBlock {
             this.outFlows[i]._activateSignal(context);
         }
     }
+
+    public getClassName(): string {
+        return FlowGraphSequenceBlock.ClassName;
+    }
+
+    public static ClassName = "FGSequenceBlock";
 }
+RegisterClass(FlowGraphSequenceBlock.ClassName, FlowGraphSequenceBlock);
