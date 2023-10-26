@@ -617,6 +617,7 @@ export class BackgroundMaterial extends PushMaterial {
     private _enableGroundProjection: boolean = false;
     /**
      * Enables the ground projection mode on the material.
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/skybox#ground-projection
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsMiscDirty")
@@ -624,12 +625,14 @@ export class BackgroundMaterial extends PushMaterial {
 
     /**
      * Defines the radius of the projected ground if enableGroundProjection is true.
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/skybox#ground-projection
      */
     @serialize()
     public projectedGroundRadius = 1000;
 
     /**
      * Defines the height of the projected ground if enableGroundProjection is true.
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/environment/skybox#ground-projection
      */
     @serialize()
     public projectedGroundHeight = 10;
