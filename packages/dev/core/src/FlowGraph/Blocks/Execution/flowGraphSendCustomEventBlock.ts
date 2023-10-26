@@ -1,5 +1,4 @@
 import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
-import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import { RegisterClass } from "../../../Misc/typeStore";

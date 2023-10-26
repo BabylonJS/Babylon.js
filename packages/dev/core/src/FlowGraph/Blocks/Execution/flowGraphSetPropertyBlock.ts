@@ -59,7 +59,9 @@ export class FlowGraphSetPropertyBlock<TargetT, ValueT> extends FlowGraphWithOnD
     }
 
     public getClassName(): string {
-        return "FGSetPropertyBlock";
+        return FlowGraphSetPropertyBlock.ClassName;
     }
+
+    public static ClassName = "FGSetPropertyBlock";
 }
 RegisterClass("FGSetPropertyBlock", FlowGraphSetPropertyBlock);
