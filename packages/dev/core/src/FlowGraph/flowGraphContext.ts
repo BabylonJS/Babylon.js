@@ -6,6 +6,7 @@ import type { FlowGraphBlock } from "./flowGraphBlock";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import type { FlowGraphEventCoordinator } from "./flowGraphEventCoordinator";
 import type { FlowGraph } from "./flowGraph";
+import type { ISerializedFlowGraphContext } from "./typeDefinitions";
 
 function isMeshClassName(className: string) {
     return (
@@ -272,7 +273,7 @@ export class FlowGraphContext {
      * @returns
      */
     public static Parse(
-        serializationObject: any = {},
+        serializationObject: ISerializedFlowGraphContext,
         graph: FlowGraph,
         valueParseFunction: (key: string, serializationObject: any, scene: Scene) => any = defaultValueParseFunction
     ): FlowGraphContext {

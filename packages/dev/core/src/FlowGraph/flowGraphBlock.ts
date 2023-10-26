@@ -4,7 +4,7 @@ import type { FlowGraphContext } from "./flowGraphContext";
 import { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import type { RichType } from "./flowGraphRichTypes";
 import { Tools } from "core/Misc/tools";
-import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
+import type { ISerializedFlowGraphBlock } from "./typeDefinitions";
 
 export interface IFlowGraphBlockConfiguration {
     name?: string;
@@ -87,23 +87,15 @@ export class FlowGraphBlock {
         return "FGBlock";
     }
 
-    public static Parse(serializationObject: any): FlowGraphBlock {
+    public static Parse(serializationObject: ISerializedFlowGraphBlock): FlowGraphBlock {
         const classType = Tools.Instantiate(serializationObject.className);
-        const obj = new classType(serializationObject.config);
+        const obj = new classType(serializationObject.config) as FlowGraphBlock;
         obj.uniqueId = serializationObject.uniqueId;
         for (let i = 0; i < serializationObject.dataInputs.length; i++) {
             obj.dataInputs[i].deserialize(serializationObject.dataInputs[i]);
         }
         for (let i = 0; i < serializationObject.dataOutputs.length; i++) {
             obj.dataOutputs[i].deserialize(serializationObject.dataOutputs[i]);
-        }
-        if (obj instanceof FlowGraphExecutionBlock) {
-            for (let i = 0; i < serializationObject.signalInputs.length; i++) {
-                obj.signalInputs[i].deserialize(serializationObject.signalInputs[i]);
-            }
-            for (let i = 0; i < serializationObject.signalOutputs.length; i++) {
-                obj.signalOutputs[i].deserialize(serializationObject.signalOutputs[i]);
-            }
         }
         return obj;
     }
