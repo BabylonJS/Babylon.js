@@ -58,7 +58,12 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
      * @param _options mesh options
      * @param _pathOptions used internaly when parsing a serialized GreasedLineRibbonMesh
      */
-    constructor(public readonly name: string, scene: Scene, _options: GreasedLineMeshOptions, _pathOptions?: { options: GreasedLineMeshOptions; pathCount: number }[]) {
+    constructor(
+        public readonly name: string,
+        scene: Scene,
+        _options: GreasedLineMeshOptions,
+        _pathOptions?: { options: GreasedLineMeshOptions; pathCount: number }[]
+    ) {
         super(name, scene, _options);
 
         if (!_options.ribbonOptions) {

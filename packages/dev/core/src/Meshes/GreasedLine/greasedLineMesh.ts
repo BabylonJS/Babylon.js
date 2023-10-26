@@ -40,7 +40,11 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
      * @param scene the scene
      * @param _options mesh options
      */
-    constructor(public readonly name: string, scene: Scene, _options: GreasedLineMeshOptions) {
+    constructor(
+        public readonly name: string,
+        scene: Scene,
+        _options: GreasedLineMeshOptions
+    ) {
         super(name, scene, _options);
 
         this._previousAndSide = [];

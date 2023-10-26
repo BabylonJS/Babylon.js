@@ -224,7 +224,10 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
      * @param _xrSessionManager the session manager for this module
      * @param _options read-only options to be used in this module
      */
-    constructor(_xrSessionManager: WebXRSessionManager, private readonly _options: IWebXRNearInteractionOptions) {
+    constructor(
+        _xrSessionManager: WebXRSessionManager,
+        private readonly _options: IWebXRNearInteractionOptions
+    ) {
         super(_xrSessionManager);
         this._scene = this._xrSessionManager.scene;
         if (this._options.nearInteractionControllerMode === undefined) {

@@ -48,7 +48,10 @@ export class PostProcessRenderPipeline {
      * @param _engine engine to add the pipeline to
      * @param name name of the pipeline
      */
-    constructor(private _engine: Engine, name: string) {
+    constructor(
+        private _engine: Engine,
+        name: string
+    ) {
         this._name = name;
 
         this._renderEffects = {};

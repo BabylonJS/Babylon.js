@@ -52,7 +52,11 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public connectedPointIds: any[] = [];
 
-    public constructor(name: string, _connectionType: FlowGraphConnectionType, /* @internal */ public _ownerBlock: BlockT) {
+    public constructor(
+        name: string,
+        _connectionType: FlowGraphConnectionType,
+        /* @internal */ public _ownerBlock: BlockT
+    ) {
         this.name = name;
         this._connectionType = _connectionType;
     }

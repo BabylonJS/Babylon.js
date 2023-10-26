@@ -7,7 +7,10 @@ import { Color3, Color4 } from "../Maths/math.color";
  * @experimental
  */
 export class RichType<T> {
-    constructor(public typeName: string, public defaultValue: T) {}
+    constructor(
+        public typeName: string,
+        public defaultValue: T
+    ) {}
 
     serialize(serializationObject: any) {
         serializationObject.typeName = this.typeName;
