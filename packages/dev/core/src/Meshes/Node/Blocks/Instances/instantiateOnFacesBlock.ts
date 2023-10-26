@@ -5,7 +5,7 @@ import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryC
 import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import type { INodeGeometryExecutionContext } from "../../Interfaces/nodeGeometryExecutionContext";
 import type { VertexData } from "../../../mesh.vertexData";
-import { Vector3 } from "../../../../Maths/math.vector";
+import { Vector2, Vector3 } from "../../../../Maths/math.vector";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../../Decorators/nodeDecorator";
 import type { Nullable } from "../../../../types";
 import type { INodeGeometryInstancingContext } from "../../Interfaces/nodeGeometryInstancingContext";
@@ -18,11 +18,15 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
     private _currentFaceIndex: number;
     private _currentLoopIndex: number;
     private _currentPosition = new Vector3();
+    private _currentUV = new Vector2();
     private _vertex0 = new Vector3();
     private _vertex1 = new Vector3();
     private _vertex2 = new Vector3();
     private _tempVector0 = new Vector3();
     private _tempVector1 = new Vector3();
+    private _uv0 = new Vector2();
+    private _uv1 = new Vector2();
+    private _uv2 = new Vector2();
 
     /**
      * Gets or sets a boolean indicating that this block can evaluate context
@@ -99,6 +103,14 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
         this._tempVector0.normalize();
         this._tempVector1.normalize();
         return Vector3.Cross(this._tempVector1, this._tempVector0);
+    }
+
+    /**
+     * Gets the value associated with a contextual UV1 se
+     * @returns the value associated with the source
+     */
+    public getOverrideUVs1ContextualValue() {
+        return this._currentUV;
     }
 
     /**
@@ -185,16 +197,26 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
             this._currentLoopIndex = 0;
 
             for (this._currentFaceIndex = 0; this._currentFaceIndex < faceCount; this._currentFaceIndex++) {
-                // Extract face vertices
-                this._vertex0.fromArray(this._vertexData.positions, this._vertexData.indices[this._currentFaceIndex * 3] * 3);
-                this._vertex1.fromArray(this._vertexData.positions, this._vertexData.indices[this._currentFaceIndex * 3 + 1] * 3);
-                this._vertex2.fromArray(this._vertexData.positions, this._vertexData.indices[this._currentFaceIndex * 3 + 2] * 3);
-
                 accumulatedCount += instancePerFace;
                 const countPerFace = (accumulatedCount | 0) - totalDone;
 
                 if (countPerFace < 1) {
                     continue;
+                }
+
+                const faceID0 = this._vertexData.indices[this._currentFaceIndex * 3];
+                const faceID1 = this._vertexData.indices[this._currentFaceIndex * 3 + 1];
+                const faceID2 = this._vertexData.indices[this._currentFaceIndex * 3 + 2];
+
+                // Extract face vertices
+                this._vertex0.fromArray(this._vertexData.positions, faceID0 * 3);
+                this._vertex1.fromArray(this._vertexData.positions, faceID1 * 3);
+                this._vertex2.fromArray(this._vertexData.positions, faceID2 * 3);
+
+                if (this._vertexData.uvs) {
+                    this._uv0.fromArray(this._vertexData.uvs, faceID0 * 2);
+                    this._uv1.fromArray(this._vertexData.uvs, faceID1 * 2);
+                    this._uv2.fromArray(this._vertexData.uvs, faceID2 * 2);
                 }
 
                 for (let faceDispatchCount = 0; faceDispatchCount < countPerFace; faceDispatchCount++) {
@@ -220,6 +242,10 @@ export class InstantiateOnFacesBlock extends NodeGeometryBlock implements INodeG
                         s * this._vertex0.y + t * this._vertex1.y + u * this._vertex2.y,
                         s * this._vertex0.z + t * this._vertex1.z + u * this._vertex2.z
                     );
+
+                    if (this._vertexData.uvs) {
+                        this._currentUV.set(s * this._uv0.x + t * this._uv1.x + u * this._uv2.x, s * this._uv0.y + t * this._uv1.y + u * this._uv2.y);
+                    }
 
                     // Clone the instance
                     instanceGeometry = this.instance.getConnectedValue(state) as VertexData;
