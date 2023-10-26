@@ -90,6 +90,11 @@ export class FlowGraphContext {
      * These are blocks that have currently pending tasks/listeners that need to be cleaned up.
      */
     private _pendingBlocks: FlowGraphAsyncExecutionBlock[] = [];
+    /**
+     * A monotonically increasing ID for each execution.
+     * Incremented for every block executed.
+     */
+    private _executionId = 0;
 
     constructor(params: IFlowGraphContextConfiguration) {
         this._configuration = params;
@@ -241,6 +246,17 @@ export class FlowGraphContext {
             block._cancelPendingTasks(this);
         }
         this._pendingBlocks.length = 0;
+    }
+
+    /**
+     * @internal
+     */
+    public _increaseExecutionId() {
+        this._executionId++;
+    }
+
+    public get executionId() {
+        return this._executionId;
     }
 
     /**

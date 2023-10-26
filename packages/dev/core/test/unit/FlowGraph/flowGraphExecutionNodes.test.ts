@@ -155,7 +155,6 @@ describe("Flow Graph Execution Nodes", () => {
         const sceneReady = new FlowGraphSceneReadyEventBlock();
         flowGraph.addEventBlock(sceneReady);
 
-        debugger;
         const switchBlock = new FlowGraphSwitchBlock({ cases: [1, 2, 3] });
         sceneReady.onDone.connectTo(switchBlock.onStart);
         switchBlock.selection.setValue(2, flowGraphContext);
