@@ -5,6 +5,7 @@ import { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import type { RichType } from "./flowGraphRichTypes";
 import { Tools } from "core/Misc/tools";
 import type { ISerializedFlowGraphBlock } from "./typeDefinitions";
+import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 
 export interface IFlowGraphBlockConfiguration {
     name?: string;
@@ -101,6 +102,14 @@ export class FlowGraphBlock {
             obj.dataOutputs[i].deserialize(serializationObject.dataOutputs[i]);
         }
         obj.metadata = serializationObject.metadata;
+        if (obj instanceof FlowGraphExecutionBlock) {
+            for (let i = 0; i < serializationObject.signalInputs.length; i++) {
+                obj.signalInputs[i].deserialize(serializationObject.signalInputs[i]);
+            }
+            for (let i = 0; i < serializationObject.signalOutputs.length; i++) {
+                obj.signalOutputs[i].deserialize(serializationObject.signalOutputs[i]);
+            }
+        }
         return obj;
     }
 }

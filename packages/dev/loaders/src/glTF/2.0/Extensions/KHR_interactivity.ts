@@ -45,7 +45,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
         const definition = this._loader.gltf.extensions?.KHR_interactivity as IKHRInteractivity;
 
         const json = convertGLTFToJson(definition);
-
+        console.log("json", json);
         const coordinator = new FlowGraphCoordinator({ scene });
         FlowGraph.Parse(json, coordinator);
 

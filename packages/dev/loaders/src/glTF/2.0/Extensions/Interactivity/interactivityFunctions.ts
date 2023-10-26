@@ -1,7 +1,7 @@
 import type { IKHRInteractivity, IKHRInteractivity_Configuration, IKHRInteractivity_Node } from "babylonjs-gltf2interface";
 import type { IFlowGraphBlockConfiguration } from "core/FlowGraph";
 import { FlowGraphLogBlock, FlowGraphSceneReadyEventBlock, FlowGraphSendCustomEventBlock, FlowGraphTimerBlock } from "core/FlowGraph";
-import type { ISerializedFlowGraph, ISerializedFlowGraphConnection, ISerializedFlowGraphContext, ISerializedFlowGraphExecutionBlock } from "core/FlowGraph/typeDefinitions";
+import type { ISerializedFlowGraph, ISerializedFlowGraphBlock, ISerializedFlowGraphConnection, ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
 import { RandomGUID } from "core/Misc";
 
 const gltfToFlowGraphTypeMap: { [key: string]: string } = {
@@ -29,7 +29,7 @@ function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKH
     return converted;
 }
 
-function convertBlock(gltfBlock: IKHRInteractivity_Node, definition: IKHRInteractivity): ISerializedFlowGraphExecutionBlock {
+function convertBlock(gltfBlock: IKHRInteractivity_Node, definition: IKHRInteractivity): ISerializedFlowGraphBlock {
     const className = gltfToFlowGraphTypeMap[gltfBlock.type];
     if (!className) {
         throw new Error(`Unknown block type: ${gltfBlock.type}`);
@@ -62,7 +62,7 @@ export function convertGLTFToJson(gltf: IKHRInteractivity): ISerializedFlowGraph
     };
     const executionContexts = [context];
 
-    const blocksMap: Map<string, ISerializedFlowGraphExecutionBlock> = new Map();
+    const blocksMap: Map<string, ISerializedFlowGraphBlock> = new Map();
 
     // Parse the blocks
     for (const gltfBlock of gltf.nodes) {

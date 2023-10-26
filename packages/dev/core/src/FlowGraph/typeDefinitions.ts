@@ -20,9 +20,6 @@ export interface ISerializedFlowGraphBlock {
     dataInputs: ISerializedFlowGraphConnection[];
     dataOutputs: ISerializedFlowGraphConnection[];
     metadata: any;
-}
-
-export interface ISerializedFlowGraphExecutionBlock extends ISerializedFlowGraphBlock {
     signalInputs: ISerializedFlowGraphConnection[];
     signalOutputs: ISerializedFlowGraphConnection[];
 }

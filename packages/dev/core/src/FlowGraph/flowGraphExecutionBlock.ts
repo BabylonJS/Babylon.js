@@ -3,7 +3,6 @@ import { FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphConnectionType } from "./flowGraphConnection";
 import type { FlowGraphContext } from "./flowGraphContext";
 import { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
-import type { ISerializedFlowGraphExecutionBlock } from "./typeDefinitions";
 
 /**
  * @experimental
@@ -66,16 +65,5 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
 
     public getClassName(): string {
         return "FGExecutionBlock";
-    }
-
-    public static Parse(serializationObject: ISerializedFlowGraphExecutionBlock) {
-        const block = FlowGraphBlock.Parse(serializationObject) as FlowGraphExecutionBlock;
-        for (let i = 0; i < serializationObject.signalInputs.length; i++) {
-            block.signalInputs[i].deserialize(serializationObject.signalInputs[i]);
-        }
-        for (let i = 0; i < serializationObject.signalOutputs.length; i++) {
-            block.signalOutputs[i].deserialize(serializationObject.signalOutputs[i]);
-        }
-        return block;
     }
 }
