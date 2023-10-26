@@ -1,6 +1,83 @@
 {
-    "fromTag": "6.25.0",
+    "fromTag": "6.25.1",
     "changelog": {
+        "6.26.0": [
+            {
+                "pr": "14467",
+                "title": "Fix transform node world space rotation when parent has negative world matrix determinant",
+                "description": "https://forum.babylonjs.com/t/unexpected-behaviour-when-rotating-a-mesh-in-world-space/43298/8\r\n\r\nPlayground to try out: https://playground.babylonjs.com/#2GVE4L#40 (both buttons should rotate in the same direction)",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/transformNode.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14465",
+                "title": "fix: missing export for public property type",
+                "description": "I'm unable to build my project with the missing type.\r\nhttps://forum.babylonjs.com/t/public-property-type-not-exported/45169/5",
+                "author": {
+                    "name": "brianzinn",
+                    "url": "https://github.com/brianzinn"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/camera.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14463",
+                "title": "CreateScreenshotUsingRenderTarget: Render to texture only when texture and camera are ready",
+                "description": "See https://forum.babylonjs.com/t/screenshot-with-post-process-not-includes-meshes/45168\r\n\r\nChecking `camera.isReady(true)` make sure that post-processes are ready before going on.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/screenshotTools.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14460",
+                "title": "GRL - instancing support",
+                "description": null,
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLinePluginMaterial.ts",
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLineSimpleMaterial.ts",
+                    "packages/dev/core/src/Shaders/greasedLine.vertex.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14457",
+                "title": "Function to add element and all its children to AssetContainer",
+                "description": "Fixes https://github.com/BabylonJS/ThePirateCove/issues/663\r\n\r\nThe function `addAllAssetsToContainer` receives a Node as argument and adds that node and all its children and derived elements (such as materials and skeletons) to an asset container. It is intended to work as a utility function used after loading a mesh with AssetsManager, for example. Usage example on: #TLFUIB#1",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/assetContainer.ts"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            }
+        ],
         "6.25.1": [
             {
                 "pr": "14464",
