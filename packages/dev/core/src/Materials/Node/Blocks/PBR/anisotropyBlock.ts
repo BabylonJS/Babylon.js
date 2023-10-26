@@ -165,8 +165,8 @@ export class AnisotropyBlock extends NodeMaterialBlock {
                 mat3 TBN = vTBN;
             #else
                 mat3 TBN = cotangent_frame(${worldNormal.associatedVariableName + ".xyz"}, ${"v_" + worldPosition.associatedVariableName + ".xyz"}, ${
-            uv.isConnected ? uv.associatedVariableName : "vec2(0.)"
-        }, vec2(1., 1.));
+                    uv.isConnected ? uv.associatedVariableName : "vec2(0.)"
+                }, vec2(1., 1.));
             #endif\n`;
 
         state._emitFunctionFromInclude("bumpFragmentMainFunctions", comments, {

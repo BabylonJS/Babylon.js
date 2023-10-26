@@ -48,7 +48,10 @@ export class RequestFileError extends RuntimeError {
      * @param message defines the message of the error
      * @param request defines the optional web request
      */
-    constructor(message: string, public request: WebRequest) {
+    constructor(
+        message: string,
+        public request: WebRequest
+    ) {
         super(message, ErrorCodes.RequestFileError);
         this.name = "RequestFileError";
         BaseError._setPrototypeOf(this, RequestFileError.prototype);
@@ -62,7 +65,10 @@ export class ReadFileError extends RuntimeError {
      * @param message defines the message of the error
      * @param file defines the optional file
      */
-    constructor(message: string, public file: File) {
+    constructor(
+        message: string,
+        public file: File
+    ) {
         super(message, ErrorCodes.ReadFileError);
         this.name = "ReadFileError";
         BaseError._setPrototypeOf(this, ReadFileError.prototype);

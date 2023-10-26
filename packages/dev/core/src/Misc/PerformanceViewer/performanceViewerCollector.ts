@@ -91,7 +91,10 @@ export class PerformanceViewerCollector {
      * @param _scene the scene to collect on.
      * @param _enabledStrategyCallbacks the list of data to collect with callbacks for initialization purposes.
      */
-    constructor(private _scene: Scene, _enabledStrategyCallbacks?: IPerformanceViewerStrategyParameter[]) {
+    constructor(
+        private _scene: Scene,
+        _enabledStrategyCallbacks?: IPerformanceViewerStrategyParameter[]
+    ) {
         this.datasets = {
             ids: [],
             data: new DynamicFloat32Array(InitialArraySize),

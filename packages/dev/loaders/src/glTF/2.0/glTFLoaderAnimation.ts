@@ -29,7 +29,12 @@ export function getWeights(target: INode, source: Float32Array, offset: number, 
 /** @internal */
 export abstract class AnimationPropertyInfo {
     /** @internal */
-    public constructor(public readonly type: number, public readonly name: string, public readonly getValue: GetValueFn, public readonly getStride: (target: any) => number) {}
+    public constructor(
+        public readonly type: number,
+        public readonly name: string,
+        public readonly getValue: GetValueFn,
+        public readonly getStride: (target: any) => number
+    ) {}
 
     protected _buildAnimation(name: string, fps: number, keys: any[]): Animation {
         const babylonAnimation = new Animation(name, this.name, fps, this.type);

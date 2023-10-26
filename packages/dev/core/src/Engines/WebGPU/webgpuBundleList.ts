@@ -31,7 +31,12 @@ export class WebGPURenderItemViewport implements IWebGPURenderItem {
 
 /** @internal */
 export class WebGPURenderItemScissor implements IWebGPURenderItem {
-    public constructor(public x: number, public y: number, public w: number, public h: number) {}
+    public constructor(
+        public x: number,
+        public y: number,
+        public w: number,
+        public h: number
+    ) {}
 
     public run(renderPass: GPURenderPassEncoder) {
         renderPass.setScissorRect(this.x, this.y, this.w, this.h);

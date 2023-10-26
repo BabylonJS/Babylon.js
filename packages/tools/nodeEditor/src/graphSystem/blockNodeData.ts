@@ -96,7 +96,10 @@ export class BlockNodeData implements INodeData {
         return null;
     }
 
-    public constructor(public data: NodeMaterialBlock, nodeContainer: INodeContainer) {
+    public constructor(
+        public data: NodeMaterialBlock,
+        nodeContainer: INodeContainer
+    ) {
         if (data.inputs) {
             this.data.inputs.forEach((input) => {
                 this._inputs.push(new ConnectionPointPortData(input, nodeContainer));

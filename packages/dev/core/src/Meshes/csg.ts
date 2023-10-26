@@ -93,7 +93,10 @@ class Plane {
      * @param normal The normal for the plane
      * @param w
      */
-    constructor(public normal: Vector3, public w: number) {}
+    constructor(
+        public normal: Vector3,
+        public w: number
+    ) {}
 
     /**
      * `CSG.Plane.EPSILON` is the tolerance used by `splitPolygon()` to decide if a
