@@ -1673,7 +1673,7 @@
         },
         {
             "title": "Screen Space Reflections 2",
-            "playgroundId": "#PIZ1GK#1499",
+            "playgroundId": "#PIZ1GK#1500",
             "renderCount": 5,
             "excludedEngines": ["webgl1"],
             "referenceImage": "Screen-Space-Reflections-2.png"
