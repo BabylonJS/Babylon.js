@@ -5,37 +5,45 @@ import type { FlowGraphContext } from "../../flowGraphContext";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 
+export interface IFlowGraphSendCustomEventBlockConfiguration extends IFlowGraphBlockConfiguration {
+    eventId: string;
+    eventData: string[];
+}
 /**
  * @experimental
  */
 export class FlowGraphSendCustomEventBlock extends FlowGraphWithOnDoneExecutionBlock {
-    /**
-     * Input connection: The id of the event to send.
-     */
-    public readonly eventId: FlowGraphDataConnection<string>;
-    /**
-     * Input connection: The data to send with the event.
-     */
-    public readonly eventData: FlowGraphDataConnection<any>;
-
-    public constructor(config?: IFlowGraphBlockConfiguration) {
+    public eventDatas: FlowGraphDataConnection<any>[] = [];
+    private _eventId: string;
+    private _eventDatas: string[];
+    public constructor(config: IFlowGraphSendCustomEventBlockConfiguration) {
         super(config);
+        this._eventId = config.eventId;
+        this._eventDatas = config.eventData;
+    }
 
-        this.eventId = this._registerDataInput("eventId", RichTypeString);
-        this.eventData = this._registerDataInput("eventData", RichTypeAny);
+    public configure(): void {
+        this.eventDatas = [];
+        for (let i = 0; i < this._eventDatas.length; i++) {
+            const dataName = this._eventDatas[i];
+            const port = this._registerDataInput(dataName, RichTypeAny);
+            this.eventDatas.push(port);
+        }
     }
 
     public _execute(context: FlowGraphContext): void {
-        const eventId = this.eventId.getValue(context);
-        const eventData = this.eventData.getValue(context);
+        const eventId = this._eventId;
+        const eventDatas = this.eventDatas.map((port) => port.getValue(context));
 
-        context.configuration.eventCoordinator.notifyCustomEvent(eventId, eventData);
+        context.configuration.eventCoordinator.notifyCustomEvent(eventId, eventDatas);
 
         this.onDone._activateSignal(context);
     }
 
     public getClassName(): string {
-        return "FGSendCustomEventBlock";
+        return FlowGraphSendCustomEventBlock.ClassName;
     }
+
+    public static ClassName = "FGSendCustomEventBlock";
 }
 RegisterClass("FGSendCustomEventBlock", FlowGraphSendCustomEventBlock);

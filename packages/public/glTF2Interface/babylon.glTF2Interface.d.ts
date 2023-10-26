@@ -1334,7 +1334,7 @@ declare module BABYLON.GLTF2 {
         type: string;
         flows: IKHRInteractivity_Flow[];
         configuration: IKHRInteractivity_Configuration[];
-        parameters: IKHRInteractivity_Parameter[];
+        values: IKHRInteractivity_Value[];
         metadata?: any;
     }
 
@@ -1349,7 +1349,7 @@ declare module BABYLON.GLTF2 {
         value: any;
     }
 
-    interface IKHRInteractivity_Parameter {
+    interface IKHRInteractivity_Value {
         id: string;
         value?: any;
         node?: number;
