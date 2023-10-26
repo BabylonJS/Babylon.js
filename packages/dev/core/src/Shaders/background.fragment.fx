@@ -151,35 +151,34 @@ varying vec3 vNormalW;
         return - b + h;
     }
 
-    vec3 project(vec3 viewDirectionW) {
+    vec3 project(vec3 viewDirectionW, vec3 eyePosition) {
         float radius = projectedGroundInfos.x;
         float height = projectedGroundInfos.y;
 
         // reproject the cube ground to a sky sphere
         // to help with shadows
         // vec3 p = normalize(vPositionW);
-        vec3 camPos = vEyePosition.xyz;
         vec3 camDir = -viewDirectionW;
-        float skySphereDistance = sphereIntersect(camPos, camDir, radius);
-        vec3 skySpherePositionW = camPos + camDir * skySphereDistance;
+        float skySphereDistance = sphereIntersect(eyePosition, camDir, radius);
+        vec3 skySpherePositionW = eyePosition + camDir * skySphereDistance;
 
         vec3 p = normalize(skySpherePositionW);
-        camPos.y -= height;
+        eyePosition.y -= height;
 
         // Let s remove extra conditions in the following block
-        // float intersection = sphereIntersect(camPos, p, radius);
+        // float intersection = sphereIntersect(eyePosition, p, radius);
         // if(intersection > 0.0) {
         //     vec3 h = vec3(0.0, -height, 0.0);
-        //     float intersection2 = diskIntersectWithBackFaceCulling(camPos, p, h, radius);
-        //     p = (camPos + min(intersection, intersection2) * p) / radius;
+        //     float intersection2 = diskIntersectWithBackFaceCulling(eyePosition, p, h, radius);
+        //     p = (eyePosition + min(intersection, intersection2) * p) / radius;
         // } else {
         //     p = vec3(0.0, 1.0, 0.0);
         // }
 
-        float sIntersection = sphereIntersect(camPos, p, radius);
+        float sIntersection = sphereIntersect(eyePosition, p, radius);
         vec3 h = vec3(0.0, -height, 0.0);
-        float dIntersection = diskIntersectWithBackFaceCulling(camPos, p, h, radius);
-        p = (camPos + min(sIntersection, dIntersection) * p);
+        float dIntersection = diskIntersectWithBackFaceCulling(eyePosition, p, h, radius);
+        p = (eyePosition + min(sIntersection, dIntersection) * p);
 
         return p;
     }
@@ -222,7 +221,7 @@ void main(void) {
     vec4 reflectionColor = vec4(1., 1., 1., 1.);
     #ifdef REFLECTION
         #ifdef PROJECTED_GROUND
-            vec3 reflectionVector = project(viewDirectionW);
+            vec3 reflectionVector = project(viewDirectionW, vEyePosition.xyz);
             reflectionVector = vec3(reflectionMatrix * vec4(reflectionVector, 1.));
         #else
             vec3 reflectionVector = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
