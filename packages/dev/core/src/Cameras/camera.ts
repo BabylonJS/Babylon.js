@@ -25,7 +25,10 @@ import type { TargetCamera } from "./targetCamera";
 import type { Ray } from "../Culling/ray";
 import type { ArcRotateCamera } from "./arcRotateCamera";
 
-interface IObliqueParams {
+/**
+ * Oblique projection values
+ */
+export interface IObliqueParams {
     /** The angle of the plane */
     angle: number;
     /** The length of the plane */

@@ -203,6 +203,7 @@ export function CreateScreenshotWithResizeAsync(engine: Engine, camera: Camera, 
  * @param enableStencilBuffer Whether the stencil buffer should be enabled or not (default: false)
  * @param useLayerMask if the camera's layer mask should be used to filter what should be rendered (default: true)
  * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
+ * @param customizeTexture An optional callback that can be used to modify the render target texture before taking the screenshot. This can be used, for instance, to enable camera post-processes before taking the screenshot.
  */
 export function CreateScreenshotUsingRenderTarget(
     engine: Engine,
@@ -216,7 +217,8 @@ export function CreateScreenshotUsingRenderTarget(
     renderSprites = false,
     enableStencilBuffer = false,
     useLayerMask = true,
-    quality?: number
+    quality?: number,
+    customizeTexture?: (texture: RenderTargetTexture) => void
 ): void {
     const { height, width, finalWidth, finalHeight } = _GetScreenshotSize(engine, camera, size);
     const targetTextureSize = { width, height };
@@ -253,36 +255,56 @@ export function CreateScreenshotUsingRenderTarget(
     texture.renderSprites = renderSprites;
     texture.activeCamera = camera;
     texture.forceLayerMaskCheck = useLayerMask;
+    customizeTexture?.(texture);
 
-    const renderToTexture = () => {
-        engine.onEndFrameObservable.addOnce(() => {
-            if (finalWidth === width && finalHeight === height) {
-                texture.readPixels(undefined, undefined, undefined, false)!.then((data) => {
-                    DumpTools.DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
-                    texture.dispose();
-                });
-            } else {
-                ApplyPostProcess("pass", texture.getInternalTexture()!, scene, undefined, undefined, undefined, finalWidth, finalHeight).then((texture) => {
-                    engine._readTexturePixels(texture, finalWidth, finalHeight, -1, 0, null, true, false, 0, 0).then((data) => {
-                        DumpTools.DumpData(finalWidth, finalHeight, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
+    const renderWhenReady = () => {
+        if (texture.isReadyForRendering() && camera.isReady(true)) {
+            engine.onEndFrameObservable.addOnce(() => {
+                if (finalWidth === width && finalHeight === height) {
+                    texture.readPixels(undefined, undefined, undefined, false)!.then((data) => {
+                        DumpTools.DumpData(width, height, data, successCallback as (data: string | ArrayBuffer) => void, mimeType, fileName, true, undefined, quality);
                         texture.dispose();
                     });
-                });
-            }
-        });
+                } else {
+                    ApplyPostProcess("pass", texture.getInternalTexture()!, scene, undefined, undefined, undefined, finalWidth, finalHeight).then((texture) => {
+                        engine._readTexturePixels(texture, finalWidth, finalHeight, -1, 0, null, true, false, 0, 0).then((data) => {
+                            DumpTools.DumpData(
+                                finalWidth,
+                                finalHeight,
+                                data,
+                                successCallback as (data: string | ArrayBuffer) => void,
+                                mimeType,
+                                fileName,
+                                true,
+                                undefined,
+                                quality
+                            );
+                            texture.dispose();
+                        });
+                    });
+                }
+            });
 
+            texture.render(true);
+
+            // re-render the scene after the camera has been reset to the original camera to avoid a flicker that could occur
+            // if the camera used for the RTT rendering stays in effect for the next frame (and if that camera was different from the original camera)
+            scene.incrementRenderId();
+            scene.resetCachedMaterial();
+            engine.setSize(originalSize.width, originalSize.height);
+            camera.getProjectionMatrix(true); // Force cache refresh;
+            scene.render();
+        } else {
+            setTimeout(renderWhenReady, 16);
+        }
+    };
+
+    const renderToTexture = () => {
         // render the RTT
         scene.incrementRenderId();
         scene.resetCachedMaterial();
-        texture.render(true);
 
-        // re-render the scene after the camera has been reset to the original camera to avoid a flicker that could occur
-        // if the camera used for the RTT rendering stays in effect for the next frame (and if that camera was different from the original camera)
-        scene.incrementRenderId();
-        scene.resetCachedMaterial();
-        engine.setSize(originalSize.width, originalSize.height);
-        camera.getProjectionMatrix(true); // Force cache refresh;
-        scene.render();
+        renderWhenReady();
     };
 
     if (antialiasing) {
