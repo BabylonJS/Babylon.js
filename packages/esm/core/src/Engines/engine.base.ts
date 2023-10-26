@@ -777,7 +777,16 @@ export function setSize(engineState: IBaseEnginePublic, width: number, height: n
  */
 export function getEmptyTexture(engineState: IBaseEnginePublic, { createRawTexture }: Pick<IRawTextureEngineExtension, "createRawTexture">): Nullable<InternalTexture> {
     if (!(engineState as BaseEngineStateFull)._emptyTexture) {
-        (engineState as BaseEngineStateFull)._emptyTexture = createRawTexture(engineState, new Uint8Array(4), 1, 1, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+        (engineState as BaseEngineStateFull)._emptyTexture = createRawTexture(
+            engineState,
+            new Uint8Array(4),
+            1,
+            1,
+            Constants.TEXTUREFORMAT_RGBA,
+            false,
+            false,
+            Constants.TEXTURE_NEAREST_SAMPLINGMODE
+        );
     }
     return (engineState as BaseEngineStateFull)._emptyTexture;
 }
@@ -1865,4 +1874,24 @@ export function releaseRenderPassId(engineState: IBaseEnginePublic, id: number):
             }
         }
     }
+}
+
+/**
+ * Enable or disable color writing
+ * @param enable defines the state to set
+ */
+export function setColorWrite(engineState: IBaseEnginePublic, enable: boolean): void {
+    const fes = engineState as BaseEngineStateFull;
+    if (enable !== fes._colorWrite) {
+        fes._colorWriteChanged = true;
+        fes._colorWrite = enable;
+    }
+}
+
+/**
+ * Gets a boolean indicating if color writing is enabled
+ * @returns the current color writing state
+ */
+export function getColorWrite(engineState: IBaseEnginePublic): boolean {
+    return (engineState as BaseEngineStateFull)._colorWrite;
 }

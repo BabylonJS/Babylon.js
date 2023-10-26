@@ -215,6 +215,8 @@ export function initWebGLEngineState(
     ps._rescalePostProcess = null;
     ps._currentBufferPointers = [];
     ps._drawCalls = new PerfCounter();
+    ps._currentInstanceLocations = [];
+    ps._currentInstanceBuffers = [];
 
     ps._stencilStateComposer.stencilGlobal = ps._stencilState;
 
@@ -3278,7 +3280,9 @@ function _setTexture(
             internalTexture._cachedCoordinatesMode = texture.coordinatesMode;
 
             const textureWrapMode =
-                texture.coordinatesMode !== Constants.TEXTURE_CUBIC_MODE && texture.coordinatesMode !== Constants.TEXTURE_SKYBOX_MODE ? Constants.TEXTURE_WRAP_ADDRESSMODE : Constants.TEXTURE_CLAMP_ADDRESSMODE;
+                texture.coordinatesMode !== Constants.TEXTURE_CUBIC_MODE && texture.coordinatesMode !== Constants.TEXTURE_SKYBOX_MODE
+                    ? Constants.TEXTURE_WRAP_ADDRESSMODE
+                    : Constants.TEXTURE_CLAMP_ADDRESSMODE;
             texture.wrapU = textureWrapMode;
             texture.wrapV = textureWrapMode;
         }
