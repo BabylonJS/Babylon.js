@@ -5,7 +5,7 @@ import { GUIEditor } from "gui-editor/guiEditor";
 
 declare let BABYLON: any;
 
-let editorUrl = `v${Engine.Version}/guiEditor/babylon.guiEditor.js`;
+let editorUrl = `https://cdn.babylonjs.com/v${Engine.Version}/guiEditor/babylon.guiEditor.js`;
 // eslint-disable-next-line @typescript-eslint/naming-convention
 let guiEditorContainer: { GUIEditor: typeof GUIEditor };
 /** Get the inspector from bundle or global */

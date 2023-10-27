@@ -114,7 +114,7 @@ export const FileToolsOptions: {
      * Gets or sets the base URL to use to load scripts
      * Used for both JS and WASM
      */
-    ScriptBaseUrl: "https://cdn.babylonjs.com/",
+    ScriptBaseUrl: "",
     /**
      * Gets or sets a function used to pre-process script url before using them to load.
      * Used for both JS and WASM

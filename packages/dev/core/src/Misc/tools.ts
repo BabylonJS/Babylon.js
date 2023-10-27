@@ -486,6 +486,11 @@ export class Tools {
     }
 
     /**
+     * @internal
+     */
+    public static _DefaultCdnUrl = "https://cdn.babylonjs.com/";
+
+    /**
      * Get a script URL including preprocessing
      * @param scriptUrl the script Url to process
      * @returns a modified URL to use
@@ -494,10 +499,11 @@ export class Tools {
         if (!scriptUrl) {
             return "";
         }
-        // check if the URL is absolute or relative. Otherwise, append the base URL
-        if (!Tools.IsAbsoluteUrl(scriptUrl)) {
+        // if the base URL was set, and the script Url is an absolute path change the default path
+        if(Tools.ScriptBaseUrl && scriptUrl.startsWith(Tools._DefaultCdnUrl)) {
+            // change the default host, which is https://cdn.babylonjs.com with the one defined
             const baseUrl = Tools.ScriptBaseUrl[Tools.ScriptBaseUrl.length - 1] === "/" ? Tools.ScriptBaseUrl : Tools.ScriptBaseUrl + "/";
-            scriptUrl = baseUrl + (scriptUrl[0] === "/" ? scriptUrl.substring(1) : scriptUrl);
+            scriptUrl = scriptUrl.replace(Tools._DefaultCdnUrl, baseUrl);
         }
 
         // run the preprocessor

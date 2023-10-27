@@ -222,7 +222,7 @@ export class DebugLayer {
      * By default it uses the babylonjs CDN.
      * @ignoreNaming
      */
-    public static InspectorURL = `v${Engine.Version}/inspector/babylon.inspector.bundle.js`;
+    public static InspectorURL = `https://cdn.babylonjs.com/v${Engine.Version}/inspector/babylon.inspector.bundle.js`;
 
     private _scene: Scene;
 
