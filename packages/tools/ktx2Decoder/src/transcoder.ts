@@ -18,7 +18,7 @@ export class Transcoder {
     public static WasmBaseUrl = "";
 
     public static GetWasmUrl(wasmUrl: string) {
-        if(Transcoder.WasmBaseUrl && wasmUrl.startsWith("https://cdn.babylonjs.com/")){
+        if (Transcoder.WasmBaseUrl && wasmUrl.startsWith("https://cdn.babylonjs.com/")) {
             wasmUrl = wasmUrl.replace("https://cdn.babylonjs.com/", Transcoder.WasmBaseUrl);
         }
         return wasmUrl;

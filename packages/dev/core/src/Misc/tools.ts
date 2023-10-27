@@ -500,7 +500,7 @@ export class Tools {
             return "";
         }
         // if the base URL was set, and the script Url is an absolute path change the default path
-        if(Tools.ScriptBaseUrl && scriptUrl.startsWith(Tools._DefaultCdnUrl)) {
+        if (Tools.ScriptBaseUrl && scriptUrl.startsWith(Tools._DefaultCdnUrl)) {
             // change the default host, which is https://cdn.babylonjs.com with the one defined
             const baseUrl = Tools.ScriptBaseUrl[Tools.ScriptBaseUrl.length - 1] === "/" ? Tools.ScriptBaseUrl : Tools.ScriptBaseUrl + "/";
             scriptUrl = scriptUrl.replace(Tools._DefaultCdnUrl, baseUrl);
