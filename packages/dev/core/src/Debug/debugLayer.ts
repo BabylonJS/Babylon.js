@@ -262,16 +262,32 @@ export class DebugLayer {
     }
 
     /**
+     * the default configuration of the inspector
+     */
+    public config: IInspectorOptions = {
+        overlay: false,
+        showExplorer: true,
+        showInspector: true,
+        embedMode: false,
+        handleResize: true,
+        enablePopup: true,
+    };
+
+    /**
      * Instantiates a new debug layer.
      * The debug layer (aka Inspector) is the go to tool in order to better understand
      * what is happening in your scene
      * @see https://doc.babylonjs.com/toolsAndResources/inspector
      * @param scene Defines the scene to inspect
+     * @param config the default configuration of the inspector
      */
-    constructor(scene?: Scene) {
+    constructor(scene?: Scene, config?: IInspectorOptions) {
         this._scene = scene || <Scene>EngineStore.LastCreatedScene;
         if (!this._scene) {
             return;
+        }
+        if (config) {
+            this.config = config;
         }
         this._scene.onDisposeObservable.add(() => {
             // Debug layer
@@ -307,12 +323,7 @@ export class DebugLayer {
         }
 
         const userOptions: IInspectorOptions = {
-            overlay: false,
-            showExplorer: true,
-            showInspector: true,
-            embedMode: false,
-            handleResize: true,
-            enablePopup: true,
+            ...this.config,
             ...config,
         };
 
