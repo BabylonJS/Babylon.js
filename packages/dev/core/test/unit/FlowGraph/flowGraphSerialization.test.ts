@@ -194,7 +194,7 @@ describe("Flow Graph Serialization", () => {
         expect(console.log).toHaveBeenCalledWith(42);
     });
 
-    it("Serializes and parses a graph with mesh references", () => {
+    it("Serializes and parses a graph with vector and mesh references", () => {
         const coordinator = new FlowGraphCoordinator({ scene });
         const graph = coordinator.createGraph();
         const context = graph.createContext();

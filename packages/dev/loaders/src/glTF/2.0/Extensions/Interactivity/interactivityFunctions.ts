@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { IKHRInteractivity, IKHRInteractivity_Configuration, IKHRInteractivity_Node } from "babylonjs-gltf2interface";
 import type { IFlowGraphBlockConfiguration } from "core/FlowGraph";
 import {
@@ -12,6 +13,7 @@ import {
 import type { ISerializedFlowGraph, ISerializedFlowGraphBlock, ISerializedFlowGraphConnection, ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
 import { RandomGUID } from "core/Misc";
 import type { GLTFLoader } from "../../glTFLoader";
+import { _parsePath } from "./utils";
 
 const gltfToFlowGraphTypeMap: { [key: string]: string } = {
     "lifecycle/onStart": FlowGraphSceneReadyEventBlock.ClassName,
@@ -36,18 +38,13 @@ function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKH
             converted.eventData = customEvent.values.map((v) => v.id);
         } else if (configObject.id === "path") {
             // Convert from a GLTF path to a reference to the Babylon.js object
-            const pathValue = (configObject.value as string).trim();
-            const regex = /(nodes\/\d+)\/(.*)/gm;
-            const matches = regex.exec(pathValue);
-            // nodes/0
-            // translation
-            if (!matches) {
-                throw new Error(`Invalid path: ${pathValue}`);
+            let pathValue = configObject.value as string;
+            if (!pathValue.startsWith("/")) {
+                pathValue = `/${pathValue}`;
             }
-            const nodePath = matches[1];
-            const nodeAttribute = matches[2];
-            const node = loader._pathToNodesMapping[nodePath];
-            console.log(nodeAttribute, node);
+            const parsedPath = _parsePath("path", pathValue, loader);
+            converted.target = parsedPath.target;
+            converted.path = parsedPath.path;
         } else {
             converted[configObject.id] = configObject.value;
         }
@@ -80,7 +77,14 @@ function convertBlock(gltfBlock: IKHRInteractivity_Node, definition: IKHRInterac
     };
 }
 
+/**
+ * Converts a glTF Interactivity Extension to a serialized flow graph.
+ * @param gltf the interactivity data
+ * @param loader the glTF loader
+ * @returns a serialized flow graph
+ */
 export function convertGLTFToJson(gltf: IKHRInteractivity, loader: GLTFLoader): ISerializedFlowGraph {
+    // create an empty serialized context to store the values of the connections
     const context: ISerializedFlowGraphContext = {
         uniqueId: RandomGUID(),
         _userVariables: {},
@@ -88,9 +92,10 @@ export function convertGLTFToJson(gltf: IKHRInteractivity, loader: GLTFLoader): 
     };
     const executionContexts = [context];
 
+    // map from uniqueId of the block to the block
     const blocksMap: Map<string, ISerializedFlowGraphBlock> = new Map();
 
-    // Parse the blocks
+    // Parse the blocks and add them to the map
     for (const gltfBlock of gltf.nodes) {
         const block = convertBlock(gltfBlock, gltf, loader);
         blocksMap.set(block.uniqueId, block);
@@ -100,40 +105,49 @@ export function convertGLTFToJson(gltf: IKHRInteractivity, loader: GLTFLoader): 
     // Parse the connections
     for (let i = 0; i < gltf.nodes.length; i++) {
         const gltfBlock = gltf.nodes[i];
+        // get the block created for the flow graph
         const fgBlock = blocksMap.get(gltfBlock.id.toString())!;
         const gltfFlows = gltfBlock.flows ?? [];
+        // for each output flow of the gltf block
         for (const flow of gltfFlows) {
             const nodeOutName = flow.id;
+            // create an output connection for the flow graph block
             const socketOut: ISerializedFlowGraphConnection = {
                 uniqueId: RandomGUID(),
                 name: nodeOutName,
-                _connectionType: 1, // Output todo: see why the enum is failing
+                _connectionType: 1, // Output
                 connectedPointIds: [],
             };
             fgBlock.signalOutputs.push(socketOut);
+            // get the input node of this flow
             const nodeInId = flow.node;
             const nodeInSocketName = flow.socket;
+            // find the corresponding flow graph node
             const nodeIn = blocksMap.get(nodeInId.toString());
             if (!nodeIn) {
                 throw new Error(`Could not find node with id ${nodeInId}`);
             }
+            // in all of the flow graph input connections, find the one with the same name as the socket
             let socketIn = nodeIn.signalInputs.find((s) => s.name === nodeInSocketName);
-            // if the socket doesn't exist, create it
+            // if the socket doesn't exist, create the input socket for the connection
             if (!socketIn) {
                 socketIn = {
                     uniqueId: RandomGUID(),
                     name: nodeInSocketName,
-                    _connectionType: 0, // input: todo see why enum is failing
+                    _connectionType: 0, // Input
                     connectedPointIds: [],
                 };
                 nodeIn.signalInputs.push(socketIn);
             }
+            // connect the sockets
             socketIn.connectedPointIds.push(socketOut.uniqueId);
             socketOut.connectedPointIds.push(socketIn.uniqueId);
         }
+        // for each input value of the gltf block
         const gltfValues = gltfBlock.values ?? [];
         for (const value of gltfValues) {
             const socketInName = value.id;
+            // create an input data connection for the flow graph block
             const socketIn: ISerializedFlowGraphConnection = {
                 uniqueId: RandomGUID(),
                 name: socketInName,
@@ -142,10 +156,13 @@ export function convertGLTFToJson(gltf: IKHRInteractivity, loader: GLTFLoader): 
             };
             fgBlock.dataInputs.push(socketIn);
             if (value.value) {
+                // if the value is set on the socket itself, store it in the context
                 context._connectionValues[socketIn.uniqueId] = value.value;
             } else if (value.node !== undefined && value.socket !== undefined) {
+                // if the value is connected with the output data of another socket, connect the two
                 const nodeOutId = value.node;
                 const nodeOutSocketName = value.socket;
+                // find the flow graph node that owns that output socket
                 const nodeOut = blocksMap.get(nodeOutId.toString());
                 if (!nodeOut) {
                     throw new Error(`Could not find node with id ${nodeOutId}`);
@@ -156,11 +173,12 @@ export function convertGLTFToJson(gltf: IKHRInteractivity, loader: GLTFLoader): 
                     socketOut = {
                         uniqueId: RandomGUID(),
                         name: nodeOutSocketName,
-                        _connectionType: 1, // Output todo: see why the enum is failing
+                        _connectionType: 1, // Output
                         connectedPointIds: [],
                     };
                     nodeOut.dataOutputs.push(socketOut);
                 }
+                // connect the sockets
                 socketIn.connectedPointIds.push(socketOut.uniqueId);
                 socketOut.connectedPointIds.push(socketIn.uniqueId);
             } else {
