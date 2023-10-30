@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Ground Projection",
+            "playgroundId": "#XG08YC#0",
+            "referenceImage": "groundProjection.png"
+        },
+        {
             "title": "Node geometry",
             "playgroundId": "#WGZLGJ#9152",
             "referenceImage": "nodeGeometry.png"

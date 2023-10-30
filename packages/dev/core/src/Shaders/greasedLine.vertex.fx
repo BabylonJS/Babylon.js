@@ -42,11 +42,7 @@ void main() {
         vec3 grlNext = grl_nextAndCounters.xyz;
         grlCounters = grl_nextAndCounters.w;
 
-        #ifdef INSTANCES
-            mat4 grlMatrix = viewProjection * finalWorld ;
-        #else
-         mat4 grlMatrix = viewProjection * world ;
-        #endif
+        mat4 grlMatrix = viewProjection * finalWorld ;
 
         vec3 grlPositionOffset = grl_offsets;
         vec4 grlFinalPosition = grlMatrix * vec4( position + grlPositionOffset , 1.0 );
