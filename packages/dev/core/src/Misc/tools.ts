@@ -488,7 +488,7 @@ export class Tools {
     /**
      * @internal
      */
-    public static _DefaultCdnUrl = "https://cdn.babylonjs.com/";
+    public static _DefaultCdnUrl = "https://cdn.babylonjs.com";
 
     /**
      * Get a script URL including preprocessing
@@ -502,7 +502,9 @@ export class Tools {
         // if the base URL was set, and the script Url is an absolute path change the default path
         if (Tools.ScriptBaseUrl && scriptUrl.startsWith(Tools._DefaultCdnUrl)) {
             // change the default host, which is https://cdn.babylonjs.com with the one defined
-            const baseUrl = Tools.ScriptBaseUrl[Tools.ScriptBaseUrl.length - 1] === "/" ? Tools.ScriptBaseUrl : Tools.ScriptBaseUrl + "/";
+            // make sure no trailing slash is present
+
+            const baseUrl = Tools.ScriptBaseUrl[Tools.ScriptBaseUrl.length - 1] === "/" ? Tools.ScriptBaseUrl.substring(0, Tools.ScriptBaseUrl.length - 1) : Tools.ScriptBaseUrl;
             scriptUrl = scriptUrl.replace(Tools._DefaultCdnUrl, baseUrl);
         }
 

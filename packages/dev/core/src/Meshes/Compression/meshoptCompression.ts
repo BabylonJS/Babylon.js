@@ -55,7 +55,7 @@ export class MeshoptCompression implements IDisposable {
      */
     public static Configuration: IMeshoptCompressionConfiguration = {
         decoder: {
-            url: "https://cdn.babylonjs.com/meshopt_decoder.js",
+            url: `${Tools._DefaultCdnUrl}/meshopt_decoder.js`,
         },
     };
 
