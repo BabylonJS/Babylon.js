@@ -155,12 +155,12 @@ export class GLTFValidation {
                 worker.addEventListener("error", onError);
                 worker.addEventListener("message", onMessage);
 
-                worker.postMessage({ id: "init", url: this.Configuration.url });
+                worker.postMessage({ id: "init", url: Tools.GetBabylonScriptURL(this.Configuration.url) });
                 worker.postMessage({ id: "validate", data: dataCopy, rootUrl: rootUrl, fileName: fileName });
             });
         } else {
             if (!this._LoadScriptPromise) {
-                this._LoadScriptPromise = Tools.LoadScriptAsync(this.Configuration.url);
+                this._LoadScriptPromise = Tools.LoadBabylonScriptAsync(this.Configuration.url);
             }
 
             return this._LoadScriptPromise.then(() => {
