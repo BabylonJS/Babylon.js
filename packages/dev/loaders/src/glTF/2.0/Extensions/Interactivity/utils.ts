@@ -1,4 +1,25 @@
+import {
+    FlowGraphSceneReadyEventBlock,
+    FlowGraphLogBlock,
+    FlowGraphTimerBlock,
+    FlowGraphSendCustomEventBlock,
+    FlowGraphSequenceBlock,
+    FlowGraphGetPropertyBlock,
+    FlowGraphSetPropertyBlock,
+    FlowGraphAddBlock,
+} from "core/FlowGraph";
 import type { GLTFLoader } from "../../glTFLoader";
+
+export const gltfToFlowGraphTypeMap: { [key: string]: string } = {
+    "lifecycle/onStart": FlowGraphSceneReadyEventBlock.ClassName,
+    log: FlowGraphLogBlock.ClassName,
+    "flow/delay": FlowGraphTimerBlock.ClassName,
+    "customEvent/send": FlowGraphSendCustomEventBlock.ClassName,
+    "flow/sequence": FlowGraphSequenceBlock.ClassName,
+    "world/get": FlowGraphGetPropertyBlock.ClassName,
+    "world/set": FlowGraphSetPropertyBlock.ClassName,
+    "math/add": FlowGraphAddBlock.ClassName,
+};
 
 const gltfPropertyNameToBabylonPropertyName: any = {
     translation: "position",
