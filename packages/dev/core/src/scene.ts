@@ -89,6 +89,7 @@ import type { Animation } from "./Animations/animation";
 import type { Animatable } from "./Animations/animatable";
 import type { Texture } from "./Materials/Textures/texture";
 import { PointerPickingConfiguration } from "./Inputs/pointerPickingConfiguration";
+import { Logger } from "./Misc/logger";
 
 /**
  * Define an interface for all classes that will hold resources
@@ -5094,6 +5095,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         camera?: Nullable<Camera>,
         trianglePredicate?: TrianglePickingPredicate
     ): PickingInfo {
+        const warn = _WarnImport("Ray", true);
+        if (warn) {
+            Logger.Warn(warn);
+        }
         // Dummy info if picking as not been imported
         return new PickingInfo();
     }
@@ -5107,6 +5112,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @returns a PickingInfo (Please note that some info will not be set like distance, bv, bu and everything that cannot be capture by only using bounding infos)
      */
     public pickWithBoundingInfo(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
+        const warn = _WarnImport("Ray", true);
+        if (warn) {
+            Logger.Warn(warn);
+        }
         // Dummy info if picking as not been imported
         return new PickingInfo();
     }
