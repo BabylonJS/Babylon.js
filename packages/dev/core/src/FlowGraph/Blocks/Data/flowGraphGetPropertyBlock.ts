@@ -21,7 +21,7 @@ export class FlowGraphGetPropertyBlock extends FlowGraphBlock {
         const path = this.config.path;
         const target = this.config.target;
         const value = target[path];
-        this.value.setValue(context, value);
+        this.value.setValue(value, context);
     }
 
     public getClassName(): string {

@@ -1,4 +1,4 @@
-import { Vector2, Vector3, Vector4 } from "../Maths/math.vector";
+import { Quaternion, Vector2, Vector3 } from "../Maths/math.vector";
 import type { Scene } from "../scene";
 
 function isMeshClassName(className: string) {
@@ -15,7 +15,7 @@ function isMeshClassName(className: string) {
 }
 
 function isVectorClass(className: string) {
-    return className === "Vector2" || className === "Vector3" || className === "Vector4";
+    return className === "Vector2" || className === "Vector3" || className === "Vector4" || className === "Quaternion";
 }
 
 export function defaultValueSerializationFunction(key: string, value: any, serializationObject: any) {
@@ -41,7 +41,7 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
         } else if (value.length === 3) {
             finalValue = Vector3.FromArray(value);
         } else if (value.length === 4) {
-            finalValue = Vector4.FromArray(value);
+            finalValue = Quaternion.FromArray(value);
         }
     }
     const className = value?.className;

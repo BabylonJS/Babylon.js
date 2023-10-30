@@ -7,6 +7,8 @@ import {
     FlowGraphGetPropertyBlock,
     FlowGraphSetPropertyBlock,
     FlowGraphAddBlock,
+    FlowGraphSceneTickEventBlock,
+    FlowGraphDoNBlock,
 } from "core/FlowGraph";
 import type { GLTFLoader } from "../../glTFLoader";
 
@@ -19,10 +21,14 @@ export const gltfToFlowGraphTypeMap: { [key: string]: string } = {
     "world/get": FlowGraphGetPropertyBlock.ClassName,
     "world/set": FlowGraphSetPropertyBlock.ClassName,
     "math/add": FlowGraphAddBlock.ClassName,
+    "lifecycle/onTick": FlowGraphSceneTickEventBlock.ClassName,
+    "flow/doN": FlowGraphDoNBlock.ClassName,
 };
 
 const gltfPropertyNameToBabylonPropertyName: any = {
     translation: "position",
+    scale: "scaling",
+    rotation: "rotationQuaternion",
 };
 
 export function _parsePath(context: string, pointer: string, _loader: GLTFLoader): { target: any; path: string } {
