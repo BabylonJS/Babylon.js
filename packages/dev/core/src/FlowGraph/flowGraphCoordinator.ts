@@ -102,4 +102,11 @@ export class FlowGraphCoordinator {
         });
         return coordinator;
     }
+
+    /**
+     * Gets the list of flow graphs
+     */
+    public get flowGraphs() {
+        return this._flowGraphs;
+    }
 }

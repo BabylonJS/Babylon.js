@@ -9,6 +9,8 @@ import {
     FlowGraphAddBlock,
     FlowGraphSceneTickEventBlock,
     FlowGraphDoNBlock,
+    FlowGraphGetVariableBlock,
+    FlowGraphSetVariableBlock,
 } from "core/FlowGraph";
 import type { GLTFLoader } from "../../glTFLoader";
 
@@ -23,6 +25,8 @@ export const gltfToFlowGraphTypeMap: { [key: string]: string } = {
     "math/add": FlowGraphAddBlock.ClassName,
     "lifecycle/onTick": FlowGraphSceneTickEventBlock.ClassName,
     "flow/doN": FlowGraphDoNBlock.ClassName,
+    "variable/get": FlowGraphGetVariableBlock.ClassName,
+    "variable/set": FlowGraphSetVariableBlock.ClassName,
 };
 
 const gltfPropertyNameToBabylonPropertyName: any = {

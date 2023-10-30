@@ -49,9 +49,11 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
         } else if (className === "Quaternion") {
             finalValue = Quaternion.FromArray(valueProperty);
         }
-    }
-    if (isMeshClassName(className)) {
+    } else if (isMeshClassName(className)) {
         finalValue = scene.getMeshByName(intermediateValue.name);
+    } else if (intermediateValue.value !== undefined) {
+        finalValue = intermediateValue.value;
     }
+
     return finalValue;
 }

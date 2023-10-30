@@ -50,6 +50,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
         FlowGraph.Parse(json, coordinator);
 
         coordinator.start();
+        console.log("Graph:", coordinator.flowGraphs[0]);
     }
 }
 

@@ -1,5 +1,11 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { IKHRInteractivity, IKHRInteractivity_Configuration, IKHRInteractivity_Node, IKHRInteractivity_ValueWithMaybeType } from "babylonjs-gltf2interface";
+import type {
+    IKHRInteractivity,
+    IKHRInteractivity_Configuration,
+    IKHRInteractivity_Node,
+    IKHRInteractivity_ValueWithMaybeType,
+    IKHRInteractivity_Variable,
+} from "babylonjs-gltf2interface";
 import type { IFlowGraphBlockConfiguration } from "core/FlowGraph";
 import type { ISerializedFlowGraph, ISerializedFlowGraphBlock, ISerializedFlowGraphConnection, ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
 import { RandomGUID } from "core/Misc";
@@ -38,6 +44,12 @@ function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKH
             }
             converted.eventId = customEvent.id;
             converted.eventData = customEvent.values.map((v) => v.id);
+        } else if (configObject.id === "variable") {
+            const variable = definition.variables[configObject.value];
+            if (!variable) {
+                throw new Error(`Unknown variable: ${configObject.value}`);
+            }
+            converted.variableName = variable.id;
         } else if (configObject.id === "path") {
             // Convert from a GLTF path to a reference to the Babylon.js object
             let pathValue = configObject.value as string;
@@ -188,6 +200,13 @@ export function convertGLTFToJson(gltf: IKHRInteractivity, loader: GLTFLoader): 
             }
         }
         allBlocks.push(fgBlock);
+    }
+
+    // Parse variables
+    for (let i = 0; i < gltf.variables.length; i++) {
+        const variable: IKHRInteractivity_Variable = gltf.variables[i];
+        const variableName = variable.id;
+        context._userVariables[variableName] = convertType(variable as IKHRInteractivity_ValueWithMaybeType, gltf);
     }
     return {
         allBlocks,

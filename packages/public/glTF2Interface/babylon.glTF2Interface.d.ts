@@ -1327,6 +1327,7 @@ declare module BABYLON.GLTF2 {
         nodes: IKHRInteractivity_Node[];
         customEvents: IKHRInteractivity_CustomEvent[];
         types: IKHRInteractivity_Type[];
+        variables: IKHRInteractivity_Variable[];
     }
 
     interface IKHRInteractivity_Node {
@@ -1377,5 +1378,11 @@ declare module BABYLON.GLTF2 {
 
     interface IKHRInteractivity_Type {
         signature: string;
+    }
+
+    interface IKHRInteractivity_Variable {
+        id: string;
+        value: any;
+        type: number;
     }
 }
