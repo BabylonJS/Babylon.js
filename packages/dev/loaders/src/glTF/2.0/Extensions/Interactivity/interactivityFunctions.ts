@@ -1,10 +1,31 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { IKHRInteractivity, IKHRInteractivity_Configuration, IKHRInteractivity_Node } from "babylonjs-gltf2interface";
+import type { IKHRInteractivity, IKHRInteractivity_Configuration, IKHRInteractivity_Node, IKHRInteractivity_ValueWithMaybeType } from "babylonjs-gltf2interface";
 import type { IFlowGraphBlockConfiguration } from "core/FlowGraph";
 import type { ISerializedFlowGraph, ISerializedFlowGraphBlock, ISerializedFlowGraphConnection, ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
 import { RandomGUID } from "core/Misc";
 import type { GLTFLoader } from "../../glTFLoader";
-import { _parsePath, gltfToFlowGraphTypeMap } from "./utils";
+import { _parsePath, gltfToFlowGraphTypeMap, gltfTypeToBabylonType } from "./utils";
+
+function convertType(configObject: IKHRInteractivity_ValueWithMaybeType, definition: IKHRInteractivity) {
+    if (configObject.type !== undefined) {
+        // get the type on the gltf definition
+        const type = definition.types[configObject.type];
+        if (!type) {
+            throw new Error(`Unknown type: ${configObject.type}`);
+        }
+        const signature = type.signature;
+        if (!signature) {
+            throw new Error(`Type ${configObject.type} has no signature`);
+        }
+        const convertedType = gltfTypeToBabylonType[signature];
+        return {
+            value: configObject.value,
+            className: convertedType,
+        };
+    } else {
+        return configObject.value;
+    }
+}
 
 function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKHRInteractivity, loader: GLTFLoader): IFlowGraphBlockConfiguration {
     const converted: IFlowGraphBlockConfiguration = {};
@@ -27,7 +48,7 @@ function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKH
             converted.target = parsedPath.target;
             converted.path = parsedPath.path;
         } else {
-            converted[configObject.id] = configObject.value;
+            converted[configObject.id] = convertType(configObject, definition);
         }
     }
     return converted;
@@ -136,9 +157,9 @@ export function convertGLTFToJson(gltf: IKHRInteractivity, loader: GLTFLoader): 
                 connectedPointIds: [],
             };
             fgBlock.dataInputs.push(socketIn);
-            if (value.value) {
+            if (value.value !== undefined) {
                 // if the value is set on the socket itself, store it in the context
-                context._connectionValues[socketIn.uniqueId] = value.value;
+                context._connectionValues[socketIn.uniqueId] = convertType(value as IKHRInteractivity_ValueWithMaybeType, gltf);
             } else if (value.node !== undefined && value.socket !== undefined) {
                 // if the value is connected with the output data of another socket, connect the two
                 const nodeOutId = value.node;

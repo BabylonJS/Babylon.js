@@ -1344,9 +1344,16 @@ declare module BABYLON.GLTF2 {
         socket: string;
     }
 
+    interface IKHRInteractivity_ValueWithMaybeType {
+        id: string;
+        value: any;
+        type?: number;
+    }
+
     interface IKHRInteractivity_Configuration {
         id: string;
         value: any;
+        type?: number;
     }
 
     interface IKHRInteractivity_Value {
@@ -1354,6 +1361,7 @@ declare module BABYLON.GLTF2 {
         value?: any;
         node?: number;
         socket?: string;
+        type?: number;
     }
 
     interface IKHRInteractivity_CustomEvent {

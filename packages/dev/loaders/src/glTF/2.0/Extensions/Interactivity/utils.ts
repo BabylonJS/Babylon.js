@@ -31,6 +31,12 @@ const gltfPropertyNameToBabylonPropertyName: any = {
     rotation: "rotationQuaternion",
 };
 
+export const gltfTypeToBabylonType: any = {
+    float2: "Vector2",
+    float3: "Vector3",
+    float4: "Vector4",
+};
+
 export function _parsePath(context: string, pointer: string, _loader: GLTFLoader): { target: any; path: string } {
     if (!pointer.startsWith("/")) {
         throw new Error(`${context}: Value (${pointer}) must start with a slash`);
