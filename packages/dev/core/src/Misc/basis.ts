@@ -114,11 +114,11 @@ export const BasisToolsOptions = {
     /**
      * URL to use when loading the basis transcoder
      */
-    JSModuleURL: "basisTranscoder/1/basis_transcoder.js",
+    JSModuleURL: "https://cdn.babylonjs.com/basisTranscoder/1/basis_transcoder.js",
     /**
      * URL to use when loading the wasm module for the transcoder
      */
-    WasmModuleURL: "basisTranscoder/1/basis_transcoder.wasm",
+    WasmModuleURL: "https://cdn.babylonjs.com/basisTranscoder/1/basis_transcoder.wasm",
 };
 
 /**
