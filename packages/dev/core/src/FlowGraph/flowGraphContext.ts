@@ -7,42 +7,7 @@ import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import type { FlowGraphEventCoordinator } from "./flowGraphEventCoordinator";
 import type { FlowGraph } from "./flowGraph";
 import type { ISerializedFlowGraphContext } from "./typeDefinitions";
-
-function isMeshClassName(className: string) {
-    return (
-        className === "Mesh" ||
-        className === "AbstractMesh" ||
-        className === "GroundMesh" ||
-        className === "InstanceMesh" ||
-        className === "LinesMesh" ||
-        className === "GoldbergMesh" ||
-        className === "GreasedLineMesh" ||
-        className === "TrailMesh"
-    );
-}
-
-function defaultValueSerializationFunction(key: string, value: any, serializationObject: any) {
-    if (value?.getClassName && isMeshClassName(value?.getClassName())) {
-        serializationObject[key] = {
-            name: value.name,
-            className: value.getClassName(),
-        };
-    } else {
-        serializationObject[key] = value;
-    }
-}
-
-function defaultValueParseFunction(key: string, serializationObject: any, scene: Scene) {
-    const value = serializationObject[key];
-    let finalValue;
-    const className = value?.className;
-    if (isMeshClassName(className)) {
-        finalValue = scene.getMeshByName(value.name);
-    } else {
-        finalValue = value;
-    }
-    return finalValue;
-}
+import { defaultValueParseFunction, defaultValueSerializationFunction } from "./serialization";
 
 /**
  * Construction parameters for the context.

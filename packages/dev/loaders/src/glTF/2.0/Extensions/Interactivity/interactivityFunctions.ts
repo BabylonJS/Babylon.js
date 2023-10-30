@@ -11,6 +11,7 @@ import {
 } from "core/FlowGraph";
 import type { ISerializedFlowGraph, ISerializedFlowGraphBlock, ISerializedFlowGraphConnection, ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
 import { RandomGUID } from "core/Misc";
+import type { GLTFLoader } from "../../glTFLoader";
 
 const gltfToFlowGraphTypeMap: { [key: string]: string } = {
     "lifecycle/onStart": FlowGraphSceneReadyEventBlock.ClassName,
@@ -22,7 +23,7 @@ const gltfToFlowGraphTypeMap: { [key: string]: string } = {
     "world/set": FlowGraphSetPropertyBlock.ClassName,
 };
 
-function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKHRInteractivity): IFlowGraphBlockConfiguration {
+function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKHRInteractivity, loader: GLTFLoader): IFlowGraphBlockConfiguration {
     const converted: IFlowGraphBlockConfiguration = {};
     const configurationList: IKHRInteractivity_Configuration[] = gltfBlock.configuration ?? [];
     for (const configObject of configurationList) {
@@ -33,6 +34,20 @@ function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKH
             }
             converted.eventId = customEvent.id;
             converted.eventData = customEvent.values.map((v) => v.id);
+        } else if (configObject.id === "path") {
+            // Convert from a GLTF path to a reference to the Babylon.js object
+            const pathValue = (configObject.value as string).trim();
+            const regex = /(nodes\/\d+)\/(.*)/gm;
+            const matches = regex.exec(pathValue);
+            // nodes/0
+            // translation
+            if (!matches) {
+                throw new Error(`Invalid path: ${pathValue}`);
+            }
+            const nodePath = matches[1];
+            const nodeAttribute = matches[2];
+            const node = loader._pathToNodesMapping[nodePath];
+            console.log(nodeAttribute, node);
         } else {
             converted[configObject.id] = configObject.value;
         }
@@ -40,12 +55,12 @@ function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKH
     return converted;
 }
 
-function convertBlock(gltfBlock: IKHRInteractivity_Node, definition: IKHRInteractivity): ISerializedFlowGraphBlock {
+function convertBlock(gltfBlock: IKHRInteractivity_Node, definition: IKHRInteractivity, loader: GLTFLoader): ISerializedFlowGraphBlock {
     const className = gltfToFlowGraphTypeMap[gltfBlock.type];
     if (!className) {
         throw new Error(`Unknown block type: ${gltfBlock.type}`);
     }
-    const config = convertConfiguration(gltfBlock, definition);
+    const config = convertConfiguration(gltfBlock, definition, loader);
     const uniqueId = gltfBlock.id.toString();
     const metadata = gltfBlock.metadata;
     // the data inputs and outputs will be saved at a later step?
@@ -65,7 +80,7 @@ function convertBlock(gltfBlock: IKHRInteractivity_Node, definition: IKHRInterac
     };
 }
 
-export function convertGLTFToJson(gltf: IKHRInteractivity): ISerializedFlowGraph {
+export function convertGLTFToJson(gltf: IKHRInteractivity, loader: GLTFLoader): ISerializedFlowGraph {
     const context: ISerializedFlowGraphContext = {
         uniqueId: RandomGUID(),
         _userVariables: {},
@@ -77,7 +92,7 @@ export function convertGLTFToJson(gltf: IKHRInteractivity): ISerializedFlowGraph
 
     // Parse the blocks
     for (const gltfBlock of gltf.nodes) {
-        const block = convertBlock(gltfBlock, gltf);
+        const block = convertBlock(gltfBlock, gltf, loader);
         blocksMap.set(block.uniqueId, block);
     }
 

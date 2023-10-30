@@ -27,6 +27,7 @@ import { MorphTarget } from "core/Morph/morphTarget";
 import { MorphTargetManager } from "core/Morph/morphTargetManager";
 import type { ISceneLoaderAsyncResult, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
 import type { Scene } from "core/scene";
+import type { Node } from "core/node";
 import type { IProperty } from "babylonjs-gltf2interface";
 import {
     AnimationChannelTargetPath,
@@ -207,6 +208,8 @@ export class GLTFLoader implements IGLTFLoader {
     private _rootBabylonMesh: Nullable<Mesh> = null;
     private _defaultBabylonMaterialData: { [drawMode: number]: Material } = {};
     private readonly _postSceneLoadActions = new Array<() => void>();
+
+    public _pathToNodesMapping: { [path: string]: Node } = {};
 
     private static _RegisteredExtensions: { [name: string]: IRegisteredExtension } = {};
 
@@ -625,6 +628,7 @@ export class GLTFLoader implements IGLTFLoader {
                 promises.push(
                     this.loadNodeAsync(`/nodes/${node.index}`, node, (babylonMesh) => {
                         babylonMesh.parent = this._rootBabylonMesh;
+                        this._pathToNodesMapping[`nodes/${index}`] = babylonMesh;
                     })
                 );
             }

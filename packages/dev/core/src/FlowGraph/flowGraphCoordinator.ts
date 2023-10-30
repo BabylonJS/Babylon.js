@@ -29,16 +29,16 @@ export class FlowGraphCoordinator {
     public readonly eventCoordinator: FlowGraphEventCoordinator;
     private readonly _flowGraphs: FlowGraph[] = [];
 
-    constructor(private _config: IFlowGraphCoordinatorConfiguration) {
+    constructor(public config: IFlowGraphCoordinatorConfiguration) {
         this.eventCoordinator = new FlowGraphEventCoordinator();
 
         // When the scene is disposed, dispose all graphs currently running on it.
-        this._config.scene.onDisposeObservable.add(() => {
+        this.config.scene.onDisposeObservable.add(() => {
             this.dispose();
         });
 
         // Add itself to the SceneCoordinators list for the Inspector.
-        const coordinators = FlowGraphCoordinator.SceneCoordinators.get(this._config.scene) ?? [];
+        const coordinators = FlowGraphCoordinator.SceneCoordinators.get(this.config.scene) ?? [];
         coordinators.push(this);
     }
 
@@ -47,7 +47,7 @@ export class FlowGraphCoordinator {
      * @returns a new flow graph
      */
     createGraph(): FlowGraph {
-        const graph = new FlowGraph({ scene: this._config.scene, eventCoordinator: this.eventCoordinator });
+        const graph = new FlowGraph({ scene: this.config.scene, eventCoordinator: this.eventCoordinator });
         this._flowGraphs.push(graph);
         return graph;
     }
@@ -79,7 +79,7 @@ export class FlowGraphCoordinator {
         this._flowGraphs.length = 0;
 
         // Remove itself from the SceneCoordinators list for the Inspector.
-        const coordinators = FlowGraphCoordinator.SceneCoordinators.get(this._config.scene) ?? [];
+        const coordinators = FlowGraphCoordinator.SceneCoordinators.get(this.config.scene) ?? [];
         const index = coordinators.indexOf(this);
         if (index !== -1) {
             coordinators.splice(index, 1);

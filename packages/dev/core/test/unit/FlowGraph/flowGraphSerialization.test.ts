@@ -5,6 +5,7 @@ import {
     FlowGraph,
     FlowGraphAddNumberBlock,
     FlowGraphBlock,
+    FlowGraphConstantBlock,
     FlowGraphContext,
     FlowGraphCoordinator,
     FlowGraphGetVariableBlock,
@@ -12,6 +13,7 @@ import {
     FlowGraphMultiGateBlock,
     FlowGraphPlayAnimationBlock,
     FlowGraphSceneReadyEventBlock,
+    FlowGraphSetPropertyBlock,
     RichTypeNumber,
     RichTypeVector3,
 } from "core/FlowGraph";
@@ -100,7 +102,7 @@ describe("Flow Graph Serialization", () => {
         expect(serialized.dataOutputs.length).toEqual(1);
         expect(serialized.className).toEqual("FGPlayAnimationBlock");
 
-        const parsed = FlowGraphBlock.Parse(serialized);
+        const parsed = FlowGraphBlock.Parse(serialized, scene);
         expect(parsed.uniqueId).toEqual(block.uniqueId);
         expect(parsed.getClassName()).toEqual("FGPlayAnimationBlock");
         expect(parsed.dataInputs.length).toEqual(6);
@@ -112,7 +114,7 @@ describe("Flow Graph Serialization", () => {
         const multiGateBlock = new FlowGraphMultiGateBlock({ numberOutputFlows: 3, name: "MultiGate" });
         const serialized2: any = {};
         multiGateBlock.serialize(serialized2);
-        const parsed2 = FlowGraphBlock.Parse(serialized2) as any;
+        const parsed2 = FlowGraphBlock.Parse(serialized2, scene) as any;
         expect(parsed2.outFlows.length).toEqual(3);
     });
 
@@ -190,5 +192,31 @@ describe("Flow Graph Serialization", () => {
 
         scene.onReadyObservable.notifyObservers(scene);
         expect(console.log).toHaveBeenCalledWith(42);
+    });
+
+    it("Serializes and parses a graph with mesh references", () => {
+        const coordinator = new FlowGraphCoordinator({ scene });
+        const graph = coordinator.createGraph();
+        const context = graph.createContext();
+
+        const mesh = new Mesh("testMesh", scene);
+
+        const flowGraphSceneReadyBlock = new FlowGraphSceneReadyEventBlock();
+        graph.addEventBlock(flowGraphSceneReadyBlock);
+
+        const setPropertyBlock = new FlowGraphSetPropertyBlock<Mesh, Vector3>({ target: mesh, path: "position" });
+        flowGraphSceneReadyBlock.onDone.connectTo(setPropertyBlock.onStart);
+
+        const constBlock = new FlowGraphConstantBlock<Vector3>({ value: new Vector3(1, 2, 3) });
+        constBlock.output.connectTo(setPropertyBlock.value);
+
+        const serialized: any = {};
+        graph.serialize(serialized);
+
+        const parsed = FlowGraph.Parse(serialized, coordinator);
+        parsed.start();
+
+        scene.onReadyObservable.notifyObservers(scene);
+        expect(mesh.position.asArray()).toEqual([1, 2, 3]);
     });
 });
