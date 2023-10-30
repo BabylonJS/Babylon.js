@@ -165,8 +165,8 @@ export interface WebGPUEngineOptions extends ThinEngineOptions, GPURequestAdapte
 export class WebGPUEngine extends Engine {
     // Default glslang options.
     private static readonly _GLSLslangDefaultOptions: GlslangOptions = {
-        jsPath: "https://cdn.babylonjs.com/glslang/glslang.js",
-        wasmPath: "https://cdn.babylonjs.com/glslang/glslang.wasm",
+        jsPath: `${Tools._DefaultCdnUrl}/glslang/glslang.js`,
+        wasmPath: `${Tools._DefaultCdnUrl}/glslang/glslang.wasm`,
     };
 
     /** true to enable using TintWASM to convert Spir-V to WGSL */

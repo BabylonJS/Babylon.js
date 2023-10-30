@@ -89,7 +89,7 @@ export class GLTFValidation {
      * The configuration. Defaults to `{ url: "https://cdn.babylonjs.com/gltf_validator.js" }`.
      */
     public static Configuration: IGLTFValidationConfiguration = {
-        url: "https://cdn.babylonjs.com/gltf_validator.js",
+        url: `${Tools._DefaultCdnUrl}/gltf_validator.js`,
     };
 
     private static _LoadScriptPromise: Promise<void>;

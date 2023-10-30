@@ -22,8 +22,8 @@ export interface TwgslOptions {
 export class WebGPUTintWASM {
     // Default twgsl options.
     private static readonly _TWgslDefaultOptions: TwgslOptions = {
-        jsPath: "https://cdn.babylonjs.com/twgsl/twgsl.js",
-        wasmPath: "https://cdn.babylonjs.com/twgsl/twgsl.wasm",
+        jsPath: `${Tools._DefaultCdnUrl}/twgsl/twgsl.js`,
+        wasmPath: `${Tools._DefaultCdnUrl}/twgsl/twgsl.wasm`,
     };
 
     public static ShowWGSLShaderCode = false;

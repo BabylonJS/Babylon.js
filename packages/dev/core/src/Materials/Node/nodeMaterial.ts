@@ -201,7 +201,7 @@ export class NodeMaterial extends PushMaterial {
     private _animationFrame = -1;
 
     /** Define the Url to load node editor script */
-    public static EditorURL = `https://cdn.babylonjs.com/v${Engine.Version}/nodeEditor/babylon.nodeEditor.js`;
+    public static EditorURL = `${Tools._DefaultCdnUrl}/v${Engine.Version}/nodeEditor/babylon.nodeEditor.js`;
 
     /** Define the Url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
