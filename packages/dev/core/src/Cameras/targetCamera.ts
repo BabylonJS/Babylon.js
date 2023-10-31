@@ -348,7 +348,7 @@ export class TargetCamera extends Camera {
         const directionMultiplier = this.invertRotation ? -this.inverseRotationSpeed : 1.0;
         const needToMove = this._decideIfNeedsToMove();
         const needToRotate = this.cameraRotation.x || this.cameraRotation.y;
-        const relativeInertia = this._getInertiaRelativeToTime()
+        const relativeInertia = this._getInertiaRelativeToTime();
         const scaleFactor = this._getRelativeScaleFactor(relativeInertia);
 
         this._deferredUpdated = false;

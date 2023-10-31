@@ -346,7 +346,7 @@ export class FlyCamera extends TargetCamera {
         if (this.applyGravity) {
             actualDisplacement.addInPlace(this.getScene().gravity);
         }
-        
+
         // Scale by factor relative to time instead of frame rate
         actualDisplacement.scaleInPlace(scaleFactor);
 

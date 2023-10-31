@@ -1557,7 +1557,7 @@ export class Camera extends Node {
     /**
      * This will return the a ratio of change between a provided relative inertia and the
      * camera's set inertia.
-     * 
+     *
      * For the math on this, inertia is a percentage of how much of camera attribute's offset
      * that we keep after each frame.  Because of this, we will subtract it from 1 (assuming 1
      * represents 100%) to get the percentage we lose each frame.  We then take the relative
