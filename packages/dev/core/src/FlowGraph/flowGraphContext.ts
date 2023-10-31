@@ -6,42 +6,7 @@ import type { FlowGraphBlock } from "./flowGraphBlock";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import type { FlowGraphEventCoordinator } from "./flowGraphEventCoordinator";
 import type { FlowGraph } from "./flowGraph";
-
-function isMeshClassName(className: string) {
-    return (
-        className === "Mesh" ||
-        className === "AbstractMesh" ||
-        className === "GroundMesh" ||
-        className === "InstanceMesh" ||
-        className === "LinesMesh" ||
-        className === "GoldbergMesh" ||
-        className === "GreasedLineMesh" ||
-        className === "TrailMesh"
-    );
-}
-
-function defaultValueSerializationFunction(key: string, value: any, serializationObject: any) {
-    if (value?.getClassName && isMeshClassName(value?.getClassName())) {
-        serializationObject[key] = {
-            name: value.name,
-            className: value.getClassName(),
-        };
-    } else {
-        serializationObject[key] = value;
-    }
-}
-
-function defaultValueParseFunction(key: string, serializationObject: any, scene: Scene) {
-    const value = serializationObject[key];
-    let finalValue;
-    const className = value?.className;
-    if (isMeshClassName(className)) {
-        finalValue = scene.getMeshByName(value.name);
-    } else {
-        finalValue = value;
-    }
-    return finalValue;
-}
+import { defaultValueParseFunction, defaultValueSerializationFunction } from "./serialization";
 
 /**
  * Construction parameters for the context.
@@ -95,6 +60,11 @@ export class FlowGraphContext {
      * Incremented for every block executed.
      */
     private _executionId = 0;
+
+    /**
+     * A mapping of paths to target objects
+     */
+    pathMap: Map<string, any> = new Map();
 
     constructor(params: IFlowGraphContextConfiguration) {
         this._configuration = params;
@@ -274,6 +244,10 @@ export class FlowGraphContext {
         this._connectionValues.forEach((value, key) => {
             valueSerializationFunction(key, value, serializationObject._connectionValues);
         });
+        serializationObject.pathMap = {};
+        this.pathMap.forEach((value, key) => {
+            valueSerializationFunction(key, value, serializationObject.pathMap);
+        });
     }
 
     public getClassName() {
@@ -301,6 +275,10 @@ export class FlowGraphContext {
         for (const key in serializationObject._connectionValues) {
             const value = valueParseFunction(key, serializationObject._connectionValues, result._configuration.scene);
             result._connectionValues.set(key, value);
+        }
+        for (const key in serializationObject.pathMap) {
+            const value = valueParseFunction(key, serializationObject.pathMap, result._configuration.scene);
+            result.pathMap.set(key, value);
         }
 
         return result;

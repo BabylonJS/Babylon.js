@@ -1,4 +1,4 @@
-import { RichTypeString, RichTypeAny } from "../../flowGraphRichTypes";
+import { RichTypeAny, RichTypeNumber } from "../../flowGraphRichTypes";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
@@ -7,30 +7,42 @@ import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 
 /**
  * @experimental
- * Block that sets a property on a target object.
- * TODO: Add support for animating the property.
+ * Configuration for the set property block.
  */
-export class FlowGraphSetPropertyBlock<TargetT, ValueT> extends FlowGraphWithOnDoneExecutionBlock {
+export interface IFlowGraphSetPropertyBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
-     * Input connection: The target object.
+     * The path of the entity whose property will be set. Needs a corresponding
+     * entity on the context.pathMap variable.
      */
-    public readonly target: FlowGraphDataConnection<TargetT>;
+    path: string;
     /**
-     * Input connection: The property to set on the object.
-     * Supports dot notation.
+     * The property to set on the target object.
      */
-    public readonly property: FlowGraphDataConnection<string>;
+    property: string;
+}
+
+const nodeIndexSubString = "{nodeIndex}";
+
+/**
+ * @experimental
+ * Block that sets a property on a target object.
+ */
+export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphWithOnDoneExecutionBlock {
     /**
      * Input connection: The value to set on the property.
      */
     public readonly value: FlowGraphDataConnection<ValueT>;
+    /**
+     * Input connection: an index to use when setting the property. Will be substituted in any path
+     * that contains a value of \{nodeIndex\}.
+     */
+    public readonly nodeIndex: FlowGraphDataConnection<number>;
 
-    public constructor(config?: IFlowGraphBlockConfiguration) {
+    public constructor(public config: IFlowGraphSetPropertyBlockConfiguration) {
         super(config);
 
-        this.target = this._registerDataInput("target", RichTypeAny);
-        this.property = this._registerDataInput("property", RichTypeString);
         this.value = this._registerDataInput("value", RichTypeAny);
+        this.nodeIndex = this._registerDataInput("nodeIndex", RichTypeNumber);
     }
 
     private _setProperty(target: any, property: string, value: any): void {
@@ -44,15 +56,25 @@ export class FlowGraphSetPropertyBlock<TargetT, ValueT> extends FlowGraphWithOnD
         currentTarget[splitProp[splitProp.length - 1]] = value;
     }
 
+    private _getTargetFromPath(context: FlowGraphContext) {
+        const path = this.config.path;
+        let finalPath = path;
+        if (path.indexOf(nodeIndexSubString) !== -1) {
+            const nodeIndex = Math.floor(this.nodeIndex.getValue(context));
+            finalPath = path.replace(nodeIndexSubString, nodeIndex.toString());
+        }
+        return context.pathMap.get(finalPath);
+    }
+
     public _execute(context: FlowGraphContext): void {
-        const target = this.target.getValue(context);
-        const property = this.property.getValue(context);
+        const target = this._getTargetFromPath(context);
+        const property = this.config.property;
         const value = this.value.getValue(context);
 
-        if (target && property && value) {
+        if (target && property) {
             this._setProperty(target, property, value);
         } else {
-            throw new Error("Invalid target, property or value.");
+            throw new Error("Invalid target or property");
         }
 
         this.onDone._activateSignal(context);
