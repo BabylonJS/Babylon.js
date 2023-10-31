@@ -10,7 +10,7 @@ import type { IFlowGraphBlockConfiguration } from "core/FlowGraph";
 import type { ISerializedFlowGraph, ISerializedFlowGraphBlock, ISerializedFlowGraphConnection, ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
 import { RandomGUID } from "core/Misc";
 import type { GLTFLoader } from "../../glTFLoader";
-import { _parsePath, gltfToFlowGraphTypeMap, gltfTypeToBabylonType } from "./utils";
+import { gltfPropertyNameToBabylonPropertyName, gltfToFlowGraphTypeMap, gltfTypeToBabylonType } from "./utils";
 
 function convertType(configObject: IKHRInteractivity_ValueWithMaybeType, definition: IKHRInteractivity) {
     if (configObject.type !== undefined) {
@@ -56,9 +56,32 @@ function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKH
             if (!pathValue.startsWith("/")) {
                 pathValue = `/${pathValue}`;
             }
-            const parsedPath = _parsePath("path", pathValue, loader);
-            converted.target = parsedPath.target;
-            converted.path = parsedPath.path;
+            // A path can be:
+            // /[nodes|materials|animations]/[numericIndex|substitutionString]/propertyName
+            // Basically the first two parts are part of the path, and from then on it's part of the property?
+            const pathParts = pathValue.split("/");
+            if (pathParts.length < 4) {
+                throw new Error(`Invalid path: ${pathValue}`);
+            }
+            const path = `/${pathParts[1]}/${pathParts[2]}`;
+            const isSecondPartNumeric = !isNaN(Number(pathParts[2]));
+            if (!isSecondPartNumeric) {
+                converted.subString = pathParts[2];
+            } else {
+                converted.subString = "";
+            }
+            converted.path = path;
+            let property = "";
+            for (let i = 3; i < pathParts.length; i++) {
+                property += pathParts[i];
+                if (i < pathParts.length - 1) {
+                    property += ".";
+                }
+            }
+            if (gltfPropertyNameToBabylonPropertyName[property]) {
+                property = gltfPropertyNameToBabylonPropertyName[property];
+            }
+            converted.property = property;
         } else {
             converted[configObject.id] = convertType(configObject, definition);
         }
@@ -72,6 +95,9 @@ function convertBlock(gltfBlock: IKHRInteractivity_Node, definition: IKHRInterac
         throw new Error(`Unknown block type: ${gltfBlock.type}`);
     }
     const config = convertConfiguration(gltfBlock, definition, loader);
+    if (gltfBlock.id === undefined) {
+        throw new Error(`Block of type ${gltfBlock.type} has no id`);
+    }
     const uniqueId = gltfBlock.id.toString();
     const metadata = gltfBlock.metadata;
     // the data inputs and outputs will be saved at a later step?

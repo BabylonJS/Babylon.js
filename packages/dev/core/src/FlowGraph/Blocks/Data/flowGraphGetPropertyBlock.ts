@@ -6,8 +6,19 @@ import { RichTypeAny } from "../../flowGraphRichTypes";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 
 export interface IFlowGraphGetPropertyBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * The path of the entity whose property will be set. Needs a corresponding
+     * entity on the context.pathMap variable.
+     */
     path: string;
-    target: any;
+    /**
+     * The property to set on the target object.
+     */
+    property: string;
+    /**
+     * A string that will be substituted by a node with the same name.
+     */
+    subString: string;
 }
 
 export class FlowGraphGetPropertyBlock extends FlowGraphBlock {
@@ -17,10 +28,24 @@ export class FlowGraphGetPropertyBlock extends FlowGraphBlock {
         this.value = this._registerDataOutput("value", RichTypeAny);
     }
 
-    public _updateOutputs(context: FlowGraphContext) {
+    private _getTargetFromPath(context: FlowGraphContext) {
         const path = this.config.path;
-        const target = this.config.target;
-        const value = target[path];
+        let finalPath = path;
+        if (path.indexOf(this.config.subString) !== -1) {
+            const nodeSub = this.getDataInput(this.config.subString);
+            if (!nodeSub) {
+                throw new Error("Invalid substitution input");
+            }
+            const nodeIndex = Math.floor(nodeSub.getValue(context));
+            finalPath = path.replace(this.config.subString, nodeIndex.toString());
+        }
+        return context.pathMap.get(finalPath);
+    }
+
+    public _updateOutputs(context: FlowGraphContext) {
+        const target = this._getTargetFromPath(context);
+        const property = this.config.property;
+        const value = target[property];
         this.value.setValue(value, context);
     }
 

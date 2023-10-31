@@ -79,6 +79,10 @@ export class FlowGraph {
         return context;
     }
 
+    public getContext(index: number) {
+        return this._executionContexts[index];
+    }
+
     /**
      * Add an event block. When the graph is started, it will start listening to events
      * from the block and execute the graph when they are triggered.

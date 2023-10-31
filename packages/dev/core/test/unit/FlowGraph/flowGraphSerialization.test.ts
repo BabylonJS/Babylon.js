@@ -207,11 +207,11 @@ describe("Flow Graph Serialization", () => {
         const flowGraphSceneReadyBlock = new FlowGraphSceneReadyEventBlock();
         graph.addEventBlock(flowGraphSceneReadyBlock);
 
-        const setPropertyBlock = new FlowGraphSetPropertyBlock<Vector3>({ path: "testMesh", property: "position" });
+        const setPropertyBlock = new FlowGraphSetPropertyBlock<Vector3>({ path: "testMesh", property: "position", subString: "" });
         flowGraphSceneReadyBlock.onDone.connectTo(setPropertyBlock.in);
 
         const constBlock = new FlowGraphConstantBlock<Vector3>({ value: new Vector3(1, 2, 3) });
-        constBlock.output.connectTo(setPropertyBlock.a);
+        constBlock.output.connectTo(setPropertyBlock.value);
 
         const serialized: any = {};
         graph.serialize(serialized);
