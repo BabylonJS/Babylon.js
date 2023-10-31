@@ -1,28 +1,15 @@
 import { RegisterClass } from "core/Misc";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
-import { FlowGraphBlock } from "../../../flowGraphBlock";
-import type { FlowGraphContext } from "../../../flowGraphContext";
-import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import { RichTypeAny } from "../../../flowGraphRichTypes";
+import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
 
-export class FlowGraphAddBlock extends FlowGraphBlock {
-    public readonly a: FlowGraphDataConnection<any>;
-    public readonly b: FlowGraphDataConnection<any>;
-    public readonly val: FlowGraphDataConnection<any>;
-
+/**
+ * @experimental
+ * Polymorphic add block.
+ */
+export class FlowGraphAddBlock extends FlowGraphBinaryOperationBlock<any, any, any> {
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(config);
-
-        this.a = this._registerDataInput("a", RichTypeAny);
-        this.b = this._registerDataInput("b", RichTypeAny);
-        this.val = this._registerDataOutput("result", RichTypeAny);
-    }
-
-    public _updateOutputs(_context: FlowGraphContext): void {
-        const aval = this.a.getValue(_context);
-        const bval = this.b.getValue(_context);
-        const result = this._polymorphicAdd(aval, bval);
-        this.val.setValue(result, _context);
+        super(RichTypeAny, RichTypeAny, RichTypeAny, (a, b) => this._polymorphicAdd(a, b), FlowGraphAddBlock.ClassName, config);
     }
 
     private _polymorphicAdd(a: any, b: any) {
@@ -47,8 +34,5 @@ export class FlowGraphAddBlock extends FlowGraphBlock {
     }
 
     public static ClassName = "FGAddBlock";
-    public getClassName(): string {
-        return FlowGraphAddBlock.ClassName;
-    }
 }
 RegisterClass(FlowGraphAddBlock.ClassName, FlowGraphAddBlock);

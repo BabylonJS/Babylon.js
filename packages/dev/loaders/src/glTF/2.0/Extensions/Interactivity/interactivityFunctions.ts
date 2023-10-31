@@ -202,9 +202,10 @@ export function convertGLTFToJson(gltf: IKHRInteractivity, loader: GLTFLoader): 
         allBlocks.push(fgBlock);
     }
 
+    const variables = gltf.variables ?? [];
     // Parse variables
-    for (let i = 0; i < gltf.variables.length; i++) {
-        const variable: IKHRInteractivity_Variable = gltf.variables[i];
+    for (let i = 0; i < variables.length; i++) {
+        const variable: IKHRInteractivity_Variable = variables[i];
         const variableName = variable.id;
         context._userVariables[variableName] = convertType(variable as IKHRInteractivity_ValueWithMaybeType, gltf);
     }

@@ -9,9 +9,9 @@ import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
  * LeftT, one of type RightT, and outputs a value of type ResultT.
  */
 export class FlowGraphBinaryOperationBlock<LeftT, RightT, ResultT> extends FlowGraphBlock {
-    leftInput: FlowGraphDataConnection<LeftT>;
-    rightInput: FlowGraphDataConnection<RightT>;
-    output: FlowGraphDataConnection<ResultT>;
+    a: FlowGraphDataConnection<LeftT>;
+    b: FlowGraphDataConnection<RightT>;
+    val: FlowGraphDataConnection<ResultT>;
 
     constructor(
         leftRichType: RichType<LeftT>,
@@ -22,13 +22,13 @@ export class FlowGraphBinaryOperationBlock<LeftT, RightT, ResultT> extends FlowG
         config?: IFlowGraphBlockConfiguration
     ) {
         super(config);
-        this.leftInput = this._registerDataInput("leftInput", leftRichType);
-        this.rightInput = this._registerDataInput("rightInput", rightRichType);
-        this.output = this._registerDataOutput("Output", resultRichType);
+        this.a = this._registerDataInput("a", leftRichType);
+        this.b = this._registerDataInput("b", rightRichType);
+        this.val = this._registerDataOutput("val", resultRichType);
     }
 
     public _updateOutputs(_context: FlowGraphContext): void {
-        this.output.setValue(this._operation(this.leftInput.getValue(_context), this.rightInput.getValue(_context)), _context);
+        this.val.setValue(this._operation(this.a.getValue(_context), this.b.getValue(_context)), _context);
     }
 
     public getClassName(): string {
