@@ -71,6 +71,9 @@ export class FlowGraphBlock {
         return output;
     }
 
+    public getDataInput(name: string): FlowGraphDataConnection<any> | undefined {
+        return this.dataInputs.find((i) => i.name === name);
+    }
     private _serializeConfig(configObject: any, valueSerializeFunction: (key: string, value: any, serializationObject: any) => void = defaultValueSerializationFunction) {
         if (this.config) {
             for (const key in this.config) {

@@ -19,9 +19,11 @@ export interface IFlowGraphSetPropertyBlockConfiguration extends IFlowGraphBlock
      * The property to set on the target object.
      */
     property: string;
+    /**
+     * A string that will be substituted by a node with the same name.
+     */
+    subString: string;
 }
-
-const nodeIndexSubString = "{nodeIndex}";
 
 /**
  * @experimental
@@ -31,7 +33,7 @@ export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphWithOnDoneExecut
     /**
      * Input connection: The value to set on the property.
      */
-    public readonly a: FlowGraphDataConnection<ValueT>;
+    public readonly value: FlowGraphDataConnection<ValueT>;
     /**
      * Input connection: an index to use when setting the property. Will be substituted in any path
      * that contains a value of \{nodeIndex\}.
@@ -41,8 +43,8 @@ export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphWithOnDoneExecut
     public constructor(public config: IFlowGraphSetPropertyBlockConfiguration) {
         super(config);
 
-        this.a = this._registerDataInput("a", RichTypeAny);
-        this.nodeIndex = this._registerDataInput("nodeIndex", RichTypeNumber);
+        this.value = this._registerDataInput("value", RichTypeAny);
+        this._registerDataInput(config.subString, RichTypeNumber);
     }
 
     private _setProperty(target: any, path: string, value: any): void {
@@ -59,9 +61,13 @@ export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphWithOnDoneExecut
     private _getTargetFromPath(context: FlowGraphContext) {
         const path = this.config.path;
         let finalPath = path;
-        if (path.indexOf(nodeIndexSubString) !== -1) {
-            const nodeIndex = Math.floor(this.nodeIndex.getValue(context));
-            finalPath = path.replace(nodeIndexSubString, nodeIndex.toString());
+        if (path.indexOf(this.config.subString) !== -1) {
+            const nodeSub = this.getDataInput(this.config.subString);
+            if (!nodeSub) {
+                throw new Error("Invalid substitution input");
+            }
+            const nodeIndex = Math.floor(nodeSub.getValue(context));
+            finalPath = path.replace(this.config.subString, nodeIndex.toString());
         }
         return context.pathMap.get(finalPath);
     }
