@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Ground Projection",
+            "playgroundId": "#XG08YC#0",
+            "referenceImage": "groundProjection.png"
+        },
+        {
             "title": "Node geometry",
             "playgroundId": "#WGZLGJ#9152",
             "referenceImage": "nodeGeometry.png"
@@ -1668,7 +1673,7 @@
         },
         {
             "title": "Screen Space Reflections 2",
-            "playgroundId": "#PIZ1GK#1320",
+            "playgroundId": "#PIZ1GK#1500",
             "renderCount": 5,
             "excludedEngines": ["webgl1"],
             "referenceImage": "Screen-Space-Reflections-2.png"
@@ -1768,6 +1773,11 @@
             "title": "Child overriding parent font properties",
             "playgroundId": "#QFK9K4#25",
             "referenceImage": "Childoverridingparentfontproperties.png"
+        },
+        {
+            "title": "Add mesh without vertex normals to SPS",
+            "playgroundId": "#H1SEDF#1",
+            "referenceImage": "AddmeshwithoutvertexnormalstoSPS.png"
         }
     ]
 }

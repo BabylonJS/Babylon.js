@@ -1,10 +1,11 @@
 precision highp float;
+#include<instancesDeclaration>
 
 attribute float grl_widths;
 attribute vec3 grl_offsets;
 attribute float grl_colorPointers;
 attribute vec3 position;
-uniform mat4 worldViewProjection;
+uniform mat4 viewProjection;
 uniform mat4 projection;
 varying float grlCounters;
 varying float grlColorPointer;
@@ -28,6 +29,8 @@ varying float grlColorPointer;
 #endif
 
 void main() {
+    #include<instancesVertex>
+
     grlColorPointer = grl_colorPointers;
 
     #ifdef GREASED_LINE_CAMERA_FACING
@@ -39,7 +42,8 @@ void main() {
         vec3 grlNext = grl_nextAndCounters.xyz;
         grlCounters = grl_nextAndCounters.w;
 
-        mat4 grlMatrix = worldViewProjection;
+        mat4 grlMatrix = viewProjection * finalWorld ;
+
         vec3 grlPositionOffset = grl_offsets;
         vec4 grlFinalPosition = grlMatrix * vec4( position + grlPositionOffset , 1.0 );
         vec4 grlPrevPos = grlMatrix * vec4( grlPrevious + grlPositionOffset, 1.0 );

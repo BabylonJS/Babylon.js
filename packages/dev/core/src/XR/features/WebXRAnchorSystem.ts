@@ -134,7 +134,10 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
      * @param _xrSessionManager an instance of WebXRSessionManager
      * @param _options configuration object for this feature
      */
-    constructor(_xrSessionManager: WebXRSessionManager, private _options: IWebXRAnchorSystemOptions = {}) {
+    constructor(
+        _xrSessionManager: WebXRSessionManager,
+        private _options: IWebXRAnchorSystemOptions = {}
+    ) {
         super(_xrSessionManager);
         this.xrNativeFeatureName = "anchors";
     }

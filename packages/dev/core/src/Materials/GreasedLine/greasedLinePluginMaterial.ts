@@ -371,8 +371,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
                     vec3 grlNext = grl_nextAndCounters.xyz;
                     grlCounters = grl_nextAndCounters.w;
 
-
-                    mat4 grlMatrix = viewProjection * world;
+                    mat4 grlMatrix = viewProjection * finalWorld;
                     vec4 grlFinalPosition = grlMatrix * vec4( positionUpdated , 1.0 );
                     vec4 grlPrevPos = grlMatrix * vec4( grlPrevious + grlPositionOffset, 1.0 );
                     vec4 grlNextPos = grlMatrix * vec4( grlNext + grlPositionOffset, 1.0 );

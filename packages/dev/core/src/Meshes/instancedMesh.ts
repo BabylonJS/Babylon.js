@@ -661,16 +661,16 @@ Mesh.prototype.registerInstancedBuffer = function (kind: string, stride: number)
         for (const instance of this.instances) {
             instance.instancedBuffers = {};
         }
+    }
 
-        if (!this._userInstancedBuffersStorage) {
-            this._userInstancedBuffersStorage = {
-                data: {},
-                vertexBuffers: {},
-                strides: {},
-                sizes: {},
-                vertexArrayObjects: this.getEngine().getCaps().vertexArrayObject ? {} : undefined,
-            };
-        }
+    if (!this._userInstancedBuffersStorage) {
+        this._userInstancedBuffersStorage = {
+            data: {},
+            vertexBuffers: {},
+            strides: {},
+            sizes: {},
+            vertexArrayObjects: this.getEngine().getCaps().vertexArrayObject ? {} : undefined,
+        };
     }
 
     // Creates an empty property for this kind

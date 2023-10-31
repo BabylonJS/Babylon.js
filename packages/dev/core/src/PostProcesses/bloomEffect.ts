@@ -65,7 +65,14 @@ export class BloomEffect extends PostProcessRenderEffect {
      * @param pipelineTextureType The type of texture to be used when performing the post processing.
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
      */
-    constructor(scene: Scene, private _bloomScale: number, bloomWeight: number, bloomKernel: number, pipelineTextureType = 0, blockCompilation = false) {
+    constructor(
+        scene: Scene,
+        private _bloomScale: number,
+        bloomWeight: number,
+        bloomKernel: number,
+        pipelineTextureType = 0,
+        blockCompilation = false
+    ) {
         super(
             scene.getEngine(),
             "bloom",

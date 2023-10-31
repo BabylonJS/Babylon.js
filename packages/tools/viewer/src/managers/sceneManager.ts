@@ -165,7 +165,11 @@ export class SceneManager {
         return this._vrHelper;
     }
 
-    constructor(private _engine: Engine, private _configurationContainer: ConfigurationContainer, private _observablesManager?: ObservablesManager) {
+    constructor(
+        private _engine: Engine,
+        private _configurationContainer: ConfigurationContainer,
+        private _observablesManager?: ObservablesManager
+    ) {
         this.models = [];
 
         this.onCameraConfiguredObservable = new Observable();

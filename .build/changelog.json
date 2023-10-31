@@ -1,7 +1,481 @@
 {
-    "fromTag": "6.24.0",
+    "fromTag": "6.27.0",
     "changelog": {
-        "6.24.0": [],
+        "6.27.1": [
+            {
+                "pr": "14473",
+                "title": "Fix gltf validator url",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/glTFValidation.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "6.27.0": [
+            {
+                "pr": "14470",
+                "title": "Add ground projection support",
+                "description": "https://forum.babylonjs.com/t/projected-ground-skybox/40568\r\n\r\ncan be tested with https://playground.babylonjs.com/#XG08YC\r\n\r\nrelated doc PR https://github.com/BabylonJS/Documentation/pull/1000",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Background/backgroundMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBaseBlock.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/backgroundFragmentDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/backgroundUboDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/helperFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrHelperFunctions.fx",
+                    "packages/dev/core/src/Shaders/background.fragment.fx",
+                    "packages/dev/core/src/Shaders/default.fragment.fx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/backgroundMaterialPropertyGridComponent.tsx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/groundProjection.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "materials",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14461",
+                "title": "Update linter and formatter",
+                "description": "Updating linter and formatter to a newer version.\n\nOld formatter seems to have ignored a rule that was set, so a few files require formatting.\n\nTHis also add a rule to set the auto-fix for type-adding to be separated and not inline.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".eslintrc",
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/core/src/Behaviors/Meshes/attachToBoxBehavior.ts",
+                    "packages/dev/core/src/Cameras/Inputs/flyCameraMouseInput.ts",
+                    "packages/dev/core/src/Cameras/VR/vrExperienceHelper.ts",
+                    "packages/dev/core/src/Collisions/intersectionInfo.ts",
+                    "packages/dev/core/src/Engines/Processors/Expressions/Operators/shaderDefineArithmeticOperator.ts",
+                    "packages/dev/core/src/Engines/Processors/Expressions/Operators/shaderDefineIsDefinedOperator.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuBundleList.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphConstantOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphConnection.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphDataConnection.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphRichTypes.ts",
+                    "packages/dev/core/src/Layers/highlightLayer.ts",
+                    "packages/dev/core/src/Loading/loadingScreen.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/anisotropyBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineBaseMesh.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineMesh.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineRibbonMesh.ts",
+                    "packages/dev/core/src/Meshes/csg.ts",
+                    "packages/dev/core/src/Meshes/geodesicMesh.ts",
+                    "packages/dev/core/src/Meshes/meshSimplification.ts",
+                    "packages/dev/core/src/Misc/PerformanceViewer/performanceViewerCollector.ts",
+                    "packages/dev/core/src/Misc/fileTools.ts",
+                    "packages/dev/core/src/Physics/physicsHelper.ts",
+                    "packages/dev/core/src/Physics/v1/Plugins/ammoJSPlugin.ts",
+                    "packages/dev/core/src/Physics/v1/Plugins/cannonJSPlugin.ts",
+                    "packages/dev/core/src/Physics/v1/Plugins/oimoJSPlugin.ts",
+                    "packages/dev/core/src/Physics/v1/physicsEngine.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsEngine.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/postProcessRenderPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/bloomEffect.ts",
+                    "packages/dev/core/src/Rendering/boundingBoxRenderer.ts",
+                    "packages/dev/core/src/XR/features/WebXRAnchorSystem.ts",
+                    "packages/dev/core/src/XR/features/WebXRControllerPhysics.ts",
+                    "packages/dev/core/src/XR/features/WebXRControllerPointerSelection.ts",
+                    "packages/dev/core/src/XR/features/WebXRControllerTeleportation.ts",
+                    "packages/dev/core/src/XR/features/WebXRDepthSensing.ts",
+                    "packages/dev/core/src/XR/features/WebXRLayers.ts",
+                    "packages/dev/core/src/XR/features/WebXRMeshDetector.ts",
+                    "packages/dev/core/src/XR/features/WebXRNearInteraction.ts",
+                    "packages/dev/core/src/XR/features/WebXRPlaneDetector.ts",
+                    "packages/dev/core/src/XR/features/WebXRSpaceWarp.ts",
+                    "packages/dev/core/src/XR/native/nativeXRRenderTarget.ts",
+                    "packages/dev/core/src/XR/webXRCamera.ts",
+                    "packages/dev/core/src/XR/webXRManagedOutputCanvas.ts",
+                    "packages/dev/core/src/XR/webXRRenderTargetTextureProvider.ts",
+                    "packages/dev/core/src/XR/webXRWebGLLayer.ts",
+                    "packages/dev/gui/src/2D/controls/image.ts",
+                    "packages/dev/gui/src/2D/controls/inputText.ts",
+                    "packages/dev/gui/src/2D/controls/inputTextArea.ts",
+                    "packages/dev/gui/src/2D/controls/toggleButton.ts",
+                    "packages/dev/gui/src/3D/controls/holographicBackplate.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/textures/textureEditor.scss",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoaderAnimation.ts",
+                    "packages/dev/materials/src/water/waterMaterial.ts",
+                    "packages/dev/sharedUiComponents/src/colorPicker/colorPicker.scss",
+                    "packages/dev/sharedUiComponents/src/components/colorPicker/ColorPicker.modules.scss",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/nodePort.ts",
+                    "packages/tools/guiEditor/src/components/log/logComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/log/logComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/blockNodeData.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/log/logComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/blockNodeData.ts",
+                    "packages/tools/viewer/src/labs/texture.ts",
+                    "packages/tools/viewer/src/loader/modelLoader.ts",
+                    "packages/tools/viewer/src/managers/sceneManager.ts",
+                    "packages/tools/viewer/src/model/viewerModel.ts",
+                    "packages/tools/viewer/src/templating/templateManager.ts",
+                    "packages/tools/viewer/src/viewer/defaultViewer.ts",
+                    "packages/tools/viewer/src/viewer/renderOnlyViewer.ts",
+                    "packages/tools/viewer/src/viewer/viewer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14471",
+                "title": "Allow instantiateOnFaces block of node geometry to infer UV coordinates",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnFacesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Interfaces/nodeGeometryExecutionContext.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBuildState.ts",
+                    "packages/dev/core/src/assetContainer.ts"
+                ],
+                "tags": [
+                    "skip changelog",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "14453",
+                "title": "Flow graph node caching",
+                "description": null,
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphBinaryOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphCachedOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphConstantOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphUnaryOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphContext.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphSignalConnection.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphDataNodes.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphExecutionNodes.test.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "6.26.0": [
+            {
+                "pr": "14467",
+                "title": "Fix transform node world space rotation when parent has negative world matrix determinant",
+                "description": "https://forum.babylonjs.com/t/unexpected-behaviour-when-rotating-a-mesh-in-world-space/43298/8\r\n\r\nPlayground to try out: https://playground.babylonjs.com/#2GVE4L#40 (both buttons should rotate in the same direction)",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/transformNode.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14465",
+                "title": "fix: missing export for public property type",
+                "description": "I'm unable to build my project with the missing type.\r\nhttps://forum.babylonjs.com/t/public-property-type-not-exported/45169/5",
+                "author": {
+                    "name": "brianzinn",
+                    "url": "https://github.com/brianzinn"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/camera.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14463",
+                "title": "CreateScreenshotUsingRenderTarget: Render to texture only when texture and camera are ready",
+                "description": "See https://forum.babylonjs.com/t/screenshot-with-post-process-not-includes-meshes/45168\r\n\r\nChecking `camera.isReady(true)` make sure that post-processes are ready before going on.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/screenshotTools.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14460",
+                "title": "GRL - instancing support",
+                "description": null,
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLinePluginMaterial.ts",
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLineSimpleMaterial.ts",
+                    "packages/dev/core/src/Shaders/greasedLine.vertex.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14457",
+                "title": "Function to add element and all its children to AssetContainer",
+                "description": "Fixes https://github.com/BabylonJS/ThePirateCove/issues/663\r\n\r\nThe function `addAllAssetsToContainer` receives a Node as argument and adds that node and all its children and derived elements (such as materials and skeletons) to an asset container. It is intended to work as a utility function used after loading a mesh with AssetsManager, for example. Usage example on: #TLFUIB#1",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/assetContainer.ts"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            }
+        ],
+        "6.25.1": [
+            {
+                "pr": "14464",
+                "title": "Add mesh without vertex normals to SPS",
+                "description": "Fix https://github.com/BabylonJS/ThePirateCove/issues/571",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/solidParticleSystem.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/AddmeshwithoutvertexnormalstoSPS.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14456",
+                "title": "Fix instanced buffers of cloned meshes",
+                "description": "Forum issue: https://forum.babylonjs.com/t/error-after-cloning-mesh-with-instanced-buffer/45154\r\nAdding @Popov72 to check if this solution makes sense 😉 ",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/instancedMesh.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "14462",
+                "title": "incorrect CDN link for some packages",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/debugLayer.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/gui/guiTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14459",
+                "title": "Move type out of import clause",
+                "description": "TypeScript 4.5 introduces inline type imports. But for anyone who uses typescript < 4.5 the build will fail.\n\nThere is no lint rule to disallow that, as it is a perfectly correct syntax. I will keep on checking for that.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphVector2MathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphVector3MathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphVector4MathBlocks.ts",
+                    "packages/dev/core/src/Meshes/Builders/greasedLineBuilder.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineMesh.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateRadialBlock.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14452",
+                "title": "Fix stack panel giving a warning for children with resizeToFit.",
+                "description": "Forum issue: https://forum.babylonjs.com/t/control-is-using-height-in-percentage-mode-inside-a-vertical-stackpanel-warnings-after-update-to-6-25-0/45071",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/stackPanel.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "14455",
+                "title": "Fix an issue in the mesh parsing code",
+                "description": "Causes `overrideMaterialSideOrientation` to be `undefined`\r\n\r\nFixes #14445",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14447",
+                "title": "Change script loading architecture",
+                "description": "Scripts (js and wasm) should now be loaded using the Tools'  GetScriptUrl function.\r\n\r\nThis function will check if the URL is absolute or relative. if relative it will append the BaseScriptUrl defined in Tools to the URL. Otherwise it will run a preprocessor and will make sure, if requested, that the URL is absolute.\r\n\r\nThis one you can either define a new URL per module OR a new global base URL for the scripts and thus replace the babylon's CDN in one call.\r\n\r\nThe preprocessor can be defined by the devs themselves to modify the URL to whatever it needs to be. Checking if the URL is absolute (GetAbsoluteUrl) was kept for back-compat reasons.\r\n\r\nNotes\r\n\r\n* Tools.LoadScript will automatically use GetScriptUrl\r\n* It is possible to define a blob or data URL instead of a (relative) URL.\r\n* KTXDecoder has a different, simpler mechanism to change the base URL",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/debugLayer.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTintWASM.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCompression.ts",
+                    "packages/dev/core/src/Meshes/Compression/meshoptCompression.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
+                    "packages/dev/core/src/Misc/basis.ts",
+                    "packages/dev/core/src/Misc/fileTools.ts",
+                    "packages/dev/core/src/Misc/khronosTextureContainer2.ts",
+                    "packages/dev/core/src/Misc/tools.ts",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/gui/guiTools.ts",
+                    "packages/dev/loaders/src/glTF/glTFValidation.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_ASTC.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_BC7.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_R8_UNORM.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_RG8_UNORM.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_RGBA_SRGB.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_RGBA_UNORM.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/mscTranscoder.ts",
+                    "packages/tools/ktx2Decoder/src/transcoder.ts",
+                    "packages/tools/ktx2Decoder/src/zstddec.ts",
+                    "packages/tools/testTools/src/utils.ts",
+                    "packages/tools/testTools/src/visualizationUtils.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14449",
+                "title": "ShadowDepthWrapper: Fix a memory leak when new effects must be created",
+                "description": "This is the PR #14406 by @nonlinearthink with a fix for the Webgl warnings (see https://github.com/BabylonJS/Babylon.js/pull/14406#discussion_r1367293207).",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/shadowDepthWrapper.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "shadows"
+                ]
+            },
+            {
+                "pr": "14450",
+                "title": "Fix key navigation in scene explorer",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/sceneExplorer/sceneExplorerComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "14448",
+                "title": "Fix texture sampler precision for skinning and morph",
+                "description": "See https://forum.babylonjs.com/t/mesh-of-fingers-jitter-on-mobile/44760",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/bonesDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/morphTargetsVertexGlobalDeclaration.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14441",
+                "title": "Faster twin renderer",
+                "description": "This PR is a rearchitecture of the HTMLTwinRenderer, aiming to improve its speed. \r\n\r\nSome PGs I tested with:\r\nThe ones in: https://doc.babylonjs.com/toolsAndResources/accessibility/screenReaders\r\nStress test: #C9GZTF#43\r\nAddAllControls: #C9GZTF#49\r\nWeapons demo with accessibility: #I6V1ST#240",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts",
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinAccessibilityItem.tsx",
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinGUIItem.ts",
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinHostComponent.tsx",
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinItem.ts",
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinItem.tsx",
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinItemAdapter.tsx",
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinNodeItem.ts",
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinSceneContext.tsx",
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinSceneTree.tsx",
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinTreeComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "accessibility"
+                ]
+            },
+            {
+                "pr": "14442",
+                "title": "Gui editor metadata",
+                "description": "I added a section in the GUI editor's property tab for editing and viewing metadata of controls.\r\nIt only makes strings, numbers and booleans editable, but it will display objects as a JSON string.\r\n\r\nIt hides any metadata keys that start with an `_` or if the key is `guiEditor` (because all controls in the editor get that key).\r\n\r\nA good snippet to test with is `#CITCWC#52` because it has some pre-existing metadata items.",
+                "author": {
+                    "name": "vinhui",
+                    "url": "https://github.com/vinhui"
+                },
+                "files": [
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyTab.scss"
+                ],
+                "tags": []
+            }
+        ],
         "6.25.0": [
             {
                 "pr": "14428",
@@ -554,6 +1028,7 @@
                 ]
             }
         ],
+        "6.24.0": [],
         "6.23.1": [
             {
                 "pr": "14411",

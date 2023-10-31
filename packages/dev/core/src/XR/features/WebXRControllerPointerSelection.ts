@@ -252,7 +252,10 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
      * @param _xrSessionManager the session manager for this module
      * @param _options read-only options to be used in this module
      */
-    constructor(_xrSessionManager: WebXRSessionManager, private readonly _options: IWebXRControllerPointerSelectionOptions) {
+    constructor(
+        _xrSessionManager: WebXRSessionManager,
+        private readonly _options: IWebXRControllerPointerSelectionOptions
+    ) {
         super(_xrSessionManager);
         this._scene = this._xrSessionManager.scene;
     }

@@ -4,6 +4,7 @@ export interface ISerializedFlowGraphContext {
     uniqueId: string;
     _userVariables: { [key: string]: any };
     _connectionValues: { [key: string]: any };
+    pathMap: { [key: string]: any };
 }
 
 export interface ISerializedFlowGraphConnection {

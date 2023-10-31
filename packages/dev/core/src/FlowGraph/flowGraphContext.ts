@@ -56,6 +56,16 @@ export class FlowGraphContext {
      * These are blocks that have currently pending tasks/listeners that need to be cleaned up.
      */
     private _pendingBlocks: FlowGraphAsyncExecutionBlock[] = [];
+    /**
+     * A monotonically increasing ID for each execution.
+     * Incremented for every block executed.
+     */
+    private _executionId = 0;
+
+    /**
+     * A mapping of paths to target objects
+     */
+    pathMap: Map<string, any> = new Map();
 
     constructor(params: IFlowGraphContextConfiguration) {
         this._configuration = params;
@@ -210,6 +220,17 @@ export class FlowGraphContext {
     }
 
     /**
+     * @internal
+     */
+    public _increaseExecutionId() {
+        this._executionId++;
+    }
+
+    public get executionId() {
+        return this._executionId;
+    }
+
+    /**
      * Serializes a context
      * @param serializationObject the object to write the values in
      * @param valueSerializationFunction a function to serialize complex values
@@ -223,6 +244,10 @@ export class FlowGraphContext {
         serializationObject._connectionValues = {};
         this._connectionValues.forEach((value, key) => {
             valueSerializationFunction(key, value, serializationObject._connectionValues);
+        });
+        serializationObject.pathMap = {};
+        this.pathMap.forEach((value, key) => {
+            valueSerializationFunction(key, value, serializationObject.pathMap);
         });
     }
 
@@ -251,6 +276,10 @@ export class FlowGraphContext {
         for (const key in serializationObject._connectionValues) {
             const value = valueParseFunction(key, serializationObject._connectionValues, result._configuration.scene);
             result._connectionValues.set(key, value);
+        }
+        for (const key in serializationObject.pathMap) {
+            const value = valueParseFunction(key, serializationObject.pathMap, result._configuration.scene);
+            result.pathMap.set(key, value);
         }
 
         return result;

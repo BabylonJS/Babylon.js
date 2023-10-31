@@ -18,42 +18,62 @@ function isVectorClassName(className: string) {
     return className === "Vector2" || className === "Vector3" || className === "Vector4" || className === "Quaternion";
 }
 
+function parseVector(className: string, value: Array<number>) {
+    if (className === "Vector2") {
+        return Vector2.FromArray(value);
+    } else if (className === "Vector3") {
+        return Vector3.FromArray(value);
+    } else if (className === "Vector4") {
+        return Vector4.FromArray(value);
+    } else if (className === "Quaternion") {
+        return Quaternion.FromArray(value);
+    } else {
+        throw new Error(`Unknown vector class name ${className}`);
+    }
+}
+
+/**
+ * The default function that serializes values in a context object to a serialization object
+ * @param key the key where the value should be stored in the serialization object
+ * @param value the value to store
+ * @param serializationObject the object where the value will be stored
+ */
 export function defaultValueSerializationFunction(key: string, value: any, serializationObject: any) {
-    if (value?.getClassName && isMeshClassName(value?.getClassName())) {
+    const className = value?.getClassName?.() ?? "";
+    if (isMeshClassName(className)) {
         serializationObject[key] = {
             name: value.name,
-            className: value.getClassName(),
+            className,
         };
-    } else if (value?.getClassName && isVectorClassName(value.getClassName())) {
+    } else if (isVectorClassName(className)) {
         serializationObject[key] = {
-            className: value.getClassName(),
             value: value.asArray(),
+            className,
         };
     } else {
         serializationObject[key] = value;
     }
 }
 
+/**
+ * The default function that parses values stored in a serialization object
+ * @param key the key to the value that will be parsed
+ * @param serializationObject the object that will be parsed
+ * @param scene
+ * @returns
+ */
 export function defaultValueParseFunction(key: string, serializationObject: any, scene: Scene) {
     const intermediateValue = serializationObject[key];
-    let finalValue = intermediateValue;
+    let finalValue;
     const className = intermediateValue?.className;
-    if (isVectorClassName(className)) {
-        const valueProperty = intermediateValue["value"];
-        if (className === "Vector2") {
-            finalValue = Vector2.FromArray(valueProperty);
-        } else if (className === "Vector3") {
-            finalValue = Vector3.FromArray(valueProperty);
-        } else if (className === "Vector4") {
-            finalValue = Vector4.FromArray(valueProperty);
-        } else if (className === "Quaternion") {
-            finalValue = Quaternion.FromArray(valueProperty);
-        }
-    } else if (isMeshClassName(className)) {
+    if (isMeshClassName(className)) {
         finalValue = scene.getMeshByName(intermediateValue.name);
+    } else if (isVectorClassName(className)) {
+        finalValue = parseVector(className, intermediateValue.value);
     } else if (intermediateValue.value !== undefined) {
         finalValue = intermediateValue.value;
+    } else {
+        finalValue = intermediateValue;
     }
-
     return finalValue;
 }

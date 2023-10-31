@@ -1,4 +1,4 @@
-import { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
+/*import { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
@@ -18,7 +18,7 @@ export class FlowGraphAnimateToBlock<TargetT, ValueT> extends FlowGraphWithOnDon
     /**
      * The value to animate to
      */
-    public readonly a: FlowGraphDataConnection<ValueT>;
+/*public readonly a: FlowGraphDataConnection<ValueT>;
 
     public constructor(public config: IFlowGraphAnimateToBlockConfiguration<TargetT>) {
         super(config);
@@ -47,4 +47,4 @@ export class FlowGraphAnimateToBlock<TargetT, ValueT> extends FlowGraphWithOnDon
 
     public static ClassName = "FGAnimateToBlock";
 }
-RegisterClass(FlowGraphAnimateToBlock.ClassName, FlowGraphAnimateToBlock);
+RegisterClass(FlowGraphAnimateToBlock.ClassName, FlowGraphAnimateToBlock);*/

@@ -1,17 +1,16 @@
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { RichType } from "../../flowGraphRichTypes";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
+import { FlowGraphCachedOperationBlock } from "./flowGraphCachedOperationBlock";
 /**
  * @experimental
  * The base block for all binary operation blocks. Receives an input of type
  * LeftT, one of type RightT, and outputs a value of type ResultT.
  */
-export class FlowGraphBinaryOperationBlock<LeftT, RightT, ResultT> extends FlowGraphBlock {
+export class FlowGraphBinaryOperationBlock<LeftT, RightT, ResultT> extends FlowGraphCachedOperationBlock<ResultT> {
     a: FlowGraphDataConnection<LeftT>;
     b: FlowGraphDataConnection<RightT>;
-    val: FlowGraphDataConnection<ResultT>;
 
     constructor(
         leftRichType: RichType<LeftT>,
@@ -21,14 +20,13 @@ export class FlowGraphBinaryOperationBlock<LeftT, RightT, ResultT> extends FlowG
         private _className: string,
         config?: IFlowGraphBlockConfiguration
     ) {
-        super(config);
+        super(resultRichType, config);
         this.a = this._registerDataInput("a", leftRichType);
         this.b = this._registerDataInput("b", rightRichType);
-        this.val = this._registerDataOutput("val", resultRichType);
     }
 
-    public _updateOutputs(_context: FlowGraphContext): void {
-        this.val.setValue(this._operation(this.a.getValue(_context), this.b.getValue(_context)), _context);
+    public override _doOperation(context: FlowGraphContext): ResultT {
+        return this._operation(this.a.getValue(context), this.b.getValue(context));
     }
 
     public getClassName(): string {

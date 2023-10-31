@@ -1,4 +1,6 @@
 ﻿const float PI = 3.1415926535897932384626433832795;
+const float RECIPROCAL_PI = 0.3183098861837907;
+const float RECIPROCAL_PI2 = 0.15915494309189535;
 const float HALF_MIN = 5.96046448e-08; // Smallest positive half.
 
 const float LinearEncodePowerApprox = 2.2;

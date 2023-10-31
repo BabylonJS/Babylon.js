@@ -103,6 +103,7 @@ export function convertGLTFToJson(gltf: IKHRInteractivity, loader: GLTFLoader): 
         uniqueId: RandomGUID(),
         _userVariables: {},
         _connectionValues: {},
+        pathMap: {},
     };
     const executionContexts = [context];
 

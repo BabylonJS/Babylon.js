@@ -201,7 +201,7 @@ export class NodeMaterial extends PushMaterial {
     private _animationFrame = -1;
 
     /** Define the Url to load node editor script */
-    public static EditorURL = `nodeEditor/v${Engine.Version}/babylon.nodeEditor.js`;
+    public static EditorURL = `v${Engine.Version}/nodeEditor/babylon.nodeEditor.js`;
 
     /** Define the Url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
@@ -1124,18 +1124,20 @@ export class NodeMaterial extends PushMaterial {
         const result = this._processDefines(dummyMesh, defines);
         Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString);
 
-        let effect = this.getScene().getEngine().createEffect(
-            {
-                vertexElement: tempName,
-                fragmentElement: tempName,
-            },
-            [VertexBuffer.PositionKind],
-            this._fragmentCompilationState.uniforms,
-            this._fragmentCompilationState.samplers,
-            defines.toString(),
-            result?.fallbacks,
-            undefined
-        );
+        let effect = this.getScene()
+            .getEngine()
+            .createEffect(
+                {
+                    vertexElement: tempName,
+                    fragmentElement: tempName,
+                },
+                [VertexBuffer.PositionKind],
+                this._fragmentCompilationState.uniforms,
+                this._fragmentCompilationState.samplers,
+                defines.toString(),
+                result?.fallbacks,
+                undefined
+            );
 
         proceduralTexture.nodeMaterialSource = this;
         proceduralTexture._setEffect(effect);
@@ -1159,18 +1161,20 @@ export class NodeMaterial extends PushMaterial {
                 Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString);
 
                 TimingTools.SetImmediate(() => {
-                    effect = this.getScene().getEngine().createEffect(
-                        {
-                            vertexElement: tempName,
-                            fragmentElement: tempName,
-                        },
-                        [VertexBuffer.PositionKind],
-                        this._fragmentCompilationState.uniforms,
-                        this._fragmentCompilationState.samplers,
-                        defines.toString(),
-                        result?.fallbacks,
-                        undefined
-                    );
+                    effect = this.getScene()
+                        .getEngine()
+                        .createEffect(
+                            {
+                                vertexElement: tempName,
+                                fragmentElement: tempName,
+                            },
+                            [VertexBuffer.PositionKind],
+                            this._fragmentCompilationState.uniforms,
+                            this._fragmentCompilationState.samplers,
+                            defines.toString(),
+                            result?.fallbacks,
+                            undefined
+                        );
 
                     proceduralTexture._setEffect(effect);
                 });

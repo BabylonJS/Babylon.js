@@ -53,7 +53,10 @@ export class HolographicBackplate extends Control3D {
      * @param name defines the control name
      * @param _shareMaterials
      */
-    constructor(name?: string, private _shareMaterials = true) {
+    constructor(
+        name?: string,
+        private _shareMaterials = true
+    ) {
         super(name);
     }
 
