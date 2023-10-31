@@ -2,9 +2,9 @@ import type { FlowGraphContext } from "../../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import { RichTypeBoolean } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
-import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneExecutionBlock";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
+import { FlowGraphExecutionBlock } from "core/FlowGraph/flowGraphExecutionBlock";
 /**
  * @experimental
  * Configuration for the while loop block.
@@ -20,7 +20,7 @@ export interface IFlowGraphWhileLoopBlockConfiguration extends IFlowGraphBlockCo
  * @experimental
  * A block that executes a branch while a condition is true.
  */
-export class FlowGraphWhileLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
+export class FlowGraphWhileLoopBlock extends FlowGraphExecutionBlock {
     /**
      * Input connection: The condition to evaluate.
      */
@@ -29,12 +29,17 @@ export class FlowGraphWhileLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
      * Output connection: The loop body.
      */
     public readonly loopBody: FlowGraphSignalConnection;
+    /**
+     * Output connection: The loop is done.
+     */
+    public readonly completed: FlowGraphSignalConnection;
 
     constructor(public config?: IFlowGraphWhileLoopBlockConfiguration) {
         super(config);
 
         this.condition = this._registerDataInput("condition", RichTypeBoolean);
         this.loopBody = this._registerSignalOutput("loopBody");
+        this.completed = this._registerSignalOutput("completed");
     }
 
     public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
@@ -46,11 +51,13 @@ export class FlowGraphWhileLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
             this.loopBody._activateSignal(context);
             conditionValue = this.condition.getValue(context);
         }
-        this.onDone._activateSignal(context);
+        this.completed._activateSignal(context);
     }
 
     public getClassName(): string {
-        return "FGWhileLoopBlock";
+        return FlowGraphWhileLoopBlock.ClassName;
     }
+
+    public static ClassName = "FGWhileLoopBlock";
 }
-RegisterClass("FGWhileLoopBlock", FlowGraphWhileLoopBlock);
+RegisterClass(FlowGraphWhileLoopBlock.ClassName, FlowGraphWhileLoopBlock);

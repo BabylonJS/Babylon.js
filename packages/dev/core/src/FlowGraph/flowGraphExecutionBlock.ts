@@ -13,14 +13,14 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
     /**
      * Input connection: The input signal of the block.
      */
-    public readonly onStart: FlowGraphSignalConnection;
+    public readonly in: FlowGraphSignalConnection;
 
     public signalInputs: FlowGraphSignalConnection[];
     public signalOutputs: FlowGraphSignalConnection[];
 
     protected constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
-        this.onStart = this._registerSignalInput("onStart");
+        this.in = this._registerSignalInput("in");
     }
 
     public configure() {

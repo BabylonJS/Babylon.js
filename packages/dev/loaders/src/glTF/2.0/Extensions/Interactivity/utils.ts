@@ -11,6 +11,10 @@ import {
     FlowGraphDoNBlock,
     FlowGraphGetVariableBlock,
     FlowGraphSetVariableBlock,
+    FlowGraphRandomBlock,
+    FlowGraphLessThanBlock,
+    FlowGraphWhileLoopBlock,
+    FlowGraphMultiplyBlock,
 } from "core/FlowGraph";
 import type { GLTFLoader } from "../../glTFLoader";
 
@@ -27,6 +31,10 @@ export const gltfToFlowGraphTypeMap: { [key: string]: string } = {
     "flow/doN": FlowGraphDoNBlock.ClassName,
     "variable/get": FlowGraphGetVariableBlock.ClassName,
     "variable/set": FlowGraphSetVariableBlock.ClassName,
+    "math/random": FlowGraphRandomBlock.ClassName,
+    "math/lt": FlowGraphLessThanBlock.ClassName,
+    "flow/whileLoop": FlowGraphWhileLoopBlock.ClassName,
+    "math/mul": FlowGraphMultiplyBlock.ClassName,
 };
 
 const gltfPropertyNameToBabylonPropertyName: any = {

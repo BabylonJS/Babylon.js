@@ -1,7 +1,9 @@
 import { RegisterClass } from "core/Misc";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
-import { RichTypeAny } from "../../../flowGraphRichTypes";
+import { RichTypeAny, RichTypeBoolean, RichTypeNumber } from "../../../flowGraphRichTypes";
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
+import { FlowGraphConstantOperationBlock } from "../flowGraphConstantOperationBlock";
+import { _getClassNameOf } from "./utils";
 
 /**
  * @experimental
@@ -13,8 +15,8 @@ export class FlowGraphAddBlock extends FlowGraphBinaryOperationBlock<any, any, a
     }
 
     private _polymorphicAdd(a: any, b: any) {
-        const aClassName = this._getClassNameOf(a);
-        const bClassName = this._getClassNameOf(b);
+        const aClassName = _getClassNameOf(a);
+        const bClassName = _getClassNameOf(b);
         if (
             (aClassName === "Vector2" && bClassName === "Vector2") ||
             (aClassName === "Vector3" && bClassName === "Vector3") ||
@@ -26,13 +28,47 @@ export class FlowGraphAddBlock extends FlowGraphBinaryOperationBlock<any, any, a
         }
     }
 
-    private _getClassNameOf(v: any) {
-        if (v.getClassName) {
-            return v.getClassName();
-        }
-        return "";
-    }
-
     public static ClassName = "FGAddBlock";
 }
 RegisterClass(FlowGraphAddBlock.ClassName, FlowGraphAddBlock);
+
+export class FlowGraphMultiplyBlock extends FlowGraphBinaryOperationBlock<any, any, any> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeAny, RichTypeAny, RichTypeAny, (a, b) => this._polymorphicMultiply(a, b), FlowGraphMultiplyBlock.ClassName, config);
+    }
+
+    private _polymorphicMultiply(a: any, b: any) {
+        const aClassName = _getClassNameOf(a);
+        const bClassName = _getClassNameOf(b);
+        if (
+            (aClassName === "Vector2" && bClassName === "Vector2") ||
+            (aClassName === "Vector3" && bClassName === "Vector3") ||
+            (aClassName === "Vector4" && bClassName === "Vector4")
+        ) {
+            return a.multiply(b);
+        } else {
+            return a * b;
+        }
+    }
+
+    public static ClassName = "FGMultiplyBlock";
+}
+RegisterClass(FlowGraphMultiplyBlock.ClassName, FlowGraphMultiplyBlock);
+
+export class FlowGraphRandomBlock extends FlowGraphConstantOperationBlock<number> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeAny, () => Math.random(), FlowGraphRandomBlock.ClassName, config);
+    }
+
+    public static ClassName = "FGRandomBlock";
+}
+RegisterClass(FlowGraphRandomBlock.ClassName, FlowGraphRandomBlock);
+
+export class FlowGraphLessThanBlock extends FlowGraphBinaryOperationBlock<number, number, boolean> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeNumber, RichTypeNumber, RichTypeBoolean, (a, b) => a < b, FlowGraphLessThanBlock.ClassName, config);
+    }
+
+    public static ClassName = "FGLessThanBlock";
+}
+RegisterClass(FlowGraphLessThanBlock.ClassName, FlowGraphLessThanBlock);

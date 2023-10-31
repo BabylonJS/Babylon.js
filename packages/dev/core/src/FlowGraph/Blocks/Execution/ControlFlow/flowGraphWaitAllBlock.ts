@@ -64,7 +64,7 @@ export class FlowGraphWaitAllBlock extends FlowGraphWithOnDoneExecutionBlock {
             for (let i = 0; i < this.config.numberInputFlows; i++) {
                 activationState[i] = false;
             }
-        } else if (callingSignal === this.onStart) {
+        } else if (callingSignal === this.in) {
             activationState[0] = true;
         } else {
             const index = this.inFlows.indexOf(callingSignal);

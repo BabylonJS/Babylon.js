@@ -36,13 +36,13 @@ describe("Flow Graph Event Nodes", () => {
         const sendEvent = new FlowGraphSendCustomEventBlock({ name: "SendEvent" });
         sendEvent.eventId.setValue("testEvent", flowGraphContext);
         sendEvent.eventData.setValue(42, flowGraphContext);
-        sceneReady.onDone.connectTo(sendEvent.onStart);
+        sceneReady.onDone.connectTo(sendEvent.in);
 
         const receiveEvent = new FlowGraphReceiveCustomEventBlock({ eventId: "testEvent", name: "ReceiveEvent" });
         receiverGraph.addEventBlock(receiveEvent);
 
         const runCustomFunction = new FlowGraphLogBlock({ name: "Log" });
-        receiveEvent.onDone.connectTo(runCustomFunction.onStart);
+        receiveEvent.onDone.connectTo(runCustomFunction.in);
         receiveEvent.eventData.connectTo(runCustomFunction.message);
 
         flowGraph.start();
