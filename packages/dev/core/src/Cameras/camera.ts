@@ -1545,4 +1545,27 @@ export class Camera extends Node {
 
         return handednessMultiplier;
     }
+
+    /**
+     * This will return a value for inertia, with respect to time, rather than frame rate.
+     * @internal
+     */
+    public _getInertiaRelativeToTime(): number {
+        return Math.pow(this.inertia, this.getScene().getAnimationRatio());
+    }
+
+    /**
+     * This will return the a ratio of change between a provided relative inertia and the
+     * camera's set inertia.
+     * 
+     * For the math on this, inertia is a percentage of how much of camera attribute's offset
+     * that we keep after each frame.  Because of this, we will subtract it from 1 (assuming 1
+     * represents 100%) to get the percentage we lose each frame.  We then take the relative
+     * value that we expect to lose and divide it by the percentage lost with our standard
+     * inertia value (expected to be what 60 FPS should use).
+     * @internal
+     */
+    public _getRelativeScaleFactor(relativeInertia: number): number {
+        return (1 - relativeInertia) / (1 - this.inertia);
+    }
 }

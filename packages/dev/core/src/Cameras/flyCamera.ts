@@ -319,7 +319,7 @@ export class FlyCamera extends TargetCamera {
     /**
      * @internal
      */
-    public _collideWithWorld(displacement: Vector3): void {
+    public _collideWithWorld(scaleFactor: number): void {
         let globalPosition: Vector3;
 
         if (this.parent) {
@@ -339,14 +339,16 @@ export class FlyCamera extends TargetCamera {
         this._collider._radius = this.ellipsoid;
         this._collider.collisionMask = this._collisionMask;
 
-        // No need for clone, as long as gravity is not on.
-        let actualDisplacement = displacement;
+        // Save to temp vector to modify without needing GC
+        const actualDisplacement = this._modifiedDirection.copyFrom(this.cameraDirection);
 
-        // Add gravity to direction to prevent dual-collision checking.
+        //add gravity to the direction to prevent the dual-collision checking
         if (this.applyGravity) {
-            // This prevents mending with cameraDirection, a global variable of the fly camera class.
-            actualDisplacement = displacement.add(this.getScene().gravity);
+            actualDisplacement.addInPlace(this.getScene().gravity);
         }
+        
+        // Scale by factor relative to time instead of frame rate
+        actualDisplacement.scaleInPlace(scaleFactor);
 
         coordinator.getNewPosition(this._oldPosition, actualDisplacement, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
     }
@@ -403,11 +405,11 @@ export class FlyCamera extends TargetCamera {
     }
 
     /** @internal */
-    public _updatePosition(): void {
+    public _updatePosition(scaleFactor: number): void {
         if (this.checkCollisions && this.getScene().collisionsEnabled) {
-            this._collideWithWorld(this.cameraDirection);
+            this._collideWithWorld(scaleFactor);
         } else {
-            super._updatePosition();
+            super._updatePosition(scaleFactor);
         }
     }
 
