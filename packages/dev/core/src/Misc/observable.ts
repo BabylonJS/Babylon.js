@@ -195,17 +195,7 @@ export class Observable<T> {
      * @param unregisterOnFirstCall defines if the observer as to be unregistered after the next notification
      * @returns the new observer created for the callback
      */
-    public add(
-        callback: (eventData: T, eventState: EventState) => void,
-        mask: number = -1,
-        insertFirst = false,
-        scope: any = null,
-        unregisterOnFirstCall = false
-    ): Nullable<Observer<T>> {
-        if (!callback) {
-            return null;
-        }
-
+    public add(callback: (eventData: T, eventState: EventState) => void, mask: number = -1, insertFirst = false, scope: any = null, unregisterOnFirstCall = false): Observer<T> {
         const observer = new Observer(callback, mask, scope);
         observer.unregisterOnNextCall = unregisterOnFirstCall;
 
@@ -238,7 +228,7 @@ export class Observable<T> {
      * @param callback the callback that will be executed for that Observer
      * @returns the new observer created for the callback
      */
-    public addOnce(callback: (eventData: T, eventState: EventState) => void): Nullable<Observer<T>> {
+    public addOnce(callback: (eventData: T, eventState: EventState) => void): Observer<T> {
         return this.add(callback, undefined, undefined, undefined, true);
     }
 
