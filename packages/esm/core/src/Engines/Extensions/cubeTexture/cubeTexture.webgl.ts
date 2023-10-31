@@ -1,5 +1,4 @@
 import type { RenderTargetWrapper } from "@babylonjs/core/Engines/renderTargetWrapper.js";
-import { ThinEngine } from "@babylonjs/core/Engines/thinEngine.js";
 import { InternalTexture, InternalTextureSource } from "@babylonjs/core/Materials/Textures/internalTexture.js";
 import type { IInternalTextureLoader } from "@babylonjs/core/Materials/Textures/internalTextureLoader.js";
 import type { DepthTextureCreationOptions } from "@babylonjs/core/Materials/Textures/textureCreationOptions.js";
@@ -15,6 +14,7 @@ import { augmentEngineState } from "../../engine.adapters.js";
 import { _loadFile } from "../../engine.tools.js";
 import { _prepareWorkingCanvas } from "../../engine.base.js";
 import { Constants } from "../../engine.constants.js";
+import { GetExponentOfTwo, _TextureLoaders } from "../../engine.static.js";
 
 export const _createDepthStencilCubeTexture: ICubeTextureEngineExtension["_createDepthStencilCubeTexture"] = function (
     engineState: IWebGLEnginePublic,
@@ -231,7 +231,7 @@ export const createCubeTextureBase: ICubeTextureEngineExtension["createCubeTextu
     const extension = forcedExtension ? forcedExtension : lastDot > -1 ? rootUrlWithoutUriParams.substring(lastDot).toLowerCase() : "";
 
     let loader: Nullable<IInternalTextureLoader> = null;
-    for (const availableLoader of ThinEngine._TextureLoaders) {
+    for (const availableLoader of _TextureLoaders) {
         if (availableLoader.canLoad(extension)) {
             loader = availableLoader;
             break;
@@ -347,7 +347,7 @@ export const createCubeTexture: ICubeTextureEngineExtension["createCubeTexture"]
         fallback,
         (texture: InternalTexture) => _bindTextureDirectly(fes, gl.TEXTURE_CUBE_MAP, texture, true),
         (texture: InternalTexture, imgs: HTMLImageElement[] | ImageBitmap[]) => {
-            const width = fes.needPOTTextures ? ThinEngine.GetExponentOfTwo(imgs[0].width, fes._caps.maxCubemapTextureSize) : imgs[0].width;
+            const width = fes.needPOTTextures ? GetExponentOfTwo(imgs[0].width, fes._caps.maxCubemapTextureSize) : imgs[0].width;
             const height = width;
 
             const faces = [
