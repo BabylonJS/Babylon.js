@@ -160,6 +160,9 @@ export interface IInspectorOptions {
 }
 
 declare module "../scene" {
+    /**
+     *
+     */
     export interface Scene {
         /**
          * @internal
@@ -262,9 +265,9 @@ export class DebugLayer {
     }
 
     /**
-     * the default configuration of the inspector
+     * the default configuration of the inspector at the class level
      */
-    public config: IInspectorOptions = {
+    public static Config: IInspectorOptions = {
         overlay: false,
         showExplorer: true,
         showInspector: true,
@@ -272,6 +275,13 @@ export class DebugLayer {
         handleResize: true,
         enablePopup: true,
     };
+
+    /**
+     * the default configuration of the inspector
+     * DebugLayer.Config is inherited when the instance is created
+     * After it is created, changes to DebugLayer.Config are not synchronized to the instance configuration
+     */
+    public config: IInspectorOptions = { ...DebugLayer.Config };
 
     /**
      * Instantiates a new debug layer.
@@ -286,9 +296,7 @@ export class DebugLayer {
         if (!this._scene) {
             return;
         }
-        if (config) {
-            this.config = config;
-        }
+        Object.assign(this.config, config);
         this._scene.onDisposeObservable.add(() => {
             // Debug layer
             if (this._scene._debugLayer) {
