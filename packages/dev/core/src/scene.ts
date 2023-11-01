@@ -1654,12 +1654,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             ...options,
         };
 
-        this._engine = engine || EngineStore.LastCreatedEngine;
-        if (!fullOptions.virtual) {
-            EngineStore._LastCreatedScene = this;
-            this._engine.scenes.push(this);
+        engine = this._engine = engine || EngineStore.LastCreatedEngine;
+        if (fullOptions.virtual) {
+            engine._virtualScenes.push(this);
         } else {
-            this._engine._virtualScenes.push(this);
+            EngineStore._LastCreatedScene = this;
+            engine.scenes.push(this);
         }
 
         this._uid = null;
@@ -1692,7 +1692,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.useClonedMeshMap = fullOptions.useClonedMeshMap;
 
         if (!options || !options.virtual) {
-            this._engine.onNewSceneAddedObservable.notifyObservers(this);
+            engine.onNewSceneAddedObservable.notifyObservers(this);
         }
     }
 
