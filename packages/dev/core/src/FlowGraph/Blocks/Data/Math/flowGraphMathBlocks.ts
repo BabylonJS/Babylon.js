@@ -28,6 +28,10 @@ export class FlowGraphAddBlock extends FlowGraphBinaryOperationBlock<any, any, a
         }
     }
 
+    public getClassName(): string {
+        return FlowGraphAddBlock.ClassName;
+    }
+
     public static ClassName = "FGAddBlock";
 }
 RegisterClass(FlowGraphAddBlock.ClassName, FlowGraphAddBlock);

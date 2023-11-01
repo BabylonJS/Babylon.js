@@ -66,7 +66,7 @@ function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKH
             const path = `/${pathParts[1]}/${pathParts[2]}`;
             const isSecondPartNumeric = !isNaN(Number(pathParts[2]));
             if (!isSecondPartNumeric) {
-                converted.subString = pathParts[2];
+                converted.subString = pathParts[2].replace("{", "").replace("}", "");
             } else {
                 converted.subString = "";
             }

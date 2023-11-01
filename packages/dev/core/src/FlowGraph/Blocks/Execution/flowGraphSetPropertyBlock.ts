@@ -61,7 +61,7 @@ export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphWithOnDoneExecut
     private _getTargetFromPath(context: FlowGraphContext) {
         const path = this.config.path;
         let finalPath = path;
-        if (path.indexOf(this.config.subString) !== -1) {
+        if (this.config.subString && path.indexOf(this.config.subString) !== -1) {
             const nodeSub = this.getDataInput(this.config.subString);
             if (!nodeSub) {
                 throw new Error("Invalid substitution input");

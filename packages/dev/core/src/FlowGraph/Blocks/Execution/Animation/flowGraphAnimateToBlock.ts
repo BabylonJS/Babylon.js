@@ -17,7 +17,7 @@ export interface IFlowGraphAnimateToBlockConfiguration extends IFlowGraphBlockCo
      */
     property: string;
     /**
-     * A string that will be substituted by a node with the same name.
+     * A string that will be substituted by a node with the same name if involved in curly braces.
      */
     subString: string;
     easingType: string;
@@ -34,18 +34,19 @@ export class FlowGraphAnimateToBlock<ValueT> extends FlowGraphWithOnDoneExecutio
         super(config);
 
         this.a = this._registerDataInput("a", RichTypeAny);
+        this._registerDataInput(config.subString, RichTypeAny);
     }
 
     private _getTargetFromPath(context: FlowGraphContext) {
         const path = this.config.path;
         let finalPath = path;
-        if (path.indexOf(this.config.subString) !== -1) {
+        if (this.config.subString && path.indexOf(`{${this.config.subString}}`) !== -1) {
             const nodeSub = this.getDataInput(this.config.subString);
             if (!nodeSub) {
-                throw new Error("Invalid substitution input");
+                throw new Error("Invalid substitution input with name " + this.config.subString);
             }
             const nodeIndex = Math.floor(nodeSub.getValue(context));
-            finalPath = path.replace(this.config.subString, nodeIndex.toString());
+            finalPath = path.replace(`{${this.config.subString}}`, nodeIndex.toString());
         }
         return context.pathMap.get(finalPath);
     }
@@ -57,7 +58,7 @@ export class FlowGraphAnimateToBlock<ValueT> extends FlowGraphWithOnDoneExecutio
 
     public _execute(context: FlowGraphContext): void {
         const target = this._getTargetFromPath(context);
-        const path = this.config.path;
+        const property = this.config.property;
         const a = this.a.getValue(context);
         const easingType = this.config.easingType;
         const easingDuration = this.config.easingDuration;
@@ -65,10 +66,10 @@ export class FlowGraphAnimateToBlock<ValueT> extends FlowGraphWithOnDoneExecutio
         const numFrames = easingDuration * fps;
         const easing = this.getEasingFunctionFromEasingType(easingType);
 
-        if (target !== undefined && path !== undefined) {
-            Animation.CreateAndStartAnimation("flowGraphAnimateToBlock", target, path, fps, numFrames, target[path], a, 0, easing);
+        if (target !== undefined && property !== undefined) {
+            Animation.CreateAndStartAnimation("flowGraphAnimateToBlock", target, property, fps, numFrames, target[property], a, 0, easing);
         } else {
-            throw new Error("Invalid target or path.");
+            throw new Error("Invalid target or property.");
         }
     }
 

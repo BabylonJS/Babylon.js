@@ -2,7 +2,7 @@ import { RegisterClass } from "core/Misc";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphContext } from "../../flowGraphContext";
-import { RichTypeAny } from "../../flowGraphRichTypes";
+import { RichTypeAny, RichTypeNumber } from "../../flowGraphRichTypes";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 
 export interface IFlowGraphGetPropertyBlockConfiguration extends IFlowGraphBlockConfiguration {
@@ -26,12 +26,13 @@ export class FlowGraphGetPropertyBlock extends FlowGraphBlock {
     public constructor(public config: IFlowGraphGetPropertyBlockConfiguration) {
         super(config);
         this.value = this._registerDataOutput("value", RichTypeAny);
+        this._registerDataInput(config.subString, RichTypeNumber);
     }
 
     private _getTargetFromPath(context: FlowGraphContext) {
         const path = this.config.path;
         let finalPath = path;
-        if (path.indexOf(this.config.subString) !== -1) {
+        if (this.config.subString && path.indexOf(this.config.subString) !== -1) {
             const nodeSub = this.getDataInput(this.config.subString);
             if (!nodeSub) {
                 throw new Error("Invalid substitution input");
