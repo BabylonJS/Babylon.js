@@ -913,34 +913,58 @@ export class ArcRotateCamera extends TargetCamera {
             const directionModifier = this.invertRotation ? -1 : 1;
             const handednessMultiplier = this._calculateHandednessMultiplier();
             let inertialAlphaOffset = this.inertialAlphaOffset * handednessMultiplier;
-            const relativeInertia = this._getInertiaRelativeToTime();
-            const scaleFactor = this._getRelativeScaleFactor(relativeInertia);
 
             if (this.beta <= 0) {
                 inertialAlphaOffset *= -1;
             }
 
-            this.alpha += inertialAlphaOffset * directionModifier * scaleFactor;
-            this.beta += this.inertialBetaOffset * directionModifier * scaleFactor;
-            this.radius -= this.inertialRadiusOffset * scaleFactor;
-
-            this.inertialAlphaOffset *= relativeInertia;
-            this.inertialBetaOffset *= relativeInertia;
-            this.inertialRadiusOffset *= relativeInertia;
-            if (Math.abs(this.inertialAlphaOffset) < Epsilon) {
+            if (this.inertia === 0) {
+                this.alpha += inertialAlphaOffset * directionModifier;
+                this.beta += this.inertialBetaOffset * directionModifier;
+                this.radius -= this.inertialRadiusOffset;
                 this.inertialAlphaOffset = 0;
-            }
-            if (Math.abs(this.inertialBetaOffset) < Epsilon) {
                 this.inertialBetaOffset = 0;
-            }
-            if (Math.abs(this.inertialRadiusOffset) < this.speed * Epsilon) {
                 this.inertialRadiusOffset = 0;
+            } else {
+                const relativeInertia = this._getInertiaRelativeToTime();
+                const scaleFactor = this._getRelativeScaleFactor(relativeInertia);
+
+                this.inertialAlphaOffset *= relativeInertia;
+                this.inertialBetaOffset *= relativeInertia;
+                this.inertialRadiusOffset *= relativeInertia;
+
+                this.alpha += inertialAlphaOffset * directionModifier * scaleFactor;
+                this.beta += this.inertialBetaOffset * directionModifier * scaleFactor;
+                this.radius -= this.inertialRadiusOffset * scaleFactor;
+
+                if (Math.abs(this.inertialAlphaOffset) < Epsilon) {
+                    this.inertialAlphaOffset = 0;
+                }
+                if (Math.abs(this.inertialBetaOffset) < Epsilon) {
+                    this.inertialBetaOffset = 0;
+                }
+                if (Math.abs(this.inertialRadiusOffset) < this.speed * Epsilon) {
+                    this.inertialRadiusOffset = 0;
+                }
             }
         }
 
         // Panning inertia
         if (this.inertialPanningX !== 0 || this.inertialPanningY !== 0) {
             const localDirection = new Vector3(this.inertialPanningX, this.inertialPanningY, this.inertialPanningY);
+
+            if (this.inertia === 0) {
+                this.inertialPanningX = 0;
+                this.inertialPanningY = 0;
+            } else {
+                const relativeInertia = this._getInertiaRelativeToTime(this.panningInertia);
+                const scaleFactor = this._getRelativeScaleFactor(relativeInertia, this.panningInertia);
+
+                this.inertialPanningX *= relativeInertia;
+                this.inertialPanningY *= relativeInertia;
+
+                localDirection.scaleInPlace(scaleFactor);
+            }
 
             this._viewMatrix.invertToRef(this._cameraTransformMatrix);
             localDirection.multiplyInPlace(this.panningAxis);
@@ -967,9 +991,6 @@ export class ArcRotateCamera extends TargetCamera {
                     this._target.addInPlace(this._transformedDirection);
                 }
             }
-
-            this.inertialPanningX *= this.panningInertia;
-            this.inertialPanningY *= this.panningInertia;
 
             if (Math.abs(this.inertialPanningX) < this.speed * Epsilon) {
                 this.inertialPanningX = 0;

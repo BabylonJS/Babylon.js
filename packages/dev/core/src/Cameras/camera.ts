@@ -24,6 +24,7 @@ import type { FreeCamera } from "./freeCamera";
 import type { TargetCamera } from "./targetCamera";
 import type { Ray } from "../Culling/ray";
 import type { ArcRotateCamera } from "./arcRotateCamera";
+import { PrecisionDate } from "core/Misc/precisionDate";
 
 /**
  * Oblique projection values
@@ -116,6 +117,12 @@ export class Camera extends Node {
      * Define the input manager associated with the camera.
      */
     public inputs: CameraInputsManager<Camera>;
+
+    /** @internal */
+    protected _lastUpdatedTime: number;
+
+    /** @internal */
+    protected _currentDeltaTime;
 
     /** @internal */
     @serializeAsVector3("position")
@@ -443,6 +450,8 @@ export class Camera extends Node {
      */
     constructor(name: string, position: Vector3, scene?: Scene, setActiveOnSceneIfNoneActive = true) {
         super(name, scene);
+        this._lastUpdatedTime = PrecisionDate.Now;
+        this._currentDeltaTime = scene?.constantAnimationDeltaTime ?? 16;
 
         this.getScene().addCamera(this);
 
@@ -696,6 +705,11 @@ export class Camera extends Node {
      * Update the camera state according to the different inputs gathered during the frame.
      */
     public update(): void {
+        // Update deltaTime
+        const currentTime = PrecisionDate.Now;
+        this._currentDeltaTime = this._scene.useConstantAnimationDeltaTime ? this._scene.constantAnimationDeltaTime : currentTime - this._lastUpdatedTime;
+        this._lastUpdatedTime = currentTime;
+
         this._checkInputs();
         if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
             this._updateRigCameras();
@@ -1550,8 +1564,8 @@ export class Camera extends Node {
      * This will return a value for inertia, with respect to time, rather than frame rate.
      * @internal
      */
-    public _getInertiaRelativeToTime(): number {
-        return Math.pow(this.inertia, this.getScene().getAnimationRatio());
+    public _getInertiaRelativeToTime(inertia: number = this.inertia): number {
+        return Math.pow(inertia, this._currentDeltaTime / 16);
     }
 
     /**
@@ -1565,7 +1579,7 @@ export class Camera extends Node {
      * inertia value (expected to be what 60 FPS should use).
      * @internal
      */
-    public _getRelativeScaleFactor(relativeInertia: number): number {
-        return (1 - relativeInertia) / (1 - this.inertia);
+    public _getRelativeScaleFactor(relativeInertia: number, inertia: number = this.inertia): number {
+        return (1 - relativeInertia) / (1 - inertia);
     }
 }
