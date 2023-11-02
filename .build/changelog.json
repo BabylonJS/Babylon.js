@@ -1,6 +1,169 @@
 {
-    "fromTag": "6.27.0",
+    "fromTag": "6.27.1",
     "changelog": {
+        "6.28.0": [
+            {
+                "pr": "14484",
+                "title": "Fix undeclared identifier error in NodeMaterial shader",
+                "description": "[this playground](https://www.babylonjs-playground.com/#TN9A7W) can reproduce the bug\r\nthe crash info as follow\r\n<img width=\"1230\" alt=\"截屏2023-11-01 21 00 29\" src=\"https://github.com/BabylonJS/Babylon.js/assets/33159342/40c3f974-4830-4743-bdea-f27087ffb594\">\r\n\r\nin [this commit](https://github.com/BabylonJS/Babylon.js/commit/a421cc939416902d462aa2554f38749f0fde2034), vPositionW is removed from shadowsFragmentFunctions.fx and used by lightFragment.fx\r\nBut PBRMetallicRoughnessBlock still only replaces 'vPositionW' in shadowsFragmentFunctions.fx.\r\n\r\nSo, if a mesh use nodematerial using PBRBlock and receiveShadows, the final shader code will have 'vPositionW' , then\r\nthe error reported.\r\n\r\n",
+                "author": {
+                    "name": "Starryi",
+                    "url": "https://github.com/Starryi"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/lightBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14483",
+                "title": "refactor: optimized scene.constructor",
+                "description": "The following optimizations have been made to 'scene.constructor':\r\n- Remove unnecessary non-runs from '!fullOptions.virtual' \r\n- Use the engine variable directly, instead of 'this._engine', which can improve the hit rate of the identifier;",
+                "author": {
+                    "name": "GuoBinyong",
+                    "url": "https://github.com/GuoBinyong"
+                },
+                "files": [
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14480",
+                "title": "ShaderMaterial: Make sure the color attribute is not duplicated",
+                "description": "See https://forum.babylonjs.com/t/linemesh-is-not-fully-backwards-compatible-in-webgpu/45339",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/shaderMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14451",
+                "title": "Adapt post process to viewport in DefaultRenderingPipeline",
+                "description": "This ensures an efficient use of the resources without using a bigger texture than the actual size it will be blit to in the main canvas.",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/postProcessRenderPipeline.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "14477",
+                "title": "Warn about missing dependency, but only once",
+                "description": "When the Ray import is missing no warning is shown when using the pick function (which is part of the default scene behavior).\n\nThis will display a single warning if Ray is not impoted. It also extends the warning mechanism to allow to throw/warn only once.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/devTools.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14476",
+                "title": "Use the static member of default CDN URL",
+                "description": "Addressing @sebavan's comment in the last PR",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/debugLayer.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTintWASM.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCompression.ts",
+                    "packages/dev/core/src/Meshes/Compression/meshoptCompression.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
+                    "packages/dev/core/src/Misc/basis.ts",
+                    "packages/dev/core/src/Misc/tools.ts",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/gui/guiTools.ts",
+                    "packages/dev/loaders/src/glTF/glTFValidation.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14475",
+                "title": "fix stack panel GUI warnings",
+                "description": "This is to cover a case that wasn't covered in https://github.com/BabylonJS/Babylon.js/pull/14452\r\nForum discussion: https://forum.babylonjs.com/t/control-is-using-height-in-percentage-mode-inside-a-vertical-stackpanel-warnings-after-update-to-6-25-0/45071/4",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/stackPanel.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "14472",
+                "title": "Fix breaking issue with ScriptBaseUrl",
+                "description": "The general idea here is this - change the ScriptBaseUrl functionality. If it is provided AND the URL is an absolute URL that starts with cdn.babylonjs.com, change this portion of the URL with the data provided in ScriptBaseURL",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/debugLayer.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTintWASM.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCompression.ts",
+                    "packages/dev/core/src/Meshes/Compression/meshoptCompression.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
+                    "packages/dev/core/src/Misc/basis.ts",
+                    "packages/dev/core/src/Misc/fileTools.ts",
+                    "packages/dev/core/src/Misc/khronosTextureContainer2.ts",
+                    "packages/dev/core/src/Misc/tools.ts",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/gui/guiTools.ts",
+                    "packages/dev/loaders/src/glTF/glTFValidation.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_ASTC.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_BC7.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_R8_UNORM.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_RG8_UNORM.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_RGBA_SRGB.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_RGBA_UNORM.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/mscTranscoder.ts",
+                    "packages/tools/ktx2Decoder/src/transcoder.ts",
+                    "packages/tools/ktx2Decoder/src/zstddec.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14469",
+                "title": "world vs finalWorld fix in shader material",
+                "description": null,
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLinePluginMaterial.ts",
+                    "packages/dev/core/src/Shaders/greasedLine.vertex.fx"
+                ],
+                "tags": []
+            }
+        ],
         "6.27.1": [
             {
                 "pr": "14473",
