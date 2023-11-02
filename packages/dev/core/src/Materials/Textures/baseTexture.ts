@@ -309,7 +309,9 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
             this._texture._gammaSpace = gamma;
         }
 
-        this._markAllSubMeshesAsTexturesDirty();
+        this.getScene()?.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+            return mat.hasTexture(this);
+        });
     }
 
     /**
@@ -319,9 +321,17 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         return this._texture != null && this._texture._isRGBD;
     }
     public set isRGBD(value: boolean) {
+        if (value === this.isRGBD) {
+            return;
+        }
+
         if (this._texture) {
             this._texture._isRGBD = value;
         }
+
+        this.getScene()?.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+            return mat.hasTexture(this);
+        });
     }
 
     /**
