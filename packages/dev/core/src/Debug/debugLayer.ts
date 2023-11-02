@@ -160,9 +160,6 @@ export interface IInspectorOptions {
 }
 
 declare module "../scene" {
-    /**
-     *
-     */
     export interface Scene {
         /**
          * @internal
