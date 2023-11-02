@@ -276,7 +276,8 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         this._texture.is2DArray = value;
     }
 
-    private _gammaSpace = true;
+    /** @internal */
+    protected _gammaSpace = true;
     /**
      * Define if the texture contains data in gamma space (most of the png/jpg aside bump).
      * HDR texture are usually stored in linear space.

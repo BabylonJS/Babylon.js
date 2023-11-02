@@ -73,6 +73,9 @@ export interface RenderTargetTextureOptions {
 
     /** True (default: false) to create a SRGB texture */
     useSRGBBuffer?: boolean;
+
+    /** Defines the underlying texture texture space */
+    gammaSpace?: boolean;
 }
 
 /**
@@ -439,6 +442,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * @param creationFlags specific flags to use when creating the texture (e.g., Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures)
      * @param noColorAttachment True (default: false) to indicate that no color target should be created. (e.g., if you only want to write to the depth buffer)
      * @param useSRGBBuffer True (default: false) to create a SRGB texture
+     * @param gammaSpace defines if the texture contains data in gamma space (most of the png/jpg aside bump).
      */
     constructor(
         name: string,
@@ -457,7 +461,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         samples?: number,
         creationFlags?: number,
         noColorAttachment?: boolean,
-        useSRGBBuffer?: boolean
+        useSRGBBuffer?: boolean,
+        gammaSpace?: boolean
     );
 
     /** @internal */
@@ -478,7 +483,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         samples?: number,
         creationFlags?: number,
         noColorAttachment = false,
-        useSRGBBuffer = false
+        useSRGBBuffer = false,
+        gammaSpace = false
     ) {
         let colorAttachment: InternalTexture | undefined = undefined;
         if (typeof generateMipMaps === "object") {
@@ -498,6 +504,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             noColorAttachment = !!options.noColorAttachment;
             useSRGBBuffer = !!options.useSRGBBuffer;
             colorAttachment = options.colorAttachment;
+            gammaSpace = !!options.gammaSpace;
         }
 
         super(null, scene, !generateMipMaps, undefined, samplingMode, undefined, undefined, undefined, undefined, format);
@@ -509,6 +516,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
         const engine = this.getScene()!.getEngine();
 
+        this._gammaSpace = gammaSpace;
         this._coordinatesMode = Texture.PROJECTION_MODE;
         this.renderList = new Array<AbstractMesh>();
         this.name = name;

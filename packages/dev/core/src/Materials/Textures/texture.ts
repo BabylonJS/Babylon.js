@@ -64,6 +64,9 @@ export interface ITextureCreationOptions {
 
     /** Defines the underlying texture from an already existing one */
     internalTexture?: InternalTexture;
+
+    /** Defines the underlying texture texture space */
+    gammaSpace?: boolean;
 }
 
 /**
@@ -380,6 +383,7 @@ export class Texture extends BaseTexture {
      * @param loaderOptions options to be passed to the loader
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @param forcedExtension defines the extension to use to pick the right loader
+     * @param gammaSpace defines if the texture contains data in gamma space (most of the png/jpg aside bump).
      */
     constructor(
         url: Nullable<string>,
@@ -395,7 +399,8 @@ export class Texture extends BaseTexture {
         mimeType?: string,
         loaderOptions?: any,
         creationFlags?: number,
-        forcedExtension?: string
+        forcedExtension?: string,
+        gammaSpace?: boolean
     ) {
         super(sceneOrEngine);
 
@@ -420,10 +425,12 @@ export class Texture extends BaseTexture {
             creationFlags = noMipmapOrOptions.creationFlags;
             useSRGBBuffer = noMipmapOrOptions.useSRGBBuffer ?? false;
             internalTexture = noMipmapOrOptions.internalTexture ?? null;
+            gammaSpace = noMipmapOrOptions.gammaSpace ?? false;
         } else {
             noMipmap = !!noMipmapOrOptions;
         }
 
+        this._gammaSpace = !!gammaSpace;
         this._noMipmap = noMipmap;
         this._invertY = invertY === undefined ? (CompatibilityOptions.UseOpenGLOrientationForUV ? false : true) : invertY;
         this._initialSamplingMode = samplingMode;
