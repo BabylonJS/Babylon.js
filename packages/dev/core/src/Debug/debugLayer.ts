@@ -224,6 +224,18 @@ export class DebugLayer {
      */
     public static InspectorURL = `v${Engine.Version}/inspector/babylon.inspector.bundle.js`;
 
+    /**
+     * The default configuration of the inspector
+     */
+    public static Config: IInspectorOptions = {
+        overlay: false,
+        showExplorer: true,
+        showInspector: true,
+        embedMode: false,
+        handleResize: true,
+        enablePopup: true,
+    };
+
     private _scene: Scene;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -260,18 +272,6 @@ export class DebugLayer {
 
         return this._onSelectionChangedObservable;
     }
-
-    /**
-     * the default configuration of the inspector at the class level
-     */
-    public static Config: IInspectorOptions = {
-        overlay: false,
-        showExplorer: true,
-        showInspector: true,
-        embedMode: false,
-        handleResize: true,
-        enablePopup: true,
-    };
 
     /**
      * Instantiates a new debug layer.
