@@ -400,7 +400,7 @@ export class Texture extends BaseTexture {
         loaderOptions?: any,
         creationFlags?: number,
         forcedExtension?: string,
-        gammaSpace?: boolean
+        gammaSpace = true
     ) {
         super(sceneOrEngine);
 
@@ -425,12 +425,12 @@ export class Texture extends BaseTexture {
             creationFlags = noMipmapOrOptions.creationFlags;
             useSRGBBuffer = noMipmapOrOptions.useSRGBBuffer ?? false;
             internalTexture = noMipmapOrOptions.internalTexture ?? null;
-            gammaSpace = noMipmapOrOptions.gammaSpace ?? false;
+            gammaSpace = noMipmapOrOptions.gammaSpace ?? gammaSpace;
         } else {
             noMipmap = !!noMipmapOrOptions;
         }
 
-        this._gammaSpace = !!gammaSpace;
+        this._gammaSpace = gammaSpace;
         this._noMipmap = noMipmap;
         this._invertY = invertY === undefined ? (CompatibilityOptions.UseOpenGLOrientationForUV ? false : true) : invertY;
         this._initialSamplingMode = samplingMode;

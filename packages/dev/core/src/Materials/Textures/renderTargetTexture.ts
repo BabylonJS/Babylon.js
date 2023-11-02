@@ -484,7 +484,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         creationFlags?: number,
         noColorAttachment = false,
         useSRGBBuffer = false,
-        gammaSpace = false
+        gammaSpace = true
     ) {
         let colorAttachment: InternalTexture | undefined = undefined;
         if (typeof generateMipMaps === "object") {
@@ -504,7 +504,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             noColorAttachment = !!options.noColorAttachment;
             useSRGBBuffer = !!options.useSRGBBuffer;
             colorAttachment = options.colorAttachment;
-            gammaSpace = !!options.gammaSpace;
+            gammaSpace = options.gammaSpace ?? gammaSpace;
         }
 
         super(null, scene, !generateMipMaps, undefined, samplingMode, undefined, undefined, undefined, undefined, format);
