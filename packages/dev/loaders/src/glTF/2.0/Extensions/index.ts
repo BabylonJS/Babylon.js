@@ -17,6 +17,7 @@ export * from "./KHR_materials_variants";
 export * from "./KHR_materials_transmission";
 export * from "./KHR_materials_translucency";
 export * from "./KHR_materials_volume";
+export * from "./KHR_materials_dispersion";
 export * from "./KHR_mesh_quantization";
 export * from "./KHR_texture_basisu";
 export * from "./KHR_texture_transform";

@@ -112,6 +112,9 @@ struct subSurfaceOutParams
             in vec3 refractionPosition,
             in vec3 refractionSize,
         #endif
+        #ifdef SS_DISPERSION
+            in float dispersion,
+        #endif
     #endif
     #ifdef SS_TRANSLUCENCY
         in vec3 vDiffusionDistance,
@@ -192,6 +195,29 @@ struct subSurfaceOutParams
     #ifdef SS_REFRACTION
         vec4 environmentRefraction = vec4(0., 0., 0., 0.);
 
+        // vRefractionInfos.y is the IOR of the volume.
+        // vRefractionMicrosurfaceInfos.w is the IOR of the surface.
+        #ifdef SS_HAS_THICKNESS
+            float ior = vRefractionInfos.y;
+        #else
+            float ior = vRefractionMicrosurfaceInfos.w;
+        #endif
+        // Scale roughness with IOR so that an IOR of 1.0 results in no microfacet refraction and
+        // an IOR of 1.5 results in the default amount of microfacet refraction.
+        #ifdef SS_LODINREFRACTIONALPHA
+            float refractionAlphaG = alphaG;
+            refractionAlphaG = mix(alphaG, 0.0, clamp(ior * 3.0 - 2.0, 0.0, 1.0));
+            float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, refractionAlphaG, NdotVUnclamped);
+        #elif defined(SS_LINEARSPECULARREFRACTION)
+            float refractionRoughness = alphaG;
+            refractionRoughness = mix(alphaG, 0.0, clamp(ior * 3.0 - 2.0, 0.0, 1.0));
+            float refractionLOD = getLinearLodFromRoughness(vRefractionMicrosurfaceInfos.x, refractionRoughness);
+        #else
+            float refractionAlphaG = alphaG;
+            refractionAlphaG = mix(alphaG, 0.0, clamp(ior * 3.0 - 2.0, 0.0, 1.0));
+            float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, refractionAlphaG);
+        #endif
+
         #ifdef ANISOTROPIC
             vec3 refractionVector = refract(-viewDirectionW, anisotropicOut.anisotropicNormal, vRefractionInfos.y);
         #else
@@ -218,29 +244,6 @@ struct subSurfaceOutParams
             #endif
             vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
             refractionCoords.y = 1.0 - refractionCoords.y;
-        #endif
-
-        // vRefractionInfos.y is the IOR of the volume.
-        // vRefractionMicrosurfaceInfos.w is the IOR of the surface.
-        #ifdef SS_HAS_THICKNESS
-            float ior = vRefractionInfos.y;
-        #else
-            float ior = vRefractionMicrosurfaceInfos.w;
-        #endif
-        // Scale roughness with IOR so that an IOR of 1.0 results in no microfacet refraction and
-        // an IOR of 1.5 results in the default amount of microfacet refraction.
-        #ifdef SS_LODINREFRACTIONALPHA
-            float refractionAlphaG = alphaG;
-            refractionAlphaG = mix(alphaG, 0.0, clamp(ior * 3.0 - 2.0, 0.0, 1.0));
-            float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, refractionAlphaG, NdotVUnclamped);
-        #elif defined(SS_LINEARSPECULARREFRACTION)
-            float refractionRoughness = alphaG;
-            refractionRoughness = mix(alphaG, 0.0, clamp(ior * 3.0 - 2.0, 0.0, 1.0));
-            float refractionLOD = getLinearLodFromRoughness(vRefractionMicrosurfaceInfos.x, refractionRoughness);
-        #else
-            float refractionAlphaG = alphaG;
-            refractionAlphaG = mix(alphaG, 0.0, clamp(ior * 3.0 - 2.0, 0.0, 1.0));
-            float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, refractionAlphaG);
         #endif
 
         #ifdef LODBASEDMICROSFURACE

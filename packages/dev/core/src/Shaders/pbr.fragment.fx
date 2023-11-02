@@ -586,6 +586,9 @@ void main(void) {
                 vRefractionPosition,
                 vRefractionSize,
             #endif
+            #ifdef SS_DISPERSION
+                dispersion,
+            #endif
         #endif
         #ifdef SS_TRANSLUCENCY
             vDiffusionDistance,
