@@ -277,26 +277,17 @@ export class DebugLayer {
     };
 
     /**
-     * the default configuration of the inspector
-     * DebugLayer.Config is inherited when the instance is created
-     * After it is created, changes to DebugLayer.Config are not synchronized to the instance configuration
-     */
-    public config: IInspectorOptions = { ...DebugLayer.Config };
-
-    /**
      * Instantiates a new debug layer.
      * The debug layer (aka Inspector) is the go to tool in order to better understand
      * what is happening in your scene
      * @see https://doc.babylonjs.com/toolsAndResources/inspector
      * @param scene Defines the scene to inspect
-     * @param config the default configuration of the inspector
      */
-    constructor(scene?: Scene, config?: IInspectorOptions) {
+    constructor(scene?: Scene) {
         this._scene = scene || <Scene>EngineStore.LastCreatedScene;
         if (!this._scene) {
             return;
         }
-        Object.assign(this.config, config);
         this._scene.onDisposeObservable.add(() => {
             // Debug layer
             if (this._scene._debugLayer) {
@@ -331,7 +322,7 @@ export class DebugLayer {
         }
 
         const userOptions: IInspectorOptions = {
-            ...this.config,
+            ...(this.constructor as typeof DebugLayer).Config,
             ...config,
         };
 
