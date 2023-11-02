@@ -322,7 +322,7 @@ export class DebugLayer {
         }
 
         const userOptions: IInspectorOptions = {
-            ...(this.constructor as typeof DebugLayer).Config,
+            ...DebugLayer.Config,
             ...config,
         };
 
