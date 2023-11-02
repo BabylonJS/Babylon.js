@@ -436,7 +436,7 @@ export class GLTFLoader implements IGLTFLoader {
                     this._babylonScene.blockMaterialDirtyMechanism = oldBlockMaterialDirtyMechanism;
                 } else {
                     // By default a newly created material is dirty so there is no need to flag the full scene as dirty.
-                    // If not Restore the blocking of material dirty without impact.
+                    // For perf reasons, we then bypass blockMaterialDirtyMechanism as this would "dirty" the entire scene.
                     this._babylonScene._forceBlockMaterialDirtyMechanism(oldBlockMaterialDirtyMechanism);
                 }
 
