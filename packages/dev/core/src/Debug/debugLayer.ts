@@ -224,6 +224,18 @@ export class DebugLayer {
      */
     public static InspectorURL = `${Tools._DefaultCdnUrl}/v${Engine.Version}/inspector/babylon.inspector.bundle.js`;
 
+    /**
+     * The default configuration of the inspector
+     */
+    public static Config: IInspectorOptions = {
+        overlay: false,
+        showExplorer: true,
+        showInspector: true,
+        embedMode: false,
+        handleResize: true,
+        enablePopup: true,
+    };
+
     private _scene: Scene;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -307,12 +319,7 @@ export class DebugLayer {
         }
 
         const userOptions: IInspectorOptions = {
-            overlay: false,
-            showExplorer: true,
-            showInspector: true,
-            embedMode: false,
-            handleResize: true,
-            enablePopup: true,
+            ...DebugLayer.Config,
             ...config,
         };
 
