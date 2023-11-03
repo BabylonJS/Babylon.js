@@ -9,35 +9,35 @@ import type { Ray } from "../Culling/ray";
 /**
  * Gather the list of pointer event types as constants.
  */
-export class PointerEventTypes {
+export enum PointerEventTypes {
     /**
      * The pointerdown event is fired when a pointer becomes active. For mouse, it is fired when the device transitions from no buttons depressed to at least one button depressed. For touch, it is fired when physical contact is made with the digitizer. For pen, it is fired when the stylus makes physical contact with the digitizer.
      */
-    public static readonly POINTERDOWN = 0x01;
+    POINTERDOWN = 0x01,
     /**
      * The pointerup event is fired when a pointer is no longer active.
      */
-    public static readonly POINTERUP = 0x02;
+    POINTERUP = 0x02,
     /**
      * The pointermove event is fired when a pointer changes coordinates.
      */
-    public static readonly POINTERMOVE = 0x04;
+    POINTERMOVE = 0x04,
     /**
      * The pointerwheel event is fired when a mouse wheel has been rotated.
      */
-    public static readonly POINTERWHEEL = 0x08;
+    POINTERWHEEL = 0x08,
     /**
      * The pointerpick event is fired when a mesh or sprite has been picked by the pointer.
      */
-    public static readonly POINTERPICK = 0x10;
+    POINTERPICK = 0x10,
     /**
      * The pointertap event is fired when a the object has been touched and released without drag.
      */
-    public static readonly POINTERTAP = 0x20;
+    POINTERTAP = 0x20,
     /**
      * The pointerdoubletap event is fired when a the object has been touched and released twice without drag.
      */
-    public static readonly POINTERDOUBLETAP = 0x40;
+    POINTERDOUBLETAP = 0x40,
 }
 
 /**
