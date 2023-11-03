@@ -2804,6 +2804,13 @@ export class WebGPUEngine extends Engine {
 
         this._debugFlushPendingCommands?.();
 
+        this._applyViewport();
+        if (this._scissorIsActive()) {
+            this._applyScissor();
+        }
+        this._applyStencilRef();
+        this._applyBlendColor();
+
         if (!gpuDepthStencilWrapper || !WebGPUTextureHelper.HasStencilAspect(gpuDepthStencilWrapper.format)) {
             this._stencilStateComposer.enabled = false;
         }
@@ -2870,6 +2877,13 @@ export class WebGPUEngine extends Engine {
         this._setColorFormat(this._mainRenderPassWrapper);
 
         this._debugFlushPendingCommands?.();
+
+        this._applyViewport();
+        if (this._scissorIsActive()) {
+            this._applyScissor();
+        }
+        this._applyStencilRef();
+        this._applyBlendColor();
 
         if (!this._isStencilEnable) {
             this._stencilStateComposer.enabled = false;
