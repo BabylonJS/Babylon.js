@@ -292,7 +292,7 @@ export class ShaderCodeInliner {
                     // FUNCTYPE retParamName;
                     // {function body}
                     // and replace the function call by retParamName
-                    const injectDeclarationIndex = FindBackward(this._sourceCode, functionCallIndex - 1, "\n");
+                    const injectDeclarationIndex = FindBackward(this._sourceCode, functionCallIndex - 1, "\n", "{");
 
                     partBefore = this._sourceCode.substring(0, injectDeclarationIndex + 1);
                     const partBetween = this._sourceCode.substring(injectDeclarationIndex + 1, functionCallIndex);
