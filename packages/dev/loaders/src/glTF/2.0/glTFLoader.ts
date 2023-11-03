@@ -194,6 +194,9 @@ export class GLTFLoader implements IGLTFLoader {
     /** @internal */
     public _disableInstancedMesh = 0;
 
+    /** @internal */
+    public _allMaterialsDirtyRequired = false;
+
     private readonly _parent: GLTFFileLoader;
     private readonly _extensions = new Array<IGLTFLoaderExtension>();
     private _disposed = false;
@@ -387,6 +390,7 @@ export class GLTFLoader implements IGLTFLoader {
                 this._rootUrl = rootUrl;
                 this._uniqueRootUrl = !rootUrl.startsWith("file:") && fileName ? rootUrl : `${rootUrl}${Date.now()}/`;
                 this._fileName = fileName;
+                this._allMaterialsDirtyRequired = false;
 
                 this._loadExtensions();
                 this._checkExtensions();
@@ -426,7 +430,15 @@ export class GLTFLoader implements IGLTFLoader {
                 }
 
                 // Restore the blocking of material dirty.
-                this._babylonScene.blockMaterialDirtyMechanism = oldBlockMaterialDirtyMechanism;
+                if (this._allMaterialsDirtyRequired) {
+                    // This can happen if we add a light for instance as it will impact the whole scene.
+                    // This automatically resets everything if needed.
+                    this._babylonScene.blockMaterialDirtyMechanism = oldBlockMaterialDirtyMechanism;
+                } else {
+                    // By default a newly created material is dirty so there is no need to flag the full scene as dirty.
+                    // For perf reasons, we then bypass blockMaterialDirtyMechanism as this would "dirty" the entire scene.
+                    this._babylonScene._forceBlockMaterialDirtyMechanism(oldBlockMaterialDirtyMechanism);
+                }
 
                 if (this._parent.compileMaterials) {
                     promises.push(this._compileMaterialsAsync());
