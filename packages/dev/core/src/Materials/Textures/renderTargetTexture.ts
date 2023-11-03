@@ -442,7 +442,6 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * @param creationFlags specific flags to use when creating the texture (e.g., Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures)
      * @param noColorAttachment True (default: false) to indicate that no color target should be created. (e.g., if you only want to write to the depth buffer)
      * @param useSRGBBuffer True (default: false) to create a SRGB texture
-     * @param gammaSpace defines if the texture contains data in gamma space (most of the png/jpg aside bump).
      */
     constructor(
         name: string,
@@ -461,8 +460,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         samples?: number,
         creationFlags?: number,
         noColorAttachment?: boolean,
-        useSRGBBuffer?: boolean,
-        gammaSpace?: boolean
+        useSRGBBuffer?: boolean
     );
 
     /** @internal */
@@ -483,10 +481,10 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         samples?: number,
         creationFlags?: number,
         noColorAttachment = false,
-        useSRGBBuffer = false,
-        gammaSpace = true
+        useSRGBBuffer = false
     ) {
         let colorAttachment: InternalTexture | undefined = undefined;
+        let gammaSpace = true;
         if (typeof generateMipMaps === "object") {
             const options = generateMipMaps;
             generateMipMaps = !!options.generateMipMaps;

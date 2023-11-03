@@ -383,7 +383,6 @@ export class Texture extends BaseTexture {
      * @param loaderOptions options to be passed to the loader
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @param forcedExtension defines the extension to use to pick the right loader
-     * @param gammaSpace defines if the texture contains data in gamma space (most of the png/jpg aside bump).
      */
     constructor(
         url: Nullable<string>,
@@ -399,8 +398,7 @@ export class Texture extends BaseTexture {
         mimeType?: string,
         loaderOptions?: any,
         creationFlags?: number,
-        forcedExtension?: string,
-        gammaSpace = true
+        forcedExtension?: string
     ) {
         super(sceneOrEngine);
 
@@ -410,6 +408,7 @@ export class Texture extends BaseTexture {
         let noMipmap: boolean;
         let useSRGBBuffer: boolean = false;
         let internalTexture: Nullable<InternalTexture> = null;
+        let gammaSpace = true;
 
         if (typeof noMipmapOrOptions === "object" && noMipmapOrOptions !== null) {
             noMipmap = noMipmapOrOptions.noMipmap ?? false;
