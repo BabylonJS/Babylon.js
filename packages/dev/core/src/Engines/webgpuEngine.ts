@@ -1100,24 +1100,22 @@ export class WebGPUEngine extends Engine {
     //------------------------------------------------------------------------------
 
     // index 0 is for main render pass, 1 for RTT render pass
-    private _viewportsCurrent: Array<{ x: number; y: number; w: number; h: number }> = [{ x: 0, y: 0, w: 0, h: 0 }];
+    private _viewportsCurrent: { x: number; y: number; w: number; h: number } = { x: 0, y: 0, w: 0, h: 0 };
 
     private _mustUpdateViewport(): boolean {
-        const index = 0;
-
         const x = this._viewportCached.x,
             y = this._viewportCached.y,
             w = this._viewportCached.z,
             h = this._viewportCached.w;
 
         const update =
-            this._viewportsCurrent[index].x !== x || this._viewportsCurrent[index].y !== y || this._viewportsCurrent[index].w !== w || this._viewportsCurrent[index].h !== h;
+            this._viewportsCurrent.x !== x || this._viewportsCurrent.y !== y || this._viewportsCurrent.w !== w || this._viewportsCurrent.h !== h;
 
         if (update) {
-            this._viewportsCurrent[index].x = this._viewportCached.x;
-            this._viewportsCurrent[index].y = this._viewportCached.y;
-            this._viewportsCurrent[index].w = this._viewportCached.z;
-            this._viewportsCurrent[index].h = this._viewportCached.w;
+            this._viewportsCurrent.x = this._viewportCached.x;
+            this._viewportsCurrent.y = this._viewportCached.y;
+            this._viewportsCurrent.w = this._viewportCached.z;
+            this._viewportsCurrent.h = this._viewportCached.w;
         }
 
         return update;
@@ -1162,24 +1160,22 @@ export class WebGPUEngine extends Engine {
         this._viewportCached.w = height;
     }
 
-    private _scissorsCurrent: Array<{ x: number; y: number; w: number; h: number }> = [{ x: 0, y: 0, w: 0, h: 0 }];
+    private _scissorsCurrent: { x: number; y: number; w: number; h: number } = { x: 0, y: 0, w: 0, h: 0 };
     protected _scissorCached = { x: 0, y: 0, z: 0, w: 0 };
 
     private _mustUpdateScissor(): boolean {
-        const index = 0;
-
         const x = this._scissorCached.x,
             y = this._scissorCached.y,
             w = this._scissorCached.z,
             h = this._scissorCached.w;
 
-        const update = this._scissorsCurrent[index].x !== x || this._scissorsCurrent[index].y !== y || this._scissorsCurrent[index].w !== w || this._scissorsCurrent[index].h !== h;
+        const update = this._scissorsCurrent.x !== x || this._scissorsCurrent.y !== y || this._scissorsCurrent.w !== w || this._scissorsCurrent.h !== h;
 
         if (update) {
-            this._scissorsCurrent[index].x = this._scissorCached.x;
-            this._scissorsCurrent[index].y = this._scissorCached.y;
-            this._scissorsCurrent[index].w = this._scissorCached.z;
-            this._scissorsCurrent[index].h = this._scissorCached.w;
+            this._scissorsCurrent.x = this._scissorCached.x;
+            this._scissorsCurrent.y = this._scissorCached.y;
+            this._scissorsCurrent.w = this._scissorCached.z;
+            this._scissorsCurrent.h = this._scissorCached.w;
         }
 
         return update;
@@ -1224,19 +1220,17 @@ export class WebGPUEngine extends Engine {
     }
 
     public disableScissor() {
-        this._scissorCached.x = 0;
-        this._scissorCached.y = 0;
-        this._scissorCached.z = 0;
-        this._scissorCached.w = 0;
+        this._scissorCached.x = this._scissorCached.y = this._scissorCached.z = this._scissorCached.w = 0;
+        this._scissorsCurrent.x = this._scissorsCurrent.y = this._scissorsCurrent.w = this._scissorsCurrent.h = 0;
     }
 
-    private _stencilRefsCurrent: Array<number> = [-1, -1];
+    private _stencilRefsCurrent = -1;
 
     private _mustUpdateStencilRef(): boolean {
         const index = 0;
-        const update = this._stencilStateComposer.funcRef !== this._stencilRefsCurrent[index];
+        const update = this._stencilStateComposer.funcRef !== this._stencilRefsCurrent;
         if (update) {
-            this._stencilRefsCurrent[index] = this._stencilStateComposer.funcRef;
+            this._stencilRefsCurrent = this._stencilStateComposer.funcRef;
         }
         return update;
     }
@@ -1250,23 +1244,22 @@ export class WebGPUEngine extends Engine {
         renderPass.setStencilReference(this._stencilStateComposer.funcRef ?? 0);
     }
 
-    private _blendColorsCurrent: Array<Array<Nullable<number>>> = [[null, null, null, null]];
+    private _blendColorsCurrent: Array<Nullable<number>> = [null, null, null, null];
 
     private _mustUpdateBlendColor(): boolean {
-        const index = 0;
         const colorBlend = this._alphaState._blendConstants;
 
         const update =
-            colorBlend[0] !== this._blendColorsCurrent[index][0] ||
-            colorBlend[1] !== this._blendColorsCurrent[index][1] ||
-            colorBlend[2] !== this._blendColorsCurrent[index][2] ||
-            colorBlend[3] !== this._blendColorsCurrent[index][3];
+            colorBlend[0] !== this._blendColorsCurrent[0] ||
+            colorBlend[1] !== this._blendColorsCurrent[1] ||
+            colorBlend[2] !== this._blendColorsCurrent[2] ||
+            colorBlend[3] !== this._blendColorsCurrent[3];
 
         if (update) {
-            this._blendColorsCurrent[index][0] = colorBlend[0];
-            this._blendColorsCurrent[index][1] = colorBlend[1];
-            this._blendColorsCurrent[index][2] = colorBlend[2];
-            this._blendColorsCurrent[index][3] = colorBlend[3];
+            this._blendColorsCurrent[0] = colorBlend[0];
+            this._blendColorsCurrent[1] = colorBlend[1];
+            this._blendColorsCurrent[2] = colorBlend[2];
+            this._blendColorsCurrent[3] = colorBlend[3];
         }
 
         return update;
@@ -1276,6 +1269,13 @@ export class WebGPUEngine extends Engine {
         const renderPass = this._getCurrentRenderPass();
 
         renderPass.setBlendConstant(this._alphaState._blendConstants as GPUColor);
+    }
+
+    private _resetRenderPassStates() {
+        this._viewportsCurrent.x = this._viewportsCurrent.y = this._viewportsCurrent.w = this._viewportsCurrent.h = 0;
+        this._scissorsCurrent.x = this._scissorsCurrent.y = this._scissorsCurrent.w = this._scissorsCurrent.h = 0;
+        this._stencilRefsCurrent = -1;
+        this._blendColorsCurrent[0] = this._blendColorsCurrent[1] = this._blendColorsCurrent[2] = this._blendColorsCurrent[3] = null;
     }
 
     /**
@@ -2804,12 +2804,7 @@ export class WebGPUEngine extends Engine {
 
         this._debugFlushPendingCommands?.();
 
-        this._applyViewport();
-        if (this._scissorIsActive()) {
-            this._applyScissor();
-        }
-        this._applyStencilRef();
-        this._applyBlendColor();
+        this._resetRenderPassStates();
 
         if (!gpuDepthStencilWrapper || !WebGPUTextureHelper.HasStencilAspect(gpuDepthStencilWrapper.format)) {
             this._stencilStateComposer.enabled = false;
@@ -2878,12 +2873,7 @@ export class WebGPUEngine extends Engine {
 
         this._debugFlushPendingCommands?.();
 
-        this._applyViewport();
-        if (this._scissorIsActive()) {
-            this._applyScissor();
-        }
-        this._applyStencilRef();
-        this._applyBlendColor();
+        this._resetRenderPassStates();
 
         if (!this._isStencilEnable) {
             this._stencilStateComposer.enabled = false;
