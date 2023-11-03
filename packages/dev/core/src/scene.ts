@@ -5332,6 +5332,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     private _blockMaterialDirtyMechanism = false;
 
+    /** @internal */
+    public _forceBlockMaterialDirtyMechanism(value: boolean) {
+        this._blockMaterialDirtyMechanism = value;
+    }
+
     /** Gets or sets a boolean blocking all the calls to markAllMaterialsAsDirty (ie. the materials won't be updated if they are out of sync) */
     public get blockMaterialDirtyMechanism(): boolean {
         return this._blockMaterialDirtyMechanism;
