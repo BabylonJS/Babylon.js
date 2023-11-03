@@ -18,7 +18,7 @@ import type { Nullable } from "core/types";
 import type { ITestDeviceInputSystem } from "./testDeviceInputSystem";
 import { TestDeviceInputSystem } from "./testDeviceInputSystem";
 import { SpriteManager } from "core/Sprites";
-import { Epsilon } from "core/Maths";
+import { Epsilon } from "core/Maths/math.constants";
 
 // Add function to NullEngine to allow for getting the canvas rect properties
 NullEngine.prototype.getInputElementClientRect = function (): Nullable<DOMRect> {
@@ -911,7 +911,7 @@ describe("InputManager", () => {
         // determine the margin of error for our tests
         const marginOfError = (camera?.speed ?? 2) * Epsilon;
         const distanceMatch30FPS = finalPosition30FPS.equalsWithEpsilon(finalPosition60FPS, marginOfError);
-        const distanceMatch120FPS = finalPosition120FPS.equalsWithEpsilon(finalPosition60FPS, marginOfError);;
+        const distanceMatch120FPS = finalPosition120FPS.equalsWithEpsilon(finalPosition60FPS, marginOfError);
         const rotationMatch30FPS = finalRotation30FPS.equalsWithEpsilon(finalRotation60FPS, marginOfError);
         const rotationMatch120FPS = finalRotation120FPS.equalsWithEpsilon(finalRotation60FPS, marginOfError);
         expect(distanceMatch30FPS).toBe(true);

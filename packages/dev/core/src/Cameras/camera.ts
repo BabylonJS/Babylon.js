@@ -124,6 +124,12 @@ export class Camera extends Node {
     /** @internal */
     protected _currentDeltaTime;
 
+    /**
+     * Delta time, in ms, for a frame run at 60 fps.
+     * @internal
+     * */
+    protected _standardDeltaTime = 1000 / 60;
+
     /** @internal */
     @serializeAsVector3("position")
     public _position = Vector3.Zero();
@@ -1565,7 +1571,7 @@ export class Camera extends Node {
      * @internal
      */
     public _getInertiaRelativeToTime(inertia: number = this.inertia): number {
-        return Math.pow(inertia, this._currentDeltaTime / 16);
+        return Math.pow(inertia, this._currentDeltaTime / this._standardDeltaTime);
     }
 
     /**
@@ -1573,8 +1579,10 @@ export class Camera extends Node {
      * move with a consistent speed regardless of the frame rate.
      *
      * The math used here is effectively a simplified version of the sum of a geometric series
-     * from 0 to n, divided by the relative inertia, where n is equal to the ratio of the current
-     * frame rate to the ideal frame rate (60 fps).
+     * for inertia^n from 0 to n, times inertia, divided by the relative inertia, where n is
+     * equal to the ratio of the current frame rate to the ideal frame rate (60 fps).
+     * The math was further simplified to just use each of the given inertia values for
+     * readability purposes.
      * @internal
      */
     public _getRelativeScaleFactor(relativeInertia: number, inertia: number = this.inertia): number {
