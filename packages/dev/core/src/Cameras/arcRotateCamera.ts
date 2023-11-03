@@ -929,6 +929,9 @@ export class ArcRotateCamera extends TargetCamera {
                 const relativeInertia = this._getInertiaRelativeToTime();
                 const scaleFactor = this._getRelativeScaleFactor(relativeInertia);
 
+                // Since we're storing a version of the inertial alpha offset with handedness
+                // we need to also multiply it against our relative inertia for an accurate value
+                inertialAlphaOffset *= relativeInertia;
                 this.inertialAlphaOffset *= relativeInertia;
                 this.inertialBetaOffset *= relativeInertia;
                 this.inertialRadiusOffset *= relativeInertia;

@@ -1569,17 +1569,17 @@ export class Camera extends Node {
     }
 
     /**
-     * This will return the a ratio of change between a provided relative inertia and the
-     * camera's set inertia.
+     * This provide a scaling factor to multiply against the offset so that all offsets will
+     * move with a consistent speed regardless of the frame rate.
      *
-     * For the math on this, inertia is a percentage of how much of camera attribute's offset
-     * that we keep after each frame.  Because of this, we will subtract it from 1 (assuming 1
-     * represents 100%) to get the percentage we lose each frame.  We then take the relative
-     * value that we expect to lose and divide it by the percentage lost with our standard
-     * inertia value (expected to be what 60 FPS should use).
+     * The math used here is effectively a simplified version of the sum of a geometric series
+     * from 0 to n, divided by the relative inertia, where n is equal to the ratio of the current
+     * frame rate to the ideal frame rate (60 fps).
      * @internal
      */
     public _getRelativeScaleFactor(relativeInertia: number, inertia: number = this.inertia): number {
-        return (1 - relativeInertia) / (1 - inertia);
+        const num = inertia * (1 - relativeInertia);
+        const den = relativeInertia * (1 - inertia);
+        return num / den;
     }
 }

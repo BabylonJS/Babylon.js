@@ -18,6 +18,7 @@ import type { Nullable } from "core/types";
 import type { ITestDeviceInputSystem } from "./testDeviceInputSystem";
 import { TestDeviceInputSystem } from "./testDeviceInputSystem";
 import { SpriteManager } from "core/Sprites";
+import { Epsilon } from "core/Maths";
 
 // Add function to NullEngine to allow for getting the canvas rect properties
 NullEngine.prototype.getInputElementClientRect = function (): Nullable<DOMRect> {
@@ -625,6 +626,10 @@ describe("InputManager", () => {
             camera.onViewMatrixChangedObservable.add(() => {
                 viewMatrixChangedCt++;
             });
+
+            // Need to set constant animation delta time to true because we're not using the default render loop
+            // which will result in an unusable delta time
+            scene.useConstantAnimationDeltaTime = true;
             // Perform basic mouse move (should trigger observable because of down pick)
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Horizontal, 64, false);
@@ -675,6 +680,244 @@ describe("InputManager", () => {
         }
 
         expect(viewMatrixChangedCt).toBe(4);
+    });
+
+    it("takes the same time to move ArcRotateCamera with different frame rates", () => {
+        let frame30FPS = 0;
+        let finalRadius30FPS = 0;
+        let finalAlpha30FPS = 0;
+        let finalBeta30FPS = 0;
+        let frame60FPS = 0;
+        let finalRadius60FPS = 0;
+        let finalAlpha60FPS = 0;
+        let finalBeta60FPS = 0;
+        let frame120FPS = 0;
+        let finalRadius120FPS = 0;
+        let finalAlpha120FPS = 0;
+        let finalBeta120FPS = 0;
+
+        if (deviceInputSystem && camera && scene) {
+            // We're not using the FreeCamera to let's dispose of it
+            camera?.dispose();
+            // Instead, let's use an ArcRotateCamera
+            const arcRotateCamera = new ArcRotateCamera("arcRotateCamera", 0, Math.PI / 2, 10, Vector3.Zero(), scene);
+            // Need to set constant animation delta time to true because we're not using the default render loop
+            // which will result in an unusable delta time
+            scene.useConstantAnimationDeltaTime = true;
+
+            // Test at 60 FPS
+            scene.constantAnimationDeltaTime = 16;
+            // Radius
+            arcRotateCamera.alpha = 0;
+            arcRotateCamera.beta = Math.PI / 2;
+            arcRotateCamera.radius = 10;
+            arcRotateCamera.inertialRadiusOffset = 1;
+            while (arcRotateCamera.inertialRadiusOffset != 0) {
+                frame60FPS++;
+                scene.render();
+            }
+            finalRadius60FPS = arcRotateCamera.radius;
+            // Alpha
+            arcRotateCamera.alpha = 0;
+            arcRotateCamera.inertialAlphaOffset = 1;
+            while (arcRotateCamera.inertialAlphaOffset != 0) {
+                scene.render();
+            }
+            finalAlpha60FPS = arcRotateCamera.alpha;
+            // Beta
+            arcRotateCamera.beta = Math.PI / 2;
+            arcRotateCamera.inertialBetaOffset = 1;
+            while (arcRotateCamera.inertialBetaOffset != 0) {
+                scene.render();
+            }
+            finalBeta60FPS = arcRotateCamera.beta;
+
+            // Test at 30 FPS
+            scene.constantAnimationDeltaTime = 32;
+            // Radius
+            arcRotateCamera.alpha = 0;
+            arcRotateCamera.beta = Math.PI / 2;
+            arcRotateCamera.radius = 10;
+            arcRotateCamera.inertialRadiusOffset = 1;
+            while (arcRotateCamera.inertialRadiusOffset != 0) {
+                frame30FPS++;
+                scene.render();
+            }
+            finalRadius30FPS = arcRotateCamera.radius;
+            // Alpha
+            arcRotateCamera.alpha = 0;
+            arcRotateCamera.inertialAlphaOffset = 1;
+            while (arcRotateCamera.inertialAlphaOffset != 0) {
+                scene.render();
+            }
+            finalAlpha30FPS = arcRotateCamera.alpha;
+            // Beta
+            arcRotateCamera.beta = Math.PI / 2;
+            arcRotateCamera.inertialBetaOffset = 1;
+            while (arcRotateCamera.inertialBetaOffset != 0) {
+                scene.render();
+            }
+            finalBeta30FPS = arcRotateCamera.beta;
+
+            // Test at 120 FPS
+            scene.constantAnimationDeltaTime = 8;
+            // Radius
+            arcRotateCamera.alpha = 0;
+            arcRotateCamera.beta = Math.PI / 2;
+            arcRotateCamera.radius = 10;
+            arcRotateCamera.inertialRadiusOffset = 1;
+            while (arcRotateCamera.inertialRadiusOffset != 0) {
+                frame120FPS++;
+                scene.render();
+            }
+            finalRadius120FPS = arcRotateCamera.radius;
+            // Alpha
+            arcRotateCamera.alpha = 0;
+            arcRotateCamera.inertialAlphaOffset = 1;
+            while (arcRotateCamera.inertialAlphaOffset != 0) {
+                scene.render();
+            }
+            finalAlpha120FPS = arcRotateCamera.alpha;
+            // Beta
+            arcRotateCamera.beta = Math.PI / 2;
+            arcRotateCamera.inertialBetaOffset = 1;
+            while (arcRotateCamera.inertialBetaOffset != 0) {
+                scene.render();
+            }
+            finalBeta120FPS = arcRotateCamera.beta;
+        }
+
+        // The number of frames should be the within +/- 1 frame of each other
+        const diffFrames30FPS = Math.abs(frame30FPS - frame60FPS * 0.5);
+        const diffFrames120FPS = Math.abs(frame120FPS - frame60FPS * 2);
+        expect(diffFrames30FPS).toBeLessThanOrEqual(1);
+        expect(diffFrames120FPS).toBeLessThanOrEqual(1);
+
+        // The final radius should be within camera.speed (Default: 2) * Epsilon of each other
+        const radiusMarginOfError = 2 * Epsilon;
+        const diffRadius30FPS = Math.abs(finalRadius30FPS - finalRadius60FPS);
+        const diffRadius120FPS = Math.abs(finalRadius120FPS - finalRadius60FPS);
+        expect(diffRadius30FPS).toBeLessThanOrEqual(radiusMarginOfError);
+        expect(diffRadius120FPS).toBeLessThanOrEqual(radiusMarginOfError);
+
+        // For alpha and beta, the final values should be within Epsilon of each other
+        const angleMarginOfError = Epsilon;
+        const diffAlpha30FPS = Math.abs(finalAlpha30FPS - finalAlpha60FPS);
+        const diffAlpha120FPS = Math.abs(finalAlpha120FPS - finalAlpha60FPS);
+        expect(diffAlpha30FPS).toBeLessThanOrEqual(angleMarginOfError);
+        expect(diffAlpha120FPS).toBeLessThanOrEqual(angleMarginOfError);
+
+        const diffBeta30FPS = Math.abs(finalBeta30FPS - finalBeta60FPS);
+        const diffBeta120FPS = Math.abs(finalBeta120FPS - finalBeta60FPS);
+        expect(diffBeta30FPS).toBeLessThanOrEqual(angleMarginOfError);
+        expect(diffBeta120FPS).toBeLessThanOrEqual(angleMarginOfError);
+    });
+
+    it("takes the same time to move FreeCamera with different frame rates", () => {
+        let frame30FPS = 0;
+        const finalPosition30FPS: Vector3 = Vector3.Zero();
+        const finalRotation30FPS: Vector3 = Vector3.Zero();
+        let frame60FPS = 0;
+        const finalPosition60FPS: Vector3 = Vector3.Zero();
+        const finalRotation60FPS: Vector3 = Vector3.Zero();
+        let frame120FPS = 0;
+        const finalPosition120FPS: Vector3 = Vector3.Zero();
+        const finalRotation120FPS: Vector3 = Vector3.Zero();
+
+        if (deviceInputSystem && camera && scene) {
+            // Need to set constant animation delta time to true because we're not using the default render loop
+            // which will result in an unusable delta time
+            scene.useConstantAnimationDeltaTime = true;
+
+            /** Check cameraDirection */
+            // Test at 60 FPS
+            scene.constantAnimationDeltaTime = 16;
+            camera.position.copyFromFloats(0, 0, 0);
+            camera.cameraDirection.x = 10;
+            camera.cameraDirection.y = 10;
+            camera.cameraDirection.z = 10;
+            while (!camera.cameraDirection.equalsToFloats(0, 0, 0)) {
+                frame60FPS++;
+                scene.render();
+            }
+            finalPosition60FPS.copyFrom(camera.position);
+
+            // Test at 30 FPS
+            scene.constantAnimationDeltaTime = 32;
+            camera.position.copyFromFloats(0, 0, 0);
+            camera.cameraDirection.x = 10;
+            camera.cameraDirection.y = 10;
+            camera.cameraDirection.z = 10;
+            while (!camera.cameraDirection.equalsToFloats(0, 0, 0)) {
+                frame30FPS++;
+                scene.render();
+            }
+            finalPosition30FPS.copyFrom(camera.position);
+
+            // Test at 120 FPS
+            scene.constantAnimationDeltaTime = 8;
+            camera.position.copyFromFloats(0, 0, 0);
+            camera.cameraDirection.x = 10;
+            camera.cameraDirection.y = 10;
+            camera.cameraDirection.z = 10;
+            while (!camera.cameraDirection.equalsToFloats(0, 0, 0)) {
+                frame120FPS++;
+                scene.render();
+            }
+            finalPosition120FPS.copyFrom(camera.position);
+
+            // Reset position for next set of tests
+            camera.position.copyFromFloats(0, 0, 0);
+
+            /** Check cameraRotation */
+            // Test at 60 FPS
+            scene.constantAnimationDeltaTime = 16;
+            camera.rotation.copyFromFloats(0, 0, 0);
+            camera.cameraRotation.x = 1;
+            camera.cameraRotation.y = 1;
+            while (camera.cameraRotation.x != 0 && camera.cameraRotation.y != 0) {
+                scene.render();
+            }
+            finalRotation60FPS.copyFrom(camera.rotation);
+
+            // Test at 30 FPS
+            scene.constantAnimationDeltaTime = 32;
+            camera.rotation.copyFromFloats(0, 0, 0);
+            camera.cameraRotation.x = 1;
+            camera.cameraRotation.y = 1;
+            while (camera.cameraRotation.x != 0 && camera.cameraRotation.y != 0) {
+                scene.render();
+            }
+            finalRotation30FPS.copyFrom(camera.rotation);
+
+            // Test at 120 FPS
+            scene.constantAnimationDeltaTime = 8;
+            camera.rotation.copyFromFloats(0, 0, 0);
+            camera.cameraRotation.x = 1;
+            camera.cameraRotation.y = 1;
+            while (camera.cameraRotation.x != 0 && camera.cameraRotation.y != 0) {
+                scene.render();
+            }
+            finalRotation120FPS.copyFrom(camera.rotation);
+        }
+
+        // The number of frames should be the within +/- 1 frame of each other
+        const diff30FPS = Math.abs(frame30FPS - frame60FPS * 0.5);
+        const diff120FPS = Math.abs(frame120FPS - frame60FPS * 2);
+        expect(diff30FPS).toBeLessThanOrEqual(1);
+        expect(diff120FPS).toBeLessThanOrEqual(1);
+
+        // Since the cutoff for all inertial values is equal to speed (default: 2) * Epsilon, we can use that to
+        // determine the margin of error for our tests
+        const marginOfError = (camera?.speed ?? 2) * Epsilon;
+        const distanceMatch30FPS = finalPosition30FPS.equalsWithEpsilon(finalPosition60FPS, marginOfError);
+        const distanceMatch120FPS = finalPosition120FPS.equalsWithEpsilon(finalPosition60FPS, marginOfError);;
+        const rotationMatch30FPS = finalRotation30FPS.equalsWithEpsilon(finalRotation60FPS, marginOfError);
+        const rotationMatch120FPS = finalRotation120FPS.equalsWithEpsilon(finalRotation60FPS, marginOfError);
+        expect(distanceMatch30FPS).toBe(true);
+        expect(distanceMatch120FPS).toBe(true);
+        expect(rotationMatch30FPS).toBe(true);
+        expect(rotationMatch120FPS).toBe(true);
     });
 
     it("can fire onProjectionMatrixObservable on camera.update", () => {
