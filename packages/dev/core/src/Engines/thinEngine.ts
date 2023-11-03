@@ -552,7 +552,7 @@ export class ThinEngine {
     protected _cachedEffectForVertexBuffers: Nullable<Effect>;
 
     /** @internal */
-    public _currentRenderTarget: Nullable<RenderTargetWrapper>;
+    public _currentRenderTarget: Nullable<RenderTargetWrapper> = null;
     private _uintIndicesCurrentlySet = false;
     protected _currentBoundBuffer = new Array<Nullable<DataBuffer>>();
     /** @internal */

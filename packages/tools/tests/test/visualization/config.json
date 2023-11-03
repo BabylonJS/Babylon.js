@@ -1773,6 +1773,16 @@
             "title": "Add mesh without vertex normals to SPS",
             "playgroundId": "#H1SEDF#1",
             "referenceImage": "AddmeshwithoutvertexnormalstoSPS.png"
+        },
+        {
+            "title": "Command encoder order in WebGPU 1",
+            "playgroundId": "#064AUB#110",
+            "referenceImage": "CommandEncodedWebGPU1.png"
+        },
+        {
+            "title": "Command encoder order in WebGPU 2",
+            "playgroundId": "#CMH5VF#7",
+            "referenceImage": "CommandEncodedWebGPU2.png"
         }
     ]
 }
