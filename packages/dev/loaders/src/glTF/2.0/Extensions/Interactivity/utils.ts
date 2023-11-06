@@ -16,6 +16,8 @@ import {
     FlowGraphWhileLoopBlock,
     FlowGraphMultiplyBlock,
     FlowGraphAnimateToBlock,
+    FlowGraphSubtractBlock,
+    FlowGraphDotBlock,
 } from "core/FlowGraph";
 
 export const gltfToFlowGraphTypeMap: { [key: string]: string } = {
@@ -36,6 +38,8 @@ export const gltfToFlowGraphTypeMap: { [key: string]: string } = {
     "flow/whileLoop": FlowGraphWhileLoopBlock.ClassName,
     "math/mul": FlowGraphMultiplyBlock.ClassName,
     "world/animateTo": FlowGraphAnimateToBlock.ClassName,
+    "math/sub": FlowGraphSubtractBlock.ClassName,
+    "math/dot": FlowGraphDotBlock.ClassName,
 };
 
 export const gltfPropertyNameToBabylonPropertyName: any = {

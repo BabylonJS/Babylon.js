@@ -5,7 +5,6 @@ import { RichTypeAny } from "../../../flowGraphRichTypes";
 import { RegisterClass } from "../../../../Misc";
 import { Animation, CircleEase } from "../../../../Animations";
 import { FlowGraphAsyncExecutionBlock } from "../../../flowGraphAsyncExecutionBlock";
-import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 
 export interface IFlowGraphAnimateToBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
@@ -30,10 +29,6 @@ export class FlowGraphAnimateToBlock<ValueT> extends FlowGraphAsyncExecutionBloc
      * The value to animate to
      */
     public readonly a: FlowGraphDataConnection<ValueT>;
-    /**
-     * The signal that will be activated when the animation is done.
-     */
-    public readonly out: FlowGraphSignalConnection;
 
     public constructor(public config: IFlowGraphAnimateToBlockConfiguration) {
         super(config);
@@ -42,7 +37,6 @@ export class FlowGraphAnimateToBlock<ValueT> extends FlowGraphAsyncExecutionBloc
         if (config.subString) {
             this._registerDataInput(config.subString, RichTypeAny);
         }
-        this.out = this._registerSignalOutput("out");
     }
 
     public getEasingFunctionFromEasingType(easingType: string) {

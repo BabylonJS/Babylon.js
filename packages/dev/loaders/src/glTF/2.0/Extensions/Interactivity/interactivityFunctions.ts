@@ -89,16 +89,13 @@ function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKH
     return converted;
 }
 
-function convertBlock(gltfBlock: IKHRInteractivity_Node, definition: IKHRInteractivity, loader: GLTFLoader): ISerializedFlowGraphBlock {
+function convertBlock(id: number, gltfBlock: IKHRInteractivity_Node, definition: IKHRInteractivity, loader: GLTFLoader): ISerializedFlowGraphBlock {
     const className = gltfToFlowGraphTypeMap[gltfBlock.type];
     if (!className) {
         throw new Error(`Unknown block type: ${gltfBlock.type}`);
     }
     const config = convertConfiguration(gltfBlock, definition, loader);
-    if (gltfBlock.id === undefined) {
-        throw new Error(`Block of type ${gltfBlock.type} has no id`);
-    }
-    const uniqueId = gltfBlock.id.toString();
+    const uniqueId = id.toString();
     const metadata = gltfBlock.metadata;
     // the data inputs and outputs will be saved at a later step?
     const dataInputs: ISerializedFlowGraphConnection[] = [];
@@ -129,17 +126,18 @@ export function convertGLTFToJson(gltf: IKHRInteractivity, loader: GLTFLoader): 
         uniqueId: RandomGUID(),
         _userVariables: {},
         _connectionValues: {},
-        pathMap: {},
     };
     const executionContexts = [context];
 
     // map from uniqueId of the block to the block
     const blocksMap: Map<string, ISerializedFlowGraphBlock> = new Map();
 
+    let i = 0;
     // Parse the blocks and add them to the map
     for (const gltfBlock of gltf.nodes) {
-        const block = convertBlock(gltfBlock, gltf, loader);
+        const block = convertBlock(i, gltfBlock, gltf, loader);
         blocksMap.set(block.uniqueId, block);
+        i++;
     }
 
     const allBlocks = [];
@@ -147,7 +145,7 @@ export function convertGLTFToJson(gltf: IKHRInteractivity, loader: GLTFLoader): 
     for (let i = 0; i < gltf.nodes.length; i++) {
         const gltfBlock = gltf.nodes[i];
         // get the block created for the flow graph
-        const fgBlock = blocksMap.get(gltfBlock.id.toString())!;
+        const fgBlock = blocksMap.get(i.toString())!;
         const gltfFlows = gltfBlock.flows ?? [];
         // for each output flow of the gltf block
         for (const flow of gltfFlows) {
