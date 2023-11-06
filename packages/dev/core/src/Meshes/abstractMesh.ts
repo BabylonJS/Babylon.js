@@ -1955,7 +1955,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             const subMesh = subMeshes.data[index];
 
             // Bounding test
-            if (len > 1 && !subMesh.canIntersects(ray)) {
+            if (len > 1 && !skipBoundingInfo && !subMesh.canIntersects(ray)) {
                 continue;
             }
 
