@@ -50,7 +50,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
         const graph = FlowGraph.Parse(json, coordinator);
         const context = graph.getContext(0);
         for (const [path, node] of this._loader._pathToNodesMapping) {
-            context.pathMap.set(path, node);
+            context.setVariable(path, node);
         }
 
         coordinator.start();

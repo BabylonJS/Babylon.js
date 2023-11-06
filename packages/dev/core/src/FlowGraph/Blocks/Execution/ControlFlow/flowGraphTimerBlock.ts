@@ -53,7 +53,7 @@ export class FlowGraphTimerBlock extends FlowGraphAsyncExecutionBlock {
      */
     public _execute(context: FlowGraphContext) {
         this._startPendingTasks(context);
-        this.onDone._activateSignal(context);
+        this.out._activateSignal(context);
     }
 
     private _onEnded(timer: AdvancedTimer, context: FlowGraphContext) {

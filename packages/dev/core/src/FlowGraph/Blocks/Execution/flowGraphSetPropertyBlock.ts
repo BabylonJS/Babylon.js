@@ -35,13 +35,15 @@ export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphWithOnDoneExecut
     /**
      * Input connection: The value to set on the property.
      */
-    public readonly value: FlowGraphDataConnection<ValueT>;
+    public readonly a: FlowGraphDataConnection<ValueT>;
 
     public constructor(public config: IFlowGraphSetPropertyBlockConfiguration) {
         super(config);
 
-        this.value = this._registerDataInput("value", RichTypeAny);
-        this._registerDataInput(config.subString, RichTypeNumber);
+        this.a = this._registerDataInput("a", RichTypeAny);
+        if (config.subString) {
+            this._registerDataInput(config.subString, RichTypeNumber);
+        }
     }
 
     private _setProperty(target: any, path: string, value: any): void {
@@ -58,7 +60,7 @@ export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphWithOnDoneExecut
     public _execute(context: FlowGraphContext): void {
         const target = context._getTargetFromPath(this.config.path, this.config.subString, this);
         const property = this.config.property;
-        const value = this.value.getValue(context);
+        const value = this.a.getValue(context);
 
         if (target && property) {
             this._setProperty(target, property, value);

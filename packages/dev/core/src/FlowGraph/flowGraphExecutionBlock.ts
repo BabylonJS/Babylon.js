@@ -47,6 +47,14 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
         return output;
     }
 
+    public getSignalInput(name: string): FlowGraphSignalConnection | undefined {
+        return this.signalInputs.find((input) => input.name === name);
+    }
+
+    public getSignalOutput(name: string): FlowGraphSignalConnection | undefined {
+        return this.signalOutputs.find((output) => output.name === name);
+    }
+
     public serialize(serializationObject: any = {}) {
         super.serialize(serializationObject);
         serializationObject.signalInputs = [];

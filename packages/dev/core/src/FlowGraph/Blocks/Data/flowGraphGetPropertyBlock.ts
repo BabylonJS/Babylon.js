@@ -29,22 +29,8 @@ export class FlowGraphGetPropertyBlock extends FlowGraphBlock {
         this._registerDataInput(config.subString, RichTypeNumber);
     }
 
-    private _getTargetFromPath(context: FlowGraphContext) {
-        const path = this.config.path;
-        let finalPath = path;
-        if (this.config.subString && path.indexOf(this.config.subString) !== -1) {
-            const nodeSub = this.getDataInput(this.config.subString);
-            if (!nodeSub) {
-                throw new Error("Invalid substitution input");
-            }
-            const nodeIndex = Math.floor(nodeSub.getValue(context));
-            finalPath = path.replace(this.config.subString, nodeIndex.toString());
-        }
-        return context.pathMap.get(finalPath);
-    }
-
     public _updateOutputs(context: FlowGraphContext) {
-        const target = this._getTargetFromPath(context);
+        const target = context._getTargetFromPath(this.config.path, this.config.subString, this);
         const property = this.config.property;
         const value = target[property];
         this.value.setValue(value, context);

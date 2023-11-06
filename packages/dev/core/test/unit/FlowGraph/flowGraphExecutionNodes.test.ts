@@ -50,7 +50,7 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.addEventBlock(sceneReady);
 
         const branch = new FlowGraphBranchBlock();
-        sceneReady.onDone.connectTo(branch.in);
+        sceneReady.out.connectTo(branch.in);
         branch.condition.setValue(true, flowGraphContext); // will execute onTrue
 
         const onTrue = new FlowGraphLogBlock();
@@ -72,7 +72,7 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.addEventBlock(sceneReady);
 
         const doN = new FlowGraphDoNBlock();
-        sceneReady.onDone.connectTo(doN.in);
+        sceneReady.out.connectTo(doN.in);
 
         const nIsDone = new FlowGraphLogBlock();
         doN.onDone.connectTo(nIsDone.in);
@@ -97,7 +97,7 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.addEventBlock(sceneReady);
 
         const forLoop = new FlowGraphForLoopBlock();
-        sceneReady.onDone.connectTo(forLoop.in);
+        sceneReady.out.connectTo(forLoop.in);
         forLoop.startIndex.setValue(1, flowGraphContext);
         forLoop.endIndex.setValue(7, flowGraphContext);
         forLoop.step.setValue(2, flowGraphContext);
@@ -125,7 +125,7 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.addEventBlock(sceneReady);
 
         const multiGate = new FlowGraphMultiGateBlock({ numberOutputFlows: 3, loop: true });
-        sceneReady.onDone.connectTo(multiGate.in);
+        sceneReady.out.connectTo(multiGate.in);
 
         const customFunction1 = new FlowGraphLogBlock();
         customFunction1.message.setValue("custom1", flowGraphContext);
@@ -159,7 +159,7 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.addEventBlock(sceneReady);
 
         const switchBlock = new FlowGraphSwitchBlock({ cases: [1, 2, 3] });
-        sceneReady.onDone.connectTo(switchBlock.in);
+        sceneReady.out.connectTo(switchBlock.in);
         switchBlock.selection.setValue(2, flowGraphContext);
 
         const customFunctionBlock1 = new FlowGraphLogBlock();
@@ -187,12 +187,12 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.addEventBlock(sceneReady);
 
         const timer = new FlowGraphTimerBlock();
-        sceneReady.onDone.connectTo(timer.in);
+        sceneReady.out.connectTo(timer.in);
         timer.timeout.setValue(0, flowGraphContext);
 
         const customFunctionBlock = new FlowGraphLogBlock();
         customFunctionBlock.message.setValue("custom", flowGraphContext);
-        timer.onDone.connectTo(customFunctionBlock.in);
+        timer.out.connectTo(customFunctionBlock.in);
 
         const customFunctionBlock2 = new FlowGraphLogBlock();
         customFunctionBlock2.message.setValue("custom2", flowGraphContext);
@@ -211,7 +211,7 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.addEventBlock(sceneTick);
 
         const flipFlop = new FlowGraphFlipFlopBlock();
-        sceneTick.onDone.connectTo(flipFlop.in);
+        sceneTick.out.connectTo(flipFlop.in);
 
         const onTrue = new FlowGraphLogBlock();
         onTrue.message.setValue("onTrue", flowGraphContext);
@@ -235,7 +235,7 @@ describe("Flow Graph Execution Nodes", () => {
 
         const throttle = new FlowGraphThrottleBlock();
         throttle.duration.setValue(1000, flowGraphContext);
-        sceneTick.onDone.connectTo(throttle.in);
+        sceneTick.out.connectTo(throttle.in);
 
         const customFunction = new FlowGraphLogBlock();
         throttle.onDone.connectTo(customFunction.in);
@@ -262,9 +262,9 @@ describe("Flow Graph Execution Nodes", () => {
             property: "position",
             subString: "nodeIndex",
         });
-        sceneReady.onDone.connectTo(setProperty.in);
+        sceneReady.out.connectTo(setProperty.in);
         setProperty.getDataInput("nodeIndex")!.setValue(1, flowGraphContext);
-        setProperty.value.setValue(new Vector3(1, 2, 3), flowGraphContext);
+        setProperty.a.setValue(new Vector3(1, 2, 3), flowGraphContext);
 
         flowGraphContext.setVariable("myMesh0", mesh0);
         flowGraphContext.setVariable("myMesh1", mesh1);

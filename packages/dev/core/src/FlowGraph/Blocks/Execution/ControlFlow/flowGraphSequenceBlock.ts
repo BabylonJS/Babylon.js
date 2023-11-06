@@ -19,7 +19,7 @@ export class FlowGraphSequenceBlock extends FlowGraphExecutionBlock {
         super.configure();
         this.outFlows = [];
         for (let i = 0; i < this.config.numberOutputFlows; i++) {
-            this.outFlows.push(this._registerSignalOutput(`out${i}`));
+            this.outFlows.push(this._registerSignalOutput(`${i}`));
         }
     }
 
