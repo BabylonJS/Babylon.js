@@ -1,5 +1,4 @@
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
-import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import { AdvancedTimer } from "../../../../Misc/timer";
 import type { FlowGraphContext } from "../../../flowGraphContext";
 import { FlowGraphAsyncExecutionBlock } from "../../../flowGraphAsyncExecutionBlock";
@@ -17,17 +16,11 @@ export class FlowGraphTimerBlock extends FlowGraphAsyncExecutionBlock {
      * Input connection: The timeout of the timer.
      */
     public readonly timeout: FlowGraphDataConnection<number>;
-    /**
-     * Output connection: The signal that is activated when the timer is done.
-     * This signal is activated asynchronically.
-     */
-    public readonly onTimerDone: FlowGraphSignalConnection;
 
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
         this.timeout = this._registerDataInput("timeout", RichTypeNumber);
-        this.onTimerDone = this._registerSignalOutput("onTimerDone");
     }
 
     public _preparePendingTasks(context: FlowGraphContext): void {
@@ -65,7 +58,7 @@ export class FlowGraphTimerBlock extends FlowGraphAsyncExecutionBlock {
             Tools.Warn("FlowGraphTimerBlock: Timer ended but was not found in the running timers list");
         }
         context._removePendingBlock(this);
-        this.onTimerDone._activateSignal(context);
+        this.done._activateSignal(context);
     }
 
     public _cancelPendingTasks(context: FlowGraphContext): void {

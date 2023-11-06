@@ -73,6 +73,7 @@ export class FlowGraphAnimateToBlock<ValueT> extends FlowGraphAsyncExecutionBloc
 
     public _execute(context: FlowGraphContext): void {
         this._preparePendingTasks(context);
+        this.out._activateSignal(context);
     }
 
     public _cancelPendingTasks(context: FlowGraphContext): void {
@@ -84,7 +85,7 @@ export class FlowGraphAnimateToBlock<ValueT> extends FlowGraphAsyncExecutionBloc
     }
 
     private _onAnimationDone(context: FlowGraphContext) {
-        this.out._activateSignal(context);
+        this.done._activateSignal(context);
     }
 
     public getClassName(): string {

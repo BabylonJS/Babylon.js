@@ -172,7 +172,7 @@ describe("Flow Graph Serialization", () => {
         graph.addEventBlock(flowGraphSceneReadyBlock);
 
         const logBlock = new FlowGraphLogBlock();
-        flowGraphSceneReadyBlock.out.connectTo(logBlock.in);
+        flowGraphSceneReadyBlock.done.connectTo(logBlock.in);
 
         const getVariableBlock = new FlowGraphGetVariableBlock({ variableName: "test" });
 
@@ -203,7 +203,7 @@ describe("Flow Graph Serialization", () => {
         graph.addEventBlock(flowGraphSceneReadyBlock);
 
         const setPropertyBlock = new FlowGraphSetPropertyBlock<Vector3>({ path: "testMesh", property: "position", subString: "" });
-        flowGraphSceneReadyBlock.out.connectTo(setPropertyBlock.in);
+        flowGraphSceneReadyBlock.done.connectTo(setPropertyBlock.in);
 
         const constBlock = new FlowGraphConstantBlock<Vector3>({ value: new Vector3(1, 2, 3) });
         constBlock.output.connectTo(setPropertyBlock.a);
