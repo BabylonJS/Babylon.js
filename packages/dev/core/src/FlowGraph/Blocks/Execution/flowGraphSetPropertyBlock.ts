@@ -53,26 +53,8 @@ export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphWithOnDoneExecut
         currentTarget[splitProp[splitProp.length - 1]] = value;
     }
 
-    private _getEnclosedSubstring(): string {
-        return `{${this.config.subString}}`;
-    }
-
-    private _getTargetFromPath(context: FlowGraphContext) {
-        const path = this.config.path;
-        let finalPath = path;
-        if (path.indexOf(this._getEnclosedSubstring()) !== -1) {
-            const nodeSub = this.getDataInput(this.config.subString);
-            if (!nodeSub) {
-                throw new Error("Invalid substitution input");
-            }
-            const nodeIndex = Math.floor(nodeSub.getValue(context));
-            finalPath = path.replace(this._getEnclosedSubstring(), nodeIndex.toString());
-        }
-        return context.getVariable(finalPath);
-    }
-
     public _execute(context: FlowGraphContext): void {
-        const target = this._getTargetFromPath(context);
+        const target = context._getTargetFromPath(this.config.path, this.config.subString, this);
         const property = this.config.property;
         const value = this.value.getValue(context);
 

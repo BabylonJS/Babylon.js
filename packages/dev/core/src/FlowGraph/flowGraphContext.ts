@@ -224,6 +224,24 @@ export class FlowGraphContext {
         return this._executionId;
     }
 
+    private _getEnclosedSubstring(subString: string): string {
+        return `{${subString}}`;
+    }
+
+    /** @internal */
+    public _getTargetFromPath(path: string, subString: string, block: FlowGraphBlock) {
+        let finalPath = path;
+        if (subString && path.indexOf(this._getEnclosedSubstring(subString)) !== -1) {
+            const nodeSub = block.getDataInput(subString);
+            if (!nodeSub) {
+                throw new Error("Invalid substitution input");
+            }
+            const nodeIndex = Math.floor(nodeSub.getValue(this));
+            finalPath = path.replace(this._getEnclosedSubstring(subString), nodeIndex.toString());
+        }
+        return this.getVariable(finalPath);
+    }
+
     /**
      * Serializes a context
      * @param serializationObject the object to write the values in
