@@ -260,7 +260,6 @@ export class FlowGraphContext {
         this._connectionValues.forEach((value, key) => {
             valueSerializationFunction(key, value, serializationObject._connectionValues);
         });
-        serializationObject.pathMap = {};
     }
 
     public getClassName() {
