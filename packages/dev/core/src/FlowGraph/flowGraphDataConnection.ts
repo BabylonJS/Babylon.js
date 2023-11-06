@@ -63,6 +63,7 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
      */
     public getValue(context: FlowGraphContext): T {
         if (this.connectionType === FlowGraphConnectionType.Output) {
+            context._notifyExecuteNode(this._ownerBlock);
             this._ownerBlock._updateOutputs(context);
             return this._getValueOrDefault(context);
         }
