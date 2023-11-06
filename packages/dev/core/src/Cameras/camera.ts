@@ -124,12 +124,6 @@ export class Camera extends Node {
     /** @internal */
     protected _currentDeltaTime;
 
-    /**
-     * Delta time, in ms, for a frame run at 60 fps.
-     * @internal
-     * */
-    protected _standardDeltaTime = 1000 / 60;
-
     /** @internal */
     @serializeAsVector3("position")
     public _position = Vector3.Zero();
@@ -457,7 +451,7 @@ export class Camera extends Node {
     constructor(name: string, position: Vector3, scene?: Scene, setActiveOnSceneIfNoneActive = true) {
         super(name, scene);
         this._lastUpdatedTime = PrecisionDate.Now;
-        this._currentDeltaTime = scene?.constantAnimationDeltaTime ?? 16;
+        this._currentDeltaTime = scene?.constantAnimationDeltaTime ?? Constants.STANDARD_TIME_STEP;
 
         this.getScene().addCamera(this);
 
@@ -1571,7 +1565,7 @@ export class Camera extends Node {
      * @internal
      */
     public _getInertiaRelativeToTime(inertia: number = this.inertia): number {
-        return Math.pow(inertia, this._currentDeltaTime / this._standardDeltaTime);
+        return Math.pow(inertia, this._currentDeltaTime / Constants.STANDARD_TIME_STEP);
     }
 
     /**

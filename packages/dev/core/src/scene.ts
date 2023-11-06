@@ -407,7 +407,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * If 'useConstantAnimationDeltaTime' is set, this is the constant delta time value used
      */
-    public constantAnimationDeltaTime = 1000 / 60;
+    public constantAnimationDeltaTime = Constants.STANDARD_TIME_STEP;
     /**
      * Gets or sets a boolean indicating if the scene must keep the meshUnderPointer property updated
      * Please note that it requires to run a ray cast through the scene on every frame

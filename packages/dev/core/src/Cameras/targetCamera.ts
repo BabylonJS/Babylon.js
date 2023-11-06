@@ -359,6 +359,7 @@ export class TargetCamera extends Camera {
         const directionMultiplier = this.invertRotation ? -this.inverseRotationSpeed : 1.0;
         const needToMove = this._decideIfNeedsToMove();
         const needToRotate = this.cameraRotation.x || this.cameraRotation.y;
+        const endMovementThreshold = this.speed * Epsilon; // minimum movement threshold before we end movement
 
         this._deferredUpdated = false;
         this._deferredRotationUpdate.copyFrom(this.rotation);
@@ -371,15 +372,15 @@ export class TargetCamera extends Camera {
         if (needToMove) {
             this._updatePosition();
 
-            if (Math.abs(this.cameraDirection.x) < this.speed * Epsilon) {
+            if (Math.abs(this.cameraDirection.x) < endMovementThreshold) {
                 this.cameraDirection.x = 0;
             }
 
-            if (Math.abs(this.cameraDirection.y) < this.speed * Epsilon) {
+            if (Math.abs(this.cameraDirection.y) < endMovementThreshold) {
                 this.cameraDirection.y = 0;
             }
 
-            if (Math.abs(this.cameraDirection.z) < this.speed * Epsilon) {
+            if (Math.abs(this.cameraDirection.z) < endMovementThreshold) {
                 this.cameraDirection.z = 0;
             }
         }
@@ -408,11 +409,11 @@ export class TargetCamera extends Camera {
                 this._deferredRotationUpdate.x += this.cameraRotation.x * directionMultiplier * scaleFactor;
                 this._deferredRotationUpdate.y += this.cameraRotation.y * directionMultiplier * scaleFactor;
 
-                if (Math.abs(this.cameraRotation.x) < this.speed * Epsilon) {
+                if (Math.abs(this.cameraRotation.x) < endMovementThreshold) {
                     this.cameraRotation.x = 0;
                 }
 
-                if (Math.abs(this.cameraRotation.y) < this.speed * Epsilon) {
+                if (Math.abs(this.cameraRotation.y) < endMovementThreshold) {
                     this.cameraRotation.y = 0;
                 }
             }
