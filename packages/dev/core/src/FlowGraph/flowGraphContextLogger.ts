@@ -1,3 +1,4 @@
+import { Tools } from "../Misc/tools";
 import type { FlowGraphContext } from "./flowGraphContext";
 
 /**
@@ -7,7 +8,7 @@ import type { FlowGraphContext } from "./flowGraphContext";
 export class FlowGraphContextLogger {
     constructor(private _context: FlowGraphContext) {
         this._context.onNodeExecutedObservable.add((node) => {
-            console.log(`Node executed: ${node.getClassName()}`);
+            Tools.Log(`Node executed: ${node.getClassName()}`);
         });
     }
 }

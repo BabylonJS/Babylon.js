@@ -18,7 +18,12 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
      * @param ownerBlock
      * @param richType
      */
-    public constructor(name: string, connectionType: FlowGraphConnectionType, ownerBlock: FlowGraphBlock, public richType: RichType<T>) {
+    public constructor(
+        name: string,
+        connectionType: FlowGraphConnectionType,
+        ownerBlock: FlowGraphBlock,
+        public richType: RichType<T>
+    ) {
         super(name, connectionType, ownerBlock);
     }
 
