@@ -322,11 +322,20 @@ export class TargetCamera extends Camera {
     public _updatePosition(): void {
         const relativeInertia = this._getInertiaRelativeToTime();
         const scaleFactor = this._getRelativeScaleFactor(relativeInertia);
-        this.cameraDirection.scaleInPlace(relativeInertia);
+
+        // If we have an inertia of zero, copy the values to apply and then zero out the direction vector
+        // Else, scale the previous values and apply them
+        if (this.inertia === 0) {
+            TmpVectors.Vector3[0].copyFrom(this.cameraDirection);
+            this.cameraDirection.scaleInPlace(0);
+        } else {
+            this.cameraDirection.scaleInPlace(relativeInertia);
+            TmpVectors.Vector3[0].copyFrom(this.cameraDirection);
+        }
 
         if (this.parent) {
             this.parent.getWorldMatrix().invertToRef(TmpVectors.Matrix[0]);
-            Vector3.TransformNormalToRef(this.cameraDirection, TmpVectors.Matrix[0], TmpVectors.Vector3[0]);
+            Vector3.TransformNormalToRef(TmpVectors.Vector3[0], TmpVectors.Matrix[0], TmpVectors.Vector3[0]);
             this._deferredPositionUpdate.addInPlace(TmpVectors.Vector3[0].scaleInPlace(scaleFactor));
             if (!this._deferOnly) {
                 this.position.copyFrom(this._deferredPositionUpdate);
@@ -335,7 +344,8 @@ export class TargetCamera extends Camera {
             }
             return;
         }
-        this.cameraDirection.scaleToRef(scaleFactor, TmpVectors.Vector3[0]);
+
+        TmpVectors.Vector3[0].scaleToRef(scaleFactor, TmpVectors.Vector3[0]);
         this._deferredPositionUpdate.addInPlace(TmpVectors.Vector3[0]);
         if (!this._deferOnly) {
             this.position.copyFrom(this._deferredPositionUpdate);
@@ -359,23 +369,18 @@ export class TargetCamera extends Camera {
 
         // Move
         if (needToMove) {
-            if (this.inertia === 0) {
-                this._updatePosition();
-                this.cameraDirection.scaleInPlace(0);
-            } else {
-                this._updatePosition();
+            this._updatePosition();
 
-                if (Math.abs(this.cameraDirection.x) < this.speed * Epsilon) {
-                    this.cameraDirection.x = 0;
-                }
+            if (Math.abs(this.cameraDirection.x) < this.speed * Epsilon) {
+                this.cameraDirection.x = 0;
+            }
 
-                if (Math.abs(this.cameraDirection.y) < this.speed * Epsilon) {
-                    this.cameraDirection.y = 0;
-                }
+            if (Math.abs(this.cameraDirection.y) < this.speed * Epsilon) {
+                this.cameraDirection.y = 0;
+            }
 
-                if (Math.abs(this.cameraDirection.z) < this.speed * Epsilon) {
-                    this.cameraDirection.z = 0;
-                }
+            if (Math.abs(this.cameraDirection.z) < this.speed * Epsilon) {
+                this.cameraDirection.z = 0;
             }
         }
 

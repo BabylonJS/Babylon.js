@@ -1586,6 +1586,11 @@ export class Camera extends Node {
      * @internal
      */
     public _getRelativeScaleFactor(relativeInertia: number, inertia: number = this.inertia): number {
+        // If we're working with an extreme inertia value, just return 1.
+        if (inertia === 0 || relativeInertia === 0) {
+            return 1;
+        }
+
         const num = inertia * (1 - relativeInertia);
         const den = relativeInertia * (1 - inertia);
         return num / den;
