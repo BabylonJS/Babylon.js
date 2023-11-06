@@ -236,8 +236,11 @@ export class FlowGraphContext {
             if (!nodeToSub) {
                 throw new Error(`Invalid substitution input for substitution string ${subString}`);
             }
-            const subNumber = Math.floor(nodeToSub.getValue(this));
-            finalPath = path.replace(this._getEnclosedSubstring(subString), subNumber.toString());
+            const index = Math.floor(nodeToSub.getValue(this));
+            if (isNaN(index)) {
+                throw new Error(`Invalid substitution value for substitution string ${subString}`);
+            }
+            finalPath = path.replace(this._getEnclosedSubstring(subString), index.toString());
         }
         return this.getVariable(finalPath);
     }
