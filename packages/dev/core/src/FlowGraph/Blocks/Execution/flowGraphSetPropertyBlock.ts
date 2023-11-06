@@ -21,6 +21,8 @@ export interface IFlowGraphSetPropertyBlockConfiguration extends IFlowGraphBlock
     property: string;
     /**
      * A string that will be substituted by a node with the same name, if encountered enclosed by \{\}.
+     * It will create an input data node which expects a number. The value of the node will be used
+     * to substitute the string.
      */
     subString: string;
 }
