@@ -62,11 +62,6 @@ export class FlowGraphContext {
      */
     private _executionId = 0;
 
-    /**
-     * A mapping of paths to target objects
-     */
-    pathMap: Map<string, any> = new Map();
-
     constructor(params: IFlowGraphContextConfiguration) {
         this._configuration = params;
     }
@@ -230,6 +225,27 @@ export class FlowGraphContext {
         return this._executionId;
     }
 
+    private _getEnclosedSubstring(subString: string): string {
+        return `{${subString}}`;
+    }
+
+    /** @internal */
+    public _getTargetFromPath(path: string, subString: string, block: FlowGraphBlock) {
+        let finalPath = path;
+        if (subString && path.indexOf(this._getEnclosedSubstring(subString)) !== -1) {
+            const nodeToSub = block.getDataInput(subString);
+            if (!nodeToSub) {
+                throw new Error(`Invalid substitution input for substitution string ${subString}`);
+            }
+            const index = Math.floor(nodeToSub.getValue(this));
+            if (isNaN(index)) {
+                throw new Error(`Invalid substitution value for substitution string ${subString}`);
+            }
+            finalPath = path.replace(this._getEnclosedSubstring(subString), index.toString());
+        }
+        return this.getVariable(finalPath);
+    }
+
     /**
      * Serializes a context
      * @param serializationObject the object to write the values in
@@ -244,10 +260,6 @@ export class FlowGraphContext {
         serializationObject._connectionValues = {};
         this._connectionValues.forEach((value, key) => {
             valueSerializationFunction(key, value, serializationObject._connectionValues);
-        });
-        serializationObject.pathMap = {};
-        this.pathMap.forEach((value, key) => {
-            valueSerializationFunction(key, value, serializationObject.pathMap);
         });
     }
 
@@ -276,10 +288,6 @@ export class FlowGraphContext {
         for (const key in serializationObject._connectionValues) {
             const value = valueParseFunction(key, serializationObject._connectionValues, result._configuration.scene);
             result._connectionValues.set(key, value);
-        }
-        for (const key in serializationObject.pathMap) {
-            const value = valueParseFunction(key, serializationObject.pathMap, result._configuration.scene);
-            result.pathMap.set(key, value);
         }
 
         return result;

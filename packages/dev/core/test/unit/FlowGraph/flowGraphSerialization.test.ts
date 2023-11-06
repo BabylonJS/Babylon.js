@@ -131,7 +131,6 @@ describe("Flow Graph Serialization", () => {
         context.setVariable("test4", mesh);
 
         const flowGraphAddBlock = new FlowGraphAddBlock();
-        context.pathMap.set("testPath", mesh);
 
         flowGraphAddBlock.a.setValue(1, context);
         flowGraphAddBlock.b.setValue(2, context);
@@ -147,8 +146,6 @@ describe("Flow Graph Serialization", () => {
         expect(serialized._userVariables.test4.className).toEqual("Mesh");
         expect(serialized._connectionValues[flowGraphAddBlock.a.uniqueId]).toEqual(1);
         expect(serialized._connectionValues[flowGraphAddBlock.b.uniqueId]).toEqual(2);
-        expect(serialized.pathMap.testPath.name).toEqual("testMesh");
-        expect(serialized.pathMap.testPath.className).toEqual("Mesh");
 
         const parsed = FlowGraphContext.Parse(serialized, graph);
 
@@ -162,7 +159,6 @@ describe("Flow Graph Serialization", () => {
         expect(parsed._getConnectionValue(flowGraphAddBlock.a)).toEqual(1);
         expect(parsed._getConnectionValue(flowGraphAddBlock.b)).toEqual(2);
         expect(parsed.getVariable("test4").uniqueId).toEqual(mesh.uniqueId);
-        expect(parsed.pathMap.get("testPath").uniqueId).toEqual(mesh.uniqueId);
     });
 
     it("Serializes and parses a graph", () => {
@@ -202,7 +198,6 @@ describe("Flow Graph Serialization", () => {
         const context = graph.createContext();
 
         const mesh = new Mesh("testMesh", scene);
-        context.pathMap.set("testMesh", mesh);
 
         const flowGraphSceneReadyBlock = new FlowGraphSceneReadyEventBlock();
         graph.addEventBlock(flowGraphSceneReadyBlock);
