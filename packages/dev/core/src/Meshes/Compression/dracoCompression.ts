@@ -302,15 +302,15 @@ export class DracoCompression implements IDisposable {
 
     /**
      * The configuration. Defaults to the following urls:
-     * - wasmUrl: "https://preview.babylonjs.com/draco_wasm_wrapper_gltf.js"
-     * - wasmBinaryUrl: "https://preview.babylonjs.com/draco_decoder_gltf.wasm"
-     * - fallbackUrl: "https://preview.babylonjs.com/draco_decoder_gltf.js"
+     * - wasmUrl: "https://cdn.babylonjs.com/draco_wasm_wrapper_gltf.js"
+     * - wasmBinaryUrl: "https://cdn.babylonjs.com/draco_decoder_gltf.wasm"
+     * - fallbackUrl: "https://cdn.babylonjs.com/draco_decoder_gltf.js"
      */
     public static Configuration: IDracoCompressionConfiguration = {
         decoder: {
-            wasmUrl: "draco_wasm_wrapper_gltf.js",
-            wasmBinaryUrl: "draco_decoder_gltf.wasm",
-            fallbackUrl: "draco_decoder_gltf.js",
+            wasmUrl: `${Tools._DefaultCdnUrl}/draco_wasm_wrapper_gltf.js`,
+            wasmBinaryUrl: `${Tools._DefaultCdnUrl}/draco_decoder_gltf.wasm`,
+            fallbackUrl: `${Tools._DefaultCdnUrl}/draco_decoder_gltf.js`,
         },
     };
 

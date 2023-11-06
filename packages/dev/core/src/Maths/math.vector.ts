@@ -7411,28 +7411,44 @@ export class Matrix {
      * @returns result input
      */
     public static TransposeToRef<T extends Matrix>(matrix: DeepImmutable<Matrix>, result: T): T {
-        const rm = result._m;
         const mm = matrix.m;
-        rm[0] = mm[0];
-        rm[1] = mm[4];
-        rm[2] = mm[8];
-        rm[3] = mm[12];
+        const rm0 = mm[0];
+        const rm1 = mm[4];
+        const rm2 = mm[8];
+        const rm3 = mm[12];
 
-        rm[4] = mm[1];
-        rm[5] = mm[5];
-        rm[6] = mm[9];
-        rm[7] = mm[13];
+        const rm4 = mm[1];
+        const rm5 = mm[5];
+        const rm6 = mm[9];
+        const rm7 = mm[13];
 
-        rm[8] = mm[2];
-        rm[9] = mm[6];
-        rm[10] = mm[10];
-        rm[11] = mm[14];
+        const rm8 = mm[2];
+        const rm9 = mm[6];
+        const rm10 = mm[10];
+        const rm11 = mm[14];
 
-        rm[12] = mm[3];
-        rm[13] = mm[7];
-        rm[14] = mm[11];
-        rm[15] = mm[15];
+        const rm12 = mm[3];
+        const rm13 = mm[7];
+        const rm14 = mm[11];
+        const rm15 = mm[15];
 
+        const rm = result._m;
+        rm[0] = rm0;
+        rm[1] = rm1;
+        rm[2] = rm2;
+        rm[3] = rm3;
+        rm[4] = rm4;
+        rm[5] = rm5;
+        rm[6] = rm6;
+        rm[7] = rm7;
+        rm[8] = rm8;
+        rm[9] = rm9;
+        rm[10] = rm10;
+        rm[11] = rm11;
+        rm[12] = rm12;
+        rm[13] = rm13;
+        rm[14] = rm14;
+        rm[15] = rm15;
         result.markAsUpdated();
 
         // identity-ness does not change when transposing
