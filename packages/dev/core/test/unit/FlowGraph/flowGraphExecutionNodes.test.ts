@@ -260,14 +260,14 @@ describe("Flow Graph Execution Nodes", () => {
         const setProperty = new FlowGraphSetPropertyBlock<Vector3>({
             path: "myMesh{nodeIndex}",
             property: "position",
-            subString: "{nodeIndex}",
+            subString: "nodeIndex",
         });
         sceneReady.onDone.connectTo(setProperty.onStart);
-        setProperty.getDataInput("{nodeIndex}")!.setValue(1, flowGraphContext);
+        setProperty.getDataInput("nodeIndex")!.setValue(1, flowGraphContext);
         setProperty.value.setValue(new Vector3(1, 2, 3), flowGraphContext);
 
-        flowGraphContext.pathMap.set("myMesh0", mesh0);
-        flowGraphContext.pathMap.set("myMesh1", mesh1);
+        flowGraphContext.setVariable("myMesh0", mesh0);
+        flowGraphContext.setVariable("myMesh1", mesh1);
 
         flowGraph.start();
 

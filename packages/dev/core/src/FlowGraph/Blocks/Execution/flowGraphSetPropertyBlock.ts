@@ -12,7 +12,7 @@ import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 export interface IFlowGraphSetPropertyBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
      * The path of the entity whose property will be set. Needs a corresponding
-     * entity on the context.pathMap variable.
+     * entity on the context variables.
      */
     path: string;
     /**
@@ -20,7 +20,7 @@ export interface IFlowGraphSetPropertyBlockConfiguration extends IFlowGraphBlock
      */
     property: string;
     /**
-     * A string that will be substituted by a node with the same name.
+     * A string that will be substituted by a node with the same name, if encountered enclosed by \{\}.
      */
     subString: string;
 }
@@ -34,11 +34,6 @@ export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphWithOnDoneExecut
      * Input connection: The value to set on the property.
      */
     public readonly value: FlowGraphDataConnection<ValueT>;
-    /**
-     * Input connection: an index to use when setting the property. Will be substituted in any path
-     * that contains a value of \{nodeIndex\}.
-     */
-    public readonly nodeIndex: FlowGraphDataConnection<number>;
 
     public constructor(public config: IFlowGraphSetPropertyBlockConfiguration) {
         super(config);
@@ -58,18 +53,22 @@ export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphWithOnDoneExecut
         currentTarget[splitProp[splitProp.length - 1]] = value;
     }
 
+    private _getEnclosedSubstring(): string {
+        return `{${this.config.subString}}`;
+    }
+
     private _getTargetFromPath(context: FlowGraphContext) {
         const path = this.config.path;
         let finalPath = path;
-        if (path.indexOf(this.config.subString) !== -1) {
+        if (path.indexOf(this._getEnclosedSubstring()) !== -1) {
             const nodeSub = this.getDataInput(this.config.subString);
             if (!nodeSub) {
                 throw new Error("Invalid substitution input");
             }
             const nodeIndex = Math.floor(nodeSub.getValue(context));
-            finalPath = path.replace(this.config.subString, nodeIndex.toString());
+            finalPath = path.replace(this._getEnclosedSubstring(), nodeIndex.toString());
         }
-        return context.pathMap.get(finalPath);
+        return context.getVariable(finalPath);
     }
 
     public _execute(context: FlowGraphContext): void {

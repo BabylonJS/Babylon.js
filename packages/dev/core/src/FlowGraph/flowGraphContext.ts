@@ -61,11 +61,6 @@ export class FlowGraphContext {
      */
     private _executionId = 0;
 
-    /**
-     * A mapping of paths to target objects
-     */
-    pathMap: Map<string, any> = new Map();
-
     constructor(params: IFlowGraphContextConfiguration) {
         this._configuration = params;
     }
@@ -245,9 +240,6 @@ export class FlowGraphContext {
             valueSerializationFunction(key, value, serializationObject._connectionValues);
         });
         serializationObject.pathMap = {};
-        this.pathMap.forEach((value, key) => {
-            valueSerializationFunction(key, value, serializationObject.pathMap);
-        });
     }
 
     public getClassName() {
@@ -275,10 +267,6 @@ export class FlowGraphContext {
         for (const key in serializationObject._connectionValues) {
             const value = valueParseFunction(key, serializationObject._connectionValues, result._configuration.scene);
             result._connectionValues.set(key, value);
-        }
-        for (const key in serializationObject.pathMap) {
-            const value = valueParseFunction(key, serializationObject.pathMap, result._configuration.scene);
-            result.pathMap.set(key, value);
         }
 
         return result;
