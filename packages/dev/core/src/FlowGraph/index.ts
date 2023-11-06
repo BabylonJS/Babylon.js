@@ -3,7 +3,6 @@ export * from "./flowGraphBlock";
 export * from "./flowGraphSignalConnection";
 export * from "./flowGraphExecutionBlock";
 export * from "./flowGraphEventBlock";
-export * from "./flowGraphEventCoordinator";
 export * from "./flowGraphRichTypes";
 export * from "./flowGraphContext";
 export * from "./flowGraphCoordinator";
