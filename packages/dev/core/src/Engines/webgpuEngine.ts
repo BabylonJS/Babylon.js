@@ -1227,7 +1227,6 @@ export class WebGPUEngine extends Engine {
     private _stencilRefsCurrent = -1;
 
     private _mustUpdateStencilRef(): boolean {
-        const index = 0;
         const update = this._stencilStateComposer.funcRef !== this._stencilRefsCurrent;
         if (update) {
             this._stencilRefsCurrent = this._stencilStateComposer.funcRef;
