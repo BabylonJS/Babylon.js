@@ -1335,7 +1335,7 @@ export class Vector3 {
         const denom = Vector3.Dot(V, n);
 
         //When the ray is close to parallel to the plane return infinity vector
-        if (Math.abs(denom) < Math.pow(10, -10)) {
+        if (Math.abs(denom) < 0.0000000001) {
             result.setAll(Infinity);
         } else {
             const t = -(Vector3.Dot(origin, n) + d) / denom;
@@ -1635,10 +1635,10 @@ export class Vector3 {
         if (order === "xyz") {
             return this;
         }
-        MathTmp.Vector3[0].copyFrom(this);
-        ["x", "y", "z"].forEach((val, i) => {
-            (<any>this)[val] = (<any>MathTmp.Vector3[0])[order[i]];
-        });
+        const tem = MathTmp.Vector3[0].copyFrom(this);
+        this.x = (<any>tem)[order[0]];
+        this.y = (<any>tem)[order[1]];
+        this.z = (<any>tem)[order[2]];
         return this;
     }
 
@@ -1794,12 +1794,10 @@ export class Vector3 {
      * @returns the clip factor
      */
     public static GetClipFactor(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>, axis: DeepImmutable<Vector3>, size: number): number {
-        const d0 = Vector3.Dot(vector0, axis) - size;
-        const d1 = Vector3.Dot(vector1, axis) - size;
+        const d0 = Vector3.Dot(vector0, axis);
+        const d1 = Vector3.Dot(vector1, axis);
 
-        const s = d0 / (d0 - d1);
-
-        return s;
+        return (d0 - size) / (d0 - d1);
     }
 
     /**
