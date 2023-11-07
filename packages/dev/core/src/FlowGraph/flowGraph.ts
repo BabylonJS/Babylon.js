@@ -3,7 +3,6 @@ import type { Nullable } from "../types";
 import type { Scene } from "../scene";
 import { FlowGraphEventBlock } from "./flowGraphEventBlock";
 import { FlowGraphContext } from "./flowGraphContext";
-import type { FlowGraphEventCoordinator } from "./flowGraphEventCoordinator";
 import { FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 import type { FlowGraphCoordinator } from "./flowGraphCoordinator";
@@ -33,7 +32,7 @@ export interface FlowGraphParams {
     /**
      * The event coordinator used by the flow graph.
      */
-    eventCoordinator: FlowGraphEventCoordinator;
+    coordinator: FlowGraphCoordinator;
 }
 /**
  * @experimental
@@ -50,7 +49,7 @@ export class FlowGraph {
      * @internal
      */
     public readonly _scene: Scene;
-    private _eventCoordinator: FlowGraphEventCoordinator;
+    private _coordinator: FlowGraphCoordinator;
     private _executionContexts: FlowGraphContext[] = [];
 
     /**
@@ -64,7 +63,7 @@ export class FlowGraph {
      */
     public constructor(params: FlowGraphParams) {
         this._scene = params.scene;
-        this._eventCoordinator = params.eventCoordinator;
+        this._coordinator = params.coordinator;
         this._sceneDisposeObserver = this._scene.onDisposeObservable.add(() => this.dispose());
     }
 
@@ -73,7 +72,7 @@ export class FlowGraph {
      * @returns the context, where you can get and set variables
      */
     public createContext() {
-        const context = new FlowGraphContext({ scene: this._scene, eventCoordinator: this._eventCoordinator });
+        const context = new FlowGraphContext({ scene: this._scene, coordinator: this._coordinator });
         this._executionContexts.push(context);
         return context;
     }
