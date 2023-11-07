@@ -1,6 +1,6 @@
 import { Logger } from "./logger";
 
-const CloneValue = (source: any, destinationObject: any) => {
+const CloneValue = (source: any, destinationObject: any, shallowCopyValues: boolean) => {
     if (!source) {
         return null;
     }
@@ -15,7 +15,7 @@ const CloneValue = (source: any, destinationObject: any) => {
         return source.clone();
     } else if (Array.isArray(source)) {
         return source.slice();
-    } else if (typeof source === "object") {
+    } else if (shallowCopyValues && typeof source === "object") {
         return { ...source };
     }
     return null;
@@ -45,8 +45,10 @@ export class DeepCopier {
      * @param destination defines the target object
      * @param doNotCopyList defines a list of properties to avoid
      * @param mustCopyList defines a list of properties to copy (even if they start with _)
+     * @param shallowCopyValues defines wether properties referencing objects (none cloneable) must be shallow copied (false by default)
+     * @remarks shallowCopyValues will not instantite the copied values which makes it only usable for "JSON objects"
      */
-    public static DeepCopy(source: any, destination: any, doNotCopyList?: string[], mustCopyList?: string[]): void {
+    public static DeepCopy(source: any, destination: any, doNotCopyList?: string[], mustCopyList?: string[], shallowCopyValues = false): void {
         const properties = GetAllPropertyNames(source);
         for (const prop of properties) {
             if (prop[0] === "_" && (!mustCopyList || mustCopyList.indexOf(prop) === -1)) {
@@ -78,7 +80,7 @@ export class DeepCopier {
                         if (sourceValue.length > 0) {
                             if (typeof sourceValue[0] == "object") {
                                 for (let index = 0; index < sourceValue.length; index++) {
-                                    const clonedValue = CloneValue(sourceValue[index], destination);
+                                    const clonedValue = CloneValue(sourceValue[index], destination, shallowCopyValues);
 
                                     if (destination[prop].indexOf(clonedValue) === -1) {
                                         // Test if auto inject was not done
@@ -90,7 +92,7 @@ export class DeepCopier {
                             }
                         }
                     } else {
-                        destination[prop] = CloneValue(sourceValue, destination);
+                        destination[prop] = CloneValue(sourceValue, destination, shallowCopyValues);
                     }
                 } else {
                     destination[prop] = sourceValue;

@@ -15,11 +15,11 @@ export class MSCTranscoder extends Transcoder {
     /**
      * URL to use when loading the MSC transcoder
      */
-    public static JSModuleURL = "ktx2Transcoders/1/msc_basis_transcoder.js";
+    public static JSModuleURL = "https://cdn.babylonjs.com/ktx2Transcoders/1/msc_basis_transcoder.js";
     /**
      * URL to use when loading the wasm module for the transcoder
      */
-    public static WasmModuleURL = "ktx2Transcoders/1/msc_basis_transcoder.wasm";
+    public static WasmModuleURL = "https://cdn.babylonjs.com/ktx2Transcoders/1/msc_basis_transcoder.wasm";
 
     public static UseFromWorkerThread = true;
 

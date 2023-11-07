@@ -130,7 +130,10 @@ class VRExperienceHelperGazer implements IDisposable {
     /** @internal */
     public _activePointer = false;
 
-    constructor(public scene: Scene, gazeTrackerToClone: Nullable<Mesh> = null) {
+    constructor(
+        public scene: Scene,
+        gazeTrackerToClone: Nullable<Mesh> = null
+    ) {
         this._id = VRExperienceHelperGazer._IdCounter++;
 
         // Gaze tracker
@@ -207,7 +210,10 @@ class VRExperienceHelperGazer implements IDisposable {
 }
 
 class VRExperienceHelperCameraGazer extends VRExperienceHelperGazer {
-    constructor(private _getCamera: () => Nullable<Camera>, scene: Scene) {
+    constructor(
+        private _getCamera: () => Nullable<Camera>,
+        scene: Scene
+    ) {
         super(scene);
     }
 

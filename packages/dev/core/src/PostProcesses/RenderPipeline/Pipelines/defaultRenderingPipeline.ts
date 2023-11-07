@@ -739,6 +739,8 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
             });
         }
 
+        this._adaptPostProcessesToViewPort();
+
         if (!this._enableMSAAOnFirstPostProcess(this.samples) && this.samples > 1) {
             Logger.Warn("MSAA failed to enable, MSAA is only supported in browsers that support webGL >= 2.0");
         }

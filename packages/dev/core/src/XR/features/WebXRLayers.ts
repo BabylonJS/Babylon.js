@@ -119,7 +119,11 @@ class WebXRCompositionLayerRenderTargetTextureProvider extends WebXRLayerRenderT
  * @internal
  */
 export class WebXRProjectionLayerWrapper extends WebXRCompositionLayerWrapper {
-    constructor(public readonly layer: XRProjectionLayer, isMultiview: boolean, xrGLBinding: XRWebGLBinding) {
+    constructor(
+        public readonly layer: XRProjectionLayer,
+        isMultiview: boolean,
+        xrGLBinding: XRWebGLBinding
+    ) {
         super(
             () => layer.textureWidth,
             () => layer.textureHeight,
@@ -138,7 +142,11 @@ export class WebXRProjectionLayerWrapper extends WebXRCompositionLayerWrapper {
 class WebXRProjectionLayerRenderTargetTextureProvider extends WebXRCompositionLayerRenderTargetTextureProvider {
     private readonly _projectionLayer: XRProjectionLayer;
 
-    constructor(_xrSessionManager: WebXRSessionManager, _xrWebGLBinding: XRWebGLBinding, public readonly layerWrapper: WebXRProjectionLayerWrapper) {
+    constructor(
+        _xrSessionManager: WebXRSessionManager,
+        _xrWebGLBinding: XRWebGLBinding,
+        public readonly layerWrapper: WebXRProjectionLayerWrapper
+    ) {
         super(_xrSessionManager, _xrWebGLBinding, layerWrapper);
         this._projectionLayer = layerWrapper.layer;
     }
@@ -211,7 +219,10 @@ export class WebXRLayers extends WebXRAbstractFeature {
     private _glContext: WebGLRenderingContext | WebGL2RenderingContext;
     private _xrWebGLBinding: XRWebGLBinding;
 
-    constructor(_xrSessionManager: WebXRSessionManager, private readonly _options: IWebXRLayersOptions = {}) {
+    constructor(
+        _xrSessionManager: WebXRSessionManager,
+        private readonly _options: IWebXRLayersOptions = {}
+    ) {
         super(_xrSessionManager);
         this.xrNativeFeatureName = "layers";
     }

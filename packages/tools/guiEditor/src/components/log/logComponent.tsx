@@ -9,7 +9,10 @@ interface ILogComponentProps {
 }
 
 export class LogEntry {
-    constructor(public message: string, public isError: boolean) {}
+    constructor(
+        public message: string,
+        public isError: boolean
+    ) {}
 }
 
 export class LogComponent extends React.Component<ILogComponentProps, { logs: LogEntry[] }> {

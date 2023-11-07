@@ -39,7 +39,10 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
      * @param containerElement the element in which the templates will be rendered
      * @param initialConfiguration the initial configuration. Defaults to extending the default configuration
      */
-    constructor(public containerElement: Element, initialConfiguration: ViewerConfiguration = { extends: "default" }) {
+    constructor(
+        public containerElement: Element,
+        initialConfiguration: ViewerConfiguration = { extends: "default" }
+    ) {
         super(containerElement, initialConfiguration);
 
         this.onModelLoadedObservable.add(this._onModelLoaded);

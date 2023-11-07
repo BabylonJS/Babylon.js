@@ -98,7 +98,7 @@ export class MaterialPluginManager {
             MaterialPluginManager._MaterialPluginClassToMainDefine[pluginClassName] = "MATERIALPLUGIN_" + ++MaterialPluginManager._MaterialPluginCounter;
         }
 
-        this._material._callbackPluginEventGeneric = this._handlePluginEvent.bind(this);
+        this._material._callbackPluginEventGeneric = (id, info) => this._handlePluginEvent(id, info);
 
         this._plugins.push(plugin);
         this._plugins.sort((a, b) => a.priority - b.priority);
