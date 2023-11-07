@@ -38,7 +38,7 @@ export class FlowGraphSendCustomEventBlock extends FlowGraphWithOnDoneExecutionB
         const eventId = this.config.eventId;
         const eventDatas = this.dataInputs.map((port) => port.getValue(context));
 
-        context.configuration.eventCoordinator.notifyCustomEvent(eventId, eventDatas);
+        context.configuration.coordinator.notifyCustomEvent(eventId, eventDatas);
 
         this.out._activateSignal(context);
     }

@@ -1,7 +1,6 @@
 import type { Observer } from "../../../Misc/observable";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
-import type { FlowGraphCustomEvent } from "../../flowGraphCustomEvent";
 import type { Nullable } from "../../../types";
 import { Tools } from "../../../Misc/tools";
 import { RichTypeAny } from "../../flowGraphRichTypes";
@@ -28,7 +27,7 @@ export interface IFlowGraphReceiveCustomEventBlockConfiguration extends IFlowGra
  * A block that receives a custom event. It saves the data sent in the eventData output.
  */
 export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
-    private _eventObserver: Nullable<Observer<FlowGraphCustomEvent>>;
+    private _eventObserver: Nullable<Observer<any>>;
 
     constructor(public config: IFlowGraphReceiveCustomEventBlockConfiguration) {
         super(config);
@@ -42,7 +41,7 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
         }
     }
     public _preparePendingTasks(context: FlowGraphContext): void {
-        const observable = context.configuration.eventCoordinator.getCustomEventObservable(this.config.eventId);
+        const observable = context.configuration.coordinator.getCustomEventObservable(this.config.eventId);
         this._eventObserver = observable.add((eventDatas: any[]) => {
             for (let i = 0; i < eventDatas.length; i++) {
                 this.dataOutputs[i].setValue(eventDatas[i], context);
@@ -51,7 +50,7 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
         });
     }
     public _cancelPendingTasks(context: FlowGraphContext): void {
-        const observable = context.configuration.eventCoordinator.getCustomEventObservable(this.config.eventId);
+        const observable = context.configuration.coordinator.getCustomEventObservable(this.config.eventId);
         if (observable) {
             observable.remove(this._eventObserver);
         } else {

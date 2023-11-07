@@ -4,10 +4,10 @@ import type { Scene } from "../scene";
 import type { FlowGraphAsyncExecutionBlock } from "./flowGraphAsyncExecutionBlock";
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
-import type { FlowGraphEventCoordinator } from "./flowGraphEventCoordinator";
 import type { FlowGraph } from "./flowGraph";
 import type { ISerializedFlowGraphContext } from "./typeDefinitions";
 import { defaultValueParseFunction, defaultValueSerializationFunction } from "./serialization";
+import type { FlowGraphCoordinator } from "./flowGraphCoordinator";
 import { Observable } from "../Misc/observable";
 
 /**
@@ -22,7 +22,7 @@ export interface IFlowGraphContextConfiguration {
     /**
      * The event coordinator used by the flow graph context.
      */
-    readonly eventCoordinator: FlowGraphEventCoordinator;
+    readonly coordinator: FlowGraphCoordinator;
 }
 /**
  * @experimental
