@@ -3,8 +3,6 @@ import { InternalTexture, InternalTextureSource } from "@babylonjs/core/Material
 import type { Nullable } from "@babylonjs/core/types";
 import {
     updateTextureSamplingMode,
-    type IWebGLEnginePublic,
-    type WebGLEngineStateFull,
     _bindTextureDirectly,
     _getInternalFormat,
     _getRGBABufferInternalSizedFormat,
@@ -13,6 +11,8 @@ import {
     _releaseTexture,
     createTexture,
 } from "../../engine.webgl";
+
+import type { IWebGLEnginePublic, WebGLEngineStateFull } from "../../engine.webgl";
 import type { IDynamicTextureEngineExtension } from "./dynamicTexture.base";
 import { augmentEngineState } from "../../engine.adapters";
 
@@ -103,3 +103,10 @@ export const updateDynamicTexture: IDynamicTextureEngineExtension["updateDynamic
 
     texture.isReady = true;
 };
+
+export const dynamicTextureEngineExtension: IDynamicTextureEngineExtension = {
+    createDynamicTexture,
+    updateDynamicTexture,
+};
+
+export default dynamicTextureEngineExtension;

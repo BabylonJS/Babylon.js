@@ -67,3 +67,10 @@ export const updateDynamicVertexBuffer: IDynamicBufferEngineExtension["updateDyn
 
     _resetVertexBufferBinding(fes);
 };
+
+export const dynamicBufferEngineExtension: IDynamicBufferEngineExtension = {
+    updateDynamicIndexBuffer,
+    updateDynamicVertexBuffer,
+};
+
+export default dynamicBufferEngineExtension;

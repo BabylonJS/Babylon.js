@@ -1,6 +1,7 @@
 import type { DataBuffer } from "@babylonjs/core/Buffers/dataBuffer.js";
 import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl.js";
 import type { Nullable } from "@babylonjs/core/types.js";
+import type { ITransformFeedbackEngineExtension } from "./engine.transformFeedback.base.js";
 
 export function createTransformFeedback(engineState: IWebGLEnginePublic): WebGLTransformFeedback {
     const gl = (engineState as WebGLEngineState)._gl;
@@ -44,7 +45,7 @@ export function bindTransformFeedbackBuffer(engineState: IWebGLEnginePublic, val
     gl.bindBufferBase(gl.TRANSFORM_FEEDBACK_BUFFER, 0, value ? value.underlyingResource : null);
 }
 
-export default {
+export const transformFeedbackEngineExtension: ITransformFeedbackEngineExtension = {
     createTransformFeedback,
     deleteTransformFeedback,
     bindTransformFeedback,
@@ -52,5 +53,6 @@ export default {
     endTransformFeedback,
     setTransformFeedbackVaryings,
     bindTransformFeedbackBuffer,
-    setTranformFeedbackVaryings,
 };
+
+export default transformFeedbackEngineExtension;

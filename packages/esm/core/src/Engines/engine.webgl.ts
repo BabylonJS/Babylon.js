@@ -52,10 +52,7 @@ import { DepthCullingState } from "@babylonjs/core/States/depthCullingState.js";
 import { StencilState } from "@babylonjs/core/States/stencilState.js";
 import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine.js";
 import { EngineExtensions, getEngineExtension } from "./Extensions/engine.extensions.js";
-import type { ITransformFeedbackEngineExtension } from "./Extensions/transformFeedback/engine.transformFeedback.base.js";
 import type { ShaderProcessingContext } from "@babylonjs/core/Engines/Processors/shaderProcessingOptions.js";
-import type { IRenderTargetEngineExtension } from "./Extensions/renderTarget/renderTarget.base.js";
-import type { IMultiRenderEngineExtension } from "./Extensions/multiRender/multiRender.base.js";
 import type { PostProcess } from "@babylonjs/core/PostProcesses/postProcess.js";
 import type { IShaderProcessor } from "@babylonjs/core/Engines/Processors/iShaderProcessor.js";
 import { IsWindowObjectExist } from "./runtimeEnvironment.js";
@@ -759,7 +756,7 @@ export function unBindFramebuffer(engineState: IWebGLEnginePublic, texture: Rend
     const gl = fes._gl;
     if (webglRTWrapper._MSAAFramebuffer) {
         if (texture.isMulti) {
-            const extension = getEngineExtension<IMultiRenderEngineExtension>(engineState, EngineExtensions.MULTI_RENDER);
+            const extension = getEngineExtension(engineState, EngineExtensions.MULTI_RENDER);
             // This texture is part of a MRT texture, we need to treat all attachments
             extension.unBindMultiColorAttachmentFramebuffer(engineState, texture, disableGenerateMipMaps, onBeforeUnbind);
             return;
@@ -1693,7 +1690,7 @@ export function _deletePipelineContext(engineState: IWebGLEnginePublic, pipeline
     const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
     if (webGLPipelineContext && webGLPipelineContext.program) {
         if (webGLPipelineContext.transformFeedback) {
-            const extension = getEngineExtension<ITransformFeedbackEngineExtension>(engineState, EngineExtensions.TRANSFORM_FEEDBACK);
+            const extension = getEngineExtension(engineState, EngineExtensions.TRANSFORM_FEEDBACK);
             extension.deleteTransformFeedback(engineState, webGLPipelineContext.transformFeedback);
             webGLPipelineContext.transformFeedback = null;
         }
@@ -1824,18 +1821,18 @@ function _createShaderProgram(
     context.attachShader(shaderProgram, fragmentShader);
 
     if (engineState.webGLVersion > 1 && transformFeedbackVaryings) {
-        const extension = getEngineExtension(engineState, EngineExtensions.TRANSFORM_FEEDBACK) as ITransformFeedbackEngineExtension;
+        const extension = getEngineExtension(engineState, EngineExtensions.TRANSFORM_FEEDBACK);
         const transformFeedback = extension.createTransformFeedback(engineState);
 
         extension.bindTransformFeedback(engineState, transformFeedback);
-        extension.setTranformFeedbackVaryings(engineState, shaderProgram, transformFeedbackVaryings);
+        extension.setTransformFeedbackVaryings(engineState, shaderProgram, transformFeedbackVaryings);
         pipelineContext.transformFeedback = transformFeedback;
     }
 
     context.linkProgram(shaderProgram);
 
     if (engineState.webGLVersion > 1 && transformFeedbackVaryings) {
-        const extension = getEngineExtension(engineState, EngineExtensions.TRANSFORM_FEEDBACK) as ITransformFeedbackEngineExtension;
+        const extension = getEngineExtension(engineState, EngineExtensions.TRANSFORM_FEEDBACK);
         extension.bindTransformFeedback(engineState, null);
     }
 
@@ -2472,7 +2469,7 @@ export function _rescaleTexture(
     engineState._gl.texParameteri(engineState._gl.TEXTURE_2D, engineState._gl.TEXTURE_MIN_FILTER, engineState._gl.LINEAR);
     engineState._gl.texParameteri(engineState._gl.TEXTURE_2D, engineState._gl.TEXTURE_WRAP_S, engineState._gl.CLAMP_TO_EDGE);
     engineState._gl.texParameteri(engineState._gl.TEXTURE_2D, engineState._gl.TEXTURE_WRAP_T, engineState._gl.CLAMP_TO_EDGE);
-    const extension = getEngineExtension(engineState, EngineExtensions.RENDER_TARGET) as IRenderTargetEngineExtension;
+    const extension = getEngineExtension(engineState, EngineExtensions.RENDER_TARGET);
     const rtt = extension.createRenderTargetTexture(
         engineState,
         {

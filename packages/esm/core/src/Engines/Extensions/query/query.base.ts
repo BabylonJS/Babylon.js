@@ -1,6 +1,6 @@
 import type { Nullable, int } from "@babylonjs/core/types";
 import type { Observer } from "@babylonjs/core/Misc/observable";
-import type { PerfCounter } from "@babylonjs/core/Misc/perfCounter";
+import { PerfCounter } from "@babylonjs/core/Misc/perfCounter";
 import type { _TimeToken } from "@babylonjs/core/Instrumentation/timeToken";
 import type { IBaseEnginePublic } from "../../engine.base";
 import { AbstractMesh } from "@babylonjs/core/Meshes/abstractMesh";
@@ -33,6 +33,21 @@ export class _OcclusionDataStorage {
 
     /** @internal */
     public forceRenderingWhenOccluded = false;
+}
+
+export interface IQueryExtensionState {
+    /** @internal */
+    _currentNonTimestampToken: Nullable<_TimeToken>;
+    /** @internal */
+    _captureGPUFrameTime: boolean;
+    /** @internal */
+    _gpuFrameTimeToken: Nullable<_TimeToken>;
+    /** @internal */
+    _gpuFrameTime: PerfCounter;
+    /** @internal */
+    _onBeginFrameObserver: Nullable<Observer<IBaseEnginePublic>>;
+    /** @internal */
+    _onEndFrameObserver: Nullable<Observer<IBaseEnginePublic>>;
 }
 
 export interface IQueryEngineExtension {
@@ -105,19 +120,6 @@ export interface IQueryEngineExtension {
      * @param value True to enable, false to disable
      */
     captureGPUFrameTime(engineState: IBaseEnginePublic, value: boolean): void;
-
-    /** @internal */
-    _currentNonTimestampToken: Nullable<_TimeToken>;
-    /** @internal */
-    _captureGPUFrameTime: boolean;
-    /** @internal */
-    _gpuFrameTimeToken: Nullable<_TimeToken>;
-    /** @internal */
-    _gpuFrameTime: PerfCounter;
-    /** @internal */
-    _onBeginFrameObserver: Nullable<Observer<IBaseEnginePublic>>;
-    /** @internal */
-    _onEndFrameObserver: Nullable<Observer<IBaseEnginePublic>>;
 
     /** @internal */
     _createTimeQuery(engineState: IBaseEnginePublic): WebGLQuery;
@@ -197,6 +199,9 @@ declare module "@babylonjs/core/Meshes/abstractMesh" {
 }
 
 export const initAbstractMesh = (extensionImplementation: IQueryEngineExtension, engineState: IBaseEnginePublic) => {
+    if (AbstractMesh.prototype._occlusionDataStorage) {
+        return;
+    }
     Object.defineProperty(AbstractMesh.prototype, "isOcclusionQueryInProgress", {
         get: function (this: AbstractMesh) {
             return this._occlusionDataStorage.isOcclusionQueryInProgress;
@@ -338,4 +343,20 @@ export const initAbstractMesh = (extensionImplementation: IQueryEngineExtension,
 
         return dataStorage.isOccluded;
     };
+};
+
+const stateObjects: IQueryExtensionState[] = [];
+
+export const _getExtensionState = (engineState: IBaseEnginePublic): IQueryExtensionState => {
+    if (!stateObjects[engineState.uniqueId]) {
+        stateObjects[engineState.uniqueId] = {
+            _currentNonTimestampToken: null,
+            _captureGPUFrameTime: false,
+            _gpuFrameTimeToken: null,
+            _gpuFrameTime: new PerfCounter(),
+            _onBeginFrameObserver: null,
+            _onEndFrameObserver: null,
+        };
+    }
+    return stateObjects[engineState.uniqueId];
 };

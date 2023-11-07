@@ -487,3 +487,15 @@ export const updateMultipleRenderTargetTextureSampleCount: IMultiRenderEngineExt
 
     return samples;
 };
+
+export const multiRenderTargetExtension: IMultiRenderEngineExtension = {
+    bindAttachments,
+    buildTextureLayout,
+    createMultipleRenderTarget,
+    restoreSingleAttachment,
+    restoreSingleAttachmentForRenderTarget,
+    unBindMultiColorAttachmentFramebuffer,
+    updateMultipleRenderTargetTextureSampleCount,
+};
+
+export default multiRenderTargetExtension;

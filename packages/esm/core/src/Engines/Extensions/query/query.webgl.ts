@@ -1,8 +1,8 @@
 import { _TimeToken } from "@babylonjs/core/Instrumentation/timeToken";
-import { PerfCounter } from "@babylonjs/core/Misc/perfCounter";
 import type { Nullable, int } from "@babylonjs/core/types";
 import type { IWebGLEnginePublic, WebGLEngineStateFull } from "../../engine.webgl";
-import type { OcclusionQuery } from "./query.base";
+import type { IQueryEngineExtension, OcclusionQuery } from "./query.base";
+import { _getExtensionState } from "./query.base";
 import { AbstractMesh } from "@babylonjs/core/Meshes/abstractMesh";
 
 export const createQuery = function (engineState: IWebGLEnginePublic): OcclusionQuery {
@@ -45,7 +45,7 @@ export const endOcclusionQuery = function (engineState: IWebGLEnginePublic, algo
     return fes;
 };
 
-export const _createTimeQuery = function (engineState: IWebGLEnginePublic): WebGLQuery {
+const _createTimeQuery = function (engineState: IWebGLEnginePublic): WebGLQuery {
     const fes = engineState as WebGLEngineStateFull;
     const timerQuery = <EXT_disjoint_timer_query>fes._caps.timerQuery;
 
@@ -56,7 +56,7 @@ export const _createTimeQuery = function (engineState: IWebGLEnginePublic): WebG
     return createQuery(fes);
 };
 
-export const _deleteTimeQuery = function (engineState: IWebGLEnginePublic, query: WebGLQuery): void {
+const _deleteTimeQuery = function (engineState: IWebGLEnginePublic, query: WebGLQuery): void {
     const fes = engineState as WebGLEngineStateFull;
     const timerQuery = <EXT_disjoint_timer_query>fes._caps.timerQuery;
 
@@ -68,7 +68,7 @@ export const _deleteTimeQuery = function (engineState: IWebGLEnginePublic, query
     deleteQuery(fes, query);
 };
 
-export const _getTimeQueryResult = function (engineState: IWebGLEnginePublic, query: WebGLQuery): any {
+const _getTimeQueryResult = function (engineState: IWebGLEnginePublic, query: WebGLQuery): any {
     const fes = engineState as WebGLEngineStateFull;
     const timerQuery = <EXT_disjoint_timer_query>fes._caps.timerQuery;
 
@@ -103,8 +103,9 @@ export const startTimeQuery = function (engineState: IWebGLEnginePublic): Nullab
 
         timerQuery.queryCounterEXT(token._startTimeQuery, timerQuery.TIMESTAMP_EXT);
     } else {
-        if (fes._currentNonTimestampToken) {
-            return fes._currentNonTimestampToken;
+        const extensionState = _getExtensionState(fes);
+        if (extensionState._currentNonTimestampToken) {
+            return extensionState._currentNonTimestampToken;
         }
 
         token._timeElapsedQuery = _createTimeQuery(fes);
@@ -114,7 +115,7 @@ export const startTimeQuery = function (engineState: IWebGLEnginePublic): Nullab
             fes._gl.beginQuery(timerQuery.TIME_ELAPSED_EXT, token._timeElapsedQuery);
         }
 
-        fes._currentNonTimestampToken = token;
+        extensionState._currentNonTimestampToken = token;
     }
     return token;
 };
@@ -142,8 +143,9 @@ export const endTimeQuery = function (engineState: IWebGLEnginePublic, token: _T
         if (timerQuery.endQueryEXT) {
             timerQuery.endQueryEXT(timerQuery.TIME_ELAPSED_EXT);
         } else {
+            const extensionState = _getExtensionState(fes);
             fes._gl.endQuery(timerQuery.TIME_ELAPSED_EXT);
-            fes._currentNonTimestampToken = null;
+            extensionState._currentNonTimestampToken = null;
         }
         token._timeElapsedQueryEnded = true;
     }
@@ -186,49 +188,68 @@ export const endTimeQuery = function (engineState: IWebGLEnginePublic, token: _T
     return -1;
 };
 
-Engine.prototype._captureGPUFrameTime = false;
-Engine.prototype._gpuFrameTime = new PerfCounter();
-
 export const getGPUFrameTimeCounter = function (engineState: IWebGLEnginePublic) {
-    return (engineState as WebGLEngineStateFull)._gpuFrameTime;
+    const extensionState = _getExtensionState(engineState);
+    return extensionState._gpuFrameTime;
 };
 
 export const captureGPUFrameTime = function (engineState: IWebGLEnginePublic, value: boolean) {
     const fes = engineState as WebGLEngineStateFull;
-    if (value === fes._captureGPUFrameTime) {
+    const extensionState = _getExtensionState(engineState);
+    if (value === extensionState._captureGPUFrameTime) {
         return;
     }
 
-    fes._captureGPUFrameTime = value;
+    extensionState._captureGPUFrameTime = value;
 
     if (value) {
-        fes._onBeginFrameObserver = fes.onBeginFrameObservable.add(() => {
-            if (!fes._gpuFrameTimeToken) {
-                fes._gpuFrameTimeToken = startTimeQuery(fes);
+        extensionState._onBeginFrameObserver = fes.onBeginFrameObservable.add(() => {
+            if (!extensionState._gpuFrameTimeToken) {
+                extensionState._gpuFrameTimeToken = startTimeQuery(fes);
             }
         });
 
-        fes._onEndFrameObserver = fes.onEndFrameObservable.add(() => {
-            if (!fes._gpuFrameTimeToken) {
+        extensionState._onEndFrameObserver = fes.onEndFrameObservable.add(() => {
+            if (!extensionState._gpuFrameTimeToken) {
                 return;
             }
-            const time = endTimeQuery(fes, fes._gpuFrameTimeToken);
+            const time = endTimeQuery(fes, extensionState._gpuFrameTimeToken);
 
             if (time > -1) {
-                fes._gpuFrameTimeToken = null;
-                fes._gpuFrameTime.fetchNewFrame();
-                fes._gpuFrameTime.addCount(time, true);
+                extensionState._gpuFrameTimeToken = null;
+                extensionState._gpuFrameTime.fetchNewFrame();
+                extensionState._gpuFrameTime.addCount(time, true);
             }
         });
     } else {
-        fes.onBeginFrameObservable.remove(fes._onBeginFrameObserver);
-        fes._onBeginFrameObserver = null;
-        fes.onEndFrameObservable.remove(fes._onEndFrameObserver);
-        fes._onEndFrameObserver = null;
+        fes.onBeginFrameObservable.remove(extensionState._onBeginFrameObserver);
+        extensionState._onBeginFrameObserver = null;
+        fes.onEndFrameObservable.remove(extensionState._onEndFrameObserver);
+        extensionState._onEndFrameObserver = null;
     }
 };
 
-export const _getGlAlgorithmType = function (engineState: IWebGLEnginePublic, algorithmType: number): number {
+const _getGlAlgorithmType = function (engineState: IWebGLEnginePublic, algorithmType: number): number {
     const fes = engineState as WebGLEngineStateFull;
     return algorithmType === AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? fes._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : fes._gl.ANY_SAMPLES_PASSED;
 };
+
+export const queryWebGLExtension: IQueryEngineExtension = {
+    createQuery,
+    deleteQuery,
+    isQueryResultAvailable,
+    getQueryResult,
+    beginOcclusionQuery,
+    endOcclusionQuery,
+    startTimeQuery,
+    endTimeQuery,
+    getGPUFrameTimeCounter,
+    captureGPUFrameTime,
+    _createTimeQuery,
+    _deleteTimeQuery,
+    _getGlAlgorithmType,
+    _getTimeQueryResult,
+    _getTimeQueryAvailability,
+};
+
+export default queryWebGLExtension;

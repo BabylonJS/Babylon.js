@@ -5,6 +5,9 @@ import { InternalTexture, InternalTextureSource } from "@babylonjs/core/Material
 import type { TextureSize, RenderTargetCreationOptions, DepthTextureCreationOptions } from "@babylonjs/core/Materials/Textures/textureCreationOptions.js";
 import type { Nullable } from "@babylonjs/core/types.js";
 import { augmentEngineState } from "../../engine.adapters.js";
+import type {
+    IWebGLEnginePublic,
+    WebGLEngineStateFull} from "../../engine.webgl.js";
 import {
     _bindTextureDirectly,
     _bindUnboundFramebuffer,
@@ -12,9 +15,7 @@ import {
     _createRenderBuffer,
     _getRGBAMultiSampleBufferFormat,
     _setupDepthStencilTexture,
-    _setupFramebufferDepthAttachments,
-    type IWebGLEnginePublic,
-    type WebGLEngineStateFull,
+    _setupFramebufferDepthAttachments
 } from "../../engine.webgl.js";
 import { Logger } from "@babylonjs/core/Misc/logger.js";
 import type { IRenderTargetEngineExtension } from "./renderTarget.base.js";
@@ -342,10 +343,12 @@ export const updateRenderTargetTextureSampleCount: IRenderTargetEngineExtension[
     return samples;
 };
 
-export default {
+export const renderTargetWebGLExtensions: IRenderTargetEngineExtension = {
     createRenderTargetTexture,
     createDepthStencilTexture,
     updateRenderTargetTextureSampleCount,
     _createHardwareRenderTargetWrapper,
     _createDepthStencilTexture,
 };
+
+export default renderTargetWebGLExtensions;

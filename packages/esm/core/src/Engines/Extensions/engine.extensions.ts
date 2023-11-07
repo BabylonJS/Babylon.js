@@ -6,6 +6,10 @@ import type { IRawTextureEngineExtension } from "./rawTexture/engine.rawTexture.
 import type { IMultiRenderEngineExtension } from "./multiRender/multiRender.base.js";
 import type { IRenderTargetEngineExtension } from "./renderTarget/renderTarget.base.js";
 import type { ITransformFeedbackEngineExtension } from "./transformFeedback/engine.transformFeedback.base.js";
+import type { IAlphaEngineExtension } from "./alpha/alpha.base.js";
+import type { IDynamicBufferEngineExtension } from "./dynamicBuffer/dynamicBuffer.base.js";
+import type { IQueryEngineExtension } from "./query/query.base.js";
+import type { IDynamicTextureEngineExtension } from "./dynamicTexture/dynamicTexture.base.js";
 
 export const enum EngineExtensions {
     RAW_TEXTURE = 0,
@@ -13,6 +17,15 @@ export const enum EngineExtensions {
     RENDER_TARGET = 2,
     MULTI_RENDER = 3,
     CUBE_TEXTURE = 4,
+    ALPHA = 5,
+    QUERY = 6,
+    DYNAMIC_BUFFER = 7,
+    DYNAMIC_TEXTURE = 8,
+}
+
+export interface IBaseEngineExtension {
+    extensionState: any;
+    initExtension(): void;
 }
 
 export interface IEngineExtensions {
@@ -21,6 +34,10 @@ export interface IEngineExtensions {
     [EngineExtensions.RENDER_TARGET]: IRenderTargetEngineExtension;
     [EngineExtensions.MULTI_RENDER]: IMultiRenderEngineExtension;
     [EngineExtensions.CUBE_TEXTURE]: ICubeTextureEngineExtension;
+    [EngineExtensions.ALPHA]: IAlphaEngineExtension;
+    [EngineExtensions.QUERY]: IQueryEngineExtension;
+    [EngineExtensions.DYNAMIC_BUFFER]: IDynamicBufferEngineExtension;
+    [EngineExtensions.DYNAMIC_TEXTURE]: IDynamicTextureEngineExtension;
 }
 
 export type IEngineExtension = IEngineExtensions[EngineExtensions];
@@ -35,15 +52,15 @@ export function getEngineExtensions(engineState: IBaseEnginePublic): IEngineExte
     return engineExtensions[engineState.uniqueId];
 }
 
-export function getEngineExtension<T>(engineState: IBaseEnginePublic, type: EngineExtensions): T {
-    return getEngineExtensions(engineState)[type] as T;
+export function getEngineExtension<K extends keyof IEngineExtensions>(engineState: IBaseEnginePublic, type: K): IEngineExtensions[K] {
+    return getEngineExtensions(engineState)[type];
 }
 
-export function setExtension<T extends IEngineExtension>(engineState: IBaseEnginePublic, type: EngineExtensions, extension: T) {
+export function setExtension<K extends keyof IEngineExtensions>(engineState: IBaseEnginePublic, type: K, extension: IEngineExtensions[K]) {
     const extensions = getEngineExtensions(engineState);
-    const castedExtension = extension as unknown as /*IEngineExtensions[typeof type]*/ any;
     // the any cast is required to avoid TS error when setting the extension
-    extensions[type] = castedExtension;
+    extensions[type] = extension;
     // augment the engine state with these functions
-    augmentEngineState(engineState, castedExtension);
+    // casted to any, as this is a legacy solution and is not part of the engine interface
+    augmentEngineState(engineState, extension as any);
 }

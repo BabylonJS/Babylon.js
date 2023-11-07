@@ -1,5 +1,6 @@
 import { InternalTexture, InternalTextureSource } from "@babylonjs/core/Materials/Textures/internalTexture.js";
 import type { Nullable } from "@babylonjs/core/types.js";
+import type { IWebGLEnginePublic, WebGLEngineStateFull } from "../../engine.webgl.js";
 import {
     _bindTextureDirectly,
     _getInternalFormat,
@@ -8,8 +9,6 @@ import {
     _getUseSRGBBuffer,
     _getWebGLTextureType,
     _unpackFlipY,
-    type IWebGLEnginePublic,
-    type WebGLEngineStateFull,
 } from "../../engine.webgl.js";
 import { Constants } from "../../engine.constants.js";
 import { augmentEngineState } from "../../engine.adapters.js";
@@ -583,7 +582,7 @@ export const updateRawTexture3D: (
     textureType?: number
 ) => void = _makeUpdateRawTextureFunction.bind(null, true);
 
-export default {
+export const rawTextureWebGLExtension: IRawTextureEngineExtension = {
     createRawTexture,
     createRawCubeTexture,
     createRawCubeTextureFromUrl,
@@ -594,3 +593,5 @@ export default {
     updateRawTexture2DArray,
     updateRawTexture3D,
 };
+
+export default rawTextureWebGLExtension;

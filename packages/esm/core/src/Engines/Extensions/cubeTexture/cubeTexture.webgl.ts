@@ -410,3 +410,16 @@ export const createCubeTexture: ICubeTextureEngineExtension["createCubeTexture"]
         !!useSRGBBuffer
     );
 };
+
+export const cubeTextureWebGLExtension: ICubeTextureEngineExtension = {
+    createCubeTexture,
+    createCubeTextureBase,
+    _createDepthStencilCubeTexture,
+    _cascadeLoadFiles,
+    _cascadeLoadImgs,
+    _partialLoadFile,
+    _partialLoadImg,
+    _setCubeMapTextureParams,
+};
+
+export default cubeTextureWebGLExtension;

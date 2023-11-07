@@ -1,6 +1,6 @@
 import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine.js";
-import type * as BaseTypes from "./engine.base.js";
-import type * as WebGLTypes from "./engine.webgl.js";
+import type * as baseTypes from "./engine.base.js";
+import type * as webGLTypes from "./engine.webgl.js";
 
 type PickMatching<T, V> = { [K in keyof T as T[K] extends V ? K : never]: T[K] };
 type ExtractMethods<T> = PickMatching<T, Function>;
@@ -8,8 +8,8 @@ type ExtractMethods<T> = PickMatching<T, Function>;
 type EngineMethods<T extends ThinEngine> = ExtractMethods<T>;
 type BaseThinEngineUnionMethods<T extends ThinEngine, E> = PickMatching<EngineMethods<T>, E>;
 
-export type BaseEngineMethods = ExtractMethods<typeof BaseTypes>;
-export type WebGLEngineMethods = ExtractMethods<typeof WebGLTypes>;
+export type BaseEngineMethods = ExtractMethods<typeof baseTypes>;
+export type WebGLEngineMethods = ExtractMethods<typeof webGLTypes>;
 
 /**
  * Augment an engineState object with methods to simulate a real engine object
@@ -20,7 +20,7 @@ export type WebGLEngineMethods = ExtractMethods<typeof WebGLTypes>;
  * @returns The engineState cased to the requested engine type
  */
 export function augmentEngineState<T extends ThinEngine, E = BaseEngineMethods | WebGLEngineMethods>(
-    engineState: BaseTypes.IBaseEnginePublic,
+    engineState: baseTypes.IBaseEnginePublic,
     injectedMethods?: Partial<E>,
     force?: boolean
 ): T {

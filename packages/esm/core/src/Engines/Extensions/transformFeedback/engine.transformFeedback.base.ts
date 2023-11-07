@@ -40,7 +40,7 @@ export interface ITransformFeedbackEngineExtension {
      * @param program defines the associated webGL program
      * @param value defines the list of strings representing the varying names
      */
-    setTranformFeedbackVaryings(engineState: IBaseEnginePublic, program: WebGLProgram, value: string[]): void;
+    setTransformFeedbackVaryings(engineState: IBaseEnginePublic, program: WebGLProgram, value: string[]): void;
 
     /**
      * Bind a webGL buffer for a transform feedback operation

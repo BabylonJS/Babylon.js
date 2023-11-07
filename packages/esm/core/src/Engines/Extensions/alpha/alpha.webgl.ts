@@ -136,3 +136,13 @@ export const setAlphaEquation: IAlphaEngineExtension["setAlphaEquation"] = (engi
 export const getAlphaEquation: IAlphaEngineExtension["getAlphaEquation"] = (engineState: IWebGLEnginePublic) => {
     return (engineState as WebGLEngineStateFull)._alphaEquation;
 };
+
+export const alphaWebGLExtension: IAlphaEngineExtension = {
+    setAlphaConstants,
+    setAlphaMode,
+    getAlphaMode,
+    setAlphaEquation,
+    getAlphaEquation,
+};
+
+export default alphaWebGLExtension;
