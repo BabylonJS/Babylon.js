@@ -406,6 +406,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public useConstantAnimationDeltaTime = false;
     /**
+     * If 'useConstantAnimationDeltaTime' is set, this is the constant delta time value used
+     */
+    public constantAnimationDeltaTime = Constants.STANDARD_TIME_STEP;
+    /**
      * Gets or sets a boolean indicating if the scene must keep the meshUnderPointer property updated
      * Please note that it requires to run a ray cast through the scene on every frame
      */
@@ -4472,7 +4476,9 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this._timeAccumulator = deltaTime < 0 ? 0 : deltaTime;
         } else {
             // Animations
-            const deltaTime = this.useConstantAnimationDeltaTime ? 16 : Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
+            const deltaTime = this.useConstantAnimationDeltaTime
+                ? this.constantAnimationDeltaTime
+                : Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
             this._animationRatio = deltaTime * (60.0 / 1000.0);
             this._animate();
             this.onAfterAnimationsObservable.notifyObservers(this);
