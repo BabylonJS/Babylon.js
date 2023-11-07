@@ -15,10 +15,13 @@ export class Transcoder {
 
     public static Name = "Transcoder";
 
-    public static WasmBaseUrl = "https://preview.babylonjs.com/";
+    public static WasmBaseUrl = "";
 
     public static GetWasmUrl(wasmUrl: string) {
-        return `${Transcoder.WasmBaseUrl}${wasmUrl}`;
+        if (Transcoder.WasmBaseUrl && wasmUrl.startsWith("https://cdn.babylonjs.com/")) {
+            wasmUrl = wasmUrl.replace("https://cdn.babylonjs.com/", Transcoder.WasmBaseUrl);
+        }
+        return wasmUrl;
     }
 
     public getName(): string {

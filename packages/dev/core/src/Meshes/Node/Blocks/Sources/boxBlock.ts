@@ -184,8 +184,9 @@ export class BoxBlock extends NodeGeometryBlock {
         if (this.evaluateContext) {
             this.geometry._storedFunction = func;
         } else {
+            const value = func(state);
             this.geometry._storedFunction = () => {
-                return func(state).clone();
+                return value.clone();
             };
         }
     }

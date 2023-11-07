@@ -985,7 +985,7 @@ export class Animation {
         let gradient = (currentFrame - startKey.frame) / frameDelta;
 
         // check for easingFunction and correction of gradient
-        const easingFunction = this.getEasingFunction();
+        const easingFunction = startKey.easingFunction || this.getEasingFunction();
         if (easingFunction !== null) {
             gradient = easingFunction.ease(gradient);
         }

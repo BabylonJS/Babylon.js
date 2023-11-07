@@ -241,7 +241,7 @@ export class KhronosTextureContainer2 {
         wasmMSCTranscoder: Nullable<string>;
         wasmZSTDDecoder: Nullable<string>;
     } = {
-        jsDecoderModule: "babylon.ktx2Decoder.js",
+        jsDecoderModule: "https://cdn.babylonjs.com/babylon.ktx2Decoder.js",
         wasmUASTCToASTC: null,
         wasmUASTCToBC7: null,
         wasmUASTCToRGBA_UNORM: null,

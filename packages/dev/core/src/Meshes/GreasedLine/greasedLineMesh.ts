@@ -159,7 +159,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
     public clone(name: string = `${this.name}-cloned`, newParent?: Nullable<Node>) {
         const lineOptions = this._createLineOptions();
         const deepCopiedLineOptions = {};
-        DeepCopier.DeepCopy(lineOptions, deepCopiedLineOptions, ["instance"]);
+        DeepCopier.DeepCopy(lineOptions, deepCopiedLineOptions, ["instance"], undefined, true);
 
         const cloned = new GreasedLineMesh(name, this._scene, <GreasedLineMeshOptions>deepCopiedLineOptions);
         if (newParent) {

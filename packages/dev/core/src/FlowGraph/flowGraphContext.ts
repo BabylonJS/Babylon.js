@@ -8,6 +8,7 @@ import type { FlowGraphEventCoordinator } from "./flowGraphEventCoordinator";
 import type { FlowGraph } from "./flowGraph";
 import type { ISerializedFlowGraphContext } from "./typeDefinitions";
 import { defaultValueParseFunction, defaultValueSerializationFunction } from "./serialization";
+import { Observable } from "../Misc/observable";
 
 /**
  * Construction parameters for the context.
@@ -61,6 +62,10 @@ export class FlowGraphContext {
      * Incremented for every block executed.
      */
     private _executionId = 0;
+    /**
+     * Observable that is triggered when a node is executed.
+     */
+    public onNodeExecutedObservable: Observable<FlowGraphBlock> = new Observable<FlowGraphBlock>();
 
     constructor(params: IFlowGraphContextConfiguration) {
         this._configuration = params;
@@ -216,11 +221,23 @@ export class FlowGraphContext {
 
     /**
      * @internal
+     * Function that notifies the node executed observable
+     * @param node
+     */
+    public _notifyExecuteNode(node: FlowGraphBlock) {
+        this.onNodeExecutedObservable.notifyObservers(node);
+    }
+
+    /**
+     * @internal
      */
     public _increaseExecutionId() {
         this._executionId++;
     }
-
+    /**
+     * A monotonically increasing ID for each execution.
+     * Incremented for every block executed.
+     */
     public get executionId() {
         return this._executionId;
     }
