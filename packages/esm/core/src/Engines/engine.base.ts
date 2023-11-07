@@ -29,7 +29,7 @@ import type { StencilState } from "@babylonjs/core/States/stencilState.js";
 import type { Scene } from "@babylonjs/core/scene.js";
 import type { PostProcess } from "@babylonjs/core/PostProcesses/postProcess.js";
 import type { ICustomAnimationFrameRequester } from "@babylonjs/core/Misc/customAnimationFrameRequester.js";
-import type { ILoadingScreen } from "public/@babylonjs/core/Loading/loadingScreen.js";
+import type { ILoadingScreen } from "@babylonjs/core/Loading/loadingScreen.js";
 
 export interface IBaseEngineOptions {
     /**
@@ -1466,6 +1466,21 @@ export function _verifyPointerLock(engineState: IBaseEnginePublic): void {
     (engineState as BaseEngineStateFull)._onPointerLockChange?.();
 }
 
+/**
+ * Gets the list of loaded textures
+ * @returns an array containing all loaded textures
+ */
+export function getLoadedTexturesCache(engineState: IBaseEnginePublic): InternalTexture[] {
+    return (engineState as BaseEngineState)._internalTexturesCache;
+}
+
+/**
+ * Gets the HTML canvas attached with the current webGL context
+ * @returns a HTML canvas
+ */
+export function getRenderingCanvas(engineState: IBaseEnginePublic): Nullable<HTMLCanvasElement> {
+    return (engineState as BaseEngineState)._renderingCanvas;
+}
 /**
  * Gets the client rect of the HTML canvas attached with the current webGL context
  * @returns a client rectangle

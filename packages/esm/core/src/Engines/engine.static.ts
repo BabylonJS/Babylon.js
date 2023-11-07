@@ -9,10 +9,10 @@ import type { Scene } from "@babylonjs/core/scene.js";
 import { Observable } from "@babylonjs/core/Misc/observable.js";
 import type { ICanvas } from "@babylonjs/core/Engines/ICanvas.js";
 import type { Material } from "@babylonjs/core/Materials/material.js";
-import type { IOfflineProvider } from "public/@babylonjs/core/Offline/IOfflineProvider.js";
-import type { IAudioEngine } from "public/@babylonjs/core/Audio/Interfaces/IAudioEngine.js";
-import type { ILoadingScreen } from "public/@babylonjs/core/Loading/loadingScreen.js";
-import type { PostProcess } from "public/@babylonjs/core/PostProcesses/postProcess.js";
+import type { IOfflineProvider } from "@babylonjs/core/Offline/IOfflineProvider.js";
+import type { IAudioEngine } from "@babylonjs/core/Audio/Interfaces/IAudioEngine.js";
+import type { ILoadingScreen } from "@babylonjs/core/Loading/loadingScreen.js";
+import type { PostProcess } from "@babylonjs/core/PostProcesses/postProcess.js";
 
 export interface IEngineStore<T extends IBaseEnginePublic = IBaseEnginePublic> {
     /** Gets the list of created engines */
