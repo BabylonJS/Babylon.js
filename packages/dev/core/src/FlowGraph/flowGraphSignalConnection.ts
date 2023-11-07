@@ -23,6 +23,7 @@ export class FlowGraphSignalConnection extends FlowGraphConnection<FlowGraphExec
      */
     public _activateSignal(context: FlowGraphContext): void {
         if (this.connectionType === FlowGraphConnectionType.Input) {
+            context._notifyExecuteNode(this._ownerBlock);
             this._ownerBlock._execute(context, this);
             context._increaseExecutionId();
         } else {

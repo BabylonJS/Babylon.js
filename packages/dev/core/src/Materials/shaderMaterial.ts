@@ -700,7 +700,9 @@ export class ShaderMaterial extends PushMaterial {
         }
 
         if (mesh && mesh.isVerticesDataPresent(VertexBuffer.ColorKind)) {
-            attribs.push(VertexBuffer.ColorKind);
+            if (attribs.indexOf(VertexBuffer.ColorKind) === -1) {
+                attribs.push(VertexBuffer.ColorKind);
+            }
             defines.push("#define VERTEXCOLOR");
         }
 

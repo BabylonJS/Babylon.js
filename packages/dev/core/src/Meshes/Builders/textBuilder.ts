@@ -340,7 +340,7 @@ export function CreateText(
         const bbox = newMesh?.getBoundingInfo();
         newMesh.position.x = -bbox?.boundingBox.extendSizeWorld._x;
         newMesh.position.y = -bbox?.boundingBox.extendSizeWorld._y;
-        newMesh.position.z = -bbox?.boundingBox.extendSizeWorld._z;
+
         newMesh.name = name;
 
         newMesh.rotation.x = -Math.PI / 2;
