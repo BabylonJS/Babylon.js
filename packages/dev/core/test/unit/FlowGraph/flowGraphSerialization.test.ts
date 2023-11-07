@@ -138,9 +138,8 @@ describe("Flow Graph Serialization", () => {
 
         expect(serialized._userVariables.test).toEqual(42);
         expect(serialized._userVariables.test2).toEqual("hello");
-        expect(serialized._userVariables.test3.x).toEqual(1);
-        expect(serialized._userVariables.test3.y).toEqual(2);
-        expect(serialized._userVariables.test3.z).toEqual(3);
+        expect(serialized._userVariables.test3.value).toEqual([1, 2, 3]);
+        expect(serialized._userVariables.test3.className).toEqual("Vector3");
         expect(serialized._userVariables.test4.name).toEqual("testMesh");
         expect(serialized._userVariables.test4.className).toEqual("Mesh");
         expect(serialized._connectionValues[flowGraphAddBlock.leftInput.uniqueId]).toEqual(1);

@@ -6,43 +6,8 @@ import type { FlowGraphBlock } from "./flowGraphBlock";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import type { FlowGraphEventCoordinator } from "./flowGraphEventCoordinator";
 import type { FlowGraph } from "./flowGraph";
+import { defaultValueParseFunction, defaultValueSerializationFunction } from "./serialization";
 import { Observable } from "../Misc/observable";
-
-function isMeshClassName(className: string) {
-    return (
-        className === "Mesh" ||
-        className === "AbstractMesh" ||
-        className === "GroundMesh" ||
-        className === "InstanceMesh" ||
-        className === "LinesMesh" ||
-        className === "GoldbergMesh" ||
-        className === "GreasedLineMesh" ||
-        className === "TrailMesh"
-    );
-}
-
-function defaultValueSerializationFunction(key: string, value: any, serializationObject: any) {
-    if (value?.getClassName && isMeshClassName(value?.getClassName())) {
-        serializationObject[key] = {
-            name: value.name,
-            className: value.getClassName(),
-        };
-    } else {
-        serializationObject[key] = value;
-    }
-}
-
-function defaultValueParseFunction(key: string, serializationObject: any, scene: Scene) {
-    const value = serializationObject[key];
-    let finalValue;
-    const className = value?.className;
-    if (isMeshClassName(className)) {
-        finalValue = scene.getMeshByName(value.name);
-    } else {
-        finalValue = value;
-    }
-    return finalValue;
-}
 
 /**
  * Construction parameters for the context.
@@ -274,6 +239,27 @@ export class FlowGraphContext {
      */
     public get executionId() {
         return this._executionId;
+    }
+
+    private _getEnclosedSubstring(subString: string): string {
+        return `{${subString}}`;
+    }
+
+    /** @internal */
+    public _getTargetFromPath(path: string, subString: string, block: FlowGraphBlock) {
+        let finalPath = path;
+        if (subString && path.indexOf(this._getEnclosedSubstring(subString)) !== -1) {
+            const nodeToSub = block.getDataInput(subString);
+            if (!nodeToSub) {
+                throw new Error(`Invalid substitution input for substitution string ${subString}`);
+            }
+            const index = Math.floor(nodeToSub.getValue(this));
+            if (isNaN(index)) {
+                throw new Error(`Invalid substitution value for substitution string ${subString}`);
+            }
+            finalPath = path.replace(this._getEnclosedSubstring(subString), index.toString());
+        }
+        return this.getVariable(finalPath);
     }
 
     /**
