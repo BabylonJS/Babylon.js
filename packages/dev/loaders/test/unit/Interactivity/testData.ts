@@ -31,7 +31,7 @@ export const loggerExample = {
                 {
                     id: "message",
                     node: 1,
-                    socket: "val",
+                    socket: "value",
                 },
             ],
         },
@@ -81,7 +81,7 @@ export const mathExample = {
                 {
                     id: "a",
                     node: 1,
-                    socket: "val",
+                    socket: "value",
                 },
             ],
             configuration: [],
@@ -98,7 +98,7 @@ export const mathExample = {
                 {
                     id: "a",
                     node: 2,
-                    socket: "val",
+                    socket: "value",
                 },
             ],
             configuration: [],
@@ -110,7 +110,7 @@ export const mathExample = {
                 {
                     id: "message",
                     node: 3,
-                    socket: "val",
+                    socket: "value",
                 },
             ],
             configuration: [],

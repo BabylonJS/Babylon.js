@@ -127,23 +127,20 @@ export function convertGLTFToJson(gltf: IKHRInteractivity): ISerializedFlowGraph
     };
     const executionContexts = [context];
 
-    // map from uniqueId of the block to the block
-    const blocksMap: Map<string, ISerializedFlowGraphBlock> = new Map();
+    // Blocks converted to the flow graph json format
+    const flowGraphJsonBlocks: ISerializedFlowGraphBlock[] = [];
 
-    let i = 0;
-    // Parse the blocks and add them to the map
-    for (const gltfBlock of gltf.nodes) {
-        const block = convertBlock(i, gltfBlock, gltf);
-        blocksMap.set(block.uniqueId, block);
-        i++;
+    for (let i = 0; i < gltf.nodes.length; i++) {
+        const gltfBlock = gltf.nodes[i];
+        const flowGraphJsonBlock = convertBlock(i, gltfBlock, gltf);
+        flowGraphJsonBlocks.push(flowGraphJsonBlock);
     }
 
-    const allBlocks = [];
     // Parse the connections
     for (let i = 0; i < gltf.nodes.length; i++) {
         const gltfBlock = gltf.nodes[i];
-        // get the block created for the flow graph
-        const fgBlock = blocksMap.get(i.toString())!;
+        // get the block that was created in the previous step
+        const fgBlock = flowGraphJsonBlocks[i];
         const gltfFlows = gltfBlock.flows ?? [];
         // for each output flow of the gltf block
         for (const flow of gltfFlows) {
@@ -160,7 +157,7 @@ export function convertGLTFToJson(gltf: IKHRInteractivity): ISerializedFlowGraph
             const nodeInId = flow.node;
             const nodeInSocketName = flow.socket;
             // find the corresponding flow graph node
-            const nodeIn = blocksMap.get(nodeInId.toString());
+            const nodeIn = flowGraphJsonBlocks[nodeInId];
             if (!nodeIn) {
                 throw new Error(`Could not find node with id ${nodeInId} that connects its input with with node ${i}'s output ${socketOutName}`);
             }
@@ -200,7 +197,7 @@ export function convertGLTFToJson(gltf: IKHRInteractivity): ISerializedFlowGraph
                 const nodeOutId = value.node;
                 const nodeOutSocketName = value.socket;
                 // find the flow graph node that owns that output socket
-                const nodeOut = blocksMap.get(nodeOutId.toString());
+                const nodeOut = flowGraphJsonBlocks[nodeOutId];
                 if (!nodeOut) {
                     throw new Error(`Could not find node with id ${nodeOutId} that connects its output with node${i}'s input ${socketInName}`);
                 }
@@ -219,10 +216,9 @@ export function convertGLTFToJson(gltf: IKHRInteractivity): ISerializedFlowGraph
                 socketIn.connectedPointIds.push(socketOut.uniqueId);
                 socketOut.connectedPointIds.push(socketIn.uniqueId);
             } else {
-                throw new Error(`Invalid socket ${socketInName}`);
+                throw new Error(`Invalid socket ${socketInName} in node ${i}`);
             }
         }
-        allBlocks.push(fgBlock);
     }
 
     const variables = gltf.variables ?? [];
@@ -232,8 +228,9 @@ export function convertGLTFToJson(gltf: IKHRInteractivity): ISerializedFlowGraph
         const variableName = variable.id;
         context._userVariables[variableName] = convertValueWithType(variable as IKHRInteractivity_ValueWithMaybeType, gltf);
     }
+
     return {
-        allBlocks,
+        allBlocks: flowGraphJsonBlocks,
         executionContexts,
     };
 }
