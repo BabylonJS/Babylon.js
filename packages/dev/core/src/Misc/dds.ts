@@ -735,20 +735,9 @@ declare module "../Engines/thinEngine" {
     }
 }
 
-/**
- * Create a cube texture from prefiltered data (ie. the mipmaps contain ready to use data for PBR reflection)
- * @param rootUrl defines the url where the file to load is located
- * @param scene defines the current scene
- * @param lodScale defines scale to apply to the mip map selection
- * @param lodOffset defines offset to apply to the mip map selection
- * @param onLoad defines an optional callback raised when the texture is loaded
- * @param onError defines an optional callback raised if there is an issue to load the texture
- * @param format defines the format of the data
- * @param forcedExtension defines the extension to use to pick the right loader
- * @param createPolynomials defines wheter or not to create polynomails harmonics for the texture
- * @returns the cube texture as an InternalTexture
- */
-ThinEngine.prototype.createPrefilteredCubeTexture = function (
+/** @internal */
+export function _createPrefilteredCubeTexture(
+    engine: ThinEngine,
     rootUrl: string,
     scene: Nullable<Scene>,
     lodScale: number,
@@ -775,7 +764,7 @@ ThinEngine.prototype.createPrefilteredCubeTexture = function (
         }
         texture._source = InternalTextureSource.CubePrefiltered;
 
-        if (this.getCaps().textureLOD) {
+        if (engine.getCaps().textureLOD) {
             // Do not add extra process if texture lod is supported.
             if (onLoad) {
                 onLoad(texture);
@@ -785,7 +774,7 @@ ThinEngine.prototype.createPrefilteredCubeTexture = function (
 
         const mipSlices = 3;
 
-        const gl = this._gl;
+        const gl = engine._gl;
         const width = loadData.width;
         if (!width) {
             return;
@@ -803,7 +792,7 @@ ThinEngine.prototype.createPrefilteredCubeTexture = function (
             const lodIndex = minLODIndex + (maxLODIndex - minLODIndex) * roughness;
             const mipmapIndex = Math.round(Math.min(Math.max(lodIndex, 0), maxLODIndex));
 
-            const glTextureFromLod = new InternalTexture(this, InternalTextureSource.Temp);
+            const glTextureFromLod = new InternalTexture(engine, InternalTextureSource.Temp);
             glTextureFromLod.type = texture.type;
             glTextureFromLod.format = texture.format;
             glTextureFromLod.width = Math.pow(2, Math.max(Scalar.Log2(width) - mipmapIndex, 0));
@@ -811,7 +800,7 @@ ThinEngine.prototype.createPrefilteredCubeTexture = function (
             glTextureFromLod.isCube = true;
             glTextureFromLod._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
             glTextureFromLod._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
-            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, glTextureFromLod, true);
+            engine._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, glTextureFromLod, true);
 
             glTextureFromLod.samplingMode = Constants.TEXTURE_LINEAR_LINEAR;
             gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -822,14 +811,14 @@ ThinEngine.prototype.createPrefilteredCubeTexture = function (
             if (loadData.isDDS) {
                 const info: DDSInfo = loadData.info;
                 const data: any = loadData.data;
-                this._unpackFlipY(info.isCompressed);
+                engine._unpackFlipY(info.isCompressed);
 
-                DDSTools.UploadDDSLevels(this, glTextureFromLod, data, info, true, 6, mipmapIndex);
+                DDSTools.UploadDDSLevels(engine, glTextureFromLod, data, info, true, 6, mipmapIndex);
             } else {
                 Logger.Warn("DDS is the only prefiltered cube map supported so far.");
             }
 
-            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
+            engine._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
 
             // Wrap in a base texture for easy binding.
             const lodTexture = new BaseTexture(scene);
@@ -849,5 +838,32 @@ ThinEngine.prototype.createPrefilteredCubeTexture = function (
         }
     };
 
-    return this.createCubeTexture(rootUrl, scene, null, false, callback, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset);
+    return engine.createCubeTexture(rootUrl, scene, null, false, callback, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset);
+}
+
+/**
+ * Create a cube texture from prefiltered data (ie. the mipmaps contain ready to use data for PBR reflection)
+ * @param rootUrl defines the url where the file to load is located
+ * @param scene defines the current scene
+ * @param lodScale defines scale to apply to the mip map selection
+ * @param lodOffset defines offset to apply to the mip map selection
+ * @param onLoad defines an optional callback raised when the texture is loaded
+ * @param onError defines an optional callback raised if there is an issue to load the texture
+ * @param format defines the format of the data
+ * @param forcedExtension defines the extension to use to pick the right loader
+ * @param createPolynomials defines wheter or not to create polynomails harmonics for the texture
+ * @returns the cube texture as an InternalTexture
+ */
+ThinEngine.prototype.createPrefilteredCubeTexture = function (
+    rootUrl: string,
+    scene: Nullable<Scene>,
+    lodScale: number,
+    lodOffset: number,
+    onLoad: Nullable<(internalTexture: Nullable<InternalTexture>) => void> = null,
+    onError: Nullable<(message?: string, exception?: any) => void> = null,
+    format?: number,
+    forcedExtension: any = null,
+    createPolynomials: boolean = true
+): InternalTexture {
+    return _createPrefilteredCubeTexture(this, rootUrl, scene, lodScale, lodOffset, onLoad, onError, format, forcedExtension, createPolynomials);
 };
