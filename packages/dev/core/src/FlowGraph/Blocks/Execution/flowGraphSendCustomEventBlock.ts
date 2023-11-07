@@ -9,7 +9,13 @@ import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
  * Parameters used to create a FlowGraphSendCustomEventBlock.
  */
 export interface IFlowGraphSendCustomEventBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * The id of the event to send.
+     */
     eventId: string;
+    /**
+     * The names of the data inputs for that event.
+     */
     eventData: string[];
 }
 /**

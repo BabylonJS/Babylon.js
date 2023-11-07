@@ -8,8 +8,8 @@ import { FlowGraphAsyncExecutionBlock } from "../../../flowGraphAsyncExecutionBl
 
 export interface IFlowGraphAnimateToBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
-     * The path of the entity whose property will be set. Needs a corresponding
-     * entity on the context.pathMap variable.
+     * The variable path of the entity whose property will be set. Needs a corresponding
+     * entity on the context variables with that variable name.
      */
     path: string;
     /**

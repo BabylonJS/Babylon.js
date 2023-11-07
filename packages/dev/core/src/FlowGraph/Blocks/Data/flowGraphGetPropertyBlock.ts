@@ -5,10 +5,13 @@ import type { FlowGraphContext } from "../../flowGraphContext";
 import { RichTypeAny, RichTypeNumber } from "../../flowGraphRichTypes";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 
+/**
+ * @experimental
+ */
 export interface IFlowGraphGetPropertyBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
-     * The path of the entity whose property will be set. Needs a corresponding
-     * entity on the context.pathMap variable.
+     * The variable path of the entity whose property will be set. Needs a corresponding
+     * entity on the context variables with that variable name.
      */
     path: string;
     /**

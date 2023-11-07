@@ -12,7 +12,14 @@ import { RegisterClass } from "../../../Misc/typeStore";
  * Parameters used to create a FlowGraphReceiveCustomEventBlock.
  */
 export interface IFlowGraphReceiveCustomEventBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * The id of the event to receive.
+     */
     eventId: string;
+    /**
+     * The names of the data outputs for that event. Should be in the same order as the event data in
+     * SendCustomEvent
+     */
     eventData: string[];
 }
 

@@ -46,8 +46,8 @@ export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphWithOnDoneExecut
         }
     }
 
-    private _setProperty(target: any, path: string, value: any): void {
-        const splitProp = path.split(".");
+    private _setProperty(target: any, propertyPath: string, value: any): void {
+        const splitProp = propertyPath.split(".");
 
         let currentTarget = target;
         for (let i = 0; i < splitProp.length - 1; i++) {

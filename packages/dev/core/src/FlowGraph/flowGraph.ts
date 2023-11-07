@@ -247,9 +247,9 @@ export class FlowGraph {
             for (const dataIn of block.dataInputs) {
                 for (const serializedConnection of dataIn.connectedPointIds) {
                     const connection = FlowGraph.GetDataOutConnectionByUniqueId(blocks, serializedConnection);
-                    console.log(
-                        `Connecting connection ${connection.name} in block ${connection._ownerBlock.name} to connection ${dataIn.name} in block ${dataIn._ownerBlock.name}`
-                    );
+                    // console.log(
+                    //     `Connecting connection ${connection.name} in block ${connection._ownerBlock.name} to connection ${dataIn.name} in block ${dataIn._ownerBlock.name}`
+                    // );
                     dataIn.connectTo(connection);
                 }
             }
@@ -257,9 +257,9 @@ export class FlowGraph {
                 for (const signalOut of block.signalOutputs) {
                     for (const serializedConnection of signalOut.connectedPointIds) {
                         const connection = FlowGraph.GetSignalInConnectionByUniqueId(blocks, serializedConnection);
-                        console.log(
-                            `Connecting connection ${connection.name} in block ${connection._ownerBlock.name} to connection ${signalOut.name} in block ${signalOut._ownerBlock.name}`
-                        );
+                        // console.log(
+                        //     `Connecting connection ${connection.name} in block ${connection._ownerBlock.name} to connection ${signalOut.name} in block ${signalOut._ownerBlock.name}`
+                        // );
                         signalOut.connectTo(connection);
                     }
                 }

@@ -11,7 +11,7 @@ import type { ISerializedFlowGraph, ISerializedFlowGraphBlock, ISerializedFlowGr
 import { RandomGUID } from "core/Misc";
 import { gltfPropertyNameToBabylonPropertyName, gltfToFlowGraphTypeMap, gltfTypeToBabylonType } from "./utils";
 
-function convertType(configObject: IKHRInteractivity_ValueWithMaybeType, definition: IKHRInteractivity) {
+function convertValueWithType(configObject: IKHRInteractivity_ValueWithMaybeType, definition: IKHRInteractivity) {
     if (configObject.type !== undefined) {
         // get the type on the gltf definition
         const type = definition.types && definition.types[configObject.type];
@@ -82,7 +82,7 @@ function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKH
             }
             converted.property = property;
         } else {
-            converted[configObject.id] = convertType(configObject, definition);
+            converted[configObject.id] = convertValueWithType(configObject, definition);
         }
     }
     return converted;
@@ -96,7 +96,6 @@ function convertBlock(id: number, gltfBlock: IKHRInteractivity_Node, definition:
     const config = convertConfiguration(gltfBlock, definition);
     const uniqueId = id.toString();
     const metadata = gltfBlock.metadata;
-    // the data inputs and outputs will be saved at a later step?
     const dataInputs: ISerializedFlowGraphConnection[] = [];
     const dataOutputs: ISerializedFlowGraphConnection[] = [];
     const signalInputs: ISerializedFlowGraphConnection[] = [];
@@ -148,11 +147,11 @@ export function convertGLTFToJson(gltf: IKHRInteractivity): ISerializedFlowGraph
         const gltfFlows = gltfBlock.flows ?? [];
         // for each output flow of the gltf block
         for (const flow of gltfFlows) {
-            const nodeOutName = flow.id;
+            const socketOutName = flow.id;
             // create an output connection for the flow graph block
             const socketOut: ISerializedFlowGraphConnection = {
                 uniqueId: RandomGUID(),
-                name: nodeOutName,
+                name: socketOutName,
                 _connectionType: 1, // Output
                 connectedPointIds: [],
             };
@@ -163,7 +162,7 @@ export function convertGLTFToJson(gltf: IKHRInteractivity): ISerializedFlowGraph
             // find the corresponding flow graph node
             const nodeIn = blocksMap.get(nodeInId.toString());
             if (!nodeIn) {
-                throw new Error(`Could not find node with id ${nodeInId}`);
+                throw new Error(`Could not find node with id ${nodeInId} that connects its input with with node ${i}'s output ${socketOutName}`);
             }
             // in all of the flow graph input connections, find the one with the same name as the socket
             let socketIn = nodeIn.signalInputs.find((s) => s.name === nodeInSocketName);
@@ -195,7 +194,7 @@ export function convertGLTFToJson(gltf: IKHRInteractivity): ISerializedFlowGraph
             fgBlock.dataInputs.push(socketIn);
             if (value.value !== undefined) {
                 // if the value is set on the socket itself, store it in the context
-                context._connectionValues[socketIn.uniqueId] = convertType(value as IKHRInteractivity_ValueWithMaybeType, gltf);
+                context._connectionValues[socketIn.uniqueId] = convertValueWithType(value as IKHRInteractivity_ValueWithMaybeType, gltf);
             } else if (value.node !== undefined && value.socket !== undefined) {
                 // if the value is connected with the output data of another socket, connect the two
                 const nodeOutId = value.node;
@@ -203,7 +202,7 @@ export function convertGLTFToJson(gltf: IKHRInteractivity): ISerializedFlowGraph
                 // find the flow graph node that owns that output socket
                 const nodeOut = blocksMap.get(nodeOutId.toString());
                 if (!nodeOut) {
-                    throw new Error(`Could not find node with id ${nodeOutId}`);
+                    throw new Error(`Could not find node with id ${nodeOutId} that connects its output with node${i}'s input ${socketInName}`);
                 }
                 let socketOut = nodeOut.dataOutputs.find((s) => s.name === nodeOutSocketName);
                 // if the socket doesn't exist, create it
@@ -231,7 +230,7 @@ export function convertGLTFToJson(gltf: IKHRInteractivity): ISerializedFlowGraph
     for (let i = 0; i < variables.length; i++) {
         const variable: IKHRInteractivity_Variable = variables[i];
         const variableName = variable.id;
-        context._userVariables[variableName] = convertType(variable as IKHRInteractivity_ValueWithMaybeType, gltf);
+        context._userVariables[variableName] = convertValueWithType(variable as IKHRInteractivity_ValueWithMaybeType, gltf);
     }
     return {
         allBlocks,
