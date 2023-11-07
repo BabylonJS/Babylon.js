@@ -1,17 +1,11 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type {
-    IKHRInteractivity,
-    IKHRInteractivity_Configuration,
-    IKHRInteractivity_Node,
-    IKHRInteractivity_ValueWithMaybeType,
-    IKHRInteractivity_Variable,
-} from "babylonjs-gltf2interface";
+import type { IKHRInteractivity, IKHRInteractivity_Configuration, IKHRInteractivity_Node, IKHRInteractivity_Variable } from "babylonjs-gltf2interface";
 import type { IFlowGraphBlockConfiguration } from "core/FlowGraph";
 import type { ISerializedFlowGraph, ISerializedFlowGraphBlock, ISerializedFlowGraphConnection, ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
 import { RandomGUID } from "core/Misc";
 import { gltfPropertyNameToBabylonPropertyName, gltfToFlowGraphTypeMap, gltfTypeToBabylonType } from "./utils";
 
-function convertValueWithType(configObject: IKHRInteractivity_ValueWithMaybeType, definition: IKHRInteractivity) {
+function convertValueWithType(configObject: IKHRInteractivity_Configuration, definition: IKHRInteractivity) {
     if (configObject.type !== undefined) {
         // get the type on the gltf definition
         const type = definition.types && definition.types[configObject.type];
@@ -191,7 +185,7 @@ export function convertGLTFToJson(gltf: IKHRInteractivity): ISerializedFlowGraph
             fgBlock.dataInputs.push(socketIn);
             if (value.value !== undefined) {
                 // if the value is set on the socket itself, store it in the context
-                context._connectionValues[socketIn.uniqueId] = convertValueWithType(value as IKHRInteractivity_ValueWithMaybeType, gltf);
+                context._connectionValues[socketIn.uniqueId] = convertValueWithType(value as IKHRInteractivity_Configuration, gltf);
             } else if (value.node !== undefined && value.socket !== undefined) {
                 // if the value is connected with the output data of another socket, connect the two
                 const nodeOutId = value.node;
@@ -226,7 +220,7 @@ export function convertGLTFToJson(gltf: IKHRInteractivity): ISerializedFlowGraph
     for (let i = 0; i < variables.length; i++) {
         const variable: IKHRInteractivity_Variable = variables[i];
         const variableName = variable.id;
-        context._userVariables[variableName] = convertValueWithType(variable as IKHRInteractivity_ValueWithMaybeType, gltf);
+        context._userVariables[variableName] = convertValueWithType(variable as IKHRInteractivity_Configuration, gltf);
     }
 
     return {

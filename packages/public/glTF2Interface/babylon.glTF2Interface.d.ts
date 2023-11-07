@@ -1344,12 +1344,6 @@ declare module BABYLON.GLTF2 {
         socket: string;
     }
 
-    interface IKHRInteractivity_ValueWithMaybeType {
-        id: string;
-        value: any;
-        type?: number;
-    }
-
     interface IKHRInteractivity_Configuration {
         id: string;
         value: any;
