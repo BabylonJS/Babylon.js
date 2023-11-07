@@ -3,7 +3,7 @@ import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RichTypeAny, RichTypeBoolean, RichTypeNumber, RichTypeVector3 } from "../../../flowGraphRichTypes";
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
 import { FlowGraphConstantOperationBlock } from "../flowGraphConstantOperationBlock";
-import { _getClassNameOf } from "./utils";
+import { _getClassNameOf, _areSameVectorClass } from "./utils";
 import { Vector3 } from "core/Maths";
 
 /**
@@ -18,11 +18,7 @@ export class FlowGraphAddBlock extends FlowGraphBinaryOperationBlock<any, any, a
     private _polymorphicAdd(a: any, b: any) {
         const aClassName = _getClassNameOf(a);
         const bClassName = _getClassNameOf(b);
-        if (
-            (aClassName === "Vector2" && bClassName === "Vector2") ||
-            (aClassName === "Vector3" && bClassName === "Vector3") ||
-            (aClassName === "Vector4" && bClassName === "Vector4")
-        ) {
+        if (_areSameVectorClass(aClassName, bClassName)) {
             return a.add(b);
         } else {
             return a + b;
@@ -49,11 +45,7 @@ export class FlowGraphSubtractBlock extends FlowGraphBinaryOperationBlock<any, a
     private _polymorphicAdd(a: any, b: any) {
         const aClassName = _getClassNameOf(a);
         const bClassName = _getClassNameOf(b);
-        if (
-            (aClassName === "Vector2" && bClassName === "Vector2") ||
-            (aClassName === "Vector3" && bClassName === "Vector3") ||
-            (aClassName === "Vector4" && bClassName === "Vector4")
-        ) {
+        if (_areSameVectorClass(aClassName, bClassName)) {
             return a.subtract(b);
         } else {
             return a - b;
@@ -76,11 +68,7 @@ export class FlowGraphMultiplyBlock extends FlowGraphBinaryOperationBlock<any, a
     private _polymorphicMultiply(a: any, b: any) {
         const aClassName = _getClassNameOf(a);
         const bClassName = _getClassNameOf(b);
-        if (
-            (aClassName === "Vector2" && bClassName === "Vector2") ||
-            (aClassName === "Vector3" && bClassName === "Vector3") ||
-            (aClassName === "Vector4" && bClassName === "Vector4")
-        ) {
+        if (_areSameVectorClass(aClassName, bClassName)) {
             return a.multiply(b);
         } else {
             return a * b;

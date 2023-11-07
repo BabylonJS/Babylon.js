@@ -130,7 +130,7 @@ export class FlowGraphBlock {
         valueParseFunction: (key: string, serializationObject: any, scene: Scene) => any = defaultValueParseFunction
     ): FlowGraphBlock {
         const classType = Tools.Instantiate(serializationObject.className);
-        console.log("parsing block of classType", serializationObject.className);
+        // console.log("parsing block of classType", serializationObject.className);
         const config = FlowGraphBlock._ParseConfig(serializationObject, scene, valueParseFunction);
         const obj = new classType(config) as FlowGraphBlock;
         obj.uniqueId = serializationObject.uniqueId;
