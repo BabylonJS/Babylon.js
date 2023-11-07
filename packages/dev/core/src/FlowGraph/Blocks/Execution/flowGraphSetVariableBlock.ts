@@ -33,7 +33,7 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphWithOnDoneExecutionBl
         const variableNameValue = this.config.variableName;
         const inputValue = this.input.getValue(context);
         context.setVariable(variableNameValue, inputValue);
-        this.onDone._activateSignal(context);
+        this.out._activateSignal(context);
     }
 
     public getClassName(): string {

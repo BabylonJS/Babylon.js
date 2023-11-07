@@ -68,7 +68,7 @@ export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphWithOnDoneExecut
             throw new Error("Invalid target or property");
         }
 
-        this.onDone._activateSignal(context);
+        this.out._activateSignal(context);
     }
 
     public getClassName(): string {

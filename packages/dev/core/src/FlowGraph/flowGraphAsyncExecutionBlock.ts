@@ -20,6 +20,7 @@ export abstract class FlowGraphAsyncExecutionBlock extends FlowGraphExecutionBlo
 
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
+        this.out = this._registerSignalOutput("out");
         this.done = this._registerSignalOutput("done");
     }
     /**

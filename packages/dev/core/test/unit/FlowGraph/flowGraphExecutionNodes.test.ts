@@ -75,13 +75,13 @@ describe("Flow Graph Execution Nodes", () => {
         sceneReady.done.connectTo(doN.in);
 
         const nIsDone = new FlowGraphLogBlock();
-        doN.onDone.connectTo(nIsDone.in);
-        doN.currentCount.connectTo(nIsDone.message);
+        doN.out.connectTo(nIsDone.in);
+        doN.value.connectTo(nIsDone.message);
 
         flowGraph.start();
 
         const numCalls = 5;
-        doN.maxNumberOfExecutions.setValue(numCalls, flowGraphContext);
+        doN.n.setValue(numCalls, flowGraphContext);
 
         const extraCalls = 2;
 
@@ -107,7 +107,7 @@ describe("Flow Graph Execution Nodes", () => {
         forLoop.index.connectTo(loop.message);
 
         const done = new FlowGraphLogBlock();
-        forLoop.onDone.connectTo(done.in);
+        forLoop.out.connectTo(done.in);
         done.message.setValue("done", flowGraphContext);
 
         flowGraph.start();
@@ -196,7 +196,7 @@ describe("Flow Graph Execution Nodes", () => {
 
         const customFunctionBlock2 = new FlowGraphLogBlock();
         customFunctionBlock2.message.setValue("custom2", flowGraphContext);
-        timer.onTimerDone.connectTo(customFunctionBlock2.in);
+        timer.done.connectTo(customFunctionBlock2.in);
 
         flowGraph.start();
         // this will run the onReadyObservable and the onBeforeRenderObservable
@@ -238,7 +238,7 @@ describe("Flow Graph Execution Nodes", () => {
         sceneTick.done.connectTo(throttle.in);
 
         const customFunction = new FlowGraphLogBlock();
-        throttle.onDone.connectTo(customFunction.in);
+        throttle.out.connectTo(customFunction.in);
 
         flowGraph.start();
         scene.render();

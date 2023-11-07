@@ -36,7 +36,7 @@ export class FlowGraphThrottleBlock extends FlowGraphWithOnDoneExecutionBlock {
         if (callingSignal === this.reset || lastExecutedTime === undefined || currentTime - lastExecutedTime > durationValue) {
             //activate the output flow
             this.timeRemaining.setValue(0, context);
-            this.onDone._activateSignal(context);
+            this.out._activateSignal(context);
             context._setExecutionVariable(this, "lastExecutedTime", currentTime);
         } else {
             //activate the output flow after the remaining time

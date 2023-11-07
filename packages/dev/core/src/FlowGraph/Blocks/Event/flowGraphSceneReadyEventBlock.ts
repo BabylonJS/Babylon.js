@@ -13,6 +13,7 @@ export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
         if (!context._getExecutionVariable(this, "sceneReadyObserver")) {
             const scene = context.configuration.scene;
             const contextObserver = scene.onReadyObservable.add(() => {
+                console.log("Scene is ready");
                 this._execute(context);
             });
             context._setExecutionVariable(this, "sceneReadyObserver", contextObserver);

@@ -18,18 +18,20 @@ import {
     FlowGraphAnimateToBlock,
     FlowGraphSubtractBlock,
     FlowGraphDotBlock,
+    FlowGraphReceiveCustomEventBlock,
 } from "core/FlowGraph";
 
 export const gltfToFlowGraphTypeMap: { [key: string]: string } = {
     "lifecycle/onStart": FlowGraphSceneReadyEventBlock.ClassName,
+    "lifecycle/onTick": FlowGraphSceneTickEventBlock.ClassName,
     log: FlowGraphLogBlock.ClassName,
     "flow/delay": FlowGraphTimerBlock.ClassName,
     "customEvent/send": FlowGraphSendCustomEventBlock.ClassName,
+    "customEvent/receive": FlowGraphReceiveCustomEventBlock.ClassName,
     "flow/sequence": FlowGraphSequenceBlock.ClassName,
     "world/get": FlowGraphGetPropertyBlock.ClassName,
     "world/set": FlowGraphSetPropertyBlock.ClassName,
     "math/add": FlowGraphAddBlock.ClassName,
-    "lifecycle/onTick": FlowGraphSceneTickEventBlock.ClassName,
     "flow/doN": FlowGraphDoNBlock.ClassName,
     "variable/get": FlowGraphGetVariableBlock.ClassName,
     "variable/set": FlowGraphSetVariableBlock.ClassName,

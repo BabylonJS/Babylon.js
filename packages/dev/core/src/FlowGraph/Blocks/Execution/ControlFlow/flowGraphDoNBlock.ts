@@ -7,6 +7,12 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 
 /**
+ * @experimental
+ */
+export class IFlowGraphDoNBlockConfiguration implements IFlowGraphBlockConfiguration {
+    startIndex: number;
+}
+/**
  * A block that executes a branch a set number of times.
  * @experimental
  */
@@ -18,27 +24,27 @@ export class FlowGraphDoNBlock extends FlowGraphWithOnDoneExecutionBlock {
     /**
      * Input connection: The maximum number of times the block can be executed.
      */
-    public readonly maxNumberOfExecutions: FlowGraphDataConnection<number>;
+    public readonly n: FlowGraphDataConnection<number>;
     /**
      * Output connection: The number of times the block has been executed.
      */
-    public readonly currentCount: FlowGraphDataConnection<number>;
+    public readonly value: FlowGraphDataConnection<number>;
 
-    constructor(config?: IFlowGraphBlockConfiguration) {
+    constructor(public config: IFlowGraphDoNBlockConfiguration = { startIndex: 0 }) {
         super(config);
         this.reset = this._registerSignalInput("reset");
-        this.maxNumberOfExecutions = this._registerDataInput("numberOfExecutions", RichTypeNumber);
-        this.currentCount = this._registerDataOutput("currentCount", RichTypeNumber);
+        this.n = this._registerDataInput("n", RichTypeNumber);
+        this.value = this._registerDataOutput("value", RichTypeNumber);
     }
 
     public _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {
         if (callingSignal === this.reset) {
-            this.currentCount.setValue(0, context);
+            this.value.setValue(this.config.startIndex, context);
         } else {
-            const currentCountValue = this.currentCount.getValue(context);
-            if (currentCountValue < this.maxNumberOfExecutions.getValue(context)) {
-                this.currentCount.setValue(currentCountValue + 1, context);
-                this.onDone._activateSignal(context);
+            const currentCountValue = this.value.getValue(context);
+            if (currentCountValue < this.n.getValue(context)) {
+                this.value.setValue(currentCountValue + 1, context);
+                this.out._activateSignal(context);
             }
         }
     }

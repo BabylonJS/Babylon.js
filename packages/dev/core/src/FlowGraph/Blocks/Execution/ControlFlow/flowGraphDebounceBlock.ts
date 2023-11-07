@@ -43,7 +43,7 @@ export class FlowGraphDebounceBlock extends FlowGraphWithOnDoneExecutionBlock {
         this.currentCount.setValue(newCount, context);
         context._setExecutionVariable(this, "debounceCount", newCount);
         if (newCount >= count) {
-            this.onDone._activateSignal(context);
+            this.out._activateSignal(context);
             context._setExecutionVariable(this, "debounceCount", 0);
         }
     }

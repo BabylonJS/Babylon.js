@@ -36,7 +36,7 @@ export class FlowGraphCounterBlock extends FlowGraphWithOnDoneExecutionBlock {
 
         context._setExecutionVariable(this, "count", countValue);
         this.count.setValue(countValue, context);
-        this.onDone._activateSignal(context);
+        this.out._activateSignal(context);
     }
 
     public getClassName(): string {

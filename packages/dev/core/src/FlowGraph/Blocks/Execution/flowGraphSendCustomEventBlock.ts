@@ -4,6 +4,10 @@ import type { FlowGraphContext } from "../../flowGraphContext";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 
+/**
+ * @experimental
+ * Parameters used to create a FlowGraphSendCustomEventBlock.
+ */
 export interface IFlowGraphSendCustomEventBlockConfiguration extends IFlowGraphBlockConfiguration {
     eventId: string;
     eventData: string[];
@@ -30,7 +34,7 @@ export class FlowGraphSendCustomEventBlock extends FlowGraphWithOnDoneExecutionB
 
         context.configuration.eventCoordinator.notifyCustomEvent(eventId, eventDatas);
 
-        this.onDone._activateSignal(context);
+        this.out._activateSignal(context);
     }
 
     public getClassName(): string {

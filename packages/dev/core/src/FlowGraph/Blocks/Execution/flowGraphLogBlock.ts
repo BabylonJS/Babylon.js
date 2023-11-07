@@ -27,7 +27,7 @@ export class FlowGraphLogBlock extends FlowGraphWithOnDoneExecutionBlock {
         const messageValue = this.message.getValue(context);
         console.log(messageValue);
         // activate the output flow block
-        this.onDone._activateSignal(context);
+        this.out._activateSignal(context);
     }
 
     public getClassName(): string {

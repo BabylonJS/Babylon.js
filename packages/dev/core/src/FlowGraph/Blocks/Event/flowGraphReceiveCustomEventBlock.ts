@@ -4,7 +4,6 @@ import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
 import type { FlowGraphCustomEvent } from "../../flowGraphCustomEvent";
 import type { Nullable } from "../../../types";
 import { Tools } from "../../../Misc/tools";
-import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { RichTypeAny } from "../../flowGraphRichTypes";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { RegisterClass } from "../../../Misc/typeStore";
@@ -14,6 +13,7 @@ import { RegisterClass } from "../../../Misc/typeStore";
  */
 export interface IFlowGraphReceiveCustomEventBlockConfiguration extends IFlowGraphBlockConfiguration {
     eventId: string;
+    eventData: string[];
 }
 
 /**
@@ -23,19 +23,23 @@ export interface IFlowGraphReceiveCustomEventBlockConfiguration extends IFlowGra
 export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
     private _eventObserver: Nullable<Observer<FlowGraphCustomEvent>>;
 
-    /**
-     * Output connection: The data sent with the event.
-     */
-    public eventData: FlowGraphDataConnection<any>;
-
     constructor(public config: IFlowGraphReceiveCustomEventBlockConfiguration) {
         super(config);
-        this.eventData = this._registerDataOutput("eventData", RichTypeAny);
+    }
+
+    public configure(): void {
+        super.configure();
+        for (let i = 0; i < this.config.eventData.length; i++) {
+            const dataName = this.config.eventData[i];
+            this._registerDataOutput(dataName, RichTypeAny);
+        }
     }
     public _preparePendingTasks(context: FlowGraphContext): void {
         const observable = context.configuration.eventCoordinator.getCustomEventObservable(this.config.eventId);
-        this._eventObserver = observable.add((eventData) => {
-            this.eventData.setValue(eventData, context);
+        this._eventObserver = observable.add((eventDatas: any[]) => {
+            for (let i = 0; i < eventDatas.length; i++) {
+                this.dataOutputs[i].setValue(eventDatas[i], context);
+            }
             this._execute(context);
         });
     }
@@ -49,7 +53,9 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
     }
 
     public getClassName(): string {
-        return "FGReceiveCustomEventBlock";
+        return FlowGraphReceiveCustomEventBlock.ClassName;
     }
+
+    public static ClassName = "FGReceiveCustomEventBlock";
 }
-RegisterClass("FGReceiveCustomEventBlock", FlowGraphReceiveCustomEventBlock);
+RegisterClass(FlowGraphReceiveCustomEventBlock.ClassName, FlowGraphReceiveCustomEventBlock);

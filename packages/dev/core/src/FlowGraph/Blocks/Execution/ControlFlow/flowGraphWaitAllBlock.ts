@@ -76,7 +76,7 @@ export class FlowGraphWaitAllBlock extends FlowGraphWithOnDoneExecutionBlock {
         context._setExecutionVariable(this, "activationState", activationState.slice());
 
         if (activationState.every((value: boolean) => value)) {
-            this.onDone._activateSignal(context);
+            this.out._activateSignal(context);
             for (let i = 0; i < this.config.numberInputFlows; i++) {
                 activationState[i] = false;
             }

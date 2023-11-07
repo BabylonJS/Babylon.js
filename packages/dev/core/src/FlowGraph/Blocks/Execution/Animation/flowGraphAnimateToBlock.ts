@@ -40,7 +40,7 @@ export class FlowGraphAnimateToBlock<ValueT> extends FlowGraphAsyncExecutionBloc
     }
 
     public getEasingFunctionFromEasingType(easingType: string) {
-        // todo fill the function
+        // todo fill the function when we have the definition of this block
         return new CircleEase();
     }
 

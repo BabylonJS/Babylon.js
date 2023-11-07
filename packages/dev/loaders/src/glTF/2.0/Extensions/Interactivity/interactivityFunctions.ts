@@ -9,13 +9,12 @@ import type {
 import type { IFlowGraphBlockConfiguration } from "core/FlowGraph";
 import type { ISerializedFlowGraph, ISerializedFlowGraphBlock, ISerializedFlowGraphConnection, ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
 import { RandomGUID } from "core/Misc";
-import type { GLTFLoader } from "../../glTFLoader";
 import { gltfPropertyNameToBabylonPropertyName, gltfToFlowGraphTypeMap, gltfTypeToBabylonType } from "./utils";
 
 function convertType(configObject: IKHRInteractivity_ValueWithMaybeType, definition: IKHRInteractivity) {
     if (configObject.type !== undefined) {
         // get the type on the gltf definition
-        const type = definition.types[configObject.type];
+        const type = definition.types && definition.types[configObject.type];
         if (!type) {
             throw new Error(`Unknown type: ${configObject.type}`);
         }
@@ -33,19 +32,19 @@ function convertType(configObject: IKHRInteractivity_ValueWithMaybeType, definit
     }
 }
 
-function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKHRInteractivity, loader: GLTFLoader): IFlowGraphBlockConfiguration {
+function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKHRInteractivity): IFlowGraphBlockConfiguration {
     const converted: IFlowGraphBlockConfiguration = {};
     const configurationList: IKHRInteractivity_Configuration[] = gltfBlock.configuration ?? [];
     for (const configObject of configurationList) {
         if (configObject.id === "customEvent") {
-            const customEvent = definition.customEvents[configObject.value];
+            const customEvent = definition.customEvents && definition.customEvents[configObject.value];
             if (!customEvent) {
                 throw new Error(`Unknown custom event: ${configObject.value}`);
             }
             converted.eventId = customEvent.id;
             converted.eventData = customEvent.values.map((v) => v.id);
         } else if (configObject.id === "variable") {
-            const variable = definition.variables[configObject.value];
+            const variable = definition.variables && definition.variables[configObject.value];
             if (!variable) {
                 throw new Error(`Unknown variable: ${configObject.value}`);
             }
@@ -89,12 +88,12 @@ function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKH
     return converted;
 }
 
-function convertBlock(id: number, gltfBlock: IKHRInteractivity_Node, definition: IKHRInteractivity, loader: GLTFLoader): ISerializedFlowGraphBlock {
+function convertBlock(id: number, gltfBlock: IKHRInteractivity_Node, definition: IKHRInteractivity): ISerializedFlowGraphBlock {
     const className = gltfToFlowGraphTypeMap[gltfBlock.type];
     if (!className) {
         throw new Error(`Unknown block type: ${gltfBlock.type}`);
     }
-    const config = convertConfiguration(gltfBlock, definition, loader);
+    const config = convertConfiguration(gltfBlock, definition);
     const uniqueId = id.toString();
     const metadata = gltfBlock.metadata;
     // the data inputs and outputs will be saved at a later step?
@@ -120,7 +119,7 @@ function convertBlock(id: number, gltfBlock: IKHRInteractivity_Node, definition:
  * @param loader the glTF loader
  * @returns a serialized flow graph
  */
-export function convertGLTFToJson(gltf: IKHRInteractivity, loader: GLTFLoader): ISerializedFlowGraph {
+export function convertGLTFToJson(gltf: IKHRInteractivity): ISerializedFlowGraph {
     // create an empty serialized context to store the values of the connections
     const context: ISerializedFlowGraphContext = {
         uniqueId: RandomGUID(),
@@ -135,7 +134,7 @@ export function convertGLTFToJson(gltf: IKHRInteractivity, loader: GLTFLoader): 
     let i = 0;
     // Parse the blocks and add them to the map
     for (const gltfBlock of gltf.nodes) {
-        const block = convertBlock(i, gltfBlock, gltf, loader);
+        const block = convertBlock(i, gltfBlock, gltf);
         blocksMap.set(block.uniqueId, block);
         i++;
     }

@@ -12,10 +12,10 @@ export abstract class FlowGraphWithOnDoneExecutionBlock extends FlowGraphExecuti
     /**
      * Output connection: The signal that is triggered when the execution of this block is done.
      */
-    public readonly onDone: FlowGraphSignalConnection;
+    public readonly out: FlowGraphSignalConnection;
 
     protected constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
-        this.onDone = this._registerSignalOutput("onDone");
+        this.out = this._registerSignalOutput("out");
     }
 }

@@ -30,10 +30,6 @@ export class FlowGraphForLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
      * Output connection: The signal that is activated when the loop body is executed.
      */
     public readonly onLoop: FlowGraphSignalConnection;
-    /**
-     * Output connection: The signal that is activated when the loop is done.
-     */
-    public readonly onDone: FlowGraphSignalConnection;
 
     public constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
@@ -44,7 +40,6 @@ export class FlowGraphForLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
 
         this.index = this._registerDataOutput("index", RichTypeNumber);
         this.onLoop = this._registerSignalOutput("onLoop");
-        this.onDone = this._registerSignalOutput("onDone");
     }
 
     private _executeLoop(context: FlowGraphContext) {
@@ -58,7 +53,7 @@ export class FlowGraphForLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
             context._setExecutionVariable(this, "index", index);
             this._executeLoop(context);
         } else {
-            this.onDone._activateSignal(context);
+            this.out._activateSignal(context);
         }
     }
 

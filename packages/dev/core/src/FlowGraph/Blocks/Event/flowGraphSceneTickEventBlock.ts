@@ -13,6 +13,7 @@ export class FlowGraphSceneTickEventBlock extends FlowGraphEventBlock {
         if (!context._getExecutionVariable(this, "sceneBeforeRender")) {
             const scene = context.configuration.scene;
             const contextObserver = scene.onBeforeRenderObservable.add(() => {
+                console.log("scene tick");
                 this._execute(context);
             });
             context._setExecutionVariable(this, "sceneBeforeRender", contextObserver);
