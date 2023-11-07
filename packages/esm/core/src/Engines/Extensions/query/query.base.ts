@@ -198,7 +198,7 @@ declare module "@babylonjs/core/Meshes/abstractMesh" {
     }
 }
 
-export const initAbstractMesh = (extensionImplementation: IQueryEngineExtension, engineState: IBaseEnginePublic) => {
+export const initQueryExtension = (extensionImplementation: IQueryEngineExtension, engineState: IBaseEnginePublic) => {
     if (AbstractMesh.prototype._occlusionDataStorage) {
         return;
     }
