@@ -10,6 +10,7 @@ import type { IAlphaEngineExtension } from "./alpha/alpha.base.js";
 import type { IDynamicBufferEngineExtension } from "./dynamicBuffer/dynamicBuffer.base.js";
 import type { IQueryEngineExtension } from "./query/query.base.js";
 import type { IDynamicTextureEngineExtension } from "./dynamicTexture/dynamicTexture.base.js";
+import type { IViewsEngineExtension } from "./views/views.base.js";
 
 export const enum EngineExtensions {
     RAW_TEXTURE = 0,
@@ -21,6 +22,7 @@ export const enum EngineExtensions {
     QUERY = 6,
     DYNAMIC_BUFFER = 7,
     DYNAMIC_TEXTURE = 8,
+    VIEWS = 9
 }
 
 export interface IBaseEngineExtension {
@@ -38,6 +40,7 @@ export interface IEngineExtensions {
     [EngineExtensions.QUERY]: IQueryEngineExtension;
     [EngineExtensions.DYNAMIC_BUFFER]: IDynamicBufferEngineExtension;
     [EngineExtensions.DYNAMIC_TEXTURE]: IDynamicTextureEngineExtension;
+    [EngineExtensions.VIEWS]: IViewsEngineExtension;
 }
 
 export type IEngineExtension = IEngineExtensions[EngineExtensions];

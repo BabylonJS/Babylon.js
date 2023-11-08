@@ -1,6 +1,6 @@
 import type { Nullable } from "@babylonjs/core/types.js";
 import type { BaseEngineState, BaseEngineStateFull, IBaseEnginePublic } from "./engine.base.js";
-import { _viewport, endFrame, getHostWindow, getRenderHeight, getRenderWidth } from "./engine.base.js";
+import { _renderFrame, _viewport, endFrame, getHostWindow, getRenderHeight, getRenderWidth } from "./engine.base.js";
 import { InternalTextureSource, InternalTexture } from "@babylonjs/core/Materials/Textures/internalTexture.js";
 import type { PostProcess } from "@babylonjs/core/PostProcesses/postProcess.js";
 import type { ThinTexture } from "@babylonjs/core/Materials/Textures/thinTexture.js";
@@ -18,6 +18,7 @@ import type { Observer } from "@babylonjs/core/Misc/observable.js";
 import type { ISceneLike } from "./engine.interfaces.js";
 import { _loadFile } from "./engine.tools.js";
 import { Logger } from "@babylonjs/core/Misc/logger.js";
+import { EngineExtensions, getEngineExtension } from "./Extensions/engine.extensions.js";
 
 /**
  * Defines the interface used by objects containing a viewport (like a camera)
@@ -113,15 +114,10 @@ export function _renderLoopBase<T extends IBaseEnginePublic = IBaseEnginePublic>
             // Start new frame
             beginFrameFunc?.(engineState);
 
-            // TODO - this needs to be provided as well!
-            // Should come from an extension (views)
-            // if (!this._renderViews()) {
-            for (let index = 0; index < fes._activeRenderLoops.length; index++) {
-                const renderFunction = fes._activeRenderLoops[index];
-
-                renderFunction();
+            // is the extension loaded and defined?
+            if (!getEngineExtension(engineState, EngineExtensions.VIEWS)?._renderViews(engineState)) {
+                _renderFrame(engineState);
             }
-            // }
 
             // Present
             endFrameFunc(engineState);
@@ -132,7 +128,7 @@ export function _renderLoopBase<T extends IBaseEnginePublic = IBaseEnginePublic>
         // Register new frame
         if (fes.customAnimationFrameRequester) {
             fes.customAnimationFrameRequester.requestID = queueNewFrameFunc(
-                fes.customAnimationFrameRequester.renderFunction as FrameRequestCallback || fes._boundRenderFunction!,
+                (fes.customAnimationFrameRequester.renderFunction as FrameRequestCallback) || fes._boundRenderFunction!,
                 fes.customAnimationFrameRequester
             );
             fes._frameHandler = fes.customAnimationFrameRequester.requestID;

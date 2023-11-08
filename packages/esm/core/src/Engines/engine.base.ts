@@ -1911,3 +1911,12 @@ export function setColorWrite(engineState: IBaseEnginePublic, enable: boolean): 
 export function getColorWrite(engineState: IBaseEnginePublic): boolean {
     return (engineState as BaseEngineStateFull)._colorWrite;
 }
+
+export function _renderFrame(engineState: IBaseEnginePublic) {
+    const fes = engineState as BaseEngineStateFull;
+    for (let index = 0; index < fes._activeRenderLoops.length; index++) {
+        const renderFunction = fes._activeRenderLoops[index];
+
+        renderFunction();
+    }
+}

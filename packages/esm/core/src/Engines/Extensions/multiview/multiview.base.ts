@@ -66,7 +66,7 @@ declare module "@babylonjs/core/Cameras/camera" {
     }
 }
 
-declare module "@babylonjs/core/scene" {
+declare module "@babylonjs/core/scene.js" {
     export interface Scene {
         /** @internal */
         _transformMatrixR: Matrix;
