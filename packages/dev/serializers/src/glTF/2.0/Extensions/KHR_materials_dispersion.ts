@@ -23,8 +23,7 @@ export class KHR_materials_dispersion implements IGLTFExporterExtensionV2 {
     private _wasUsed = false;
 
     /** Constructor */
-    constructor() {
-    }
+    constructor() {}
 
     /** */
     public dispose() {}
@@ -54,7 +53,7 @@ export class KHR_materials_dispersion implements IGLTFExporterExtensionV2 {
 
                 const subs = babylonMaterial.subSurface;
                 const dispersion = subs.dispersion;
-                
+
                 const dispersionInfo: IKHRMaterialsDispersion = {
                     dispersion: dispersion,
                 };

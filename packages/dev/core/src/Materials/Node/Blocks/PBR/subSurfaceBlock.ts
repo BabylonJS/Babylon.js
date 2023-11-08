@@ -37,7 +37,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
             NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("refraction", this, NodeMaterialConnectionPointDirection.Input, RefractionBlock, "RefractionBlock")
         );
-        this.registerInput("dispersion", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
+        this.registerInput("dispersion", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
 
         this.registerOutput(
             "subsurface",
