@@ -132,7 +132,7 @@ export function _renderLoopBase<T extends IBaseEnginePublic = IBaseEnginePublic>
         // Register new frame
         if (fes.customAnimationFrameRequester) {
             fes.customAnimationFrameRequester.requestID = queueNewFrameFunc(
-                fes.customAnimationFrameRequester.renderFunction || fes._boundRenderFunction!,
+                fes.customAnimationFrameRequester.renderFunction as FrameRequestCallback || fes._boundRenderFunction!,
                 fes.customAnimationFrameRequester
             );
             fes._frameHandler = fes.customAnimationFrameRequester.requestID;

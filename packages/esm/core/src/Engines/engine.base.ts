@@ -194,7 +194,7 @@ export interface IBaseEngineInternals {
     _hardwareScalingLevel: number;
     _caps: EngineCapabilities; // TODO
     _features: EngineFeatures;
-    // _videoTextureSupported: boolean;
+    _videoTextureSupported: boolean;
     _alphaState: AlphaState;
     _alphaMode: number;
     _alphaEquation: number;
@@ -625,6 +625,7 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
         _creationOptions: options,
         _isStencilEnable: !!options.stencil,
         _virtualScenes: [],
+        _videoTextureSupported: false,
 
         // Missing vars
         _shaderProcessor: null,

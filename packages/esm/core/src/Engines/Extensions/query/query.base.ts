@@ -347,6 +347,7 @@ export const initQueryExtension = (extensionImplementation: IQueryEngineExtensio
 
 const stateObjects: IQueryExtensionState[] = [];
 
+/** @internal */
 export const _getExtensionState = (engineState: IBaseEnginePublic): IQueryExtensionState => {
     if (!stateObjects[engineState.uniqueId]) {
         stateObjects[engineState.uniqueId] = {
