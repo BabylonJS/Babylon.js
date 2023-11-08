@@ -4133,16 +4133,17 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param force defines a boolean used to force the update even if cache is up to date
      */
     public updateTransformMatrix(force?: boolean): void {
-        if (!this.activeCamera) {
+        const activeCamera = this.activeCamera;
+        if (!activeCamera) {
             return;
         }
 
-        if (this.activeCamera._renderingMultiview) {
-            const leftCamera = this.activeCamera._rigCameras[0];
-            const rightCamera = this.activeCamera._rigCameras[1];
+        if (activeCamera._renderingMultiview) {
+            const leftCamera = activeCamera._rigCameras[0];
+            const rightCamera = activeCamera._rigCameras[1];
             this.setTransformMatrix(leftCamera.getViewMatrix(), leftCamera.getProjectionMatrix(force), rightCamera.getViewMatrix(), rightCamera.getProjectionMatrix(force));
         } else {
-            this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(force));
+            this.setTransformMatrix(activeCamera.getViewMatrix(), activeCamera.getProjectionMatrix(force));
         }
     }
 
