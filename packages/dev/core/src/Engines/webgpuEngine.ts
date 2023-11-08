@@ -3231,12 +3231,13 @@ export class WebGPUEngine extends Engine {
         }
 
         let textureState = 0;
-        if (!this._caps.textureFloatLinearFiltering && this._currentMaterialContext.hasFloatTextures) {
+        if (this._currentMaterialContext.hasFloatOrDepthTextures) {
             let bitVal = 1;
             for (let i = 0; i < webgpuPipelineContext.shaderProcessingContext.textureNames.length; ++i) {
                 const textureName = webgpuPipelineContext.shaderProcessingContext.textureNames[i];
                 const texture = this._currentMaterialContext.textures[textureName]?.texture;
-                if (texture?.type === Constants.TEXTURETYPE_FLOAT) {
+                const textureIsDepth = texture && texture.format >= Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 && texture.format <= Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8;
+                if (texture?.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering || textureIsDepth) {
                     textureState |= bitVal;
                 }
                 bitVal = bitVal << 1;

@@ -900,7 +900,7 @@ export abstract class WebGPUCacheRenderPipeline {
                     let samplerType = samplerInfo?.type ?? WebGPUConstants.SamplerBindingType.Filtering;
 
                     if (this._textureState & bitVal && sampleType !== WebGPUConstants.TextureSampleType.Depth) {
-                        // The texture is a 32 bits float texture but the system does not support linear filtering for them:
+                        // The texture is a 32 bits float texture but the system does not support linear filtering for them OR the texture is a depth texture with "float" filtering:
                         // we set the sampler to "non-filtering" and the texture sample type to "unfilterable-float"
                         if (textureInfo.autoBindSampler) {
                             samplerType = WebGPUConstants.SamplerBindingType.NonFiltering;
