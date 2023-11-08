@@ -212,7 +212,7 @@ export class GLTFLoader implements IGLTFLoader {
     private _defaultBabylonMaterialData: { [drawMode: number]: Material } = {};
     private readonly _postSceneLoadActions = new Array<() => void>();
     /** @internal */
-    public _pathToNodesMapping: Map<string, Node> = new Map();
+    public _pathToNodesMapping: { [key: string]: Node } = {};
 
     private static _RegisteredExtensions: { [name: string]: IRegisteredExtension } = {};
 
@@ -640,7 +640,7 @@ export class GLTFLoader implements IGLTFLoader {
                 promises.push(
                     this.loadNodeAsync(`/nodes/${node.index}`, node, (babylonMesh) => {
                         babylonMesh.parent = this._rootBabylonMesh;
-                        this._pathToNodesMapping.set(`/nodes/${node.index}`, babylonMesh);
+                        this._pathToNodesMapping[`/nodes/${node.index}`] = babylonMesh;
                     })
                 );
             }

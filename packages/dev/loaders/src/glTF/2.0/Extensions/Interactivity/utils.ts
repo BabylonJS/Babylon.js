@@ -19,7 +19,8 @@ import {
     FlowGraphSubtractBlock,
     FlowGraphDotBlock,
     FlowGraphReceiveCustomEventBlock,
-} from "core/FlowGraph";
+    // eslint-disable-next-line import/no-internal-modules
+} from "core/FlowGraph/index";
 
 export const gltfToFlowGraphTypeMap: { [key: string]: string } = {
     "lifecycle/onStart": FlowGraphSceneReadyEventBlock.ClassName,
