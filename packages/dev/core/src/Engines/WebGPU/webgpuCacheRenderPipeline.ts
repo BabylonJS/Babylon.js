@@ -156,9 +156,9 @@ export abstract class WebGPUCacheRenderPipeline {
         }
     }
 
-    constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer, useTextureStage: boolean) {
+    constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer) {
         this._device = device;
-        this._useTextureStage = useTextureStage;
+        this._useTextureStage = true; // we force usage because we must handle depth textures with "float" filtering, which can't be fixed by a caps (like "textureFloatLinearFiltering" can for float textures)
         this._states = new Array(30); // pre-allocate enough room so that no new allocation will take place afterwards
         this._statesLength = 0;
         this._stateDirtyLowestIndex = 0;

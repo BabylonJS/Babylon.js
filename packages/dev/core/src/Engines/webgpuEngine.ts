@@ -692,7 +692,7 @@ export class WebGPUEngine extends Engine {
 
                 this._emptyVertexBuffer = new VertexBuffer(this, [0], "", false, false, 1, false, 0, 1);
 
-                this._cacheRenderPipeline = new WebGPUCacheRenderPipelineTree(this._device, this._emptyVertexBuffer, !this._caps.textureFloatLinearFiltering);
+                this._cacheRenderPipeline = new WebGPUCacheRenderPipelineTree(this._device, this._emptyVertexBuffer);
 
                 this._depthCullingState = new WebGPUDepthCullingState(this._cacheRenderPipeline);
                 this._stencilStateComposer = new WebGPUStencilStateComposer(this._cacheRenderPipeline);
