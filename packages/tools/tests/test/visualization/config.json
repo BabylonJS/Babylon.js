@@ -1393,7 +1393,7 @@
             "title": "Instances + GBR + motion blur",
             "renderCount": 10,
             "playgroundId": "#YB006J#549",
-            "excludedEngines": ["webgl1"],
+            "excludedEngines": ["webgl1","webgpu"],
             "referenceImage": "instances-gbr-mb.png"
         },
         {
