@@ -1108,8 +1108,7 @@ export class WebGPUEngine extends Engine {
             w = this._viewportCached.z,
             h = this._viewportCached.w;
 
-        const update =
-            this._viewportsCurrent.x !== x || this._viewportsCurrent.y !== y || this._viewportsCurrent.w !== w || this._viewportsCurrent.h !== h;
+        const update = this._viewportsCurrent.x !== x || this._viewportsCurrent.y !== y || this._viewportsCurrent.w !== w || this._viewportsCurrent.h !== h;
 
         if (update) {
             this._viewportsCurrent.x = this._viewportCached.x;
@@ -3256,7 +3255,7 @@ export class WebGPUEngine extends Engine {
                 renderPass2 = this._device.createRenderBundleEncoder({
                     colorFormats: this._cacheRenderPipeline.colorFormats,
                     depthStencilFormat: this._depthTextureFormat,
-                    sampleCount: this.currentSampleCount,
+                    sampleCount: WebGPUTextureHelper.GetSample(this.currentSampleCount),
                 });
             }
         }

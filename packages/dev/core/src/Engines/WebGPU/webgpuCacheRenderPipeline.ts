@@ -206,10 +206,8 @@ export abstract class WebGPUCacheRenderPipeline {
     public readonly mrtTextureCount: number = 0;
 
     public getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number, textureState = 0): GPURenderPipeline {
-        if (sampleCount > 1) {
-            // WebGPU only supports 1 or 4
-            sampleCount = 4;
-        }
+        sampleCount = WebGPUTextureHelper.GetSample(sampleCount);
+
         if (this.disabled) {
             const topology = WebGPUCacheRenderPipeline._GetTopology(fillMode);
 

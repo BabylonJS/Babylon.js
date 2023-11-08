@@ -94,7 +94,7 @@ export class WebGPUClearQuad {
             renderPass2 = this._device.createRenderBundleEncoder({
                 colorFormats: this._cacheRenderPipeline.colorFormats,
                 depthStencilFormat: this._depthTextureFormat,
-                sampleCount,
+                sampleCount: WebGPUTextureHelper.GetSample(sampleCount),
             });
         }
 

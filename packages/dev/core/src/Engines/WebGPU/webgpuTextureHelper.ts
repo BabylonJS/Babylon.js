@@ -1165,6 +1165,11 @@ export class WebGPUTextureHelper {
         return format;
     }
 
+    public static GetSample(sampleCount: number) {
+        // WebGPU only supports 1 or 4
+        return sampleCount > 1 ? 4 : 1;
+    }
+
     public copyVideoToTexture(video: ExternalTexture, texture: InternalTexture, format: GPUTextureFormat, invertY = false, commandEncoder?: GPUCommandEncoder): void {
         const useOwnCommandEncoder = commandEncoder === undefined;
         const [pipeline, bindGroupLayout] = this._getVideoPipeline(format, invertY ? VideoPipelineType.InvertY : VideoPipelineType.DontInvertY);
@@ -1443,10 +1448,7 @@ export class WebGPUTextureHelper {
         additionalUsages = 0,
         label?: string
     ): GPUTexture {
-        if (sampleCount > 1) {
-            // WebGPU only supports 1 or 4
-            sampleCount = 4;
-        }
+        sampleCount = WebGPUTextureHelper.GetSample(sampleCount);
 
         const layerCount = (imageBitmap as any).layers || 1;
         const textureSize = {
@@ -1503,10 +1505,7 @@ export class WebGPUTextureHelper {
         additionalUsages = 0,
         label?: string
     ): GPUTexture {
-        if (sampleCount > 1) {
-            // WebGPU only supports 1 or 4
-            sampleCount = 4;
-        }
+        sampleCount = WebGPUTextureHelper.GetSample(sampleCount);
 
         const width = WebGPUTextureHelper.IsImageBitmapArray(imageBitmaps) ? imageBitmaps[0].width : imageBitmaps.width;
         const height = WebGPUTextureHelper.IsImageBitmapArray(imageBitmaps) ? imageBitmaps[0].height : imageBitmaps.height;

@@ -1,4 +1,5 @@
 import type { Nullable } from "../../types";
+import { WebGPUTextureHelper } from "./webgpuTextureHelper";
 
 /** @internal */
 interface IWebGPURenderItem {
@@ -31,12 +32,7 @@ export class WebGPURenderItemViewport implements IWebGPURenderItem {
 
 /** @internal */
 export class WebGPURenderItemScissor implements IWebGPURenderItem {
-    public constructor(
-        public x: number,
-        public y: number,
-        public w: number,
-        public h: number
-    ) {}
+    public constructor(public x: number, public y: number, public w: number, public h: number) {}
 
     public run(renderPass: GPURenderPassEncoder) {
         renderPass.setScissorRect(this.x, this.y, this.w, this.h);
@@ -169,7 +165,7 @@ export class WebGPUBundleList {
             this._bundleEncoder = this._device.createRenderBundleEncoder({
                 colorFormats,
                 depthStencilFormat,
-                sampleCount,
+                sampleCount: WebGPUTextureHelper.GetSample(sampleCount),
             });
         }
         return this._bundleEncoder!;
