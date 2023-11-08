@@ -34,21 +34,6 @@ export class KHR_materials_dispersion implements IGLTFExporterExtensionV2 {
         return this._wasUsed;
     }
 
-    // public postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[] {
-    //     const additionalTextures: BaseTexture[] = [];
-
-    //     if (babylonMaterial instanceof PBRMaterial) {
-    //         if (this._isExtensionEnabled(babylonMaterial)) {
-    //             if (babylonMaterial.subSurface.thicknessTexture) {
-    //                 additionalTextures.push(babylonMaterial.subSurface.thicknessTexture);
-    //             }
-    //             return additionalTextures;
-    //         }
-    //     }
-
-    //     return additionalTextures;
-    // }
-
     private _isExtensionEnabled(mat: PBRMaterial): boolean {
         // This extension must not be used on a material that also uses KHR_materials_unlit
         if (mat.unlit) {
@@ -56,32 +41,22 @@ export class KHR_materials_dispersion implements IGLTFExporterExtensionV2 {
         }
         const subs = mat.subSurface;
         // this extension requires refraction to be enabled.
-        if (!subs.isRefractionEnabled) {
+        if (!subs.isRefractionEnabled && !subs.isDispersionEnabled) {
             return false;
         }
         return true;
     }
-
-    // private _hasTexturesExtension(mat: PBRMaterial): boolean {
-    //     return mat.subSurface.thicknessTexture != null;
-    // }
 
     public postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
         return new Promise((resolve) => {
             if (babylonMaterial instanceof PBRMaterial && this._isExtensionEnabled(babylonMaterial)) {
                 this._wasUsed = true;
 
-                // const subs = babylonMaterial.subSurface;
-                const dispersion = 0.0;//subs.dispersion;
+                const subs = babylonMaterial.subSurface;
+                const dispersion = subs.dispersion;
                 
                 const dispersionInfo: IKHRMaterialsDispersion = {
                     dispersion: dispersion,
-                    // thicknessTexture: thicknessTexture,
-                    // attenuationDistance: attenuationDistance,
-                    // attenuationColor: attenuationColor,
-                    // hasTextures: () => {
-                    //     return this._hasTexturesExtension(babylonMaterial);
-                    // },
                 };
                 node.extensions = node.extensions || {};
                 node.extensions[NAME] = dispersionInfo;

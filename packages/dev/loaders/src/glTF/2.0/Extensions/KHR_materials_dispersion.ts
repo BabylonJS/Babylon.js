@@ -75,7 +75,7 @@ export class KHR_materials_dispersion implements IGLTFLoaderExtension {
         if ((!babylonMaterial.subSurface.isRefractionEnabled) || !extension.dispersion) {
             return Promise.resolve();
         }
-
+        babylonMaterial.subSurface.isDispersionEnabled = true;
         babylonMaterial.subSurface.dispersion = extension.dispersion;
         return Promise.resolve();
     }
