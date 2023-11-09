@@ -44,7 +44,7 @@ export class WebGPUClearQuad {
         this._device = device;
         this._engine = engine;
 
-        this._cacheRenderPipeline = new WebGPUCacheRenderPipelineTree(this._device, emptyVertexBuffer, !engine._caps.textureFloatLinearFiltering);
+        this._cacheRenderPipeline = new WebGPUCacheRenderPipelineTree(this._device, emptyVertexBuffer);
         this._cacheRenderPipeline.setDepthTestEnabled(false);
         this._cacheRenderPipeline.setStencilReadMask(0xff);
 

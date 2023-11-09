@@ -465,7 +465,7 @@ export class WebGPUTextureHelper {
         return pipelineAndBGL;
     }
 
-    private static _GetTextureTypeFromFormat(format: GPUTextureFormat): number {
+    public static GetTextureTypeFromFormat(format: GPUTextureFormat): number {
         switch (format) {
             // One Component = 8 bits
             case WebGPUConstants.TextureFormat.R8Unorm:
@@ -487,7 +487,6 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.RGB10A2Unorm: // composite format - let's say it's byte...
             case WebGPUConstants.TextureFormat.RGB9E5UFloat: // composite format - let's say it's byte...
             case WebGPUConstants.TextureFormat.RG11B10UFloat: // composite format - let's say it's byte...
-            case WebGPUConstants.TextureFormat.Depth32FloatStencil8: // composite format - let's say it's byte...
             case WebGPUConstants.TextureFormat.BC7RGBAUnorm:
             case WebGPUConstants.TextureFormat.BC7RGBAUnormSRGB:
             case WebGPUConstants.TextureFormat.BC6HRGBUFloat:
@@ -540,6 +539,7 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.ASTC12x10UnormSRGB:
             case WebGPUConstants.TextureFormat.ASTC12x12Unorm:
             case WebGPUConstants.TextureFormat.ASTC12x12UnormSRGB:
+            case WebGPUConstants.TextureFormat.Stencil8:
                 return Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
             // One component = 16 bits
@@ -570,14 +570,10 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.RG32Float:
             case WebGPUConstants.TextureFormat.RGBA32Float:
             case WebGPUConstants.TextureFormat.Depth32Float:
-                return Constants.TEXTURETYPE_FLOAT;
-
-            case WebGPUConstants.TextureFormat.Stencil8:
-                throw "No fixed size for Stencil8 format!";
+            case WebGPUConstants.TextureFormat.Depth32FloatStencil8:
             case WebGPUConstants.TextureFormat.Depth24Plus:
-                throw "No fixed size for Depth24Plus format!";
             case WebGPUConstants.TextureFormat.Depth24PlusStencil8:
-                throw "No fixed size for Depth24PlusStencil8 format!";
+                return Constants.TEXTURETYPE_FLOAT;
         }
 
         return Constants.TEXTURETYPE_UNSIGNED_BYTE;
@@ -2086,7 +2082,7 @@ export class WebGPUTextureHelper {
             height,
             bytesPerRow,
             bytesPerRowAligned,
-            WebGPUTextureHelper._GetTextureTypeFromFormat(format),
+            WebGPUTextureHelper.GetTextureTypeFromFormat(format),
             0,
             buffer,
             true,
