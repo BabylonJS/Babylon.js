@@ -365,8 +365,7 @@ export class TargetCamera extends Camera {
             if (this.inertia === 0) {
                 this._updatePosition(relativeInertia, scaleFactor);
                 this.cameraDirection.scaleInPlace(0);
-            }
-            else {
+            } else {
                 this.cameraDirection.scaleInPlace(relativeInertia);
                 this._updatePosition(relativeInertia, scaleFactor);
             }
