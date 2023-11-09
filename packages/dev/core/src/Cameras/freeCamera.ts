@@ -1,6 +1,6 @@
 import type { Nullable } from "../types";
 import { serializeAsVector3, serialize } from "../Misc/decorators";
-import { Vector3, Vector2 } from "../Maths/math.vector";
+import { Vector3, Vector2, TmpVectors } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
@@ -349,6 +349,8 @@ export class FreeCamera extends TargetCamera {
      */
     public _collideWithWorld(displacement: Vector3): void {
         let globalPosition: Vector3;
+        const relativeInertia = this._getInertiaRelativeToTime();
+        const scaleFactor = this._getRelativeScaleFactor(relativeInertia);
 
         if (this.parent) {
             globalPosition = Vector3.TransformCoordinates(this.position, this.parent.getWorldMatrix());
@@ -367,16 +369,24 @@ export class FreeCamera extends TargetCamera {
         this._collider._radius = this.ellipsoid;
         this._collider.collisionMask = this._collisionMask;
 
-        //no need for clone, as long as gravity is not on.
-        let actualDisplacement = displacement;
+        // Copy displacement vector into temporary to manipulate it
+        const scaledDisplacement = TmpVectors.Vector3[0].copyFrom(displacement);
 
         //add gravity to the direction to prevent the dual-collision checking
         if (this.applyGravity) {
-            //this prevents mending with cameraDirection, a global variable of the free camera class.
-            actualDisplacement = displacement.add(this.getScene().gravity);
+            // Apply gravity to current displacement
+            scaledDisplacement.addInPlace(this.getScene().gravity);
         }
 
-        coordinator.getNewPosition(this._oldPosition, actualDisplacement, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+        // Scale original displacement by relative inertia (decay over time to zero)
+        displacement.scaleInPlace(relativeInertia);
+
+        // If inertia is not zero, apply both relative inertia and scale factor
+        if (this.inertia !== 0) {
+            scaledDisplacement.scaleInPlace(relativeInertia * scaleFactor);
+        }
+
+        coordinator.getNewPosition(this._oldPosition, scaledDisplacement, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
     }
 
     private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh> = null) => {
