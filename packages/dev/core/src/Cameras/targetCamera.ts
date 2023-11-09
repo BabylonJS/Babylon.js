@@ -325,13 +325,7 @@ export class TargetCamera extends Camera {
 
         // If we have an inertia of zero, copy the values to apply and then zero out the direction vector
         // Else, scale the previous values and apply them
-        if (this.inertia === 0) {
-            TmpVectors.Vector3[0].copyFrom(this.cameraDirection);
-            this.cameraDirection.scaleInPlace(0);
-        } else {
-            this.cameraDirection.scaleInPlace(relativeInertia);
-            TmpVectors.Vector3[0].copyFrom(this.cameraDirection);
-        }
+        TmpVectors.Vector3[0].copyFrom(this.cameraDirection);
 
         if (this.parent) {
             this.parent.getWorldMatrix().invertToRef(TmpVectors.Matrix[0]);
@@ -382,6 +376,12 @@ export class TargetCamera extends Camera {
 
             if (Math.abs(this.cameraDirection.z) < endMovementThreshold) {
                 this.cameraDirection.z = 0;
+            }
+            const relativeInertia = this._getInertiaRelativeToTime();
+            if (this.inertia === 0) {
+                this.cameraDirection.scaleInPlace(0);
+            } else {
+                this.cameraDirection.scaleInPlace(relativeInertia);
             }
         }
 
