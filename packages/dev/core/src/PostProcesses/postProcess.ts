@@ -680,6 +680,35 @@ export class PostProcess {
         this.onSizeChangedObservable.notifyObservers(this);
     }
 
+    private _getTarget() {
+        let target: RenderTargetWrapper;
+
+        if (this._shareOutputWithPostProcess) {
+            target = this._shareOutputWithPostProcess.inputTexture;
+        } else if (this._forcedOutputTexture) {
+            target = this._forcedOutputTexture;
+
+            this.width = this._forcedOutputTexture.width;
+            this.height = this._forcedOutputTexture.height;
+        } else {
+            target = this.inputTexture;
+
+            let cache;
+            for (let i = 0; i < this._textureCache.length; i++) {
+                if (this._textureCache[i].texture === target) {
+                    cache = this._textureCache[i];
+                    break;
+                }
+            }
+
+            if (cache) {
+                cache.lastUsedRenderId = this._renderId;
+            }
+        }
+
+        return target;
+    }
+
     /**
      * Activates the post process by intializing the textures to be used when executed. Notifies onActivateObservable.
      * When this post process is used in a pipeline, this is call will bind the input texture of this post process to the output of the previous.
@@ -726,7 +755,7 @@ export class PostProcess {
                 }
             }
 
-            if (this.width !== desiredWidth || this.height !== desiredHeight) {
+            if (this.width !== desiredWidth || this.height !== desiredHeight || !this._getTarget()) {
                 this._resize(desiredWidth, desiredHeight, camera, needMipMaps, forceDepthStencil);
             }
 
@@ -740,30 +769,7 @@ export class PostProcess {
             this._renderId++;
         }
 
-        let target: RenderTargetWrapper;
-
-        if (this._shareOutputWithPostProcess) {
-            target = this._shareOutputWithPostProcess.inputTexture;
-        } else if (this._forcedOutputTexture) {
-            target = this._forcedOutputTexture;
-
-            this.width = this._forcedOutputTexture.width;
-            this.height = this._forcedOutputTexture.height;
-        } else {
-            target = this.inputTexture;
-
-            let cache;
-            for (let i = 0; i < this._textureCache.length; i++) {
-                if (this._textureCache[i].texture === target) {
-                    cache = this._textureCache[i];
-                    break;
-                }
-            }
-
-            if (cache) {
-                cache.lastUsedRenderId = this._renderId;
-            }
-        }
+        const target = this._getTarget();
 
         // Bind the input of this post process to be used as the output of the previous post process.
         if (this.enablePixelPerfectMode) {
