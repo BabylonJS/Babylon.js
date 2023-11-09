@@ -10,8 +10,8 @@ import type { IKHRMaterialsDispersion } from "babylonjs-gltf2interface";
 const NAME = "KHR_materials_dispersion";
 
 /**
- * [Specification](TODO)
- * @since 5.0.0
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/87bd64a7f5e23c84b6aef2e6082069583ed0ddb4/extensions/2.0/Khronos/KHR_materials_dispersion/README.md)
+ * @experimental
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_dispersion implements IGLTFLoaderExtension {
