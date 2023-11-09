@@ -8,7 +8,7 @@ import type { RenderTargetTexture } from "@babylonjs/core/Materials/Textures/ren
 import type { IViewportLike } from "@babylonjs/core/Maths/math.like.js";
 import { EngineStore, QueueNewFrame, _TextureLoaders } from "./engine.static.js";
 import type { IPipelineContext } from "@babylonjs/core/Engines/IPipelineContext.js";
-import type { Effect } from "@babylonjs/core/Materials/effect.js";
+import { Effect } from "@babylonjs/core/Materials/effect.js";
 import { Constants } from "./engine.constants.js";
 import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine.js";
 import type { IInternalTextureLoader } from "@babylonjs/core/Materials/Textures/internalTextureLoader.js";
@@ -633,5 +633,109 @@ export function setDepthStencilTextureBase<T extends IBaseEnginePublic = IBaseEn
         _setTexture(engineState, channel, null, undefined, undefined, name);
     } else {
         _setTexture(engineState, channel, texture, false, true, name);
+    }
+}
+
+export function _restoreEngineAfterContextLost<T extends IBaseEnginePublic = IBaseEnginePublic>(
+    {
+        wipeCaches,
+    }: {
+        wipeCaches: (engineState: T, bruteForce?: boolean) => void;
+    },
+    engineState: IBaseEnginePublic,
+    initEngine: () => void
+): void {
+    const fes = engineState as BaseEngineStateFull<T>;
+    // Adding a timeout to avoid race condition at browser level
+    setTimeout(async () => {
+        // only available on webgl, not part of the base engine
+        (fes as any)._dummyFramebuffer = null;
+
+        const depthTest = fes._depthCullingState?.depthTest; // backup those values because the call to initEngine / wipeCaches will reset them
+        const depthFunc = fes._depthCullingState?.depthFunc;
+        const depthMask = fes._depthCullingState?.depthMask;
+        const stencilTest = fes._stencilState?.stencilTest;
+
+        // Rebuild context
+        initEngine();
+
+        // Ensure webgl and engine states are matching
+        wipeCaches(fes, true);
+
+        // Rebuild effects
+        _rebuildEffects(fes);
+
+        // TODO - this is from an extension!
+        // _rebuildComputeEffects?.(fes);
+
+        // Note:
+        //  The call to _rebuildBuffers must be made before the call to _rebuildInternalTextures because in the process of _rebuildBuffers the buffers used by the post process managers will be rebuilt
+        //  and we may need to use the post process manager of the scene during _rebuildInternalTextures (in WebGL1, non-POT textures are rescaled using a post process + post process manager of the scene)
+
+        // Rebuild buffers
+        _rebuildBuffers(fes);
+        // Rebuild textures
+        _rebuildInternalTextures(fes);
+        // Rebuild textures
+        _rebuildRenderTargetWrappers(fes);
+
+        // Reset engine states after all the buffer/textures/... have been rebuilt
+        wipeCaches(fes, true);
+
+        if (fes._depthCullingState) {
+            fes._depthCullingState.depthTest = depthTest as boolean;
+            fes._depthCullingState.depthFunc = depthFunc as Nullable<number>;
+            fes._depthCullingState.depthMask = depthMask as boolean;
+        }
+        if (fes._stencilState) {
+            fes._stencilState.stencilTest = stencilTest as boolean;
+        }
+
+        Logger.Warn(fes.name + " context successfully restored.");
+        fes.onContextRestoredObservable.notifyObservers(fes);
+        fes._contextWasLost = false;
+    }, 0);
+}
+
+function _rebuildInternalTextures(engineState: IBaseEnginePublic): void {
+    const fes = engineState as BaseEngineStateFull;
+    const currentState = fes._internalTexturesCache.slice(); // Do a copy because the rebuild will add proxies
+
+    for (const internalTexture of currentState) {
+        internalTexture._rebuild();
+    }
+}
+
+function _rebuildRenderTargetWrappers(engineState: IBaseEnginePublic): void {
+    const fes = engineState as BaseEngineStateFull;
+    const currentState = fes._renderTargetWrapperCache.slice(); // Do a copy because the rebuild will add proxies
+
+    for (const renderTargetWrapper of currentState) {
+        renderTargetWrapper._rebuild();
+    }
+}
+
+function _rebuildEffects(engineState: IBaseEnginePublic): void {
+    const fes = engineState as BaseEngineStateFull;
+    for (const key in fes._compiledEffects) {
+        const effect = <Effect>fes._compiledEffects[key];
+
+        effect._pipelineContext = null; // because _prepareEffect will try to dispose this pipeline before recreating it and that would lead to webgl errors
+        effect._wasPreviouslyReady = false;
+        effect._prepareEffect();
+    }
+
+    Effect.ResetCache();
+}
+
+function _rebuildBuffers(engineState: IBaseEnginePublic): void {
+    const fes = engineState as BaseEngineStateFull;
+    // Uniforms
+    for (const uniformBuffer of fes._uniformBuffers) {
+        uniformBuffer._rebuild();
+    }
+    // Storage buffers
+    for (const storageBuffer of fes._storageBuffers) {
+        storageBuffer._rebuild();
     }
 }
