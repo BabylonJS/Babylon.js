@@ -10,7 +10,7 @@ import type { Scene } from "../scene";
  */
 export class EngineStore {
     /** Gets the list of created engines */
-    public static Instances = new Array<Engine>();
+    public static Instances: Engine[] = [];
 
     /**
      * Notifies when an engine was disposed.

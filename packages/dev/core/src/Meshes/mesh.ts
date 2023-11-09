@@ -96,8 +96,8 @@ class _InstanceDataStorage {
 export class _InstancesBatch {
     public mustReturn = false;
     public visibleInstances = new Array<Nullable<Array<InstancedMesh>>>();
-    public renderSelf = new Array<boolean>();
-    public hardwareInstancedRendering = new Array<boolean>();
+    public renderSelf: boolean[] = [];
+    public hardwareInstancedRendering: boolean[] = [];
 }
 
 /**
@@ -387,7 +387,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Note also that the order of the InstancedMesh wihin the array is not significant and might change.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/copies/instances
      */
-    public instances = new Array<InstancedMesh>();
+    public instances: InstancedMesh[] = [];
 
     /**
      * Gets the file containing delay loading data for this mesh
@@ -1167,7 +1167,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      */
     public getVerticesDataKinds(bypassInstanceData?: boolean): string[] {
         if (!this._geometry) {
-            const result = new Array<string>();
+            const result: string[] = [];
             if (this._delayInfo) {
                 this._delayInfo.forEach(function (kind) {
                     result.push(kind);
@@ -2530,7 +2530,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         let maxUsedWeights: number = 0;
         let numberNotNormalized: number = 0;
         const numInfluences: number = matricesWeightsExtra === null ? 4 : 8;
-        const usedWeightCounts = new Array<number>();
+        const usedWeightCounts: number[] = [];
         for (let a = 0; a <= numInfluences; a++) {
             usedWeightCounts[a] = 0;
         }
@@ -2711,7 +2711,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns an array of IAnimatable
      */
     public getAnimatables(): IAnimatable[] {
-        const results = new Array<IAnimatable>();
+        const results: IAnimatable[] = [];
 
         if (this.material) {
             results.push(this.material);
@@ -3406,7 +3406,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             for (let i = 0; i < currentIndices.length; i += 3) {
                 facet = [currentIndices[i], currentIndices[i + 1], currentIndices[i + 2]]; //facet vertex indices
-                pstring = new Array();
+                pstring = [];
                 for (let j = 0; j < 3; j++) {
                     pstring[j] = "";
                     for (let k = 0; k < 3; k++) {
@@ -3554,11 +3554,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
-        const vectorPositions = new Array<Vector3>();
+        const vectorPositions: Vector3[] = [];
         for (let pos = 0; pos < positions.length; pos = pos + 3) {
             vectorPositions.push(Vector3.FromArray(positions, pos));
         }
-        const dupes = new Array<number>();
+        const dupes: number[] = [];
 
         AsyncLoop.SyncAsyncForLoop(
             vectorPositions.length,

@@ -1248,7 +1248,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         this._stopped = false;
         this._actualFrame = 0;
         if (this._subEmitters && this._subEmitters.length != 0) {
-            this.activeSubSystems = new Array<ParticleSystem>();
+            this.activeSubSystems = [] as ParticleSystem[];
         }
 
         // Reset emit gradient so it acts the same on every start
@@ -1437,7 +1437,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         this.activeSubSystems.forEach((subSystem) => {
             subSystem.stop(true);
         });
-        this.activeSubSystems = new Array<ParticleSystem>();
+        this.activeSubSystems = [] as ParticleSystem[];
     }
 
     private _createParticle: () => Particle = () => {

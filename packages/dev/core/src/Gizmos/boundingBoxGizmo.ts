@@ -610,7 +610,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
         this._rootMesh.addChild(this._scaleBoxesParent);
 
         // Hover color change
-        const pointerIds = new Array<AbstractMesh>();
+        const pointerIds: AbstractMesh[] = [];
         this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
             if (!pointerIds[(<IPointerEvent>pointerInfo.event).pointerId]) {
                 this._rotateSpheresParent

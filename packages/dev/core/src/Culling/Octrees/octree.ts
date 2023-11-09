@@ -19,7 +19,7 @@ export class Octree<T> {
     /**
      * Content stored in the octree
      */
-    public dynamicContent = new Array<T>();
+    public dynamicContent: T[] = [];
 
     private _maxBlockCapacity: number;
     private _selectionContent: SmartArrayNoDuplicate<T>;

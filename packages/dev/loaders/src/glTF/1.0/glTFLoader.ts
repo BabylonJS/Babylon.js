@@ -677,10 +677,10 @@ const importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[]
     const subMaterials: Material[] = [];
 
     let vertexData: Nullable<VertexData> = null;
-    const verticesStarts = new Array<number>();
-    const verticesCounts = new Array<number>();
-    const indexStarts = new Array<number>();
-    const indexCounts = new Array<number>();
+    const verticesStarts: number[] = [];
+    const verticesCounts: number[] = [];
+    const indexStarts: number[] = [];
+    const indexCounts: number[] = [];
 
     for (let meshIndex = 0; meshIndex < meshes.length; meshIndex++) {
         const meshId = meshes[meshIndex];
@@ -1795,8 +1795,8 @@ export class GLTFLoader implements IGLTFLoader {
                 // Create nodes
                 this._createNodes(gltfRuntime);
 
-                const meshes = new Array<AbstractMesh>();
-                const skeletons = new Array<Skeleton>();
+                const meshes: AbstractMesh[] = [];
+                const skeletons: Skeleton[] = [];
 
                 // Fill arrays of meshes and skeletons
                 for (const nde in gltfRuntime.nodes) {

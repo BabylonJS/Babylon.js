@@ -165,7 +165,7 @@ export class Node implements IBehaviorAware<Node> {
     /**
      * Gets a list of Animations associated with the node
      */
-    public animations = new Array<Animation>();
+    public animations: Animation[] = [];
     protected _ranges: { [name: string]: Nullable<AnimationRange> } = {};
 
     /**
@@ -673,7 +673,7 @@ export class Node implements IBehaviorAware<Node> {
      * @returns all children nodes of all types
      */
     public getDescendants(directDescendantsOnly?: boolean, predicate?: (node: Node) => boolean): Node[] {
-        const results = new Array<Node>();
+        const results: Node[] = [];
 
         this._getDescendants(results, directDescendantsOnly, predicate);
 

@@ -153,7 +153,7 @@ export class PostProcess {
     /**
      * Animations to be used for the post processing
      */
-    public animations = new Array<Animation>();
+    public animations: Animation[] = [];
 
     /**
      * Enable Pixel Perfect mode where texture is not scaled to be power of 2.

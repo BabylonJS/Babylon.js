@@ -233,7 +233,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     private _parseSolid(meshesNames: any, scene: Scene, data: string, rootUrl: string): Promise<Array<AbstractMesh>> {
         let fileToLoad: string = ""; //The name of the mtlFile to load
         const materialsFromMTLFile: MTLFileLoader = new MTLFileLoader();
-        const materialToUse = new Array<string>();
+        const materialToUse: string[] = [];
         const babylonMeshesArray: Array<Mesh> = []; //The mesh for babylon
 
         // Main function

@@ -12,19 +12,19 @@ export class NodeMaterialBuildState {
     /**
      * Gets the list of emitted attributes
      */
-    public attributes = new Array<string>();
+    public attributes: string[] = [];
     /**
      * Gets the list of emitted uniforms
      */
-    public uniforms = new Array<string>();
+    public uniforms: string[] = [];
     /**
      * Gets the list of emitted constants
      */
-    public constants = new Array<string>();
+    public constants: string[] = [];
     /**
      * Gets the list of emitted samplers
      */
-    public samplers = new Array<string>();
+    public samplers: string[] = [];
     /**
      * Gets the list of emitted functions
      */
