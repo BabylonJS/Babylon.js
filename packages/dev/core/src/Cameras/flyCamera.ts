@@ -342,7 +342,7 @@ export class FlyCamera extends TargetCamera {
         // Copy displacement vector (scaled in _updatePosition) into temporary to manipulate it
         const scaledDisplacement = TmpVectors.Vector3[0].copyFrom(displacement);
 
-        //add gravity to the direction to prevent the dual-collision checking
+        // Add gravity to the direction to prevent the dual-collision checking
         if (this.applyGravity) {
             // Apply gravity to current displacement, then scale by relative inertia (if applicable)
             const relativeGravity = TmpVectors.Vector3[1].copyFrom(this.getScene().gravity);
