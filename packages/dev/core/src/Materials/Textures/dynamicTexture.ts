@@ -134,10 +134,14 @@ export class DynamicTexture extends Texture {
 
     /**
      * Clears the texture
+     * @param clearColor Defines the clear color to use
      */
-    public clear(): void {
+    public clear(clearColor?: string): void {
         const size = this.getSize();
-        this._context.fillRect(0, 0, size.width, size.height);
+        if (clearColor) {
+            this._context.fillStyle = clearColor;
+        }
+        this._context.clearRect(0, 0, size.width, size.height);
     }
 
     /**
@@ -182,7 +186,7 @@ export class DynamicTexture extends Texture {
         const size = this.getSize();
         if (clearColor) {
             this._context.fillStyle = clearColor;
-            this._context.fillRect(0, 0, size.width, size.height);
+            this._context.clearRect(0, 0, size.width, size.height);
         }
 
         this._context.font = font;
