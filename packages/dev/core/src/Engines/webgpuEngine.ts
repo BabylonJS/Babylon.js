@@ -3204,7 +3204,7 @@ export class WebGPUEngine extends Engine {
                 const textureName = webgpuPipelineContext.shaderProcessingContext.textureNames[i];
                 const texture = this._currentMaterialContext.textures[textureName]?.texture;
                 const textureIsDepth = texture && texture.format >= Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 && texture.format <= Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8;
-                if (texture?.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering || textureIsDepth) {
+                if ((texture?.type === Constants.TEXTURETYPE_FLOAT && !this._caps.textureFloatLinearFiltering) || textureIsDepth) {
                     textureState |= bitVal;
                 }
                 bitVal = bitVal << 1;

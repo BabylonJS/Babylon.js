@@ -71,7 +71,9 @@ export class WebGPUSnapshotRendering {
         } else {
             // We are playing the snapshot
             if (this._playBundleListIndex >= this._allBundleLists.length) {
-                throw new Error(`Invalid playBundleListIndex! Your snapshot is no longer valid for the current frame, you should recreate a new one. playBundleListIndex=${this._playBundleListIndex}, allBundleLists.length=${this._allBundleLists.length}}`);
+                throw new Error(
+                    `Invalid playBundleListIndex! Your snapshot is no longer valid for the current frame, you should recreate a new one. playBundleListIndex=${this._playBundleListIndex}, allBundleLists.length=${this._allBundleLists.length}}`
+                );
             }
             bundleList = this._allBundleLists[this._playBundleListIndex++];
         }
