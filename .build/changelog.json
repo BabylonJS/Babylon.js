@@ -1,6 +1,177 @@
 {
-    "fromTag": "6.28.0",
+    "fromTag": "6.28.1",
     "changelog": {
+        "6.29.0": [
+            {
+                "pr": "14482",
+                "title": "Camera: Modify Camera Movement to work off of time, instead of frame rate",
+                "description": "This PR modifies all cameras to take the animation ratio (time to complete a single frame) and uses it to make all camera movements take the same amount of time as 60 FPS (AR of 1).\r\n\r\nUpdate: Since the animation ratio (ratio used to scale inertia and movement offsets) is only updated in `scene.render()`, we had to add a custom timing method for users that have a custom rendering loop/cadence.  This PR also adds the following changes:\r\n\r\n- `PrecisionDate.Now` has been updated to be more efficient\r\n- The variable `constantAnimationDeltaTime` has been added so that users can change the delta time for testing purposes\r\n\r\nPGs Used to Test: \r\n- https://playground.babylonjs.com/#DLIIMQ\r\n- https://playground.babylonjs.com/#DLIIMQ#1\r\n- https://playground.babylonjs.com/#DLIIMQ#3\r\n- https://playground.babylonjs.com/#DLIIMQ#4\r\n\r\nUpdate 2: Because we're now using 1000 / 60 (16.6666...) instead of 16 for the default constant animation ratio, some of the particle tests were broke.  I've updated the PNGs against the new ratio.\r\n\r\nIn order to get the camera to move correctly, regardless of frame rate, I had to create a scaling factor that has to be multiplied against the offsets to be added.  Because the math isn't quite clear as to how the scaling factor is found, here's an explanation:\r\n\r\nGiven the following variables:\r\n**r = initial offset\r\nn = inertia\r\na = relative inertia (with respect to frame deltaTime ratio; currentDeltaTime/standardDeltaTime) = n^t\r\ns = scale factor\r\nt = deltaTime ratio = currentDeltaTime/standardDeltaTime**\r\n\r\nLet's assume that the work to be done for our current frame rate can be represented as `scaleFactor * initial offset * relative inertia` `(inertia ^ (currentDeltaTime/standardDeltaTime))`.  The equivalent amount of time could be represented as the sum _from (1 to t)_ of our `initial offset * inertia^x`\r\nsra = rn^t + ... + rn\r\n\r\nIf we factor out a common value of `rn`, we then have our initial value * the sum of a geometric series.\r\nsra = rn(n^(t-1) + ... + 1)\r\n\r\nWe can also factor out our initial offset\r\nsa = n(n^(t-1) + ... + 1)\r\n\r\nNext, we can substitute the closed formula for the sum of a geometric series\r\nsa = n((n^t - 1) / (n - 1))\r\n\r\nFinally, we set everything equal to s\r\ns = n((n^t - 1) / (n - 1)) / a\r\n\r\nLet's substitute a for n^t and clean up the fractions a bit\r\ns = n * (1/a) * ((a - 1) / (n - 1))\r\n**s = (n/a) * ((a - 1) / (n - 1))**",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animatable.ts",
+                    "packages/dev/core/src/Behaviors/Meshes/fadeInOutBehavior.ts",
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts",
+                    "packages/dev/core/src/Cameras/camera.ts",
+                    "packages/dev/core/src/Cameras/targetCamera.ts",
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/Misc/precisionDate.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.inputManager.test.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/SpaceDeK.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/particles.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prepass-ssao-particles.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/subemitters.png"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "14499",
+                "title": "Flow graph remove event coordinator",
+                "description": "# Changes\r\n- This PR removes the FlowGraphEventCoordinator class and moves its functionality to the FlowGraphCoordinator class. The purpose of it is to make the structure of the Flow Graph a bit simpler.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphReceiveCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSendCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraph.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphContext.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphCoordinator.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphCustomEvent.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphEventCoordinator.ts",
+                    "packages/dev/core/src/FlowGraph/index.ts"
+                ],
+                "tags": [
+                    "skip changelog",
+                    "flow graph"
+                ]
+            },
+            {
+                "pr": "14498",
+                "title": "feat: optimize vector3",
+                "description": "Optimize the performance of the following methods for vector3:\r\n- `projectOnPlaneToRef()`：Change `Math.pow(10, -10)` to a constant\r\n- `reorderInPlace()`：Reduce function calls and member access\r\n- `GetClipFactor()`：Reduce function calls and member access",
+                "author": {
+                    "name": "GuoBinyong",
+                    "url": "https://github.com/GuoBinyong"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14497",
+                "title": "Animations: Add an easingFunction property to IAnimationKey",
+                "description": "See https://forum.babylonjs.com/t/how-to-add-easing-function-to-babylon-js-keyframe/45400",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animation.ts",
+                    "packages/dev/core/src/Animations/animationKey.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "14481",
+                "title": "Flow Graph Path Mapping",
+                "description": "# Changes\r\n - On the SetPropertyBlock, add a new parameter named `subString`, which represents a string that will be substituted by a node value if encountered between `{}`. For example, if the subString is `nodeIndex`, and the path is `/node/{nodeIndex}/`, when this node is activated, it will look into the nodeIndex socket, and substitute its value (which could be 0, then the path would be `/node/0`). This allows dynamic paths that are resolved based on the current state of the scene.\r\n   - This change will be needed because of how the glTF Interactivity uses paths. In some cases, paths are defined as `/node/{nodeIndex}/property`, and we want these paths to be resolved at runtime.\r\n-  The SetProperty node was changed to use a configuration object instead of sockets. The configuration object contains a string path (as defined in the context variables), and a string property, such as translation, rotation, etc.\r\n- I also moved the default serialization and parsing functions to a separate module, and added handling of vector values.\r\n- I also removed the variableDefinitions value, as it wasn't being used and made things more complex.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetPropertyBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraph.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphContext.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphVariableDefinitions.ts",
+                    "packages/dev/core/src/FlowGraph/serialization.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphExecutionNodes.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphSerialization.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14495",
+                "title": "Flow Graph Context Logger",
+                "description": "# Changes\r\n- Add a new observable in the context, `onNodeExecutedObservable`, which is notified every time a node is executed. This observable can be subscribed to for various functionalities, such as logging\r\n- Add the FlowGraphContextLogger, which is subscribed to the observable above and logs when each node is executed.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/flowGraphContext.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphContextLogger.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphDataConnection.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphSignalConnection.ts",
+                    "packages/dev/core/src/FlowGraph/index.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "flow graph"
+                ]
+            },
+            {
+                "pr": "14494",
+                "title": "Rename internal classes in CSG",
+                "description": "CSG didn't export the internal declarations until 6.22.1 . In this version a new function was added (in #14368) that used those internal classes, which forced typescript to export them as well.\n\nAs they are only internal classes this is not exactly a breaking change. It is out of the question to not export these classes, as this will fail the build due to missing declarations.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/csg.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14492",
+                "title": "Fix ray cast skipBoundingInfo with in intersects",
+                "description": "https://forum.babylonjs.com/t/the-problem-when-picking-the-merged-mesh-thin-instance/45336/8",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "math"
+                ]
+            },
+            {
+                "pr": "14493",
+                "title": "CreateText does not align text on z",
+                "description": "https://forum.babylonjs.com/t/meshbuilder-createtext/40958/13\r\n\r\n[breaking change]: The created text will not be positioned at the same position as before along z but this is a necessary bug fix.",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/textBuilder.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "breaking change",
+                    "geometry"
+                ]
+            }
+        ],
         "6.28.1": [
             {
                 "pr": "14491",
