@@ -319,7 +319,7 @@ export class NodeMaterial extends PushMaterial {
     /**
      * Gets an array of blocks that needs to be serialized even if they are not yet connected
      */
-    public attachedBlocks = new Array<NodeMaterialBlock>();
+    public attachedBlocks: NodeMaterialBlock[] = [];
 
     /**
      * Specifies the mode of the node material

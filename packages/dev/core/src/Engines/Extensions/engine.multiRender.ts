@@ -172,14 +172,14 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
     const defaultFormat = Constants.TEXTUREFORMAT_RGBA;
     const defaultTarget = Constants.TEXTURE_2D;
 
-    let types = new Array<number>();
-    let samplingModes = new Array<number>();
-    let useSRGBBuffers = new Array<boolean>();
-    let formats = new Array<number>();
-    let targets = new Array<number>();
-    let faceIndex = new Array<number>();
-    let layerIndex = new Array<number>();
-    let layers = new Array<number>();
+    let types: number[] = [];
+    let samplingModes: number[] = [];
+    let useSRGBBuffers: boolean[] = [];
+    let formats: number[] = [];
+    let targets: number[] = [];
+    let faceIndex: number[] = [];
+    let layerIndex: number[] = [];
+    let layers: number[] = [];
 
     const rtWrapper = this._createHardwareRenderTargetWrapper(true, false, size) as WebGLRenderTargetWrapper;
 

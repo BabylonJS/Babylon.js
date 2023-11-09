@@ -27,7 +27,7 @@ export class LensFlareSystem {
     /**
      * List of lens flares used in this system.
      */
-    public lensFlares = new Array<LensFlare>();
+    public lensFlares: LensFlare[] = [];
 
     /**
      * Define a limit from the border the lens flare can be visible.

@@ -52,7 +52,7 @@ export class SoundTrack {
             return;
         }
         this._scene = scene;
-        this.soundCollection = new Array();
+        this.soundCollection = [];
         this._options = options;
 
         if (!this._options.mainTrack && this._scene.soundTracks) {

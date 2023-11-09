@@ -393,7 +393,7 @@ export class Engine extends ThinEngine {
     /**
      * Gets the list of created scenes
      */
-    public scenes = new Array<Scene>();
+    public scenes: Scene[] = [];
 
     /** @internal */
     public _virtualScenes = new Array<Scene>();
@@ -406,7 +406,7 @@ export class Engine extends ThinEngine {
     /**
      * Gets the list of created postprocesses
      */
-    public postProcesses = new Array<PostProcess>();
+    public postProcesses: PostProcess[] = [];
 
     /**
      * Gets a boolean indicating if the pointer is currently locked

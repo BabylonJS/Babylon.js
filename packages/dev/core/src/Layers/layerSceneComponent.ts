@@ -44,7 +44,7 @@ export class LayerSceneComponent implements ISceneComponent {
             return;
         }
         this._engine = this.scene.getEngine();
-        this.scene.layers = new Array<Layer>();
+        this.scene.layers = [] as Layer[];
     }
 
     /**

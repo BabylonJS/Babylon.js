@@ -102,7 +102,7 @@ export class Vector2 {
      * @returns a new array with 2 elements: the Vector2 coordinates.
      */
     public asArray(): number[] {
-        const result = new Array<number>();
+        const result: number[] = [];
         this.toArray(result, 0);
         return result;
     }
@@ -3065,7 +3065,7 @@ export class Vector4 {
      * @returns the resulting array
      */
     public asArray(): number[] {
-        const result = new Array<number>();
+        const result: number[] = [];
 
         this.toArray(result, 0);
 

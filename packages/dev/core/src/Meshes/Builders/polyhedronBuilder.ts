@@ -490,14 +490,14 @@ export function CreatePolyhedronVertexData(options: {
     const flat = options.flat === undefined ? true : options.flat;
     const sideOrientation = options.sideOrientation === 0 ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
 
-    const positions = new Array<number>();
-    const indices = new Array<number>();
-    const normals = new Array<number>();
-    const uvs = new Array<number>();
-    const colors = new Array<number>();
+    const positions: number[] = [];
+    const indices: number[] = [];
+    const normals: number[] = [];
+    const uvs: number[] = [];
+    const colors: number[] = [];
     let index = 0;
     let faceIdx = 0; // face cursor in the array "indexes"
-    const indexes = new Array<number>();
+    const indexes: number[] = [];
     let i = 0;
     let f = 0;
     let u: number, v: number, ang: number, x: number, y: number, tmp: number;

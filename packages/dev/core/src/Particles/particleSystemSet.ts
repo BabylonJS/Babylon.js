@@ -33,7 +33,7 @@ export class ParticleSystemSet implements IDisposable {
     /**
      * Gets the particle system list
      */
-    public systems = new Array<IParticleSystem>();
+    public systems: IParticleSystem[] = [];
 
     /**
      * Gets or sets the emitter node used with this set

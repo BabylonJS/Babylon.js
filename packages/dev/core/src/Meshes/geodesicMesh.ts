@@ -393,7 +393,7 @@ export class _PrimaryIsoTriangle {
      */
 
     public build(m: number, n: number) {
-        const vertices = new Array<_IsoVector>();
+        const vertices: _IsoVector[] = [];
 
         const O: _IsoVector = _IsoVector.Zero();
         const A: _IsoVector = new _IsoVector(m, n);

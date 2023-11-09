@@ -516,7 +516,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
         this._gammaSpace = gammaSpace;
         this._coordinatesMode = Texture.PROJECTION_MODE;
-        this.renderList = new Array<AbstractMesh>();
+        this.renderList = [] as AbstractMesh[];
         this.name = name;
         this.isRenderTarget = true;
         this._initialSizeParameter = size;

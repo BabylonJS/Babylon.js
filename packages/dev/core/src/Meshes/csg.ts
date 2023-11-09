@@ -343,8 +343,8 @@ class Node {
         if (!this._plane) {
             return polygons.slice();
         }
-        let front = new Array<CSGPolygon>(),
-            back = new Array<CSGPolygon>();
+        let front: CSGPolygon[] = [],
+            back = [] as CSGPolygon[];
         for (let i = 0; i < polygons.length; i++) {
             this._plane.splitPolygon(polygons[i], front, back, front, back);
         }
@@ -403,8 +403,8 @@ class Node {
         if (!this._plane) {
             this._plane = polygons[0].plane.clone();
         }
-        const front = new Array<CSGPolygon>(),
-            back = new Array<CSGPolygon>();
+        const front: CSGPolygon[] = [],
+            back = [] as CSGPolygon[];
         for (let i = 0; i < polygons.length; i++) {
             this._plane.splitPolygon(polygons[i], this._polygons, this._polygons, front, back);
         }
@@ -456,7 +456,7 @@ export class CSG {
      */
     public static FromVertexData(data: VertexData): CSG {
         let vertex: Vertex, polygon: CSGPolygon, vertices: Vertex[];
-        const polygons = new Array<CSGPolygon>();
+        const polygons: CSGPolygon[] = [];
 
         const indices = data.indices;
         const positions = data.positions;
@@ -518,7 +518,7 @@ export class CSG {
             vertColor: Color4 | undefined = undefined,
             polygon: CSGPolygon,
             vertices: Vertex[];
-        const polygons = new Array<CSGPolygon>();
+        const polygons: CSGPolygon[] = [];
         let matrix: Matrix,
             meshPosition: Vector3,
             meshRotation: Vector3,
@@ -945,7 +945,7 @@ export class CSG {
             let materialIndexOffset = 0,
                 materialMaxIndex;
 
-            mesh.subMeshes = new Array<SubMesh>();
+            mesh.subMeshes = [] as SubMesh[];
 
             for (const m in subMeshDict) {
                 materialMaxIndex = -1;

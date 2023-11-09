@@ -111,7 +111,7 @@ export class ReflectionProbe {
 
         // Create the scene field if not exist.
         if (!this._scene.reflectionProbes) {
-            this._scene.reflectionProbes = new Array<ReflectionProbe>();
+            this._scene.reflectionProbes = [] as ReflectionProbe[];
         }
         this._scene.reflectionProbes.push(this);
 

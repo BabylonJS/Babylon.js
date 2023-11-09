@@ -10,7 +10,7 @@ import { _ObserveArray } from "core/Misc/arrayTools";
         it("should be able to listen to push", () => {
             const listener = jest.fn();
 
-            const array = new Array<number>();
+            const array: number[] = [];
             array.push(1);
             expect(listener).not.toBeCalled();
 
@@ -22,7 +22,7 @@ import { _ObserveArray } from "core/Misc/arrayTools";
         });
 
         it("should have updated values in callback", (done) => {
-            const array = new Array<number>();
+            const array: number[] = [];
             array.push(1);
             const listener = () => {
                 expect(array.length).toEqual(2);
@@ -88,7 +88,7 @@ import { _ObserveArray } from "core/Misc/arrayTools";
         });
 
         it("should stop listening to in a chain", () => {
-            const array = new Array<number>();
+            const array: number[] = [];
 
             const listener1 = jest.fn();
             const listener2 = jest.fn();
