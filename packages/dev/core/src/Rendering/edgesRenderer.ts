@@ -100,7 +100,7 @@ InstancedLinesMesh.prototype.enableEdgesRendering = function (epsilon = 0.95, ch
  * FaceAdjacencies Helper class to generate edges
  */
 class FaceAdjacencies {
-    public edges = new Array<number>();
+    public edges: number[] = [];
     public p0: Vector3;
     public p1: Vector3;
     public p2: Vector3;
@@ -776,8 +776,8 @@ export class EdgesRenderer implements IEdgesRenderer {
         }
 
         // First let's find adjacencies
-        const adjacencies = new Array<FaceAdjacencies>();
-        const faceNormals = new Array<Vector3>();
+        const adjacencies: FaceAdjacencies[] = [];
+        const faceNormals: Vector3[] = [];
         let index: number;
         let faceAdjacencies: FaceAdjacencies;
 

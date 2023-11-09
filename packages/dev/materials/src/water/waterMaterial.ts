@@ -511,7 +511,7 @@ export class WaterMaterial extends PushMaterial {
                 "refractionSampler",
                 "reflectionSampler",
             ];
-            const uniformBuffers = new Array<string>();
+            const uniformBuffers: string[] = [];
 
             if (ImageProcessingConfiguration) {
                 ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);

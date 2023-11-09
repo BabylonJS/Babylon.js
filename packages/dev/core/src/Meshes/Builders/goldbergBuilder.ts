@@ -67,10 +67,10 @@ export function CreateGoldbergVertexData(options: GoldbergVertexDataOption, gold
     const sizeZ: number = options.sizeZ || size || 1;
     const sideOrientation = options.sideOrientation === 0 ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
 
-    const positions = new Array<number>();
-    const indices = new Array<number>();
-    const normals = new Array<number>();
-    const uvs = new Array<number>();
+    const positions: number[] = [];
+    const indices: number[] = [];
+    const normals: number[] = [];
+    const uvs: number[] = [];
 
     let minX = Infinity;
     let maxX = -Infinity;

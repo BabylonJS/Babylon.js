@@ -404,7 +404,7 @@ export class MergeMeshesOptimization extends SceneOptimization {
         let globalLength = globalPool.length;
 
         for (let index = 0; index < globalLength; index++) {
-            const currentPool = new Array<Mesh>();
+            const currentPool: Mesh[] = [];
             const current = globalPool[index];
 
             // Checks
@@ -470,7 +470,7 @@ export class SceneOptimizerOptions {
     /**
      * Gets the list of optimizations to apply
      */
-    public optimizations = new Array<SceneOptimization>();
+    public optimizations: SceneOptimization[] = [];
 
     /**
      * Creates a new list of options used by SceneOptimizer

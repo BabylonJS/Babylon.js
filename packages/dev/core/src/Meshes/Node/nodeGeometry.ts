@@ -88,7 +88,7 @@ export class NodeGeometry {
     /**
      * Gets an array of blocks that needs to be serialized even if they are not yet connected
      */
-    public attachedBlocks = new Array<NodeGeometryBlock>();
+    public attachedBlocks: NodeGeometryBlock[] = [];
 
     /**
      * Observable raised when the geometry is built

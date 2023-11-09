@@ -22,7 +22,7 @@ export class OctreeBlock<T> {
     /**
      * Gets the content of the current block
      */
-    public entries = new Array<T>();
+    public entries: T[] = [];
 
     /**
      * Gets the list of block children

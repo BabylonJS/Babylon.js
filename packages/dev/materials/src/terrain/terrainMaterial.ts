@@ -261,7 +261,7 @@ export class TerrainMaterial extends PushMaterial {
             ];
             const samplers = ["textureSampler", "diffuse1Sampler", "diffuse2Sampler", "diffuse3Sampler", "bump1Sampler", "bump2Sampler", "bump3Sampler"];
 
-            const uniformBuffers = new Array<string>();
+            const uniformBuffers: string[] = [];
 
             addClipPlaneUniforms(uniforms);
 

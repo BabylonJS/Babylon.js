@@ -274,7 +274,7 @@ export class LavaMaterial extends PushMaterial {
             addClipPlaneUniforms(uniforms);
 
             const samplers = ["diffuseSampler", "noiseTexture"];
-            const uniformBuffers = new Array<string>();
+            const uniformBuffers: string[] = [];
 
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,

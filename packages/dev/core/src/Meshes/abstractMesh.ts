@@ -1955,7 +1955,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             const subMesh = subMeshes.data[index];
 
             // Bounding test
-            if (len > 1 && !subMesh.canIntersects(ray)) {
+            if (len > 1 && !skipBoundingInfo && !subMesh.canIntersects(ray)) {
                 continue;
             }
 
@@ -2021,7 +2021,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                 this.subMeshes[0].dispose();
             }
         } else {
-            this.subMeshes = new Array<SubMesh>();
+            this.subMeshes = [] as SubMesh[];
         }
         return this;
     }
@@ -2202,10 +2202,10 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     private _initFacetData(): AbstractMesh {
         const data = this._internalAbstractMeshDataInfo._facetData;
         if (!data.facetNormals) {
-            data.facetNormals = new Array<Vector3>();
+            data.facetNormals = [] as Vector3[];
         }
         if (!data.facetPositions) {
-            data.facetPositions = new Array<Vector3>();
+            data.facetPositions = [] as Vector3[];
         }
         if (!data.facetPartitioning) {
             data.facetPartitioning = new Array<number[]>();
@@ -2549,8 +2549,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         const facetData = this._internalAbstractMeshDataInfo._facetData;
         if (facetData.facetDataEnabled) {
             facetData.facetDataEnabled = false;
-            facetData.facetPositions = new Array<Vector3>();
-            facetData.facetNormals = new Array<Vector3>();
+            facetData.facetPositions = [] as Vector3[];
+            facetData.facetNormals = [] as Vector3[];
             facetData.facetPartitioning = new Array<number[]>();
             facetData.facetParameters = null;
             facetData.depthSortedIndices = new Uint32Array(0);

@@ -985,7 +985,7 @@ export class Animation {
         let gradient = (currentFrame - startKey.frame) / frameDelta;
 
         // check for easingFunction and correction of gradient
-        const easingFunction = this.getEasingFunction();
+        const easingFunction = startKey.easingFunction || this.getEasingFunction();
         if (easingFunction !== null) {
             gradient = easingFunction.ease(gradient);
         }
@@ -1524,7 +1524,7 @@ export class Animation {
                         }
 
                         if (serializationObject.length) {
-                            const output = new Array<Animation>();
+                            const output: Animation[] = [];
                             for (const serializedAnimation of serializationObject) {
                                 output.push(this.Parse(serializedAnimation));
                             }
@@ -1565,7 +1565,7 @@ export class Animation {
 
                         if (snippet.animations) {
                             const serializationObject = JSON.parse(snippet.animations);
-                            const outputs = new Array<Animation>();
+                            const outputs: Animation[] = [];
                             for (const serializedAnimation of serializationObject.animations) {
                                 const output = this.Parse(serializedAnimation);
                                 output.snippetId = snippetId;
