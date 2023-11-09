@@ -1194,6 +1194,7 @@ export class ThinEngine {
             drawBuffersExtension: false,
             maxMSAASamples: 1,
             colorBufferFloat: !!(this._webGLVersion > 1 && this._gl.getExtension("EXT_color_buffer_float")),
+            supportFloatTexturesResolve: false,
             colorBufferHalfFloat: !!(this._webGLVersion > 1 && this._gl.getExtension("EXT_color_buffer_half_float")),
             textureFloat: this._webGLVersion > 1 || this._gl.getExtension("OES_texture_float") ? true : false,
             textureHalfFloat: this._webGLVersion > 1 || this._gl.getExtension("OES_texture_half_float") ? true : false,
@@ -1218,6 +1219,8 @@ export class ThinEngine {
             texture2DArrayMaxLayerCount: this._webGLVersion > 1 ? this._gl.getParameter(this._gl.MAX_ARRAY_TEXTURE_LAYERS) : 128,
             disableMorphTargetTexture: false,
         };
+
+        this._caps.supportFloatTexturesResolve = this._caps.colorBufferFloat;
 
         // Infos
         this._glVersion = this._gl.getParameter(this._gl.VERSION);

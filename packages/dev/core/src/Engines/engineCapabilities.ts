@@ -115,4 +115,6 @@ export interface EngineCapabilities {
     texture2DArrayMaxLayerCount: number;
     /** Defines if the morph target texture is supported. */
     disableMorphTargetTexture: boolean;
+    /** Defines if float textures like r32f, rg32f or rgba32f support being used as a resolve target */
+    supportFloatTexturesResolve: boolean;
 }

@@ -774,6 +774,7 @@ export class WebGPUEngine extends Engine {
             fragmentDepthSupported: true,
             highPrecisionShaderSupported: true,
             colorBufferFloat: true,
+            supportFloatTexturesResolve: false, // See https://github.com/gpuweb/gpuweb/issues/3844
             textureFloat: true,
             textureFloatLinearFiltering: this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.Float32Filterable) >= 0,
             textureFloatRender: true,
