@@ -32,7 +32,12 @@ export class WebGPURenderItemViewport implements IWebGPURenderItem {
 
 /** @internal */
 export class WebGPURenderItemScissor implements IWebGPURenderItem {
-    public constructor(public x: number, public y: number, public w: number, public h: number) { }
+    public constructor(
+        public x: number,
+        public y: number,
+        public w: number,
+        public h: number
+    ) {}
 
     public run(renderPass: GPURenderPassEncoder) {
         renderPass.setScissorRect(this.x, this.y, this.w, this.h);
@@ -45,7 +50,7 @@ export class WebGPURenderItemScissor implements IWebGPURenderItem {
 
 /** @internal */
 export class WebGPURenderItemStencilRef implements IWebGPURenderItem {
-    public constructor(public ref: number) { }
+    public constructor(public ref: number) {}
 
     public run(renderPass: GPURenderPassEncoder) {
         renderPass.setStencilReference(this.ref);
@@ -58,7 +63,7 @@ export class WebGPURenderItemStencilRef implements IWebGPURenderItem {
 
 /** @internal */
 export class WebGPURenderItemBlendColor implements IWebGPURenderItem {
-    public constructor(public color: Nullable<number>[]) { }
+    public constructor(public color: Nullable<number>[]) {}
 
     public run(renderPass: GPURenderPassEncoder) {
         renderPass.setBlendConstant(this.color as GPUColor);
@@ -71,7 +76,7 @@ export class WebGPURenderItemBlendColor implements IWebGPURenderItem {
 
 /** @internal */
 export class WebGPURenderItemBeginOcclusionQuery implements IWebGPURenderItem {
-    public constructor(public query: number) { }
+    public constructor(public query: number) {}
 
     public run(renderPass: GPURenderPassEncoder) {
         renderPass.beginOcclusionQuery(this.query);
@@ -84,7 +89,7 @@ export class WebGPURenderItemBeginOcclusionQuery implements IWebGPURenderItem {
 
 /** @internal */
 export class WebGPURenderItemEndOcclusionQuery implements IWebGPURenderItem {
-    public constructor() { }
+    public constructor() {}
 
     public run(renderPass: GPURenderPassEncoder) {
         renderPass.endOcclusionQuery();
