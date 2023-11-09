@@ -319,10 +319,8 @@ export class FlyCamera extends TargetCamera {
     /**
      * @internal
      */
-    public _collideWithWorld(displacement: Vector3): void {
+    public _collideWithWorld(displacement: Vector3, relativeInertia: number, scaleFactor: number): void {
         let globalPosition: Vector3;
-        const relativeInertia = this._getInertiaRelativeToTime();
-        const scaleFactor = this._getRelativeScaleFactor(relativeInertia);
 
         if (this.parent) {
             globalPosition = Vector3.TransformCoordinates(this.position, this.parent.getWorldMatrix());
@@ -341,22 +339,22 @@ export class FlyCamera extends TargetCamera {
         this._collider._radius = this.ellipsoid;
         this._collider.collisionMask = this._collisionMask;
 
-        // Copy displacement vector into temporary to manipulate it
+        // Copy displacement vector (scaled in _updatePosition) into temporary to manipulate it
         const scaledDisplacement = TmpVectors.Vector3[0].copyFrom(displacement);
 
         //add gravity to the direction to prevent the dual-collision checking
         if (this.applyGravity) {
-            // Apply gravity to current displacement
-            scaledDisplacement.addInPlace(this.getScene().gravity);
+            // Apply gravity to current displacement, then scale by relative inertia (if applicable)
+            const relativeGravity = TmpVectors.Vector3[1].copyFrom(this.getScene().gravity);
+            if (this.inertia !== 0) {
+                relativeGravity.scaleInPlace(relativeInertia);
+            }
+            // Take relative gravity and add to scaled displacement
+            scaledDisplacement.addInPlace(relativeGravity);
         }
 
-        // Scale original displacement by relative inertia (decay over time to zero)
-        displacement.scaleInPlace(relativeInertia);
-
-        // If inertia is not zero, apply both relative inertia and scale factor
-        if (this.inertia !== 0) {
-            scaledDisplacement.scaleInPlace(relativeInertia * scaleFactor);
-        }
+        // Scale by our scaling factor before using in function
+        scaledDisplacement.scaleInPlace(scaleFactor);
 
         coordinator.getNewPosition(this._oldPosition, scaledDisplacement, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
     }
@@ -413,11 +411,11 @@ export class FlyCamera extends TargetCamera {
     }
 
     /** @internal */
-    public _updatePosition(): void {
+    public _updatePosition(relativeInertia: number, scaleFactor: number): void {
         if (this.checkCollisions && this.getScene().collisionsEnabled) {
-            this._collideWithWorld(this.cameraDirection);
+            this._collideWithWorld(this.cameraDirection, relativeInertia, scaleFactor);
         } else {
-            super._updatePosition();
+            super._updatePosition(relativeInertia, scaleFactor);
         }
     }
 
