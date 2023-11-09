@@ -2546,22 +2546,13 @@ export class WebGPUEngine extends Engine {
      * End the current frame
      */
     public endFrame() {
-        this._snapshotRendering.endFrame();
-
         this._endCurrentRenderPass();
+
+        this._snapshotRendering.endFrame();
 
         this._timestampQuery.endFrame(this._renderEncoder);
 
         this.flushFramebuffer();
-
-        if (this.dbgVerboseLogsForFirstFrames) {
-            if ((this as any)._count === undefined) {
-                (this as any)._count = 0;
-            }
-            if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log("frame #" + (this as any)._count + " - counters");
-            }
-        }
 
         this._textureHelper.destroyDeferredTextures();
         this._bufferManager.destroyDeferredBuffers();
@@ -2993,11 +2984,6 @@ export class WebGPUEngine extends Engine {
         }
 
         // We don't create the render pass just now, we do a lazy creation of the render pass, hoping the render pass will be created by a call to clear()...
-
-        if (this.snapshotRendering && this.snapshotRenderingMode === Constants.SNAPSHOTRENDERING_FAST) {
-            // force the creation of the render pass as we know that in the fast snapshot rendering mode, clear() won't be called
-            this._getCurrentRenderPass();
-        }
 
         if (this._cachedViewport && !forceFullscreenViewport) {
             this.setViewport(this._cachedViewport, requiredWidth, requiredHeight);
