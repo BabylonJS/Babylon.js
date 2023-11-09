@@ -323,8 +323,7 @@ export class TargetCamera extends Camera {
         const relativeInertia = this._getInertiaRelativeToTime();
         const scaleFactor = this._getRelativeScaleFactor(relativeInertia);
 
-        // If we have an inertia of zero, copy the values to apply and then zero out the direction vector
-        // Else, scale the previous values and apply them
+        //  copy the values to a temp vector
         TmpVectors.Vector3[0].copyFrom(this.cameraDirection);
 
         if (this.parent) {
@@ -378,6 +377,8 @@ export class TargetCamera extends Camera {
                 this.cameraDirection.z = 0;
             }
             const relativeInertia = this._getInertiaRelativeToTime();
+            // If we have an inertia of zero, zero out the direction vector
+            // Else, scale the previous values and apply them
             if (this.inertia === 0) {
                 this.cameraDirection.scaleInPlace(0);
             } else {
