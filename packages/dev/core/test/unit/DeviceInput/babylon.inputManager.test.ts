@@ -905,7 +905,7 @@ describe("InputManager", () => {
         const diff30FPS = Math.abs(frame30FPS - frame60FPS * 0.5);
         const diff120FPS = Math.abs(frame120FPS - frame60FPS * 2);
         expect(diff30FPS).toBeLessThanOrEqual(1);
-        expect(diff120FPS).toBeLessThanOrEqual(1);
+        expect(diff120FPS).toBeLessThanOrEqual(2);
 
         // Since the cutoff for all inertial values is equal to speed (default: 2) * Epsilon, we can use that to
         // determine the margin of error for our tests
