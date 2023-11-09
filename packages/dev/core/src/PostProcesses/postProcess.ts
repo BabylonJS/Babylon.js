@@ -735,6 +735,8 @@ export class PostProcess {
             this.renderTargetSamplingMode !== Constants.TEXTURE_NEAREST_NEAREST &&
             this.renderTargetSamplingMode !== Constants.TEXTURE_LINEAR_LINEAR;
 
+        let target: Nullable<RenderTargetWrapper> = null;
+
         if (!this._shareOutputWithPostProcess && !this._forcedOutputTexture) {
             if (this.adaptScaleToCurrentViewport) {
                 const currentViewport = engine.currentViewport;
@@ -755,7 +757,7 @@ export class PostProcess {
                 }
             }
 
-            if (this.width !== desiredWidth || this.height !== desiredHeight || !this._getTarget()) {
+            if (this.width !== desiredWidth || this.height !== desiredHeight || !(target = this._getTarget())) {
                 this._resize(desiredWidth, desiredHeight, camera, needMipMaps, forceDepthStencil);
             }
 
@@ -769,7 +771,9 @@ export class PostProcess {
             this._renderId++;
         }
 
-        const target = this._getTarget();
+        if (!target) {
+            target = this._getTarget();
+        }
 
         // Bind the input of this post process to be used as the output of the previous post process.
         if (this.enablePixelPerfectMode) {
