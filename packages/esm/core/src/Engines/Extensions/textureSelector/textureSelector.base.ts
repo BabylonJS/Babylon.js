@@ -1,5 +1,5 @@
-import type { Nullable } from "@babylonjs/core/types";
-import type { BaseEngineStateFull, IBaseEnginePublic } from "../../engine.base";
+import type { Nullable } from "@babylonjs/core/types.js";
+import type { BaseEngineStateFull, IBaseEnginePublic } from "../../engine.base.js";
 
 export interface ITextureSelectorExtensionState {
     /** @internal */

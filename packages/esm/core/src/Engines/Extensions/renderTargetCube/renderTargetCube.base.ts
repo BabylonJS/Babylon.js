@@ -1,6 +1,6 @@
-import type { RenderTargetWrapper } from "@babylonjs/core/Engines/renderTargetWrapper";
-import type { RenderTargetCreationOptions } from "@babylonjs/core/Materials/Textures/textureCreationOptions";
-import type { IBaseEnginePublic } from "../../engine.base";
+import type { RenderTargetWrapper } from "@babylonjs/core/Engines/renderTargetWrapper.js";
+import type { RenderTargetCreationOptions } from "@babylonjs/core/Materials/Textures/textureCreationOptions.js";
+import type { IBaseEnginePublic } from "../../engine.base.js";
 
 export interface IRenderTargetCubeEngineExtension {
     /**

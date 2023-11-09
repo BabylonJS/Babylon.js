@@ -1,6 +1,6 @@
-import type { InternalTexture } from "@babylonjs/core/Materials/Textures/internalTexture";
-import type { Nullable } from "@babylonjs/core/types";
-import type { IBaseEnginePublic } from "../../engine.base";
+import type { InternalTexture } from "@babylonjs/core/Materials/Textures/internalTexture.js";
+import type { Nullable } from "@babylonjs/core/types.js";
+import type { IBaseEnginePublic } from "../../engine.base.js";
 
 export interface IReadTextureEngineExtension {
     /** @internal */

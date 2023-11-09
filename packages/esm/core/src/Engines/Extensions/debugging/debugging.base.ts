@@ -1,4 +1,4 @@
-import type { IBaseEnginePublic } from "../../engine.base";
+import type { IBaseEnginePublic } from "../../engine.base.js";
 
 export interface IDebuggingEngineExtension {
     /** @internal */

@@ -1,6 +1,6 @@
-import type { TextureSampler } from "@babylonjs/core/Materials/Textures/textureSampler";
-import type { Nullable } from "@babylonjs/core/types";
-import type { IBaseEnginePublic } from "../../engine.base";
+import type { TextureSampler } from "@babylonjs/core/Materials/Textures/textureSampler.js";
+import type { Nullable } from "@babylonjs/core/types.js";
+import type { IBaseEnginePublic } from "../../engine.base.js";
 
 export interface ITextureSamplerEngineExtension {
     /**

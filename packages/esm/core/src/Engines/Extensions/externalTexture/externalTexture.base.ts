@@ -1,5 +1,5 @@
-import type { ExternalTexture } from "@babylonjs/core/Materials/Textures/externalTexture";
-import type { Nullable } from "@babylonjs/core/types";
+import type { ExternalTexture } from "@babylonjs/core/Materials/Textures/externalTexture.js";
+import type { Nullable } from "@babylonjs/core/types.js";
 
 export interface IExternalTextureEngineExtension {
     /**

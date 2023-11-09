@@ -1,7 +1,7 @@
-import { createCubeTexture } from "./Extensions/cubeTexture/cubeTexture.webgl";
-import { createDynamicTexture, updateDynamicTexture } from "./Extensions/dynamicTexture/dynamicTexture.webgl";
-import { createRawTexture, createRawTexture3D, createRawTexture2DArray, createRawCubeTexture } from "./Extensions/rawTexture/engine.rawTexture.webgl";
-import type { IWebGLEnginePublic } from "./engine.webgl";
+import { createCubeTexture } from "./Extensions/cubeTexture/cubeTexture.webgl.js";
+import { createDynamicTexture, updateDynamicTexture } from "./Extensions/dynamicTexture/dynamicTexture.webgl.js";
+import { createRawTexture, createRawTexture3D, createRawTexture2DArray, createRawCubeTexture } from "./Extensions/rawTexture/engine.rawTexture.webgl.js";
+import type { IWebGLEnginePublic } from "./engine.webgl.js";
 import {
     createTexture,
     _createHardwareTexture,
@@ -19,16 +19,16 @@ import {
     setTexture,
     setTextureArray,
     setTextureFromPostProcess,
-} from "./engine.webgl";
-import { getCaps, getHostDocument, getLoadedTexturesCache, getRenderingCanvas } from "./engine.base";
-import type { InternalTexture } from "@babylonjs/core/Materials/Textures/internalTexture";
-import { InternalTextureSource } from "@babylonjs/core/Materials/Textures/internalTexture";
-import type { Scene } from "@babylonjs/core/scene";
-import type { Nullable } from "@babylonjs/core/types";
-import { _createPrefilteredCubeTexture } from "@babylonjs/core/Misc/dds";
-import { augmentEngineState } from "./engine.adapters";
-import { _loadFile } from "./engine.tools";
-import { bindUniformBufferBase } from "./Extensions/uniformBuffer/uniformBuffer.webgl";
+} from "./engine.webgl.js";
+import { getCaps, getHostDocument, getLoadedTexturesCache, getRenderingCanvas } from "./engine.base.js";
+import type { InternalTexture } from "@babylonjs/core/Materials/Textures/internalTexture.js";
+import { InternalTextureSource } from "@babylonjs/core/Materials/Textures/internalTexture.js";
+import type { Scene } from "@babylonjs/core/scene.js";
+import type { Nullable } from "@babylonjs/core/types.js";
+import { _createPrefilteredCubeTexture } from "@babylonjs/core/Misc/dds.js";
+import { augmentEngineState } from "./engine.adapters.js";
+import { _loadFile } from "./engine.tools.js";
+import { bindUniformBufferBase } from "./Extensions/uniformBuffer/uniformBuffer.webgl.js";
 
 export const createPrefilteredCubeTextureWebGLAdapter = {
     getCaps,
@@ -91,6 +91,7 @@ const createPrefilteredCubeTexture = (
     );
 };
 
+// TODO - this function is not very tree-shaking-friendly
 export function getInternalTextureWebGLAdapter(type?: InternalTextureSource) {
     switch (type) {
         case undefined:

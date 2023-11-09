@@ -1,6 +1,6 @@
-import { Constants } from "../../engine.constants";
-import type { IWebGLEnginePublic, WebGLEngineStateFull } from "../../engine.webgl";
-import type { IAlphaEngineExtension } from "./alpha.base";
+import { Constants } from "../../engine.constants.js";
+import type { IWebGLEnginePublic, WebGLEngineStateFull } from "../../engine.webgl.js";
+import type { IAlphaEngineExtension } from "./alpha.base.js";
 
 export const setAlphaConstants: IAlphaEngineExtension["setAlphaConstants"] = (engineState: IWebGLEnginePublic, r: number, g: number, b: number, a: number) => {
     const fes = engineState as WebGLEngineStateFull;

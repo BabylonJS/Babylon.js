@@ -1,7 +1,7 @@
-import type { Nullable } from "@babylonjs/core/types";
-import type { IWebGLEnginePublic, WebGLEngineStateFull } from "../../engine.webgl";
-import type { ITextureSelectorEngineExtension } from "./textureSelector.base";
-import { _getExtensionState, _transformTextureUrl } from "./textureSelector.base";
+import type { Nullable } from "@babylonjs/core/types.js";
+import type { IWebGLEnginePublic, WebGLEngineStateFull } from "../../engine.webgl.js";
+import type { ITextureSelectorEngineExtension } from "./textureSelector.base.js";
+import { _getExtensionState, _transformTextureUrl } from "./textureSelector.base.js";
 
 export const setCompressedTextureExclusions: ITextureSelectorEngineExtension["setCompressedTextureExclusions"] = function (
     engineState: IWebGLEnginePublic,

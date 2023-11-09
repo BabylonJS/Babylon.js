@@ -1,4 +1,4 @@
-import type { WebGLRenderTargetWrapper } from "@babylonjs/core/Engines/WebGL/webGLRenderTargetWrapper";
+import type { WebGLRenderTargetWrapper } from "@babylonjs/core/Engines/WebGL/webGLRenderTargetWrapper.js";
 import {
     _bindTextureDirectly,
     _bindUnboundFramebuffer,
@@ -9,16 +9,16 @@ import {
     _setupFramebufferDepthAttachments,
     type IWebGLEnginePublic,
     type WebGLEngineStateFull,
-} from "../../engine.webgl";
-import type { IRenderTargetCubeEngineExtension } from "./renderTargetCube.base";
-import { _createHardwareRenderTargetWrapper } from "../renderTarget/renderTarget.webgl";
-import { Constants } from "../../engine.constants";
-import { InternalTexture, InternalTextureSource } from "@babylonjs/core/Materials/Textures/internalTexture";
-import { Logger } from "@babylonjs/core/Misc/logger";
-import type { RenderTargetWrapper } from "@babylonjs/core/Engines/renderTargetWrapper";
-import type { RenderTargetCreationOptions } from "@babylonjs/core/Materials/Textures/textureCreationOptions";
-import { augmentEngineState } from "../../engine.adapters";
-import { getInternalTextureWebGLAdapter } from "../../engine.adapterHelpers";
+} from "../../engine.webgl.js";
+import type { IRenderTargetCubeEngineExtension } from "./renderTargetCube.base.js";
+import { _createHardwareRenderTargetWrapper } from "../renderTarget/renderTarget.webgl.js";
+import { Constants } from "../../engine.constants.js";
+import { InternalTexture, InternalTextureSource } from "@babylonjs/core/Materials/Textures/internalTexture.js";
+import { Logger } from "@babylonjs/core/Misc/logger.js";
+import type { RenderTargetWrapper } from "@babylonjs/core/Engines/renderTargetWrapper.js";
+import type { RenderTargetCreationOptions } from "@babylonjs/core/Materials/Textures/textureCreationOptions.js";
+import { augmentEngineState } from "../../engine.adapters.js";
+import { getInternalTextureWebGLAdapter } from "../../engine.adapterHelpers.js";
 
 export const createRenderTargetCubeTexture: IRenderTargetCubeEngineExtension["createRenderTargetCubeTexture"] = function (
     engineState: IWebGLEnginePublic,

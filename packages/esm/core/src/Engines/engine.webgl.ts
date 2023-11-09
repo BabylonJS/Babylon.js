@@ -184,12 +184,10 @@ export function initWebGLEngineState(
         },
         options
     );
-    // public and protected
-    const fes = baseEngineState as WebGLEngineState;
-    fes._shaderProcessor = new WebGLShaderProcessor();
-
+    
     // private
-    const ps = fes as WebGLEngineStateFull;
+    const ps = baseEngineState as WebGLEngineStateFull;
+    ps._shaderProcessor = new WebGLShaderProcessor();
     ps.enableUnpackFlipYCached = true;
     ps._uintIndicesCurrentlySet = false;
     ps._currentBoundBuffer = [];
@@ -229,7 +227,7 @@ export function initWebGLEngineState(
 
         // Exceptions
         if (navigator && navigator.userAgent) {
-            _setupMobileChecks(fes);
+            _setupMobileChecks(ps);
 
             const ua = navigator.userAgent;
             for (const exception of ExceptionList.webgl) {
@@ -387,7 +385,7 @@ export function initWebGLEngineState(
         ps._renderingCanvas.setAttribute("data-engine", versionToLog);
     }
 
-    return fes;
+    return ps;
 }
 
 function _rebuildInternalTextures(engineState: IWebGLEnginePublic): void {

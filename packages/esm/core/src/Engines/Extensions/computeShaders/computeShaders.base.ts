@@ -1,8 +1,8 @@
-import type { Nullable } from "@babylonjs/core/types";
-import type { ComputeEffect, IComputeEffectCreationOptions } from "@babylonjs/core/Compute/computeEffect";
-import type { IComputeContext } from "@babylonjs/core/Compute/IComputeContext";
-import type { IComputePipelineContext } from "@babylonjs/core/Compute/IComputePipelineContext";
-import type { IBaseEnginePublic } from "../../engine.base";
+import type { Nullable } from "@babylonjs/core/types.js";
+import type { ComputeEffect, IComputeEffectCreationOptions } from "@babylonjs/core/Compute/computeEffect.js";
+import type { IComputeContext } from "@babylonjs/core/Compute/IComputeContext.js";
+import type { IComputePipelineContext } from "@babylonjs/core/Compute/IComputePipelineContext.js";
+import type { IBaseEnginePublic } from "../../engine.base.js";
 
 /**
  * Type used to locate a resource in a compute shader.

@@ -1,14 +1,14 @@
-import type { RenderTargetWrapper } from "@babylonjs/core/Engines/renderTargetWrapper";
-import type { IBaseEnginePublic } from "../../engine.base";
-import { Camera } from "@babylonjs/core/Cameras/camera";
-import { Scene } from "@babylonjs/core/scene";
-import type { Engine } from "@babylonjs/core/Engines/engine";
-import type { RenderTargetTexture } from "@babylonjs/core/Materials/Textures/renderTargetTexture";
-import { UniformBuffer } from "@babylonjs/core/Materials/uniformBuffer";
-import { Frustum } from "@babylonjs/core/Maths/math.frustum";
-import { Matrix, TmpVectors } from "@babylonjs/core/Maths/math.vector";
-import type { Nullable } from "@babylonjs/core/types";
-import { MultiviewRenderTarget } from "@babylonjs/core/Materials/Textures/MultiviewRenderTarget";
+import type { RenderTargetWrapper } from "@babylonjs/core/Engines/renderTargetWrapper.js";
+import type { IBaseEnginePublic } from "../../engine.base.js";
+import { Camera } from "@babylonjs/core/Cameras/camera.js";
+import { Scene } from "@babylonjs/core/scene.js";
+import type { Engine } from "@babylonjs/core/Engines/engine.js";
+import type { RenderTargetTexture } from "@babylonjs/core/Materials/Textures/renderTargetTexture.js";
+import { UniformBuffer } from "@babylonjs/core/Materials/uniformBuffer.js";
+import { Frustum } from "@babylonjs/core/Maths/math.frustum.js";
+import { Matrix, TmpVectors } from "@babylonjs/core/Maths/math.vector.js";
+import type { Nullable } from "@babylonjs/core/types.js";
+import { MultiviewRenderTarget } from "@babylonjs/core/Materials/Textures/MultiviewRenderTarget.js";
 
 export interface IMultiviewEngineExtension {
     /**
@@ -37,7 +37,7 @@ export interface IMultiviewEngineExtension {
      */
     bindSpaceWarpFramebuffer(engineState: IBaseEnginePublic, spaceWarpTexture: RenderTargetWrapper): void;
 }
-declare module "@babylonjs/core/Cameras/camera" {
+declare module "@babylonjs/core/Cameras/camera.js" {
     export interface Camera {
         /**
          * @internal

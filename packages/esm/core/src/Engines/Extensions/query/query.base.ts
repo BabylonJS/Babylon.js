@@ -1,9 +1,9 @@
-import type { Nullable, int } from "@babylonjs/core/types";
-import type { Observer } from "@babylonjs/core/Misc/observable";
-import { PerfCounter } from "@babylonjs/core/Misc/perfCounter";
-import type { _TimeToken } from "@babylonjs/core/Instrumentation/timeToken";
-import type { IBaseEnginePublic } from "../../engine.base";
-import { AbstractMesh } from "@babylonjs/core/Meshes/abstractMesh";
+import type { Nullable, int } from "@babylonjs/core/types.js";
+import type { Observer } from "@babylonjs/core/Misc/observable.js";
+import { PerfCounter } from "@babylonjs/core/Misc/perfCounter.js";
+import type { _TimeToken } from "@babylonjs/core/Instrumentation/timeToken.js";
+import type { IBaseEnginePublic } from "../../engine.base.js";
+import { AbstractMesh } from "@babylonjs/core/Meshes/abstractMesh.js";
 
 // TODO there is a breaking change here - returning engine state instead of engine
 
@@ -139,7 +139,7 @@ export interface IQueryEngineExtension {
 
 export function initQuesryState(engineState: IBaseEnginePublic): void {}
 
-declare module "@babylonjs/core/Meshes/abstractMesh" {
+declare module "@babylonjs/core/Meshes/abstractMesh.js" {
     export interface AbstractMesh {
         /**
          * Backing filed

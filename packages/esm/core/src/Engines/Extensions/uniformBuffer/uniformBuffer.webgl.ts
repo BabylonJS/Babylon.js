@@ -1,10 +1,10 @@
-import type { DataBuffer } from "@babylonjs/core/Buffers/dataBuffer";
-import type { IPipelineContext } from "@babylonjs/core/Engines/IPipelineContext";
-import type { WebGLPipelineContext } from "@babylonjs/core/Engines/WebGL/webGLPipelineContext";
-import { WebGLDataBuffer } from "@babylonjs/core/Meshes/WebGL/webGLDataBuffer";
-import type { FloatArray, Nullable } from "@babylonjs/core/types";
-import type { IWebGLEnginePublic, WebGLEngineStateFull } from "../../engine.webgl";
-import type { IUniformBufferEngineExtension } from "./uniformBuffer.base";
+import type { DataBuffer } from "@babylonjs/core/Buffers/dataBuffer.js";
+import type { IPipelineContext } from "@babylonjs/core/Engines/IPipelineContext.js";
+import type { WebGLPipelineContext } from "@babylonjs/core/Engines/WebGL/webGLPipelineContext.js";
+import { WebGLDataBuffer } from "@babylonjs/core/Meshes/WebGL/webGLDataBuffer.js";
+import type { FloatArray, Nullable } from "@babylonjs/core/types.js";
+import type { IWebGLEnginePublic, WebGLEngineStateFull } from "../../engine.webgl.js";
+import type { IUniformBufferEngineExtension } from "./uniformBuffer.base.js";
 
 const _createUniformBuffer = function (engineState: IWebGLEnginePublic, elements: FloatArray, dynamic?: boolean): DataBuffer {
     const fes = engineState as WebGLEngineStateFull;

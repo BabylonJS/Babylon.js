@@ -1,7 +1,7 @@
-import type { InternalTexture } from "@babylonjs/core/Materials/Textures/internalTexture";
-import type { ICanvas } from "@babylonjs/core/Engines/ICanvas";
-import type { Nullable } from "@babylonjs/core/types";
-import type { IBaseEnginePublic } from "../../engine.base";
+import type { InternalTexture } from "@babylonjs/core/Materials/Textures/internalTexture.js";
+import type { ICanvas } from "@babylonjs/core/Engines/ICanvas.js";
+import type { Nullable } from "@babylonjs/core/types.js";
+import type { IBaseEnginePublic } from "../../engine.base.js";
 
 export interface IDynamicTextureEngineExtension {
     /**

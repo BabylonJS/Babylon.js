@@ -1,7 +1,7 @@
-import type { Camera } from "@babylonjs/core/Cameras/camera";
-import type { IBaseEnginePublic } from "../../engine.base";
-import { Observable } from "@babylonjs/core/Misc/observable";
-import type { Nullable } from "@babylonjs/core/types";
+import type { Camera } from "@babylonjs/core/Cameras/camera.js";
+import type { IBaseEnginePublic } from "../../engine.base.js";
+import { Observable } from "@babylonjs/core/Misc/observable.js";
+import type { Nullable } from "@babylonjs/core/types.js";
 
 /**
  * Class used to define an additional view for the engine
