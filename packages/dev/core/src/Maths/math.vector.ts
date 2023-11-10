@@ -5492,7 +5492,9 @@ export class Quaternion {
  * Example Playground - Overview Transformation - https://playground.babylonjs.com/#AV9X17#1
  * Example Playground - Overview Projection - https://playground.babylonjs.com/#AV9X17#2
  */
-export class Matrix {
+export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>> {
+    public declare readonly dimension: [4, 4];
+
     /**
      * Gets the precision of matrix computations
      */
@@ -5514,12 +5516,12 @@ export class Matrix {
      */
     public updateFlag: number = -1;
 
-    private readonly _m: Float32Array | Array<number>;
+    private readonly _m: Tuple<number, 16>;
 
     /**
      * Gets the internal data of the matrix
      */
-    public get m(): DeepImmutable<Float32Array | Array<number>> {
+    public get m(): DeepImmutable<Tuple<number, 16>> {
         return this._m;
     }
 
@@ -5552,6 +5554,10 @@ export class Matrix {
         this._m = new PerformanceConfigurator.MatrixCurrentType(16);
 
         this.markAsUpdated();
+    }
+
+    public toString(): string {
+        return JSON.stringify(this._m);
     }
 
     // Properties
@@ -5676,16 +5682,47 @@ export class Matrix {
      * Example Playground - https://playground.babylonjs.com/#AV9X17#49
      * @returns the matrix underlying array
      */
-    public toArray(): DeepImmutable<Float32Array | Array<number>> {
-        return this._m;
+    public toArray(array: FloatArray, index: number = 0): this {
+        const m = this._m;
+        for (let i = 0; i < m.length; i++) {
+            array[index + i] = m[i];
+        }
+        return this;
     }
+
     /**
      * Returns the matrix as a Float32Array or Array<number>
      * Example Playground - https://playground.babylonjs.com/#AV9X17#114
      * @returns the matrix underlying array.
      */
-    public asArray(): DeepImmutable<Float32Array | Array<number>> {
+    public asArray(): Tuple<number, 16> {
         return this._m;
+    }
+
+    public fromArray(array: FloatArray, index: number = 0): this {
+        return Matrix.FromArrayToRef(array, index, this);
+    }
+
+    public copyFromFloats(...floats: Tuple<number, 16>): this {
+        return Matrix.FromArrayToRef(floats, 0, this);
+    }
+
+    public set(...values: Tuple<number, 16>): this {
+        const m = this._m;
+        for (let i = 0; i < m.length; i++) {
+            m[i] = values[i];
+        }
+        this.markAsUpdated();
+        return this;
+    }
+
+    public setAll(value: number): this {
+        const m = this._m;
+        for (let i = 0; i < m.length; i++) {
+            m[i] = value;
+        }
+        this.markAsUpdated();
+        return this;
     }
 
     /**
@@ -5751,6 +5788,70 @@ export class Matrix {
         }
         this.markAsUpdated();
         return this;
+    }
+
+    public addInPlace(other: DeepImmutable<this>): this {
+        const m = this._m,
+            otherM = other.m;
+        for (let i = 0; i < m.length; i++) {
+            m[i] += otherM[i];
+        }
+        this.markAsUpdated();
+        return this;
+    }
+
+    public addInPlaceFromFloats(...floats: Tuple<number, 16>): this {
+        const m = this._m;
+        for (let i = 0; i < m.length; i++) {
+            m[i] += floats[i];
+        }
+        this.markAsUpdated();
+        return this;
+    }
+
+    public subtract(other: DeepImmutable<this>): this {
+        const m = this._m,
+            otherM = other.m;
+        for (let i = 0; i < m.length; i++) {
+            m[i] -= otherM[i];
+        }
+        this.markAsUpdated();
+        return this;
+    }
+    public subtractToRef<T extends this>(other: DeepImmutable<this>, result: T): T {
+        const m = this._m,
+            otherM = other.m,
+            resultM = result._m;
+        for (let i = 0; i < m.length; i++) {
+            resultM[i] = m[i] - otherM[i];
+        }
+        result.markAsUpdated();
+        return result;
+    }
+    public subtractInPlace(other: DeepImmutable<this>): this {
+        const m = this._m,
+            otherM = other.m;
+        for (let i = 0; i < m.length; i++) {
+            m[i] -= otherM[i];
+        }
+        this.markAsUpdated();
+        return this;
+    }
+
+    public subtractFromFloats(...floats: Tuple<number, 16>): this {
+        return this.subtractFromFloatsToRef(...floats, new (this.constructor as Constructor<typeof Matrix, this>)());
+    }
+
+    public subtractFromFloatsToRef<T extends this>(...args: [...Tuple<number, 16>, T]): T {
+        const result = args.pop() as T,
+            m = this._m,
+            resultM = result._m,
+            values = args as unknown as Tuple<number, 16>;
+        for (let i = 0; i < m.length; i++) {
+            resultM[i] = m[i] - values[i];
+        }
+        result.markAsUpdated();
+        return result;
     }
 
     /**
@@ -5958,19 +6059,6 @@ export class Matrix {
     }
 
     /**
-     * Multiply two matrices
-     * Example Playground - https://playground.babylonjs.com/#AV9X17#15
-     * A.multiply(B) means apply B to A so result is B x A
-     * @param other defines the second operand
-     * @returns a new matrix set with the multiplication result of the current Matrix and the given one
-     */
-    public multiply(other: DeepImmutable<Matrix>): this {
-        const result = new (this.constructor as Constructor<typeof Matrix, this>)();
-        this.multiplyToRef(other, result);
-        return result;
-    }
-
-    /**
      * Copy the current matrix from the given one
      * Example Playground - https://playground.babylonjs.com/#AV9X17#21
      * @param other defines the source matrix
@@ -6010,6 +6098,50 @@ export class Matrix {
         array[offset + 15] = source[15];
 
         return this;
+    }
+
+    /**
+     * Multiply two matrices
+     * Example Playground - https://playground.babylonjs.com/#AV9X17#15
+     * A.multiply(B) means apply B to A so result is B x A
+     * @param other defines the second operand
+     * @returns a new matrix set with the multiplication result of the current Matrix and the given one
+     */
+    public multiply(other: DeepImmutable<Matrix>): this {
+        const result = new (this.constructor as Constructor<typeof Matrix, this>)();
+        this.multiplyToRef(other, result);
+        return result;
+    }
+
+    public multiplyInPlace(other: DeepImmutable<this>): this {
+        const m = this._m,
+            otherM = other.m;
+        for (let i = 0; i < m.length; i++) {
+            m[i] *= otherM[i];
+        }
+        this.markAsUpdated();
+        return this;
+    }
+
+    public multiplyByFloats(...floats: Tuple<number, 16>): this {
+        const m = this._m;
+        for (let i = 0; i < m.length; i++) {
+            m[i] = floats[i];
+        }
+        this.markAsUpdated();
+        return this;
+    }
+
+    public multiplyByFloatsToRef<T extends this>(...args: [...Tuple<number, 16>, T]): T {
+        const result = args.pop() as T,
+            m = this._m,
+            resultM = result._m,
+            values = args as unknown as Tuple<number, 16>;
+        for (let i = 0; i < m.length; i++) {
+            resultM[i] = m[i] * values[i];
+        }
+        result.markAsUpdated();
+        return result;
     }
 
     /**
@@ -6101,6 +6233,92 @@ export class Matrix {
         return this;
     }
 
+    public divide(other: DeepImmutable<this>): this {
+        return this.divideToRef(other, new (this.constructor as Constructor<typeof Matrix, this>)());
+    }
+
+    public divideToRef<T extends this>(other: DeepImmutable<this>, result: T): T {
+        const m = this._m,
+            otherM = other.m,
+            resultM = result._m;
+        for (let i = 0; i < m.length; i++) {
+            resultM[i] = m[i] / otherM[i];
+        }
+        result.markAsUpdated();
+        return result;
+    }
+
+    public divideInPlace(other: DeepImmutable<this>): this {
+        const m = this._m,
+            otherM = other.m;
+        for (let i = 0; i < m.length; i++) {
+            m[i] /= otherM[i];
+        }
+        this.markAsUpdated();
+        return this;
+    }
+
+    public minimizeInPlace(other: DeepImmutable<this>): this {
+        const m = this._m,
+            otherM = other.m;
+        for (let i = 0; i < m.length; i++) {
+            m[i] = Math.min(m[i], otherM[i]);
+        }
+        this.markAsUpdated();
+        return this;
+    }
+
+    public minimizeInPlaceFromFloats(...floats: Tuple<number, 16>): this {
+        const m = this._m;
+        for (let i = 0; i < m.length; i++) {
+            m[i] = Math.min(m[i], floats[i]);
+        }
+        this.markAsUpdated();
+        return this;
+    }
+
+    public maximizeInPlace(other: DeepImmutable<this>): this {
+        const m = this._m,
+            otherM = other.m;
+        for (let i = 0; i < m.length; i++) {
+            m[i] = Math.min(m[i], otherM[i]);
+        }
+        this.markAsUpdated();
+        return this;
+    }
+
+    public maximizeInPlaceFromFloats(...floats: Tuple<number, 16>): this {
+        const m = this._m;
+        for (let i = 0; i < m.length; i++) {
+            m[i] = Math.min(m[i], floats[i]);
+        }
+        this.markAsUpdated();
+        return this;
+    }
+
+    public negate(): this {
+        return this.negateToRef(new (this.constructor as Constructor<typeof Matrix, this>)());
+    }
+
+    public negateInPlace(): this {
+        const m = this._m;
+        for (let i = 0; i < m.length; i++) {
+            m[i] = -m[i];
+        }
+        this.markAsUpdated();
+        return this;
+    }
+
+    public negateToRef<T extends this>(result: T): T {
+        const m = this._m,
+            resultM = result._m;
+        for (let i = 0; i < m.length; i++) {
+            resultM[i] = -m[i];
+        }
+        result.markAsUpdated();
+        return result;
+    }
+
     /**
      * Check equality between this matrix and a second one
      * @param value defines the second matrix to compare
@@ -6138,6 +6356,55 @@ export class Matrix {
             m[14] === om[14] &&
             m[15] === om[15]
         );
+    }
+
+    public equalsWithEpsilon(other: DeepImmutable<this>, epsilon: number = 0): boolean {
+        const m = this._m,
+            otherM = other.m;
+        for (let i = 0; i < m.length; i++) {
+            if (!Scalar.WithinEpsilon(m[i], otherM[i], epsilon)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public equalsToFloats(...floats: Tuple<number, 16>): boolean {
+        const m = this._m;
+        for (let i = 0; i < m.length; i++) {
+            if (m[i] != floats[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public floor(): this {
+        return this.floorToRef(new (this.constructor as Constructor<typeof Matrix, this>)());
+    }
+
+    public floorToRef<T extends this>(result: T): T {
+        const m = this._m,
+            resultM = result._m;
+        for (let i = 0; i < m.length; i++) {
+            resultM[i] = Math.floor(m[i]);
+        }
+        result.markAsUpdated();
+        return result;
+    }
+
+    public fract(): this {
+        return this.fractToRef(new (this.constructor as Constructor<typeof Matrix, this>)());
+    }
+
+    public fractToRef<T extends this>(result: T): T {
+        const m = this._m,
+            resultM = result._m;
+        for (let i = 0; i < m.length; i++) {
+            resultM[i] = m[i] - Math.floor(m[i]);
+        }
+        result.markAsUpdated();
+        return result;
     }
 
     /**
@@ -6392,6 +6659,15 @@ export class Matrix {
         }
         result.markAsUpdated();
         return result;
+    }
+
+    public scaleInPlace(scale: number): this {
+        const m = this._m;
+        for (let i = 0; i < m.length; i++) {
+            m[i] *= scale;
+        }
+        this.markAsUpdated();
+        return this;
     }
 
     /**
@@ -7970,6 +8246,7 @@ export class Matrix {
         return result;
     }
 }
+Object.defineProperty(Vector4.prototype, "dimension", { value: [4, 4] });
 
 /**
  * @internal
