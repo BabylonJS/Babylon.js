@@ -1,5 +1,5 @@
 import type { DeepImmutable } from "../types";
-import { Vector3, Matrix, Vector3Like } from "./math.vector";
+import { Vector3, Matrix, type Vector3Like } from "./math.vector";
 
 /**
  * @internal

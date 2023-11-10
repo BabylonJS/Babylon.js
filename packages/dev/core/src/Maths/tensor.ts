@@ -15,7 +15,7 @@ export declare abstract class Tensor<V extends unknown[] = number[]> {
      * @remarks
      * This is abstract to allow implementations with getter
      */
-    public abstract readonly dimension: Dimension<V>;
+    public abstract readonly dimension: Readonly<Dimension<V>>;
 
     /**
      * Creates a new Tensor from the given coordinates

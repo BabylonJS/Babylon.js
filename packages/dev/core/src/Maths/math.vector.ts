@@ -20,7 +20,7 @@ const _ExtractAsInt = (value: number) => {
  * Reprents a vector of any dimension
  */
 export declare abstract class Vector<N extends number[] = number[]> extends Tensor<N> {
-    public readonly dimension: Dimension<N>;
+    public readonly dimension: Readonly<Dimension<N>>;
 
     /**
      * Gets the length of the vector
@@ -208,7 +208,7 @@ export interface Vector2Like {
 export class Vector2 implements Vector<Tuple<number, 2>>, Vector2Like {
     private static _ZeroReadOnly = Vector2.Zero() as DeepImmutable<Vector2>;
 
-    public declare readonly dimension: [2];
+    public declare readonly dimension: Readonly<[2]>;
 
     /**
      * Creates a new Vector2 from the given x and y coordinates
@@ -1234,7 +1234,7 @@ export class Vector3 implements Vector<Tuple<number, 3>>, Vector3Like {
     private static _ZeroReadOnly = Vector3.Zero() as DeepImmutable<Vector3>;
     private static _OneReadOnly = Vector3.One() as DeepImmutable<Vector3>;
 
-    public declare readonly dimension: [3];
+    public declare readonly dimension: Readonly<[3]>;
 
     /** @internal */
     public _x: number;
@@ -3383,7 +3383,7 @@ export interface Vector4Like extends Vector3Like {
 export class Vector4 implements Vector<Tuple<number, 4>>, Vector4Like {
     private static _ZeroReadOnly = Vector4.Zero() as DeepImmutable<Vector4>;
 
-    public declare readonly dimension: [4];
+    public declare readonly dimension: Readonly<[4]>;
 
     /**
      * Creates a Vector4 object from the given floats.
@@ -4395,7 +4395,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, QuaternionLike {
         this._isDirty = true;
     }
 
-    public declare readonly dimension: [4];
+    public declare readonly dimension: Readonly<[4]>;
 
     /**
      * Creates a new Quaternion from the given floats
@@ -5690,7 +5690,7 @@ export interface MatrixLike {
  * Example Playground - Overview Projection - https://playground.babylonjs.com/#AV9X17#2
  */
 export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, MatrixLike {
-    public declare readonly dimension: [4, 4];
+    public declare readonly dimension: Readonly<[4, 4]>;
 
     /**
      * Gets the precision of matrix computations
