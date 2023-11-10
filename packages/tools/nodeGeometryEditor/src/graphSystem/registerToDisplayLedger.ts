@@ -6,6 +6,7 @@ import { SourceDisplayManager } from "./display/sourceDisplayManager";
 import { DebugDisplayManager } from "./display/debugDisplayManager";
 import { TeleportInDisplayManager } from "./display/teleportInDisplayManager";
 import { TeleportOutDisplayManager } from "./display/teleportOutDisplayManager";
+import { TextureDisplayManager } from "./display/textureDisplayManager";
 
 export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["GeometryInputBlock"] = InputDisplayManager;
@@ -23,4 +24,5 @@ export const RegisterToDisplayManagers = () => {
     DisplayLedger.RegisteredControls["IcoSphereBlock"] = SourceDisplayManager;
     DisplayLedger.RegisteredControls["TeleportInBlock"] = TeleportInDisplayManager;
     DisplayLedger.RegisteredControls["TeleportOutBlock"] = TeleportOutDisplayManager;
+    DisplayLedger.RegisteredControls["GeometryTextureBlock"] = TextureDisplayManager;
 };

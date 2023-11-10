@@ -621,7 +621,7 @@ SceneLoader.RegisterPlugin({
                 meshesNames = [meshesNames];
             }
 
-            const hierarchyIds = new Array<number>();
+            const hierarchyIds: number[] = [];
             const parsedIdToNodeMap = new Map<number, Node>();
 
             // Transform nodes (the overall idea is to load all of them as this is super fast and then get rid of the ones we don't need)

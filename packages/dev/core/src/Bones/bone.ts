@@ -21,10 +21,10 @@ export class Bone extends Node {
     /**
      * Gets the list of child bones
      */
-    public children = new Array<Bone>();
+    public children: Bone[] = [];
 
     /** Gets the animations associated with this bone */
-    public animations = new Array<Animation>();
+    public animations: Animation[] = [];
 
     /**
      * Gets or sets bone length

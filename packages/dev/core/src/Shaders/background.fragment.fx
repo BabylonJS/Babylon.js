@@ -7,8 +7,6 @@ precision highp float;
 #include<__decl__backgroundFragment>
 #include<helperFunctions>
 
-#define RECIPROCAL_PI2 0.15915494
-
 // Input
 varying vec3 vPositionW;
 
@@ -108,6 +106,83 @@ varying vec3 vNormalW;
     }
 #endif
 
+#ifdef PROJECTED_GROUND
+    // From: https://www.shadertoy.com/view/4tsBD7
+    // keeping for reference the general formula for a disk
+    // float diskIntersectWithBackFaceCulling(vec3 ro, vec3 rd, vec3 c, vec3 n, float r) {
+    //     float d = dot(rd, n);
+    //     if(d > 0.0) { return 1e6; }
+    //     vec3 o = ro - c;
+    //     float t = -dot(n, o) / d;
+    //     vec3 q = o + rd * t;
+    //     return (dot(q, q) < r * r) ? t : 1e6;
+    // }
+    // optimized for a disk on the ground facing up
+    float diskIntersectWithBackFaceCulling(vec3 ro, vec3 rd, vec3 c, float r) {
+        float d = rd.y;
+        if(d > 0.0) { return 1e6; }
+        vec3 o = ro - c;
+        float t = -o.y / d;
+        vec3 q = o + rd * t;
+        return (dot(q, q) < r * r) ? t : 1e6;
+    }
+
+    // From: https://www.iquilezles.org/www/articles/intersectors/intersectors.htm
+    // keeping for reference the general formula for a sphere
+    // float sphereIntersect(vec3 ro, vec3 rd, vec3 ce, float ra) {
+    //     vec3 oc = ro - ce;
+    //     float b = dot(oc, rd);
+    //     float c = dot(oc, oc) - ra * ra;
+    //     float h = b * b - c;
+    //     if(h < 0.0) { return -1.0; }
+    //     h = sqrt(h);
+    //     return - b + h;
+    // }
+    // optimized for a sphere centered at the origin
+    float sphereIntersect(vec3 ro, vec3 rd, float ra) {
+        float b = dot(ro, rd);
+        float c = dot(ro, ro) - ra * ra;
+        float h = b * b - c;
+
+        if(h < 0.0) { return -1.0; }
+
+        h = sqrt(h);
+
+        return - b + h;
+    }
+
+    vec3 project(vec3 viewDirectionW, vec3 eyePosition) {
+        float radius = projectedGroundInfos.x;
+        float height = projectedGroundInfos.y;
+
+        // reproject the cube ground to a sky sphere
+        // to help with shadows
+        // vec3 p = normalize(vPositionW);
+        vec3 camDir = -viewDirectionW;
+        float skySphereDistance = sphereIntersect(eyePosition, camDir, radius);
+        vec3 skySpherePositionW = eyePosition + camDir * skySphereDistance;
+
+        vec3 p = normalize(skySpherePositionW);
+        eyePosition.y -= height;
+
+        // Let s remove extra conditions in the following block
+        // float intersection = sphereIntersect(eyePosition, p, radius);
+        // if(intersection > 0.0) {
+        //     vec3 h = vec3(0.0, -height, 0.0);
+        //     float intersection2 = diskIntersectWithBackFaceCulling(eyePosition, p, h, radius);
+        //     p = (eyePosition + min(intersection, intersection2) * p) / radius;
+        // } else {
+        //     p = vec3(0.0, 1.0, 0.0);
+        // }
+
+        float sIntersection = sphereIntersect(eyePosition, p, radius);
+        vec3 h = vec3(0.0, -height, 0.0);
+        float dIntersection = diskIntersectWithBackFaceCulling(eyePosition, p, h, radius);
+        p = (eyePosition + min(sIntersection, dIntersection) * p);
+
+        return p;
+    }
+#endif
 
 #define CUSTOM_FRAGMENT_DEFINITIONS
 
@@ -145,7 +220,13 @@ void main(void) {
     // _____________________________ REFLECTION ______________________________________
     vec4 reflectionColor = vec4(1., 1., 1., 1.);
     #ifdef REFLECTION
-        vec3 reflectionVector = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
+        #ifdef PROJECTED_GROUND
+            vec3 reflectionVector = project(viewDirectionW, vEyePosition.xyz);
+            reflectionVector = vec3(reflectionMatrix * vec4(reflectionVector, 1.));
+        #else
+            vec3 reflectionVector = computeReflectionCoords(vec4(vPositionW, 1.0), normalW);
+        #endif
+
         #ifdef REFLECTIONMAP_OPPOSITEZ
             reflectionVector.z *= -1.0;
         #endif

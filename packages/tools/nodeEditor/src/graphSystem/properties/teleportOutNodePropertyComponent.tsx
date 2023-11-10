@@ -30,7 +30,7 @@ export class TeleportOutPropertyTabComponent extends React.Component<IPropertyCo
         const block = this.props.nodeData.data as NodeMaterialTeleportOutBlock;
 
         const options = [{ label: "None", value: -1 }];
-        const teleporters = new Array<NodeMaterialTeleportInBlock>();
+        const teleporters: NodeMaterialTeleportInBlock[] = [];
 
         const nodeGeometry = (this.props.stateManager.data as GlobalState).nodeMaterial;
 

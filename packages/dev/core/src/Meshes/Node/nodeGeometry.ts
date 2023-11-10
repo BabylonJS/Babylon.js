@@ -49,7 +49,7 @@ export class NodeGeometry {
     private _buildExecutionTime: number = 0;
 
     /** Define the Url to load node editor script */
-    public static EditorURL = `https://unpkg.com/babylonjs-node-geometry-editor@${Engine.Version}/babylon.nodeGeometryEditor.js`;
+    public static EditorURL = `${Tools._DefaultCdnUrl}/v${Engine.Version}/nodeGeometryEditor/babylon.nodeGeometryEditor.js`;
 
     /** Define the Url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
@@ -88,7 +88,7 @@ export class NodeGeometry {
     /**
      * Gets an array of blocks that needs to be serialized even if they are not yet connected
      */
-    public attachedBlocks = new Array<NodeGeometryBlock>();
+    public attachedBlocks: NodeGeometryBlock[] = [];
 
     /**
      * Observable raised when the geometry is built
@@ -194,7 +194,7 @@ export class NodeGeometry {
                 const editorUrl = config && config.editorURL ? config.editorURL : NodeGeometry.EditorURL;
 
                 // Load editor and add it to the DOM
-                Tools.LoadScript(editorUrl, () => {
+                Tools.LoadBabylonScript(editorUrl, () => {
                     this.BJSNODEGEOMETRYEDITOR = this.BJSNODEGEOMETRYEDITOR || this._getGlobalNodeGeometryEditor();
                     this._createNodeEditor(config?.nodeGeometryEditorConfig);
                     resolve();
@@ -489,11 +489,11 @@ export class NodeGeometry {
         if (this.outputBlock) {
             // Connections
             alreadyDumped = [];
-            codeString += "\n`;// Connections\n`;";
+            codeString += "// Connections\n";
             codeString += this.outputBlock._dumpCodeForOutputConnections(alreadyDumped);
 
             // Output nodes
-            codeString += "\n`;// Output nodes\n`;";
+            codeString += "// Output nodes\n";
             codeString += `nodeGeometry.outputBlock = ${this.outputBlock._codeVariableName};\n`;
             codeString += `nodeGeometry.build();\n`;
         }
@@ -564,11 +564,10 @@ export class NodeGeometry {
 
     /**
      * Serializes this geometry in a JSON representation
-     * @param saveMeshData defines a boolean indicating that mesh data must be saved as well
      * @param selectedBlocks defines the list of blocks to save (if null the whole geometry will be saved)
      * @returns the serialized geometry object
      */
-    public serialize(saveMeshData?: boolean, selectedBlocks?: NodeGeometryBlock[]): any {
+    public serialize(selectedBlocks?: NodeGeometryBlock[]): any {
         const serializationObject = selectedBlocks ? {} : SerializationHelper.Serialize(this);
         serializationObject.editorData = JSON.parse(JSON.stringify(this.editorData)); // Copy
 
@@ -587,7 +586,7 @@ export class NodeGeometry {
         serializationObject.blocks = [];
 
         for (const block of blocks) {
-            serializationObject.blocks.push(block.serialize(saveMeshData));
+            serializationObject.blocks.push(block.serialize());
         }
 
         if (!selectedBlocks) {
@@ -595,7 +594,7 @@ export class NodeGeometry {
                 if (blocks.indexOf(block) !== -1) {
                     continue;
                 }
-                serializationObject.blocks.push(block.serialize(saveMeshData));
+                serializationObject.blocks.push(block.serialize());
             }
         }
 

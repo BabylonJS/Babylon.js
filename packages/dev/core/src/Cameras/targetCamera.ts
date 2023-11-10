@@ -536,7 +536,7 @@ export class TargetCamera extends Camera {
             const rigCamera = new TargetCamera(name, this.position.clone(), this.getScene());
             rigCamera.isRigCamera = true;
             rigCamera.rigParent = this;
-            if (this.cameraRigMode === Camera.RIG_MODE_VR || this.cameraRigMode === Camera.RIG_MODE_WEBVR) {
+            if (this.cameraRigMode === Camera.RIG_MODE_VR) {
                 if (!this.rotationQuaternion) {
                     this.rotationQuaternion = new Quaternion();
                 }

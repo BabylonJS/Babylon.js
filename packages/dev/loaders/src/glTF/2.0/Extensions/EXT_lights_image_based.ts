@@ -67,6 +67,8 @@ export class EXT_lights_image_based implements IGLTFLoaderExtension {
      */
     public loadSceneAsync(context: string, scene: IScene): Nullable<Promise<void>> {
         return GLTFLoader.LoadExtensionAsync<IEXTLightsImageBased_LightReferenceImageBased>(context, scene, this.name, (extensionContext, extension) => {
+            this._loader._allMaterialsDirtyRequired = true;
+
             const promises = new Array<Promise<any>>();
 
             promises.push(this._loader.loadSceneAsync(context, scene));

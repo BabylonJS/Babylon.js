@@ -314,7 +314,7 @@ export class MixMaterial extends PushMaterial {
                 "diffuse8Sampler",
             ];
 
-            const uniformBuffers = new Array<string>();
+            const uniformBuffers: string[] = [];
 
             addClipPlaneUniforms(uniforms);
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{

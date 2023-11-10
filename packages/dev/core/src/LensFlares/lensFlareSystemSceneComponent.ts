@@ -12,7 +12,7 @@ AbstractScene.AddParser(SceneComponentConstants.NAME_LENSFLARESYSTEM, (parsedDat
     // Lens flares
     if (parsedData.lensFlareSystems !== undefined && parsedData.lensFlareSystems !== null) {
         if (!container.lensFlareSystems) {
-            container.lensFlareSystems = new Array<LensFlareSystem>();
+            container.lensFlareSystems = [] as LensFlareSystem[];
         }
 
         for (let index = 0, cache = parsedData.lensFlareSystems.length; index < cache; index++) {
@@ -126,7 +126,7 @@ export class LensFlareSystemSceneComponent implements ISceneSerializableComponen
     constructor(scene: Scene) {
         this.scene = scene;
 
-        scene.lensFlareSystems = new Array<LensFlareSystem>();
+        scene.lensFlareSystems = [] as LensFlareSystem[];
     }
 
     /**

@@ -51,7 +51,9 @@ export class WebGPUDrawContext implements IDrawContext {
         } else {
             this.indirectDrawBuffer = this._bufferManager.createRawBuffer(
                 20,
-                WebGPUConstants.BufferUsage.CopyDst | WebGPUConstants.BufferUsage.Indirect | WebGPUConstants.BufferUsage.Storage
+                WebGPUConstants.BufferUsage.CopyDst | WebGPUConstants.BufferUsage.Indirect | WebGPUConstants.BufferUsage.Storage,
+                undefined,
+                "IndirectDrawBuffer"
             );
             this._indirectDrawData = new Uint32Array(5);
             this._indirectDrawData[3] = 0;

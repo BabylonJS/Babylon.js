@@ -108,7 +108,10 @@ export class PlaneBlock extends NodeGeometryBlock {
         if (this.evaluateContext) {
             this.geometry._storedFunction = func;
         } else {
-            this.geometry._storedValue = func(state);
+            const value = func(state);
+            this.geometry._storedFunction = () => {
+                return value.clone();
+            };
         }
     }
 

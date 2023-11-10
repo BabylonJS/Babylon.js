@@ -133,7 +133,11 @@ export class ViewerModel implements IDisposable {
 
     private _shadowsRenderedAfterLoad: boolean = false;
 
-    constructor(private _observablesManager: ObservablesManager, modelConfiguration: IModelConfiguration, private _configurationContainer?: ConfigurationContainer) {
+    constructor(
+        private _observablesManager: ObservablesManager,
+        modelConfiguration: IModelConfiguration,
+        private _configurationContainer?: ConfigurationContainer
+    ) {
         this.onLoadedObservable = new Observable();
         this.onLoadErrorObservable = new Observable();
         this.onLoadProgressObservable = new Observable();
@@ -392,8 +396,7 @@ export class ViewerModel implements IDisposable {
     protected _getAnimationByName(name: string): Nullable<IModelAnimation> {
         // can't use .find, noe available on IE
         const filtered = this._animations.filter((a) => a.name === name.trim());
-        // what the next line means - if two animations have the same name, they will not be returned!
-        if (filtered.length === 1) {
+        if (filtered.length >= 1) {
             return filtered[0];
         } else {
             return null;

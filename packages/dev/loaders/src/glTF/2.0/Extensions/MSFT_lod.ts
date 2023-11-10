@@ -358,7 +358,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
             throw new Error("maxLODsToLoad must be greater than zero");
         }
 
-        const properties = new Array<T>();
+        const properties: T[] = [];
 
         for (let i = ids.length - 1; i >= 0; i--) {
             properties.push(ArrayItem.Get(`${context}/ids/${ids[i]}`, array, ids[i]));
@@ -372,7 +372,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
     }
 
     private _disposeTransformNode(babylonTransformNode: TransformNode): void {
-        const babylonMaterials = new Array<Material>();
+        const babylonMaterials: Material[] = [];
         const babylonMaterial = (babylonTransformNode as Mesh).material;
         if (babylonMaterial) {
             babylonMaterials.push(babylonMaterial);

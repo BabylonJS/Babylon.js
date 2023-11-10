@@ -8,7 +8,14 @@ import {
     PhysicsConstraintAxisLimitMode,
     PhysicsEventType,
 } from "../IPhysicsEnginePlugin";
-import type { PhysicsShapeParameters, IPhysicsEnginePluginV2, PhysicsMassProperties, IPhysicsCollisionEvent, IBasePhysicsCollisionEvent } from "../IPhysicsEnginePlugin";
+import type {
+    PhysicsShapeParameters,
+    IPhysicsEnginePluginV2,
+    PhysicsMassProperties,
+    IPhysicsCollisionEvent,
+    IBasePhysicsCollisionEvent,
+    ConstrainedBodyPair,
+} from "../IPhysicsEnginePlugin";
 import type { IRaycastQuery, PhysicsRaycastResult } from "../../physicsRaycastResult";
 import { Logger } from "../../../Misc/logger";
 import type { PhysicsBody } from "../physicsBody";
@@ -278,6 +285,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     private _bodies = new Map<bigint, { body: PhysicsBody; index: number }>();
     private _bodyBuffer: number;
     private _bodyCollisionObservable = new Map<bigint, Observable<IPhysicsCollisionEvent>>();
+    // Map from constraint id to the pair of bodies, where the first is the parent and the second is the child
+    private _constraintToBodyIdPair = new Map<bigint, [bigint, bigint]>();
+    private _bodyCollisionEndedObservable = new Map<bigint, Observable<IBasePhysicsCollisionEvent>>();
     /**
      * Observable for collision started and collision continued events
      */
@@ -291,7 +301,10 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      */
     public onTriggerCollisionObservable = new Observable<IBasePhysicsCollisionEvent>();
 
-    public constructor(private _useDeltaForWorldStep: boolean = true, hpInjection: any = HK) {
+    public constructor(
+        private _useDeltaForWorldStep: boolean = true,
+        hpInjection: any = HK
+    ) {
         if (typeof hpInjection === "function") {
             Logger.Error("Havok is not ready. Please make sure you await HK() before using the plugin.");
             return;
@@ -417,11 +430,13 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             for (const instance of body._pluginDataInstances) {
                 this._bodyCollisionObservable.delete(instance.hpBodyId[0]);
                 this._hknp.HP_World_RemoveBody(this.world, instance.hpBodyId);
+                this._bodies.delete(instance.hpBodyId[0]);
             }
         }
         if (body._pluginData) {
             this._bodyCollisionObservable.delete(body._pluginData.hpBodyId[0]);
             this._hknp.HP_World_RemoveBody(this.world, body._pluginData.hpBodyId);
+            this._bodies.delete(body._pluginData.hpBodyId[0]);
         }
     }
 
@@ -1389,14 +1404,17 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             return;
         }
 
+        constraint._pluginData = constraint._pluginData ?? [];
         const jointId = this._hknp.HP_Constraint_Create()[1];
-        constraint._pluginData = jointId;
+        constraint._pluginData.push(jointId);
 
         // body parenting
         const bodyA = this._getPluginReference(body, instanceIndex).hpBodyId;
         const bodyB = this._getPluginReference(childBody, childInstanceIndex).hpBodyId;
         this._hknp.HP_Constraint_SetParentBody(jointId, bodyA);
         this._hknp.HP_Constraint_SetChildBody(jointId, bodyB);
+
+        this._constraintToBodyIdPair.set(jointId[0], [bodyA[0], bodyB[0]]);
 
         // anchors
         const pivotA = options.pivotA ? this._bVecToV3(options.pivotA) : this._bVecToV3(Vector3.Zero());
@@ -1417,6 +1435,19 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             axisB.getNormalToRef(perpAxisB);
         }
         this._hknp.HP_Constraint_SetAnchorInChild(jointId, pivotB, this._bVecToV3(axisB), this._bVecToV3(perpAxisB));
+
+        // Save the options that were used for initializing the constraint for debugging purposes
+        // Check first to avoid copying the same options multiple times
+        if (!constraint._initOptions) {
+            constraint._initOptions = {
+                axisA: axisA.clone(),
+                axisB: axisB.clone(),
+                perpAxisA: perpAxisA.clone(),
+                perpAxisB: perpAxisB.clone(),
+                pivotA: new Vector3(pivotA[0], pivotA[1], pivotA[2]),
+                pivotB: new Vector3(pivotB[0], pivotB[1], pivotB[2]),
+            };
+        }
 
         if (type == PhysicsConstraintType.LOCK) {
             this._hknp.HP_Constraint_SetAxisMode(jointId, this._hknp.ConstraintAxis.LINEAR_X, this._hknp.ConstraintAxisLimitMode.LOCKED);
@@ -1486,6 +1517,26 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     }
 
     /**
+     * Get a list of all the pairs of bodies that are connected by this constraint.
+     * @param constraint the constraint to search from
+     * @returns a list of parent, child pairs
+     */
+    getBodiesUsingConstraint(constraint: PhysicsConstraint): ConstrainedBodyPair[] {
+        const pairs: ConstrainedBodyPair[] = [];
+        for (const jointId of constraint._pluginData) {
+            const bodyIds = this._constraintToBodyIdPair.get(jointId[0]);
+            if (bodyIds) {
+                const parentBodyInfo = this._bodies.get(bodyIds[0]);
+                const childBodyInfo = this._bodies.get(bodyIds[1]);
+                if (parentBodyInfo && childBodyInfo) {
+                    pairs.push({ parentBody: parentBodyInfo.body, parentBodyIndex: parentBodyInfo.index, childBody: childBodyInfo.body, childBodyIndex: childBodyInfo.index });
+                }
+            }
+        }
+        return pairs;
+    }
+
+    /**
      * Adds a constraint to the physics engine.
      *
      * @param body - The main body to which the constraint is applied.
@@ -1506,7 +1557,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      *
      */
     public setEnabled(constraint: PhysicsConstraint, isEnabled: boolean): void {
-        this._hknp.HP_Constraint_SetEnabled(constraint._pluginData, isEnabled);
+        for (const jointId of constraint._pluginData) {
+            this._hknp.HP_Constraint_SetEnabled(jointId, isEnabled);
+        }
     }
 
     /**
@@ -1516,7 +1569,11 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      *
      */
     public getEnabled(constraint: PhysicsConstraint): boolean {
-        return this._hknp.HP_Constraint_GetEnabled(constraint._pluginData)[1];
+        const firstId = constraint._pluginData && constraint._pluginData[0];
+        if (firstId) {
+            return this._hknp.HP_Constraint_GetEnabled(firstId)[1];
+        }
+        return false;
     }
 
     /**
@@ -1526,7 +1583,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      *
      */
     public setCollisionsEnabled(constraint: PhysicsConstraint, isEnabled: boolean): void {
-        this._hknp.HP_Constraint_SetCollisionsEnabled(constraint._pluginData, isEnabled);
+        for (const jointId of constraint._pluginData) {
+            this._hknp.HP_Constraint_SetCollisionsEnabled(jointId, isEnabled);
+        }
     }
 
     /**
@@ -1536,7 +1595,11 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      *
      */
     public getCollisionsEnabled(constraint: PhysicsConstraint): boolean {
-        return this._hknp.HP_Constraint_GetCollisionsEnabled(constraint._pluginData)[1];
+        const firstId = constraint._pluginData && constraint._pluginData[0];
+        if (firstId) {
+            return this._hknp.HP_Constraint_GetCollisionsEnabled(firstId)[1];
+        }
+        return false;
     }
 
     /**
@@ -1549,7 +1612,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      *
      */
     public setAxisFriction(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, friction: number): void {
-        this._hknp.HP_Constraint_SetAxisFriction(constraint._pluginData, this._constraintAxisToNative(axis), friction);
+        for (const jointId of constraint._pluginData) {
+            this._hknp.HP_Constraint_SetAxisFriction(jointId, this._constraintAxisToNative(axis), friction);
+        }
     }
 
     /**
@@ -1560,8 +1625,12 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * @returns The friction value of the specified axis.
      *
      */
-    public getAxisFriction(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): number {
-        return this._hknp.HP_Constraint_GetAxisFriction(constraint._pluginData, this._constraintAxisToNative(axis))[1];
+    public getAxisFriction(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): Nullable<number> {
+        const firstId = constraint._pluginData && constraint._pluginData[0];
+        if (firstId) {
+            return this._hknp.HP_Constraint_GetAxisFriction(firstId, this._constraintAxisToNative(axis))[1];
+        }
+        return null;
     }
 
     /**
@@ -1571,7 +1640,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * @param limitMode - The limit mode to set.
      */
     public setAxisMode(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, limitMode: PhysicsConstraintAxisLimitMode): void {
-        this._hknp.HP_Constraint_SetAxisMode(constraint._pluginData, this._constraintAxisToNative(axis), this._limitModeToNative(limitMode));
+        for (const jointId of constraint._pluginData) {
+            this._hknp.HP_Constraint_SetAxisMode(jointId, this._constraintAxisToNative(axis), this._limitModeToNative(limitMode));
+        }
     }
 
     /**
@@ -1582,9 +1653,13 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * @returns The axis limit mode of the given constraint.
      *
      */
-    public getAxisMode(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): PhysicsConstraintAxisLimitMode {
-        const mode = this._hknp.HP_Constraint_GetAxisMode(constraint._pluginData, this._constraintAxisToNative(axis))[1];
-        return this._nativeToLimitMode(mode);
+    public getAxisMode(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): Nullable<PhysicsConstraintAxisLimitMode> {
+        const firstId = constraint._pluginData && constraint._pluginData[0];
+        if (firstId) {
+            const mode = this._hknp.HP_Constraint_GetAxisMode(firstId, this._constraintAxisToNative(axis))[1];
+            return this._nativeToLimitMode(mode);
+        }
+        return null;
     }
 
     /**
@@ -1595,7 +1670,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      *
      */
     public setAxisMinLimit(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, limit: number): void {
-        this._hknp.HP_Constraint_SetAxisMinLimit(constraint._pluginData, this._constraintAxisToNative(axis), limit);
+        for (const jointId of constraint._pluginData) {
+            this._hknp.HP_Constraint_SetAxisMinLimit(jointId, this._constraintAxisToNative(axis), limit);
+        }
     }
 
     /**
@@ -1605,8 +1682,12 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * @returns The minimum limit of the specified axis of the given constraint.
      *
      */
-    public getAxisMinLimit(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): number {
-        return this._hknp.HP_Constraint_GetAxisMinLimit(constraint._pluginData, this._constraintAxisToNative(axis))[1];
+    public getAxisMinLimit(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): Nullable<number> {
+        const firstId = constraint._pluginData && constraint._pluginData[0];
+        if (firstId) {
+            return this._hknp.HP_Constraint_GetAxisMinLimit(firstId, this._constraintAxisToNative(axis))[1];
+        }
+        return null;
     }
 
     /**
@@ -1617,7 +1698,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      *
      */
     public setAxisMaxLimit(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, limit: number): void {
-        this._hknp.HP_Constraint_SetAxisMaxLimit(constraint._pluginData, this._constraintAxisToNative(axis), limit);
+        for (const jointId of constraint._pluginData) {
+            this._hknp.HP_Constraint_SetAxisMaxLimit(jointId, this._constraintAxisToNative(axis), limit);
+        }
     }
 
     /**
@@ -1628,8 +1711,12 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * @returns The maximum limit of the given axis of the given constraint.
      *
      */
-    public getAxisMaxLimit(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): number {
-        return this._hknp.HP_Constraint_GetAxisMaxLimit(constraint._pluginData, this._constraintAxisToNative(axis))[1];
+    public getAxisMaxLimit(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): Nullable<number> {
+        const firstId = constraint._pluginData && constraint._pluginData[0];
+        if (firstId) {
+            return this._hknp.HP_Constraint_GetAxisMaxLimit(firstId, this._constraintAxisToNative(axis))[1];
+        }
+        return null;
     }
 
     /**
@@ -1641,7 +1728,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      *
      */
     public setAxisMotorType(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, motorType: PhysicsConstraintMotorType): void {
-        this._hknp.HP_Constraint_SetAxisMotorType(constraint._pluginData, this._constraintAxisToNative(axis), this._constraintMotorTypeToNative(motorType));
+        for (const jointId of constraint._pluginData) {
+            this._hknp.HP_Constraint_SetAxisMotorType(jointId, this._constraintAxisToNative(axis), this._constraintMotorTypeToNative(motorType));
+        }
     }
 
     /**
@@ -1651,8 +1740,12 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * @returns The motor type of the specified axis of the given constraint.
      *
      */
-    public getAxisMotorType(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): PhysicsConstraintMotorType {
-        return this._nativeToMotorType(this._hknp.HP_Constraint_GetAxisMotorType(constraint._pluginData, this._constraintAxisToNative(axis))[1]);
+    public getAxisMotorType(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): Nullable<PhysicsConstraintMotorType> {
+        const firstId = constraint._pluginData && constraint._pluginData[0];
+        if (firstId) {
+            return this._nativeToMotorType(this._hknp.HP_Constraint_GetAxisMotorType(firstId, this._constraintAxisToNative(axis))[1]);
+        }
+        return null;
     }
 
     /**
@@ -1664,7 +1757,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      *
      */
     public setAxisMotorTarget(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, target: number): void {
-        this._hknp.HP_Constraint_SetAxisMotorTarget(constraint._pluginData, this._constraintAxisToNative(axis), target);
+        for (const jointId of constraint._pluginData) {
+            this._hknp.HP_Constraint_SetAxisMotorTarget(jointId, this._constraintAxisToNative(axis), target);
+        }
     }
 
     /**
@@ -1675,8 +1770,12 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * @returns The target of the motor of the given axis of the given constraint.
      *
      */
-    public getAxisMotorTarget(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): number {
-        return this._hknp.HP_Constraint_GetAxisMotorTarget(constraint._pluginData, this._constraintAxisToNative(axis))[1];
+    public getAxisMotorTarget(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): Nullable<number> {
+        const firstId = constraint._pluginData && constraint._pluginData[0];
+        if (firstId) {
+            return this._hknp.HP_Constraint_GetAxisMotorTarget(constraint._pluginData, this._constraintAxisToNative(axis))[1];
+        }
+        return null;
     }
 
     /**
@@ -1687,7 +1786,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      *
      */
     public setAxisMotorMaxForce(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, maxForce: number): void {
-        this._hknp.HP_Constraint_SetAxisMotorMaxForce(constraint._pluginData, this._constraintAxisToNative(axis), maxForce);
+        for (const jointId of constraint._pluginData) {
+            this._hknp.HP_Constraint_SetAxisMotorMaxForce(jointId, this._constraintAxisToNative(axis), maxForce);
+        }
     }
 
     /**
@@ -1698,8 +1799,12 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * @returns The maximum force of the motor of the given constraint axis.
      *
      */
-    public getAxisMotorMaxForce(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): number {
-        return this._hknp.HP_Constraint_GetAxisMotorMaxForce(constraint._pluginData, this._constraintAxisToNative(axis))[1];
+    public getAxisMotorMaxForce(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis): Nullable<number> {
+        const firstId = constraint._pluginData && constraint._pluginData[0];
+        if (firstId) {
+            return this._hknp.HP_Constraint_GetAxisMotorMaxForce(firstId, this._constraintAxisToNative(axis))[1];
+        }
+        return null;
     }
 
     /**
@@ -1711,10 +1816,11 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * the Havok constraint, when it is no longer needed. This is important for avoiding memory leaks.
      */
     public disposeConstraint(constraint: PhysicsConstraint): void {
-        const jointId = constraint._pluginData;
-        this._hknp.HP_Constraint_SetEnabled(jointId, false);
-        this._hknp.HP_Constraint_Release(jointId);
-        constraint._pluginData = undefined;
+        for (const jointId of constraint._pluginData) {
+            this._hknp.HP_Constraint_SetEnabled(jointId, false);
+            this._hknp.HP_Constraint_Release(jointId);
+        }
+        constraint._pluginData.length = 0;
     }
 
     /**
@@ -1766,7 +1872,22 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     }
 
     /**
-     * Enable collision to be reported for a body when a callback is settup on the world
+     * Return the collision ended observable for a particular physics body.
+     * @param body the physics body
+     * @returns
+     */
+    public getCollisionEndedObservable(body: PhysicsBody): Observable<IBasePhysicsCollisionEvent> {
+        const bodyId = body._pluginData.hpBodyId[0];
+        let observable = this._bodyCollisionEndedObservable.get(bodyId);
+        if (!observable) {
+            observable = new Observable<IBasePhysicsCollisionEvent>();
+            this._bodyCollisionEndedObservable.set(bodyId, observable);
+        }
+        return observable;
+    }
+
+    /**
+     * Enable collision to be reported for a body when a callback is setup on the world
      * @param body the physics body
      * @param enabled
      */
@@ -1782,23 +1903,48 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         }
     }
 
+    /**
+     * Enable collision ended to be reported for a body when a callback is setup on the world
+     * @param body
+     * @param enabled
+     */
+    public setCollisionEndedCallbackEnabled(body: PhysicsBody, enabled: boolean): void {
+        // Register to collide ended events
+        const pluginRef = this._getPluginReference(body);
+        let currentCollideEvents = this._hknp.HP_Body_GetEventMask(pluginRef.hpBodyId)[1];
+        // update with the ended mask
+        currentCollideEvents = enabled
+            ? currentCollideEvents | this._hknp.EventType.COLLISION_FINISHED.value
+            : currentCollideEvents & ~this._hknp.EventType.COLLISION_FINISHED.value;
+        if (body._pluginDataInstances && body._pluginDataInstances.length) {
+            body._pluginDataInstances.forEach((bodyId) => {
+                this._hknp.HP_Body_SetEventMask(bodyId.hpBodyId, currentCollideEvents);
+            });
+        } else if (body._pluginData) {
+            this._hknp.HP_Body_SetEventMask(body._pluginData.hpBodyId, currentCollideEvents);
+        }
+    }
+
     private _notifyTriggers() {
         let eventAddress = this._hknp.HP_World_GetTriggerEvents(this.world)[1];
         const event = new TriggerEvent();
         while (eventAddress) {
             TriggerEvent.readToRef(this._hknp.HEAPU8.buffer, eventAddress, event);
 
-            const bodyInfoA = this._bodies.get(event.bodyIdA)!;
-            const bodyInfoB = this._bodies.get(event.bodyIdB)!;
+            const bodyInfoA = this._bodies.get(event.bodyIdA);
+            const bodyInfoB = this._bodies.get(event.bodyIdB);
 
-            const triggerCollisionInfo: IBasePhysicsCollisionEvent = {
-                collider: bodyInfoA.body,
-                colliderIndex: bodyInfoA.index,
-                collidedAgainst: bodyInfoB.body,
-                collidedAgainstIndex: bodyInfoB.index,
-                type: this._nativeTriggerCollisionValueToCollisionType(event.type),
-            };
-            this.onTriggerCollisionObservable.notifyObservers(triggerCollisionInfo);
+            // Bodies may have been disposed between events. Check both still exist.
+            if (bodyInfoA && bodyInfoB) {
+                const triggerCollisionInfo: IBasePhysicsCollisionEvent = {
+                    collider: bodyInfoA.body,
+                    colliderIndex: bodyInfoA.index,
+                    collidedAgainst: bodyInfoB.body,
+                    collidedAgainstIndex: bodyInfoB.index,
+                    type: this._nativeTriggerCollisionValueToCollisionType(event.type),
+                };
+                this.onTriggerCollisionObservable.notifyObservers(triggerCollisionInfo);
+            }
 
             eventAddress = this._hknp.HP_World_GetNextTriggerEvent(this.world, eventAddress);
         }
@@ -1813,42 +1959,62 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         const worldAddr = Number(this.world);
         while (eventAddress) {
             CollisionEvent.readToRef(this._hknp.HEAPU8.buffer, eventAddress, event);
-            const bodyInfoA = this._bodies.get(event.contactOnA.bodyId)!;
-            const bodyInfoB = this._bodies.get(event.contactOnB.bodyId)!;
-            const collisionInfo: any = {
-                collider: bodyInfoA.body,
-                colliderIndex: bodyInfoA.index,
-                collidedAgainst: bodyInfoB.body,
-                collidedAgainstIndex: bodyInfoB.index,
-                type: this._nativeCollisionValueToCollisionType(event.type),
-            };
-            if (collisionInfo.type === PhysicsEventType.COLLISION_FINISHED) {
-                this.onCollisionEndedObservable.notifyObservers(collisionInfo);
-            } else {
-                event.contactOnB.position.subtractToRef(event.contactOnA.position, this._tmpVec3[0]);
-                const distance = Vector3.Dot(this._tmpVec3[0], event.contactOnA.normal);
-                collisionInfo.point = event.contactOnA.position;
-                collisionInfo.distance = distance;
-                collisionInfo.impulse = event.impulseApplied;
-                collisionInfo.normal = event.contactOnA.normal;
-                this.onCollisionObservable.notifyObservers(collisionInfo);
-            }
+            const bodyInfoA = this._bodies.get(event.contactOnA.bodyId);
+            const bodyInfoB = this._bodies.get(event.contactOnB.bodyId);
 
-            if (this._bodyCollisionObservable.size && collisionInfo.type !== PhysicsEventType.COLLISION_FINISHED) {
-                const observableA = this._bodyCollisionObservable.get(event.contactOnA.bodyId);
-                const observableB = this._bodyCollisionObservable.get(event.contactOnB.bodyId);
+            // Bodies may have been disposed between events. Check both still exist.
+            if (bodyInfoA && bodyInfoB) {
+                const collisionInfo: any = {
+                    collider: bodyInfoA.body,
+                    colliderIndex: bodyInfoA.index,
+                    collidedAgainst: bodyInfoB.body,
+                    collidedAgainstIndex: bodyInfoB.index,
+                    type: this._nativeCollisionValueToCollisionType(event.type),
+                };
+                if (collisionInfo.type === PhysicsEventType.COLLISION_FINISHED) {
+                    this.onCollisionEndedObservable.notifyObservers(collisionInfo);
+                } else {
+                    event.contactOnB.position.subtractToRef(event.contactOnA.position, this._tmpVec3[0]);
+                    const distance = Vector3.Dot(this._tmpVec3[0], event.contactOnA.normal);
+                    collisionInfo.point = event.contactOnA.position;
+                    collisionInfo.distance = distance;
+                    collisionInfo.impulse = event.impulseApplied;
+                    collisionInfo.normal = event.contactOnA.normal;
+                    this.onCollisionObservable.notifyObservers(collisionInfo);
+                }
 
-                if (observableA) {
-                    observableA.notifyObservers(collisionInfo);
-                } else if (observableB) {
-                    //<todo This seems like it would give unexpected results when both bodies have observers?
-                    // Flip collision info:
-                    collisionInfo.collider = bodyInfoB.body;
-                    collisionInfo.colliderIndex = bodyInfoB.index;
-                    collisionInfo.collidedAgainst = bodyInfoA.body;
-                    collisionInfo.collidedAgainstIndex = bodyInfoA.index;
-                    collisionInfo.normal = event.contactOnB.normal;
-                    observableB.notifyObservers(collisionInfo);
+                if (this._bodyCollisionObservable.size && collisionInfo.type !== PhysicsEventType.COLLISION_FINISHED) {
+                    const observableA = this._bodyCollisionObservable.get(event.contactOnA.bodyId);
+                    const observableB = this._bodyCollisionObservable.get(event.contactOnB.bodyId);
+
+                    if (observableA) {
+                        observableA.notifyObservers(collisionInfo);
+                    } else if (observableB) {
+                        //<todo This seems like it would give unexpected results when both bodies have observers?
+                        // Flip collision info:
+                        collisionInfo.collider = bodyInfoB.body;
+                        collisionInfo.colliderIndex = bodyInfoB.index;
+                        collisionInfo.collidedAgainst = bodyInfoA.body;
+                        collisionInfo.collidedAgainstIndex = bodyInfoA.index;
+                        collisionInfo.normal = event.contactOnB.normal;
+                        observableB.notifyObservers(collisionInfo);
+                    }
+                } else if (this._bodyCollisionEndedObservable.size) {
+                    const observableA = this._bodyCollisionEndedObservable.get(event.contactOnA.bodyId);
+                    const observableB = this._bodyCollisionEndedObservable.get(event.contactOnB.bodyId);
+
+                    if (observableA) {
+                        observableA.notifyObservers(collisionInfo);
+                    } else if (observableB) {
+                        //<todo This seems like it would give unexpected results when both bodies have observers?
+                        // Flip collision info:
+                        collisionInfo.collider = bodyInfoB.body;
+                        collisionInfo.colliderIndex = bodyInfoB.index;
+                        collisionInfo.collidedAgainst = bodyInfoA.body;
+                        collisionInfo.collidedAgainstIndex = bodyInfoA.index;
+                        collisionInfo.normal = event.contactOnB.normal;
+                        observableB.notifyObservers(collisionInfo);
+                    }
                 }
             }
 

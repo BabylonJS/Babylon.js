@@ -36,7 +36,7 @@ export class LiteTranscoder extends Transcoder {
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     protected setModulePath(modulePath: string): void {
-        this._modulePath = modulePath;
+        this._modulePath = Transcoder.GetWasmUrl(modulePath);
     }
 
     public initialize(): void {

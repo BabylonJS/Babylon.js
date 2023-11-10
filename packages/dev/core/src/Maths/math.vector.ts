@@ -1680,7 +1680,7 @@ export class Vector3 implements Vector<Tuple<number, 3>>, Vector3Like {
         const denom = Vector3.Dot(V, n);
 
         //When the ray is close to parallel to the plane return infinity vector
-        if (Math.abs(denom) < Math.pow(10, -10)) {
+        if (Math.abs(denom) < 0.0000000001) {
             result.setAll(Infinity);
         } else {
             const t = -(Vector3.Dot(origin, n) + d) / denom;
@@ -2002,10 +2002,10 @@ export class Vector3 implements Vector<Tuple<number, 3>>, Vector3Like {
         if (order === "xyz") {
             return this;
         }
-        MathTmp.Vector3[0].copyFrom(this);
-        ["x", "y", "z"].forEach((val, i) => {
-            (<any>this)[val] = (<any>MathTmp.Vector3[0])[order[i]];
-        });
+        const tem = MathTmp.Vector3[0].copyFrom(this);
+        this.x = (<any>tem)[order[0]];
+        this.y = (<any>tem)[order[1]];
+        this.z = (<any>tem)[order[2]];
         return this;
     }
 
@@ -2161,12 +2161,10 @@ export class Vector3 implements Vector<Tuple<number, 3>>, Vector3Like {
      * @returns the clip factor
      */
     public static GetClipFactor(vector0: DeepImmutable<Vector3>, vector1: DeepImmutable<Vector3>, axis: DeepImmutable<Vector3>, size: number): number {
-        const d0 = Vector3.Dot(vector0, axis) - size;
-        const d1 = Vector3.Dot(vector1, axis) - size;
+        const d0 = Vector3.Dot(vector0, axis);
+        const d1 = Vector3.Dot(vector1, axis);
 
-        const s = d0 / (d0 - d1);
-
-        return s;
+        return (d0 - size) / (d0 - d1);
     }
 
     /**
@@ -3444,11 +3442,7 @@ export class Vector4 implements Vector<Tuple<number, 4>>, Vector4Like {
      * @returns the resulting array
      */
     public asArray(): Tuple<number, 4> {
-        const result = new Array<number>();
-
-        this.toArray(result, 0);
-
-        return result as Tuple<number, 4>;
+        return [this.x, this.y, this.z, this.w];
     }
 
     /**
@@ -5037,7 +5031,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, QuaternionLike {
      * Updates the given rotation matrix with the current quaternion values
      * Example Playground https://playground.babylonjs.com/#L49EJ7#67
      * @param result defines the target matrix
-     * @returns the current unchanged quaternion
+     * @returns the updated matrix with the rotation
      */
     public toRotationMatrix<T extends Matrix>(result: T): T {
         Matrix.FromQuaternionToRef(this, result);
@@ -5881,6 +5875,14 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, MatrixLike {
     // Methods
 
     /**
+     * Gets a string with the Matrix values
+     * @returns a string with the Matrix values
+     */
+    public toString(): string {
+        return `{${this.m[0]}, ${this.m[1]}, ${this.m[2]}, ${this.m[3]}\n${this.m[4]}, ${this.m[5]}, ${this.m[6]}, ${this.m[7]}\n${this.m[8]}, ${this.m[9]}, ${this.m[10]}, ${this.m[11]}\n${this.m[12]}, ${this.m[13]}, ${this.m[14]}, ${this.m[15]}}`;
+    }
+
+    /**
      * Returns the matrix as a Float32Array or Array<number>
      * Example Playground - https://playground.babylonjs.com/#AV9X17#49
      * @returns the matrix underlying array
@@ -6686,9 +6688,9 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, MatrixLike {
         scale.z = Math.sqrt(m[8] * m[8] + m[9] * m[9] + m[10] * m[10]);
 
         if (preserveScalingNode) {
-            const signX = preserveScalingNode.scaling.x < 0 ? -1 : 1;
-            const signY = preserveScalingNode.scaling.y < 0 ? -1 : 1;
-            const signZ = preserveScalingNode.scaling.z < 0 ? -1 : 1;
+            const signX = preserveScalingNode.absoluteScaling.x < 0 ? -1 : 1;
+            const signY = preserveScalingNode.absoluteScaling.y < 0 ? -1 : 1;
+            const signZ = preserveScalingNode.absoluteScaling.z < 0 ? -1 : 1;
 
             scale.x *= signX;
             scale.y *= signY;
@@ -7375,25 +7377,26 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, MatrixLike {
      * @param from defines the vector to align
      * @param to defines the vector to align to
      * @param result defines the target matrix
+     * @param useYAxisForCoplanar defines a boolean indicating that we should favor Y axis for coplanar vectors (default is false)
      * @returns result input
      */
-    public static RotationAlignToRef<T extends Matrix>(from: DeepImmutable<Vector3>, to: DeepImmutable<Vector3>, result: T): T {
+    public static RotationAlignToRef<T extends Matrix>(from: DeepImmutable<Vector3>, to: DeepImmutable<Vector3>, result: T, useYAxisForCoplanar = false): T {
         const c = Vector3.Dot(to, from);
         const m = result._m;
         if (c < -1 + Epsilon) {
             // from and to are colinear and opposite direction.
-            // compute a PI rotation on Z axis
+            // compute a PI rotation on Y axis
             m[0] = -1;
             m[1] = 0;
             m[2] = 0;
             m[3] = 0;
             m[4] = 0;
-            m[5] = -1;
+            m[5] = useYAxisForCoplanar ? 1 : -1;
             m[6] = 0;
             m[7] = 0;
             m[8] = 0;
             m[9] = 0;
-            m[10] = 1;
+            m[10] = useYAxisForCoplanar ? -1 : 1;
             m[11] = 0;
         } else {
             const v = Vector3.Cross(to, from);
@@ -7889,6 +7892,49 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, MatrixLike {
     }
 
     /**
+     * Stores a left-handed oblique projection into a given matrix
+     * @param left defines the viewport left coordinate
+     * @param right defines the viewport right coordinate
+     * @param bottom defines the viewport bottom coordinate
+     * @param top defines the viewport top coordinate
+     * @param znear defines the near clip plane
+     * @param zfar defines the far clip plane
+     * @param angle Angle (along X/Y Plane) to apply shear
+     * @param length Length of the shear
+     * @param distance Distance from shear point
+     * @param result defines the target matrix
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
+     * @returns result input
+     */
+    public static ObliqueOffCenterLHToRef<T extends Matrix>(
+        left: number,
+        right: number,
+        bottom: number,
+        top: number,
+        znear: number,
+        zfar: number,
+        length: number,
+        angle: number,
+        distance: number,
+        result: T,
+        halfZRange?: boolean
+    ): T {
+        const a = -length * Math.cos(angle);
+        const b = -length * Math.sin(angle);
+
+        Matrix.TranslationToRef(0, 0, -distance, MathTmp.Matrix[1]);
+        Matrix.FromValuesToRef(1, 0, 0, 0, 0, 1, 0, 0, a, b, 1, 0, 0, 0, 0, 1, MathTmp.Matrix[0]);
+        MathTmp.Matrix[1].multiplyToRef(MathTmp.Matrix[0], MathTmp.Matrix[0]);
+        Matrix.TranslationToRef(0, 0, distance, MathTmp.Matrix[1]);
+        MathTmp.Matrix[0].multiplyToRef(MathTmp.Matrix[1], MathTmp.Matrix[0]);
+
+        Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, result, halfZRange);
+        MathTmp.Matrix[0].multiplyToRef(result, result);
+
+        return result;
+    }
+
+    /**
      * Creates a right-handed orthographic projection matrix
      * Example Playground - https://playground.babylonjs.com/#AV9X17#76
      * @param left defines the viewport left coordinate
@@ -7931,6 +7977,49 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, MatrixLike {
     ): T {
         Matrix.OrthoOffCenterLHToRef(left, right, bottom, top, znear, zfar, result, halfZRange);
         result._m[10] *= -1; // No need to call markAsUpdated as previous function already called it and let _isIdentityDirty to true
+        return result;
+    }
+
+    /**
+     * Stores a right-handed oblique projection into a given matrix
+     * @param left defines the viewport left coordinate
+     * @param right defines the viewport right coordinate
+     * @param bottom defines the viewport bottom coordinate
+     * @param top defines the viewport top coordinate
+     * @param znear defines the near clip plane
+     * @param zfar defines the far clip plane
+     * @param angle Angle (along X/Y Plane) to apply shear
+     * @param length Length of the shear
+     * @param distance Distance from shear point
+     * @param result defines the target matrix
+     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
+     * @returns result input
+     */
+    public static ObliqueOffCenterRHToRef<T extends Matrix>(
+        left: number,
+        right: number,
+        bottom: number,
+        top: number,
+        znear: number,
+        zfar: number,
+        length: number,
+        angle: number,
+        distance: number,
+        result: T,
+        halfZRange?: boolean
+    ): T {
+        const a = length * Math.cos(angle);
+        const b = length * Math.sin(angle);
+
+        Matrix.TranslationToRef(0, 0, distance, MathTmp.Matrix[1]);
+        Matrix.FromValuesToRef(1, 0, 0, 0, 0, 1, 0, 0, a, b, 1, 0, 0, 0, 0, 1, MathTmp.Matrix[0]);
+        MathTmp.Matrix[1].multiplyToRef(MathTmp.Matrix[0], MathTmp.Matrix[0]);
+        Matrix.TranslationToRef(0, 0, -distance, MathTmp.Matrix[1]);
+        MathTmp.Matrix[0].multiplyToRef(MathTmp.Matrix[1], MathTmp.Matrix[0]);
+
+        Matrix.OrthoOffCenterRHToRef(left, right, bottom, top, znear, zfar, result, halfZRange);
+        MathTmp.Matrix[0].multiplyToRef(result, result);
+
         return result;
     }
 
@@ -8189,62 +8278,6 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, MatrixLike {
     }
 
     /**
-     * Stores a perspective projection for WebVR info a given matrix
-     * Example Playground - https://playground.babylonjs.com/#AV9X17#92
-     * @param fov defines the field of view
-     * @param fov.upDegrees
-     * @param fov.downDegrees
-     * @param fov.leftDegrees
-     * @param fov.rightDegrees
-     * @param znear defines the near clip plane
-     * @param zfar defines the far clip plane
-     * @param result defines the target matrix
-     * @param rightHanded defines if the matrix must be in right-handed mode (false by default)
-     * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
-     * @param projectionPlaneTilt optional tilt angle of the projection plane around the X axis (horizontal)
-     * @returns result input
-     */
-    public static PerspectiveFovWebVRToRef<T extends Matrix>(
-        fov: { upDegrees: number; downDegrees: number; leftDegrees: number; rightDegrees: number },
-        znear: number,
-        zfar: number,
-        result: T,
-        rightHanded = false,
-        halfZRange?: boolean,
-        projectionPlaneTilt: number = 0
-    ): T {
-        const rightHandedFactor = rightHanded ? -1 : 1;
-
-        const upTan = Math.tan((fov.upDegrees * Math.PI) / 180.0);
-        const downTan = Math.tan((fov.downDegrees * Math.PI) / 180.0);
-        const leftTan = Math.tan((fov.leftDegrees * Math.PI) / 180.0);
-        const rightTan = Math.tan((fov.rightDegrees * Math.PI) / 180.0);
-        const xScale = 2.0 / (leftTan + rightTan);
-        const yScale = 2.0 / (upTan + downTan);
-        const rot = Math.tan(projectionPlaneTilt);
-
-        const m = result._m;
-        m[0] = xScale;
-        m[1] = m[2] = m[3] = m[4] = 0.0;
-        m[5] = yScale;
-        m[6] = 0.0;
-        m[7] = rot;
-        m[8] = (leftTan - rightTan) * xScale * 0.5;
-        m[9] = -((upTan - downTan) * yScale * 0.5);
-        m[10] = -zfar / (znear - zfar);
-        m[11] = 1.0 * rightHandedFactor;
-        m[12] = m[13] = m[15] = 0.0;
-        m[14] = -(2.0 * zfar * znear) / (zfar - znear);
-
-        if (halfZRange) {
-            result.multiplyToRef(mtxConvertNDCToHalfZRange, result);
-        }
-
-        result.markAsUpdated();
-        return result;
-    }
-
-    /**
      * Computes a complete transformation matrix
      * Example Playground - https://playground.babylonjs.com/#AV9X17#113
      * @param viewport defines the viewport to use
@@ -8317,28 +8350,44 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, MatrixLike {
      * @returns result input
      */
     public static TransposeToRef<T extends Matrix>(matrix: DeepImmutable<Matrix>, result: T): T {
-        const rm = result._m;
         const mm = matrix.m;
-        rm[0] = mm[0];
-        rm[1] = mm[4];
-        rm[2] = mm[8];
-        rm[3] = mm[12];
+        const rm0 = mm[0];
+        const rm1 = mm[4];
+        const rm2 = mm[8];
+        const rm3 = mm[12];
 
-        rm[4] = mm[1];
-        rm[5] = mm[5];
-        rm[6] = mm[9];
-        rm[7] = mm[13];
+        const rm4 = mm[1];
+        const rm5 = mm[5];
+        const rm6 = mm[9];
+        const rm7 = mm[13];
 
-        rm[8] = mm[2];
-        rm[9] = mm[6];
-        rm[10] = mm[10];
-        rm[11] = mm[14];
+        const rm8 = mm[2];
+        const rm9 = mm[6];
+        const rm10 = mm[10];
+        const rm11 = mm[14];
 
-        rm[12] = mm[3];
-        rm[13] = mm[7];
-        rm[14] = mm[11];
-        rm[15] = mm[15];
+        const rm12 = mm[3];
+        const rm13 = mm[7];
+        const rm14 = mm[11];
+        const rm15 = mm[15];
 
+        const rm = result._m;
+        rm[0] = rm0;
+        rm[1] = rm1;
+        rm[2] = rm2;
+        rm[3] = rm3;
+        rm[4] = rm4;
+        rm[5] = rm5;
+        rm[6] = rm6;
+        rm[7] = rm7;
+        rm[8] = rm8;
+        rm[9] = rm9;
+        rm[10] = rm10;
+        rm[11] = rm11;
+        rm[12] = rm12;
+        rm[13] = rm13;
+        rm[14] = rm14;
+        rm[15] = rm15;
         result.markAsUpdated();
 
         // identity-ness does not change when transposing

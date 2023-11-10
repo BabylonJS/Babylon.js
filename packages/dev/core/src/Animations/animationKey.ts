@@ -1,3 +1,5 @@
+import type { IEasingFunction } from "./easing";
+
 /**
  * Defines an interface which represents an animation key frame
  */
@@ -26,6 +28,10 @@ export interface IAnimationKey {
      * Property defined by UI tools to link (or not ) the tangents
      */
     lockedTangent?: boolean;
+    /**
+     * The easing function associated with the key frame (optional). If not defined, the easing function defined at the animation level (if any) will be used instead
+     */
+    easingFunction?: IEasingFunction;
 }
 
 /**

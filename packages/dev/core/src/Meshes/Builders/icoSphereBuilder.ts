@@ -249,10 +249,10 @@ export function CreateIcoSphereVertexData(options: {
         0, //  15 - 19
     ];
 
-    const indices = new Array<number>();
-    const positions = new Array<number>();
-    const normals = new Array<number>();
-    const uvs = new Array<number>();
+    const indices: number[] = [];
+    const positions: number[] = [];
+    const normals: number[] = [];
+    const uvs: number[] = [];
 
     let current_indice = 0;
     // prepare array of 3 vector (empty) (to be worked in place, shared for each face)

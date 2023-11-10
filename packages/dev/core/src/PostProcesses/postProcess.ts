@@ -23,7 +23,6 @@ import { ShaderLanguage } from "../Materials/shaderLanguage";
 
 import type { Scene } from "../scene";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
-import type { WebVRFreeCamera } from "../Cameras/VR/webVRCamera";
 import type { Animation } from "../Animations/animation";
 import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 import type { PrePassEffectConfiguration } from "../Rendering/prePassEffectConfiguration";
@@ -154,7 +153,7 @@ export class PostProcess {
     /**
      * Animations to be used for the post processing
      */
-    public animations = new Array<Animation>();
+    public animations: Animation[] = [];
 
     /**
      * Enable Pixel Perfect mode where texture is not scaled to be power of 2.
@@ -681,72 +680,7 @@ export class PostProcess {
         this.onSizeChangedObservable.notifyObservers(this);
     }
 
-    /**
-     * Activates the post process by intializing the textures to be used when executed. Notifies onActivateObservable.
-     * When this post process is used in a pipeline, this is call will bind the input texture of this post process to the output of the previous.
-     * @param camera The camera that will be used in the post process. This camera will be used when calling onActivateObservable.
-     * @param sourceTexture The source texture to be inspected to get the width and height if not specified in the post process constructor. (default: null)
-     * @param forceDepthStencil If true, a depth and stencil buffer will be generated. (default: false)
-     * @returns The render target wrapper that was bound to be written to.
-     */
-    public activate(camera: Nullable<Camera>, sourceTexture: Nullable<InternalTexture> = null, forceDepthStencil?: boolean): RenderTargetWrapper {
-        camera = camera || this._camera;
-
-        const scene = camera.getScene();
-        const engine = scene.getEngine();
-        const maxSize = engine.getCaps().maxTextureSize;
-
-        let requiredWidth = ((sourceTexture ? sourceTexture.width : this._engine.getRenderWidth(true)) * <number>this._options) | 0;
-        const requiredHeight = ((sourceTexture ? sourceTexture.height : this._engine.getRenderHeight(true)) * <number>this._options) | 0;
-
-        // If rendering to a webvr camera's left or right eye only half the width should be used to avoid resize when rendered to screen
-        const webVRCamera = <WebVRFreeCamera>camera.parent;
-        if (webVRCamera && (webVRCamera.leftCamera == camera || webVRCamera.rightCamera == camera)) {
-            requiredWidth /= 2;
-        }
-
-        let desiredWidth = (<PostProcessOptions>this._options).width || requiredWidth;
-        let desiredHeight = (<PostProcessOptions>this._options).height || requiredHeight;
-
-        const needMipMaps =
-            this.renderTargetSamplingMode !== Constants.TEXTURE_NEAREST_LINEAR &&
-            this.renderTargetSamplingMode !== Constants.TEXTURE_NEAREST_NEAREST &&
-            this.renderTargetSamplingMode !== Constants.TEXTURE_LINEAR_LINEAR;
-
-        if (!this._shareOutputWithPostProcess && !this._forcedOutputTexture) {
-            if (this.adaptScaleToCurrentViewport) {
-                const currentViewport = engine.currentViewport;
-
-                if (currentViewport) {
-                    desiredWidth *= currentViewport.width;
-                    desiredHeight *= currentViewport.height;
-                }
-            }
-
-            if (needMipMaps || this.alwaysForcePOT) {
-                if (!(<PostProcessOptions>this._options).width) {
-                    desiredWidth = engine.needPOTTextures ? Engine.GetExponentOfTwo(desiredWidth, maxSize, this.scaleMode) : desiredWidth;
-                }
-
-                if (!(<PostProcessOptions>this._options).height) {
-                    desiredHeight = engine.needPOTTextures ? Engine.GetExponentOfTwo(desiredHeight, maxSize, this.scaleMode) : desiredHeight;
-                }
-            }
-
-            if (this.width !== desiredWidth || this.height !== desiredHeight) {
-                this._resize(desiredWidth, desiredHeight, camera, needMipMaps, forceDepthStencil);
-            }
-
-            this._textures.forEach((texture) => {
-                if (texture.samples !== this.samples) {
-                    this._engine.updateRenderTargetTextureSampleCount(texture, this.samples);
-                }
-            });
-
-            this._flushTextureCache();
-            this._renderId++;
-        }
-
+    private _getTarget() {
         let target: RenderTargetWrapper;
 
         if (this._shareOutputWithPostProcess) {
@@ -770,6 +704,75 @@ export class PostProcess {
             if (cache) {
                 cache.lastUsedRenderId = this._renderId;
             }
+        }
+
+        return target;
+    }
+
+    /**
+     * Activates the post process by intializing the textures to be used when executed. Notifies onActivateObservable.
+     * When this post process is used in a pipeline, this is call will bind the input texture of this post process to the output of the previous.
+     * @param camera The camera that will be used in the post process. This camera will be used when calling onActivateObservable.
+     * @param sourceTexture The source texture to be inspected to get the width and height if not specified in the post process constructor. (default: null)
+     * @param forceDepthStencil If true, a depth and stencil buffer will be generated. (default: false)
+     * @returns The render target wrapper that was bound to be written to.
+     */
+    public activate(camera: Nullable<Camera>, sourceTexture: Nullable<InternalTexture> = null, forceDepthStencil?: boolean): RenderTargetWrapper {
+        camera = camera || this._camera;
+
+        const scene = camera.getScene();
+        const engine = scene.getEngine();
+        const maxSize = engine.getCaps().maxTextureSize;
+
+        const requiredWidth = ((sourceTexture ? sourceTexture.width : this._engine.getRenderWidth(true)) * <number>this._options) | 0;
+        const requiredHeight = ((sourceTexture ? sourceTexture.height : this._engine.getRenderHeight(true)) * <number>this._options) | 0;
+
+        let desiredWidth = (<PostProcessOptions>this._options).width || requiredWidth;
+        let desiredHeight = (<PostProcessOptions>this._options).height || requiredHeight;
+
+        const needMipMaps =
+            this.renderTargetSamplingMode !== Constants.TEXTURE_NEAREST_LINEAR &&
+            this.renderTargetSamplingMode !== Constants.TEXTURE_NEAREST_NEAREST &&
+            this.renderTargetSamplingMode !== Constants.TEXTURE_LINEAR_LINEAR;
+
+        let target: Nullable<RenderTargetWrapper> = null;
+
+        if (!this._shareOutputWithPostProcess && !this._forcedOutputTexture) {
+            if (this.adaptScaleToCurrentViewport) {
+                const currentViewport = engine.currentViewport;
+
+                if (currentViewport) {
+                    desiredWidth *= currentViewport.width;
+                    desiredHeight *= currentViewport.height;
+                }
+            }
+
+            if (needMipMaps || this.alwaysForcePOT) {
+                if (!(<PostProcessOptions>this._options).width) {
+                    desiredWidth = engine.needPOTTextures ? Engine.GetExponentOfTwo(desiredWidth, maxSize, this.scaleMode) : desiredWidth;
+                }
+
+                if (!(<PostProcessOptions>this._options).height) {
+                    desiredHeight = engine.needPOTTextures ? Engine.GetExponentOfTwo(desiredHeight, maxSize, this.scaleMode) : desiredHeight;
+                }
+            }
+
+            if (this.width !== desiredWidth || this.height !== desiredHeight || !(target = this._getTarget())) {
+                this._resize(desiredWidth, desiredHeight, camera, needMipMaps, forceDepthStencil);
+            }
+
+            this._textures.forEach((texture) => {
+                if (texture.samples !== this.samples) {
+                    this._engine.updateRenderTargetTextureSampleCount(texture, this.samples);
+                }
+            });
+
+            this._flushTextureCache();
+            this._renderId++;
+        }
+
+        if (!target) {
+            target = this._getTarget();
         }
 
         // Bind the input of this post process to be used as the output of the previous post process.

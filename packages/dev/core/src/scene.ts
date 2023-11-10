@@ -67,7 +67,6 @@ import type { AnimationGroup } from "./Animations/animationGroup";
 import type { Skeleton } from "./Bones/skeleton";
 import type { Bone } from "./Bones/bone";
 import type { Camera } from "./Cameras/camera";
-import type { WebVRFreeCamera } from "./Cameras/VR/webVRCamera";
 import type { Collider } from "./Collisions/collider";
 import type { Ray, TrianglePickingPredicate } from "./Culling/ray";
 import type { Light } from "./Lights/light";
@@ -90,6 +89,7 @@ import type { Animation } from "./Animations/animation";
 import type { Animatable } from "./Animations/animatable";
 import type { Texture } from "./Materials/Textures/texture";
 import { PointerPickingConfiguration } from "./Inputs/pointerPickingConfiguration";
+import { Logger } from "./Misc/logger";
 
 /**
  * Define an interface for all classes that will hold resources
@@ -454,7 +454,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Use this array to add regular expressions used to disable offline support for specific urls
      */
-    public disableOfflineSupportExceptionRules = new Array<RegExp>();
+    public disableOfflineSupportExceptionRules: RegExp[] = [];
 
     /**
      * An event triggered when the scene is disposed.
@@ -932,11 +932,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @returns the computed eye position
      */
     public bindEyePosition(effect: Nullable<Effect>, variableName = "vEyePosition", isVector3 = false): Vector4 {
-        const eyePosition = this._forcedViewPosition
-            ? this._forcedViewPosition
-            : this._mirroredCameraPosition
-            ? this._mirroredCameraPosition
-            : this.activeCamera!.globalPosition ?? (this.activeCamera as WebVRFreeCamera).devicePosition;
+        const eyePosition = this._forcedViewPosition ? this._forcedViewPosition : this._mirroredCameraPosition ? this._mirroredCameraPosition : this.activeCamera!.globalPosition;
 
         const invertNormal = this.useRightHandedSystem === (this._mirroredCameraPosition != null);
 
@@ -1304,7 +1300,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * The list of user defined render targets added to the scene
      */
-    public customRenderTargets = new Array<RenderTargetTexture>();
+    public customRenderTargets: RenderTargetTexture[] = [];
 
     /**
      * Defines if texture loading must be delayed
@@ -1315,7 +1311,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets the list of meshes imported to the scene through SceneLoader
      */
-    public importedMeshesFiles = new Array<string>();
+    public importedMeshesFiles: string[] = [];
 
     // Probes
     /**
@@ -1648,7 +1644,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     constructor(engine: Engine, options?: SceneOptions) {
         super();
 
-        this.activeCameras = new Array<Camera>();
+        this.activeCameras = [] as Camera[];
 
         const fullOptions = {
             useGeometryUniqueIdsMap: true,
@@ -1658,12 +1654,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             ...options,
         };
 
-        this._engine = engine || EngineStore.LastCreatedEngine;
-        if (!fullOptions.virtual) {
-            EngineStore._LastCreatedScene = this;
-            this._engine.scenes.push(this);
+        engine = this._engine = engine || EngineStore.LastCreatedEngine;
+        if (fullOptions.virtual) {
+            engine._virtualScenes.push(this);
         } else {
-            this._engine._virtualScenes.push(this);
+            EngineStore._LastCreatedScene = this;
+            engine.scenes.push(this);
         }
 
         this._uid = null;
@@ -1696,7 +1692,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.useClonedMeshMap = fullOptions.useClonedMeshMap;
 
         if (!options || !options.virtual) {
-            this._engine.onNewSceneAddedObservable.notifyObservers(this);
+            engine.onNewSceneAddedObservable.notifyObservers(this);
         }
     }
 
@@ -1742,11 +1738,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * and getCollidingSubMeshCandidates to their default function
      */
     public setDefaultCandidateProviders(): void {
-        this.getActiveMeshCandidates = this._getDefaultMeshCandidates.bind(this);
-
-        this.getActiveSubMeshCandidates = this._getDefaultSubMeshCandidates.bind(this);
-        this.getIntersectingSubMeshCandidates = this._getDefaultSubMeshCandidates.bind(this);
-        this.getCollidingSubMeshCandidates = this._getDefaultSubMeshCandidates.bind(this);
+        this.getActiveMeshCandidates = () => this._getDefaultMeshCandidates();
+        this.getActiveSubMeshCandidates = (mesh: AbstractMesh) => this._getDefaultSubMeshCandidates(mesh);
+        this.getIntersectingSubMeshCandidates = (mesh: AbstractMesh, localRay: Ray) => this._getDefaultSubMeshCandidates(mesh);
+        this.getCollidingSubMeshCandidates = (mesh: AbstractMesh, collider: Collider) => this._getDefaultSubMeshCandidates(mesh);
     }
 
     /**
@@ -4762,7 +4757,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this._pointerDownStage.clear();
         this._pointerUpStage.clear();
 
-        this.importedMeshesFiles = new Array<string>();
+        this.importedMeshesFiles = [] as string[];
 
         if (this.stopAllAnimations) {
             // Ensures that no animatable notifies a callback that could start a new animation group, constantly adding new animatables to the active list...
@@ -5100,6 +5095,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         camera?: Nullable<Camera>,
         trianglePredicate?: TrianglePickingPredicate
     ): PickingInfo {
+        const warn = _WarnImport("Ray", true);
+        if (warn) {
+            Logger.Warn(warn);
+        }
         // Dummy info if picking as not been imported
         return new PickingInfo();
     }
@@ -5113,6 +5112,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @returns a PickingInfo (Please note that some info will not be set like distance, bv, bu and everything that cannot be capture by only using bounding infos)
      */
     public pickWithBoundingInfo(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
+        const warn = _WarnImport("Ray", true);
+        if (warn) {
+            Logger.Warn(warn);
+        }
         // Dummy info if picking as not been imported
         return new PickingInfo();
     }
@@ -5212,8 +5215,14 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 
-    // Tags
-    private _getByTags(list: any[], tagsQuery: string, forEach?: (item: any) => void): any[] {
+    /**
+     * Get from a list of objects by tags
+     * @param list the list of objects to use
+     * @param tagsQuery the query to use
+     * @param filter a predicate to filter for tags
+     * @returns
+     */
+    private _getByTags(list: any[], tagsQuery: string, filter?: (item: any) => boolean): any[] {
         if (tagsQuery === undefined) {
             // returns the complete list (could be done with Tags.MatchesQuery but no need to have a for-loop here)
             return list;
@@ -5221,17 +5230,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         const listByTags = [];
 
-        forEach =
-            forEach ||
-            ((item: any) => {
-                return;
-            });
-
         for (const i in list) {
             const item = list[i];
-            if (Tags && Tags.MatchesQuery(item, tagsQuery)) {
+            if (Tags && Tags.MatchesQuery(item, tagsQuery) && (!filter || filter(item))) {
                 listByTags.push(item);
-                forEach(item);
             }
         }
 
@@ -5241,51 +5243,51 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Get a list of meshes by tags
      * @param tagsQuery defines the tags query to use
-     * @param forEach defines a predicate used to filter results
+     * @param filter defines a predicate used to filter results
      * @returns an array of Mesh
      */
-    public getMeshesByTags(tagsQuery: string, forEach?: (mesh: AbstractMesh) => void): Mesh[] {
-        return this._getByTags(this.meshes, tagsQuery, forEach);
+    public getMeshesByTags(tagsQuery: string, filter?: (mesh: AbstractMesh) => boolean): Mesh[] {
+        return this._getByTags(this.meshes, tagsQuery, filter);
     }
 
     /**
      * Get a list of cameras by tags
      * @param tagsQuery defines the tags query to use
-     * @param forEach defines a predicate used to filter results
+     * @param filter defines a predicate used to filter results
      * @returns an array of Camera
      */
-    public getCamerasByTags(tagsQuery: string, forEach?: (camera: Camera) => void): Camera[] {
-        return this._getByTags(this.cameras, tagsQuery, forEach);
+    public getCamerasByTags(tagsQuery: string, filter?: (camera: Camera) => boolean): Camera[] {
+        return this._getByTags(this.cameras, tagsQuery, filter);
     }
 
     /**
      * Get a list of lights by tags
      * @param tagsQuery defines the tags query to use
-     * @param forEach defines a predicate used to filter results
+     * @param filter defines a predicate used to filter results
      * @returns an array of Light
      */
-    public getLightsByTags(tagsQuery: string, forEach?: (light: Light) => void): Light[] {
-        return this._getByTags(this.lights, tagsQuery, forEach);
+    public getLightsByTags(tagsQuery: string, filter?: (light: Light) => boolean): Light[] {
+        return this._getByTags(this.lights, tagsQuery, filter);
     }
 
     /**
      * Get a list of materials by tags
      * @param tagsQuery defines the tags query to use
-     * @param forEach defines a predicate used to filter results
+     * @param filter defines a predicate used to filter results
      * @returns an array of Material
      */
-    public getMaterialByTags(tagsQuery: string, forEach?: (material: Material) => void): Material[] {
-        return this._getByTags(this.materials, tagsQuery, forEach).concat(this._getByTags(this.multiMaterials, tagsQuery, forEach));
+    public getMaterialByTags(tagsQuery: string, filter?: (material: Material) => boolean): Material[] {
+        return this._getByTags(this.materials, tagsQuery, filter).concat(this._getByTags(this.multiMaterials, tagsQuery, filter));
     }
 
     /**
      * Get a list of transform nodes by tags
      * @param tagsQuery defines the tags query to use
-     * @param forEach defines a predicate used to filter results
+     * @param filter defines a predicate used to filter results
      * @returns an array of TransformNode
      */
-    public getTransformNodesByTags(tagsQuery: string, forEach?: (transform: TransformNode) => void): TransformNode[] {
-        return this._getByTags(this.transformNodes, tagsQuery, forEach);
+    public getTransformNodesByTags(tagsQuery: string, filter?: (transform: TransformNode) => boolean): TransformNode[] {
+        return this._getByTags(this.transformNodes, tagsQuery, filter);
     }
 
     /**
@@ -5329,6 +5331,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     private _blockMaterialDirtyMechanism = false;
+
+    /** @internal */
+    public _forceBlockMaterialDirtyMechanism(value: boolean) {
+        this._blockMaterialDirtyMechanism = value;
+    }
 
     /** Gets or sets a boolean blocking all the calls to markAllMaterialsAsDirty (ie. the materials won't be updated if they are out of sync) */
     public get blockMaterialDirtyMechanism(): boolean {

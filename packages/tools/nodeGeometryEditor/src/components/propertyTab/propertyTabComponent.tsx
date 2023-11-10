@@ -111,7 +111,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                 label={block.name}
                                 target={block}
                                 propertyName="value"
-                                step={(isInteger ? 1 : block.max - block.min) / 100.0}
+                                step={isInteger ? 1 : Math.abs(block.max - block.min) / 100.0}
                                 decimalCount={isInteger ? 0 : 2}
                                 minimum={block.min}
                                 maximum={block.max}
@@ -189,7 +189,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
     }
 
     save() {
-        const json = SerializationTools.Serialize(this.props.globalState.nodeGeometry, true, this.props.globalState);
+        const json = SerializationTools.Serialize(this.props.globalState.nodeGeometry, this.props.globalState);
         StringTools.DownloadAsFile(this.props.globalState.hostDocument, json, "nodeGeometry.json");
     }
 
@@ -197,7 +197,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.setState({ uploadInProgress: true });
         this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Saving your geometry to Babylon.js snippet server...", false));
         this.props.globalState
-            .customSave!.action(SerializationTools.Serialize(this.props.globalState.nodeGeometry, false, this.props.globalState))
+            .customSave!.action(SerializationTools.Serialize(this.props.globalState.nodeGeometry, this.props.globalState))
             .then(() => {
                 this.props.globalState.onLogRequiredObservable.notifyObservers(new LogEntry("Geometry saved successfully", false));
                 this.setState({ uploadInProgress: false });
@@ -212,7 +212,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         const geometry = this.props.globalState.nodeGeometry;
         const xmlHttp = new XMLHttpRequest();
 
-        const json = SerializationTools.Serialize(geometry, false, this.props.globalState);
+        const json = SerializationTools.Serialize(geometry, this.props.globalState);
 
         xmlHttp.onreadystatechange = () => {
             if (xmlHttp.readyState == 4) {
@@ -424,11 +424,10 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             />
                         )}
                     </LineContainerComponent>
-                    {this.props.globalState.resyncHandler && (
-                        <LineContainerComponent title="SYNC">
-                            <ButtonLineComponent label="Update mesh in scene" onClick={() => this.props.globalState.resyncHandler!()} />
-                        </LineContainerComponent>
-                    )}
+                    <LineContainerComponent title="SYNC">
+                        {this.props.globalState.resyncHandler && <ButtonLineComponent label="Update mesh in scene" onClick={() => this.props.globalState.resyncHandler!()} />}
+                        <ButtonLineComponent label="Rebuild" onClick={() => this.props.globalState.stateManager.onRebuildRequiredObservable.notifyObservers()} />
+                    </LineContainerComponent>
                     <LineContainerComponent title="FILE">
                         <FileButtonLineComponent label="Load" onClick={(file) => this.load(file)} accept=".json" />
                         <ButtonLineComponent
@@ -452,7 +451,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                                         this.customSave();
                                     }}
                                 />
-                                <TextLineComponent label="(*) Mesh data will NOT be serialized" ignoreValue={true} additionalClass="label-center" />
+                                <TextLineComponent label="(*) Mesh and texture data will NOT be serialized by default" ignoreValue={true} additionalClass="label-center" />
                             </>
                         )}
                         <FileButtonLineComponent label="Load Frame" uploadName={"frame-upload"} onClick={(file) => this.loadFrame(file)} accept=".json" />

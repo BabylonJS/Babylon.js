@@ -84,9 +84,12 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this._noPreventDefault = noPreventDefault;
 
-        this._observer = this.camera.getScene()._inputManager._addCameraPointerObserver((p: any) => {
-            this._pointerInput(p);
-        }, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
+        this._observer = this.camera.getScene()._inputManager._addCameraPointerObserver(
+            (p: any) => {
+                this._pointerInput(p);
+            },
+            PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE
+        );
 
         // Correct Roll by rate, if enabled.
         this._rollObserver = this.camera.getScene().onBeforeRenderObservable.add(() => {
@@ -134,10 +137,6 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
 
         const camera = this.camera;
         const engine = camera.getEngine();
-
-        if (engine.isInVRExclusivePointerMode) {
-            return;
-        }
 
         if (!this.touchEnabled && e.pointerType === "touch") {
             return;
@@ -221,7 +220,7 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
         const camera = this.camera;
         const engine = camera.getEngine();
 
-        if (!engine.isPointerLock || engine.isInVRExclusivePointerMode) {
+        if (!engine.isPointerLock) {
             return;
         }
 
@@ -244,15 +243,9 @@ export class FlyCameraMouseInput implements ICameraInput<FlyCamera> {
      */
     private _rotateCamera(offsetX: number, offsetY: number): void {
         const camera = this.camera;
-        const scene = this.camera.getScene();
+        const handednessMultiplier = camera._calculateHandednessMultiplier();
 
-        if (scene.useRightHandedSystem) {
-            offsetX *= -1;
-        }
-
-        if (camera.parent && camera.parent._getWorldMatrixDeterminant() < 0) {
-            offsetX *= -1;
-        }
+        offsetX *= handednessMultiplier;
 
         const x = offsetX / this.angularSensibility;
         const y = offsetY / this.angularSensibility;

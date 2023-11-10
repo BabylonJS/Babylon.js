@@ -729,10 +729,6 @@ export class Constants {
      */
     public static readonly RIG_MODE_VR = 20;
     /**
-     * Defines that both eyes of the camera should be renderered in a VR mode (webVR).
-     */
-    public static readonly RIG_MODE_WEBVR = 21;
-    /**
      * Custom rig mode allowing rig cameras to be populated manually with any number of cameras
      */
     public static readonly RIG_MODE_CUSTOM = 22;

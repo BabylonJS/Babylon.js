@@ -11,15 +11,18 @@ export class StorageBuffer {
     private _buffer: DataBuffer;
     private _bufferSize: number;
     private _creationFlags: number;
+    private _label?: string;
 
     /**
      * Creates a new storage buffer instance
      * @param engine The engine the buffer will be created inside
      * @param size The size of the buffer in bytes
      * @param creationFlags flags to use when creating the buffer (see Constants.BUFFER_CREATIONFLAG_XXX). The BUFFER_CREATIONFLAG_STORAGE flag will be automatically added.
+     * @param label defines the label of the buffer (for debug purpose)
      */
-    constructor(engine: ThinEngine, size: number, creationFlags = Constants.BUFFER_CREATIONFLAG_READWRITE) {
+    constructor(engine: ThinEngine, size: number, creationFlags = Constants.BUFFER_CREATIONFLAG_READWRITE, label?: string) {
         this._engine = engine;
+        this._label = label;
         this._engine._storageBuffers.push(this);
         this._create(size, creationFlags);
     }
@@ -27,7 +30,7 @@ export class StorageBuffer {
     private _create(size: number, creationFlags: number): void {
         this._bufferSize = size;
         this._creationFlags = creationFlags;
-        this._buffer = this._engine.createStorageBuffer(size, creationFlags);
+        this._buffer = this._engine.createStorageBuffer(size, creationFlags, this._label);
     }
 
     /** @internal */

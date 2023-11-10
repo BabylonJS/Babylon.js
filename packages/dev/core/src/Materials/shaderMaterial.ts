@@ -700,7 +700,9 @@ export class ShaderMaterial extends PushMaterial {
         }
 
         if (mesh && mesh.isVerticesDataPresent(VertexBuffer.ColorKind)) {
-            attribs.push(VertexBuffer.ColorKind);
+            if (attribs.indexOf(VertexBuffer.ColorKind) === -1) {
+                attribs.push(VertexBuffer.ColorKind);
+            }
             defines.push("#define VERTEXCOLOR");
         }
 
@@ -1597,7 +1599,7 @@ export class ShaderMaterial extends PushMaterial {
         // Texture arrays
         for (name in source.textureArrays) {
             const array = source.textureArrays[name];
-            const textureArray = new Array<Texture>();
+            const textureArray: Texture[] = [];
 
             for (let index = 0; index < array.length; index++) {
                 textureArray.push(<Texture>Texture.Parse(array[index], scene, rootUrl));

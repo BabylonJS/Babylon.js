@@ -72,7 +72,7 @@ export class BlockNodeData implements INodeData {
     public isConnectedToOutput() {
         const block = this.data;
 
-        return block.isAnAncestorOfType("GeometryOutputBlock");
+        return block.isDebug || block.isAnAncestorOfType("GeometryOutputBlock");
     }
 
     public dispose() {
@@ -98,7 +98,10 @@ export class BlockNodeData implements INodeData {
         return null;
     }
 
-    public constructor(public data: NodeGeometryBlock, nodeContainer: INodeContainer) {
+    public constructor(
+        public data: NodeGeometryBlock,
+        nodeContainer: INodeContainer
+    ) {
         if (data.inputs) {
             this.data.inputs.forEach((input) => {
                 this._inputs.push(new ConnectionPointPortData(input, nodeContainer));

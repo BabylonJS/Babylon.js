@@ -17,7 +17,7 @@ export abstract class AbstractActionManager implements IDisposable {
     public hoverCursor: string = "";
 
     /** Gets the list of actions */
-    public actions = new Array<IAction>();
+    public actions: IAction[] = [];
 
     /**
      * Gets or sets a boolean indicating that the manager is recursive meaning that it can trigger action from children

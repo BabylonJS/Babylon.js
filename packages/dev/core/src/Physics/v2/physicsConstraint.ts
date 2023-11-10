@@ -1,6 +1,7 @@
 import type { Scene } from "../../scene";
 import type { Vector3 } from "../../Maths/math.vector";
-import type { IPhysicsEnginePluginV2, PhysicsConstraintParameters, PhysicsConstraintAxisLimitMode, PhysicsConstraintMotorType } from "./IPhysicsEnginePlugin";
+import type { Nullable } from "../../types";
+import type { IPhysicsEnginePluginV2, PhysicsConstraintParameters, PhysicsConstraintAxisLimitMode, PhysicsConstraintMotorType, ConstrainedBodyPair } from "./IPhysicsEnginePlugin";
 import { PhysicsConstraintAxis, PhysicsConstraintType } from "./IPhysicsEnginePlugin";
 
 /**
@@ -19,6 +20,11 @@ export class PhysicsConstraint {
     protected _physicsPlugin: IPhysicsEnginePluginV2;
     protected _options: PhysicsConstraintParameters;
     protected _type: PhysicsConstraintType;
+    /**
+     * @internal
+     * The internal options that were used to init the constraint
+     */
+    public _initOptions?: PhysicsConstraintParameters;
 
     /**
      * Constructs a new constraint for the physics constraint.
@@ -107,6 +113,14 @@ export class PhysicsConstraint {
     }
 
     /**
+     * Gets all bodies that are using this constraint
+     * @returns
+     */
+    public getBodiesUsingConstraint(): ConstrainedBodyPair[] {
+        return this._physicsPlugin.getBodiesUsingConstraint(this);
+    }
+
+    /**
      * Disposes the constraint from the physics engine.
      *
      * This method is useful for cleaning up the physics engine when a body is no longer needed. Disposing the body will free up resources and prevent memory leaks.
@@ -174,10 +188,10 @@ export class Physics6DoFConstraint extends PhysicsConstraint {
     /**
      * Gets the friction of the given axis of the physics engine.
      * @param axis - The axis of the physics engine.
-     * @returns The friction of the given axis.
+     * @returns The friction of the given axis, or null if the constraint hasn't been initialized yet.
      *
      */
-    public getAxisFriction(axis: PhysicsConstraintAxis): number {
+    public getAxisFriction(axis: PhysicsConstraintAxis): Nullable<number> {
         return this._physicsPlugin.getAxisFriction(this, axis);
     }
 
@@ -199,10 +213,10 @@ export class Physics6DoFConstraint extends PhysicsConstraint {
      * Gets the limit mode of the given axis of the constraint.
      *
      * @param axis - The axis of the constraint.
-     * @returns The limit mode of the given axis.
+     * @returns The limit mode of the given axis, or null if the constraint hasn't been initialized yet.
      *
      */
-    public getAxisMode(axis: PhysicsConstraintAxis): PhysicsConstraintAxisLimitMode {
+    public getAxisMode(axis: PhysicsConstraintAxis): Nullable<PhysicsConstraintAxisLimitMode> {
         return this._physicsPlugin.getAxisMode(this, axis);
     }
 
@@ -219,10 +233,10 @@ export class Physics6DoFConstraint extends PhysicsConstraint {
     /**
      * Gets the minimum limit of the given axis of the physics engine.
      * @param axis - The axis of the physics engine.
-     * @returns The minimum limit of the given axis.
+     * @returns The minimum limit of the given axis, or null if the constraint hasn't been initialized yet.
      *
      */
-    public getAxisMinLimit(axis: PhysicsConstraintAxis): number {
+    public getAxisMinLimit(axis: PhysicsConstraintAxis): Nullable<number> {
         return this._physicsPlugin.getAxisMinLimit(this, axis);
     }
 
@@ -242,10 +256,10 @@ export class Physics6DoFConstraint extends PhysicsConstraint {
     /**
      * Gets the maximum limit of the given axis of the physics engine.
      * @param axis - The axis of the physics engine.
-     * @returns The maximum limit of the given axis.
+     * @returns The maximum limit of the given axis, or null if the constraint hasn't been initialized yet.
      *
      */
-    public getAxisMaxLimit(axis: PhysicsConstraintAxis): number {
+    public getAxisMaxLimit(axis: PhysicsConstraintAxis): Nullable<number> {
         return this._physicsPlugin.getAxisMaxLimit(this, axis);
     }
 
@@ -264,10 +278,10 @@ export class Physics6DoFConstraint extends PhysicsConstraint {
      * Gets the motor type of the specified axis of the constraint.
      *
      * @param axis - The axis of the constraint.
-     * @returns The motor type of the specified axis.
+     * @returns The motor type of the specified axis, or null if the constraint hasn't been initialized yet.
      *
      */
-    public getAxisMotorType(axis: PhysicsConstraintAxis): PhysicsConstraintMotorType {
+    public getAxisMotorType(axis: PhysicsConstraintAxis): Nullable<PhysicsConstraintMotorType> {
         return this._physicsPlugin.getAxisMotorType(this, axis);
     }
 
@@ -285,10 +299,10 @@ export class Physics6DoFConstraint extends PhysicsConstraint {
     /**
      * Gets the target velocity of the motor associated to the given constraint axis.
      * @param axis - The constraint axis associated to the motor.
-     * @returns The target velocity of the motor.
+     * @returns The target velocity of the motor, or null if the constraint hasn't been initialized yet.
      *
      */
-    public getAxisMotorTarget(axis: PhysicsConstraintAxis): number {
+    public getAxisMotorTarget(axis: PhysicsConstraintAxis): Nullable<number> {
         return this._physicsPlugin.getAxisMotorTarget(this, axis);
     }
 
@@ -305,10 +319,10 @@ export class Physics6DoFConstraint extends PhysicsConstraint {
     /**
      * Gets the maximum force of the motor of the given axis of the constraint.
      * @param axis - The axis of the constraint.
-     * @returns The maximum force of the motor.
+     * @returns The maximum force of the motor, or null if the constraint hasn't been initialized yet.
      *
      */
-    public getAxisMotorMaxForce(axis: PhysicsConstraintAxis): number {
+    public getAxisMotorMaxForce(axis: PhysicsConstraintAxis): Nullable<number> {
         return this._physicsPlugin.getAxisMotorMaxForce(this, axis);
     }
 }

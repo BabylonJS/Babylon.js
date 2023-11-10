@@ -1,7 +1,3 @@
-// Constants
-#define RECIPROCAL_PI2 0.15915494
-#define RECIPROCAL_PI 0.31830988618
-
 // AlphaG epsilon to avoid numerical issues
 #define MINIMUMVARIANCE 0.0005
 

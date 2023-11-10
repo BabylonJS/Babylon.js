@@ -1,7 +1,7 @@
 const path = require("path");
 const outputDirectoryForAliases = "dist";
 const buildTools = require("@dev/build-tools");
-const externalsFunction = buildTools.webpackTools.externalsFunction;
+const webpackTools = buildTools.webpackTools;
 
 // option - min files or max files, but it is just the filenames. all will have sourcemaps
 
@@ -22,20 +22,16 @@ env: {
 module.exports = (env) => {
     const source = env.source || process.env.SOURCE || "dev"; // || "lts";
     const basePathForSources = path.resolve(__dirname, "../../", source);
-    const externals = externalsFunction();
-    const production = env.mode === "production" || process.env.NODE_ENV === "production";
     const commonConfig = {
-        mode: production ? "production" : "development",
-        devtool: production ? "source-map" : "eval-cheap-module-source-map",
         entry: {
             sceneTs: "./src/sceneTs.ts",
             sceneJs: "./src/sceneJs.js",
         },
-        output: {
-            path: path.resolve(__dirname, "dist"),
-            filename: "[name].js",
-            devtoolModuleFilenameTemplate: production ? "webpack://[namespace]/[resource-path]?[loaders]" : "file:///[absolute-resource-path]",
-        },
+        ...webpackTools.commonDevWebpackConfiguration({
+            mode: env.mode,
+            outputFilename: "[name].js",
+            dirName: __dirname,
+        }),
         resolve: {
             extensions: [".js", ".ts"],
             alias: {

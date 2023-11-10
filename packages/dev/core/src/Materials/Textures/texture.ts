@@ -20,6 +20,7 @@ import type { CubeTexture } from "../../Materials/Textures/cubeTexture";
 import type { MirrorTexture } from "../../Materials/Textures/mirrorTexture";
 import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import type { Scene } from "../../scene";
+import type { VideoTexture, VideoTextureSettings } from "./videoTexture";
 
 /**
  * Defines the available options when creating a texture
@@ -63,6 +64,9 @@ export interface ITextureCreationOptions {
 
     /** Defines the underlying texture from an already existing one */
     internalTexture?: InternalTexture;
+
+    /** Defines the underlying texture texture space */
+    gammaSpace?: boolean;
 }
 
 /**
@@ -110,6 +114,20 @@ export class Texture extends BaseTexture {
     public static _CreateRenderTargetTexture = (name: string, renderTargetSize: number, scene: Scene, generateMipMaps: boolean, creationFlags?: number): RenderTargetTexture => {
         throw _WarnImport("RenderTargetTexture");
     };
+
+    public static _CreateVideoTexture(
+        name: Nullable<string>,
+        src: string | string[] | HTMLVideoElement,
+        scene: Nullable<Scene>,
+        generateMipMaps = false,
+        invertY = false,
+        samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
+        settings: Partial<VideoTextureSettings> = {},
+        onError?: Nullable<(message?: string, exception?: any) => void>,
+        format: number = Constants.TEXTUREFORMAT_RGBA
+    ): VideoTexture {
+        throw _WarnImport("VideoTexture");
+    }
 
     /** nearest is mag = nearest and min = nearest and no mip */
     public static readonly NEAREST_SAMPLINGMODE = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
@@ -390,6 +408,7 @@ export class Texture extends BaseTexture {
         let noMipmap: boolean;
         let useSRGBBuffer: boolean = false;
         let internalTexture: Nullable<InternalTexture> = null;
+        let gammaSpace = true;
 
         if (typeof noMipmapOrOptions === "object" && noMipmapOrOptions !== null) {
             noMipmap = noMipmapOrOptions.noMipmap ?? false;
@@ -405,10 +424,12 @@ export class Texture extends BaseTexture {
             creationFlags = noMipmapOrOptions.creationFlags;
             useSRGBBuffer = noMipmapOrOptions.useSRGBBuffer ?? false;
             internalTexture = noMipmapOrOptions.internalTexture ?? null;
+            gammaSpace = noMipmapOrOptions.gammaSpace ?? gammaSpace;
         } else {
             noMipmap = !!noMipmapOrOptions;
         }
 
+        this._gammaSpace = gammaSpace;
         this._noMipmap = noMipmap;
         this._invertY = invertY === undefined ? (CompatibilityOptions.UseOpenGLOrientationForUV ? false : true) : invertY;
         this._initialSamplingMode = samplingMode;
@@ -480,7 +501,7 @@ export class Texture extends BaseTexture {
             return;
         }
 
-        this._texture = internalTexture ?? this._getFromCache(this.url, noMipmap, samplingMode, this._invertY, useSRGBBuffer);
+        this._texture = internalTexture ?? this._getFromCache(this.url, noMipmap, samplingMode, this._invertY, useSRGBBuffer, this.isCube);
 
         if (!this._texture) {
             if (!scene || !scene.useDelayedTextureLoading) {
@@ -543,7 +564,9 @@ export class Texture extends BaseTexture {
     ): void {
         if (this.url) {
             this.releaseInternalTexture();
-            this.getScene()!.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+            this.getScene()!.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+                return mat.hasTexture(this);
+            });
         }
 
         if (!this.name || this.name.startsWith("data:")) {
@@ -575,7 +598,7 @@ export class Texture extends BaseTexture {
         }
 
         this.delayLoadState = Constants.DELAYLOADSTATE_LOADED;
-        this._texture = this._getFromCache(this.url, this._noMipmap, this.samplingMode, this._invertY, this._useSRGBBuffer);
+        this._texture = this._getFromCache(this.url, this._noMipmap, this.samplingMode, this._invertY, this._useSRGBBuffer, this.isCube);
 
         if (!this._texture) {
             this._texture = scene
@@ -819,7 +842,7 @@ export class Texture extends BaseTexture {
             // We flag the materials that are using this texture as "texture dirty" if the coordinatesMode has changed.
             // Indeed, this property is used to set the value of some defines used to generate the effect (in material.isReadyForSubMesh), so we must make sure this code will be re-executed and the effect recreated if necessary
             scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
-                return mat.getActiveTextures().indexOf(this) !== -1;
+                return mat.hasTexture(this);
             });
         }
 
@@ -893,6 +916,7 @@ export class Texture extends BaseTexture {
         if (Texture._SerializeInternalTextureUniqueId) {
             serializationObject.internalTextureUniqueId = this._texture?.uniqueId ?? undefined;
         }
+        serializationObject.noMipmap = this._noMipmap;
 
         this.name = savedName;
 
@@ -1029,6 +1053,18 @@ export class Texture extends BaseTexture {
                     }
                     onLoaded(renderTargetTexture);
                     return renderTargetTexture;
+                } else if (parsedTexture.isVideo) {
+                    const texture = Texture._CreateVideoTexture(
+                        rootUrl + (parsedTexture.url || parsedTexture.name),
+                        rootUrl + (parsedTexture.src || parsedTexture.url),
+                        scene,
+                        generateMipMaps,
+                        parsedTexture.invertY,
+                        parsedTexture.samplingMode,
+                        parsedTexture.settings || {}
+                    );
+                    onLoaded(texture);
+                    return texture;
                 } else {
                     let texture: Texture;
 

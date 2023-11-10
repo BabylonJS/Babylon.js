@@ -331,7 +331,7 @@ Mesh.prototype.thinInstanceGetWorldMatrices = function (): Matrix[] {
     const matrixData = this._thinInstanceDataStorage.matrixData;
 
     if (!this._thinInstanceDataStorage.worldMatrices) {
-        this._thinInstanceDataStorage.worldMatrices = new Array<Matrix>();
+        this._thinInstanceDataStorage.worldMatrices = [] as Matrix[];
 
         for (let i = 0; i < this._thinInstanceDataStorage.instancesCount; ++i) {
             this._thinInstanceDataStorage.worldMatrices[i] = Matrix.FromArray(matrixData, i * 16);

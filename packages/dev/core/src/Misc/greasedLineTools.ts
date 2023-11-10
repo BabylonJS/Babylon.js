@@ -5,21 +5,117 @@ import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { IFontData } from "../Meshes/Builders/textBuilder";
 import { CreateTextShapePaths } from "../Meshes/Builders/textBuilder";
 import type { FloatArray, IndicesArray } from "../types";
+import type { GreasedLinePoints } from "../Meshes/GreasedLine/greasedLineBaseMesh";
+import type { Color3 } from "../Maths/math.color";
+import { RawTexture } from "../Materials/Textures/rawTexture";
+import type { Scene } from "../scene";
+import { Engine } from "../Engines/engine";
+import { GreasedLineMaterialDefaults } from "../Materials/GreasedLine/greasedLineMaterialDefaults";
 
 /**
  * Tool functions for GreasedLine
  */
 export class GreasedLineTools {
     /**
+     * Converts GreasedLinePoints to number[][]
+     * @param points GreasedLinePoints
+     * @returns number[][] with x, y, z coordinates of the points, like [[x, y, z, x, y, z, ...], [x, y, z, ...]]
+     */
+    public static ConvertPoints(points: GreasedLinePoints): number[][] {
+        if (points.length && Array.isArray(points) && typeof points[0] === "number") {
+            return [<number[]>points];
+        } else if (points.length && Array.isArray(points[0]) && typeof points[0][0] === "number") {
+            return <number[][]>points;
+        } else if (points.length && !Array.isArray(points[0]) && points[0] instanceof Vector3) {
+            const positions: number[] = [];
+            for (let j = 0; j < points.length; j++) {
+                const p = points[j] as Vector3;
+                positions.push(p.x, p.y, p.z);
+            }
+            return [positions];
+        } else if (points.length > 0 && Array.isArray(points[0]) && points[0].length > 0 && points[0][0] instanceof Vector3) {
+            const positions: number[][] = [];
+            const vectorPoints = points as Vector3[][];
+            vectorPoints.forEach((p) => {
+                positions.push(p.flatMap((p2) => [p2.x, p2.y, p2.z]));
+            });
+            return positions;
+        } else if (points instanceof Float32Array) {
+            return [Array.from(points)];
+        } else if (points.length && points[0] instanceof Float32Array) {
+            const positions: number[][] = [];
+            points.forEach((p) => {
+                positions.push(Array.from(p as Float32Array));
+            });
+            return positions;
+        }
+
+        return [];
+    }
+
+    /**
      * Omit zero length lines predicate for the MeshesToLines function
      * @param p1 point1 position of the face
      * @param p2 point2 position of the face
      * @param p3 point3 position of the face
-     * @returns
+     * @returns original points or null if any edge length is zero
      */
     public static OmitZeroLengthPredicate(p1: Vector3, p2: Vector3, p3: Vector3) {
-        return p1.lengthSquared() === 0 && p2.lengthSquared() === 0 && p3.lengthSquared() === 0;
+        const fileredPoints = [];
+        // edge1
+        if (p2.subtract(p1).lengthSquared() > 0) {
+            fileredPoints.push([p1, p2]);
+        }
+        // edge2
+        if (p3.subtract(p2).lengthSquared() > 0) {
+            fileredPoints.push([p2, p3]);
+        }
+        // edge3
+        if (p1.subtract(p3).lengthSquared() > 0) {
+            fileredPoints.push([p3, p1]);
+        }
+        return fileredPoints.length === 0 ? null : fileredPoints;
     }
+
+    /**
+     * Omit duplicate lines predicate for the MeshesToLines function
+     * @param p1 point1 position of the face
+     * @param p2 point2 position of the face
+     * @param p3 point3 position of the face
+     * @returns original points or null if any edge length is zero
+     */
+    public static OmitDuplicatesPredicate(p1: Vector3, p2: Vector3, p3: Vector3, points: Vector3[][]) {
+        const fileredPoints = [];
+        // edge1
+        if (!GreasedLineTools._SearchInPoints(p1, p2, points)) {
+            fileredPoints.push([p1, p2]);
+        }
+        // edge2
+        if (!GreasedLineTools._SearchInPoints(p2, p3, points)) {
+            fileredPoints.push([p2, p3]);
+        }
+        // edge3
+        if (!GreasedLineTools._SearchInPoints(p3, p1, points)) {
+            fileredPoints.push([p3, p1]);
+        }
+        return fileredPoints.length === 0 ? null : fileredPoints;
+    }
+
+    private static _SearchInPoints(p1: Vector3, p2: Vector3, points: Vector3[][]) {
+        for (const ps of points) {
+            for (let i = 0; i < ps.length; i++) {
+                if (ps[i]?.equals(p1)) {
+                    // find the first point
+                    // if it has a sibling of p2 the line already exists
+                    if (ps[i + 1]?.equals(p2) || ps[i - 1]?.equals(p2)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * Gets mesh triangles as line positions
      * @param meshes array of meshes
@@ -32,13 +128,14 @@ export class GreasedLineTools {
             p1: Vector3,
             p2: Vector3,
             p3: Vector3,
+            points: Vector3[][],
             indiceIndex: number,
             vertexIndex: number,
             mesh: AbstractMesh,
             meshIndex: number,
             vertices: FloatArray,
             indices: IndicesArray
-        ) => Vector3[]
+        ) => Vector3[][]
     ) {
         const points: Vector3[][] = [];
 
@@ -56,10 +153,14 @@ export class GreasedLineTools {
                     const p3 = new Vector3(vertices[vi3], vertices[vi3 + 1], vertices[vi3 + 2]);
 
                     if (predicate) {
-                        const pointsFromPredicate = predicate(p1, p2, p3, i, vi1, m, meshIndex, vertices, indices);
-                        pointsFromPredicate && points.push(pointsFromPredicate);
+                        const pointsFromPredicate = predicate(p1, p2, p3, points, i, vi1, m, meshIndex, vertices, indices);
+                        if (pointsFromPredicate) {
+                            for (const p of pointsFromPredicate) {
+                                points.push(p);
+                            }
+                        }
                     } else {
-                        points.push([p1, p2, p3, p1]);
+                        points.push([p1, p2], [p2, p3], [p3, p1]);
                     }
                 }
             }
@@ -73,10 +174,24 @@ export class GreasedLineTools {
      * @param points number array of x, y, z, x, y z, ... coordinates
      * @returns Vector3 array
      */
-    public static ToVector3Array(points: number[]) {
+    public static ToVector3Array(points: number[] | number[][]) {
+        if (Array.isArray(points[0])) {
+            const array: Vector3[][] = [];
+            const inputArray = points as number[][];
+            for (const subInputArray of inputArray) {
+                const subArray: Vector3[] = [];
+                for (let i = 0; i < subInputArray.length; i += 3) {
+                    subArray.push(new Vector3(subInputArray[i], subInputArray[i + 1], subInputArray[i + 2]));
+                }
+                array.push(subArray);
+            }
+            return array;
+        }
+
+        const inputArray = points as number[];
         const array: Vector3[] = [];
-        for (let i = 0; i < points.length; i += 3) {
-            array.push(new Vector3(points[i], points[i + 1], points[i + 2]));
+        for (let i = 0; i < inputArray.length; i += 3) {
+            array.push(new Vector3(inputArray[i], inputArray[i + 1], inputArray[i + 2]));
         }
         return array;
     }
@@ -120,9 +235,9 @@ export class GreasedLineTools {
 
         let points: Vector3[];
         if (typeof data[0] === "number") {
-            points = GreasedLineTools.ToVector3Array(<number[]>data);
+            points = GreasedLineTools.ToVector3Array(<number[]>data) as Vector3[];
         } else {
-            points = <Vector3[]>data;
+            points = data as Vector3[];
         }
 
         const tmp = TmpVectors.Vector3[0];
@@ -169,7 +284,12 @@ export class GreasedLineTools {
      * @returns line point
      */
     public static SegmentizeLineBySegmentLength(what: Vector3[] | number[] | { point1: Vector3; point2: Vector3; length: number }[], segmentLength: number): Vector3[] {
-        const subLines = what[0] instanceof Vector3 ? GreasedLineTools.GetLineSegments(what as Vector3[]) : (what as { point1: Vector3; point2: Vector3; length: number }[]);
+        const subLines =
+            what[0] instanceof Vector3
+                ? GreasedLineTools.GetLineSegments(what as Vector3[])
+                : typeof what[0] === "number"
+                ? GreasedLineTools.GetLineSegments(GreasedLineTools.ToVector3Array(what as number[]) as Vector3[])
+                : (what as { point1: Vector3; point2: Vector3; length: number }[]);
         const points: Vector3[] = [];
         subLines.forEach((s) => {
             if (s.length > segmentLength) {
@@ -192,9 +312,10 @@ export class GreasedLineTools {
      * @param segmentCount number of segments
      * @returns line point
      */
-    public static SegmentizeLineBySegmentCount(what: Vector3[], segmentCount: number): Vector3[] {
-        const segmentLength = GreasedLineTools.GetLineLength(what) / segmentCount;
-        return GreasedLineTools.SegmentizeLineBySegmentLength(what, segmentLength);
+    public static SegmentizeLineBySegmentCount(what: Vector3[] | number[], segmentCount: number): Vector3[] {
+        const points = <Vector3[]>(typeof what[0] === "number" ? GreasedLineTools.ToVector3Array(<number[]>what) : what);
+        const segmentLength = GreasedLineTools.GetLineLength(points) / segmentCount;
+        return GreasedLineTools.SegmentizeLineBySegmentLength(points, segmentLength);
     }
     /**
      * Gets line segments.
@@ -351,5 +472,64 @@ export class GreasedLineTools {
         }
 
         return allPoints;
+    }
+
+    /**
+     * Converts an array of Color3 to Uint8Array
+     * @param colors Arrray of Color3
+     * @returns Uin8Array of colors [r, g, b, a, r, g, b, a, ...]
+     */
+    public static Color3toRGBAUint8(colors: Color3[]) {
+        const colorTable: Uint8Array = new Uint8Array(colors.length * 4);
+        for (let i = 0, j = 0; i < colors.length; i++) {
+            colorTable[j++] = colors[i].r * 255;
+            colorTable[j++] = colors[i].g * 255;
+            colorTable[j++] = colors[i].b * 255;
+            colorTable[j++] = 255;
+        }
+
+        return colorTable;
+    }
+
+    /**
+     * Creates a RawTexture from an RGBA color array and sets it on the plugin material instance.
+     * @param name name of the texture
+     * @param colors Uint8Array of colors
+     */
+    public static CreateColorsTexture(name: string, colors: Color3[], colorsSampling: number, scene: Scene) {
+        const colorsArray = GreasedLineTools.Color3toRGBAUint8(colors);
+        const colorsTexture = new RawTexture(colorsArray, colors.length, 1, Engine.TEXTUREFORMAT_RGBA, scene, false, true, colorsSampling);
+        colorsTexture.name = name;
+        return colorsTexture;
+    }
+
+    /**
+     * A minimum size texture for the colors sampler2D when there is no colors texture defined yet.
+     * For fast switching using the useColors property without the need to use defines.
+     * @param scene Scene
+     */
+    public static PrepareEmptyColorsTexture(scene: Scene) {
+        if (!GreasedLineMaterialDefaults.EmptyColorsTexture) {
+            const colorsArray = new Uint8Array(4);
+            GreasedLineMaterialDefaults.EmptyColorsTexture = new RawTexture(colorsArray, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false, false, RawTexture.NEAREST_NEAREST);
+            GreasedLineMaterialDefaults.EmptyColorsTexture.name = "grlEmptyColorsTexture";
+        }
+    }
+
+    /**
+     * Diposes the shared empty colors texture
+     */
+    public static DisposeEmptyColorsTexture() {
+        GreasedLineMaterialDefaults.EmptyColorsTexture?.dispose();
+        GreasedLineMaterialDefaults.EmptyColorsTexture = null;
+    }
+
+    /**
+     * Converts boolean to number.
+     * @param bool
+     * @returns 1 if true, 0 if false.
+     */
+    public static BooleanToNumber(bool?: boolean) {
+        return bool ? 1 : 0;
     }
 }

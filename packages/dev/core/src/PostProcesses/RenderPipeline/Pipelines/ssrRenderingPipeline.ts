@@ -651,12 +651,18 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 if (geometryBufferRenderer) {
                     geometryBufferRenderer.enableReflectivity = true;
                     geometryBufferRenderer.useSpecificClearForDepthTexture = true;
+                    if (geometryBufferRenderer.generateNormalsInWorldSpace) {
+                        console.error("SSRRenderingPipeline does not support generateNormalsInWorldSpace=true for the geometry buffer renderer!");
+                    }
                 }
             } else {
                 const prePassRenderer = scene.enablePrePassRenderer();
                 if (prePassRenderer) {
                     prePassRenderer.useSpecificClearForDepthTexture = true;
                     prePassRenderer.markAsDirty();
+                    if (prePassRenderer.generateNormalsInWorldSpace) {
+                        console.error("SSRRenderingPipeline does not support generateNormalsInWorldSpace=true for the prepass renderer!");
+                    }
                 }
             }
 

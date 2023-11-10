@@ -201,7 +201,7 @@ export class NodeMaterial extends PushMaterial {
     private _animationFrame = -1;
 
     /** Define the Url to load node editor script */
-    public static EditorURL = `https://unpkg.com/babylonjs-node-editor@${Engine.Version}/babylon.nodeEditor.js`;
+    public static EditorURL = `${Tools._DefaultCdnUrl}/v${Engine.Version}/nodeEditor/babylon.nodeEditor.js`;
 
     /** Define the Url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
@@ -319,7 +319,7 @@ export class NodeMaterial extends PushMaterial {
     /**
      * Gets an array of blocks that needs to be serialized even if they are not yet connected
      */
-    public attachedBlocks = new Array<NodeMaterialBlock>();
+    public attachedBlocks: NodeMaterialBlock[] = [];
 
     /**
      * Specifies the mode of the node material
@@ -1124,18 +1124,20 @@ export class NodeMaterial extends PushMaterial {
         const result = this._processDefines(dummyMesh, defines);
         Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString);
 
-        let effect = this.getScene().getEngine().createEffect(
-            {
-                vertexElement: tempName,
-                fragmentElement: tempName,
-            },
-            [VertexBuffer.PositionKind],
-            this._fragmentCompilationState.uniforms,
-            this._fragmentCompilationState.samplers,
-            defines.toString(),
-            result?.fallbacks,
-            undefined
-        );
+        let effect = this.getScene()
+            .getEngine()
+            .createEffect(
+                {
+                    vertexElement: tempName,
+                    fragmentElement: tempName,
+                },
+                [VertexBuffer.PositionKind],
+                this._fragmentCompilationState.uniforms,
+                this._fragmentCompilationState.samplers,
+                defines.toString(),
+                result?.fallbacks,
+                undefined
+            );
 
         proceduralTexture.nodeMaterialSource = this;
         proceduralTexture._setEffect(effect);
@@ -1159,18 +1161,20 @@ export class NodeMaterial extends PushMaterial {
                 Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString);
 
                 TimingTools.SetImmediate(() => {
-                    effect = this.getScene().getEngine().createEffect(
-                        {
-                            vertexElement: tempName,
-                            fragmentElement: tempName,
-                        },
-                        [VertexBuffer.PositionKind],
-                        this._fragmentCompilationState.uniforms,
-                        this._fragmentCompilationState.samplers,
-                        defines.toString(),
-                        result?.fallbacks,
-                        undefined
-                    );
+                    effect = this.getScene()
+                        .getEngine()
+                        .createEffect(
+                            {
+                                vertexElement: tempName,
+                                fragmentElement: tempName,
+                            },
+                            [VertexBuffer.PositionKind],
+                            this._fragmentCompilationState.uniforms,
+                            this._fragmentCompilationState.samplers,
+                            defines.toString(),
+                            result?.fallbacks,
+                            undefined
+                        );
 
                     proceduralTexture._setEffect(effect);
                 });
@@ -1743,7 +1747,7 @@ export class NodeMaterial extends PushMaterial {
                 const editorUrl = config && config.editorURL ? config.editorURL : NodeMaterial.EditorURL;
 
                 // Load editor and add it to the DOM
-                Tools.LoadScript(editorUrl, () => {
+                Tools.LoadBabylonScript(editorUrl, () => {
                     this.BJSNODEMATERIALEDITOR = this.BJSNODEMATERIALEDITOR || this._getGlobalNodeMaterialEditor();
                     this._createNodeEditor(config?.nodeEditorConfig);
                     resolve();
@@ -2263,6 +2267,31 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
+     * Awaits for all the material textures to be ready before resolving the returned promise.
+     */
+    public whenTexturesReadyAsync(): Promise<void[]> {
+        // Ensures all textures are ready to render.
+        const textureReadyPromises: Promise<void>[] = [];
+        this.getActiveTextures().forEach((texture) => {
+            const internalTexture = texture.getInternalTexture();
+            if (internalTexture && !internalTexture.isReady) {
+                textureReadyPromises.push(
+                    new Promise((textureResolve, textureReject) => {
+                        internalTexture.onLoadedObservable.addOnce(() => {
+                            textureResolve();
+                        });
+                        internalTexture.onErrorObservable.addOnce((e) => {
+                            textureReject(e);
+                        });
+                    })
+                );
+            }
+        });
+
+        return Promise.all(textureReadyPromises);
+    }
+
+    /**
      * Creates a node material from parsed material data
      * @param source defines the JSON representation of the material
      * @param scene defines the hosting scene
@@ -2314,6 +2343,7 @@ export class NodeMaterial extends PushMaterial {
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @param nodeMaterial defines a node material to update (instead of creating a new one)
      * @param skipBuild defines whether to build the node material
+     * @param waitForTextureReadyness defines whether to wait for texture readiness resolving the promise (default: false)
      * @returns a promise that will resolve to the new node material
      */
     public static ParseFromSnippetAsync(
@@ -2321,7 +2351,8 @@ export class NodeMaterial extends PushMaterial {
         scene: Scene = EngineStore.LastCreatedScene!,
         rootUrl: string = "",
         nodeMaterial?: NodeMaterial,
-        skipBuild: boolean = false
+        skipBuild: boolean = false,
+        waitForTextureReadyness: boolean = false
     ): Promise<NodeMaterial> {
         if (snippetId === "_BLANK") {
             return Promise.resolve(NodeMaterial.CreateDefault("blank", scene));
@@ -2347,9 +2378,21 @@ export class NodeMaterial extends PushMaterial {
                             if (!skipBuild) {
                                 nodeMaterial.build();
                             }
-                            resolve(nodeMaterial);
                         } catch (err) {
                             reject(err);
+                        }
+
+                        if (waitForTextureReadyness) {
+                            nodeMaterial
+                                .whenTexturesReadyAsync()
+                                .then(() => {
+                                    resolve(nodeMaterial!);
+                                })
+                                .catch((err) => {
+                                    reject(err);
+                                });
+                        } else {
+                            resolve(nodeMaterial);
                         }
                     } else {
                         reject("Unable to load the snippet " + snippetId);

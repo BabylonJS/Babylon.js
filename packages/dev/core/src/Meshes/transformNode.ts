@@ -906,9 +906,14 @@ export class TransformNode extends Node {
             this.rotationQuaternion.multiplyToRef(rotationQuaternion, this.rotationQuaternion);
         } else {
             if (this.parent) {
+                const parentWorldMatrix = this.parent.getWorldMatrix();
                 const invertParentWorldMatrix = TmpVectors.Matrix[0];
-                this.parent.getWorldMatrix().invertToRef(invertParentWorldMatrix);
+                parentWorldMatrix.invertToRef(invertParentWorldMatrix);
                 axis = Vector3.TransformNormal(axis, invertParentWorldMatrix);
+
+                if (parentWorldMatrix.determinant() < 0) {
+                    amount *= -1;
+                }
             }
             rotationQuaternion = Quaternion.RotationAxisToRef(axis, amount, TransformNode._RotationAxisCache);
             rotationQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);

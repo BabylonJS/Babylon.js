@@ -2,7 +2,11 @@ import { ShaderDefineExpression } from "../shaderDefineExpression";
 
 /** @internal */
 export class ShaderDefineArithmeticOperator extends ShaderDefineExpression {
-    public constructor(public define: string, public operand: string, public testValue: string) {
+    public constructor(
+        public define: string,
+        public operand: string,
+        public testValue: string
+    ) {
         super();
     }
 

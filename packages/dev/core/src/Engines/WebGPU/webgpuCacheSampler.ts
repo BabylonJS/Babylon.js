@@ -197,7 +197,7 @@ export class WebGPUCacheSampler {
                 break;
         }
 
-        if (anisotropy > 1 && (lodMinClamp !== 0 || lodMaxClamp !== 0)) {
+        if (anisotropy > 1 && (lodMinClamp !== 0 || lodMaxClamp !== 0) && mipmapFilter !== WebGPUConstants.FilterMode.Nearest) {
             return {
                 magFilter: WebGPUConstants.FilterMode.Linear,
                 minFilter: WebGPUConstants.FilterMode.Linear,

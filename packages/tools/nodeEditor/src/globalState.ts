@@ -17,6 +17,7 @@ import { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager"
 import { RegisterDefaultInput } from "./graphSystem/registerDefaultInput";
 import { RegisterExportData } from "./graphSystem/registerExportData";
 import type { FilesInput } from "core/Misc/filesInput";
+import { RegisterDebugSupport } from "./graphSystem/registerDebugSupport";
 
 export class GlobalState {
     nodeMaterial: NodeMaterial;
@@ -32,6 +33,7 @@ export class GlobalState {
     onIsLoadingChanged = new Observable<boolean>();
     onPreviewCommandActivated = new Observable<boolean>();
     onLightUpdated = new Observable<void>();
+    onBackgroundHDRUpdated = new Observable<void>();
     onPreviewBackgroundChanged = new Observable<void>();
     onBackFaceCullingChanged = new Observable<void>();
     onDepthPrePassChanged = new Observable<void>();
@@ -42,6 +44,8 @@ export class GlobalState {
     onGetNodeFromBlock: (block: NodeMaterialBlock) => GraphNode;
     previewType: PreviewType;
     previewFile: File;
+    envType: PreviewType;
+    envFile: File;
     particleSystemBlendMode = ParticleSystem.BLENDMODE_ONEONE;
     listOfCustomPreviewFiles: File[] = [];
     rotatePreview: boolean;
@@ -52,6 +56,7 @@ export class GlobalState {
     hemisphericLight: boolean;
     directionalLight0: boolean;
     directionalLight1: boolean;
+    backgroundHDR: boolean;
     controlCamera: boolean;
     _mode: NodeMaterialModes;
     pointerOverCanvas: boolean = false;
@@ -74,11 +79,13 @@ export class GlobalState {
 
     public constructor() {
         this.previewType = DataStorage.ReadNumber("PreviewType", PreviewType.Box);
+        this.envType = DataStorage.ReadNumber("EnvType", PreviewType.Room);
         this.backFaceCulling = DataStorage.ReadBoolean("BackFaceCulling", true);
         this.depthPrePass = DataStorage.ReadBoolean("DepthPrePass", false);
         this.hemisphericLight = DataStorage.ReadBoolean("HemisphericLight", true);
         this.directionalLight0 = DataStorage.ReadBoolean("DirectionalLight0", false);
         this.directionalLight1 = DataStorage.ReadBoolean("DirectionalLight1", false);
+        this.backgroundHDR = DataStorage.ReadBoolean("backgroundHDR", false);
         this.controlCamera = DataStorage.ReadBoolean("ControlCamera", true);
         this._mode = DataStorage.ReadNumber("Mode", NodeMaterialModes.Material);
         this.stateManager = new StateManager();
@@ -86,6 +93,7 @@ export class GlobalState {
         this.stateManager.lockObject = this.lockObject;
 
         RegisterElbowSupport(this.stateManager);
+        RegisterDebugSupport(this.stateManager);
         RegisterNodePortDesign(this.stateManager);
         RegisterDefaultInput(this.stateManager);
         RegisterExportData(this.stateManager);

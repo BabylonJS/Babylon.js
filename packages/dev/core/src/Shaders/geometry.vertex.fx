@@ -90,10 +90,14 @@ void main(void)
 	vec4 worldPos = vec4(finalWorld * vec4(positionUpdated, 1.0));
 
 	#ifdef BUMP
-	vWorldView = view * finalWorld;
-	vNormalW = normalUpdated;
+		vWorldView = view * finalWorld;
+		vNormalW = normalUpdated;
 	#else
-	vNormalV = normalize(vec3((view * finalWorld) * vec4(normalUpdated, 0.0)));
+        #ifdef NORMAL_WORLDSPACE
+			vNormalV = normalize(vec3(finalWorld * vec4(normalUpdated, 0.0)));
+		#else
+			vNormalV = normalize(vec3((view * finalWorld) * vec4(normalUpdated, 0.0)));
+		#endif
 	#endif
 
 	vViewPos = view * worldPos;

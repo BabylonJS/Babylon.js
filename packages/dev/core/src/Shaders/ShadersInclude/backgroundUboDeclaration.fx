@@ -14,14 +14,9 @@ uniform Material
 	uniform float pointSize;
 	uniform float shadowLevel;
 	uniform float alpha;
-
-	#if defined(REFLECTIONFRESNEL) || defined(OPACITYFRESNEL)
-		uniform vec3 vBackgroundCenter;
-	#endif
-
-	#ifdef REFLECTIONFRESNEL
-		uniform vec4 vReflectionControl;
-	#endif
+	uniform vec3 vBackgroundCenter;
+	uniform vec4 vReflectionControl;
+	uniform vec2 projectedGroundInfos;
 };
 
 #include<sceneUboDeclaration>

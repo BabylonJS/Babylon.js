@@ -71,44 +71,48 @@ void main() {
     #include<clipPlaneFragment>
 
     #ifdef ALPHATEST
-    if (texture2D(diffuseSampler, vUV).a < 0.4)
-        discard;
+        if (texture2D(diffuseSampler, vUV).a < 0.4)
+            discard;
     #endif
 
     vec3 normalOutput;
     #ifdef BUMP
-    vec3 normalW = normalize(vNormalW);
-    #include<bumpFragment>
-    normalOutput = normalize(vec3(vWorldView * vec4(normalW, 0.0)));
+        vec3 normalW = normalize(vNormalW);
+        #include<bumpFragment>
+        #ifdef NORMAL_WORLDSPACE
+            normalOutput = normalW;
+        #else
+            normalOutput = normalize(vec3(vWorldView * vec4(normalW, 0.0)));
+        #endif
     #else
-    normalOutput = normalize(vNormalV);
+        normalOutput = normalize(vNormalV);
     #endif
 
     #ifdef PREPASS
         #ifdef PREPASS_DEPTH
-        gl_FragData[DEPTH_INDEX] = vec4(vViewPos.z / vViewPos.w, 0.0, 0.0, 1.0);
+            gl_FragData[DEPTH_INDEX] = vec4(vViewPos.z / vViewPos.w, 0.0, 0.0, 1.0);
         #endif
 
         #ifdef PREPASS_NORMAL
-        gl_FragData[NORMAL_INDEX] = vec4(normalOutput, 1.0);
+            gl_FragData[NORMAL_INDEX] = vec4(normalOutput, 1.0);
         #endif
     #else
-    gl_FragData[0] = vec4(vViewPos.z / vViewPos.w, 0.0, 0.0, 1.0);
-    gl_FragData[1] = vec4(normalOutput, 1.0);
+        gl_FragData[0] = vec4(vViewPos.z / vViewPos.w, 0.0, 0.0, 1.0);
+        gl_FragData[1] = vec4(normalOutput, 1.0);
     #endif
 
     #ifdef POSITION
-    gl_FragData[POSITION_INDEX] = vec4(vPositionW, 1.0);
+        gl_FragData[POSITION_INDEX] = vec4(vPositionW, 1.0);
     #endif
 
     #ifdef VELOCITY
-    vec2 a = (vCurrentPosition.xy / vCurrentPosition.w) * 0.5 + 0.5;
-	vec2 b = (vPreviousPosition.xy / vPreviousPosition.w) * 0.5 + 0.5;
+        vec2 a = (vCurrentPosition.xy / vCurrentPosition.w) * 0.5 + 0.5;
+        vec2 b = (vPreviousPosition.xy / vPreviousPosition.w) * 0.5 + 0.5;
 
-    vec2 velocity = abs(a - b);
-    velocity = vec2(pow(velocity.x, 1.0 / 3.0), pow(velocity.y, 1.0 / 3.0)) * sign(a - b) * 0.5 + 0.5;
+        vec2 velocity = abs(a - b);
+        velocity = vec2(pow(velocity.x, 1.0 / 3.0), pow(velocity.y, 1.0 / 3.0)) * sign(a - b) * 0.5 + 0.5;
 
-    gl_FragData[VELOCITY_INDEX] = vec4(velocity, 0.0, 1.0);
+        gl_FragData[VELOCITY_INDEX] = vec4(velocity, 0.0, 1.0);
     #endif
 
     #ifdef REFLECTIVITY

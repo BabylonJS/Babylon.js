@@ -4,6 +4,7 @@ import type { Effect } from "./effect";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import type { ThinEngine } from "../Engines/thinEngine";
+import type { InternalTexture } from "./Textures/internalTexture";
 import { Tools } from "../Misc/tools";
 import type { MatrixLike, Vector3Like, Vector4Like } from "core/Maths/math.vector";
 import type { Color3Like, Color4Like } from "core/Maths/math.color";
@@ -557,6 +558,14 @@ export class UniformBuffer {
         this._needSync = true;
     }
 
+    private _getNames() {
+        const names = [];
+        for (const name in this._uniformLocations) {
+            names.push(name);
+        }
+        return names.join(",");
+    }
+
     /** @internal */
     public _rebuild(): void {
         if (this._noUBO || !this._bufferData) {
@@ -564,9 +573,9 @@ export class UniformBuffer {
         }
 
         if (this._dynamic) {
-            this._buffer = this._engine.createDynamicUniformBuffer(this._bufferData);
+            this._buffer = this._engine.createDynamicUniformBuffer(this._bufferData, this._name + "_UniformList:" + this._getNames());
         } else {
-            this._buffer = this._engine.createUniformBuffer(this._bufferData);
+            this._buffer = this._engine.createUniformBuffer(this._bufferData, this._name + "_UniformList:" + this._getNames());
         }
 
         if (this._engine._features.trackUbosInFrame) {
@@ -712,7 +721,7 @@ export class UniformBuffer {
             for (let i = 0; i < size; i++) {
                 // We are checking the matrix cache before calling updateUniform so we do not need to check it here
                 // Hence the test for size === 16 to simply commit the matrix values
-                if ((size === 16 && !this._engine._features.uniformBufferHardCheckMatrix) || this._bufferData[location + i] !== Tools.FloatRound(data[i])) {
+                if ((size === 16 && !this._engine._features.uniformBufferHardCheckMatrix) || this._bufferData[location + i] !== Math.fround(data[i])) {
                     changed = true;
                     if (this._createBufferOnWrite) {
                         this._createNewBuffer();
@@ -1075,6 +1084,15 @@ export class UniformBuffer {
      */
     public setTexture(name: string, texture: Nullable<ThinTexture>) {
         this._currentEffect.setTexture(name, texture);
+    }
+
+    /**
+     * Sets a sampler uniform on the effect.
+     * @param name Define the name of the sampler.
+     * @param texture Define the (internal) texture to set in the sampler
+     */
+    public bindTexture(name: string, texture: Nullable<InternalTexture>) {
+        this._currentEffect._bindTexture(name, texture);
     }
 
     /**

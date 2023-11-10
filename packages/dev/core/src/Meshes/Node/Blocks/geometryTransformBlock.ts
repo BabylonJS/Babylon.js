@@ -42,6 +42,7 @@ export class GeometryTransformBlock extends NodeGeometryBlock {
         this._outputs[0]._typeConnectionSource = this._inputs[0];
         this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Float);
         this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Matrix);
+        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Texture);
     }
 
     /**
@@ -147,6 +148,7 @@ export class GeometryTransformBlock extends NodeGeometryBlock {
         if (this.evaluateContext) {
             this.output._storedFunction = func;
         } else {
+            this.output._storedFunction = null;
             this.output._storedValue = func(state);
         }
     }

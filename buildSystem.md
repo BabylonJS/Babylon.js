@@ -911,6 +911,16 @@ For example:
 npm run test:visualization -- -i "webgl2" -t "Particle subemitters"
 ```
 
+#### Generating and updating the reference images
+
+If you add a new test that doesn't have a snapshot, the system can generate the image for you. Run the test with the following command and the reference image will be generated:
+
+```shell
+npm run test:visualization -- -i "webgl2" -t "test name" --updateSnapshot
+```
+
+If you want to update the image that already exists, first remove the original image and then run the test with the -u flag.
+
 ## Changlog
 
 The changelog is generated automatically based on a script in the ./scripts/ directory and the `changelog.json` file located in the `.build` directory. It is generated on every npm publish (once a week).

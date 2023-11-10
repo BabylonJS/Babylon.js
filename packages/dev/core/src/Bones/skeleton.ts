@@ -25,7 +25,7 @@ export class Skeleton implements IAnimatable {
     /**
      * Defines the list of child bones
      */
-    public bones = new Array<Bone>();
+    public bones: Bone[] = [];
     /**
      * Defines an estimate of the dimension of the skeleton at rest
      */
@@ -884,7 +884,7 @@ export class Skeleton implements IAnimatable {
      * Sorts bones per internal index
      */
     public sortBones(): void {
-        const bones = new Array<Bone>();
+        const bones: Bone[] = [];
         const visited = new Array<boolean>(this.bones.length);
         for (let index = 0; index < this.bones.length; index++) {
             this._sortBones(index, bones, visited);

@@ -431,7 +431,7 @@ export class DDSTools {
     ) {
         let sphericalPolynomialFaces: Nullable<Array<ArrayBufferView>> = null;
         if (info.sphericalPolynomial) {
-            sphericalPolynomialFaces = new Array<ArrayBufferView>();
+            sphericalPolynomialFaces = [] as ArrayBufferView[];
         }
         const ext = !!engine.getCaps().s3tc;
 

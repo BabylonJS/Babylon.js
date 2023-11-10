@@ -134,10 +134,14 @@ export class DynamicTexture extends Texture {
 
     /**
      * Clears the texture
+     * @param clearColor Defines the clear color to use
      */
-    public clear(): void {
+    public clear(clearColor?: string): void {
         const size = this.getSize();
-        this._context.fillRect(0, 0, size.width, size.height);
+        if (clearColor) {
+            this._context.fillStyle = clearColor;
+        }
+        this._context.clearRect(0, 0, size.width, size.height);
     }
 
     /**
@@ -165,7 +169,7 @@ export class DynamicTexture extends Texture {
      * @param y defines the placement of the text from the top when invertY is true and from the bottom when false
      * @param font defines the font to be used with font-style, font-size, font-name
      * @param color defines the color used for the text
-     * @param clearColor defines the color for the canvas, use null to not overwrite canvas
+     * @param fillColor defines the color for the canvas, use null to not overwrite canvas (this bleands with the background to replace, use the clear function)
      * @param invertY defines the direction for the Y axis (default is true - y increases downwards)
      * @param update defines whether texture is immediately update (default is true)
      */
@@ -175,13 +179,13 @@ export class DynamicTexture extends Texture {
         y: number | null | undefined,
         font: string,
         color: string | null,
-        clearColor: string | null,
+        fillColor: string | null,
         invertY?: boolean,
         update = true
     ) {
         const size = this.getSize();
-        if (clearColor) {
-            this._context.fillStyle = clearColor;
+        if (fillColor) {
+            this._context.fillStyle = fillColor;
             this._context.fillRect(0, 0, size.width, size.height);
         }
 

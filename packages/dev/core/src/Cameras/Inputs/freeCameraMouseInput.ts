@@ -48,7 +48,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
 
     private _currentActiveButton: number = -1;
     private _activePointerId: number = -1;
-    private _contextMenuBind: () => void;
+    private _contextMenuBind: (evt: MouseEvent) => void;
 
     /**
      * Manage the mouse inputs to control the movement of a free camera.
@@ -76,10 +76,6 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
             this._pointerInput = (p) => {
                 const evt = <IPointerEvent>p.event;
                 const isTouch = evt.pointerType === "touch";
-
-                if (engine.isInVRExclusivePointerMode) {
-                    return;
-                }
 
                 if (!this.touchEnabled && isTouch) {
                     return;
@@ -145,14 +141,9 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                     if (engine.isPointerLock && this._onMouseMove) {
                         this._onMouseMove(p.event);
                     } else if (this._previousPosition) {
-                        let offsetX = evt.clientX - this._previousPosition.x;
+                        const handednessMultiplier = this.camera._calculateHandednessMultiplier();
+                        const offsetX = (evt.clientX - this._previousPosition.x) * handednessMultiplier;
                         const offsetY = evt.clientY - this._previousPosition.y;
-                        if (this.camera.getScene().useRightHandedSystem) {
-                            offsetX *= -1;
-                        }
-                        if (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() < 0) {
-                            offsetX *= -1;
-                        }
 
                         if (this._allowCameraRotation) {
                             this.camera.cameraRotation.y += offsetX / this.angularSensibility;
@@ -178,17 +169,9 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                 return;
             }
 
-            if (engine.isInVRExclusivePointerMode) {
-                return;
-            }
+            const handednessMultiplier = this.camera._calculateHandednessMultiplier();
+            const offsetX = evt.movementX * handednessMultiplier;
 
-            let offsetX = evt.movementX;
-            if (this.camera.getScene().useRightHandedSystem) {
-                offsetX *= -1;
-            }
-            if (this.camera.parent && this.camera.parent._getWorldMatrixDeterminant() < 0) {
-                offsetX *= -1;
-            }
             this.camera.cameraRotation.y += offsetX / this.angularSensibility;
 
             const offsetY = evt.movementY;
@@ -206,7 +189,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
             ._inputManager._addCameraPointerObserver(this._pointerInput, PointerEventTypes.POINTERDOWN | PointerEventTypes.POINTERUP | PointerEventTypes.POINTERMOVE);
 
         if (element) {
-            this._contextMenuBind = this.onContextMenu.bind(this);
+            this._contextMenuBind = (evt: MouseEvent) => this.onContextMenu(evt as PointerEvent);
             element.addEventListener("contextmenu", this._contextMenuBind, false); // TODO: We need to figure out how to handle this for Native
         }
     }

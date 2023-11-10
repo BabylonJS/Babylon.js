@@ -13,9 +13,6 @@
 #extension GL_EXT_frag_depth : enable
 #endif
 
-// Constants
-#define RECIPROCAL_PI2 0.15915494
-
 // Input
 varying vec3 vPositionW;
 
@@ -456,7 +453,11 @@ color.rgb = max(color.rgb, 0.);
     #endif
 
     #ifdef PREPASS_NORMAL
-        gl_FragData[PREPASS_NORMAL_INDEX] = vec4(normalize((view * vec4(normalW, 0.0)).rgb), writeGeometryInfo); // Normal
+        #ifdef PREPASS_NORMAL_WORLDSPACE
+            gl_FragData[PREPASS_NORMAL_INDEX] = vec4(normalW, writeGeometryInfo); // Normal
+        #else
+            gl_FragData[PREPASS_NORMAL_INDEX] = vec4(normalize((view * vec4(normalW, 0.0)).rgb), writeGeometryInfo); // Normal
+        #endif
     #endif
 
     #ifdef PREPASS_ALBEDO_SQRT

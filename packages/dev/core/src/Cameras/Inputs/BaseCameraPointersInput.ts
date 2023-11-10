@@ -68,10 +68,6 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
             const evt = <IPointerEvent>p.event;
             const isTouch = evt.pointerType === "touch";
 
-            if (engine.isInVRExclusivePointerMode) {
-                return;
-            }
-
             if (p.type !== PointerEventTypes.POINTERMOVE && this.buttons.indexOf(evt.button) === -1) {
                 return;
             }
@@ -232,7 +228,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
             this.onLostFocus();
         };
 
-        this._contextMenuBind = this.onContextMenu.bind(this);
+        this._contextMenuBind = (evt: Event) => this.onContextMenu(evt as PointerEvent);
 
         element && element.addEventListener("contextmenu", this._contextMenuBind, false);
 
@@ -341,19 +337,17 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
      * Called each time a new POINTERDOWN event occurs. Ie, for each button
      * press.
      * Override this method to provide functionality.
-     * @param evt
+     * @param _evt Defines the event to track
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public onButtonDown(evt: IPointerEvent): void {}
+    public onButtonDown(_evt: IPointerEvent): void {}
 
     /**
      * Called each time a new POINTERUP event occurs. Ie, for each button
      * release.
      * Override this method to provide functionality.
-     * @param evt
+     * @param _evt Defines the event to track
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public onButtonUp(evt: IPointerEvent): void {}
+    public onButtonUp(_evt: IPointerEvent): void {}
 
     /**
      * Called when window becomes inactive.

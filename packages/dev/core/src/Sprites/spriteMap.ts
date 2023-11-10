@@ -351,7 +351,7 @@ export class SpriteMap implements ISpriteMap {
      * @returns RawTexture of the frameMap
      */
     private _createFrameBuffer(): RawTexture {
-        const data = new Array();
+        const data = [];
         //Do two Passes
         for (let i = 0; i < this.spriteCount; i++) {
             data.push(0, 0, 0, 0); //frame
@@ -397,7 +397,7 @@ export class SpriteMap implements ISpriteMap {
      * @returns RawTexture of the tileMap
      */
     private _createTileBuffer(buffer: any, _layer: number = 0): RawTexture {
-        let data = new Array();
+        let data = [];
         const _ty = this.options.stageSize!.y || 0;
         const _tx = this.options.stageSize!.x || 0;
 
@@ -434,7 +434,7 @@ export class SpriteMap implements ISpriteMap {
             return;
         }
 
-        let p = new Array();
+        let p = [];
         if (pos instanceof Vector2) {
             p.push(pos);
         } else {
@@ -463,7 +463,7 @@ export class SpriteMap implements ISpriteMap {
      * @returns RawTexture of the animationMap
      */
     private _createTileAnimationBuffer(buffer: Nullable<ArrayBufferView>): RawTexture {
-        const data = new Array();
+        const data = [];
         let floatArray;
         if (!buffer) {
             for (let i = 0; i < this.spriteCount; i++) {

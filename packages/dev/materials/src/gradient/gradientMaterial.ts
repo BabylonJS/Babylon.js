@@ -198,7 +198,7 @@ export class GradientMaterial extends PushMaterial {
             ];
             addClipPlaneUniforms(uniforms);
             const samplers: string[] = [];
-            const uniformBuffers = new Array<string>();
+            const uniformBuffers: string[] = [];
 
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,

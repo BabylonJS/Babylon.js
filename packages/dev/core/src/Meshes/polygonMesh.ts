@@ -27,10 +27,10 @@ class IndexedVector2 extends Vector2 {
  * Defines points to create a polygon
  */
 class PolygonPoints {
-    elements = new Array<IndexedVector2>();
+    elements = [] as IndexedVector2[];
 
     add(originalPoints: Array<Vector2>): Array<IndexedVector2> {
-        const result = new Array<IndexedVector2>();
+        const result: IndexedVector2[] = [];
         originalPoints.forEach((point) => {
             const newPoint = new IndexedVector2(point, this.elements.length);
             result.push(newPoint);
@@ -95,7 +95,7 @@ export class Polygon {
      * @returns points that make the resulting circle
      */
     static Circle(radius: number, cx: number = 0, cy: number = 0, numberOfSides: number = 32): Vector2[] {
-        const result = new Array<Vector2>();
+        const result: Vector2[] = [];
 
         let angle = 0;
         const increment = (Math.PI * 2) / numberOfSides;
@@ -238,9 +238,9 @@ export class PolygonMeshBuilder {
     buildVertexData(depth: number = 0, smoothingThreshold: number = 2): VertexData {
         const result = new VertexData();
 
-        const normals = new Array<number>();
-        const positions = new Array<number>();
-        const uvs = new Array<number>();
+        const normals: number[] = [];
+        const positions: number[] = [];
+        const uvs: number[] = [];
 
         const bounds = this._points.computeBounds();
         this._points.elements.forEach((p) => {
@@ -249,7 +249,7 @@ export class PolygonMeshBuilder {
             uvs.push((p.x - bounds.min.x) / bounds.width, (p.y - bounds.min.y) / bounds.height);
         });
 
-        const indices = new Array<number>();
+        const indices: number[] = [];
 
         const res = this.bjsEarcut(this._epoints, this._eholes, 2);
 

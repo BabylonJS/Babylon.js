@@ -1,4 +1,4 @@
-import type { IPhysicsCollisionEvent, IPhysicsEnginePluginV2, PhysicsMassProperties, PhysicsMotionType } from "./IPhysicsEnginePlugin";
+import type { IBasePhysicsCollisionEvent, IPhysicsCollisionEvent, IPhysicsEnginePluginV2, PhysicsMassProperties, PhysicsMotionType } from "./IPhysicsEnginePlugin";
 import type { PhysicsShape } from "./physicsShape";
 import { Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector";
 import type { Scene } from "../../scene";
@@ -40,6 +40,10 @@ export class PhysicsBody {
      */
     private _collisionCBEnabled: boolean = false;
     /**
+     * If the collision ended callback is enabled
+     */
+    private _collisionEndedCBEnabled: boolean = false;
+    /**
      * The transform node associated with this Physics Body
      */
     transformNode: TransformNode;
@@ -55,6 +59,8 @@ export class PhysicsBody {
     public startAsleep: boolean;
 
     private _nodeDisposeObserver: Nullable<Observer<Node>>;
+
+    private _isDisposed = false;
 
     /**
      * Constructs a new physics body for the given node.
@@ -419,11 +425,19 @@ export class PhysicsBody {
     }
 
     /**
-     * Returns an observable that will be notified for all collisions happening for event-enabled bodies
+     * Returns an observable that will be notified for when a collision starts or continues for this PhysicsBody
      * @returns Observable
      */
     public getCollisionObservable(): Observable<IPhysicsCollisionEvent> {
         return this._physicsPlugin.getCollisionObservable(this);
+    }
+
+    /**
+     * Returns an observable that will be notified when the body has finished colliding with another body
+     * @returns
+     */
+    public getCollisionEndedObservable(): Observable<IBasePhysicsCollisionEvent> {
+        return this._physicsPlugin.getCollisionEndedObservable(this);
     }
 
     /**
@@ -433,6 +447,11 @@ export class PhysicsBody {
     public setCollisionCallbackEnabled(enabled: boolean): void {
         this._collisionCBEnabled = enabled;
         this._physicsPlugin.setCollisionCallbackEnabled(this, enabled);
+    }
+
+    public setCollisionEndedCallbackEnabled(enabled: boolean): void {
+        this._collisionEndedCBEnabled = enabled;
+        this._physicsPlugin.setCollisionEndedCallbackEnabled(this, enabled);
     }
 
     /*
@@ -573,9 +592,15 @@ export class PhysicsBody {
      * This method is useful for cleaning up the physics engine when a body is no longer needed. Disposing the body will free up resources and prevent memory leaks.
      */
     public dispose() {
+        if (this._isDisposed) {
+            return;
+        }
         // Disable collisions CB so it doesn't fire when the body is disposed
         if (this._collisionCBEnabled) {
             this.setCollisionCallbackEnabled(false);
+        }
+        if (this._collisionEndedCBEnabled) {
+            this.setCollisionEndedCallbackEnabled(false);
         }
         if (this._nodeDisposeObserver) {
             this.transformNode.onDisposeObservable.remove(this._nodeDisposeObserver);
@@ -587,5 +612,6 @@ export class PhysicsBody {
         this.transformNode.physicsBody = null;
         this._pluginData = null;
         this._pluginDataInstances.length = 0;
+        this._isDisposed = true;
     }
 }

@@ -134,7 +134,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         }
 
         if (!this._freezeShadowCastersBoundingInfoObservable && !freeze) {
-            this._freezeShadowCastersBoundingInfoObservable = this._scene.onBeforeRenderObservable.add(this._computeShadowCastersBoundingInfo.bind(this));
+            this._freezeShadowCastersBoundingInfoObservable = this._scene.onBeforeRenderObservable.add(() => this._computeShadowCastersBoundingInfo());
         }
 
         this._freezeShadowCastersBoundingInfo = freeze;
@@ -310,7 +310,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             this._shadowMaxZ = value;
             return;
         }
-        if (this._shadowMaxZ === value || value < camera.minZ || value > camera.maxZ) {
+        if (this._shadowMaxZ === value || value < camera.minZ || (value > camera.maxZ && camera.maxZ !== 0)) {
             return;
         }
         this._shadowMaxZ = value;

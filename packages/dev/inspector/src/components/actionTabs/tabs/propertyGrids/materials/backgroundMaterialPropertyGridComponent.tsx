@@ -107,6 +107,36 @@ export class BackgroundMaterialPropertyGridComponent extends React.Component<IBa
                 </LineContainerComponent>
                 {this.renderTextures()}
                 <LineContainerComponent title="RENDERING" closed={true} selection={this.props.globalState}>
+                    <CheckBoxLineComponent
+                        label="Ground Projection"
+                        target={material}
+                        propertyName="enableGroundProjection"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    {material.enableGroundProjection && (
+                        <div className="fragment">
+                            <SliderLineComponent
+                                lockObject={this.props.lockObject}
+                                label="Ground radius"
+                                target={material}
+                                propertyName="projectedGroundRadius"
+                                minimum={0}
+                                maximum={10000}
+                                step={10}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                            <SliderLineComponent
+                                lockObject={this.props.lockObject}
+                                label="Ground height"
+                                target={material}
+                                propertyName="projectedGroundHeight"
+                                minimum={1}
+                                maximum={1000}
+                                step={10}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                        </div>
+                    )}
                     <CheckBoxLineComponent label="Enable noise" target={material} propertyName="enableNoise" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                     <CheckBoxLineComponent
                         label="Opacity fresnel"

@@ -16,6 +16,13 @@ export class SetUVsBlock extends NodeGeometryBlock implements INodeGeometryExecu
     private _currentIndex: number;
 
     /**
+     * Gets or sets a boolean indicating that this block can evaluate context
+     * Build performance is improved when this value is set to false as the system will cache values instead of reevaluating everything per context change
+     */
+    @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { rebuild: true } })
+    public evaluateContext = true;
+
+    /**
      * Gets or sets a value indicating which UV to set
      */
     @editableInPropertyPage("Texture coordinates index", PropertyTypeForEdition.List, "ADVANCED", {
@@ -98,65 +105,75 @@ export class SetUVsBlock extends NodeGeometryBlock implements INodeGeometryExecu
     }
 
     protected _buildBlock(state: NodeGeometryBuildState) {
-        state.executionContext = this;
+        const func = (state: NodeGeometryBuildState) => {
+            state.pushExecutionContext(this);
 
-        this._vertexData = this.geometry.getConnectedValue(state);
-        state.geometryContext = this._vertexData;
+            this._vertexData = this.geometry.getConnectedValue(state);
+            state.pushGeometryContext(this._vertexData);
 
-        if (!this._vertexData || !this._vertexData.positions) {
-            state.executionContext = null;
-            state.geometryContext = null;
-            this.output._storedValue = null;
-            return;
-        }
-
-        if (!this.uvs.isConnected) {
-            state.executionContext = null;
-            state.geometryContext = null;
-            this.output._storedValue = this._vertexData;
-            return;
-        }
-
-        const uvs: number[] = [];
-
-        // Processing
-        const vertexCount = this._vertexData.positions.length / 3;
-        for (this._currentIndex = 0; this._currentIndex < vertexCount; this._currentIndex++) {
-            const tempVector2 = this.uvs.getConnectedValue(state) as Vector2;
-            if (tempVector2) {
-                tempVector2.toArray(uvs, this._currentIndex * 2);
+            if (!this._vertexData || !this._vertexData.positions) {
+                state.restoreGeometryContext();
+                state.restoreExecutionContext();
+                this.output._storedValue = null;
+                return;
             }
-        }
 
-        switch (this.textureCoordinateIndex) {
-            case 0:
-                this._vertexData.uvs = uvs;
-                break;
-            case 1:
-                this._vertexData.uvs2 = uvs;
-                break;
-            case 2:
-                this._vertexData.uvs3 = uvs;
-                break;
-            case 3:
-                this._vertexData.uvs4 = uvs;
-                break;
-            case 4:
-                this._vertexData.uvs5 = uvs;
-                break;
-            case 5:
-                this._vertexData.uvs6 = uvs;
-                break;
-        }
+            if (!this.uvs.isConnected) {
+                state.restoreGeometryContext();
+                state.restoreExecutionContext();
+                this.output._storedValue = this._vertexData;
+                return;
+            }
 
-        // Storage
-        this.output._storedValue = this._vertexData;
-        state.executionContext = null;
-        state.geometryContext = null;
+            const uvs: number[] = [];
+
+            // Processing
+            const vertexCount = this._vertexData.positions.length / 3;
+            for (this._currentIndex = 0; this._currentIndex < vertexCount; this._currentIndex++) {
+                const tempVector2 = this.uvs.getConnectedValue(state) as Vector2;
+                if (tempVector2) {
+                    tempVector2.toArray(uvs, this._currentIndex * 2);
+                }
+            }
+
+            switch (this.textureCoordinateIndex) {
+                case 0:
+                    this._vertexData.uvs = uvs;
+                    break;
+                case 1:
+                    this._vertexData.uvs2 = uvs;
+                    break;
+                case 2:
+                    this._vertexData.uvs3 = uvs;
+                    break;
+                case 3:
+                    this._vertexData.uvs4 = uvs;
+                    break;
+                case 4:
+                    this._vertexData.uvs5 = uvs;
+                    break;
+                case 5:
+                    this._vertexData.uvs6 = uvs;
+                    break;
+            }
+
+            // Storage
+            state.restoreGeometryContext();
+            state.restoreExecutionContext();
+            return this._vertexData;
+        };
+
+        if (this.evaluateContext) {
+            this.output._storedFunction = func;
+        } else {
+            this.output._storedFunction = null;
+            this.output._storedValue = func(state);
+        }
     }
 
     protected _dumpPropertiesCode() {
-        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.textureCoordinateIndex};\n`;
+        let codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.textureCoordinateIndex};\n`;
+        codeString += `${this._codeVariableName}.evaluateContext = ${this.evaluateContext ? "true" : "false"};\n`;
         return codeString;
     }
 
@@ -167,6 +184,7 @@ export class SetUVsBlock extends NodeGeometryBlock implements INodeGeometryExecu
     public serialize(): any {
         const serializationObject = super.serialize();
 
+        serializationObject.evaluateContext = this.evaluateContext;
         serializationObject.textureCoordinateIndex = this.textureCoordinateIndex;
 
         return serializationObject;
@@ -176,6 +194,10 @@ export class SetUVsBlock extends NodeGeometryBlock implements INodeGeometryExecu
         super._deserialize(serializationObject);
 
         this.textureCoordinateIndex = serializationObject.textureCoordinateIndex;
+
+        if (serializationObject.evaluateContext !== undefined) {
+            this.evaluateContext = serializationObject.evaluateContext;
+        }
     }
 }
 
