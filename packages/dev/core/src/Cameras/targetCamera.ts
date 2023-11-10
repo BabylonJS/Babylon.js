@@ -320,23 +320,10 @@ export class TargetCamera extends Camera {
 
     /** @internal */
     public _updatePosition(): void {
-        const relativeInertia = this._getInertiaRelativeToTime();
-        const scaleFactor = this._getRelativeScaleFactor(relativeInertia);
-
-        // If we have an inertia of zero, copy the values to apply and then zero out the direction vector
-        // Else, scale the previous values and apply them
-        if (this.inertia === 0) {
-            TmpVectors.Vector3[0].copyFrom(this.cameraDirection);
-            this.cameraDirection.scaleInPlace(0);
-        } else {
-            this.cameraDirection.scaleInPlace(relativeInertia);
-            TmpVectors.Vector3[0].copyFrom(this.cameraDirection);
-        }
-
         if (this.parent) {
             this.parent.getWorldMatrix().invertToRef(TmpVectors.Matrix[0]);
-            Vector3.TransformNormalToRef(TmpVectors.Vector3[0], TmpVectors.Matrix[0], TmpVectors.Vector3[0]);
-            this._deferredPositionUpdate.addInPlace(TmpVectors.Vector3[0].scaleInPlace(scaleFactor));
+            Vector3.TransformNormalToRef(this.cameraDirection, TmpVectors.Matrix[0], TmpVectors.Vector3[0]);
+            this._deferredPositionUpdate.addInPlace(TmpVectors.Vector3[0]);
             if (!this._deferOnly) {
                 this.position.copyFrom(this._deferredPositionUpdate);
             } else {
@@ -344,9 +331,7 @@ export class TargetCamera extends Camera {
             }
             return;
         }
-
-        TmpVectors.Vector3[0].scaleToRef(scaleFactor, TmpVectors.Vector3[0]);
-        this._deferredPositionUpdate.addInPlace(TmpVectors.Vector3[0]);
+        this._deferredPositionUpdate.addInPlace(this.cameraDirection);
         if (!this._deferOnly) {
             this.position.copyFrom(this._deferredPositionUpdate);
         } else {
@@ -359,7 +344,6 @@ export class TargetCamera extends Camera {
         const directionMultiplier = this.invertRotation ? -this.inverseRotationSpeed : 1.0;
         const needToMove = this._decideIfNeedsToMove();
         const needToRotate = this.cameraRotation.x || this.cameraRotation.y;
-        const endMovementThreshold = this.speed * Epsilon; // minimum movement threshold before we end movement
 
         this._deferredUpdated = false;
         this._deferredRotationUpdate.copyFrom(this.rotation);
@@ -371,52 +355,17 @@ export class TargetCamera extends Camera {
         // Move
         if (needToMove) {
             this._updatePosition();
-
-            if (Math.abs(this.cameraDirection.x) < endMovementThreshold) {
-                this.cameraDirection.x = 0;
-            }
-
-            if (Math.abs(this.cameraDirection.y) < endMovementThreshold) {
-                this.cameraDirection.y = 0;
-            }
-
-            if (Math.abs(this.cameraDirection.z) < endMovementThreshold) {
-                this.cameraDirection.z = 0;
-            }
         }
 
         // Rotate
         if (needToRotate) {
-            if (this.inertia === 0) {
-                //rotate, if quaternion is set and rotation was used
-                if (this.rotationQuaternion) {
-                    this.rotationQuaternion.toEulerAnglesToRef(this._deferredRotationUpdate);
-                }
-
-                this._deferredRotationUpdate.x += this.cameraRotation.x * directionMultiplier;
-                this._deferredRotationUpdate.y += this.cameraRotation.y * directionMultiplier;
-                this.cameraRotation.scaleInPlace(0);
-            } else {
-                const relativeInertia = this._getInertiaRelativeToTime();
-                const scaleFactor = this._getRelativeScaleFactor(relativeInertia);
-                this.cameraRotation.scaleInPlace(relativeInertia);
-
-                //rotate, if quaternion is set and rotation was used
-                if (this.rotationQuaternion) {
-                    this.rotationQuaternion.toEulerAnglesToRef(this._deferredRotationUpdate);
-                }
-
-                this._deferredRotationUpdate.x += this.cameraRotation.x * directionMultiplier * scaleFactor;
-                this._deferredRotationUpdate.y += this.cameraRotation.y * directionMultiplier * scaleFactor;
-
-                if (Math.abs(this.cameraRotation.x) < endMovementThreshold) {
-                    this.cameraRotation.x = 0;
-                }
-
-                if (Math.abs(this.cameraRotation.y) < endMovementThreshold) {
-                    this.cameraRotation.y = 0;
-                }
+            //rotate, if quaternion is set and rotation was used
+            if (this.rotationQuaternion) {
+                this.rotationQuaternion.toEulerAnglesToRef(this._deferredRotationUpdate);
             }
+
+            this._deferredRotationUpdate.x += this.cameraRotation.x * directionMultiplier;
+            this._deferredRotationUpdate.y += this.cameraRotation.y * directionMultiplier;
 
             // Apply constraints
             if (!this.noRotationConstraint) {
@@ -453,6 +402,33 @@ export class TargetCamera extends Camera {
                     }
                 }
             }
+        }
+
+        // Inertia
+        if (needToMove) {
+            if (Math.abs(this.cameraDirection.x) < this.speed * Epsilon) {
+                this.cameraDirection.x = 0;
+            }
+
+            if (Math.abs(this.cameraDirection.y) < this.speed * Epsilon) {
+                this.cameraDirection.y = 0;
+            }
+
+            if (Math.abs(this.cameraDirection.z) < this.speed * Epsilon) {
+                this.cameraDirection.z = 0;
+            }
+
+            this.cameraDirection.scaleInPlace(this.inertia);
+        }
+        if (needToRotate) {
+            if (Math.abs(this.cameraRotation.x) < this.speed * Epsilon) {
+                this.cameraRotation.x = 0;
+            }
+
+            if (Math.abs(this.cameraRotation.y) < this.speed * Epsilon) {
+                this.cameraRotation.y = 0;
+            }
+            this.cameraRotation.scaleInPlace(this.inertia);
         }
 
         super._checkInputs();
