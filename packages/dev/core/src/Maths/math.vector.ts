@@ -754,8 +754,8 @@ export class Vector2 {
      * @param vector defines the vector to normalize
      * @returns a new Vector2
      */
-    public static Normalize(vector: DeepImmutable<Vector2>): Vector2 {
-        const result = Vector2.Zero();
+    public static Normalize<T extends Vector2>(vector: DeepImmutable<T>): T {
+        const result = new (vector.constructor as Vector2Constructor<T>)();
         Vector2.NormalizeToRef(vector, result);
         return result;
     }
@@ -4392,14 +4392,21 @@ export class Quaternion {
      * @returns the current updated quaternion
      */
     public normalize(): this {
-        const len = this.length();
-        if (len === 0) {
+        return this.normalizeFromLength(this.length());
+    }
+
+    /**
+     * Normalize the current quaternion with the given input length.
+     * Please note that this is an in place operation.
+     * @param len the length of the quaternion
+     * @returns the current updated Quaternion
+     */
+    public normalizeFromLength(len: number): this {
+        if (len === 0 || len === 1.0) {
             return this;
         }
 
-        const inv = 1.0 / len;
-        this.scaleInPlace(inv);
-        return this;
+        return this.scaleInPlace(1.0 / len);
     }
 
     /**
@@ -4408,13 +4415,23 @@ export class Quaternion {
      * @returns the normalized quaternion
      */
     public normalizeToNew(): this {
+        const normalized = new (this.constructor as QuaternionConstructor<this>)(0, 0, 0, 1);
+        this.normalizeToRef(normalized);
+        return normalized;
+    }
+
+    /**
+     * Normalize the current Quaternion to the reference
+     * @param reference define the Quaternion to update
+     * @returns the updated Quaternion
+     */
+    public normalizeToRef<T extends Quaternion>(reference: T): T {
         const len = this.length();
-        if (len === 0) {
-            return this.clone();
+        if (len === 0 || len === 1.0) {
+            return reference.copyFromFloats(this._x, this._y, this._z, this._w);
         }
 
-        const inv = 1.0 / len;
-        return this.scale(inv);
+        return this.scaleToRef(1.0 / len, reference);
     }
 
     /**
@@ -5105,6 +5122,28 @@ export class Quaternion {
         result._z = (t2 - time) * 6 * value1._z + (3 * t2 - 4 * time + 1) * tangent1._z + (-t2 + time) * 6 * value2._z + (3 * t2 - 2 * time) * tangent2._z;
         result._w = (t2 - time) * 6 * value1._w + (3 * t2 - 4 * time + 1) * tangent1._w + (-t2 + time) * 6 * value2._w + (3 * t2 - 2 * time) * tangent2._w;
         result._isDirty = true;
+        return result;
+    }
+
+    /**
+     * Returns a new Quaternion as the normalization of the given Quaternion
+     * @param quat defines the Quaternion to normalize
+     * @returns the new Quaternion
+     */
+    public static Normalize(quat: DeepImmutable<Quaternion>): Quaternion {
+        const result = Quaternion.Zero();
+        Quaternion.NormalizeToRef(quat, result);
+        return result;
+    }
+
+    /**
+     * Sets the given Quaternion "result" with the normalization of the given first Quaternion
+     * @param quat defines the Quaternion to normalize
+     * @param result defines the Quaternion where to store the result
+     * @returns result input
+     */
+    public static NormalizeToRef<T extends Quaternion>(quat: DeepImmutable<Quaternion>, result: T): T {
+        quat.normalizeToRef(result);
         return result;
     }
 }
