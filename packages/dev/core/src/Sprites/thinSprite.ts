@@ -1,4 +1,4 @@
-import type { IVector3Like, IColor4Like } from "../Maths/math.like";
+import type { Vector3Like, Color4Like } from "../Maths/math.like";
 import type { Nullable } from "../types";
 
 /**
@@ -12,9 +12,9 @@ export class ThinSprite {
     /** Gets or sets the cell reference in the sprite sheet, uses sprite's filename when added to sprite sheet */
     public cellRef: string;
     /** Gets or sets the current world position */
-    public position: IVector3Like;
+    public position: Vector3Like;
     /** Gets or sets the main color */
-    public color: IColor4Like;
+    public color: Color4Like;
     /** Gets or sets the width */
     public width = 1.0;
     /** Gets or sets the height */

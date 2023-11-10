@@ -13,7 +13,7 @@ import type { ICustomAnimationFrameRequester } from "../Misc/customAnimationFram
 import type { EngineOptions } from "./thinEngine";
 import { ThinEngine } from "./thinEngine";
 import { Constants } from "./constants";
-import type { IViewportLike, IColor4Like } from "../Maths/math.like";
+import type { ViewportLike, Color4Like } from "../Maths/math.like";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { PerformanceMonitor } from "../Misc/performanceMonitor";
 import type { DataBuffer } from "../Buffers/dataBuffer";
@@ -48,7 +48,7 @@ interface IViewportOwnerLike {
     /**
      * Gets or sets the viewport
      */
-    viewport: IViewportLike;
+    viewport: ViewportLike;
 }
 
 /**
@@ -1051,7 +1051,7 @@ export class Engine extends ThinEngine {
      * @param height defines the height of the viewport (in screen space)
      * @returns the current viewport Object (if any) that is being replaced by this call. You can restore this viewport later on to go back to the original state
      */
-    public setDirectViewport(x: number, y: number, width: number, height: number): Nullable<IViewportLike> {
+    public setDirectViewport(x: number, y: number, width: number, height: number): Nullable<ViewportLike> {
         const currentViewport = this._cachedViewport;
         this._cachedViewport = null;
 
@@ -1068,7 +1068,7 @@ export class Engine extends ThinEngine {
      * @param height defines the height of the clear rectangle
      * @param clearColor defines the clear color
      */
-    public scissorClear(x: number, y: number, width: number, height: number, clearColor: IColor4Like): void {
+    public scissorClear(x: number, y: number, width: number, height: number, clearColor: Color4Like): void {
         this.enableScissor(x, y, width, height);
         this.clear(clearColor, true, true, true);
         this.disableScissor();

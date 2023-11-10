@@ -8,7 +8,7 @@ import type { IPipelineContext } from "../Engines/IPipelineContext";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { ShaderProcessor } from "../Engines/Processors/shaderProcessor";
 import type { ProcessingOptions, ShaderCustomProcessingFunction, ShaderProcessingContext } from "../Engines/Processors/shaderProcessingOptions";
-import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IQuaternionLike } from "../Maths/math.like";
+import type { MatrixLike, Vector2Like, Vector3Like, Vector4Like, Color3Like, Color4Like, QuaternionLike } from "../Maths/math.like";
 import type { ThinEngine } from "../Engines/thinEngine";
 import type { IEffectFallbacks } from "./iEffectFallbacks";
 import { ShaderStore as EngineShaderStore } from "../Engines/shaderStore";
@@ -1333,7 +1333,7 @@ export class Effect implements IDisposable {
      * @param matrix matrix to be set.
      * @returns this effect.
      */
-    public setMatrix(uniformName: string, matrix: IMatrixLike): Effect {
+    public setMatrix(uniformName: string, matrix: MatrixLike): Effect {
         this._pipelineContext!.setMatrix(uniformName, matrix);
         return this;
     }
@@ -1390,7 +1390,7 @@ export class Effect implements IDisposable {
      * @param vector2 vector2 to be set.
      * @returns this effect.
      */
-    public setVector2(uniformName: string, vector2: IVector2Like): Effect {
+    public setVector2(uniformName: string, vector2: Vector2Like): Effect {
         this._pipelineContext!.setVector2(uniformName, vector2);
         return this;
     }
@@ -1413,7 +1413,7 @@ export class Effect implements IDisposable {
      * @param vector3 Value to be set.
      * @returns this effect.
      */
-    public setVector3(uniformName: string, vector3: IVector3Like): Effect {
+    public setVector3(uniformName: string, vector3: Vector3Like): Effect {
         this._pipelineContext!.setVector3(uniformName, vector3);
         return this;
     }
@@ -1437,7 +1437,7 @@ export class Effect implements IDisposable {
      * @param vector4 Value to be set.
      * @returns this effect.
      */
-    public setVector4(uniformName: string, vector4: IVector4Like): Effect {
+    public setVector4(uniformName: string, vector4: Vector4Like): Effect {
         this._pipelineContext!.setVector4(uniformName, vector4);
         return this;
     }
@@ -1448,7 +1448,7 @@ export class Effect implements IDisposable {
      * @param quaternion Value to be set.
      * @returns this effect.
      */
-    public setQuaternion(uniformName: string, quaternion: IQuaternionLike): Effect {
+    public setQuaternion(uniformName: string, quaternion: QuaternionLike): Effect {
         this._pipelineContext!.setQuaternion(uniformName, quaternion);
         return this;
     }
@@ -1473,7 +1473,7 @@ export class Effect implements IDisposable {
      * @param color3 Value to be set.
      * @returns this effect.
      */
-    public setColor3(uniformName: string, color3: IColor3Like): Effect {
+    public setColor3(uniformName: string, color3: Color3Like): Effect {
         this._pipelineContext!.setColor3(uniformName, color3);
         return this;
     }
@@ -1485,7 +1485,7 @@ export class Effect implements IDisposable {
      * @param alpha Alpha value to be set.
      * @returns this effect.
      */
-    public setColor4(uniformName: string, color3: IColor3Like, alpha: number): Effect {
+    public setColor4(uniformName: string, color3: Color3Like, alpha: number): Effect {
         this._pipelineContext!.setColor4(uniformName, color3, alpha);
         return this;
     }
@@ -1496,7 +1496,7 @@ export class Effect implements IDisposable {
      * @param color4 defines the value to be set
      * @returns this effect.
      */
-    public setDirectColor4(uniformName: string, color4: IColor4Like): Effect {
+    public setDirectColor4(uniformName: string, color4: Color4Like): Effect {
         this._pipelineContext!.setDirectColor4(uniformName, color4);
         return this;
     }

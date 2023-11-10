@@ -1,6 +1,6 @@
 import type { Nullable } from "../types";
 import { Constants } from "../Engines/constants";
-import type { IMatrixLike } from "../Maths/math.like";
+import type { MatrixLike } from "../Maths/math.like";
 import type { ThinEngine } from "../Engines/thinEngine";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { Buffer, VertexBuffer } from "../Buffers/buffer";
@@ -228,8 +228,8 @@ export class SpriteRenderer {
     public render(
         sprites: ThinSprite[],
         deltaTime: number,
-        viewMatrix: IMatrixLike,
-        projectionMatrix: IMatrixLike,
+        viewMatrix: MatrixLike,
+        projectionMatrix: MatrixLike,
         customSpriteUpdate: Nullable<(sprite: ThinSprite, baseSize: ISize) => void> = null
     ): void {
         if (!this.texture || !this.texture.isReady() || !sprites.length) {

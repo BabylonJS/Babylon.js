@@ -16,7 +16,7 @@ import { StencilState } from "../States/stencilState";
 import { AlphaState } from "../States/alphaCullingState";
 import { Constants } from "./constants";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import type { IViewportLike, IColor4Like } from "../Maths/math.like";
+import type { ViewportLike, Color4Like } from "../Maths/math.like";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import type { IFileRequest } from "../Misc/fileRequest";
 import { Logger } from "../Misc/logger";
@@ -541,7 +541,7 @@ export class ThinEngine {
     protected _compiledEffects: { [key: string]: Effect } = {};
     private _vertexAttribArraysEnabled: boolean[] = [];
     /** @internal */
-    protected _cachedViewport: Nullable<IViewportLike>;
+    protected _cachedViewport: Nullable<ViewportLike>;
     private _cachedVertexArrayObject: Nullable<WebGLVertexArrayObject>;
     /** @internal */
     protected _cachedVertexBuffers: any;
@@ -623,7 +623,7 @@ export class ThinEngine {
     /**
      * Gets the current viewport
      */
-    public get currentViewport(): Nullable<IViewportLike> {
+    public get currentViewport(): Nullable<ViewportLike> {
         return this._cachedViewport;
     }
 
@@ -1720,7 +1720,7 @@ export class ThinEngine {
      * @param depth defines if the depth buffer must be cleared
      * @param stencil defines if the stencil buffer must be cleared
      */
-    public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+    public clear(color: Nullable<Color4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
         const useStencilGlobalOnly = this.stencilStateComposer.useStencilGlobalOnly;
         this.stencilStateComposer.useStencilGlobalOnly = true; // make sure the stencil mask is coming from the global stencil and not from a material (effect) which would currently be in effect
 
@@ -1802,7 +1802,7 @@ export class ThinEngine {
      * @param requiredWidth defines the width required for rendering. If not provided the rendering canvas' width is used
      * @param requiredHeight defines the height required for rendering. If not provided the rendering canvas' height is used
      */
-    public setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void {
+    public setViewport(viewport: ViewportLike, requiredWidth?: number, requiredHeight?: number): void {
         const width = requiredWidth || this.getRenderWidth();
         const height = requiredHeight || this.getRenderHeight();
         const x = viewport.x || 0;

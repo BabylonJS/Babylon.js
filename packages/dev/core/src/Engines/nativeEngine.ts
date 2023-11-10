@@ -18,7 +18,7 @@ import { CreateImageDataArrayBufferViews, GetEnvInfo, UploadEnvSpherical } from 
 import type { Scene } from "../scene";
 import type { RenderTargetCreationOptions, TextureSize, DepthTextureCreationOptions, InternalTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
 import type { IPipelineContext } from "./IPipelineContext";
-import type { IColor3Like, IColor4Like, IViewportLike } from "../Maths/math.like";
+import type { Color3Like, Color4Like, ViewportLike } from "../Maths/math.like";
 import { Logger } from "../Misc/logger";
 import { Constants } from "./constants";
 import type { ISceneLike } from "./thinEngine";
@@ -440,7 +440,7 @@ export class NativeEngine extends Engine {
         return null;
     }
 
-    public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+    public clear(color: Nullable<Color4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
         if (this.useReverseDepthBuffer) {
             throw new Error("reverse depth buffer is not currently implemented");
         }
@@ -793,7 +793,7 @@ export class NativeEngine extends Engine {
         return this._engine.getRenderHeight();
     }
 
-    public setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void {
+    public setViewport(viewport: ViewportLike, requiredWidth?: number, requiredHeight?: number): void {
         this._cachedViewport = viewport;
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETVIEWPORT);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(viewport.x);
@@ -1443,7 +1443,7 @@ export class NativeEngine extends Engine {
         return true;
     }
 
-    public setColor3(uniform: WebGLUniformLocation, color3: IColor3Like): boolean {
+    public setColor3(uniform: WebGLUniformLocation, color3: Color3Like): boolean {
         if (!uniform) {
             return false;
         }
@@ -1452,7 +1452,7 @@ export class NativeEngine extends Engine {
         return true;
     }
 
-    public setColor4(uniform: WebGLUniformLocation, color3: IColor3Like, alpha: number): boolean {
+    public setColor4(uniform: WebGLUniformLocation, color3: Color3Like, alpha: number): boolean {
         if (!uniform) {
             return false;
         }

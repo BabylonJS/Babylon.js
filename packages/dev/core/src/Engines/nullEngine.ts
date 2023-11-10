@@ -9,7 +9,7 @@ import type { Effect } from "../Materials/effect";
 import { Constants } from "./constants";
 import type { IPipelineContext } from "./IPipelineContext";
 import { DataBuffer } from "../Buffers/dataBuffer";
-import type { IColor4Like, IViewportLike } from "../Maths/math.like";
+import type { Color4Like, ViewportLike } from "../Maths/math.like";
 import type { ISceneLike } from "./thinEngine";
 import { PerformanceConfigurator } from "./performanceConfigurator";
 import { DrawWrapper } from "../Materials/drawWrapper";
@@ -228,7 +228,7 @@ export class NullEngine extends Engine {
      * @param depth defines if the depth buffer must be cleared
      * @param stencil defines if the stencil buffer must be cleared
      */
-    public clear(color: IColor4Like, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {}
+    public clear(color: Color4Like, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {}
 
     /**
      * Gets the current render width
@@ -262,7 +262,7 @@ export class NullEngine extends Engine {
      * @param requiredWidth defines the width required for rendering. If not provided the rendering canvas' width is used
      * @param requiredHeight defines the height required for rendering. If not provided the rendering canvas' height is used
      */
-    public setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void {
+    public setViewport(viewport: ViewportLike, requiredWidth?: number, requiredHeight?: number): void {
         this._cachedViewport = viewport;
     }
 

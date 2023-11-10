@@ -26,7 +26,7 @@ import { RandomGUID } from "./guid";
 import type { IScreenshotSize } from "./interfaces/screenshotSize";
 import type { Engine } from "../Engines/engine";
 import type { Camera } from "../Cameras/camera";
-import type { IColor4Like } from "../Maths/math.like";
+import type { Color4Like } from "../Maths/math.like";
 
 declare function importScripts(...urls: string[]): void;
 
@@ -129,7 +129,7 @@ export class Tools {
      * @param pixels defines the source byte array
      * @param color defines the output color
      */
-    public static FetchToRef(u: number, v: number, width: number, height: number, pixels: Uint8Array, color: IColor4Like): void {
+    public static FetchToRef(u: number, v: number, width: number, height: number, pixels: Uint8Array, color: Color4Like): void {
         const wrappedU = (Math.abs(u) * width) % width | 0;
         const wrappedV = (Math.abs(v) * height) % height | 0;
 

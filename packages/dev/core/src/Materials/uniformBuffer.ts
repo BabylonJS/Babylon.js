@@ -1,6 +1,6 @@
 import { Logger } from "../Misc/logger";
 import type { Nullable, FloatArray } from "../types";
-import type { IMatrixLike, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from "../Maths/math.like";
+import type { MatrixLike, Vector3Like, Vector4Like, Color3Like, Color4Like } from "../Maths/math.like";
 import type { Effect } from "./effect";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { DataBuffer } from "../Buffers/dataBuffer";
@@ -123,7 +123,7 @@ export class UniformBuffer {
      * This is dynamic to allow compat with webgl 1 and 2.
      * You will need to pass the name of the uniform as well as the value.
      */
-    public updateMatrix: (name: string, mat: IMatrixLike) => void;
+    public updateMatrix: (name: string, mat: MatrixLike) => void;
 
     /**
      * Lambda to Update an array of 4x4 Matrix in a uniform buffer.
@@ -137,35 +137,35 @@ export class UniformBuffer {
      * This is dynamic to allow compat with webgl 1 and 2.
      * You will need to pass the name of the uniform as well as the value.
      */
-    public updateVector3: (name: string, vector: IVector3Like) => void;
+    public updateVector3: (name: string, vector: Vector3Like) => void;
 
     /**
      * Lambda to Update vec4 of float from a Vector in a uniform buffer.
      * This is dynamic to allow compat with webgl 1 and 2.
      * You will need to pass the name of the uniform as well as the value.
      */
-    public updateVector4: (name: string, vector: IVector4Like) => void;
+    public updateVector4: (name: string, vector: Vector4Like) => void;
 
     /**
      * Lambda to Update vec3 of float from a Color in a uniform buffer.
      * This is dynamic to allow compat with webgl 1 and 2.
      * You will need to pass the name of the uniform as well as the value.
      */
-    public updateColor3: (name: string, color: IColor3Like, suffix?: string) => void;
+    public updateColor3: (name: string, color: Color3Like, suffix?: string) => void;
 
     /**
      * Lambda to Update vec4 of float from a Color in a uniform buffer.
      * This is dynamic to allow compat with webgl 1 and 2.
      * You will need to pass the name of the uniform as well as the value.
      */
-    public updateColor4: (name: string, color: IColor3Like, alpha: number, suffix?: string) => void;
+    public updateColor4: (name: string, color: Color3Like, alpha: number, suffix?: string) => void;
 
     /**
      * Lambda to Update vec4 of float from a Color in a uniform buffer.
      * This is dynamic to allow compat with webgl 1 and 2.
      * You will need to pass the name of the uniform as well as the value.
      */
-    public updateDirectColor4: (name: string, color: IColor4Like, suffix?: string) => void;
+    public updateDirectColor4: (name: string, color: Color4Like, suffix?: string) => void;
 
     /**
      * Lambda to Update a int a uniform buffer.
@@ -463,7 +463,7 @@ export class UniformBuffer {
      * @param name Name of the uniform, as used in the uniform block in the shader.
      * @param mat A 4x4 matrix.
      */
-    public addMatrix(name: string, mat: IMatrixLike) {
+    public addMatrix(name: string, mat: MatrixLike) {
         this.addUniform(name, Array.prototype.slice.call(mat.toArray()));
     }
 
@@ -495,7 +495,7 @@ export class UniformBuffer {
      * @param name Name of the uniform, as used in the uniform block in the shader.
      * @param color Define the vec3 from a Color
      */
-    public addColor3(name: string, color: IColor3Like) {
+    public addColor3(name: string, color: Color3Like) {
         const temp = [color.r, color.g, color.b];
         this.addUniform(name, temp);
     }
@@ -506,7 +506,7 @@ export class UniformBuffer {
      * @param color Define the rgb components from a Color
      * @param alpha Define the a component of the vec4
      */
-    public addColor4(name: string, color: IColor3Like, alpha: number) {
+    public addColor4(name: string, color: Color3Like, alpha: number) {
         const temp = [color.r, color.g, color.b, alpha];
         this.addUniform(name, temp);
     }
@@ -516,7 +516,7 @@ export class UniformBuffer {
      * @param name Name of the uniform, as used in the uniform block in the shader.
      * @param vector Define the vec3 components from a Vector
      */
-    public addVector3(name: string, vector: IVector3Like) {
+    public addVector3(name: string, vector: Vector3Like) {
         const temp = [vector.x, vector.y, vector.z];
         this.addUniform(name, temp);
     }
@@ -785,7 +785,7 @@ export class UniformBuffer {
 
     // Matrix cache
     private _valueCache: { [key: string]: number } = {};
-    private _cacheMatrix(name: string, matrix: IMatrixLike): boolean {
+    private _cacheMatrix(name: string, matrix: MatrixLike): boolean {
         this._checkNewFrame();
 
         const cache = this._valueCache[name];
@@ -908,11 +908,11 @@ export class UniformBuffer {
         this.updateUniformArray(name, UniformBuffer._TempBuffer, array.length);
     }
 
-    private _updateMatrixForEffect(name: string, mat: IMatrixLike) {
+    private _updateMatrixForEffect(name: string, mat: MatrixLike) {
         this._currentEffect.setMatrix(name, mat);
     }
 
-    private _updateMatrixForUniform(name: string, mat: IMatrixLike) {
+    private _updateMatrixForUniform(name: string, mat: MatrixLike) {
         if (this._cacheMatrix(name, mat)) {
             this.updateUniform(name, <any>mat.toArray(), 16);
         }
@@ -926,22 +926,22 @@ export class UniformBuffer {
         this.updateUniform(name, mat, mat.length);
     }
 
-    private _updateVector3ForEffect(name: string, vector: IVector3Like) {
+    private _updateVector3ForEffect(name: string, vector: Vector3Like) {
         this._currentEffect.setVector3(name, vector);
     }
 
-    private _updateVector3ForUniform(name: string, vector: IVector3Like) {
+    private _updateVector3ForUniform(name: string, vector: Vector3Like) {
         UniformBuffer._TempBuffer[0] = vector.x;
         UniformBuffer._TempBuffer[1] = vector.y;
         UniformBuffer._TempBuffer[2] = vector.z;
         this.updateUniform(name, UniformBuffer._TempBuffer, 3);
     }
 
-    private _updateVector4ForEffect(name: string, vector: IVector4Like) {
+    private _updateVector4ForEffect(name: string, vector: Vector4Like) {
         this._currentEffect.setVector4(name, vector);
     }
 
-    private _updateVector4ForUniform(name: string, vector: IVector4Like) {
+    private _updateVector4ForUniform(name: string, vector: Vector4Like) {
         UniformBuffer._TempBuffer[0] = vector.x;
         UniformBuffer._TempBuffer[1] = vector.y;
         UniformBuffer._TempBuffer[2] = vector.z;
@@ -949,26 +949,26 @@ export class UniformBuffer {
         this.updateUniform(name, UniformBuffer._TempBuffer, 4);
     }
 
-    private _updateColor3ForEffect(name: string, color: IColor3Like, suffix = "") {
+    private _updateColor3ForEffect(name: string, color: Color3Like, suffix = "") {
         this._currentEffect.setColor3(name + suffix, color);
     }
 
-    private _updateColor3ForUniform(name: string, color: IColor3Like) {
+    private _updateColor3ForUniform(name: string, color: Color3Like) {
         UniformBuffer._TempBuffer[0] = color.r;
         UniformBuffer._TempBuffer[1] = color.g;
         UniformBuffer._TempBuffer[2] = color.b;
         this.updateUniform(name, UniformBuffer._TempBuffer, 3);
     }
 
-    private _updateColor4ForEffect(name: string, color: IColor3Like, alpha: number, suffix = "") {
+    private _updateColor4ForEffect(name: string, color: Color3Like, alpha: number, suffix = "") {
         this._currentEffect.setColor4(name + suffix, color, alpha);
     }
 
-    private _updateDirectColor4ForEffect(name: string, color: IColor4Like, suffix = "") {
+    private _updateDirectColor4ForEffect(name: string, color: Color4Like, suffix = "") {
         this._currentEffect.setDirectColor4(name + suffix, color);
     }
 
-    private _updateColor4ForUniform(name: string, color: IColor3Like, alpha: number) {
+    private _updateColor4ForUniform(name: string, color: Color3Like, alpha: number) {
         UniformBuffer._TempBuffer[0] = color.r;
         UniformBuffer._TempBuffer[1] = color.g;
         UniformBuffer._TempBuffer[2] = color.b;
@@ -976,7 +976,7 @@ export class UniformBuffer {
         this.updateUniform(name, UniformBuffer._TempBuffer, 4);
     }
 
-    private _updateDirectColor4ForUniform(name: string, color: IColor4Like) {
+    private _updateDirectColor4ForUniform(name: string, color: Color4Like) {
         UniformBuffer._TempBuffer[0] = color.r;
         UniformBuffer._TempBuffer[1] = color.g;
         UniformBuffer._TempBuffer[2] = color.b;

@@ -1,6 +1,6 @@
 import type { Nullable } from "../types";
 import type { Effect } from "../Materials/effect";
-import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IQuaternionLike } from "../Maths/math.like";
+import type { MatrixLike, Vector2Like, Vector3Like, Vector4Like, Color3Like, Color4Like, QuaternionLike } from "../Maths/math.like";
 
 /**
  * Class used to store and describe the pipeline context associated with an effect
@@ -206,7 +206,7 @@ export interface IPipelineContext {
      * @param uniformName Name of the variable.
      * @param matrix matrix to be set.
      */
-    setMatrix(uniformName: string, matrix: IMatrixLike): void;
+    setMatrix(uniformName: string, matrix: MatrixLike): void;
 
     /**
      * Sets a 3x3 matrix on a uniform variable. (Specified as [1,2,3,4,5,6,7,8,9] will result in [1,2,3][4,5,6][7,8,9] matrix)
@@ -234,7 +234,7 @@ export interface IPipelineContext {
      * @param uniformName Name of the variable.
      * @param vector2 vector2 to be set.
      */
-    setVector2(uniformName: string, vector2: IVector2Like): void;
+    setVector2(uniformName: string, vector2: Vector2Like): void;
 
     /**
      * Sets a float2 on a uniform variable.
@@ -249,7 +249,7 @@ export interface IPipelineContext {
      * @param uniformName Name of the variable.
      * @param vector3 Value to be set.
      */
-    setVector3(uniformName: string, vector3: IVector3Like): void;
+    setVector3(uniformName: string, vector3: Vector3Like): void;
 
     /**
      * Sets a float3 on a uniform variable.
@@ -265,14 +265,14 @@ export interface IPipelineContext {
      * @param uniformName Name of the variable.
      * @param vector4 Value to be set.
      */
-    setVector4(uniformName: string, vector4: IVector4Like): void;
+    setVector4(uniformName: string, vector4: Vector4Like): void;
 
     /**
      * Sets a Quaternion on a uniform variable.
      * @param uniformName Name of the variable.
      * @param quaternion Value to be set.
      */
-    setQuaternion(uniformName: string, quaternion: IQuaternionLike): void;
+    setQuaternion(uniformName: string, quaternion: QuaternionLike): void;
 
     /**
      * Sets a float4 on a uniform variable.
@@ -289,7 +289,7 @@ export interface IPipelineContext {
      * @param uniformName Name of the variable.
      * @param color3 Value to be set.
      */
-    setColor3(uniformName: string, color3: IColor3Like): void;
+    setColor3(uniformName: string, color3: Color3Like): void;
 
     /**
      * Sets a Color4 on a uniform variable.
@@ -297,12 +297,12 @@ export interface IPipelineContext {
      * @param color3 Value to be set.
      * @param alpha Alpha value to be set.
      */
-    setColor4(uniformName: string, color3: IColor3Like, alpha: number): void;
+    setColor4(uniformName: string, color3: Color3Like, alpha: number): void;
 
     /**
      * Sets a Color4 on a uniform variable
      * @param uniformName defines the name of the variable
      * @param color4 defines the value to be set
      */
-    setDirectColor4(uniformName: string, color4: IColor4Like): void;
+    setDirectColor4(uniformName: string, color4: Color4Like): void;
 }

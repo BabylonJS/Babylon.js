@@ -1,6 +1,6 @@
 import type { Effect } from "../../Materials/effect";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
-import type { IColor4Like } from "../../Maths/math.like";
+import type { Color4Like } from "../../Maths/math.like";
 import type { VertexBuffer } from "../../Buffers/buffer";
 import type { WebGPUDataBuffer } from "../../Meshes/WebGPU/webgpuDataBuffer";
 import type { Nullable } from "../../types";
@@ -53,7 +53,7 @@ export class WebGPUClearQuad {
 
     public clear(
         renderPass: Nullable<GPURenderPassEncoder>,
-        clearColor?: Nullable<IColor4Like>,
+        clearColor?: Nullable<Color4Like>,
         clearDepth?: boolean,
         clearStencil?: boolean,
         sampleCount = 1

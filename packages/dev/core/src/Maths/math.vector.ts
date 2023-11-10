@@ -4,7 +4,7 @@ import { Epsilon } from "./math.constants";
 import type { Viewport } from "./math.viewport";
 import type { DeepImmutable, Nullable, FloatArray, float, Constructor, Tuple } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
-import type { IPlaneLike } from "./math.like";
+import type { PlaneLike } from "./math.like";
 import { RegisterClass } from "../Misc/typeStore";
 import type { Plane } from "./math.plane";
 import { PerformanceConfigurator } from "../Engines/performanceConfigurator";
@@ -8319,7 +8319,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>> {
      * @param plane defines the reflection plane
      * @returns a new matrix
      */
-    public static Reflection(plane: DeepImmutable<IPlaneLike>): Matrix {
+    public static Reflection(plane: DeepImmutable<PlaneLike>): Matrix {
         const matrix = new Matrix();
         Matrix.ReflectionToRef(plane, matrix);
         return matrix;
@@ -8332,7 +8332,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>> {
      * @param result defines the target matrix
      * @returns result input
      */
-    public static ReflectionToRef<T extends Matrix>(plane: DeepImmutable<IPlaneLike>, result: T): T {
+    public static ReflectionToRef<T extends Matrix>(plane: DeepImmutable<PlaneLike>, result: T): T {
         plane.normalize();
         const x = plane.normal.x;
         const y = plane.normal.y;

@@ -3,7 +3,7 @@ import type { float, int, DeepImmutable } from "../types";
 /**
  * @internal
  */
-export interface IColor4Like {
+export interface Color4Like {
     r: float;
     g: float;
     b: float;
@@ -13,13 +13,13 @@ export interface IColor4Like {
 /**
  * @internal
  */
-export interface IColor3Like {
+export interface Color3Like {
     r: float;
     g: float;
     b: float;
 }
 
-export interface IQuaternionLike {
+export interface QuaternionLike {
     x: float;
     y: float;
     z: float;
@@ -29,7 +29,7 @@ export interface IQuaternionLike {
 /**
  * @internal
  */
-export interface IVector4Like {
+export interface Vector4Like {
     x: float;
     y: float;
     z: float;
@@ -39,7 +39,7 @@ export interface IVector4Like {
 /**
  * @internal
  */
-export interface IVector3Like {
+export interface Vector3Like {
     x: float;
     y: float;
     z: float;
@@ -48,7 +48,7 @@ export interface IVector3Like {
 /**
  * @internal
  */
-export interface IVector2Like {
+export interface Vector2Like {
     x: float;
     y: float;
 }
@@ -56,7 +56,7 @@ export interface IVector2Like {
 /**
  * @internal
  */
-export interface IMatrixLike {
+export interface MatrixLike {
     toArray(): DeepImmutable<Float32Array | Array<number>>;
     updateFlag: int;
 }
@@ -64,7 +64,7 @@ export interface IMatrixLike {
 /**
  * @internal
  */
-export interface IViewportLike {
+export interface ViewportLike {
     x: float;
     y: float;
     width: float;
@@ -74,8 +74,8 @@ export interface IViewportLike {
 /**
  * @internal
  */
-export interface IPlaneLike {
-    normal: IVector3Like;
+export interface PlaneLike {
+    normal: Vector3Like;
     d: float;
     normalize(): void;
 }

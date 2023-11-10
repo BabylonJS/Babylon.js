@@ -1,4 +1,4 @@
-import type { IColor3Like, IColor4Like, IMatrixLike, IVector3Like, IVector4Like } from "../Maths/math.like";
+import type { Color3Like, Color4Like, MatrixLike, Vector3Like, Vector4Like } from "../Maths/math.like";
 import type { Effect } from "./effect";
 import type { UniformBuffer } from "./uniformBuffer";
 
@@ -22,19 +22,19 @@ export class UniformBufferEffectCommonAccessor {
 
     public setIntArray: (name: string, array: Int32Array) => void;
 
-    public setMatrix: (name: string, mat: IMatrixLike) => void;
+    public setMatrix: (name: string, mat: MatrixLike) => void;
 
     public setMatrices: (name: string, mat: Float32Array) => void;
 
-    public setVector3: (name: string, vector: IVector3Like) => void;
+    public setVector3: (name: string, vector: Vector3Like) => void;
 
-    public setVector4: (name: string, vector: IVector4Like) => void;
+    public setVector4: (name: string, vector: Vector4Like) => void;
 
-    public setColor3: (name: string, color: IColor3Like, suffix?: string) => void;
+    public setColor3: (name: string, color: Color3Like, suffix?: string) => void;
 
-    public setColor4: (name: string, color: IColor3Like, alpha: number, suffix?: string) => void;
+    public setColor4: (name: string, color: Color3Like, alpha: number, suffix?: string) => void;
 
-    public setDirectColor4: (name: string, color: IColor4Like) => void;
+    public setDirectColor4: (name: string, color: Color4Like) => void;
 
     public setInt: (name: string, x: number, suffix?: string) => void;
 
