@@ -55,6 +55,25 @@ export const effectWebGLAdapter = {
     bindUniformBlock,
 };
 
+
+export const effectWebGPUAdapter = {
+    getHostDocument,
+    _getShaderProcessingContext: () => null,
+    // _getShaderProcessor,
+    _loadFile,
+    // createPipelineContext,
+    // _preparePipelineContext,
+    //_executeWhenRenderingStateIsCompiled,
+    // bindSamplers,
+    // _bindTexture,
+    // setTexture,
+    // setDepthStencilTexture,
+    // setTextureArray,
+    // setTextureFromPostProcess,
+    bindUniformBufferBase,
+    // bindUniformBlock,
+};
+
 // internal texture webgl
 const internalTextureWebGLAdapter: { [key: string]: Function } = {
     _createHardwareTexture,

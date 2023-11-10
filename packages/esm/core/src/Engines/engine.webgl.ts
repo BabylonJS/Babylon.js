@@ -16,6 +16,7 @@ import {
     getHostDocument,
     resize,
     _setupMobileChecks,
+    _getGlobalDefines,
 } from "./engine.base.js";
 import { WebGLShaderProcessor } from "@babylonjs/core/Engines/WebGL/webGLShaderProcessors.js";
 import type { DataBuffer } from "@babylonjs/core/Buffers/dataBuffer.js";
@@ -49,7 +50,6 @@ import { ShaderLanguage } from "@babylonjs/core/Materials/shaderLanguage.js";
 import { augmentEngineState } from "./engine.adapters.js";
 import { StencilStateComposer } from "@babylonjs/core/States/stencilStateComposer.js";
 import { DepthCullingState } from "@babylonjs/core/States/depthCullingState.js";
-import { StencilState } from "@babylonjs/core/States/stencilState.js";
 import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine.js";
 import { EngineExtensions, getEngineExtension } from "./Extensions/engine.extensions.js";
 import type { ShaderProcessingContext } from "@babylonjs/core/Engines/Processors/shaderProcessingOptions.js";
@@ -118,7 +118,6 @@ interface IWebGLEngineProtected extends IBaseEngineProtected {
     // overrides from base
     _depthCullingState: DepthCullingState;
     _stencilStateComposer: StencilStateComposer;
-    _stencilState: StencilState;
     _creationOptions: IWebGLEngineOptions;
 }
 
@@ -207,7 +206,6 @@ export function initWebGLEngineState(
     ps._currentTextureChannel = -1;
     ps._stencilStateComposer = new StencilStateComposer();
     ps._depthCullingState = new DepthCullingState();
-    ps._stencilState = new StencilState();
     ps._rescalePostProcess = null;
     ps._currentBufferPointers = [];
     ps._drawCalls = new PerfCounter();
@@ -1411,45 +1409,45 @@ function _drawMode(gl: IWebGLEngineInternals["_gl"], fillMode: number): number {
     }
 }
 
-/** @internal */
-export function _getGlobalDefines(engineState: IWebGLEnginePublic, defines?: { [key: string]: string }): string | undefined {
-    if (defines) {
-        if (engineState.isNDCHalfZRange) {
-            defines["IS_NDC_HALF_ZRANGE"] = "";
-        } else {
-            delete defines["IS_NDC_HALF_ZRANGE"];
-        }
-        if (engineState.useReverseDepthBuffer) {
-            defines["USE_REVERSE_DEPTHBUFFER"] = "";
-        } else {
-            delete defines["USE_REVERSE_DEPTHBUFFER"];
-        }
-        if (engineState.useExactSrgbConversions) {
-            defines["USE_EXACT_SRGB_CONVERSIONS"] = "";
-        } else {
-            delete defines["USE_EXACT_SRGB_CONVERSIONS"];
-        }
-        return;
-    } else {
-        let s = "";
-        if (engineState.isNDCHalfZRange) {
-            s += "#define IS_NDC_HALF_ZRANGE";
-        }
-        if (engineState.useReverseDepthBuffer) {
-            if (s) {
-                s += "\n";
-            }
-            s += "#define USE_REVERSE_DEPTHBUFFER";
-        }
-        if (engineState.useExactSrgbConversions) {
-            if (s) {
-                s += "\n";
-            }
-            s += "#define USE_EXACT_SRGB_CONVERSIONS";
-        }
-        return s;
-    }
-}
+// /** @internal */
+// export function _getGlobalDefines(engineState: IWebGLEnginePublic, defines?: { [key: string]: string }): string | undefined {
+//     if (defines) {
+//         if (engineState.isNDCHalfZRange) {
+//             defines["IS_NDC_HALF_ZRANGE"] = "";
+//         } else {
+//             delete defines["IS_NDC_HALF_ZRANGE"];
+//         }
+//         if (engineState.useReverseDepthBuffer) {
+//             defines["USE_REVERSE_DEPTHBUFFER"] = "";
+//         } else {
+//             delete defines["USE_REVERSE_DEPTHBUFFER"];
+//         }
+//         if (engineState.useExactSrgbConversions) {
+//             defines["USE_EXACT_SRGB_CONVERSIONS"] = "";
+//         } else {
+//             delete defines["USE_EXACT_SRGB_CONVERSIONS"];
+//         }
+//         return;
+//     } else {
+//         let s = "";
+//         if (engineState.isNDCHalfZRange) {
+//             s += "#define IS_NDC_HALF_ZRANGE";
+//         }
+//         if (engineState.useReverseDepthBuffer) {
+//             if (s) {
+//                 s += "\n";
+//             }
+//             s += "#define USE_REVERSE_DEPTHBUFFER";
+//         }
+//         if (engineState.useExactSrgbConversions) {
+//             if (s) {
+//                 s += "\n";
+//             }
+//             s += "#define USE_EXACT_SRGB_CONVERSIONS";
+//         }
+//         return s;
+//     }
+// }
 
 /**
  * Create a new effect (used to store vertex/fragment shaders)

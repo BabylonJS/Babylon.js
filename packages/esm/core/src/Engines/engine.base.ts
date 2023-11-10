@@ -25,7 +25,7 @@ import { PerformanceConfigurator } from "@babylonjs/core/Engines/performanceConf
 import { EngineStore, _CreateCanvas, _ExitFullscreen, _ExitPointerlock, _RequestFullscreen, _RequestPointerlock } from "./engine.static.js";
 import { PerformanceMonitor } from "@babylonjs/core/Misc/performanceMonitor.js";
 import type { StencilStateComposer } from "@babylonjs/core/States/stencilStateComposer.js";
-import type { StencilState } from "@babylonjs/core/States/stencilState.js";
+import { StencilState } from "@babylonjs/core/States/stencilState.js";
 import type { Scene } from "@babylonjs/core/scene.js";
 import type { PostProcess } from "@babylonjs/core/PostProcesses/postProcess.js";
 import type { ICustomAnimationFrameRequester } from "@babylonjs/core/Misc/customAnimationFrameRequester.js";
@@ -158,7 +158,7 @@ export interface IBaseEngineProtected {
     // TODO - the following can be taken out of the engine completely. be state objects
     _depthCullingState?: DepthCullingState;
     _stencilStateComposer?: StencilStateComposer;
-    _stencilState?: StencilState;
+    _stencilState: StencilState;
     _activeChannel: number;
     _boundTexturesCache: { [key: string]: Nullable<InternalTexture> };
     _currentEffect: Nullable<Effect>;
@@ -626,6 +626,7 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
         _isStencilEnable: !!options.stencil,
         _virtualScenes: [],
         _videoTextureSupported: false,
+        _stencilState: new StencilState(),
 
         // Missing vars
         _shaderProcessor: null,
