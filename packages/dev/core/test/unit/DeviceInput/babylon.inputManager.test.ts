@@ -19,6 +19,7 @@ import type { ITestDeviceInputSystem } from "./testDeviceInputSystem";
 import { TestDeviceInputSystem } from "./testDeviceInputSystem";
 import { SpriteManager } from "core/Sprites";
 import { Epsilon } from "core/Maths/math.constants";
+import "core/Collisions/collisionCoordinator";
 
 // Add function to NullEngine to allow for getting the canvas rect properties
 NullEngine.prototype.getInputElementClientRect = function (): Nullable<DOMRect> {
@@ -290,7 +291,7 @@ describe("InputManager", () => {
 
         expect(lazyPickCt).toBe(2);
         expect(lazyPickHitCt).toBe(1);
-        expect(pickSpy).toBeCalledTimes(6);
+        expect(pickSpy).toHaveBeenCalledTimes(6);
     });
 
     it("onPointerObservable returns correct PointerEventTypes", () => {
@@ -920,6 +921,71 @@ describe("InputManager", () => {
         expect(rotationMatch120FPS).toBe(true);
     });
 
+    it("is still frame rate independent with apply gravity enabled", () => {
+        const gravity = 0.08;
+        let finalY60FPS = 2;
+        let finalY30FPS = 2;
+        let finalY120FPS = 2;
+
+        if (deviceInputSystem && camera && scene) {
+            scene.gravity.y = -gravity;
+            scene.collisionsEnabled = true;
+            camera.checkCollisions = true;
+            camera.applyGravity = true;
+            camera.position = new Vector3(0, 2, 0);
+            camera.speed = 0.3;
+
+            // Need to set constant animation delta time to true because we're not using the default render loop
+            // which will result in an unusable delta time
+            scene.useConstantAnimationDeltaTime = true;
+
+            // Test at 60 FPS
+            scene.constantAnimationDeltaTime = 16;
+            camera.position.y = 2;
+            camera.cameraDirection.y = 0.1;
+
+            while (camera.cameraDirection.y !== 0) {
+                scene.render();
+            }
+
+            finalY60FPS = camera.position.y;
+
+            // Test at 30 FPS
+            scene.constantAnimationDeltaTime = 32;
+            camera.position.y = 2;
+            camera.cameraDirection.y = 0.1;
+
+            while (camera.cameraDirection.y !== 0) {
+                scene.render();
+            }
+
+            finalY30FPS = camera.position.y;
+
+            // Test at 120 FPS
+            scene.constantAnimationDeltaTime = 8;
+            camera.position.y = 2;
+            camera.cameraDirection.y = 0.1;
+
+            while (camera.cameraDirection.y !== 0) {
+                scene.render();
+            }
+
+            finalY120FPS = camera.position.y;
+        }
+
+        expect(finalY60FPS).toBeLessThan(2);
+        expect(finalY30FPS).toBeLessThan(2);
+        expect(finalY120FPS).toBeLessThan(2);
+
+        // Margin of error is equal to our gravity y-value (a single frame of error)
+        const marginOfError30FPS = gravity * 2;
+        const marginOfError120FPS = gravity * 0.5;
+        const diff30FPS = Math.abs(finalY30FPS - finalY60FPS);
+        const diff120FPS = Math.abs(finalY120FPS - finalY60FPS);
+        expect(diff30FPS).toBeLessThanOrEqual(marginOfError30FPS);
+        expect(diff120FPS).toBeLessThanOrEqual(marginOfError120FPS);
+    });
+
     it("can fire onProjectionMatrixObservable on camera.update", () => {
         let projectionMatrixChangedCt = 0;
 
@@ -1047,7 +1113,8 @@ describe("InputManager", () => {
                     pickedTestMesh = pointerInfo.pickInfo.pickedMesh;
                 }
                 // We expect this to not be called at all as the picking should already be done by this point
-                expect(generateSpy).toBeCalledTimes(0);
+                // eslint-disable-next-line jest/no-conditional-expect
+                expect(generateSpy).toHaveBeenCalledTimes(0);
             });
 
             // Set initial point

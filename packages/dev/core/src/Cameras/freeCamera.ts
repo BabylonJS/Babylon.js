@@ -11,6 +11,7 @@ import type { FreeCameraKeyboardMoveInput } from "../Cameras/Inputs/freeCameraKe
 import { Tools } from "../Misc/tools";
 
 import type { Collider } from "../Collisions/collider";
+import { Constants } from "core/Engines/constants";
 
 /**
  * This represents a free type of camera. It can be useful in First Person Shooter game for instance.
@@ -367,22 +368,20 @@ export class FreeCamera extends TargetCamera {
         this._collider._radius = this.ellipsoid;
         this._collider.collisionMask = this._collisionMask;
 
-        // Copy displacement vector (scaled in _updatePosition) into temporary to manipulate it
-        const scaledDisplacement = TmpVectors.Vector3[0].copyFrom(displacement);
+        // Copy and scale displacement vector (scaled in _updatePosition) into temporary to manipulate it
+        const scaledDisplacement = TmpVectors.Vector3[0].copyFrom(displacement).scaleInPlace(scaleFactor);
 
-        //add gravity to the direction to prevent the dual-collision checking
+        // Add gravity to the direction to prevent the dual-collision checking
         if (this.applyGravity) {
             // Apply gravity to current displacement, then scale by relative inertia (if applicable)
             const relativeGravity = TmpVectors.Vector3[1].copyFrom(this.getScene().gravity);
-            if (this.inertia !== 0) {
-                relativeGravity.scaleInPlace(relativeInertia);
-            }
+            // Since gravity is a constant and we don't need to scale by the scale factor
+            // but instead by the ratio of the frame's delta time to the standard
+            const deltaRatio = this._currentDeltaTime / Constants.STANDARD_TIME_STEP;
+            relativeGravity.scaleInPlace(deltaRatio);
             // Take relative gravity and add to scaled displacement
             scaledDisplacement.addInPlace(relativeGravity);
         }
-
-        // Scale by our scaling factor before using in function
-        scaledDisplacement.scaleInPlace(scaleFactor);
 
         coordinator.getNewPosition(this._oldPosition, scaledDisplacement, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
     }
