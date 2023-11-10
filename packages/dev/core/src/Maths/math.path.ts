@@ -1,6 +1,7 @@
 import type { DeepImmutable, Nullable } from "../types";
 import { Scalar } from "./math.scalar";
-import { Vector2, Vector3, type Vector4, Quaternion, Matrix } from "./math.vector";
+import { Vector2, Vector3, Quaternion, Matrix } from "./math.vector";
+import type { Vector4 } from "./math.vector";
 import { Epsilon } from "./math.constants";
 
 /**
