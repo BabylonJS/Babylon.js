@@ -107,12 +107,12 @@ export class NodeMaterialConnectionPoint {
     /**
      * Gets or sets the additional types supported by this connection point
      */
-    public acceptedConnectionPointTypes = new Array<NodeMaterialBlockConnectionPointTypes>();
+    public acceptedConnectionPointTypes: NodeMaterialBlockConnectionPointTypes[] = [];
 
     /**
      * Gets or sets the additional types excluded by this connection point
      */
-    public excludedConnectionPointTypes = new Array<NodeMaterialBlockConnectionPointTypes>();
+    public excludedConnectionPointTypes: NodeMaterialBlockConnectionPointTypes[] = [];
 
     /**
      * Observable triggered when this point is connected

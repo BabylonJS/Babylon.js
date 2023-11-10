@@ -74,7 +74,7 @@ Object.defineProperty(Engine.prototype, "texturesSupported", {
         // Next PVRTC & DXT, which are probably superior to ETC1/2.
         // Likely no hardware which supports both PVR & DXT, so order matters little.
         // ETC2 is newer and handles ETC1 (no alpha capability), so check for first.
-        const texturesSupported = new Array<string>();
+        const texturesSupported: string[] = [];
         if (this._caps.astc) {
             texturesSupported.push("-astc.ktx");
         }

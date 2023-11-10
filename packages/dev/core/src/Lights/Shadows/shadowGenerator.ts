@@ -1361,7 +1361,7 @@ export class ShadowGenerator implements IShadowGenerator {
             return;
         }
 
-        const subMeshes = new Array<SubMesh>();
+        const subMeshes: SubMesh[] = [];
         for (const mesh of renderList) {
             subMeshes.push(...mesh.subMeshes);
         }

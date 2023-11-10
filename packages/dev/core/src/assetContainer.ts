@@ -981,7 +981,7 @@ export class AssetContainer extends AbstractScene {
             }
         });
 
-        const newAnimationGroups = new Array<AnimationGroup>();
+        const newAnimationGroups: AnimationGroup[] = [];
 
         // Copy new animation groups
         this.animationGroups.slice().forEach((animationGroupInAC) => {
@@ -1061,7 +1061,7 @@ export class AssetContainer extends AbstractScene {
             return;
         }
 
-        const nodesToVisit = new Array<Node>();
+        const nodesToVisit: Node[] = [];
         const visitedNodes = new Set<Node>();
 
         nodesToVisit.push(root);

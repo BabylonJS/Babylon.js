@@ -108,35 +108,35 @@ export abstract class AbstractScene {
     /**
      * Gets the list of root nodes (ie. nodes with no parent)
      */
-    public rootNodes = new Array<Node>();
+    public rootNodes: Node[] = [];
 
     /** All of the cameras added to this scene
      * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras
      */
-    public cameras = new Array<Camera>();
+    public cameras: Camera[] = [];
 
     /**
      * All of the lights added to this scene
      * @see https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction
      */
-    public lights = new Array<Light>();
+    public lights: Light[] = [];
 
     /**
      * All of the (abstract) meshes added to this scene
      */
-    public meshes = new Array<AbstractMesh>();
+    public meshes: AbstractMesh[] = [];
 
     /**
      * The list of skeletons added to the scene
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/bonesSkeletons
      */
-    public skeletons = new Array<Skeleton>();
+    public skeletons: Skeleton[] = [];
 
     /**
      * All of the particle systems added to this scene
      * @see https://doc.babylonjs.com/features/featuresDeepDive/particles/particle_system/particle_system_intro
      */
-    public particleSystems = new Array<IParticleSystem>();
+    public particleSystems: IParticleSystem[] = [];
 
     /**
      * Gets a list of Animations associated with the scene
@@ -147,13 +147,13 @@ export abstract class AbstractScene {
      * All of the animation groups added to this scene
      * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/groupAnimations
      */
-    public animationGroups = new Array<AnimationGroup>();
+    public animationGroups: AnimationGroup[] = [];
 
     /**
      * All of the multi-materials added to this scene
      * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/multiMaterials
      */
-    public multiMaterials = new Array<MultiMaterial>();
+    public multiMaterials: MultiMaterial[] = [];
 
     /**
      * All of the materials added to this scene
@@ -162,18 +162,18 @@ export abstract class AbstractScene {
      * Note also that the order of the Material within the array is not significant and might change.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/materials_introduction
      */
-    public materials = new Array<Material>();
+    public materials: Material[] = [];
 
     /**
      * The list of morph target managers added to the scene
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/dynamicMeshMorph
      */
-    public morphTargetManagers = new Array<MorphTargetManager>();
+    public morphTargetManagers: MorphTargetManager[] = [];
 
     /**
      * The list of geometries used in the scene.
      */
-    public geometries = new Array<Geometry>();
+    public geometries: Geometry[] = [];
 
     /**
      * All of the transform nodes added to this scene
@@ -182,18 +182,18 @@ export abstract class AbstractScene {
      * Note also that the order of the TransformNode within the array is not significant and might change.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/parent_pivot/transform_node
      */
-    public transformNodes = new Array<TransformNode>();
+    public transformNodes: TransformNode[] = [];
 
     /**
      * ActionManagers available on the scene.
      * @deprecated
      */
-    public actionManagers = new Array<AbstractActionManager>();
+    public actionManagers: AbstractActionManager[] = [];
 
     /**
      * Textures to keep.
      */
-    public textures = new Array<BaseTexture>();
+    public textures: BaseTexture[] = [];
 
     /** @internal */
     protected _environmentTexture: Nullable<BaseTexture> = null;
@@ -213,13 +213,13 @@ export abstract class AbstractScene {
     /**
      * The list of postprocesses added to the scene
      */
-    public postProcesses = new Array<PostProcess>();
+    public postProcesses: PostProcess[] = [];
 
     /**
      * @returns all meshes, lights, cameras, transformNodes and bones
      */
     public getNodes(): Array<Node> {
-        let nodes = new Array<Node>();
+        let nodes: Node[] = [];
         nodes = nodes.concat(this.meshes);
         nodes = nodes.concat(this.lights);
         nodes = nodes.concat(this.cameras);

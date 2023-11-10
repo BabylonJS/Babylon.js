@@ -414,7 +414,7 @@ export class FluentButtonMaterial extends PushMaterial {
                 "Global_Right_Index_Tip_Proximity",
             ];
             const samplers: string[] = ["_Blob_Texture_"];
-            const uniformBuffers = new Array<string>();
+            const uniformBuffers: string[] = [];
 
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,

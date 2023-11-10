@@ -466,7 +466,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     /**
      * Define the list of animation attached to the texture.
      */
-    public animations = new Array<Animation>();
+    public animations: Animation[] = [];
 
     /**
      * An event triggered when the texture is disposed.

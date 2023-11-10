@@ -64,12 +64,12 @@ export class NodeGeometryConnectionPoint {
     /**
      * Gets or sets the additional types supported by this connection point
      */
-    public acceptedConnectionPointTypes = new Array<NodeGeometryBlockConnectionPointTypes>();
+    public acceptedConnectionPointTypes: NodeGeometryBlockConnectionPointTypes[] = [];
 
     /**
      * Gets or sets the additional types excluded by this connection point
      */
-    public excludedConnectionPointTypes = new Array<NodeGeometryBlockConnectionPointTypes>();
+    public excludedConnectionPointTypes: NodeGeometryBlockConnectionPointTypes[] = [];
 
     /**
      * Observable triggered when this point is connected

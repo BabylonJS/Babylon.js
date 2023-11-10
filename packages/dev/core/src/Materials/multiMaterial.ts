@@ -51,7 +51,7 @@ export class MultiMaterial extends Material {
 
         this.getScene().addMultiMaterial(this);
 
-        this.subMaterials = new Array<Material>();
+        this.subMaterials = [] as Material[];
 
         this._storeEffectOnSubMeshes = true; // multimaterial is considered like a push material
     }
