@@ -1,5 +1,5 @@
 {
-    "fromTag": "6.28.1",
+    "fromTag": "6.29.0",
     "changelog": {
         "6.29.0": [
             {
@@ -170,6 +170,253 @@
                     "breaking change",
                     "geometry"
                 ]
+            }
+        ],
+        "6.29.1": [
+            {
+                "pr": "14510",
+                "title": "Revert \"Camera: Modify Camera Movement to work off of time",
+                "description": "Reverting https://github.com/BabylonJS/Babylon.js/pull/14482 due to an issue with gravity",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animatable.ts",
+                    "packages/dev/core/src/Behaviors/Meshes/fadeInOutBehavior.ts",
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts",
+                    "packages/dev/core/src/Cameras/camera.ts",
+                    "packages/dev/core/src/Cameras/targetCamera.ts",
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/Misc/precisionDate.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.inputManager.test.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/SpaceDeK.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/particles.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prepass-ssao-particles.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/subemitters.png"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "14512",
+                "title": "Remove redundant memory leak tests (now using memlab)",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/tests/test/integration/leaks/camera.test.ts",
+                    "packages/tools/tests/test/integration/leaks/playgrounds.test.ts",
+                    "packages/tools/tests/test/integration/leaks/scene.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14482",
+                "title": "Camera: Modify Camera Movement to work off of time, instead of frame rate",
+                "description": "This PR modifies all cameras to take the animation ratio (time to complete a single frame) and uses it to make all camera movements take the same amount of time as 60 FPS (AR of 1).\r\n\r\nUpdate: Since the animation ratio (ratio used to scale inertia and movement offsets) is only updated in `scene.render()`, we had to add a custom timing method for users that have a custom rendering loop/cadence.  This PR also adds the following changes:\r\n\r\n- `PrecisionDate.Now` has been updated to be more efficient\r\n- The variable `constantAnimationDeltaTime` has been added so that users can change the delta time for testing purposes\r\n\r\nPGs Used to Test: \r\n- https://playground.babylonjs.com/#DLIIMQ\r\n- https://playground.babylonjs.com/#DLIIMQ#1\r\n- https://playground.babylonjs.com/#DLIIMQ#3\r\n- https://playground.babylonjs.com/#DLIIMQ#4\r\n\r\nUpdate 2: Because we're now using 1000 / 60 (16.6666...) instead of 16 for the default constant animation ratio, some of the particle tests were broke.  I've updated the PNGs against the new ratio.\r\n\r\nIn order to get the camera to move correctly, regardless of frame rate, I had to create a scaling factor that has to be multiplied against the offsets to be added.  Because the math isn't quite clear as to how the scaling factor is found, here's an explanation:\r\n\r\nGiven the following variables:\r\n**r = initial offset\r\nn = inertia\r\na = relative inertia (with respect to frame deltaTime ratio; currentDeltaTime/standardDeltaTime) = n^t\r\ns = scale factor\r\nt = deltaTime ratio = currentDeltaTime/standardDeltaTime**\r\n\r\nLet's assume that the work to be done for our current frame rate can be represented as `scaleFactor * initial offset * relative inertia` `(inertia ^ (currentDeltaTime/standardDeltaTime))`.  The equivalent amount of time could be represented as the sum _from (1 to t)_ of our `initial offset * inertia^x`\r\nsra = rn^t + ... + rn\r\n\r\nIf we factor out a common value of `rn`, we then have our initial value * the sum of a geometric series.\r\nsra = rn(n^(t-1) + ... + 1)\r\n\r\nWe can also factor out our initial offset\r\nsa = n(n^(t-1) + ... + 1)\r\n\r\nNext, we can substitute the closed formula for the sum of a geometric series\r\nsa = n((n^t - 1) / (n - 1))\r\n\r\nFinally, we set everything equal to s\r\ns = n((n^t - 1) / (n - 1)) / a\r\n\r\nLet's substitute a for n^t and clean up the fractions a bit\r\ns = n * (1/a) * ((a - 1) / (n - 1))\r\n**s = (n/a) * ((a - 1) / (n - 1))**",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animatable.ts",
+                    "packages/dev/core/src/Behaviors/Meshes/fadeInOutBehavior.ts",
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts",
+                    "packages/dev/core/src/Cameras/camera.ts",
+                    "packages/dev/core/src/Cameras/targetCamera.ts",
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/Misc/precisionDate.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.inputManager.test.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/SpaceDeK.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/particles.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/prepass-ssao-particles.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/subemitters.png"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "14509",
+                "title": "CreateText does not align text on z",
+                "description": "Follow up on https://github.com/BabylonJS/Babylon.js/pull/14493",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/textBuilder.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14507",
+                "title": "Fix dynamic texture clear with transparency",
+                "description": "https://forum.babylonjs.com/t/get-dynamictexture-text-and-change-it/45583/3",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/dynamicTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "14505",
+                "title": "PostProcess: Fix target not created after parsing",
+                "description": "See https://forum.babylonjs.com/t/double-fxaa-deserialize-error/45561\r\n\r\nThe problem occurred when parsing a previously serialized post-process, if the current width/height of the output window is the same as the serialized width/height: in this case, we didn't execute the target creation code, which led to the error.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/postProcess.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "14502",
+                "title": "Add optional color option to camera gizmo",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/change-cameragizmo-frustum-color/45548",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/cameraGizmo.ts"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "14503",
+                "title": "refactor: change the way arrays are literals",
+                "description": "change the way arrays are literals\r\n\r\nChanged all the way in which arrays were created by constructors to array literals throughout the project, because array literals are more performant.",
+                "author": {
+                    "name": "GuoBinyong",
+                    "url": "https://github.com/GuoBinyong"
+                },
+                "files": [
+                    "packages/dev/core/src/Actions/abstractActionManager.ts",
+                    "packages/dev/core/src/Actions/actionManager.ts",
+                    "packages/dev/core/src/Animations/animation.ts",
+                    "packages/dev/core/src/Animations/pathCursor.ts",
+                    "packages/dev/core/src/Audio/audioSceneComponent.ts",
+                    "packages/dev/core/src/Audio/soundTrack.ts",
+                    "packages/dev/core/src/Bones/bone.ts",
+                    "packages/dev/core/src/Bones/skeleton.ts",
+                    "packages/dev/core/src/Cameras/camera.ts",
+                    "packages/dev/core/src/Culling/Octrees/octree.ts",
+                    "packages/dev/core/src/Culling/Octrees/octreeBlock.ts",
+                    "packages/dev/core/src/Culling/ray.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.textureSelector.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/engineStore.ts",
+                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts",
+                    "packages/dev/core/src/Layers/effectLayerSceneComponent.ts",
+                    "packages/dev/core/src/Layers/layerSceneComponent.ts",
+                    "packages/dev/core/src/LensFlares/lensFlareSystem.ts",
+                    "packages/dev/core/src/LensFlares/lensFlareSystemSceneComponent.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Lights/light.ts",
+                    "packages/dev/core/src/Loading/Plugins/babylonFileLoader.ts",
+                    "packages/dev/core/src/Loading/sceneLoader.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlockConnectionPoint.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildStateSharedData.ts",
+                    "packages/dev/core/src/Materials/Textures/Procedurals/proceduralTextureSceneComponent.ts",
+                    "packages/dev/core/src/Materials/Textures/baseTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Materials/multiMaterial.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Maths/math.path.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/src/Meshes/Builders/cylinderBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/decalBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/discBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/goldbergBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/groundBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/icoSphereBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/latheBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/linesBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/polyhedronBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/shapeBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/torusKnotBuilder.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Instances/instantiateOnVerticesBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlockConnectionPoint.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Meshes/csg.ts",
+                    "packages/dev/core/src/Meshes/geodesicMesh.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Meshes/mesh.vertexData.ts",
+                    "packages/dev/core/src/Meshes/meshSimplification.ts",
+                    "packages/dev/core/src/Meshes/polygonMesh.ts",
+                    "packages/dev/core/src/Meshes/thinInstanceMesh.ts",
+                    "packages/dev/core/src/Misc/dds.ts",
+                    "packages/dev/core/src/Misc/filesInput.ts",
+                    "packages/dev/core/src/Misc/sceneOptimizer.ts",
+                    "packages/dev/core/src/Morph/morphTarget.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts",
+                    "packages/dev/core/src/Particles/particleSystemComponent.ts",
+                    "packages/dev/core/src/Particles/particleSystemSet.ts",
+                    "packages/dev/core/src/Physics/v1/Plugins/cannonJSPlugin.ts",
+                    "packages/dev/core/src/PostProcesses/postProcess.ts",
+                    "packages/dev/core/src/PostProcesses/volumetricLightScatteringPostProcess.ts",
+                    "packages/dev/core/src/Probes/reflectionProbe.ts",
+                    "packages/dev/core/src/Rendering/edgesRenderer.ts",
+                    "packages/dev/core/src/Sprites/spriteManager.ts",
+                    "packages/dev/core/src/Sprites/spriteMap.ts",
+                    "packages/dev/core/src/Sprites/spriteSceneComponent.ts",
+                    "packages/dev/core/src/XR/features/WebXRFeaturePointSystem.ts",
+                    "packages/dev/core/src/abstractScene.ts",
+                    "packages/dev/core/src/assetContainer.ts",
+                    "packages/dev/core/src/node.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/core/test/unit/Misc/babylon.arrayTools.test.ts",
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/dev/gui/src/3D/materials/fluent/fluentMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/fluentBackplate/fluentBackplateMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/fluentButton/fluentButtonMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlBackglowMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlBackplateMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlFrontplateMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlInnerquadMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlSliderBarMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlSliderThumbMaterial.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/graph/curve.ts",
+                    "packages/dev/loaders/src/OBJ/objFileLoader.ts",
+                    "packages/dev/loaders/src/glTF/1.0/glTFLoader.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/MSFT_lod.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts",
+                    "packages/dev/loaders/test/integration/babylon.sceneLoader.test.ts",
+                    "packages/dev/materials/src/cell/cellMaterial.ts",
+                    "packages/dev/materials/src/fur/furMaterial.ts"
+                ],
+                "tags": []
             }
         ],
         "6.28.1": [
