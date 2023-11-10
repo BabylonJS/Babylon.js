@@ -120,7 +120,7 @@ export declare abstract class Tensor<V extends unknown[] = number[]> {
     public addInPlaceFromFloats(...floats: Flatten<V>): this;
 
     /**
-     * Gets a new Tensor2 set with the subtracted coordinates of the given one from the current Tensor2
+     * Gets a new Tensor set with the subtracted coordinates of the given one from the current Tensor
      * @param otherTensor defines the other tensor
      * @returns a new Tensor
      */
@@ -303,7 +303,7 @@ export declare abstract class Tensor<V extends unknown[] = number[]> {
      * @param floats defines the coordinates to compare against
      * @returns true if both tensors are equal
      */
-    public equalsToFloats(...floats: V): boolean;
+    public equalsToFloats(...floats: Flatten<V>): boolean;
 
     /**
      * Gets a new Tensor from current Tensor floored values
@@ -436,3 +436,4 @@ export declare abstract class Tensor<V extends unknown[] = number[]> {
      */
     public static CenterToRef<T extends Tensor>(value1: DeepImmutable<T>, value2: DeepImmutable<T>, ref: T): T;
 }
+
