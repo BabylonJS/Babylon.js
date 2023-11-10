@@ -26,7 +26,7 @@ import type { ISceneLike, ThinEngineOptions } from "./thinEngine";
 import { WebGPUBufferManager } from "./WebGPU/webgpuBufferManager";
 import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import { WebGPUHardwareTexture } from "./WebGPU/webgpuHardwareTexture";
-import type { Color4Like } from "../Maths/math.like";
+import type { Color4Like } from "../Maths/math.color";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { WebGPURenderPassWrapper } from "./WebGPU/webgpuRenderPassWrapper";
 import { WebGPUCacheSampler } from "./WebGPU/webgpuCacheSampler";

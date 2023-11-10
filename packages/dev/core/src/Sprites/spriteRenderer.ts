@@ -1,6 +1,6 @@
 import type { Nullable } from "../types";
 import { Constants } from "../Engines/constants";
-import type { MatrixLike } from "../Maths/math.like";
+import type { MatrixLike } from "../Maths/math.vector";
 import type { ThinEngine } from "../Engines/thinEngine";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { Buffer, VertexBuffer } from "../Buffers/buffer";

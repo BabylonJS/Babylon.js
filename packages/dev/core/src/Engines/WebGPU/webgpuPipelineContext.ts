@@ -4,7 +4,8 @@ import type { WebGPUEngine } from "../webgpuEngine";
 import type { Effect } from "../../Materials/effect";
 import type { WebGPUShaderProcessingContext } from "./webgpuShaderProcessingContext";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
-import type { MatrixLike, Vector2Like, Vector3Like, Vector4Like, Color3Like, Color4Like, QuaternionLike } from "../../Maths/math.like";
+import type { MatrixLike, Vector2Like, Vector3Like, Vector4Like, QuaternionLike } from "../../Maths/math.vector";
+import type { Color3Like, Color4Like } from "../../Maths/math.color";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 
 /** @internal */

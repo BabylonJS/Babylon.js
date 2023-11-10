@@ -1,7 +1,8 @@
 import type { IPipelineContext } from "../IPipelineContext";
 import type { Nullable } from "../../types";
 import type { Effect } from "../../Materials/effect";
-import type { MatrixLike, Vector2Like, Vector3Like, Vector4Like, Color3Like, Color4Like, QuaternionLike } from "../../Maths/math.like";
+import type { MatrixLike, Vector2Like, Vector3Like, Vector4Like, QuaternionLike } from "../../Maths/math.vector";
+import type { Color3Like, Color4Like } from "../../Maths/math.color";
 import type { ThinEngine } from "../thinEngine";
 
 /** @internal */
@@ -459,7 +460,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      */
     public setMatrix(uniformName: string, matrix: MatrixLike): void {
         if (this._cacheMatrix(uniformName, matrix)) {
-            if (!this.engine.setMatrices(this._uniforms[uniformName], matrix.toArray() as Float32Array)) {
+            if (!this.engine.setMatrices(this._uniforms[uniformName], matrix.asArray() as Float32Array)) {
                 this._valueCache[uniformName] = null;
             }
         }

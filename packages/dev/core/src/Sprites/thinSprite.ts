@@ -1,4 +1,5 @@
-import type { Vector3Like, Color4Like } from "../Maths/math.like";
+import type { Vector3Like } from "../Maths/math.vector";
+import type { Color4Like } from "../Maths/math.color";
 import type { Nullable } from "../types";
 
 /**

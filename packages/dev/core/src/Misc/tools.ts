@@ -26,7 +26,7 @@ import { RandomGUID } from "./guid";
 import type { IScreenshotSize } from "./interfaces/screenshotSize";
 import type { Engine } from "../Engines/engine";
 import type { Camera } from "../Cameras/camera";
-import type { Color4Like } from "../Maths/math.like";
+import type { Color4Like } from "../Maths/math.color";
 
 declare function importScripts(...urls: string[]): void;
 

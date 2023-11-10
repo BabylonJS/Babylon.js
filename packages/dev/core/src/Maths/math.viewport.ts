@@ -1,7 +1,17 @@
 /**
+ * @internal
+ */
+export interface ViewportLike {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+}
+
+/**
  * Class used to represent a viewport on screen
  */
-export class Viewport {
+export class Viewport implements ViewportLike {
     /**
      * Creates a Viewport object located at (x, y) and sized (width, height)
      * @param x defines viewport left coordinate

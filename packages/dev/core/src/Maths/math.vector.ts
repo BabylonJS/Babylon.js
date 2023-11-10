@@ -4,9 +4,8 @@ import { Epsilon } from "./math.constants";
 import type { Viewport } from "./math.viewport";
 import type { DeepImmutable, Nullable, FloatArray, float, Constructor, Tuple } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
-import type { PlaneLike } from "./math.like";
 import { RegisterClass } from "../Misc/typeStore";
-import type { Plane } from "./math.plane";
+import type { Plane, PlaneLike } from "./math.plane";
 import { PerformanceConfigurator } from "../Engines/performanceConfigurator";
 import { EngineStore } from "../Engines/engineStore";
 import type { TransformNode } from "../Meshes/transformNode";
@@ -195,10 +194,18 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
 }
 
 /**
+ * @internal
+ */
+export interface Vector2Like {
+    x: number;
+    y: number;
+}
+
+/**
  * Class representing a vector containing 2 coordinates
  * Example Playground - Overview -  https://playground.babylonjs.com/#QYBWV4#9
  */
-export class Vector2 implements Vector<Tuple<number, 2>> {
+export class Vector2 implements Vector<Tuple<number, 2>>, Vector2Like {
     private static _ZeroReadOnly = Vector2.Zero() as DeepImmutable<Vector2>;
 
     public declare readonly dimension: [2];
@@ -1202,13 +1209,20 @@ export class Vector2 implements Vector<Tuple<number, 2>> {
 Object.defineProperty(Vector2.prototype, "dimension", { value: [2] });
 
 /**
+ * @internal
+ */
+export interface Vector3Like extends Vector2Like {
+    z: number;
+}
+
+/**
  * Class used to store (x,y,z) vector representation
  * A Vector3 is the main object used in 3D geometry
  * It can represent either the coordinates of a point the space, either a direction
  * Reminder: js uses a left handed forward facing system
  * Example Playground - Overview - https://playground.babylonjs.com/#R1F8YU
  */
-export class Vector3 implements Vector<Tuple<number, 3>> {
+export class Vector3 implements Vector<Tuple<number, 3>>, Vector3Like {
     private static _UpReadOnly = Vector3.Up() as DeepImmutable<Vector3>;
     private static _DownReadOnly = Vector3.Down() as DeepImmutable<Vector3>;
     private static _LeftHandedForwardReadOnly = Vector3.Forward(false) as DeepImmutable<Vector3>;
@@ -3359,9 +3373,16 @@ export class Vector3 implements Vector<Tuple<number, 3>> {
 Object.defineProperty(Vector3.prototype, "dimension", { value: [3] });
 
 /**
+ * @internal
+ */
+export interface Vector4Like extends Vector3Like {
+    w: number;
+}
+
+/**
  * Vector4 class created for EulerAngle class conversion to Quaternion
  */
-export class Vector4 implements Vector<Tuple<number, 4>> {
+export class Vector4 implements Vector<Tuple<number, 4>>, Vector4Like {
     private static _ZeroReadOnly = Vector4.Zero() as DeepImmutable<Vector4>;
 
     public declare readonly dimension: [4];
@@ -4314,13 +4335,17 @@ export class Vector4 implements Vector<Tuple<number, 4>> {
 }
 Object.defineProperty(Vector4.prototype, "dimension", { value: [4] });
 
+export interface QuaternionLike extends Vector3Like {
+    w: number;
+}
+
 /**
  * Class used to store quaternion data
  * Example Playground - Overview - https://playground.babylonjs.com/#L49EJ7#100
  * @see https://en.wikipedia.org/wiki/Quaternion
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms
  */
-export class Quaternion implements Tensor<Tuple<number, 4>> {
+export class Quaternion implements Tensor<Tuple<number, 4>>, QuaternionLike {
     /** @internal */
     public _x: number;
 
@@ -5641,6 +5666,14 @@ export class Quaternion implements Tensor<Tuple<number, 4>> {
 Object.defineProperty(Quaternion.prototype, "dimension", { value: [4] });
 
 /**
+ * @internal
+ */
+export interface MatrixLike {
+    asArray(): DeepImmutable<Float32Array | Array<number>>;
+    updateFlag: number;
+}
+
+/**
  * Class used to store matrix data (4x4)
  * Note on matrix definitions in Babylon.js for setting values directly
  * rather than using one of the methods available.
@@ -5662,7 +5695,7 @@ Object.defineProperty(Quaternion.prototype, "dimension", { value: [4] });
  * Example Playground - Overview Transformation - https://playground.babylonjs.com/#AV9X17#1
  * Example Playground - Overview Projection - https://playground.babylonjs.com/#AV9X17#2
  */
-export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>> {
+export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, MatrixLike {
     public declare readonly dimension: [4, 4];
 
     /**

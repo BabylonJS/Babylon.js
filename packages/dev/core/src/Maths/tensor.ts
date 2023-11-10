@@ -436,4 +436,3 @@ export declare abstract class Tensor<V extends unknown[] = number[]> {
      */
     public static CenterToRef<T extends Tensor>(value1: DeepImmutable<T>, value2: DeepImmutable<T>, ref: T): T;
 }
-

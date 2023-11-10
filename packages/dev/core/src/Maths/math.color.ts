@@ -28,9 +28,18 @@ function colorChannelToGammaSpaceExact(color: number): number {
 }
 
 /**
+ * @internal
+ */
+export interface Color3Like {
+    r: number;
+    g: number;
+    b: number;
+}
+
+/**
  * Class used to hold a RGB color
  */
-export class Color3 implements Tensor<Tuple<number, 3>> {
+export class Color3 implements Tensor<Tuple<number, 3>>, Color3Like {
     public declare readonly dimension: [3];
 
     /**
@@ -1000,9 +1009,16 @@ export class Color3 implements Tensor<Tuple<number, 3>> {
 Object.defineProperty(Color3.prototype, "dimension", { value: [3] });
 
 /**
+ * @internal
+ */
+export interface Color4Like extends Color3Like {
+    a: number;
+}
+
+/**
  * Class used to hold a RBGA color
  */
-export class Color4 implements Tensor<Tuple<number, 4>> {
+export class Color4 implements Tensor<Tuple<number, 4>>, Color4Like {
     public declare readonly dimension: [4];
 
     /**

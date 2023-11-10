@@ -1,4 +1,5 @@
-import type { Color3Like, Color4Like, MatrixLike, Vector3Like, Vector4Like } from "../Maths/math.like";
+import type { MatrixLike, Vector3Like, Vector4Like } from "../Maths/math.vector";
+import type { Color3Like, Color4Like } from "../Maths/math.color";
 import type { Effect } from "./effect";
 import type { UniformBuffer } from "./uniformBuffer";
 

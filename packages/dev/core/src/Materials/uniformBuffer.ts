@@ -1,12 +1,12 @@
 import { Logger } from "../Misc/logger";
 import type { Nullable, FloatArray } from "../types";
-import type { MatrixLike, Vector3Like, Vector4Like, Color3Like, Color4Like } from "../Maths/math.like";
 import type { Effect } from "./effect";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import type { ThinEngine } from "../Engines/thinEngine";
 import { Tools } from "../Misc/tools";
-
+import type { MatrixLike, Vector3Like, Vector4Like } from "core/Maths/math.vector";
+import type { Color3Like, Color4Like } from "core/Maths/math.color";
 import "../Engines/Extensions/engine.uniformBuffer";
 
 /**
@@ -464,7 +464,7 @@ export class UniformBuffer {
      * @param mat A 4x4 matrix.
      */
     public addMatrix(name: string, mat: MatrixLike) {
-        this.addUniform(name, Array.prototype.slice.call(mat.toArray()));
+        this.addUniform(name, Array.prototype.slice.call(mat.asArray()));
     }
 
     /**
@@ -914,7 +914,7 @@ export class UniformBuffer {
 
     private _updateMatrixForUniform(name: string, mat: MatrixLike) {
         if (this._cacheMatrix(name, mat)) {
-            this.updateUniform(name, <any>mat.toArray(), 16);
+            this.updateUniform(name, <any>mat.asArray(), 16);
         }
     }
 

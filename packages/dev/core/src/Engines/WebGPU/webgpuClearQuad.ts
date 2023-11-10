@@ -1,6 +1,6 @@
 import type { Effect } from "../../Materials/effect";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
-import type { Color4Like } from "../../Maths/math.like";
+import type { Color4Like } from "../../Maths/math.color";
 import type { VertexBuffer } from "../../Buffers/buffer";
 import type { WebGPUDataBuffer } from "../../Meshes/WebGPU/webgpuDataBuffer";
 import type { Nullable } from "../../types";

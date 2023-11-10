@@ -1,10 +1,19 @@
 import type { DeepImmutable } from "../types";
-import { Vector3, Matrix } from "./math.vector";
+import { Vector3, Matrix, Vector3Like } from "./math.vector";
+
+/**
+ * @internal
+ */
+export interface PlaneLike {
+    normal: Vector3Like;
+    d: number;
+    normalize(): void;
+}
 
 /**
  * Represents a plane by the equation ax + by + cz + d = 0
  */
-export class Plane {
+export class Plane implements PlaneLike {
     private static _TmpMatrix = Matrix.Identity();
 
     /**

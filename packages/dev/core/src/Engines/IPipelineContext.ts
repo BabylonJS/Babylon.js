@@ -1,6 +1,7 @@
 import type { Nullable } from "../types";
 import type { Effect } from "../Materials/effect";
-import type { MatrixLike, Vector2Like, Vector3Like, Vector4Like, Color3Like, Color4Like, QuaternionLike } from "../Maths/math.like";
+import type { Color3Like, Color4Like } from "../Maths/math.color";
+import type { MatrixLike, Vector2Like, Vector3Like, Vector4Like, QuaternionLike } from "../Maths/math.vector";
 
 /**
  * Class used to store and describe the pipeline context associated with an effect

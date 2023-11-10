@@ -18,7 +18,8 @@ import { CreateImageDataArrayBufferViews, GetEnvInfo, UploadEnvSpherical } from 
 import type { Scene } from "../scene";
 import type { RenderTargetCreationOptions, TextureSize, DepthTextureCreationOptions, InternalTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
 import type { IPipelineContext } from "./IPipelineContext";
-import type { Color3Like, Color4Like, ViewportLike } from "../Maths/math.like";
+import type { Color3Like, Color4Like } from "../Maths/math.color";
+import type { ViewportLike } from "../Maths/math.viewport";
 import { Logger } from "../Misc/logger";
 import { Constants } from "./constants";
 import type { ISceneLike } from "./thinEngine";
