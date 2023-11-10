@@ -745,7 +745,7 @@ export class Vector2 {
      * @returns the dot product (float)
      */
     public static Dot(left: DeepImmutable<Vector2>, right: DeepImmutable<Vector2>): number {
-        return left.dot(right);
+        return left.x * right.x + left.y * right.y;
     }
 
     /**
@@ -2514,7 +2514,7 @@ export class Vector3 {
      * @returns the dot product
      */
     public static Dot(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>): number {
-        return left.dot(right);
+        return left._x * right._x + left._y * right._y + left._z * right._z;
     }
 
     /**
@@ -4596,7 +4596,7 @@ export class Quaternion {
      * @returns the dot product
      */
     public static Dot(left: DeepImmutable<Quaternion>, right: DeepImmutable<Quaternion>): number {
-        return left.dot(right);
+        return left._x * right._x + left._y * right._y + left._z * right._z + left._w * right._w;
     }
 
     /**
