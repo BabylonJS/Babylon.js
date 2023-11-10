@@ -692,7 +692,7 @@ Scene.prototype._animate = function (): void {
         this._animationTimeLast = now;
     }
 
-    this.deltaTime = this.useConstantAnimationDeltaTime ? this.constantAnimationDeltaTime : (now - this._animationTimeLast) * this.animationTimeScale;
+    this.deltaTime = this.useConstantAnimationDeltaTime ? 16.0 : (now - this._animationTimeLast) * this.animationTimeScale;
     this._animationTimeLast = now;
 
     const animatables = this._activeAnimatables;
