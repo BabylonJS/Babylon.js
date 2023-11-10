@@ -5753,10 +5753,6 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, MatrixLike {
         this.markAsUpdated();
     }
 
-    public toString(): string {
-        return JSON.stringify(this._m);
-    }
-
     // Properties
 
     /**
