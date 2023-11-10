@@ -143,6 +143,11 @@ export type IndicesArray = number[] | Int32Array | Uint32Array | Uint16Array;
 export type DataArray = number[] | ArrayBuffer | ArrayBufferView;
 
 /**
+ * A recursive array of T (i.e. T[], T[][], T[][][], ...)
+ */
+export type RecrusiveArray<T> = (RecrusiveArray<T> | T)[];
+
+/**
  * Multidimensional array
  *
  * @remarks
@@ -150,8 +155,8 @@ export type DataArray = number[] | ArrayBuffer | ArrayBufferView;
  */
 export type MultidimensionalArray<T, D> = D extends 0
     ? T
-    : D extends 1
-    ? T[]
+    : number extends D
+    ? RecrusiveArray<T>
     : D extends number
     ? T extends unknown[]
         ? T extends Array<infer U>

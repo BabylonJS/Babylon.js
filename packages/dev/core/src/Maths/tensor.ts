@@ -1,4 +1,4 @@
-import type { DeepImmutable, Flatten, FloatArray, MultidimensionalArray, Length } from "../types";
+import type { DeepImmutable, Flatten, FloatArray, Length } from "../types";
 
 /**
  * Computes the tensor dimension of a multi-dimensional array
@@ -9,7 +9,7 @@ export type Dimension<T> = T extends Array<infer U> ? [Length<T>, ...Dimension<U
  * Describes a mathimatical tensor.
  * @see https://wikipedia.org/wiki/Tensor
  */
-export declare abstract class Tensor<V extends MultidimensionalArray<number, number> = number[]> {
+export declare abstract class Tensor<V extends unknown[] = number[]> {
     /**
      * The number of dimensions the tensor has (i.e. the length of the coordinate array)
      * @remarks
