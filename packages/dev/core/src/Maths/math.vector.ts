@@ -4320,7 +4320,7 @@ Object.defineProperty(Vector4.prototype, "dimension", { value: [4] });
  * @see https://en.wikipedia.org/wiki/Quaternion
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms
  */
-export class Quaternion {
+export class Quaternion implements Tensor<Tuple<number, 4>> {
     /** @internal */
     public _x: number;
 
@@ -4375,6 +4375,9 @@ export class Quaternion {
         this._w = value;
         this._isDirty = true;
     }
+
+    public declare readonly dimension: [4];
+
     /**
      * Creates a new Quaternion from the given floats
      * @param x defines the first component (0 by default)
@@ -4427,7 +4430,7 @@ export class Quaternion {
      * Example Playground https://playground.babylonjs.com/#L49EJ7#13
      * @returns a new array populated with 4 elements from the quaternion coordinates
      */
-    public asArray(): number[] {
+    public asArray(): Tuple<number, 4> {
         return [this._x, this._y, this._z, this._w];
     }
 
@@ -4438,12 +4441,16 @@ export class Quaternion {
      * @param index defines an optional index in the target array to define where to start storing values
      * @returns the current Quaternion object
      */
-    public toArray(array: FloatArray, index: number = 0): Quaternion {
+    public toArray(array: FloatArray, index: number = 0): this {
         array[index] = this._x;
         array[index + 1] = this._y;
         array[index + 2] = this._z;
         array[index + 3] = this._w;
         return this;
+    }
+
+    public fromArray(array: FloatArray, index: number = 0): this {
+        return Quaternion.FromArrayToRef(array, index, this);
     }
 
     /**
@@ -4528,6 +4535,10 @@ export class Quaternion {
         return this.copyFromFloats(x, y, z, w);
     }
 
+    public setAll(value: number): this {
+        return this.copyFromFloats(value, value, value, value);
+    }
+
     /**
      * Adds two quaternions
      * Example Playground https://playground.babylonjs.com/#L49EJ7#10
@@ -4553,13 +4564,53 @@ export class Quaternion {
         return this;
     }
 
+    public addToRef<T extends this>(other: DeepImmutable<T>, result: T): T {
+        result._x = this._x + other._x;
+        result._y = this._y + other._y;
+        result._z = this._z + other._z;
+        result._w = this._w + other._w;
+        result._isDirty = true;
+        return result;
+    }
+
+    public addInPlaceFromFloats(x: number, y: number, z: number, w: number): this {
+        this._x += x;
+        this._y += y;
+        this._z += z;
+        this._w += w;
+        this._isDirty = true;
+        return this;
+    }
+
+    public subtractToRef<T extends this>(other: DeepImmutable<this>, result: T): T {
+        result._x = this._x - other._x;
+        result._y = this._y - other._y;
+        result._z = this._z - other._z;
+        result._w = this._w - other._w;
+        result._isDirty = true;
+        return result;
+    }
+
+    public subtractFromFloats(x: number, y: number, z: number, w: number): this {
+        return this.subtractFromFloatsToRef(x, y, z, w, new (this.constructor as Constructor<typeof Quaternion, this>)());
+    }
+
+    public subtractFromFloatsToRef<T extends this>(x: number, y: number, z: number, w: number, result: T): T {
+        result._x = this._x - x;
+        result._y = this._y - y;
+        result._z = this._z - z;
+        result._w = this._w - w;
+        result._isDirty = true;
+        return result;
+    }
+
     /**
      * Subtract two quaternions
      * Example Playground https://playground.babylonjs.com/#L49EJ7#57
      * @param other defines the second operand
      * @returns a new quaternion as the subtraction result of the given one from the current one
      */
-    public subtract(other: Quaternion): this {
+    public subtract(other: DeepImmutable<this>): this {
         return new (this.constructor as Constructor<typeof Quaternion, this>)(this._x - other._x, this._y - other._y, this._z - other._z, this._w - other._w);
     }
 
@@ -4667,12 +4718,130 @@ export class Quaternion {
     /**
      * Updates the current quaternion with the multiplication of itself with the given one "q1"
      * Example Playground https://playground.babylonjs.com/#L49EJ7#46
-     * @param q1 defines the second operand
+     * @param other defines the second operand
      * @returns the currentupdated quaternion
      */
-    public multiplyInPlace(q1: DeepImmutable<Quaternion>): this {
-        this.multiplyToRef(q1, this);
+    public multiplyInPlace(other: DeepImmutable<Quaternion>): this {
+        return this.multiplyToRef(other, this);
+    }
+
+    public multiplyByFloats(x: number, y: number, z: number, w: number): this {
+        this._x *= x;
+        this._y *= y;
+        this._z *= z;
+        this._w *= w;
+        this._isDirty = true;
         return this;
+    }
+
+    public divide(other: DeepImmutable<this>): this {
+        return this.divideToRef(other, new (this.constructor as Constructor<typeof Quaternion, this>)());
+    }
+
+    public divideToRef<T extends this>(other: DeepImmutable<this>, result: T): T {
+        result._x = this._x / other._x;
+        result._y = this._y / other._y;
+        result._z = this._z / other._z;
+        result._w = this._w / other._w;
+        result._isDirty = true;
+        return result;
+    }
+
+    public divideInPlace(other: DeepImmutable<this>): this {
+        this._x /= other._x;
+        this._y /= other._y;
+        this._z /= other._z;
+        this._w /= other._w;
+        this._isDirty = true;
+        return this;
+    }
+
+    public minimizeInPlace(other: DeepImmutable<this>): this {
+        this._x = Math.min(this._x, other._x);
+        this._y = Math.min(this._y, other._y);
+        this._z = Math.min(this._z, other._z);
+        this._w = Math.min(this._w, other._w);
+        this._isDirty = true;
+        return this;
+    }
+
+    public minimizeInPlaceFromFloats(x: number, y: number, z: number, w: number): this {
+        this._x = Math.min(this._x, x);
+        this._y = Math.min(this._y, y);
+        this._z = Math.min(this._z, z);
+        this._w = Math.min(this._w, w);
+        this._isDirty = true;
+        return this;
+    }
+
+    public maximizeInPlace(other: DeepImmutable<this>): this {
+        this._x = Math.max(this._x, other._x);
+        this._y = Math.max(this._y, other._y);
+        this._z = Math.max(this._z, other._z);
+        this._w = Math.max(this._w, other._w);
+        this._isDirty = true;
+        return this;
+    }
+
+    public maximizeInPlaceFromFloats(x: number, y: number, z: number, w: number): this {
+        this._x = Math.max(this._x, x);
+        this._y = Math.max(this._y, y);
+        this._z = Math.max(this._z, z);
+        this._w = Math.max(this._w, w);
+        this._isDirty = true;
+        return this;
+    }
+
+    public negate(): this {
+        return this.negateToRef(new (this.constructor as Constructor<typeof Quaternion, this>)());
+    }
+
+    public negateInPlace(): this {
+        this._x = -this._x;
+        this._y = -this._y;
+        this._z = -this._z;
+        this._w = -this._w;
+        this._isDirty = true;
+        return this;
+    }
+
+    public negateToRef<T extends this>(result: T): T {
+        result._x = -this._x;
+        result._y = -this._y;
+        result._z = -this._z;
+        result._w = -this._w;
+        result._isDirty = true;
+        return result;
+    }
+
+    public equalsToFloats(x: number, y: number, z: number, w: number): boolean {
+        return this._x === x && this._y === y && this._z === z && this._w === w;
+    }
+
+    public floor(): this {
+        return this.floorToRef(new (this.constructor as Constructor<typeof Quaternion, this>)());
+    }
+
+    public floorToRef<T extends this>(result: T): T {
+        result._x = Math.floor(this._x);
+        result._y = Math.floor(this._y);
+        result._z = Math.floor(this._z);
+        result._w = Math.floor(this._w);
+        result._isDirty = true;
+        return result;
+    }
+
+    public fract(): this {
+        return this.fractToRef(new (this.constructor as Constructor<typeof Quaternion, this>)());
+    }
+
+    public fractToRef<T extends this>(result: T): T {
+        result._x = this._x - Math.floor(this._x);
+        result._y = this._y - Math.floor(this._y);
+        result._z = this._z - Math.floor(this._z);
+        result._w = this._w - Math.floor(this._w);
+        result._isDirty = true;
+        return result;
     }
 
     /**
@@ -5469,6 +5638,7 @@ export class Quaternion {
         return result;
     }
 }
+Object.defineProperty(Quaternion.prototype, "dimension", { value: [4] });
 
 /**
  * Class used to store matrix data (4x4)
