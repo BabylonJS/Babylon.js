@@ -6,6 +6,11 @@ import type { DeepImmutable, Flatten, FloatArray, Length } from "../types";
 export type Dimension<T> = T extends Array<infer U> ? [Length<T>, ...Dimension<U>] : T extends readonly [infer U, ...infer R] ? [Length<T>, ...Dimension<U>] : [];
 
 /**
+ * Extracts the value type of a Tensor
+ */
+export type TensorValue<T> = T extends Tensor<infer V> ? V : never;
+
+/**
  * Describes a mathimatical tensor.
  * @see https://wikipedia.org/wiki/Tensor
  */
