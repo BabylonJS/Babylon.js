@@ -8494,7 +8494,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, MatrixLike {
         return result;
     }
 }
-Object.defineProperty(Vector4.prototype, "dimension", { value: [4, 4] });
+Object.defineProperty(Matrix.prototype, "dimension", { value: [4, 4] });
 
 /**
  * @internal
