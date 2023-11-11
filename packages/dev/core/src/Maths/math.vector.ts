@@ -1330,9 +1330,7 @@ export class Vector3 implements Vector<Tuple<number, 3>>, Vector3Like {
      * @returns a new array of numbers
      */
     public asArray(): Tuple<number, 3> {
-        const result: number[] = [];
-        this.toArray(result, 0);
-        return result as Tuple<number, 3>;
+        return [this._x, this._y, this._z];
     }
 
     /**
@@ -5897,7 +5895,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, MatrixLike {
      * @returns the matrix underlying array.
      */
     public asArray(): Tuple<number, 16> {
-        return this._m;
+        return [...this._m];
     }
 
     public fromArray(array: FloatArray, index: number = 0): this {
