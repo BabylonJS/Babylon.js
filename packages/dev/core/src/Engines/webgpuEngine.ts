@@ -82,13 +82,13 @@ const disableUniformityAnalysisMarker = "/* disable_uniformity_analysis */";
 const tempColor4 = new Color4();
 
 /** @internal */
-class WebGPURenderPassWrapper {
-    public renderPassDescriptor: Nullable<GPURenderPassDescriptor> = null;
+interface IWebGPURenderPassWrapper {
+    renderPassDescriptor: Nullable<GPURenderPassDescriptor>;
 
-    public colorAttachmentViewDescriptor: Nullable<GPUTextureViewDescriptor> = null;
-    public depthAttachmentViewDescriptor: Nullable<GPUTextureViewDescriptor> = null;
-    public colorAttachmentGPUTextures: (WebGPUHardwareTexture | null)[] = [];
-    public depthTextureFormat: GPUTextureFormat | undefined;
+    colorAttachmentViewDescriptor: Nullable<GPUTextureViewDescriptor>;
+    depthAttachmentViewDescriptor: Nullable<GPUTextureViewDescriptor>;
+    colorAttachmentGPUTextures: (WebGPUHardwareTexture | null)[];
+    depthTextureFormat: GPUTextureFormat | undefined;
 }
 
 /**
@@ -283,8 +283,20 @@ export class WebGPUEngine extends Engine {
     // Frame Buffer Life Cycle (recreated for each render target pass)
     /** @internal */
     public _currentRenderPass: Nullable<GPURenderPassEncoder> = null;
-    private _mainRenderPassWrapper: WebGPURenderPassWrapper = new WebGPURenderPassWrapper();
-    private _rttRenderPassWrapper: WebGPURenderPassWrapper = new WebGPURenderPassWrapper();
+    private _mainRenderPassWrapper: IWebGPURenderPassWrapper = {
+        renderPassDescriptor: null,
+        colorAttachmentViewDescriptor: null,
+        depthAttachmentViewDescriptor: null,
+        colorAttachmentGPUTextures: [],
+        depthTextureFormat: undefined,
+    };
+    private _rttRenderPassWrapper: IWebGPURenderPassWrapper = {
+        renderPassDescriptor: null,
+        colorAttachmentViewDescriptor: null,
+        depthAttachmentViewDescriptor: null,
+        colorAttachmentGPUTextures: [],
+        depthTextureFormat: undefined,
+    };
     /** @internal */
     public _pendingDebugCommands: Array<[string, Nullable<string>]> = [];
     /**
@@ -3070,7 +3082,7 @@ export class WebGPUEngine extends Engine {
     /**
      * @internal
      */
-    public _setColorFormat(wrapper: WebGPURenderPassWrapper): void {
+    public _setColorFormat(wrapper: IWebGPURenderPassWrapper): void {
         const format = wrapper.colorAttachmentGPUTextures[0]?.format ?? null;
         this._cacheRenderPipeline.setColorFormat(format);
         if (this._colorFormat === format) {
@@ -3082,7 +3094,7 @@ export class WebGPUEngine extends Engine {
     /**
      * @internal
      */
-    public _setDepthTextureFormat(wrapper: WebGPURenderPassWrapper): void {
+    public _setDepthTextureFormat(wrapper: IWebGPURenderPassWrapper): void {
         this._cacheRenderPipeline.setDepthStencilFormat(wrapper.depthTextureFormat);
         if (this._depthTextureFormat === wrapper.depthTextureFormat) {
             return;
