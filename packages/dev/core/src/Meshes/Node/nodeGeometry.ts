@@ -49,7 +49,7 @@ export class NodeGeometry {
     private _buildExecutionTime: number = 0;
 
     /** Define the Url to load node editor script */
-    public static EditorURL = `v${Engine.Version}/nodeGeometryEditor/babylon.nodeGeometryEditor.js`;
+    public static EditorURL = `${Tools._DefaultCdnUrl}/v${Engine.Version}/nodeGeometryEditor/babylon.nodeGeometryEditor.js`;
 
     /** Define the Url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
@@ -88,7 +88,7 @@ export class NodeGeometry {
     /**
      * Gets an array of blocks that needs to be serialized even if they are not yet connected
      */
-    public attachedBlocks = new Array<NodeGeometryBlock>();
+    public attachedBlocks: NodeGeometryBlock[] = [];
 
     /**
      * Observable raised when the geometry is built

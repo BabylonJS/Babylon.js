@@ -346,7 +346,6 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         state.sharedData.bindableBlocks.push(this);
 
         const comments = `//${this.name}`;
-        state._emitFunction("ReciprocalPI", "#define RECIPROCAL_PI2 0.15915494", "");
         state._emitFunctionFromInclude("helperFunctions", comments);
         state._emitFunctionFromInclude("reflectionFunction", comments, {
             replaceStrings: [{ search: /vec3 computeReflectionCoords/g, replace: "void DUMMYFUNC" }],

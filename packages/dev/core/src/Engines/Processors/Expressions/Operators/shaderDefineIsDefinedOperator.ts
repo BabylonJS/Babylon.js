@@ -2,7 +2,10 @@ import { ShaderDefineExpression } from "../shaderDefineExpression";
 
 /** @internal */
 export class ShaderDefineIsDefinedOperator extends ShaderDefineExpression {
-    public constructor(public define: string, public not: boolean = false) {
+    public constructor(
+        public define: string,
+        public not: boolean = false
+    ) {
         super();
     }
 

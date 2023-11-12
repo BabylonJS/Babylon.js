@@ -194,6 +194,9 @@ export class GLTFLoader implements IGLTFLoader {
     /** @internal */
     public _disableInstancedMesh = 0;
 
+    /** @internal */
+    public _allMaterialsDirtyRequired = false;
+
     private readonly _parent: GLTFFileLoader;
     private readonly _extensions = new Array<IGLTFLoaderExtension>();
     private _disposed = false;
@@ -387,6 +390,7 @@ export class GLTFLoader implements IGLTFLoader {
                 this._rootUrl = rootUrl;
                 this._uniqueRootUrl = !rootUrl.startsWith("file:") && fileName ? rootUrl : `${rootUrl}${Date.now()}/`;
                 this._fileName = fileName;
+                this._allMaterialsDirtyRequired = false;
 
                 this._loadExtensions();
                 this._checkExtensions();
@@ -426,7 +430,15 @@ export class GLTFLoader implements IGLTFLoader {
                 }
 
                 // Restore the blocking of material dirty.
-                this._babylonScene.blockMaterialDirtyMechanism = oldBlockMaterialDirtyMechanism;
+                if (this._allMaterialsDirtyRequired) {
+                    // This can happen if we add a light for instance as it will impact the whole scene.
+                    // This automatically resets everything if needed.
+                    this._babylonScene.blockMaterialDirtyMechanism = oldBlockMaterialDirtyMechanism;
+                } else {
+                    // By default a newly created material is dirty so there is no need to flag the full scene as dirty.
+                    // For perf reasons, we then bypass blockMaterialDirtyMechanism as this would "dirty" the entire scene.
+                    this._babylonScene._forceBlockMaterialDirtyMechanism(oldBlockMaterialDirtyMechanism);
+                }
 
                 if (this._parent.compileMaterials) {
                     promises.push(this._compileMaterialsAsync());
@@ -649,7 +661,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _getGeometries(): Geometry[] {
-        const geometries = new Array<Geometry>();
+        const geometries: Geometry[] = [];
 
         const nodes = this._gltf.nodes;
         if (nodes) {
@@ -667,7 +679,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _getMeshes(): AbstractMesh[] {
-        const meshes = new Array<AbstractMesh>();
+        const meshes: AbstractMesh[] = [];
 
         // Root mesh is always first, if available.
         if (this._rootBabylonMesh) {
@@ -687,7 +699,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _getTransformNodes(): TransformNode[] {
-        const transformNodes = new Array<TransformNode>();
+        const transformNodes: TransformNode[] = [];
 
         const nodes = this._gltf.nodes;
         if (nodes) {
@@ -705,7 +717,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _getSkeletons(): Skeleton[] {
-        const skeletons = new Array<Skeleton>();
+        const skeletons: Skeleton[] = [];
 
         const skins = this._gltf.skins;
         if (skins) {
@@ -720,7 +732,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _getAnimationGroups(): AnimationGroup[] {
-        const animationGroups = new Array<AnimationGroup>();
+        const animationGroups: AnimationGroup[] = [];
 
         const animations = this._gltf.animations;
         if (animations) {
@@ -1350,7 +1362,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         const paths: { [joint: number]: Array<INode> } = {};
         for (const index of joints) {
-            const path = new Array<INode>();
+            const path: INode[] = [];
             let node = ArrayItem.Get(`${context}/${index}`, this._gltf.nodes, index);
             while (node.index !== -1) {
                 path.unshift(node);

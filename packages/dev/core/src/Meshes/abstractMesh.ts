@@ -1955,7 +1955,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             const subMesh = subMeshes.data[index];
 
             // Bounding test
-            if (len > 1 && !subMesh.canIntersects(ray)) {
+            if (len > 1 && !skipBoundingInfo && !subMesh.canIntersects(ray)) {
                 continue;
             }
 
@@ -2021,7 +2021,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                 this.subMeshes[0].dispose();
             }
         } else {
-            this.subMeshes = new Array<SubMesh>();
+            this.subMeshes = [] as SubMesh[];
         }
         return this;
     }
@@ -2034,6 +2034,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
         let index: number;
 
+        const scene = this.getScene();
+
         // mesh map release.
         if (this._scene.useMaterialMeshMap) {
             // remove from material mesh map id needed
@@ -2043,8 +2045,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
 
         // Smart Array Retainers.
-        this.getScene().freeActiveMeshes();
-        this.getScene().freeRenderingGroups();
+        scene.freeActiveMeshes();
+        scene.freeRenderingGroups();
+        if (scene.renderingManager.maintainStateBetweenFrames) {
+            scene.renderingManager.restoreDispachedFlags();
+        }
 
         // Action manager
         if (this.actionManager !== undefined && this.actionManager !== null) {
@@ -2074,7 +2079,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this._intersectionsInProgress.length = 0;
 
         // Lights
-        const lights = this.getScene().lights;
+        const lights = scene.lights;
 
         lights.forEach((light: Light) => {
             let meshIndex = light.includedOnlyMeshes.indexOf(this);
@@ -2114,7 +2119,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         }
 
         // Query
-        const engine = this.getScene().getEngine();
+        const engine = scene.getEngine();
         if (this._occlusionQuery !== null) {
             this.isOcclusionQueryInProgress = false;
             engine.deleteQuery(this._occlusionQuery);
@@ -2125,7 +2130,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         engine.wipeCaches();
 
         // Remove from scene
-        this.getScene().removeMesh(this);
+        scene.removeMesh(this);
 
         if (this._parentContainer) {
             const index = this._parentContainer.meshes.indexOf(this);
@@ -2147,9 +2152,9 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
         if (!doNotRecurse) {
             // Particles
-            for (index = 0; index < this.getScene().particleSystems.length; index++) {
-                if (this.getScene().particleSystems[index].emitter === this) {
-                    this.getScene().particleSystems[index].dispose();
+            for (index = 0; index < scene.particleSystems.length; index++) {
+                if (scene.particleSystems[index].emitter === this) {
+                    scene.particleSystems[index].dispose();
                     index--;
                 }
             }
@@ -2197,10 +2202,10 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     private _initFacetData(): AbstractMesh {
         const data = this._internalAbstractMeshDataInfo._facetData;
         if (!data.facetNormals) {
-            data.facetNormals = new Array<Vector3>();
+            data.facetNormals = [] as Vector3[];
         }
         if (!data.facetPositions) {
-            data.facetPositions = new Array<Vector3>();
+            data.facetPositions = [] as Vector3[];
         }
         if (!data.facetPartitioning) {
             data.facetPartitioning = new Array<number[]>();
@@ -2544,8 +2549,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         const facetData = this._internalAbstractMeshDataInfo._facetData;
         if (facetData.facetDataEnabled) {
             facetData.facetDataEnabled = false;
-            facetData.facetPositions = new Array<Vector3>();
-            facetData.facetNormals = new Array<Vector3>();
+            facetData.facetPositions = [] as Vector3[];
+            facetData.facetNormals = [] as Vector3[];
             facetData.facetPartitioning = new Array<number[]>();
             facetData.facetParameters = null;
             facetData.depthSortedIndices = new Uint32Array(0);

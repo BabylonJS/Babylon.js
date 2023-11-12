@@ -89,16 +89,28 @@ export class MergeGeometryBlock extends NodeGeometryBlock {
             const additionalVertexData: VertexData[] = [];
 
             if (this.geometry1.isConnected) {
-                additionalVertexData.push(this.geometry1.getConnectedValue(state));
+                const data = this.geometry1.getConnectedValue(state);
+                if (data) {
+                    additionalVertexData.push(data);
+                }
             }
             if (this.geometry2.isConnected) {
-                additionalVertexData.push(this.geometry2.getConnectedValue(state));
+                const data = this.geometry2.getConnectedValue(state);
+                if (data) {
+                    additionalVertexData.push(data);
+                }
             }
             if (this.geometry3.isConnected) {
-                additionalVertexData.push(this.geometry3.getConnectedValue(state));
+                const data = this.geometry3.getConnectedValue(state);
+                if (data) {
+                    additionalVertexData.push(data);
+                }
             }
             if (this.geometry4.isConnected) {
-                additionalVertexData.push(this.geometry4.getConnectedValue(state));
+                const data = this.geometry4.getConnectedValue(state);
+                if (data) {
+                    additionalVertexData.push(data);
+                }
             }
 
             if (additionalVertexData.length && vertexData) {

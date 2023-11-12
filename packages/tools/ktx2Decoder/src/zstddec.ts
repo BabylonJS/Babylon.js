@@ -30,7 +30,7 @@ const IMPORT_OBJECT = {
  * ZSTD (Zstandard) decoder.
  */
 export class ZSTDDecoder {
-    public static WasmModuleURL = "zstddec.wasm";
+    public static WasmModuleURL = "https://cdn.babylonjs.com/zstddec.wasm";
 
     init(): Promise<void> {
         if (init) {

@@ -4,44 +4,10 @@ import type { Scene } from "../scene";
 import type { FlowGraphAsyncExecutionBlock } from "./flowGraphAsyncExecutionBlock";
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
-import type { FlowGraphEventCoordinator } from "./flowGraphEventCoordinator";
 import type { FlowGraph } from "./flowGraph";
-
-function isMeshClassName(className: string) {
-    return (
-        className === "Mesh" ||
-        className === "AbstractMesh" ||
-        className === "GroundMesh" ||
-        className === "InstanceMesh" ||
-        className === "LinesMesh" ||
-        className === "GoldbergMesh" ||
-        className === "GreasedLineMesh" ||
-        className === "TrailMesh"
-    );
-}
-
-function defaultValueSerializationFunction(key: string, value: any, serializationObject: any) {
-    if (value?.getClassName && isMeshClassName(value?.getClassName())) {
-        serializationObject[key] = {
-            name: value.name,
-            className: value.getClassName(),
-        };
-    } else {
-        serializationObject[key] = value;
-    }
-}
-
-function defaultValueParseFunction(key: string, serializationObject: any, scene: Scene) {
-    const value = serializationObject[key];
-    let finalValue;
-    const className = value?.className;
-    if (isMeshClassName(className)) {
-        finalValue = scene.getMeshByName(value.name);
-    } else {
-        finalValue = value;
-    }
-    return finalValue;
-}
+import { defaultValueParseFunction, defaultValueSerializationFunction } from "./serialization";
+import type { FlowGraphCoordinator } from "./flowGraphCoordinator";
+import { Observable } from "../Misc/observable";
 
 /**
  * Construction parameters for the context.
@@ -55,7 +21,7 @@ export interface IFlowGraphContextConfiguration {
     /**
      * The event coordinator used by the flow graph context.
      */
-    readonly eventCoordinator: FlowGraphEventCoordinator;
+    readonly coordinator: FlowGraphCoordinator;
 }
 /**
  * @experimental
@@ -90,6 +56,15 @@ export class FlowGraphContext {
      * These are blocks that have currently pending tasks/listeners that need to be cleaned up.
      */
     private _pendingBlocks: FlowGraphAsyncExecutionBlock[] = [];
+    /**
+     * A monotonically increasing ID for each execution.
+     * Incremented for every block executed.
+     */
+    private _executionId = 0;
+    /**
+     * Observable that is triggered when a node is executed.
+     */
+    public onNodeExecutedObservable: Observable<FlowGraphBlock> = new Observable<FlowGraphBlock>();
 
     constructor(params: IFlowGraphContextConfiguration) {
         this._configuration = params;
@@ -241,6 +216,50 @@ export class FlowGraphContext {
             block._cancelPendingTasks(this);
         }
         this._pendingBlocks.length = 0;
+    }
+
+    /**
+     * @internal
+     * Function that notifies the node executed observable
+     * @param node
+     */
+    public _notifyExecuteNode(node: FlowGraphBlock) {
+        this.onNodeExecutedObservable.notifyObservers(node);
+    }
+
+    /**
+     * @internal
+     */
+    public _increaseExecutionId() {
+        this._executionId++;
+    }
+    /**
+     * A monotonically increasing ID for each execution.
+     * Incremented for every block executed.
+     */
+    public get executionId() {
+        return this._executionId;
+    }
+
+    private _getEnclosedSubstring(subString: string): string {
+        return `{${subString}}`;
+    }
+
+    /** @internal */
+    public _getTargetFromPath(path: string, subString: string, block: FlowGraphBlock) {
+        let finalPath = path;
+        if (subString && path.indexOf(this._getEnclosedSubstring(subString)) !== -1) {
+            const nodeToSub = block.getDataInput(subString);
+            if (!nodeToSub) {
+                throw new Error(`Invalid substitution input for substitution string ${subString}`);
+            }
+            const index = Math.floor(nodeToSub.getValue(this));
+            if (isNaN(index)) {
+                throw new Error(`Invalid substitution value for substitution string ${subString}`);
+            }
+            finalPath = path.replace(this._getEnclosedSubstring(subString), index.toString());
+        }
+        return this.getVariable(finalPath);
     }
 
     /**

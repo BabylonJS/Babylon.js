@@ -1,7 +1,14 @@
 import type { Engine } from "core/Engines";
 import { NullEngine } from "core/Engines";
 import type { FlowGraph, FlowGraphContext } from "core/FlowGraph";
-import { FlowGraphCoordinator, FlowGraphGetVariableBlock, FlowGraphSceneReadyEventBlock, FlowGraphLogBlock } from "core/FlowGraph";
+import {
+    FlowGraphCoordinator,
+    FlowGraphGetVariableBlock,
+    FlowGraphSceneReadyEventBlock,
+    FlowGraphLogBlock,
+    FlowGraphAddNumberBlock,
+    FlowGraphRandomNumberBlock,
+} from "core/FlowGraph";
 import { Scene } from "core/scene";
 
 describe("Flow Graph Data Nodes", () => {
@@ -50,5 +57,47 @@ describe("Flow Graph Data Nodes", () => {
 
         expect(console.log).toHaveBeenCalledWith(42);
         expect(console.log).toHaveBeenCalledWith(43);
+    });
+
+    it("Values are cached for the same execution id", () => {
+        const sceneReady = new FlowGraphSceneReadyEventBlock({ name: "SceneReady" });
+        flowGraph.addEventBlock(sceneReady);
+
+        const add = new FlowGraphAddNumberBlock();
+
+        const rnd = new FlowGraphRandomNumberBlock();
+        rnd.leftInput.setValue(0, flowGraphContext);
+        rnd.rightInput.setValue(1, flowGraphContext);
+
+        // add a number to itself, which should only trigger the random number block once and cache the result
+        add.leftInput.connectTo(rnd.output);
+        add.rightInput.connectTo(rnd.output);
+
+        // log ther result
+        const log = new FlowGraphLogBlock();
+        log.message.connectTo(add.output);
+        sceneReady.onDone.connectTo(log.onStart);
+
+        flowGraph.start();
+
+        let mockRandomIndex = 1;
+        const mockedRandom = (): number => {
+            return mockRandomIndex++;
+        };
+
+        // clear the random mock before calling
+        const random = jest.spyOn(global.Math, "random").mockImplementation(mockedRandom);
+
+        scene.onReadyObservable.notifyObservers(scene);
+
+        expect(random).toHaveBeenCalledTimes(1);
+        expect(console.log).toHaveBeenCalledWith(2); // 1 + 1
+
+        random.mockRestore();
+    });
+
+    afterEach(() => {
+        scene.dispose();
+        engine.dispose();
     });
 });

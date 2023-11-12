@@ -1116,9 +1116,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("imageProcessingDeclaration", comments);
         state._emitFunctionFromInclude("imageProcessingFunctions", comments);
 
-        state._emitFunctionFromInclude("shadowsFragmentFunctions", comments, {
-            replaceStrings: [{ search: /vPositionW/g, replace: worldPosVarName + ".xyz" }],
-        });
+        state._emitFunctionFromInclude("shadowsFragmentFunctions", comments);
 
         state._emitFunctionFromInclude("pbrDirectLightingSetupFunctions", comments, {
             replaceStrings: [{ search: /vPositionW/g, replace: worldPosVarName + ".xyz" }],
@@ -1331,11 +1329,15 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         if (this.light) {
             state.compilationString += state._emitCodeFromInclude("lightFragment", comments, {
-                replaceStrings: [{ search: /{X}/g, replace: this._lightId.toString() }],
+                replaceStrings: [
+                    { search: /{X}/g, replace: this._lightId.toString() },
+                    { search: /vPositionW/g, replace: worldPosVarName + ".xyz" },
+                ],
             });
         } else {
             state.compilationString += state._emitCodeFromInclude("lightFragment", comments, {
                 repeatKey: "maxSimultaneousLights",
+                substitutionVars: `vPositionW,${worldPosVarName}.xyz`,
             });
         }
 

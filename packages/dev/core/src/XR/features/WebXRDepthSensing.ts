@@ -168,7 +168,10 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
      * @param _xrSessionManager the WebXRSessionManager
      * @param options options for WebXR Depth Sensing Feature
      */
-    constructor(_xrSessionManager: WebXRSessionManager, public readonly options: IWebXRDepthSensingOptions) {
+    constructor(
+        _xrSessionManager: WebXRSessionManager,
+        public readonly options: IWebXRDepthSensingOptions
+    ) {
         super(_xrSessionManager);
         this.xrNativeFeatureName = "depth-sensing";
 

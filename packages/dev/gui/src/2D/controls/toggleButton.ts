@@ -127,7 +127,10 @@ export class ToggleButton extends Rectangle {
      * @param name defines the control name
      * @param group defines the toggle group this toggle belongs to
      */
-    constructor(public name?: string, group?: string) {
+    constructor(
+        public name?: string,
+        group?: string
+    ) {
         super(name);
         this.group = group ?? "";
 

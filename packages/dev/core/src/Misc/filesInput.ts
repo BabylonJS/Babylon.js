@@ -227,7 +227,7 @@ export class FilesInput {
         }
 
         if (this._filesToLoad && this._filesToLoad.length > 0) {
-            const files = new Array<File>();
+            const files: File[] = [];
             const folders = [];
             const items = event.dataTransfer ? event.dataTransfer.items : null;
 

@@ -1,6 +1,6 @@
 import type { Nullable } from "../types";
 import { Vector3 } from "../Maths/math.vector";
-import { Color3 } from "../Maths/math.color";
+import { Color3, Color4 } from "../Maths/math.color";
 import { Mesh } from "../Meshes/mesh";
 import type { IGizmo } from "./gizmo";
 import { Gizmo } from "./gizmo";
@@ -39,6 +39,7 @@ export class CameraGizmo extends Gizmo implements ICameraGizmo {
     protected _cameraLinesMesh: Mesh;
     protected _material: StandardMaterial;
     protected _pointerObserver: Nullable<Observer<PointerInfo>> = null;
+    private _gizmoColor?: Color3;
 
     /**
      * Event that fires each time the gizmo is clicked
@@ -49,11 +50,12 @@ export class CameraGizmo extends Gizmo implements ICameraGizmo {
      * Creates a CameraGizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
      */
-    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer) {
+    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, gizmoColor?: Color3) {
         super(gizmoLayer);
 
         this._material = new StandardMaterial("cameraGizmoMaterial", this.gizmoLayer.utilityLayerScene);
-        this._material.diffuseColor = new Color3(0.5, 0.5, 0.5);
+        this._gizmoColor = gizmoColor;
+        this._material.diffuseColor = gizmoColor ?? new Color3(0.5, 0.5, 0.5);
         this._material.specularColor = new Color3(0.1, 0.1, 0.1);
 
         this._pointerObserver = gizmoLayer.utilityLayerScene.onPointerObservable.add((pointerInfo) => {
@@ -92,7 +94,8 @@ export class CameraGizmo extends Gizmo implements ICameraGizmo {
                 this._cameraLinesMesh.dispose();
             }
             this._cameraMesh = CameraGizmo._CreateCameraMesh(this.gizmoLayer.utilityLayerScene);
-            this._cameraLinesMesh = CameraGizmo._CreateCameraFrustum(this.gizmoLayer.utilityLayerScene);
+            const linesColor = this._gizmoColor?.toColor4(1) ?? new Color4(1, 1, 1, 1);
+            this._cameraLinesMesh = CameraGizmo._CreateCameraFrustum(this.gizmoLayer.utilityLayerScene, linesColor);
 
             this._cameraMesh.getChildMeshes(false).forEach((m) => {
                 m.material = this._material;
@@ -206,22 +209,22 @@ export class CameraGizmo extends Gizmo implements ICameraGizmo {
         return root;
     }
 
-    private static _CreateCameraFrustum(scene: Scene) {
+    private static _CreateCameraFrustum(scene: Scene, linesColor: Color4) {
         const root = new Mesh("rootCameraGizmo", scene);
         const mesh = new Mesh(root.name, scene);
         mesh.parent = root;
 
         for (let y = 0; y < 4; y += 2) {
             for (let x = 0; x < 4; x += 2) {
-                let line = CreateLines("lines", { points: [new Vector3(-1 + x, -1 + y, -1), new Vector3(-1 + x, -1 + y, 1)] }, scene);
+                let line = CreateLines("lines", { points: [new Vector3(-1 + x, -1 + y, -1), new Vector3(-1 + x, -1 + y, 1)], colors: [linesColor, linesColor] }, scene);
                 line.parent = mesh;
                 line.alwaysSelectAsActiveMesh = true;
                 line.isPickable = false;
-                line = CreateLines("lines", { points: [new Vector3(-1, -1 + x, -1 + y), new Vector3(1, -1 + x, -1 + y)] }, scene);
+                line = CreateLines("lines", { points: [new Vector3(-1, -1 + x, -1 + y), new Vector3(1, -1 + x, -1 + y)], colors: [linesColor, linesColor] }, scene);
                 line.parent = mesh;
                 line.alwaysSelectAsActiveMesh = true;
                 line.isPickable = false;
-                line = CreateLines("lines", { points: [new Vector3(-1 + x, -1, -1 + y), new Vector3(-1 + x, 1, -1 + y)] }, scene);
+                line = CreateLines("lines", { points: [new Vector3(-1 + x, -1, -1 + y), new Vector3(-1 + x, 1, -1 + y)], colors: [linesColor, linesColor] }, scene);
                 line.parent = mesh;
                 line.alwaysSelectAsActiveMesh = true;
                 line.isPickable = false;

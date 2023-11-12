@@ -89,6 +89,7 @@ import type { Animation } from "./Animations/animation";
 import type { Animatable } from "./Animations/animatable";
 import type { Texture } from "./Materials/Textures/texture";
 import { PointerPickingConfiguration } from "./Inputs/pointerPickingConfiguration";
+import { Logger } from "./Misc/logger";
 
 /**
  * Define an interface for all classes that will hold resources
@@ -453,7 +454,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Use this array to add regular expressions used to disable offline support for specific urls
      */
-    public disableOfflineSupportExceptionRules = new Array<RegExp>();
+    public disableOfflineSupportExceptionRules: RegExp[] = [];
 
     /**
      * An event triggered when the scene is disposed.
@@ -1299,7 +1300,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * The list of user defined render targets added to the scene
      */
-    public customRenderTargets = new Array<RenderTargetTexture>();
+    public customRenderTargets: RenderTargetTexture[] = [];
 
     /**
      * Defines if texture loading must be delayed
@@ -1310,7 +1311,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets the list of meshes imported to the scene through SceneLoader
      */
-    public importedMeshesFiles = new Array<string>();
+    public importedMeshesFiles: string[] = [];
 
     // Probes
     /**
@@ -1643,7 +1644,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     constructor(engine: Engine, options?: SceneOptions) {
         super();
 
-        this.activeCameras = new Array<Camera>();
+        this.activeCameras = [] as Camera[];
 
         const fullOptions = {
             useGeometryUniqueIdsMap: true,
@@ -1653,12 +1654,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             ...options,
         };
 
-        this._engine = engine || EngineStore.LastCreatedEngine;
-        if (!fullOptions.virtual) {
-            EngineStore._LastCreatedScene = this;
-            this._engine.scenes.push(this);
+        engine = this._engine = engine || EngineStore.LastCreatedEngine;
+        if (fullOptions.virtual) {
+            engine._virtualScenes.push(this);
         } else {
-            this._engine._virtualScenes.push(this);
+            EngineStore._LastCreatedScene = this;
+            engine.scenes.push(this);
         }
 
         this._uid = null;
@@ -1691,7 +1692,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this.useClonedMeshMap = fullOptions.useClonedMeshMap;
 
         if (!options || !options.virtual) {
-            this._engine.onNewSceneAddedObservable.notifyObservers(this);
+            engine.onNewSceneAddedObservable.notifyObservers(this);
         }
     }
 
@@ -4756,7 +4757,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this._pointerDownStage.clear();
         this._pointerUpStage.clear();
 
-        this.importedMeshesFiles = new Array<string>();
+        this.importedMeshesFiles = [] as string[];
 
         if (this.stopAllAnimations) {
             // Ensures that no animatable notifies a callback that could start a new animation group, constantly adding new animatables to the active list...
@@ -5094,6 +5095,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         camera?: Nullable<Camera>,
         trianglePredicate?: TrianglePickingPredicate
     ): PickingInfo {
+        const warn = _WarnImport("Ray", true);
+        if (warn) {
+            Logger.Warn(warn);
+        }
         // Dummy info if picking as not been imported
         return new PickingInfo();
     }
@@ -5107,6 +5112,10 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @returns a PickingInfo (Please note that some info will not be set like distance, bv, bu and everything that cannot be capture by only using bounding infos)
      */
     public pickWithBoundingInfo(x: number, y: number, predicate?: (mesh: AbstractMesh) => boolean, fastCheck?: boolean, camera?: Nullable<Camera>): Nullable<PickingInfo> {
+        const warn = _WarnImport("Ray", true);
+        if (warn) {
+            Logger.Warn(warn);
+        }
         // Dummy info if picking as not been imported
         return new PickingInfo();
     }
@@ -5322,6 +5331,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     }
 
     private _blockMaterialDirtyMechanism = false;
+
+    /** @internal */
+    public _forceBlockMaterialDirtyMechanism(value: boolean) {
+        this._blockMaterialDirtyMechanism = value;
+    }
 
     /** Gets or sets a boolean blocking all the calls to markAllMaterialsAsDirty (ie. the materials won't be updated if they are out of sync) */
     public get blockMaterialDirtyMechanism(): boolean {

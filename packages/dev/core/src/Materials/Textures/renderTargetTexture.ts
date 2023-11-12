@@ -73,6 +73,9 @@ export interface RenderTargetTextureOptions {
 
     /** True (default: false) to create a SRGB texture */
     useSRGBBuffer?: boolean;
+
+    /** Defines the underlying texture texture space */
+    gammaSpace?: boolean;
 }
 
 /**
@@ -481,6 +484,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         useSRGBBuffer = false
     ) {
         let colorAttachment: InternalTexture | undefined = undefined;
+        let gammaSpace = true;
         if (typeof generateMipMaps === "object") {
             const options = generateMipMaps;
             generateMipMaps = !!options.generateMipMaps;
@@ -498,6 +502,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             noColorAttachment = !!options.noColorAttachment;
             useSRGBBuffer = !!options.useSRGBBuffer;
             colorAttachment = options.colorAttachment;
+            gammaSpace = options.gammaSpace ?? gammaSpace;
         }
 
         super(null, scene, !generateMipMaps, undefined, samplingMode, undefined, undefined, undefined, undefined, format);
@@ -509,8 +514,9 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
         const engine = this.getScene()!.getEngine();
 
+        this._gammaSpace = gammaSpace;
         this._coordinatesMode = Texture.PROJECTION_MODE;
-        this.renderList = new Array<AbstractMesh>();
+        this.renderList = [] as AbstractMesh[];
         this.name = name;
         this.isRenderTarget = true;
         this._initialSizeParameter = size;

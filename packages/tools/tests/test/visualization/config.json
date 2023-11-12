@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Ground Projection",
+            "playgroundId": "#XG08YC#0",
+            "referenceImage": "groundProjection.png"
+        },
+        {
             "title": "Node geometry",
             "playgroundId": "#WGZLGJ#9152",
             "referenceImage": "nodeGeometry.png"
@@ -1668,7 +1673,7 @@
         },
         {
             "title": "Screen Space Reflections 2",
-            "playgroundId": "#PIZ1GK#1320",
+            "playgroundId": "#PIZ1GK#1500",
             "renderCount": 5,
             "excludedEngines": ["webgl1"],
             "referenceImage": "Screen-Space-Reflections-2.png"

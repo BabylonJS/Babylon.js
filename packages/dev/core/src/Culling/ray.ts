@@ -866,7 +866,7 @@ Scene.prototype._internalMultiPick = function (
     if (!PickingInfo) {
         return null;
     }
-    const pickingInfos = new Array<PickingInfo>();
+    const pickingInfos: PickingInfo[] = [];
     const computeWorldMatrixForCamera = !!(this.activeCameras && this.activeCameras.length > 1 && this.cameraToUseForPointers !== this.activeCamera);
     const currentCamera = this.cameraToUseForPointers || this.activeCamera;
 

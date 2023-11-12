@@ -981,7 +981,7 @@ export class AssetContainer extends AbstractScene {
             }
         });
 
-        const newAnimationGroups = new Array<AnimationGroup>();
+        const newAnimationGroups: AnimationGroup[] = [];
 
         // Copy new animation groups
         this.animationGroups.slice().forEach((animationGroupInAC) => {
@@ -1052,7 +1052,7 @@ export class AssetContainer extends AbstractScene {
     }
 
     /**
-     * @since
+     * @since 6.26.0
      * Given a root asset, this method will traverse its hierarchy and add it, its children and any materials/skeletons/animation groups to the container.
      * @param root
      */
@@ -1061,7 +1061,7 @@ export class AssetContainer extends AbstractScene {
             return;
         }
 
-        const nodesToVisit = new Array<Node>();
+        const nodesToVisit: Node[] = [];
         const visitedNodes = new Set<Node>();
 
         nodesToVisit.push(root);

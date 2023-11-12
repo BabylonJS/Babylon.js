@@ -58,7 +58,12 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
      * @param _options mesh options
      * @param _pathOptions used internaly when parsing a serialized GreasedLineRibbonMesh
      */
-    constructor(public readonly name: string, scene: Scene, _options: GreasedLineMeshOptions, _pathOptions?: { options: GreasedLineMeshOptions; pathCount: number }[]) {
+    constructor(
+        public readonly name: string,
+        scene: Scene,
+        _options: GreasedLineMeshOptions,
+        _pathOptions?: { options: GreasedLineMeshOptions; pathCount: number }[]
+    ) {
         super(name, scene, _options);
 
         if (!_options.ribbonOptions) {
@@ -421,8 +426,8 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         const lineOptions = this._createLineOptions();
         const deepCopiedLineOptions: any = {};
         const pathOptionsCloned: any = [];
-        DeepCopier.DeepCopy(this._pathsOptions, pathOptionsCloned);
-        DeepCopier.DeepCopy(lineOptions, deepCopiedLineOptions, ["instance"]);
+        DeepCopier.DeepCopy(this._pathsOptions, pathOptionsCloned, undefined, undefined, true);
+        DeepCopier.DeepCopy(lineOptions, deepCopiedLineOptions, ["instance"], undefined, true);
 
         const cloned = new GreasedLineRibbonMesh(name, this._scene, <GreasedLineMeshOptions>deepCopiedLineOptions, pathOptionsCloned);
         if (newParent) {

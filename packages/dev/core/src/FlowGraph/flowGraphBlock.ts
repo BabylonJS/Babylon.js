@@ -65,6 +65,10 @@ export class FlowGraphBlock {
         return output;
     }
 
+    public getDataInput(name: string): FlowGraphDataConnection<any> | undefined {
+        return this.dataInputs.find((i) => i.name === name);
+    }
+
     public serialize(serializationObject: any = {}) {
         serializationObject.uniqueId = this.uniqueId;
         serializationObject.config = this.config;

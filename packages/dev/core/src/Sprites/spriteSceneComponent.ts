@@ -144,7 +144,7 @@ Scene.prototype._internalMultiPickSprites = function (ray: Ray, predicate?: (spr
         return null;
     }
 
-    let pickingInfos = new Array<PickingInfo>();
+    let pickingInfos: PickingInfo[] = [];
 
     if (!camera) {
         if (!this.activeCamera) {
@@ -275,7 +275,7 @@ export class SpriteSceneComponent implements ISceneComponent {
      */
     constructor(scene: Scene) {
         this.scene = scene;
-        this.scene.spriteManagers = new Array<ISpriteManager>();
+        this.scene.spriteManagers = [] as ISpriteManager[];
         this.scene._tempSpritePickingRay = Ray ? Ray.Zero() : null;
         this.scene.onBeforeSpritesRenderingObservable = new Observable<Scene>();
         this.scene.onAfterSpritesRenderingObservable = new Observable<Scene>();

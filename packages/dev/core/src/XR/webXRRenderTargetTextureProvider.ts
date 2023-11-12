@@ -49,7 +49,10 @@ export abstract class WebXRLayerRenderTargetTextureProvider implements IWebXRRen
 
     private _engine: Engine;
 
-    constructor(private readonly _scene: Scene, public readonly layerWrapper: WebXRLayerWrapper) {
+    constructor(
+        private readonly _scene: Scene,
+        public readonly layerWrapper: WebXRLayerWrapper
+    ) {
         this._engine = _scene.getEngine();
     }
 

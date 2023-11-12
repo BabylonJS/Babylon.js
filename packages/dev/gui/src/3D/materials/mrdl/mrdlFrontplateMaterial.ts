@@ -412,7 +412,7 @@ export class MRDLFrontplateMaterial extends PushMaterial {
                 "_Use_Global_Right_Index_",
             ];
             const samplers: string[] = [];
-            const uniformBuffers = new Array<string>();
+            const uniformBuffers: string[] = [];
 
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,

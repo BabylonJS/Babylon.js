@@ -71,8 +71,8 @@ export function CreateDashedLinesVertexData(options: { points: Vector3[]; dashSi
     const dashNb = options.dashNb || 200;
     const points = options.points;
 
-    const positions = new Array<number>();
-    const indices = new Array<number>();
+    const positions: number[] = [];
+    const indices: number[] = [];
 
     const curvect = Vector3.Zero();
     let lg = 0;

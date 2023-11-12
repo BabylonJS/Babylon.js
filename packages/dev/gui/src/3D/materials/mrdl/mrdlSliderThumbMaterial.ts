@@ -658,7 +658,7 @@ export class MRDLSliderThumbMaterial extends PushMaterial {
                 "Global_Right_Index_Tip_Proximity",
             ];
             const samplers: string[] = ["_Rim_Texture_", "_Iridescence_Texture_"];
-            const uniformBuffers = new Array<string>();
+            const uniformBuffers: string[] = [];
 
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,

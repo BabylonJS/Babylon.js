@@ -1,6 +1,6 @@
+import { Observable } from "core/Misc/observable";
 import type { Scene } from "../scene";
 import { FlowGraph } from "./flowGraph";
-import { FlowGraphEventCoordinator } from "./flowGraphEventCoordinator";
 
 /**
  * @experimental
@@ -23,15 +23,11 @@ export class FlowGraphCoordinator {
      */
     public static readonly SceneCoordinators: Map<Scene, FlowGraphCoordinator[]> = new Map();
 
-    /**
-     * The event coordinator used by the flow graph coordinator.
-     */
-    public readonly eventCoordinator: FlowGraphEventCoordinator;
     private readonly _flowGraphs: FlowGraph[] = [];
 
-    constructor(private _config: IFlowGraphCoordinatorConfiguration) {
-        this.eventCoordinator = new FlowGraphEventCoordinator();
+    private _customEventsMap: Map<string, Observable<any>> = new Map();
 
+    constructor(private _config: IFlowGraphCoordinatorConfiguration) {
         // When the scene is disposed, dispose all graphs currently running on it.
         this._config.scene.onDisposeObservable.add(() => {
             this.dispose();
@@ -47,7 +43,7 @@ export class FlowGraphCoordinator {
      * @returns a new flow graph
      */
     createGraph(): FlowGraph {
-        const graph = new FlowGraph({ scene: this._config.scene, eventCoordinator: this.eventCoordinator });
+        const graph = new FlowGraph({ scene: this._config.scene, coordinator: this });
         this._flowGraphs.push(graph);
         return graph;
     }
@@ -101,5 +97,31 @@ export class FlowGraphCoordinator {
             FlowGraph.Parse(serializedGraph, coordinator, valueParseFunction);
         });
         return coordinator;
+    }
+
+    /**
+     * Get an observable that will be notified when the event with the given id is fired.
+     * @param id the id of the event
+     * @returns the observable for the event
+     */
+    getCustomEventObservable(id: string): Observable<any> {
+        let observable = this._customEventsMap.get(id);
+        if (!observable) {
+            observable = new Observable<any>();
+            this._customEventsMap.set(id, observable);
+        }
+        return observable;
+    }
+
+    /**
+     * Notifies the observable for the given event id with the given data.
+     * @param id the id of the event
+     * @param data the data to send with the event
+     */
+    notifyCustomEvent(id: string, data: any) {
+        const observable = this._customEventsMap.get(id);
+        if (observable) {
+            observable.notifyObservers(data);
+        }
     }
 }

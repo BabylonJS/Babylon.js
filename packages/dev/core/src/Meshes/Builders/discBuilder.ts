@@ -31,10 +31,10 @@ export function CreateDiscVertexData(options: {
     frontUVs?: Vector4;
     backUVs?: Vector4;
 }): VertexData {
-    const positions = new Array<number>();
-    const indices = new Array<number>();
-    const normals = new Array<number>();
-    const uvs = new Array<number>();
+    const positions: number[] = [];
+    const indices: number[] = [];
+    const normals: number[] = [];
+    const uvs: number[] = [];
 
     const radius = options.radius || 0.5;
     const tessellation = options.tessellation || 64;

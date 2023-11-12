@@ -2,9 +2,7 @@ import type { Observer } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
 import { FlowGraphEventBlock } from "./flowGraphEventBlock";
-import { FlowGraphVariableDefinitions } from "./flowGraphVariableDefinitions";
 import { FlowGraphContext } from "./flowGraphContext";
-import type { FlowGraphEventCoordinator } from "./flowGraphEventCoordinator";
 import { FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 import type { FlowGraphCoordinator } from "./flowGraphCoordinator";
@@ -34,7 +32,7 @@ export interface FlowGraphParams {
     /**
      * The event coordinator used by the flow graph.
      */
-    eventCoordinator: FlowGraphEventCoordinator;
+    coordinator: FlowGraphCoordinator;
 }
 /**
  * @experimental
@@ -44,11 +42,6 @@ export interface FlowGraphParams {
  * The graph can then be started, which will init and start all of its event blocks.
  */
 export class FlowGraph {
-    /**
-     * The variables defined for this graph
-     */
-    public variableDefinitions: FlowGraphVariableDefinitions = new FlowGraphVariableDefinitions();
-
     /** @internal */
     public _eventBlocks: FlowGraphEventBlock[] = [];
     private _sceneDisposeObserver: Nullable<Observer<Scene>>;
@@ -56,7 +49,7 @@ export class FlowGraph {
      * @internal
      */
     public readonly _scene: Scene;
-    private _eventCoordinator: FlowGraphEventCoordinator;
+    private _coordinator: FlowGraphCoordinator;
     private _executionContexts: FlowGraphContext[] = [];
 
     /**
@@ -70,7 +63,7 @@ export class FlowGraph {
      */
     public constructor(params: FlowGraphParams) {
         this._scene = params.scene;
-        this._eventCoordinator = params.eventCoordinator;
+        this._coordinator = params.coordinator;
         this._sceneDisposeObserver = this._scene.onDisposeObservable.add(() => this.dispose());
     }
 
@@ -79,7 +72,7 @@ export class FlowGraph {
      * @returns the context, where you can get and set variables
      */
     public createContext() {
-        const context = this.variableDefinitions.generateContext({ scene: this._scene, eventCoordinator: this._eventCoordinator });
+        const context = new FlowGraphContext({ scene: this._scene, coordinator: this._coordinator });
         this._executionContexts.push(context);
         return context;
     }
@@ -172,7 +165,6 @@ export class FlowGraph {
      */
     public serialize(serializationObject: any = {}, valueSerializeFunction?: (key: string, value: any, serializationObject: any) => void) {
         serializationObject.variableDefinitions = {};
-        this.variableDefinitions.serialize(serializationObject.variableDefinitions);
         serializationObject.allBlocks = [];
         this.visitAllBlocks((block) => {
             const serializedBlock: any = {};
@@ -232,7 +224,6 @@ export class FlowGraph {
      */
     public static Parse(serializationObject: any, coordinator: FlowGraphCoordinator, valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any): FlowGraph {
         const graph = coordinator.createGraph();
-        graph.variableDefinitions.deserialize(serializationObject.variableDefinitions);
         const blocks: FlowGraphBlock[] = [];
         // Parse all blocks
         for (const serializedBlock of serializationObject.allBlocks) {

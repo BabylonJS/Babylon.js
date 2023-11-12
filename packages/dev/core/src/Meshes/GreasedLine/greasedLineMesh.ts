@@ -40,7 +40,11 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
      * @param scene the scene
      * @param _options mesh options
      */
-    constructor(public readonly name: string, scene: Scene, _options: GreasedLineMeshOptions) {
+    constructor(
+        public readonly name: string,
+        scene: Scene,
+        _options: GreasedLineMeshOptions
+    ) {
         super(name, scene, _options);
 
         this._previousAndSide = [];
@@ -155,7 +159,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
     public clone(name: string = `${this.name}-cloned`, newParent?: Nullable<Node>) {
         const lineOptions = this._createLineOptions();
         const deepCopiedLineOptions = {};
-        DeepCopier.DeepCopy(lineOptions, deepCopiedLineOptions, ["instance"]);
+        DeepCopier.DeepCopy(lineOptions, deepCopiedLineOptions, ["instance"], undefined, true);
 
         const cloned = new GreasedLineMesh(name, this._scene, <GreasedLineMeshOptions>deepCopiedLineOptions);
         if (newParent) {

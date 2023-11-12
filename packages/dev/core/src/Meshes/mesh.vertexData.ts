@@ -585,7 +585,7 @@ export class VertexData {
             return [this];
         }
 
-        const result = new Array<VertexData>();
+        const result: VertexData[] = [];
         for (const materialInfo of this.materialInfos) {
             const vertexData = new VertexData();
 

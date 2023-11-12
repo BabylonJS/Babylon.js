@@ -11,12 +11,14 @@ import {
     FlowGraphMultiGateBlock,
     FlowGraphSceneReadyEventBlock,
     FlowGraphSceneTickEventBlock,
+    FlowGraphSetPropertyBlock,
     FlowGraphSwitchBlock,
     FlowGraphThrottleBlock,
     FlowGraphTimerBlock,
 } from "core/FlowGraph";
 import { FlowGraphBranchBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphBranchBlock";
 import { Vector3 } from "core/Maths/math.vector";
+import { Mesh } from "core/Meshes";
 import { Scene } from "core/scene";
 
 describe("Flow Graph Execution Nodes", () => {
@@ -40,6 +42,7 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraphCoordinator = new FlowGraphCoordinator({ scene });
         flowGraph = flowGraphCoordinator.createGraph();
         flowGraphContext = flowGraph.createContext();
+        const cam = new ArcRotateCamera("cam", 0, 0, 0, new Vector3(0, 0, 0), scene);
     });
 
     it("Branch Block", () => {
@@ -155,7 +158,6 @@ describe("Flow Graph Execution Nodes", () => {
         const sceneReady = new FlowGraphSceneReadyEventBlock();
         flowGraph.addEventBlock(sceneReady);
 
-        debugger;
         const switchBlock = new FlowGraphSwitchBlock({ cases: [1, 2, 3] });
         sceneReady.onDone.connectTo(switchBlock.onStart);
         switchBlock.selection.setValue(2, flowGraphContext);
@@ -181,8 +183,6 @@ describe("Flow Graph Execution Nodes", () => {
     });
 
     it("Timer Block", () => {
-        const cam = new ArcRotateCamera("cam", 0, 0, 0, new Vector3(0, 0, 0), scene);
-
         const sceneReady = new FlowGraphSceneReadyEventBlock();
         flowGraph.addEventBlock(sceneReady);
 
@@ -207,8 +207,6 @@ describe("Flow Graph Execution Nodes", () => {
     });
 
     it("Flip Flop Block", () => {
-        const cam = new ArcRotateCamera("cam", 0, 0, 0, new Vector3(0, 0, 0), scene);
-
         const sceneTick = new FlowGraphSceneTickEventBlock();
         flowGraph.addEventBlock(sceneTick);
 
@@ -232,8 +230,6 @@ describe("Flow Graph Execution Nodes", () => {
     });
 
     it("Throttle Block", () => {
-        const cam = new ArcRotateCamera("cam", 0, 0, 0, new Vector3(0, 0, 0), scene);
-
         const sceneTick = new FlowGraphSceneTickEventBlock();
         flowGraph.addEventBlock(sceneTick);
 
@@ -252,6 +248,32 @@ describe("Flow Graph Execution Nodes", () => {
         // Check if the execution is throttled
         scene.render();
         expect(console.log).toHaveBeenCalledTimes(1);
+    });
+
+    it("SetPropertyBlock", () => {
+        const mesh0 = new Mesh("myMesh0", scene);
+        const mesh1 = new Mesh("myMesh1", scene);
+
+        const sceneReady = new FlowGraphSceneReadyEventBlock();
+        flowGraph.addEventBlock(sceneReady);
+
+        const setProperty = new FlowGraphSetPropertyBlock<Vector3>({
+            path: "myMesh{nodeIndex}",
+            property: "position",
+            subString: "nodeIndex",
+        });
+        sceneReady.onDone.connectTo(setProperty.onStart);
+        setProperty.getDataInput("nodeIndex")!.setValue(1, flowGraphContext);
+        setProperty.value.setValue(new Vector3(1, 2, 3), flowGraphContext);
+
+        flowGraphContext.setVariable("myMesh0", mesh0);
+        flowGraphContext.setVariable("myMesh1", mesh1);
+
+        flowGraph.start();
+
+        scene.onReadyObservable.notifyObservers(scene);
+        expect(mesh0.position.asArray()).toEqual([0, 0, 0]);
+        expect(mesh1.position.asArray()).toEqual([1, 2, 3]);
     });
 
     afterEach(() => {
