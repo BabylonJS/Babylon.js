@@ -1,4 +1,2 @@
-// The public API of the engine extension
-export { initBaseEngineState, areAllEffectsReady, clearInternalTexturesCache } from "./engine.base";
-
-export * as Constants from "./engine.constants";
+// This file will be the entry point for the public API of the engine. Similar to the index.ts file in the legacy package.
+export { Constants } from "./engine.constants";

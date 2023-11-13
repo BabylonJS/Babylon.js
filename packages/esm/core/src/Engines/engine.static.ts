@@ -1,3 +1,7 @@
+/**
+ * Static engine functionality. Static functions don't require the engine state to run.
+ */
+
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Effect } from "@babylonjs/core/Materials/effect.js";
 import type { IInternalTextureLoader } from "@babylonjs/core/Materials/Textures/internalTextureLoader.js";

@@ -1,3 +1,8 @@
+/**
+ * Extendable functionality for the different engines.
+ * Think super.??? without classes.
+ */
+
 import type { Nullable } from "@babylonjs/core/types.js";
 import type { BaseEngineState, BaseEngineStateFull, IBaseEnginePublic } from "./engine.base.js";
 import { _renderFrame, _viewport, endFrame, getHostWindow, getRenderHeight, getRenderWidth } from "./engine.base.js";

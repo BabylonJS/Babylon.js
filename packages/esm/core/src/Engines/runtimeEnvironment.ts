@@ -1,4 +1,7 @@
-// TODO move it here?
+/**
+ * A representation of the runtime in which the engine is running.
+ * Could be a browser, a node.js process, a react-native app, etc.
+ */
 import type { ICanvas } from "@babylonjs/core/Engines/ICanvas.js";
 
 export interface HostInformation {

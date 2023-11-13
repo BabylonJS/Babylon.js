@@ -1,3 +1,7 @@
+/**
+ * This file will include general engine tools, like reporters and loadFile
+ */
+
 import { PerfCounter } from "@babylonjs/core/Misc/perfCounter.js";
 import type { BaseEngineState, BaseEngineStateFull, IBaseEnginePublic } from "./engine.base.js";
 import type { IOfflineProvider } from "@babylonjs/core/Offline/IOfflineProvider.js";

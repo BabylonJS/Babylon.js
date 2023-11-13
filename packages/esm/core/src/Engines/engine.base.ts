@@ -1,3 +1,7 @@
+/**
+ * Base engine functionality to be used in all other different engines
+ */
+
 /* eslint-disable jsdoc/require-jsdoc */
 import { Effect } from "@babylonjs/core/Materials/effect.js";
 import type { InternalTexture } from "@babylonjs/core/Materials/Textures/internalTexture.js";

@@ -27,7 +27,7 @@ import { WebGPUTintWASM, type TwgslOptions } from "@babylonjs/core/Engines/WebGP
 import { EngineType } from "../engine.interfaces.js";
 import { IsWindowObjectExist } from "../runtimeEnvironment.js";
 import { Tools } from "@babylonjs/core/Misc/tools.js";
-import { BufferUsage, CanvasAlphaMode, FeatureName, LoadOp, StoreOp, TextureDimension, TextureFormat, TextureUsage } from "../engine.webgpu.constants.js";
+import { BufferUsage, CanvasAlphaMode, FeatureName, LoadOp, StoreOp, TextureDimension, TextureFormat, TextureUsage } from "./engine.webgpu.constants.js";
 import { VertexBuffer } from "@babylonjs/core/Buffers/buffer.js";
 import { WebGPUBufferManager } from "@babylonjs/core/Engines/WebGPU/webgpuBufferManager.js";
 import { WebGPUBundleList, WebGPURenderItemScissor, WebGPURenderItemStencilRef } from "@babylonjs/core/Engines/WebGPU/webgpuBundleList.js";
