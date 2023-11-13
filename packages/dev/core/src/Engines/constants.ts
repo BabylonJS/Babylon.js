@@ -783,7 +783,4 @@ export class Constants {
 
     /** URL to the snippet server. Points to the public snippet server by default */
     public static SnippetUrl = "https://snippet.babylonjs.com";
-
-    /** Standard time a frame should take at 60 fps (in ms) */
-    public static readonly STANDARD_TIME_STEP = 1000 / 60;
 }
