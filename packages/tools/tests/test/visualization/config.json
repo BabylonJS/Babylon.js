@@ -1958,7 +1958,8 @@
         {
             "title": "screen-space-curvature",
             "renderCount": 5,
-            "playgroundId": "#YF8D42#22"
+            "playgroundId": "#YF8D42#22",
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "digital-rain",
