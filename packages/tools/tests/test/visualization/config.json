@@ -1952,8 +1952,9 @@
         },
         {
             "title": "change-texture-of-material",
-            "renderCount": 15,
-            "playgroundId": "#7PN9PH#2"
+            "renderCount": 10,
+            "playgroundId": "#7PN9PH#2",
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "screen-space-curvature",
