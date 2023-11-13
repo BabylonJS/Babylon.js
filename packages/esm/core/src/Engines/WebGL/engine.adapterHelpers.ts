@@ -20,14 +20,14 @@ import {
     setTextureArray,
     setTextureFromPostProcess,
 } from "./engine.webgl.js";
-import { getCaps, getHostDocument, getLoadedTexturesCache, getRenderingCanvas } from "./engine.base.js";
+import { getCaps, getHostDocument, getLoadedTexturesCache, getRenderingCanvas } from "../engine.base.js";
 import type { InternalTexture } from "@babylonjs/core/Materials/Textures/internalTexture.js";
 import { InternalTextureSource } from "@babylonjs/core/Materials/Textures/internalTexture.js";
 import type { Scene } from "@babylonjs/core/scene.js";
 import type { Nullable } from "@babylonjs/core/types.js";
 import { _createPrefilteredCubeTexture } from "@babylonjs/core/Misc/dds.js";
-import { augmentEngineState } from "./engine.adapters.js";
-import { _loadFile } from "./engine.tools.js";
+import { augmentEngineState } from "../engine.adapters.js";
+import { _loadFile } from "../engine.tools.js";
 import { bindUniformBufferBase } from "./Extensions/uniformBuffer/uniformBuffer.webgl.js";
 
 export const createPrefilteredCubeTextureWebGLAdapter = {

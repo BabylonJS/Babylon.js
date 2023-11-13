@@ -1,9 +1,9 @@
 import type { InternalTexture } from "@babylonjs/core/Materials/Textures/internalTexture.js";
 import type { Nullable } from "@babylonjs/core/types.js";
-import { Constants } from "../../engine.constants.js";
-import type { IReadTextureEngineExtension } from "./readTexture.base.js";
 import type { IWebGLEnginePublic, WebGLEngineStateFull} from "../../engine.webgl.js";
 import { _getWebGLTextureType, flushFramebuffer } from "../../engine.webgl.js";
+import { Constants } from "../../../engine.constants.js";
+import type { IReadTextureEngineExtension } from "../../../Extensions/readTexture/readTexture.base.js";
 
 /**
  * Allocate a typed array depending on a texture type. Optionally can copy existing data in the buffer.

@@ -2,7 +2,7 @@
 /* eslint-disable jsdoc/require-jsdoc */
 /* eslint-disable babylonjs/available */
 import type { DataArray, IndicesArray, Nullable } from "@babylonjs/core/types.js";
-import type { IBaseEngineProtected, IBaseEnginePublic, IBaseEngineInternals, IBaseEngineOptions } from "./engine.base.js";
+import type { IBaseEngineProtected, IBaseEnginePublic, IBaseEngineInternals, IBaseEngineOptions } from "../engine.base.js";
 import {
     initBaseEngineState,
     endFrame as endFrameBase,
@@ -17,13 +17,13 @@ import {
     resize,
     _setupMobileChecks,
     _getGlobalDefines,
-} from "./engine.base.js";
+} from "../engine.base.js";
 import { WebGLShaderProcessor } from "@babylonjs/core/Engines/WebGL/webGLShaderProcessors.js";
 import type { DataBuffer } from "@babylonjs/core/Buffers/dataBuffer.js";
 import type { IEffectCreationOptions } from "@babylonjs/core/Materials/effect.js";
 import { Effect } from "@babylonjs/core/Materials/effect.js";
 import type { IColor4Like, IViewportLike } from "@babylonjs/core/Maths/math.like.js";
-import { Constants } from "./engine.constants.js";
+import { Constants } from "../engine.constants.js";
 import type { RenderTargetWrapper } from "@babylonjs/core/Engines/renderTargetWrapper.js";
 import type { WebGLRenderTargetWrapper } from "@babylonjs/core/Engines/WebGL/webGLRenderTargetWrapper.js";
 import * as _ from "lodash";
@@ -33,12 +33,12 @@ import type { IPipelineContext } from "@babylonjs/core/Engines/IPipelineContext.
 import type { VertexBuffer } from "@babylonjs/core/Buffers/buffer.js";
 import type { InstancingAttributeInfo } from "@babylonjs/core/Engines/instancingAttributeInfo.js";
 import { InternalTextureSource, InternalTexture } from "@babylonjs/core/Materials/Textures/internalTexture.js";
-import { _loadFile, _reportDrawCall } from "./engine.tools.js";
+import { _loadFile, _reportDrawCall } from "../engine.tools.js";
 import type { RenderTargetTexture } from "@babylonjs/core/Materials/Textures/renderTargetTexture.js";
 import type { ThinTexture } from "@babylonjs/core/Materials/Textures/thinTexture.js";
 import type { VideoTexture } from "@babylonjs/core/Materials/Textures/videoTexture.js";
-import type { ISceneLike } from "./engine.interfaces.js";
-import { EngineStore, ExceptionList, GetExponentOfTwo, Version } from "./engine.static.js";
+import type { ISceneLike } from "../engine.interfaces.js";
+import { EngineStore, ExceptionList, GetExponentOfTwo, Version } from "../engine.static.js";
 import type { Scene } from "@babylonjs/core/scene.js";
 import type { InternalTextureCreationOptions, TextureSize } from "@babylonjs/core/Materials/Textures/textureCreationOptions.js";
 import { Logger } from "@babylonjs/core/Misc/logger.js";
@@ -47,15 +47,15 @@ import { WebGLHardwareTexture } from "@babylonjs/core/Engines/WebGL/webGLHardwar
 import { DrawWrapper } from "@babylonjs/core/Materials/drawWrapper.js";
 import type { IEffectFallbacks } from "@babylonjs/core/Materials/iEffectFallbacks.js";
 import { ShaderLanguage } from "@babylonjs/core/Materials/shaderLanguage.js";
-import { augmentEngineState } from "./engine.adapters.js";
+import { augmentEngineState } from "../engine.adapters.js";
 import { StencilStateComposer } from "@babylonjs/core/States/stencilStateComposer.js";
 import { DepthCullingState } from "@babylonjs/core/States/depthCullingState.js";
 import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine.js";
-import { EngineExtensions, getEngineExtension } from "./Extensions/engine.extensions.js";
+import { EngineExtensions, getEngineExtension } from "../Extensions/engine.extensions.js";
 import type { ShaderProcessingContext } from "@babylonjs/core/Engines/Processors/shaderProcessingOptions.js";
 import type { PostProcess } from "@babylonjs/core/PostProcesses/postProcess.js";
 import type { IShaderProcessor } from "@babylonjs/core/Engines/Processors/iShaderProcessor.js";
-import { IsWindowObjectExist } from "./runtimeEnvironment.js";
+import { IsWindowObjectExist } from "../runtimeEnvironment.js";
 import { PerfCounter } from "@babylonjs/core/Misc/perfCounter.js";
 import {
     _createTextureBase,
@@ -65,7 +65,7 @@ import {
     setTextureFromPostProcessBase,
     setTextureFromPostProcessOutputBase,
     setViewportBase,
-} from "./engine.extendable.js";
+} from "../engine.extendable.js";
 
 const _TempClearColorUint32 = new Uint32Array(4);
 const _TempClearColorInt32 = new Int32Array(4);

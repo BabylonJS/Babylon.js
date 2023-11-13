@@ -3,9 +3,9 @@ import type { RenderTargetWrapper } from "@babylonjs/core/Engines/renderTargetWr
 import { InternalTexture, InternalTextureSource } from "@babylonjs/core/Materials/Textures/internalTexture.js";
 import { bindFramebuffer, type IWebGLEnginePublic, type WebGLEngineStateFull } from "../../engine.webgl.js";
 import { _createHardwareRenderTargetWrapper } from "../renderTarget/renderTarget.webgl.js";
-import { augmentEngineState } from "../../engine.adapters.js";
+import type { IMultiviewEngineExtension } from "../../../Extensions/multiview/multiview.base.js";
+import { augmentEngineState } from "../../../engine.adapters.js";
 import { getInternalTextureWebGLAdapter } from "../../engine.adapterHelpers.js";
-import type { IMultiviewEngineExtension } from "./multiview.base.js";
 
 export const createMultiviewRenderTargetTexture: IMultiviewEngineExtension["createMultiviewRenderTargetTexture"] = function (
     engineState: IWebGLEnginePublic,

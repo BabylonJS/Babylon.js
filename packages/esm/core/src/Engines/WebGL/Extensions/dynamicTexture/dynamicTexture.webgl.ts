@@ -1,20 +1,11 @@
 import { ThinEngine } from "@babylonjs/core/Engines/thinEngine.js";
 import { InternalTexture, InternalTextureSource } from "@babylonjs/core/Materials/Textures/internalTexture.js";
 import type { Nullable } from "@babylonjs/core/types.js";
-import {
-    updateTextureSamplingMode,
-    _bindTextureDirectly,
-    _getInternalFormat,
-    _getRGBABufferInternalSizedFormat,
-    _getWebGLTextureType,
-    _unpackFlipY,
-    _releaseTexture,
-    createTexture,
-} from "../../engine.webgl.js";
+import type { IDynamicTextureEngineExtension } from "../../../Extensions/dynamicTexture/dynamicTexture.base";
+import { augmentEngineState } from "../../../engine.adapters";
+import type { IWebGLEnginePublic, WebGLEngineStateFull} from "../../engine.webgl";
+import { _releaseTexture, createTexture, updateTextureSamplingMode, _bindTextureDirectly, _unpackFlipY, _getWebGLTextureType, _getInternalFormat, _getRGBABufferInternalSizedFormat } from "../../engine.webgl";
 
-import type { IWebGLEnginePublic, WebGLEngineStateFull } from "../../engine.webgl.js";
-import type { IDynamicTextureEngineExtension } from "./dynamicTexture.base.js";
-import { augmentEngineState } from "../../engine.adapters.js";
 
 export const createDynamicTexture: IDynamicTextureEngineExtension["createDynamicTexture"] = function (
     engineState: IWebGLEnginePublic,

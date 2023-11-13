@@ -10,14 +10,14 @@ import {
     _getWebGLTextureType,
     _unpackFlipY,
 } from "../../engine.webgl.js";
-import { Constants } from "../../engine.constants.js";
-import { augmentEngineState } from "../../engine.adapters.js";
 import { Logger } from "@babylonjs/core/Misc/logger.js";
 import { Tools } from "@babylonjs/core/Misc/tools.js";
 import type { Scene } from "@babylonjs/core/scene.js";
 import type { IWebRequest } from "@babylonjs/core/Misc/interfaces/iWebRequest.js";
-import { _loadFile } from "../../engine.tools.js";
-import type { IRawTextureEngineExtension } from "../rawTexture/engine.rawTexture.base.js";
+import type { IRawTextureEngineExtension } from "../../../Extensions/rawTexture/engine.rawTexture.base.js";
+import { augmentEngineState } from "../../../engine.adapters.js";
+import { Constants } from "../../../engine.constants.js";
+import { _loadFile } from "../../../engine.tools.js";
 
 export const updateRawTexture: IRawTextureEngineExtension["updateRawTexture"] = function (
     engineState: IWebGLEnginePublic,

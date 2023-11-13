@@ -4,7 +4,7 @@ import type { RenderTargetWrapper } from "@babylonjs/core/Engines/renderTargetWr
 import { InternalTexture, InternalTextureSource } from "@babylonjs/core/Materials/Textures/internalTexture.js";
 import type { TextureSize, RenderTargetCreationOptions, DepthTextureCreationOptions } from "@babylonjs/core/Materials/Textures/textureCreationOptions.js";
 import type { Nullable } from "@babylonjs/core/types.js";
-import { augmentEngineState } from "../../engine.adapters.js";
+
 import type {
     IWebGLEnginePublic,
     WebGLEngineStateFull} from "../../engine.webgl.js";
@@ -18,9 +18,10 @@ import {
     _setupFramebufferDepthAttachments
 } from "../../engine.webgl.js";
 import { Logger } from "@babylonjs/core/Misc/logger.js";
-import type { IRenderTargetEngineExtension } from "./renderTarget.base.js";
 import { _createDepthStencilCubeTexture } from "../cubeTexture/cubeTexture.webgl.js";
-import { Constants } from "../../engine.constants.js";
+import type { IRenderTargetEngineExtension } from "../../../Extensions/renderTarget/renderTarget.base.js";
+import { augmentEngineState } from "../../../engine.adapters.js";
+import { Constants } from "../../../engine.constants.js";
 
 export const _createHardwareRenderTargetWrapper: IRenderTargetEngineExtension["_createHardwareRenderTargetWrapper"] = function (
     engineState: IWebGLEnginePublic,

@@ -1,7 +1,7 @@
 import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine.js";
 import type * as baseTypes from "./engine.base.js";
-import type * as webGLTypes from "./engine.webgl.js";
-import type * as webGPUTypes from "./engine.webgpu.js";
+import type * as webGLTypes from "./WebGL/engine.webgl.js";
+import type * as webGPUTypes from "./WebGPU/engine.webgpu.js";
 
 type PickMatching<T, V> = { [K in keyof T as T[K] extends V ? K : never]: T[K] };
 type ExtractMethods<T> = PickMatching<T, Function>;

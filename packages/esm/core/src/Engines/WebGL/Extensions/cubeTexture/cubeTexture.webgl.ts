@@ -7,14 +7,16 @@ import { RandomGUID } from "@babylonjs/core/Misc/guid.js";
 import type { IWebRequest } from "@babylonjs/core/Misc/interfaces/iWebRequest.js";
 import type { Scene } from "@babylonjs/core/scene.js";
 import type { Nullable } from "@babylonjs/core/types.js";
-import { _bindTextureDirectly, _getInternalFormat, _setupDepthStencilTexture, _unpackFlipY, type IWebGLEnginePublic, type WebGLEngineStateFull } from "../../engine.webgl.js";
-import type { ICubeTextureEngineExtension } from "./cubeTexture.base.js";
+import type { IWebGLEnginePublic, WebGLEngineStateFull } from "../../engine.webgl.js";
+import { _bindTextureDirectly, _getInternalFormat, _setupDepthStencilTexture, _unpackFlipY } from "../../engine.webgl.js";
 import { Logger } from "@babylonjs/core/Misc/logger.js";
-import { augmentEngineState } from "../../engine.adapters.js";
-import { _loadFile } from "../../engine.tools.js";
-import { _prepareWorkingCanvas } from "../../engine.base.js";
-import { Constants } from "../../engine.constants.js";
-import { GetExponentOfTwo, _TextureLoaders } from "../../engine.static.js";
+import type { ICubeTextureEngineExtension } from "../../../Extensions/cubeTexture/cubeTexture.base.js";
+import { augmentEngineState } from "../../../engine.adapters.js";
+import { _prepareWorkingCanvas } from "../../../engine.base.js";
+import { Constants } from "../../../engine.constants.js";
+import { _TextureLoaders, GetExponentOfTwo } from "../../../engine.static.js";
+import { _loadFile } from "../../../engine.tools.js";
+
 
 export const _createDepthStencilCubeTexture: ICubeTextureEngineExtension["_createDepthStencilCubeTexture"] = function (
     engineState: IWebGLEnginePublic,

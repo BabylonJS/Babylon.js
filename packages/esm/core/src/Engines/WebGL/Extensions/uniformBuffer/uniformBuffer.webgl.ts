@@ -4,7 +4,7 @@ import type { WebGLPipelineContext } from "@babylonjs/core/Engines/WebGL/webGLPi
 import { WebGLDataBuffer } from "@babylonjs/core/Meshes/WebGL/webGLDataBuffer.js";
 import type { FloatArray, Nullable } from "@babylonjs/core/types.js";
 import type { IWebGLEnginePublic, WebGLEngineStateFull } from "../../engine.webgl.js";
-import type { IUniformBufferEngineExtension } from "./uniformBuffer.base.js";
+import type { IUniformBufferEngineExtension } from "../../../Extensions/uniformBuffer/uniformBuffer.base.js";
 
 const _createUniformBuffer = function (engineState: IWebGLEnginePublic, elements: FloatArray, dynamic?: boolean): DataBuffer {
     const fes = engineState as WebGLEngineStateFull;

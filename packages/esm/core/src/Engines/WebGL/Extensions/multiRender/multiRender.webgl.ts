@@ -12,7 +12,6 @@ import {
     type IWebGLEnginePublic,
     type WebGLEngineStateFull,
 } from "../../engine.webgl.js";
-import type { IMultiRenderEngineExtension } from "./multiRender.base.js";
 import type { WebGLHardwareTexture } from "@babylonjs/core/Engines/WebGL/webGLHardwareTexture.js";
 import type { RenderTargetWrapper } from "@babylonjs/core/Engines/renderTargetWrapper.js";
 import { InternalTexture, InternalTextureSource } from "@babylonjs/core/Materials/Textures/internalTexture.js";
@@ -21,9 +20,10 @@ import type { TextureSize } from "@babylonjs/core/Materials/Textures/textureCrea
 import type { Nullable } from "@babylonjs/core/types.js";
 import { _createHardwareRenderTargetWrapper } from "../renderTarget/renderTarget.webgl.js";
 import { Logger } from "@babylonjs/core/Misc/logger.js";
-import { augmentEngineState } from "../../engine.adapters.js";
-import { resetTextureCache } from "../../engine.base.js";
-import { Constants } from "../../engine.constants.js";
+import type { IMultiRenderEngineExtension } from "../../../Extensions/multiRender/multiRender.base.js";
+import { augmentEngineState } from "../../../engine.adapters.js";
+import { resetTextureCache } from "../../../engine.base.js";
+import { Constants } from "../../../engine.constants.js";
 
 export const restoreSingleAttachment: IMultiRenderEngineExtension["restoreSingleAttachment"] = function (engineState: IWebGLEnginePublic): void {
     const fes = engineState as WebGLEngineStateFull;

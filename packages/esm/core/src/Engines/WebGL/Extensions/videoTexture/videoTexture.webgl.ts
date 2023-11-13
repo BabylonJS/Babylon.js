@@ -1,10 +1,10 @@
 import type { InternalTexture } from "@babylonjs/core/Materials/Textures/internalTexture.js";
 import type { Nullable } from "@babylonjs/core/types.js";
-import { Constants } from "../../engine.constants.js";
-import type { IVideoTextureEngineExtension } from "./videoTexture.base.js";
 import type { IWebGLEnginePublic, WebGLEngineStateFull } from "../../engine.webgl.js";
 import { _bindTextureDirectly, _getInternalFormat, _getRGBABufferInternalSizedFormat, _unpackFlipY } from "../../engine.webgl.js";
-import { _CreateCanvas } from "../../engine.static.js";
+import type { IVideoTextureEngineExtension } from "../../../Extensions/videoTexture/videoTexture.base.js";
+import { Constants } from "../../../engine.constants.js";
+import { _CreateCanvas } from "../../../engine.static.js";
 
 export const updateVideoTexture: IVideoTextureEngineExtension["updateVideoTexture"] = function (
     engineState: IWebGLEnginePublic,

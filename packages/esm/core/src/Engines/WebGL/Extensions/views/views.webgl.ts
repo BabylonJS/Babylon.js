@@ -2,8 +2,9 @@ import type { Camera } from "@babylonjs/core/Cameras/camera.js";
 import type { Scene } from "@babylonjs/core/scene.js";
 import type { Nullable } from "@babylonjs/core/types.js";
 import { flushFramebuffer, type IWebGLEnginePublic, type WebGLEngineStateFull } from "../../engine.webgl.js";
-import { _getExtensionState, type EngineView } from "./views.base.js";
-import { _renderFrame, getRenderingCanvas, setSize } from "../../engine.base.js";
+import type { EngineView } from "../../../Extensions/views/views.base.js";
+import { _getExtensionState } from "../../../Extensions/views/views.base.js";
+import { _renderFrame, getRenderingCanvas, setSize } from "../../../engine.base.js";
 
 export const getInputElement = function (engineState: IWebGLEnginePublic): Nullable<HTMLElement> {
     const extensionState = _getExtensionState(engineState);

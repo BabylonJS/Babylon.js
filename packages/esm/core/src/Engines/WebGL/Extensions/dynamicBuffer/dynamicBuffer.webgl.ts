@@ -1,8 +1,8 @@
 import type { DataBuffer } from "@babylonjs/core/Buffers/dataBuffer.js";
-import type { IWebGLEnginePublic, WebGLEngineStateFull } from "../../engine.webgl.js";
-import { _bindIndexBuffer, _resetIndexBufferBinding, _resetVertexBufferBinding, bindArrayBuffer } from "../../engine.webgl.js";
 import type { DataArray, IndicesArray } from "@babylonjs/core/types.js";
-import type { IDynamicBufferEngineExtension } from "./dynamicBuffer.base.js";
+import type { IDynamicBufferEngineExtension } from "../../../Extensions/dynamicBuffer/dynamicBuffer.base";
+import type { IWebGLEnginePublic, WebGLEngineStateFull} from "../../engine.webgl";
+import { _bindIndexBuffer, _resetIndexBufferBinding, bindArrayBuffer, _resetVertexBufferBinding } from "../../engine.webgl";
 
 export const updateDynamicIndexBuffer: IDynamicBufferEngineExtension["updateDynamicIndexBuffer"] = function (
     engineState: IWebGLEnginePublic,

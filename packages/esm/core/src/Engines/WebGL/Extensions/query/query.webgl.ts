@@ -1,9 +1,9 @@
 import { _TimeToken } from "@babylonjs/core/Instrumentation/timeToken.js";
 import type { Nullable, int } from "@babylonjs/core/types.js";
 import type { IWebGLEnginePublic, WebGLEngineStateFull } from "../../engine.webgl.js";
-import type { IQueryEngineExtension, OcclusionQuery } from "./query.base.js";
-import { _getExtensionState } from "./query.base.js";
 import { AbstractMesh } from "@babylonjs/core/Meshes/abstractMesh.js";
+import type { OcclusionQuery, IQueryEngineExtension } from "../../../Extensions/query/query.base.js";
+import { _getExtensionState } from "../../../Extensions/query/query.base.js";
 
 export const createQuery = function (engineState: IWebGLEnginePublic): OcclusionQuery {
     const query = (engineState as WebGLEngineStateFull)._gl.createQuery();
