@@ -239,11 +239,12 @@ export class WebGPUCacheSampler {
         };
     }
 
-    private static _GetSamplerDescriptor(sampler: TextureSampler): GPUSamplerDescriptor {
+    private static _GetSamplerDescriptor(sampler: TextureSampler, label?: string): GPUSamplerDescriptor {
         // The WebGPU spec currently only allows values 1 and 4 for anisotropy
         const anisotropy = sampler.useMipMaps && sampler._cachedAnisotropicFilteringLevel && sampler._cachedAnisotropicFilteringLevel > 1 ? 4 : 1;
         const filterDescriptor = this._GetSamplerFilterDescriptor(sampler, anisotropy);
         return {
+            label,
             ...filterDescriptor,
             ...this._GetSamplerWrappingDescriptor(sampler),
             compare: sampler._comparisonFunction ? WebGPUCacheSampler.GetCompareFunction(sampler._comparisonFunction) : undefined,
@@ -274,9 +275,9 @@ export class WebGPUCacheSampler {
         }
     }
 
-    public getSampler(sampler: TextureSampler, bypassCache = false, hash = 0): GPUSampler {
+    public getSampler(sampler: TextureSampler, bypassCache = false, hash = 0, label?: string): GPUSampler {
         if (this.disabled) {
-            return this._device.createSampler(WebGPUCacheSampler._GetSamplerDescriptor(sampler));
+            return this._device.createSampler(WebGPUCacheSampler._GetSamplerDescriptor(sampler, label));
         }
 
         if (bypassCache) {
@@ -287,7 +288,7 @@ export class WebGPUCacheSampler {
 
         let gpuSampler = bypassCache ? undefined : this._samplers[hash];
         if (!gpuSampler) {
-            gpuSampler = this._device.createSampler(WebGPUCacheSampler._GetSamplerDescriptor(sampler));
+            gpuSampler = this._device.createSampler(WebGPUCacheSampler._GetSamplerDescriptor(sampler, label));
             if (!bypassCache) {
                 this._samplers[hash] = gpuSampler;
             }

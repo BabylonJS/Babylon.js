@@ -1337,7 +1337,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         } else {
             state.compilationString += state._emitCodeFromInclude("lightFragment", comments, {
                 repeatKey: "maxSimultaneousLights",
-                replaceStrings: [{ search: /vPositionW/g, replace: worldPosVarName + ".xyz" }],
+                substitutionVars: `vPositionW,${worldPosVarName}.xyz`,
             });
         }
 

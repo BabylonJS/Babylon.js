@@ -1,3 +1,5 @@
+/* eslint-disable babylonjs/available */
+/* eslint-disable jsdoc/require-jsdoc */
 import { ExternalTexture } from "../../Materials/Textures/externalTexture";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import type { TextureSampler } from "../../Materials/Textures/textureSampler";
@@ -15,7 +17,7 @@ interface IWebGPUMaterialContextSamplerCache {
 /** @internal */
 interface IWebGPUMaterialContextTextureCache {
     texture: Nullable<InternalTexture | ExternalTexture>;
-    isFloatTexture: boolean;
+    isFloatOrDepthTexture: boolean;
     isExternalTexture: boolean;
 }
 
@@ -34,6 +36,7 @@ export class WebGPUMaterialContext implements IMaterialContext {
     // In this case, we must configure the sampler as "non filtering", as well as set the texture sample type to "unfilterable-float" when creating the bind group layout.
     // When that happens, we end up with different bind group layouts (depending on which type of textures have been set in the material), that we must all store
     // in the WebGPUPipelineContext (see @WebGPUPipelineContext.bindGroupLayouts) for later retrieval in the bind group cache implementation (see @WebGPUCacheBindGroups.getBindGroups), thanks to this property.
+    // There's the same problem with depth textures, where "float" filtering is not supported either.
     public textureState: number;
 
     public get forceBindGroupCreation() {
@@ -42,11 +45,11 @@ export class WebGPUMaterialContext implements IMaterialContext {
         return this._numExternalTextures > 0;
     }
 
-    public get hasFloatTextures() {
-        return this._numFloatTextures > 0;
+    public get hasFloatOrDepthTextures() {
+        return this._numFloatOrDepthTextures > 0;
     }
 
-    protected _numFloatTextures: number;
+    protected _numFloatOrDepthTextures: number;
     protected _numExternalTextures: number;
 
     constructor() {
@@ -60,7 +63,7 @@ export class WebGPUMaterialContext implements IMaterialContext {
         this.samplers = {};
         this.textures = {};
         this.isDirty = true;
-        this._numFloatTextures = 0;
+        this._numFloatOrDepthTextures = 0;
         this._numExternalTextures = 0;
     }
 
@@ -88,7 +91,7 @@ export class WebGPUMaterialContext implements IMaterialContext {
         let textureCache = this.textures[name];
         let currentTextureId = -1;
         if (!textureCache) {
-            this.textures[name] = textureCache = { texture, isFloatTexture: false, isExternalTexture: false };
+            this.textures[name] = textureCache = { texture, isFloatOrDepthTexture: false, isExternalTexture: false };
         } else {
             currentTextureId = textureCache.texture?.uniqueId ?? -1;
         }
@@ -96,21 +99,23 @@ export class WebGPUMaterialContext implements IMaterialContext {
         if (textureCache.isExternalTexture) {
             this._numExternalTextures--;
         }
-        if (textureCache.isFloatTexture) {
-            this._numFloatTextures--;
+        if (textureCache.isFloatOrDepthTexture) {
+            this._numFloatOrDepthTextures--;
         }
 
         if (texture) {
-            textureCache.isFloatTexture = texture.type === Constants.TEXTURETYPE_FLOAT;
+            textureCache.isFloatOrDepthTexture =
+                texture.type === Constants.TEXTURETYPE_FLOAT ||
+                (texture.format >= Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 && texture.format <= Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8);
             textureCache.isExternalTexture = ExternalTexture.IsExternalTexture(texture);
-            if (textureCache.isFloatTexture) {
-                this._numFloatTextures++;
+            if (textureCache.isFloatOrDepthTexture) {
+                this._numFloatOrDepthTextures++;
             }
             if (textureCache.isExternalTexture) {
                 this._numExternalTextures++;
             }
         } else {
-            textureCache.isFloatTexture = false;
+            textureCache.isFloatOrDepthTexture = false;
             textureCache.isExternalTexture = false;
         }
 

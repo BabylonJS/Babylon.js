@@ -37,9 +37,7 @@ WebGPUEngine.prototype.beginOcclusionQuery = function (algorithmType: number, qu
             return true;
         }
     } else {
-        const renderPassIndex = this._getCurrentRenderPassIndex();
-        const bundleList = renderPassIndex === 0 ? this._bundleList : this._bundleListRenderTarget;
-        bundleList.addItem(new WebGPURenderItemBeginOcclusionQuery(query as number));
+        this._bundleList.addItem(new WebGPURenderItemBeginOcclusionQuery(query as number));
         return true;
     }
 
@@ -50,9 +48,7 @@ WebGPUEngine.prototype.endOcclusionQuery = function (): WebGPUEngine {
     if (this.compatibilityMode) {
         this._currentRenderPass?.endOcclusionQuery();
     } else {
-        const renderPassIndex = this._getCurrentRenderPassIndex();
-        const bundleList = renderPassIndex === 0 ? this._bundleList : this._bundleListRenderTarget;
-        bundleList.addItem(new WebGPURenderItemEndOcclusionQuery());
+        this._bundleList.addItem(new WebGPURenderItemEndOcclusionQuery());
     }
     return this;
 };

@@ -177,10 +177,6 @@ export class InternalTexture extends TextureSampler {
      * Gets a boolean indicating if the texture is inverted on Y axis
      */
     public invertY: boolean = false;
-    /**
-     * Used for debugging purpose only
-     */
-    public label?: string;
 
     // Private
     /** @internal */

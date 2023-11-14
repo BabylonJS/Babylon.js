@@ -1,4 +1,5 @@
 import type { Nullable } from "../../types";
+import { WebGPUTextureHelper } from "./webgpuTextureHelper";
 
 /** @internal */
 interface IWebGPURenderItem {
@@ -169,7 +170,7 @@ export class WebGPUBundleList {
             this._bundleEncoder = this._device.createRenderBundleEncoder({
                 colorFormats,
                 depthStencilFormat,
-                sampleCount,
+                sampleCount: WebGPUTextureHelper.GetSample(sampleCount),
             });
         }
         return this._bundleEncoder!;

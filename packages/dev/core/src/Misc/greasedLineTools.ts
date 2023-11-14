@@ -507,6 +507,7 @@ export class GreasedLineTools {
      * A minimum size texture for the colors sampler2D when there is no colors texture defined yet.
      * For fast switching using the useColors property without the need to use defines.
      * @param scene Scene
+     * @returns empty colors texture
      */
     public static PrepareEmptyColorsTexture(scene: Scene) {
         if (!GreasedLineMaterialDefaults.EmptyColorsTexture) {
@@ -514,6 +515,8 @@ export class GreasedLineTools {
             GreasedLineMaterialDefaults.EmptyColorsTexture = new RawTexture(colorsArray, 1, 1, Engine.TEXTUREFORMAT_RGBA, scene, false, false, RawTexture.NEAREST_NEAREST);
             GreasedLineMaterialDefaults.EmptyColorsTexture.name = "grlEmptyColorsTexture";
         }
+
+        return GreasedLineMaterialDefaults.EmptyColorsTexture;
     }
 
     /**

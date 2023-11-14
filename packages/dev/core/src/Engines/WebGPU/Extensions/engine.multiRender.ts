@@ -21,9 +21,7 @@ WebGPUEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (
     const attachments = rtWrapper._attachments!;
     const count = attachments.length;
 
-    if (this._currentRenderPass && this._currentRenderPass !== this._mainRenderPassWrapper.renderPass) {
-        this._endRenderTargetRenderPass();
-    }
+    this._endCurrentRenderPass();
 
     for (let i = 0; i < count; i++) {
         const texture = rtWrapper.textures![i];
@@ -37,9 +35,6 @@ WebGPUEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (
     this._mrtAttachments = [];
     this._cacheRenderPipeline.setMRT([]);
     this._cacheRenderPipeline.setMRTAttachments(this._mrtAttachments);
-    this._currentRenderPass = this._mainRenderPassWrapper.renderPass;
-    this._setDepthTextureFormat(this._mainRenderPassWrapper);
-    this._setColorFormat(this._mainRenderPassWrapper);
 };
 
 WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, options: IMultiRenderTargetOptions, initializeBuffers?: boolean): RenderTargetWrapper {

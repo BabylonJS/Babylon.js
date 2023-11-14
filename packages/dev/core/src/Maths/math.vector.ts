@@ -763,10 +763,10 @@ export class Vector2 implements Vector<Tuple<number, 2>>, Vector2Like {
     }
 
     /**
-     * Normalize the current Vector with the given input length.
+     * Normalize the current Vector2 with the given input length.
      * Please note that this is an in place operation.
      * @param len the length of the vector
-     * @returns the current updated Vector
+     * @returns the current updated Vector2
      */
     public normalizeFromLength(len: number): this {
         if (len === 0 || len === 1.0) {
@@ -777,8 +777,8 @@ export class Vector2 implements Vector<Tuple<number, 2>>, Vector2Like {
     }
 
     /**
-     * Normalize the current Vector to a new vector
-     * @returns the new Vector
+     * Normalize the current Vector2 to a new vector
+     * @returns the new Vector2
      */
     public normalizeToNew(): this {
         const normalized = new (this.constructor as Constructor<typeof Vector2, this>)();
@@ -787,9 +787,9 @@ export class Vector2 implements Vector<Tuple<number, 2>>, Vector2Like {
     }
 
     /**
-     * Normalize the current Vector to the reference
+     * Normalize the current Vector2 to the reference
      * @param reference define the Vector to update
-     * @returns the updated Vector
+     * @returns the updated Vector2
      */
     public normalizeToRef<T extends this>(reference: T): T {
         const len = this.length();
@@ -806,6 +806,15 @@ export class Vector2 implements Vector<Tuple<number, 2>>, Vector2Like {
      */
     public clone(): this {
         return new (this.constructor as Constructor<typeof Vector2, this>)(this.x, this.y);
+    }
+
+    /**
+     * Gets the dot product of the current vector and the vector "otherVector"
+     * @param otherVector defines second vector
+     * @returns the dot product (float)
+     */
+    public dot(otherVector: DeepImmutable<this>): number {
+        return this.x * otherVector.x + this.y * otherVector.y;
     }
 
     // Statics
@@ -1040,9 +1049,9 @@ export class Vector2 implements Vector<Tuple<number, 2>>, Vector2Like {
      * @returns a new Vector2
      */
     public static Normalize<T extends Vector2>(vector: DeepImmutable<T>): T {
-        const newVector = new (vector.constructor as Constructor<typeof Vector2, T>)();
-        this.NormalizeToRef(vector, newVector);
-        return newVector;
+        const result = new (vector.constructor as Constructor<typeof Vector2, T>)();
+        Vector2.NormalizeToRef(vector, result);
+        return result;
     }
 
     /**
@@ -1053,14 +1062,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, Vector2Like {
      * @returns result input
      */
     public static NormalizeToRef<T extends Vector2>(vector: DeepImmutable<Vector2>, result: T): T {
-        const len = vector.length();
-
-        if (len === 0) {
-            return result;
-        }
-
-        result.x = vector.x / len;
-        result.y = vector.y / len;
+        vector.normalizeToRef(result);
         return result;
     }
 
@@ -2844,6 +2846,15 @@ export class Vector3 implements Vector<Tuple<number, 3>>, Vector3Like {
     }
 
     /**
+     * Returns the dot product (float) between the current vectors and "otherVector"
+     * @param otherVector defines the right operand
+     * @returns the dot product
+     */
+    public dot(otherVector: DeepImmutable<this>): number {
+        return this._x * otherVector._x + this._y * otherVector._y + this._z * otherVector._z;
+    }
+
+    /**
      * Returns a new Vector3 as the cross product of the vectors "left" and "right"
      * The cross product is then orthogonal to both "left" and "right"
      * Example Playground https://playground.babylonjs.com/#R1F8YU#15
@@ -3922,13 +3933,7 @@ export class Vector4 implements Vector<Tuple<number, 4>>, Vector4Like {
      * @returns the updated Vector4.
      */
     public normalize(): this {
-        const len = this.length();
-
-        if (len === 0) {
-            return this;
-        }
-
-        return this.scaleInPlace(1.0 / len);
+        return this.normalizeFromLength(this.length());
     }
 
     /**
@@ -4033,6 +4038,15 @@ export class Vector4 implements Vector<Tuple<number, 4>>, Vector4Like {
         return this;
     }
 
+    /**
+     * Returns the dot product (float) between the current vectors and "otherVector"
+     * @param otherVector defines the right operand
+     * @returns the dot product
+     */
+    public dot(otherVector: DeepImmutable<this>): number {
+        return this.x * otherVector.x + this.y * otherVector.y + this.z * otherVector.z + this.w * otherVector.w;
+    }
+
     // Statics
     /**
      * Returns a new Vector4 set from the starting index of the given array.
@@ -4135,8 +4149,7 @@ export class Vector4 implements Vector<Tuple<number, 4>>, Vector4Like {
      * @returns result input
      */
     public static NormalizeToRef<T extends Vector4>(vector: DeepImmutable<Vector4>, result: T): T {
-        result.copyFrom(vector);
-        result.normalize();
+        vector.normalizeToRef(result);
         return result;
     }
 
@@ -4323,6 +4336,16 @@ export class Vector4 implements Vector<Tuple<number, 4>>, Vector4Like {
      */
     public static FromVector3(source: Vector3, w: number = 0) {
         return new Vector4(source._x, source._y, source._z, w);
+    }
+
+    /**
+     * Returns the dot product (float) between the vectors "left" and "right"
+     * @param left defines the left operand
+     * @param right defines the right operand
+     * @returns the dot product
+     */
+    public static Dot(left: DeepImmutable<Vector4>, right: DeepImmutable<Vector4>): number {
+        return left.dot(right);
     }
 }
 Object.defineProperty(Vector4.prototype, "dimension", { value: [4] });
@@ -4948,14 +4971,21 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, QuaternionLike {
      * @returns the current updated quaternion
      */
     public normalize(): this {
-        const len = this.length();
-        if (len === 0) {
+        return this.normalizeFromLength(this.length());
+    }
+
+    /**
+     * Normalize the current quaternion with the given input length.
+     * Please note that this is an in place operation.
+     * @param len the length of the quaternion
+     * @returns the current updated Quaternion
+     */
+    public normalizeFromLength(len: number): this {
+        if (len === 0 || len === 1.0) {
             return this;
         }
 
-        const inv = 1.0 / len;
-        this.scaleInPlace(inv);
-        return this;
+        return this.scaleInPlace(1.0 / len);
     }
 
     /**
@@ -4964,13 +4994,23 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, QuaternionLike {
      * @returns the normalized quaternion
      */
     public normalizeToNew(): this {
+        const normalized = new (this.constructor as QuaternionConstructor<this>)(0, 0, 0, 1);
+        this.normalizeToRef(normalized);
+        return normalized;
+    }
+
+    /**
+     * Normalize the current Quaternion to the reference
+     * @param reference define the Quaternion to update
+     * @returns the updated Quaternion
+     */
+    public normalizeToRef<T extends Quaternion>(reference: T): T {
         const len = this.length();
-        if (len === 0) {
-            return this.clone();
+        if (len === 0 || len === 1.0) {
+            return reference.copyFromFloats(this._x, this._y, this._z, this._w);
         }
 
-        const inv = 1.0 / len;
-        return this.scale(inv);
+        return this.scaleToRef(1.0 / len, reference);
     }
 
     /**
@@ -5045,6 +5085,15 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, QuaternionLike {
     public fromRotationMatrix(matrix: DeepImmutable<Matrix>): this {
         Quaternion.FromRotationMatrixToRef(matrix, this);
         return this;
+    }
+
+    /**
+     * Returns the dot product (float) between the current quaternions and "other"
+     * @param other defines the right operand
+     * @returns the dot product
+     */
+    public dot(other: DeepImmutable<this>): number {
+        return this._x * other._x + this._y * other._y + this._z * other._z + this._w * other._w;
     }
 
     // Statics
@@ -5652,6 +5701,28 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, QuaternionLike {
         result._z = (t2 - time) * 6 * value1._z + (3 * t2 - 4 * time + 1) * tangent1._z + (-t2 + time) * 6 * value2._z + (3 * t2 - 2 * time) * tangent2._z;
         result._w = (t2 - time) * 6 * value1._w + (3 * t2 - 4 * time + 1) * tangent1._w + (-t2 + time) * 6 * value2._w + (3 * t2 - 2 * time) * tangent2._w;
         result._isDirty = true;
+        return result;
+    }
+
+    /**
+     * Returns a new Quaternion as the normalization of the given Quaternion
+     * @param quat defines the Quaternion to normalize
+     * @returns the new Quaternion
+     */
+    public static Normalize(quat: DeepImmutable<Quaternion>): Quaternion {
+        const result = Quaternion.Zero();
+        Quaternion.NormalizeToRef(quat, result);
+        return result;
+    }
+
+    /**
+     * Sets the given Quaternion "result" with the normalization of the given first Quaternion
+     * @param quat defines the Quaternion to normalize
+     * @param result defines the Quaternion where to store the result
+     * @returns result input
+     */
+    public static NormalizeToRef<T extends Quaternion>(quat: DeepImmutable<Quaternion>, result: T): T {
+        quat.normalizeToRef(result);
         return result;
     }
 }
