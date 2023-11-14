@@ -62,7 +62,7 @@ WebGPUEngine.prototype.readFromStorageBuffer = function (storageBuffer: DataBuff
 
     const gpuBuffer = this._bufferManager.createRawBuffer(size, WebGPUConstants.BufferUsage.MapRead | WebGPUConstants.BufferUsage.CopyDst, undefined, "TempReadFromStorageBuffer");
 
-    this._renderTargetEncoder.copyBufferToBuffer(storageBuffer.underlyingResource, offset ?? 0, gpuBuffer, 0, size);
+    this._renderEncoder.copyBufferToBuffer(storageBuffer.underlyingResource, offset ?? 0, gpuBuffer, 0, size);
 
     return new Promise((resolve, reject) => {
         // we are using onEndFrameObservable because we need to map the gpuBuffer AFTER the command buffers

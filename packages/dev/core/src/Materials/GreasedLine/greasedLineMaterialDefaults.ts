@@ -1,4 +1,4 @@
-import type { BaseTexture } from "../Textures/baseTexture";
+import type { RawTexture } from "../Textures/rawTexture";
 import type { Nullable } from "../../types";
 import { Color3 } from "../../Maths/math.color";
 
@@ -21,5 +21,5 @@ export class GreasedLineMaterialDefaults {
     /**
      * Empty colors texture for WebGPU
      */
-    public static EmptyColorsTexture: Nullable<BaseTexture>;
+    public static EmptyColorsTexture: Nullable<RawTexture>;
 }

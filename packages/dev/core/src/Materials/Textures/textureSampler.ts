@@ -108,6 +108,11 @@ export class TextureSampler {
     public _comparisonFunction: number = 0;
 
     /**
+     * Used for debugging purpose only
+     */
+    public label?: string;
+
+    /**
      * Creates a Sampler instance
      */
     constructor() {}

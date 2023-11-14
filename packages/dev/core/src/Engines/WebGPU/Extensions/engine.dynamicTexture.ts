@@ -27,7 +27,7 @@ WebGPUEngine.prototype.updateDynamicTexture = function (
 
     this._textureHelper.updateTexture(canvas, texture, width, height, texture.depth, gpuTextureWrapper.format, 0, 0, invertY, premulAlpha, 0, 0, allowGPUOptimization);
     if (texture.generateMipMaps) {
-        this._generateMipmaps(texture, this._uploadEncoder);
+        this._generateMipmaps(texture);
     }
 
     texture.isReady = true;
