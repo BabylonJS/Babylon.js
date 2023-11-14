@@ -7964,8 +7964,8 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, MatrixLike {
      * @param top defines the viewport top coordinate
      * @param znear defines the near clip plane
      * @param zfar defines the far clip plane
-     * @param angle Angle (along X/Y Plane) to apply shear
      * @param length Length of the shear
+     * @param angle Angle (along X/Y Plane) to apply shear
      * @param distance Distance from shear point
      * @param result defines the target matrix
      * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)
