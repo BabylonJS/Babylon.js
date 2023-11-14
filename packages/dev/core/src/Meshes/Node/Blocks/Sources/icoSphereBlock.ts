@@ -122,6 +122,7 @@ export class IcoSphereBlock extends NodeGeometryBlock {
         } else {
             const value = func(state);
             this.geometry._storedFunction = () => {
+                this.geometry._executionCount = 1;
                 return value.clone();
             };
         }
