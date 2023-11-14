@@ -230,7 +230,10 @@ class DecimationVertex {
 
     public originalOffsets: Array<number>;
 
-    constructor(public position: Vector3, public id: number) {
+    constructor(
+        public position: Vector3,
+        public id: number
+    ) {
         this.isBorder = true;
         this.q = new QuadraticMatrix();
         this.triangleCount = 0;
@@ -299,7 +302,10 @@ class QuadraticMatrix {
 }
 
 class Reference {
-    constructor(public vertexId: number, public triangleId: number) {}
+    constructor(
+        public vertexId: number,
+        public triangleId: number
+    ) {}
 }
 
 /**

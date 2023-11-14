@@ -45,7 +45,10 @@ export class PhysicsEngine implements IPhysicsEngine {
      * @param gravity defines the gravity vector used by the simulation
      * @param _physicsPlugin defines the plugin to use (CannonJS by default)
      */
-    constructor(gravity: Nullable<Vector3>, private _physicsPlugin: IPhysicsEnginePlugin = PhysicsEngine.DefaultPluginFactory()) {
+    constructor(
+        gravity: Nullable<Vector3>,
+        private _physicsPlugin: IPhysicsEnginePlugin = PhysicsEngine.DefaultPluginFactory()
+    ) {
         if (!this._physicsPlugin.isSupported()) {
             throw new Error("Physics Engine " + this._physicsPlugin.name + " cannot be found. " + "Please make sure it is included.");
         }

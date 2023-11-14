@@ -133,7 +133,11 @@ export class ViewerModel implements IDisposable {
 
     private _shadowsRenderedAfterLoad: boolean = false;
 
-    constructor(private _observablesManager: ObservablesManager, modelConfiguration: IModelConfiguration, private _configurationContainer?: ConfigurationContainer) {
+    constructor(
+        private _observablesManager: ObservablesManager,
+        modelConfiguration: IModelConfiguration,
+        private _configurationContainer?: ConfigurationContainer
+    ) {
         this.onLoadedObservable = new Observable();
         this.onLoadErrorObservable = new Observable();
         this.onLoadProgressObservable = new Observable();

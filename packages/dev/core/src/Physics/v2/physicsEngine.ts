@@ -41,7 +41,10 @@ export class PhysicsEngine implements IPhysicsEngine {
      * @param gravity defines the gravity vector used by the simulation
      * @param _physicsPlugin defines the plugin to use (CannonJS by default)
      */
-    constructor(gravity: Nullable<Vector3>, private _physicsPlugin: IPhysicsEnginePluginV2 = PhysicsEngine.DefaultPluginFactory()) {
+    constructor(
+        gravity: Nullable<Vector3>,
+        private _physicsPlugin: IPhysicsEnginePluginV2 = PhysicsEngine.DefaultPluginFactory()
+    ) {
         gravity = gravity || new Vector3(0, -9.807, 0);
         this.setGravity(gravity);
         this.setTimeStep();
