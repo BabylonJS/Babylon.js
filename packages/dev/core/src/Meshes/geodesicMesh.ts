@@ -549,12 +549,7 @@ export class _PrimaryIsoTriangle {
 export class PolyhedronData {
     public edgematch: (number | string)[][];
 
-    constructor(
-        public name: string,
-        public category: string,
-        public vertex: number[][],
-        public face: number[][]
-    ) {}
+    constructor(public name: string, public category: string, public vertex: number[][], public face: number[][]) {}
 }
 
 /**

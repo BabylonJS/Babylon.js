@@ -301,10 +301,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      */
     public onTriggerCollisionObservable = new Observable<IBasePhysicsCollisionEvent>();
 
-    public constructor(
-        private _useDeltaForWorldStep: boolean = true,
-        hpInjection: any = HK
-    ) {
+    public constructor(private _useDeltaForWorldStep: boolean = true, hpInjection: any = HK) {
         if (typeof hpInjection === "function") {
             Logger.Error("Havok is not ready. Please make sure you await HK() before using the plugin.");
             return;

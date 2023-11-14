@@ -141,10 +141,7 @@ export class InputTextArea extends InputText {
      * @param name defines the control name
      * @param text defines the text of the control
      */
-    constructor(
-        public name?: string,
-        text: string = ""
-    ) {
+    constructor(public name?: string, text: string = "") {
         super(name);
 
         this.text = text;

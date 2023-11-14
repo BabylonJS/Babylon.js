@@ -400,10 +400,7 @@ class PhysicsRadialExplosionEvent {
      * @param _scene BabylonJS scene
      * @param _options The options for the vortex event
      */
-    constructor(
-        private _scene: Scene,
-        private _options: PhysicsRadialExplosionEventOptions
-    ) {
+    constructor(private _scene: Scene, private _options: PhysicsRadialExplosionEventOptions) {
         this._options = { ...new PhysicsRadialExplosionEventOptions(), ...this._options };
     }
 
@@ -565,12 +562,7 @@ class PhysicsGravitationalFieldEvent {
      * @param _origin The origin position of the gravitational field event
      * @param _options The options for the vortex event
      */
-    constructor(
-        private _physicsHelper: PhysicsHelper,
-        private _scene: Scene,
-        private _origin: Vector3,
-        private _options: PhysicsRadialExplosionEventOptions
-    ) {
+    constructor(private _physicsHelper: PhysicsHelper, private _scene: Scene, private _origin: Vector3, private _options: PhysicsRadialExplosionEventOptions) {
         this._options = { ...new PhysicsRadialExplosionEventOptions(), ...this._options };
 
         this._tickCallback = () => this._tick();
@@ -655,11 +647,7 @@ class PhysicsUpdraftEvent {
      * @param _origin The origin position of the updraft
      * @param _options The options for the updraft event
      */
-    constructor(
-        private _scene: Scene,
-        private _origin: Vector3,
-        private _options: PhysicsUpdraftEventOptions
-    ) {
+    constructor(private _scene: Scene, private _origin: Vector3, private _options: PhysicsUpdraftEventOptions) {
         this._physicsEngine = this._scene.getPhysicsEngine() as PhysicsEngineV1 | PhysicsEngineV2;
         this._options = { ...new PhysicsUpdraftEventOptions(), ...this._options };
 
@@ -843,11 +831,7 @@ class PhysicsVortexEvent {
      * @param _origin The origin position of the vortex
      * @param _options The options for the vortex event
      */
-    constructor(
-        private _scene: Scene,
-        private _origin: Vector3,
-        private _options: PhysicsVortexEventOptions
-    ) {
+    constructor(private _scene: Scene, private _origin: Vector3, private _options: PhysicsVortexEventOptions) {
         this._physicsEngine = this._scene.getPhysicsEngine() as PhysicsEngineV1 | PhysicsEngineV2;
         this._options = { ...new PhysicsVortexEventOptions(), ...this._options };
 

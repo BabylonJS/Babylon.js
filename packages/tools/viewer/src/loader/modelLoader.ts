@@ -40,10 +40,7 @@ export class ModelLoader {
      * @param _observablesManager
      * @param _configurationContainer
      */
-    constructor(
-        private _observablesManager: ObservablesManager,
-        private _configurationContainer?: ConfigurationContainer
-    ) {
+    constructor(private _observablesManager: ObservablesManager, private _configurationContainer?: ConfigurationContainer) {
         this._loaders = [];
         this._loadId = 0;
         this._plugins = [];

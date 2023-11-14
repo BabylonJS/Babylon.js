@@ -310,10 +310,7 @@ export class Template {
 
     private _loadRequests: Array<IFileRequest>;
 
-    constructor(
-        public name: string,
-        private _configuration: ITemplateConfiguration
-    ) {
+    constructor(public name: string, private _configuration: ITemplateConfiguration) {
         this.onLoaded = new Observable<Template>();
         this.onAppended = new Observable<Template>();
         this.onStateChange = new Observable<Template>();

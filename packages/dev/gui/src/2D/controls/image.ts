@@ -744,10 +744,7 @@ export class Image extends Control {
      * @param name defines the control name
      * @param url defines the image url
      */
-    constructor(
-        public name?: string,
-        url: Nullable<string> = null
-    ) {
+    constructor(public name?: string, url: Nullable<string> = null) {
         super(name);
         this.source = url;
     }

@@ -30,11 +30,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public BJSCANNON: any;
 
-    public constructor(
-        private _useDeltaForWorldStep: boolean = true,
-        iterations: number = 10,
-        cannonInjection = CANNON
-    ) {
+    public constructor(private _useDeltaForWorldStep: boolean = true, iterations: number = 10, cannonInjection = CANNON) {
         this.BJSCANNON = cannonInjection;
         if (!this.isSupported()) {
             Logger.Error("CannonJS is not available. Please make sure you included the js file.");

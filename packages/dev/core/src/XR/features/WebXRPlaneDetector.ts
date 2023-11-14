@@ -93,10 +93,7 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
      * @param _xrSessionManager an instance of xr Session manager
      * @param _options configuration to use when constructing this feature
      */
-    constructor(
-        _xrSessionManager: WebXRSessionManager,
-        private _options: IWebXRPlaneDetectorOptions = {}
-    ) {
+    constructor(_xrSessionManager: WebXRSessionManager, private _options: IWebXRPlaneDetectorOptions = {}) {
         super(_xrSessionManager);
         this.xrNativeFeatureName = "plane-detection";
         if (this._xrSessionManager.session) {

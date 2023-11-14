@@ -138,11 +138,7 @@ export class WebXRSpaceWarpRenderTargetTextureProvider implements IWebXRRenderTa
     protected _framebufferDimensions: Nullable<{ framebufferWidth: number; framebufferHeight: number }>;
     protected _engine: Engine;
 
-    constructor(
-        protected readonly _scene: Scene,
-        protected readonly _xrSessionManager: WebXRSessionManager,
-        protected readonly _xrWebGLBinding: XRWebGLBinding
-    ) {
+    constructor(protected readonly _scene: Scene, protected readonly _xrSessionManager: WebXRSessionManager, protected readonly _xrWebGLBinding: XRWebGLBinding) {
         this._engine = _scene.getEngine();
     }
 

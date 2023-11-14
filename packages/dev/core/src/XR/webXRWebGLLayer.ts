@@ -36,10 +36,7 @@ export class WebXRWebGLLayerRenderTargetTextureProvider extends WebXRLayerRender
     private _framebuffer: WebGLFramebuffer;
     private _layer: XRWebGLLayer;
 
-    constructor(
-        scene: Scene,
-        public readonly layerWrapper: WebXRWebGLLayerWrapper
-    ) {
+    constructor(scene: Scene, public readonly layerWrapper: WebXRWebGLLayerWrapper) {
         super(scene, layerWrapper);
         this._layer = layerWrapper.layer;
         this._framebufferDimensions = {

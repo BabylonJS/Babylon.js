@@ -159,11 +159,7 @@ export class TextureCube {
      * @param type WebGL pixel type of the supplied data and texture on the GPU
      * @param source An array containing mipmap levels of faces, where each mipmap level is an array of faces and each face is a TextureSource object
      */
-    constructor(
-        public internalFormat: PixelFormat,
-        public type: PixelType,
-        public source: MipmapsCube = []
-    ) {}
+    constructor(public internalFormat: PixelFormat, public type: PixelType, public source: MipmapsCube = []) {}
 }
 
 /**

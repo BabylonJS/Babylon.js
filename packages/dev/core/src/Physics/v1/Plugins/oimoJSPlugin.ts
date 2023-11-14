@@ -21,11 +21,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
     private _raycastResult: PhysicsRaycastResult;
     private _fixedTimeStep: number = 1 / 60;
 
-    constructor(
-        private _useDeltaForWorldStep: boolean = true,
-        iterations?: number,
-        oimoInjection = OIMO
-    ) {
+    constructor(private _useDeltaForWorldStep: boolean = true, iterations?: number, oimoInjection = OIMO) {
         this.BJSOIMO = oimoInjection;
         this.world = new this.BJSOIMO.World({
             iterations: iterations,

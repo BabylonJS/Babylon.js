@@ -177,6 +177,16 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                         })}
                     </LineContainerComponent>
                 )}
+                <LineContainerComponent title="DEBUG INFOS">
+                    {block.outputs.map((output) => {
+                        return (
+                            <>
+                                <TextLineComponent label="Call count" value={output.callCount.toString()} />
+                                <TextLineComponent label="Execution count" value={output.executionCount.toString()} />
+                            </>
+                        );
+                    })}
+                </LineContainerComponent>
             </>
         );
     }
