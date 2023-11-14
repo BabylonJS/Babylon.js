@@ -4994,7 +4994,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, QuaternionLike {
      * @returns the normalized quaternion
      */
     public normalizeToNew(): this {
-        const normalized = new (this.constructor as QuaternionConstructor<this>)(0, 0, 0, 1);
+        const normalized = new (this.constructor as Constructor<typeof Quaternion, this>)(0, 0, 0, 1);
         this.normalizeToRef(normalized);
         return normalized;
     }

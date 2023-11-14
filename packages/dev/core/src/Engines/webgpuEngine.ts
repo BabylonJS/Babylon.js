@@ -2810,54 +2810,8 @@ export class WebGPUEngine extends Engine {
         }
     }
 
-    /** @internal */
-    public _endRenderTargetRenderPass() {
-        if (this._currentRenderPass) {
-            const gpuWrapper = this._currentRenderTarget!.texture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
-            if (gpuWrapper && !this._snapshotRendering.endRenderTargetPass(this._currentRenderPass, gpuWrapper) && !this.compatibilityMode) {
-                this._bundleListRenderTarget.run(this._currentRenderPass);
-                this._bundleListRenderTarget.reset();
-            }
-            this._currentRenderPass.end();
-            if (this.dbgVerboseLogsForFirstFrames) {
-                if ((this as any)._count === undefined) {
-                    (this as any)._count = 0;
-                }
-                if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                    console.log("frame #" + (this as any)._count + " - render target end pass - internalTexture.uniqueId=", this._currentRenderTarget?.texture?.uniqueId);
-                }
-            }
-            this._debugPopGroup?.(1);
-            this._resetCurrentViewport(1);
-            this._viewport(0, 0, 0, 0);
-            this._resetCurrentScissor(1);
-            this._resetCurrentStencilRef(1);
-            this._resetCurrentColorBlend(1);
-            this._currentRenderPass = null;
-            this._rttRenderPassWrapper.reset();
-        }
-    }
-
-    private _getCurrentRenderPass(): GPURenderPassEncoder {
-        if (this._currentRenderTarget && !this._currentRenderPass) {
-            // delayed creation of the render target pass, but we now need to create it as we are requested the render pass
-            this._startRenderTargetRenderPass(this._currentRenderTarget, false, null, false, false);
-        } else if (!this._currentRenderPass) {
-            this._startMainRenderPass(false);
-        }
-
-        return this._currentRenderPass!;
-    }
-
-    /** @internal */
-    public _getCurrentRenderPassIndex(): number {
-        return this._currentRenderPass === null ? -1 : this._currentRenderPass === this._mainRenderPassWrapper.renderPass ? 0 : 1;
-    }
-
     private _startMainRenderPass(setClearStates: boolean, clearColor?: Nullable<Color4Like>, clearDepth?: boolean, clearStencil?: boolean): void {
-        if (this._mainRenderPassWrapper.renderPass) {
-            this.flushFramebuffer(false);
-        }
+        this._endCurrentRenderPass();
 
         if (this.useReverseDepthBuffer) {
             this.setDepthFunctionToGreaterOrEqual();
