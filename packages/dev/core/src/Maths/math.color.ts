@@ -1886,7 +1886,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, Color4Like {
     }
 }
 Object.defineProperty(Color4.prototype, "dimension", { value: [4] });
-Object.defineProperty(Color3.prototype, "rank", { value: 1 });
+Object.defineProperty(Color4.prototype, "rank", { value: 1 });
 
 /**
  * @internal
