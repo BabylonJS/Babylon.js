@@ -41,6 +41,7 @@ export interface Color3Like {
  */
 export class Color3 implements Tensor<Tuple<number, 3>>, Color3Like {
     public declare readonly dimension: [3];
+	public declare readonly rank: 1;
 
     /**
      * Creates a new Color3 object from red, green, blue values, all between 0 and 1
@@ -1007,6 +1008,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, Color3Like {
     }
 }
 Object.defineProperty(Color3.prototype, "dimension", { value: [3] });
+Object.defineProperty(Color3.prototype, "rank", { value: 1 });
 
 /**
  * @internal
@@ -1020,6 +1022,7 @@ export interface Color4Like extends Color3Like {
  */
 export class Color4 implements Tensor<Tuple<number, 4>>, Color4Like {
     public declare readonly dimension: [4];
+	public declare readonly rank: 1;
 
     /**
      * Creates a new Color4 object from red, green, blue values, all between 0 and 1
@@ -1883,6 +1886,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, Color4Like {
     }
 }
 Object.defineProperty(Color4.prototype, "dimension", { value: [4] });
+Object.defineProperty(Color3.prototype, "rank", { value: 1 });
 
 /**
  * @internal

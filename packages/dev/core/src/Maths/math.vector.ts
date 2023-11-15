@@ -22,6 +22,8 @@ const _ExtractAsInt = (value: number) => {
 export declare abstract class Vector<N extends number[] = number[]> extends Tensor<N> {
     public readonly dimension: Readonly<Dimension<N>>;
 
+    public readonly rank: 1;
+
     /**
      * Gets the length of the vector
      * @returns the vector length (float)
@@ -209,6 +211,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, Vector2Like {
     private static _ZeroReadOnly = Vector2.Zero() as DeepImmutable<Vector2>;
 
     public declare readonly dimension: Readonly<[2]>;
+    public declare readonly rank: 1;
 
     /**
      * Creates a new Vector2 from the given x and y coordinates
@@ -1209,6 +1212,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, Vector2Like {
     }
 }
 Object.defineProperty(Vector2.prototype, "dimension", { value: [2] });
+Object.defineProperty(Vector2.prototype, "rank", { value: 1 });
 
 /**
  * @internal
@@ -1237,6 +1241,7 @@ export class Vector3 implements Vector<Tuple<number, 3>>, Vector3Like {
     private static _OneReadOnly = Vector3.One() as DeepImmutable<Vector3>;
 
     public declare readonly dimension: Readonly<[3]>;
+    public declare readonly rank: 1;
 
     /** @internal */
     public _x: number;
@@ -3378,6 +3383,7 @@ export class Vector3 implements Vector<Tuple<number, 3>>, Vector3Like {
     }
 }
 Object.defineProperty(Vector3.prototype, "dimension", { value: [3] });
+Object.defineProperty(Vector3.prototype, "rank", { value: 1 });
 
 /**
  * @internal
@@ -3393,6 +3399,7 @@ export class Vector4 implements Vector<Tuple<number, 4>>, Vector4Like {
     private static _ZeroReadOnly = Vector4.Zero() as DeepImmutable<Vector4>;
 
     public declare readonly dimension: Readonly<[4]>;
+    public declare readonly rank: 1;
 
     /**
      * Creates a Vector4 object from the given floats.
@@ -4349,6 +4356,7 @@ export class Vector4 implements Vector<Tuple<number, 4>>, Vector4Like {
     }
 }
 Object.defineProperty(Vector4.prototype, "dimension", { value: [4] });
+Object.defineProperty(Vector4.prototype, "rank", { value: 1 });
 
 export interface QuaternionLike extends Vector3Like {
     w: number;
@@ -4417,6 +4425,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, QuaternionLike {
     }
 
     public declare readonly dimension: Readonly<[4]>;
+    public declare readonly rank: 1;
 
     /**
      * Creates a new Quaternion from the given floats
@@ -5727,6 +5736,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, QuaternionLike {
     }
 }
 Object.defineProperty(Quaternion.prototype, "dimension", { value: [4] });
+Object.defineProperty(Quaternion.prototype, "rank", { value: 1 });
 
 /**
  * @internal
@@ -5760,6 +5770,7 @@ export interface MatrixLike {
  */
 export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, MatrixLike {
     public declare readonly dimension: Readonly<[4, 4]>;
+    public declare readonly rank: 2;
 
     /**
      * Gets the precision of matrix computations
@@ -8564,6 +8575,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, MatrixLike {
     }
 }
 Object.defineProperty(Matrix.prototype, "dimension", { value: [4, 4] });
+Object.defineProperty(Matrix.prototype, "rank", { value: 2 });
 
 /**
  * @internal

@@ -18,9 +18,16 @@ export declare abstract class Tensor<V extends unknown[] = unknown[]> {
     /**
      * The number of dimensions the tensor has (i.e. the length of the coordinate array)
      * @remarks
-     * This is abstract to allow implementations with getter
+     * This is abstract to allow implementations with using a getter
      */
     public abstract readonly dimension: Readonly<Dimension<V>>;
+
+    /**
+     * The rank of the tensor. This is the same as the length of the tensor's dimension.
+     * @remarks
+     * This is abstract to allow implementations with using a getter
+     */
+    public abstract readonly rank: number;
 
     /**
      * Creates a new Tensor from the given coordinates
