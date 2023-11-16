@@ -105,6 +105,8 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
     public dispose(): void {
         this.detach();
         this.isDisposed = true;
+        this.onFeatureAttachObservable.clear();
+        this.onFeatureDetachObservable.clear();
     }
 
     /**

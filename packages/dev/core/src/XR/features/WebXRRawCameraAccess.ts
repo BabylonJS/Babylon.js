@@ -120,7 +120,10 @@ export class WebXRRawCameraAccess extends WebXRAbstractFeature {
     /**
      * Dispose this feature and all of the resources attached
      */
-    public dispose(): void {}
+    public dispose(): void {
+        super.dispose();
+        this.onTexturesUpdatedObservable.clear();
+    }
 
     /**
      * @see https://github.com/immersive-web/raw-camera-access/blob/main/explainer.md
