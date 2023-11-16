@@ -178,7 +178,7 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
         useEulerRotation = false,
         thickness: number = 1,
         hoverColor: Color3 = Color3.Yellow(),
-        disableColor: Color3 = Color3.Gray(),
+        disableColor: Color3 = Color3.Gray()
     ) {
         super(gizmoLayer);
         this._parent = parent;
@@ -200,10 +200,14 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
         const { rotationMesh, collider } = this._createGizmoMesh(this._gizmoMesh, thickness, tessellation);
 
         // Setup Rotation Circle
-        this._rotationDisplayPlane = CreatePlane("rotationDisplay", {
-            size: 0.6,
-            updatable: false
-        }, this.gizmoLayer.utilityLayerScene);
+        this._rotationDisplayPlane = CreatePlane(
+            "rotationDisplay",
+            {
+                size: 0.6,
+                updatable: false,
+            },
+            this.gizmoLayer.utilityLayerScene
+        );
         this._rotationDisplayPlane.rotation.z = Math.PI * 0.5;
         this._rotationDisplayPlane.parent = this._gizmoMesh;
         this._rotationDisplayPlane.setEnabled(false);

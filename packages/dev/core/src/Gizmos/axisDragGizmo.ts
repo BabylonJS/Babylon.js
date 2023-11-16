@@ -89,18 +89,26 @@ export class AxisDragGizmo extends Gizmo implements IAxisDragGizmo {
      */
     public static _CreateArrow(scene: Scene, material: StandardMaterial, thickness: number = 1, isCollider = false): TransformNode {
         const arrow = new TransformNode("arrow", scene);
-        const cylinder = CreateCylinder("cylinder", {
-            diameterTop: 0,
-            height: 0.075,
-            diameterBottom: 0.0375 * (1 + (thickness - 1) / 4),
-            tessellation: 96
-        }, scene);
-        const line = CreateCylinder("cylinder", {
-            diameterTop: 0.005 * thickness,
-            height: 0.275,
-            diameterBottom: 0.005 * thickness,
-            tessellation: 96
-        }, scene);
+        const cylinder = CreateCylinder(
+            "cylinder",
+            {
+                diameterTop: 0,
+                height: 0.075,
+                diameterBottom: 0.0375 * (1 + (thickness - 1) / 4),
+                tessellation: 96,
+            },
+            scene
+        );
+        const line = CreateCylinder(
+            "cylinder",
+            {
+                diameterTop: 0.005 * thickness,
+                height: 0.275,
+                diameterBottom: 0.005 * thickness,
+                tessellation: 96,
+            },
+            scene
+        );
 
         // Position arrow pointing in its drag axis
         cylinder.parent = arrow;
@@ -149,7 +157,7 @@ export class AxisDragGizmo extends Gizmo implements IAxisDragGizmo {
         parent: Nullable<PositionGizmo> = null,
         thickness: number = 1,
         hoverColor: Color3 = Color3.Yellow(),
-        disableColor: Color3 = Color3.Gray(),
+        disableColor: Color3 = Color3.Gray()
     ) {
         super(gizmoLayer);
         this._parent = parent;
