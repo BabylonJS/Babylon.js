@@ -705,26 +705,24 @@ Scene.prototype.createPickingRayToRef = function (
 ): Scene {
     const engine = this.getEngine();
 
-    if (!camera) {
-        if (!this.activeCamera) {
-            return this;
-        }
-
-        camera = this.activeCamera;
+    if (!camera && !(camera = this.activeCamera!)) {
+        return this;
     }
 
     const cameraViewport = camera.viewport;
-    const viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+    const renderHeight = engine.getRenderHeight();
+    const { x: vx, y: vy, width, height } = cameraViewport.toGlobal(engine.getRenderWidth(), renderHeight);
 
     // Moving coordinates to local viewport world
-    x = x / engine.getHardwareScalingLevel() - viewport.x;
-    y = y / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - viewport.y - viewport.height);
+    const levelInv = 1 / engine.getHardwareScalingLevel();
+    x = x * levelInv - vx;
+    y = y * levelInv - (renderHeight - vy - height);
 
     result.update(
         x,
         y,
-        viewport.width,
-        viewport.height,
+        width,
+        height,
         world ? world : Matrix.IdentityReadOnly,
         cameraViewSpace ? Matrix.IdentityReadOnly : camera.getViewMatrix(),
         camera.getProjectionMatrix(),
@@ -748,22 +746,20 @@ Scene.prototype.createPickingRayInCameraSpaceToRef = function (x: number, y: num
 
     const engine = this.getEngine();
 
-    if (!camera) {
-        if (!this.activeCamera) {
-            throw new Error("Active camera not set");
-        }
-
-        camera = this.activeCamera;
+    if (!camera && !(camera = this.activeCamera!)) {
+        throw new Error("Active camera not set");
     }
 
     const cameraViewport = camera.viewport;
-    const viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+    const renderHeight = engine.getRenderHeight();
+    const { x: vx, y: vy, width, height } = cameraViewport.toGlobal(engine.getRenderWidth(), renderHeight);
     const identity = Matrix.Identity();
 
     // Moving coordinates to local viewport world
-    x = x / engine.getHardwareScalingLevel() - viewport.x;
-    y = y / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - viewport.y - viewport.height);
-    result.update(x, y, viewport.width, viewport.height, identity, identity, camera.getProjectionMatrix());
+    const levelInv = 1 / engine.getHardwareScalingLevel();
+    x = x * levelInv - vx;
+    y = y * levelInv - (renderHeight - vy - height);
+    result.update(x, y, width, height, identity, identity, camera.getProjectionMatrix());
     return this;
 };
 
