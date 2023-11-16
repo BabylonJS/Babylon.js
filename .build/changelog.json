@@ -1,6 +1,23 @@
 {
-    "fromTag": "6.29.1",
+    "fromTag": "6.29.2",
     "changelog": {
+        "6.30.0": [
+            {
+                "pr": "14522",
+                "title": "Fix crash when one teleport was not serialized",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
         "6.29.2": [
             {
                 "pr": "14519",
