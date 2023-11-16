@@ -33,7 +33,7 @@ export interface IPlaneRotationGizmo extends IGizmo {
     sensitivity: number;
     /**
      * Event that fires each time the gizmo snaps to a new location.
-     * * snapDistance is the the change in distance
+     * * snapDistance is the change in distance
      */
     onSnapObservable: Observable<{ snapDistance: number }>;
     /** Accumulated relative angle value for rotation on the axis. */
@@ -65,7 +65,7 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
     public snapDistance = 0;
     /**
      * Event that fires each time the gizmo snaps to a new location.
-     * * snapDistance is the the change in distance
+     * * snapDistance is the change in distance
      */
     public onSnapObservable = new Observable<{ snapDistance: number }>();
 
@@ -122,34 +122,37 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
             vUV = uv;
         }`;
 
-    protected static _RotationGizmoFragmentShader = `
-        precision highp float;
-        varying vec2 vUV;
-        varying vec3 vPosition;
-        uniform vec3 angles;
-        #define twopi 6.283185307
-        void main(void) {
-            vec2 uv = vUV - vec2(0.5);
-            float angle = atan(uv.y, uv.x) + 3.141592;
-            float delta = gl_FrontFacing ? angles.y : -angles.y;
-            float begin = angles.x - delta * angles.z;
-            float start = (begin < (begin + delta)) ? begin : (begin + delta);
-            float end = (begin > (begin + delta)) ? begin : (begin + delta);
-            float len = sqrt(dot(uv,uv));
-            float opacity = 1. - step(0.5, len);
+    protected static _createRotationGizmoFragmentShader(color: Color3) {
+        return `
+            precision highp float;
+            varying vec2 vUV;
+            varying vec3 vPosition;
+            uniform vec3 angles;
+            #define twopi 6.283185307
+            void main(void) {
+                vec2 uv = vUV - vec2(0.5);
+                float angle = atan(uv.y, uv.x) + 3.141592;
+                float delta = gl_FrontFacing ? angles.y : -angles.y;
+                float begin = angles.x - delta * angles.z;
+                float start = (begin < (begin + delta)) ? begin : (begin + delta);
+                float end = (begin > (begin + delta)) ? begin : (begin + delta);
+                float len = sqrt(dot(uv,uv));
+                float opacity = 1. - step(0.5, len);
 
-            float base = abs(floor(start / twopi)) * twopi;
-            start += base;
-            end += base;
+                float base = abs(floor(start / twopi)) * twopi;
+                start += base;
+                end += base;
 
-            float intensity = 0.;
-            for (int i = 0; i < 5; i++)
-            {
-                intensity += max(step(start, angle) - step(end, angle), 0.);
-                angle += twopi;
+                float intensity = 0.;
+                for (int i = 0; i < 5; i++)
+                {
+                    intensity += max(step(start, angle) - step(end, angle), 0.);
+                    angle += twopi;
+                }
+                gl_FragColor = vec4(${color.asArray()}, min(intensity * 0.25, 0.8)) * opacity;
             }
-            gl_FragColor = vec4(1.,1.,0., min(intensity * 0.25, 0.8)) * opacity;
-        }`;
+        `;
+    }
 
     protected _rotationShaderMaterial: ShaderMaterial;
 
@@ -162,6 +165,8 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
      * @param parent
      * @param useEulerRotation Use and update Euler angle instead of quaternion
      * @param thickness display gizmo axis thickness
+     * @param hoverColor The color of the gizmo when hovering over and dragging
+     * @param disableColor The Color of the gizmo when its disabled
      */
     constructor(
         planeNormal: Vector3,
@@ -171,7 +176,9 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
         parent: Nullable<RotationGizmo> = null,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         useEulerRotation = false,
-        thickness: number = 1
+        thickness: number = 1,
+        hoverColor: Color3 = Color3.Yellow(),
+        disableColor: Color3 = Color3.Gray(),
     ) {
         super(gizmoLayer);
         this._parent = parent;
@@ -181,10 +188,10 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
         this._coloredMaterial.specularColor = color.subtract(new Color3(0.1, 0.1, 0.1));
 
         this._hoverMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        this._hoverMaterial.diffuseColor = Color3.Yellow();
+        this._hoverMaterial.diffuseColor = hoverColor;
 
         this._disableMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        this._disableMaterial.diffuseColor = Color3.Gray();
+        this._disableMaterial.diffuseColor = disableColor;
         this._disableMaterial.alpha = 0.4;
 
         // Build mesh on root node
@@ -192,13 +199,16 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
         const { rotationMesh, collider } = this._createGizmoMesh(this._gizmoMesh, thickness, tessellation);
 
         // Setup Rotation Circle
-        this._rotationDisplayPlane = CreatePlane("rotationDisplay", { size: 0.6, updatable: false }, this.gizmoLayer.utilityLayerScene);
+        this._rotationDisplayPlane = CreatePlane("rotationDisplay", {
+            size: 0.6,
+            updatable: false
+        }, this.gizmoLayer.utilityLayerScene);
         this._rotationDisplayPlane.rotation.z = Math.PI * 0.5;
         this._rotationDisplayPlane.parent = this._gizmoMesh;
         this._rotationDisplayPlane.setEnabled(false);
 
         Effect.ShadersStore["rotationGizmoVertexShader"] = PlaneRotationGizmo._RotationGizmoVertexShader;
-        Effect.ShadersStore["rotationGizmoFragmentShader"] = PlaneRotationGizmo._RotationGizmoFragmentShader;
+        Effect.ShadersStore["rotationGizmoFragmentShader"] = PlaneRotationGizmo._createRotationGizmoFragmentShader(hoverColor);
         this._rotationShaderMaterial = new ShaderMaterial(
             "shader",
             this.gizmoLayer.utilityLayerScene,
@@ -458,9 +468,11 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
             }
         }
     }
+
     public get isEnabled(): boolean {
         return this._isEnabled;
     }
+
     /**
      * Disposes of the gizmo
      */
