@@ -122,14 +122,20 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
             vUV = uv;
         }`;
 
+    protected static defaultHoverColor = Color3.Yellow();
+
+    protected static get _RotationGizmoFragmentShader() {
+        return PlaneRotationGizmo._createRotationGizmoFragmentShader(PlaneRotationGizmo.defaultHoverColor);
+    }
+
     protected static _createRotationGizmoFragmentShader(color: Color3) {
         let r = `${color.r}`;
         let g = `${color.g}`;
         let b = `${color.b}`;
 
-        r = r.includes('.') ? r : `${r}.`;
-        g = g.includes('.') ? g : `${g}.`;
-        b = b.includes('.') ? b : `${b}.`;
+        r = r.includes(".") ? r : `${r}.`;
+        g = g.includes(".") ? g : `${g}.`;
+        b = b.includes(".") ? b : `${b}.`;
 
         return `
             precision highp float;
@@ -185,7 +191,7 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         useEulerRotation = false,
         thickness: number = 1,
-        hoverColor: Color3 = Color3.Yellow(),
+        hoverColor: Color3 = PlaneRotationGizmo.defaultHoverColor,
         disableColor: Color3 = Color3.Gray()
     ) {
         super(gizmoLayer);
