@@ -189,6 +189,7 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
 
         this._hoverMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
         this._hoverMaterial.diffuseColor = hoverColor;
+        this._hoverMaterial.specularColor = hoverColor;
 
         this._disableMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
         this._disableMaterial.diffuseColor = disableColor;
