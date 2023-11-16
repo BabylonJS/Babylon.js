@@ -123,6 +123,14 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
         }`;
 
     protected static _createRotationGizmoFragmentShader(color: Color3) {
+        let r = `${color.r}`;
+        let g = `${color.g}`;
+        let b = `${color.b}`;
+
+        r = r.includes('.') ? r : `${r}.`;
+        g = g.includes('.') ? g : `${g}.`;
+        b = b.includes('.') ? b : `${b}.`;
+
         return `
             precision highp float;
             varying vec2 vUV;
@@ -149,7 +157,7 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                     intensity += max(step(start, angle) - step(end, angle), 0.);
                     angle += twopi;
                 }
-                gl_FragColor = vec4(${color.asArray()}, min(intensity * 0.25, 0.8)) * opacity;
+                gl_FragColor = vec4(${r}, ${g}, ${b}, min(intensity * 0.25, 0.8)) * opacity;
             }
         `;
     }
