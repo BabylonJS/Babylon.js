@@ -25,10 +25,9 @@ export interface IWebXRRawCameraAccessOptions {
 export class WebXRRawCameraAccess extends WebXRAbstractFeature {
     private _cachedInternalTextures: InternalTexture[] = [];
     /**
-     * This function will return an array of camera views
+     * This is an array of camera views
      * Note that mostly the array will contain a single view
-     * If you want to know the order of the views, use the `viewIndex` property
-     * @returns the array of base textures which can be used throughout the framework
+     * If you want to know the order of the views, use the `viewIndex` array
      */
     public texturesData: BaseTexture[] = [];
     /**
@@ -85,12 +84,6 @@ export class WebXRRawCameraAccess extends WebXRAbstractFeature {
         this.xrNativeFeatureName = "camera-access";
     }
 
-    /**
-     * attach this feature
-     * Will usually be called by the features manager
-     *
-     * @returns true if successful.
-     */
     public attach(force?: boolean | undefined): boolean {
         if (!super.attach(force)) {
             return false;
@@ -168,7 +161,7 @@ export class WebXRRawCameraAccess extends WebXRAbstractFeature {
         const lp = this._glBinding?.getCameraImage(view.camera);
 
         if (!this._cachedInternalTextures[index]) {
-            const internalTexture = new InternalTexture(this._xrSessionManager.scene.getEngine(), InternalTextureSource.Unknown);
+            const internalTexture = new InternalTexture(this._xrSessionManager.scene.getEngine(), InternalTextureSource.Unknown, true);
             internalTexture.isCube = true;
             internalTexture.invertY = false;
             // internalTexture._useSRGBBuffer = this.options.reflectionFormat === "srgba8";
