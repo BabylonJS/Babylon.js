@@ -1,5 +1,6 @@
 import type { IWebXRFeature } from "../webXRFeaturesManager";
-import type { Observer, Observable, EventState } from "../../Misc/observable";
+import type { Observer, EventState } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import type { WebXRSessionManager } from "../webXRSessionManager";
 
@@ -29,6 +30,15 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
      * The name of the native xr feature name (like anchor, hit-test, or hand-tracking)
      */
     public xrNativeFeatureName: string = "";
+
+    /**
+     * Observers registered here will be executed when the feature is attached
+     */
+    public onFeatureAttachObservable: Observable<IWebXRFeature> = new Observable();
+    /**
+     * Observers registered here will be executed when the feature is detached
+     */
+    public onFeatureDetachObservable: Observable<IWebXRFeature> = new Observable();
 
     /**
      * Construct a new (abstract) WebXR feature
@@ -67,6 +77,7 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
 
         this._attached = true;
         this._addNewAttachObserver(this._xrSessionManager.onXRFrameObservable, (frame) => this._onXRFrame(frame));
+        this.onFeatureAttachObservable.notifyObservers(this);
         return true;
     }
 
@@ -84,6 +95,7 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
         this._removeOnDetach.forEach((toRemove) => {
             toRemove.observable.remove(toRemove.observer);
         });
+        this.onFeatureDetachObservable.notifyObservers(this);
         return true;
     }
 
@@ -93,6 +105,8 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
     public dispose(): void {
         this.detach();
         this.isDisposed = true;
+        this.onFeatureAttachObservable.clear();
+        this.onFeatureDetachObservable.clear();
     }
 
     /**
