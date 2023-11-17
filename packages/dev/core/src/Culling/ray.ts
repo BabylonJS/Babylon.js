@@ -1043,15 +1043,16 @@ Camera.prototype.getForwardRayToRef = function (refRay: Ray, length = 100, trans
     }
     refRay.length = length;
 
-    if (!origin) {
-        refRay.origin.copyFrom(this.position);
-    } else {
+    if (origin) {
         refRay.origin.copyFrom(origin);
+    } else {
+        refRay.origin.copyFrom(this.position);
     }
-    TmpVectors.Vector3[2].set(0, 0, this._scene.useRightHandedSystem ? -1 : 1);
-    Vector3.TransformNormalToRef(TmpVectors.Vector3[2], transform, TmpVectors.Vector3[3]);
-
-    Vector3.NormalizeToRef(TmpVectors.Vector3[3], refRay.direction);
+    const forward = TmpVectors.Vector3[2];
+    forward.set(0, 0, this._scene.useRightHandedSystem ? -1 : 1);
+    const worldForward = TmpVectors.Vector3[3];
+    Vector3.TransformNormalToRef(forward, transform, worldForward);
+    Vector3.NormalizeToRef(worldForward, refRay.direction);
 
     return refRay;
 };
