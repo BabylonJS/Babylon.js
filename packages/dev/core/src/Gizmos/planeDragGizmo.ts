@@ -26,7 +26,7 @@ export interface IPlaneDragGizmo extends IGizmo {
     snapDistance: number;
     /**
      * Event that fires each time the gizmo snaps to a new location.
-     * * snapDistance is the the change in distance
+     * * snapDistance is the change in distance
      */
     onSnapObservable: Observable<{ snapDistance: number }>;
     /** If the gizmo is enabled */
@@ -82,6 +82,7 @@ export class PlaneDragGizmo extends Gizmo implements IPlaneDragGizmo {
     public get disableMaterial() {
         return this._disableMaterial;
     }
+
     /**
      * @internal
      */
@@ -205,6 +206,7 @@ export class PlaneDragGizmo extends Gizmo implements IPlaneDragGizmo {
             this._setGizmoMeshMaterial(cache.gizmoMeshes, newState ? this._coloredMaterial : this._disableMaterial);
         });
     }
+
     protected _attachedNodeChanged(value: Nullable<Node>) {
         if (this.dragBehavior) {
             this.dragBehavior.enabled = value ? true : false;
@@ -224,9 +226,11 @@ export class PlaneDragGizmo extends Gizmo implements IPlaneDragGizmo {
             }
         }
     }
+
     public get isEnabled(): boolean {
         return this._isEnabled;
     }
+
     /**
      * Disposes of the gizmo
      */
