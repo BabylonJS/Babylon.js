@@ -177,6 +177,10 @@ export class InputTextArea extends InputText {
      * @param evt Defines the KeyboardEvent
      */
     public processKeyboard(evt: IKeyboardEvent): void {
+        if (this.isReadOnly) {
+            return;
+        }
+
         // process pressed key
         this.alternativeProcessKey(evt.code, evt.key, evt);
 
@@ -1009,6 +1013,10 @@ export class InputTextArea extends InputText {
             return false;
         }
 
+        if (this.isReadOnly) {
+            return true;
+        }
+
         this._clickedCoordinateX = coordinates.x;
         this._clickedCoordinateY = coordinates.y;
 
@@ -1037,7 +1045,7 @@ export class InputTextArea extends InputText {
             return;
         }
 
-        if (this._host.focusedControl === this && this._isPointerDown) {
+        if (this._host.focusedControl === this && this._isPointerDown && !this.isReadOnly) {
             this._clickedCoordinateX = coordinates.x;
             this._clickedCoordinateY = coordinates.y;
 
