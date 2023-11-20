@@ -295,11 +295,7 @@ export class InputManager {
         }
 
         scene.onPrePointerObservable.notifyObservers(pi, type);
-        if (pi.skipOnPointerObservable) {
-            return true;
-        } else {
-            return false;
-        }
+        return pi.skipOnPointerObservable;
     }
 
     /** @internal */
