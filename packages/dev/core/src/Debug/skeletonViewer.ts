@@ -417,11 +417,12 @@ export class SkeletonViewer {
         options.computeBonesUsingShaders = options.computeBonesUsingShaders ?? true;
         options.useAllBones = options.useAllBones ?? true;
 
-        const initialMeshBoneIndices = mesh.getVerticesData(VertexBuffer.MatricesIndicesKind);
-        const initialMeshBoneWeights = mesh.getVerticesData(VertexBuffer.MatricesWeightsKind);
         this._boneIndices = new Set();
 
         if (!options.useAllBones) {
+            const initialMeshBoneIndices = mesh.getVerticesData(VertexBuffer.MatricesIndicesKind);
+            const initialMeshBoneWeights = mesh.getVerticesData(VertexBuffer.MatricesWeightsKind);
+            
             if (initialMeshBoneIndices && initialMeshBoneWeights) {
                 for (let i = 0; i < initialMeshBoneIndices.length; ++i) {
                     const index = initialMeshBoneIndices[i],
