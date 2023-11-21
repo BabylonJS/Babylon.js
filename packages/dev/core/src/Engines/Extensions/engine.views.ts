@@ -15,8 +15,11 @@ export class EngineView {
     readonly id: string;
     /** Defines the canvas where to render the view */
     target: HTMLCanvasElement;
-    /** Defines an optional camera used to render the view (will use active camera else) */
-    camera?: Camera;
+    /**
+     * Defines an optional camera or array of cameras used to render the view (will use active camera / cameras else)
+     * Support for array of cameras @since
+     */
+    camera?: Camera | Camera[];
     /** Indicates if the destination view canvas should be cleared before copying the parent canvas. Can help if the scene clear color has alpha < 1 */
     clearBeforeCopy?: boolean;
     /** Indicates if the view is enabled (true by default) */
@@ -62,11 +65,11 @@ declare module "../../Engines/engine" {
         /**
          * Register a new child canvas
          * @param canvas defines the canvas to register
-         * @param camera defines an optional camera to use with this canvas (it will overwrite the scene.camera for this view)
-         * @param clearBeforeCopy Indicates if the destination view canvas should be cleared before copying the parent canvas. Can help if the scene clear color has alpha < 1
+         * @param camera defines an optional camera or array of cameras to use with this canvas (it will overwrite the scene.activeCamera / scene.activeCameras for this view). Support for array of cameras @since
+         * @param clearBeforeCopy Indicates if the destination view canvas should be cleared before copying the parent canvas. Can help if the scene clear color has alpha \< 1
          * @returns the associated view
          */
-        registerView(canvas: HTMLCanvasElement, camera?: Camera, clearBeforeCopy?: boolean): EngineView;
+        registerView(canvas: HTMLCanvasElement, camera?: Camera | Camera[], clearBeforeCopy?: boolean): EngineView;
 
         /**
          * Remove a registered child canvas
@@ -113,7 +116,7 @@ Engine.prototype.getInputElement = function (): Nullable<HTMLElement> {
     return this.inputElement || this.getRenderingCanvas();
 };
 
-Engine.prototype.registerView = function (canvas: HTMLCanvasElement, camera?: Camera, clearBeforeCopy?: boolean): EngineView {
+Engine.prototype.registerView = function (canvas: HTMLCanvasElement, camera?: Camera | Camera[], clearBeforeCopy?: boolean): EngineView {
     if (!this.views) {
         this.views = [];
     }
@@ -133,7 +136,7 @@ Engine.prototype.registerView = function (canvas: HTMLCanvasElement, camera?: Ca
     const newView = { target: canvas, camera, clearBeforeCopy, enabled: true, id: (Math.random() * 100000).toFixed() };
     this.views.push(newView);
 
-    if (camera) {
+    if (camera && !Array.isArray(camera)) {
         camera.onDisposeObservable.add(() => {
             this.unRegisterView(canvas);
         });
@@ -172,18 +175,22 @@ Engine.prototype._renderViewStep = function (view: EngineView): boolean {
     _onBeforeViewRenderObservable.notifyObservers(view);
     const camera = view.camera;
     let previewCamera: Nullable<Camera> = null;
+    let previewCameras: Nullable<Camera[]> = null;
     let scene: Nullable<Scene> = null;
     if (camera) {
-        scene = camera.getScene();
+        scene = Array.isArray(camera) ? camera[0].getScene() : camera.getScene();
 
-        if (!scene || (scene.activeCameras && scene.activeCameras.length)) {
-            return true;
-        }
+        previewCamera = scene.activeCamera;
+        previewCameras = scene.activeCameras;
 
         this.activeView = view;
 
-        previewCamera = scene.activeCamera;
-        scene.activeCamera = camera;
+        if (Array.isArray(camera)) {
+            scene.activeCameras = camera;
+        } else {
+            scene.activeCamera = camera;
+            scene.activeCameras = null;
+        }
     }
 
     if (view.customResize) {
@@ -217,7 +224,8 @@ Engine.prototype._renderViewStep = function (view: EngineView): boolean {
     context.drawImage(parent, 0, 0);
 
     // Restore
-    if (previewCamera && scene) {
+    if (scene) {
+        scene.activeCameras = previewCameras;
         scene.activeCamera = previewCamera;
     }
     _onAfterViewRenderObservable.notifyObservers(view);
