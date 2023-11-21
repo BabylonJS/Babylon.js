@@ -6832,7 +6832,7 @@ export class Matrix {
      * @param result defines the target matrix
      * @returns result input
      */
-    public static LookAtLHToRef(eye: DeepImmutable<Vector3>, target: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: Matrix): void {
+    public static LookAtLHToRef(eye: DeepImmutable<Vector3>, target: DeepImmutable<Vector3>, up: DeepImmutable<Vector3>, result: Matrix): Matrix {
         const xAxis = MathTmp.Vector3[0];
         const yAxis = MathTmp.Vector3[1];
         const zAxis = MathTmp.Vector3[2];
@@ -6861,6 +6861,7 @@ export class Matrix {
         const ez = -Vector3.Dot(zAxis, eye);
 
         Matrix.FromValuesToRef(xAxis._x, yAxis._x, zAxis._x, 0.0, xAxis._y, yAxis._y, zAxis._y, 0.0, xAxis._z, yAxis._z, zAxis._z, 0.0, ex, ey, ez, 1.0, result);
+        return result;
     }
 
     /**
