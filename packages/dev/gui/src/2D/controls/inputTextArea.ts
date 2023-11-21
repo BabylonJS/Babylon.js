@@ -1232,7 +1232,7 @@ export class InputTextArea extends InputText {
         this._markAsDirty();
     }
 
-    public dipose() {
+    public dispose() {
         super.dispose();
 
         this.onLinesReadyObservable.clear();
