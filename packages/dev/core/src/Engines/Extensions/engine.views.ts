@@ -18,7 +18,7 @@ export class EngineView {
     /**
      * Defines an optional camera or array of cameras used to render the view (will use active camera / cameras else)
      * Support for array of cameras @since
-    */
+     */
     camera?: Camera | Camera[];
     /** Indicates if the destination view canvas should be cleared before copying the parent canvas. Can help if the scene clear color has alpha < 1 */
     clearBeforeCopy?: boolean;
