@@ -15,7 +15,10 @@ export class EngineView {
     readonly id: string;
     /** Defines the canvas where to render the view */
     target: HTMLCanvasElement;
-    /** Defines an optional camera or array of cameras used to render the view (will use active camera / cameras else) */
+    /**
+     * Defines an optional camera or array of cameras used to render the view (will use active camera / cameras else)
+     * Support for array of cameras @since
+    */
     camera?: Camera | Camera[];
     /** Indicates if the destination view canvas should be cleared before copying the parent canvas. Can help if the scene clear color has alpha < 1 */
     clearBeforeCopy?: boolean;
@@ -62,7 +65,7 @@ declare module "../../Engines/engine" {
         /**
          * Register a new child canvas
          * @param canvas defines the canvas to register
-         * @param camera defines an optional camera or array of cameras to use with this canvas (it will overwrite the scene.activeCamera / scene.activeCameras for this view)
+         * @param camera defines an optional camera or array of cameras to use with this canvas (it will overwrite the scene.activeCamera / scene.activeCameras for this view). Support for array of cameras @since
          * @param clearBeforeCopy Indicates if the destination view canvas should be cleared before copying the parent canvas. Can help if the scene clear color has alpha \< 1
          * @returns the associated view
          */
