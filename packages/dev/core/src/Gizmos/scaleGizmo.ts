@@ -117,13 +117,15 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
     public set attachedMesh(mesh: Nullable<AbstractMesh>) {
         this._meshAttached = mesh;
         this._nodeAttached = mesh;
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
+        const gizmoArr = [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo];
+        for (let i = 0;i < 4;i++  ){
+            const gizmo = gizmoArr[i];
             if (gizmo.isEnabled) {
                 gizmo.attachedMesh = mesh;
             } else {
                 gizmo.attachedMesh = null;
             }
-        });
+        }
     }
 
     public get attachedNode() {
@@ -132,13 +134,15 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
     public set attachedNode(node: Nullable<Node>) {
         this._meshAttached = null;
         this._nodeAttached = node;
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
+        const gizmoArr = [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo];
+        for (let i = 0;i < 4;i++  ){
+            const gizmo = gizmoArr[i];
             if (gizmo.isEnabled) {
                 gizmo.attachedNode = node;
             } else {
                 gizmo.attachedNode = null;
             }
-        });
+        }
     }
 
     public set updateScale(value: boolean) {
@@ -155,11 +159,8 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
      * True when the mouse pointer is hovering a gizmo mesh
      */
     public get isHovered() {
-        let hovered = false;
-        [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
-            hovered = hovered || gizmo.isHovered;
-        });
-        return hovered;
+        const {xGizmo,yGizmo,zGizmo} = this;
+        return xGizmo.isHovered || yGizmo.isHovered || zGizmo.isHovered;
     }
 
     /**
@@ -175,18 +176,24 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
         this.yGizmo = new AxisScaleGizmo(new Vector3(0, 1, 0), Color3.Green().scale(0.5), gizmoLayer, this, thickness);
         this.zGizmo = new AxisScaleGizmo(new Vector3(0, 0, 1), Color3.Blue().scale(0.5), gizmoLayer, this, thickness);
 
+        
         // Relay drag events
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
-            gizmo.dragBehavior.onDragStartObservable.add(() => {
-                this.onDragStartObservable.notifyObservers({});
-            });
-            gizmo.dragBehavior.onDragObservable.add(() => {
-                this.onDragObservable.notifyObservers({});
-            });
-            gizmo.dragBehavior.onDragEndObservable.add(() => {
-                this.onDragEndObservable.notifyObservers({});
-            });
-        });
+        const dragStartListener = () => {
+            this.onDragStartObservable.notifyObservers({});
+        };
+        const dragListener = () => {
+            this.onDragObservable.notifyObservers({});
+        };
+        const dragEndListener = () => {
+            this.onDragEndObservable.notifyObservers({});
+        };
+        const gizmoArr = [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo];
+        for (let i = 0;i < 4;i++  ){
+            const gizmo = gizmoArr[i];
+            gizmo.dragBehavior.onDragStartObservable.add(dragStartListener);
+            gizmo.dragBehavior.onDragObservable.add(dragListener);
+            gizmo.dragBehavior.onDragEndObservable.add(dragEndListener);
+        }
 
         this.attachedMesh = null;
         this.attachedNode = null;
@@ -244,11 +251,13 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
             Logger.Warn("Setting updateGizmoRotationToMatchAttachedMesh = false on scaling gizmo is not supported.");
         } else {
             this._updateGizmoRotationToMatchAttachedMesh = value;
-            [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
+            const gizmoArr = [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo];
+            for (let i = 0;i < 4;i++  ){
+                const gizmo = gizmoArr[i];
                 if (gizmo) {
                     gizmo.updateGizmoRotationToMatchAttachedMesh = value;
                 }
-            });
+            }
         }
     }
     public get updateGizmoRotationToMatchAttachedMesh() {
@@ -257,11 +266,13 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
 
     public set anchorPoint(value: GizmoAnchorPoint) {
         this._anchorPoint = value;
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
+        const gizmoArr = [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo];
+        for (let i = 0;i < 4;i++  ){
+            const gizmo = gizmoArr[i];
             if (gizmo) {
                 gizmo.anchorPoint = value;
             }
-        });
+        }
     }
     public get anchorPoint() {
         return this._anchorPoint;
@@ -276,9 +287,10 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
         if (coordinatesMode == GizmoCoordinatesMode.World) {
             Logger.Warn("Setting coordinates Mode to world on scaling gizmo is not supported.");
         }
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
-            gizmo.coordinatesMode = GizmoCoordinatesMode.Local;
-        });
+        const gizmoArr = [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo];
+        for (let i = 0;i < 4;i++  ){
+            gizmoArr[i].coordinatesMode = GizmoCoordinatesMode.Local;
+        }
     }
 
     /**
@@ -286,11 +298,13 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
      */
     public set snapDistance(value: number) {
         this._snapDistance = value;
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
+        const gizmoArr = [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo];
+        for (let i = 0;i < 4;i++  ){
+            const gizmo = gizmoArr[i];
             if (gizmo) {
                 gizmo.snapDistance = value;
             }
-        });
+        }
     }
     public get snapDistance() {
         return this._snapDistance;
@@ -301,11 +315,13 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
      */
     public set scaleRatio(value: number) {
         this._scaleRatio = value;
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
+        const gizmoArr = [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo];
+        for (let i = 0;i < 4;i++  ){
+            const gizmo = gizmoArr[i];
             if (gizmo) {
                 gizmo.scaleRatio = value;
-            }
-        });
+            } 
+        }
     }
     public get scaleRatio() {
         return this._scaleRatio;
