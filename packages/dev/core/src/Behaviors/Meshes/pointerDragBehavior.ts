@@ -259,8 +259,8 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                 return;
             }
 
-            const {pickInfo,type,event} = pointerInfo;
-            const {pointerId,button,pointerType} = event as IPointerEvent;
+            const { pickInfo, type, event } = pointerInfo;
+            const { pointerId, button, pointerType } = event as IPointerEvent;
 
             if (type == PointerEventTypes.POINTERDOWN) {
                 if (
@@ -280,15 +280,10 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                     }
                 }
             } else if (type == PointerEventTypes.POINTERUP) {
-                if (
-                    this.startAndReleaseDragOnPointerEvents &&
-                    this.currentDraggingPointerId == pointerId &&
-                    (this._activeDragButton === button || this._activeDragButton === -1)
-                ) {
+                if (this.startAndReleaseDragOnPointerEvents && this.currentDraggingPointerId == pointerId && (this._activeDragButton === button || this._activeDragButton === -1)) {
                     this.releaseDrag();
                 }
             } else if (type == PointerEventTypes.POINTERMOVE) {
-
                 // If drag was started with anyMouseID specified, set pointerID to the next mouse that moved
                 if (this.currentDraggingPointerId === PointerDragBehavior._AnyMouseId && pointerId !== PointerDragBehavior._AnyMouseId) {
                     const isMouseEvent = pointerType === "mouse" || (!this._scene.getEngine().hostInformation.isMobile && event instanceof MouseEvent);

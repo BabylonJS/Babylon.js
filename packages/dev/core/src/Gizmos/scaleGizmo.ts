@@ -118,7 +118,7 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
         this._meshAttached = mesh;
         this._nodeAttached = mesh;
         const gizmoArr = [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo];
-        for (let i = 0;i < 4;i++  ){
+        for (let i = 0; i < 4; i++) {
             const gizmo = gizmoArr[i];
             if (gizmo.isEnabled) {
                 gizmo.attachedMesh = mesh;
@@ -135,7 +135,7 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
         this._meshAttached = null;
         this._nodeAttached = node;
         const gizmoArr = [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo];
-        for (let i = 0;i < 4;i++  ){
+        for (let i = 0; i < 4; i++) {
             const gizmo = gizmoArr[i];
             if (gizmo.isEnabled) {
                 gizmo.attachedNode = node;
@@ -159,7 +159,7 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
      * True when the mouse pointer is hovering a gizmo mesh
      */
     public get isHovered() {
-        const {xGizmo,yGizmo,zGizmo} = this;
+        const { xGizmo, yGizmo, zGizmo } = this;
         return xGizmo.isHovered || yGizmo.isHovered || zGizmo.isHovered;
     }
 
@@ -176,7 +176,6 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
         this.yGizmo = new AxisScaleGizmo(new Vector3(0, 1, 0), Color3.Green().scale(0.5), gizmoLayer, this, thickness);
         this.zGizmo = new AxisScaleGizmo(new Vector3(0, 0, 1), Color3.Blue().scale(0.5), gizmoLayer, this, thickness);
 
-        
         // Relay drag events
         const dragStartListener = () => {
             this.onDragStartObservable.notifyObservers({});
@@ -188,7 +187,7 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
             this.onDragEndObservable.notifyObservers({});
         };
         const gizmoArr = [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo];
-        for (let i = 0;i < 4;i++  ){
+        for (let i = 0; i < 4; i++) {
             const gizmo = gizmoArr[i];
             gizmo.dragBehavior.onDragStartObservable.add(dragStartListener);
             gizmo.dragBehavior.onDragObservable.add(dragListener);
@@ -252,7 +251,7 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
         } else {
             this._updateGizmoRotationToMatchAttachedMesh = value;
             const gizmoArr = [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo];
-            for (let i = 0;i < 4;i++  ){
+            for (let i = 0; i < 4; i++) {
                 const gizmo = gizmoArr[i];
                 if (gizmo) {
                     gizmo.updateGizmoRotationToMatchAttachedMesh = value;
@@ -267,7 +266,7 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
     public set anchorPoint(value: GizmoAnchorPoint) {
         this._anchorPoint = value;
         const gizmoArr = [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo];
-        for (let i = 0;i < 4;i++  ){
+        for (let i = 0; i < 4; i++) {
             const gizmo = gizmoArr[i];
             if (gizmo) {
                 gizmo.anchorPoint = value;
@@ -288,7 +287,7 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
             Logger.Warn("Setting coordinates Mode to world on scaling gizmo is not supported.");
         }
         const gizmoArr = [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo];
-        for (let i = 0;i < 4;i++  ){
+        for (let i = 0; i < 4; i++) {
             gizmoArr[i].coordinatesMode = GizmoCoordinatesMode.Local;
         }
     }
@@ -299,7 +298,7 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
     public set snapDistance(value: number) {
         this._snapDistance = value;
         const gizmoArr = [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo];
-        for (let i = 0;i < 4;i++  ){
+        for (let i = 0; i < 4; i++) {
             const gizmo = gizmoArr[i];
             if (gizmo) {
                 gizmo.snapDistance = value;
@@ -316,11 +315,11 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
     public set scaleRatio(value: number) {
         this._scaleRatio = value;
         const gizmoArr = [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo];
-        for (let i = 0;i < 4;i++  ){
+        for (let i = 0; i < 4; i++) {
             const gizmo = gizmoArr[i];
             if (gizmo) {
                 gizmo.scaleRatio = value;
-            } 
+            }
         }
     }
     public get scaleRatio() {
@@ -332,11 +331,13 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
      */
     public set sensitivity(value: number) {
         this._sensitivity = value;
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
+        const gizmoArr = [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo];
+        for (let i = 0; i < 4; i++) {
+            const gizmo = gizmoArr[i];
             if (gizmo) {
                 gizmo.sensitivity = value;
             }
-        });
+        }
     }
     public get sensitivity() {
         return this._sensitivity;
@@ -355,26 +356,32 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
      * Disposes of the gizmo
      */
     public dispose() {
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
+        const gizmoArr = [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo];
+        for (let i = 0; i < 4; i++) {
+            const gizmo = gizmoArr[i];
             if (gizmo) {
                 gizmo.dispose();
             }
-        });
-        this._observables.forEach((obs) => {
-            this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(obs);
-        });
+        }
+        const { _observables, _uniformScalingMesh, _octahedron } = this;
+        const _obserLength = _observables.length;
+        const onPointerObservable = this.gizmoLayer.utilityLayerScene.onPointerObservable;
+        for (let i = 0; i < _obserLength; i++) {
+            const obs = _observables[i];
+            onPointerObservable.remove(obs);
+        }
         this.onDragStartObservable.clear();
         this.onDragObservable.clear();
         this.onDragEndObservable.clear();
-        [this._uniformScalingMesh, this._octahedron].forEach((msh) => {
-            if (msh) {
-                msh.dispose();
-            }
-        });
-        [this._coloredMaterial, this._hoverMaterial, this._disableMaterial].forEach((matl) => {
+        _uniformScalingMesh && _uniformScalingMesh.dispose();
+        _octahedron && _octahedron.dispose();
+
+        const materArr = [this._coloredMaterial, this._hoverMaterial, this._disableMaterial];
+        for (let i = 0; i < 3; i++) {
+            const matl = materArr[i];
             if (matl) {
                 matl.dispose();
             }
-        });
+        }
     }
 }
