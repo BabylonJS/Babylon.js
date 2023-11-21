@@ -259,38 +259,39 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                 return;
             }
 
-            if (pointerInfo.type == PointerEventTypes.POINTERDOWN) {
+            const {pickInfo,type,event} = pointerInfo;
+            const {pointerId,button,pointerType} = event as IPointerEvent;
+
+            if (type == PointerEventTypes.POINTERDOWN) {
                 if (
                     this.startAndReleaseDragOnPointerEvents &&
                     !this.dragging &&
-                    pointerInfo.pickInfo &&
-                    pointerInfo.pickInfo.hit &&
-                    pointerInfo.pickInfo.pickedMesh &&
-                    pointerInfo.pickInfo.pickedPoint &&
-                    pointerInfo.pickInfo.ray &&
-                    pickPredicate(pointerInfo.pickInfo.pickedMesh)
+                    pickInfo &&
+                    pickInfo.hit &&
+                    pickInfo.pickedMesh &&
+                    pickInfo.pickedPoint &&
+                    pickInfo.ray &&
+                    pickPredicate(pickInfo.pickedMesh)
                 ) {
-                    if (this._activeDragButton === -1 && this.dragButtons.indexOf(pointerInfo.event.button) !== -1) {
-                        this._activeDragButton = pointerInfo.event.button;
+                    if (this._activeDragButton === -1 && this.dragButtons.indexOf(button) !== -1) {
+                        this._activeDragButton = button;
                         this._activePointerInfo = pointerInfo;
-                        this._startDrag((<IPointerEvent>pointerInfo.event).pointerId, pointerInfo.pickInfo.ray, pointerInfo.pickInfo.pickedPoint);
+                        this._startDrag(pointerId, pickInfo.ray, pickInfo.pickedPoint);
                     }
                 }
-            } else if (pointerInfo.type == PointerEventTypes.POINTERUP) {
+            } else if (type == PointerEventTypes.POINTERUP) {
                 if (
                     this.startAndReleaseDragOnPointerEvents &&
-                    this.currentDraggingPointerId == (<IPointerEvent>pointerInfo.event).pointerId &&
-                    (this._activeDragButton === pointerInfo.event.button || this._activeDragButton === -1)
+                    this.currentDraggingPointerId == pointerId &&
+                    (this._activeDragButton === button || this._activeDragButton === -1)
                 ) {
                     this.releaseDrag();
                 }
-            } else if (pointerInfo.type == PointerEventTypes.POINTERMOVE) {
-                const pointerId = (<IPointerEvent>pointerInfo.event).pointerId;
+            } else if (type == PointerEventTypes.POINTERMOVE) {
 
                 // If drag was started with anyMouseID specified, set pointerID to the next mouse that moved
                 if (this.currentDraggingPointerId === PointerDragBehavior._AnyMouseId && pointerId !== PointerDragBehavior._AnyMouseId) {
-                    const evt = <IPointerEvent>pointerInfo.event;
-                    const isMouseEvent = evt.pointerType === "mouse" || (!this._scene.getEngine().hostInformation.isMobile && evt instanceof MouseEvent);
+                    const isMouseEvent = pointerType === "mouse" || (!this._scene.getEngine().hostInformation.isMobile && event instanceof MouseEvent);
                     if (isMouseEvent) {
                         if (this._lastPointerRay[this.currentDraggingPointerId]) {
                             this._lastPointerRay[pointerId] = this._lastPointerRay[this.currentDraggingPointerId];
@@ -304,12 +305,12 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
                 if (!this._lastPointerRay[pointerId]) {
                     this._lastPointerRay[pointerId] = new Ray(new Vector3(), new Vector3());
                 }
-                if (pointerInfo.pickInfo && pointerInfo.pickInfo.ray) {
-                    this._lastPointerRay[pointerId].origin.copyFrom(pointerInfo.pickInfo.ray.origin);
-                    this._lastPointerRay[pointerId].direction.copyFrom(pointerInfo.pickInfo.ray.direction);
+                if (pickInfo && pickInfo.ray) {
+                    this._lastPointerRay[pointerId].origin.copyFrom(pickInfo.ray.origin);
+                    this._lastPointerRay[pointerId].direction.copyFrom(pickInfo.ray.direction);
 
                     if (this.currentDraggingPointerId == pointerId && this.dragging) {
-                        this._moveDrag(pointerInfo.pickInfo.ray);
+                        this._moveDrag(pickInfo.ray);
                     }
                 }
             }
