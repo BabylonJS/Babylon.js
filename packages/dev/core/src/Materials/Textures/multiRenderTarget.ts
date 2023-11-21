@@ -16,15 +16,15 @@ export interface IMultiRenderTargetOptions {
      */
     generateMipMaps?: boolean;
     /**
-     * Define the types of all the draw buffers we want to create
+     * Define the types of all the draw buffers (render textures) we want to create
      */
     types?: number[];
     /**
-     * Define the sampling modes of all the draw buffers we want to create
+     * Define the sampling modes of all the draw buffers (render textures) we want to create
      */
     samplingModes?: number[];
     /**
-     * Define if sRGB format should be used for each of the draw buffers we want to create
+     * Define if sRGB format should be used for each of the draw buffers (render textures) we want to create
      */
     useSRGBBuffers?: boolean[];
     /**
@@ -40,7 +40,7 @@ export interface IMultiRenderTargetOptions {
      */
     generateDepthTexture?: boolean;
     /**
-     * Define the internal format of the buffer in the RTT (RED, RG, RGB, RGBA (default), ALPHA...) of all the draw buffers we want to create
+     * Define the internal format of the buffer in the RTT (RED, RG, RGB, RGBA (default), ALPHA...) of all the draw buffers (render textures) we want to create
      */
     formats?: number[];
     /**
@@ -48,7 +48,7 @@ export interface IMultiRenderTargetOptions {
      */
     depthTextureFormat?: number;
     /**
-     * Define the number of desired draw buffers
+     * Define the number of desired draw buffers (render textures)
      */
     textureCount?: number;
     /**
@@ -84,11 +84,15 @@ export interface IMultiRenderTargetOptions {
      * Define the number of layer of each texture in the textures array (if applicable, given the corresponding targetType) (for Constants.TEXTURE_3D, .TEXTURE_2D_ARRAY, and .TEXTURE_CUBE_MAP_ARRAY)
      */
     layerCounts?: number[];
+    /**
+     * Define the names of the textures (used for debugging purpose)
+     */
+    labels?: string[];
 }
 
 /**
  * A multi render target, like a render target provides the ability to render to a texture.
- * Unlike the render target, it can render to several draw buffers in one draw.
+ * Unlike the render target, it can render to several draw buffers (render textures) in one draw.
  * This is specially interesting in deferred rendering or for any effects requiring more than
  * just one color from a single pass.
  */
@@ -100,7 +104,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
     private _textureNames?: string[];
 
     /**
-     * Get if draw buffers are currently supported by the used hardware and browser.
+     * Get if draw buffers (render textures) are currently supported by the used hardware and browser.
      */
     public get isSupported(): boolean {
         return this._engine?.getCaps().drawBuffersExtension ?? false;
@@ -154,7 +158,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
     /**
      * Instantiate a new multi render target texture.
      * A multi render target, like a render target provides the ability to render to a texture.
-     * Unlike the render target, it can render to several draw buffers in one draw.
+     * Unlike the render target, it can render to several draw buffers (render textures) in one draw.
      * This is specially interesting in deferred rendering or for any effects requiring more than
      * just one color from a single pass.
      * @param name Define the name of the texture
@@ -162,7 +166,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * @param count Define the number of target we are rendering into
      * @param scene Define the scene the texture belongs to
      * @param options Define the options used to create the multi render target
-     * @param textureNames Define the names to set to the textures (if count > 0 - optional)
+     * @param textureNames Define the names to set to the textures (if count \> 0 - optional)
      */
     constructor(name: string, size: any, count: number, scene?: Scene, options?: IMultiRenderTargetOptions, textureNames?: string[]) {
         const generateMipMaps = options && options.generateMipMaps ? options.generateMipMaps : false;
@@ -207,6 +211,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
             faceIndex: faceIndex,
             layerIndex: layerIndex,
             layerCounts: layerCounts,
+            labels: textureNames,
         };
 
         this._count = count;
@@ -520,6 +525,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
         this._multiRenderTargetOptions.faceIndex = faceIndex;
         this._multiRenderTargetOptions.layerIndex = layerIndex;
         this._multiRenderTargetOptions.layerCounts = layerCounts;
+        this._multiRenderTargetOptions.labels = textureNames;
 
         this._rebuild(true, textureNames);
     }
@@ -548,7 +554,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
     }
 
     /**
-     * Release all the underlying texture used as draw buffers.
+     * Release all the underlying texture used as draw buffers (render textures).
      */
     public releaseInternalTextures(): void {
         const internalTextures = this._renderTarget?.textures;

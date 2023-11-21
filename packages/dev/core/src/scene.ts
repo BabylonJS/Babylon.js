@@ -2010,6 +2010,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         // Ensures that the pre-pass renderer is enabled if it is to be enabled.
         this.prePassRenderer?.update();
 
+        // OIT
+        if (this.useOrderIndependentTransparency && this.depthPeelingRenderer) {
+            isReady &&= this.depthPeelingRenderer.isReady();
+        }
+
         // Meshes
         if (checkRenderTargets) {
             this._processedMaterials.reset();
