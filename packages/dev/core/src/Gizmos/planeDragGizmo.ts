@@ -34,9 +34,9 @@ export interface IPlaneDragGizmo extends IGizmo {
 
     /** Default material used to render when gizmo is not disabled or hovered */
     coloredMaterial: StandardMaterial;
-    /** Material used to render when gizmo is hovered with mouse*/
+    /** Material used to render when gizmo is hovered with mouse */
     hoverMaterial: StandardMaterial;
-    /** Material used to render when gizmo is disabled. typically grey.*/
+    /** Material used to render when gizmo is disabled. typically grey. */
     disableMaterial: StandardMaterial;
 }
 
@@ -55,7 +55,7 @@ export class PlaneDragGizmo extends Gizmo implements IPlaneDragGizmo {
     public snapDistance = 0;
     /**
      * Event that fires each time the gizmo snaps to a new location.
-     * * snapDistance is the the change in distance
+     * * snapDistance is the change in distance
      */
     public onSnapObservable = new Observable<{ snapDistance: number }>();
 
