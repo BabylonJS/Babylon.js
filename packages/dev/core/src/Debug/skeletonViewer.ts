@@ -416,13 +416,11 @@ export class SkeletonViewer {
         options.displayOptions.localAxesSize = options.displayOptions.localAxesSize ?? 0.075;
         options.computeBonesUsingShaders = options.computeBonesUsingShaders ?? true;
         options.useAllBones = options.useAllBones ?? true;
-
         this._boneIndices = new Set();
 
         if (!options.useAllBones) {
             const initialMeshBoneIndices = mesh.getVerticesData(VertexBuffer.MatricesIndicesKind);
             const initialMeshBoneWeights = mesh.getVerticesData(VertexBuffer.MatricesWeightsKind);
-
             if (initialMeshBoneIndices && initialMeshBoneWeights) {
                 for (let i = 0; i < initialMeshBoneIndices.length; ++i) {
                     const index = initialMeshBoneIndices[i],
