@@ -51,7 +51,7 @@ function readViewAsync(arrayBufferView: ArrayBufferView, byteOffset: number, byt
         if (arrayBufferView.byteOffset + byteOffset + byteLength > arrayBufferView.buffer.byteLength) {
             throw new Error("Array length out of bounds.");
         }
-        
+
         return Promise.resolve(new Uint8Array(arrayBufferView.buffer, arrayBufferView.byteOffset + byteOffset, byteLength));
     } catch (e) {
         return Promise.reject(e);
