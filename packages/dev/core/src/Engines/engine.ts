@@ -1000,7 +1000,7 @@ export class Engine extends ThinEngine {
     private _cachedStencilReference: number;
 
     /**
-     * Caches the the state of the stencil buffer
+     * Caches the state of the stencil buffer
      */
     public cacheStencilState() {
         this._cachedStencilBuffer = this.getStencilBuffer();

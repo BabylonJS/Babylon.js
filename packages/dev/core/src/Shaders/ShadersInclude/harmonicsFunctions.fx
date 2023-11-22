@@ -1,6 +1,6 @@
 #ifdef USESPHERICALFROMREFLECTIONMAP
     #ifdef SPHERICAL_HARMONICS
-        // Please note the the coefficient have been prescaled.
+        // Please note the coefficient have been prescaled.
         //
         // This uses the theory from both Sloan and Ramamoothi:
         //   https://www.ppsloan.org/publications/SHJCGT.pdf

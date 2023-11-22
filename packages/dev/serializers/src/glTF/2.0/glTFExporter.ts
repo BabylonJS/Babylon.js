@@ -1749,7 +1749,7 @@ export class _Exporter {
 
     /**
      * Creates a glTF scene based on the array of meshes
-     * Returns the the total byte offset
+     * Returns the total byte offset
      * @param babylonScene Babylon scene to get the mesh data from
      * @param binaryWriter Buffer to write binary data to
      */
