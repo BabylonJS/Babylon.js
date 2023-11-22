@@ -1569,7 +1569,7 @@ export class Vector3 {
      * Due to float precision, scale of a mesh could be uniform but float values are off by a small fraction
      * Check if is non uniform within a certain amount of decimal places to account for this
      * @param epsilon the amount the values can differ
-     * @returns if the the vector is non uniform to a certain number of decimal places
+     * @returns if the vector is non uniform to a certain number of decimal places
      */
     public isNonUniformWithinEpsilon(epsilon: number) {
         const absX = Math.abs(this._x);
@@ -4279,7 +4279,7 @@ export class Quaternion {
     }
 
     /**
-     * Sets the given "result" as the the multiplication result of the current one with the given one "q1"
+     * Sets the given "result" as the multiplication result of the current one with the given one "q1"
      * Example Playground https://playground.babylonjs.com/#L49EJ7#45
      * @param q1 defines the second operand
      * @param result defines the target quaternion
@@ -6753,7 +6753,7 @@ export class Matrix {
 
     /**
      * Builds a new matrix whose values are computed by:
-     * * decomposing the the "startValue" and "endValue" matrices into their respective scale, rotation and translation matrices
+     * * decomposing the "startValue" and "endValue" matrices into their respective scale, rotation and translation matrices
      * * interpolating for "gradient" (float) the values between each of these decomposed matrices between the start and the end
      * * recomposing a new matrix from these 3 interpolated scale, rotation and translation matrices
      * Example Playground - https://playground.babylonjs.com/#AV9X17#22
@@ -6771,7 +6771,7 @@ export class Matrix {
 
     /**
      * Update a matrix to values which are computed by:
-     * * decomposing the the "startValue" and "endValue" matrices into their respective scale, rotation and translation matrices
+     * * decomposing the "startValue" and "endValue" matrices into their respective scale, rotation and translation matrices
      * * interpolating for "gradient" (float) the values between each of these decomposed matrices between the start and the end
      * * recomposing a new matrix from these 3 interpolated scale, rotation and translation matrices
      * Example Playground - https://playground.babylonjs.com/#AV9X17#23

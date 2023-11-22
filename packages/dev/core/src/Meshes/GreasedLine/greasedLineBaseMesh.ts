@@ -235,7 +235,7 @@ export abstract class GreasedLineBaseMesh extends Mesh {
     }
 
     /**
-     * Return the the points offsets
+     * Return the points offsets
      */
     get offsets() {
         return this._offsets;
