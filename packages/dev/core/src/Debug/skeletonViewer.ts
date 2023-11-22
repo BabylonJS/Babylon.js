@@ -20,7 +20,7 @@ import type { Observer } from "../Misc/observable";
 
 import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 import { ExtrudeShapeCustom } from "../Meshes/Builders/shapeBuilder";
-import { TransformNode } from "core/Meshes";
+import { TransformNode } from "../Meshes";
 
 /**
  * Class used to render a debug view of a given skeleton
