@@ -277,13 +277,11 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
 
         // Position arrow pointing in its drag axis
         arrowMesh.scaling.scaleInPlace(0.1);
-        arrowMesh.material = this._coloredMaterial;
-        arrowMesh.rotation.x = Math.PI / 2;
-        arrowMesh.position.z += 0.3;
+        arrowTail.material = arrowMesh.material = this._coloredMaterial;
+        arrowTail.rotation.x = arrowMesh.rotation.x = Math.PI / 2;
 
-        arrowTail.material = this._coloredMaterial;
-        arrowTail.position.z += 0.275 / 2;
-        arrowTail.rotation.x = Math.PI / 2;
+        arrowMesh.position.z += 0.3;
+        arrowTail.position.z += 0.1375;
 
         if (isCollider) {
             arrowMesh.visibility = 0;
