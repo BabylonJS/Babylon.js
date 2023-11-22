@@ -28,7 +28,7 @@ export interface IAxisScaleGizmo extends IGizmo {
     snapDistance: number;
     /**
      * Event that fires each time the gizmo snaps to a new location.
-     * * snapDistance is the the change in distance
+     * * snapDistance is the change in distance
      */
     onSnapObservable: Observable<{ snapDistance: number }>;
     /** If the scaling operation should be done on all axis */
@@ -63,7 +63,7 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
     public snapDistance = 0;
     /**
      * Event that fires each time the gizmo snaps to a new location.
-     * * snapDistance is the the change in distance
+     * * snapDistance is the change in distance
      */
     public onSnapObservable = new Observable<{ snapDistance: number }>();
     /**

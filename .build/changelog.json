@@ -7230,7 +7230,7 @@
             {
                 "pr": "14065",
                 "title": "FreeCameraMouseInput: Reset Active pointerId when detaching controls",
-                "description": "A user in the forum found an issue where the camera controls stopped working after an animation started.  It was determined the issue was caused by the controls being detached before the `pointerup` event was handled.  A line was added to make sure the the tracked active pointerid was being reset when the controls were no longer active so that input could begin to be received again.\r\n\r\nA test has also been added to check for this scenario\r\n\r\nForum Link: https://forum.babylonjs.com/t/mesh-actionmanager-camera-control-bug/42292",
+                "description": "A user in the forum found an issue where the camera controls stopped working after an animation started.  It was determined the issue was caused by the controls being detached before the `pointerup` event was handled.  A line was added to make sure the tracked active pointerid was being reset when the controls were no longer active so that input could begin to be received again.\r\n\r\nA test has also been added to check for this scenario\r\n\r\nForum Link: https://forum.babylonjs.com/t/mesh-actionmanager-camera-control-bug/42292",
                 "author": {
                     "name": "PolygonalSun",
                     "url": "https://github.com/PolygonalSun"
@@ -14808,7 +14808,7 @@
             {
                 "pr": "13514",
                 "title": "VideoTexture - Fix texture refresh bug",
-                "description": "My last PR: #13513 introduced logic to refresh the the VideoTexture's internal texture when the underlying video changed sizes.\r\n\r\nI missed an edge case where the resize event can occur on the same frame that the texture was already updated from. When that happens the new texture was not getting hooked up to the video feed because of a no-op condition that avoids updating the texture twice in one frame. This change ensures that when swapping out the internal texture it also gets re-registered with the video feed.",
+                "description": "My last PR: #13513 introduced logic to refresh the VideoTexture's internal texture when the underlying video changed sizes.\r\n\r\nI missed an edge case where the resize event can occur on the same frame that the texture was already updated from. When that happens the new texture was not getting hooked up to the video feed because of a no-op condition that avoids updating the texture twice in one frame. This change ensures that when swapping out the internal texture it also gets re-registered with the video feed.",
                 "author": {
                     "name": "CoPrez",
                     "url": "https://github.com/CoPrez"

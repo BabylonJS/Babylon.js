@@ -204,7 +204,7 @@ export class GroundMesh extends Mesh {
         return this;
     }
 
-    // Compute each quad element values and update the the heightMap array :
+    // Compute each quad element values and update the heightMap array :
     // slope : Vector2(c, h) = 2D diagonal line equation setting apart two triangular facets in a quad : z = cx + h
     // facet1 : Vector4(a, b, c, d) = first facet 3D plane equation : ax + by + cz + d = 0
     // facet2 :  Vector4(a, b, c, d) = second facet 3D plane equation : ax + by + cz + d = 0

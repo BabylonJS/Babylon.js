@@ -822,7 +822,7 @@ export class Camera extends Node {
             return this._worldMatrix;
         }
 
-        // Getting the the view matrix will also compute the world matrix.
+        // Getting the view matrix will also compute the world matrix.
         this.getViewMatrix();
 
         return this._worldMatrix;
