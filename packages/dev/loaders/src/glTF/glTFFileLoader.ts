@@ -48,11 +48,11 @@ function readAsync(arrayBuffer: ArrayBuffer, byteOffset: number, byteLength: num
 
 function readViewAsync(arrayBufferView: ArrayBufferView, byteOffset: number, byteLength: number): Promise<Uint8Array> {
     try {
-        if ((arrayBufferView as Uint8Array).byteOffset + byteLength > arrayBufferView.byteLength) {
+        if (arrayBufferView.byteOffset + byteOffset + byteLength > arrayBufferView.buffer.byteLength) {
             throw new Error("Array length out of bounds.");
         }
-
-        return Promise.resolve(new Uint8Array(arrayBufferView.buffer, (arrayBufferView as Uint8Array).byteOffset + byteOffset, byteLength));
+        
+        return Promise.resolve(new Uint8Array(arrayBufferView.buffer, arrayBufferView.byteOffset + byteOffset, byteLength));
     } catch (e) {
         return Promise.reject(e);
     }
