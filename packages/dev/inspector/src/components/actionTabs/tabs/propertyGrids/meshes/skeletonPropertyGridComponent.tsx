@@ -15,6 +15,7 @@ import { CustomPropertyGridComponent } from "../customPropertyGridComponent";
 import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
+import {AbstractMesh} from "core/Meshes";
 
 interface ISkeletonPropertyGridComponentProps {
     globalState: GlobalState;
@@ -82,7 +83,9 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
             }
         } else {
             for (let index = 0; index < this._skeletonViewers.length; index++) {
-                this._skeletonViewers[index].mesh.reservedDataStore.skeletonViewer = null;
+                if (this._skeletonViewers[index].mesh) {
+                    ((this._skeletonViewers[index].mesh) as AbstractMesh).reservedDataStore.skeletonViewer = null;
+                }
                 this._skeletonViewers[index].dispose();
             }
             this._skeletonViewers = [];
