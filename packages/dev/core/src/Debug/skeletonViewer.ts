@@ -592,6 +592,9 @@ export class SkeletonViewer {
             points[1].subtractInPlace(meshPos);
             boneNum++;
         }
+        if (!mesh) {
+            transformNode.dispose();
+        }
     }
 
     /**
