@@ -1,5 +1,5 @@
 {
-    "fromTag": "6.29.2",
+    "fromTag": "6.30.0",
     "changelog": {
         "6.30.0": [
             {
@@ -16,6 +16,281 @@
                 "tags": [
                     "skip changelog"
                 ]
+            }
+        ],
+        "6.31.0": [
+            {
+                "pr": "14540",
+                "title": "glTF loader: Fix checking bounds when creating a typed array",
+                "description": "See https://forum.babylonjs.com/t/gltffileloader-array-length-out-of-bounds/45849",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/glTFFileLoader.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "glTF"
+                ]
+            },
+            {
+                "pr": "14539",
+                "title": "docs: s/the the/the",
+                "description": "### What\r\n\r\n- remove double \"the\" in comments :detective:\r\n\r\n### Why\r\n\r\n- comments without typos are easier to read :innocent: ",
+                "author": {
+                    "name": "PhilippeMorier",
+                    "url": "https://github.com/PhilippeMorier"
+                },
+                "files": [
+                    ".build/changelog.json",
+                    "packages/dev/core/src/Cameras/camera.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Gizmos/axisScaleGizmo.ts",
+                    "packages/dev/core/src/Materials/Textures/Procedurals/proceduralTexture.ts",
+                    "packages/dev/core/src/Materials/imageProcessingConfiguration.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineBaseMesh.ts",
+                    "packages/dev/core/src/Meshes/groundMesh.ts",
+                    "packages/dev/core/src/Physics/physicsHelper.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/bloomEffect.ts",
+                    "packages/dev/core/src/PostProcesses/postProcess.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/harmonicsFunctions.fx",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/viewer/src/initializer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14537",
+                "title": "Update skeletonViewer.ts",
+                "description": "Skip mesh operations when they are not required.\r\n\r\nThis is the first step to render skeletons without a mesh.",
+                "author": {
+                    "name": "yuripourre",
+                    "url": "https://github.com/yuripourre"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/skeletonViewer.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14536",
+                "title": "OIT: Add a isReady method to the depth peeling renderer",
+                "description": "See https://forum.babylonjs.com/t/screenshots-while-using-oit-seems-broken/45767/4\r\n\r\nNote: this PR also adds names to some textures, to help debugging",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Materials/Textures/multiRenderTarget.ts",
+                    "packages/dev/core/src/Rendering/depthPeelingRenderer.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14535",
+                "title": "Multi canvas rendering: Allow multiple cameras when registering a view",
+                "description": "See https://forum.babylonjs.com/t/multi-canvas-picture-in-picture/45808/6",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.views.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14534",
+                "title": "feat(gizmo): set custom rotation color",
+                "description": "### What\r\n\r\n- adds setter to allow changing color of the drag angle sector drawn by the rotation shader  \r\n  <img src=\"https://github.com/BabylonJS/Babylon.js/assets/12933406/059a53a1-aceb-41a7-aed5-2962fba9b369\" height=\"40\">\r\n- relates to https://github.com/BabylonJS/Babylon.js/pull/14525\r\n\r\n### Why\r\n\r\n- to allow changing the color after the gizmo is created\r\n- to allow having different color for mesh (torus) and drag angle sector\r\n\r\n### Visuals\r\n\r\n|Before [PG](https://playground.babylonjs.com/#VJ0MJD#1)|After [PG](https://babylonsnapshots.z22.web.core.windows.net/refs/pull/14534/merge/index.html#VJ0MJD#1) (blue & yellow)|\r\n|-|-|\r\n|![babylonjs-gizmo-before](https://github.com/BabylonJS/Babylon.js/assets/12933406/00b727a4-19e8-4bb2-aaa2-5896120333ee)|![babylonjs-gizmo-after](https://github.com/BabylonJS/Babylon.js/assets/12933406/2b80ad0f-1e33-4f98-8f79-a1177f09603e)|\r\n\r\n",
+                "author": {
+                    "name": "PhilippeMorier",
+                    "url": "https://github.com/PhilippeMorier"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/axisDragGizmo.ts",
+                    "packages/dev/core/src/Gizmos/planeDragGizmo.ts",
+                    "packages/dev/core/src/Gizmos/planeRotationGizmo.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14532",
+                "title": "Usability Fix",
+                "description": "https://forum.babylonjs.com/t/matrix-lookatlhtoref-not-returning/45754",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14533",
+                "title": "Fix inputTextArea isReadOnly",
+                "description": "https://forum.babylonjs.com/t/inputtextarea-isreadonly-how-to/45818",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/inputTextArea.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "14526",
+                "title": "Add HDR Filtering to webxr light estimation",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRLightEstimation.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14531",
+                "title": "refactor: optimize getForwardRayToRef",
+                "description": "optimize getForwardRayToRef",
+                "author": {
+                    "name": "GuoBinyong",
+                    "url": "https://github.com/GuoBinyong"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/ray.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14525",
+                "title": "feat(gizmo): custom colors for gizmos",
+                "description": "### What\r\n\r\n- support setting custom colors for hover & disable material for\r\n  - plane-drag gizmo\r\n  - plane-rotation gizmo\r\n- related https://forum.babylonjs.com/t/setts-of-gizmo-color-when-events/22271\r\n\r\n### Why\r\n\r\n- to avoid setting it via accessing \"private\" members\r\n- to avoid white reflection color on manually set hover material  \r\n  ![image](https://github.com/BabylonJS/Babylon.js/assets/12933406/2949f297-5ec8-4ded-9ff4-7c1dcfde4465)\r\n\r\n### Visuals\r\n\r\n|Before [PG](https://playground.babylonjs.com/#VJ0MJD)|After|\r\n|-|-|\r\n|![babylonjs-gizmo-before](https://github.com/BabylonJS/Babylon.js/assets/12933406/18c46247-3da2-4830-9d1f-5d2ea12c5211)|![babylonjs-gizmo-after](https://github.com/BabylonJS/Babylon.js/assets/12933406/46331989-716f-4b15-b2eb-3723a8075bf0)|\r\n\r\n",
+                "author": {
+                    "name": "PhilippeMorier",
+                    "url": "https://github.com/PhilippeMorier"
+                },
+                "files": [
+                    "contributing.md",
+                    "packages/dev/core/src/Gizmos/axisDragGizmo.ts",
+                    "packages/dev/core/src/Gizmos/planeDragGizmo.ts",
+                    "packages/dev/core/src/Gizmos/planeRotationGizmo.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14530",
+                "title": "fix: correct two misspellings",
+                "description": null,
+                "author": {
+                    "name": "wy-luke",
+                    "url": "https://github.com/wy-luke"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/textBlock.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14527",
+                "title": "Raw camera access feature",
+                "description": "This new feature implemented according to the specs in https://github.com/immersive-web/raw-camera-access/blob/main/explainer.md\n\nPlayground demo (once merged on using the snapshot) : #UV8FAB#2\n\nA new feature was added - features now have an observable that will trigger when the feature attach or detach.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/webxr.d.ts",
+                    "packages/dev/core/src/XR/features/WebXRAbstractFeature.ts",
+                    "packages/dev/core/src/XR/features/WebXRRawCameraAccess.ts",
+                    "packages/dev/core/src/XR/features/index.ts",
+                    "packages/dev/core/src/XR/webXRFeaturesManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14529",
+                "title": "Fix teleport node target",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Teleport/teleportInBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14528",
+                "title": "DepthRenderer: Support point rendering",
+                "description": "Example PG: https://playground.babylonjs.com/#UTHA7W#35\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/depthRenderer.ts",
+                    "packages/dev/core/src/Shaders/depth.vertex.fx"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14523",
+                "title": "Optimize duplicate member visits",
+                "description": "This is a small optimization that includes the following areas\r\n- scene\r\n- LinesBuilder",
+                "author": {
+                    "name": "GuoBinyong",
+                    "url": "https://github.com/GuoBinyong"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/linesBuilder.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14524",
+                "title": "refactor: Optimized createPickingRay",
+                "description": "Optimize the performance of Ray's following methods：\r\n- createPickingRayToRef\r\n- createPickingRayInCameraSpaceToRef",
+                "author": {
+                    "name": "GuoBinyong",
+                    "url": "https://github.com/GuoBinyong"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/ray.ts"
+                ],
+                "tags": []
             }
         ],
         "6.29.2": [
