@@ -19,7 +19,7 @@ export interface IWebXRRawCameraAccessOptions {
 
 /**
  * WebXR Feature for WebXR raw camera access
- * @since
+ * @since 6.31.0
  * @see https://immersive-web.github.io/raw-camera-access/
  */
 export class WebXRRawCameraAccess extends WebXRAbstractFeature {
