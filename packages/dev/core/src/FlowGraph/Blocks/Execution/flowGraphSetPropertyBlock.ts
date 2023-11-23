@@ -4,6 +4,7 @@ import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
+import type { FlowGraphPath } from "../../flowGraphPath";
 
 /**
  * @experimental
@@ -14,17 +15,7 @@ export interface IFlowGraphSetPropertyBlockConfiguration extends IFlowGraphBlock
      * The path of the entity whose property will be set. Needs a corresponding
      * entity on the context variables.
      */
-    path: string;
-    /**
-     * The property to set on the target object.
-     */
-    property: string;
-    /**
-     * A string that will be substituted by a node with the same name, if encountered enclosed by \{\}.
-     * It will create an input data node which expects a number. The value of the node will be used
-     * to substitute the string.
-     */
-    subString: string;
+    path: FlowGraphPath;
 }
 
 /**
@@ -36,37 +27,28 @@ export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphWithOnDoneExecut
      * Input connection: The value to set on the property.
      */
     public readonly a: FlowGraphDataConnection<ValueT>;
+    /**
+     * Input connection: The template strings to substitute in the path.
+     */
+    public readonly templateStringInputs: FlowGraphDataConnection<number>[] = [];
 
     public constructor(public config: IFlowGraphSetPropertyBlockConfiguration) {
         super(config);
 
-        this.a = this._registerDataInput("a", RichTypeAny);
-        if (config.subString) {
-            this._registerDataInput(config.subString, RichTypeNumber);
+        this.a = this._registerDataInput("value", RichTypeAny);
+        for (const templateString of config.path.getTemplateStrings()) {
+            this.templateStringInputs.push(this._registerDataInput(templateString, RichTypeNumber));
         }
-    }
-
-    private _setProperty(target: any, propertyPath: string, value: any): void {
-        const splitProp = propertyPath.split(".");
-
-        let currentTarget = target;
-        for (let i = 0; i < splitProp.length - 1; i++) {
-            currentTarget = currentTarget[splitProp[i]];
-        }
-
-        currentTarget[splitProp[splitProp.length - 1]] = value;
     }
 
     public _execute(context: FlowGraphContext): void {
-        const target = context._getTargetFromPath(this.config.path, this.config.subString, this);
-        const property = this.config.property;
-        const value = this.a.getValue(context);
-
-        if (target && property) {
-            this._setProperty(target, property, value);
-        } else {
-            throw new Error("Invalid target or property");
+        for (const templateStringInput of this.templateStringInputs) {
+            const templateStringValue = templateStringInput.getValue(context);
+            const templateString = templateStringInput.name;
+            this.config.path.setTemplateSubstitution(templateString, templateStringValue);
         }
+        const value = this.a.getValue(context);
+        this.config.path.setProperty(context, value);
 
         this.out._activateSignal(context);
     }

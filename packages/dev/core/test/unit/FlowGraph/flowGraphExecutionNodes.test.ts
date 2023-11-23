@@ -9,6 +9,7 @@ import {
     FlowGraphForLoopBlock,
     FlowGraphLogBlock,
     FlowGraphMultiGateBlock,
+    FlowGraphPath,
     FlowGraphSceneReadyEventBlock,
     FlowGraphSceneTickEventBlock,
     FlowGraphSetPropertyBlock,
@@ -257,17 +258,22 @@ describe("Flow Graph Execution Nodes", () => {
         const sceneReady = new FlowGraphSceneReadyEventBlock();
         flowGraph.addEventBlock(sceneReady);
 
+        flowGraphContext._userVariables = {
+            0: mesh0,
+            1: mesh1,
+        };
+        const path = new FlowGraphPath("/{nodeIndex}/position");
+
         const setProperty = new FlowGraphSetPropertyBlock<Vector3>({
-            path: "myMesh{nodeIndex}",
-            property: "position",
-            subString: "nodeIndex",
+            path,
         });
         sceneReady.done.connectTo(setProperty.in);
-        setProperty.getDataInput("nodeIndex")!.setValue(1, flowGraphContext);
-        setProperty.a.setValue(new Vector3(1, 2, 3), flowGraphContext);
 
-        flowGraphContext.setVariable("myMesh0", mesh0);
-        flowGraphContext.setVariable("myMesh1", mesh1);
+        const nodeIndexInput = setProperty.getDataInput("nodeIndex");
+        expect(nodeIndexInput).toBeDefined();
+
+        nodeIndexInput!.setValue(1, flowGraphContext);
+        setProperty.a.setValue(new Vector3(1, 2, 3), flowGraphContext);
 
         flowGraph.start();
 
