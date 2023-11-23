@@ -12,10 +12,12 @@ export class FlowGraphPath {
     private templateSubstitutions: {
         [key: string]: number;
     } = {}; // this is a map of template strings to values that are substituted during runtime
+    public hasTemplateStrings: boolean = false;
 
     constructor(path: string) {
         this.path = path;
         const templateStrings = this._getTemplateStringsInPath(path);
+        this.hasTemplateStrings = templateStrings.length > 0;
         for (const templateString of templateStrings) {
             this.templateSubstitutions[templateString] = -1;
         }

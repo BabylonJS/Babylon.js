@@ -1,24 +1,30 @@
 import type { FlowGraphContext } from "../../../flowGraphContext";
-import type { Animatable, Animation, IAnimatable } from "../../../../Animations";
+import type { Animatable, Animation } from "../../../../Animations";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import { FlowGraphAsyncExecutionBlock } from "../../../flowGraphAsyncExecutionBlock";
 import { RichTypeAny, RichTypeNumber, RichTypeBoolean } from "../../../flowGraphRichTypes";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import type { FlowGraphPath } from "../../../flowGraphPath";
+
+export interface IFlowGraphPlayAnimationBlockConfiguration extends IFlowGraphBlockConfiguration {
+    targetPath: FlowGraphPath;
+    animationPath: FlowGraphPath;
+}
 /**
  * @experimental
  * A block that plays an animation on an animatable object.
  */
 export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     /**
-     * Input connection: The target to play the animation on.
+     * Input connection: The possible template strings to substitute for in the target path
      */
-    public readonly target: FlowGraphDataConnection<IAnimatable>;
+    public readonly templateStringTargetInputs: FlowGraphDataConnection<number>[] = [];
     /**
-     * Input connection: The animation to play.
+     * Input connection: The possible template strings to substitute for in the animation path
      */
-    public readonly animation: FlowGraphDataConnection<Animation>;
+    public readonly templateStringAnimationInputs: FlowGraphDataConnection<number>[] = [];
     /**
      * Input connection: The speed of the animation.
      */
@@ -46,11 +52,16 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      */
     public readonly runningAnimatable: FlowGraphDataConnection<Animatable>;
 
-    public constructor(config?: IFlowGraphBlockConfiguration) {
+    public constructor(public config: IFlowGraphPlayAnimationBlockConfiguration) {
         super(config);
 
-        this.target = this._registerDataInput("target", RichTypeAny);
-        this.animation = this._registerDataInput("animation", RichTypeAny);
+        for (const templateString of config.targetPath.getTemplateStrings()) {
+            this.templateStringTargetInputs.push(this._registerDataInput(templateString, RichTypeNumber));
+        }
+        for (const templateString of config.animationPath.getTemplateStrings()) {
+            this.templateStringAnimationInputs.push(this._registerDataInput(templateString, RichTypeNumber));
+        }
+
         this.speed = this._registerDataInput("speed", RichTypeNumber);
         this.loop = this._registerDataInput("loop", RichTypeBoolean);
         this.from = this._registerDataInput("from", RichTypeNumber);
@@ -65,8 +76,18 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      * @param context
      */
     public _preparePendingTasks(context: FlowGraphContext): void {
-        const targetValue = this.target.getValue(context);
-        const animationValue = this.animation.getValue(context) as Animation;
+        for (const templateStringInput of this.templateStringTargetInputs) {
+            const templateStringValue = templateStringInput.getValue(context);
+            const templateString = templateStringInput.name;
+            this.config.targetPath.setTemplateSubstitution(templateString, templateStringValue);
+        }
+        const targetValue = this.config.targetPath.getProperty(context);
+        for (const templateStringInput of this.templateStringAnimationInputs) {
+            const templateStringValue = templateStringInput.getValue(context);
+            const templateString = templateStringInput.name;
+            this.config.targetPath.setTemplateSubstitution(templateString, templateStringValue);
+        }
+        const animationValue = this.config.animationPath.getProperty(context) as Animation;
 
         if (!targetValue || !animationValue) {
             throw new Error("Cannot play animation without target or animation");
