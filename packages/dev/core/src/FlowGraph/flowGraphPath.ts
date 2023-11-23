@@ -5,7 +5,6 @@ const SEPARATORS = /\/|\./;
  * This class represents a path of type /x/{y}/z/.../w that is evaluated
  * on a target object. The string between curly braces ({y} in the example)
  * is a special template string that is replaced during runtime.
- * Possible issue: serializing this structure? it would have to serialize the target too
  */
 export class FlowGraphPath {
     private path: string;
@@ -19,6 +18,8 @@ export class FlowGraphPath {
         const templateStrings = this._getTemplateStringsInPath(path);
         this.hasTemplateStrings = templateStrings.length > 0;
         for (const templateString of templateStrings) {
+            // Part of the path enclosed in curly braces = template string, we'll set a default
+            // value on the template substitutions for now
             this.templateSubstitutions[templateString] = -1;
         }
     }
@@ -27,12 +28,10 @@ export class FlowGraphPath {
         return Object.keys(this.templateSubstitutions);
     }
 
-    _getTemplateStringsInPath(path: string): string[] {
+    private _getTemplateStringsInPath(path: string): string[] {
         const splitPath = path.split(SEPARATORS).filter((part) => part !== "");
         const templateStrings: string[] = [];
         for (const partPath of splitPath) {
-            // Part of the path enclosed in curly braces = template string, we'll set a default
-            // value on the template substitutions for now
             if (partPath.startsWith("{") && partPath.endsWith("}")) {
                 templateStrings.push(partPath.slice(1, partPath.length - 1));
             }
@@ -44,8 +43,8 @@ export class FlowGraphPath {
         this.templateSubstitutions[template] = value;
     }
 
-    _evaluateTemplates(): string {
-        let finalPath = this.path.slice(0); // copy the path so we don't replace on it?
+    private _evaluateTemplates(): string {
+        let finalPath = this.path.slice(0); // copy the path so we don't replace on it.
         for (const template in this.templateSubstitutions) {
             if (this.templateSubstitutions[template] === -1) {
                 throw new Error(`Template string ${template} has no value`);
@@ -55,7 +54,7 @@ export class FlowGraphPath {
         return finalPath;
     }
 
-    _evaluatePath(context: FlowGraphContext, setValue = false, value?: any): any {
+    private _evaluatePath(context: FlowGraphContext, setValue = false, value?: any): any {
         const finalPath = this._evaluateTemplates();
         const splitPath = finalPath.split(SEPARATORS).filter((part) => part !== "");
         let currentTarget = context._userVariables;
@@ -80,11 +79,4 @@ export class FlowGraphPath {
     setProperty(context: FlowGraphContext, value: any) {
         this._evaluatePath(context, true, value);
     }
-
-    // TODO: implement this, define the necessary parameters, etc.
-    animateProperty(animationParams: {}) {}
-
-    // TODO: implement this
-    // for this to work, the path should refer to an animation object.
-    startAnimation() {}
 }

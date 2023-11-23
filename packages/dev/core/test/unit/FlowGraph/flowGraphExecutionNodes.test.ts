@@ -258,25 +258,22 @@ describe("Flow Graph Execution Nodes", () => {
         const sceneReady = new FlowGraphSceneReadyEventBlock();
         flowGraph.addEventBlock(sceneReady);
 
-        const path = new FlowGraphPath("/{nodeIndex}/position");
         flowGraphContext._userVariables = {
             0: mesh0,
             1: mesh1,
         };
+        const path = new FlowGraphPath("/{nodeIndex}/position");
 
         const setProperty = new FlowGraphSetPropertyBlock<Vector3>({
             path,
         });
         sceneReady.onDone.connectTo(setProperty.onStart);
 
-        const nodeIndexInput = setProperty.getDataInput("nodeIndex")!;
+        const nodeIndexInput = setProperty.getDataInput("nodeIndex");
         expect(nodeIndexInput).toBeDefined();
 
-        nodeIndexInput.setValue(1, flowGraphContext);
+        nodeIndexInput!.setValue(1, flowGraphContext);
         setProperty.value.setValue(new Vector3(1, 2, 3), flowGraphContext);
-
-        flowGraphContext.setVariable("myMesh0", mesh0);
-        flowGraphContext.setVariable("myMesh1", mesh1);
 
         flowGraph.start();
 
