@@ -18,22 +18,27 @@ describe("Flow Graph Utilities Test", () => {
     it("Flow Graph Valid Path", () => {
         context._userVariables = {
             x: {
-                k: {
+                1: {
                     z: 1,
                 },
             },
         };
 
-        const path = new FlowGraphPath();
-        path.path = "/x/{y}/z";
+        const path = new FlowGraphPath("/x/{y}/z");
 
-        path.addTemplateSubstitution("y", "k");
+        // We haven't specified what we want to substitute for y, so we can't evaluate the path
+        expect(() => path.getProperty(context)).toThrow();
+
+        path.setTemplateSubstitution("y", 1);
 
         expect(path.getProperty(context)).toBe(1);
 
         path.setProperty(context, 2);
-        expect(context._userVariables.x.k.z).toBe(2);
+        expect(context._userVariables.x[1].z).toBe(2);
         expect(path.getProperty(context)).toBe(2);
+
+        const path2 = new FlowGraphPath("/x/1.z"); // the path can also be separated by dots
+        expect(path2.getProperty(context)).toBe(2);
     });
 
     it("Flow Graph Invalid Path", () => {
@@ -45,8 +50,7 @@ describe("Flow Graph Utilities Test", () => {
             },
         };
 
-        const path = new FlowGraphPath();
-        path.path = "/a/b/c";
+        const path = new FlowGraphPath("/a/b/c");
 
         expect(() => path.getProperty(context)).toThrow();
     });

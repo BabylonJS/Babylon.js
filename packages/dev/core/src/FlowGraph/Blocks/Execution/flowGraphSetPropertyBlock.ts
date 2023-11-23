@@ -27,13 +27,16 @@ export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphWithOnDoneExecut
      * Input connection: The value to set on the property.
      */
     public readonly value: FlowGraphDataConnection<ValueT>;
+    /**
+     * Input connection: The template strings to substitute in the path.
+     */
     public readonly templateStringInputs: FlowGraphDataConnection<number>[] = [];
 
     public constructor(public config: IFlowGraphSetPropertyBlockConfiguration) {
         super(config);
 
         this.value = this._registerDataInput("value", RichTypeAny);
-        for (const templateString in config.path.templateSubstitutions) {
+        for (const templateString of config.path.getTemplateStrings()) {
             this.templateStringInputs.push(this._registerDataInput(templateString, RichTypeNumber));
         }
     }
@@ -42,7 +45,7 @@ export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphWithOnDoneExecut
         for (const templateStringInput of this.templateStringInputs) {
             const templateStringValue = templateStringInput.getValue(context);
             const templateString = templateStringInput.name;
-            this.config.path.addTemplateSubstitution(templateString, templateStringValue);
+            this.config.path.setTemplateSubstitution(templateString, templateStringValue);
         }
         const value = this.value.getValue(context);
         this.config.path.setProperty(context, value);
