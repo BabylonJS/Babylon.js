@@ -77,7 +77,7 @@ export class LayerPropertyGridComponent extends React.Component<ILayerPropertyGr
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
                             <CheckBoxLineComponent
-                                label="Outter Glow"
+                                label="Outer Glow"
                                 target={layer}
                                 propertyName="outerGlow"
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
