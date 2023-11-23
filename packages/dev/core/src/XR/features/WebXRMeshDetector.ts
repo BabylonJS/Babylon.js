@@ -36,6 +36,7 @@ export interface IWebXRMeshDetectorOptions {
      * If set to true, the feature will generate meshes for the detected data.
      * Note that this might be time consuming, as the mesh's vertex data will be updated on every change.
      * Setting this to true will also set convertCoordinateSystems to true.
+     * Note - the meshes will NOT be disposed automatically when the feature is detached or the session ended.
      */
     generateMeshes?: boolean;
 }
