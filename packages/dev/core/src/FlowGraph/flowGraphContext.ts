@@ -37,9 +37,10 @@ export class FlowGraphContext {
     @serialize()
     public uniqueId = RandomGUID();
     /**
+     * @internal
      * These are the variables defined by a user.
      */
-    private _userVariables: Map<string, any> = new Map();
+    public _userVariables: { [key: string]: any } = {};
     /**
      * These are the variables set by the blocks.
      */
@@ -76,7 +77,7 @@ export class FlowGraphContext {
      * @returns
      */
     public hasVariable(name: string) {
-        return this._userVariables.has(name);
+        return name in this._userVariables;
     }
 
     /**
@@ -85,7 +86,7 @@ export class FlowGraphContext {
      * @param value
      */
     public setVariable(name: string, value: any) {
-        this._userVariables.set(name, value);
+        this._userVariables[name] = value;
     }
 
     /**
@@ -94,7 +95,7 @@ export class FlowGraphContext {
      * @returns
      */
     public getVariable(name: string): any {
-        return this._userVariables.get(name);
+        return this._userVariables[name];
     }
 
     private _getUniqueIdPrefixedName(obj: FlowGraphBlock, name: string): string {
@@ -241,27 +242,6 @@ export class FlowGraphContext {
         return this._executionId;
     }
 
-    private _getEnclosedSubstring(subString: string): string {
-        return `{${subString}}`;
-    }
-
-    /** @internal */
-    public _getTargetFromPath(path: string, subString: string, block: FlowGraphBlock) {
-        let finalPath = path;
-        if (subString && path.indexOf(this._getEnclosedSubstring(subString)) !== -1) {
-            const nodeToSub = block.getDataInput(subString);
-            if (!nodeToSub) {
-                throw new Error(`Invalid substitution input for substitution string ${subString}`);
-            }
-            const index = Math.floor(nodeToSub.getValue(this));
-            if (isNaN(index)) {
-                throw new Error(`Invalid substitution value for substitution string ${subString}`);
-            }
-            finalPath = path.replace(this._getEnclosedSubstring(subString), index.toString());
-        }
-        return this.getVariable(finalPath);
-    }
-
     /**
      * Serializes a context
      * @param serializationObject the object to write the values in
@@ -270,9 +250,9 @@ export class FlowGraphContext {
     public serialize(serializationObject: any = {}, valueSerializationFunction: (key: string, value: any, serializationObject: any) => void = defaultValueSerializationFunction) {
         serializationObject.uniqueId = this.uniqueId;
         serializationObject._userVariables = {};
-        this._userVariables.forEach((value, key) => {
-            valueSerializationFunction(key, value, serializationObject._userVariables);
-        });
+        for (const key in this._userVariables) {
+            valueSerializationFunction(key, this._userVariables[key], serializationObject._userVariables);
+        }
         serializationObject._connectionValues = {};
         this._connectionValues.forEach((value, key) => {
             valueSerializationFunction(key, value, serializationObject._connectionValues);

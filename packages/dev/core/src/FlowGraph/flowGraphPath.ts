@@ -1,3 +1,5 @@
+import type { FlowGraphContext } from "./flowGraphContext";
+
 /*
  * This class represents a path of type /x/{y}/z/.../w that is evaluated
  * on a target object. The string between curly braces ({y} in the example)
@@ -6,8 +8,6 @@
  */
 export class FlowGraphPath {
     path: string;
-    // todo: use context instead!
-    target: any; // target should be an object where the path is evaluated
     separator: string = "/"; // the separator between path parts
     templateSubstitutions: {
         [key: string]: any;
@@ -27,13 +27,13 @@ export class FlowGraphPath {
         return finalPath;
     }
 
-    _evaluatePath(setValue = false, value?: any): any {
+    _evaluatePath(context: FlowGraphContext, setValue = false, value?: any): any {
         const finalPath = this._evaluateTemplates();
         const splitPath = finalPath.split(this.separator).filter((part) => part !== "");
-        let currentTarget = this.target;
+        let currentTarget = context._userVariables;
         for (let i = 0; i < (setValue ? splitPath.length - 1 : splitPath.length); i++) {
             if (currentTarget === undefined) {
-                throw new Error(`Could not find path ${finalPath} in target object`);
+                throw new Error(`Could not find path ${finalPath} in target context`);
             }
             const pathPart = splitPath[i];
             currentTarget = currentTarget[pathPart];
@@ -45,12 +45,12 @@ export class FlowGraphPath {
         return currentTarget;
     }
 
-    getProperty(): any {
-        return this._evaluatePath();
+    getProperty(context: FlowGraphContext): any {
+        return this._evaluatePath(context);
     }
 
-    setProperty(value: any) {
-        this._evaluatePath(true, value);
+    setProperty(context: FlowGraphContext, value: any) {
+        this._evaluatePath(context, true, value);
     }
 
     animateProperty(animationParams: {}) {}

@@ -45,7 +45,7 @@ export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphWithOnDoneExecut
             this.config.path.addTemplateSubstitution(templateString, templateStringValue);
         }
         const value = this.value.getValue(context);
-        this.config.path.setProperty(value);
+        this.config.path.setProperty(context, value);
 
         this.onDone._activateSignal(context);
     }

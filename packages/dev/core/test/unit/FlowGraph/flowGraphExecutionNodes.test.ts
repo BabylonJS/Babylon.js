@@ -260,7 +260,7 @@ describe("Flow Graph Execution Nodes", () => {
 
         const path = new FlowGraphPath();
         path.path = "/{nodeIndex}/position";
-        path.target = {
+        flowGraphContext._userVariables = {
             0: mesh0,
             1: mesh1,
         };
