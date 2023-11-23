@@ -229,7 +229,7 @@ export class MRDLBackglowMaterial extends PushMaterial {
                 "_Bias_",
             ];
             const samplers: string[] = [];
-            const uniformBuffers = new Array<string>();
+            const uniformBuffers: string[] = [];
 
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,

@@ -56,8 +56,8 @@ export class WebGPUCacheRenderPipelineTree extends WebGPUCacheRenderPipeline {
         return pipelines;
     }
 
-    constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer, useTextureStage: boolean) {
-        super(device, emptyVertexBuffer, useTextureStage);
+    constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer) {
+        super(device, emptyVertexBuffer);
         this._nodeStack = [];
         this._nodeStack[0] = WebGPUCacheRenderPipelineTree._Cache;
     }

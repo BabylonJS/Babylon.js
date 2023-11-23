@@ -13,7 +13,7 @@ export interface KeyEntry {
 
 export class Curve {
     public static readonly SampleRate = 50;
-    public keys = new Array<KeyEntry>();
+    public keys: KeyEntry[] = [];
     public animation: Animation;
     public color: string;
     public onDataUpdatedObservable = new Observable<void>();

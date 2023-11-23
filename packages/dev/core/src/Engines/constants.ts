@@ -178,6 +178,8 @@ export class Constants {
     public static readonly TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8 = 18;
     /** Stencil 8 bits */
     public static readonly TEXTUREFORMAT_STENCIL8 = 19;
+    /** UNDEFINED */
+    public static readonly TEXTUREFORMAT_UNDEFINED = 0xffffffff;
 
     /** Compressed BC7 */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM = 36492;
@@ -781,7 +783,4 @@ export class Constants {
 
     /** URL to the snippet server. Points to the public snippet server by default */
     public static SnippetUrl = "https://snippet.babylonjs.com";
-
-    /** Standard time a frame should take at 60 fps (in ms) */
-    public static readonly STANDARD_TIME_STEP = 1000 / 60;
 }

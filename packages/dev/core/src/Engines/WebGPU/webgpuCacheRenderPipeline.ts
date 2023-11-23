@@ -156,9 +156,9 @@ export abstract class WebGPUCacheRenderPipeline {
         }
     }
 
-    constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer, useTextureStage: boolean) {
+    constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer) {
         this._device = device;
-        this._useTextureStage = useTextureStage;
+        this._useTextureStage = true; // we force usage because we must handle depth textures with "float" filtering, which can't be fixed by a caps (like "textureFloatLinearFiltering" can for float textures)
         this._states = new Array(30); // pre-allocate enough room so that no new allocation will take place afterwards
         this._statesLength = 0;
         this._stateDirtyLowestIndex = 0;
@@ -206,10 +206,8 @@ export abstract class WebGPUCacheRenderPipeline {
     public readonly mrtTextureCount: number = 0;
 
     public getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number, textureState = 0): GPURenderPipeline {
-        if (sampleCount > 1) {
-            // WebGPU only supports 1 or 4
-            sampleCount = 4;
-        }
+        sampleCount = WebGPUTextureHelper.GetSample(sampleCount);
+
         if (this.disabled) {
             const topology = WebGPUCacheRenderPipeline._GetTopology(fillMode);
 
@@ -902,7 +900,7 @@ export abstract class WebGPUCacheRenderPipeline {
                     let samplerType = samplerInfo?.type ?? WebGPUConstants.SamplerBindingType.Filtering;
 
                     if (this._textureState & bitVal && sampleType !== WebGPUConstants.TextureSampleType.Depth) {
-                        // The texture is a 32 bits float texture but the system does not support linear filtering for them:
+                        // The texture is a 32 bits float texture but the system does not support linear filtering for them OR the texture is a depth texture with "float" filtering:
                         // we set the sampler to "non-filtering" and the texture sample type to "unfilterable-float"
                         if (textureInfo.autoBindSampler) {
                             samplerType = WebGPUConstants.SamplerBindingType.NonFiltering;

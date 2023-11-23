@@ -40,10 +40,10 @@ export function CreateTorusKnotVertexData(options: {
     frontUVs?: Vector4;
     backUVs?: Vector4;
 }): VertexData {
-    const indices = new Array<number>();
-    const positions = new Array<number>();
-    const normals = new Array<number>();
-    const uvs = new Array<number>();
+    const indices: number[] = [];
+    const positions: number[] = [];
+    const normals: number[] = [];
+    const uvs: number[] = [];
 
     const radius = options.radius || 2;
     const tube = options.tube || 0.5;

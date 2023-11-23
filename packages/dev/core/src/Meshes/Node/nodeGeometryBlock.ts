@@ -279,6 +279,8 @@ export class NodeGeometryBlock {
             if (!this._outputs.some((o) => o.hasEndpoints) && !this.isDebug) {
                 return false;
             }
+
+            this.outputs.forEach((o) => o._resetCounters());
         }
 
         this._buildId = state.buildId;

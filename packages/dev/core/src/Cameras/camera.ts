@@ -24,7 +24,6 @@ import type { FreeCamera } from "./freeCamera";
 import type { TargetCamera } from "./targetCamera";
 import type { Ray } from "../Culling/ray";
 import type { ArcRotateCamera } from "./arcRotateCamera";
-import { PrecisionDate } from "core/Misc/precisionDate";
 
 /**
  * Oblique projection values
@@ -117,12 +116,6 @@ export class Camera extends Node {
      * Define the input manager associated with the camera.
      */
     public inputs: CameraInputsManager<Camera>;
-
-    /** @internal */
-    protected _lastUpdatedTime: number;
-
-    /** @internal */
-    protected _currentDeltaTime;
 
     /** @internal */
     @serializeAsVector3("position")
@@ -367,7 +360,7 @@ export class Camera extends Node {
      *
      * To change the final output target of the camera, camera.outputRenderTarget should be used instead (eg. webXR renders to a render target corresponding to an HMD)
      */
-    public customRenderTargets = new Array<RenderTargetTexture>();
+    public customRenderTargets: RenderTargetTexture[] = [];
     /**
      * When set, the camera will render to this render target instead of the default canvas
      *
@@ -450,8 +443,6 @@ export class Camera extends Node {
      */
     constructor(name: string, position: Vector3, scene?: Scene, setActiveOnSceneIfNoneActive = true) {
         super(name, scene);
-        this._lastUpdatedTime = PrecisionDate.Now;
-        this._currentDeltaTime = scene?.constantAnimationDeltaTime ?? Constants.STANDARD_TIME_STEP;
 
         this.getScene().addCamera(this);
 
@@ -705,11 +696,6 @@ export class Camera extends Node {
      * Update the camera state according to the different inputs gathered during the frame.
      */
     public update(): void {
-        // Update deltaTime
-        const currentTime = PrecisionDate.Now;
-        this._currentDeltaTime = this._scene.useConstantAnimationDeltaTime ? this._scene.constantAnimationDeltaTime : currentTime - this._lastUpdatedTime;
-        this._lastUpdatedTime = currentTime;
-
         this._checkInputs();
         if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
             this._updateRigCameras();
@@ -836,7 +822,7 @@ export class Camera extends Node {
             return this._worldMatrix;
         }
 
-        // Getting the the view matrix will also compute the world matrix.
+        // Getting the view matrix will also compute the world matrix.
         this.getViewMatrix();
 
         return this._worldMatrix;
@@ -1558,35 +1544,5 @@ export class Camera extends Node {
         }
 
         return handednessMultiplier;
-    }
-
-    /**
-     * This will return a value for inertia, with respect to time, rather than frame rate.
-     * @internal
-     */
-    public _getInertiaRelativeToTime(inertia: number = this.inertia): number {
-        return Math.pow(inertia, this._currentDeltaTime / Constants.STANDARD_TIME_STEP);
-    }
-
-    /**
-     * This provide a scaling factor to multiply against the offset so that all offsets will
-     * move with a consistent speed regardless of the frame rate.
-     *
-     * The math used here is effectively a simplified version of the sum of a geometric series
-     * for inertia^n from 0 to n, times inertia, divided by the relative inertia, where n is
-     * equal to the ratio of the current frame rate to the ideal frame rate (60 fps).
-     * The math was further simplified to just use each of the given inertia values for
-     * readability purposes.
-     * @internal
-     */
-    public _getRelativeScaleFactor(relativeInertia: number, inertia: number = this.inertia): number {
-        // If we're working with an extreme inertia value, just return 1.
-        if (inertia === 0 || relativeInertia === 0) {
-            return 1;
-        }
-
-        const num = inertia * (1 - relativeInertia);
-        const den = relativeInertia * (1 - inertia);
-        return num / den;
     }
 }

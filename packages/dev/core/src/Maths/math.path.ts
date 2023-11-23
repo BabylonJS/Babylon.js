@@ -1,6 +1,7 @@
 import type { DeepImmutable, Nullable } from "../types";
 import { Scalar } from "./math.scalar";
 import { Vector2, Vector3, Quaternion, Matrix } from "./math.vector";
+import type { Vector4 } from "./math.vector";
 import { Epsilon } from "./math.constants";
 
 /**
@@ -82,7 +83,7 @@ export class Angle {
     }
 
     /**
-     * Gets a new Angle object valued with the gradient angle, in radians, of the line joining two points
+     * Gets a new Angle object with a value of the angle (in radians) between the line connecting the two points and the x-axis
      * @param a defines first point as the origin
      * @param b defines point
      * @returns a new Angle
@@ -91,6 +92,22 @@ export class Angle {
         const delta = b.subtract(a);
         const theta = Math.atan2(delta.y, delta.x);
         return new Angle(theta);
+    }
+
+    /**
+     * Gets the angle between the two vectors
+     * @param a defines first vector
+     * @param b defines vector
+     * @returns Returns an new Angle between 0 and PI
+     */
+    public static BetweenTwoVectors<Vec extends Vector2 | Vector3 | Vector4>(a: DeepImmutable<Vec>, b: DeepImmutable<Vec>): Angle {
+        let product = a.lengthSquared() * b.lengthSquared();
+        if (product === 0) return new Angle(Math.PI / 2);
+        product = Math.sqrt(product);
+        let cosVal = a.dot(b as any) / product;
+        cosVal = Scalar.Clamp(cosVal, -1, 1);
+        const angle = Math.acos(cosVal);
+        return new Angle(angle);
     }
 
     /**
@@ -968,7 +985,7 @@ export class Curve3 {
      */
     public static CreateQuadraticBezier(v0: DeepImmutable<Vector3>, v1: DeepImmutable<Vector3>, v2: DeepImmutable<Vector3>, nbPoints: number): Curve3 {
         nbPoints = nbPoints > 2 ? nbPoints : 3;
-        const bez = new Array<Vector3>();
+        const bez: Vector3[] = [];
         const equation = (t: number, val0: number, val1: number, val2: number) => {
             const res = (1.0 - t) * (1.0 - t) * val0 + 2.0 * t * (1.0 - t) * val1 + t * t * val2;
             return res;
@@ -990,7 +1007,7 @@ export class Curve3 {
      */
     public static CreateCubicBezier(v0: DeepImmutable<Vector3>, v1: DeepImmutable<Vector3>, v2: DeepImmutable<Vector3>, v3: DeepImmutable<Vector3>, nbPoints: number): Curve3 {
         nbPoints = nbPoints > 3 ? nbPoints : 4;
-        const bez = new Array<Vector3>();
+        const bez: Vector3[] = [];
         const equation = (t: number, val0: number, val1: number, val2: number, val3: number) => {
             const res = (1.0 - t) * (1.0 - t) * (1.0 - t) * val0 + 3.0 * t * (1.0 - t) * (1.0 - t) * val1 + 3.0 * t * t * (1.0 - t) * val2 + t * t * t * val3;
             return res;
@@ -1011,7 +1028,7 @@ export class Curve3 {
      * @returns the created Curve3
      */
     public static CreateHermiteSpline(p1: DeepImmutable<Vector3>, t1: DeepImmutable<Vector3>, p2: DeepImmutable<Vector3>, t2: DeepImmutable<Vector3>, nSeg: number): Curve3 {
-        const hermite = new Array<Vector3>();
+        const hermite: Vector3[] = [];
         const step = 1.0 / nSeg;
         for (let i = 0; i <= nSeg; i++) {
             hermite.push(Vector3.Hermite(p1, t1, p2, t2, i * step));
@@ -1027,7 +1044,7 @@ export class Curve3 {
      * @returns the created Curve3
      */
     public static CreateCatmullRomSpline(points: DeepImmutable<Vector3[]>, nbPoints: number, closed?: boolean): Curve3 {
-        const catmullRom = new Array<Vector3>();
+        const catmullRom: Vector3[] = [];
         const step = 1.0 / nbPoints;
         let amount = 0.0;
         if (closed) {
@@ -1043,7 +1060,7 @@ export class Curve3 {
             }
             catmullRom.push(catmullRom[0]);
         } else {
-            const totalPoints = new Array<Vector3>();
+            const totalPoints: Vector3[] = [];
             totalPoints.push(points[0].clone());
             Array.prototype.push.apply(totalPoints, points);
             totalPoints.push(points[points.length - 1].clone());
@@ -1073,7 +1090,7 @@ export class Curve3 {
      * @returns the created Curve3
      */
     public static ArcThru3Points(first: Vector3, second: Vector3, third: Vector3, steps: number = 32, closed: boolean = false, fullCircle: boolean = false): Curve3 {
-        const arc = new Array<Vector3>();
+        const arc: Vector3[] = [];
         const vec1 = second.subtract(first);
         const vec2 = third.subtract(second);
         const vec3 = first.subtract(third);

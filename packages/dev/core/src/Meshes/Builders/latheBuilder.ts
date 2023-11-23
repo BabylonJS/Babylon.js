@@ -65,7 +65,7 @@ export function CreateLathe(
     const sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
     const cap = options.cap || Mesh.NO_CAP;
     const pi2 = Math.PI * 2;
-    const paths = new Array();
+    const paths = [];
     const invertUV = options.invertUV || false;
 
     let i = 0;

@@ -986,7 +986,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         const engine = this._engine;
-        const data = new Array<float>();
+        const data: float[] = [];
 
         this._attributesStrideSize = 21;
         this._targetIndex = 0;

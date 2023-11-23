@@ -298,7 +298,7 @@ function _ExtrudeShapeGeneric(
         const rotationMatrix: Matrix = TmpVectors.Matrix[0];
 
         for (let i = 0; i < curve.length; i++) {
-            const shapePath = new Array<Vector3>();
+            const shapePath: Vector3[] = [];
             const angleStep = rotate(i, distances[i]);
             const scaleRatio = scl(i, distances[i]);
             Matrix.RotationAxisToRef(tangents[i], angle, rotationMatrix);

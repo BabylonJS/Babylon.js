@@ -160,7 +160,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
             let vertexCount = this._vertexData.positions.length / 3;
             const additionalVertexData: VertexData[] = [];
             const currentPosition = new Vector3();
-            const alreadyDone = new Array<number>();
+            const alreadyDone: number[] = [];
             let vertices = this._vertexData.positions;
             this._currentLoopIndex = 0;
 

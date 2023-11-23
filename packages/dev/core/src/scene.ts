@@ -406,10 +406,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public useConstantAnimationDeltaTime = false;
     /**
-     * If 'useConstantAnimationDeltaTime' is set, this is the constant delta time value used
-     */
-    public constantAnimationDeltaTime = Constants.STANDARD_TIME_STEP;
-    /**
      * Gets or sets a boolean indicating if the scene must keep the meshUnderPointer property updated
      * Please note that it requires to run a ray cast through the scene on every frame
      */
@@ -458,7 +454,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Use this array to add regular expressions used to disable offline support for specific urls
      */
-    public disableOfflineSupportExceptionRules = new Array<RegExp>();
+    public disableOfflineSupportExceptionRules: RegExp[] = [];
 
     /**
      * An event triggered when the scene is disposed.
@@ -1304,7 +1300,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * The list of user defined render targets added to the scene
      */
-    public customRenderTargets = new Array<RenderTargetTexture>();
+    public customRenderTargets: RenderTargetTexture[] = [];
 
     /**
      * Defines if texture loading must be delayed
@@ -1315,7 +1311,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /**
      * Gets the list of meshes imported to the scene through SceneLoader
      */
-    public importedMeshesFiles = new Array<string>();
+    public importedMeshesFiles: string[] = [];
 
     // Probes
     /**
@@ -1648,7 +1644,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     constructor(engine: Engine, options?: SceneOptions) {
         super();
 
-        this.activeCameras = new Array<Camera>();
+        this.activeCameras = [] as Camera[];
 
         const fullOptions = {
             useGeometryUniqueIdsMap: true,
@@ -2013,6 +2009,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         // Ensures that the pre-pass renderer is enabled if it is to be enabled.
         this.prePassRenderer?.update();
+
+        // OIT
+        if (this.useOrderIndependentTransparency && this.depthPeelingRenderer) {
+            isReady &&= this.depthPeelingRenderer.isReady();
+        }
 
         // Meshes
         if (checkRenderTargets) {
@@ -3164,7 +3165,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * Gets a light node using its name
-     * @param name defines the the light's name
+     * @param name defines the light's name
      * @returns the light or null if none found.
      */
     public getLightByName(name: string): Nullable<Light> {
@@ -4137,16 +4138,17 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param force defines a boolean used to force the update even if cache is up to date
      */
     public updateTransformMatrix(force?: boolean): void {
-        if (!this.activeCamera) {
+        const activeCamera = this.activeCamera;
+        if (!activeCamera) {
             return;
         }
 
-        if (this.activeCamera._renderingMultiview) {
-            const leftCamera = this.activeCamera._rigCameras[0];
-            const rightCamera = this.activeCamera._rigCameras[1];
+        if (activeCamera._renderingMultiview) {
+            const leftCamera = activeCamera._rigCameras[0];
+            const rightCamera = activeCamera._rigCameras[1];
             this.setTransformMatrix(leftCamera.getViewMatrix(), leftCamera.getProjectionMatrix(force), rightCamera.getViewMatrix(), rightCamera.getProjectionMatrix(force));
         } else {
-            this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(force));
+            this.setTransformMatrix(activeCamera.getViewMatrix(), activeCamera.getProjectionMatrix(force));
         }
     }
 
@@ -4476,9 +4478,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             this._timeAccumulator = deltaTime < 0 ? 0 : deltaTime;
         } else {
             // Animations
-            const deltaTime = this.useConstantAnimationDeltaTime
-                ? this.constantAnimationDeltaTime
-                : Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
+            const deltaTime = this.useConstantAnimationDeltaTime ? 16 : Math.max(Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), Scene.MaxDeltaTime));
             this._animationRatio = deltaTime * (60.0 / 1000.0);
             this._animate();
             this.onAfterAnimationsObservable.notifyObservers(this);
@@ -4763,7 +4763,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         this._pointerDownStage.clear();
         this._pointerUpStage.clear();
 
-        this.importedMeshesFiles = new Array<string>();
+        this.importedMeshesFiles = [] as string[];
 
         if (this.stopAllAnimations) {
             // Ensures that no animatable notifies a callback that could start a new animation group, constantly adding new animatables to the active list...

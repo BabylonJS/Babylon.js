@@ -105,10 +105,10 @@ export function CreateTiledGroundVertexData(options: {
     const subdivisions = options.subdivisions || { w: 1, h: 1 };
     const precision = options.precision || { w: 1, h: 1 };
 
-    const indices = new Array<number>();
-    const positions = new Array<number>();
-    const normals = new Array<number>();
-    const uvs = new Array<number>();
+    const indices: number[] = [];
+    const positions: number[] = [];
+    const normals: number[] = [];
+    const uvs: number[] = [];
     let row: number, col: number, tileRow: number, tileCol: number;
 
     subdivisions.h = subdivisions.h < 1 ? 1 : subdivisions.h;

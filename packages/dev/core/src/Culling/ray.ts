@@ -705,26 +705,24 @@ Scene.prototype.createPickingRayToRef = function (
 ): Scene {
     const engine = this.getEngine();
 
-    if (!camera) {
-        if (!this.activeCamera) {
-            return this;
-        }
-
-        camera = this.activeCamera;
+    if (!camera && !(camera = this.activeCamera!)) {
+        return this;
     }
 
     const cameraViewport = camera.viewport;
-    const viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+    const renderHeight = engine.getRenderHeight();
+    const { x: vx, y: vy, width, height } = cameraViewport.toGlobal(engine.getRenderWidth(), renderHeight);
 
     // Moving coordinates to local viewport world
-    x = x / engine.getHardwareScalingLevel() - viewport.x;
-    y = y / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - viewport.y - viewport.height);
+    const levelInv = 1 / engine.getHardwareScalingLevel();
+    x = x * levelInv - vx;
+    y = y * levelInv - (renderHeight - vy - height);
 
     result.update(
         x,
         y,
-        viewport.width,
-        viewport.height,
+        width,
+        height,
         world ? world : Matrix.IdentityReadOnly,
         cameraViewSpace ? Matrix.IdentityReadOnly : camera.getViewMatrix(),
         camera.getProjectionMatrix(),
@@ -748,22 +746,20 @@ Scene.prototype.createPickingRayInCameraSpaceToRef = function (x: number, y: num
 
     const engine = this.getEngine();
 
-    if (!camera) {
-        if (!this.activeCamera) {
-            throw new Error("Active camera not set");
-        }
-
-        camera = this.activeCamera;
+    if (!camera && !(camera = this.activeCamera!)) {
+        throw new Error("Active camera not set");
     }
 
     const cameraViewport = camera.viewport;
-    const viewport = cameraViewport.toGlobal(engine.getRenderWidth(), engine.getRenderHeight());
+    const renderHeight = engine.getRenderHeight();
+    const { x: vx, y: vy, width, height } = cameraViewport.toGlobal(engine.getRenderWidth(), renderHeight);
     const identity = Matrix.Identity();
 
     // Moving coordinates to local viewport world
-    x = x / engine.getHardwareScalingLevel() - viewport.x;
-    y = y / engine.getHardwareScalingLevel() - (engine.getRenderHeight() - viewport.y - viewport.height);
-    result.update(x, y, viewport.width, viewport.height, identity, identity, camera.getProjectionMatrix());
+    const levelInv = 1 / engine.getHardwareScalingLevel();
+    x = x * levelInv - vx;
+    y = y * levelInv - (renderHeight - vy - height);
+    result.update(x, y, width, height, identity, identity, camera.getProjectionMatrix());
     return this;
 };
 
@@ -866,7 +862,7 @@ Scene.prototype._internalMultiPick = function (
     if (!PickingInfo) {
         return null;
     }
-    const pickingInfos = new Array<PickingInfo>();
+    const pickingInfos: PickingInfo[] = [];
     const computeWorldMatrixForCamera = !!(this.activeCameras && this.activeCameras.length > 1 && this.cameraToUseForPointers !== this.activeCamera);
     const currentCamera = this.cameraToUseForPointers || this.activeCamera;
 
@@ -1047,15 +1043,16 @@ Camera.prototype.getForwardRayToRef = function (refRay: Ray, length = 100, trans
     }
     refRay.length = length;
 
-    if (!origin) {
-        refRay.origin.copyFrom(this.position);
-    } else {
+    if (origin) {
         refRay.origin.copyFrom(origin);
+    } else {
+        refRay.origin.copyFrom(this.position);
     }
-    TmpVectors.Vector3[2].set(0, 0, this._scene.useRightHandedSystem ? -1 : 1);
-    Vector3.TransformNormalToRef(TmpVectors.Vector3[2], transform, TmpVectors.Vector3[3]);
-
-    Vector3.NormalizeToRef(TmpVectors.Vector3[3], refRay.direction);
+    const forward = TmpVectors.Vector3[2];
+    forward.set(0, 0, this._scene.useRightHandedSystem ? -1 : 1);
+    const worldForward = TmpVectors.Vector3[3];
+    Vector3.TransformNormalToRef(forward, transform, worldForward);
+    Vector3.NormalizeToRef(worldForward, refRay.direction);
 
     return refRay;
 };

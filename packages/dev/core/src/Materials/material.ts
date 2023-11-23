@@ -1397,7 +1397,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      */
     public getBindedMeshes(): AbstractMesh[] {
         if (this.meshMap) {
-            const result = new Array<AbstractMesh>();
+            const result: AbstractMesh[] = [];
             for (const meshId in this.meshMap) {
                 const mesh = this.meshMap[meshId];
                 if (mesh) {

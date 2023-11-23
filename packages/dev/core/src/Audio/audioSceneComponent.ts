@@ -340,8 +340,8 @@ export class AudioSceneComponent implements ISceneSerializableComponent {
         }
         this.scene = scene;
 
-        scene.soundTracks = new Array<SoundTrack>();
-        scene.sounds = new Array<Sound>();
+        scene.soundTracks = [] as SoundTrack[];
+        scene.sounds = [] as Sound[];
     }
 
     /**

@@ -1443,7 +1443,7 @@ export class Control implements IAnimatable {
      * @returns all child controls
      */
     public getDescendants(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): Control[] {
-        const results = new Array<Control>();
+        const results: Control[] = [];
 
         this.getDescendantsToRef(results, directDescendantsOnly, predicate);
 

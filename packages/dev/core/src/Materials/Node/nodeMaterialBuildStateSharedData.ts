@@ -12,12 +12,12 @@ export class NodeMaterialBuildStateSharedData {
     /**
      * Gets the list of emitted varyings
      */
-    public temps = new Array<string>();
+    public temps: string[] = [];
 
     /**
      * Gets the list of emitted varyings
      */
-    public varyings = new Array<string>();
+    public varyings: string[] = [];
 
     /**
      * Gets the varying declaration string
@@ -32,52 +32,52 @@ export class NodeMaterialBuildStateSharedData {
     /**
      * Input blocks
      */
-    public inputBlocks = new Array<InputBlock>();
+    public inputBlocks: InputBlock[] = [];
 
     /**
      * Input blocks
      */
-    public textureBlocks = new Array<NodeMaterialTextureBlocks>();
+    public textureBlocks: NodeMaterialTextureBlocks[] = [];
 
     /**
      * Bindable blocks (Blocks that need to set data to the effect)
      */
-    public bindableBlocks = new Array<NodeMaterialBlock>();
+    public bindableBlocks: NodeMaterialBlock[] = [];
 
     /**
      * Bindable blocks (Blocks that need to set data to the effect) that will always be called (by bindForSubMesh), contrary to bindableBlocks that won't be called if _mustRebind() returns false
      */
-    public forcedBindableBlocks = new Array<NodeMaterialBlock>();
+    public forcedBindableBlocks: NodeMaterialBlock[] = [];
 
     /**
      * List of blocks that can provide a compilation fallback
      */
-    public blocksWithFallbacks = new Array<NodeMaterialBlock>();
+    public blocksWithFallbacks: NodeMaterialBlock[] = [];
 
     /**
      * List of blocks that can provide a define update
      */
-    public blocksWithDefines = new Array<NodeMaterialBlock>();
+    public blocksWithDefines: NodeMaterialBlock[] = [];
 
     /**
      * List of blocks that can provide a repeatable content
      */
-    public repeatableContentBlocks = new Array<NodeMaterialBlock>();
+    public repeatableContentBlocks: NodeMaterialBlock[] = [];
 
     /**
      * List of blocks that can provide a dynamic list of uniforms
      */
-    public dynamicUniformBlocks = new Array<NodeMaterialBlock>();
+    public dynamicUniformBlocks: NodeMaterialBlock[] = [];
 
     /**
      * List of blocks that can block the isReady function for the material
      */
-    public blockingBlocks = new Array<NodeMaterialBlock>();
+    public blockingBlocks: NodeMaterialBlock[] = [];
 
     /**
      * Gets the list of animated inputs
      */
-    public animatedInputs = new Array<InputBlock>();
+    public animatedInputs: InputBlock[] = [];
 
     /**
      * Build Id used to avoid multiple recompilations

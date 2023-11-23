@@ -801,9 +801,9 @@ export class SceneLoader {
 
                 if ((<any>plugin).importMesh) {
                     const syncedPlugin = <ISceneLoaderPlugin>plugin;
-                    const meshes = new Array<AbstractMesh>();
-                    const particleSystems = new Array<IParticleSystem>();
-                    const skeletons = new Array<Skeleton>();
+                    const meshes: AbstractMesh[] = [];
+                    const particleSystems: IParticleSystem[] = [];
+                    const skeletons: Skeleton[] = [];
 
                     if (!syncedPlugin.importMesh(meshNames, scene, data, fileInfo.rootUrl, meshes, particleSystems, skeletons, errorHandler)) {
                         return;

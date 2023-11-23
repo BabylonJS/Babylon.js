@@ -26,7 +26,7 @@ WebGPUEngine.prototype.updateVideoTexture = function (texture: Nullable<Internal
     if (IsExternalTexture(video)) {
         this._textureHelper.copyVideoToTexture(video, texture, gpuTextureWrapper.format, !invertY);
         if (texture.generateMipMaps) {
-            this._generateMipmaps(texture, this._uploadEncoder);
+            this._generateMipmaps(texture);
         }
         texture.isReady = true;
     } else if (video) {
@@ -34,7 +34,7 @@ WebGPUEngine.prototype.updateVideoTexture = function (texture: Nullable<Internal
             .then((bitmap) => {
                 this._textureHelper.updateTexture(bitmap, texture, texture.width, texture.height, texture.depth, gpuTextureWrapper.format, 0, 0, !invertY, false, 0, 0);
                 if (texture.generateMipMaps) {
-                    this._generateMipmaps(texture, this._uploadEncoder);
+                    this._generateMipmaps(texture);
                 }
 
                 texture.isReady = true;

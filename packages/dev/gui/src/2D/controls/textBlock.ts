@@ -76,7 +76,7 @@ export class TextBlock extends Control {
     }
 
     /**
-     * Gets or sets an boolean indicating that the TextBlock will be resized to fit its content
+     * Gets or sets a boolean indicating that the TextBlock will be resized to fit its content
 
      */
     @serialize()
@@ -85,7 +85,7 @@ export class TextBlock extends Control {
     }
 
     /**
-     * Gets or sets an boolean indicating that the TextBlock will be resized to fit its content
+     * Gets or sets a boolean indicating that the TextBlock will be resized to fit its content
 
      */
     public set resizeToFit(value: boolean) {

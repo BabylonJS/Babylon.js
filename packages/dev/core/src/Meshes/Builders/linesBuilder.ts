@@ -31,10 +31,12 @@ export function CreateLineSystemVertexData(options: { lines: Vector3[][]; colors
     for (let l = 0; l < lines.length; l++) {
         const points = lines[l];
         for (let index = 0; index < points.length; index++) {
-            positions.push(points[index].x, points[index].y, points[index].z);
+            const { x, y, z } = points[index];
+            positions.push(x, y, z);
             if (colors) {
                 const color = colors[l];
-                vertexColors.push(color[index].r, color[index].g, color[index].b, color[index].a);
+                const { r, g, b, a } = color[index];
+                vertexColors.push(r, g, b, a);
             }
             if (index > 0) {
                 indices.push(idx - 1);
@@ -71,8 +73,8 @@ export function CreateDashedLinesVertexData(options: { points: Vector3[]; dashSi
     const dashNb = options.dashNb || 200;
     const points = options.points;
 
-    const positions = new Array<number>();
-    const indices = new Array<number>();
+    const positions: number[] = [];
+    const indices: number[] = [];
 
     const curvect = Vector3.Zero();
     let lg = 0;

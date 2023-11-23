@@ -194,7 +194,7 @@ export class ProceduralTexture extends Texture {
 
     /**
      * The effect that is created when initializing the post process.
-     * @returns The created effect corresponding the the postprocess.
+     * @returns The created effect corresponding the postprocess.
      */
     public getEffect(): Effect {
         return this._drawWrapper.effect!;
