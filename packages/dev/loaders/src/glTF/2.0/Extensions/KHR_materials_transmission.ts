@@ -270,6 +270,8 @@ class TransmissionHelper {
         this._opaqueRenderTarget.lodGenerationScale = this._options.lodGenerationScale;
         this._opaqueRenderTarget.lodGenerationOffset = this._options.lodGenerationOffset;
         this._opaqueRenderTarget.samples = this._options.samples;
+        this._opaqueRenderTarget.renderSprites = true;
+        this._opaqueRenderTarget.renderParticles = true;
 
         let sceneImageProcessingapplyByPostProcess: boolean;
 
