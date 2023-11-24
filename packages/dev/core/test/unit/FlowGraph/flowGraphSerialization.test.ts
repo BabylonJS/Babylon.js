@@ -97,7 +97,6 @@ describe("Flow Graph Serialization", () => {
 
         const serialized: any = {};
         block.serialize(serialized);
-        // console.log("serialized block", serialized);
         expect(serialized.uniqueId).toBeDefined();
         expect(serialized.signalInputs.length).toEqual(1);
         expect(serialized.signalOutputs.length).toEqual(2);

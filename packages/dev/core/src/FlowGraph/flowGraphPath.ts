@@ -1,10 +1,15 @@
 import { RegisterClass } from "../Misc/typeStore";
 import type { FlowGraphContext } from "./flowGraphContext";
 
-const SEPARATORS = /\/|\./;
-
 // Path: /x/{y}/z/.../w
 const PATH_REGEX = /[./]({?\w+}?)/g;
+
+interface IPathPart {
+    value: string;
+    isTemplate: boolean;
+    valueWithoutBraces: string;
+    replacedValue?: string;
+}
 /*
  * @experimental
  * This class represents a path of type /x/{y}/z/.../w that is evaluated
@@ -16,6 +21,8 @@ export class FlowGraphPath {
     private _templateSubstitutions: {
         [key: string]: number;
     } = {}; // this is a map of template strings to values that are substituted during runtime
+    private _pathParts: IPathPart[] = []; // this is the path divided into parts, with each part being either a template string or a regular string
+    private _templateStrings: string[] = []; // this is the list of template strings in the path
     /**
      * Whether this path has any template strings in it.
      */
@@ -23,13 +30,33 @@ export class FlowGraphPath {
 
     constructor(path: string) {
         this._path = path;
-        const templateStrings = this._getTemplateStringsInPath(path);
+        const { pathParts, templateStrings } = this._getPathPartsAndTemplateStrings(path);
+        this._pathParts = pathParts;
+        this._templateStrings = templateStrings;
         this.hasTemplateStrings = templateStrings.length > 0;
-        for (const templateString of templateStrings) {
-            // Part of the path enclosed in curly braces = template string, we'll set a default
-            // value on the template substitutions for now
-            this._templateSubstitutions[templateString] = NaN;
+    }
+
+    private _getPathPartsAndTemplateStrings(path: string) {
+        const allMatches = path.matchAll(PATH_REGEX);
+
+        const pathParts = [];
+        const templateStrings = [];
+        for (const singleMatch of allMatches) {
+            const [, value] = singleMatch;
+            let valueWithoutBraces = value;
+            let isTemplate = false;
+            if (value.startsWith("{") && value.endsWith("}")) {
+                isTemplate = true;
+                valueWithoutBraces = value.slice(1, value.length - 1);
+                templateStrings.push(valueWithoutBraces);
+            }
+            pathParts.push({
+                value,
+                isTemplate,
+                valueWithoutBraces,
+            });
         }
+        return { pathParts, templateStrings };
     }
 
     /**
@@ -37,36 +64,36 @@ export class FlowGraphPath {
      * @returns an array containing the template strings in this path.
      */
     getTemplateStrings(): string[] {
-        return Object.keys(this._templateSubstitutions);
-    }
-
-    private _getTemplateStringsInPath(path: string): string[] {
-        const allMatches = path.matchAll(PATH_REGEX);
-
-        const templateStrings: string[] = [];
-        for (const singleMatch of allMatches) {
-            const [, individualPart] = singleMatch;
-            if (individualPart.startsWith("{") && individualPart.endsWith("}")) {
-                const partName = individualPart.slice(1, individualPart.length - 1);
-                if (templateStrings.indexOf(partName) === -1) {
-                    templateStrings.push(partName);
-                }
-            }
-        }
-        return templateStrings;
+        return this._templateStrings;
     }
 
     setTemplateSubstitution(template: string, value: number) {
+        if (this._templateStrings.indexOf(template) === -1) {
+            throw new Error(`Template string ${template} does not exist in path ${this._path}`);
+        }
         this._templateSubstitutions[template] = value;
     }
 
-    private _evaluateTemplates(): string {
-        let finalPath = this._path;
-        for (const template in this._templateSubstitutions) {
-            if (Number.isNaN(this._templateSubstitutions[template])) {
-                throw new Error(`Template string ${template} has no value`);
+    private _evaluateTemplates() {
+        for (const pathPart of this._pathParts) {
+            if (pathPart.isTemplate) {
+                const value = this._templateSubstitutions[pathPart.valueWithoutBraces];
+                if (value === undefined) {
+                    throw new Error(`Template string ${pathPart.value} was not substituted`);
+                }
+                pathPart.replacedValue = value.toString();
             }
-            finalPath = finalPath.replace(`{${template}}`, this._templateSubstitutions[template].toString());
+        }
+    }
+
+    private _getFinalPath() {
+        let finalPath = "";
+        for (const pathPart of this._pathParts) {
+            if (pathPart.isTemplate) {
+                finalPath += pathPart.replacedValue;
+            } else {
+                finalPath += pathPart.value;
+            }
         }
         return finalPath;
     }
@@ -76,17 +103,22 @@ export class FlowGraphPath {
      * /x/y/z would be split into [context._userVariables.x, context._userVariables.x.y, context._userVariables.x.y.z]
      */
     private _evaluatePath(context: FlowGraphContext): any {
-        const finalPath = this._evaluateTemplates();
-        const splitPath = finalPath.split(SEPARATORS).filter((part) => part !== "");
+        this._evaluateTemplates();
+
         const entityChain = [];
+        const splitPath = [];
         let currentTarget = context._userVariables;
-        for (let i = 0; i < splitPath.length; i++) {
+        for (const pathPart of this._pathParts) {
             if (currentTarget === undefined) {
-                throw new Error(`Could not find path ${finalPath} in target context`);
+                throw new Error(`Could not find path ${this._getFinalPath()} in target context`);
             }
-            const pathPart = splitPath[i];
-            currentTarget = currentTarget[pathPart];
+            const value = pathPart.isTemplate ? pathPart.replacedValue : pathPart.value;
+            if (!value) {
+                throw new Error(`Invalid path ${this._getFinalPath()}`);
+            }
+            currentTarget = currentTarget[value];
             entityChain.push(currentTarget);
+            splitPath.push(value);
         }
 
         return { entityChain, splitPath };

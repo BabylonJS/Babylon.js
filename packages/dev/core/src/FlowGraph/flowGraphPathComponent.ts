@@ -9,8 +9,17 @@ import { RichTypeNumber } from "./flowGraphRichTypes";
  * data inputs which fill in the template strings in the path.
  */
 export class FlowGraphPathComponent {
+    /**
+     * The path that this component is associated with.
+     */
     path: FlowGraphPath;
+    /**
+     * The list of numeric data inputs that fill in the template strings in the path.
+     */
     templateStringInputs: FlowGraphDataConnection<number>[] = [];
+    /**
+     * The block that owns this component.
+     */
     ownerBlock: FlowGraphBlock;
 
     constructor(path: FlowGraphPath, ownerBlock: FlowGraphBlock) {
@@ -21,6 +30,12 @@ export class FlowGraphPathComponent {
         }
     }
 
+    /**
+     * Get the inputs of all of the numeric data inputs and use them to fill in the
+     * template strings in the path.
+     * @param context the context to use to get the values of the numeric data inputs
+     * @returns the path with the template strings filled in
+     */
     substitutePath(context: FlowGraphContext): FlowGraphPath {
         for (const templateStringInput of this.templateStringInputs) {
             const templateStringValue = templateStringInput.getValue(context);
