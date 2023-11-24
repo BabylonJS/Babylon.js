@@ -53,13 +53,13 @@ export class FlowGraphBlock {
         // empty by default, overriden in data blocks
     }
 
-    protected _registerDataInput<T>(name: string, className: RichType<T>): FlowGraphDataConnection<T> {
+    public registerDataInput<T>(name: string, className: RichType<T>): FlowGraphDataConnection<T> {
         const input = new FlowGraphDataConnection(name, FlowGraphConnectionType.Input, this, className);
         this.dataInputs.push(input);
         return input;
     }
 
-    protected _registerDataOutput<T>(name: string, className: RichType<T>): FlowGraphDataConnection<T> {
+    public registerDataOutput<T>(name: string, className: RichType<T>): FlowGraphDataConnection<T> {
         const output = new FlowGraphDataConnection(name, FlowGraphConnectionType.Output, this, className);
         this.dataOutputs.push(output);
         return output;

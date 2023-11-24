@@ -92,9 +92,10 @@ export class FlowGraphPath {
         return "FGPath";
     }
 
-    serialize(serializationObject: any) {
+    serialize(serializationObject: any = {}) {
         serializationObject.path = this._path;
         serializationObject.className = this.getClassName();
+        return serializationObject;
     }
 
     Parse(serializationObject: any) {

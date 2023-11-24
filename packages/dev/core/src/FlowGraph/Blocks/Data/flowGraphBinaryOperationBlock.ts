@@ -21,8 +21,8 @@ export class FlowGraphBinaryOperationBlock<LeftT, RightT, ResultT> extends FlowG
         config?: IFlowGraphBlockConfiguration
     ) {
         super(resultRichType, config);
-        this.leftInput = this._registerDataInput("leftInput", leftRichType);
-        this.rightInput = this._registerDataInput("rightInput", rightRichType);
+        this.leftInput = this.registerDataInput("leftInput", leftRichType);
+        this.rightInput = this.registerDataInput("rightInput", rightRichType);
     }
 
     public override _doOperation(context: FlowGraphContext): ResultT {

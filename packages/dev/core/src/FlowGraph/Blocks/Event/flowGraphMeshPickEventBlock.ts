@@ -73,9 +73,7 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
 
     public serialize(serializationObject?: any): void {
         super.serialize(serializationObject);
-        const serializedPath = {};
-        this.config.path.serialize(serializedPath);
-        serializationObject.config.path = serializedPath;
+        serializationObject.config.path = this.config.path.serialize();
     }
 }
 RegisterClass("FGMeshPickEventBlock", FlowGraphMeshPickEventBlock);

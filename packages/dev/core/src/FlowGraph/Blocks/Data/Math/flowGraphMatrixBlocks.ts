@@ -186,10 +186,10 @@ export class FlowGraphClampMatrixBlock extends FlowGraphBlock {
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
-        this.input = this._registerDataInput("input", RichTypeMatrix);
-        this.min = this._registerDataInput("min", RichTypeNumber);
-        this.max = this._registerDataInput("max", RichTypeNumber);
-        this.output = this._registerDataOutput("output", RichTypeMatrix);
+        this.input = this.registerDataInput("input", RichTypeMatrix);
+        this.min = this.registerDataInput("min", RichTypeNumber);
+        this.max = this.registerDataInput("max", RichTypeNumber);
+        this.output = this.registerDataOutput("output", RichTypeMatrix);
     }
 
     public _updateOutputs(_context: FlowGraphContext): void {
@@ -241,10 +241,10 @@ export class FlowGraphDecomposeMatrixBlock extends FlowGraphBlock {
     public constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
-        this.input = this._registerDataInput("input", RichTypeMatrix);
-        this.translation = this._registerDataOutput("translation", RichTypeVector3);
-        this.rotation = this._registerDataOutput("rotation", RichTypeQuaternion);
-        this.scale = this._registerDataOutput("scale", RichTypeVector3);
+        this.input = this.registerDataInput("input", RichTypeMatrix);
+        this.translation = this.registerDataOutput("translation", RichTypeVector3);
+        this.rotation = this.registerDataOutput("rotation", RichTypeQuaternion);
+        this.scale = this.registerDataOutput("scale", RichTypeVector3);
     }
 
     public _updateOutputs(_context: FlowGraphContext): void {
@@ -291,10 +291,10 @@ export class FlowGraphComposeMatrixBlock extends FlowGraphBlock {
     public constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
-        this.output = this._registerDataOutput("input", RichTypeMatrix);
-        this.translation = this._registerDataInput("translation", RichTypeVector3);
-        this.rotation = this._registerDataInput("rotation", RichTypeQuaternion);
-        this.scale = this._registerDataInput("scale", RichTypeVector3);
+        this.output = this.registerDataOutput("input", RichTypeMatrix);
+        this.translation = this.registerDataInput("translation", RichTypeVector3);
+        this.rotation = this.registerDataInput("rotation", RichTypeQuaternion);
+        this.scale = this.registerDataInput("scale", RichTypeVector3);
     }
 
     public _updateOutputs(_context: FlowGraphContext): void {

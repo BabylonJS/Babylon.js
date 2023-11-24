@@ -17,7 +17,7 @@ export class FlowGraphStopAnimationBlock extends FlowGraphWithOnDoneExecutionBlo
 
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
-        this.animationToStop = this._registerDataInput("animationToStop", RichTypeAny);
+        this.animationToStop = this.registerDataInput("animationToStop", RichTypeAny);
     }
 
     public _execute(context: FlowGraphContext): void {

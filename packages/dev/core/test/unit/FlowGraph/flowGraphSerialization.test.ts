@@ -89,6 +89,7 @@ describe("Flow Graph Serialization", () => {
     });
 
     it("Serializes and parses a block", () => {
+        // Serialize a block with path
         const block = new FlowGraphPlayAnimationBlock({
             targetPath: new FlowGraphPath("test"),
             animationPath: new FlowGraphPath("test2"),

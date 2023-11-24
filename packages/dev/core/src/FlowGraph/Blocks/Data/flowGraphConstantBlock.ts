@@ -27,7 +27,7 @@ export class FlowGraphConstantBlock<T> extends FlowGraphBlock {
     constructor(public config: IFlowGraphConstantBlockConfiguration<T>) {
         super(config);
 
-        this.output = this._registerDataOutput("output", getRichTypeFromValue(config.value));
+        this.output = this.registerDataOutput("output", getRichTypeFromValue(config.value));
     }
 
     public _updateOutputs(context: FlowGraphContext): void {

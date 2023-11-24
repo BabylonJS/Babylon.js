@@ -27,8 +27,8 @@ export class FlowGraphDoNBlock extends FlowGraphWithOnDoneExecutionBlock {
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
         this.reset = this._registerSignalInput("reset");
-        this.maxNumberOfExecutions = this._registerDataInput("numberOfExecutions", RichTypeNumber);
-        this.currentCount = this._registerDataOutput("currentCount", RichTypeNumber);
+        this.maxNumberOfExecutions = this.registerDataInput("numberOfExecutions", RichTypeNumber);
+        this.currentCount = this.registerDataOutput("currentCount", RichTypeNumber);
     }
 
     public _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {

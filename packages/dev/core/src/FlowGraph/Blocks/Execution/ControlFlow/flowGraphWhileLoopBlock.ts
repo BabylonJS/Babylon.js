@@ -33,7 +33,7 @@ export class FlowGraphWhileLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
     constructor(public config?: IFlowGraphWhileLoopBlockConfiguration) {
         super(config);
 
-        this.condition = this._registerDataInput("condition", RichTypeBoolean);
+        this.condition = this.registerDataInput("condition", RichTypeBoolean);
         this.loopBody = this._registerSignalOutput("loopBody");
     }
 

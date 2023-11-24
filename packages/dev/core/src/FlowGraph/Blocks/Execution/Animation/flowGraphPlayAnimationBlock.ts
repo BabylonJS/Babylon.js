@@ -7,7 +7,11 @@ import { RichTypeAny, RichTypeNumber, RichTypeBoolean } from "../../../flowGraph
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import type { FlowGraphPath } from "../../../flowGraphPath";
+import { FlowGraphPathComponent } from "../../../flowGraphPathComponent";
 
+/**
+ * @experimental
+ */
 export interface IFlowGraphPlayAnimationBlockConfiguration extends IFlowGraphBlockConfiguration {
     targetPath: FlowGraphPath;
     animationPath: FlowGraphPath;
@@ -17,14 +21,16 @@ export interface IFlowGraphPlayAnimationBlockConfiguration extends IFlowGraphBlo
  * A block that plays an animation on an animatable object.
  */
 export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
-    /**
-     * Input connection: The possible template strings to substitute for in the target path
-     */
-    public readonly templateStringTargetInputs: FlowGraphDataConnection<number>[] = [];
-    /**
-     * Input connection: The possible template strings to substitute for in the animation path
-     */
-    public readonly templateStringAnimationInputs: FlowGraphDataConnection<number>[] = [];
+    // /**
+    //  * Input connection: The possible template strings to substitute for in the target path
+    //  */
+    // public readonly templateStringTargetInputs: FlowGraphDataConnection<number>[] = [];
+    // /**
+    //  * Input connection: The possible template strings to substitute for in the animation path
+    //  */
+    // public readonly templateStringAnimationInputs: FlowGraphDataConnection<number>[] = [];
+    public readonly templateTargetComponent: FlowGraphPathComponent;
+    public readonly templateAnimationComponent: FlowGraphPathComponent;
     /**
      * Input connection: The speed of the animation.
      */
@@ -55,20 +61,16 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     public constructor(public config: IFlowGraphPlayAnimationBlockConfiguration) {
         super(config);
 
-        for (const templateString of config.targetPath.getTemplateStrings()) {
-            this.templateStringTargetInputs.push(this._registerDataInput(templateString, RichTypeNumber));
-        }
-        for (const templateString of config.animationPath.getTemplateStrings()) {
-            this.templateStringAnimationInputs.push(this._registerDataInput(templateString, RichTypeNumber));
-        }
+        this.templateTargetComponent = new FlowGraphPathComponent(config.targetPath, this);
+        this.templateAnimationComponent = new FlowGraphPathComponent(config.animationPath, this);
 
-        this.speed = this._registerDataInput("speed", RichTypeNumber);
-        this.loop = this._registerDataInput("loop", RichTypeBoolean);
-        this.from = this._registerDataInput("from", RichTypeNumber);
-        this.to = this._registerDataInput("to", RichTypeNumber);
+        this.speed = this.registerDataInput("speed", RichTypeNumber);
+        this.loop = this.registerDataInput("loop", RichTypeBoolean);
+        this.from = this.registerDataInput("from", RichTypeNumber);
+        this.to = this.registerDataInput("to", RichTypeNumber);
 
         this.onAnimationEnd = this._registerSignalOutput("onAnimationEnd");
-        this.runningAnimatable = this._registerDataOutput("runningAnimatable", RichTypeAny);
+        this.runningAnimatable = this.registerDataOutput("runningAnimatable", RichTypeAny);
     }
 
     /**
@@ -76,17 +78,9 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      * @param context
      */
     public _preparePendingTasks(context: FlowGraphContext): void {
-        for (const templateStringInput of this.templateStringTargetInputs) {
-            const templateStringValue = templateStringInput.getValue(context);
-            const templateString = templateStringInput.name;
-            this.config.targetPath.setTemplateSubstitution(templateString, templateStringValue);
-        }
+        this.templateTargetComponent.substitutePath(context);
         const targetValue = this.config.targetPath.getProperty(context);
-        for (const templateStringInput of this.templateStringAnimationInputs) {
-            const templateStringValue = templateStringInput.getValue(context);
-            const templateString = templateStringInput.name;
-            this.config.targetPath.setTemplateSubstitution(templateString, templateStringValue);
-        }
+        this.templateAnimationComponent.substitutePath(context);
         const animationValue = this.config.animationPath.getProperty(context) as Animation;
 
         if (!targetValue || !animationValue) {
@@ -151,12 +145,8 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
 
     public serialize(serializationObject: any = {}) {
         super.serialize(serializationObject);
-        const serializedTargetPath = {};
-        this.config.targetPath.serialize(serializedTargetPath);
-        serializationObject.config.targetPath = serializedTargetPath;
-        const serializedAnimationPath = {};
-        this.config.animationPath.serialize(serializedAnimationPath);
-        serializationObject.config.animationPath = serializedAnimationPath;
+        serializationObject.config.targetPath = this.config.targetPath.serialize();
+        serializationObject.config.animationPath = this.config.animationPath.serialize();
     }
 }
 

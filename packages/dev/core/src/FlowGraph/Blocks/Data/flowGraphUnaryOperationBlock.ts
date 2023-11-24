@@ -19,7 +19,7 @@ export class FlowGraphUnaryOperationBlock<InputT, ResultT> extends FlowGraphCach
         config?: IFlowGraphBlockConfiguration
     ) {
         super(resultRichType, config);
-        this.input = this._registerDataInput("input", inputRichType);
+        this.input = this.registerDataInput("input", inputRichType);
     }
     public override _doOperation(context: FlowGraphContext): ResultT {
         return this._operation(this.input.getValue(context));

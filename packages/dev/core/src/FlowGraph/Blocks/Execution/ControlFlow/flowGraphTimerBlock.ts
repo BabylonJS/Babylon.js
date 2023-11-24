@@ -26,7 +26,7 @@ export class FlowGraphTimerBlock extends FlowGraphAsyncExecutionBlock {
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
-        this.timeout = this._registerDataInput("timeout", RichTypeNumber);
+        this.timeout = this.registerDataInput("timeout", RichTypeNumber);
         this.onTimerDone = this._registerSignalOutput("onTimerDone");
     }
 

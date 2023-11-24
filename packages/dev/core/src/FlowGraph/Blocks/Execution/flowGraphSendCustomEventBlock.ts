@@ -21,8 +21,8 @@ export class FlowGraphSendCustomEventBlock extends FlowGraphWithOnDoneExecutionB
     public constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
-        this.eventId = this._registerDataInput("eventId", RichTypeString);
-        this.eventData = this._registerDataInput("eventData", RichTypeAny);
+        this.eventId = this.registerDataInput("eventId", RichTypeString);
+        this.eventData = this.registerDataInput("eventData", RichTypeAny);
     }
 
     public _execute(context: FlowGraphContext): void {

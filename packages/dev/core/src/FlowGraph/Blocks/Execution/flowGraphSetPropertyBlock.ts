@@ -5,6 +5,7 @@ import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExec
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import type { FlowGraphPath } from "../../flowGraphPath";
+import { FlowGraphPathComponent } from "../../flowGraphPathComponent";
 
 /**
  * @experimental
@@ -28,36 +29,28 @@ export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphWithOnDoneExecut
      */
     public readonly value: FlowGraphDataConnection<ValueT>;
     /**
-     * Input connection: The template strings to substitute in the path.
+     * The component with the templated inputs for the provided path.
      */
-    public readonly templateStringInputs: FlowGraphDataConnection<number>[] = [];
+    public readonly templateComponent: FlowGraphPathComponent;
 
     public constructor(public config: IFlowGraphSetPropertyBlockConfiguration) {
         super(config);
 
-        this.value = this._registerDataInput("value", RichTypeAny);
-        for (const templateString of config.path.getTemplateStrings()) {
-            this.templateStringInputs.push(this._registerDataInput(templateString, RichTypeNumber));
-        }
+        this.value = this.registerDataInput("value", RichTypeAny);
+        this.templateComponent = new FlowGraphPathComponent(config.path, this);
     }
 
     public _execute(context: FlowGraphContext): void {
-        for (const templateStringInput of this.templateStringInputs) {
-            const templateStringValue = templateStringInput.getValue(context);
-            const templateString = templateStringInput.name;
-            this.config.path.setTemplateSubstitution(templateString, templateStringValue);
-        }
         const value = this.value.getValue(context);
-        this.config.path.setProperty(context, value);
+        const path = this.templateComponent.substitutePath(context);
+        path.setProperty(context, value);
 
         this.onDone._activateSignal(context);
     }
 
     public serialize(serializationObject: any = {}) {
         super.serialize(serializationObject);
-        const serializedPath = {};
-        this.config.path.serialize(serializedPath);
-        serializationObject.config.path = serializedPath;
+        serializationObject.config.path = this.config.path.serialize();
     }
 
     public getClassName(): string {

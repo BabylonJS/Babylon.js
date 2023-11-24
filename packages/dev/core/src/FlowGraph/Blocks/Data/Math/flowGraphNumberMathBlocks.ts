@@ -456,10 +456,10 @@ export class FlowGraphMixNumberBlock extends FlowGraphBlock {
 
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
-        this.leftInput = this._registerDataInput("leftInput", RichTypeNumber);
-        this.rightInput = this._registerDataInput("rightInput", RichTypeNumber);
-        this.alphaInput = this._registerDataInput("alphaInput", RichTypeNumber);
-        this.resultOutput = this._registerDataOutput("resultOutput", RichTypeNumber);
+        this.leftInput = this.registerDataInput("leftInput", RichTypeNumber);
+        this.rightInput = this.registerDataInput("rightInput", RichTypeNumber);
+        this.alphaInput = this.registerDataInput("alphaInput", RichTypeNumber);
+        this.resultOutput = this.registerDataOutput("resultOutput", RichTypeNumber);
     }
 
     public _updateOutputs(_context: FlowGraphContext): void {

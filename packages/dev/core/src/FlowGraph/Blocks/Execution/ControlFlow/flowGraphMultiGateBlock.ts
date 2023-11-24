@@ -50,7 +50,7 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
     constructor(public config: IFlowGraphMultiGateBlockConfiguration) {
         super(config);
         this.reset = this._registerSignalInput("reset");
-        this.currentIndex = this._registerDataOutput("currentIndex", RichTypeNumber);
+        this.currentIndex = this.registerDataOutput("currentIndex", RichTypeNumber);
     }
 
     public configure() {
