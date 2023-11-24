@@ -120,5 +120,13 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
     public getClassName(): string {
         return "FGMultiGateBlock";
     }
+
+    public serialize(serializationObject?: any): void {
+        super.serialize(serializationObject);
+        serializationObject.config.numberOutputFlows = this.config.numberOutputFlows;
+        serializationObject.config.isRandom = this.config.isRandom;
+        serializationObject.config.loop = this.config.loop;
+        serializationObject.config.startIndex = this.config.startIndex;
+    }
 }
 RegisterClass("FGMultiGateBlock", FlowGraphMultiGateBlock);

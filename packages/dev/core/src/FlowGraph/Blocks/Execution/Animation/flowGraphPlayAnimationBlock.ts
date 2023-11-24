@@ -148,6 +148,16 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     public getClassName(): string {
         return "FGPlayAnimationBlock";
     }
+
+    public serialize(serializationObject: any = {}) {
+        super.serialize(serializationObject);
+        const serializedTargetPath = {};
+        this.config.targetPath.serialize(serializedTargetPath);
+        serializationObject.config.targetPath = serializedTargetPath;
+        const serializedAnimationPath = {};
+        this.config.animationPath.serialize(serializedAnimationPath);
+        serializationObject.config.animationPath = serializedAnimationPath;
+    }
 }
 
 RegisterClass("FGPlayAnimationBlock", FlowGraphPlayAnimationBlock);

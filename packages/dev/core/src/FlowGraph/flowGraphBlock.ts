@@ -71,7 +71,10 @@ export class FlowGraphBlock {
 
     public serialize(serializationObject: any = {}) {
         serializationObject.uniqueId = this.uniqueId;
-        serializationObject.config = this.config;
+        serializationObject.config = {};
+        if (this.config) {
+            serializationObject.config["name"] = this.config.name;
+        }
         serializationObject.dataInputs = [];
         serializationObject.dataOutputs = [];
         serializationObject.className = this.getClassName();
@@ -93,7 +96,19 @@ export class FlowGraphBlock {
 
     public static Parse(serializationObject: any): FlowGraphBlock {
         const classType = Tools.Instantiate(serializationObject.className);
-        const obj = new classType(serializationObject.config);
+        const parsedConfig: any = {};
+        if (serializationObject.config) {
+            for (const key in serializationObject.config) {
+                const value = serializationObject.config[key];
+                if (value && value.className) {
+                    const valueClassType = Tools.Instantiate(value.className);
+                    parsedConfig[key] = valueClassType.prototype.Parse(value);
+                } else {
+                    parsedConfig[key] = value;
+                }
+            }
+        }
+        const obj = new classType(parsedConfig);
         obj.uniqueId = serializationObject.uniqueId;
         for (let i = 0; i < serializationObject.dataInputs.length; i++) {
             obj.dataInputs[i].deserialize(serializationObject.dataInputs[i]);

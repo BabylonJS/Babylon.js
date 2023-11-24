@@ -52,5 +52,10 @@ export class FlowGraphWhileLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
     public getClassName(): string {
         return "FGWhileLoopBlock";
     }
+
+    public serialize(serializationObject?: any): void {
+        super.serialize(serializationObject);
+        serializationObject.isDo = this.config?.isDo;
+    }
 }
 RegisterClass("FGWhileLoopBlock", FlowGraphWhileLoopBlock);

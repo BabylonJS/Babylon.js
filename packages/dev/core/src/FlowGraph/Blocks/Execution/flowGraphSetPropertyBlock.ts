@@ -53,6 +53,13 @@ export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphWithOnDoneExecut
         this.onDone._activateSignal(context);
     }
 
+    public serialize(serializationObject: any = {}) {
+        super.serialize(serializationObject);
+        const serializedPath = {};
+        this.config.path.serialize(serializedPath);
+        serializationObject.config.path = serializedPath;
+    }
+
     public getClassName(): string {
         return "FGSetPropertyBlock";
     }

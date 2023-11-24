@@ -86,5 +86,10 @@ export class FlowGraphWaitAllBlock extends FlowGraphWithOnDoneExecutionBlock {
     public getClassName(): string {
         return "FGWaitAllBlock";
     }
+
+    public serialize(serializationObject?: any): void {
+        super.serialize(serializationObject);
+        serializationObject.config.numberInputFlows = this.config.numberInputFlows;
+    }
 }
 RegisterClass("FGWaitAllBlock", FlowGraphWaitAllBlock);
