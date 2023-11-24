@@ -26,6 +26,7 @@ describe("Flow Graph Utilities Test", () => {
 
         const path = new FlowGraphPath("/x/{y}/z");
 
+        expect(path.getTemplateStrings()).toEqual(["y"]);
         // We haven't specified what we want to substitute for y, so we can't evaluate the path
         expect(() => path.getProperty(context)).toThrow();
 

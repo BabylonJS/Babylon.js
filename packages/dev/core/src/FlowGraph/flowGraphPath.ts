@@ -2,7 +2,11 @@ import { RegisterClass } from "../Misc/typeStore";
 import type { FlowGraphContext } from "./flowGraphContext";
 
 const SEPARATORS = /\/|\./;
+
+// Path: /x/{y}/z/.../w
+const PATH_REGEX = /[./]({?\w+}?)/g;
 /*
+ * @experimental
  * This class represents a path of type /x/{y}/z/.../w that is evaluated
  * on a target object. The string between curly braces ({y} in the example)
  * is a special template string that is replaced during runtime.
@@ -12,6 +16,9 @@ export class FlowGraphPath {
     private _templateSubstitutions: {
         [key: string]: number;
     } = {}; // this is a map of template strings to values that are substituted during runtime
+    /**
+     * Whether this path has any template strings in it.
+     */
     public hasTemplateStrings: boolean = false;
 
     constructor(path: string) {
@@ -25,16 +32,25 @@ export class FlowGraphPath {
         }
     }
 
+    /**
+     * Gets the template strings in this path.
+     * @returns an array containing the template strings in this path.
+     */
     getTemplateStrings(): string[] {
         return Object.keys(this._templateSubstitutions);
     }
 
     private _getTemplateStringsInPath(path: string): string[] {
-        const splitPath = path.split(SEPARATORS).filter((part) => part !== "");
+        const allMatches = path.matchAll(PATH_REGEX);
+
         const templateStrings: string[] = [];
-        for (const partPath of splitPath) {
-            if (partPath.startsWith("{") && partPath.endsWith("}")) {
-                templateStrings.push(partPath.slice(1, partPath.length - 1));
+        for (const singleMatch of allMatches) {
+            const [, individualPart] = singleMatch;
+            if (individualPart.startsWith("{") && individualPart.endsWith("}")) {
+                const partName = individualPart.slice(1, individualPart.length - 1);
+                if (templateStrings.indexOf(partName) === -1) {
+                    templateStrings.push(partName);
+                }
             }
         }
         return templateStrings;
@@ -45,7 +61,7 @@ export class FlowGraphPath {
     }
 
     private _evaluateTemplates(): string {
-        let finalPath = this._path.slice(0); // copy the path so we don't replace on it.
+        let finalPath = this._path;
         for (const template in this._templateSubstitutions) {
             if (Number.isNaN(this._templateSubstitutions[template])) {
                 throw new Error(`Template string ${template} has no value`);
