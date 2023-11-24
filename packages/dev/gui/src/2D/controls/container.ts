@@ -619,6 +619,30 @@ export class Container extends Control {
         this._measureForChildren.copyFrom(this._currentMeasure);
     }
 
+    public isWidthFullyDefined(): boolean {
+        if (this.adaptWidthToChildren) {
+            for (const child of this.children) {
+                if (!child.isWidthFullyDefined()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return super.isWidthFullyDefined();
+    }
+
+    public isHeightFullyDefined(): boolean {
+        if (this.adaptHeightToChildren) {
+            for (const child of this.children) {
+                if (!child.isHeightFullyDefined()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return super.isHeightFullyDefined();
+    }
+
     /**
      * Serializes the current control
      * @param serializationObject defined the JSON serialized object

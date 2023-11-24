@@ -165,10 +165,8 @@ export class StackPanel extends Container {
                     child._top.ignoreAdaptiveScaling = true;
                 }
 
-                if (child._height.isPercentage && !child._automaticSize && !(child as TextBlock).resizeToFit && !(child as Container).adaptHeightToChildren) {
-                    if (!this.ignoreLayoutWarnings) {
-                        Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using height in percentage mode inside a vertical StackPanel`);
-                    }
+                if (!this.isHeightFullyDefined() && !this.ignoreLayoutWarnings) {
+                    Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using height in percentage mode inside a vertical StackPanel`);
                 } else {
                     stackHeight += child._currentMeasure.height + child._paddingTopInPixels + child._paddingBottomInPixels + (index < childrenCount - 1 ? this._spacing : 0);
                 }
@@ -179,16 +177,8 @@ export class StackPanel extends Container {
                     child._left.ignoreAdaptiveScaling = true;
                 }
 
-                if (
-                    child._width.isPercentage &&
-                    !child._automaticSize &&
-                    child.getClassName() === "TextBlock" &&
-                    (child as TextBlock).textWrapping !== TextWrapping.Clip &&
-                    !(child as TextBlock).forceResizeWidth
-                ) {
-                    if (!this.ignoreLayoutWarnings) {
-                        Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using width in percentage mode inside a horizontal StackPanel`);
-                    }
+                if (!this.isWidthFullyDefined() && !this.ignoreLayoutWarnings) {
+                    Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using width in percentage mode inside a horizontal StackPanel`);
                 } else {
                     stackWidth += child._currentMeasure.width + child._paddingLeftInPixels + child._paddingRightInPixels + (index < childrenCount - 1 ? this._spacing : 0);
                 }
@@ -234,6 +224,30 @@ export class StackPanel extends Container {
         }
 
         super._postMeasure();
+    }
+
+    public isWidthFullyDefined(): boolean {
+        if (!this.isVertical && !this._manualWidth) {
+            for (const child of this._children) {
+                if (!child.isWidthFullyDefined()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return this._width.isPixel;
+    }
+
+    public isHeightFullyDefined(): boolean {
+        if (this.isVertical && !this._manualHeight) {
+            for (const child of this._children) {
+                if (!child.isHeightFullyDefined()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return this._height.isPixel;
     }
 
     /**

@@ -2425,6 +2425,22 @@ export class Control implements IAnimatable {
     }
 
     /**
+     * A fully defined width means that it is possible to know what size it will occupy
+     * by querying only it and its children, and not its parent.
+     */
+    public isWidthFullyDefined(): boolean {
+        return this._width.isPixel;
+    }
+
+    /**
+     * A fully defined height means that it is possible to know what size it will occupy
+     * by querying only it and its children, and not its parent.
+     */
+    public isHeightFullyDefined(): boolean {
+        return this._height.isPixel;
+    }
+
+    /**
      * Clones a control and its descendants
      * @param host the texture where the control will be instantiated. Can be empty, in which case the control will be created on the same texture
      * @returns the cloned control
