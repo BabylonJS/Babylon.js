@@ -48,7 +48,9 @@ export class FlowGraphPath {
             if (value.startsWith("{") && value.endsWith("}")) {
                 isTemplate = true;
                 valueWithoutBraces = value.slice(1, value.length - 1);
-                templateStrings.push(valueWithoutBraces);
+                if (templateStrings.indexOf(valueWithoutBraces) === -1) {
+                    templateStrings.push(valueWithoutBraces);
+                }
             }
             pathParts.push({
                 value,
