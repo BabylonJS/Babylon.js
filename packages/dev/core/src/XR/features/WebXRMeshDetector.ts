@@ -2,7 +2,7 @@ import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager"
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import type { WebXRSessionManager } from "../webXRSessionManager";
 import type { TransformNode } from "../../Meshes/transformNode";
-import { Matrix } from "../../Maths/math";
+import { Matrix, Quaternion } from "../../Maths/math";
 import { Observable } from "../../Misc/observable";
 import { Mesh } from "../../Meshes/mesh";
 import { VertexBuffer } from "core/Buffers/buffer";
@@ -275,14 +275,16 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
 
             if (this._options.generateMeshes) {
                 if (!mesh.mesh) {
-                    mesh.mesh = new Mesh("xr mesh " + mesh.id, this._xrSessionManager.scene);
-                    mesh.mesh.setVerticesData(VertexBuffer.PositionKind, mesh.positions);
+                    const generatedMesh = new Mesh("xr mesh " + mesh.id, this._xrSessionManager.scene);
+                    generatedMesh.rotationQuaternion = new Quaternion();
+                    generatedMesh.setVerticesData(VertexBuffer.PositionKind, mesh.positions);
                     if (mesh.normals) {
-                        mesh.mesh.setVerticesData(VertexBuffer.NormalKind, mesh.normals);
+                        generatedMesh.setVerticesData(VertexBuffer.NormalKind, mesh.normals);
                     } else {
-                        mesh.mesh.createNormals(true);
+                        generatedMesh.createNormals(true);
                     }
-                    mesh.mesh.setIndices(mesh.indices, undefined, true);
+                    generatedMesh.setIndices(mesh.indices, undefined, true);
+                    mesh.mesh = generatedMesh;
                 } else {
                     const generatedMesh = mesh.mesh;
                     generatedMesh.updateVerticesData(VertexBuffer.PositionKind, mesh.positions);
@@ -293,6 +295,7 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
                     }
                     generatedMesh.updateIndices(mesh.indices);
                 }
+                mesh.transformationMatrix?.decompose(mesh.mesh.scaling, mesh.mesh.rotationQuaternion!, mesh.mesh.position);
             }
         }
 
