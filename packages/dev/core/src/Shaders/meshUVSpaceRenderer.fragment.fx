@@ -8,7 +8,7 @@ uniform sampler2D maskTexture; // The mask texture
 
 void main(void) {
     // Hard-coded texel size for a 1024x1024 texture
-    vec2 texelSize = vec2(1.0 / 1024.0, 1.0 / 1024.0);
+    vec2 texelSize = vec2(4.0 / 1024.0, 4.0 / 1024.0);
     
     // Sample the center pixel and surrounding pixels
     float centerPixel = texture2D(maskTexture, vUV).r;
