@@ -1,28 +1,40 @@
 precision highp float;
 
-varying vec2 vDecalTC;
-varying vec2 vUV;
+varying vec2 vDecalTC; // Texture coordinates from the decal
+varying vec2 vUV; // Original UV coordinates
 
-uniform sampler2D textureSampler;
-uniform sampler2D maskTexture; // The mask texture
+uniform sampler2D textureSampler; // The main texture sampler for decals
+uniform sampler2D maskTexture; // The mask texture for seams
 
 void main(void) {
+    if (vDecalTC.x < 0. || vDecalTC.x > 1. || vDecalTC.y < 0. || vDecalTC.y > 1.) {
+        discard; // Discard fragment outside of the decal texture coordinates
+    }
+
     // Hard-coded texel size for a 1024x1024 texture
     vec2 texelSize = vec2(4.0 / 1024.0, 4.0 / 1024.0);
-    
-    // Sample the center pixel and surrounding pixels
+
+    // Sample the center pixel and surrounding pixels from the mask texture
     float centerPixel = texture2D(maskTexture, vUV).r;
     float rightPixel = texture2D(maskTexture, vUV + vec2(texelSize.x, 0.0)).r;
     float leftPixel = texture2D(maskTexture, vUV - vec2(texelSize.x, 0.0)).r;
     float topPixel = texture2D(maskTexture, vUV + vec2(0.0, texelSize.y)).r;
     float bottomPixel = texture2D(maskTexture, vUV - vec2(0.0, texelSize.y)).r;
 
-    // Detect edges by checking if the center pixel is white but at least one of the neighbors is not
-    if (centerPixel > 0.5 && (rightPixel < 0.5 || leftPixel < 0.5 || topPixel < 0.5 || bottomPixel < 0.5)) {
-        // Current pixel is on the edge of a UV island
-        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); // Red
+    // Check if the current pixel is near a seam
+    bool nearSeam = centerPixel > 0.5 && (rightPixel < 0.5 || leftPixel < 0.5 || topPixel < 0.5 || bottomPixel < 0.5);
+
+    // Sample the decal texture
+    vec4 decalColor = texture2D(textureSampler, vDecalTC);
+
+    // Determine if the pixel is part of a decal (non-transparent pixel in the decal texture)
+    bool isDecal = decalColor.a > 0.5;
+
+    // If the pixel is part of a decal and near a seam, draw the green line
+    if (isDecal && nearSeam) {
+        gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0); // Draw green line over the seam
     } else {
-        // Current pixel is not on the edge of a UV island
-        gl_FragColor = vec4(centerPixel, centerPixel, centerPixel, 1.0); // Original color
+        // Otherwise, render the decal color
+        gl_FragColor = decalColor;
     }
 }
