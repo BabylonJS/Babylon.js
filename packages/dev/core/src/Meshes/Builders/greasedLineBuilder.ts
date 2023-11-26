@@ -197,7 +197,26 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
         }
     }
 
-    if (!options.instance) {
+    if (options.instance) {
+        // update the data on the mesh instance
+        instance = options.instance;
+        if (instance instanceof GreasedLineRibbonMesh) {
+            instance.addPoints(allPoints, initialGreasedLineOptions);
+        } else {
+            const currentWidths = instance.widths;
+
+            if (currentWidths) {
+                const newWidths = currentWidths.slice();
+                for (const w of widths) {
+                    newWidths.push(w);
+                }
+                instance.widths = newWidths;
+            } else {
+                instance.widths = widths;
+            }
+            instance.addPoints(allPoints);
+        }
+    } else {
         instance = initialGreasedLineOptions.ribbonOptions
             ? new GreasedLineRibbonMesh(name, scene, initialGreasedLineOptions)
             : new GreasedLineMesh(name, scene, initialGreasedLineOptions);
@@ -231,25 +250,6 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
                     material.backFaceCulling = false;
                 }
             }
-        }
-    } else {
-        // update the data on the mesh instance
-        instance = options.instance;
-        if (instance instanceof GreasedLineRibbonMesh) {
-            instance.addPoints(allPoints, initialGreasedLineOptions);
-        } else {
-            const currentWidths = instance.widths;
-
-            if (currentWidths) {
-                const newWidths = currentWidths.slice();
-                for (const w of widths) {
-                    newWidths.push(w);
-                }
-                instance.widths = newWidths;
-            } else {
-                instance.widths = widths;
-            }
-            instance.addPoints(allPoints);
         }
     }
 
