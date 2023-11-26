@@ -642,7 +642,7 @@ export class PostProcess {
     }
 
     /**
-     * 
+     * Resizes the post-process texture
      * @param width Width of the texture
      * @param height Height of the texture
      * @param camera The camera this post-process is applied to. Pass null if the post-process is used outside the context of a camera post-process chain (default: null)

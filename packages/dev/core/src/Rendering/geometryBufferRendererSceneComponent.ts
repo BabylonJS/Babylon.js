@@ -45,7 +45,10 @@ Object.defineProperty(Scene.prototype, "geometryBufferRenderer", {
     configurable: true,
 });
 
-Scene.prototype.enableGeometryBufferRenderer = function (ratio: number | { width: number; height: number } = 1, depthFormat = Constants.TEXTUREFORMAT_DEPTH16): Nullable<GeometryBufferRenderer> {
+Scene.prototype.enableGeometryBufferRenderer = function (
+    ratio: number | { width: number; height: number } = 1,
+    depthFormat = Constants.TEXTUREFORMAT_DEPTH16
+): Nullable<GeometryBufferRenderer> {
     if (this._geometryBufferRenderer) {
         return this._geometryBufferRenderer;
     }
