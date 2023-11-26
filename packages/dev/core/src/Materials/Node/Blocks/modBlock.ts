@@ -21,6 +21,8 @@ export class ModBlock extends NodeMaterialBlock {
 
         this._outputs[0]._typeConnectionSource = this._inputs[0];
         this._linkConnectionTypes(0, 1);
+
+        this._inputs[1].acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Float);
     }
 
     /**
