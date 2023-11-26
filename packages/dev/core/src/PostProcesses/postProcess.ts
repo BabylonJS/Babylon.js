@@ -641,7 +641,19 @@ export class PostProcess {
         }
     }
 
-    private _resize(width: number, height: number, camera: Camera, needMipMaps: boolean, forceDepthStencil?: boolean) {
+    /**
+     * 
+     * @param width Width of the texture
+     * @param height Height of the texture
+     * @param camera The camera this post-process is applied to. Pass null if the post-process is used outside the context of a camera post-process chain (default: null)
+     * @param needMipMaps True if mip maps need to be generated after render (default: false)
+     * @param forceDepthStencil True to force post-process texture creation with stencil depth and buffer (default: false)
+     */
+    public resize(width: number, height: number, camera: Nullable<Camera> = null, needMipMaps = false, forceDepthStencil = false) {
+        this._resize(width, height, camera, needMipMaps, forceDepthStencil);
+    }
+
+    private _resize(width: number, height: number, camera: Nullable<Camera>, needMipMaps: boolean, forceDepthStencil?: boolean) {
         if (this._textures.length > 0) {
             this._textures.reset();
         }
@@ -650,10 +662,12 @@ export class PostProcess {
         this.height = height;
 
         let firstPP = null;
-        for (let i = 0; i < camera._postProcesses.length; i++) {
-            if (camera._postProcesses[i] !== null) {
-                firstPP = camera._postProcesses[i];
-                break;
+        if (camera) {
+            for (let i = 0; i < camera._postProcesses.length; i++) {
+                if (camera._postProcesses[i] !== null) {
+                    firstPP = camera._postProcesses[i];
+                    break;
+                }
             }
         }
 

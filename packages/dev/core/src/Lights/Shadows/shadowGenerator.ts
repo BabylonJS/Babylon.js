@@ -1781,6 +1781,20 @@ export class ShadowGenerator implements IShadowGenerator {
     }
 
     /**
+     * Gets the view matrix used to render the shadow map.
+     */
+    public get viewMatrix() {
+        return this._viewMatrix;
+    }
+
+    /**
+     * Gets the projection matrix used to render the shadow map.
+     */
+    public get projectionMatrix() {
+        return this._projectionMatrix;
+    }
+
+    /**
      * Gets the transformation matrix used to project the meshes into the map from the light point of view.
      * (eq to shadow projection matrix * light transform matrix)
      * @returns The transform matrix used to create the shadow map
