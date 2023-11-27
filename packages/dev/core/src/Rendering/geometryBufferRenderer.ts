@@ -723,9 +723,9 @@ export class GeometryBufferRenderer {
         }
 
         const dimensions =
-            typeof this._ratioOrDimensions === "object"
-                ? this._ratioOrDimensions
-                : { width: engine.getRenderWidth() * this._ratioOrDimensions, height: engine.getRenderHeight() * this._ratioOrDimensions };
+            (this._ratioOrDimensions as any).width !== undefined
+                ? (this._ratioOrDimensions as { width: number; height: number })
+                : { width: engine.getRenderWidth() * (this._ratioOrDimensions as number), height: engine.getRenderHeight() * (this._ratioOrDimensions as number) };
 
         this._multiRenderTarget = new MultiRenderTarget(
             "gBuffer",
@@ -772,9 +772,9 @@ export class GeometryBufferRenderer {
         this._resizeObserver = engine.onResizeObservable.add(() => {
             if (this._multiRenderTarget) {
                 const dimensions =
-                    typeof this._ratioOrDimensions === "object"
-                        ? this._ratioOrDimensions
-                        : { width: engine.getRenderWidth() * this._ratioOrDimensions, height: engine.getRenderHeight() * this._ratioOrDimensions };
+                    (this._ratioOrDimensions as any).width !== undefined
+                        ? (this._ratioOrDimensions as { width: number; height: number })
+                        : { width: engine.getRenderWidth() * (this._ratioOrDimensions as number), height: engine.getRenderHeight() * (this._ratioOrDimensions as number) };
                 this._multiRenderTarget.resize(dimensions);
             }
         });
