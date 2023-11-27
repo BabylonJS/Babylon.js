@@ -23,7 +23,7 @@ export class FlowGraphStopAnimationBlock extends FlowGraphWithOnDoneExecutionBlo
     public _execute(context: FlowGraphContext): void {
         const animationToStopValue = this.animationToStop.getValue(context);
         animationToStopValue.stop();
-        this.onDone._activateSignal(context);
+        this.out._activateSignal(context);
     }
 
     public getClassName(): string {

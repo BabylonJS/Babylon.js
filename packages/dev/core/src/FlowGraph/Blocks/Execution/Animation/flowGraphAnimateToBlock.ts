@@ -5,21 +5,15 @@ import { RichTypeAny } from "../../../flowGraphRichTypes";
 import { RegisterClass } from "../../../../Misc";
 import { Animation, CircleEase } from "../../../../Animations";
 import { FlowGraphAsyncExecutionBlock } from "../../../flowGraphAsyncExecutionBlock";
+import { FlowGraphPathComponent } from "../../../flowGraphPathComponent";
+import type { FlowGraphPath } from "../../../flowGraphPath";
 
 export interface IFlowGraphAnimateToBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
      * The variable path of the entity whose property will be set. Needs a corresponding
      * entity on the context variables with that variable name.
      */
-    path: string;
-    /**
-     * The property to set on the target object.
-     */
-    property: string;
-    /**
-     * A string that will be substituted by a node with the same name if involved in curly braces.
-     */
-    subString: string;
+    path: FlowGraphPath;
     easingType: string;
     easingDuration: number;
 }
@@ -29,14 +23,15 @@ export class FlowGraphAnimateToBlock<ValueT> extends FlowGraphAsyncExecutionBloc
      * The value to animate to
      */
     public readonly a: FlowGraphDataConnection<ValueT>;
+    /**
+     * The component with the templated inputs for the provided path.
+     */
+    public readonly templateComponent: FlowGraphPathComponent;
 
     public constructor(public config: IFlowGraphAnimateToBlockConfiguration) {
         super(config);
-
-        this.a = this._registerDataInput("a", RichTypeAny);
-        if (config.subString) {
-            this._registerDataInput(config.subString, RichTypeAny);
-        }
+        this.templateComponent = new FlowGraphPathComponent(config.path, this);
+        this.a = this.registerDataInput("a", RichTypeAny);
     }
 
     public getEasingFunctionFromEasingType(easingType: string) {
@@ -47,8 +42,8 @@ export class FlowGraphAnimateToBlock<ValueT> extends FlowGraphAsyncExecutionBloc
     public _preparePendingTasks(context: FlowGraphContext): void {
         let runningAnimatable = context._getExecutionVariable(this, "runningAnimatable");
         if (!runningAnimatable) {
-            const target = context._getTargetFromPath(this.config.path, this.config.subString, this);
-            const property = this.config.property;
+            const target = this.templateComponent.getTarget(context);
+            const property = this.templateComponent.getPropertyPath(context);
             const a = this.a.getValue(context);
             const easingType = this.config.easingType;
             const easingDuration = this.config.easingDuration;

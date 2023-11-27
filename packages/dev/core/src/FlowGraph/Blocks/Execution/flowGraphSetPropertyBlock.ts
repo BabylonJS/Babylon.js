@@ -36,7 +36,7 @@ export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphWithOnDoneExecut
     public constructor(public config: IFlowGraphSetPropertyBlockConfiguration) {
         super(config);
 
-        this.a = this.registerDataInput("value", RichTypeAny);
+        this.a = this.registerDataInput("a", RichTypeAny);
         this.templateComponent = new FlowGraphPathComponent(config.path, this);
     }
 

@@ -3,7 +3,7 @@ import type { IKHRInteractivity, IKHRInteractivity_Configuration, IKHRInteractiv
 import type { IFlowGraphBlockConfiguration } from "core/FlowGraph";
 import type { ISerializedFlowGraph, ISerializedFlowGraphBlock, ISerializedFlowGraphConnection, ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
 import { RandomGUID } from "core/Misc";
-import { gltfPropertyNameToBabylonPropertyName, gltfToFlowGraphTypeMap, gltfTypeToBabylonType } from "./utils";
+import { gltfPropertyPathToBabylonPropertyPath, gltfToFlowGraphTypeMap, gltfTypeToBabylonType } from "./interactivityUtils";
 
 function convertValueWithType(configObject: IKHRInteractivity_Configuration, definition: IKHRInteractivity) {
     if (configObject.type !== undefined) {
@@ -46,35 +46,20 @@ function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKH
         } else if (configObject.id === "path") {
             // Convert from a GLTF path to a reference to the Babylon.js object
             let pathValue = configObject.value as string;
+            console.log("parsing path", pathValue);
             if (!pathValue.startsWith("/")) {
                 pathValue = `/${pathValue}`;
             }
-            // A path can be:
-            // /[nodes|materials|animations]/[numericIndex|substitutionString]/propertyName
-            // Basically the first two parts are part of the path, and from then on it's part of the property?
-            const pathParts = pathValue.split("/");
-            if (pathParts.length < 4) {
-                throw new Error(`Invalid path: ${pathValue}`);
+            pathValue = `/gltf${pathValue}`;
+            for (const key in gltfPropertyPathToBabylonPropertyPath) {
+                const value = gltfPropertyPathToBabylonPropertyPath[key];
+                pathValue = pathValue.replace(key, value);
             }
-            const path = `/${pathParts[1]}/${pathParts[2]}`;
-            const isSecondPartNumeric = !isNaN(Number(pathParts[2]));
-            if (!isSecondPartNumeric) {
-                converted.subString = pathParts[2].replace("{", "").replace("}", "");
-            } else {
-                converted.subString = "";
-            }
-            converted.path = path;
-            let property = "";
-            for (let i = 3; i < pathParts.length; i++) {
-                property += pathParts[i];
-                if (i < pathParts.length - 1) {
-                    property += ".";
-                }
-            }
-            if (gltfPropertyNameToBabylonPropertyName[property]) {
-                property = gltfPropertyNameToBabylonPropertyName[property];
-            }
-            converted.property = property;
+            console.log("converted path", pathValue);
+            converted.path = {
+                path: pathValue,
+                className: "FGPath",
+            };
         } else {
             converted[configObject.id] = convertValueWithType(configObject, definition);
         }

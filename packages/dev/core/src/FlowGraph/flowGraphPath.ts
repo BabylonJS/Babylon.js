@@ -145,6 +145,16 @@ export class FlowGraphPath {
         target[property] = value;
     }
 
+    getTarget(context: FlowGraphContext) {
+        const { entityChain } = this._evaluatePath(context);
+        return entityChain[entityChain.length - 2];
+    }
+
+    getPropertyPath(context: FlowGraphContext) {
+        const { splitPath } = this._evaluatePath(context);
+        return splitPath[splitPath.length - 1];
+    }
+
     getClassName() {
         return "FGPath";
     }

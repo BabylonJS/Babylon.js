@@ -27,7 +27,7 @@ export class FlowGraphPlayAudioBlock extends FlowGraphWithOnDoneExecutionBlock {
         if (audioValue instanceof Sound) {
             audioValue.play();
         }
-        this.onDone._activateSignal(context);
+        this.out._activateSignal(context);
     }
 
     public getClassName(): string {

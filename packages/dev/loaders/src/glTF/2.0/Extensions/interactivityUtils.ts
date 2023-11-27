@@ -45,10 +45,10 @@ export const gltfToFlowGraphTypeMap: { [key: string]: string } = {
     "math/dot": FlowGraphDotBlock.ClassName,
 };
 
-export const gltfPropertyNameToBabylonPropertyName: any = {
-    translation: "position",
-    scale: "scaling",
-    rotation: "rotationQuaternion",
+export const gltfPropertyPathToBabylonPropertyPath: any = {
+    translation: "_babylonTransformNode/position",
+    scale: "_babylonTransformNode/scaling",
+    rotation: "_babylonTransformNode/rotationQuaternion",
 };
 
 export const gltfTypeToBabylonType: any = {

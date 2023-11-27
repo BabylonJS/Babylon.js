@@ -9,6 +9,7 @@ import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 
 export interface IFlowGraphBlockConfiguration {
     name?: string;
+    [key: string]: any;
 }
 
 /**

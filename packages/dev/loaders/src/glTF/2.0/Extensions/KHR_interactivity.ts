@@ -3,7 +3,7 @@ import type { IKHRInteractivity } from "babylonjs-gltf2interface";
 import { GLTFLoader } from "../glTFLoader";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { FlowGraphCoordinator, FlowGraph } from "core/FlowGraph";
-import { convertGLTFToJson } from "./Interactivity/interactivityFunctions";
+import { convertGLTFToJson } from "./interactivityFunctions";
 
 const NAME = "KHR_interactivity";
 
@@ -50,10 +50,10 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
         const coordinator = new FlowGraphCoordinator({ scene });
         const graph = FlowGraph.Parse(json, coordinator);
         const context = graph.getContext(0);
-        for (const path in this._loader._pathToNodesMapping) {
-            const node = this._loader._pathToNodesMapping[path];
-            context.setVariable(path, node);
+        if (!context._userVariables) {
+            context._userVariables = {};
         }
+        context._userVariables.gltf = this._loader.gltf;
 
         coordinator.start();
         console.log("Graph:", coordinator.flowGraphs[0]);

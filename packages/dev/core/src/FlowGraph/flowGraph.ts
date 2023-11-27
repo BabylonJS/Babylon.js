@@ -235,7 +235,7 @@ export class FlowGraph {
         const blocks: FlowGraphBlock[] = [];
         // Parse all blocks
         for (const serializedBlock of serializationObject.allBlocks) {
-            const block = FlowGraphBlock.Parse(serializedBlock, coordinator.config.scene, valueParseFunction);
+            const block = FlowGraphBlock.Parse(serializedBlock);
             blocks.push(block);
             if (block instanceof FlowGraphEventBlock) {
                 graph.addEventBlock(block);

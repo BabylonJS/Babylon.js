@@ -64,4 +64,14 @@ export class FlowGraphPathComponent {
         this.substitutePath(context);
         this.path.setProperty(context, value);
     }
+
+    getTarget(context: FlowGraphContext): any {
+        this.substitutePath(context);
+        return this.path.getTarget(context);
+    }
+
+    getPropertyPath(context: FlowGraphContext): string {
+        this.substitutePath(context);
+        return this.path.getPropertyPath(context);
+    }
 }
