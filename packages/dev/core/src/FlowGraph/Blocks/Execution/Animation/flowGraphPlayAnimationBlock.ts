@@ -1,5 +1,5 @@
 import type { FlowGraphContext } from "../../../flowGraphContext";
-import type { Animatable, Animation } from "../../../../Animations";
+import type { Animatable } from "../../../../Animations";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import { FlowGraphAsyncExecutionBlock } from "../../../flowGraphAsyncExecutionBlock";
