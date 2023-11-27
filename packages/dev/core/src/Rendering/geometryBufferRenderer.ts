@@ -51,6 +51,7 @@ const uniforms = [
     "morphTargetInfluences",
     "morphTargetTextureInfo",
     "morphTargetTextureIndices",
+    "boneTextureWidth",
 ];
 addClipPlaneUniforms(uniforms);
 
@@ -570,7 +571,7 @@ export class GeometryBufferRenderer {
         }
 
         // Bones
-        if (mesh.useBones && mesh.computeBonesUsingShaders) {
+        if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
             attribs.push(VertexBuffer.MatricesIndicesKind);
             attribs.push(VertexBuffer.MatricesWeightsKind);
             if (mesh.numBoneInfluencers > 4) {
@@ -578,9 +579,12 @@ export class GeometryBufferRenderer {
                 attribs.push(VertexBuffer.MatricesWeightsExtraKind);
             }
             defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-            defines.push("#define BonesPerMesh " + (mesh.skeleton ? mesh.skeleton.bones.length + 1 : 0));
+            defines.push("#define BONETEXTURE " + mesh.skeleton.isUsingTextureForMatrices);
+            defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
         } else {
             defines.push("#define NUM_BONE_INFLUENCERS 0");
+            defines.push("#define BONETEXTURE false");
+            defines.push("#define BonesPerMesh 0");
         }
 
         // Morph targets
@@ -629,7 +633,7 @@ export class GeometryBufferRenderer {
                     {
                         attributes: attribs,
                         uniformsNames: uniforms,
-                        samplers: ["diffuseSampler", "bumpSampler", "reflectivitySampler", "albedoSampler", "morphTargets"],
+                        samplers: ["diffuseSampler", "bumpSampler", "reflectivitySampler", "albedoSampler", "morphTargets", "boneSampler"],
                         defines: join,
                         onCompiled: null,
                         fallbacks: null,
@@ -953,7 +957,16 @@ export class GeometryBufferRenderer {
 
                 // Bones
                 if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
-                    effect.setMatrices("mBones", renderingMesh.skeleton.getTransformMatrices(renderingMesh));
+                    const skeleton = renderingMesh.skeleton;
+
+                    if (skeleton.isUsingTextureForMatrices && effect.getUniformIndex("boneTextureWidth") > -1) {
+                        const boneTexture = skeleton.getTransformMatrixTexture(renderingMesh);
+                        effect.setTexture("boneSampler", boneTexture);
+                        effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
+                    } else {
+                        effect.setMatrices("mBones", renderingMesh.skeleton.getTransformMatrices(renderingMesh));
+                    }
+
                     if (this._enableVelocity) {
                         effect.setMatrices("mPreviousBones", this._previousBonesTransformationMatrices[renderingMesh.uniqueId]);
                     }
