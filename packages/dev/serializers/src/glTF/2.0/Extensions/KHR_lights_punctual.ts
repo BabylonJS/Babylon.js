@@ -71,10 +71,10 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                     babylonNode.getTypeID() == Light.LIGHTTYPEID_POINTLIGHT
                         ? KHRLightsPunctual_LightType.POINT
                         : babylonNode.getTypeID() == Light.LIGHTTYPEID_DIRECTIONALLIGHT
-                        ? KHRLightsPunctual_LightType.DIRECTIONAL
-                        : babylonNode.getTypeID() == Light.LIGHTTYPEID_SPOTLIGHT
-                        ? KHRLightsPunctual_LightType.SPOT
-                        : null;
+                          ? KHRLightsPunctual_LightType.DIRECTIONAL
+                          : babylonNode.getTypeID() == Light.LIGHTTYPEID_SPOTLIGHT
+                            ? KHRLightsPunctual_LightType.SPOT
+                            : null;
                 if (lightType == null) {
                     Logger.Warn(`${context}: Light ${babylonNode.name} is not supported in ${NAME}`);
                 } else {
