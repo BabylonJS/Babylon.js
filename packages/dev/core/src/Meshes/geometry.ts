@@ -564,7 +564,7 @@ export class Geometry implements IGetSetVerticesData {
         this._totalVertices = totalVertices;
         this._totalIndices = totalIndices;
 
-        indexBuffer.is32Bits = this._totalIndices > 65535;
+        indexBuffer.is32Bits ||= this._totalIndices > 65535;
 
         for (const mesh of this._meshes) {
             mesh._createGlobalSubMesh(true);
