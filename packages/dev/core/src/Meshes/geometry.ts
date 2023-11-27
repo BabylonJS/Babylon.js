@@ -555,16 +555,31 @@ export class Geometry implements IGetSetVerticesData {
      * Sets the index buffer for this geometry.
      * @param indexBuffer Defines the index buffer to use for this geometry
      * @param totalVertices Defines the total number of vertices used by the buffer
-     * @param totalIndices Defines the total number of indices in the index buffer
+     * @param indicesArrayOrTotalIndices Defines the content of the index buffer OR the total number of indices in the index buffer
+     * @param updatable defines if the index buffer must be flagged as updatable (false by default)
      */
-    public setIndexBuffer(indexBuffer: DataBuffer, totalVertices: number, totalIndices: number): void {
-        this._indices = [];
-        this._indexBufferIsUpdatable = false;
-        this._indexBuffer = indexBuffer;
-        this._totalVertices = totalVertices;
-        this._totalIndices = totalIndices;
+    public setIndexBuffer(indexBuffer: Nullable<DataBuffer>, totalVertices: Nullable<number>, indicesArrayOrTotalIndices: number | IndicesArray, updatable: boolean = false): void {
+        if (typeof indicesArrayOrTotalIndices === "number") {
+            this._indices = [];
+            this._totalIndices = indicesArrayOrTotalIndices;
 
-        indexBuffer.is32Bits = this._totalIndices > 65535;
+            if (indexBuffer) {
+                indexBuffer.is32Bits ||= this._totalIndices > 65535;
+            }
+        } else {
+            this._indices = indicesArrayOrTotalIndices;
+            this._totalIndices = undefined;
+        }
+
+        this._indexBufferIsUpdatable = updatable;
+
+        if (indexBuffer) {
+            this._indexBuffer = indexBuffer;
+        }
+
+        if (totalVertices != undefined) {
+            this._totalVertices = totalVertices;
+        }
 
         for (const mesh of this._meshes) {
             mesh._createGlobalSubMesh(true);
@@ -585,23 +600,12 @@ export class Geometry implements IGetSetVerticesData {
             this._engine._releaseBuffer(this._indexBuffer);
         }
 
-        this._indices = indices;
-        this._indexBufferIsUpdatable = updatable;
+        let indexBuffer: Nullable<DataBuffer> = null;
         if (this._meshes.length !== 0 && this._indices) {
-            this._indexBuffer = this._engine.createIndexBuffer(this._indices, updatable);
+            indexBuffer = this._engine.createIndexBuffer(this._indices, updatable);
         }
 
-        if (totalVertices != undefined) {
-            // including null and undefined
-            this._totalVertices = totalVertices;
-        }
-
-        for (const mesh of this._meshes) {
-            mesh._createGlobalSubMesh(true);
-            mesh.synchronizeInstances();
-        }
-
-        this._notifyUpdate();
+        this.setIndexBuffer(indexBuffer, totalVertices, indices, updatable);
     }
 
     /**
