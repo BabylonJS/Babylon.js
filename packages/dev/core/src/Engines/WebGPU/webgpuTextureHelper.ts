@@ -348,12 +348,12 @@ export class WebGPUTextureHelper {
             type === PipelineType.MipMap
                 ? 1 << 0
                 : type === PipelineType.InvertYPremultiplyAlpha
-                ? ((params!.invertY ? 1 : 0) << 1) + ((params!.premultiplyAlpha ? 1 : 0) << 2)
-                : type === PipelineType.Clear
-                ? 1 << 3
-                : type === PipelineType.InvertYPremultiplyAlphaWithOfst
-                ? ((params!.invertY ? 1 : 0) << 4) + ((params!.premultiplyAlpha ? 1 : 0) << 5)
-                : 0;
+                  ? ((params!.invertY ? 1 : 0) << 1) + ((params!.premultiplyAlpha ? 1 : 0) << 2)
+                  : type === PipelineType.Clear
+                    ? 1 << 3
+                    : type === PipelineType.InvertYPremultiplyAlphaWithOfst
+                      ? ((params!.invertY ? 1 : 0) << 4) + ((params!.premultiplyAlpha ? 1 : 0) << 5)
+                      : 0;
 
         if (!this._pipelines[format]) {
             this._pipelines[format] = [];
@@ -1684,8 +1684,8 @@ export class WebGPUTextureHelper {
             texture._source === InternalTextureSource.RenderTarget || texture.source === InternalTextureSource.MultiRenderTarget
                 ? WebGPUConstants.TextureUsage.TextureBinding | WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment
                 : texture._source === InternalTextureSource.DepthStencil
-                ? WebGPUConstants.TextureUsage.TextureBinding | WebGPUConstants.TextureUsage.RenderAttachment
-                : -1;
+                  ? WebGPUConstants.TextureUsage.TextureBinding | WebGPUConstants.TextureUsage.RenderAttachment
+                  : -1;
 
         gpuTextureWrapper.textureAdditionalUsages = isStorageTexture ? WebGPUConstants.TextureUsage.StorageBinding : 0;
 
@@ -1749,8 +1749,8 @@ export class WebGPUTextureHelper {
                     dimension: texture.is2DArray
                         ? WebGPUConstants.TextureViewDimension.E2dArray
                         : texture.is3D
-                        ? WebGPUConstants.TextureDimension.E3d
-                        : WebGPUConstants.TextureViewDimension.E2d,
+                          ? WebGPUConstants.TextureDimension.E3d
+                          : WebGPUConstants.TextureViewDimension.E2d,
                     mipLevelCount: mipmapCount,
                     baseArrayLayer: 0,
                     baseMipLevel: 0,

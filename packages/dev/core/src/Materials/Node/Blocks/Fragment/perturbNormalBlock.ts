@@ -253,8 +253,8 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         const replaceForParallaxInfos = !this.parallaxScale.isConnectedToInputBlock
             ? "0.05"
             : this.parallaxScale.connectInputBlock!.isConstant
-            ? state._emitFloat(this.parallaxScale.connectInputBlock!.value)
-            : this.parallaxScale.associatedVariableName;
+              ? state._emitFloat(this.parallaxScale.connectInputBlock!.value)
+              : this.parallaxScale.associatedVariableName;
 
         const replaceForBumpInfos =
             this.strength.isConnectedToInputBlock && this.strength.connectInputBlock!.isConstant
