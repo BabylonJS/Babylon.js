@@ -7,8 +7,6 @@ import { RegisterClass } from "core/Misc/typeStore";
 import { serialize } from "core/Misc/decorators";
 import type { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
-import type { TextBlock } from "./textBlock";
-import { TextWrapping } from "./textBlock";
 
 /**
  * Class used to create a 2D stack panel container
@@ -235,7 +233,7 @@ export class StackPanel extends Container {
             }
             return true;
         }
-        return this._width.isPixel;
+        return this._width.isPixel || this.adaptWidthToChildren;
     }
 
     public isHeightFullyDefined(): boolean {
@@ -247,7 +245,7 @@ export class StackPanel extends Container {
             }
             return true;
         }
-        return this._height.isPixel;
+        return this._height.isPixel || this.adaptHeightToChildren;
     }
 
     /**
