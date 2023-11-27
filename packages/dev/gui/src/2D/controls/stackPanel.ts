@@ -163,7 +163,7 @@ export class StackPanel extends Container {
                     child._top.ignoreAdaptiveScaling = true;
                 }
 
-                if (!this.isHeightFullyDefined() && !this.ignoreLayoutWarnings) {
+                if (!child.isHeightFullyDefined() && !this.ignoreLayoutWarnings) {
                     Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using height in percentage mode inside a vertical StackPanel`);
                 } else {
                     stackHeight += child._currentMeasure.height + child._paddingTopInPixels + child._paddingBottomInPixels + (index < childrenCount - 1 ? this._spacing : 0);
@@ -175,7 +175,7 @@ export class StackPanel extends Container {
                     child._left.ignoreAdaptiveScaling = true;
                 }
 
-                if (!this.isWidthFullyDefined() && !this.ignoreLayoutWarnings) {
+                if (!child.isWidthFullyDefined() && !this.ignoreLayoutWarnings) {
                     Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using width in percentage mode inside a horizontal StackPanel`);
                 } else {
                     stackWidth += child._currentMeasure.width + child._paddingLeftInPixels + child._paddingRightInPixels + (index < childrenCount - 1 ? this._spacing : 0);
