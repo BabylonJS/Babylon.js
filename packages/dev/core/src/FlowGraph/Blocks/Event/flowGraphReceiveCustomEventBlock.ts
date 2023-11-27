@@ -37,7 +37,7 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
         super.configure();
         for (let i = 0; i < this.config.eventData.length; i++) {
             const dataName = this.config.eventData[i];
-            this._registerDataOutput(dataName, RichTypeAny);
+            this.registerDataOutput(dataName, RichTypeAny);
         }
     }
     public _preparePendingTasks(context: FlowGraphContext): void {
@@ -63,5 +63,10 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
     }
 
     public static ClassName = "FGReceiveCustomEventBlock";
+
+    public serialize(serializationObject?: any): void {
+        super.serialize(serializationObject);
+        serializationObject.eventId = this.config.eventId;
+    }
 }
 RegisterClass(FlowGraphReceiveCustomEventBlock.ClassName, FlowGraphReceiveCustomEventBlock);

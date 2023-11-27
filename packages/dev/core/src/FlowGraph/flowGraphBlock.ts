@@ -6,12 +6,9 @@ import type { RichType } from "./flowGraphRichTypes";
 import { Tools } from "core/Misc/tools";
 import type { ISerializedFlowGraphBlock } from "./typeDefinitions";
 import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
-import { defaultValueParseFunction, defaultValueSerializationFunction } from "./serialization";
-import type { Scene } from "../scene";
 
 export interface IFlowGraphBlockConfiguration {
     name?: string;
-    [key: string]: any;
 }
 
 /**
@@ -59,13 +56,13 @@ export class FlowGraphBlock {
         // empty by default, overriden in data blocks
     }
 
-    protected _registerDataInput<T>(name: string, className: RichType<T>): FlowGraphDataConnection<T> {
+    public registerDataInput<T>(name: string, className: RichType<T>): FlowGraphDataConnection<T> {
         const input = new FlowGraphDataConnection(name, FlowGraphConnectionType.Input, this, className);
         this.dataInputs.push(input);
         return input;
     }
 
-    protected _registerDataOutput<T>(name: string, className: RichType<T>): FlowGraphDataConnection<T> {
+    public registerDataOutput<T>(name: string, className: RichType<T>): FlowGraphDataConnection<T> {
         const output = new FlowGraphDataConnection(name, FlowGraphConnectionType.Output, this, className);
         this.dataOutputs.push(output);
         return output;
@@ -79,18 +76,12 @@ export class FlowGraphBlock {
         return this.dataOutputs.find((i) => i.name === name);
     }
 
-    private _serializeConfig(configObject: any, valueSerializeFunction: (key: string, value: any, serializationObject: any) => void = defaultValueSerializationFunction) {
-        if (this.config) {
-            for (const key in this.config) {
-                valueSerializeFunction(key, this.config[key], configObject);
-            }
-        }
-    }
-
     public serialize(serializationObject: any = {}, valueSerializeFunction?: (key: string, value: any, serializationObject: any) => void) {
         serializationObject.uniqueId = this.uniqueId;
         serializationObject.config = {};
-        this._serializeConfig(serializationObject.config, valueSerializeFunction);
+        if (this.config) {
+            serializationObject.config["name"] = this.config.name;
+        }
         serializationObject.dataInputs = [];
         serializationObject.dataOutputs = [];
         serializationObject.className = this.getClassName();
@@ -110,29 +101,21 @@ export class FlowGraphBlock {
         return "FGBlock";
     }
 
-    private static _ParseConfig(
-        serializationObject: any,
-        scene: Scene,
-        valueParseFunction: (key: string, serializationObject: any, scene: Scene) => any = defaultValueParseFunction
-    ): IFlowGraphBlockConfiguration {
-        const config: IFlowGraphBlockConfiguration = {};
+    public static Parse(serializationObject: ISerializedFlowGraphBlock): FlowGraphBlock {
+        const classType = Tools.Instantiate(serializationObject.className);
+        const parsedConfig: any = {};
         if (serializationObject.config) {
             for (const key in serializationObject.config) {
-                config[key] = valueParseFunction(key, serializationObject.config, scene);
+                const value = serializationObject.config[key];
+                if (value && value.className) {
+                    const valueClassType = Tools.Instantiate(value.className);
+                    parsedConfig[key] = valueClassType.prototype.Parse(value);
+                } else {
+                    parsedConfig[key] = value;
+                }
             }
         }
-        return config;
-    }
-
-    public static Parse(
-        serializationObject: ISerializedFlowGraphBlock,
-        scene: Scene,
-        valueParseFunction: (key: string, serializationObject: any, scene: Scene) => any = defaultValueParseFunction
-    ): FlowGraphBlock {
-        const classType = Tools.Instantiate(serializationObject.className);
-        // console.log("parsing block of classType", serializationObject.className);
-        const config = FlowGraphBlock._ParseConfig(serializationObject, scene, valueParseFunction);
-        const obj = new classType(config) as FlowGraphBlock;
+        const obj = new classType(parsedConfig);
         obj.uniqueId = serializationObject.uniqueId;
         for (let i = 0; i < serializationObject.dataInputs.length; i++) {
             const dataInput = obj.getDataInput(serializationObject.dataInputs[i].name);

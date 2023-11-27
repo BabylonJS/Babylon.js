@@ -20,7 +20,7 @@ export class FlowGraphTimerBlock extends FlowGraphAsyncExecutionBlock {
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
-        this.timeout = this._registerDataInput("timeout", RichTypeNumber);
+        this.timeout = this.registerDataInput("timeout", RichTypeNumber);
     }
 
     public _preparePendingTasks(context: FlowGraphContext): void {

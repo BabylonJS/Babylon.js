@@ -30,7 +30,7 @@ export class FlowGraphSendCustomEventBlock extends FlowGraphWithOnDoneExecutionB
         super.configure();
         for (let i = 0; i < this.config.eventData.length; i++) {
             const dataName = this.config.eventData[i];
-            this._registerDataInput(dataName, RichTypeAny);
+            this.registerDataInput(dataName, RichTypeAny);
         }
     }
 

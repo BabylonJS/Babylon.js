@@ -26,8 +26,8 @@ export class FlowGraphThrottleBlock extends FlowGraphWithOnDoneExecutionBlock {
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
         this.reset = this._registerSignalInput("reset");
-        this.duration = this._registerDataInput("duration", RichTypeNumber);
-        this.timeRemaining = this._registerDataOutput("timeRemaining", RichTypeNumber);
+        this.duration = this.registerDataInput("duration", RichTypeNumber);
+        this.timeRemaining = this.registerDataOutput("timeRemaining", RichTypeNumber);
     }
     public _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {
         const lastExecutedTime = context._getExecutionVariable(this, "lastExecutedTime");

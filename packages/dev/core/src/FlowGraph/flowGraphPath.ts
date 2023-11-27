@@ -1,89 +1,162 @@
+import { RegisterClass } from "../Misc/typeStore";
 import type { FlowGraphContext } from "./flowGraphContext";
 
-export interface IFlowGraphPathAnimationConfig {}
+// Path: /x/{y}/z/.../w
+const PATH_REGEX = /([./])({?\w+}?)/g;
 
-const SEPARATORS = /\/|\./;
+interface IPathPart {
+    value: string;
+    isTemplate: boolean;
+    valueWithoutBraces: string;
+    replacedValue?: string;
+    separator: string;
+}
 /*
+ * @experimental
  * This class represents a path of type /x/{y}/z/.../w that is evaluated
  * on a target object. The string between curly braces ({y} in the example)
  * is a special template string that is replaced during runtime.
  */
 export class FlowGraphPath {
-    private path: string;
-    private templateSubstitutions: {
+    private _path: string;
+    private _templateSubstitutions: {
         [key: string]: number;
     } = {}; // this is a map of template strings to values that are substituted during runtime
+    private _pathParts: IPathPart[] = []; // this is the path divided into parts, with each part being either a template string or a regular string
+    private _templateStrings: string[] = []; // this is the list of template strings in the path
+    /**
+     * Whether this path has any template strings in it.
+     */
     public hasTemplateStrings: boolean = false;
 
     constructor(path: string) {
-        this.path = path;
-        const templateStrings = this._getTemplateStringsInPath(path);
+        this._path = path;
+        const { pathParts, templateStrings } = this._getPathPartsAndTemplateStrings(path);
+        this._pathParts = pathParts;
+        this._templateStrings = templateStrings;
         this.hasTemplateStrings = templateStrings.length > 0;
-        for (const templateString of templateStrings) {
-            // Part of the path enclosed in curly braces = template string, we'll set a default
-            // value on the template substitutions for now
-            this.templateSubstitutions[templateString] = -1;
-        }
     }
 
-    getTemplateStrings(): string[] {
-        return Object.keys(this.templateSubstitutions);
-    }
+    private _getPathPartsAndTemplateStrings(path: string) {
+        const allMatches = path.matchAll(PATH_REGEX);
 
-    private _getTemplateStringsInPath(path: string): string[] {
-        const splitPath = path.split(SEPARATORS).filter((part) => part !== "");
-        const templateStrings: string[] = [];
-        for (const partPath of splitPath) {
-            if (partPath.startsWith("{") && partPath.endsWith("}")) {
-                templateStrings.push(partPath.slice(1, partPath.length - 1));
+        const pathParts = [];
+        const templateStrings = [];
+        let nextMatch = allMatches.next();
+        while (!nextMatch.done) {
+            const singleMatch = nextMatch.value;
+            const [, separator, value] = singleMatch;
+            let valueWithoutBraces = value;
+            let isTemplate = false;
+            if (value.startsWith("{") && value.endsWith("}")) {
+                isTemplate = true;
+                valueWithoutBraces = value.slice(1, value.length - 1);
+                if (templateStrings.indexOf(valueWithoutBraces) === -1) {
+                    templateStrings.push(valueWithoutBraces);
+                }
             }
+            pathParts.push({
+                value,
+                isTemplate,
+                valueWithoutBraces,
+                separator,
+            });
+            nextMatch = allMatches.next();
         }
-        return templateStrings;
+        return { pathParts, templateStrings };
+    }
+
+    /**
+     * Gets the template strings in this path.
+     * @returns an array containing the template strings in this path.
+     */
+    getTemplateStrings(): string[] {
+        return this._templateStrings;
     }
 
     setTemplateSubstitution(template: string, value: number) {
-        this.templateSubstitutions[template] = value;
+        if (this._templateStrings.indexOf(template) === -1) {
+            throw new Error(`Template string ${template} does not exist in path ${this._path}`);
+        }
+        this._templateSubstitutions[template] = value;
     }
 
-    private _evaluateTemplates(): string {
-        let finalPath = this.path.slice(0); // copy the path so we don't replace on it.
-        for (const template in this.templateSubstitutions) {
-            if (this.templateSubstitutions[template] === -1) {
-                throw new Error(`Template string ${template} has no value`);
+    private _evaluateTemplates() {
+        for (const pathPart of this._pathParts) {
+            if (pathPart.isTemplate) {
+                const value = this._templateSubstitutions[pathPart.valueWithoutBraces];
+                if (value === undefined) {
+                    throw new Error(`Template string ${pathPart.value} was not substituted`);
+                }
+                pathPart.replacedValue = value.toString();
             }
-            finalPath = finalPath.replace(`{${template}}`, this.templateSubstitutions[template].toString());
+        }
+    }
+
+    private _getFinalPath() {
+        let finalPath = "";
+        for (const pathPart of this._pathParts) {
+            finalPath += pathPart.separator;
+            if (pathPart.isTemplate) {
+                finalPath += pathPart.replacedValue;
+            } else {
+                finalPath += pathPart.value;
+            }
         }
         return finalPath;
     }
 
-    private _evaluatePath(context: FlowGraphContext, setValue = false, value?: any): any {
-        const finalPath = this._evaluateTemplates();
-        const splitPath = finalPath.split(SEPARATORS).filter((part) => part !== "");
+    /*
+     * Breaks the path into a chain of entities, for example,
+     * /x/y/z would be split into [context._userVariables.x, context._userVariables.x.y, context._userVariables.x.y.z],
+     * and the path that was split, i.e. /x/y/z, would be split into ["x", "y", "z"].
+     */
+    private _evaluatePath(context: FlowGraphContext): { entityChain: any[]; splitPath: string[] } {
+        this._evaluateTemplates();
+
+        const entityChain = [];
+        const splitPath = [];
         let currentTarget = context._userVariables;
-        for (let i = 0; i < (setValue ? splitPath.length - 1 : splitPath.length); i++) {
+        for (const pathPart of this._pathParts) {
             if (currentTarget === undefined) {
-                throw new Error(`Could not find path ${finalPath} in target context`);
+                throw new Error(`Could not find path ${this._getFinalPath()} in target context`);
             }
-            const pathPart = splitPath[i];
-            currentTarget = currentTarget[pathPart];
+            const value = pathPart.isTemplate ? pathPart.replacedValue : pathPart.value;
+            if (!value) {
+                throw new Error(`Invalid path ${this._getFinalPath()}`);
+            }
+            currentTarget = currentTarget[value];
+            entityChain.push(currentTarget);
+            splitPath.push(value);
         }
-        if (setValue) {
-            currentTarget[splitPath[splitPath.length - 1]] = value;
-            currentTarget = value;
-        }
-        return currentTarget;
+
+        return { entityChain, splitPath };
     }
 
     getProperty(context: FlowGraphContext): any {
-        return this._evaluatePath(context);
+        const { entityChain } = this._evaluatePath(context);
+        return entityChain[entityChain.length - 1];
     }
 
     setProperty(context: FlowGraphContext, value: any) {
-        this._evaluatePath(context, true, value);
+        const { entityChain, splitPath } = this._evaluatePath(context);
+        const target = entityChain[entityChain.length - 2];
+        const property = splitPath[splitPath.length - 1];
+        target[property] = value;
     }
 
-    animateProperty(context: FlowGraphContext, config: IFlowGraphPathAnimationConfig) {
-        //const {from, to, value, easing, duration} = config;
-        //todo
+    getClassName() {
+        return "FGPath";
+    }
+
+    serialize(serializationObject: any = {}) {
+        serializationObject.path = this._path;
+        serializationObject.className = this.getClassName();
+        return serializationObject;
+    }
+
+    Parse(serializationObject: any) {
+        return new FlowGraphPath(serializationObject.path);
     }
 }
+RegisterClass("FGPath", FlowGraphPath);

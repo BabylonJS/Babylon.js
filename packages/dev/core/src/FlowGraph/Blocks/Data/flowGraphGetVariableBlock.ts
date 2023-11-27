@@ -31,7 +31,7 @@ export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
         super(config);
 
         // The output connection has to have the name of the variable.
-        this.output = this._registerDataOutput(config.variableName, RichTypeAny);
+        this.output = this.registerDataOutput(config.variableName, RichTypeAny);
     }
 
     /**

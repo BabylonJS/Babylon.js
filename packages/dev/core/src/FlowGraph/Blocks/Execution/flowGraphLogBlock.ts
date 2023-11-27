@@ -17,7 +17,7 @@ export class FlowGraphLogBlock extends FlowGraphWithOnDoneExecutionBlock {
 
     public constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
-        this.message = this._registerDataInput("message", RichTypeAny);
+        this.message = this.registerDataInput("message", RichTypeAny);
     }
 
     /**

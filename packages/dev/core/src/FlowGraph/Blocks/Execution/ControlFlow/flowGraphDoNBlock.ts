@@ -33,8 +33,8 @@ export class FlowGraphDoNBlock extends FlowGraphWithOnDoneExecutionBlock {
     constructor(public config: IFlowGraphDoNBlockConfiguration = { startIndex: 0 }) {
         super(config);
         this.reset = this._registerSignalInput("reset");
-        this.n = this._registerDataInput("n", RichTypeNumber);
-        this.value = this._registerDataOutput("value", RichTypeNumber);
+        this.n = this.registerDataInput("n", RichTypeNumber);
+        this.value = this.registerDataOutput("value", RichTypeNumber);
     }
 
     public _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {

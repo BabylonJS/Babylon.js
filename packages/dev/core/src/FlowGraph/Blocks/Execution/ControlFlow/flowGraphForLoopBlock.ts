@@ -34,11 +34,11 @@ export class FlowGraphForLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
     public constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
-        this.startIndex = this._registerDataInput("startIndex", RichTypeNumber);
-        this.endIndex = this._registerDataInput("endIndex", RichTypeNumber);
-        this.step = this._registerDataInput("step", RichTypeNumber);
+        this.startIndex = this.registerDataInput("startIndex", RichTypeNumber);
+        this.endIndex = this.registerDataInput("endIndex", RichTypeNumber);
+        this.step = this.registerDataInput("step", RichTypeNumber);
 
-        this.index = this._registerDataOutput("index", RichTypeNumber);
+        this.index = this.registerDataOutput("index", RichTypeNumber);
         this.onLoop = this._registerSignalOutput("onLoop");
     }
 
