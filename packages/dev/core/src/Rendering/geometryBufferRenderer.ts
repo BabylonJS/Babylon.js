@@ -113,7 +113,7 @@ export class GeometryBufferRenderer {
     private _scene: Scene;
     private _resizeObserver: Nullable<Observer<Engine>> = null;
     private _multiRenderTarget: MultiRenderTarget;
-    private _ratio: number | { width: number; height: number };
+    private _ratioOrDimensions: number | { width: number; height: number };
     private _enablePosition: boolean = false;
     private _enableVelocity: boolean = false;
     private _enableReflectivity: boolean = false;
@@ -343,7 +343,7 @@ export class GeometryBufferRenderer {
      * How big is the buffer related to the main canvas.
      */
     public get ratio(): number {
-        return typeof this._ratio === "object" ? 1 : this._ratio;
+        return typeof this._ratioOrDimensions === "object" ? 1 : this._ratioOrDimensions;
     }
 
     /**
@@ -356,12 +356,12 @@ export class GeometryBufferRenderer {
     /**
      * Creates a new G Buffer for the scene
      * @param scene The scene the buffer belongs to
-     * @param ratio How big is the buffer related to the main canvas (default: 1). You can also directly pass a width and height for the generated textures
+     * @param ratioOrDimensions How big is the buffer related to the main canvas (default: 1). You can also directly pass a width and height for the generated textures @since
      * @param depthFormat Format of the depth texture (default: Constants.TEXTUREFORMAT_DEPTH16)
      */
-    constructor(scene: Scene, ratio: number | { width: number; height: number } = 1, depthFormat = Constants.TEXTUREFORMAT_DEPTH16) {
+    constructor(scene: Scene, ratioOrDimensions: number | { width: number; height: number } = 1, depthFormat = Constants.TEXTUREFORMAT_DEPTH16) {
         this._scene = scene;
-        this._ratio = ratio;
+        this._ratioOrDimensions = ratioOrDimensions;
         this._useUbo = scene.getEngine().supportsUniformBuffers;
         this._depthFormat = depthFormat;
 
@@ -718,7 +718,10 @@ export class GeometryBufferRenderer {
             type = Constants.TEXTURETYPE_HALF_FLOAT;
         }
 
-        const dimensions = typeof this._ratio === "object" ? this._ratio : { width: engine.getRenderWidth() * this._ratio, height: engine.getRenderHeight() * this._ratio };
+        const dimensions =
+            typeof this._ratioOrDimensions === "object"
+                ? this._ratioOrDimensions
+                : { width: engine.getRenderWidth() * this._ratioOrDimensions, height: engine.getRenderHeight() * this._ratioOrDimensions };
 
         this._multiRenderTarget = new MultiRenderTarget(
             "gBuffer",
@@ -764,7 +767,10 @@ export class GeometryBufferRenderer {
 
         this._resizeObserver = engine.onResizeObservable.add(() => {
             if (this._multiRenderTarget) {
-                const dimensions = typeof this._ratio === "object" ? this._ratio : { width: engine.getRenderWidth() * this._ratio, height: engine.getRenderHeight() * this._ratio };
+                const dimensions =
+                    typeof this._ratioOrDimensions === "object"
+                        ? this._ratioOrDimensions
+                        : { width: engine.getRenderWidth() * this._ratioOrDimensions, height: engine.getRenderHeight() * this._ratioOrDimensions };
                 this._multiRenderTarget.resize(dimensions);
             }
         });
