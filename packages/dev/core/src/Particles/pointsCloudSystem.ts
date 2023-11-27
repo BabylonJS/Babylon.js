@@ -636,12 +636,13 @@ export class PointsCloudSystem implements IDisposable {
             if (pointsGroup && pointsGroup._positionFunction) {
                 pointsGroup._positionFunction(cp, idx, i);
             }
-            this._positions.push(cp.position.x, cp.position.y, cp.position.z);
-            if (cp.color) {
-                this._colors.push(cp.color.r, cp.color.g, cp.color.b, cp.color.a);
+            const {position,color,uv} = cp;
+            this._positions.push(position.x, position.y, position.z);
+            if (color) {
+                this._colors.push(color.r, color.g, color.b, color.a);
             }
-            if (cp.uv) {
-                this._uvs.push(cp.uv.x, cp.uv.y);
+            if (uv) {
+                this._uvs.push(uv.x, uv.y);
             }
             idx++;
         }
