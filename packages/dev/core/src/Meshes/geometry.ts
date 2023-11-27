@@ -54,6 +54,7 @@ export class Geometry implements IGetSetVerticesData {
     private _engine: Engine;
     private _meshes: Mesh[];
     private _totalVertices = 0;
+    private _totalIndices?: number;
     /** @internal */
     public _loadedUniqueId: string;
     /** @internal */
@@ -551,6 +552,29 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     /**
+     * Sets the index buffer for this geometry.
+     * @param indexBuffer Defines the index buffer to use for this geometry
+     * @param totalVertices Defines the total number of vertices used by the buffer
+     * @param totalIndices Defines the total number of indices in the index buffer
+     */
+    public setIndexBuffer(indexBuffer: DataBuffer, totalVertices: number, totalIndices: number): void {
+        this._indices = [];
+        this._indexBufferIsUpdatable = false;
+        this._indexBuffer = indexBuffer;
+        this._totalVertices = totalVertices;
+        this._totalIndices = totalIndices;
+
+        indexBuffer.is32Bits ||= this._totalIndices > 65535;
+
+        for (const mesh of this._meshes) {
+            mesh._createGlobalSubMesh(true);
+            mesh.synchronizeInstances();
+        }
+
+        this._notifyUpdate();
+    }
+
+    /**
      * Creates a new index buffer
      * @param indices defines the indices to store in the index buffer
      * @param totalVertices defines the total number of vertices (could be null)
@@ -588,7 +612,7 @@ export class Geometry implements IGetSetVerticesData {
         if (!this.isReady()) {
             return 0;
         }
-        return this._indices.length;
+        return this._totalIndices !== undefined ? this._totalIndices : this._indices.length;
     }
 
     /**
