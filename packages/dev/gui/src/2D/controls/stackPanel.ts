@@ -163,7 +163,7 @@ export class StackPanel extends Container {
                     child._top.ignoreAdaptiveScaling = true;
                 }
 
-                if (!child.isHeightFullyDefined() && !this.ignoreLayoutWarnings) {
+                if (!child.isDimensionFullyDefined("height") && !this.ignoreLayoutWarnings) {
                     Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using height in percentage mode inside a vertical StackPanel`);
                 } else {
                     stackHeight += child._currentMeasure.height + child._paddingTopInPixels + child._paddingBottomInPixels + (index < childrenCount - 1 ? this._spacing : 0);
@@ -175,7 +175,7 @@ export class StackPanel extends Container {
                     child._left.ignoreAdaptiveScaling = true;
                 }
 
-                if (!child.isWidthFullyDefined() && !this.ignoreLayoutWarnings) {
+                if (!child.isDimensionFullyDefined("width") && !this.ignoreLayoutWarnings) {
                     Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using width in percentage mode inside a horizontal StackPanel`);
                 } else {
                     stackWidth += child._currentMeasure.width + child._paddingLeftInPixels + child._paddingRightInPixels + (index < childrenCount - 1 ? this._spacing : 0);
@@ -224,40 +224,32 @@ export class StackPanel extends Container {
         super._postMeasure();
     }
 
-    public isWidthFullyDefined(): boolean {
-        if (!this._isDirty && this._cachedIsWidthFullyDefined !== undefined) {
-            return this._cachedIsWidthFullyDefined;
+    private _getManualDim(dim: "width" | "height") {
+        if (dim === "width") {
+            return this._manualWidth;
+        } else {
+            return this._manualHeight;
         }
-        if (!this.isVertical && !this._manualWidth) {
-            for (const child of this._children) {
-                if (!child.isWidthFullyDefined()) {
-                    this._cachedIsWidthFullyDefined = false;
-                    return false;
-                }
-            }
-            this._cachedIsWidthFullyDefined = true;
-            return true;
-        }
-        this._cachedIsWidthFullyDefined = this._width.isPixel || this.adaptWidthToChildren;
-        return this._cachedIsWidthFullyDefined;
     }
 
-    public isHeightFullyDefined(): boolean {
-        if (!this._isDirty && this._cachedIsHeightFullyDefined !== undefined) {
-            return this._cachedIsHeightFullyDefined;
+    public isDimensionFullyDefined(dim: "width" | "height"): boolean {
+        if (this._isDirty && this._cacheFullyDefinedDim[dim] !== undefined) {
+            return this._cacheFullyDefinedDim[dim]!;
         }
-        if (this.isVertical && !this._manualHeight) {
+
+        if (dim === "height" ? this.isVertical : !this.isVertical && !this._getManualDim(dim)) {
             for (const child of this._children) {
-                if (!child.isHeightFullyDefined()) {
-                    this._cachedIsHeightFullyDefined = false;
+                if (!child.isDimensionFullyDefined(dim)) {
+                    this._cacheFullyDefinedDim[dim] = false;
                     return false;
                 }
             }
-            this._cachedIsHeightFullyDefined = true;
+            this._cacheFullyDefinedDim[dim] = true;
             return true;
         }
-        this._cachedIsHeightFullyDefined = this._height.isPixel || this.adaptHeightToChildren;
-        return this._cachedIsHeightFullyDefined;
+
+        this._cacheFullyDefinedDim[dim] = this.getDimension(dim).isPixel || this._getAdaptDimTo(dim);
+        return this._cacheFullyDefinedDim[dim]!;
     }
 
     /**

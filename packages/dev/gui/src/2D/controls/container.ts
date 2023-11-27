@@ -37,8 +37,6 @@ export class Container extends Control {
     protected _renderToIntermediateTexture: boolean = false;
     /** @internal */
     protected _intermediateTexture: Nullable<DynamicTexture> = null;
-    protected _cachedIsWidthFullyDefined?: boolean;
-    protected _cachedIsHeightFullyDefined?: boolean;
 
     /** Gets or sets boolean indicating if children should be rendered to an intermediate texture rather than directly to host, useful for alpha blending */
     @serialize()
@@ -621,40 +619,35 @@ export class Container extends Control {
         this._measureForChildren.copyFrom(this._currentMeasure);
     }
 
-    public isWidthFullyDefined(): boolean {
-        if (!this._isDirty && this._cachedIsWidthFullyDefined !== undefined) {
-            return this._cachedIsWidthFullyDefined;
+    protected _cacheFullyDefinedDim: { width?: boolean; height?: boolean } = {
+        width: undefined,
+        height: undefined,
+    };
+
+    protected _getAdaptDimTo(dim: "width" | "height"): boolean {
+        if (dim === "width") {
+            return this.adaptWidthToChildren;
+        } else {
+            return this.adaptHeightToChildren;
         }
-        if (this.adaptWidthToChildren) {
-            for (const child of this.children) {
-                if (!child.isWidthFullyDefined()) {
-                    this._cachedIsWidthFullyDefined = false;
-                    return false;
-                }
-            }
-            this._cachedIsWidthFullyDefined = true;
-            return true;
-        }
-        this._cachedIsWidthFullyDefined = super.isWidthFullyDefined();
-        return this._cachedIsWidthFullyDefined;
     }
 
-    public isHeightFullyDefined(): boolean {
-        if (!this._isDirty && this._cachedIsHeightFullyDefined !== undefined) {
-            return this._cachedIsHeightFullyDefined;
+    public isDimensionFullyDefined(dim: "width" | "height"): boolean {
+        if (!this._isDirty && this._cacheFullyDefinedDim[dim] !== undefined) {
+            return this._cacheFullyDefinedDim[dim]!;
         }
-        if (this.adaptHeightToChildren) {
+        if (this._getAdaptDimTo(dim)) {
             for (const child of this.children) {
-                if (!child.isHeightFullyDefined()) {
-                    this._cachedIsHeightFullyDefined = false;
+                if (!child.isDimensionFullyDefined(dim)) {
+                    this._cacheFullyDefinedDim[dim] = false;
                     return false;
                 }
             }
-            this._cachedIsHeightFullyDefined = true;
+            this._cacheFullyDefinedDim[dim] = true;
             return true;
         }
-        this._cachedIsHeightFullyDefined = super.isHeightFullyDefined();
-        return this._cachedIsHeightFullyDefined;
+        this._cacheFullyDefinedDim[dim] = super.isDimensionFullyDefined(dim);
+        return this._cacheFullyDefinedDim[dim]!;
     }
 
     /**

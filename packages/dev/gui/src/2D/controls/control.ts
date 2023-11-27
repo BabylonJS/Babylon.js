@@ -2424,20 +2424,16 @@ export class Control implements IAnimatable {
         this.getDescendants().forEach((child) => child._markAllAsDirty());
     }
 
-    /**
-     * A fully defined width means that it is possible to know what size it will occupy
-     * by querying only it and its children, and not its parent.
-     */
-    public isWidthFullyDefined(): boolean {
-        return this._width.isPixel;
+    public isDimensionFullyDefined(dim: "width" | "height"): boolean {
+        return this.getDimension(dim).isPixel;
     }
 
-    /**
-     * A fully defined height means that it is possible to know what size it will occupy
-     * by querying only it and its children, and not its parent.
-     */
-    public isHeightFullyDefined(): boolean {
-        return this._height.isPixel;
+    public getDimension(dim: "width" | "height"): ValueAndUnit {
+        if (dim === "width") {
+            return this._width;
+        } else {
+            return this._height;
+        }
     }
 
     /**

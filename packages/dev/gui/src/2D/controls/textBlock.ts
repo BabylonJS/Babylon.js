@@ -646,18 +646,11 @@ export class TextBlock extends Control {
         return newHeight;
     }
 
-    public isWidthFullyDefined(): boolean {
+    public isDimensionFullyDefined(dim: "width" | "height"): boolean {
         if (this.resizeToFit) {
             return true;
         }
-        return super.isWidthFullyDefined();
-    }
-
-    public isHeightFullyDefined(): boolean {
-        if (this.resizeToFit) {
-            return true;
-        }
-        return super.isHeightFullyDefined();
+        return super.isDimensionFullyDefined(dim);
     }
 
     /**
