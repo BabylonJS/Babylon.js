@@ -125,9 +125,9 @@ export class FlowGraphCreateVector2Block extends FlowGraphBlock {
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
-        this.x = this._registerDataInput("x", RichTypeNumber);
-        this.y = this._registerDataInput("y", RichTypeNumber);
-        this.vector = this._registerDataOutput("vector", RichTypeVector2);
+        this.x = this.registerDataInput("x", RichTypeNumber);
+        this.y = this.registerDataInput("y", RichTypeNumber);
+        this.vector = this.registerDataOutput("vector", RichTypeVector2);
     }
 
     public _updateOutputs(_context: FlowGraphContext): void {
@@ -159,9 +159,9 @@ export class FlowGraphSplitVector2Block extends FlowGraphBlock {
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
-        this.vector = this._registerDataInput("vector", RichTypeVector2);
-        this.x = this._registerDataOutput("x", RichTypeNumber);
-        this.y = this._registerDataOutput("y", RichTypeNumber);
+        this.vector = this.registerDataInput("vector", RichTypeVector2);
+        this.x = this.registerDataOutput("x", RichTypeNumber);
+        this.y = this.registerDataOutput("y", RichTypeNumber);
     }
 
     public _updateOutputs(_context: FlowGraphContext): void {
@@ -194,9 +194,9 @@ export class FlowGraphRotate2dVector2Block extends FlowGraphBlock {
 
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
-        this.input = this._registerDataInput("input", RichTypeVector2);
-        this.angle = this._registerDataInput("angle", RichTypeNumber);
-        this.output = this._registerDataOutput("output", RichTypeVector2);
+        this.input = this.registerDataInput("input", RichTypeVector2);
+        this.angle = this.registerDataInput("angle", RichTypeNumber);
+        this.output = this.registerDataOutput("output", RichTypeVector2);
     }
 
     public _updateOutputs(_context: FlowGraphContext): void {

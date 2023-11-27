@@ -22,7 +22,7 @@ export class FlowGraphCounterBlock extends FlowGraphWithOnDoneExecutionBlock {
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
-        this.count = this._registerDataOutput("count", RichTypeNumber);
+        this.count = this.registerDataOutput("count", RichTypeNumber);
         this.reset = this._registerSignalInput("reset");
     }
 

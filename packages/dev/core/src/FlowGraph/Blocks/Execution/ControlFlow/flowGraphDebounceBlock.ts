@@ -26,9 +26,9 @@ export class FlowGraphDebounceBlock extends FlowGraphWithOnDoneExecutionBlock {
 
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
-        this.count = this._registerDataInput("count", RichTypeNumber);
+        this.count = this.registerDataInput("count", RichTypeNumber);
         this.reset = this._registerSignalInput("reset");
-        this.currentCount = this._registerDataOutput("currentCount", RichTypeNumber);
+        this.currentCount = this.registerDataOutput("currentCount", RichTypeNumber);
     }
 
     public _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {

@@ -19,7 +19,7 @@ export abstract class FlowGraphCachedOperationBlock<OutputT> extends FlowGraphBl
     constructor(outputRichType: RichType<OutputT>, config?: IFlowGraphBlockConfiguration) {
         super(config);
 
-        this.output = this._registerDataOutput("output", outputRichType);
+        this.output = this.registerDataOutput("output", outputRichType);
     }
 
     /**

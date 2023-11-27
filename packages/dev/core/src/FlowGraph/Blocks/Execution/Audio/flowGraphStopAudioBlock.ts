@@ -19,7 +19,7 @@ export class FlowGraphStopAudioBlock extends FlowGraphWithOnDoneExecutionBlock {
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
-        this.audio = this._registerDataInput("audio", RichTypeAny);
+        this.audio = this.registerDataInput("audio", RichTypeAny);
     }
 
     public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {

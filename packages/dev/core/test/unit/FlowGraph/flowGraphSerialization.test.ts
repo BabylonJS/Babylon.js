@@ -10,6 +10,7 @@ import {
     FlowGraphGetVariableBlock,
     FlowGraphLogBlock,
     FlowGraphMultiGateBlock,
+    FlowGraphPath,
     FlowGraphPlayAnimationBlock,
     FlowGraphSceneReadyEventBlock,
     RichTypeNumber,
@@ -88,22 +89,25 @@ describe("Flow Graph Serialization", () => {
     });
 
     it("Serializes and parses a block", () => {
-        const block = new FlowGraphPlayAnimationBlock();
+        // Serialize a block with path
+        const block = new FlowGraphPlayAnimationBlock({
+            targetPath: new FlowGraphPath("test"),
+            animationPath: new FlowGraphPath("test2"),
+        });
 
         const serialized: any = {};
         block.serialize(serialized);
-        // console.log("serialized block", serialized);
         expect(serialized.uniqueId).toBeDefined();
         expect(serialized.signalInputs.length).toEqual(1);
         expect(serialized.signalOutputs.length).toEqual(2);
-        expect(serialized.dataInputs.length).toEqual(6);
+        expect(serialized.dataInputs.length).toEqual(4);
         expect(serialized.dataOutputs.length).toEqual(1);
         expect(serialized.className).toEqual("FGPlayAnimationBlock");
 
         const parsed = FlowGraphBlock.Parse(serialized);
         expect(parsed.uniqueId).toEqual(block.uniqueId);
         expect(parsed.getClassName()).toEqual("FGPlayAnimationBlock");
-        expect(parsed.dataInputs.length).toEqual(6);
+        expect(parsed.dataInputs.length).toEqual(4);
         expect(parsed.dataOutputs.length).toEqual(1);
         expect((parsed as FlowGraphExecutionBlock).signalInputs.length).toEqual(1);
         expect((parsed as FlowGraphExecutionBlock).signalOutputs.length).toEqual(2);

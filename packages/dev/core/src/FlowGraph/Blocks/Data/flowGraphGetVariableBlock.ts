@@ -26,8 +26,8 @@ export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
-        this.variableName = this._registerDataInput("variableName", RichTypeString);
-        this.output = this._registerDataOutput("output", RichTypeAny);
+        this.variableName = this.registerDataInput("variableName", RichTypeString);
+        this.output = this.registerDataOutput("output", RichTypeAny);
     }
 
     /**

@@ -33,7 +33,7 @@ export class FlowGraphWhileLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
     constructor(public config?: IFlowGraphWhileLoopBlockConfiguration) {
         super(config);
 
-        this.condition = this._registerDataInput("condition", RichTypeBoolean);
+        this.condition = this.registerDataInput("condition", RichTypeBoolean);
         this.loopBody = this._registerSignalOutput("loopBody");
     }
 
@@ -51,6 +51,11 @@ export class FlowGraphWhileLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
 
     public getClassName(): string {
         return "FGWhileLoopBlock";
+    }
+
+    public serialize(serializationObject?: any): void {
+        super.serialize(serializationObject);
+        serializationObject.isDo = this.config?.isDo;
     }
 }
 RegisterClass("FGWhileLoopBlock", FlowGraphWhileLoopBlock);

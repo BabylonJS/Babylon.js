@@ -22,8 +22,8 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphWithOnDoneExecutionBl
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
-        this.variableName = this._registerDataInput("variableName", RichTypeString);
-        this.input = this._registerDataInput("input", RichTypeAny);
+        this.variableName = this.registerDataInput("variableName", RichTypeString);
+        this.input = this.registerDataInput("input", RichTypeAny);
     }
 
     public _execute(context: FlowGraphContext): void {
