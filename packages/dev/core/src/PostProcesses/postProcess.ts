@@ -650,10 +650,6 @@ export class PostProcess {
      * @param forceDepthStencil True to force post-process texture creation with stencil depth and buffer (default: false)
      */
     public resize(width: number, height: number, camera: Nullable<Camera> = null, needMipMaps = false, forceDepthStencil = false) {
-        this._resize(width, height, camera, needMipMaps, forceDepthStencil);
-    }
-
-    private _resize(width: number, height: number, camera: Nullable<Camera>, needMipMaps: boolean, forceDepthStencil?: boolean) {
         if (this._textures.length > 0) {
             this._textures.reset();
         }
@@ -772,7 +768,7 @@ export class PostProcess {
             }
 
             if (this.width !== desiredWidth || this.height !== desiredHeight || !(target = this._getTarget())) {
-                this._resize(desiredWidth, desiredHeight, camera, needMipMaps, forceDepthStencil);
+                this.resize(desiredWidth, desiredHeight, camera, needMipMaps, forceDepthStencil);
             }
 
             this._textures.forEach((texture) => {
