@@ -37,6 +37,8 @@ export class Container extends Control {
     protected _renderToIntermediateTexture: boolean = false;
     /** @internal */
     protected _intermediateTexture: Nullable<DynamicTexture> = null;
+    protected _cachedIsWidthFullyDefined?: boolean;
+    protected _cachedIsHeightFullyDefined?: boolean;
 
     /** Gets or sets boolean indicating if children should be rendered to an intermediate texture rather than directly to host, useful for alpha blending */
     @serialize()
@@ -620,27 +622,39 @@ export class Container extends Control {
     }
 
     public isWidthFullyDefined(): boolean {
+        if (!this._isDirty && this._cachedIsWidthFullyDefined !== undefined) {
+            return this._cachedIsWidthFullyDefined;
+        }
         if (this.adaptWidthToChildren) {
             for (const child of this.children) {
                 if (!child.isWidthFullyDefined()) {
+                    this._cachedIsWidthFullyDefined = false;
                     return false;
                 }
             }
+            this._cachedIsWidthFullyDefined = true;
             return true;
         }
-        return super.isWidthFullyDefined();
+        this._cachedIsWidthFullyDefined = super.isWidthFullyDefined();
+        return this._cachedIsWidthFullyDefined;
     }
 
     public isHeightFullyDefined(): boolean {
+        if (!this._isDirty && this._cachedIsHeightFullyDefined !== undefined) {
+            return this._cachedIsHeightFullyDefined;
+        }
         if (this.adaptHeightToChildren) {
             for (const child of this.children) {
                 if (!child.isHeightFullyDefined()) {
+                    this._cachedIsHeightFullyDefined = false;
                     return false;
                 }
             }
+            this._cachedIsHeightFullyDefined = true;
             return true;
         }
-        return super.isHeightFullyDefined();
+        this._cachedIsHeightFullyDefined = super.isHeightFullyDefined();
+        return this._cachedIsHeightFullyDefined;
     }
 
     /**

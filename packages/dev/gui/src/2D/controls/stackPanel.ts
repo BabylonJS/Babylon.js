@@ -225,27 +225,39 @@ export class StackPanel extends Container {
     }
 
     public isWidthFullyDefined(): boolean {
+        if (!this._isDirty && this._cachedIsWidthFullyDefined !== undefined) {
+            return this._cachedIsWidthFullyDefined;
+        }
         if (!this.isVertical && !this._manualWidth) {
             for (const child of this._children) {
                 if (!child.isWidthFullyDefined()) {
+                    this._cachedIsWidthFullyDefined = false;
                     return false;
                 }
             }
+            this._cachedIsWidthFullyDefined = true;
             return true;
         }
-        return this._width.isPixel || this.adaptWidthToChildren;
+        this._cachedIsWidthFullyDefined = this._width.isPixel || this.adaptWidthToChildren;
+        return this._cachedIsWidthFullyDefined;
     }
 
     public isHeightFullyDefined(): boolean {
+        if (!this._isDirty && this._cachedIsHeightFullyDefined !== undefined) {
+            return this._cachedIsHeightFullyDefined;
+        }
         if (this.isVertical && !this._manualHeight) {
             for (const child of this._children) {
                 if (!child.isHeightFullyDefined()) {
+                    this._cachedIsHeightFullyDefined = false;
                     return false;
                 }
             }
+            this._cachedIsHeightFullyDefined = true;
             return true;
         }
-        return this._height.isPixel || this.adaptHeightToChildren;
+        this._cachedIsHeightFullyDefined = this._height.isPixel || this.adaptHeightToChildren;
+        return this._cachedIsHeightFullyDefined;
     }
 
     /**
