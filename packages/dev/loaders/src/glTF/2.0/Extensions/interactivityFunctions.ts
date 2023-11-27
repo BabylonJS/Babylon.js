@@ -5,16 +5,16 @@ import type { ISerializedFlowGraph, ISerializedFlowGraphBlock, ISerializedFlowGr
 import { RandomGUID } from "core/Misc";
 import { gltfPropertyPathToBabylonPropertyPath, gltfToFlowGraphTypeMap, gltfTypeToBabylonType } from "./interactivityUtils";
 
-function convertValueWithType(configObject: IKHRInteractivity_Configuration, definition: IKHRInteractivity) {
+function convertValueWithType(configObject: IKHRInteractivity_Configuration, definition: IKHRInteractivity, context: string) {
     if (configObject.type !== undefined) {
         // get the type on the gltf definition
         const type = definition.types && definition.types[configObject.type];
         if (!type) {
-            throw new Error(`Unknown type: ${configObject.type}`);
+            throw new Error(`${context}: Unknown type: ${configObject.type}`);
         }
         const signature = type.signature;
         if (!signature) {
-            throw new Error(`Type ${configObject.type} has no signature`);
+            throw new Error(`${context}: Type ${configObject.type} has no signature`);
         }
         const convertedType = gltfTypeToBabylonType[signature];
         return {
@@ -26,27 +26,26 @@ function convertValueWithType(configObject: IKHRInteractivity_Configuration, def
     }
 }
 
-function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKHRInteractivity): IFlowGraphBlockConfiguration {
+function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKHRInteractivity, id: string): IFlowGraphBlockConfiguration {
     const converted: IFlowGraphBlockConfiguration = {};
     const configurationList: IKHRInteractivity_Configuration[] = gltfBlock.configuration ?? [];
     for (const configObject of configurationList) {
         if (configObject.id === "customEvent") {
             const customEvent = definition.customEvents && definition.customEvents[configObject.value];
             if (!customEvent) {
-                throw new Error(`Unknown custom event: ${configObject.value}`);
+                throw new Error(`/extensions/KHR_interactivity/nodes/${id}: Unknown custom event: ${configObject.value}`);
             }
             converted.eventId = customEvent.id;
             converted.eventData = customEvent.values.map((v) => v.id);
         } else if (configObject.id === "variable") {
             const variable = definition.variables && definition.variables[configObject.value];
             if (!variable) {
-                throw new Error(`Unknown variable: ${configObject.value}`);
+                throw new Error(`/extensions/KHR_interactivity/nodes/${id}: Unknown variable: ${configObject.value}`);
             }
             converted.variableName = variable.id;
         } else if (configObject.id === "path") {
             // Convert from a GLTF path to a reference to the Babylon.js object
             let pathValue = configObject.value as string;
-            console.log("parsing path", pathValue);
             if (!pathValue.startsWith("/")) {
                 pathValue = `/${pathValue}`;
             }
@@ -55,13 +54,12 @@ function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKH
                 const value = gltfPropertyPathToBabylonPropertyPath[key];
                 pathValue = pathValue.replace(key, value);
             }
-            console.log("converted path", pathValue);
             converted.path = {
                 path: pathValue,
                 className: "FGPath",
             };
         } else {
-            converted[configObject.id] = convertValueWithType(configObject, definition);
+            converted[configObject.id] = convertValueWithType(configObject, definition, `/extensions/KHR_interactivity/nodes/${id}`);
         }
     }
     return converted;
@@ -72,8 +70,8 @@ function convertBlock(id: number, gltfBlock: IKHRInteractivity_Node, definition:
     if (!className) {
         throw new Error(`Unknown block type: ${gltfBlock.type}`);
     }
-    const config = convertConfiguration(gltfBlock, definition);
     const uniqueId = id.toString();
+    const config = convertConfiguration(gltfBlock, definition, uniqueId);
     const metadata = gltfBlock.metadata;
     const dataInputs: ISerializedFlowGraphConnection[] = [];
     const dataOutputs: ISerializedFlowGraphConnection[] = [];
@@ -94,7 +92,6 @@ function convertBlock(id: number, gltfBlock: IKHRInteractivity_Node, definition:
 /**
  * Converts a glTF Interactivity Extension to a serialized flow graph.
  * @param gltf the interactivity data
- * @param loader the glTF loader
  * @returns a serialized flow graph
  */
 export function convertGLTFToJson(gltf: IKHRInteractivity): ISerializedFlowGraph {
@@ -138,7 +135,9 @@ export function convertGLTFToJson(gltf: IKHRInteractivity): ISerializedFlowGraph
             // find the corresponding flow graph node
             const nodeIn = flowGraphJsonBlocks[nodeInId];
             if (!nodeIn) {
-                throw new Error(`Could not find node with id ${nodeInId} that connects its input with with node ${i}'s output ${socketOutName}`);
+                throw new Error(
+                    `/extensions/KHR_interactivity/nodes/${i}: Could not find node with id ${nodeInId} that connects its input with with node ${i}'s output ${socketOutName}`
+                );
             }
             // in all of the flow graph input connections, find the one with the same name as the socket
             let socketIn = nodeIn.signalInputs.find((s) => s.name === nodeInSocketName);
@@ -170,7 +169,7 @@ export function convertGLTFToJson(gltf: IKHRInteractivity): ISerializedFlowGraph
             fgBlock.dataInputs.push(socketIn);
             if (value.value !== undefined) {
                 // if the value is set on the socket itself, store it in the context
-                context._connectionValues[socketIn.uniqueId] = convertValueWithType(value as IKHRInteractivity_Configuration, gltf);
+                context._connectionValues[socketIn.uniqueId] = convertValueWithType(value as IKHRInteractivity_Configuration, gltf, `/extensions/KHR_interactivity/nodes/${i}`);
             } else if (value.node !== undefined && value.socket !== undefined) {
                 // if the value is connected with the output data of another socket, connect the two
                 const nodeOutId = value.node;
@@ -178,7 +177,9 @@ export function convertGLTFToJson(gltf: IKHRInteractivity): ISerializedFlowGraph
                 // find the flow graph node that owns that output socket
                 const nodeOut = flowGraphJsonBlocks[nodeOutId];
                 if (!nodeOut) {
-                    throw new Error(`Could not find node with id ${nodeOutId} that connects its output with node${i}'s input ${socketInName}`);
+                    throw new Error(
+                        `/extensions/KHR_interactivity/nodes/${i}: Could not find node with id ${nodeOutId} that connects its output with node${i}'s input ${socketInName}`
+                    );
                 }
                 let socketOut = nodeOut.dataOutputs.find((s) => s.name === nodeOutSocketName);
                 // if the socket doesn't exist, create it
@@ -195,7 +196,7 @@ export function convertGLTFToJson(gltf: IKHRInteractivity): ISerializedFlowGraph
                 socketIn.connectedPointIds.push(socketOut.uniqueId);
                 socketOut.connectedPointIds.push(socketIn.uniqueId);
             } else {
-                throw new Error(`Invalid socket ${socketInName} in node ${i}`);
+                throw new Error(`/extensions/KHR_interactivity/nodes/${i}: Invalid socket ${socketInName} in node ${i}`);
             }
         }
     }
@@ -205,7 +206,7 @@ export function convertGLTFToJson(gltf: IKHRInteractivity): ISerializedFlowGraph
     for (let i = 0; i < variables.length; i++) {
         const variable: IKHRInteractivity_Variable = variables[i];
         const variableName = variable.id;
-        context._userVariables[variableName] = convertValueWithType(variable as IKHRInteractivity_Configuration, gltf);
+        context._userVariables[variableName] = convertValueWithType(variable as IKHRInteractivity_Configuration, gltf, `/extensions/KHR_interactivity/variables/${i}`);
     }
 
     return {
