@@ -38,10 +38,10 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
     }
 
     public onReady(): void {
-        if (!this._loader._babylonScene) {
+        if (!this._loader.babylonScene) {
             return;
         }
-        const scene = this._loader._babylonScene;
+        const scene = this._loader.babylonScene;
         const definition = this._loader.gltf.extensions?.KHR_interactivity as IKHRInteractivity;
 
         const json = convertGLTFToJson(definition);
