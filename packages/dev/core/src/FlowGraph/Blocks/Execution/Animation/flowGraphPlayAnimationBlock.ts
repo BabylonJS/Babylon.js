@@ -78,10 +78,8 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      * @param context
      */
     public _preparePendingTasks(context: FlowGraphContext): void {
-        this.templateTargetComponent.substitutePath(context);
-        const targetValue = this.config.targetPath.getProperty(context);
-        this.templateAnimationComponent.substitutePath(context);
-        const animationValue = this.config.animationPath.getProperty(context) as Animation;
+        const targetValue = this.templateTargetComponent.getProperty(context);
+        const animationValue = this.templateAnimationComponent.getProperty(context);
 
         if (!targetValue || !animationValue) {
             throw new Error("Cannot play animation without target or animation");

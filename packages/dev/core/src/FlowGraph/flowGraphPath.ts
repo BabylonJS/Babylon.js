@@ -2,13 +2,14 @@ import { RegisterClass } from "../Misc/typeStore";
 import type { FlowGraphContext } from "./flowGraphContext";
 
 // Path: /x/{y}/z/.../w
-const PATH_REGEX = /[./]({?\w+}?)/g;
+const PATH_REGEX = /([./])({?\w+}?)/g;
 
 interface IPathPart {
     value: string;
     isTemplate: boolean;
     valueWithoutBraces: string;
     replacedValue?: string;
+    separator: string;
 }
 /*
  * @experimental
@@ -41,8 +42,10 @@ export class FlowGraphPath {
 
         const pathParts = [];
         const templateStrings = [];
-        for (const singleMatch of allMatches) {
-            const [, value] = singleMatch;
+        let nextMatch = allMatches.next();
+        while (!nextMatch.done) {
+            const singleMatch = nextMatch.value;
+            const [, separator, value] = singleMatch;
             let valueWithoutBraces = value;
             let isTemplate = false;
             if (value.startsWith("{") && value.endsWith("}")) {
@@ -56,7 +59,9 @@ export class FlowGraphPath {
                 value,
                 isTemplate,
                 valueWithoutBraces,
+                separator,
             });
+            nextMatch = allMatches.next();
         }
         return { pathParts, templateStrings };
     }
@@ -91,6 +96,7 @@ export class FlowGraphPath {
     private _getFinalPath() {
         let finalPath = "";
         for (const pathPart of this._pathParts) {
+            finalPath += pathPart.separator;
             if (pathPart.isTemplate) {
                 finalPath += pathPart.replacedValue;
             } else {
@@ -102,9 +108,10 @@ export class FlowGraphPath {
 
     /*
      * Breaks the path into a chain of entities, for example,
-     * /x/y/z would be split into [context._userVariables.x, context._userVariables.x.y, context._userVariables.x.y.z]
+     * /x/y/z would be split into [context._userVariables.x, context._userVariables.x.y, context._userVariables.x.y.z],
+     * and the path that was split, i.e. /x/y/z, would be split into ["x", "y", "z"].
      */
-    private _evaluatePath(context: FlowGraphContext): any {
+    private _evaluatePath(context: FlowGraphContext): { entityChain: any[]; splitPath: string[] } {
         this._evaluateTemplates();
 
         const entityChain = [];

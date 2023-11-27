@@ -44,4 +44,24 @@ export class FlowGraphPathComponent {
         }
         return this.path;
     }
+
+    /**
+     * Substitutes the template strings in the path and gets the property on the target object.
+     * @param context
+     * @returns
+     */
+    getProperty(context: FlowGraphContext): any {
+        this.substitutePath(context);
+        return this.path.getProperty(context);
+    }
+
+    /**
+     * Substitutes the template strings in the path and sets the property on the target object.
+     * @param context
+     * @param value
+     */
+    setProperty(context: FlowGraphContext, value: any) {
+        this.substitutePath(context);
+        this.path.setProperty(context, value);
+    }
 }
