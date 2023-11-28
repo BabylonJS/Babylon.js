@@ -3,7 +3,7 @@ import type { IKHRInteractivity, IKHRInteractivity_Configuration, IKHRInteractiv
 import type { IFlowGraphBlockConfiguration } from "core/FlowGraph";
 import type { ISerializedFlowGraph, ISerializedFlowGraphBlock, ISerializedFlowGraphConnection, ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
 import { RandomGUID } from "core/Misc";
-import { convertBlockInputType, gltfPropertyPathToBabylonPropertyPath, gltfToFlowGraphTypeMap, gltfTypeToBabylonType } from "./interactivityUtils";
+import { gltfToFlowGraphTypeMap, gltfTypeToBabylonType } from "./interactivityUtils";
 
 function convertValueWithType(configObject: IKHRInteractivity_Configuration, definition: IKHRInteractivity, context: string) {
     if (configObject.type !== undefined) {
@@ -45,15 +45,16 @@ function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKH
             converted.variableName = variable.id;
         } else if (configObject.id === "path") {
             // Convert from a GLTF path to a reference to the Babylon.js object
-            let pathValue = configObject.value as string;
-            if (!pathValue.startsWith("/")) {
-                pathValue = `/${pathValue}`;
-            }
-            pathValue = `/gltf${pathValue}`;
-            for (const key in gltfPropertyPathToBabylonPropertyPath) {
-                const value = gltfPropertyPathToBabylonPropertyPath[key];
-                pathValue = pathValue.replace(key, value);
-            }
+            const pathValue = configObject.value as string;
+            // let pathValue = configObject.value as string;
+            // if (!pathValue.startsWith("/")) {
+            //     pathValue = `/${pathValue}`;
+            // }
+            // pathValue = `/gltf${pathValue}`;
+            // for (const key in gltfPropertyPathToBabylonPropertyPath) {
+            //     const value = gltfPropertyPathToBabylonPropertyPath[key];
+            //     pathValue = pathValue.replace(key, value);
+            // }
             converted.path = {
                 path: pathValue,
                 className: "FGPath",
@@ -170,7 +171,7 @@ export function convertGLTFToJson(gltf: IKHRInteractivity): ISerializedFlowGraph
             if (value.value !== undefined) {
                 // if the value is set on the socket itself, store it in the context
                 const convertedValue = convertValueWithType(value as IKHRInteractivity_Configuration, gltf, `/extensions/KHR_interactivity/nodes/${i}`);
-                convertBlockInputType(gltfBlock, value, convertedValue, `/extensions/KHR_interactivity/nodes/${i}`);
+                // convertBlockInputType(gltfBlock, value, convertedValue, `/extensions/KHR_interactivity/nodes/${i}`);
                 context._connectionValues[socketIn.uniqueId] = convertedValue;
             } else if (value.node !== undefined && value.socket !== undefined) {
                 // if the value is connected with the output data of another socket, connect the two

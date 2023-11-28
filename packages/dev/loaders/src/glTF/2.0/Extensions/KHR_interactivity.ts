@@ -2,8 +2,9 @@
 import type { IKHRInteractivity } from "babylonjs-gltf2interface";
 import { GLTFLoader } from "../glTFLoader";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { FlowGraphCoordinator, FlowGraph } from "core/FlowGraph";
+import { FlowGraphCoordinator, FlowGraph, FlowGraphPath } from "core/FlowGraph";
 import { convertGLTFToJson } from "./interactivityFunctions";
+import { interactivityPathExensions } from "./interactivityPathExtensions";
 
 const NAME = "KHR_interactivity";
 
@@ -44,6 +45,12 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
         const scene = this._loader.babylonScene;
         const definition = this._loader.gltf.extensions?.KHR_interactivity as IKHRInteractivity;
 
+        // Fill out the array of extensions that the FlowGraphPath can use
+        for (const extension of interactivityPathExensions) {
+            if (!FlowGraphPath._Extensions.includes(extension)) {
+                FlowGraphPath._Extensions.push(extension);
+            }
+        }
         const json = convertGLTFToJson(definition);
         // todo: remove once out of draft
         console.log("json", json);
