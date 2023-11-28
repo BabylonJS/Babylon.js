@@ -5974,7 +5974,7 @@ export class Matrix {
      * @returns result input
      */
     public getRowToRef<T extends Vector4>(index: number, rowVector: T): T {
-        if (index >= 0 && index < 3) {
+        if (index >= 0 && index <= 3) {
             const i = index * 4;
             rowVector.x = this._m[i + 0];
             rowVector.y = this._m[i + 1];
