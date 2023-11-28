@@ -20,7 +20,13 @@ export interface IFlowGraphPlayAnimationBlockConfiguration extends IFlowGraphBlo
  * A block that plays an animation on an animatable object.
  */
 export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
+    /**
+     * The substitution inputs for template strings in the target
+     */
     public readonly templateTargetComponent: FlowGraphPathComponent;
+    /**
+     * The substitution inputs for template strings in the animation
+     */
     public readonly templateAnimationComponent: FlowGraphPathComponent;
     /**
      * Input connection: The speed of the animation.

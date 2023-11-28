@@ -1163,10 +1163,10 @@ export class Tools {
                   return a.href;
               }
             : typeof URL === "function" && typeof location === "object"
-            ? (url) => new URL(url, location.origin).href
-            : () => {
-                  throw new Error("Unable to get absolute URL. Override BABYLON.Tools.GetAbsoluteUrl to a custom implementation for the current context.");
-              };
+              ? (url) => new URL(url, location.origin).href
+              : () => {
+                    throw new Error("Unable to get absolute URL. Override BABYLON.Tools.GetAbsoluteUrl to a custom implementation for the current context.");
+                };
 
     // Logs
     /**

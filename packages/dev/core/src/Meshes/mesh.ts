@@ -48,6 +48,7 @@ import type { IPhysicsEnabledObject, PhysicsImpostor } from "../Physics/v1/physi
 import type { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
 import type { LinesMesh } from "./linesMesh";
 import type { GroundMesh } from "./groundMesh";
+import type { DataBuffer } from "core/Buffers/dataBuffer";
 
 /**
  * @internal
@@ -370,7 +371,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     public get hasThinInstances(): boolean {
-        return (this._thinInstanceDataStorage.instancesCount ?? 0) > 0;
+        return (this.forcedInstanceCount || this._thinInstanceDataStorage.instancesCount || 0) > 0;
     }
 
     // Members
@@ -1681,6 +1682,20 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         oldGeometry.releaseForMesh(this, true);
         geometry.applyToMesh(this);
         return this;
+    }
+
+    /**
+     * Sets the index buffer of this mesh.
+     * @param indexBuffer Defines the index buffer to use for this mesh
+     * @param totalVertices Defines the total number of vertices used by the buffer
+     * @param totalIndices Defines the total number of indices in the index buffer
+     */
+    public setIndexBuffer(indexBuffer: DataBuffer, totalVertices: number, totalIndices: number): void {
+        let geometry = this._geometry;
+        if (!geometry) {
+            geometry = new Geometry(Geometry.RandomId(), this.getScene(), undefined, undefined, this);
+        }
+        geometry.setIndexBuffer(indexBuffer, totalVertices, totalIndices);
     }
 
     /**

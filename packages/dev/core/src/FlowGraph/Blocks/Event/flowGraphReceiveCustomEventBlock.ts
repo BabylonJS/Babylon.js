@@ -67,6 +67,7 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
     public serialize(serializationObject?: any): void {
         super.serialize(serializationObject);
         serializationObject.eventId = this.config.eventId;
+        serializationObject.eventData = this.config.eventData;
     }
 }
 RegisterClass(FlowGraphReceiveCustomEventBlock.ClassName, FlowGraphReceiveCustomEventBlock);

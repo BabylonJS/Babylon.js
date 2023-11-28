@@ -51,6 +51,7 @@ const uniforms = [
     "morphTargetInfluences",
     "morphTargetTextureInfo",
     "morphTargetTextureIndices",
+    "boneTextureWidth",
 ];
 addClipPlaneUniforms(uniforms);
 
@@ -113,7 +114,7 @@ export class GeometryBufferRenderer {
     private _scene: Scene;
     private _resizeObserver: Nullable<Observer<Engine>> = null;
     private _multiRenderTarget: MultiRenderTarget;
-    private _ratio: number;
+    private _ratioOrDimensions: number | { width: number; height: number };
     private _enablePosition: boolean = false;
     private _enableVelocity: boolean = false;
     private _enableReflectivity: boolean = false;
@@ -343,7 +344,7 @@ export class GeometryBufferRenderer {
      * How big is the buffer related to the main canvas.
      */
     public get ratio(): number {
-        return this._ratio;
+        return typeof this._ratioOrDimensions === "object" ? 1 : this._ratioOrDimensions;
     }
 
     /**
@@ -356,12 +357,12 @@ export class GeometryBufferRenderer {
     /**
      * Creates a new G Buffer for the scene
      * @param scene The scene the buffer belongs to
-     * @param ratio How big is the buffer related to the main canvas (default: 1)
+     * @param ratioOrDimensions How big is the buffer related to the main canvas (default: 1). You can also directly pass a width and height for the generated textures @since
      * @param depthFormat Format of the depth texture (default: Constants.TEXTUREFORMAT_DEPTH16)
      */
-    constructor(scene: Scene, ratio: number = 1, depthFormat = Constants.TEXTUREFORMAT_DEPTH16) {
+    constructor(scene: Scene, ratioOrDimensions: number | { width: number; height: number } = 1, depthFormat = Constants.TEXTUREFORMAT_DEPTH16) {
         this._scene = scene;
-        this._ratio = ratio;
+        this._ratioOrDimensions = ratioOrDimensions;
         this._useUbo = scene.getEngine().supportsUniformBuffers;
         this._depthFormat = depthFormat;
 
@@ -570,7 +571,7 @@ export class GeometryBufferRenderer {
         }
 
         // Bones
-        if (mesh.useBones && mesh.computeBonesUsingShaders) {
+        if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
             attribs.push(VertexBuffer.MatricesIndicesKind);
             attribs.push(VertexBuffer.MatricesWeightsKind);
             if (mesh.numBoneInfluencers > 4) {
@@ -578,9 +579,12 @@ export class GeometryBufferRenderer {
                 attribs.push(VertexBuffer.MatricesWeightsExtraKind);
             }
             defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-            defines.push("#define BonesPerMesh " + (mesh.skeleton ? mesh.skeleton.bones.length + 1 : 0));
+            defines.push("#define BONETEXTURE " + mesh.skeleton.isUsingTextureForMatrices);
+            defines.push("#define BonesPerMesh " + (mesh.skeleton.bones.length + 1));
         } else {
             defines.push("#define NUM_BONE_INFLUENCERS 0");
+            defines.push("#define BONETEXTURE false");
+            defines.push("#define BonesPerMesh 0");
         }
 
         // Morph targets
@@ -629,7 +633,7 @@ export class GeometryBufferRenderer {
                     {
                         attributes: attribs,
                         uniformsNames: uniforms,
-                        samplers: ["diffuseSampler", "bumpSampler", "reflectivitySampler", "albedoSampler", "morphTargets"],
+                        samplers: ["diffuseSampler", "bumpSampler", "reflectivitySampler", "albedoSampler", "morphTargets", "boneSampler"],
                         defines: join,
                         onCompiled: null,
                         fallbacks: null,
@@ -718,9 +722,14 @@ export class GeometryBufferRenderer {
             type = Constants.TEXTURETYPE_HALF_FLOAT;
         }
 
+        const dimensions =
+            (this._ratioOrDimensions as any).width !== undefined
+                ? (this._ratioOrDimensions as { width: number; height: number })
+                : { width: engine.getRenderWidth() * (this._ratioOrDimensions as number), height: engine.getRenderHeight() * (this._ratioOrDimensions as number) };
+
         this._multiRenderTarget = new MultiRenderTarget(
             "gBuffer",
-            { width: engine.getRenderWidth() * this._ratio, height: engine.getRenderHeight() * this._ratio },
+            dimensions,
             count,
             this._scene,
             { generateMipMaps: false, generateDepthTexture: true, defaultType: type, depthTextureFormat: this._depthFormat },
@@ -762,7 +771,11 @@ export class GeometryBufferRenderer {
 
         this._resizeObserver = engine.onResizeObservable.add(() => {
             if (this._multiRenderTarget) {
-                this._multiRenderTarget.resize({ width: engine.getRenderWidth() * this._ratio, height: engine.getRenderHeight() * this._ratio });
+                const dimensions =
+                    (this._ratioOrDimensions as any).width !== undefined
+                        ? (this._ratioOrDimensions as { width: number; height: number })
+                        : { width: engine.getRenderWidth() * (this._ratioOrDimensions as number), height: engine.getRenderHeight() * (this._ratioOrDimensions as number) };
+                this._multiRenderTarget.resize(dimensions);
             }
         });
 
@@ -950,7 +963,16 @@ export class GeometryBufferRenderer {
 
                 // Bones
                 if (renderingMesh.useBones && renderingMesh.computeBonesUsingShaders && renderingMesh.skeleton) {
-                    effect.setMatrices("mBones", renderingMesh.skeleton.getTransformMatrices(renderingMesh));
+                    const skeleton = renderingMesh.skeleton;
+
+                    if (skeleton.isUsingTextureForMatrices && effect.getUniformIndex("boneTextureWidth") > -1) {
+                        const boneTexture = skeleton.getTransformMatrixTexture(renderingMesh);
+                        effect.setTexture("boneSampler", boneTexture);
+                        effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
+                    } else {
+                        effect.setMatrices("mBones", renderingMesh.skeleton.getTransformMatrices(renderingMesh));
+                    }
+
                     if (this._enableVelocity) {
                         effect.setMatrices("mPreviousBones", this._previousBonesTransformationMatrices[renderingMesh.uniqueId]);
                     }
