@@ -1,10 +1,10 @@
-import { RegisterClass } from "core/Misc";
+import { RegisterClass } from "../../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RichTypeAny, RichTypeBoolean, RichTypeNumber, RichTypeVector3 } from "../../../flowGraphRichTypes";
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
 import { FlowGraphConstantOperationBlock } from "../flowGraphConstantOperationBlock";
 import { _getClassNameOf, _areSameVectorClass } from "./utils";
-import { Vector3 } from "core/Maths";
+import { Vector3 } from "../../../../Maths/math.vector";
 
 /**
  * @experimental
