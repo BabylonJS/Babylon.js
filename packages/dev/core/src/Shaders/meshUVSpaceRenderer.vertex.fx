@@ -7,7 +7,7 @@ attribute vec2 uv;
 uniform mat4 projMatrix;
 
 varying vec2 vDecalTC;
-varying vec2 vUV;
+varying highp vec2 vUV;
 
 
 #include<bonesDeclaration>
