@@ -3,7 +3,7 @@ import type { IKHRInteractivity, IKHRInteractivity_Configuration, IKHRInteractiv
 import type { IFlowGraphBlockConfiguration } from "core/FlowGraph";
 import type { ISerializedFlowGraph, ISerializedFlowGraphBlock, ISerializedFlowGraphConnection, ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
 import { RandomGUID } from "core/Misc";
-import { gltfPropertyPathToBabylonPropertyPath, gltfToFlowGraphTypeMap, gltfTypeToBabylonType } from "./interactivityUtils";
+import { convertBlockInputType, gltfPropertyPathToBabylonPropertyPath, gltfToFlowGraphTypeMap, gltfTypeToBabylonType } from "./interactivityUtils";
 
 function convertValueWithType(configObject: IKHRInteractivity_Configuration, definition: IKHRInteractivity, context: string) {
     if (configObject.type !== undefined) {
@@ -169,7 +169,9 @@ export function convertGLTFToJson(gltf: IKHRInteractivity): ISerializedFlowGraph
             fgBlock.dataInputs.push(socketIn);
             if (value.value !== undefined) {
                 // if the value is set on the socket itself, store it in the context
-                context._connectionValues[socketIn.uniqueId] = convertValueWithType(value as IKHRInteractivity_Configuration, gltf, `/extensions/KHR_interactivity/nodes/${i}`);
+                const convertedValue = convertValueWithType(value as IKHRInteractivity_Configuration, gltf, `/extensions/KHR_interactivity/nodes/${i}`);
+                convertBlockInputType(gltfBlock, value, convertedValue, `/extensions/KHR_interactivity/nodes/${i}`);
+                context._connectionValues[socketIn.uniqueId] = convertedValue;
             } else if (value.node !== undefined && value.socket !== undefined) {
                 // if the value is connected with the output data of another socket, connect the two
                 const nodeOutId = value.node;

@@ -1,3 +1,4 @@
+import { Color3, Color4 } from "../Maths/math.color";
 import { Quaternion, Vector2, Vector3, Vector4 } from "../Maths/math.vector";
 import type { Scene } from "../scene";
 
@@ -15,7 +16,7 @@ function isMeshClassName(className: string) {
 }
 
 function isVectorClassName(className: string) {
-    return className === "Vector2" || className === "Vector3" || className === "Vector4" || className === "Quaternion";
+    return className === "Vector2" || className === "Vector3" || className === "Vector4" || className === "Quaternion" || className === "Color3" || className === "Color4";
 }
 
 function parseVector(className: string, value: Array<number>) {
@@ -27,6 +28,10 @@ function parseVector(className: string, value: Array<number>) {
         return Vector4.FromArray(value);
     } else if (className === "Quaternion") {
         return Quaternion.FromArray(value);
+    } else if (className === "Color3") {
+        return new Color3(value[0], value[1], value[2]);
+    } else if (className === "Color4") {
+        return new Color4(value[0], value[1], value[2], value[3]);
     } else {
         throw new Error(`Unknown vector class name ${className}`);
     }

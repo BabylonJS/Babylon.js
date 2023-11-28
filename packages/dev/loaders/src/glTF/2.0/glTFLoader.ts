@@ -27,7 +27,6 @@ import { MorphTarget } from "core/Morph/morphTarget";
 import { MorphTargetManager } from "core/Morph/morphTargetManager";
 import type { ISceneLoaderAsyncResult, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
 import type { Scene } from "core/scene";
-import type { Node } from "core/node";
 import type { IProperty } from "babylonjs-gltf2interface";
 import {
     AnimationChannelTargetPath,
