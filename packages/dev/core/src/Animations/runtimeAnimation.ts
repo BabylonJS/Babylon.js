@@ -1,32 +1,19 @@
-import type { DeepImmutable, Nullable } from "../types";
-import { Quaternion, Vector3, Vector2, Matrix } from "../Maths/math.vector";
-import { Color3 } from "../Maths/math.color";
+import type { Nullable } from "../types";
+import { Matrix } from "../Maths/math.vector";
 import type { _IAnimationState } from "./animation";
-import { Animation } from "./animation";
+import {
+    Animation,
+    _staticOffsetValueColor3,
+    _staticOffsetValueColor4,
+    _staticOffsetValueQuaternion,
+    _staticOffsetValueSize,
+    _staticOffsetValueVector2,
+    _staticOffsetValueVector3,
+} from "./animation";
 import type { AnimationEvent } from "./animationEvent";
-
 import type { Animatable } from "./animatable";
-
 import type { Scene } from "../scene";
 import type { IAnimationKey } from "./animationKey";
-import { Size } from "../Maths/math.size";
-
-// Static values to help the garbage collector
-
-// Quaternion
-const _staticOffsetValueQuaternion: DeepImmutable<Quaternion> = Object.freeze(new Quaternion(0, 0, 0, 0));
-
-// Vector3
-const _staticOffsetValueVector3: DeepImmutable<Vector3> = Object.freeze(Vector3.Zero());
-
-// Vector2
-const _staticOffsetValueVector2: DeepImmutable<Vector2> = Object.freeze(Vector2.Zero());
-
-// Size
-const _staticOffsetValueSize: DeepImmutable<Size> = Object.freeze(Size.Zero());
-
-// Color3
-const _staticOffsetValueColor3: DeepImmutable<Color3> = Object.freeze(Color3.Black());
 
 /**
  * Defines a runtime animation
@@ -600,6 +587,10 @@ export class RuntimeAnimation {
                 // Color3
                 case Animation.ANIMATIONTYPE_COLOR3:
                     offsetValue = _staticOffsetValueColor3;
+                    break;
+                case Animation.ANIMATIONTYPE_COLOR4:
+                    offsetValue = _staticOffsetValueColor4;
+                    break;
             }
         }
 
