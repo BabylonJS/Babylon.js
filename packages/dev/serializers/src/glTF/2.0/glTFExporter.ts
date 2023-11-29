@@ -48,7 +48,6 @@ import { _GLTFAnimation } from "./glTFAnimation";
 import { Camera } from "core/Cameras/camera";
 import { EngineStore } from "core/Engines/engineStore";
 import { MultiMaterial } from "core/Materials/multiMaterial";
-import { TargetCamera } from "core/Cameras/targetCamera";
 
 // Matrix that converts handedness on the X-axis.
 const convertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion.Identity(), Vector3.Zero());
@@ -1257,24 +1256,20 @@ export class _Exporter {
         }
     }
 
-    private _setCameraTransformation(node: INode, babylonCamera: TargetCamera): void {
-        if (!babylonCamera.position.equalsToFloats(0, 0, 0)) {
-            node.translation = babylonCamera.position.asArray();
+    private _setCameraTransformation(node: INode, babylonCamera: Camera): void {
+        const translation = TmpVectors.Vector3[0];
+        const rotation = TmpVectors.Quaternion[0];
+        babylonCamera.getWorldMatrix().decompose(undefined, rotation, translation);
+
+        if (!translation.equalsToFloats(0, 0, 0)) {
+            node.translation = translation.asArray();
         }
 
-        const rotation = babylonCamera.rotation;
-        const rotationQuaternion = Quaternion.FromEulerAnglesToRef(rotation.x, rotation.y, rotation.z, TmpVectors.Quaternion[0]);
-        if (babylonCamera.rotationQuaternion) {
-            rotationQuaternion.multiplyInPlace(babylonCamera.rotationQuaternion);
-        }
+        // // Rotation by 180 as glTF has a different convention than Babylon.
+        rotation.multiplyInPlace(rotation180Y);
 
-        // Rotation by 180 as glTF has a different convention than Babylon.
-        rotationQuaternion.multiplyInPlace(rotation180Y);
-
-        rotationQuaternion.normalize();
-
-        if (!Quaternion.IsIdentity(rotationQuaternion)) {
-            node.rotation = rotationQuaternion.asArray();
+        if (!Quaternion.IsIdentity(rotation)) {
+            node.rotation = rotation.asArray();
         }
     }
 
@@ -1796,9 +1791,9 @@ export class _Exporter {
         }
 
         // Export babylon cameras to glTFCamera
-        const cameraMap = new Map<TargetCamera, number>();
+        const cameraMap = new Map<Camera, number>();
         this._babylonScene.cameras.forEach((camera) => {
-            if (!(camera instanceof TargetCamera) || (this._options.shouldExportNode && !this._options.shouldExportNode(camera))) {
+            if (this._options.shouldExportNode && !this._options.shouldExportNode(camera)) {
                 return;
             }
 
@@ -1857,7 +1852,7 @@ export class _Exporter {
                                 }
                             }
 
-                            if (babylonNode instanceof TargetCamera) {
+                            if (babylonNode instanceof Camera) {
                                 glTFNode.camera = cameraMap.get(babylonNode);
                             }
 
@@ -2066,7 +2061,7 @@ export class _Exporter {
                     }
                     return node;
                 });
-            } else if (babylonNode instanceof TargetCamera) {
+            } else if (babylonNode instanceof Camera) {
                 this._setCameraTransformation(node, babylonNode);
                 return node;
             } else {
