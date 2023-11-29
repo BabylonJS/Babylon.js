@@ -852,6 +852,23 @@ export class Image extends Control {
         context.clearRect(0, 0, width, height);
     }
 
+    _dumpWorkingCanvas() {
+        if (!this._workingCanvas) {
+            return;
+        }
+
+        // Capture the currently drawn image of the canvas
+        const dataURL = this._workingCanvas.toDataURL("image/png");
+
+        // Create a link element to download the image
+        const link = document.createElement("a");
+        link.href = dataURL;
+        link.download = "image.png";
+
+        // Simulate a click on the link to trigger the download
+        link.click();
+    }
+
     private _drawImage(context: ICanvasRenderingContext, sx: number, sy: number, sw: number, sh: number, tx: number, ty: number, tw: number, th: number) {
         context.drawImage(this._domImage, sx, sy, sw, sh, tx, ty, tw, th);
 
@@ -860,9 +877,17 @@ export class Image extends Control {
         }
 
         const canvas = this._workingCanvas!;
-        context = canvas.getContext("2d")!;
-
-        context.drawImage(this._domImage, sx, sy, sw, sh, tx - this._currentMeasure.left, ty - this._currentMeasure.top, tw, th);
+        const workingCanvasContext = canvas.getContext("2d")!;
+        workingCanvasContext.save();
+        const ttx = tx - this._currentMeasure.left;
+        const tty = ty - this._currentMeasure.top;
+        workingCanvasContext.translate((ttx + tw) / 2, (tty + th) / 2);
+        workingCanvasContext.rotate(this.rotation);
+        workingCanvasContext.scale(this.scaleX, this.scaleY);
+        workingCanvasContext.translate(-(ttx + tw) / 2, -(tty + th) / 2);
+        workingCanvasContext.drawImage(this._domImage, sx, sy, sw, sh, ttx, tty, tw, th);
+        // this._dumpWorkingCanvas();
+        workingCanvasContext.restore();
     }
 
     public _draw(context: ICanvasRenderingContext): void {
