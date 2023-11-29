@@ -6,6 +6,7 @@ import { StandardMaterial } from "core/Materials/standardMaterial";
 import type { Mesh } from "core/Meshes/mesh";
 import type { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
+import { Color3, Color4 } from "core/Maths/math.color";
 
 export class CustomShaderStructure {
     public FragmentStore: string;
@@ -71,8 +72,17 @@ export class CustomMaterial extends StandardMaterial {
                 if (ea[0] == "vec2") {
                     effect.setVector2(ea[1], this._newUniformInstances[el]);
                 } else if (ea[0] == "vec3") {
-                    effect.setVector3(ea[1], this._newUniformInstances[el]);
+                    if (this._newUniformInstances[el] instanceof Color3) {
+                        effect.setColor3(ea[1], this._newUniformInstances[el]);
+                    } else {
+                        effect.setVector3(ea[1], this._newUniformInstances[el]);
+                    }
                 } else if (ea[0] == "vec4") {
+                    if (this._newUniformInstances[el] instanceof Color4) {
+                        effect.setDirectColor4(ea[1], this._newUniformInstances[el]);
+                    } else {
+                        effect.setVector4(ea[1], this._newUniformInstances[el]);
+                    }
                     effect.setVector4(ea[1], this._newUniformInstances[el]);
                 } else if (ea[0] == "mat4") {
                     effect.setMatrix(ea[1], this._newUniformInstances[el]);
