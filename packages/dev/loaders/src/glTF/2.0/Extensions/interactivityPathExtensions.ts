@@ -124,4 +124,42 @@ const pbrMaterialExtension = {
     },
 };
 
-export const interactivityPathExensions: IPathExtension[] = [transformNodeExtension, pbrMaterialExtension];
+const camerasRegex = /^\/cameras\/(\d+)\/(orthographic|perspective)\/(xmag|ymag|zfar|znear|aspectRatio|yfov)$/;
+
+function getBabylonCamera(path: FlowGraphPath, context: FlowGraphContext) {
+    const fullPath = path.getFinalPath();
+    const gltfTree = context.getVariable("gltf") as IGLTF;
+    if (!gltfTree) {
+        throw new Error(`No glTF tree found for path ${fullPath}`);
+    }
+    const matches = fullPath.match(camerasRegex);
+    if (!matches || matches.length !== 4) {
+        throw new Error(`Invalid path ${fullPath}`);
+    }
+    const cameraIndex = parseInt(matches[1]);
+    const camera = gltfTree.cameras && gltfTree.cameras[cameraIndex];
+    if (!camera) {
+        throw new Error(`Invalid camera index for path ${fullPath}`);
+    }
+    const babylonCamera = (camera as any)._babylonCamera;
+    if (!babylonCamera) {
+        throw new Error(`No Babylon camera found for path ${fullPath}`);
+    }
+    const gltfProperty = matches[3];
+    if (!gltfProperty) {
+        throw new Error(`Invalid property for path ${fullPath}`);
+    }
+
+    return { babylonCamera, gltfProperty };
+}
+
+const camerasExtension = {
+    shouldProcess(path: FlowGraphPath): boolean {
+        const fullPath = path.getFinalPath();
+        return !!fullPath.match(camerasRegex);
+    },
+    processGet(path: FlowGraphPath, context: FlowGraphContext): any {},
+    processSet(path: FlowGraphPath, context: FlowGraphContext, value: any) {},
+};
+
+export const interactivityPathExensions: IPathExtension[] = [transformNodeExtension, pbrMaterialExtension, camerasExtension];
