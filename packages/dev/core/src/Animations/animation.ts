@@ -2,8 +2,7 @@ import type { IEasingFunction, EasingFunction } from "./easing";
 import { Vector3, Quaternion, Vector2, Matrix, TmpVectors } from "../Maths/math.vector";
 import { Color3, Color4 } from "../Maths/math.color";
 import { Scalar } from "../Maths/math.scalar";
-
-import type { Nullable } from "../types";
+import type { DeepImmutable, Nullable } from "../types";
 import type { Scene } from "../scene";
 import { SerializationHelper } from "../Misc/decorators";
 import { RegisterClass } from "../Misc/typeStore";
@@ -16,9 +15,28 @@ import type { IAnimatable } from "./animatable.interface";
 import { Size } from "../Maths/math.size";
 import { WebRequest } from "../Misc/webRequest";
 import { Constants } from "../Engines/constants";
-
 import type { Animatable } from "./animatable";
 import type { RuntimeAnimation } from "./runtimeAnimation";
+
+// Static values to help the garbage collector
+
+// Quaternion
+export const _staticOffsetValueQuaternion: DeepImmutable<Quaternion> = Object.freeze(new Quaternion(0, 0, 0, 0));
+
+// Vector3
+export const _staticOffsetValueVector3: DeepImmutable<Vector3> = Object.freeze(Vector3.Zero());
+
+// Vector2
+export const _staticOffsetValueVector2: DeepImmutable<Vector2> = Object.freeze(Vector2.Zero());
+
+// Size
+export const _staticOffsetValueSize: DeepImmutable<Size> = Object.freeze(Size.Zero());
+
+// Color3
+export const _staticOffsetValueColor3: DeepImmutable<Color3> = Object.freeze(Color3.Black());
+
+// Color4
+export const _staticOffsetValueColor4: DeepImmutable<Color4> = Object.freeze(new Color4(0, 0, 0, 0));
 
 /**
  * Options to be used when creating an additive animation
@@ -1002,7 +1020,7 @@ export class Animation {
                     case Animation.ANIMATIONLOOPMODE_YOYO:
                         return floatValue;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                        return state.offsetValue * state.repeatCount + floatValue;
+                        return (state.offsetValue ?? 0) * state.repeatCount + floatValue;
                 }
                 break;
             }
@@ -1017,7 +1035,7 @@ export class Animation {
                     case Animation.ANIMATIONLOOPMODE_YOYO:
                         return quatValue;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                        return quatValue.addInPlace(state.offsetValue.scale(state.repeatCount));
+                        return quatValue.addInPlace((state.offsetValue ?? _staticOffsetValueQuaternion).scale(state.repeatCount));
                 }
 
                 return quatValue;
@@ -1033,7 +1051,7 @@ export class Animation {
                     case Animation.ANIMATIONLOOPMODE_YOYO:
                         return vec3Value;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                        return vec3Value.add(state.offsetValue.scale(state.repeatCount));
+                        return vec3Value.add((state.offsetValue ?? _staticOffsetValueVector3).scale(state.repeatCount));
                 }
                 break;
             }
@@ -1048,7 +1066,7 @@ export class Animation {
                     case Animation.ANIMATIONLOOPMODE_YOYO:
                         return vec2Value;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                        return vec2Value.add(state.offsetValue.scale(state.repeatCount));
+                        return vec2Value.add((state.offsetValue ?? _staticOffsetValueVector2).scale(state.repeatCount));
                 }
                 break;
             }
@@ -1060,7 +1078,7 @@ export class Animation {
                     case Animation.ANIMATIONLOOPMODE_YOYO:
                         return this.sizeInterpolateFunction(startValue, endValue, gradient);
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                        return this.sizeInterpolateFunction(startValue, endValue, gradient).add(state.offsetValue.scale(state.repeatCount));
+                        return this.sizeInterpolateFunction(startValue, endValue, gradient).add((state.offsetValue ?? _staticOffsetValueSize).scale(state.repeatCount));
                 }
                 break;
             }
@@ -1075,7 +1093,7 @@ export class Animation {
                     case Animation.ANIMATIONLOOPMODE_YOYO:
                         return color3Value;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                        return color3Value.add(state.offsetValue.scale(state.repeatCount));
+                        return color3Value.add((state.offsetValue ?? _staticOffsetValueColor3).scale(state.repeatCount));
                 }
                 break;
             }
@@ -1090,7 +1108,7 @@ export class Animation {
                     case Animation.ANIMATIONLOOPMODE_YOYO:
                         return color4Value;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                        return color4Value.add(state.offsetValue.scale(state.repeatCount));
+                        return color4Value.add((state.offsetValue ?? _staticOffsetValueColor4).scale(state.repeatCount));
                 }
                 break;
             }
