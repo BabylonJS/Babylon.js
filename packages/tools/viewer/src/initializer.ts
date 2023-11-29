@@ -3,7 +3,7 @@ import { mapperManager } from "./configuration/mappers";
 import { viewerGlobals } from "./configuration/globals";
 
 /**
- * Will attach an init function the the DOMContentLoaded event.
+ * Will attach an init function the DOMContentLoaded event.
  * The init function will be removed automatically after the event was triggered.
  */
 export function initListeners() {

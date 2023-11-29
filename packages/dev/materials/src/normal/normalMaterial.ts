@@ -237,7 +237,7 @@ export class NormalMaterial extends PushMaterial {
                 "diffuseMatrix",
             ];
             const samplers = ["diffuseSampler"];
-            const uniformBuffers = new Array<string>();
+            const uniformBuffers: string[] = [];
 
             addClipPlaneUniforms(uniforms);
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{

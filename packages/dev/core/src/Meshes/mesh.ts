@@ -48,6 +48,7 @@ import type { IPhysicsEnabledObject, PhysicsImpostor } from "../Physics/v1/physi
 import type { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
 import type { LinesMesh } from "./linesMesh";
 import type { GroundMesh } from "./groundMesh";
+import type { DataBuffer } from "core/Buffers/dataBuffer";
 
 /**
  * @internal
@@ -96,8 +97,8 @@ class _InstanceDataStorage {
 export class _InstancesBatch {
     public mustReturn = false;
     public visibleInstances = new Array<Nullable<Array<InstancedMesh>>>();
-    public renderSelf = new Array<boolean>();
-    public hardwareInstancedRendering = new Array<boolean>();
+    public renderSelf: boolean[] = [];
+    public hardwareInstancedRendering: boolean[] = [];
 }
 
 /**
@@ -370,7 +371,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     public get hasThinInstances(): boolean {
-        return (this._thinInstanceDataStorage.instancesCount ?? 0) > 0;
+        return (this.forcedInstanceCount || this._thinInstanceDataStorage.instancesCount || 0) > 0;
     }
 
     // Members
@@ -387,7 +388,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Note also that the order of the InstancedMesh wihin the array is not significant and might change.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/copies/instances
      */
-    public instances = new Array<InstancedMesh>();
+    public instances: InstancedMesh[] = [];
 
     /**
      * Gets the file containing delay loading data for this mesh
@@ -1167,7 +1168,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      */
     public getVerticesDataKinds(bypassInstanceData?: boolean): string[] {
         if (!this._geometry) {
-            const result = new Array<string>();
+            const result: string[] = [];
             if (this._delayInfo) {
                 this._delayInfo.forEach(function (kind) {
                     result.push(kind);
@@ -1681,6 +1682,20 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         oldGeometry.releaseForMesh(this, true);
         geometry.applyToMesh(this);
         return this;
+    }
+
+    /**
+     * Sets the index buffer of this mesh.
+     * @param indexBuffer Defines the index buffer to use for this mesh
+     * @param totalVertices Defines the total number of vertices used by the buffer
+     * @param totalIndices Defines the total number of indices in the index buffer
+     */
+    public setIndexBuffer(indexBuffer: DataBuffer, totalVertices: number, totalIndices: number): void {
+        let geometry = this._geometry;
+        if (!geometry) {
+            geometry = new Geometry(Geometry.RandomId(), this.getScene(), undefined, undefined, this);
+        }
+        geometry.setIndexBuffer(indexBuffer, totalVertices, totalIndices);
     }
 
     /**
@@ -2203,6 +2218,43 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
+     * Triggers the draw call for the mesh (or a submesh), for a specific render pass id
+     * @param renderPassId defines the render pass id to use to draw the mesh / submesh. If not provided, use the current renderPassId of the engine.
+     * @param enableAlphaMode defines if alpha mode can be changed (default: false)
+     * @param effectiveMeshReplacement defines an optional mesh used to provide info for the rendering (default: undefined)
+     * @param subMesh defines the subMesh to render. If not provided, draw all mesh submeshes (default: undefined)
+     * @param checkFrustumCulling defines if frustum culling must be checked (default: true). If you know the mesh is in the frustum (or if you don't care!), you can pass false to optimize.
+     * @returns the current mesh
+     */
+    public renderWithRenderPassId(renderPassId?: number, enableAlphaMode?: boolean, effectiveMeshReplacement?: AbstractMesh, subMesh?: SubMesh, checkFrustumCulling = true) {
+        const engine = this._scene.getEngine();
+        const currentRenderPassId = engine.currentRenderPassId;
+
+        if (renderPassId !== undefined) {
+            engine.currentRenderPassId = renderPassId;
+        }
+
+        if (subMesh) {
+            if (!checkFrustumCulling || (checkFrustumCulling && subMesh.isInFrustum(this._scene._frustumPlanes))) {
+                this.render(subMesh, !!enableAlphaMode, effectiveMeshReplacement);
+            }
+        } else {
+            for (let s = 0; s < this.subMeshes.length; s++) {
+                const subMesh = this.subMeshes[s];
+                if (!checkFrustumCulling || (checkFrustumCulling && subMesh.isInFrustum(this._scene._frustumPlanes))) {
+                    this.render(subMesh, !!enableAlphaMode, effectiveMeshReplacement);
+                }
+            }
+        }
+
+        if (renderPassId !== undefined) {
+            engine.currentRenderPassId = currentRenderPassId;
+        }
+
+        return this;
+    }
+
+    /**
      * Triggers the draw call for the mesh. Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager
      * @param subMesh defines the subMesh to render
      * @param enableAlphaMode defines if alpha mode can be changed
@@ -2327,7 +2379,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         let sideOrientation: Nullable<number>;
 
-        if (!instanceDataStorage.isFrozen && (this._internalMeshDataInfo._effectiveMaterial.backFaceCulling || this.overrideMaterialSideOrientation !== null)) {
+        if (
+            !instanceDataStorage.isFrozen &&
+            (this._internalMeshDataInfo._effectiveMaterial.backFaceCulling ||
+                this.overrideMaterialSideOrientation !== null ||
+                (this._internalMeshDataInfo._effectiveMaterial as any).twoSidedLighting)
+        ) {
+            // Note: if two sided lighting is enabled, we need to ensure that the normal will point in the right direction even if the determinant of the world matrix is negative
             const mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
             sideOrientation = this.overrideMaterialSideOrientation;
             if (sideOrientation == null) {
@@ -2493,7 +2551,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         let maxUsedWeights: number = 0;
         let numberNotNormalized: number = 0;
         const numInfluences: number = matricesWeightsExtra === null ? 4 : 8;
-        const usedWeightCounts = new Array<number>();
+        const usedWeightCounts: number[] = [];
         for (let a = 0; a <= numInfluences; a++) {
             usedWeightCounts[a] = 0;
         }
@@ -2674,7 +2732,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @returns an array of IAnimatable
      */
     public getAnimatables(): IAnimatable[] {
-        const results = new Array<IAnimatable>();
+        const results: IAnimatable[] = [];
 
         if (this.material) {
             results.push(this.material);
@@ -3369,7 +3427,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             for (let i = 0; i < currentIndices.length; i += 3) {
                 facet = [currentIndices[i], currentIndices[i + 1], currentIndices[i + 2]]; //facet vertex indices
-                pstring = new Array();
+                pstring = [];
                 for (let j = 0; j < 3; j++) {
                     pstring[j] = "";
                     for (let k = 0; k < 3; k++) {
@@ -3517,11 +3575,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return this;
         }
 
-        const vectorPositions = new Array<Vector3>();
+        const vectorPositions: Vector3[] = [];
         for (let pos = 0; pos < positions.length; pos = pos + 3) {
             vectorPositions.push(Vector3.FromArray(positions, pos));
         }
-        const dupes = new Array<number>();
+        const dupes: number[] = [];
 
         AsyncLoop.SyncAsyncForLoop(
             vectorPositions.length,
@@ -3879,6 +3937,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public static _GreasedLineRibbonMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
+        throw _WarnImport("GreasedLineRibbonMesh");
+    };
+
+    /**
+     * @internal
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static _TrailMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
         throw _WarnImport("TrailMesh");
     };
@@ -3963,7 +4029,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         mesh.checkCollisions = parsedMesh.checkCollisions;
-        mesh.overrideMaterialSideOrientation = parsedMesh.overrideMaterialSideOrientation;
+
+        if (parsedMesh.overrideMaterialSideOrientation !== undefined) {
+            mesh.overrideMaterialSideOrientation = parsedMesh.overrideMaterialSideOrientation;
+        }
 
         if (parsedMesh.isBlocker !== undefined) {
             mesh.isBlocker = parsedMesh.isBlocker;

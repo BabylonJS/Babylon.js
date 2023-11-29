@@ -558,6 +558,14 @@ export class UniformBuffer {
         this._needSync = true;
     }
 
+    private _getNames() {
+        const names = [];
+        for (const name in this._uniformLocations) {
+            names.push(name);
+        }
+        return names.join(",");
+    }
+
     /** @internal */
     public _rebuild(): void {
         if (this._noUBO || !this._bufferData) {
@@ -565,9 +573,9 @@ export class UniformBuffer {
         }
 
         if (this._dynamic) {
-            this._buffer = this._engine.createDynamicUniformBuffer(this._bufferData);
+            this._buffer = this._engine.createDynamicUniformBuffer(this._bufferData, this._name + "_UniformList:" + this._getNames());
         } else {
-            this._buffer = this._engine.createUniformBuffer(this._bufferData);
+            this._buffer = this._engine.createUniformBuffer(this._bufferData, this._name + "_UniformList:" + this._getNames());
         }
 
         if (this._engine._features.trackUbosInFrame) {
@@ -713,7 +721,7 @@ export class UniformBuffer {
             for (let i = 0; i < size; i++) {
                 // We are checking the matrix cache before calling updateUniform so we do not need to check it here
                 // Hence the test for size === 16 to simply commit the matrix values
-                if ((size === 16 && !this._engine._features.uniformBufferHardCheckMatrix) || this._bufferData[location + i] !== Tools.FloatRound(data[i])) {
+                if ((size === 16 && !this._engine._features.uniformBufferHardCheckMatrix) || this._bufferData[location + i] !== Math.fround(data[i])) {
                     changed = true;
                     if (this._createBufferOnWrite) {
                         this._createNewBuffer();

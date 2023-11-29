@@ -400,7 +400,10 @@ class PhysicsRadialExplosionEvent {
      * @param _scene BabylonJS scene
      * @param _options The options for the vortex event
      */
-    constructor(private _scene: Scene, private _options: PhysicsRadialExplosionEventOptions) {
+    constructor(
+        private _scene: Scene,
+        private _options: PhysicsRadialExplosionEventOptions
+    ) {
         this._options = { ...new PhysicsRadialExplosionEventOptions(), ...this._options };
     }
 
@@ -562,10 +565,15 @@ class PhysicsGravitationalFieldEvent {
      * @param _origin The origin position of the gravitational field event
      * @param _options The options for the vortex event
      */
-    constructor(private _physicsHelper: PhysicsHelper, private _scene: Scene, private _origin: Vector3, private _options: PhysicsRadialExplosionEventOptions) {
+    constructor(
+        private _physicsHelper: PhysicsHelper,
+        private _scene: Scene,
+        private _origin: Vector3,
+        private _options: PhysicsRadialExplosionEventOptions
+    ) {
         this._options = { ...new PhysicsRadialExplosionEventOptions(), ...this._options };
 
-        this._tickCallback = this._tick.bind(this);
+        this._tickCallback = () => this._tick();
 
         this._options.strength = this._options.strength * -1;
     }
@@ -647,7 +655,11 @@ class PhysicsUpdraftEvent {
      * @param _origin The origin position of the updraft
      * @param _options The options for the updraft event
      */
-    constructor(private _scene: Scene, private _origin: Vector3, private _options: PhysicsUpdraftEventOptions) {
+    constructor(
+        private _scene: Scene,
+        private _origin: Vector3,
+        private _options: PhysicsUpdraftEventOptions
+    ) {
         this._physicsEngine = this._scene.getPhysicsEngine() as PhysicsEngineV1 | PhysicsEngineV2;
         this._options = { ...new PhysicsUpdraftEventOptions(), ...this._options };
 
@@ -658,7 +670,7 @@ class PhysicsUpdraftEvent {
             this._originDirection = this._origin.subtract(this._originTop).normalize();
         }
 
-        this._tickCallback = this._tick.bind(this);
+        this._tickCallback = () => this._tick();
 
         if (this._physicsEngine.getPluginVersion() === 1) {
             this._prepareCylinder();
@@ -831,14 +843,18 @@ class PhysicsVortexEvent {
      * @param _origin The origin position of the vortex
      * @param _options The options for the vortex event
      */
-    constructor(private _scene: Scene, private _origin: Vector3, private _options: PhysicsVortexEventOptions) {
+    constructor(
+        private _scene: Scene,
+        private _origin: Vector3,
+        private _options: PhysicsVortexEventOptions
+    ) {
         this._physicsEngine = this._scene.getPhysicsEngine() as PhysicsEngineV1 | PhysicsEngineV2;
         this._options = { ...new PhysicsVortexEventOptions(), ...this._options };
 
         this._origin.addToRef(new Vector3(0, this._options.height / 2, 0), this._cylinderPosition);
         this._origin.addToRef(new Vector3(0, this._options.height, 0), this._originTop);
 
-        this._tickCallback = this._tick.bind(this);
+        this._tickCallback = () => this._tick();
 
         if (this._physicsEngine.getPluginVersion() === 1) {
             this._prepareCylinder();
@@ -1075,7 +1091,7 @@ export class PhysicsUpdraftEventOptions {
     height: number = 10;
 
     /**
-     * The mode for the the updraft.
+     * The mode for the updraft.
      */
     updraftMode: PhysicsUpdraftMode = PhysicsUpdraftMode.Center;
 }

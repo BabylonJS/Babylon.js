@@ -253,7 +253,7 @@ export function CreateDecal(
         let clipResult: Nullable<DecalVertex[]> = null;
 
         if (vertices.length > 3) {
-            clipResult = new Array<DecalVertex>();
+            clipResult = [] as DecalVertex[];
         }
 
         for (let index = 0; index < vertices.length; index += 3) {

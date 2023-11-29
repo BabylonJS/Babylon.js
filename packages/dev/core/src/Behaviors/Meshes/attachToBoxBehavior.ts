@@ -10,7 +10,12 @@ import type { Behavior } from "../../Behaviors/behavior";
  * @internal
  */
 class FaceDirectionInfo {
-    constructor(public direction: Vector3, public rotatedDirection = new Vector3(), public diff = 0, public ignore = false) {}
+    constructor(
+        public direction: Vector3,
+        public rotatedDirection = new Vector3(),
+        public diff = 0,
+        public ignore = false
+    ) {}
 }
 
 /**

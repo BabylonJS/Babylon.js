@@ -6,6 +6,7 @@ import { Image } from "gui/2D/controls/image";
 import { TextBlock } from "gui/2D/controls/textBlock";
 import { Vector2WithInfo } from "gui/2D/math2D";
 import { HTMLTwinItem } from "./htmlTwinItem";
+import type { IHTMLTwinRendererOptions } from "./htmlTwinRenderer";
 
 /**
  * A abstract layer to store the html twin tree structure. It is constructed from the BabylonJS scene entities that need to be accessible. It informs the parent-children relationship of html twin tree, and informs how to render: description, isActionable, onclick/onrightclick/onfocus/onblur.
@@ -16,27 +17,23 @@ export class HTMLTwinGUIItem extends HTMLTwinItem {
      */
     public entity: Control;
 
-    /**
-     * The children of this item in the html twin tree.
-     */
-    public children: HTMLTwinGUIItem[];
-
-    constructor(entity: Control, scene: Scene, children: HTMLTwinGUIItem[]) {
-        super(entity, scene, children);
+    constructor(entity: Control, scene: Scene) {
+        super(entity, scene);
     }
 
     /**
      * The text content displayed in HTML element.
+     * @param options - Options to render HTML twin tree where this element is contained.
      */
-    public override get description(): string {
+    public override getDescription(options: IHTMLTwinRendererOptions): string {
         let description = "";
-        if (this.entity.accessibilityTag?.description) {
+        if (this.entity?.accessibilityTag?.description) {
             description = this.entity.accessibilityTag.description;
-        } else if (this.entity instanceof TextBlock) {
+        } else if (options.addAllControls && this.entity instanceof TextBlock) {
             description = (this.entity as TextBlock).text;
-        } else if (this.entity instanceof Button) {
+        } else if (options.addAllControls && this.entity instanceof Button) {
             description = (this.entity as Button).textBlock?.text ?? "";
-        } else if (this.entity instanceof Image) {
+        } else if (options.addAllControls && this.entity instanceof Image) {
             description = (this.entity as Image).alt ?? "";
         }
         return description;

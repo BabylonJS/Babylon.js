@@ -1675,7 +1675,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                         else if (reflectionTexture.isCube) {
                             defines.USESPHERICALFROMREFLECTIONMAP = true;
                             defines.USEIRRADIANCEMAP = false;
-                            if (this._forceIrradianceInFragment || this.realTimeFiltering || engine.getCaps().maxVaryingVectors <= 8) {
+                            if (this._forceIrradianceInFragment || this.realTimeFiltering || this._twoSidedLighting || engine.getCaps().maxVaryingVectors <= 8) {
                                 defines.USESPHERICALINVERTEX = false;
                             } else {
                                 defines.USESPHERICALINVERTEX = true;
@@ -2319,7 +2319,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
 
             // View
-            if ((scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) || reflectionTexture || mesh.receiveShadows || defines.PREPASS) {
+            if (
+                (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) ||
+                reflectionTexture ||
+                this.subSurface.refractionTexture ||
+                mesh.receiveShadows ||
+                defines.PREPASS
+            ) {
                 this.bindView(effect);
             }
 

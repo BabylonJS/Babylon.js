@@ -35,7 +35,7 @@ export class ProceduralTextureSceneComponent implements ISceneComponent {
      */
     constructor(scene: Scene) {
         this.scene = scene;
-        this.scene.proceduralTextures = new Array<ProceduralTexture>();
+        this.scene.proceduralTextures = [] as ProceduralTexture[];
     }
 
     /**

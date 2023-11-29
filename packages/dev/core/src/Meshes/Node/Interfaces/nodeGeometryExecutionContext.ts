@@ -29,4 +29,10 @@ export interface INodeGeometryExecutionContext {
      * @returns the value associated with the source
      */
     getOverrideNormalsContextualValue?(): any;
+
+    /**
+     * Gets the value associated with a contextual UV1 set
+     * @returns the value associated with the source
+     */
+    getOverrideUVs1ContextualValue?(): any;
 }

@@ -410,14 +410,14 @@ export class ImageProcessingConfiguration {
     @serialize()
     public _skipFinalColorClamp = false;
     /**
-     * If apply by post process is set to true, setting this to true will skip the the final color clamp step in the fragment shader
+     * If apply by post process is set to true, setting this to true will skip the final color clamp step in the fragment shader
      * Applies to PBR materials.
      */
     public get skipFinalColorClamp(): boolean {
         return this._skipFinalColorClamp;
     }
     /**
-     * If apply by post process is set to true, setting this to true will skip the the final color clamp step in the fragment shader
+     * If apply by post process is set to true, setting this to true will skip the final color clamp step in the fragment shader
      * Applies to PBR materials.
      */
     public set skipFinalColorClamp(value: boolean) {

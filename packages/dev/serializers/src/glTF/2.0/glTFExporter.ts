@@ -1294,8 +1294,8 @@ export class _Exporter {
             babylonTransformNode instanceof Mesh
                 ? (babylonTransformNode as Mesh)
                 : babylonTransformNode instanceof InstancedMesh
-                ? (babylonTransformNode as InstancedMesh).sourceMesh
-                : null;
+                  ? (babylonTransformNode as InstancedMesh).sourceMesh
+                  : null;
 
         if (bufferMesh) {
             const vertexBuffer = bufferMesh.getVertexBuffer(kind, true);
@@ -1722,10 +1722,16 @@ export class _Exporter {
                         meshPrimitive.material = materialIndex;
                     }
                     if (morphTargetManager) {
-                        let target;
+                        // By convention, morph target names are stored in the mesh extras.
+                        if (!mesh.extras) {
+                            mesh.extras = {};
+                        }
+                        mesh.extras.targetNames = [];
+
                         for (let i = 0; i < morphTargetManager.numTargets; ++i) {
-                            target = morphTargetManager.getTarget(i);
+                            const target = morphTargetManager.getTarget(i);
                             this._setMorphTargetAttributes(submesh, meshPrimitive, target, binaryWriter);
+                            mesh.extras.targetNames.push(target.name);
                         }
                     }
 
@@ -1743,7 +1749,7 @@ export class _Exporter {
 
     /**
      * Creates a glTF scene based on the array of meshes
-     * Returns the the total byte offset
+     * Returns the total byte offset
      * @param babylonScene Babylon scene to get the mesh data from
      * @param binaryWriter Buffer to write binary data to
      */

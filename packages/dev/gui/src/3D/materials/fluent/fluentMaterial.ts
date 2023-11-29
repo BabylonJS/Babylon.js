@@ -197,7 +197,7 @@ export class FluentMaterial extends PushMaterial {
             ];
 
             const samplers = ["albedoSampler"];
-            const uniformBuffers = new Array<string>();
+            const uniformBuffers: string[] = [];
 
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,

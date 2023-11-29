@@ -143,6 +143,20 @@ export class ArrayItem {
     }
 
     /**
+     * Gets an item from the given array or returns null if not available.
+     * @param array The array to get the item from
+     * @param index The index to the array
+     * @returns The array item or null
+     */
+    public static TryGet<T>(array: ArrayLike<T> | undefined, index: number | undefined): Nullable<T> {
+        if (!array || index == undefined || !array[index]) {
+            return null;
+        }
+
+        return array[index];
+    }
+
+    /**
      * Assign an `index` field to each item of the given array.
      * @param array The array of items
      */
@@ -179,6 +193,9 @@ export class GLTFLoader implements IGLTFLoader {
 
     /** @internal */
     public _disableInstancedMesh = 0;
+
+    /** @internal */
+    public _allMaterialsDirtyRequired = false;
 
     private readonly _parent: GLTFFileLoader;
     private readonly _extensions = new Array<IGLTFLoaderExtension>();
@@ -373,6 +390,7 @@ export class GLTFLoader implements IGLTFLoader {
                 this._rootUrl = rootUrl;
                 this._uniqueRootUrl = !rootUrl.startsWith("file:") && fileName ? rootUrl : `${rootUrl}${Date.now()}/`;
                 this._fileName = fileName;
+                this._allMaterialsDirtyRequired = false;
 
                 this._loadExtensions();
                 this._checkExtensions();
@@ -412,7 +430,15 @@ export class GLTFLoader implements IGLTFLoader {
                 }
 
                 // Restore the blocking of material dirty.
-                this._babylonScene.blockMaterialDirtyMechanism = oldBlockMaterialDirtyMechanism;
+                if (this._allMaterialsDirtyRequired) {
+                    // This can happen if we add a light for instance as it will impact the whole scene.
+                    // This automatically resets everything if needed.
+                    this._babylonScene.blockMaterialDirtyMechanism = oldBlockMaterialDirtyMechanism;
+                } else {
+                    // By default a newly created material is dirty so there is no need to flag the full scene as dirty.
+                    // For perf reasons, we then bypass blockMaterialDirtyMechanism as this would "dirty" the entire scene.
+                    this._babylonScene._forceBlockMaterialDirtyMechanism(oldBlockMaterialDirtyMechanism);
+                }
 
                 if (this._parent.compileMaterials) {
                     promises.push(this._compileMaterialsAsync());
@@ -635,7 +661,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _getGeometries(): Geometry[] {
-        const geometries = new Array<Geometry>();
+        const geometries: Geometry[] = [];
 
         const nodes = this._gltf.nodes;
         if (nodes) {
@@ -653,7 +679,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _getMeshes(): AbstractMesh[] {
-        const meshes = new Array<AbstractMesh>();
+        const meshes: AbstractMesh[] = [];
 
         // Root mesh is always first, if available.
         if (this._rootBabylonMesh) {
@@ -673,7 +699,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _getTransformNodes(): TransformNode[] {
-        const transformNodes = new Array<TransformNode>();
+        const transformNodes: TransformNode[] = [];
 
         const nodes = this._gltf.nodes;
         if (nodes) {
@@ -691,7 +717,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _getSkeletons(): Skeleton[] {
-        const skeletons = new Array<Skeleton>();
+        const skeletons: Skeleton[] = [];
 
         const skins = this._gltf.skins;
         if (skins) {
@@ -706,7 +732,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _getAnimationGroups(): AnimationGroup[] {
-        const animationGroups = new Array<AnimationGroup>();
+        const animationGroups: AnimationGroup[] = [];
 
         const animations = this._gltf.animations;
         if (animations) {
@@ -1050,8 +1076,8 @@ export class GLTFLoader implements IGLTFLoader {
             );
         }
 
-        const loadAttribute = (attribute: string, kind: string, callback?: (accessor: IAccessor) => void) => {
-            if (attributes[attribute] == undefined) {
+        const loadAttribute = (name: string, kind: string, callback?: (accessor: IAccessor) => void) => {
+            if (attributes[name] == undefined) {
                 return;
             }
 
@@ -1060,7 +1086,7 @@ export class GLTFLoader implements IGLTFLoader {
                 babylonMesh._delayInfo.push(kind);
             }
 
-            const accessor = ArrayItem.Get(`${context}/attributes/${attribute}`, this._gltf.accessors, attributes[attribute]);
+            const accessor = ArrayItem.Get(`${context}/attributes/${name}`, this._gltf.accessors, attributes[name]);
             promises.push(
                 this._loadVertexAccessorAsync(`/accessors/${accessor.index}`, accessor, kind).then((babylonVertexBuffer) => {
                     if (babylonVertexBuffer.getKind() === VertexBuffer.PositionKind && !this.parent.alwaysComputeBoundingBox && !babylonMesh.skeleton) {
@@ -1336,7 +1362,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         const paths: { [joint: number]: Array<INode> } = {};
         for (const index of joints) {
-            const path = new Array<INode>();
+            const path: INode[] = [];
             let node = ArrayItem.Get(`${context}/${index}`, this._gltf.nodes, index);
             while (node.index !== -1) {
                 path.unshift(node);
@@ -1965,35 +1991,28 @@ export class GLTFLoader implements IGLTFLoader {
 
         const engine = this._babylonScene.getEngine();
 
-        if (accessor.sparse) {
-            accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync(context, accessor).then((data) => {
-                return new VertexBuffer(engine, data, kind, false);
-            });
-        }
-        // Load joint indices as a float array since the shaders expect float data but glTF uses unsigned byte/short.
-        // This prevents certain platforms (e.g. D3D) from having to convert the data to float on the fly.
-        else if (kind === VertexBuffer.MatricesIndicesKind || kind === VertexBuffer.MatricesIndicesExtraKind) {
+        if (accessor.sparse || accessor.bufferView == undefined) {
             accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync(context, accessor).then((data) => {
                 return new VertexBuffer(engine, data, kind, false);
             });
         } else {
             const bufferView = ArrayItem.Get(`${context}/bufferView`, this._gltf.bufferViews, accessor.bufferView);
             accessor._babylonVertexBuffer[kind] = this._loadVertexBufferViewAsync(bufferView).then((babylonBuffer) => {
-                const size = GLTFLoader._GetNumComponents(context, accessor.type);
+                const numComponents = GLTFLoader._GetNumComponents(context, accessor.type);
                 return new VertexBuffer(
                     engine,
                     babylonBuffer,
                     kind,
                     false,
-                    false,
+                    undefined,
                     bufferView.byteStride,
-                    false,
+                    undefined,
                     accessor.byteOffset,
-                    size,
+                    numComponents,
                     accessor.componentType,
                     accessor.normalized,
                     true,
-                    1,
+                    undefined,
                     true
                 );
             });

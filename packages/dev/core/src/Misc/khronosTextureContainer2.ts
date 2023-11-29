@@ -10,44 +10,40 @@ import { EngineFormat, TranscodeTarget } from "core/Materials/Textures/ktx2decod
 
 declare let KTX2DECODER: any;
 
-function getAbsoluteUrlOrNull(url: Nullable<string>): Nullable<string> {
-    return url ? Tools.GetAbsoluteUrl(url) : null;
-}
-
 function applyConfig(urls: typeof KhronosTextureContainer2.URLConfig): void {
-    if (urls.wasmUASTCToASTC !== null) {
+    if (urls.wasmUASTCToASTC) {
         KTX2DECODER.LiteTranscoder_UASTC_ASTC.WasmModuleURL = urls.wasmUASTCToASTC;
     }
 
-    if (urls.wasmUASTCToBC7 !== null) {
+    if (urls.wasmUASTCToBC7) {
         KTX2DECODER.LiteTranscoder_UASTC_BC7.WasmModuleURL = urls.wasmUASTCToBC7;
     }
 
-    if (urls.wasmUASTCToRGBA_UNORM !== null) {
+    if (urls.wasmUASTCToRGBA_UNORM) {
         KTX2DECODER.LiteTranscoder_UASTC_RGBA_UNORM.WasmModuleURL = urls.wasmUASTCToRGBA_UNORM;
     }
 
-    if (urls.wasmUASTCToRGBA_SRGB !== null) {
+    if (urls.wasmUASTCToRGBA_SRGB) {
         KTX2DECODER.LiteTranscoder_UASTC_RGBA_SRGB.WasmModuleURL = urls.wasmUASTCToRGBA_SRGB;
     }
 
-    if (urls.wasmUASTCToR8_UNORM !== null) {
+    if (urls.wasmUASTCToR8_UNORM) {
         KTX2DECODER.LiteTranscoder_UASTC_R8_UNORM.WasmModuleURL = urls.wasmUASTCToR8_UNORM;
     }
 
-    if (urls.wasmUASTCToRG8_UNORM !== null) {
+    if (urls.wasmUASTCToRG8_UNORM) {
         KTX2DECODER.LiteTranscoder_UASTC_RG8_UNORM.WasmModuleURL = urls.wasmUASTCToRG8_UNORM;
     }
 
-    if (urls.jsMSCTranscoder !== null) {
+    if (urls.jsMSCTranscoder) {
         KTX2DECODER.MSCTranscoder.JSModuleURL = urls.jsMSCTranscoder;
     }
 
-    if (urls.wasmMSCTranscoder !== null) {
+    if (urls.wasmMSCTranscoder) {
         KTX2DECODER.MSCTranscoder.WasmModuleURL = urls.wasmMSCTranscoder;
     }
 
-    if (urls.wasmZSTDDecoder !== null) {
+    if (urls.wasmZSTDDecoder) {
         KTX2DECODER.ZSTDDecoder.WasmModuleURL = urls.wasmZSTDDecoder;
     }
 }
@@ -245,7 +241,7 @@ export class KhronosTextureContainer2 {
         wasmMSCTranscoder: Nullable<string>;
         wasmZSTDDecoder: Nullable<string>;
     } = {
-        jsDecoderModule: "https://preview.babylonjs.com/babylon.ktx2Decoder.js",
+        jsDecoderModule: "https://cdn.babylonjs.com/babylon.ktx2Decoder.js",
         wasmUASTCToASTC: null,
         wasmUASTCToBC7: null,
         wasmUASTCToRGBA_UNORM: null,
@@ -285,16 +281,16 @@ export class KhronosTextureContainer2 {
         }
 
         const urls = {
-            jsDecoderModule: Tools.GetAbsoluteUrl(this.URLConfig.jsDecoderModule),
-            wasmUASTCToASTC: getAbsoluteUrlOrNull(this.URLConfig.wasmUASTCToASTC),
-            wasmUASTCToBC7: getAbsoluteUrlOrNull(this.URLConfig.wasmUASTCToBC7),
-            wasmUASTCToRGBA_UNORM: getAbsoluteUrlOrNull(this.URLConfig.wasmUASTCToRGBA_UNORM),
-            wasmUASTCToRGBA_SRGB: getAbsoluteUrlOrNull(this.URLConfig.wasmUASTCToRGBA_SRGB),
-            wasmUASTCToR8_UNORM: getAbsoluteUrlOrNull(this.URLConfig.wasmUASTCToR8_UNORM),
-            wasmUASTCToRG8_UNORM: getAbsoluteUrlOrNull(this.URLConfig.wasmUASTCToRG8_UNORM),
-            jsMSCTranscoder: getAbsoluteUrlOrNull(this.URLConfig.jsMSCTranscoder),
-            wasmMSCTranscoder: getAbsoluteUrlOrNull(this.URLConfig.wasmMSCTranscoder),
-            wasmZSTDDecoder: getAbsoluteUrlOrNull(this.URLConfig.wasmZSTDDecoder),
+            jsDecoderModule: Tools.GetBabylonScriptURL(this.URLConfig.jsDecoderModule, true),
+            wasmUASTCToASTC: Tools.GetBabylonScriptURL(this.URLConfig.wasmUASTCToASTC, true),
+            wasmUASTCToBC7: Tools.GetBabylonScriptURL(this.URLConfig.wasmUASTCToBC7, true),
+            wasmUASTCToRGBA_UNORM: Tools.GetBabylonScriptURL(this.URLConfig.wasmUASTCToRGBA_UNORM, true),
+            wasmUASTCToRGBA_SRGB: Tools.GetBabylonScriptURL(this.URLConfig.wasmUASTCToRGBA_SRGB, true),
+            wasmUASTCToR8_UNORM: Tools.GetBabylonScriptURL(this.URLConfig.wasmUASTCToR8_UNORM, true),
+            wasmUASTCToRG8_UNORM: Tools.GetBabylonScriptURL(this.URLConfig.wasmUASTCToRG8_UNORM, true),
+            jsMSCTranscoder: Tools.GetBabylonScriptURL(this.URLConfig.jsMSCTranscoder, true),
+            wasmMSCTranscoder: Tools.GetBabylonScriptURL(this.URLConfig.wasmMSCTranscoder, true),
+            wasmZSTDDecoder: Tools.GetBabylonScriptURL(this.URLConfig.wasmZSTDDecoder, true),
         };
 
         if (numWorkers && typeof Worker === "function" && typeof URL !== "undefined") {
@@ -334,7 +330,7 @@ export class KhronosTextureContainer2 {
                 );
             });
         } else if (typeof KTX2DECODER === "undefined") {
-            KhronosTextureContainer2._DecoderModulePromise = Tools.LoadScriptAsync(urls.jsDecoderModule).then(() => {
+            KhronosTextureContainer2._DecoderModulePromise = Tools.LoadBabylonScriptAsync(urls.jsDecoderModule).then(() => {
                 KTX2DECODER.MSCTranscoder.UseFromWorkerThread = false;
                 KTX2DECODER.WASMMemoryManager.LoadBinariesFromCurrentThread = true;
                 applyConfig(urls);

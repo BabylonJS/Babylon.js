@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable babylonjs/available */
+/* eslint-disable jsdoc/require-jsdoc */
 import { Constants } from "../constants";
 import * as WebGPUConstants from "./webgpuConstants";
 import type { Effect } from "../../Materials/effect";
@@ -56,6 +58,24 @@ const stencilOpToIndex: { [name: number]: number } = {
     0x150a: 5, // INVERT
     0x8507: 6, // INCR_WRAP
     0x8508: 7, // DECR_WRAP
+};
+
+const vertexBufferKindForNonFloatProcessing: { [kind: string]: boolean } = {
+    [VertexBuffer.PositionKind]: true,
+    [VertexBuffer.NormalKind]: true,
+    [VertexBuffer.TangentKind]: true,
+    [VertexBuffer.UVKind]: true,
+    [VertexBuffer.UV2Kind]: true,
+    [VertexBuffer.UV3Kind]: true,
+    [VertexBuffer.UV4Kind]: true,
+    [VertexBuffer.UV5Kind]: true,
+    [VertexBuffer.UV6Kind]: true,
+    [VertexBuffer.ColorKind]: true,
+    [VertexBuffer.ColorInstanceKind]: true,
+    [VertexBuffer.MatricesIndicesKind]: true,
+    [VertexBuffer.MatricesWeightsKind]: true,
+    [VertexBuffer.MatricesIndicesExtraKind]: true,
+    [VertexBuffer.MatricesWeightsExtraKind]: true,
 };
 
 /** @internal */
@@ -120,9 +140,25 @@ export abstract class WebGPUCacheRenderPipeline {
     private _textureState: number;
     private _useTextureStage: boolean;
 
-    constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer, useTextureStage: boolean) {
+    private static _IsSignedType(type: number): boolean {
+        switch (type) {
+            case VertexBuffer.BYTE:
+            case VertexBuffer.SHORT:
+            case VertexBuffer.INT:
+            case VertexBuffer.FLOAT:
+                return true;
+            case VertexBuffer.UNSIGNED_BYTE:
+            case VertexBuffer.UNSIGNED_SHORT:
+            case VertexBuffer.UNSIGNED_INT:
+                return false;
+            default:
+                throw new Error(`Invalid type '${type}'`);
+        }
+    }
+
+    constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer) {
         this._device = device;
-        this._useTextureStage = useTextureStage;
+        this._useTextureStage = true; // we force usage because we must handle depth textures with "float" filtering, which can't be fixed by a caps (like "textureFloatLinearFiltering" can for float textures)
         this._states = new Array(30); // pre-allocate enough room so that no new allocation will take place afterwards
         this._statesLength = 0;
         this._stateDirtyLowestIndex = 0;
@@ -170,10 +206,8 @@ export abstract class WebGPUCacheRenderPipeline {
     public readonly mrtTextureCount: number = 0;
 
     public getRenderPipeline(fillMode: number, effect: Effect, sampleCount: number, textureState = 0): GPURenderPipeline {
-        if (sampleCount > 1) {
-            // WebGPU only supports 1 or 4
-            sampleCount = 4;
-        }
+        sampleCount = WebGPUTextureHelper.GetSample(sampleCount);
+
         if (this.disabled) {
             const topology = WebGPUCacheRenderPipeline._GetTopology(fillMode);
 
@@ -323,7 +357,7 @@ export abstract class WebGPUCacheRenderPipeline {
         textureCount = textureCount ?? textureArray.length;
         if (textureCount > 10) {
             // If we want more than 10 attachments we need to change this method (and the StatePosition enum) but 10 seems plenty: note that WebGPU only supports 8 at the time (2021/12/13)!
-            // As we need 39 different values we are using 6 bits to encode a texture format, meaning we can encode 5 texture formats in 32 bits
+            // As we need ~39 different values we are using 6 bits to encode a texture format, meaning we can encode 5 texture formats in 32 bits
             // We are using 2x32 bit values to handle 10 textures
             throw "Can't handle more than 10 attachments for a MRT in cache render pipeline!";
         }
@@ -781,16 +815,18 @@ export abstract class WebGPUCacheRenderPipeline {
                 vertexBuffer = this._emptyVertexBuffer;
             }
 
-            const buffer = vertexBuffer.getBuffer()?.underlyingResource;
+            const buffer = vertexBuffer.effectiveBuffer?.underlyingResource;
 
             // We optimize usage of GPUVertexBufferLayout: we will create a single GPUVertexBufferLayout for all the attributes which follow each other and which use the same GPU buffer
             // However, there are some constraints in the attribute.offset value range, so we must check for them before being able to reuse the same GPUVertexBufferLayout
             // See _getVertexInputDescriptor() below
             if (vertexBuffer._validOffsetRange === undefined) {
-                const offset = vertexBuffer.byteOffset;
+                const offset = vertexBuffer.effectiveByteOffset;
                 const formatSize = vertexBuffer.getSize(true);
-                const byteStride = vertexBuffer.byteStride;
-                vertexBuffer._validOffsetRange = offset <= this._kMaxVertexBufferStride - formatSize && (byteStride === 0 || offset + formatSize <= byteStride);
+                const byteStride = vertexBuffer.effectiveByteStride;
+
+                vertexBuffer._validOffsetRange =
+                    (offset + formatSize <= this._kMaxVertexBufferStride && byteStride === 0) || (byteStride !== 0 && offset + formatSize <= byteStride);
             }
 
             if (!(currentGPUBuffer && currentGPUBuffer === buffer && vertexBuffer._validOffsetRange)) {
@@ -864,7 +900,7 @@ export abstract class WebGPUCacheRenderPipeline {
                     let samplerType = samplerInfo?.type ?? WebGPUConstants.SamplerBindingType.Filtering;
 
                     if (this._textureState & bitVal && sampleType !== WebGPUConstants.TextureSampleType.Depth) {
-                        // The texture is a 32 bits float texture but the system does not support linear filtering for them:
+                        // The texture is a 32 bits float texture but the system does not support linear filtering for them OR the texture is a depth texture with "float" filtering:
                         // we set the sampler to "non-filtering" and the texture sample type to "unfilterable-float"
                         if (textureInfo.autoBindSampler) {
                             samplerType = WebGPUConstants.SamplerBindingType.NonFiltering;
@@ -914,15 +950,15 @@ export abstract class WebGPUCacheRenderPipeline {
                 vertexBuffer = this._emptyVertexBuffer;
             }
 
-            let buffer = vertexBuffer.getBuffer()?.underlyingResource;
+            let buffer = vertexBuffer.effectiveBuffer?.underlyingResource;
 
             // We reuse the same GPUVertexBufferLayout for all attributes that use the same underlying GPU buffer (and for attributes that follow each other in the attributes array)
-            let offset = vertexBuffer.byteOffset;
+            let offset = vertexBuffer.effectiveByteOffset;
             const invalidOffsetRange = !vertexBuffer._validOffsetRange;
             if (!(currentGPUBuffer && currentGPUAttributes && currentGPUBuffer === buffer) || invalidOffsetRange) {
                 const vertexBufferDescriptor: GPUVertexBufferLayout = {
-                    arrayStride: vertexBuffer.byteStride,
-                    stepMode: vertexBuffer.getIsInstanced() ? WebGPUConstants.InputStepMode.Instance : WebGPUConstants.InputStepMode.Vertex,
+                    arrayStride: vertexBuffer.effectiveByteStride,
+                    stepMode: vertexBuffer.getIsInstanced() ? WebGPUConstants.VertexStepMode.Instance : WebGPUConstants.VertexStepMode.Vertex,
                     attributes: [],
                 };
 
@@ -946,6 +982,41 @@ export abstract class WebGPUCacheRenderPipeline {
         return descriptors;
     }
 
+    private _processNonFloatVertexBuffers(webgpuPipelineContext: WebGPUPipelineContext, effect: Effect) {
+        const webgpuShaderProcessor = webgpuPipelineContext.engine._getShaderProcessor(webgpuPipelineContext.shaderProcessingContext.shaderLanguage) as WebGPUShaderProcessor;
+
+        let reprocessShaders = false;
+
+        for (const kind in this._vertexBuffers) {
+            const currentVertexBuffer = this._vertexBuffers[kind];
+
+            if (!currentVertexBuffer || !vertexBufferKindForNonFloatProcessing[kind]) {
+                continue;
+            }
+
+            const currentVertexBufferType = currentVertexBuffer.normalized ? VertexBuffer.FLOAT : currentVertexBuffer.type;
+            const vertexBufferType = webgpuPipelineContext.vertexBufferKindToType[kind];
+
+            if (
+                (currentVertexBufferType !== VertexBuffer.FLOAT && vertexBufferType === undefined) ||
+                (vertexBufferType !== undefined && vertexBufferType !== currentVertexBufferType)
+            ) {
+                reprocessShaders = true;
+                webgpuPipelineContext.vertexBufferKindToType[kind] = currentVertexBufferType;
+                if (currentVertexBufferType !== VertexBuffer.FLOAT) {
+                    webgpuShaderProcessor.vertexBufferKindToNumberOfComponents[kind] = VertexBuffer.DeduceStride(kind);
+                    if (WebGPUCacheRenderPipeline._IsSignedType(currentVertexBufferType)) {
+                        webgpuShaderProcessor.vertexBufferKindToNumberOfComponents[kind] *= -1;
+                    }
+                }
+            }
+        }
+
+        if (reprocessShaders) {
+            effect._processShaderCode(webgpuShaderProcessor, true);
+        }
+    }
+
     private _createRenderPipeline(effect: Effect, topology: GPUPrimitiveTopology, sampleCount: number): GPURenderPipeline {
         const webgpuPipelineContext = effect._pipelineContext as WebGPUPipelineContext;
         const inputStateDescriptor = this._getVertexInputDescriptor(effect);
@@ -954,6 +1025,8 @@ export abstract class WebGPUCacheRenderPipeline {
         const colorStates: Array<GPUColorTargetState | null> = [];
         const alphaBlend = this._getAphaBlendState();
         const colorBlend = this._getColorBlendState();
+
+        this._processNonFloatVertexBuffers(webgpuPipelineContext, effect);
 
         if (this._mrtAttachments1 > 0) {
             for (let i = 0; i < this._mrtFormats.length; ++i) {

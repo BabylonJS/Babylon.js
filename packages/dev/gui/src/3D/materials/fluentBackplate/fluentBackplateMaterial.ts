@@ -355,7 +355,7 @@ export class FluentBackplateMaterial extends PushMaterial {
                 "Global_Right_Index_Tip_Position",
             ];
             const samplers: string[] = ["_Blob_Texture_", "_Iridescent_Map_"];
-            const uniformBuffers = new Array<string>();
+            const uniformBuffers: string[] = [];
 
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,

@@ -32,7 +32,8 @@ export class FluidRenderingDepthTextureCopy {
                 label: "FluidRenderingDepthTextureCopyRTT",
             }
         );
-        this._depthRTWrapper.createDepthStencilTexture(0, false, false, 1, undefined, "FluidRenderingDepthTextureCopyRTTDepthStencil");
+        const depthTexture = this._depthRTWrapper.createDepthStencilTexture(0, false, false, 1, undefined, "FluidRenderingDepthTextureCopyRTTDepthStencil");
+        depthTexture.label = `FluidDepthTextureCopy${width}x${height}x${samples}`;
     }
 
     public copy(source: InternalTexture): boolean {

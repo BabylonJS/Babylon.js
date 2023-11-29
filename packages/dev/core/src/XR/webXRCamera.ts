@@ -59,7 +59,11 @@ export class WebXRCamera extends FreeCamera {
      * @param scene the scene to add the camera to
      * @param _xrSessionManager a constructed xr session manager
      */
-    constructor(name: string, scene: Scene, private _xrSessionManager: WebXRSessionManager) {
+    constructor(
+        name: string,
+        scene: Scene,
+        private _xrSessionManager: WebXRSessionManager
+    ) {
         super(name, Vector3.Zero(), scene);
 
         // Initial camera configuration

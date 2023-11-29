@@ -79,6 +79,7 @@ export class AnimationGroup implements IDisposable {
     private _playOrder = 0;
     private _enableBlending: Nullable<boolean> = null;
     private _blendingSpeed: Nullable<number> = null;
+    private _numActiveAnimatables = 0;
 
     /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
@@ -135,13 +136,17 @@ export class AnimationGroup implements IDisposable {
      */
     public syncWithMask() {
         if (!this.mask) {
+            this._numActiveAnimatables = this._targetedAnimations.length;
             return;
         }
+
+        this._numActiveAnimatables = 0;
 
         for (let i = 0; i < this._animatables.length; ++i) {
             const animatable = this._animatables[i];
 
             if (this.mask.retainsTarget(animatable.target.name)) {
+                this._numActiveAnimatables++;
                 if (animatable.paused) {
                     animatable.restart();
                 }
@@ -380,6 +385,23 @@ export class AnimationGroup implements IDisposable {
     }
 
     /**
+     * Gets the length (in seconds) of the animation group
+     * This function assumes that all animations are played at the same framePerSecond speed!
+     * Note: you can only call this method after you've added at least one targeted animation!
+     * @param from Starting frame range (default is AnimationGroup.from)
+     * @param to Ending frame range (default is AnimationGroup.to)
+     * @returns The length in seconds
+     */
+    public getLength(from?: number, to?: number): number {
+        from = from ?? this._from;
+        to = to ?? this._to;
+
+        const fps = this.targetedAnimations[0].animation.framePerSecond * this._speedRatio;
+
+        return (to - from) / fps;
+    }
+
+    /**
      * Merge the array of animation groups into a new animation group
      * @param animationGroups List of animation groups to merge
      * @param disposeSource If true, animation groups will be disposed after being merged (default: true)
@@ -562,7 +584,7 @@ export class AnimationGroup implements IDisposable {
             this._animationLoopFlags[index] = true;
 
             this._animationLoopCount++;
-            if (this._animationLoopCount === this._targetedAnimations.length) {
+            if (this._animationLoopCount === this._numActiveAnimatables) {
                 this.onAnimationGroupLoopObservable.notifyObservers(this);
                 this._animationLoopCount = 0;
                 this._animationLoopFlags.length = 0;
@@ -985,7 +1007,7 @@ export class AnimationGroup implements IDisposable {
     /**
      * Convert the keyframes for all animations belonging to the group to be relative to a given reference frame.
      * @param sourceAnimationGroup defines the AnimationGroup containing animations to convert
-     * @param options defines the options to use when converting ey keyframes
+     * @param options defines the options to use when converting keyframes
      * @returns a new AnimationGroup if options.cloneOriginalAnimationGroup is true or the original AnimationGroup if options.cloneOriginalAnimationGroup is false
      */
     public static MakeAnimationAdditive(sourceAnimationGroup: AnimationGroup, options?: IMakeAnimationGroupAdditiveOptions): AnimationGroup;

@@ -1073,6 +1073,11 @@ interface XRFrame {
     getLightEstimate(xrLightProbe: XRLightProbe): XRLightEstimate;
 }
 
+// Plane detection
+interface XRSession {
+    initiateRoomCapture?(): Promise<void>;
+}
+
 type XREventType = keyof XRSessionEventMap;
 
 type XRImageTrackingState = "tracked" | "emulated";
@@ -1193,6 +1198,21 @@ interface XRWebGLBinding {
 // enabledFeatures
 interface XRSession {
     enabledFeatures: string[];
+}
+
+// Raw camera access
+
+interface XRView {
+    readonly camera: XRCamera | undefined;
+}
+
+interface XRCamera {
+    readonly width: number;
+    readonly height: number;
+}
+
+interface XRWebGLBinding {
+    getCameraImage(camera: XRCamera): WebGLTexture | undefined;
 }
 
 /**

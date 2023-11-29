@@ -90,11 +90,11 @@ export function CreateCylinderVertexData(options: {
         }
     }
 
-    const indices = new Array<number>();
-    const positions = new Array<number>();
-    const normals = new Array<number>();
-    const uvs = new Array<number>();
-    const colors = new Array<number>();
+    const indices: number[] = [];
+    const positions: number[] = [];
+    const normals: number[] = [];
+    const uvs: number[] = [];
+    const colors: number[] = [];
 
     const angleStep = (Math.PI * 2 * arc) / tessellation;
     let angle: number;

@@ -32,16 +32,6 @@ import type { Material } from "../Materials/material";
 import type { PostProcess } from "../PostProcesses/postProcess";
 
 /**
- * Defines the interface used by display changed events
- */
-export interface IDisplayChangedEventArgs {
-    /** Gets the vrDisplay object (if any) */
-    vrDisplay: Nullable<any>;
-    /** Gets a boolean indicating if webVR is supported */
-    vrSupported: boolean;
-}
-
-/**
  * Defines the interface used by objects containing a viewport (like a camera)
  */
 interface IViewportOwnerLike {
@@ -403,7 +393,7 @@ export class Engine extends ThinEngine {
     /**
      * Gets the list of created scenes
      */
-    public scenes = new Array<Scene>();
+    public scenes: Scene[] = [];
 
     /** @internal */
     public _virtualScenes = new Array<Scene>();
@@ -416,7 +406,7 @@ export class Engine extends ThinEngine {
     /**
      * Gets the list of created postprocesses
      */
-    public postProcesses = new Array<PostProcess>();
+    public postProcesses: PostProcess[] = [];
 
     /**
      * Gets a boolean indicating if the pointer is currently locked
@@ -597,14 +587,6 @@ export class Engine extends ThinEngine {
             const canvas = <HTMLCanvasElement>canvasOrContext;
 
             this._sharedInit(canvas);
-
-            this._connectVREvents();
-        }
-
-        // Load WebVR Devices
-        this._prepareVRComponent();
-        if (options.autoEnableWebVR) {
-            this.initWebVR();
         }
     }
 
@@ -1018,7 +1000,7 @@ export class Engine extends ThinEngine {
     private _cachedStencilReference: number;
 
     /**
-     * Caches the the state of the stencil buffer
+     * Caches the state of the stencil buffer
      */
     public cacheStencilState() {
         this._cachedStencilBuffer = this.getStencilBuffer();
@@ -1103,54 +1085,6 @@ export class Engine extends ThinEngine {
      */
     public _reportDrawCall(numDrawCalls = 1) {
         this._drawCalls.addCount(numDrawCalls, false);
-    }
-
-    /**
-     * Initializes a webVR display and starts listening to display change events
-     * The onVRDisplayChangedObservable will be notified upon these changes
-     * @returns The onVRDisplayChangedObservable
-     */
-    public initWebVR(): Observable<IDisplayChangedEventArgs> {
-        throw _WarnImport("WebVRCamera");
-    }
-
-    /** @internal */
-    public _prepareVRComponent() {
-        // Do nothing as the engine side effect will overload it
-    }
-
-    /**
-     * @internal
-     */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public _connectVREvents(canvas?: HTMLCanvasElement, document?: any) {
-        // Do nothing as the engine side effect will overload it
-    }
-
-    /** @internal */
-    public _submitVRFrame() {
-        // Do nothing as the engine side effect will overload it
-    }
-    /**
-     * Call this function to leave webVR mode
-     * Will do nothing if webVR is not supported or if there is no webVR device
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/webVRCamera
-     */
-    public disableVR() {
-        // Do nothing as the engine side effect will overload it
-    }
-
-    /**
-     * Gets a boolean indicating that the system is in VR mode and is presenting
-     * @returns true if VR mode is engaged
-     */
-    public isVRPresenting() {
-        return false;
-    }
-
-    /** @internal */
-    public _requestVRFrame() {
-        // Do nothing as the engine side effect will overload it
     }
 
     /**
@@ -1323,8 +1257,6 @@ export class Engine extends ThinEngine {
                     this.customAnimationFrameRequester
                 );
                 this._frameHandler = this.customAnimationFrameRequester.requestID;
-            } else if (this.isVRPresenting()) {
-                this._requestVRFrame();
             } else {
                 this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
             }
@@ -1403,22 +1335,8 @@ export class Engine extends ThinEngine {
      */
     public endFrame(): void {
         super.endFrame();
-        this._submitVRFrame();
 
         this.onEndFrameObservable.notifyObservers(this);
-    }
-
-    /**
-     * Resize the view according to the canvas' size
-     * @param forceSetSize true to force setting the sizes of the underlying canvas
-     */
-    public resize(forceSetSize = false): void {
-        // We're not resizing the size of the canvas while in VR mode & presenting
-        if (this.isVRPresenting()) {
-            return;
-        }
-
-        super.resize(forceSetSize);
     }
 
     /**
@@ -1705,12 +1623,24 @@ export class Engine extends ThinEngine {
      * @param texture defines the external texture
      * @param hasMipMaps defines whether the external texture has mip maps (default: false)
      * @param samplingMode defines the sampling mode for the external texture (default: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE)
+     * @param width defines the width for the external texture (default: 0)
+     * @param height defines the height for the external texture (default: 0)
      * @returns the babylon internal texture
      */
-    public wrapWebGLTexture(texture: WebGLTexture, hasMipMaps: boolean = false, samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE): InternalTexture {
+    public wrapWebGLTexture(
+        texture: WebGLTexture,
+        hasMipMaps: boolean = false,
+        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+        width: number = 0,
+        height: number = 0
+    ): InternalTexture {
         const hardwareTexture = new WebGLHardwareTexture(texture, this._gl);
         const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
         internalTexture._hardwareTexture = hardwareTexture;
+        internalTexture.baseWidth = width;
+        internalTexture.baseHeight = height;
+        internalTexture.width = width;
+        internalTexture.height = height;
         internalTexture.isReady = true;
         internalTexture.useMipMaps = hasMipMaps;
         this.updateTextureSamplingMode(samplingMode, internalTexture);
@@ -1899,9 +1829,6 @@ export class Engine extends ThinEngine {
             Engine.audioEngine.dispose();
             Engine.audioEngine = null;
         }
-
-        //WebVR
-        this.disableVR();
 
         // Events
         const hostWindow = this.getHostWindow(); // it calls IsWindowObjectExist()

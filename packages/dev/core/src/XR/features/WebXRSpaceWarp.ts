@@ -16,6 +16,7 @@ import type { Material } from "../../Materials/material";
 
 import "../../Shaders/velocity.fragment";
 import "../../Shaders/velocity.vertex";
+import type { Observer } from "core/Misc/observable";
 
 /**
  * Used for Space Warp render process
@@ -137,7 +138,11 @@ export class WebXRSpaceWarpRenderTargetTextureProvider implements IWebXRRenderTa
     protected _framebufferDimensions: Nullable<{ framebufferWidth: number; framebufferHeight: number }>;
     protected _engine: Engine;
 
-    constructor(protected readonly _scene: Scene, protected readonly _xrSessionManager: WebXRSessionManager, protected readonly _xrWebGLBinding: XRWebGLBinding) {
+    constructor(
+        protected readonly _scene: Scene,
+        protected readonly _xrSessionManager: WebXRSessionManager,
+        protected readonly _xrWebGLBinding: XRWebGLBinding
+    ) {
         this._engine = _scene.getEngine();
     }
 
@@ -286,6 +291,7 @@ export class WebXRSpaceWarp extends WebXRAbstractFeature {
     private _glContext: WebGLRenderingContext | WebGL2RenderingContext;
     private _xrWebGLBinding: XRWebGLBinding;
     private _renderTargetTexture: Nullable<RenderTargetTexture>;
+    private _onAfterRenderObserver: Nullable<Observer<Scene>> = null;
 
     /**
      * constructor for the space warp feature
@@ -314,9 +320,14 @@ export class WebXRSpaceWarp extends WebXRAbstractFeature {
 
         this.spaceWarpRTTProvider = new WebXRSpaceWarpRenderTargetTextureProvider(this._xrSessionManager.scene, this._xrSessionManager, this._xrWebGLBinding);
 
-        this._xrSessionManager.scene.onAfterRenderObservable.add(this._onAfterRender.bind(this));
+        this._onAfterRenderObserver = this._xrSessionManager.scene.onAfterRenderObservable.add(() => this._onAfterRender());
 
         return true;
+    }
+
+    public detach(): boolean {
+        this._xrSessionManager.scene.onAfterRenderObservable.remove(this._onAfterRenderObserver);
+        return super.detach();
     }
 
     private _onAfterRender(): void {

@@ -178,6 +178,8 @@ export class Constants {
     public static readonly TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8 = 18;
     /** Stencil 8 bits */
     public static readonly TEXTUREFORMAT_STENCIL8 = 19;
+    /** UNDEFINED */
+    public static readonly TEXTUREFORMAT_UNDEFINED = 0xffffffff;
 
     /** Compressed BC7 */
     public static readonly TEXTUREFORMAT_COMPRESSED_RGBA_BPTC_UNORM = 36492;
@@ -728,10 +730,6 @@ export class Constants {
      * Defines that both eyes of the camera should be renderered in a VR mode (carbox).
      */
     public static readonly RIG_MODE_VR = 20;
-    /**
-     * Defines that both eyes of the camera should be renderered in a VR mode (webVR).
-     */
-    public static readonly RIG_MODE_WEBVR = 21;
     /**
      * Custom rig mode allowing rig cameras to be populated manually with any number of cameras
      */

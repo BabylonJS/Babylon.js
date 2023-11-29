@@ -13,7 +13,6 @@ export * from "./engine.cubeTexture";
 export * from "./engine.renderTarget";
 export * from "./engine.renderTargetCube";
 export * from "./engine.textureSampler";
-export * from "./engine.webVR";
 export * from "./engine.uniformBuffer";
 export * from "./engine.dynamicBuffer";
 export * from "./engine.views";

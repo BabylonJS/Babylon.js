@@ -27,6 +27,8 @@
     },
     "sideEffects": false,
     "devDependencies": {
-        "@dev/build-tools": "^1.0.0"
+        "@dev/build-tools": "^1.0.0",
+        "@types/draco3d": "^1.4.3",
+        "@types/draco3dgltf": "^1.4.0"
     }
 }

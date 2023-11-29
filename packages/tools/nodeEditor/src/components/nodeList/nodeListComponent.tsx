@@ -119,10 +119,10 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         RadiansToDegreesBlock: "Converts the input radians value to degrees",
         SawToothWaveBlock: "Outputs a sawtooth pattern value between -1 and 1 based on the input value",
         SignBlock: "returns 1 if the input is positive, 0 if input is equal to 0, or -1 if the input is negative",
-        SinBlock: "Outputs the the sine value based on the input value",
-        SqrtBlock: "Outputs the the square root of the input value",
+        SinBlock: "Outputs the sine value based on the input value",
+        SqrtBlock: "Outputs the square root of the input value",
         SquareWaveBlock: "Outputs a stepped pattern value between -1 and 1 based on the input value",
-        TanBlock: "Outputs the the tangent value based on the input value",
+        TanBlock: "Outputs the tangent value based on the input value",
         TriangleWaveBlock: "Outputs a sawtooth pattern value between 0 and 1 based on the input value",
         CrossBlock: "Outputs a vector that is perpendicular to two input vectors",
         DotBlock: "Outputs the cos of the angle between two vectors",
@@ -537,6 +537,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                         key="add..."
                         title={"Add Custom Frame"}
                         closed={false}
+                        multiple={true}
                         label="Add..."
                         uploadName={"custom-frame-upload"}
                         iconImage={addButton}
@@ -553,6 +554,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                         key="add..."
                         title={"Add Custom Block"}
                         closed={false}
+                        multiple={true}
                         label="Add..."
                         uploadName={"custom-block-upload"}
                         iconImage={addButton}
@@ -599,7 +601,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         }
 
         return (
-            <div id="nodeList">
+            <div id="nmeNodeList">
                 <div className="panes">
                     <div className="pane">
                         <div className="filter">

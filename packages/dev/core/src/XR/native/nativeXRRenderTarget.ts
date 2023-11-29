@@ -30,7 +30,10 @@ export class NativeXRLayerRenderTargetTextureProvider extends WebXRLayerRenderTa
     private _nativeRTTProvider: WebXRLayerRenderTargetTextureProvider;
     private _nativeLayer: XRWebGLLayer;
 
-    constructor(sessionManager: WebXRSessionManager, public readonly layerWrapper: NativeXRLayerWrapper) {
+    constructor(
+        sessionManager: WebXRSessionManager,
+        public readonly layerWrapper: NativeXRLayerWrapper
+    ) {
         super(sessionManager.scene, layerWrapper);
         this._nativeRTTProvider = (navigator as any).xr.getNativeRenderTargetProvider(
             sessionManager.session,

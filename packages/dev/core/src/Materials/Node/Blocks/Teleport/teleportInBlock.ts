@@ -17,6 +17,32 @@ export class NodeMaterialTeleportInBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets or sets the target of the block
+     */
+    public get target() {
+        const input = this._inputs[0];
+        if (input.isConnected) {
+            const block = input.connectedPoint!.ownerBlock;
+            if (block.target !== NodeMaterialBlockTargets.VertexAndFragment) {
+                return block.target;
+            }
+
+            if (input.connectedPoint!.target !== NodeMaterialBlockTargets.VertexAndFragment) {
+                return input.connectedPoint!.target;
+            }
+        }
+
+        return this._target;
+    }
+
+    public set target(value: NodeMaterialBlockTargets) {
+        if ((this._target & value) !== 0) {
+            return;
+        }
+        this._target = value;
+    }
+
+    /**
      * Create a new NodeMaterialTeleportInBlock
      * @param name defines the block name
      */

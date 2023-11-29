@@ -8,13 +8,14 @@
 
     #ifndef BAKED_VERTEX_ANIMATION_TEXTURE
         #ifdef BONETEXTURE
-            uniform sampler2D boneSampler;
+            uniform highp sampler2D boneSampler;
             uniform float boneTextureWidth;
         #else
             uniform mat4 mBones[BonesPerMesh];
-            #ifdef BONES_VELOCITY_ENABLED
-                uniform mat4 mPreviousBones[BonesPerMesh];
-            #endif
+        #endif
+
+        #ifdef BONES_VELOCITY_ENABLED
+            uniform mat4 mPreviousBones[BonesPerMesh];
         #endif
 
         #ifdef BONETEXTURE

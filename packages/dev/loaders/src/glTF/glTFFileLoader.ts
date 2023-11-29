@@ -48,11 +48,15 @@ function readAsync(arrayBuffer: ArrayBuffer, byteOffset: number, byteLength: num
 
 function readViewAsync(arrayBufferView: ArrayBufferView, byteOffset: number, byteLength: number): Promise<Uint8Array> {
     try {
-        if ((arrayBufferView as Uint8Array).byteOffset + byteLength > arrayBufferView.byteLength) {
-            throw new Error("Array length out of bounds.");
+        if (byteOffset < 0 || byteOffset >= arrayBufferView.byteLength) {
+            throw new RangeError("Offset is out of range.");
         }
 
-        return Promise.resolve(new Uint8Array(arrayBufferView.buffer, (arrayBufferView as Uint8Array).byteOffset + byteOffset, byteLength));
+        if (byteOffset + byteLength > arrayBufferView.byteLength) {
+            throw new RangeError("Length is out of range.");
+        }
+
+        return Promise.resolve(new Uint8Array(arrayBufferView.buffer, arrayBufferView.byteOffset + byteOffset, byteLength));
     } catch (e) {
         return Promise.reject(e);
     }
@@ -669,10 +673,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         );
     }
 
-    /**
-     * @internal
-     */
-    _loadBinary(
+    private _loadBinary(
         scene: Scene,
         data: ArrayBufferView,
         rootUrl: string,

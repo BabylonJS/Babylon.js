@@ -26,7 +26,7 @@ export interface IPlaneDragGizmo extends IGizmo {
     snapDistance: number;
     /**
      * Event that fires each time the gizmo snaps to a new location.
-     * * snapDistance is the the change in distance
+     * * snapDistance is the change in distance
      */
     onSnapObservable: Observable<{ snapDistance: number }>;
     /** If the gizmo is enabled */
@@ -34,9 +34,9 @@ export interface IPlaneDragGizmo extends IGizmo {
 
     /** Default material used to render when gizmo is not disabled or hovered */
     coloredMaterial: StandardMaterial;
-    /** Material used to render when gizmo is hovered with mouse*/
+    /** Material used to render when gizmo is hovered with mouse */
     hoverMaterial: StandardMaterial;
-    /** Material used to render when gizmo is disabled. typically grey.*/
+    /** Material used to render when gizmo is disabled. typically grey. */
     disableMaterial: StandardMaterial;
 }
 
@@ -55,7 +55,7 @@ export class PlaneDragGizmo extends Gizmo implements IPlaneDragGizmo {
     public snapDistance = 0;
     /**
      * Event that fires each time the gizmo snaps to a new location.
-     * * snapDistance is the the change in distance
+     * * snapDistance is the change in distance
      */
     public onSnapObservable = new Observable<{ snapDistance: number }>();
 
@@ -82,6 +82,7 @@ export class PlaneDragGizmo extends Gizmo implements IPlaneDragGizmo {
     public get disableMaterial() {
         return this._disableMaterial;
     }
+
     /**
      * @internal
      */
@@ -139,7 +140,6 @@ export class PlaneDragGizmo extends Gizmo implements IPlaneDragGizmo {
 
         this.dragBehavior.onDragObservable.add((event) => {
             if (this.attachedNode) {
-                this._handlePivot();
                 // Keep world translation and use it to update world transform
                 // if the node has parent, the local transform properties (position, rotation, scale)
                 // will be recomputed in _matrixChanged function
@@ -206,6 +206,7 @@ export class PlaneDragGizmo extends Gizmo implements IPlaneDragGizmo {
             this._setGizmoMeshMaterial(cache.gizmoMeshes, newState ? this._coloredMaterial : this._disableMaterial);
         });
     }
+
     protected _attachedNodeChanged(value: Nullable<Node>) {
         if (this.dragBehavior) {
             this.dragBehavior.enabled = value ? true : false;
@@ -225,9 +226,11 @@ export class PlaneDragGizmo extends Gizmo implements IPlaneDragGizmo {
             }
         }
     }
+
     public get isEnabled(): boolean {
         return this._isEnabled;
     }
+
     /**
      * Disposes of the gizmo
      */

@@ -114,11 +114,11 @@ export const BasisToolsOptions = {
     /**
      * URL to use when loading the basis transcoder
      */
-    JSModuleURL: "https://cdn.babylonjs.com/basisTranscoder/1/basis_transcoder.js",
+    JSModuleURL: `${Tools._DefaultCdnUrl}/basisTranscoder/1/basis_transcoder.js`,
     /**
      * URL to use when loading the wasm module for the transcoder
      */
-    WasmModuleURL: "https://cdn.babylonjs.com/basisTranscoder/1/basis_transcoder.wasm",
+    WasmModuleURL: `${Tools._DefaultCdnUrl}/basisTranscoder/1/basis_transcoder.wasm`,
 };
 
 /**
@@ -168,7 +168,7 @@ const _CreateWorkerAsync = () => {
             if (_Worker) {
                 res(_Worker);
             } else {
-                Tools.LoadFileAsync(BasisToolsOptions.WasmModuleURL)
+                Tools.LoadFileAsync(Tools.GetBabylonScriptURL(BasisToolsOptions.WasmModuleURL))
                     .then((wasmBinary) => {
                         if (typeof URL !== "function") {
                             return reject("Basis transcoder requires an environment with a URL constructor");
@@ -185,7 +185,7 @@ const _CreateWorkerAsync = () => {
                             }
                         };
                         _Worker.addEventListener("message", initHandler);
-                        _Worker.postMessage({ action: "init", url: BasisToolsOptions.JSModuleURL, wasmBinary: wasmBinary });
+                        _Worker.postMessage({ action: "init", url: Tools.GetBabylonScriptURL(BasisToolsOptions.JSModuleURL), wasmBinary: wasmBinary });
                     })
                     .catch(reject);
             }

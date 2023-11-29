@@ -404,7 +404,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
      * When enabled, a depth renderer is created which will render the back faces of the scene to a depth texture (meaning additional work for the GPU).
      * In that mode, the "thickness" property is still used as an offset to compute the ray intersection, but you can typically use a much lower
      * value than when enableAutomaticThicknessComputation is false (it's even possible to use a value of 0 when using low values for "step")
-     * Note that for performance reasons, this option will only apply to the first camera to which the the rendering pipeline is attached!
+     * Note that for performance reasons, this option will only apply to the first camera to which the rendering pipeline is attached!
      */
     public get enableAutomaticThicknessComputation(): boolean {
         return this._enableAutomaticThicknessComputation;
@@ -651,12 +651,18 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 if (geometryBufferRenderer) {
                     geometryBufferRenderer.enableReflectivity = true;
                     geometryBufferRenderer.useSpecificClearForDepthTexture = true;
+                    if (geometryBufferRenderer.generateNormalsInWorldSpace) {
+                        console.error("SSRRenderingPipeline does not support generateNormalsInWorldSpace=true for the geometry buffer renderer!");
+                    }
                 }
             } else {
                 const prePassRenderer = scene.enablePrePassRenderer();
                 if (prePassRenderer) {
                     prePassRenderer.useSpecificClearForDepthTexture = true;
                     prePassRenderer.markAsDirty();
+                    if (prePassRenderer.generateNormalsInWorldSpace) {
+                        console.error("SSRRenderingPipeline does not support generateNormalsInWorldSpace=true for the prepass renderer!");
+                    }
                 }
             }
 

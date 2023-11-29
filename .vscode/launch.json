@@ -8,57 +8,50 @@
             /*
             Launch the playground to be use to test changes in dev packages
             */
-            "type": "pwa-msedge",
+            "type": "msedge",
             "request": "launch",
             "name": "Run and Watch Dev Server (ES5-Dev)",
             "url": "http://localhost:1337",
-            "outFiles": ["!**/node_modules/**"],
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "CDN Serve and watch (Dev)"
         },
         {
             /*
             Launch the playground to be use to test changes in dev packages
             */
-            "type": "pwa-msedge",
+            "type": "msedge",
             "request": "launch",
             "name": "Run and Watch Dev Server - SSL (ES5-Dev)",
             "url": "https://localhost:1337",
-            "outFiles": ["!**/node_modules/**"],
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "CDN Serve and watch (Dev)"
         },
         {
             /*
             Launch the playground to be use to test changes in dev packages
             */
-            "type": "pwa-msedge",
+            "type": "msedge",
             "request": "launch",
             "name": "Dev Host development (Edge)",
             "url": "http://localhost:1338",
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Run Dev host (Dev)"
         },
         {
             /*
             Launch the playground to be use to test changes in dev packages
             */
-            "type": "pwa-chrome",
+            "type": "chrome",
             "request": "launch",
             "name": "Dev Host development (Chrome)",
             "url": "http://localhost:1338",
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Run Dev host (Dev)"
         },
         {
             /*
             Launch the playground to be use to test changes in dev packages
             */
-            "type": "pwa-msedge",
+            "type": "msedge",
             "request": "launch",
             "name": "Dev Host development - SSL (Edge)",
             "url": "https://localhost:1338",
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Run Dev host (Dev)",
             "env": {
                 "ENABLE_HTTPS": "true"
@@ -68,11 +61,10 @@
             /*
             Launch the playground to be use to test changes in dev packages
             */
-            "type": "pwa-chrome",
+            "type": "chrome",
             "request": "launch",
             "name": "Dev Host development - SSL (Chrome)",
             "url": "https://localhost:1338",
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Run Dev host (Dev)",
             "env": {
                 "ENABLE_HTTPS": "true"
@@ -83,11 +75,10 @@
             Playground development - meant for development of the playground
             It doesn't set any source code watchers!
             */
-            "type": "pwa-msedge",
+            "type": "msedge",
             "request": "launch",
             "name": "Playground development (Edge)",
             "url": "http://localhost:1338",
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Playground Serve (Dev)"
         },
         {
@@ -95,33 +86,30 @@
             Playground development - meant for development of the playground
             It doesn't set any source code watchers!
             */
-            "type": "pwa-chrome",
+            "type": "chrome",
             "request": "launch",
             "name": "Playground development (Chrome)",
             "url": "http://localhost:1338",
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Playground Serve (Dev)"
         },
         {
             /*
             Launch the playground to be use to test changes in dev packages
             */
-            "type": "pwa-msedge",
+            "type": "msedge",
             "request": "launch",
             "name": "Launch Playground (Edge)",
             "url": "http://localhost:1338",
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Playground Serve for core (Dev)"
         },
         {
             /*
             Launch the playground to be use to test changes in dev packages
             */
-            "type": "pwa-chrome",
+            "type": "chrome",
             "request": "launch",
             "name": "Launch Playground (Chrome)",
             "url": "http://localhost:1338",
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Playground Serve for core (Dev)"
         },
         {
@@ -129,11 +117,10 @@
             Playground development - meant for development of the playground
             It doesn't set any source code watchers!
             */
-            "type": "pwa-msedge",
+            "type": "msedge",
             "request": "launch",
             "name": "Sandbox development (Edge)",
             "url": "http://localhost:1339",
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Sandbox Serve (Dev)"
         },
         {
@@ -141,203 +128,182 @@
             Playground development - meant for development of the playground
             It doesn't set any source code watchers!
             */
-            "type": "pwa-chrome",
+            "type": "chrome",
             "request": "launch",
             "name": "Sandbox development (Chrome)",
             "url": "http://localhost:1339",
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Sandbox Serve (Dev)"
         },
         {
             /*
             Launch the playground to be use to test changes in dev packages
             */
-            "type": "pwa-msedge",
+            "type": "msedge",
             "request": "launch",
             "name": "Launch Sandbox (Edge)",
             "url": "http://localhost:1339",
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Sandbox Serve for core (Dev)"
         },
         {
             /*
             Launch the playground to be use to test changes in dev packages
             */
-            "type": "pwa-chrome",
+            "type": "chrome",
             "request": "launch",
             "name": "Launch Sandbox (Chrome)",
             "url": "http://localhost:1339",
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Sandbox Serve for core (Dev)"
         },
         {
-            "type": "pwa-msedge",
+            "type": "msedge",
             "request": "launch",
             "name": "GUI Editor development (Edge)",
             "url": "http://localhost:1341",
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "GUI Editor Serve (Dev)"
         },
         {
-            "type": "pwa-chrome",
+            "type": "chrome",
             "request": "launch",
             "name": "GUI Editor development (Chrome)",
             "url": "http://localhost:1341",
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "GUI Editor Serve (Dev)"
         },
         {
             /*
             Launch the playground to be use to test changes in dev packages
             */
-            "type": "pwa-msedge",
+            "type": "msedge",
             "request": "launch",
             "name": "Launch GUI Editor (Edge)",
             "url": "http://localhost:1341",
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "GUI Editor Serve for core (Dev)"
         },
         {
             /*
             Launch the playground to be use to test changes in dev packages
             */
-            "type": "pwa-chrome",
+            "type": "chrome",
             "request": "launch",
             "name": "Launch GUI Editor (Chrome)",
             "url": "http://localhost:1341",
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "GUI Editor Serve for core (Dev)"
         },
         {
-            "type": "pwa-msedge",
+            "type": "msedge",
             "request": "launch",
             "name": "Node Editor development (Edge)",
             "url": "http://localhost:1340",
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Node Editor Serve (Dev)"
         },
         {
-            "type": "pwa-chrome",
+            "type": "chrome",
             "request": "launch",
             "name": "Node Editor development (Chrome)",
             "url": "http://localhost:1340",
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Node Editor Serve (Dev)"
         },
         {
-            "type": "pwa-msedge",
+            "type": "msedge",
             "request": "launch",
             "name": "Node Geometry Editor development (Edge)",
             "url": "http://localhost:1340",
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Node Geometry Editor Serve (Dev)"
         },
         {
-            "type": "pwa-chrome",
+            "type": "chrome",
             "request": "launch",
             "name": "Node Geometry Editor development (Chrome)",
             "url": "http://localhost:1340",
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Node Geometry Editor Serve (Dev)"
-        },        
+        },
         {
             /*
             Launch the playground to be use to test changes in dev packages
             */
-            "type": "pwa-msedge",
+            "type": "msedge",
             "request": "launch",
             "name": "Launch Node Editor (Edge)",
             "url": "http://localhost:1340",
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Node Editor Serve for core (Dev)"
         },
         {
             /*
             Launch the playground to be use to test changes in dev packages
             */
-            "type": "pwa-chrome",
+            "type": "chrome",
             "request": "launch",
             "name": "Launch Node Editor (Chrome)",
             "url": "http://localhost:1340",
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Node Editor Serve for core (Dev)"
         },
         {
             /*
             Launch the playground to be use to test changes in dev packages
             */
-            "type": "pwa-msedge",
+            "type": "msedge",
             "request": "launch",
             "name": "Launch Node Geometry Editor (Edge)",
             "url": "http://localhost:1340",
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Node Geometry Editor Serve for core (Dev)"
         },
         {
             /*
             Launch the playground to be use to test changes in dev packages
             */
-            "type": "pwa-chrome",
+            "type": "chrome",
             "request": "launch",
             "name": "Launch Node Geometry Editor (Chrome)",
             "url": "http://localhost:1340",
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Node Geometry Editor Serve for core (Dev)"
-        },        
+        },
         {
-            "type": "pwa-msedge",
+            "type": "msedge",
             "request": "launch",
             "name": "VSM development (Edge)",
             "url": "http://localhost:1342",
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "VSM Serve (Dev)"
         },
         {
-            "type": "pwa-chrome",
+            "type": "chrome",
             "request": "launch",
             "name": "VSM development (Chrome)",
             "url": "http://localhost:1342",
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "VSM Serve (Dev)"
         },
         {
-            "type": "pwa-msedge",
+            "type": "msedge",
             "request": "launch",
             "name": "Launch VSM (Edge)",
             "url": "http://localhost:1342",
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "VSM Serve for core (Dev)"
         },
         {
-            "type": "pwa-chrome",
+            "type": "chrome",
             "request": "launch",
             "name": "Launch VSM (Chrome)",
             "url": "http://localhost:1342",
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "VSM Serve for core (Dev)"
         },
         {
             /*
             Launch the playground to be use to test changes in dev packages
             */
-            "type": "pwa-msedge",
+            "type": "msedge",
             "request": "launch",
             "name": "Run and Watch Dev host (ES6-Dev)",
             "url": "http://localhost:1338",
             "outFiles": ["!**/node_modules/**"],
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Run and Watch Dev host (Dev)"
         },
         {
             /*
             Launch the playground to be use to test changes in dev packages
             */
-            "type": "pwa-msedge",
+            "type": "msedge",
             "request": "launch",
             "name": "Run and Watch Dev host - SSL (ES6-Dev)",
             "url": "https://localhost:1338",
             "outFiles": ["!**/node_modules/**"],
-            "webRoot": "${workspaceFolder}",
             "preLaunchTask": "Run and Watch Dev host (Dev)"
         },
         {
@@ -370,7 +336,7 @@
             "port": 9229,
             // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
             // "envFile": "${workspaceRoot}/.env",
-            "preLaunchTask": "CDN Serve (Dev)"
+            "preLaunchTask": "CDN Serve and watch (Dev)"
         },
         {
             /*
@@ -380,13 +346,23 @@
             "type": "node",
             "request": "launch",
             "name": "Run single validation test - WebGL2 (Dev)",
-            "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/jest/bin/jest.js", "--runInBand", "--selectProjects", "visualization", "-i", "webgl2", "-t", "${input:testName}"],
+            "runtimeArgs": [
+                "--inspect-brk",
+                "${workspaceRoot}/node_modules/jest/bin/jest.js",
+                "--runInBand",
+                "--selectProjects",
+                "visualization",
+                "-i",
+                "webgl2",
+                "-t",
+                "${input:testName}"
+            ],
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
             "port": 9229,
             // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
             // "envFile": "${workspaceRoot}/.env",
-            "preLaunchTask": "CDN Serve (Dev)"
+            "preLaunchTask": "CDN Serve and watch (Dev)"
         },
         {
             /*
@@ -396,13 +372,24 @@
             "type": "node",
             "request": "launch",
             "name": "Update single validation test - WebGL2 (Dev)",
-            "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/jest/bin/jest.js", "--runInBand", "--selectProjects", "visualization", "-i", "webgl2", "-t", "${input:testName}" , "-u"],
+            "runtimeArgs": [
+                "--inspect-brk",
+                "${workspaceRoot}/node_modules/jest/bin/jest.js",
+                "--runInBand",
+                "--selectProjects",
+                "visualization",
+                "-i",
+                "webgl2",
+                "-t",
+                "${input:testName}",
+                "-u"
+            ],
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
             "port": 9229,
             // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
             // "envFile": "${workspaceRoot}/.env",
-            "preLaunchTask": "CDN Serve (Dev)"
+            "preLaunchTask": "CDN Serve and watch (Dev)"
         },
         {
             /*
@@ -418,7 +405,7 @@
             "port": 9229,
             // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
             // "envFile": "${workspaceRoot}/.env",
-            "preLaunchTask": "CDN Serve (Dev)"
+            "preLaunchTask": "CDN Serve and watch (Dev)"
         },
         {
             /*
@@ -437,7 +424,7 @@
             },
             // "outFiles": ["${workspaceRoot}/**/dist/**/*"], // debugging sources
             // "envFile": "${workspaceRoot}/.env",
-            "preLaunchTask": "CDN Serve (Dev)"
+            "preLaunchTask": "CDN Serve and watch (Dev)"
         },
         {
             /*
@@ -451,7 +438,7 @@
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
             "port": 9229,
-            "preLaunchTask": "CDN Serve (Dev)"
+            "preLaunchTask": "CDN Serve and watch (Dev)"
         },
         {
             /*
@@ -472,7 +459,7 @@
             // "envFile": "${workspaceRoot}/.env",
             "preLaunchTask": "CDN Serve Prod (Dev)"
         }
-    ], 
+    ],
     "inputs": [
         {
             "id": "testName",

@@ -293,7 +293,7 @@ export class FurMaterial extends PushMaterial {
             addClipPlaneUniforms(uniforms);
             const samplers = ["diffuseSampler", "heightTexture", "furTexture"];
 
-            const uniformBuffers = new Array<string>();
+            const uniformBuffers: string[] = [];
 
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,

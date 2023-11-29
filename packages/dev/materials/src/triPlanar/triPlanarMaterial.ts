@@ -251,7 +251,7 @@ export class TriPlanarMaterial extends PushMaterial {
             ];
             const samplers = ["diffuseSamplerX", "diffuseSamplerY", "diffuseSamplerZ", "normalSamplerX", "normalSamplerY", "normalSamplerZ"];
 
-            const uniformBuffers = new Array<string>();
+            const uniformBuffers: string[] = [];
 
             addClipPlaneUniforms(uniforms);
 

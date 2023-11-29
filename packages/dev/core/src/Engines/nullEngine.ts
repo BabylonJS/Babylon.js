@@ -131,6 +131,7 @@ export class NullEngine extends Engine {
             fragmentDepthSupported: false,
             highPrecisionShaderSupported: true,
             colorBufferFloat: false,
+            supportFloatTexturesResolve: false,
             textureFloat: false,
             textureFloatLinearFiltering: false,
             textureFloatRender: false,
@@ -181,6 +182,7 @@ export class NullEngine extends Engine {
             needToAlwaysBindUniformBuffers: false,
             supportRenderPasses: true,
             supportSpriteInstancing: false,
+            forceVertexBufferStrideMultiple4Bytes: false,
             _collectUbosUpdatedInFrame: false,
         };
 

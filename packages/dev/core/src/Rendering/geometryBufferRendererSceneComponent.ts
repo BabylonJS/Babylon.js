@@ -19,11 +19,11 @@ declare module "../scene" {
 
         /**
          * Enables a GeometryBufferRender and associates it with the scene
-         * @param ratio defines the scaling ratio to apply to the renderer (1 by default which means same resolution)
+         * @param ratio defines the scaling ratio to apply to the renderer (1 by default which means same resolution). You can also directly pass a width and height for the generated textures
          * @param depthFormat Format of the depth texture (default: Constants.TEXTUREFORMAT_DEPTH16)
          * @returns the GeometryBufferRenderer
          */
-        enableGeometryBufferRenderer(ratio?: number, depthFormat?: number): Nullable<GeometryBufferRenderer>;
+        enableGeometryBufferRenderer(ratio?: number | { width: number; height: number }, depthFormat?: number): Nullable<GeometryBufferRenderer>;
 
         /**
          * Disables the GeometryBufferRender associated with the scene
@@ -45,7 +45,10 @@ Object.defineProperty(Scene.prototype, "geometryBufferRenderer", {
     configurable: true,
 });
 
-Scene.prototype.enableGeometryBufferRenderer = function (ratio: number = 1, depthFormat = Constants.TEXTUREFORMAT_DEPTH16): Nullable<GeometryBufferRenderer> {
+Scene.prototype.enableGeometryBufferRenderer = function (
+    ratio: number | { width: number; height: number } = 1,
+    depthFormat = Constants.TEXTUREFORMAT_DEPTH16
+): Nullable<GeometryBufferRenderer> {
     if (this._geometryBufferRenderer) {
         return this._geometryBufferRenderer;
     }

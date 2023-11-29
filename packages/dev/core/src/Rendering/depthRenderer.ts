@@ -296,6 +296,11 @@ export class DepthRenderer {
                     if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
                         renderingMesh.morphTargetManager._bind(effect);
                     }
+
+                    // Points cloud rendering
+                    if (material.pointsCloud) {
+                        effect.setFloat("pointSize", material.pointSize);
+                    }
                 }
 
                 // Draw
@@ -416,6 +421,11 @@ export class DepthRenderer {
             }
         }
 
+        // Points cloud rendering
+        if (material.pointsCloud) {
+            defines.push("#define POINTSIZE");
+        }
+
         // Instances
         if (useInstances) {
             defines.push("#define INSTANCES");
@@ -452,6 +462,7 @@ export class DepthRenderer {
                 "world",
                 "mBones",
                 "boneTextureWidth",
+                "pointSize",
                 "viewProjection",
                 "view",
                 "diffuseMatrix",

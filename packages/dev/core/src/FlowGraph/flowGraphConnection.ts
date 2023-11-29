@@ -1,3 +1,7 @@
+import { Tools } from "../Misc/tools";
+import { RandomGUID } from "../Misc/guid";
+import type { FlowGraphBlock } from "./flowGraphBlock";
+
 /**
  * @experimental
  * The type of a connection point - inpput or output.
@@ -11,6 +15,7 @@ export enum FlowGraphConnectionType {
  * @experimental
  */
 export interface IConnectable {
+    uniqueId: string;
     _connectedPoint: Array<IConnectable>;
     _isSingularConnection(): boolean;
     _connectionType: FlowGraphConnectionType;
@@ -24,8 +29,37 @@ export interface IConnectable {
 export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> implements IConnectable {
     /** @internal */
     public _connectedPoint: Array<ConnectedToT> = [];
+    /**
+     * A uniquely identifying string for the connection.
+     */
+    public uniqueId = RandomGUID();
 
-    public constructor(public name: string, /** @internal */ public _connectionType: FlowGraphConnectionType, protected _ownerBlock: BlockT) {}
+    /**
+     * The name of the connection.
+     */
+    public name: string;
+
+    /**
+     * @internal
+     */
+    public _connectionType: FlowGraphConnectionType;
+
+    /**
+     * Used for parsing connections.
+     * @internal
+     */
+    // disable warning as this is used for parsing
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public connectedPointIds: any[] = [];
+
+    public constructor(
+        name: string,
+        _connectionType: FlowGraphConnectionType,
+        /* @internal */ public _ownerBlock: BlockT
+    ) {
+        this.name = name;
+        this._connectionType = _connectionType;
+    }
 
     /**
      * The type of the connection
@@ -63,5 +97,47 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
         }
         this._connectedPoint.push(point);
         point._connectedPoint.push(this);
+    }
+
+    /**
+     * Saves the connection to a JSON object.
+     */
+    public serialize(serializationObject: any = {}) {
+        serializationObject.uniqueId = this.uniqueId;
+        serializationObject.name = this.name;
+        serializationObject._connectionType = this._connectionType;
+        serializationObject.connectedPointIds = [];
+        serializationObject.className = this.getClassName();
+        for (const point of this._connectedPoint) {
+            serializationObject.connectedPointIds.push(point.uniqueId);
+        }
+    }
+
+    public getClassName(): string {
+        return "FGConnection";
+    }
+
+    /**
+     * Deserialize from a object into this
+     * @param serializationObject
+     */
+    deserialize(serializationObject: any) {
+        this.uniqueId = serializationObject.uniqueId;
+        this.name = serializationObject.name;
+        this._connectionType = serializationObject._connectionType;
+        this.connectedPointIds = serializationObject.connectedPointIds;
+    }
+
+    /**
+     * Parses a connection from an object
+     * @param serializationObject
+     * @param ownerBlock
+     * @returns
+     */
+    public static Parse(serializationObject: any = {}, ownerBlock: FlowGraphBlock) {
+        const type = Tools.Instantiate(serializationObject.className);
+        const connection = new type(serializationObject.name, serializationObject._connectionType, ownerBlock);
+        connection.deserialize(serializationObject);
+        return connection;
     }
 }

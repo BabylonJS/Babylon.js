@@ -5,6 +5,7 @@ import type { INodeGeometryTextureData } from "../../Interfaces/nodeGeometryText
 import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
 import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
+import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 
 /**
  * Block used to fetch a color from texture data
@@ -25,7 +26,12 @@ export class GeometryTextureFetchBlock extends NodeGeometryBlock {
 
         this.registerInput("texture", NodeGeometryBlockConnectionPointTypes.Texture);
         this.registerInput("coordinates", NodeGeometryBlockConnectionPointTypes.Vector2);
-        this.registerOutput("color", NodeGeometryBlockConnectionPointTypes.Vector4);
+        this.registerOutput("rgba", NodeGeometryBlockConnectionPointTypes.Vector4);
+        this.registerOutput("rgb", NodeGeometryBlockConnectionPointTypes.Vector3);
+        this.registerOutput("r", NodeGeometryBlockConnectionPointTypes.Float);
+        this.registerOutput("g", NodeGeometryBlockConnectionPointTypes.Float);
+        this.registerOutput("b", NodeGeometryBlockConnectionPointTypes.Float);
+        this.registerOutput("a", NodeGeometryBlockConnectionPointTypes.Float);
     }
 
     /**
@@ -51,10 +57,45 @@ export class GeometryTextureFetchBlock extends NodeGeometryBlock {
     }
 
     /**
-     * Gets the color component
+     * Gets the rgba component
      */
-    public get color(): NodeGeometryConnectionPoint {
+    public get rgba(): NodeGeometryConnectionPoint {
         return this._outputs[0];
+    }
+
+    /**
+     * Gets the rgb component
+     */
+    public get rgb(): NodeGeometryConnectionPoint {
+        return this._outputs[1];
+    }
+
+    /**
+     * Gets the r component
+     */
+    public get r(): NodeGeometryConnectionPoint {
+        return this._outputs[2];
+    }
+
+    /**
+     * Gets the g component
+     */
+    public get g(): NodeGeometryConnectionPoint {
+        return this._outputs[3];
+    }
+
+    /**
+     * Gets the b component
+     */
+    public get b(): NodeGeometryConnectionPoint {
+        return this._outputs[4];
+    }
+
+    /**
+     * Gets the a component
+     */
+    public get a(): NodeGeometryConnectionPoint {
+        return this._outputs[5];
     }
 
     private _repeatClamp(num: number) {
@@ -66,7 +107,7 @@ export class GeometryTextureFetchBlock extends NodeGeometryBlock {
     }
 
     protected _buildBlock() {
-        this.color._storedFunction = (state) => {
+        const func = (state: NodeGeometryBuildState) => {
             const textureData = this.texture.getConnectedValue(state) as INodeGeometryTextureData;
             if (!textureData || !textureData.data) {
                 return null;
@@ -86,6 +127,35 @@ export class GeometryTextureFetchBlock extends NodeGeometryBlock {
             const index = x + textureData.width * y;
 
             return Vector4.FromArray(textureData.data, index * 4);
+        };
+
+        this.rgba._storedFunction = (state) => {
+            return func(state);
+        };
+
+        this.rgb._storedFunction = (state) => {
+            const color = func(state) as Vector4;
+            return color ? color.toVector3() : null;
+        };
+
+        this.r._storedFunction = (state) => {
+            const color = func(state) as Vector4;
+            return color ? color.x : null;
+        };
+
+        this.g._storedFunction = (state) => {
+            const color = func(state) as Vector4;
+            return color ? color.y : null;
+        };
+
+        this.b._storedFunction = (state) => {
+            const color = func(state) as Vector4;
+            return color ? color.z : null;
+        };
+
+        this.a._storedFunction = (state) => {
+            const color = func(state) as Vector4;
+            return color ? color.w : null;
         };
     }
 

@@ -1,14 +1,10 @@
 import type { FlowGraphContext } from "../../flowGraphContext";
+import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { RichTypeString, RichTypeAny } from "../../flowGraphRichTypes";
-/**
- * @experimental
- * Parameters used to create a FlowGraphGetVariableBlock.
- */
-export interface IFlowGraphGetVariableBlockParameter {
-    variableName: string;
-}
+import { RegisterClass } from "../../../Misc/typeStore";
+
 /**
  * A block that gets the value of a variable.
  * @experimental
@@ -27,14 +23,11 @@ export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
      * Construct a FlowGraphGetVariableBlock.
      * @param params optional construction parameters
      */
-    constructor(params?: IFlowGraphGetVariableBlockParameter) {
-        super();
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(config);
 
-        this.variableName = this._registerDataInput("variableName", RichTypeString);
-        if (params?.variableName) {
-            this.variableName.value = params.variableName;
-        }
-        this.output = this._registerDataOutput("output", RichTypeAny);
+        this.variableName = this.registerDataInput("variableName", RichTypeString);
+        this.output = this.registerDataOutput("output", RichTypeAny);
     }
 
     /**
@@ -43,7 +36,12 @@ export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
     public _updateOutputs(context: FlowGraphContext): void {
         const variableNameValue = this.variableName.getValue(context);
         if (context.hasVariable(variableNameValue)) {
-            this.output.value = context.getVariable(variableNameValue);
+            this.output.setValue(context.getVariable(variableNameValue), context);
         }
     }
+
+    public getClassName(): string {
+        return "FGGetVariableBlock";
+    }
 }
+RegisterClass("FGGetVariableBlock", FlowGraphGetVariableBlock);

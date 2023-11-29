@@ -49,13 +49,13 @@ export class MeshoptCompression implements IDisposable {
      * The configuration. Defaults to the following:
      * ```javascript
      * decoder: {
-     *   url: "https://preview.babylonjs.com/meshopt_decoder.js"
+     *   url: "https://cdn.babylonjs.com/meshopt_decoder.js"
      * }
      * ```
      */
     public static Configuration: IMeshoptCompressionConfiguration = {
         decoder: {
-            url: "https://preview.babylonjs.com/meshopt_decoder.js",
+            url: `${Tools._DefaultCdnUrl}/meshopt_decoder.js`,
         },
     };
 
@@ -78,7 +78,7 @@ export class MeshoptCompression implements IDisposable {
     constructor() {
         const decoder = MeshoptCompression.Configuration.decoder;
 
-        this._decoderModulePromise = Tools.LoadScriptAsync(Tools.GetAbsoluteUrl(decoder.url)).then(() => {
+        this._decoderModulePromise = Tools.LoadBabylonScriptAsync(decoder.url).then(() => {
             // Wait for WebAssembly compilation before resolving promise
             return MeshoptDecoder.ready;
         });

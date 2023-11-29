@@ -173,7 +173,7 @@ export class MRDLInnerquadMaterial extends PushMaterial {
                 "_Glow_Falloff_",
             ];
             const samplers: string[] = [];
-            const uniformBuffers = new Array<string>();
+            const uniformBuffers: string[] = [];
 
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,

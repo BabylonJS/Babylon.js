@@ -28,7 +28,7 @@ export interface IAxisScaleGizmo extends IGizmo {
     snapDistance: number;
     /**
      * Event that fires each time the gizmo snaps to a new location.
-     * * snapDistance is the the change in distance
+     * * snapDistance is the change in distance
      */
     onSnapObservable: Observable<{ snapDistance: number }>;
     /** If the scaling operation should be done on all axis */
@@ -63,7 +63,7 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
     public snapDistance = 0;
     /**
      * Event that fires each time the gizmo snaps to a new location.
-     * * snapDistance is the the change in distance
+     * * snapDistance is the change in distance
      */
     public onSnapObservable = new Observable<{ snapDistance: number }>();
     /**
@@ -174,7 +174,6 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
         const tmpSnapEvent = { snapDistance: 0 };
         this.dragBehavior.onDragObservable.add((event) => {
             if (this.attachedNode) {
-                this._handlePivot();
                 // Drag strength is modified by the scale of the gizmo (eg. for small objects like boombox the strength will be increased to match the behavior of larger objects)
                 const dragStrength = this.sensitivity * event.dragDistance * ((this.scaleRatio * 3) / this._rootMesh.scaling.length());
                 const tmpVector = this._tmpVector;

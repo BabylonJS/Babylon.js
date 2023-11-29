@@ -504,7 +504,7 @@ describe("Babylon Scene Loader", function () {
                 const promises = new Array<Promise<void>>();
                 const data: { [key: string]: any } = {};
 
-                const setRequestHeaderCalls = new Array<string>();
+                const setRequestHeaderCalls: string[] = [];
                 const origSetRequestHeader = BABYLON.WebRequest.prototype.setRequestHeader;
                 BABYLON.WebRequest.prototype.setRequestHeader = function (...args) {
                     console.log(args);

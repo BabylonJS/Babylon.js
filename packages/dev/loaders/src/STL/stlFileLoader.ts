@@ -71,12 +71,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
             // ASCII .stl
 
             // convert to string
-            const array_buffer = new Uint8Array(data);
-            let str = "";
-            for (let i = 0; i < data.byteLength; i++) {
-                str += String.fromCharCode(array_buffer[i]); // implicitly assumes little-endian
-            }
-            data = str;
+            data = new TextDecoder().decode(new Uint8Array(data));
         }
 
         //if arrived here, data is a string, containing the STLA data.

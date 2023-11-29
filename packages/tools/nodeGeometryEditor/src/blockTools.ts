@@ -46,6 +46,8 @@ import { MapRangeBlock } from "core/Meshes/Node/Blocks/mapRangeBlock";
 import { GeometryOptimizeBlock } from "core/Meshes/Node/Blocks/geometryOptimizeBlock";
 import { IntFloatConverterBlock } from "core/Meshes/Node/Blocks/intFloatConverterBlock";
 import { ConditionBlock, ConditionBlockTests } from "core/Meshes/Node/Blocks/conditionBlock";
+import { InstantiateLinearBlock } from "core/Meshes/Node/Blocks//Instances/instantiateLinearBlock";
+import { InstantiateRadialBlock } from "core/Meshes/Node/Blocks/Instances/instantiateRadialBlock";
 import { GeometryCollectionBlock } from "core/Meshes/Node/Blocks/geometryCollectionBlock";
 import { GeometryInfoBlock } from "core/Meshes/Node/Blocks/geometryInfoBlock";
 import { MappingBlock } from "core/Meshes/Node/Blocks/mappingBlock";
@@ -53,10 +55,16 @@ import { MatrixComposeBlock } from "core/Meshes/Node/Blocks/matrixComposeBlock";
 import { GeometryTextureBlock } from "core/Meshes/Node/Blocks/Textures/geometryTextureBlock";
 import { GeometryTextureFetchBlock } from "core/Meshes/Node/Blocks/Textures/geometryTextureFetchBlock";
 import { BoundingBlock } from "core/Meshes/Node/Blocks/boundingBlock";
+import { BooleanGeometryBlock } from "core/Meshes/Node/Blocks/booleanGeometryBlock";
 
+/**
+ * Static class for BlockTools
+ */
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "BooleanBlock":
+                return new BooleanGeometryBlock("Boolean");
             case "TextureFetchBlock":
                 return new GeometryTextureFetchBlock("Texture Fetch");
             case "TextureBlock":
@@ -404,6 +412,12 @@ export class BlockTools {
                 const block = new MathBlock("Max");
                 block.operation = MathBlockOperations.Max;
                 return block;
+            }
+            case "InstantiateLinearBlock": {
+                return new InstantiateLinearBlock("Instantiate Linear");
+            }
+            case "InstantiateRadialBlock": {
+                return new InstantiateRadialBlock("Instantiate Radial");
             }
         }
 

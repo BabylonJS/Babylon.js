@@ -185,11 +185,12 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
     }
 
     /**
-     * Predicate to determine if it is valid to move the object to a new position when it is moved
-     * @param targetPosition
+     * Predicate to determine if it is valid to move the object to a new position when it is moved.
+     * In the case of rotation gizmo, target contains the angle.
+     * @param target destination position or desired angle delta
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public validateDrag = (targetPosition: Vector3) => {
+    public validateDrag = (target: Vector3) => {
         return true;
     };
 

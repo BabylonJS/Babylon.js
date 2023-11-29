@@ -2,10 +2,9 @@
 	uniform float morphTargetInfluences[NUM_MORPH_INFLUENCERS];
 
 	#ifdef MORPHTARGETS_TEXTURE	
-		precision mediump sampler2DArray;		
 		uniform float morphTargetTextureIndices[NUM_MORPH_INFLUENCERS];
 		uniform vec3 morphTargetTextureInfo;
-		uniform sampler2DArray morphTargets;
+		uniform highp sampler2DArray morphTargets;
 
 		vec3 readVector3FromRawSampler(int targetIndex, float vertexIndex)
 		{			

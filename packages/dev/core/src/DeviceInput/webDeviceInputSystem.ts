@@ -660,8 +660,8 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             "onwheel" in document.createElement("div")
                 ? "wheel" // Modern browsers support "wheel"
                 : (<any>document).onmousewheel !== undefined
-                ? "mousewheel" // Webkit and IE support at least "mousewheel"
-                : "DOMMouseScroll"; // let's assume that remaining browsers are older Firefox
+                  ? "mousewheel" // Webkit and IE support at least "mousewheel"
+                  : "DOMMouseScroll"; // let's assume that remaining browsers are older Firefox
 
         // Code originally in scene.inputManager.ts
         // Chrome reports warning in console if wheel listener doesn't set an explicit passive option.

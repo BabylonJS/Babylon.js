@@ -165,10 +165,11 @@ export function RemoveComments(block: string): string {
  * @param s the string to parse
  * @param index starting index in the string
  * @param c the character to find
+ * @param c2 an optional second character to find
  * @returns the index of the character if found, else -1
  */
-export function FindBackward(s: string, index: number, c: string): number {
-    while (index >= 0 && s.charAt(index) !== c) {
+export function FindBackward(s: string, index: number, c: string, c2?: string): number {
+    while (index >= 0 && s.charAt(index) !== c && (!c2 || s.charAt(index) !== c2)) {
         index--;
     }
 

@@ -42,6 +42,11 @@ export class ExternalTexture {
     public readonly type = Constants.TEXTURETYPE_UNDEFINED;
 
     /**
+     * The format of the underlying texture is implementation dependent, so return "UNDEFINED" for the format
+     */
+    public readonly format = Constants.TEXTUREFORMAT_UNDEFINED;
+
+    /**
      * Gets the unique id of this texture
      */
     public readonly uniqueId: number;

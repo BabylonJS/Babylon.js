@@ -165,7 +165,7 @@ export class StackPanel extends Container {
                     child._top.ignoreAdaptiveScaling = true;
                 }
 
-                if (child._height.isPercentage && !child._automaticSize) {
+                if (child._height.isPercentage && !child._automaticSize && !(child as TextBlock).resizeToFit && !(child as Container).adaptHeightToChildren) {
                     if (!this.ignoreLayoutWarnings) {
                         Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using height in percentage mode inside a vertical StackPanel`);
                     }

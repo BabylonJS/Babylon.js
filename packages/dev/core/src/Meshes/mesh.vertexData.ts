@@ -585,7 +585,7 @@ export class VertexData {
             return [this];
         }
 
-        const result = new Array<VertexData>();
+        const result: VertexData[] = [];
         for (const materialInfo of this.materialInfos) {
             const vertexData = new VertexData();
 
@@ -1132,10 +1132,10 @@ export class VertexData {
             kind === VertexBuffer.PositionKind
                 ? VertexData._TransformVector3Coordinates
                 : kind === VertexBuffer.NormalKind
-                ? VertexData._TransformVector3Normals
-                : kind === VertexBuffer.TangentKind
-                ? VertexData._TransformVector4Normals
-                : () => {};
+                  ? VertexData._TransformVector3Normals
+                  : kind === VertexBuffer.TangentKind
+                    ? VertexData._TransformVector4Normals
+                    : () => {};
 
         if (source instanceof Float32Array) {
             // use non-loop method when the source is Float32Array
