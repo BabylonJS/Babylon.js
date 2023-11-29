@@ -633,7 +633,8 @@ export class Container extends Control {
     }
 
     public isDimensionFullyDefined(dim: "width" | "height"): boolean {
-        if (!this._isDirty && this._cacheFullyDefinedDim[dim] !== undefined) {
+        const hasChildDirty = this.children.some((c) => c.isDirty);
+        if (!hasChildDirty && !this._isDirty && this._cacheFullyDefinedDim[dim] !== undefined) {
             return this._cacheFullyDefinedDim[dim]!;
         }
         if (this._getAdaptDimTo(dim)) {

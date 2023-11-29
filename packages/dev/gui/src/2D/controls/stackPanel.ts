@@ -163,7 +163,7 @@ export class StackPanel extends Container {
                     child._top.ignoreAdaptiveScaling = true;
                 }
 
-                if (!child.isDimensionFullyDefined("height") && !this.ignoreLayoutWarnings) {
+                if (!this.ignoreLayoutWarnings && !child.isDimensionFullyDefined("height")) {
                     Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using height in percentage mode inside a vertical StackPanel`);
                 } else {
                     stackHeight += child._currentMeasure.height + child._paddingTopInPixels + child._paddingBottomInPixels + (index < childrenCount - 1 ? this._spacing : 0);
@@ -175,7 +175,7 @@ export class StackPanel extends Container {
                     child._left.ignoreAdaptiveScaling = true;
                 }
 
-                if (!child.isDimensionFullyDefined("width") && !this.ignoreLayoutWarnings) {
+                if (!this.ignoreLayoutWarnings && !child.isDimensionFullyDefined("width")) {
                     Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using width in percentage mode inside a horizontal StackPanel`);
                 } else {
                     stackWidth += child._currentMeasure.width + child._paddingLeftInPixels + child._paddingRightInPixels + (index < childrenCount - 1 ? this._spacing : 0);
@@ -233,7 +233,8 @@ export class StackPanel extends Container {
     }
 
     public isDimensionFullyDefined(dim: "width" | "height"): boolean {
-        if (this._isDirty && this._cacheFullyDefinedDim[dim] !== undefined) {
+        const hasChildDirty = this._children.some((c) => c.isDirty);
+        if (!hasChildDirty && !this._isDirty && this._cacheFullyDefinedDim[dim] !== undefined) {
             return this._cacheFullyDefinedDim[dim]!;
         }
 
