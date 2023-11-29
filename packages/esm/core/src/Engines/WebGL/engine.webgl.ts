@@ -121,6 +121,12 @@ interface IWebGLEngineProtected extends IBaseEngineProtected {
     _creationOptions: IWebGLEngineOptions;
 }
 
+interface TexImageParameters {
+    internalFormat: number;
+    format: number;
+    type: number;
+}
+
 export interface IWebGLEngineInternals extends IBaseEngineInternals {
     /** @internal */
     _webGLVersion: number;
@@ -160,6 +166,12 @@ export interface IWebGLEngineOptions extends IBaseEngineOptions, WebGLContextAtt
      * @see https://doc.babylonjs.com/setup/support/webGL2
      */
     disableWebGL2Support?: boolean;
+
+    /**
+     * Defines if the gl context should be released.
+     * It's false by default for backward compatibility, but you should probably pass true (see https://registry.khronos.org/webgl/extensions/WEBGL_lose_context/)
+     */
+    loseContextOnDispose?: boolean;
 }
 
 export type WebGLEngineState = IWebGLEnginePublic & IWebGLEngineInternals & IWebGLEngineProtected;
@@ -281,7 +293,7 @@ export function initWebGLEngineState(
             };
 
             ps._onContextRestored = () => {
-                _restoreEngineAfterContextLost({ wipeCaches }, ps, _initGLContext.bind(null, ps));
+                _restoreEngineAfterContextLost({ wipeCaches }, ps, () => _initGLContext(ps));
             };
 
             canvas.addEventListener("webglcontextlost", ps._onContextLost, false);
@@ -587,6 +599,9 @@ export function bindFramebuffer(
                 rtWrapper.texture!._hardwareTexture?.underlyingResource,
                 lodLevel
             );
+        } else if (webglRTWrapper._currentLOD !== lodLevel) {
+            gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, rtWrapper.texture!._hardwareTexture?.underlyingResource, lodLevel);
+            webglRTWrapper._currentLOD = lodLevel;
         }
     }
 
@@ -737,9 +752,10 @@ export function _resetVertexBufferBinding(engineState: IWebGLEnginePublic): void
 /**
  * Creates a dynamic vertex buffer
  * @param data the data for the dynamic vertex buffer
+ * @param _label defines the label of the buffer (for debug purpose)
  * @returns the new WebGL dynamic buffer
  */
-export function createDynamicVertexBuffer(engineState: IWebGLEnginePublic, data: DataArray): DataBuffer {
+export function createDynamicVertexBuffer(engineState: IWebGLEnginePublic, data: DataArray, _label?: string): DataBuffer {
     const fes = engineState as WebGLEngineState;
     return _createVertexBuffer(engineState, data, fes._gl.DYNAMIC_DRAW);
 }
@@ -747,9 +763,11 @@ export function createDynamicVertexBuffer(engineState: IWebGLEnginePublic, data:
 /**
  * Creates a vertex buffer
  * @param data the data for the vertex buffer
+ * @param _updatable whether the buffer should be created as updatable
+ * @param _label defines the label of the buffer (for debug purpose)
  * @returns the new WebGL static buffer
  */
-export function createVertexBuffer(engineState: IWebGLEnginePublic, data: DataArray): DataBuffer {
+export function createVertexBuffer(engineState: IWebGLEnginePublic, data: DataArray, _updatable?: boolean, _label?: string): DataBuffer {
     const fes = engineState as WebGLEngineState;
     return _createVertexBuffer(engineState, data, fes._gl.STATIC_DRAW);
 }
@@ -789,9 +807,10 @@ export function _resetIndexBufferBinding(engineState: IWebGLEnginePublic): void 
  * Creates a new index buffer
  * @param indices defines the content of the index buffer
  * @param updatable defines if the index buffer must be updatable
+ * @param _label defines the label of the buffer (for debug purpose)
  * @returns a new webGL buffer
  */
-export function createIndexBuffer(engineState: IWebGLEnginePublic, indices: IndicesArray, updatable?: boolean): DataBuffer {
+export function createIndexBuffer(engineState: IWebGLEnginePublic, indices: IndicesArray, updatable?: boolean, _label?: string): DataBuffer {
     const fes = engineState as WebGLEngineState;
     const vbo = fes._gl.createBuffer();
     const dataBuffer = new WebGLDataBuffer(vbo!);
@@ -1889,7 +1908,7 @@ export function _executeWhenRenderingStateIsCompiled(_engineState: IWebGLEngineP
  */
 export function getUniforms(engineState: IWebGLEnginePublic, pipelineContext: IPipelineContext, uniformsNames: string[]): Nullable<WebGLUniformLocation>[] {
     const fes = engineState as WebGLEngineState;
-    const results = new Array<Nullable<WebGLUniformLocation>>();
+    const results = [] as Array<Nullable<WebGLUniformLocation>>;
     const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
 
     for (let index = 0; index < uniformsNames.length; index++) {
@@ -2292,21 +2311,10 @@ export function createTexture(
             const gl = fes._gl;
             const isPot = img.width === potWidth && img.height === potHeight;
 
-            const internalFormat = format
-                ? _getInternalFormat(engineState, format, texture._useSRGBBuffer)
-                : extension === ".jpg" && !texture._useSRGBBuffer
-                ? gl.RGB
-                : texture._useSRGBBuffer
-                ? fes._glSRGBExtensionValues.SRGB8_ALPHA8
-                : gl.RGBA;
-            let texelFormat = format ? _getInternalFormat(engineState, format) : extension === ".jpg" && !texture._useSRGBBuffer ? gl.RGB : gl.RGBA;
-
-            if (texture._useSRGBBuffer && fes.webGLVersion === 1) {
-                texelFormat = internalFormat;
-            }
+            const tip = _getTexImageParametersForCreateTexture(fes, format, extension, texture._useSRGBBuffer);
 
             if (isPot) {
-                gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, texelFormat, gl.UNSIGNED_BYTE, img as any);
+                gl.texImage2D(gl.TEXTURE_2D, 0, tip.internalFormat, tip.format, tip.type, img as any);
                 return false;
             }
 
@@ -2322,7 +2330,7 @@ export function createTexture(
                 fes._workingCanvas.height = potHeight;
 
                 fes._workingContext.drawImage(img as any, 0, 0, img.width, img.height, 0, 0, potWidth, potHeight);
-                gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, texelFormat, gl.UNSIGNED_BYTE, fes._workingCanvas as TexImageSource);
+                gl.texImage2D(gl.TEXTURE_2D, 0, tip.internalFormat, tip.format, tip.type, fes._workingCanvas as TexImageSource);
 
                 texture.width = potWidth;
                 texture.height = potHeight;
@@ -2332,9 +2340,9 @@ export function createTexture(
                 // Using shaders when possible to rescale because canvas.drawImage is lossy
                 const source = new InternalTexture(engineAdapter, InternalTextureSource.Temp);
                 _bindTextureDirectly(engineState, gl.TEXTURE_2D, source, true);
-                gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, texelFormat, gl.UNSIGNED_BYTE, img as any);
+                gl.texImage2D(gl.TEXTURE_2D, 0, tip.internalFormat, tip.format, tip.type, img as any);
 
-                _rescaleTexture(fes, source, texture, scene, internalFormat, () => {
+                _rescaleTexture(fes, source, texture, scene, tip.format, () => {
                     _releaseTexture(fes, source);
                     _bindTextureDirectly(engineState, gl.TEXTURE_2D, texture, true);
 
@@ -2352,6 +2360,50 @@ export function createTexture(
         loaderOptions,
         useSRGBBuffer
     );
+}
+
+/**
+ * Calls to the GL texImage2D and texImage3D functions require three arguments describing the pixel format of the texture.
+ * createTexture derives these from the babylonFormat and useSRGBBuffer arguments and also the file extension of the URL it's working with.
+ * This function encapsulates that derivation for easy unit testing.
+ * @param babylonFormat Babylon's format enum, as specified in ITextureCreationOptions.
+ * @param fileExtension The file extension including the dot, e.g. .jpg.
+ * @param useSRGBBuffer Use SRGB not linear.
+ * @returns The options to pass to texImage2D or texImage3D calls.
+ * @internal
+ */
+export function _getTexImageParametersForCreateTexture(
+    engineState: WebGLEngineStateFull,
+    babylonFormat: Nullable<number>,
+    fileExtension: string,
+    useSRGBBuffer: boolean
+): TexImageParameters {
+    if (babylonFormat === undefined || babylonFormat === null) {
+        babylonFormat = fileExtension === ".jpg" && !useSRGBBuffer ? Constants.TEXTUREFORMAT_RGB : Constants.TEXTUREFORMAT_RGBA;
+    }
+
+    const fes = engineState as WebGLEngineStateFull;
+
+    let format: number, internalFormat: number;
+    if (fes.webGLVersion === 1) {
+        // In WebGL 1, format and internalFormat must be the same and taken from a limited set of values, see https://docs.gl/es2/glTexImage2D.
+        // The SRGB extension (https://developer.mozilla.org/en-US/docs/Web/API/EXT_sRGB) adds some extra values, hence passing useSRGBBuffer
+        // to getInternalFormat.
+        format = _getInternalFormat(fes, babylonFormat, useSRGBBuffer);
+        internalFormat = format;
+    } else {
+        // In WebGL 2, format has a wider range of values and internal format can be one of the sized formats, see
+        // https://registry.khronos.org/OpenGL-Refpages/es3.0/html/glTexImage2D.xhtml.
+        // SRGB is included in the sized format and should not be passed in "format", hence always passing useSRGBBuffer as false.
+        format = _getInternalFormat(fes, babylonFormat, false);
+        internalFormat = _getRGBABufferInternalSizedFormat(fes, Constants.TEXTURETYPE_UNSIGNED_BYTE, babylonFormat, useSRGBBuffer);
+    }
+
+    return {
+        internalFormat,
+        format,
+        type: fes._gl.UNSIGNED_BYTE,
+    };
 }
 
 /**
@@ -2823,6 +2875,8 @@ function _prepareWebGLTexture(
     texture.width = potWidth;
     texture.height = potHeight;
     texture.isReady = true;
+    texture.type = texture.type !== -1 ? texture.type : Constants.TEXTURETYPE_UNSIGNED_BYTE;
+    texture.format = texture.format !== -1 ? texture.format : extension === ".jpg" && !texture._useSRGBBuffer ? Constants.TEXTUREFORMAT_RGB : Constants.TEXTUREFORMAT_RGBA;
 
     if (
         processFunction(potWidth, potHeight, img, extension, texture, () => {
@@ -3391,6 +3445,7 @@ export function _initGLContext(engineState: IWebGLEnginePublic): void {
         drawBuffersExtension: false,
         maxMSAASamples: 1,
         colorBufferFloat: !!(fes._webGLVersion > 1 && fes._gl.getExtension("EXT_color_buffer_float")),
+        supportFloatTexturesResolve: false,
         colorBufferHalfFloat: !!(fes._webGLVersion > 1 && fes._gl.getExtension("EXT_color_buffer_half_float")),
         textureFloat: fes._webGLVersion > 1 || fes._gl.getExtension("OES_texture_float") ? true : false,
         textureHalfFloat: fes._webGLVersion > 1 || fes._gl.getExtension("OES_texture_half_float") ? true : false,
@@ -3415,6 +3470,8 @@ export function _initGLContext(engineState: IWebGLEnginePublic): void {
         texture2DArrayMaxLayerCount: fes._webGLVersion > 1 ? fes._gl.getParameter(fes._gl.MAX_ARRAY_TEXTURE_LAYERS) : 128,
         disableMorphTargetTexture: false,
     };
+
+    fes._caps.supportFloatTexturesResolve = fes._caps.colorBufferFloat;
 
     // Infos
     fes._glVersion = fes._gl.getParameter(fes._gl.VERSION);
@@ -3637,6 +3694,7 @@ export function _initFeatures(engineState: IWebGLEnginePublic): void {
         needToAlwaysBindUniformBuffers: false,
         supportRenderPasses: false,
         supportSpriteInstancing: true,
+        forceVertexBufferStrideMultiple4Bytes: false,
         _collectUbosUpdatedInFrame: false,
     };
 }
@@ -4527,6 +4585,10 @@ export function dispose(engineState: IWebGLEnginePublic): void {
         fes._rescalePostProcess.dispose();
     }
 
+    if (fes._creationOptions.loseContextOnDispose) {
+        fes._gl.getExtension("WEBGL_lose_context")?.loseContext();
+    }
+
     disposeBase(fes);
 }
 
@@ -4756,18 +4818,27 @@ export function setSize(engineState: IWebGLEnginePublic, width: number, height: 
  * @param texture defines the external texture
  * @param hasMipMaps defines whether the external texture has mip maps (default: false)
  * @param samplingMode defines the sampling mode for the external texture (default: Constants.Constants.TEXTURE_TRILINEAR_SAMPLINGMODE)
+ * @param width defines the width for the external texture (default: 0)
+ * @param height defines the height for the external texture (default: 0)
  * @returns the babylon internal texture
  */
 export function wrapWebGLTexture(
     engineState: IWebGLEnginePublic,
     texture: WebGLTexture,
     hasMipMaps: boolean = false,
-    samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE
+    samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+    width: number = 0,
+    height: number = 0
 ): InternalTexture {
     const fes = engineState as WebGLEngineStateFull;
     const hardwareTexture = new WebGLHardwareTexture(texture, fes._gl);
     const internalTexture = new InternalTexture(augmentEngineState(engineState), InternalTextureSource.Unknown, true);
     internalTexture._hardwareTexture = hardwareTexture;
+    internalTexture._hardwareTexture = hardwareTexture;
+    internalTexture.baseWidth = width;
+    internalTexture.baseHeight = height;
+    internalTexture.width = width;
+    internalTexture.height = height;
     internalTexture.isReady = true;
     internalTexture.useMipMaps = hasMipMaps;
     updateTextureSamplingMode(engineState, samplingMode, internalTexture);

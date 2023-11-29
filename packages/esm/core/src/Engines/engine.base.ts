@@ -555,7 +555,7 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
             return engineState.forcePOTTextures;
         },
         _renderingQueueLaunched: false,
-        _activeRenderLoops: new Array<() => void>(),
+        _activeRenderLoops: [],
         get activeRenderLoops(): Array<() => void> {
             return engineState._activeRenderLoops;
         },
@@ -1736,7 +1736,7 @@ export function setDepthFunctionToLessOrEqual(engineState: IBaseEnginePublic): v
 }
 
 /**
- * Caches the the state of the stencil buffer
+ * Caches the state of the stencil buffer
  */
 export function cacheStencilState(engineState: IBaseEnginePublic) {
     const fes = engineState as BaseEngineStateFull;
