@@ -1263,7 +1263,7 @@ export class _Exporter {
         }
 
         const rotation = babylonCamera.rotation;
-        const rotationQuaternion = Quaternion.FromEulerAngles(rotation.x, rotation.y, rotation.z);
+        const rotationQuaternion = Quaternion.FromEulerAnglesToRef(rotation.x, rotation.y, rotation.z, TmpVectors.Quaternion[0]);
         if (babylonCamera.rotationQuaternion) {
             rotationQuaternion.multiplyInPlace(babylonCamera.rotationQuaternion);
         }
