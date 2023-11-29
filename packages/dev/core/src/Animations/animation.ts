@@ -78,7 +78,7 @@ export interface IMakeAnimationAdditiveOptions {
  * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export class _IAnimationState {
+export interface _IAnimationState {
     key: number;
     repeatCount: number;
     workValue?: any;
@@ -1035,7 +1035,7 @@ export class Animation {
                     case Animation.ANIMATIONLOOPMODE_YOYO:
                         return quatValue;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                        return quatValue.addInPlace((state.offsetValue ?? _staticOffsetValueQuaternion).scale(state.repeatCount));
+                        return quatValue.addInPlace((state.offsetValue || _staticOffsetValueQuaternion).scale(state.repeatCount));
                 }
 
                 return quatValue;
@@ -1051,7 +1051,7 @@ export class Animation {
                     case Animation.ANIMATIONLOOPMODE_YOYO:
                         return vec3Value;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                        return vec3Value.add((state.offsetValue ?? _staticOffsetValueVector3).scale(state.repeatCount));
+                        return vec3Value.add((state.offsetValue || _staticOffsetValueVector3).scale(state.repeatCount));
                 }
                 break;
             }
@@ -1066,7 +1066,7 @@ export class Animation {
                     case Animation.ANIMATIONLOOPMODE_YOYO:
                         return vec2Value;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                        return vec2Value.add((state.offsetValue ?? _staticOffsetValueVector2).scale(state.repeatCount));
+                        return vec2Value.add((state.offsetValue || _staticOffsetValueVector2).scale(state.repeatCount));
                 }
                 break;
             }
@@ -1078,7 +1078,7 @@ export class Animation {
                     case Animation.ANIMATIONLOOPMODE_YOYO:
                         return this.sizeInterpolateFunction(startValue, endValue, gradient);
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                        return this.sizeInterpolateFunction(startValue, endValue, gradient).add((state.offsetValue ?? _staticOffsetValueSize).scale(state.repeatCount));
+                        return this.sizeInterpolateFunction(startValue, endValue, gradient).add((state.offsetValue || _staticOffsetValueSize).scale(state.repeatCount));
                 }
                 break;
             }
@@ -1093,7 +1093,7 @@ export class Animation {
                     case Animation.ANIMATIONLOOPMODE_YOYO:
                         return color3Value;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                        return color3Value.add((state.offsetValue ?? _staticOffsetValueColor3).scale(state.repeatCount));
+                        return color3Value.add((state.offsetValue || _staticOffsetValueColor3).scale(state.repeatCount));
                 }
                 break;
             }
@@ -1108,7 +1108,7 @@ export class Animation {
                     case Animation.ANIMATIONLOOPMODE_YOYO:
                         return color4Value;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                        return color4Value.add((state.offsetValue ?? _staticOffsetValueColor4).scale(state.repeatCount));
+                        return color4Value.add((state.offsetValue || _staticOffsetValueColor4).scale(state.repeatCount));
                 }
                 break;
             }
