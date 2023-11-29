@@ -137,6 +137,13 @@ export class Gizmo implements IGizmo {
     public static PreserveScaling = false;
 
     /**
+     * There are 2 ways to preserve scaling: using mesh scaling or absolute scaling. Depending of hierarchy, non uniform scaling and LH or RH coordinates. One is preferable than the other.
+     * If the scaling to be preserved is the local scaling, then set this value to false.
+     * Default is true which means scaling to be preserved is absolute one (with hierarchy applied)
+     */
+    public static UseAbsoluteScaling = true;
+
+    /**
      * Ratio for the scale of the gizmo (Default: 1)
      */
     public set scaleRatio(value: number) {
@@ -430,7 +437,7 @@ export class Gizmo implements IGizmo {
                 const localMat = TmpVectors.Matrix[1];
                 transform.parent.getWorldMatrix().invertToRef(parentInv);
                 this._attachedNode.getWorldMatrix().multiplyToRef(parentInv, localMat);
-                localMat.decompose(TmpVectors.Vector3[0], TmpVectors.Quaternion[0], transform.position);
+                localMat.decompose(TmpVectors.Vector3[0], TmpVectors.Quaternion[0], transform.position, Gizmo.PreserveScaling ? transform : undefined, Gizmo.UseAbsoluteScaling);
                 TmpVectors.Quaternion[0].normalize();
                 if (transform.isUsingPivotMatrix()) {
                     // Calculate the local matrix without the translation.
@@ -457,7 +464,13 @@ export class Gizmo implements IGizmo {
                     transform.position.subtractInPlace(TmpVectors.Vector3[1]);
                 }
             } else {
-                this._attachedNode._worldMatrix.decompose(TmpVectors.Vector3[0], TmpVectors.Quaternion[0], transform.position, Gizmo.PreserveScaling ? transform : undefined);
+                this._attachedNode._worldMatrix.decompose(
+                    TmpVectors.Vector3[0],
+                    TmpVectors.Quaternion[0],
+                    transform.position,
+                    Gizmo.PreserveScaling ? transform : undefined,
+                    Gizmo.UseAbsoluteScaling
+                );
             }
             TmpVectors.Vector3[0].scaleInPlace(1.0 / transform.scalingDeterminant);
             transform.scaling.copyFrom(TmpVectors.Vector3[0]);

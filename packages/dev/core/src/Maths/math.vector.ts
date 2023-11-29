@@ -5874,9 +5874,10 @@ export class Matrix {
      * @param rotation defines the rotation quaternion given as a reference to update
      * @param translation defines the translation vector3 given as a reference to update
      * @param preserveScalingNode Use scaling sign coming from this node. Otherwise scaling sign might change.
+     * @param useAbsoluteScaling Use scaling sign coming from this absoluteScaling when true or scaling otherwise.
      * @returns true if operation was successful
      */
-    public decompose(scale?: Vector3, rotation?: Quaternion, translation?: Vector3, preserveScalingNode?: TransformNode): boolean {
+    public decompose(scale?: Vector3, rotation?: Quaternion, translation?: Vector3, preserveScalingNode?: TransformNode, useAbsoluteScaling: boolean = true): boolean {
         if (this._isIdentity) {
             if (translation) {
                 translation.setAll(0);
@@ -5902,9 +5903,9 @@ export class Matrix {
         scale.z = Math.sqrt(m[8] * m[8] + m[9] * m[9] + m[10] * m[10]);
 
         if (preserveScalingNode) {
-            const signX = preserveScalingNode.absoluteScaling.x < 0 ? -1 : 1;
-            const signY = preserveScalingNode.absoluteScaling.y < 0 ? -1 : 1;
-            const signZ = preserveScalingNode.absoluteScaling.z < 0 ? -1 : 1;
+            const signX = (useAbsoluteScaling ? preserveScalingNode.absoluteScaling.x : preserveScalingNode.scaling.x) < 0 ? -1 : 1;
+            const signY = (useAbsoluteScaling ? preserveScalingNode.absoluteScaling.y : preserveScalingNode.scaling.y) < 0 ? -1 : 1;
+            const signZ = (useAbsoluteScaling ? preserveScalingNode.absoluteScaling.z : preserveScalingNode.scaling.z) < 0 ? -1 : 1;
 
             scale.x *= signX;
             scale.y *= signY;
