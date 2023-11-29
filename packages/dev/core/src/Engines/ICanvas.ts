@@ -125,7 +125,7 @@ export interface DOMMatrix {
      */
     isIdentity: boolean;
     /**
-     * The following double-precision floating-point values represent the components of a 4×4 matrix which are required in order to perform 2D rotations and translations.
+     * The following double-precision floating-point values represent the components of a matrix which are required in order to perform 2D rotations and translations.
      */
     a: number;
     b: number;
