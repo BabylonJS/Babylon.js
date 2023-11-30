@@ -17,6 +17,7 @@ import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import type { ScaleGizmo } from "./scaleGizmo";
 import { Color3 } from "../Maths/math.color";
 import type { TransformNode } from "../Meshes/transformNode";
+import { Epsilon } from "../Maths/math.constants";
 
 /**
  * Interface for axis scale gizmo
@@ -78,6 +79,11 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
      * The magnitude of the drag strength (scaling factor)
      */
     public dragScale = 1;
+
+    /**
+     * The minimal absolute scale per component. can be positive or negative but never smaller.
+     */
+    public static MinimumAbsoluteScale = Epsilon;
 
     protected _isEnabled: boolean = true;
     protected _parent: Nullable<ScaleGizmo> = null;
@@ -202,7 +208,14 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
                     }
                 }
 
-                Matrix.ScalingToRef(1 + tmpVector.x, 1 + tmpVector.y, 1 + tmpVector.z, TmpVectors.Matrix[2]);
+                tmpVector.addInPlaceFromFloats(1, 1, 1);
+
+                // can't use Math.sign here because Math.sign(0) is 0 and it needs to be positive
+                tmpVector.x = Math.abs(tmpVector.x) < AxisScaleGizmo.MinimumAbsoluteScale ? AxisScaleGizmo.MinimumAbsoluteScale * (tmpVector.x < 0 ? -1 : 1) : tmpVector.x;
+                tmpVector.y = Math.abs(tmpVector.y) < AxisScaleGizmo.MinimumAbsoluteScale ? AxisScaleGizmo.MinimumAbsoluteScale * (tmpVector.y < 0 ? -1 : 1) : tmpVector.y;
+                tmpVector.z = Math.abs(tmpVector.z) < AxisScaleGizmo.MinimumAbsoluteScale ? AxisScaleGizmo.MinimumAbsoluteScale * (tmpVector.z < 0 ? -1 : 1) : tmpVector.z;
+
+                Matrix.ScalingToRef(tmpVector.x, tmpVector.y, tmpVector.z, TmpVectors.Matrix[2]);
 
                 TmpVectors.Matrix[2].multiplyToRef(this.attachedNode.getWorldMatrix(), TmpVectors.Matrix[1]);
                 const transformNode = (<Mesh>this.attachedNode)._isMesh ? (this.attachedNode as TransformNode) : undefined;
