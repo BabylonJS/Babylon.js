@@ -103,6 +103,7 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
     public get disableMaterial() {
         return this._disableMaterial;
     }
+
     /**
      * Creates an AxisScaleGizmo
      * @param dragAxis The axis which the gizmo will be able to scale on
@@ -110,13 +111,17 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
      * @param gizmoLayer The utility layer the gizmo will be added to
      * @param parent
      * @param thickness display gizmo axis thickness
+     * @param hoverColor The color of the gizmo when hovering over and dragging
+     * @param disableColor The Color of the gizmo when its disabled
      */
     constructor(
         dragAxis: Vector3,
         color: Color3 = Color3.Gray(),
         gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer,
         parent: Nullable<ScaleGizmo> = null,
-        thickness: number = 1
+        thickness: number = 1,
+        hoverColor: Color3 = Color3.Yellow(),
+        disableColor: Color3 = Color3.Gray()
     ) {
         super(gizmoLayer);
         this._parent = parent;
@@ -126,10 +131,10 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
         this._coloredMaterial.specularColor = color.subtract(new Color3(0.1, 0.1, 0.1));
 
         this._hoverMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        this._hoverMaterial.diffuseColor = Color3.Yellow();
+        this._hoverMaterial.diffuseColor = hoverColor;
 
         this._disableMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        this._disableMaterial.diffuseColor = Color3.Gray();
+        this._disableMaterial.diffuseColor = disableColor;
         this._disableMaterial.alpha = 0.4;
 
         // Build mesh + Collider
@@ -317,6 +322,7 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
             }
         }
     }
+
     public get isEnabled(): boolean {
         return this._isEnabled;
     }
