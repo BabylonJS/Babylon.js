@@ -79,10 +79,10 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
     /**
      * all gizmos
      */
-    get allGizmos(){
-        return this._allGizmos || (this._allGizmos = [this.xGizmo,this.yGizmo,this.zGizmo,this.uniformScaleGizmo]);
+    get allGizmos() {
+        return this._allGizmos || (this._allGizmos = [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo]);
     }
-    protected _allGizmos:[IAxisScaleGizmo,IAxisScaleGizmo,IAxisScaleGizmo,IAxisScaleGizmo]|null = null;
+    protected _allGizmos: [IAxisScaleGizmo, IAxisScaleGizmo, IAxisScaleGizmo, IAxisScaleGizmo] | null = null;
 
     protected _meshAttached: Nullable<AbstractMesh> = null;
     protected _nodeAttached: Nullable<Node> = null;

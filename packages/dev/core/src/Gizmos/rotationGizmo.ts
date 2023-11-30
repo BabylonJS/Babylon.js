@@ -100,10 +100,10 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
     /**
      * all gizmos
      */
-    get allGizmos(){
-        return this._allGizmos || (this._allGizmos = [this.xGizmo,this.yGizmo,this.zGizmo]);
+    get allGizmos() {
+        return this._allGizmos || (this._allGizmos = [this.xGizmo, this.yGizmo, this.zGizmo]);
     }
-    protected _allGizmos:[IPlaneRotationGizmo,IPlaneRotationGizmo,IPlaneRotationGizmo]|null = null;
+    protected _allGizmos: [IPlaneRotationGizmo, IPlaneRotationGizmo, IPlaneRotationGizmo] | null = null;
 
     /** Fires an event when any of it's sub gizmos are dragged */
     public onDragStartObservable = new Observable();

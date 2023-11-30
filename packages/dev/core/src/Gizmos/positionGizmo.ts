@@ -84,6 +84,14 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
     public zPlaneGizmo: IPlaneDragGizmo;
 
     /**
+     * all gizmos
+     */
+    get allGizmos() {
+        return this._allGizmos || (this._allGizmos = [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo]);
+    }
+    protected _allGizmos: [IAxisDragGizmo, IAxisDragGizmo, IAxisDragGizmo, IPlaneDragGizmo, IPlaneDragGizmo, IPlaneDragGizmo] | null = null;
+
+    /**
      * protected variables
      */
     protected _meshAttached: Nullable<AbstractMesh> = null;
@@ -112,7 +120,7 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
     public set attachedMesh(mesh: Nullable<AbstractMesh>) {
         this._meshAttached = mesh;
         this._nodeAttached = mesh;
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+        this.allGizmos.forEach((gizmo) => {
             if (gizmo.isEnabled) {
                 gizmo.attachedMesh = mesh;
             } else {
@@ -127,7 +135,7 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
     public set attachedNode(node: Nullable<Node>) {
         this._meshAttached = null;
         this._nodeAttached = node;
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+        this.allGizmos.forEach((gizmo) => {
             if (gizmo.isEnabled) {
                 gizmo.attachedNode = node;
             } else {
@@ -141,7 +149,7 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
      */
     public get isHovered() {
         let hovered = false;
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+        this.allGizmos.forEach((gizmo) => {
             hovered = hovered || gizmo.isHovered;
         });
         return hovered;
@@ -163,7 +171,7 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
         this.yPlaneGizmo = new PlaneDragGizmo(new Vector3(0, 1, 0), Color3.Green().scale(0.5), this.gizmoLayer, this);
         this.zPlaneGizmo = new PlaneDragGizmo(new Vector3(0, 0, 1), Color3.Blue().scale(0.5), this.gizmoLayer, this);
         // Relay drag events
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+        this.allGizmos.forEach((gizmo) => {
             gizmo.dragBehavior.onDragStartObservable.add(() => {
                 this.onDragStartObservable.notifyObservers({});
             });
@@ -214,7 +222,7 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
      */
     public set updateGizmoRotationToMatchAttachedMesh(value: boolean) {
         this._updateGizmoRotationToMatchAttachedMesh = value;
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+        this.allGizmos.forEach((gizmo) => {
             if (gizmo) {
                 gizmo.updateGizmoRotationToMatchAttachedMesh = value;
             }
@@ -226,7 +234,7 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
 
     public set updateGizmoPositionToMatchAttachedMesh(value: boolean) {
         this._updateGizmoPositionToMatchAttachedMesh = value;
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+        this.allGizmos.forEach((gizmo) => {
             if (gizmo) {
                 gizmo.updateGizmoPositionToMatchAttachedMesh = value;
             }
@@ -238,7 +246,7 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
 
     public set anchorPoint(value: GizmoAnchorPoint) {
         this._anchorPoint = value;
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+        this.allGizmos.forEach((gizmo) => {
             gizmo.anchorPoint = value;
         });
     }
@@ -252,7 +260,7 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
      * In that case, setting the coordinate system will change `updateGizmoRotationToMatchAttachedMesh` and `updateGizmoPositionToMatchAttachedMesh`
      */
     public set coordinatesMode(coordinatesMode: GizmoCoordinatesMode) {
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+        this.allGizmos.forEach((gizmo) => {
             gizmo.coordinatesMode = coordinatesMode;
         });
     }
@@ -272,7 +280,7 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
      */
     public set snapDistance(value: number) {
         this._snapDistance = value;
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+        this.allGizmos.forEach((gizmo) => {
             if (gizmo) {
                 gizmo.snapDistance = value;
             }
@@ -287,7 +295,7 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
      */
     public set scaleRatio(value: number) {
         this._scaleRatio = value;
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+        this.allGizmos.forEach((gizmo) => {
             if (gizmo) {
                 gizmo.scaleRatio = value;
             }
@@ -310,7 +318,7 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
      * Disposes of the gizmo
      */
     public dispose() {
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+        this.allGizmos.forEach((gizmo) => {
             if (gizmo) {
                 gizmo.dispose();
             }
