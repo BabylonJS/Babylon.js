@@ -1,4 +1,5 @@
-import type { FlowGraphPath, FlowGraphContext, IPathExtension } from "core/FlowGraph";
+import type { FlowGraphPath, IPathExtension } from "core/FlowGraph/flowGraphPath";
+import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import type { TransformNode } from "core/Meshes";
 import type { IGLTF } from "../glTFLoaderInterfaces";
 

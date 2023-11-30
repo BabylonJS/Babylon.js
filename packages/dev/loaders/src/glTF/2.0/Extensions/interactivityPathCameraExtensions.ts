@@ -1,5 +1,6 @@
 import type { Camera } from "core/Cameras";
-import type { FlowGraphPath, FlowGraphContext } from "core/FlowGraph";
+import type { FlowGraphPath } from "core/FlowGraph/flowGraphPath";
+import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import { Tools } from "core/Misc";
 import type { IGLTF } from "../glTFLoaderInterfaces";
 

@@ -1,4 +1,5 @@
-import type { FlowGraphPath, FlowGraphContext } from "core/FlowGraph";
+import type { FlowGraphPath } from "core/FlowGraph/flowGraphPath";
+import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import type { PBRMaterial, Texture } from "core/Materials";
 import { Color3 } from "core/Maths";
 import type { IGLTF } from "../glTFLoaderInterfaces";

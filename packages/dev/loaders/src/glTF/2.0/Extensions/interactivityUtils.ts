@@ -1,27 +1,25 @@
-import type { IKHRInteractivity_Node, IKHRInteractivity_Value } from "babylonjs-gltf2interface";
+import { FlowGraphSceneReadyEventBlock } from "core/FlowGraph/Blocks/Event/flowGraphSceneReadyEventBlock";
+import { FlowGraphSceneTickEventBlock } from "core/FlowGraph/Blocks/Event/flowGraphSceneTickEventBlock";
+import { FlowGraphLogBlock } from "core/FlowGraph/Blocks/Execution/flowGraphLogBlock";
+import { FlowGraphTimerBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphTimerBlock";
+import { FlowGraphSendCustomEventBlock } from "core/FlowGraph/Blocks/Execution/flowGraphSendCustomEventBlock";
+import { FlowGraphReceiveCustomEventBlock } from "core/FlowGraph/Blocks/Event/flowGraphReceiveCustomEventBlock";
+import { FlowGraphSequenceBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphSequenceBlock";
+import { FlowGraphGetPropertyBlock } from "core/FlowGraph/Blocks/Data/flowGraphGetPropertyBlock";
+import { FlowGraphSetPropertyBlock } from "core/FlowGraph/Blocks/Execution/flowGraphSetPropertyBlock";
 import {
-    FlowGraphSceneReadyEventBlock,
-    FlowGraphLogBlock,
-    FlowGraphTimerBlock,
-    FlowGraphSendCustomEventBlock,
-    FlowGraphSequenceBlock,
-    FlowGraphGetPropertyBlock,
-    FlowGraphSetPropertyBlock,
     FlowGraphAddBlock,
-    FlowGraphSceneTickEventBlock,
-    FlowGraphDoNBlock,
-    FlowGraphGetVariableBlock,
-    FlowGraphSetVariableBlock,
     FlowGraphRandomBlock,
     FlowGraphLessThanBlock,
-    FlowGraphWhileLoopBlock,
     FlowGraphMultiplyBlock,
-    FlowGraphAnimateToBlock,
     FlowGraphSubtractBlock,
     FlowGraphDotBlock,
-    FlowGraphReceiveCustomEventBlock,
-    // eslint-disable-next-line import/no-internal-modules
-} from "core/FlowGraph/index";
+} from "core/FlowGraph/Blocks/Data/Math/flowGraphMathBlocks";
+import { FlowGraphDoNBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphDoNBlock";
+import { FlowGraphGetVariableBlock } from "core/FlowGraph/Blocks/Data/flowGraphGetVariableBlock";
+import { FlowGraphSetVariableBlock } from "core/FlowGraph/Blocks/Execution/flowGraphSetVariableBlock";
+import { FlowGraphWhileLoopBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphWhileLoopBlock";
+import { FlowGraphAnimateToBlock } from "core/FlowGraph/Blocks/Execution/Animation/flowGraphAnimateToBlock";
 
 export const gltfToFlowGraphTypeMap: { [key: string]: string } = {
     "lifecycle/onStart": FlowGraphSceneReadyEventBlock.ClassName,
@@ -46,30 +44,8 @@ export const gltfToFlowGraphTypeMap: { [key: string]: string } = {
     "math/dot": FlowGraphDotBlock.ClassName,
 };
 
-export const gltfPropertyPathToBabylonPropertyPath: any = {
-    translation: "_babylonTransformNode/position",
-    scale: "_babylonTransformNode/scaling",
-    rotation: "_babylonTransformNode/rotationQuaternion",
-    "pbrMetallicRoughness/baseColorFactor": "_data/0/babylonMaterial/albedoColor",
-};
-
 export const gltfTypeToBabylonType: any = {
     float2: "Vector2",
     float3: "Vector3",
     float4: "Vector4",
-};
-
-export const convertBlockInputType = (gltfBlock: IKHRInteractivity_Node, value: IKHRInteractivity_Value, convertedValue: any, context: string) => {
-    if (gltfBlock.type === "world/set" || gltfBlock.type === "world/get" || gltfBlock.type === "world/animateTo") {
-        const gltfConfig = gltfBlock.configuration && gltfBlock.configuration[0];
-        if (!gltfConfig) {
-            throw new Error(`${context}: Invalid glTF block configuration`);
-        }
-        const path = gltfConfig.value as string;
-        if (path.includes("baseColorFactor")) {
-            if (value.id === "a" && value.value !== undefined && convertedValue.className === "Vector4") {
-                convertedValue.className = "Color3";
-            }
-        }
-    }
 };
