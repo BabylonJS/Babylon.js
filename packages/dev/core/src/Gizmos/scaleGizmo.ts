@@ -38,6 +38,8 @@ export interface IScaleGizmo extends IGizmo {
     onDragEndObservable: Observable<unknown>;
     /** Drag distance in babylon units that the gizmo will snap to when dragged */
     snapDistance: number;
+    /** Incremental snap scaling. When true, with a snapDistance of 0.1, scaling will be 1.1,1.2,1.3 instead of, when false: 1.1,1.21,1.33,... */
+    incrementalSnap: boolean;
     /** Sensitivity factor for dragging */
     sensitivity: number;
     /**
@@ -80,6 +82,7 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
     protected _meshAttached: Nullable<AbstractMesh> = null;
     protected _nodeAttached: Nullable<Node> = null;
     protected _snapDistance: number;
+    protected _incrementalSnap: boolean = false;
     protected _uniformScalingMesh: Mesh;
     protected _octahedron: Mesh;
     protected _sensitivity: number = 1;
@@ -314,6 +317,20 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
         return this._snapDistance;
     }
 
+    /**
+     * Incremental snap scaling (default is false). When true, with a snapDistance of 0.1, scaling will be 1.1,1.2,1.3 instead of, when false: 1.1,1.21,1.33,...
+     */
+    public set incrementalSnap(value: boolean) {
+        this._incrementalSnap = value;
+        [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
+            if (gizmo) {
+                gizmo.incrementalSnap = value;
+            }
+        });
+    }
+    public get incrementalSnap() {
+        return this._incrementalSnap;
+    }
     /**
      * Ratio for the scale of the gizmo (Default: 1)
      */
