@@ -269,9 +269,10 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
      */
     protected _createGizmoMesh(parentMesh: AbstractMesh, thickness: number, isCollider = false) {
         const arrowMesh = CreateBox("yPosMesh", { size: 0.4 * (1 + (thickness - 1) / 4) }, this.gizmoLayer.utilityLayerScene);
+        const height = 0.275;
         const arrowTail = CreateCylinder(
             "cylinder",
-            { diameterTop: 0.005 * thickness, height: 0.275, diameterBottom: 0.005 * thickness, tessellation: 96 },
+            { diameterTop: 0.005 * thickness, height, diameterBottom: 0.005 * thickness, tessellation: 96 },
             this.gizmoLayer.utilityLayerScene
         );
 
@@ -281,7 +282,7 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
         arrowTail.rotation.x = arrowMesh.rotation.x = Math.PI / 2;
 
         arrowMesh.position.z += 0.3;
-        arrowTail.position.z += 0.1375;
+        arrowTail.position.z += height/2;
 
         if (isCollider) {
             arrowMesh.visibility = 0;

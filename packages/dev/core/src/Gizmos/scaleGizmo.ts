@@ -390,15 +390,11 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
         this.onDragStartObservable.clear();
         this.onDragObservable.clear();
         this.onDragEndObservable.clear();
-        _uniformScalingMesh && _uniformScalingMesh.dispose();
-        _octahedron && _octahedron.dispose();
+        _uniformScalingMesh?.dispose();
+        _octahedron?.dispose();
 
-        const materArr = [this._coloredMaterial, this._hoverMaterial, this._disableMaterial];
-        for (let i = 0; i < 3; i++) {
-            const matl = materArr[i];
-            if (matl) {
-                matl.dispose();
-            }
-        }
+        this._coloredMaterial?.dispose();
+        this._hoverMaterial?.dispose();
+        this._disableMaterial?.dispose();
     }
 }
