@@ -1,20 +1,318 @@
 {
-    "fromTag": "6.30.0",
+    "fromTag": "6.31.0",
     "changelog": {
-        "6.30.0": [
+        "6.32.0": [
             {
-                "pr": "14522",
-                "title": "Fix crash when one teleport was not serialized",
-                "description": null,
+                "pr": "14558",
+                "title": "Fix Add Color Uniform of CustomMaterial & PBRCustomMaterial",
+                "description": "In CustomMaterial & PBRCustomMaterial,  `AddUniform` can not pass color value to shader.\r\n\r\nhttps://www.babylonjs-playground.com/#9ZQL2G can reproduce the bug.\r\n\r\n",
                 "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
+                    "name": "Starryi",
+                    "url": "https://github.com/Starryi"
                 },
                 "files": [
-                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts"
+                    "packages/dev/materials/src/custom/customMaterial.ts",
+                    "packages/dev/materials/src/custom/pbrCustomMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14560",
+                "title": "Fix for animations with relative loop mode.",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/ace-input-value-doesnt-change/46022\r\nThe reason for the errors in ACE was that, when editing values/moving the playhead/etc, the `_interpolate` function was called, but the animation state's `offsetValue` is undefined at the time. Since `offsetValue` is defined as optional, I added a check for the undefined case, returning the previously defined `_staticOffsetValueXXX` values.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animation.ts",
+                    "packages/dev/core/src/Animations/runtimeAnimation.ts",
+                    "packages/dev/core/src/Maths/math.size.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "animations",
+                    "ace"
+                ]
+            },
+            {
+                "pr": "14556",
+                "title": "Fix Matrix getRowToRef function",
+                "description": "https://forum.babylonjs.com/t/matrix-getrowtoref-incorrectly-handles-4th-row/45995/2",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.vector.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "math"
+                ]
+            },
+            {
+                "pr": "14557",
+                "title": "Fix incorrect range check when reading glTF buffer",
+                "description": "This is a follow up to #14540 which still has an incorrect range check. The intention of the `readViewAsync` checks is to make sure the arguments fit within the given array buffer view.\r\n\r\nI've tested against the PG from [the forum issue](https://forum.babylonjs.com/t/gltffileloader-array-length-out-of-bounds/45849) to make sure it still works.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/glTFFileLoader.ts"
                 ],
                 "tags": [
                     "skip changelog"
+                ]
+            },
+            {
+                "pr": "14551",
+                "title": "Mesh: Add a setIndexBuffer method",
+                "description": "See https://forum.babylonjs.com/t/how-to-keep-buffers-on-the-gpu-when-using-compute-shaders-for-instancing-or-vertex-data-generation/45951/6",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/geometry.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14554",
+                "title": "Simple One Word Typo Fix",
+                "description": "Fix typo of the word \"gradients\" in the particle system editor.",
+                "author": {
+                    "name": "FrameBuffer4096",
+                    "url": "https://github.com/FrameBuffer4096"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14544",
+                "title": "Flow graph path",
+                "description": "# Changes\r\nA new class called `FlowGraphPath` was introduced. The intention behind this class is to serve as a generic implementation of the glTF Object Model (https://github.com/KhronosGroup/glTF/blob/d8c3ef5bd9e2054e2caff34c99103953aa29a610/specification/2.0/ObjectModel.adoc), as assets in the interactivity extension are referenced by this model. The path will be resolved against the user variables in the Flow Graph's context. For example, given a context with\r\n```javascript\r\nconst context = new FlowGraphContext(...);\r\ncontext._userVariables = {\r\n a: [ { b: 1 } ]\r\n}\r\n```\r\n\r\nthen, `a/0/b` would resolve to the value \"1\". The dot also works as an separator, so `a/0.b` should also resolve to \"1\".\r\n\r\nIt is also possible to perform runtime substitutions with numeric values on these paths. One example would be `a/{runTimeValue}/b`, where `runTimeValue` can be substituted for any number. The string \"runTimeValue\" is called a \"template string\", and nodes created with paths containing template strings will have an input connection for each of these values. A concrete example:\r\n\r\n```javascript\r\nconst block = new FlowGraphSetPropertyBlock({path: new FlowGraphPath(\"/a/{runTimeValue}/b\")});\r\nblock.getDataInput(\"runTimeValue\").setValue(0, ... );\r\n```\r\nThen, at run-time, the value of the \"runTimeValue\" input would be evaluated, and the string `a/{runTimeValue}/b` resolved as `a/0/b`. Using template strings wouldn't make much sense in this example, as I could just have created the path with the final value I wanted, but if the \"runTimeValue\" input is connected to other data nodes, then we have the dynamic resolution of assets.\r\n\r\nBesides the SetProperty block, other blocks that utilize paths are PlayAnimation and MeshPick. MeshPick is a little special because it is an Event Block - meaning it shouldn't depend on arbitrary input data to function (at least from my understanding - this can be discussed). In this case, it shouldn't receive paths with template strings.\r\n\r\n[EDIT: NEW ADDITION]\r\nTo simplify the common pattern of generating numeric data inputs from a path, and getting those values and substituting them in the path, a new class named FlowGraphPathComponent was added. This class is intended to be a member of blocks that realize this pattern, such as SetProperty or PlayAnimation. So, for example, in the SetProperty constructor:\r\n```javascript\r\npublic constructor(public config: IFlowGraphSetPropertyBlockConfiguration) {\r\n        super(config);\r\n\r\n        this.value = this.registerDataInput(\"value\", RichTypeAny);\r\n        this.templateComponent = new FlowGraphPathComponent(config.path, this);\r\n}\r\n```\r\n\r\nand in execute:\r\n\r\n```javascript\r\npublic _execute(context: FlowGraphContext): void {\r\n        const value = this.value.getValue(context);\r\n        const path = this.templateComponent.substitutePath(context);\r\n        path.setProperty(context, value);\r\n\r\n        this.onDone._activateSignal(context);\r\n}\r\n```\r\n\r\n---\r\n\r\nSome additional changes that ended up being made: on the FlowGraphContext, I switched the `_userVariables`, `_executionVariables`, etc, i.e, the Map values, to be simple Records. The reason for that is just making the nested access in _userVariables easier, and the others were changed to keep the same style. It should have a bonus of not having any overhead from the Map class. \r\n\r\n# Examples\r\nSome PGs that use the paths:\r\n- #KSTQJU#9 - SetProperty with path: click on the left sphere and the right sphere will change position\r\n- #KSTQJU#10 - SetProperty with template string\r\n- #KSTQJU#11 - MeshPick and SetProperty with template string\r\n- #KSTQJU#13 - MeshPick and PlayAnimation with template string\r\n- #GPPEUA#11 - Car semaphore example\r\n",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphMatrixBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphNumberMathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphVector2MathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphVector3MathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphVector4MathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphBinaryOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphCachedOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphConditionalDataBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphConstantBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphCoordinateTransformBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphGetVariableBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphUnaryOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphMeshPickEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphReceiveCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPauseAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPlayAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphStopAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Audio/flowGraphPlayAudioBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Audio/flowGraphStopAudioBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphBranchBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphCounterBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphDebounceBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphDoNBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphFlipFlopBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphForLoopBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphMultiGateBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphSwitchBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphThrottleBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphTimerBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphWaitAllBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphWhileLoopBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphLogBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSendCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetPropertyBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetVariableBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphContext.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphPath.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphPathComponent.ts",
+                    "packages/dev/core/src/FlowGraph/index.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphExecutionNodes.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphSerialization.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphUtils.test.ts",
+                    "tsconfig.test.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14550",
+                "title": "Update dependencies",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/core/src/Actions/action.ts",
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraDeviceOrientationInput.ts",
+                    "packages/dev/core/src/DeviceInput/InputDevices/deviceSource.ts",
+                    "packages/dev/core/src/DeviceInput/InputDevices/deviceTypes.ts",
+                    "packages/dev/core/src/DeviceInput/webDeviceInputSystem.ts",
+                    "packages/dev/core/src/Engines/Processors/shaderCodeNode.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsGLSL.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureHelper.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Loading/sceneLoader.ts",
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLineSimpleMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/perturbNormalBlock.ts",
+                    "packages/dev/core/src/Meshes/mesh.vertexData.ts",
+                    "packages/dev/core/src/Misc/dds.ts",
+                    "packages/dev/core/src/Misc/greasedLineTools.ts",
+                    "packages/dev/core/src/Misc/tools.ts",
+                    "packages/dev/core/src/types.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_lights_punctual.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
+                    "packages/tools/reflector/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14553",
+                "title": "Thin instances: Support forcedInstanceCount with thin instances",
+                "description": "See https://forum.babylonjs.com/t/how-to-keep-buffers-on-the-gpu-when-using-compute-shaders-for-instancing-or-vertex-data-generation/45951/7",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14552",
+                "title": "Engine: Misc helpers",
+                "description": "Follow up to #14546 ",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/postProcess.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14547",
+                "title": "Allow Mod Node to use float as second operand",
+                "description": "https://docs.gl/sl4/mod\r\n\r\nallow mod block's firtst operand to be float/vec2/vec3/vec4 and second operand be float, such as `mod(vec2(0.5, 0.5), 0.5)`",
+                "author": {
+                    "name": "Starryi",
+                    "url": "https://github.com/Starryi"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/modBlock.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14548",
+                "title": "GeometryBufferRenderer: Use bone texture if supported",
+                "description": "See https://forum.babylonjs.com/t/error-on-new-ssrrenderingpipeline/41812/16\r\n\r\nWe used uniforms even when bone texture was supported because of the velocity target (which only supports passing previous bone data through uniforms). The PR let use bone texture for the model while still using uniforms for previous bone data.\r\n\r\nPG to test: https://playground.babylonjs.com/#E5YGEL#59\r\n\r\nYou can see with Spector that with the current code, the bone matrices are passed through uniforms, whereas the shader uses the bone texture when the PR is applied.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/bonesDeclaration.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14546",
+                "title": "Engine: Misc helpers",
+                "description": "Miscellaneous changes I needed for my pet project.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/PostProcesses/postProcess.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRendererSceneComponent.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14542",
+                "title": "glTF transmission: Fix rendering sprites and particle systems in the opaque texture",
+                "description": "See https://forum.babylonjs.com/t/sprite-not-showing-behind-a-glass-material/45874/4",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_transmission.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "glTF"
+                ]
+            },
+            {
+                "pr": "14538",
+                "title": "Allows SkeletonViewer to render skeleton without mesh",
+                "description": "Allows SkeletonViewer to render skeleton without mesh, handling null mesh.\r\n\r\nTested in the following playgrounds:\r\nBroke in Master:\r\nhttps://playground.babylonjs.com/#HJEBQF#5\r\n\r\nWorks with the PR:\r\nhttps://babylonsnapshots.z22.web.core.windows.net/refs/pull/14538/merge/index.html#HJEBQF#5\r\nhttps://babylonsnapshots.z22.web.core.windows.net/refs/pull/14538/merge/index.html#HJEBQF#6",
+                "author": {
+                    "name": "yuripourre",
+                    "url": "https://github.com/yuripourre"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/skeletonViewer.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/skeletonPropertyGridComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14541",
+                "title": "Fix highlight layer properties in inspector",
+                "description": "https://forum.babylonjs.com/t/highlightlayer-showing-invalid-parameters-in-the-inspector/45863/2",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRRawCameraAccess.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/layers/layerPropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "inspector"
                 ]
             }
         ],
@@ -291,6 +589,23 @@
                     "packages/dev/core/src/Culling/ray.ts"
                 ],
                 "tags": []
+            }
+        ],
+        "6.30.0": [
+            {
+                "pr": "14522",
+                "title": "Fix crash when one teleport was not serialized",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
             }
         ],
         "6.29.2": [
