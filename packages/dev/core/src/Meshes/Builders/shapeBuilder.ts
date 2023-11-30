@@ -260,27 +260,30 @@ function _ExtrudeShapeGeneric(
         if (adjustFrame) {
             /* fix tangents,normals, binormals */
             for (let i = 0; i < tangents.length; i++) {
-                if (tangents[i].x == 0 && tangents[i].y == 0 && tangents[i].z == 0) {
-                    tangents[i].copyFrom(tangents[i - 1]);
+                const tangent = tangents[i];
+                if (tangent.x == 0 && tangent.y == 0 && tangent.z == 0) {
+                    tangent.copyFrom(tangents[i - 1]);
                 }
-                if (normals[i].x == 0 && normals[i].y == 0 && normals[i].z == 0) {
-                    normals[i].copyFrom(normals[i - 1]);
+                const normal = normals[i];
+                if (normal.x == 0 && normal.y == 0 && normal.z == 0) {
+                    normal.copyFrom(normals[i - 1]);
                 }
-                if (binormals[i].x == 0 && binormals[i].y == 0 && binormals[i].z == 0) {
-                    binormals[i].copyFrom(binormals[i - 1]);
+                const binormal = binormals[i];
+                if (binormal.x == 0 && binormal.y == 0 && binormal.z == 0) {
+                    binormal.copyFrom(binormals[i - 1]);
                 }
                 if (i > 0) {
                     let v = tangents[i - 1];
-                    if (Vector3.Dot(v, tangents[i]) < 0) {
-                        tangents[i].scaleInPlace(-1);
+                    if (Vector3.Dot(v, tangent) < 0) {
+                        tangent.scaleInPlace(-1);
                     }
                     v = normals[i - 1];
-                    if (Vector3.Dot(v, normals[i]) < 0) {
-                        normals[i].scaleInPlace(-1);
+                    if (Vector3.Dot(v, normal) < 0) {
+                        normal.scaleInPlace(-1);
                     }
                     v = binormals[i - 1];
-                    if (Vector3.Dot(v, binormals[i]) < 0) {
-                        binormals[i].scaleInPlace(-1);
+                    if (Vector3.Dot(v, binormal) < 0) {
+                        binormal.scaleInPlace(-1);
                     }
                 }
             }
@@ -301,14 +304,15 @@ function _ExtrudeShapeGeneric(
             const shapePath: Vector3[] = [];
             const angleStep = rotate(i, distances[i]);
             const scaleRatio = scl(i, distances[i]);
-            Matrix.RotationAxisToRef(tangents[i], angle, rotationMatrix);
+            const tangent = tangents[i];
+            Matrix.RotationAxisToRef(tangent, angle, rotationMatrix);
             const normal = normals[i];
             const binormal = binormals[i];
             const cur = curve[i];
             const shapeLength = shapePath.length;
             for (let p = 0; p < shapeLength; p++) {
                 const { x, y, z } = shapePath[p];
-                const planed = tangents[i].scale(z).add(normal.scale(x)).add(binormal.scale(y));
+                const planed = tangent.scale(z).add(normal.scale(x)).add(binormal.scale(y));
                 const rotated = Vector3.Zero();
                 Vector3.TransformCoordinatesToRef(planed, rotationMatrix, rotated);
                 rotated.scaleInPlace(scaleRatio).addInPlace(cur);
