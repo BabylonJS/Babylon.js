@@ -302,11 +302,16 @@ function _ExtrudeShapeGeneric(
             const angleStep = rotate(i, distances[i]);
             const scaleRatio = scl(i, distances[i]);
             Matrix.RotationAxisToRef(tangents[i], angle, rotationMatrix);
-            for (let p = 0; p < shape.length; p++) {
-                const planed = tangents[i].scale(shape[p].z).add(normals[i].scale(shape[p].x)).add(binormals[i].scale(shape[p].y));
+            const normal = normals[i];
+            const binormal = binormals[i];
+            const cur = curve[i];
+            const shapeLength = shapePath.length;
+            for (let p = 0; p < shapeLength; p++) {
+                const {x,y,z} = shapePath[p];
+                const planed = tangents[i].scale(z).add(normal.scale(x)).add(binormal.scale(y));
                 const rotated = Vector3.Zero();
                 Vector3.TransformCoordinatesToRef(planed, rotationMatrix, rotated);
-                rotated.scaleInPlace(scaleRatio).addInPlace(curve[i]);
+                rotated.scaleInPlace(scaleRatio).addInPlace(cur);
                 shapePath[p] = rotated;
             }
             shapePaths[index] = shapePath;
