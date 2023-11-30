@@ -16,7 +16,6 @@ export interface IPathExtension {
     shouldProcess(path: FlowGraphPath): boolean;
     processGet(path: FlowGraphPath, context: FlowGraphContext): any;
     processSet(path: FlowGraphPath, context: FlowGraphContext, value: any): void;
-    [extraInfo: string]: any;
 }
 /*
  * @experimental

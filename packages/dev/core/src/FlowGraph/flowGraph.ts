@@ -88,6 +88,8 @@ export class FlowGraph {
      * @param block
      */
     public addEventBlock(block: FlowGraphEventBlock): void {
+        // todo: when adding a mesh pick block, check if the target of the pick is child of a mesh that is already on the list
+        // if it is, put the child before the parent
         this._eventBlocks.push(block);
     }
 
