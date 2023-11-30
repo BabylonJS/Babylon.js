@@ -86,10 +86,9 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
     /**
      * all gizmos
      */
-    get allGizmos() {
-        return this._allGizmos || (this._allGizmos = [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo]);
+    public get allGizmos(): (IAxisDragGizmo | IPlaneDragGizmo)[] {
+        return [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo];
     }
-    protected _allGizmos: [IAxisDragGizmo, IAxisDragGizmo, IAxisDragGizmo, IPlaneDragGizmo, IPlaneDragGizmo, IPlaneDragGizmo] | null = null;
 
     /**
      * protected variables
@@ -170,6 +169,7 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
         this.xPlaneGizmo = new PlaneDragGizmo(new Vector3(1, 0, 0), Color3.Red().scale(0.5), this.gizmoLayer, this);
         this.yPlaneGizmo = new PlaneDragGizmo(new Vector3(0, 1, 0), Color3.Green().scale(0.5), this.gizmoLayer, this);
         this.zPlaneGizmo = new PlaneDragGizmo(new Vector3(0, 0, 1), Color3.Blue().scale(0.5), this.gizmoLayer, this);
+
         // Relay drag events
         this.allGizmos.forEach((gizmo) => {
             gizmo.dragBehavior.onDragStartObservable.add(() => {

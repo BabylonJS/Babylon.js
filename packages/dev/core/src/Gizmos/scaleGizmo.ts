@@ -79,10 +79,9 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
     /**
      * all gizmos
      */
-    get allGizmos() {
-        return this._allGizmos || (this._allGizmos = [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo]);
+    public get allGizmos() {
+        return [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo];
     }
-    protected _allGizmos: [IAxisScaleGizmo, IAxisScaleGizmo, IAxisScaleGizmo, IAxisScaleGizmo] | null = null;
 
     protected _meshAttached: Nullable<AbstractMesh> = null;
     protected _nodeAttached: Nullable<Node> = null;
@@ -126,7 +125,8 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
         this._meshAttached = mesh;
         this._nodeAttached = mesh;
         const allGizmos = this.allGizmos;
-        for (let i = 0; i < 4; i++) {
+        const gizmoCount = allGizmos.length;
+        for (let i = 0; i < gizmoCount; i++) {
             const gizmo = allGizmos[i];
             if (gizmo.isEnabled) {
                 gizmo.attachedMesh = mesh;
@@ -143,7 +143,8 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
         this._meshAttached = null;
         this._nodeAttached = node;
         const allGizmos = this.allGizmos;
-        for (let i = 0; i < 4; i++) {
+        const gizmoCount = allGizmos.length;
+        for (let i = 0; i < gizmoCount; i++) {
             const gizmo = allGizmos[i];
             if (gizmo.isEnabled) {
                 gizmo.attachedNode = node;
@@ -194,8 +195,9 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
         const dragEndListener = () => {
             this.onDragEndObservable.notifyObservers({});
         };
+
         const allGizmos = this.allGizmos;
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < allGizmos.length; i++) {
             const gizmo = allGizmos[i];
             gizmo.dragBehavior.onDragStartObservable.add(dragStartListener);
             gizmo.dragBehavior.onDragObservable.add(dragListener);
@@ -259,7 +261,8 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
         } else {
             this._updateGizmoRotationToMatchAttachedMesh = value;
             const allGizmos = this.allGizmos;
-            for (let i = 0; i < 4; i++) {
+            const gizmoCount = allGizmos.length;
+            for (let i = 0; i < gizmoCount; i++) {
                 const gizmo = allGizmos[i];
                 if (gizmo) {
                     gizmo.updateGizmoRotationToMatchAttachedMesh = value;
@@ -274,7 +277,8 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
     public set anchorPoint(value: GizmoAnchorPoint) {
         this._anchorPoint = value;
         const allGizmos = this.allGizmos;
-        for (let i = 0; i < 4; i++) {
+        const gizmoCount = allGizmos.length;
+        for (let i = 0; i < gizmoCount; i++) {
             const gizmo = allGizmos[i];
             if (gizmo) {
                 gizmo.anchorPoint = value;
@@ -295,7 +299,8 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
             Logger.Warn("Setting coordinates Mode to world on scaling gizmo is not supported.");
         }
         const allGizmos = this.allGizmos;
-        for (let i = 0; i < 4; i++) {
+        const gizmoCount = allGizmos.length;
+        for (let i = 0; i < gizmoCount; i++) {
             allGizmos[i].coordinatesMode = GizmoCoordinatesMode.Local;
         }
     }
@@ -306,7 +311,8 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
     public set snapDistance(value: number) {
         this._snapDistance = value;
         const allGizmos = this.allGizmos;
-        for (let i = 0; i < 4; i++) {
+        const gizmoCount = allGizmos.length;
+        for (let i = 0; i < gizmoCount; i++) {
             const gizmo = allGizmos[i];
             if (gizmo) {
                 gizmo.snapDistance = value;
@@ -323,7 +329,8 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
     public set scaleRatio(value: number) {
         this._scaleRatio = value;
         const allGizmos = this.allGizmos;
-        for (let i = 0; i < 4; i++) {
+        const gizmoCount = allGizmos.length;
+        for (let i = 0; i < gizmoCount; i++) {
             const gizmo = allGizmos[i];
             if (gizmo) {
                 gizmo.scaleRatio = value;
@@ -340,7 +347,8 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
     public set sensitivity(value: number) {
         this._sensitivity = value;
         const allGizmos = this.allGizmos;
-        for (let i = 0; i < 4; i++) {
+        const gizmoCount = allGizmos.length;
+        for (let i = 0; i < gizmoCount; i++) {
             const gizmo = allGizmos[i];
             if (gizmo) {
                 gizmo.sensitivity = value;
@@ -365,7 +373,8 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
      */
     public dispose() {
         const allGizmos = this.allGizmos;
-        for (let i = 0; i < 4; i++) {
+        const gizmoCount = allGizmos.length;
+        for (let i = 0; i < gizmoCount; i++) {
             const gizmo = allGizmos[i];
             if (gizmo) {
                 gizmo.dispose();

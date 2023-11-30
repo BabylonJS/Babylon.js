@@ -100,10 +100,9 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
     /**
      * all gizmos
      */
-    get allGizmos() {
-        return this._allGizmos || (this._allGizmos = [this.xGizmo, this.yGizmo, this.zGizmo]);
+    public get allGizmos() {
+        return [this.xGizmo, this.yGizmo, this.zGizmo];
     }
-    protected _allGizmos: [IPlaneRotationGizmo, IPlaneRotationGizmo, IPlaneRotationGizmo] | null = null;
 
     /** Fires an event when any of it's sub gizmos are dragged */
     public onDragStartObservable = new Observable();
@@ -208,6 +207,7 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
         this.xGizmo = new PlaneRotationGizmo(new Vector3(1, 0, 0), xColor, gizmoLayer, tessellation, this, useEulerRotation, thickness);
         this.yGizmo = new PlaneRotationGizmo(new Vector3(0, 1, 0), yColor, gizmoLayer, tessellation, this, useEulerRotation, thickness);
         this.zGizmo = new PlaneRotationGizmo(new Vector3(0, 0, 1), zColor, gizmoLayer, tessellation, this, useEulerRotation, thickness);
+
         // Relay drag events and set update scale
         this.allGizmos.forEach((gizmo) => {
             //must set updateScale on each gizmo, as setting it on root RotationGizmo doesnt prevent individual gizmos from updating
