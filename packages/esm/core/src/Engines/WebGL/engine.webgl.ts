@@ -17,6 +17,7 @@ import {
     resize,
     _setupMobileChecks,
     _getGlobalDefines,
+    getLoadedTexturesCache,
 } from "../engine.base.js";
 import { WebGLShaderProcessor } from "@babylonjs/core/Engines/WebGL/webGLShaderProcessors.js";
 import type { DataBuffer } from "@babylonjs/core/Buffers/dataBuffer.js";
@@ -66,6 +67,7 @@ import {
     setTextureFromPostProcessOutputBase,
     setViewportBase,
 } from "../engine.extendable.js";
+import type { Engine } from "public/@babylonjs/core/Engines/engine.js";
 
 const _TempClearColorUint32 = new Uint32Array(4);
 const _TempClearColorInt32 = new Int32Array(4);
@@ -175,7 +177,7 @@ export interface IWebGLEngineOptions extends IBaseEngineOptions, WebGLContextAtt
 }
 
 export type WebGLEngineState = IWebGLEnginePublic & IWebGLEngineInternals & IWebGLEngineProtected;
-export type WebGLEngineStateFull = WebGLEngineState & IWebGLEnginePrivate;
+type WebGLEngineStateFull = WebGLEngineState & IWebGLEnginePrivate;
 
 export function initWebGLEngineState(
     canvasOrContext: Nullable<HTMLCanvasElement | OffscreenCanvas | WebGLRenderingContext | WebGL2RenderingContext>,
@@ -2187,9 +2189,7 @@ export function _createInternalTexture(
     const gl = fes._gl;
     const engineAdapter = augmentEngineState(engineState, {
         _releaseTexture,
-        getLoadedTexturesCache: (_engineState: IWebGLEnginePublic) => {
-            return (_engineState as WebGLEngineState)._internalTexturesCache;
-        },
+        getLoadedTexturesCache,
         createTexture,
     });
     const texture = new InternalTexture(engineAdapter, source);
@@ -2285,11 +2285,9 @@ export function createTexture(
     useSRGBBuffer?: boolean
 ): InternalTexture {
     const fes = engineState as WebGLEngineStateFull;
-    const engineAdapter = augmentEngineState(engineState, {
+    const engineAdapter = augmentEngineState<Engine>(engineState, {
         _releaseTexture,
-        getLoadedTexturesCache: (_engineState: IWebGLEnginePublic) => {
-            return (_engineState as WebGLEngineState)._internalTexturesCache;
-        },
+        getLoadedTexturesCache,
         createTexture,
         _createHardwareTexture,
     });
@@ -2298,7 +2296,7 @@ export function createTexture(
             getUseSRGBBuffer: _getUseSRGBBuffer,
             engineAdapter,
         },
-        fes,
+        engineState,
         url,
         noMipmap,
         invertY,

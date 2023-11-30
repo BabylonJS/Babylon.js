@@ -15,7 +15,6 @@ import { EngineStore, QueueNewFrame, _TextureLoaders } from "./engine.static.js"
 import type { IPipelineContext } from "@babylonjs/core/Engines/IPipelineContext.js";
 import { Effect } from "@babylonjs/core/Materials/effect.js";
 import { Constants } from "./engine.constants.js";
-import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine.js";
 import type { IInternalTextureLoader } from "@babylonjs/core/Materials/Textures/internalTextureLoader.js";
 import { LoadImage } from "@babylonjs/core/Misc/fileTools.js";
 import type { IWebRequest } from "@babylonjs/core/Misc/interfaces/iWebRequest.js";
@@ -24,6 +23,7 @@ import type { ISceneLike } from "./engine.interfaces.js";
 import { _loadFile } from "./engine.tools.js";
 import { Logger } from "@babylonjs/core/Misc/logger.js";
 import { EngineExtensions, getEngineExtension } from "./Extensions/engine.extensions.js";
+import type { EngineBaseType } from "./engine.adapters.js";
 
 /**
  * Defines the interface used by objects containing a viewport (like a camera)
@@ -217,15 +217,15 @@ export function _releaseEffectBase<T extends IBaseEnginePublic = IBaseEnginePubl
     }
 }
 
-export function _createTextureBase<T extends IBaseEnginePublic = IBaseEnginePublic>(
+export function _createTextureBase<T>(
     {
         getUseSRGBBuffer,
         engineAdapter,
     }: {
-        getUseSRGBBuffer: (engineState: T, useSRGBBuffer: boolean, noMipmap: boolean) => boolean;
-        engineAdapter?: ThinEngine;
+        getUseSRGBBuffer: (engineState: EngineBaseType<T>, useSRGBBuffer: boolean, noMipmap: boolean) => boolean;
+        engineAdapter?: T;
     },
-    engineState: T,
+    engineState: EngineBaseType<T>,
     url: Nullable<string>,
     noMipmap: boolean,
     invertY: boolean,
@@ -267,7 +267,7 @@ export function _createTextureBase<T extends IBaseEnginePublic = IBaseEnginePubl
     loaderOptions?: any,
     useSRGBBuffer?: boolean
 ): InternalTexture {
-    const fes = engineState as BaseEngineStateFull<T>;
+    const fes = engineState as BaseEngineStateFull<EngineBaseType<T>>;
     url = url || "";
     const fromData = url.substring(0, 5) === "data:";
     const fromBlob = url.substring(0, 5) === "blob:";
