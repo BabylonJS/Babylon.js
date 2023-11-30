@@ -574,7 +574,7 @@ export class GLTFLoader implements IGLTFLoader {
             for (const name of this._gltf.extensionsRequired) {
                 const available = this._extensions.some((extension) => extension.name === name && extension.enabled);
                 if (!available) {
-                    throw new Error(`Require extension ${name} is not available`);
+                    throw new Error(`Required extension ${name} is not available`);
                 }
             }
         }
@@ -1481,7 +1481,8 @@ export class GLTFLoader implements IGLTFLoader {
         babylonCamera.ignoreParentScaling = true;
         camera._babylonCamera = babylonCamera;
 
-        babylonCamera.rotation = new Vector3(0, Math.PI, 0);
+        // Rotation by 180 as glTF has a different convention than Babylon.
+        babylonCamera.rotation.set(0, Math.PI, 0);
 
         switch (camera.type) {
             case CameraType.PERSPECTIVE: {
