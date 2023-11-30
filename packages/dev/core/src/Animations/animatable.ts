@@ -1154,7 +1154,7 @@ Scene.prototype._processLateAnimationBindings = function (): void {
                     if (holder.totalWeight < 1.0) {
                         // We need to mix the original value in
                         if (originalAnimationIsLoopRelative) {
-                            finalValue = originalValue.clone();
+                            finalValue = originalValue.clone ? originalValue.clone() : originalValue;
                         } else if (originalAnimation && originalValue.scale) {
                             finalValue = originalValue.scale(1.0 - holder.totalWeight);
                         } else if (originalAnimation) {
