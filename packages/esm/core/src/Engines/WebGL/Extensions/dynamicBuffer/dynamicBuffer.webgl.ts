@@ -1,7 +1,7 @@
 import type { DataBuffer } from "@babylonjs/core/Buffers/dataBuffer.js";
 import type { DataArray, IndicesArray } from "@babylonjs/core/types.js";
 import type { IDynamicBufferEngineExtension } from "../../../Extensions/dynamicBuffer/dynamicBuffer.base";
-import type { IWebGLEnginePublic, WebGLEngineStateFull} from "../../engine.webgl";
+import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl";
 import { _bindIndexBuffer, _resetIndexBufferBinding, bindArrayBuffer, _resetVertexBufferBinding } from "../../engine.webgl";
 
 export const updateDynamicIndexBuffer: IDynamicBufferEngineExtension["updateDynamicIndexBuffer"] = function (
@@ -10,7 +10,7 @@ export const updateDynamicIndexBuffer: IDynamicBufferEngineExtension["updateDyna
     indices: IndicesArray,
     _offset: number = 0
 ): void {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     // Force cache update
     fes._currentBoundBuffer[fes._gl.ELEMENT_ARRAY_BUFFER] = null;
     _bindIndexBuffer(fes, indexBuffer);
@@ -36,7 +36,7 @@ export const updateDynamicVertexBuffer: IDynamicBufferEngineExtension["updateDyn
     byteOffset?: number,
     byteLength?: number
 ): void {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     bindArrayBuffer(fes, vertexBuffer);
 
     if (byteOffset === undefined) {

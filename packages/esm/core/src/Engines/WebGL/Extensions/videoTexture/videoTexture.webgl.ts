@@ -1,6 +1,6 @@
 import type { InternalTexture } from "@babylonjs/core/Materials/Textures/internalTexture.js";
 import type { Nullable } from "@babylonjs/core/types.js";
-import type { IWebGLEnginePublic, WebGLEngineStateFull } from "../../engine.webgl.js";
+import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl.js";
 import { _bindTextureDirectly, _getInternalFormat, _getRGBABufferInternalSizedFormat, _unpackFlipY } from "../../engine.webgl.js";
 import type { IVideoTextureEngineExtension } from "../../../Extensions/videoTexture/videoTexture.base.js";
 import { Constants } from "../../../engine.constants.js";
@@ -15,7 +15,7 @@ export const updateVideoTexture: IVideoTextureEngineExtension["updateVideoTextur
     if (!texture || texture._isDisabled) {
         return;
     }
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const gl = fes._gl;
 
     const glformat = _getInternalFormat(engineState, texture.format);

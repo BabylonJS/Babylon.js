@@ -1,6 +1,6 @@
 import { InternalTexture, InternalTextureSource } from "@babylonjs/core/Materials/Textures/internalTexture.js";
 import type { Nullable } from "@babylonjs/core/types.js";
-import type { IWebGLEnginePublic, WebGLEngineStateFull } from "../../engine.webgl.js";
+import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl.js";
 import {
     _bindTextureDirectly,
     _getInternalFormat,
@@ -32,7 +32,7 @@ export const updateRawTexture: IRawTextureEngineExtension["updateRawTexture"] = 
     if (!texture) {
         return;
     }
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     // Babylon's internalSizedFomat but gl's texImage2D internalFormat
     const internalSizedFomat = _getRGBABufferInternalSizedFormat(fes, type, format, useSRGBBuffer);
 
@@ -83,7 +83,7 @@ export const createRawTexture: IRawTextureEngineExtension["createRawTexture"] = 
     creationFlags = 0,
     useSRGBBuffer = false
 ): InternalTexture {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const adapter = augmentEngineState(fes);
     const texture = new InternalTexture(adapter, InternalTextureSource.Raw);
     texture.baseWidth = width;
@@ -133,7 +133,7 @@ export const createRawCubeTexture: IRawTextureEngineExtension["createRawCubeText
     samplingMode: number,
     compression: Nullable<string> = null
 ): InternalTexture {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const adapter = augmentEngineState(fes);
     const gl = fes._gl;
     const texture = new InternalTexture(adapter, InternalTextureSource.CubeRaw);
@@ -236,7 +236,7 @@ export const updateRawCubeTexture: IRawTextureEngineExtension["updateRawCubeText
     compression: Nullable<string> = null,
     level: number = 0
 ): void {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     texture._bufferViewArray = data;
     texture.format = format;
     texture.type = type;
@@ -299,7 +299,7 @@ export const createRawCubeTextureFromUrl: IRawTextureEngineExtension["createRawC
     samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
     invertY: boolean = false
 ): InternalTexture {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const gl = fes._gl;
     const texture = createRawCubeTexture(fes, null, size, format, type, !noMipmap, invertY, samplingMode, null);
     scene?.addPendingData(texture);
@@ -437,7 +437,7 @@ function _makeCreateRawTextureFunction(
     compression: Nullable<string> = null,
     textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT
 ): InternalTexture {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const target = is3D ? fes._gl.TEXTURE_3D : fes._gl.TEXTURE_2D_ARRAY;
     const source = is3D ? InternalTextureSource.Raw3D : InternalTextureSource.Raw2DArray;
     const adapter = augmentEngineState(fes);
@@ -529,7 +529,7 @@ function _makeUpdateRawTextureFunction(
     compression: Nullable<string> = null,
     textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT
 ): void {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const target = is3D ? fes._gl.TEXTURE_3D : fes._gl.TEXTURE_2D_ARRAY;
     const internalType = _getWebGLTextureType(fes, textureType);
     const internalFormat = _getInternalFormat(fes, format);

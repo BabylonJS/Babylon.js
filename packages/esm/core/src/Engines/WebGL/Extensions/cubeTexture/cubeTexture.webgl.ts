@@ -7,7 +7,7 @@ import { RandomGUID } from "@babylonjs/core/Misc/guid.js";
 import type { IWebRequest } from "@babylonjs/core/Misc/interfaces/iWebRequest.js";
 import type { Scene } from "@babylonjs/core/scene.js";
 import type { Nullable } from "@babylonjs/core/types.js";
-import type { IWebGLEnginePublic, WebGLEngineStateFull } from "../../engine.webgl.js";
+import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl.js";
 import { _bindTextureDirectly, _getInternalFormat, _setupDepthStencilTexture, _unpackFlipY } from "../../engine.webgl.js";
 import { Logger } from "@babylonjs/core/Misc/logger.js";
 import type { ICubeTextureEngineExtension } from "../../../Extensions/cubeTexture/cubeTexture.base.js";
@@ -17,14 +17,13 @@ import { Constants } from "../../../engine.constants.js";
 import { _TextureLoaders, GetExponentOfTwo } from "../../../engine.static.js";
 import { _loadFile } from "../../../engine.tools.js";
 
-
 export const _createDepthStencilCubeTexture: ICubeTextureEngineExtension["_createDepthStencilCubeTexture"] = function (
     engineState: IWebGLEnginePublic,
     size: number,
     options: DepthTextureCreationOptions,
     rtWrapper: RenderTargetWrapper
 ): InternalTexture {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const internalTexture = new InternalTexture(augmentEngineState(fes), InternalTextureSource.DepthStencil);
     internalTexture.isCube = true;
 
@@ -72,7 +71,7 @@ export const _partialLoadFile: ICubeTextureEngineExtension["_partialLoadFile"] =
     onfinish: (files: ArrayBuffer[]) => void,
     onErrorCallBack: Nullable<(message?: string, exception?: any) => void> = null
 ): void {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const onload = (data: ArrayBuffer) => {
         loadedFiles[index] = data;
         (<any>loadedFiles)._internalCount++;
@@ -98,7 +97,7 @@ export const _cascadeLoadFiles: ICubeTextureEngineExtension["_cascadeLoadFiles"]
     files: string[],
     onError: Nullable<(message?: string, exception?: any) => void> = null
 ): void {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const loadedFiles: ArrayBuffer[] = [];
     (<any>loadedFiles)._internalCount = 0;
 
@@ -172,7 +171,7 @@ export const _setCubeMapTextureParams: ICubeTextureEngineExtension["_setCubeMapT
     loadMipmap: boolean,
     maxLevel?: number
 ): void {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const gl = fes._gl;
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, loadMipmap ? gl.LINEAR_MIPMAP_LINEAR : gl.LINEAR);
@@ -206,7 +205,7 @@ export const createCubeTextureBase: ICubeTextureEngineExtension["createCubeTextu
     imageHandler: Nullable<(texture: InternalTexture, imgs: HTMLImageElement[] | ImageBitmap[]) => void> = null,
     useSRGBBuffer = false
 ): InternalTexture {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const texture = fallback ? fallback : new InternalTexture(augmentEngineState(fes), InternalTextureSource.Cube);
     texture.isCube = true;
     texture.url = rootUrl;
@@ -330,7 +329,7 @@ export const createCubeTexture: ICubeTextureEngineExtension["createCubeTexture"]
     loaderOptions?: any,
     useSRGBBuffer = false
 ): InternalTexture {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const gl = fes._gl;
 
     return createCubeTextureBase(

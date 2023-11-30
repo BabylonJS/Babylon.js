@@ -1,7 +1,7 @@
 import type { WebGLRenderTargetWrapper } from "@babylonjs/core/Engines/WebGL/webGLRenderTargetWrapper.js";
 import type { RenderTargetWrapper } from "@babylonjs/core/Engines/renderTargetWrapper.js";
 import { InternalTexture, InternalTextureSource } from "@babylonjs/core/Materials/Textures/internalTexture.js";
-import { bindFramebuffer, type IWebGLEnginePublic, type WebGLEngineStateFull } from "../../engine.webgl.js";
+import { bindFramebuffer, type IWebGLEnginePublic, type WebGLEngineState } from "../../engine.webgl.js";
 import { _createHardwareRenderTargetWrapper } from "../renderTarget/renderTarget.webgl.js";
 import type { IMultiviewEngineExtension } from "../../../Extensions/multiview/multiview.base.js";
 import { augmentEngineState } from "../../../engine.adapters.js";
@@ -14,7 +14,7 @@ export const createMultiviewRenderTargetTexture: IMultiviewEngineExtension["crea
     colorTexture?: WebGLTexture,
     depthStencilTexture?: WebGLTexture
 ) {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const gl = fes._gl;
 
     if (!fes._caps.multiview) {
@@ -60,7 +60,7 @@ export const createMultiviewRenderTargetTexture: IMultiviewEngineExtension["crea
 
 export const bindMultiviewFramebuffer: IMultiviewEngineExtension["bindMultiviewFramebuffer"] = function (engineState: IWebGLEnginePublic, _multiviewTexture: RenderTargetWrapper) {
     const multiviewTexture = _multiviewTexture as WebGLRenderTargetWrapper;
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
 
     const gl: any = fes._gl;
     const ext = fes._caps.oculusMultiview || fes._caps.multiview;
@@ -90,7 +90,7 @@ export const bindMultiviewFramebuffer: IMultiviewEngineExtension["bindMultiviewF
 
 export const bindSpaceWarpFramebuffer: IMultiviewEngineExtension["bindSpaceWarpFramebuffer"] = function (engineState: IWebGLEnginePublic, _spaceWarpTexture: RenderTargetWrapper) {
     const spaceWarpTexture = _spaceWarpTexture as WebGLRenderTargetWrapper;
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
 
     const gl: any = fes._gl;
     const ext = fes._caps.oculusMultiview || fes._caps.multiview;

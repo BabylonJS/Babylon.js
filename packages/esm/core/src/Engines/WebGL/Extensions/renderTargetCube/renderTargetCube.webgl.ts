@@ -8,7 +8,7 @@ import {
     _getWebGLTextureType,
     _setupFramebufferDepthAttachments,
     type IWebGLEnginePublic,
-    type WebGLEngineStateFull,
+    type WebGLEngineState,
 } from "../../engine.webgl.js";
 import { _createHardwareRenderTargetWrapper } from "../renderTarget/renderTarget.webgl.js";
 import { InternalTexture, InternalTextureSource } from "@babylonjs/core/Materials/Textures/internalTexture.js";
@@ -25,7 +25,7 @@ export const createRenderTargetCubeTexture: IRenderTargetCubeEngineExtension["cr
     size: number,
     options?: RenderTargetCreationOptions
 ): RenderTargetWrapper {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const rtWrapper = _createHardwareRenderTargetWrapper(engineState, false, true, size) as WebGLRenderTargetWrapper;
 
     const fullOptions = {

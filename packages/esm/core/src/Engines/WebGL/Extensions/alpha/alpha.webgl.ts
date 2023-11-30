@@ -1,14 +1,14 @@
 import type { IAlphaEngineExtension } from "../../../Extensions/alpha/alpha.base";
 import { Constants } from "../../../engine.constants";
-import type { IWebGLEnginePublic, WebGLEngineStateFull } from "../../engine.webgl";
+import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl";
 
 export const setAlphaConstants: IAlphaEngineExtension["setAlphaConstants"] = (engineState: IWebGLEnginePublic, r: number, g: number, b: number, a: number) => {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     fes._alphaState.setAlphaBlendConstants(r, g, b, a);
 };
 
 export const setAlphaMode: IAlphaEngineExtension["setAlphaMode"] = (engineState: IWebGLEnginePublic, mode: number, noDepthWriteChange: boolean = false): void => {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     if (fes._alphaMode === mode) {
         if (!noDepthWriteChange) {
             // Make sure we still have the correct depth mask according to the alpha mode (a transparent material could have forced writting to the depth buffer, for instance)
@@ -101,11 +101,11 @@ export const setAlphaMode: IAlphaEngineExtension["setAlphaMode"] = (engineState:
 };
 
 export const getAlphaMode: IAlphaEngineExtension["getAlphaMode"] = (engineState: IWebGLEnginePublic): number => {
-    return (engineState as WebGLEngineStateFull)._alphaMode;
+    return (engineState as WebGLEngineState)._alphaMode;
 };
 
 export const setAlphaEquation: IAlphaEngineExtension["setAlphaEquation"] = (engineState: IWebGLEnginePublic, equation: number): void => {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     if (fes._alphaEquation === equation) {
         return;
     }
@@ -134,7 +134,7 @@ export const setAlphaEquation: IAlphaEngineExtension["setAlphaEquation"] = (engi
 };
 
 export const getAlphaEquation: IAlphaEngineExtension["getAlphaEquation"] = (engineState: IWebGLEnginePublic) => {
-    return (engineState as WebGLEngineStateFull)._alphaEquation;
+    return (engineState as WebGLEngineState)._alphaEquation;
 };
 
 export const alphaWebGLExtension: IAlphaEngineExtension = {

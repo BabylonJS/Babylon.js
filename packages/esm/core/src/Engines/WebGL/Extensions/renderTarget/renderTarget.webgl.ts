@@ -5,9 +5,7 @@ import { InternalTexture, InternalTextureSource } from "@babylonjs/core/Material
 import type { TextureSize, RenderTargetCreationOptions, DepthTextureCreationOptions } from "@babylonjs/core/Materials/Textures/textureCreationOptions.js";
 import type { Nullable } from "@babylonjs/core/types.js";
 
-import type {
-    IWebGLEnginePublic,
-    WebGLEngineStateFull} from "../../engine.webgl.js";
+import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl.js";
 import {
     _bindTextureDirectly,
     _bindUnboundFramebuffer,
@@ -15,7 +13,7 @@ import {
     _createRenderBuffer,
     _getRGBAMultiSampleBufferFormat,
     _setupDepthStencilTexture,
-    _setupFramebufferDepthAttachments
+    _setupFramebufferDepthAttachments,
 } from "../../engine.webgl.js";
 import { Logger } from "@babylonjs/core/Misc/logger.js";
 import { _createDepthStencilCubeTexture } from "../cubeTexture/cubeTexture.webgl.js";
@@ -29,7 +27,7 @@ export const _createHardwareRenderTargetWrapper: IRenderTargetEngineExtension["_
     isCube: boolean,
     size: TextureSize
 ): RenderTargetWrapper {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const rtWrapper = new WebGLRenderTargetWrapper(isMulti, isCube, size, augmentEngineState(fes), fes._gl);
     fes._renderTargetWrapperCache.push(rtWrapper);
     return rtWrapper;
@@ -40,7 +38,7 @@ export const createRenderTargetTexture: IRenderTargetEngineExtension["createRend
     size: TextureSize,
     options: boolean | RenderTargetCreationOptions
 ): RenderTargetWrapper {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const rtWrapper = _createHardwareRenderTargetWrapper(engineState, false, false, size) as WebGLRenderTargetWrapper;
 
     let generateDepthBuffer = true;
@@ -142,7 +140,7 @@ export const _createDepthStencilTexture: IRenderTargetEngineExtension["_createDe
     options: DepthTextureCreationOptions,
     rtWrapper: RenderTargetWrapper
 ): InternalTexture {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const gl = fes._gl;
     const layers = (<
             {
@@ -271,7 +269,7 @@ export const updateRenderTargetTextureSampleCount: IRenderTargetEngineExtension[
     rtWrapper: Nullable<WebGLRenderTargetWrapper>,
     samples: number
 ): number {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     if (fes.webGLVersion < 2 || !rtWrapper || !rtWrapper.texture) {
         return 1;
     }

@@ -24,6 +24,7 @@ import { _loadFile } from "./engine.tools.js";
 import { Logger } from "@babylonjs/core/Misc/logger.js";
 import { EngineExtensions, getEngineExtension } from "./Extensions/engine.extensions.js";
 import type { EngineBaseType } from "./engine.adapters.js";
+import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine.js";
 
 /**
  * Defines the interface used by objects containing a viewport (like a camera)
@@ -217,7 +218,7 @@ export function _releaseEffectBase<T extends IBaseEnginePublic = IBaseEnginePubl
     }
 }
 
-export function _createTextureBase<T>(
+export function _createTextureBase<T extends ThinEngine>(
     {
         getUseSRGBBuffer,
         engineAdapter,

@@ -2371,7 +2371,7 @@ export function createTexture(
  * @internal
  */
 export function _getTexImageParametersForCreateTexture(
-    engineState: WebGLEngineStateFull,
+    engineState: IWebGLEnginePublic,
     babylonFormat: Nullable<number>,
     fileExtension: string,
     useSRGBBuffer: boolean
@@ -2414,17 +2414,18 @@ export function _getTexImageParametersForCreateTexture(
  * @param onComplete callback to be called when resize has completed
  */
 export function _rescaleTexture(
-    engineState: WebGLEngineStateFull,
+    engineState: IWebGLEnginePublic,
     source: InternalTexture,
     destination: InternalTexture,
     scene: Nullable<any>,
     internalFormat: number,
     onComplete: () => void
 ): void {
-    engineState._gl.texParameteri(engineState._gl.TEXTURE_2D, engineState._gl.TEXTURE_MAG_FILTER, engineState._gl.LINEAR);
-    engineState._gl.texParameteri(engineState._gl.TEXTURE_2D, engineState._gl.TEXTURE_MIN_FILTER, engineState._gl.LINEAR);
-    engineState._gl.texParameteri(engineState._gl.TEXTURE_2D, engineState._gl.TEXTURE_WRAP_S, engineState._gl.CLAMP_TO_EDGE);
-    engineState._gl.texParameteri(engineState._gl.TEXTURE_2D, engineState._gl.TEXTURE_WRAP_T, engineState._gl.CLAMP_TO_EDGE);
+    const fes = engineState as WebGLEngineStateFull;
+    fes._gl.texParameteri(fes._gl.TEXTURE_2D, fes._gl.TEXTURE_MAG_FILTER, fes._gl.LINEAR);
+    fes._gl.texParameteri(fes._gl.TEXTURE_2D, fes._gl.TEXTURE_MIN_FILTER, fes._gl.LINEAR);
+    fes._gl.texParameteri(fes._gl.TEXTURE_2D, fes._gl.TEXTURE_WRAP_S, fes._gl.CLAMP_TO_EDGE);
+    fes._gl.texParameteri(fes._gl.TEXTURE_2D, fes._gl.TEXTURE_WRAP_T, fes._gl.CLAMP_TO_EDGE);
     const extension = getEngineExtension(engineState, EngineExtensions.RENDER_TARGET);
     const rtt = extension.createRenderTargetTexture(
         engineState,
@@ -2441,14 +2442,14 @@ export function _rescaleTexture(
         }
     );
 
-    if (!engineState._rescalePostProcess && EngineStore._RescalePostProcessFactory) {
-        engineState._rescalePostProcess = EngineStore._RescalePostProcessFactory(engineState);
+    if (!fes._rescalePostProcess && EngineStore._RescalePostProcessFactory) {
+        fes._rescalePostProcess = EngineStore._RescalePostProcessFactory(engineState);
     }
 
-    if (engineState._rescalePostProcess) {
-        engineState._rescalePostProcess.externalTextureSamplerBinding = true;
-        engineState._rescalePostProcess.getEffect().executeWhenCompiled(() => {
-            engineState._rescalePostProcess!.onApply = function (effect) {
+    if (fes._rescalePostProcess) {
+        fes._rescalePostProcess.externalTextureSamplerBinding = true;
+        fes._rescalePostProcess.getEffect().executeWhenCompiled(() => {
+            fes._rescalePostProcess!.onApply = function (effect) {
                 effect._bindTexture("textureSampler", source);
             };
 
@@ -2457,10 +2458,10 @@ export function _rescaleTexture(
             if (!hostingScene) {
                 hostingScene = engineState.scenes[engineState.scenes.length - 1];
             }
-            hostingScene.postProcessManager.directRender([engineState._rescalePostProcess!], rtt, true);
+            hostingScene.postProcessManager.directRender([fes._rescalePostProcess!], rtt, true);
 
-            _bindTextureDirectly(engineState, engineState._gl.TEXTURE_2D, destination, true);
-            engineState._gl.copyTexImage2D(engineState._gl.TEXTURE_2D, 0, internalFormat, 0, 0, destination.width, destination.height, 0);
+            _bindTextureDirectly(engineState, fes._gl.TEXTURE_2D, destination, true);
+            fes._gl.copyTexImage2D(fes._gl.TEXTURE_2D, 0, internalFormat, 0, 0, destination.width, destination.height, 0);
 
             unBindFramebuffer(engineState, rtt);
             rtt.dispose();
@@ -2475,30 +2476,33 @@ export function _rescaleTexture(
 /**
  * @internal
  */
-export function _unpackFlipY(engineState: WebGLEngineStateFull, value: boolean): void {
-    if (engineState._unpackFlipYCached !== value) {
-        engineState._gl.pixelStorei(engineState._gl.UNPACK_FLIP_Y_WEBGL, value ? 1 : 0);
+export function _unpackFlipY(engineState: IWebGLEnginePublic, value: boolean): void {
+    const fes = engineState as WebGLEngineStateFull;
+    if (fes._unpackFlipYCached !== value) {
+        fes._gl.pixelStorei(fes._gl.UNPACK_FLIP_Y_WEBGL, value ? 1 : 0);
 
-        if (engineState.enableUnpackFlipYCached) {
-            engineState._unpackFlipYCached = value;
+        if (fes.enableUnpackFlipYCached) {
+            fes._unpackFlipYCached = value;
         }
     }
 }
 
 /** @internal */
-export function _getUnpackAlignement(engineState: WebGLEngineState): number {
-    return engineState._gl.getParameter(engineState._gl.UNPACK_ALIGNMENT);
+export function _getUnpackAlignement(engineState: IWebGLEnginePublic): number {
+    const fes = engineState as WebGLEngineStateFull;
+    return fes._gl.getParameter(fes._gl.UNPACK_ALIGNMENT);
 }
 
-function _getTextureTarget(engineState: WebGLEngineState, texture: InternalTexture): number {
+function _getTextureTarget(engineState: IWebGLEnginePublic, texture: InternalTexture): number {
+    const fes = engineState as WebGLEngineStateFull;
     if (texture.isCube) {
-        return engineState._gl.TEXTURE_CUBE_MAP;
+        return fes._gl.TEXTURE_CUBE_MAP;
     } else if (texture.is3D) {
-        return engineState._gl.TEXTURE_3D;
+        return fes._gl.TEXTURE_3D;
     } else if (texture.is2DArray || texture.isMultiview) {
-        return engineState._gl.TEXTURE_2D_ARRAY;
+        return fes._gl.TEXTURE_2D_ARRAY;
     }
-    return engineState._gl.TEXTURE_2D;
+    return fes._gl.TEXTURE_2D;
 }
 
 /**

@@ -3,11 +3,11 @@ import type { IPipelineContext } from "@babylonjs/core/Engines/IPipelineContext.
 import type { WebGLPipelineContext } from "@babylonjs/core/Engines/WebGL/webGLPipelineContext.js";
 import { WebGLDataBuffer } from "@babylonjs/core/Meshes/WebGL/webGLDataBuffer.js";
 import type { FloatArray, Nullable } from "@babylonjs/core/types.js";
-import type { IWebGLEnginePublic, WebGLEngineStateFull } from "../../engine.webgl.js";
+import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl.js";
 import type { IUniformBufferEngineExtension } from "../../../Extensions/uniformBuffer/uniformBuffer.base.js";
 
 const _createUniformBuffer = function (engineState: IWebGLEnginePublic, elements: FloatArray, dynamic?: boolean): DataBuffer {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const gl = fes._gl;
     const ubo = gl.createBuffer();
 
@@ -48,7 +48,7 @@ export const updateUniformBuffer: IUniformBufferEngineExtension["updateUniformBu
     offset?: number,
     count?: number
 ): void {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const gl = fes._gl;
     bindUniformBuffer(fes, uniformBuffer);
 
@@ -74,7 +74,7 @@ export const updateUniformBuffer: IUniformBufferEngineExtension["updateUniformBu
 };
 
 export const bindUniformBuffer: IUniformBufferEngineExtension["bindUniformBuffer"] = function (engineState: IWebGLEnginePublic, buffer: Nullable<DataBuffer>): void {
-    const gl = (engineState as WebGLEngineStateFull)._gl;
+    const gl = (engineState as WebGLEngineState)._gl;
     gl.bindBuffer(gl.UNIFORM_BUFFER, buffer ? buffer.underlyingResource : null);
 };
 
@@ -85,7 +85,7 @@ export const bindUniformBufferBase: IUniformBufferEngineExtension["bindUniformBu
     location: number,
     _name: string
 ): void {
-    const gl = (engineState as WebGLEngineStateFull)._gl;
+    const gl = (engineState as WebGLEngineState)._gl;
     gl.bindBufferBase(gl.UNIFORM_BUFFER, location, buffer ? buffer.underlyingResource : null);
 };
 
@@ -96,7 +96,7 @@ export const bindUniformBlock: IUniformBufferEngineExtension["bindUniformBlock"]
     index: number
 ): void {
     const program = (pipelineContext as WebGLPipelineContext).program!;
-    const gl = (engineState as WebGLEngineStateFull)._gl;
+    const gl = (engineState as WebGLEngineState)._gl;
 
     const uniformLocation = gl.getUniformBlockIndex(program, blockName);
 

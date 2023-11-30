@@ -3,9 +3,18 @@ import { InternalTexture, InternalTextureSource } from "@babylonjs/core/Material
 import type { Nullable } from "@babylonjs/core/types.js";
 import type { IDynamicTextureEngineExtension } from "../../../Extensions/dynamicTexture/dynamicTexture.base";
 import { augmentEngineState } from "../../../engine.adapters";
-import type { IWebGLEnginePublic, WebGLEngineStateFull} from "../../engine.webgl";
-import { _releaseTexture, createTexture, updateTextureSamplingMode, _bindTextureDirectly, _unpackFlipY, _getWebGLTextureType, _getInternalFormat, _getRGBABufferInternalSizedFormat } from "../../engine.webgl";
-
+import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl";
+import {
+    _releaseTexture,
+    createTexture,
+    updateTextureSamplingMode,
+    _bindTextureDirectly,
+    _unpackFlipY,
+    _getWebGLTextureType,
+    _getInternalFormat,
+    _getRGBABufferInternalSizedFormat,
+} from "../../engine.webgl";
+import { getLoadedTexturesCache } from "../../../engine.base";
 
 export const createDynamicTexture: IDynamicTextureEngineExtension["createDynamicTexture"] = function (
     engineState: IWebGLEnginePublic,
@@ -14,13 +23,11 @@ export const createDynamicTexture: IDynamicTextureEngineExtension["createDynamic
     generateMipMaps: boolean,
     samplingMode: number
 ): InternalTexture {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     // TODO - make sure all needed functions are here, cache this if possible
     const engineAdapter = augmentEngineState(engineState, {
         _releaseTexture,
-        getLoadedTexturesCache: (_engineState: IWebGLEnginePublic) => {
-            return (_engineState as WebGLEngineStateFull)._internalTexturesCache;
-        },
+        getLoadedTexturesCache,
         createTexture,
     });
     const texture = new InternalTexture(engineAdapter, InternalTextureSource.Dynamic);
@@ -61,7 +68,7 @@ export const updateDynamicTexture: IDynamicTextureEngineExtension["updateDynamic
         return;
     }
 
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
 
     const gl = fes._gl;
     const target = gl.TEXTURE_2D;

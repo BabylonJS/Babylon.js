@@ -1,7 +1,7 @@
 import type { Camera } from "@babylonjs/core/Cameras/camera.js";
 import type { Scene } from "@babylonjs/core/scene.js";
 import type { Nullable } from "@babylonjs/core/types.js";
-import { flushFramebuffer, type IWebGLEnginePublic, type WebGLEngineStateFull } from "../../engine.webgl.js";
+import { flushFramebuffer, type IWebGLEnginePublic, type WebGLEngineState } from "../../engine.webgl.js";
 import type { EngineView } from "../../../Extensions/views/views.base.js";
 import { _getExtensionState } from "../../../Extensions/views/views.base.js";
 import { _renderFrame, getRenderingCanvas, setSize } from "../../../engine.base.js";
@@ -63,7 +63,7 @@ export const unRegisterView = function (engineState: IWebGLEnginePublic, canvas:
 
 export const _renderViewStep = function (engineState: IWebGLEnginePublic, view: EngineView): boolean {
     const extensionState = _getExtensionState(engineState);
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const canvas = view.target;
     const context = canvas.getContext("2d");
     if (!context) {
@@ -169,14 +169,14 @@ export const _renderViews = function (engineState: IWebGLEnginePublic) {
 export const _setOnEngineViewChanged = function (engineState: IWebGLEnginePublic, callback: (engineState: IWebGLEnginePublic) => void) {
     const extensionState = _getExtensionState(engineState);
     extensionState._onEngineViewChanged = callback;
-}
+};
 
 export const viewsEngineExtension = {
     registerView,
     unRegisterView,
     _renderViewStep,
     _renderViews,
-    _setOnEngineViewChanged
+    _setOnEngineViewChanged,
 };
 
 export default viewsEngineExtension;

@@ -1,6 +1,6 @@
 import type { InternalTexture } from "@babylonjs/core/Materials/Textures/internalTexture.js";
 import type { Nullable } from "@babylonjs/core/types.js";
-import type { IWebGLEnginePublic, WebGLEngineStateFull} from "../../engine.webgl.js";
+import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl.js";
 import { _getWebGLTextureType, flushFramebuffer } from "../../engine.webgl.js";
 import { Constants } from "../../../engine.constants.js";
 import type { IReadTextureEngineExtension } from "../../../Extensions/readTexture/readTexture.base.js";
@@ -95,7 +95,7 @@ export const _readTexturePixelsSync: IReadTextureEngineExtension["_readTexturePi
     x = 0,
     y = 0
 ): ArrayBufferView {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const gl = fes._gl;
     if (!gl) {
         throw new Error("Engine does not have gl rendering context.");

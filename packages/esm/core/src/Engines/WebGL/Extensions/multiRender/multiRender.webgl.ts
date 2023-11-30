@@ -10,7 +10,7 @@ import {
     _getWebGLTextureType,
     _setupFramebufferDepthAttachments,
     type IWebGLEnginePublic,
-    type WebGLEngineStateFull,
+    type WebGLEngineState,
 } from "../../engine.webgl.js";
 import type { WebGLHardwareTexture } from "@babylonjs/core/Engines/WebGL/webGLHardwareTexture.js";
 import type { RenderTargetWrapper } from "@babylonjs/core/Engines/renderTargetWrapper.js";
@@ -26,21 +26,21 @@ import { resetTextureCache } from "../../../engine.base.js";
 import { Constants } from "../../../engine.constants.js";
 
 export const restoreSingleAttachment: IMultiRenderEngineExtension["restoreSingleAttachment"] = function (engineState: IWebGLEnginePublic): void {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const gl = fes._gl;
 
     bindAttachments(fes, [gl.BACK]);
 };
 
 export const restoreSingleAttachmentForRenderTarget: IMultiRenderEngineExtension["restoreSingleAttachmentForRenderTarget"] = function (engineState: IWebGLEnginePublic): void {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const gl = fes._gl;
 
     bindAttachments(fes, [gl.COLOR_ATTACHMENT0]);
 };
 
 export const buildTextureLayout: IMultiRenderEngineExtension["buildTextureLayout"] = function (engineState: IWebGLEnginePublic, textureStatus: boolean[]): number[] {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const gl = fes._gl;
 
     const result = [];
@@ -57,7 +57,7 @@ export const buildTextureLayout: IMultiRenderEngineExtension["buildTextureLayout
 };
 
 export const bindAttachments: IMultiRenderEngineExtension["bindAttachments"] = function (engineState: IWebGLEnginePublic, attachments: number[]): void {
-    const gl = (engineState as WebGLEngineStateFull)._gl;
+    const gl = (engineState as WebGLEngineState)._gl;
 
     gl.drawBuffers(attachments);
 };
@@ -68,7 +68,7 @@ export const unBindMultiColorAttachmentFramebuffer: IMultiRenderEngineExtension[
     disableGenerateMipMaps: boolean = false,
     onBeforeUnbind?: () => void
 ): void {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     fes._currentRenderTarget = null;
 
     // If MSAA, we need to bitblt back to main texture
@@ -194,7 +194,7 @@ export const createMultipleRenderTarget: IMultiRenderEngineExtension["createMult
             depthTextureFormat = options.depthTextureFormat;
         }
     }
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const gl = fes._gl;
     // Create the framebuffer
     const framebuffer = gl.createFramebuffer();
@@ -391,7 +391,7 @@ export const updateMultipleRenderTargetTextureSampleCount: IMultiRenderEngineExt
     samples: number,
     initializeBuffers: boolean = true
 ): number {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     if (fes.webGLVersion < 2 || !rtWrapper || !rtWrapper.texture) {
         return 1;
     }

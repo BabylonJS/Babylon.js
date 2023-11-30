@@ -1,6 +1,6 @@
 import type { Nullable } from "@babylonjs/core/types.js";
-import type { IWebGLEnginePublic, WebGLEngineStateFull } from "../../engine.webgl.js";
-import type { ITextureSelectorEngineExtension} from "../../../Extensions/textureSelector/textureSelector.base.js";
+import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl.js";
+import type { ITextureSelectorEngineExtension } from "../../../Extensions/textureSelector/textureSelector.base.js";
 import { _getExtensionState, _transformTextureUrl } from "../../../Extensions/textureSelector/textureSelector.base.js";
 
 export const setCompressedTextureExclusions: ITextureSelectorEngineExtension["setCompressedTextureExclusions"] = function (
@@ -15,7 +15,7 @@ export const setTextureFormatToUse: ITextureSelectorEngineExtension["setTextureF
     formatsAvailable: Array<string>
 ): Nullable<string> {
     const state = _getExtensionState(engineState);
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const texturesSupported = state.texturesSupported;
     for (let i = 0, len1 = texturesSupported.length; i < len1; i++) {
         for (let j = 0, len2 = formatsAvailable.length; j < len2; j++) {

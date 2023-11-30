@@ -1,12 +1,12 @@
 import { _TimeToken } from "@babylonjs/core/Instrumentation/timeToken.js";
 import type { Nullable, int } from "@babylonjs/core/types.js";
-import type { IWebGLEnginePublic, WebGLEngineStateFull } from "../../engine.webgl.js";
+import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl.js";
 import { AbstractMesh } from "@babylonjs/core/Meshes/abstractMesh.js";
 import type { OcclusionQuery, IQueryEngineExtension } from "../../../Extensions/query/query.base.js";
 import { _getExtensionState } from "../../../Extensions/query/query.base.js";
 
 export const createQuery = function (engineState: IWebGLEnginePublic): OcclusionQuery {
-    const query = (engineState as WebGLEngineStateFull)._gl.createQuery();
+    const query = (engineState as WebGLEngineState)._gl.createQuery();
     if (!query) {
         throw new Error("Unable to create Occlusion Query");
     }
@@ -14,23 +14,23 @@ export const createQuery = function (engineState: IWebGLEnginePublic): Occlusion
 };
 
 export const deleteQuery = function (engineState: IWebGLEnginePublic, query: OcclusionQuery): IWebGLEnginePublic {
-    (engineState as WebGLEngineStateFull)._gl.deleteQuery(query);
+    (engineState as WebGLEngineState)._gl.deleteQuery(query);
 
     return engineState;
 };
 
 export const isQueryResultAvailable = function (engineState: IWebGLEnginePublic, query: OcclusionQuery): boolean {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     return fes._gl.getQueryParameter(query, fes._gl.QUERY_RESULT_AVAILABLE) as boolean;
 };
 
 export const getQueryResult = function (engineState: IWebGLEnginePublic, query: OcclusionQuery): number {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     return fes._gl.getQueryParameter(query, fes._gl.QUERY_RESULT) as number;
 };
 
 export const beginOcclusionQuery = function (engineState: IWebGLEnginePublic, algorithmType: number, query: OcclusionQuery): boolean {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const glAlgorithm = _getGlAlgorithmType(fes, algorithmType);
     fes._gl.beginQuery(glAlgorithm, query);
 
@@ -38,7 +38,7 @@ export const beginOcclusionQuery = function (engineState: IWebGLEnginePublic, al
 };
 
 export const endOcclusionQuery = function (engineState: IWebGLEnginePublic, algorithmType: number): IWebGLEnginePublic {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const glAlgorithm = _getGlAlgorithmType(fes, algorithmType);
     fes._gl.endQuery(glAlgorithm);
 
@@ -46,7 +46,7 @@ export const endOcclusionQuery = function (engineState: IWebGLEnginePublic, algo
 };
 
 const _createTimeQuery = function (engineState: IWebGLEnginePublic): WebGLQuery {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const timerQuery = <EXT_disjoint_timer_query>fes._caps.timerQuery;
 
     if (timerQuery.createQueryEXT) {
@@ -57,7 +57,7 @@ const _createTimeQuery = function (engineState: IWebGLEnginePublic): WebGLQuery 
 };
 
 const _deleteTimeQuery = function (engineState: IWebGLEnginePublic, query: WebGLQuery): void {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const timerQuery = <EXT_disjoint_timer_query>fes._caps.timerQuery;
 
     if (timerQuery.deleteQueryEXT) {
@@ -69,7 +69,7 @@ const _deleteTimeQuery = function (engineState: IWebGLEnginePublic, query: WebGL
 };
 
 const _getTimeQueryResult = function (engineState: IWebGLEnginePublic, query: WebGLQuery): any {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const timerQuery = <EXT_disjoint_timer_query>fes._caps.timerQuery;
 
     if (timerQuery.getQueryObjectEXT) {
@@ -79,7 +79,7 @@ const _getTimeQueryResult = function (engineState: IWebGLEnginePublic, query: We
 };
 
 export const _getTimeQueryAvailability = function (engineState: IWebGLEnginePublic, query: WebGLQuery): any {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const timerQuery = <EXT_disjoint_timer_query>fes._caps.timerQuery;
 
     if (timerQuery.getQueryObjectEXT) {
@@ -89,7 +89,7 @@ export const _getTimeQueryAvailability = function (engineState: IWebGLEnginePubl
 };
 
 export const startTimeQuery = function (engineState: IWebGLEnginePublic): Nullable<_TimeToken> {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const caps = fes._caps;
     const timerQuery = caps.timerQuery;
     if (!timerQuery) {
@@ -121,7 +121,7 @@ export const startTimeQuery = function (engineState: IWebGLEnginePublic): Nullab
 };
 
 export const endTimeQuery = function (engineState: IWebGLEnginePublic, token: _TimeToken): int {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const caps = fes._caps;
     const timerQuery = caps.timerQuery;
     if (!timerQuery || !token) {
@@ -194,7 +194,7 @@ export const getGPUFrameTimeCounter = function (engineState: IWebGLEnginePublic)
 };
 
 export const captureGPUFrameTime = function (engineState: IWebGLEnginePublic, value: boolean) {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     const extensionState = _getExtensionState(engineState);
     if (value === extensionState._captureGPUFrameTime) {
         return;
@@ -230,7 +230,7 @@ export const captureGPUFrameTime = function (engineState: IWebGLEnginePublic, va
 };
 
 const _getGlAlgorithmType = function (engineState: IWebGLEnginePublic, algorithmType: number): number {
-    const fes = engineState as WebGLEngineStateFull;
+    const fes = engineState as WebGLEngineState;
     return algorithmType === AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? fes._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : fes._gl.ANY_SAMPLES_PASSED;
 };
 
