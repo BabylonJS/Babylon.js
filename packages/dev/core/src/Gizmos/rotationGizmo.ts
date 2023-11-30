@@ -97,6 +97,14 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
      */
     public zGizmo: IPlaneRotationGizmo;
 
+    /**
+     * all gizmos
+     */
+    get allGizmos(){
+        return this._allGizmos || (this._allGizmos = [this.xGizmo,this.yGizmo,this.zGizmo]);
+    }
+    protected _allGizmos:[IPlaneRotationGizmo,IPlaneRotationGizmo,IPlaneRotationGizmo]|null = null;
+
     /** Fires an event when any of it's sub gizmos are dragged */
     public onDragStartObservable = new Observable();
     /** Fires an event when any of it's sub gizmos are being dragged */
@@ -119,7 +127,7 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
         this._meshAttached = mesh;
         this._nodeAttached = mesh;
         this._checkBillboardTransform();
-        [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
+        this.allGizmos.forEach((gizmo) => {
             if (gizmo.isEnabled) {
                 gizmo.attachedMesh = mesh;
             } else {
@@ -135,7 +143,7 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
         this._meshAttached = null;
         this._nodeAttached = node;
         this._checkBillboardTransform();
-        [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
+        this.allGizmos.forEach((gizmo) => {
             if (gizmo.isEnabled) {
                 gizmo.attachedNode = node;
             } else {
@@ -155,7 +163,7 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
      */
     public set sensitivity(value: number) {
         this._sensitivity = value;
-        [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
+        this.allGizmos.forEach((gizmo) => {
             if (gizmo) {
                 gizmo.sensitivity = value;
             }
@@ -170,7 +178,7 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
      */
     public get isHovered() {
         let hovered = false;
-        [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
+        this.allGizmos.forEach((gizmo) => {
             hovered = hovered || gizmo.isHovered;
         });
         return hovered;
@@ -201,7 +209,7 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
         this.yGizmo = new PlaneRotationGizmo(new Vector3(0, 1, 0), yColor, gizmoLayer, tessellation, this, useEulerRotation, thickness);
         this.zGizmo = new PlaneRotationGizmo(new Vector3(0, 0, 1), zColor, gizmoLayer, tessellation, this, useEulerRotation, thickness);
         // Relay drag events and set update scale
-        [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
+        this.allGizmos.forEach((gizmo) => {
             //must set updateScale on each gizmo, as setting it on root RotationGizmo doesnt prevent individual gizmos from updating
             //currently updateScale is a property with no getter/setter, so no good way to override behavior at runtime, so we will at least set it on startup
             if (options && options.updateScale != undefined) {
@@ -257,7 +265,7 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
 
     public set anchorPoint(value: GizmoAnchorPoint) {
         this._anchorPoint = value;
-        [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
+        this.allGizmos.forEach((gizmo) => {
             gizmo.anchorPoint = value;
         });
     }
@@ -271,7 +279,7 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
      * In that case, setting the coordinate system will change `updateGizmoRotationToMatchAttachedMesh` and `updateGizmoPositionToMatchAttachedMesh`
      */
     public set coordinatesMode(coordinatesMode: GizmoCoordinatesMode) {
-        [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
+        this.allGizmos.forEach((gizmo) => {
             gizmo.coordinatesMode = coordinatesMode;
         });
     }
