@@ -1,5 +1,3 @@
-import { Tools } from "core/Misc/tools";
-
 import { Container } from "./container";
 import type { Measure } from "../measure";
 import { Control } from "./control";
@@ -7,6 +5,7 @@ import { RegisterClass } from "core/Misc/typeStore";
 import { serialize } from "core/Misc/decorators";
 import type { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
+import { Logger } from "core/Misc/logger";
 
 /**
  * Class used to create a 2D stack panel container
@@ -164,7 +163,7 @@ export class StackPanel extends Container {
                 }
 
                 if (!this.ignoreLayoutWarnings && !child.isDimensionFullyDefined("height")) {
-                    Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using height in percentage mode inside a vertical StackPanel`);
+                    Logger.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using height in percentage mode inside a vertical StackPanel`, 1);
                 } else {
                     stackHeight += child._currentMeasure.height + child._paddingTopInPixels + child._paddingBottomInPixels + (index < childrenCount - 1 ? this._spacing : 0);
                 }
@@ -176,7 +175,7 @@ export class StackPanel extends Container {
                 }
 
                 if (!this.ignoreLayoutWarnings && !child.isDimensionFullyDefined("width")) {
-                    Tools.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using width in percentage mode inside a horizontal StackPanel`);
+                    Logger.Warn(`Control (Name:${child.name}, UniqueId:${child.uniqueId}) is using width in percentage mode inside a horizontal StackPanel`, 1);
                 } else {
                     stackWidth += child._currentMeasure.width + child._paddingLeftInPixels + child._paddingRightInPixels + (index < childrenCount - 1 ? this._spacing : 0);
                 }
