@@ -14,7 +14,7 @@ import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { CreatePlane } from "../../Meshes/Builders/planeBuilder";
 
 import type { IPointerEvent } from "../../Events/deviceInputEvents";
-import { Epsilon } from "core/Maths";
+import { Epsilon } from "../../Maths";
 
 /**
  * A behavior that when attached to a mesh will allow the mesh to be dragged around the screen based on pointer events
