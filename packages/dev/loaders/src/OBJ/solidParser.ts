@@ -11,7 +11,6 @@ import { VertexData } from "core/Meshes/mesh.vertexData";
 import type { Scene } from "core/scene";
 import type { FloatArray, IndicesArray, Nullable } from "core/types";
 import type { OBJLoadingOptions } from "./objLoadingOptions";
-import { Tools } from "core/Misc/tools";
 
 type MeshObject = {
     name: string;
@@ -832,9 +831,6 @@ export class SolidParser {
                     if (this._meshesFromObj[k].isObject && this._meshesFromObj[k]._babylonMesh) {
                         babylonMesh.parent = this._meshesFromObj[k]._babylonMesh!;
                         break;
-                    }
-                    if (k <= 0) {
-                        Tools.Warn("OBJ Loader: Group mesh has no object parent.");
                     }
                 }
             }
