@@ -14,7 +14,7 @@ import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { CreatePlane } from "../../Meshes/Builders/planeBuilder";
 
 import type { IPointerEvent } from "../../Events/deviceInputEvents";
-import { Epsilon } from "../../Maths";
+import { Epsilon } from "../../Maths/math.constants";
 
 /**
  * A behavior that when attached to a mesh will allow the mesh to be dragged around the screen based on pointer events
@@ -514,7 +514,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
         }
 
         planePosition.subtractToRef(ray.origin, TmpVectors.Vector3[0]);
-        let t = TmpVectors.Vector3[0].dot(planeNormal) / dotProduct;
+        const t = TmpVectors.Vector3[0].dot(planeNormal) / dotProduct;
         // Ensure the intersection point is in front of the ray (t must be positive)
         if (t < 0) {
             // Intersection point is behind the ray
