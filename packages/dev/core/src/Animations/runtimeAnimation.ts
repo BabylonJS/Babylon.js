@@ -415,7 +415,15 @@ export class RuntimeAnimation {
         if (weight !== -1.0) {
             this._scene._registerTargetForLateAnimationBinding(this, this._originalValue[targetIndex]);
         } else {
-            destination[this._targetPath] = this._currentValue;
+            if (this._animationState.loopMode === Animation.ANIMATIONLOOPMODE_RELATIVE) {
+                if (this._currentValue.addToRef) {
+                    this._currentValue.addToRef(this._originalValue[targetIndex], destination[this._targetPath]);
+                } else {
+                    destination[this._targetPath] = this._originalValue[targetIndex] + this._currentValue;
+                }
+            } else {
+                destination[this._targetPath] = this._currentValue;
+            }
         }
 
         if (target.markAsDirty) {
