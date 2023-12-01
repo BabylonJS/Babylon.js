@@ -144,7 +144,7 @@ export class Plane {
      * @returns the updated Plane.
      */
     public copyFromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>) {
-        this.normal = normal;
+        this.normal.copyFrom(normal);
         this.d = -origin.dot(normal);
         return this;
     }
