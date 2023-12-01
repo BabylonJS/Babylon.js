@@ -201,10 +201,9 @@ export class Plane {
      * Note : the vector "normal" is updated because normalized.
      */
     static FromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: Vector3): Plane {
-        const result = new Plane(0.0, 0.0, 0.0, 0.0);
         normal.normalize();
-        result.normal = normal;
-        result.d = -(normal.x * origin.x + normal.y * origin.y + normal.z * origin.z);
+        const result = new Plane(0.0, 0.0, 0.0, 0.0);
+        result.copyFromPositionAndNormal(origin, normal);
         return result;
     }
 
