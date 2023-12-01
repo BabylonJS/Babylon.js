@@ -1,7 +1,7 @@
 import { NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { loggerExample, mathExample, customEventExample, worldPointerExample, doNExample } from "./testData";
-import { convertGLTFToJson } from "loaders/glTF/2.0/Extensions/Interactivity";
+import { convertGLTFToJson } from "loaders/glTF/2.0/Extensions/interactivityFunctions";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { FlowGraph } from "core/FlowGraph/flowGraph";
 import { Vector3, Vector4 } from "core/Maths";
@@ -58,10 +58,10 @@ describe("Babylon Interactivity", () => {
         const graph = FlowGraph.Parse(json, coordinator);
         const context = graph.getContext(0);
 
-        coordinator.start();
-
         const mesh = new Mesh("mesh", scene);
-        context.setVariable("/nodes/0", mesh);
+        context.setVariable("nodes", [mesh]);
+
+        coordinator.start();
 
         scene.onReadyObservable.notifyObservers(scene);
         expect(log).toHaveBeenCalledWith(new Vector3(1, 1, 1));

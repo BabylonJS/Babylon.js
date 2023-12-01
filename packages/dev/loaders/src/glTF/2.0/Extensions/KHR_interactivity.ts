@@ -52,8 +52,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
             }
         }
         const json = convertGLTFToJson(definition);
-        // todo: remove once out of draft
-        console.log("json", json);
+
         const coordinator = new FlowGraphCoordinator({ scene });
         const graph = FlowGraph.Parse(json, coordinator);
         const context = graph.getContext(0);
@@ -63,7 +62,6 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
         context._userVariables.gltf = this._loader.gltf;
 
         coordinator.start();
-        console.log("Graph:", coordinator.flowGraphs[0]);
     }
 }
 

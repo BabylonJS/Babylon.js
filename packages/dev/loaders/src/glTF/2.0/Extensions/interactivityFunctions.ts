@@ -4,6 +4,7 @@ import type { IFlowGraphBlockConfiguration } from "core/FlowGraph";
 import type { ISerializedFlowGraph, ISerializedFlowGraphBlock, ISerializedFlowGraphConnection, ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
 import { RandomGUID } from "core/Misc";
 import { gltfToFlowGraphTypeMap, gltfTypeToBabylonType } from "./interactivityUtils";
+import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 
 function convertValueWithType(configObject: IKHRInteractivity_Configuration, definition: IKHRInteractivity, context: string) {
     if (configObject.type !== undefined) {
@@ -46,15 +47,6 @@ function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKH
         } else if (configObject.id === "path") {
             // Convert from a GLTF path to a reference to the Babylon.js object
             const pathValue = configObject.value as string;
-            // let pathValue = configObject.value as string;
-            // if (!pathValue.startsWith("/")) {
-            //     pathValue = `/${pathValue}`;
-            // }
-            // pathValue = `/gltf${pathValue}`;
-            // for (const key in gltfPropertyPathToBabylonPropertyPath) {
-            //     const value = gltfPropertyPathToBabylonPropertyPath[key];
-            //     pathValue = pathValue.replace(key, value);
-            // }
             converted.path = {
                 path: pathValue,
                 className: "FGPath",
@@ -69,7 +61,7 @@ function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKH
 function convertBlock(id: number, gltfBlock: IKHRInteractivity_Node, definition: IKHRInteractivity): ISerializedFlowGraphBlock {
     const className = gltfToFlowGraphTypeMap[gltfBlock.type];
     if (!className) {
-        throw new Error(`Unknown block type: ${gltfBlock.type}`);
+        throw new Error(`/extensions/KHR_interactivity/nodes/${id}: Unknown block type: ${gltfBlock.type}`);
     }
     const uniqueId = id.toString();
     const config = convertConfiguration(gltfBlock, definition, uniqueId);
@@ -164,7 +156,7 @@ export function convertGLTFToJson(gltf: IKHRInteractivity): ISerializedFlowGraph
             const socketIn: ISerializedFlowGraphConnection = {
                 uniqueId: RandomGUID(),
                 name: socketInName,
-                _connectionType: 0, // input: todo see why enum is failing
+                _connectionType: FlowGraphConnectionType.Input,
                 connectedPointIds: [],
             };
             fgBlock.dataInputs.push(socketIn);
@@ -190,7 +182,7 @@ export function convertGLTFToJson(gltf: IKHRInteractivity): ISerializedFlowGraph
                     socketOut = {
                         uniqueId: RandomGUID(),
                         name: nodeOutSocketName,
-                        _connectionType: 1, // Output
+                        _connectionType: FlowGraphConnectionType.Output,
                         connectedPointIds: [],
                     };
                     nodeOut.dataOutputs.push(socketOut);

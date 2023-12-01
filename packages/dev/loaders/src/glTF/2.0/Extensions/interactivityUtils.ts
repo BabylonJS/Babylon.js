@@ -71,7 +71,6 @@ import { FlowGraphDoNBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/f
 import { FlowGraphGetVariableBlock } from "core/FlowGraph/Blocks/Data/flowGraphGetVariableBlock";
 import { FlowGraphSetVariableBlock } from "core/FlowGraph/Blocks/Execution/flowGraphSetVariableBlock";
 import { FlowGraphWhileLoopBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphWhileLoopBlock";
-import { FlowGraphAnimateToBlock } from "core/FlowGraph/Blocks/Execution/Animation/flowGraphAnimateToBlock";
 
 export const gltfToFlowGraphTypeMap: { [key: string]: string } = {
     "lifecycle/onStart": FlowGraphSceneReadyEventBlock.ClassName,
@@ -87,7 +86,6 @@ export const gltfToFlowGraphTypeMap: { [key: string]: string } = {
     "variable/get": FlowGraphGetVariableBlock.ClassName,
     "variable/set": FlowGraphSetVariableBlock.ClassName,
     "flow/whileLoop": FlowGraphWhileLoopBlock.ClassName,
-    "world/animateTo": FlowGraphAnimateToBlock.ClassName,
     "math/random": FlowGraphRandomBlock.ClassName,
     "math/e": FlowGraphEBlock.ClassName,
     "math/pi": FlowGraphPiBlock.ClassName,

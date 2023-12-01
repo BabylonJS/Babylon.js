@@ -42,8 +42,8 @@ export const camerasExtension = {
         const { babylonCamera, gltfProperty } = getBabylonCamera(path, context);
         switch (gltfProperty) {
             case "aspectRatio":
-                Tools.Warn("Setting aspect ratio is not supported.");
-                break;
+                Tools.Warn("Getting aspect ratio is not supported.");
+                return -1;
             case "zNear":
                 return babylonCamera.minZ;
             case "zFar":
@@ -58,7 +58,6 @@ export const camerasExtension = {
     },
     processSet(path: FlowGraphPath, context: FlowGraphContext, value: any) {
         const { babylonCamera, gltfProperty } = getBabylonCamera(path, context);
-        // console.log("babylonCamera", babylonCamera, gltfProperty);
         switch (gltfProperty) {
             case "aspectRatio":
                 Tools.Warn("Setting aspect ratio is not supported.");

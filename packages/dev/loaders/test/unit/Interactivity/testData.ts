@@ -237,7 +237,6 @@ export const worldPointerExample = {
             ],
         },
         {
-            id: 3,
             type: "world/set",
             values: [
                 {
@@ -249,7 +248,7 @@ export const worldPointerExample = {
             configuration: [
                 {
                     id: "path",
-                    value: "nodes/0/translation",
+                    value: "/nodes/0/position",
                 },
             ],
             flows: [
@@ -272,7 +271,7 @@ export const worldPointerExample = {
             configuration: [
                 {
                     id: "path",
-                    value: "nodes/{nodeIndex}/translation",
+                    value: "/nodes/{nodeIndex}/position",
                 },
             ],
             flows: [],
