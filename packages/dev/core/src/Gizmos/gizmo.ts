@@ -9,7 +9,7 @@ import type { TargetCamera } from "../Cameras/targetCamera";
 import type { Node } from "../node";
 import type { Bone } from "../Bones/bone";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import type { TransformNode } from "../Meshes/transformNode";
+import { TransformNode } from "../Meshes/transformNode";
 import type { StandardMaterial } from "../Materials/standardMaterial";
 import type { PointerInfo } from "../Events/pointerEvents";
 import { PointerEventTypes } from "../Events/pointerEvents";
@@ -376,6 +376,22 @@ export class Gizmo implements IGizmo {
     }
 
     /**
+     * if transform has a pivot and is not using PostMultiplyPivotMatrix, then the worldMatrix contains the pivot matrix (it's not cancelled at the end)
+     * so, when extracting the world matrix component, the translation (and other components) is containing the pivot translation.
+     * And the pivot is applied each frame. Removing it anyway here makes it applied only in computeWorldMatrix.
+     * @param transform local transform that needs to be transform by the pivot inverse matrix
+     * @param localMatrix local matrix that needs to be transform by the pivot inverse matrix
+     * @returns matrix transformed by pivot inverse if the transform node is using pivot without using post Multiply Pivot Matrix
+     */
+    protected _handlePivotMatrixInverse(transform: TransformNode, localMatrix: Matrix): Matrix {
+        if (transform.isUsingPivotMatrix() && !transform.isUsingPostMultiplyPivotMatrix()) {
+            transform.getPivotMatrix().invertToRef(TmpVectors.Matrix[5]);
+            TmpVectors.Matrix[5].multiplyToRef(localMatrix /*this._attachedNode._worldMatrix*/, TmpVectors.Matrix[4]);
+            return TmpVectors.Matrix[4];
+        }
+        return localMatrix;
+    }
+    /**
      * computes the rotation/scaling/position of the transform once the Node world matrix has changed.
      */
     protected _matrixChanged() {
@@ -437,7 +453,14 @@ export class Gizmo implements IGizmo {
                 const localMat = TmpVectors.Matrix[1];
                 transform.parent.getWorldMatrix().invertToRef(parentInv);
                 this._attachedNode.getWorldMatrix().multiplyToRef(parentInv, localMat);
-                localMat.decompose(TmpVectors.Vector3[0], TmpVectors.Quaternion[0], transform.position, Gizmo.PreserveScaling ? transform : undefined, Gizmo.UseAbsoluteScaling);
+                let matrixToDecompose = this._handlePivotMatrixInverse(transform, localMat);
+                matrixToDecompose.decompose(
+                    TmpVectors.Vector3[0],
+                    TmpVectors.Quaternion[0],
+                    transform.position,
+                    Gizmo.PreserveScaling ? transform : undefined,
+                    Gizmo.UseAbsoluteScaling
+                );
                 TmpVectors.Quaternion[0].normalize();
                 if (transform.isUsingPivotMatrix()) {
                     // Calculate the local matrix without the translation.
@@ -464,7 +487,8 @@ export class Gizmo implements IGizmo {
                     transform.position.subtractInPlace(TmpVectors.Vector3[1]);
                 }
             } else {
-                this._attachedNode._worldMatrix.decompose(
+                let matrixToDecompose = this._handlePivotMatrixInverse(transform, this._attachedNode._worldMatrix);
+                matrixToDecompose.decompose(
                     TmpVectors.Vector3[0],
                     TmpVectors.Quaternion[0],
                     transform.position,
