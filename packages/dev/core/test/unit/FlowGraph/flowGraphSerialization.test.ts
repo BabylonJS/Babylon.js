@@ -9,7 +9,7 @@ import {
     FlowGraphContext,
     FlowGraphCoordinator,
     FlowGraphGetVariableBlock,
-    FlowGraphLogBlock,
+    FlowGraphConsoleLogBlock,
     FlowGraphMultiGateBlock,
     FlowGraphPath,
     FlowGraphPlayAnimationBlock,
@@ -175,8 +175,8 @@ describe("Flow Graph Serialization", () => {
         const flowGraphSceneReadyBlock = new FlowGraphSceneReadyEventBlock();
         graph.addEventBlock(flowGraphSceneReadyBlock);
 
-        const logBlock = new FlowGraphLogBlock();
-        flowGraphSceneReadyBlock.done.connectTo(logBlock.in);
+        const logBlock = new FlowGraphConsoleLogBlock();
+        flowGraphSceneReadyBlock.out.connectTo(logBlock.in);
 
         const getVariableBlock = new FlowGraphGetVariableBlock({ variableName: "test" });
 
@@ -184,7 +184,6 @@ describe("Flow Graph Serialization", () => {
 
         const serialized: any = {};
         graph.serialize(serialized);
-
         // Graph is serialized with all blocks
         expect(serialized.allBlocks.length).toBe(3);
 
@@ -202,12 +201,14 @@ describe("Flow Graph Serialization", () => {
         const context = graph.createContext();
 
         const mesh = new Mesh("testMesh", scene);
+        context.setVariable("testMesh", mesh);
 
         const flowGraphSceneReadyBlock = new FlowGraphSceneReadyEventBlock();
         graph.addEventBlock(flowGraphSceneReadyBlock);
 
-        const setPropertyBlock = new FlowGraphSetPropertyBlock<Vector3>({ path: "testMesh", property: "position", subString: "" });
-        flowGraphSceneReadyBlock.done.connectTo(setPropertyBlock.in);
+        const path = new FlowGraphPath("/testMesh/position");
+        const setPropertyBlock = new FlowGraphSetPropertyBlock<Vector3>({ path });
+        flowGraphSceneReadyBlock.out.connectTo(setPropertyBlock.in);
 
         const constBlock = new FlowGraphConstantBlock<Vector3>({ value: new Vector3(1, 2, 3) });
         constBlock.output.connectTo(setPropertyBlock.a);

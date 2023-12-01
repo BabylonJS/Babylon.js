@@ -48,6 +48,11 @@ export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
         return FlowGraphGetVariableBlock.ClassName;
     }
 
+    public serialize(serializationObject?: any): void {
+        super.serialize(serializationObject);
+        serializationObject.config.variableName = this.config.variableName;
+    }
+
     public static ClassName = "FGGetVariableBlock";
 }
 RegisterClass(FlowGraphGetVariableBlock.ClassName, FlowGraphGetVariableBlock);

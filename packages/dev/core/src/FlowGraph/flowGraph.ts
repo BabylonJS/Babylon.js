@@ -174,7 +174,7 @@ export class FlowGraph {
         serializationObject.allBlocks = [];
         this.visitAllBlocks((block) => {
             const serializedBlock: any = {};
-            block.serialize(serializedBlock, valueSerializeFunction);
+            block.serialize(serializedBlock);
             serializationObject.allBlocks.push(serializedBlock);
         });
         serializationObject.executionContexts = [];
@@ -237,7 +237,7 @@ export class FlowGraph {
         const blocks: FlowGraphBlock[] = [];
         // Parse all blocks
         for (const serializedBlock of serializationObject.allBlocks) {
-            const block = FlowGraphBlock.Parse(serializedBlock);
+            const block = FlowGraphBlock.Parse(serializedBlock, coordinator.config.scene, valueParseFunction);
             blocks.push(block);
             if (block instanceof FlowGraphEventBlock) {
                 graph.addEventBlock(block);

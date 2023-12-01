@@ -1,7 +1,7 @@
 import { RichTypeAny } from "../../flowGraphRichTypes";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
+import { FlowGraphExecutionBlockWithOutSignal } from "../../flowGraphWithOnDoneExecutionBlock";
 import { RegisterClass } from "core/Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 
@@ -17,7 +17,7 @@ export interface IFlowGraphSetVariableBlockConfiguration extends IFlowGraphBlock
  * Block to set a variable.
  * @experimental
  */
-export class FlowGraphSetVariableBlock<T> extends FlowGraphWithOnDoneExecutionBlock {
+export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOutSignal {
     /**
      * Input connection: The value to set on the variable.
      */

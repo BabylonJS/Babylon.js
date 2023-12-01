@@ -1,5 +1,8 @@
 import type { FlowGraphConnectionType } from "./flowGraphConnection";
 
+/**
+ * Definitions for the serialization of graphs
+ */
 export interface ISerializedFlowGraphContext {
     uniqueId: string;
     _userVariables: { [key: string]: any };

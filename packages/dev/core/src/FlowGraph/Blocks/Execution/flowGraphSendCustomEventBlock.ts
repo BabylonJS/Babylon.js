@@ -1,5 +1,5 @@
 import { RichTypeAny } from "core/FlowGraph/flowGraphRichTypes";
-import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
+import { FlowGraphExecutionBlockWithOutSignal } from "../../flowGraphWithOnDoneExecutionBlock";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
@@ -21,7 +21,7 @@ export interface IFlowGraphSendCustomEventBlockConfiguration extends IFlowGraphB
 /**
  * @experimental
  */
-export class FlowGraphSendCustomEventBlock extends FlowGraphWithOnDoneExecutionBlock {
+export class FlowGraphSendCustomEventBlock extends FlowGraphExecutionBlockWithOutSignal {
     public constructor(public config: IFlowGraphSendCustomEventBlockConfiguration) {
         super(config);
     }

@@ -1,6 +1,6 @@
 import type { FlowGraphContext } from "../../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
-import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneExecutionBlock";
+import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphWithOnDoneExecutionBlock";
 import type { Animatable } from "../../../../Animations";
 import { RichTypeAny } from "../../../flowGraphRichTypes";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
@@ -9,7 +9,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
  * @experimental
  * Block that stops a running animation
  */
-export class FlowGraphStopAnimationBlock extends FlowGraphWithOnDoneExecutionBlock {
+export class FlowGraphStopAnimationBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
      *
      */

@@ -1,6 +1,6 @@
 import type { FlowGraphContext } from "../../../flowGraphContext";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
-import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneExecutionBlock";
+import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphWithOnDoneExecutionBlock";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 /**
@@ -18,7 +18,7 @@ export interface IFlowGraphWaitAllBlockConfiguration extends IFlowGraphBlockConf
  * @experimental
  * A block that waits for all input flows to be activated before activating its output flow.
  */
-export class FlowGraphWaitAllBlock extends FlowGraphWithOnDoneExecutionBlock {
+export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
      * Input connection: Resets the block.
      */

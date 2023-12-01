@@ -1,6 +1,6 @@
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
+import { FlowGraphExecutionBlockWithOutSignal } from "../../flowGraphWithOnDoneExecutionBlock";
 import { RichTypeAny } from "../../flowGraphRichTypes";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
@@ -9,7 +9,7 @@ import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
  * @experimental
  * Block that logs a message to the console.
  */
-export class FlowGraphLogBlock extends FlowGraphWithOnDoneExecutionBlock {
+export class FlowGraphConsoleLogBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
      * Input connection: The message to log.
      */
@@ -31,9 +31,9 @@ export class FlowGraphLogBlock extends FlowGraphWithOnDoneExecutionBlock {
     }
 
     public getClassName(): string {
-        return FlowGraphLogBlock.ClassName;
+        return FlowGraphConsoleLogBlock.ClassName;
     }
 
-    public static ClassName = "FGLogBlock";
+    public static ClassName = "FGConsoleLogBlock";
 }
-RegisterClass("FGLogBlock", FlowGraphLogBlock);
+RegisterClass(FlowGraphConsoleLogBlock.ClassName, FlowGraphConsoleLogBlock);

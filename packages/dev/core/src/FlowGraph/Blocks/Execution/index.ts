@@ -1,4 +1,4 @@
-export * from "./flowGraphLogBlock";
+export * from "./flowGraphConsoleLogBlock";
 export * from "./flowGraphSetVariableBlock";
 export * from "./flowGraphSetPropertyBlock";
 export * from "./flowGraphSendCustomEventBlock";

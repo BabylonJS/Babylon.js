@@ -6,10 +6,12 @@ import type { RichType } from "./flowGraphRichTypes";
 import { Tools } from "core/Misc/tools";
 import type { ISerializedFlowGraphBlock } from "./typeDefinitions";
 import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
+import { defaultValueParseFunction, defaultValueSerializationFunction } from "./serialization";
+import type { Scene } from "../scene";
 
 export interface IFlowGraphBlockConfiguration {
     name?: string;
-    [key: string]: any;
+    [extraPropertyKey: string]: any;
 }
 
 /**
@@ -77,7 +79,7 @@ export class FlowGraphBlock {
         return this.dataOutputs.find((i) => i.name === name);
     }
 
-    public serialize(serializationObject: any = {}, valueSerializeFunction?: (key: string, value: any, serializationObject: any) => void) {
+    public serialize(serializationObject: any = {}, _valueSerializeFunction: (key: string, value: any, serializationObject: any) => any = defaultValueSerializationFunction) {
         serializationObject.uniqueId = this.uniqueId;
         serializationObject.config = {};
         if (this.config) {
@@ -102,18 +104,16 @@ export class FlowGraphBlock {
         return "FGBlock";
     }
 
-    public static Parse(serializationObject: ISerializedFlowGraphBlock): FlowGraphBlock {
+    public static Parse(
+        serializationObject: ISerializedFlowGraphBlock,
+        scene: Scene,
+        valueParseFunction: (key: string, serializationObject: any, scene: Scene) => any = defaultValueParseFunction
+    ): FlowGraphBlock {
         const classType = Tools.Instantiate(serializationObject.className);
         const parsedConfig: any = {};
         if (serializationObject.config) {
             for (const key in serializationObject.config) {
-                const value = serializationObject.config[key];
-                if (value && value.className) {
-                    const valueClassType = Tools.Instantiate(value.className);
-                    parsedConfig[key] = valueClassType.prototype.Parse(value);
-                } else {
-                    parsedConfig[key] = value;
-                }
+                parsedConfig[key] = valueParseFunction(key, serializationObject.config, scene);
             }
         }
         const obj = new classType(parsedConfig);

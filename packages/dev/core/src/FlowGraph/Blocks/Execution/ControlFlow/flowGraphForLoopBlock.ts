@@ -1,6 +1,6 @@
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
-import { FlowGraphWithOnDoneExecutionBlock } from "core/FlowGraph/flowGraphWithOnDoneExecutionBlock";
+import { FlowGraphExecutionBlockWithOutSignal } from "core/FlowGraph/flowGraphWithOnDoneExecutionBlock";
 import type { FlowGraphContext } from "../../../flowGraphContext";
 import { RichTypeNumber } from "../../../flowGraphRichTypes";
 import { RegisterClass } from "../../../../Misc/typeStore";
@@ -9,7 +9,7 @@ import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
  * @experimental
  * Block that executes an action in a loop.
  */
-export class FlowGraphForLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
+export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
      * Input connection: The start index of the loop.
      */

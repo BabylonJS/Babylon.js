@@ -1,7 +1,7 @@
 import { RichTypeAny } from "../../flowGraphRichTypes";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
+import { FlowGraphExecutionBlockWithOutSignal } from "../../flowGraphWithOnDoneExecutionBlock";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import type { FlowGraphPath } from "../../flowGraphPath";
@@ -23,7 +23,7 @@ export interface IFlowGraphSetPropertyBlockConfiguration extends IFlowGraphBlock
  * @experimental
  * Block that sets a property on a target object.
  */
-export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphWithOnDoneExecutionBlock {
+export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphExecutionBlockWithOutSignal {
     /**
      * Input connection: The value to set on the property.
      */

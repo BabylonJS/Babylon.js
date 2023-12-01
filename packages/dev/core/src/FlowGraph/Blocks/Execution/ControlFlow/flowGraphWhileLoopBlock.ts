@@ -4,7 +4,7 @@ import { RichTypeBoolean } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
-import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneExecutionBlock";
+import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphWithOnDoneExecutionBlock";
 /**
  * @experimental
  * Configuration for the while loop block.
@@ -20,7 +20,7 @@ export interface IFlowGraphWhileLoopBlockConfiguration extends IFlowGraphBlockCo
  * @experimental
  * A block that executes a branch while a condition is true.
  */
-export class FlowGraphWhileLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
+export class FlowGraphWhileLoopBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
      * Input connection: The condition to evaluate.
      */

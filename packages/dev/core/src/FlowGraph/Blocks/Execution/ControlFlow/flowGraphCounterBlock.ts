@@ -2,14 +2,14 @@ import type { FlowGraphContext } from "../../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import { RichTypeNumber } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
-import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneExecutionBlock";
+import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphWithOnDoneExecutionBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 /**
  * @experimental
  * A block that counts the number of times it has been called.
  */
-export class FlowGraphCounterBlock extends FlowGraphWithOnDoneExecutionBlock {
+export class FlowGraphCounterBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
      * Output connection: The number of times the block has been called.
      */

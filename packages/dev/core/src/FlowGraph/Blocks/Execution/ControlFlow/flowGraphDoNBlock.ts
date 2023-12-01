@@ -2,21 +2,21 @@ import type { FlowGraphContext } from "../../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import { RichTypeNumber } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
-import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneExecutionBlock";
+import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphWithOnDoneExecutionBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 
 /**
  * @experimental
  */
-export class IFlowGraphDoNBlockConfiguration implements IFlowGraphBlockConfiguration {
+export interface IFlowGraphDoNBlockConfiguration extends IFlowGraphBlockConfiguration {
     startIndex: number;
 }
 /**
  * A block that executes a branch a set number of times.
  * @experimental
  */
-export class FlowGraphDoNBlock extends FlowGraphWithOnDoneExecutionBlock {
+export class FlowGraphDoNBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
      * Input connection: Resets the counter
      */

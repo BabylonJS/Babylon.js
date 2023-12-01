@@ -1,7 +1,7 @@
 import type { Engine } from "core/Engines";
 import { NullEngine } from "core/Engines";
 import type { FlowGraph, FlowGraphContext } from "core/FlowGraph";
-import { FlowGraphCoordinator, FlowGraphLogBlock, FlowGraphReceiveCustomEventBlock, FlowGraphSceneReadyEventBlock, FlowGraphSendCustomEventBlock } from "core/FlowGraph";
+import { FlowGraphCoordinator, FlowGraphConsoleLogBlock, FlowGraphReceiveCustomEventBlock, FlowGraphSceneReadyEventBlock, FlowGraphSendCustomEventBlock } from "core/FlowGraph";
 import { Scene } from "core/scene";
 
 describe("Flow Graph Event Nodes", () => {
@@ -33,17 +33,20 @@ describe("Flow Graph Event Nodes", () => {
         const sceneReady = new FlowGraphSceneReadyEventBlock({ name: "SceneReady" });
         flowGraph.addEventBlock(sceneReady);
 
-        const sendEvent = new FlowGraphSendCustomEventBlock({ name: "SendEvent" });
-        sendEvent.eventId.setValue("testEvent", flowGraphContext);
-        sendEvent.eventData.setValue(42, flowGraphContext);
-        sceneReady.done.connectTo(sendEvent.in);
+        const sendEvent = new FlowGraphSendCustomEventBlock({ eventId: "testEvent", eventData: ["testData"] });
+        const sendEventDataNode = sendEvent.getDataInput("testData");
+        expect(sendEventDataNode).toBeDefined();
+        sendEventDataNode?.setValue(42, flowGraphContext);
+        sceneReady.out.connectTo(sendEvent.in);
 
-        const receiveEvent = new FlowGraphReceiveCustomEventBlock({ eventId: "testEvent", name: "ReceiveEvent" });
+        const receiveEvent = new FlowGraphReceiveCustomEventBlock({ eventId: "testEvent", eventData: ["testData"] });
         receiverGraph.addEventBlock(receiveEvent);
 
-        const runCustomFunction = new FlowGraphLogBlock({ name: "Log" });
-        receiveEvent.done.connectTo(runCustomFunction.in);
-        receiveEvent.eventData.connectTo(runCustomFunction.message);
+        const consoleLogBlock = new FlowGraphConsoleLogBlock({ name: "Log" });
+        receiveEvent.out.connectTo(consoleLogBlock.in);
+        const receiveEventDataNode = receiveEvent.getDataOutput("testData");
+        expect(receiveEventDataNode).toBeDefined();
+        receiveEventDataNode?.connectTo(consoleLogBlock.message);
 
         flowGraph.start();
         receiverGraph.start();

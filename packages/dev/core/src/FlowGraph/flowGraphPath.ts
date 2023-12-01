@@ -4,7 +4,7 @@ import type { FlowGraphContext } from "./flowGraphContext";
 // Path: /x/{y}/z/.../w
 const PATH_REGEX = /([./])({?\w+}?)/g;
 
-export interface IPathPart {
+interface IPathPart {
     value: string;
     isTemplate: boolean;
     valueWithoutBraces: string;
@@ -12,11 +12,16 @@ export interface IPathPart {
     separator: string;
 }
 
+/**
+ * @experimental
+ * An extension to add new functionality to path resolution
+ */
 export interface IPathExtension {
     shouldProcess(path: FlowGraphPath): boolean;
     processGet(path: FlowGraphPath, context: FlowGraphContext): any;
     processSet(path: FlowGraphPath, context: FlowGraphContext, value: any): void;
 }
+
 /*
  * @experimental
  * This class represents a path of type /x/{y}/z/.../w that is evaluated
@@ -191,7 +196,7 @@ export class FlowGraphPath {
         return serializationObject;
     }
 
-    Parse(serializationObject: any) {
+    static Parse(serializationObject: any) {
         return new FlowGraphPath(serializationObject.path);
     }
 }
