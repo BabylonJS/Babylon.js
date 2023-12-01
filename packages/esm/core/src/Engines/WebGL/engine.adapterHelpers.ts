@@ -55,7 +55,6 @@ export const effectWebGLAdapter = {
     bindUniformBlock,
 };
 
-
 export const effectWebGPUAdapter = {
     getHostDocument,
     _getShaderProcessingContext: () => null,

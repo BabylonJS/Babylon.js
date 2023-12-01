@@ -1,4 +1,3 @@
-
 import { getHostDocument } from "../engine.base.js";
 import { _createPrefilteredCubeTexture } from "@babylonjs/core/Misc/dds.js";
 import { _loadFile } from "../engine.tools.js";

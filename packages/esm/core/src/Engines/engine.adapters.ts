@@ -24,7 +24,11 @@ export type WebGPUEngineMethods = ExtractMethods<typeof webGPUTypes> & BaseEngin
 
 export type EngineType = ThinEngine | Engine | WebGPUEngine;
 type EngineMethodsType<T = EngineType> = T extends WebGPUEngine ? WebGPUEngineMethods : T extends Engine ? WebGLEngineMethods : BaseEngineMethods;
-export type EngineBaseType<T = EngineType> = T extends WebGPUEngine ? webGPUTypes.IWebGPUEnginePublic : T extends Engine ? webGLTypes.IWebGLEnginePublic : baseTypes.IBaseEnginePublic;
+export type EngineBaseType<T = EngineType> = T extends WebGPUEngine
+    ? webGPUTypes.IWebGPUEnginePublic
+    : T extends Engine
+      ? webGLTypes.IWebGLEnginePublic
+      : baseTypes.IBaseEnginePublic;
 /**
  * Augment an engineState object with methods to simulate a real engine object
  *

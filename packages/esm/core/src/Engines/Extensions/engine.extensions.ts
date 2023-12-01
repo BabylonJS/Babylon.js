@@ -22,7 +22,7 @@ export const enum EngineExtensions {
     QUERY = 6,
     DYNAMIC_BUFFER = 7,
     DYNAMIC_TEXTURE = 8,
-    VIEWS = 9
+    VIEWS = 9,
 }
 
 export interface IBaseEngineExtension {

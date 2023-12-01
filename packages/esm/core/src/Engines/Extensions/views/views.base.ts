@@ -114,4 +114,4 @@ export function _getExtensionState<T extends IBaseEnginePublic = IBaseEnginePubl
         };
     }
     return stateObjects[engineState.uniqueId];
-};
+}
