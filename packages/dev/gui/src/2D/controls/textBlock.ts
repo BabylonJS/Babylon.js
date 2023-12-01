@@ -646,6 +646,13 @@ export class TextBlock extends Control {
         return newHeight;
     }
 
+    public isDimensionFullyDefined(dim: "width" | "height"): boolean {
+        if (this.resizeToFit) {
+            return true;
+        }
+        return super.isDimensionFullyDefined(dim);
+    }
+
     /**
      * Given a width constraint applied on the text block, find the expected height
      * @returns expected height
