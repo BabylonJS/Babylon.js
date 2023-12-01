@@ -206,6 +206,19 @@ export class Plane {
     }
 
     /**
+     * Updates the given Plane "result" from an origin point and a normal.
+     * @param origin origin of the plane to be constructed
+     * @param normal the normalized normals of the plane to be constructed
+     * @param result defines the Plane where to store the result
+     * @returns result input
+     */
+    static FromPositionAndNormalToRef<T extends Plane>(origin: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>, result: T): T {
+        result.normal.copyFrom(normal);
+        result.d = -origin.dot(normal);
+        return result;
+    }
+
+    /**
      * Calculates the distance from a plane and a point
      * @param origin origin of the plane to be constructed
      * @param normal normal of the plane to be constructed
