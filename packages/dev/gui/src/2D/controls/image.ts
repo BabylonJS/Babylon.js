@@ -859,10 +859,18 @@ export class Image extends Control {
             return;
         }
 
-        const canvas = this._workingCanvas!;
-        context = canvas.getContext("2d")!;
+        const transform = context.getTransform();
 
-        context.drawImage(this._domImage, sx, sy, sw, sh, tx - this._currentMeasure.left, ty - this._currentMeasure.top, tw, th);
+        const canvas = this._workingCanvas!;
+        const workingCanvasContext = canvas.getContext("2d")!;
+        workingCanvasContext.save();
+        const ttx = tx - this._currentMeasure.left;
+        const tty = ty - this._currentMeasure.top;
+        workingCanvasContext.setTransform(transform.a, transform.b, transform.c, transform.d, (ttx + tw) / 2, (tty + th) / 2);
+        workingCanvasContext.translate(-(ttx + tw) / 2, -(tty + th) / 2);
+
+        workingCanvasContext.drawImage(this._domImage, sx, sy, sw, sh, ttx, tty, tw, th);
+        workingCanvasContext.restore();
     }
 
     public _draw(context: ICanvasRenderingContext): void {

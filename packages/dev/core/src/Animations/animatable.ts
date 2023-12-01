@@ -1149,9 +1149,13 @@ Scene.prototype._processLateAnimationBindings = function (): void {
                     let startIndex = 0;
                     let normalizer = 1.0;
 
+                    const originalAnimationIsLoopRelative = originalAnimation && originalAnimation._animationState.loopMode === Animation.ANIMATIONLOOPMODE_RELATIVE;
+
                     if (holder.totalWeight < 1.0) {
                         // We need to mix the original value in
-                        if (originalAnimation && originalValue.scale) {
+                        if (originalAnimationIsLoopRelative) {
+                            finalValue = originalValue.clone ? originalValue.clone() : originalValue;
+                        } else if (originalAnimation && originalValue.scale) {
                             finalValue = originalValue.scale(1.0 - holder.totalWeight);
                         } else if (originalAnimation) {
                             finalValue = originalValue * (1.0 - holder.totalWeight);
@@ -1172,6 +1176,14 @@ Scene.prototype._processLateAnimationBindings = function (): void {
                             }
                         } else {
                             finalValue = originalAnimation.currentValue;
+                        }
+
+                        if (originalAnimationIsLoopRelative) {
+                            if (finalValue.addToRef) {
+                                finalValue.addToRef(originalValue, finalValue);
+                            } else {
+                                finalValue += originalValue;
+                            }
                         }
 
                         startIndex = 1;

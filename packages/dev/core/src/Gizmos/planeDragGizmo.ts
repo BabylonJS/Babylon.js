@@ -102,12 +102,16 @@ export class PlaneDragGizmo extends Gizmo implements IPlaneDragGizmo {
      * @param color The color of the gizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
      * @param parent
+     * @param hoverColor The color of the gizmo when hovering over and dragging
+     * @param disableColor The Color of the gizmo when its disabled
      */
     constructor(
         dragPlaneNormal: Vector3,
         color: Color3 = Color3.Gray(),
         gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer,
-        parent: Nullable<PositionGizmo> = null
+        parent: Nullable<PositionGizmo> = null,
+        hoverColor: Color3 = Color3.Yellow(),
+        disableColor: Color3 = Color3.Gray()
     ) {
         super(gizmoLayer);
         this._parent = parent;
@@ -117,10 +121,10 @@ export class PlaneDragGizmo extends Gizmo implements IPlaneDragGizmo {
         this._coloredMaterial.specularColor = color.subtract(new Color3(0.1, 0.1, 0.1));
 
         this._hoverMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        this._hoverMaterial.diffuseColor = Color3.Yellow();
+        this._hoverMaterial.diffuseColor = hoverColor;
 
         this._disableMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        this._disableMaterial.diffuseColor = Color3.Gray();
+        this._disableMaterial.diffuseColor = disableColor;
         this._disableMaterial.alpha = 0.4;
 
         // Build plane mesh on root node
