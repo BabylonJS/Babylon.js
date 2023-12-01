@@ -230,7 +230,7 @@ export class AxisDragGizmo extends Gizmo implements IAxisDragGizmo {
                         if (this.dragBehavior.validateDrag(TmpVectors.Vector3[2])) {
                             this.attachedNode.getWorldMatrix().addTranslationFromFloats(TmpVectors.Vector3[1].x, TmpVectors.Vector3[1].y, TmpVectors.Vector3[1].z);
                             this.attachedNode.updateCache();
-                            tmpSnapEvent.snapDistance = this.snapDistance * dragSteps;
+                            tmpSnapEvent.snapDistance = this.snapDistance * dragSteps * Math.sign(currentSnapDragDistance);
                             this.onSnapObservable.notifyObservers(tmpSnapEvent);
                             matrixChanged = true;
                         }
