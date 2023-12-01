@@ -619,11 +619,6 @@ export class Container extends Control {
         this._measureForChildren.copyFrom(this._currentMeasure);
     }
 
-    protected _cacheFullyDefinedDim: { width?: boolean; height?: boolean } = {
-        width: undefined,
-        height: undefined,
-    };
-
     protected _getAdaptDimTo(dim: "width" | "height"): boolean {
         if (dim === "width") {
             return this.adaptWidthToChildren;
@@ -633,22 +628,15 @@ export class Container extends Control {
     }
 
     public isDimensionFullyDefined(dim: "width" | "height"): boolean {
-        const hasChildDirty = this.children.some((c) => c.isDirty);
-        if (!hasChildDirty && !this._isDirty && this._cacheFullyDefinedDim[dim] !== undefined) {
-            return this._cacheFullyDefinedDim[dim]!;
-        }
         if (this._getAdaptDimTo(dim)) {
             for (const child of this.children) {
                 if (!child.isDimensionFullyDefined(dim)) {
-                    this._cacheFullyDefinedDim[dim] = false;
                     return false;
                 }
             }
-            this._cacheFullyDefinedDim[dim] = true;
             return true;
         }
-        this._cacheFullyDefinedDim[dim] = super.isDimensionFullyDefined(dim);
-        return this._cacheFullyDefinedDim[dim]!;
+        return super.isDimensionFullyDefined(dim);
     }
 
     /**

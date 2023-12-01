@@ -232,24 +232,16 @@ export class StackPanel extends Container {
     }
 
     public isDimensionFullyDefined(dim: "width" | "height"): boolean {
-        const hasChildDirty = this._children.some((c) => c.isDirty);
-        if (!hasChildDirty && !this._isDirty && this._cacheFullyDefinedDim[dim] !== undefined) {
-            return this._cacheFullyDefinedDim[dim]!;
-        }
-
         if (dim === "height" ? this.isVertical : !this.isVertical && !this._getManualDim(dim)) {
             for (const child of this._children) {
                 if (!child.isDimensionFullyDefined(dim)) {
-                    this._cacheFullyDefinedDim[dim] = false;
                     return false;
                 }
             }
-            this._cacheFullyDefinedDim[dim] = true;
             return true;
         }
 
-        this._cacheFullyDefinedDim[dim] = this.getDimension(dim).isPixel || this._getAdaptDimTo(dim);
-        return this._cacheFullyDefinedDim[dim]!;
+        return this.getDimension(dim).isPixel || this._getAdaptDimTo(dim);
     }
 
     /**
