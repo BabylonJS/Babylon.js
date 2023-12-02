@@ -251,6 +251,12 @@ export class InternalTexture extends TextureSampler {
     /** @internal */
     public _gammaSpace: Nullable<boolean> = null;
 
+    /** @internal */
+    public _premulAlpha = false;
+
+    /** @internal */
+    public _dynamicTextureSource: Nullable<ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas> = null;
+
     private _engine: ThinEngine;
     private _uniqueId: number;
 
@@ -437,7 +443,9 @@ export class InternalTexture extends TextureSampler {
             case InternalTextureSource.Dynamic:
                 proxy = this._engine.createDynamicTexture(this.baseWidth, this.baseHeight, this.generateMipMaps, this.samplingMode);
                 proxy._swapAndDie(this, false);
-                this._engine.updateDynamicTexture(this, this._engine.getRenderingCanvas()!, this.invertY, undefined, undefined, true);
+                if (this._dynamicTextureSource) {
+                    this._engine.updateDynamicTexture(this, this._dynamicTextureSource, this.invertY, this._premulAlpha, this.format, true);
+                }
 
                 // The engine will make sure to update content so no need to flag it as isReady = true
                 break;
@@ -568,6 +576,7 @@ export class InternalTexture extends TextureSampler {
         if (this._references === 0) {
             this._engine._releaseTexture(this);
             this._hardwareTexture = null;
+            this._dynamicTextureSource = null;
         }
     }
 }
