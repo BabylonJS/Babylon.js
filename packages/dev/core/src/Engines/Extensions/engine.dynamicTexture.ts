@@ -104,5 +104,12 @@ ThinEngine.prototype.updateDynamicTexture = function (
         gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0);
     }
 
+    if (format) {
+        texture.format = format;
+    }
+
+    texture._dynamicTextureSource = source;
+    texture._premulAlpha = premulAlpha;
+    texture.invertY = invertY || false;
     texture.isReady = true;
 };
