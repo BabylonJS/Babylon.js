@@ -1,6 +1,175 @@
 {
-    "fromTag": "6.31.0",
+    "fromTag": "6.32.0",
     "changelog": {
+        "6.32.1": [
+            {
+                "pr": "14571",
+                "title": "Avoid duplicate shader created by customMaterial & pbrCustomMaterial",
+                "description": "I define a new class extending `PBRCustomMaterial` and declare getter/setter for uniform value, as follows\r\n```js\r\nclass TintColorifyPBRCustomMaterial extends BABYLON.PBRCustomMaterial {\r\n    _tintColor = BABYLON.Color3.Black();\r\n    set tintColor(v) {\r\n        this._tintColor = v;\r\n    }\r\n    get tintColor() {\r\n        return this._tintColor;\r\n    }\r\n\r\n    constructor(name, scene) {\r\n        super(name, scene);\r\n\r\n        this.unlit = true;\r\n\r\n        this.AddUniform('tintColor', 'vec3', this.tintColor);\r\n        this.Fragment_Before_FragColor(`\r\n        finalColor.rgb = tintColor;\r\n        `);\r\n\r\n        this.onBindObservable.add(() => {\r\n            const effect = this.getEffect();\r\n            effect.setColor3('tintColor', this.tintColor);\r\n        });\r\n    }\r\n}\r\n```\r\n\r\nIn use, `TintColorifyPBRCustomMaterial` likes `PBRMaterial` and other builtin material types in babylon library, and is very convenient to use, like follows \r\n```js\r\nconst mat = new TintColorifyPBRCustomMaterial('mat', scene);\r\nmat.tintColor = BABYLON.Color3.Red();\r\n```\r\nThat is my main purpose to define new class.\r\n\r\n\r\nbut, the above code will insert duplicate shaders to `Effect.ShadersStore` in such case: \r\n```js\r\nconst mat1 = new TintColorifyPBRCustomMaterial('mat1', scene);\r\nconst mat2 = new TintColorifyPBRCustomMaterial('mat2', scene);\r\n```\r\nhttps://www.babylonjs-playground.com/#W90UFJ#1 can reproduce the issue.\r\n\r\n\r\nIn this commit, I hope to fix the problem.\r\n\r\nWhen defining new class extending `PBRCustomMaterial` and `CustomMaterial`,  if you specify a shader name for your new material type,  by assigning a value to `this._createdShaderName`, as follows\r\n```js\r\nclass TintColorifyPBRCustomMaterial extends BABYLON.PBRCustomMaterial {\r\n    _tintColor = BABYLON.Color3.Black();\r\n    set tintColor(v) {\r\n        this._tintColor = v;\r\n    }\r\n    get tintColor() {\r\n        return this._tintColor;\r\n    }\r\n\r\n    constructor(name, scene) {\r\n        super(name, scene);\r\n\r\n        this.unlit = true;\r\n\r\n        this.AddUniform('tintColor', 'vec3', this.tintColor);\r\n        this.Fragment_Before_FragColor(`\r\n        finalColor.rgb = tintColor;\r\n        `);\r\n\r\n        this._createdShaderName = 'TingColorify';\r\n\r\n\r\n        this.onBindObservable.add(() => {\r\n            const effect = this.getEffect();\r\n            effect.setColor3('tintColor', this.tintColor);\r\n        });\r\n    }\r\n}\r\n```\r\nbecause `mat1` and `mat2` has same `_createdShaderName`, so no duplicate shaders in `Effect.ShadersStore`\r\n\r\n\r\nIf you do not assign a value to `_createdShaderName`, then the shader name resolving logic as before,  nothing is changed.\r\n",
+                "author": {
+                    "name": "Starryi",
+                    "url": "https://github.com/Starryi"
+                },
+                "files": [
+                    "packages/dev/materials/src/custom/customMaterial.ts",
+                    "packages/dev/materials/src/custom/pbrCustomMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14572",
+                "title": "Allow forcing chrome instead of chromium on playwright",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/tests/playwright.config.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14549",
+                "title": "Better handling of StackPanel layout warning",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/control-is-using-height-in-percentage-mode-inside-a-vertical-stackpanel-warnings-after-update-to-6-25-0/45071\r\n\r\nThis PR tries to make more consistent the handling of cases where to display a warning about sizes inside a StackPanel. The main reason this warning should be displayed is in cases where it is not possible to determine the sizes of all controls inside the StackPanel by using just the controls themselves and their children. I'm calling \"fully defined\" the width/height of controls that can be determined using just the size of the control and its children - i.e, the control doesn't depend on its parent for sizing. A regular Control would be fully defined if its size is expressed in pixels instead of percentage. And a Container control would be fully defined if it has `adaptWidth/HeightToChildren` set to true and all its children are fully defined. For a StackPanel, we want its width (in horizontal mode) or height (in vertical mode) to be fully defined, because they adapt to their children. So we display the warning when the corresponding dimension is not fully defined. I didn't reword the warning itself because I couldn't think of a better phrasing, but it might be good to change the phrasing too.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/container.ts",
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/dev/gui/src/2D/controls/stackPanel.ts",
+                    "packages/dev/gui/src/2D/controls/textBlock.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "14569",
+                "title": "Add analytics",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/public/index.html",
+                    "packages/tools/nodeGeometryEditor/public/index.html",
+                    "packages/tools/playground/public/debug.html",
+                    "packages/tools/playground/public/frame.html",
+                    "packages/tools/playground/public/full.html",
+                    "packages/tools/playground/public/index.html",
+                    "packages/tools/sandbox/public/index.html"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14568",
+                "title": "Post process: Add support for uniform buffers",
+                "description": "See https://forum.babylonjs.com/t/how-to-use-glsl-uniform-struct-with-webgpu/46071",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/postProcess.ts"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14563",
+                "title": "Animations: Fix loop relative mode to start at the current value of the animated object",
+                "description": "See https://forum.babylonjs.com/t/issue-with-relative-animation/46042/4\r\n\r\nI don't know if we should make the change (there's a workaround, see the thread), as it is a breaking change (except if we consider it to be a bug, but it will still break existing animations that use the relative loop mode)...\r\n\r\nPG to test: https://playground.babylonjs.com/#SK7C9Y#7\r\n\r\nAnimations should start from the starting position, but this is not the case.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animatable.ts",
+                    "packages/dev/core/src/Animations/runtimeAnimation.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "animations",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "14565",
+                "title": "Parent group entities to object entities on the OBJ loader",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/obj-export-to-babylon-nodes-are-doubled/46028\r\nThe cause for the apparent doubling of nodes was having an \"o\" entity followed by a \"g\" entity:\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/6002144/c2189f28-3d9d-419c-8889-b3acadcce0fd)\r\nIn our loader, encountering both of these definitions results in creating a new mesh. However, groups are _parts_ of objects, so we should be parenting the group to the object to make that relationship explicit. ",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/loaders/src/OBJ/solidParser.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "loaders"
+                ]
+            },
+            {
+                "pr": "14566",
+                "title": "feat(gizmo): support hover & disable color",
+                "description": "### What\r\n\r\n- support hover & disable color for `PlanDragGizmo` & `AxisScaleGizmo`\r\n- relates to https://github.com/BabylonJS/Babylon.js/pull/14525\r\n\r\n### Why\r\n\r\n- to be consistent with `AxisDragGizmo` & `PlaneRotationGizmo`\r\n",
+                "author": {
+                    "name": "PhilippeMorier",
+                    "url": "https://github.com/PhilippeMorier"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/axisScaleGizmo.ts",
+                    "packages/dev/core/src/Gizmos/planeDragGizmo.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "gizmos"
+                ]
+            },
+            {
+                "pr": "14561",
+                "title": "Fix opaque only picking for rotated controls",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/gui-issue-with-detectpointeronopaqueonly-when-using-rotation/46033\r\nCurrently, when drawing a GUI Image to the secondary canvas used to test for opaque picking, the current context's rotation and scaling are not considered. This PR adds these transformations.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/ICanvas.ts",
+                    "packages/dev/gui/src/2D/controls/image.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "14562",
+                "title": "Fix camera rotation when exporting glTF",
+                "description": "See https://forum.babylonjs.com/t/gltfexport-flipped-camera/45986.\r\n\r\nIntroduced partially by https://github.com/BabylonJS/Babylon.js/pull/13909 but it was already somewhat broken.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            }
+        ],
         "6.32.0": [
             {
                 "pr": "14558",
