@@ -275,6 +275,24 @@ export class ProceduralTexture extends Texture {
     }
 
     /**
+     * Executes a function when the texture will be ready to be drawn.
+     * @param func The callback to be used.
+     */
+    public executeWhenReady(func: (texture: ProceduralTexture) => void): void {
+        if (this.isReady()) {
+            func(this);
+            return;
+        }
+
+        const effect = this.getEffect();
+        if (effect) {
+            effect.executeWhenCompiled(() => {
+                func(this);
+            });
+        }
+    }
+
+    /**
      * Is the texture ready to be used ? (rendered at least once)
      * @returns true if ready, otherwise, false.
      */
