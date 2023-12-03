@@ -295,7 +295,7 @@ export class MeshUVSpaceRenderer {
         try {
             this._scene.clearColor = new Color4(0, 0, 0, 1);
             // Set up the mask material
-            const maskMaterial = new ShaderMaterial(
+            const finalMaterial = new ShaderMaterial(
                 "meshUVSpaceRendererFinaliserShader",
                 this._scene,
                 {
@@ -310,14 +310,14 @@ export class MeshUVSpaceRenderer {
             );
 
             // this._mesh.material = this._mesh.material as PBRMaterial;
-            maskMaterial.setTexture("decalTexture", this.decalTexture);
-            maskMaterial.setTexture("maskTexture", this._maskTexture);
-            maskMaterial.backFaceCulling = false;
+            finalMaterial.setTexture("decalTexture", this.decalTexture);
+            finalMaterial.setTexture("maskTexture", this._maskTexture);
+            finalMaterial.backFaceCulling = false;
 
             
             if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture)) {
                 this._scene.customRenderTargets.push(this.texture);
-
+                this.texture.setMaterialForRendering(this._mesh, finalMaterial);
                 this.texture.render();
             }
             const plane = MeshBuilder.CreatePlane("image", {size: 1},  this._scene);
