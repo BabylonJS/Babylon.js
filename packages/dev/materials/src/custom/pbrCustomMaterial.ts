@@ -224,7 +224,7 @@ export class PBRCustomMaterial extends PBRMaterial {
         this.FragmentShader = this.FragmentShader.replace(/#include<pbrBlockFinalColorComposition>/g, Effect.IncludesShadersStore["pbrBlockFinalColorComposition"]);
 
         PBRCustomMaterial.ShaderIndexer++;
-        this._createdShaderName = "custom_" + PBRCustomMaterial.ShaderIndexer;
+        this._createdShaderName = "custompbr_" + PBRCustomMaterial.ShaderIndexer;
     }
 
     protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null): void {
