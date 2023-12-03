@@ -315,7 +315,6 @@ export class MeshUVSpaceRenderer {
             maskMaterial.backFaceCulling = false;
 
             
-            // Ensure the mask texture is updated
             if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture)) {
                 this._scene.customRenderTargets.push(this.texture);
 
