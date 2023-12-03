@@ -1,8 +1,17 @@
+// Vertex shader
+precision highp float;
+
+// Attributes
+attribute vec3 position;
 attribute vec2 uv;
 
+// Uniforms
+uniform mat4 worldViewProjection;
+
+// Varyings
 varying vec2 vUV;
 
-void main(void) {
-    gl_Position = vec4(vec2(uv.x, uv.y) * 2.0 - 1.0, 0., 1.0);
+void main() {
+    gl_Position = worldViewProjection * vec4(position, 1.0);
     vUV = uv;
 }

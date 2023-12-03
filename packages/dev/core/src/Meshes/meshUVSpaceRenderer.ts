@@ -304,13 +304,13 @@ export class MeshUVSpaceRenderer {
                 {
                     attributes: ["position", "uv"],
                     // uniforms: ["worldViewProjection"],
-                    samplers: ["decalTexture", "maskTexture"]
+                    samplers: ["decalSampler", "maskSampler"]
                 }
             );
 
             // this._mesh.material = this._mesh.material as PBRMaterial;
-            finalMaterial.setTexture("decalTexture", this.decalTexture);
-            finalMaterial.setTexture("maskTexture", this._maskTexture);
+            finalMaterial.setTexture("decalSampler", this.decalTexture);
+            finalMaterial.setTexture("maskSampler", this._maskTexture);
             finalMaterial.backFaceCulling = false;
 
              // Create a full-screen quad
