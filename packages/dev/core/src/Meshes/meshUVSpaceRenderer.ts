@@ -21,7 +21,7 @@ import "../Shaders/meshUVSpaceRendererMasker.fragment";
 import "../Shaders/meshUVSpaceRendererFinaliser.fragment";
 import "../Shaders/meshUVSpaceRendererFinaliser.vertex";
 // import { MeshBuilder } from "./meshBuilder";
-import type { PBRMaterial} from "..";
+import { PBRMaterial} from "..";
 // import { TextureFormat } from "..";
 
 
@@ -92,13 +92,13 @@ export class MeshUVSpaceRenderer {
                 },
                 {
                     attributes: ["position", "normal", "uv"],
-                    uniforms: ["world", "projMatrix"],
-                    samplers: ["textureSampler"],
+                    uniforms: ["world", "projMatrix", "texelSize"],
+                    samplers: ["textureSampler", "maskTexture"],
                     needAlphaBlending: true,
                 }
             );
             shader.backFaceCulling = false;
-            shader.alphaMode = 0;
+            shader.alphaMode = Constants.ALPHA_COMBINE;
 
             scene.onDisposeObservable.add(() => {
                 scene._meshUVSpaceRendererShader?.dispose();
@@ -183,24 +183,38 @@ export class MeshUVSpaceRenderer {
     }
 
     // Method to use the mask texture to fix UV seams
-    public renderTexture(texture: BaseTexture, position: Vector3, normal: Vector3, size: Vector3, angle = 0): void {
+    public async renderTexture(texture: BaseTexture, position: Vector3, normal: Vector3, size: Vector3, angle = 0): void {
+        // Ensure the mask texture is ready for seam fixing
+        //todo flag
+        await this._createMaskTexture();
+
+        this._createSeamTexture();
+
         // Create the diffuse render target texture if it doesn't exist
         if (!this.decalTexture) {
             this._createDiffuseRTT();
         }
 
-        // Ensure the mask texture is ready for seam fixing
-        this._createMaskTexture();
+        const plane = MeshBuilder.CreatePlane("image", {size: 1},  this._scene);
+        const pbr = new PBRMaterial("P", this._scene);
+        pbr.roughness = 1;
+        pbr.emissiveTexture = this._maskTexture;
+        pbr.emissiveIntensity = 1;
+        pbr.emissiveColor = new Color3(1, 1, 1);
+        pbr.albedoTexture = this._maskTexture;
+        plane.material = pbr;
+        pbr.disableLighting = true;
 
-        // const plane = MeshBuilder.CreatePlane("image", {size: 1},  this._scene);
-        // const pbr = new PBRMaterial("P", this._scene);
-        // pbr.roughness = 1;
-        // pbr.emissiveTexture = this._maskTexture;
-        // pbr.emissiveIntensity = 1;
-        // pbr.emissiveColor = new Color3(1, 1, 1);
-        // pbr.albedoTexture = this._maskTexture;
-        // plane.material = pbr;
-        // pbr.disableLighting = true;
+        const plane2 = MeshBuilder.CreatePlane("image", {size: 1},  this._scene);
+        const pbr2 = new PBRMaterial("P2", this._scene);
+        pbr2.roughness = 1;
+        pbr2.emissiveTexture = this._seamTexture;
+        pbr2.emissiveIntensity = 1;
+        pbr2.emissiveColor = new Color3(1, 1, 1);
+        pbr2.albedoTexture = this._seamTexture;
+        plane2.material = pbr2;
+        pbr2.disableLighting = true;
+        plane2.position.y -= 1;
 
         // Prepare the shader with the decal texture, mask texture, and necessary uniforms
         const shader = MeshUVSpaceRenderer._GetShader(this._scene);
@@ -230,12 +244,33 @@ export class MeshUVSpaceRenderer {
         this._createFinalTexture();
     }
 
+    private combineTextures(t1: RenderTargetTexture, t2: RenderTargetTexture): void { 
+        const shaderMaterial = new ShaderMaterial("shaderMaterial", this._scene, {
+            vertex: "custom",   // Replace with your vertex shader path or string
+            fragment: "custom", // Replace with your fragment shader path or string
+        }, {
+            attributes: ["position", "uv"],
+            uniforms: ["worldViewProjection", "texture1", "texture2", "blendFactor"]
+        });
+        
+        // Assign textures
+        shaderMaterial.setTexture("texture1", t1);
+        shaderMaterial.setTexture("texture2", t2);
+        
+        // Set blend factor (0.0 to 1.0)
+        shaderMaterial.setFloat("blendFactor", 0.5);
+        
+        // Create a plane and apply the material
+        const plane = MeshBuilder.CreatePlane("plane", {size: 1}, this._scene);
+        plane.material = shaderMaterial;
+    }
+
     private _createMaskTexture(): void {
         if (this._maskTexture) {
             return; // Mask texture already created
-        }
-        
+        }  
         try {
+
             this._scene.clearColor = new Color4(0,0,0,1);
             // Create a new render target texture for the mask
             this._maskTexture = new RenderTargetTexture(
@@ -266,6 +301,8 @@ export class MeshUVSpaceRenderer {
             maskMaterial.setTexture("textureSampler", this._mesh.material.albedoTexture);
             maskMaterial.backFaceCulling = false;
 
+            this._mesh.material = this._mesh.material as PBRMaterial;
+            maskMaterial.backFaceCulling = false;
     
             // Render the mesh with the mask material to the mask texture
             this._maskTexture.renderList.push(this._mesh);
@@ -274,7 +311,7 @@ export class MeshUVSpaceRenderer {
             // Ensure the mask texture is updated
             this._maskTexture.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
             this._scene.customRenderTargets.push(this._maskTexture);
-
+            Promise.resolve();
         } catch (error) {
             console.error("Error creating mask texture:", error);
         }
