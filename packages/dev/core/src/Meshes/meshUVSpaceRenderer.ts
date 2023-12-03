@@ -260,8 +260,7 @@ export class MeshUVSpaceRenderer {
                 }
             );
 
-            this._mesh.material = this._mesh.material as PBRMaterial;
-            maskMaterial.setTexture("textureSampler", this._mesh.material.albedoTexture);
+            maskMaterial.setTexture("textureSampler", this._mesh.material?.albedoTexture);
             maskMaterial.backFaceCulling = false;
 
             this._mesh.material = this._mesh.material as PBRMaterial;
@@ -317,6 +316,7 @@ export class MeshUVSpaceRenderer {
             
             if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture)) {
                 this._scene.customRenderTargets.push(this.texture);
+                this.texture.renderList?.push(this._mesh);
                 this.texture.setMaterialForRendering(this._mesh, finalMaterial);
                 this.texture.render();
             }
