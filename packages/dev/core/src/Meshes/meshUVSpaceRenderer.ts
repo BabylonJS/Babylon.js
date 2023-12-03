@@ -20,7 +20,7 @@ import "../Shaders/meshUVSpaceRendererMasker.fragment";
 import "../Shaders/meshUVSpaceRendererFinaliser.fragment";
 import "../Shaders/meshUVSpaceRendererFinaliser.vertex";
 // import { MeshBuilder } from "./meshBuilder";
-import { Material, MeshBuilder, PBRMaterial} from "..";
+import { Material, Mesh, MeshBuilder, PBRMaterial} from "..";
 // import { TextureFormat } from "..";
 
 
@@ -313,22 +313,28 @@ export class MeshUVSpaceRenderer {
             finalMaterial.setTexture("maskTexture", this._maskTexture);
             finalMaterial.backFaceCulling = false;
 
-            
+             // Create a full-screen quad
+            const fullScreenQuad = MeshBuilder.CreatePlane("image", { size: 1 },  this._scene);
+            // fullScreenQuad.scaling.y = -1; // Invert Y for correct UVs
+            // fullScreenQuad.position.z = 1; // Place it in front of the camera
+            fullScreenQuad.isPickable = false; // Ensure it does not interfere with scene interaction
+            fullScreenQuad.setEnabled(true);
+            // fullScreenQuad.material = finalMaterial;
             if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture)) {
                 this._scene.customRenderTargets.push(this.texture);
-                this.texture.renderList?.push(this._mesh);
-                this.texture.setMaterialForRendering(this._mesh, finalMaterial);
+                this.texture.renderList?.push(fullScreenQuad);
+                this.texture.setMaterialForRendering(fullScreenQuad, finalMaterial);
                 this.texture.render();
             }
-            const plane = MeshBuilder.CreatePlane("image", {size: 1},  this._scene);
-            const pbr = new PBRMaterial("P", this._scene);
-            pbr.roughness = 1;
-            pbr.emissiveTexture = this.texture;
-            pbr.emissiveIntensity = 1;
-            pbr.emissiveColor = new Color3(1, 1, 1);
-            pbr.albedoTexture = this.texture;
-            plane.material = pbr;
-            pbr.disableLighting = true;
+            // const plane = MeshBuilder.CreatePlane("image", {size: 1},  this._scene);
+            // const pbr = new PBRMaterial("P", this._scene);
+            // pbr.roughness = 1;
+            // pbr.emissiveTexture = this.texture;
+            // pbr.emissiveIntensity = 1;
+            // pbr.emissiveColor = new Color3(1, 1, 1);
+            // pbr.albedoTexture = this.texture;
+            // plane.material = pbr;
+            // pbr.disableLighting = true;
         } catch (error) {
             console.error("Error creating final texture:", error);
         }
