@@ -314,10 +314,11 @@ export class MeshUVSpaceRenderer {
             maskMaterial.setTexture("maskTexture", this._maskTexture);
             maskMaterial.backFaceCulling = false;
 
-
+            
             // Ensure the mask texture is updated
-            // this._scene.customRenderTargets.push(this.texture);
             if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture)) {
+                this._scene.customRenderTargets.push(this.texture);
+
                 this.texture.render();
             }
             const plane = MeshBuilder.CreatePlane("image", {size: 1},  this._scene);
@@ -330,7 +331,7 @@ export class MeshUVSpaceRenderer {
             plane.material = pbr;
             pbr.disableLighting = true;
         } catch (error) {
-            console.error("Error creating mask texture:", error);
+            console.error("Error creating final texture:", error);
         }
     }
 
