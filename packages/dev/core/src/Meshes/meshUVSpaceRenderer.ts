@@ -79,6 +79,10 @@ export class MeshUVSpaceRenderer {
      *
      */
     _finalTexture: any;
+    
+    /**
+     *
+     */
     decalTexture: any;
 
     private static _GetShader(scene: Scene): ShaderMaterial {
