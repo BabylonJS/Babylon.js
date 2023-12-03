@@ -7,8 +7,6 @@ attribute vec2 uv;
 uniform mat4 projMatrix;
 
 varying vec2 vDecalTC;
-varying vec2 vUV;
-
 
 #include<bonesDeclaration>
 #include<bakedVertexAnimationDeclaration>
@@ -17,7 +15,6 @@ varying vec2 vUV;
 #include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
 
 #include<instancesDeclaration>
-
 
 void main(void) {
     vec3 positionUpdated = position;
@@ -51,7 +48,6 @@ void main(void) {
 
     vec3 decalTC = (projMatrix * worldPos).xyz;
     vDecalTC = decalTC.xy;
-    vUV = uv;
 
     gl_Position = vec4(uv * 2.0 - 1.0, normalView.z > 0.0 ? 2. : decalTC.z, 1.0);
 }
