@@ -9,7 +9,10 @@ import { Matrix, Vector2 } from "core/Maths/math.vector";
 import { Constants } from "core/Engines/constants";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
-import {  Color3, Color4 } from "core/Maths/math.color";
+import { Color4 } from "core/Maths/math.color";
+import { PBRMaterial} from "core/Materials/PBR/pbrMaterial";
+import { StandardMaterial } from "core/Materials/standardMaterial";
+import { PostProcess } from "core/PostProcesses/postProcess";
 
 import "../Shaders/meshUVSpaceRenderer.vertex";
 import "../Shaders/meshUVSpaceRenderer.fragment";
@@ -19,10 +22,6 @@ import "../Shaders/meshUVSpaceRendererMasker.fragment";
 
 import "../Shaders/meshUVSpaceRendererFinaliser.fragment";
 import "../Shaders/meshUVSpaceRendererFinaliser.vertex";
-// import { MeshBuilder } from "./meshBuilder";
-import type { PBRMaterial} from "..";
-import { Material, Mesh, MeshBuilder, PostProcess} from "..";
-// import { TextureFormat } from "..";
 
 
 declare module "../scene" {
@@ -167,7 +166,7 @@ export class MeshUVSpaceRenderer {
         return MeshUVSpaceRenderer._IsRenderTargetTexture(this.decalTexture) ? this.decalTexture.isReadyForRendering() : this.decalTexture.isReady();
     }
 
-/**
+    /**
      * Projects and renders a texture in the mesh UV space
      * @param texture The texture
      * @param position The position of the center of projection (world space coordinates)
@@ -187,16 +186,6 @@ export class MeshUVSpaceRenderer {
             this._createDiffuseRTT();
         }
 
-        // const plane = MeshBuilder.CreatePlane("image", {size: 1},  this._scene);
-        // const pbr = new PBRMaterial("P", this._scene);
-        // pbr.roughness = 1;
-        // pbr.emissiveTexture = this._maskTexture;
-        // pbr.emissiveIntensity = 1;
-        // pbr.emissiveColor = new Color3(1, 1, 1);
-        // pbr.albedoTexture = this._maskTexture;
-        // plane.material = pbr;
-        // pbr.disableLighting = true;
-
         // // Prepare the shader with the decal texture, mask texture, and necessary uniforms
         const shader = MeshUVSpaceRenderer._GetShader(this._scene);
         shader.setTexture("textureSampler", texture); // Decal texture
@@ -213,7 +202,7 @@ export class MeshUVSpaceRenderer {
 
     private _createMaskTexture(): void {
         if (this._maskTexture) {
-            return; // Mask texture already created
+            return;
         }  
         try {
 
@@ -243,7 +232,19 @@ export class MeshUVSpaceRenderer {
                 }
             );
 
-            maskMaterial.setTexture("textureSampler", this._mesh.material?.albedoTexture);
+            let texture = null;
+            if (this._mesh.material instanceof PBRMaterial) {
+                texture = (this._mesh.material as PBRMaterial).albedoTexture;
+            } else if (this._mesh.material instanceof StandardMaterial) {
+                texture = (this._mesh.material as StandardMaterial).diffuseTexture;
+            }
+        
+            if (texture) {
+                maskMaterial.setTexture("textureSampler", texture);
+            } else {
+                console.error("Material does not have a valid texture property.");
+            }
+
             maskMaterial.backFaceCulling = false;
 
             this._mesh.material = this._mesh.material as PBRMaterial;
