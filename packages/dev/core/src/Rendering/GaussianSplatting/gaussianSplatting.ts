@@ -1,18 +1,23 @@
-import { Effect, Material, ShaderMaterial } from "core/Materials";
-import { Matrix, Quaternion, Vector2 } from "core/Maths/math.vector";
-import { Mesh } from "core/Meshes/mesh";
-import { VertexData } from "core/Meshes/mesh.vertexData";
-import { Tools } from "core/Misc/tools";
-import { Scene } from "core/scene";
-import { Nullable } from "core/types";
+import { Effect, Material, ShaderMaterial } from "../../Materials";
+import { Matrix, Quaternion, Vector2 } from "../../Maths/math.vector";
+import { Mesh } from "../../Meshes/mesh";
+import { VertexData } from "../../Meshes/mesh.vertexData";
+import { Observer } from "../../Misc/observable";
+import { Tools } from "../../Misc/tools";
+import { Scene } from "../../scene";
+import { Nullable } from "../../types";
 
 export class GaussianSplatting {
     private _vertexCount: number = 0;
-    protected _positions: Float32Array;
-    protected _u_buffer: Uint8Array;
-    protected _covA: Float32Array;
-    protected _covB: Float32Array;
-    protected _mesh: Nullable<Mesh>;
+    private _positions: Float32Array;
+    private _u_buffer: Uint8Array;
+    private _covA: Float32Array;
+    private _covB: Float32Array;
+    private _mesh: Nullable<Mesh>;
+    private _sceneDisposeObserver: Nullable<Observer<Scene>>;
+
+    public readonly name: string;
+    public readonly scene: Scene;
 
     /**
      * return the number of splattings used
@@ -46,7 +51,7 @@ export class GaussianSplatting {
     }
 
     private _getMesh(scene: Scene): Mesh {
-        const mesh = new Mesh("custom", scene);
+        const mesh = new Mesh(this.name, scene);
         var vertexData = new VertexData();
         vertexData.positions = [-2, -2, 0, 2, -2, 0, 2, 2, 0, -2, 2, 0];
         vertexData.indices = [0, 1, 2, 0, 2, 3];
@@ -233,12 +238,21 @@ export class GaussianSplatting {
     }
 
     /**
-     * 
+     *
+     * @param scene
+     */
+    constructor(name: string, scene: Scene) {
+        this.scene = scene;
+        this.name = name;
+    }
+
+    /**
+     *
      * @param url path to the splat file to load
      * @param scene scene to load the Gaussian Splatting into
      * @returns a promise that resolves when the operation is complete
      */
-    public loadAsync(url: string, scene: Scene): Promise<void> {
+    public loadAsync(url: string): Promise<void> {
         return Tools.LoadFileAsync(url, true).then((data: string | ArrayBuffer) => {
             if (this._mesh) {
                 this.dispose();
@@ -269,7 +283,7 @@ export class GaussianSplatting {
                 }
 
                 if (!this._mesh) {
-                    this._mesh = this._getMesh(scene);
+                    this._mesh = this._getMesh(this.scene);
                     this._mesh.thinInstanceSetBuffer("matrix", matricesData, 16, false);
                 } else {
                     this._mesh.thinInstanceBufferUpdated("matrix");
@@ -291,14 +305,14 @@ export class GaussianSplatting {
                 const indexMix = new Uint32Array(e.data.depthMix.buffer);
                 updateInstances(indexMix);
             };
-            scene.onBeforeRenderObservable.add(() => {
+            this.scene.onBeforeRenderObservable.add(() => {
                 if (this._mesh && GaussianSplatting._Worker) {
-                    const engine = scene.getEngine();
+                    const engine = this.scene.getEngine();
                     GaussianSplatting._Material?.setVector2("viewport", new Vector2(engine.getRenderWidth(), engine.getRenderHeight()));
-                    GaussianSplatting._Worker.postMessage({ view: scene.activeCamera?.getViewMatrix().m, positions: this._positions });
+                    GaussianSplatting._Worker.postMessage({ view: this.scene.activeCamera?.getViewMatrix().m, positions: this._positions });
                 }
             });
-            scene.onDisposeObservable.add(() => {
+            this._sceneDisposeObserver = this.scene.onDisposeObservable.add(() => {
                 this.dispose();
             });
         });
@@ -308,6 +322,7 @@ export class GaussianSplatting {
      * Clear datas used for Gaussian Splatting and associated resources
      */
     public dispose(): void {
+        this.scene.onDisposeObservable.remove(this._sceneDisposeObserver);
         GaussianSplatting._Worker?.terminate();
         GaussianSplatting._Worker = null;
         this._mesh?.dispose();
