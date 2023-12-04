@@ -213,7 +213,6 @@ export class MeshUVSpaceRenderer {
             return;
         }
         try {
-            this._scene.clearColor = new Color4(0, 0, 0, 1);
             // Create a new render target texture for the mask
             this._maskTexture = new RenderTargetTexture(
                 "maskTexture",
@@ -288,8 +287,6 @@ export class MeshUVSpaceRenderer {
         }
 
         try {
-            this._scene.clearColor = new Color4(0, 0, 0, 1);
-
             // Set up the shader material
             this.finalMaterial = new ShaderMaterial(
                 "meshUVSpaceRendererFinaliserShader",
