@@ -60,6 +60,10 @@ export interface IMeshUVSpaceRendererOptions {
      * If you plan to use the texture as a decal map and rotate / offset the texture, you should set this to false
      */
     optimizeUVAllocation?: boolean;
+    /**
+     * If true, the texture will be blended with the mesh's texture to avoid seams. Default: false
+     */
+    uvEdgeBlending?: boolean;
 }
 
 /**
@@ -72,22 +76,25 @@ export class MeshUVSpaceRenderer {
     private _options: Required<IMeshUVSpaceRendererOptions>;
     private _textureCreatedInternally = false;
     /**
-     *
+     * Mask Texture for the UV Edge Blending
      */
     _maskTexture: any;
     /**
-     *
+     * Final Texture for the UV Edge Blending
      */
     _finalTexture: any;
     
     /**
-     *
+     * The decal texture
      */
     decalTexture: Texture;
     /**
-     *
+     * The final material for the UV Edge Blending
      */
     public finalMaterial: ShaderMaterial;
+    /**
+     * The final post process for the UV Edge Blending
+     */
     _finalPostProcess: any;
 
     private static _GetShader(scene: Scene): ShaderMaterial {
@@ -151,6 +158,7 @@ export class MeshUVSpaceRenderer {
             textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             generateMipMaps: true,
             optimizeUVAllocation: true,
+            uvEdgeBlending: options?.uvEdgeBlending ?? false,
             ...options,
         };
     }
@@ -191,8 +199,12 @@ export class MeshUVSpaceRenderer {
 
         if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.decalTexture)) {
             this.decalTexture.render();
-            await this._createMaskTexture();
-            this._createFinalTexture();
+            if(this._options.uvEdgeBlending) {
+                await this._createMaskTexture();
+                this._createFinalTexture();
+            } else {
+                this.texture = this.decalTexture;
+            }
         }
     }
 
@@ -202,7 +214,6 @@ export class MeshUVSpaceRenderer {
             return;
         }  
         try {
-
             this._scene.clearColor = new Color4(0,0,0,1);
             // Create a new render target texture for the mask
             this._maskTexture = new RenderTargetTexture(
@@ -326,8 +337,6 @@ export class MeshUVSpaceRenderer {
             console.error("Error creating final texture:", error);
         }
     }
-    
-    
 
     /**
      * Clears the texture map
