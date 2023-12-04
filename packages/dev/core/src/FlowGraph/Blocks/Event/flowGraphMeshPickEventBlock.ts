@@ -26,8 +26,7 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
     }
 
     public _getReferencedMesh(context: FlowGraphContext): AbstractMesh | undefined {
-        const mesh = this.config.path.getProperty(context);
-        return mesh;
+        return this.config.path.getProperty(context);
     }
 
     /**
