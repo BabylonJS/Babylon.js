@@ -6,6 +6,8 @@ import { StandardMaterial } from "core/Materials/standardMaterial";
 import type { Mesh } from "core/Meshes/mesh";
 import type { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
+import { Color3, Color4 } from "core/Maths/math.color";
+import type { Nullable } from "core/types";
 
 export class CustomShaderStructure {
     public FragmentStore: string;
@@ -53,7 +55,6 @@ export class ShaderSpecialParts {
 export class CustomMaterial extends StandardMaterial {
     public static ShaderIndexer = 1;
     public CustomParts: ShaderSpecialParts;
-    _isCreatedShader: boolean;
     _createdShaderName: string;
     _customUniform: string[];
     _newUniforms: string[];
@@ -71,8 +72,17 @@ export class CustomMaterial extends StandardMaterial {
                 if (ea[0] == "vec2") {
                     effect.setVector2(ea[1], this._newUniformInstances[el]);
                 } else if (ea[0] == "vec3") {
-                    effect.setVector3(ea[1], this._newUniformInstances[el]);
+                    if (this._newUniformInstances[el] instanceof Color3) {
+                        effect.setColor3(ea[1], this._newUniformInstances[el]);
+                    } else {
+                        effect.setVector3(ea[1], this._newUniformInstances[el]);
+                    }
                 } else if (ea[0] == "vec4") {
+                    if (this._newUniformInstances[el] instanceof Color4) {
+                        effect.setDirectColor4(ea[1], this._newUniformInstances[el]);
+                    } else {
+                        effect.setVector4(ea[1], this._newUniformInstances[el]);
+                    }
                     effect.setVector4(ea[1], this._newUniformInstances[el]);
                 } else if (ea[0] == "mat4") {
                     effect.setMatrix(ea[1], this._newUniformInstances[el]);
@@ -117,24 +127,11 @@ export class CustomMaterial extends StandardMaterial {
         this.ReviewUniform("uniform", uniforms);
         this.ReviewUniform("sampler", samplers);
 
-        if (this._isCreatedShader) {
-            return this._createdShaderName;
+        const name = this._createdShaderName;
+
+        if (Effect.ShadersStore[name + "VertexShader"] && Effect.ShadersStore[name + "PixelShader"]) {
+            return name;
         }
-        this._isCreatedShader = false;
-
-        CustomMaterial.ShaderIndexer++;
-        const name: string = "custom_" + CustomMaterial.ShaderIndexer;
-
-        const fn_afterBind = this._afterBind.bind(this);
-        this._afterBind = (m, e) => {
-            if (!e) {
-                return;
-            }
-            this.AttachAfterBind(m, e);
-            try {
-                fn_afterBind(m, e);
-            } catch (e) {}
-        };
 
         Effect.ShadersStore[name + "VertexShader"] = this.VertexShader.replace("#define CUSTOM_VERTEX_BEGIN", this.CustomParts.Vertex_Begin ? this.CustomParts.Vertex_Begin : "")
             .replace(
@@ -175,9 +172,6 @@ export class CustomMaterial extends StandardMaterial {
             );
         }
 
-        this._isCreatedShader = true;
-        this._createdShaderName = name;
-
         return name;
     }
 
@@ -188,6 +182,19 @@ export class CustomMaterial extends StandardMaterial {
 
         this.FragmentShader = Effect.ShadersStore["defaultPixelShader"];
         this.VertexShader = Effect.ShadersStore["defaultVertexShader"];
+
+        CustomMaterial.ShaderIndexer++;
+        this._createdShaderName = "custom_" + CustomMaterial.ShaderIndexer;
+    }
+
+    protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null): void {
+        if (!effect) {
+            return;
+        }
+        this.AttachAfterBind(mesh, effect);
+        try {
+            super._afterBind(mesh, effect);
+        } catch (e) {}
     }
 
     public AddUniform(name: string, kind: string, param: any): CustomMaterial {

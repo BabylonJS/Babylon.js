@@ -1,7 +1,18 @@
+import { PickingInfo } from "core/Collisions";
 import type { Engine } from "core/Engines";
 import { NullEngine } from "core/Engines";
+import { PointerEventTypes, PointerInfo } from "core/Events";
 import type { FlowGraph, FlowGraphContext } from "core/FlowGraph";
-import { FlowGraphCoordinator, FlowGraphConsoleLogBlock, FlowGraphReceiveCustomEventBlock, FlowGraphSceneReadyEventBlock, FlowGraphSendCustomEventBlock } from "core/FlowGraph";
+import {
+    FlowGraphCoordinator,
+    FlowGraphConsoleLogBlock,
+    FlowGraphMeshPickEventBlock,
+    FlowGraphPath,
+    FlowGraphReceiveCustomEventBlock,
+    FlowGraphSceneReadyEventBlock,
+    FlowGraphSendCustomEventBlock,
+} from "core/FlowGraph";
+import { Mesh } from "core/Meshes";
 import { Scene } from "core/scene";
 
 describe("Flow Graph Event Nodes", () => {
@@ -55,5 +66,48 @@ describe("Flow Graph Event Nodes", () => {
         scene.onReadyObservable.notifyObservers(scene);
 
         expect(console.log).toHaveBeenCalledWith(42);
+    });
+
+    it("Mesh Pick Event Bubbling", () => {
+        const graph = flowGraphCoordinator.createGraph();
+        const context = graph.createContext();
+
+        // We have three meshes, mesh1 is the parent of mesh2, which is the parent of mesh3
+        const mesh1 = new Mesh("mesh1", scene);
+        const mesh2 = new Mesh("mesh2", scene);
+        mesh2.parent = mesh1;
+        const mesh3 = new Mesh("mesh3", scene);
+        mesh3.parent = mesh2;
+
+        context.setVariable("meshes", [mesh1, mesh2, mesh3]);
+
+        // Create a mesh pick event on mesh1 and mesh3
+        const meshPick1 = new FlowGraphMeshPickEventBlock({ name: "MeshPick1", path: new FlowGraphPath("/meshes/0") });
+        graph.addEventBlock(meshPick1);
+        const meshPick3 = new FlowGraphMeshPickEventBlock({ name: "MeshPick3", path: new FlowGraphPath("/meshes/2") });
+        graph.addEventBlock(meshPick3);
+
+        // Create a console log block for each mesh pick
+        const meshLog1 = new FlowGraphConsoleLogBlock({ name: "MeshLog1" });
+        meshPick1.out.connectTo(meshLog1.in);
+        meshLog1.message.setValue("Mesh 1 was picked", context);
+        const meshLog3 = new FlowGraphConsoleLogBlock({ name: "MeshLog3" });
+        meshPick3.out.connectTo(meshLog3.in);
+        meshLog3.message.setValue("Mesh 3 was picked", context);
+
+        // Start the graph
+        graph.start();
+
+        // Notify that the mesh3 was picked
+        const pickInfo = new PickingInfo();
+        pickInfo.hit = true;
+        pickInfo.pickedMesh = mesh3;
+        const mouseEvent = {} as any;
+        const pointerInfo = new PointerInfo(PointerEventTypes.POINTERPICK, mouseEvent, pickInfo);
+        scene.onPointerObservable.notifyObservers(pointerInfo);
+
+        // Mesh3 was picked, so we expect the pick to "bubble up" to mesh1
+        expect(console.log).toHaveBeenNthCalledWith(1, "Mesh 3 was picked");
+        expect(console.log).toHaveBeenNthCalledWith(2, "Mesh 1 was picked");
     });
 });

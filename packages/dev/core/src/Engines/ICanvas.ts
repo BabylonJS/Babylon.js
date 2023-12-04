@@ -113,6 +113,48 @@ export interface ITextMetrics {
 }
 
 /**
+ * Class used to abstract a matrix
+ */
+export interface DOMMatrix {
+    /**
+     * A Boolean flag whose value is true if the matrix was initialized as a 2D matrix. If false, the matrix is 3D.
+     */
+    is2D: boolean;
+    /**
+     * A Boolean whose value is true if the matrix is the identity matrix. The identity matrix is one in which every value is 0 except those on the main diagonal from top-left to bottom-right corner (in other words, where the offsets in each direction are equal).
+     */
+    isIdentity: boolean;
+    /**
+     * The following double-precision floating-point values represent the components of a matrix which are required in order to perform 2D rotations and translations.
+     */
+    a: number;
+    b: number;
+    c: number;
+    d: number;
+    e: number;
+    f: number;
+    /**
+     * The following are double-precision floating-point values representing each component of a 4×4 matrix, where m11 through m14 are the first column, m21 through m24 are the second column, and so forth.
+     */
+    m11: number;
+    m12: number;
+    m13: number;
+    m14: number;
+    m21: number;
+    m22: number;
+    m23: number;
+    m24: number;
+    m31: number;
+    m32: number;
+    m33: number;
+    m34: number;
+    m41: number;
+    m42: number;
+    m43: number;
+    m44: number;
+}
+
+/**
  * Class used to abstract canvas rendering
  */
 export interface ICanvasRenderingContext {
@@ -415,4 +457,9 @@ export interface ICanvasRenderingContext {
      * @param f Vertical translation (moving).
      */
     setTransform(a: number, b: number, c: number, d: number, e: number, f: number): void;
+
+    /**
+     * Retrieves the current transformation matrix being applied to the context.
+     */
+    getTransform(): DOMMatrix;
 }
