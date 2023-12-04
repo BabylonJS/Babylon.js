@@ -88,7 +88,7 @@ export class MeshUVSpaceRenderer {
     /**
      *
      */
-    finalMaterial: ShaderMaterial;
+    public finalMaterial: ShaderMaterial;
 
     private static _GetShader(scene: Scene): ShaderMaterial {
         if (!scene._meshUVSpaceRendererShader) {

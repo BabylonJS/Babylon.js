@@ -15,7 +15,7 @@ void main() {
     if (mask.r > 0.5) {
         gl_FragColor = texture2D(textureSampler, vUV);
     } else {
-        vec2 texelSize = 1.0 / textureSize;
+        vec2 texelSize = 4.0 / textureSize;
 
         vec2 uv_p01 = vUV + vec2(-1.0, 0.0) * texelSize;
         vec2 uv_p21 = vUV + vec2(1.0, 0.0) * texelSize;
