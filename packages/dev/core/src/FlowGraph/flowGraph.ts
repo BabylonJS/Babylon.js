@@ -8,7 +8,7 @@ import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 import type { FlowGraphCoordinator } from "./flowGraphCoordinator";
 import type { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
-import { FlowGraphMeshPickEventBlock } from "./Blocks";
+import { FlowGraphMeshPickEventBlock } from "./Blocks/Event/flowGraphMeshPickEventBlock";
 import { _isADescendantOf } from "./utils";
 
 export enum FlowGraphState {
@@ -113,10 +113,10 @@ export class FlowGraph {
         for (const block1 of this._eventBlocks) {
             // If the block is a mesh pick, guarantee that picks of children meshes come before picks of parent meshes
             if (block1.getClassName() === FlowGraphMeshPickEventBlock.ClassName) {
+                const mesh1 = (block1 as FlowGraphMeshPickEventBlock)._getReferencedMesh(context);
                 let i = 0;
                 for (; i < order.length; i++) {
                     const block2 = order[i];
-                    const mesh1 = (block1 as FlowGraphMeshPickEventBlock)._getReferencedMesh(context);
                     const mesh2 = (block2 as FlowGraphMeshPickEventBlock)._getReferencedMesh(context);
                     if (mesh1 && mesh2 && _isADescendantOf(mesh1, mesh2)) {
                         break;
