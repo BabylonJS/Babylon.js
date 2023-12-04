@@ -381,15 +381,15 @@ export class Gizmo implements IGizmo {
      * And the pivot is applied each frame. Removing it anyway here makes it applied only in computeWorldMatrix.
      * @param transform local transform that needs to be transform by the pivot inverse matrix
      * @param localMatrix local matrix that needs to be transform by the pivot inverse matrix
-     * @returns matrix transformed by pivot inverse if the transform node is using pivot without using post Multiply Pivot Matrix
+     * @param result resulting matrix transformed by pivot inverse if the transform node is using pivot without using post Multiply Pivot Matrix
      */
-    protected _handlePivotMatrixInverse(transform: TransformNode, localMatrix: Matrix): Matrix {
+    protected _handlePivotMatrixInverse(transform: TransformNode, localMatrix: Matrix, result: Matrix): void {
         if (transform.isUsingPivotMatrix() && !transform.isUsingPostMultiplyPivotMatrix()) {
             transform.getPivotMatrix().invertToRef(TmpVectors.Matrix[5]);
-            TmpVectors.Matrix[5].multiplyToRef(localMatrix /*this._attachedNode._worldMatrix*/, TmpVectors.Matrix[4]);
-            return TmpVectors.Matrix[4];
+            TmpVectors.Matrix[5].multiplyToRef(localMatrix, result);
+            return;
         }
-        return localMatrix;
+        result.copyFrom(localMatrix);
     }
     /**
      * computes the rotation/scaling/position of the transform once the Node world matrix has changed.
@@ -453,7 +453,8 @@ export class Gizmo implements IGizmo {
                 const localMat = TmpVectors.Matrix[1];
                 transform.parent.getWorldMatrix().invertToRef(parentInv);
                 this._attachedNode.getWorldMatrix().multiplyToRef(parentInv, localMat);
-                const matrixToDecompose = this._handlePivotMatrixInverse(transform, localMat);
+                const matrixToDecompose = TmpVectors.Matrix[4];
+                this._handlePivotMatrixInverse(transform, localMat, matrixToDecompose);
                 matrixToDecompose.decompose(
                     TmpVectors.Vector3[0],
                     TmpVectors.Quaternion[0],
@@ -487,7 +488,8 @@ export class Gizmo implements IGizmo {
                     transform.position.subtractInPlace(TmpVectors.Vector3[1]);
                 }
             } else {
-                const matrixToDecompose = this._handlePivotMatrixInverse(transform, this._attachedNode._worldMatrix);
+                const matrixToDecompose = TmpVectors.Matrix[4];
+                this._handlePivotMatrixInverse(transform, this._attachedNode._worldMatrix, matrixToDecompose);
                 matrixToDecompose.decompose(
                     TmpVectors.Vector3[0],
                     TmpVectors.Quaternion[0],
