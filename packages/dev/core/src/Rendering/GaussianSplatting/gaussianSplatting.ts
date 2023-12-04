@@ -1,5 +1,6 @@
-import type { Material} from "../../Materials";
-import { Effect, ShaderMaterial } from "../../Materials";
+import type { Material } from "../../Materials/material";
+import { Effect } from "../../Materials/effect";
+import { ShaderMaterial } from "../../Materials/shaderMaterial";
 import { Matrix, Quaternion, Vector2 } from "../../Maths/math.vector";
 import { Mesh } from "../../Meshes/mesh";
 import { VertexData } from "../../Meshes/mesh.vertexData";
@@ -9,7 +10,7 @@ import type { Scene } from "../../scene";
 import type { Nullable } from "../../types";
 
 /**
- * 
+ *
  */
 export class GaussianSplatting {
     private _vertexCount: number = 0;
@@ -21,11 +22,11 @@ export class GaussianSplatting {
     private _sceneDisposeObserver: Nullable<Observer<Scene>>;
 
     /**
-     * 
+     *
      */
     public readonly name: string;
     /**
-     * 
+     *
      */
     public readonly scene: Scene;
 
@@ -249,7 +250,8 @@ export class GaussianSplatting {
 
     /**
      *
-     * @param scene
+     * @param name name of the mesh used for rendering
+     * @param scene scene it belongs to
      */
     public constructor(name: string, scene: Scene) {
         this.scene = scene;
@@ -259,7 +261,6 @@ export class GaussianSplatting {
     /**
      *
      * @param url path to the splat file to load
-     * @param scene scene to load the Gaussian Splatting into
      * @returns a promise that resolves when the operation is complete
      */
     public loadAsync(url: string): Promise<void> {
