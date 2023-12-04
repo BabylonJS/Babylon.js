@@ -1,11 +1,11 @@
-import type { Texture } from "core/Materials/Textures/texture";
+import { Texture } from "core/Materials/Textures/texture";
 import type { Vector3 } from "core/Maths/math.vector";
 import type { Scene } from "core/scene";
 import type { AbstractMesh } from "./abstractMesh";
 import type { ThinTexture } from "core/Materials/Textures/thinTexture";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Nullable } from "core/types";
-import { Matrix } from "core/Maths/math.vector";
+import { Matrix, Vector2 } from "core/Maths/math.vector";
 import { Constants } from "core/Engines/constants";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
@@ -20,7 +20,8 @@ import "../Shaders/meshUVSpaceRendererMasker.fragment";
 import "../Shaders/meshUVSpaceRendererFinaliser.fragment";
 import "../Shaders/meshUVSpaceRendererFinaliser.vertex";
 // import { MeshBuilder } from "./meshBuilder";
-import { Material, Mesh, MeshBuilder, PBRMaterial} from "..";
+import type { PBRMaterial} from "..";
+import { Material, Mesh, MeshBuilder, PostProcess} from "..";
 // import { TextureFormat } from "..";
 
 
@@ -83,7 +84,11 @@ export class MeshUVSpaceRenderer {
     /**
      *
      */
-    decalTexture: any;
+    decalTexture: Texture;
+    /**
+     *
+     */
+    finalMaterial: ShaderMaterial;
 
     private static _GetShader(scene: Scene): ShaderMaterial {
         if (!scene._meshUVSpaceRendererShader) {
@@ -96,8 +101,8 @@ export class MeshUVSpaceRenderer {
                 },
                 {
                     attributes: ["position", "normal", "uv"],
-                    uniforms: ["world", "projMatrix", "texelSize"],
-                    samplers: ["textureSampler", "maskTexture"],
+                    uniforms: ["world", "projMatrix"],
+                    samplers: ["textureSampler"],
                     needAlphaBlending: true,
                 }
             );
@@ -155,11 +160,11 @@ export class MeshUVSpaceRenderer {
      * @returns true if the texture is ready to be used
      */
     public isReady(): boolean {
-        if (!this.texture) {
+        if (!this.decalTexture) {
             this._createDiffuseRTT();
         }
 
-        return MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture) ? this.texture.isReadyForRendering() : this.texture.isReady();
+        return MeshUVSpaceRenderer._IsRenderTargetTexture(this.decalTexture) ? this.decalTexture.isReadyForRendering() : this.decalTexture.isReady();
     }
 
 /**
@@ -172,7 +177,7 @@ export class MeshUVSpaceRenderer {
      */
 
     // Method to use the mask texture to fix UV seams
-    public async renderTexture(texture: BaseTexture, position: Vector3, normal: Vector3, size: Vector3, angle = 0): void {
+    public async renderTexture(texture: BaseTexture, position: Vector3, normal: Vector3, size: Vector3, angle = 0): Promise<void> {
         // Ensure the mask texture is ready for seam fixing
         //todo flag
         await this._createMaskTexture();
@@ -202,30 +207,8 @@ export class MeshUVSpaceRenderer {
 
         if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.decalTexture)) {
             this.decalTexture.render();
+            this._createFinalTexture();
         }
-
-        this._createFinalTexture();
-    }
-
-    private combineTextures(t1: RenderTargetTexture, t2: RenderTargetTexture): void { 
-        const shaderMaterial = new ShaderMaterial("shaderMaterial", this._scene, {
-            vertex: "custom",   // Replace with your vertex shader path or string
-            fragment: "custom", // Replace with your fragment shader path or string
-        }, {
-            attributes: ["position", "uv"],
-            uniforms: ["worldViewProjection", "texture1", "texture2", "blendFactor"]
-        });
-        
-        // Assign textures
-        shaderMaterial.setTexture("texture1", t1);
-        shaderMaterial.setTexture("texture2", t2);
-        
-        // Set blend factor (0.0 to 1.0)
-        shaderMaterial.setFloat("blendFactor", 0.5);
-        
-        // Create a plane and apply the material
-        const plane = MeshBuilder.CreatePlane("plane", {size: 1}, this._scene);
-        plane.material = shaderMaterial;
     }
 
     private _createMaskTexture(): void {
@@ -290,11 +273,12 @@ export class MeshUVSpaceRenderer {
                 this._options.textureType
             );
         }
-
+    
         try {
             this._scene.clearColor = new Color4(0, 0, 0, 1);
-            // Set up the mask material
-            const finalMaterial = new ShaderMaterial(
+    
+            // Set up the shader material
+            this.finalMaterial = new ShaderMaterial(
                 "meshUVSpaceRendererFinaliserShader",
                 this._scene,
                 {
@@ -303,53 +287,57 @@ export class MeshUVSpaceRenderer {
                 },
                 {
                     attributes: ["position", "uv"],
-                    // uniforms: ["worldViewProjection"],
-                    samplers: ["decalSampler", "maskSampler"]
+                    uniforms: ["worldViewProjection", "textureSize"],
+                    samplers: ["textureSampler", "maskTextureSampler"]
                 }
             );
-
-            // this._mesh.material = this._mesh.material as PBRMaterial;
-            finalMaterial.setTexture("decalSampler", this.decalTexture);
-            finalMaterial.setTexture("maskSampler", this._maskTexture);
-            finalMaterial.backFaceCulling = false;
-
-             // Create a full-screen quad
-            const fullScreenQuad = MeshBuilder.CreatePlane("image", { size: 1 },  this._scene);
-            // fullScreenQuad.scaling.y = -1; // Invert Y for correct UVs
-            // fullScreenQuad.position.z = 1; // Place it in front of the camera
-            fullScreenQuad.isPickable = false; // Ensure it does not interfere with scene interaction
-            fullScreenQuad.setEnabled(true);
-            // fullScreenQuad.material = finalMaterial;
+    
+            this.finalMaterial.setTexture("textureSampler", this.decalTexture);
+            this.finalMaterial.setTexture("maskTextureSampler", this._maskTexture);
+            this.finalMaterial.setVector2("textureSize", new Vector2(this._options.width, this._options.height));
+            this.finalMaterial.backFaceCulling = false;
+    
+            // Create and configure the post-process
+            const postProcess = new PostProcess(
+                "finalTexturePostProcess",
+                "meshUVSpaceRendererFinaliser",
+                ["textureSize"],
+                ["textureSampler", "maskTextureSampler"],
+                1.0, // options: scale ratio or PostProcessOptions object
+                null, // camera
+                Texture.NEAREST_SAMPLINGMODE, // sampling mode
+                this._scene.getEngine(), // engine
+                false, // reusable
+                null, // defines
+                this._options.textureType // textureType
+            );
+    
+            postProcess.onApply = (effect) => {
+                effect.setTexture("textureSampler", this.decalTexture);
+                effect.setTexture("maskTextureSampler", this._maskTexture);
+                effect.setVector2("textureSize", new Vector2(this._options.width, this._options.height));
+            };
+    
             if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture)) {
-                this._scene.customRenderTargets.push(this.texture);
-                this.texture.renderList?.push(fullScreenQuad);
-                this.texture.setMaterialForRendering(fullScreenQuad, finalMaterial);
+                this.texture.addPostProcess(postProcess);
                 this.texture.render();
             }
-            // const plane = MeshBuilder.CreatePlane("image", {size: 1},  this._scene);
-            // const pbr = new PBRMaterial("P", this._scene);
-            // pbr.roughness = 1;
-            // pbr.emissiveTexture = this.texture;
-            // pbr.emissiveIntensity = 1;
-            // pbr.emissiveColor = new Color3(1, 1, 1);
-            // pbr.albedoTexture = this.texture;
-            // plane.material = pbr;
-            // pbr.disableLighting = true;
         } catch (error) {
             console.error("Error creating final texture:", error);
         }
     }
+    
 
     /**
      * Clears the texture map
      */
     public clear(): void {
-        if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture) && this.texture.renderTarget) {
+        if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.decalTexture) && this.decalTexture.renderTarget) {
             const engine = this._scene.getEngine();
 
-            engine.bindFramebuffer(this.texture.renderTarget);
+            engine.bindFramebuffer(this.decalTexture.renderTarget);
             engine.clear(this.clearColor, true, true, true);
-            engine.unBindFramebuffer(this.texture.renderTarget);
+            engine.unBindFramebuffer(this.decalTexture.renderTarget);
         }
     }
 
@@ -358,7 +346,7 @@ export class MeshUVSpaceRenderer {
      */
     public dispose() {
         if (this._textureCreatedInternally) {
-            this.texture.dispose();
+            this.decalTexture.dispose();
             this._textureCreatedInternally = false;
         }
     } 
@@ -371,6 +359,11 @@ export class MeshUVSpaceRenderer {
         texture.setMaterialForRendering(this._mesh, MeshUVSpaceRenderer._GetShader(this._scene));
 
         this.decalTexture = texture;
+
+        // Additional check after assignment
+        if (!this.decalTexture.isReady()) {
+            console.error("decalTexture is not ready after creation in _createDiffuseRTT.");
+        }
     }
 
     private _createRenderTargetTexture(width: number, height: number): RenderTargetTexture {
