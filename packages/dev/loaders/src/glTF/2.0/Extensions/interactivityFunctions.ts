@@ -83,11 +83,12 @@ function convertBlock(id: number, gltfBlock: IKHRInteractivity_Node, definition:
 }
 
 /**
+ * @internal
  * Converts a glTF Interactivity Extension to a serialized flow graph.
  * @param gltf the interactivity data
  * @returns a serialized flow graph
  */
-export function convertGLTFToJson(gltf: IKHRInteractivity): ISerializedFlowGraph {
+export function convertGLTFToSerializedFlowGraph(gltf: IKHRInteractivity): ISerializedFlowGraph {
     // create an empty serialized context to store the values of the connections
     const context: ISerializedFlowGraphContext = {
         uniqueId: RandomGUID(),

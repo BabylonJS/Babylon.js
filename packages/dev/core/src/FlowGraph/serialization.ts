@@ -76,7 +76,7 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
         finalValue = scene.getMeshByName(intermediateValue.name);
     } else if (isVectorClassName(className)) {
         finalValue = parseVector(className, intermediateValue.value);
-    } else if (className === "FGPath") {
+    } else if (className === FlowGraphPath.ClassName) {
         finalValue = FlowGraphPath.Parse(intermediateValue);
     } else if (intermediateValue && intermediateValue.value !== undefined) {
         finalValue = intermediateValue.value;

@@ -177,7 +177,7 @@ export class FlowGraphPath {
     }
 
     getClassName() {
-        return "FGPath";
+        return FlowGraphPath.ClassName;
     }
 
     serialize(serializationObject: any = {}) {
@@ -189,5 +189,7 @@ export class FlowGraphPath {
     static Parse(serializationObject: any) {
         return new FlowGraphPath(serializationObject.path);
     }
+
+    public static ClassName = "FGPath";
 }
-RegisterClass("FGPath", FlowGraphPath);
+RegisterClass(FlowGraphPath.ClassName, FlowGraphPath);

@@ -5,7 +5,7 @@ import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { FlowGraph } from "core/FlowGraph/flowGraph";
 import { FlowGraphPath } from "core/FlowGraph/flowGraphPath";
-import { convertGLTFToJson } from "./interactivityFunctions";
+import { convertGLTFToSerializedFlowGraph } from "./interactivityFunctions";
 import { interactivityPathExensions } from "./interactivityPathExtensions";
 
 const NAME = "KHR_interactivity";
@@ -53,7 +53,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
                 FlowGraphPath._Extensions.push(extension);
             }
         }
-        const json = convertGLTFToJson(definition);
+        const json = convertGLTFToSerializedFlowGraph(definition);
 
         const coordinator = new FlowGraphCoordinator({ scene });
         const graph = FlowGraph.Parse(json, coordinator);

@@ -1,7 +1,7 @@
 import { NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { loggerExample, mathExample, customEventExample, worldPointerExample, doNExample } from "./testData";
-import { convertGLTFToJson } from "loaders/glTF/2.0/Extensions/interactivityFunctions";
+import { convertGLTFToSerializedFlowGraph } from "loaders/glTF/2.0/Extensions/interactivityFunctions";
 import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
 import { FlowGraph } from "core/FlowGraph/flowGraph";
 import { Vector3, Vector4 } from "core/Maths";
@@ -20,7 +20,7 @@ describe("Babylon Interactivity", () => {
     });
 
     it("should load a basic graph", () => {
-        const json = convertGLTFToJson(loggerExample);
+        const json = convertGLTFToSerializedFlowGraph(loggerExample);
         const coordinator = new FlowGraphCoordinator({ scene });
         FlowGraph.Parse(json, coordinator);
 
@@ -31,7 +31,7 @@ describe("Babylon Interactivity", () => {
     });
 
     it("should load a math graph", () => {
-        const json = convertGLTFToJson(mathExample);
+        const json = convertGLTFToSerializedFlowGraph(mathExample);
         const coordinator = new FlowGraphCoordinator({ scene });
         FlowGraph.Parse(json, coordinator);
 
@@ -42,7 +42,7 @@ describe("Babylon Interactivity", () => {
     });
 
     it("should load a custom event graph", () => {
-        const json = convertGLTFToJson(customEventExample);
+        const json = convertGLTFToSerializedFlowGraph(customEventExample);
         const coordinator = new FlowGraphCoordinator({ scene });
         FlowGraph.Parse(json, coordinator);
 
@@ -53,7 +53,7 @@ describe("Babylon Interactivity", () => {
     });
 
     it("should resolve world pointers", () => {
-        const json = convertGLTFToJson(worldPointerExample);
+        const json = convertGLTFToSerializedFlowGraph(worldPointerExample);
         const coordinator = new FlowGraphCoordinator({ scene });
         const graph = FlowGraph.Parse(json, coordinator);
         const context = graph.getContext(0);
@@ -69,7 +69,7 @@ describe("Babylon Interactivity", () => {
     });
 
     it("should execute an event N times with doN", () => {
-        const json = convertGLTFToJson(doNExample);
+        const json = convertGLTFToSerializedFlowGraph(doNExample);
         const coordinator = new FlowGraphCoordinator({ scene });
         FlowGraph.Parse(json, coordinator);
 

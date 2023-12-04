@@ -3,10 +3,32 @@ import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RichTypeAny, RichTypeBoolean, RichTypeNumber, RichTypeVector2, RichTypeVector3 } from "../../../flowGraphRichTypes";
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
 import { FlowGraphConstantOperationBlock } from "../flowGraphConstantOperationBlock";
-import { _getClassNameOf, _areSameVectorClass } from "./utils";
 import { Matrix, Vector2, Vector3, Vector4 } from "../../../../Maths/math.vector";
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
 import { FlowGraphTernaryOperationBlock } from "../flowGraphTernaryOperationBlock";
+
+/**
+ * @internal
+ * @param v
+ * @returns
+ */
+function _getClassNameOf(v: any) {
+    if (v.getClassName) {
+        return v.getClassName();
+    }
+    return "";
+}
+
+/**
+ * @internal
+ * @param className
+ * @param className2
+ * @returns
+ */
+function _areSameVectorClass(className: string, className2: string) {
+    return (className === "Vector2" && className2 === "Vector2") || (className === "Vector3" && className2 === "Vector3") || (className === "Vector4" && className2 === "Vector4");
+}
+
 
 /**
  * @experimental
