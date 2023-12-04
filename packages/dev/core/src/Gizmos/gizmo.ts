@@ -137,6 +137,13 @@ export class Gizmo implements IGizmo {
     public static PreserveScaling = false;
 
     /**
+     * There are 2 ways to preserve scaling: using mesh scaling or absolute scaling. Depending of hierarchy, non uniform scaling and LH or RH coordinates. One is preferable than the other.
+     * If the scaling to be preserved is the local scaling, then set this value to false.
+     * Default is true which means scaling to be preserved is absolute one (with hierarchy applied)
+     */
+    public static UseAbsoluteScaling = true;
+
+    /**
      * Ratio for the scale of the gizmo (Default: 1)
      */
     public set scaleRatio(value: number) {
@@ -369,6 +376,22 @@ export class Gizmo implements IGizmo {
     }
 
     /**
+     * if transform has a pivot and is not using PostMultiplyPivotMatrix, then the worldMatrix contains the pivot matrix (it's not cancelled at the end)
+     * so, when extracting the world matrix component, the translation (and other components) is containing the pivot translation.
+     * And the pivot is applied each frame. Removing it anyway here makes it applied only in computeWorldMatrix.
+     * @param transform local transform that needs to be transform by the pivot inverse matrix
+     * @param localMatrix local matrix that needs to be transform by the pivot inverse matrix
+     * @param result resulting matrix transformed by pivot inverse if the transform node is using pivot without using post Multiply Pivot Matrix
+     */
+    protected _handlePivotMatrixInverse(transform: TransformNode, localMatrix: Matrix, result: Matrix): void {
+        if (transform.isUsingPivotMatrix() && !transform.isUsingPostMultiplyPivotMatrix()) {
+            transform.getPivotMatrix().invertToRef(TmpVectors.Matrix[5]);
+            TmpVectors.Matrix[5].multiplyToRef(localMatrix, result);
+            return;
+        }
+        result.copyFrom(localMatrix);
+    }
+    /**
      * computes the rotation/scaling/position of the transform once the Node world matrix has changed.
      */
     protected _matrixChanged() {
@@ -430,7 +453,15 @@ export class Gizmo implements IGizmo {
                 const localMat = TmpVectors.Matrix[1];
                 transform.parent.getWorldMatrix().invertToRef(parentInv);
                 this._attachedNode.getWorldMatrix().multiplyToRef(parentInv, localMat);
-                localMat.decompose(TmpVectors.Vector3[0], TmpVectors.Quaternion[0], transform.position);
+                const matrixToDecompose = TmpVectors.Matrix[4];
+                this._handlePivotMatrixInverse(transform, localMat, matrixToDecompose);
+                matrixToDecompose.decompose(
+                    TmpVectors.Vector3[0],
+                    TmpVectors.Quaternion[0],
+                    transform.position,
+                    Gizmo.PreserveScaling ? transform : undefined,
+                    Gizmo.UseAbsoluteScaling
+                );
                 TmpVectors.Quaternion[0].normalize();
                 if (transform.isUsingPivotMatrix()) {
                     // Calculate the local matrix without the translation.
@@ -457,7 +488,15 @@ export class Gizmo implements IGizmo {
                     transform.position.subtractInPlace(TmpVectors.Vector3[1]);
                 }
             } else {
-                this._attachedNode._worldMatrix.decompose(TmpVectors.Vector3[0], TmpVectors.Quaternion[0], transform.position, Gizmo.PreserveScaling ? transform : undefined);
+                const matrixToDecompose = TmpVectors.Matrix[4];
+                this._handlePivotMatrixInverse(transform, this._attachedNode._worldMatrix, matrixToDecompose);
+                matrixToDecompose.decompose(
+                    TmpVectors.Vector3[0],
+                    TmpVectors.Quaternion[0],
+                    transform.position,
+                    Gizmo.PreserveScaling ? transform : undefined,
+                    Gizmo.UseAbsoluteScaling
+                );
             }
             TmpVectors.Vector3[0].scaleInPlace(1.0 / transform.scalingDeterminant);
             transform.scaling.copyFrom(TmpVectors.Vector3[0]);
