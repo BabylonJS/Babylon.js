@@ -341,8 +341,9 @@ struct subSurfaceOutParams
 
         #ifdef SS_DISPERSION
             float realIOR = 1.0 / ior;
-            float iorDispersionSpread = 0.025 * dispersion * (realIOR - 1.0);
-            vec3 iors = vec3(ior - iorDispersionSpread, ior, ior + iorDispersionSpread);
+            // The 0.04 value is completely empirical
+            float iorDispersionSpread = 0.04 * dispersion * (realIOR - 1.0);
+            vec3 iors = vec3(1.0/(realIOR - iorDispersionSpread), ior, 1.0/(realIOR + iorDispersionSpread));
             for (int i = 0; i < 3; i++) {
                 ior = iors[i];
         #endif
