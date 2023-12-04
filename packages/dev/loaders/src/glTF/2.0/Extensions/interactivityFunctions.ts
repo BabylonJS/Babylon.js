@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { IKHRInteractivity, IKHRInteractivity_Configuration, IKHRInteractivity_Node, IKHRInteractivity_Variable } from "babylonjs-gltf2interface";
-import type { IFlowGraphBlockConfiguration } from "core/FlowGraph";
+import type { IFlowGraphBlockConfiguration } from "core/FlowGraph/flowGraphBlock";
 import type { ISerializedFlowGraph, ISerializedFlowGraphBlock, ISerializedFlowGraphConnection, ISerializedFlowGraphContext } from "core/FlowGraph/typeDefinitions";
-import { RandomGUID } from "core/Misc";
+import { RandomGUID } from "core/Misc/guid";
 import { gltfToFlowGraphTypeMap, gltfTypeToBabylonType } from "./interactivityUtils";
 import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 

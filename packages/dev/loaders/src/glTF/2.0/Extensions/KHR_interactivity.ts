@@ -2,7 +2,9 @@
 import type { IKHRInteractivity } from "babylonjs-gltf2interface";
 import { GLTFLoader } from "../glTFLoader";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
-import { FlowGraphCoordinator, FlowGraph, FlowGraphPath } from "core/FlowGraph";
+import { FlowGraphCoordinator } from "core/FlowGraph/flowGraphCoordinator";
+import { FlowGraph } from "core/FlowGraph/flowGraph";
+import { FlowGraphPath } from "core/FlowGraph/flowGraphPath";
 import { convertGLTFToJson } from "./interactivityFunctions";
 import { interactivityPathExensions } from "./interactivityPathExtensions";
 

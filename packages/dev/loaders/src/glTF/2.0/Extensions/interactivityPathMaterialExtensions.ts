@@ -1,7 +1,8 @@
 import type { FlowGraphPath } from "core/FlowGraph/flowGraphPath";
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import type { PBRMaterial, Texture } from "core/Materials";
-import { Color3 } from "core/Maths";
+import type { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import type { Texture } from "core/Materials/Textures/texture";
+import { Color3 } from "core/Maths/math.color";
 import type { IGLTF } from "../glTFLoaderInterfaces";
 
 const materialsRegex =

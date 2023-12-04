@@ -1,7 +1,7 @@
-import type { Camera } from "core/Cameras";
+import type { Camera } from "core/Cameras/camera";
 import type { FlowGraphPath } from "core/FlowGraph/flowGraphPath";
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
-import { Tools } from "core/Misc";
+import { Tools } from "core/Misc/tools";
 import type { IGLTF } from "../glTFLoaderInterfaces";
 
 const camerasRegex = /^\/cameras\/(\d+)\/(orthographic|perspective)\/(xmag|ymag|zfar|znear|aspectRatio|yfov)$/;
