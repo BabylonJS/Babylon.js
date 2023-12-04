@@ -319,6 +319,10 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
      * posture that the gizmo will be display
      * When set null, default value will be used (Quaternion(0, 0, 0, 1))
      */
+    public get customRotationQuaternion(): Nullable<Quaternion> {
+        return this._customRotationQuaternion;
+    }
+
     public set customRotationQuaternion(customRotationQuaternion: Nullable<Quaternion>) {
         this._customRotationQuaternion = customRotationQuaternion;
         [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
