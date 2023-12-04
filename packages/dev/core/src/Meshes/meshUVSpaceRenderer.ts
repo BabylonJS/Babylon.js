@@ -327,10 +327,12 @@ export class MeshUVSpaceRenderer {
                     effect.setTexture("maskTextureSampler", this._maskTexture);
                     effect.setVector2("textureSize", new Vector2(this._options.width, this._options.height));
                 };
+                if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture)) {
+                    this.texture.addPostProcess(this._finalPostProcess);
+                }
             }
     
             if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture)) {
-                this.texture.addPostProcess(this._finalPostProcess);
                 this.texture.render();
             }
         } catch (error) {
