@@ -9,7 +9,7 @@ import type { TargetCamera } from "../Cameras/targetCamera";
 import type { Node } from "../node";
 import type { Bone } from "../Bones/bone";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
-import { TransformNode } from "../Meshes/transformNode";
+import type { TransformNode } from "../Meshes/transformNode";
 import type { StandardMaterial } from "../Materials/standardMaterial";
 import type { PointerInfo } from "../Events/pointerEvents";
 import { PointerEventTypes } from "../Events/pointerEvents";
@@ -453,7 +453,7 @@ export class Gizmo implements IGizmo {
                 const localMat = TmpVectors.Matrix[1];
                 transform.parent.getWorldMatrix().invertToRef(parentInv);
                 this._attachedNode.getWorldMatrix().multiplyToRef(parentInv, localMat);
-                let matrixToDecompose = this._handlePivotMatrixInverse(transform, localMat);
+                const matrixToDecompose = this._handlePivotMatrixInverse(transform, localMat);
                 matrixToDecompose.decompose(
                     TmpVectors.Vector3[0],
                     TmpVectors.Quaternion[0],
@@ -487,7 +487,7 @@ export class Gizmo implements IGizmo {
                     transform.position.subtractInPlace(TmpVectors.Vector3[1]);
                 }
             } else {
-                let matrixToDecompose = this._handlePivotMatrixInverse(transform, this._attachedNode._worldMatrix);
+                const matrixToDecompose = this._handlePivotMatrixInverse(transform, this._attachedNode._worldMatrix);
                 matrixToDecompose.decompose(
                     TmpVectors.Vector3[0],
                     TmpVectors.Quaternion[0],
