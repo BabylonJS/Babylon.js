@@ -1,22 +1,32 @@
-import { Effect, Material, ShaderMaterial } from "../../Materials";
+import type { Material} from "../../Materials";
+import { Effect, ShaderMaterial } from "../../Materials";
 import { Matrix, Quaternion, Vector2 } from "../../Maths/math.vector";
 import { Mesh } from "../../Meshes/mesh";
 import { VertexData } from "../../Meshes/mesh.vertexData";
-import { Observer } from "../../Misc/observable";
+import type { Observer } from "../../Misc/observable";
 import { Tools } from "../../Misc/tools";
-import { Scene } from "../../scene";
-import { Nullable } from "../../types";
+import type { Scene } from "../../scene";
+import type { Nullable } from "../../types";
 
+/**
+ * 
+ */
 export class GaussianSplatting {
     private _vertexCount: number = 0;
     private _positions: Float32Array;
-    private _u_buffer: Uint8Array;
+    private _uBuffer: Uint8Array;
     private _covA: Float32Array;
     private _covB: Float32Array;
     private _mesh: Nullable<Mesh>;
     private _sceneDisposeObserver: Nullable<Observer<Scene>>;
 
+    /**
+     * 
+     */
     public readonly name: string;
+    /**
+     * 
+     */
     public readonly scene: Scene;
 
     /**
@@ -52,7 +62,7 @@ export class GaussianSplatting {
 
     private _getMesh(scene: Scene): Mesh {
         const mesh = new Mesh(this.name, scene);
-        var vertexData = new VertexData();
+        const vertexData = new VertexData();
         vertexData.positions = [-2, -2, 0, 2, -2, 0, 2, 2, 0, -2, 2, 0];
         vertexData.indices = [0, 1, 2, 0, 2, 3];
         vertexData.applyToMesh(mesh);
@@ -142,22 +152,22 @@ export class GaussianSplatting {
         }`;
 
     protected static _CreateWorker(self: any) {
-        var viewProj: number[];
+        let viewProj: number[];
         let lastProj: number[] = [];
-        var depthMix = new BigInt64Array();
-        var vertexCount = 0;
-        var positions: Float32Array;
+        const depthMix = new BigInt64Array();
+        let vertexCount = 0;
+        let positions: Float32Array;
 
         const runSort = (viewProj: number[]) => {
             vertexCount = positions.length;
             if (depthMix.length !== vertexCount) {
-                depthMix = new BigInt64Array(vertexCount);
+                const depthMix = new BigInt64Array(vertexCount);
                 const indices = new Uint32Array(depthMix.buffer);
                 for (let j = 0; j < vertexCount; j++) {
                     indices[2 * j] = j;
                 }
             }
-            let dot = lastProj[2] * viewProj[2] + lastProj[6] * viewProj[6] + lastProj[10] * viewProj[10];
+            const dot = lastProj[2] * viewProj[2] + lastProj[6] * viewProj[6] + lastProj[10] * viewProj[10];
             if (Math.abs(dot - 1) < 0.01) {
                 return;
             }
@@ -165,7 +175,7 @@ export class GaussianSplatting {
             const floatMix = new Float32Array(depthMix.buffer);
             const indexMix = new Uint32Array(depthMix.buffer);
             for (let j = 0; j < vertexCount; j++) {
-                let i = indexMix[2 * j];
+                const i = indexMix[2 * j];
                 floatMix[2 * j + 1] = 10000 - (viewProj[2] * positions[3 * i + 0] + viewProj[6] * positions[3 * i + 1] + viewProj[10] * positions[3 * i + 2]);
             }
             lastProj = viewProj;
@@ -178,7 +188,7 @@ export class GaussianSplatting {
         const throttledSort = () => {
             if (!sortRunning) {
                 sortRunning = true;
-                let lastView = viewProj;
+                const lastView = viewProj;
                 runSort(lastView);
                 setTimeout(() => {
                     sortRunning = false;
@@ -206,21 +216,21 @@ export class GaussianSplatting {
         this._covB = new Float32Array(3 * vertexCount);
 
         const f_buffer = new Float32Array(binaryData.buffer);
-        this._u_buffer = new Uint8Array(binaryData.buffer);
+        this._uBuffer = new Uint8Array(binaryData.buffer);
 
-        let matrixRotation = Matrix.Zero();
-        let matrixScale = Matrix.Zero();
-        let quaternion = Quaternion.Identity();
+        const matrixRotation = Matrix.Zero();
+        const matrixScale = Matrix.Zero();
+        const quaternion = Quaternion.Identity();
         for (let i = 0; i < vertexCount; i++) {
             this._positions[3 * i + 0] = f_buffer[8 * i + 0];
             this._positions[3 * i + 1] = -f_buffer[8 * i + 1];
             this._positions[3 * i + 2] = f_buffer[8 * i + 2];
 
             quaternion.set(
-                (this._u_buffer[32 * i + 28 + 1] - 128) / 128,
-                (this._u_buffer[32 * i + 28 + 2] - 128) / 128,
-                (this._u_buffer[32 * i + 28 + 3] - 128) / 128,
-                -(this._u_buffer[32 * i + 28 + 0] - 128) / 128
+                (this._uBuffer[32 * i + 28 + 1] - 128) / 128,
+                (this._uBuffer[32 * i + 28 + 2] - 128) / 128,
+                (this._uBuffer[32 * i + 28 + 3] - 128) / 128,
+                -(this._uBuffer[32 * i + 28 + 0] - 128) / 128
             );
             quaternion.toRotationMatrix(matrixRotation);
 
@@ -241,7 +251,7 @@ export class GaussianSplatting {
      *
      * @param scene
      */
-    constructor(name: string, scene: Scene) {
+    public constructor(name: string, scene: Scene) {
         this.scene = scene;
         this.name = name;
     }
@@ -258,7 +268,7 @@ export class GaussianSplatting {
                 this.dispose();
             }
             this._setData(new Uint8Array(data as any));
-            var matricesData = new Float32Array(this.vertexCount * 16);
+            const matricesData = new Float32Array(this.vertexCount * 16);
 
             const updateInstances = (indexMix: Uint32Array) => {
                 for (let j = 0; j < this.vertexCount; j++) {
@@ -268,10 +278,10 @@ export class GaussianSplatting {
                     matricesData[index + 1] = this._positions[i * 3 + 1];
                     matricesData[index + 2] = this._positions[i * 3 + 2];
 
-                    matricesData[index + 4] = this._u_buffer[32 * i + 24 + 0] / 255;
-                    matricesData[index + 5] = this._u_buffer[32 * i + 24 + 1] / 255;
-                    matricesData[index + 6] = this._u_buffer[32 * i + 24 + 2] / 255;
-                    matricesData[index + 7] = this._u_buffer[32 * i + 24 + 3] / 255;
+                    matricesData[index + 4] = this._uBuffer[32 * i + 24 + 0] / 255;
+                    matricesData[index + 5] = this._uBuffer[32 * i + 24 + 1] / 255;
+                    matricesData[index + 6] = this._uBuffer[32 * i + 24 + 2] / 255;
+                    matricesData[index + 7] = this._uBuffer[32 * i + 24 + 3] / 255;
 
                     matricesData[index + 8] = this._covA[i * 3 + 0];
                     matricesData[index + 9] = this._covA[i * 3 + 1];
