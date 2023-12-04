@@ -10,7 +10,7 @@ import { Constants } from "core/Engines/constants";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Color4 } from "core/Maths/math.color";
-import { PBRMaterial} from "core/Materials/PBR/pbrMaterial";
+import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { PostProcess } from "core/PostProcesses/postProcess";
 
@@ -22,7 +22,6 @@ import "../Shaders/meshUVSpaceRendererMasker.fragment";
 
 import "../Shaders/meshUVSpaceRendererFinaliser.fragment";
 import "../Shaders/meshUVSpaceRendererFinaliser.vertex";
-
 
 declare module "../scene" {
     /**
@@ -83,7 +82,7 @@ export class MeshUVSpaceRenderer {
      * Final Texture for the UV Edge Blending
      */
     _finalTexture: any;
-    
+
     /**
      * The decal texture
      */
@@ -199,7 +198,7 @@ export class MeshUVSpaceRenderer {
 
         if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.decalTexture)) {
             this.decalTexture.render();
-            if(this._options.uvEdgeBlending) {
+            if (this._options.uvEdgeBlending) {
                 await this._createMaskTexture();
                 this._createFinalTexture();
             } else {
@@ -212,9 +211,9 @@ export class MeshUVSpaceRenderer {
         if (this._maskTexture) {
             Promise.resolve();
             return;
-        }  
+        }
         try {
-            this._scene.clearColor = new Color4(0,0,0,1);
+            this._scene.clearColor = new Color4(0, 0, 0, 1);
             // Create a new render target texture for the mask
             this._maskTexture = new RenderTargetTexture(
                 "maskTexture",
@@ -223,9 +222,14 @@ export class MeshUVSpaceRenderer {
                 false, // No mipmaps for the mask texture
                 true,
                 Constants.TEXTURETYPE_UNSIGNED_BYTE,
-                false, undefined, undefined, undefined, undefined, Constants.TEXTUREFORMAT_R
+                false,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                Constants.TEXTUREFORMAT_R
             );
-    
+
             // Set up the mask material
             const maskMaterial = new ShaderMaterial(
                 "meshUVSpaceRendererMaskerShader",
@@ -236,7 +240,7 @@ export class MeshUVSpaceRenderer {
                 },
                 {
                     attributes: ["position", "uv"],
-                    uniforms: ["worldViewProjection"]
+                    uniforms: ["worldViewProjection"],
                 }
             );
 
@@ -246,7 +250,7 @@ export class MeshUVSpaceRenderer {
             } else if (this._mesh.material instanceof StandardMaterial) {
                 texture = (this._mesh.material as StandardMaterial).diffuseTexture;
             }
-        
+
             if (texture) {
                 maskMaterial.setTexture("textureSampler", texture);
             } else {
@@ -257,7 +261,7 @@ export class MeshUVSpaceRenderer {
 
             this._mesh.material = this._mesh.material as PBRMaterial;
             maskMaterial.backFaceCulling = false;
-    
+
             // Render the mesh with the mask material to the mask texture
             this._maskTexture.renderList.push(this._mesh);
             this._maskTexture.setMaterialForRendering(this._mesh, maskMaterial);
@@ -282,10 +286,10 @@ export class MeshUVSpaceRenderer {
                 this._options.textureType
             );
         }
-    
+
         try {
             this._scene.clearColor = new Color4(0, 0, 0, 1);
-    
+
             // Set up the shader material
             this.finalMaterial = new ShaderMaterial(
                 "meshUVSpaceRendererFinaliserShader",
@@ -297,15 +301,15 @@ export class MeshUVSpaceRenderer {
                 {
                     attributes: ["position", "uv"],
                     uniforms: ["worldViewProjection", "textureSize"],
-                    samplers: ["textureSampler", "maskTextureSampler"]
+                    samplers: ["textureSampler", "maskTextureSampler"],
                 }
             );
-    
+
             this.finalMaterial.setTexture("textureSampler", this.decalTexture);
             this.finalMaterial.setTexture("maskTextureSampler", this._maskTexture);
             this.finalMaterial.setVector2("textureSize", new Vector2(this._options.width, this._options.height));
             this.finalMaterial.backFaceCulling = false;
-    
+
             // Create the post-process only if it hasn't been created already
             if (!this._finalPostProcess) {
                 this._finalPostProcess = new PostProcess(
@@ -321,8 +325,8 @@ export class MeshUVSpaceRenderer {
                     null,
                     this._options.textureType
                 );
-    
-                this._finalPostProcess.onApply = (effect: { setTexture: (arg0: string, arg1: Texture) => void; setVector2: (arg0: string, arg1: Vector2) => void; }) => {
+
+                this._finalPostProcess.onApply = (effect: { setTexture: (arg0: string, arg1: Texture) => void; setVector2: (arg0: string, arg1: Vector2) => void }) => {
                     effect.setTexture("textureSampler", this.decalTexture);
                     effect.setTexture("maskTextureSampler", this._maskTexture);
                     effect.setVector2("textureSize", new Vector2(this._options.width, this._options.height));
@@ -331,7 +335,7 @@ export class MeshUVSpaceRenderer {
                     this.texture.addPostProcess(this._finalPostProcess);
                 }
             }
-    
+
             if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture)) {
                 this.texture.render();
             }
@@ -361,7 +365,7 @@ export class MeshUVSpaceRenderer {
             this.texture.dispose();
             this._textureCreatedInternally = false;
         }
-    } 
+    }
 
     private _createDiffuseRTT(): void {
         this._textureCreatedInternally = true;
