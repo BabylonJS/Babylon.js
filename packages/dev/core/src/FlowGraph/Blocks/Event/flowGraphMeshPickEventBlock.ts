@@ -6,6 +6,7 @@ import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { FlowGraphPath } from "../../flowGraphPath";
 import { Tools } from "../../../Misc/tools";
+import { _isADescendantOf } from "../../utils";
 /**
  * @experimental
  */
@@ -24,6 +25,10 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
         super(config);
     }
 
+    public _getReferencedMesh(context: FlowGraphContext): AbstractMesh | undefined {
+        return this.config.path.getProperty(context);
+    }
+
     /**
      * @internal
      */
@@ -36,7 +41,11 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
             }
             context._setExecutionVariable(this, "mesh", mesh);
             pickObserver = mesh.getScene().onPointerObservable.add((pointerInfo) => {
-                if (pointerInfo.type === PointerEventTypes.POINTERPICK && pointerInfo.pickInfo?.pickedMesh === mesh) {
+                if (
+                    pointerInfo.type === PointerEventTypes.POINTERPICK &&
+                    pointerInfo.pickInfo?.pickedMesh &&
+                    (pointerInfo.pickInfo?.pickedMesh === mesh || _isADescendantOf(pointerInfo.pickInfo?.pickedMesh, mesh))
+                ) {
                     this._execute(context);
                 }
             });
@@ -68,12 +77,14 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
     }
 
     public getClassName(): string {
-        return "FGMeshPickEventBlock";
+        return FlowGraphMeshPickEventBlock.ClassName;
     }
 
     public serialize(serializationObject?: any): void {
         super.serialize(serializationObject);
         serializationObject.config.path = this.config.path.serialize();
     }
+
+    static ClassName = "FGMeshPickEventBlock";
 }
-RegisterClass("FGMeshPickEventBlock", FlowGraphMeshPickEventBlock);
+RegisterClass(FlowGraphMeshPickEventBlock.ClassName, FlowGraphMeshPickEventBlock);
