@@ -88,6 +88,7 @@ export class MeshUVSpaceRenderer {
      *
      */
     public finalMaterial: ShaderMaterial;
+    _finalPostProcess: any;
 
     private static _GetShader(scene: Scene): ShaderMaterial {
         if (!scene._meshUVSpaceRendererShader) {
@@ -174,13 +175,7 @@ export class MeshUVSpaceRenderer {
      * @param size The size of the projection
      * @param angle The rotation angle around the direction of the projection
      */
-
-    // Method to use the mask texture to fix UV seams
     public async renderTexture(texture: BaseTexture, position: Vector3, normal: Vector3, size: Vector3, angle = 0): Promise<void> {
-        // Ensure the mask texture is ready for seam fixing
-        //todo flag
-        await this._createMaskTexture();
-
         // Create the diffuse render target texture if it doesn't exist
         if (!this.decalTexture) {
             this._createDiffuseRTT();
@@ -196,12 +191,14 @@ export class MeshUVSpaceRenderer {
 
         if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.decalTexture)) {
             this.decalTexture.render();
+            await this._createMaskTexture();
             this._createFinalTexture();
         }
     }
 
     private _createMaskTexture(): void {
         if (this._maskTexture) {
+            Promise.resolve();
             return;
         }  
         try {
@@ -298,29 +295,31 @@ export class MeshUVSpaceRenderer {
             this.finalMaterial.setVector2("textureSize", new Vector2(this._options.width, this._options.height));
             this.finalMaterial.backFaceCulling = false;
     
-            // Create and configure the post-process
-            const postProcess = new PostProcess(
-                "finalTexturePostProcess",
-                "meshUVSpaceRendererFinaliser",
-                ["textureSize"],
-                ["textureSampler", "maskTextureSampler"],
-                1.0, // options: scale ratio or PostProcessOptions object
-                null, // camera
-                Texture.NEAREST_SAMPLINGMODE, // sampling mode
-                this._scene.getEngine(), // engine
-                false, // reusable
-                null, // defines
-                this._options.textureType // textureType
-            );
+            // Create the post-process only if it hasn't been created already
+            if (!this._finalPostProcess) {
+                this._finalPostProcess = new PostProcess(
+                    "finalTexturePostProcess",
+                    "meshUVSpaceRendererFinaliser",
+                    ["textureSize"],
+                    ["textureSampler", "maskTextureSampler"],
+                    1.0,
+                    null,
+                    Texture.NEAREST_SAMPLINGMODE,
+                    this._scene.getEngine(),
+                    false,
+                    null,
+                    this._options.textureType
+                );
     
-            postProcess.onApply = (effect) => {
-                effect.setTexture("textureSampler", this.decalTexture);
-                effect.setTexture("maskTextureSampler", this._maskTexture);
-                effect.setVector2("textureSize", new Vector2(this._options.width, this._options.height));
-            };
+                this._finalPostProcess.onApply = (effect: { setTexture: (arg0: string, arg1: Texture) => void; setVector2: (arg0: string, arg1: Vector2) => void; }) => {
+                    effect.setTexture("textureSampler", this.decalTexture);
+                    effect.setTexture("maskTextureSampler", this._maskTexture);
+                    effect.setVector2("textureSize", new Vector2(this._options.width, this._options.height));
+                };
+            }
     
             if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture)) {
-                this.texture.addPostProcess(postProcess);
+                this.texture.addPostProcess(this._finalPostProcess);
                 this.texture.render();
             }
         } catch (error) {
@@ -328,17 +327,18 @@ export class MeshUVSpaceRenderer {
         }
     }
     
+    
 
     /**
      * Clears the texture map
      */
     public clear(): void {
-        if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.decalTexture) && this.decalTexture.renderTarget) {
+        if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture) && this.texture.renderTarget) {
             const engine = this._scene.getEngine();
 
-            engine.bindFramebuffer(this.decalTexture.renderTarget);
+            engine.bindFramebuffer(this.texture.renderTarget);
             engine.clear(this.clearColor, true, true, true);
-            engine.unBindFramebuffer(this.decalTexture.renderTarget);
+            engine.unBindFramebuffer(this.texture.renderTarget);
         }
     }
 
@@ -347,7 +347,7 @@ export class MeshUVSpaceRenderer {
      */
     public dispose() {
         if (this._textureCreatedInternally) {
-            this.decalTexture.dispose();
+            this.texture.dispose();
             this._textureCreatedInternally = false;
         }
     } 
