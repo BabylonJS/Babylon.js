@@ -13,7 +13,6 @@ import {
     getRenderWidth,
     initBaseEngineState,
     resize,
-    setDepthFunctionToGreaterOrEqual,
 } from "../engine.base.js";
 import { WebGPUSnapshotRendering } from "core/Engines/WebGPU/webgpuSnapshotRendering.js";
 import type { IDrawContext } from "core/Engines/IDrawContext.js";
@@ -30,7 +29,7 @@ import { Tools } from "core/Misc/tools.js";
 import { BufferUsage, CanvasAlphaMode, FeatureName, LoadOp, StoreOp, TextureDimension, TextureFormat, TextureUsage } from "./engine.webgpu.constants.js";
 import { VertexBuffer } from "core/Buffers/buffer.js";
 import { WebGPUBufferManager } from "core/Engines/WebGPU/webgpuBufferManager.js";
-import { WebGPUBundleList, WebGPURenderItemScissor, WebGPURenderItemStencilRef } from "core/Engines/WebGPU/webgpuBundleList.js";
+import { WebGPUBundleList } from "core/Engines/WebGPU/webgpuBundleList.js";
 import { WebGPUCacheSampler } from "core/Engines/WebGPU/webgpuCacheSampler.js";
 import { WebGPUOcclusionQuery } from "core/Engines/WebGPU/webgpuOcclusionQuery.js";
 import { WebGPUTextureHelper } from "core/Engines/WebGPU/webgpuTextureHelper.js";
@@ -60,9 +59,6 @@ import { effectWebGPUAdapter } from "../WebGL/engine.adapterHelpers.js";
 import type { Engine } from "core/Engines/engine.js";
 import { WebGPUHardwareTexture } from "core/Engines/WebGPU/webgpuHardwareTexture.js";
 import { Color4 } from "core/Maths/math.color.js";
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper.js";
-import type { IColor4Like } from "core/Maths/math.like.js";
-import type { WebGPURenderTargetWrapper } from "core/Engines/WebGPU/webgpuRenderTargetWrapper.js";
 
 declare function importScripts(jsPath: string): void;
 
@@ -76,7 +72,7 @@ const _uploadEncoderDescriptor = { label: "upload" };
 const _renderEncoderDescriptor = { label: "render" };
 const _renderTargetEncoderDescriptor = { label: "renderTarget" };
 const _defaultSampleCount = 4;
-const tempColor4 = new Color4();
+// const tempColor4 = new Color4();
 
 /** @internal */
 interface IWebGPURenderPassWrapper {
@@ -88,21 +84,21 @@ interface IWebGPURenderPassWrapper {
     depthTextureFormat: GPUTextureFormat | undefined;
 }
 
-const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
-    label: `TextureView_SwapChain_ResolveTarget`,
-    dimension: TextureDimension.E2d,
-    format: undefined as any, // will be updated with the right value
-    mipLevelCount: 1,
-    arrayLayerCount: 1,
-};
+// const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
+//     label: `TextureView_SwapChain_ResolveTarget`,
+//     dimension: TextureDimension.E2d,
+//     format: undefined as any, // will be updated with the right value
+//     mipLevelCount: 1,
+//     arrayLayerCount: 1,
+// };
 
-const viewDescriptorSwapChain: GPUTextureViewDescriptor = {
-    label: `TextureView_SwapChain`,
-    dimension: TextureDimension.E2d,
-    format: undefined as any, // will be updated with the right value
-    mipLevelCount: 1,
-    arrayLayerCount: 1,
-};
+// const viewDescriptorSwapChain: GPUTextureViewDescriptor = {
+//     label: `TextureView_SwapChain`,
+//     dimension: TextureDimension.E2d,
+//     format: undefined as any, // will be updated with the right value
+//     mipLevelCount: 1,
+//     arrayLayerCount: 1,
+// };
 
 // public readonly
 /** @internal */
@@ -1101,300 +1097,300 @@ function _currentPassIsMainPass(engineState: IWebGPUEnginePublic) {
 //                              Render Pass
 //------------------------------------------------------------------------------
 
-function _startRenderTargetRenderPass(
-    engineState: IWebGPUEnginePublic,
-    renderTargetWrapper: RenderTargetWrapper,
-    setClearStates: boolean,
-    clearColor: Nullable<IColor4Like>,
-    clearDepth: boolean,
-    clearStencil: boolean
-) {
-    const fes = engineState as WebGPUEngineStateFull;
-    const rtWrapper = renderTargetWrapper as WebGPURenderTargetWrapper;
+// function _startRenderTargetRenderPass(
+//     engineState: IWebGPUEnginePublic,
+//     renderTargetWrapper: RenderTargetWrapper,
+//     setClearStates: boolean,
+//     clearColor: Nullable<IColor4Like>,
+//     clearDepth: boolean,
+//     clearStencil: boolean
+// ) {
+//     const fes = engineState as WebGPUEngineStateFull;
+//     const rtWrapper = renderTargetWrapper as WebGPURenderTargetWrapper;
 
-    const depthStencilTexture = rtWrapper._depthStencilTexture;
-    const gpuDepthStencilWrapper = depthStencilTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
-    const gpuDepthStencilTexture = gpuDepthStencilWrapper?.underlyingResource as Nullable<GPUTexture>;
-    const gpuDepthStencilMSAATexture = gpuDepthStencilWrapper?.getMSAATexture();
+//     const depthStencilTexture = rtWrapper._depthStencilTexture;
+//     const gpuDepthStencilWrapper = depthStencilTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
+//     const gpuDepthStencilTexture = gpuDepthStencilWrapper?.underlyingResource as Nullable<GPUTexture>;
+//     const gpuDepthStencilMSAATexture = gpuDepthStencilWrapper?.getMSAATexture();
 
-    const depthTextureView = gpuDepthStencilTexture?.createView(fes._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
-    const depthMSAATextureView = gpuDepthStencilMSAATexture?.createView(fes._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
-    const depthTextureHasStencil = gpuDepthStencilWrapper ? WebGPUTextureHelper.HasStencilAspect(gpuDepthStencilWrapper.format) : false;
+//     const depthTextureView = gpuDepthStencilTexture?.createView(fes._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
+//     const depthMSAATextureView = gpuDepthStencilMSAATexture?.createView(fes._rttRenderPassWrapper.depthAttachmentViewDescriptor!);
+//     const depthTextureHasStencil = gpuDepthStencilWrapper ? WebGPUTextureHelper.HasStencilAspect(gpuDepthStencilWrapper.format) : false;
 
-    const colorAttachments: (GPURenderPassColorAttachment | null)[] = [];
+//     const colorAttachments: (GPURenderPassColorAttachment | null)[] = [];
 
-    if (fes.useReverseDepthBuffer) {
-        setDepthFunctionToGreaterOrEqual(fes);
-    }
+//     if (fes.useReverseDepthBuffer) {
+//         setDepthFunctionToGreaterOrEqual(fes);
+//     }
 
-    const clearColorForIntegerRT = tempColor4;
-    if (clearColor) {
-        clearColorForIntegerRT.r = clearColor.r * 255;
-        clearColorForIntegerRT.g = clearColor.g * 255;
-        clearColorForIntegerRT.b = clearColor.b * 255;
-        clearColorForIntegerRT.a = clearColor.a * 255;
-    }
+//     const clearColorForIntegerRT = tempColor4;
+//     if (clearColor) {
+//         clearColorForIntegerRT.r = clearColor.r * 255;
+//         clearColorForIntegerRT.g = clearColor.g * 255;
+//         clearColorForIntegerRT.b = clearColor.b * 255;
+//         clearColorForIntegerRT.a = clearColor.a * 255;
+//     }
 
-    const mustClearColor = setClearStates && clearColor;
-    const mustClearDepth = setClearStates && clearDepth;
-    const mustClearStencil = setClearStates && clearStencil;
+//     const mustClearColor = setClearStates && clearColor;
+//     const mustClearDepth = setClearStates && clearDepth;
+//     const mustClearStencil = setClearStates && clearStencil;
 
-    if (rtWrapper._attachments && rtWrapper.isMulti) {
-        // multi render targets
-        if (!fes._mrtAttachments || fes._mrtAttachments.length === 0) {
-            fes._mrtAttachments = rtWrapper._defaultAttachments;
-        }
-        for (let i = 0; i < fes._mrtAttachments.length; ++i) {
-            const index = fes._mrtAttachments[i]; // if index == 0 it means the texture should not be written to => at render pass creation time, it means we should not clear it
-            const mrtTexture = rtWrapper.textures![i];
-            const gpuMRTWrapper = mrtTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
-            const gpuMRTTexture = gpuMRTWrapper?.underlyingResource;
-            if (gpuMRTWrapper && gpuMRTTexture) {
-                const gpuMSAATexture = gpuMRTWrapper.getMSAATexture(i);
+//     if (rtWrapper._attachments && rtWrapper.isMulti) {
+//         // multi render targets
+//         if (!fes._mrtAttachments || fes._mrtAttachments.length === 0) {
+//             fes._mrtAttachments = rtWrapper._defaultAttachments;
+//         }
+//         for (let i = 0; i < fes._mrtAttachments.length; ++i) {
+//             const index = fes._mrtAttachments[i]; // if index == 0 it means the texture should not be written to => at render pass creation time, it means we should not clear it
+//             const mrtTexture = rtWrapper.textures![i];
+//             const gpuMRTWrapper = mrtTexture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
+//             const gpuMRTTexture = gpuMRTWrapper?.underlyingResource;
+//             if (gpuMRTWrapper && gpuMRTTexture) {
+//                 const gpuMSAATexture = gpuMRTWrapper.getMSAATexture(i);
 
-                const layerIndex = rtWrapper.layerIndices?.[i] ?? 0;
-                const faceIndex = rtWrapper.faceIndices?.[i] ?? 0;
-                const viewDescriptor = {
-                    ...fes._rttRenderPassWrapper.colorAttachmentViewDescriptor!,
-                    format: gpuMRTWrapper.format,
-                    baseArrayLayer: mrtTexture.isCube ? layerIndex * 6 + faceIndex : layerIndex,
-                };
-                const msaaViewDescriptor = {
-                    ...fes._rttRenderPassWrapper.colorAttachmentViewDescriptor!,
-                    format: gpuMRTWrapper.format,
-                    baseArrayLayer: 0,
-                };
-                const isRTInteger = mrtTexture.type === Constants.TEXTURETYPE_UNSIGNED_INTEGER || mrtTexture.type === Constants.TEXTURETYPE_UNSIGNED_SHORT;
+//                 const layerIndex = rtWrapper.layerIndices?.[i] ?? 0;
+//                 const faceIndex = rtWrapper.faceIndices?.[i] ?? 0;
+//                 const viewDescriptor = {
+//                     ...fes._rttRenderPassWrapper.colorAttachmentViewDescriptor!,
+//                     format: gpuMRTWrapper.format,
+//                     baseArrayLayer: mrtTexture.isCube ? layerIndex * 6 + faceIndex : layerIndex,
+//                 };
+//                 const msaaViewDescriptor = {
+//                     ...fes._rttRenderPassWrapper.colorAttachmentViewDescriptor!,
+//                     format: gpuMRTWrapper.format,
+//                     baseArrayLayer: 0,
+//                 };
+//                 const isRTInteger = mrtTexture.type === Constants.TEXTURETYPE_UNSIGNED_INTEGER || mrtTexture.type === Constants.TEXTURETYPE_UNSIGNED_SHORT;
 
-                const colorTextureView = gpuMRTTexture.createView(viewDescriptor);
-                const colorMSAATextureView = gpuMSAATexture?.createView(msaaViewDescriptor);
+//                 const colorTextureView = gpuMRTTexture.createView(viewDescriptor);
+//                 const colorMSAATextureView = gpuMSAATexture?.createView(msaaViewDescriptor);
 
-                colorAttachments.push({
-                    view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
-                    resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
-                    clearValue: index !== 0 && mustClearColor ? (isRTInteger ? clearColorForIntegerRT : clearColor) : undefined,
-                    loadOp: index !== 0 && mustClearColor ? LoadOp.Clear : LoadOp.Load,
-                    storeOp: StoreOp.Store,
-                });
-            }
-        }
-        fes._cacheRenderPipeline.setMRT(rtWrapper.textures!, fes._mrtAttachments.length);
-        fes._cacheRenderPipeline.setMRTAttachments(fes._mrtAttachments);
-    } else {
-        // single render target
-        const internalTexture = rtWrapper.texture;
-        if (internalTexture) {
-            const gpuWrapper = internalTexture._hardwareTexture as WebGPUHardwareTexture;
-            const gpuTexture = gpuWrapper.underlyingResource!;
+//                 colorAttachments.push({
+//                     view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
+//                     resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
+//                     clearValue: index !== 0 && mustClearColor ? (isRTInteger ? clearColorForIntegerRT : clearColor) : undefined,
+//                     loadOp: index !== 0 && mustClearColor ? LoadOp.Clear : LoadOp.Load,
+//                     storeOp: StoreOp.Store,
+//                 });
+//             }
+//         }
+//         fes._cacheRenderPipeline.setMRT(rtWrapper.textures!, fes._mrtAttachments.length);
+//         fes._cacheRenderPipeline.setMRTAttachments(fes._mrtAttachments);
+//     } else {
+//         // single render target
+//         const internalTexture = rtWrapper.texture;
+//         if (internalTexture) {
+//             const gpuWrapper = internalTexture._hardwareTexture as WebGPUHardwareTexture;
+//             const gpuTexture = gpuWrapper.underlyingResource!;
 
-            const gpuMSAATexture = gpuWrapper.getMSAATexture();
-            const colorTextureView = gpuTexture.createView(fes._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
-            const colorMSAATextureView = gpuMSAATexture?.createView(fes._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
-            const isRTInteger = internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_INTEGER || internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_SHORT;
+//             const gpuMSAATexture = gpuWrapper.getMSAATexture();
+//             const colorTextureView = gpuTexture.createView(fes._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
+//             const colorMSAATextureView = gpuMSAATexture?.createView(fes._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
+//             const isRTInteger = internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_INTEGER || internalTexture.type === Constants.TEXTURETYPE_UNSIGNED_SHORT;
 
-            colorAttachments.push({
-                view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
-                resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
-                clearValue: mustClearColor ? (isRTInteger ? clearColorForIntegerRT : clearColor) : undefined,
-                loadOp: mustClearColor ? LoadOp.Clear : LoadOp.Load,
-                storeOp: StoreOp.Store,
-            });
-        } else {
-            colorAttachments.push(null);
-        }
-    }
+//             colorAttachments.push({
+//                 view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
+//                 resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
+//                 clearValue: mustClearColor ? (isRTInteger ? clearColorForIntegerRT : clearColor) : undefined,
+//                 loadOp: mustClearColor ? LoadOp.Clear : LoadOp.Load,
+//                 storeOp: StoreOp.Store,
+//             });
+//         } else {
+//             colorAttachments.push(null);
+//         }
+//     }
 
-    _debugPushGroup?.(fes, "render target pass", 1);
+//     _debugPushGroup?.(fes, "render target pass", 1);
 
-    fes._rttRenderPassWrapper.renderPassDescriptor = {
-        label: (renderTargetWrapper.label ?? "RTT") + "RenderPass",
-        colorAttachments,
-        depthStencilAttachment:
-            depthStencilTexture && gpuDepthStencilTexture
-                ? {
-                      view: depthMSAATextureView ? depthMSAATextureView : depthTextureView!,
-                      depthClearValue: mustClearDepth ? (fes.useReverseDepthBuffer ? _clearReverseDepthValue : _clearDepthValue) : undefined,
-                      depthLoadOp: mustClearDepth ? LoadOp.Clear : LoadOp.Load,
-                      depthStoreOp: StoreOp.Store,
-                      stencilClearValue: rtWrapper._depthStencilTextureWithStencil && mustClearStencil ? _clearStencilValue : undefined,
-                      stencilLoadOp: !depthTextureHasStencil ? undefined : rtWrapper._depthStencilTextureWithStencil && mustClearStencil ? LoadOp.Clear : LoadOp.Load,
-                      stencilStoreOp: !depthTextureHasStencil ? undefined : StoreOp.Store,
-                  }
-                : undefined,
-        occlusionQuerySet: fes._occlusionQuery?.hasQueries ? fes._occlusionQuery.querySet : undefined,
-    };
-    fes._rttRenderPassWrapper.renderPass = fes._renderTargetEncoder.beginRenderPass(fes._rttRenderPassWrapper.renderPassDescriptor);
+//     fes._rttRenderPassWrapper.renderPassDescriptor = {
+//         label: (renderTargetWrapper.label ?? "RTT") + "RenderPass",
+//         colorAttachments,
+//         depthStencilAttachment:
+//             depthStencilTexture && gpuDepthStencilTexture
+//                 ? {
+//                       view: depthMSAATextureView ? depthMSAATextureView : depthTextureView!,
+//                       depthClearValue: mustClearDepth ? (fes.useReverseDepthBuffer ? _clearReverseDepthValue : _clearDepthValue) : undefined,
+//                       depthLoadOp: mustClearDepth ? LoadOp.Clear : LoadOp.Load,
+//                       depthStoreOp: StoreOp.Store,
+//                       stencilClearValue: rtWrapper._depthStencilTextureWithStencil && mustClearStencil ? _clearStencilValue : undefined,
+//                       stencilLoadOp: !depthTextureHasStencil ? undefined : rtWrapper._depthStencilTextureWithStencil && mustClearStencil ? LoadOp.Clear : LoadOp.Load,
+//                       stencilStoreOp: !depthTextureHasStencil ? undefined : StoreOp.Store,
+//                   }
+//                 : undefined,
+//         occlusionQuerySet: fes._occlusionQuery?.hasQueries ? fes._occlusionQuery.querySet : undefined,
+//     };
+//     fes._rttRenderPassWrapper.renderPass = fes._renderTargetEncoder.beginRenderPass(fes._rttRenderPassWrapper.renderPassDescriptor);
 
-    if (fes.dbgVerboseLogsForFirstFrames) {
-        if ((fes as any)._count === undefined) {
-            (fes as any)._count = 0;
-        }
-        if (!(fes as any)._count || (fes as any)._count < fes.dbgVerboseLogsNumFrames) {
-            const internalTexture = rtWrapper.texture!;
-            console.log(
-                "frame #" + (fes as any)._count + " - render target begin pass - internalTexture.uniqueId=",
-                internalTexture.uniqueId,
-                "width=",
-                internalTexture.width,
-                "height=",
-                internalTexture.height,
-                fes._rttRenderPassWrapper.renderPassDescriptor
-            );
-        }
-    }
+//     if (fes.dbgVerboseLogsForFirstFrames) {
+//         if ((fes as any)._count === undefined) {
+//             (fes as any)._count = 0;
+//         }
+//         if (!(fes as any)._count || (fes as any)._count < fes.dbgVerboseLogsNumFrames) {
+//             const internalTexture = rtWrapper.texture!;
+//             console.log(
+//                 "frame #" + (fes as any)._count + " - render target begin pass - internalTexture.uniqueId=",
+//                 internalTexture.uniqueId,
+//                 "width=",
+//                 internalTexture.width,
+//                 "height=",
+//                 internalTexture.height,
+//                 fes._rttRenderPassWrapper.renderPassDescriptor
+//             );
+//         }
+//     }
 
-    fes._currentRenderPass = fes._rttRenderPassWrapper.renderPass;
+//     fes._currentRenderPass = fes._rttRenderPassWrapper.renderPass;
 
-    _debugFlushPendingCommands?.(fes);
+//     _debugFlushPendingCommands?.(fes);
 
-    _resetCurrentViewport(fes, 1);
-    _resetCurrentScissor(fes, 1);
-    _resetCurrentStencilRef(fes, 1);
-    _resetCurrentColorBlend(fes, 1);
+//     _resetCurrentViewport(fes, 1);
+//     _resetCurrentScissor(fes, 1);
+//     _resetCurrentStencilRef(fes, 1);
+//     _resetCurrentColorBlend(fes, 1);
 
-    if (!gpuDepthStencilWrapper || !WebGPUTextureHelper.HasStencilAspect(gpuDepthStencilWrapper.format)) {
-        fes._stencilStateComposer!.enabled = false;
-    }
-}
+//     if (!gpuDepthStencilWrapper || !WebGPUTextureHelper.HasStencilAspect(gpuDepthStencilWrapper.format)) {
+//         fes._stencilStateComposer!.enabled = false;
+//     }
+// }
 
-/** @internal */
-export function _endRenderTargetRenderPass(engineState: IWebGPUEnginePublic) {
-    const fes = engineState as WebGPUEngineStateFull;
-    if (fes._currentRenderPass) {
-        const gpuWrapper = fes._currentRenderTarget!.texture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
-        if (gpuWrapper && !fes._snapshotRendering.endRenderTargetPass(fes._currentRenderPass, gpuWrapper) && !fes.compatibilityMode) {
-            fes._bundleListRenderTarget.run(fes._currentRenderPass);
-            fes._bundleListRenderTarget.reset();
-        }
-        fes._currentRenderPass.end();
-        if (fes.dbgVerboseLogsForFirstFrames) {
-            if ((fes as any)._count === undefined) {
-                (fes as any)._count = 0;
-            }
-            if (!(fes as any)._count || (fes as any)._count < fes.dbgVerboseLogsNumFrames) {
-                console.log("frame #" + (fes as any)._count + " - render target end pass - internalTexture.uniqueId=", fes._currentRenderTarget?.texture?.uniqueId);
-            }
-        }
-        _debugPopGroup?.(fes, 1);
-        _resetCurrentViewport(fes, 1);
-        _viewport(fes, 0, 0, 0, 0);
-        _resetCurrentScissor(fes, 1);
-        _resetCurrentStencilRef(fes, 1);
-        _resetCurrentColorBlend(fes, 1);
-        fes._currentRenderPass = null;
-        fes._rttRenderPassWrapper.reset();
-    }
-}
+// /** @internal */
+// export function _endRenderTargetRenderPass(engineState: IWebGPUEnginePublic) {
+//     const fes = engineState as WebGPUEngineStateFull;
+//     if (fes._currentRenderPass) {
+//         const gpuWrapper = fes._currentRenderTarget!.texture?._hardwareTexture as Nullable<WebGPUHardwareTexture>;
+//         if (gpuWrapper && !fes._snapshotRendering.endRenderTargetPass(fes._currentRenderPass, gpuWrapper) && !fes.compatibilityMode) {
+//             fes._bundleListRenderTarget.run(fes._currentRenderPass);
+//             fes._bundleListRenderTarget.reset();
+//         }
+//         fes._currentRenderPass.end();
+//         if (fes.dbgVerboseLogsForFirstFrames) {
+//             if ((fes as any)._count === undefined) {
+//                 (fes as any)._count = 0;
+//             }
+//             if (!(fes as any)._count || (fes as any)._count < fes.dbgVerboseLogsNumFrames) {
+//                 console.log("frame #" + (fes as any)._count + " - render target end pass - internalTexture.uniqueId=", fes._currentRenderTarget?.texture?.uniqueId);
+//             }
+//         }
+//         _debugPopGroup?.(fes, 1);
+//         _resetCurrentViewport(fes, 1);
+//         _viewport(fes, 0, 0, 0, 0);
+//         _resetCurrentScissor(fes, 1);
+//         _resetCurrentStencilRef(fes, 1);
+//         _resetCurrentColorBlend(fes, 1);
+//         fes._currentRenderPass = null;
+//         fes._rttRenderPassWrapper.reset();
+//     }
+// }
 
-function _getCurrentRenderPass(engineState: IWebGPUEnginePublic): GPURenderPassEncoder {
-    const fes = engineState as WebGPUEngineStateFull;
-    if (fes._currentRenderTarget && !fes._currentRenderPass) {
-        // delayed creation of the render target pass, but we now need to create it as we are requested the render pass
-        _startRenderTargetRenderPass(fes, fes._currentRenderTarget, false, null, false, false);
-    } else if (!fes._currentRenderPass) {
-        _startMainRenderPass(fes, false);
-    }
+// function _getCurrentRenderPass(engineState: IWebGPUEnginePublic): GPURenderPassEncoder {
+//     const fes = engineState as WebGPUEngineStateFull;
+//     if (fes._currentRenderTarget && !fes._currentRenderPass) {
+//         // delayed creation of the render target pass, but we now need to create it as we are requested the render pass
+//         _startRenderTargetRenderPass(fes, fes._currentRenderTarget, false, null, false, false);
+//     } else if (!fes._currentRenderPass) {
+//         _startMainRenderPass(fes, false);
+//     }
 
-    return fes._currentRenderPass!;
-}
+//     return fes._currentRenderPass!;
+// }
 
-function _startMainRenderPass(engineState: IWebGPUEnginePublic, setClearStates: boolean, clearColor?: Nullable<IColor4Like>, clearDepth?: boolean, clearStencil?: boolean): void {
-    const fes = engineState as WebGPUEngineStateFull;
-    if (fes._mainRenderPassWrapper.renderPass) {
-        flushFramebuffer(fes, false);
-    }
+// function _startMainRenderPass(engineState: IWebGPUEnginePublic, setClearStates: boolean, clearColor?: Nullable<IColor4Like>, clearDepth?: boolean, clearStencil?: boolean): void {
+//     const fes = engineState as WebGPUEngineStateFull;
+//     if (fes._mainRenderPassWrapper.renderPass) {
+//         flushFramebuffer(fes, false);
+//     }
 
-    if (fes.useReverseDepthBuffer) {
-        setDepthFunctionToGreaterOrEqual(fes);
-    }
+//     if (fes.useReverseDepthBuffer) {
+//         setDepthFunctionToGreaterOrEqual(fes);
+//     }
 
-    const mustClearColor = setClearStates && clearColor;
-    const mustClearDepth = setClearStates && clearDepth;
-    const mustClearStencil = setClearStates && clearStencil;
+//     const mustClearColor = setClearStates && clearColor;
+//     const mustClearDepth = setClearStates && clearDepth;
+//     const mustClearStencil = setClearStates && clearStencil;
 
-    fes._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0]!.clearValue = mustClearColor ? clearColor : undefined;
-    fes._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0]!.loadOp = mustClearColor ? LoadOp.Clear : LoadOp.Load;
-    fes._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.depthClearValue = mustClearDepth
-        ? fes.useReverseDepthBuffer
-            ? _clearReverseDepthValue
-            : _clearDepthValue
-        : undefined;
-    fes._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.depthLoadOp = mustClearDepth ? LoadOp.Clear : LoadOp.Load;
-    fes._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.stencilClearValue = mustClearStencil ? _clearStencilValue : undefined;
-    fes._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.stencilLoadOp = !fes.isStencilEnable ? undefined : mustClearStencil ? LoadOp.Clear : LoadOp.Load;
-    fes._mainRenderPassWrapper.renderPassDescriptor!.occlusionQuerySet = fes._occlusionQuery?.hasQueries ? fes._occlusionQuery.querySet : undefined;
+//     fes._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0]!.clearValue = mustClearColor ? clearColor : undefined;
+//     fes._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0]!.loadOp = mustClearColor ? LoadOp.Clear : LoadOp.Load;
+//     fes._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.depthClearValue = mustClearDepth
+//         ? fes.useReverseDepthBuffer
+//             ? _clearReverseDepthValue
+//             : _clearDepthValue
+//         : undefined;
+//     fes._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.depthLoadOp = mustClearDepth ? LoadOp.Clear : LoadOp.Load;
+//     fes._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.stencilClearValue = mustClearStencil ? _clearStencilValue : undefined;
+//     fes._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.stencilLoadOp = !fes.isStencilEnable ? undefined : mustClearStencil ? LoadOp.Clear : LoadOp.Load;
+//     fes._mainRenderPassWrapper.renderPassDescriptor!.occlusionQuerySet = fes._occlusionQuery?.hasQueries ? fes._occlusionQuery.querySet : undefined;
 
-    const swapChainTexture = fes._context.getCurrentTexture();
-    fes._mainRenderPassWrapper.colorAttachmentGPUTextures[0]!.set(swapChainTexture);
+//     const swapChainTexture = fes._context.getCurrentTexture();
+//     fes._mainRenderPassWrapper.colorAttachmentGPUTextures[0]!.set(swapChainTexture);
 
-    // Resolve in case of MSAA
-    if (fes._options.antialias) {
-        viewDescriptorSwapChainAntialiasing.format = swapChainTexture.format;
-        fes._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0]!.resolveTarget = swapChainTexture.createView(viewDescriptorSwapChainAntialiasing);
-    } else {
-        viewDescriptorSwapChain.format = swapChainTexture.format;
-        fes._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0]!.view = swapChainTexture.createView(viewDescriptorSwapChain);
-    }
+//     // Resolve in case of MSAA
+//     if (fes._options.antialias) {
+//         viewDescriptorSwapChainAntialiasing.format = swapChainTexture.format;
+//         fes._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0]!.resolveTarget = swapChainTexture.createView(viewDescriptorSwapChainAntialiasing);
+//     } else {
+//         viewDescriptorSwapChain.format = swapChainTexture.format;
+//         fes._mainRenderPassWrapper.renderPassDescriptor!.colorAttachments[0]!.view = swapChainTexture.createView(viewDescriptorSwapChain);
+//     }
 
-    if (fes.dbgVerboseLogsForFirstFrames) {
-        if ((fes as any)._count === undefined) {
-            (fes as any)._count = 0;
-        }
-        if (!(fes as any)._count || (fes as any)._count < fes.dbgVerboseLogsNumFrames) {
-            console.log(
-                "frame #" + (fes as any)._count + " - main begin pass - texture width=" + (fes._mainTextureExtends as any).width,
-                " height=" + (fes._mainTextureExtends as any).height,
-                fes._mainRenderPassWrapper.renderPassDescriptor
-            );
-        }
-    }
+//     if (fes.dbgVerboseLogsForFirstFrames) {
+//         if ((fes as any)._count === undefined) {
+//             (fes as any)._count = 0;
+//         }
+//         if (!(fes as any)._count || (fes as any)._count < fes.dbgVerboseLogsNumFrames) {
+//             console.log(
+//                 "frame #" + (fes as any)._count + " - main begin pass - texture width=" + (fes._mainTextureExtends as any).width,
+//                 " height=" + (fes._mainTextureExtends as any).height,
+//                 fes._mainRenderPassWrapper.renderPassDescriptor
+//             );
+//         }
+//     }
 
-    _debugPushGroup?.(fes, "main pass", 0);
+//     _debugPushGroup?.(fes, "main pass", 0);
 
-    fes._currentRenderPass = fes._renderEncoder.beginRenderPass(fes._mainRenderPassWrapper.renderPassDescriptor!);
+//     fes._currentRenderPass = fes._renderEncoder.beginRenderPass(fes._mainRenderPassWrapper.renderPassDescriptor!);
 
-    fes._mainRenderPassWrapper.renderPass = fes._currentRenderPass;
+//     fes._mainRenderPassWrapper.renderPass = fes._currentRenderPass;
 
-    _debugFlushPendingCommands?.(fes);
+//     _debugFlushPendingCommands?.(fes);
 
-    _resetCurrentViewport(fes, 0);
-    _resetCurrentScissor(fes, 0);
-    _resetCurrentStencilRef(fes, 0);
-    _resetCurrentColorBlend(fes, 0);
+//     _resetCurrentViewport(fes, 0);
+//     _resetCurrentScissor(fes, 0);
+//     _resetCurrentStencilRef(fes, 0);
+//     _resetCurrentColorBlend(fes, 0);
 
-    if (!fes._isStencilEnable) {
-        fes._stencilStateComposer!.enabled = false;
-    }
-}
+//     if (!fes._isStencilEnable) {
+//         fes._stencilStateComposer!.enabled = false;
+//     }
+// }
 
-function _endMainRenderPass(engineState: IWebGPUEnginePublic): void {
-    const fes = engineState as WebGPUEngineStateFull;
-    if (fes._mainRenderPassWrapper.renderPass !== null) {
-        fes._snapshotRendering.endMainRenderPass();
-        if (!fes.compatibilityMode && !fes._snapshotRendering.play) {
-            fes._bundleList.run(fes._mainRenderPassWrapper.renderPass);
-            fes._bundleList.reset();
-        }
-        fes._mainRenderPassWrapper.renderPass.end();
-        if (fes.dbgVerboseLogsForFirstFrames) {
-            if ((fes as any)._count === undefined) {
-                (fes as any)._count = 0;
-            }
-            if (!(fes as any)._count || (fes as any)._count < fes.dbgVerboseLogsNumFrames) {
-                console.log("frame #" + (fes as any)._count + " - main end pass");
-            }
-        }
-        _debugPopGroup?.(fes, 0);
-        _resetCurrentViewport(fes, 0);
-        _resetCurrentScissor(fes, 0);
-        _resetCurrentStencilRef(fes, 0);
-        _resetCurrentColorBlend(fes, 0);
-        if (fes._mainRenderPassWrapper.renderPass === fes._currentRenderPass) {
-            fes._currentRenderPass = null;
-        }
-        fes._mainRenderPassWrapper.reset(false);
-    }
-}
+// function _endMainRenderPass(engineState: IWebGPUEnginePublic): void {
+//     const fes = engineState as WebGPUEngineStateFull;
+//     if (fes._mainRenderPassWrapper.renderPass !== null) {
+//         fes._snapshotRendering.endMainRenderPass();
+//         if (!fes.compatibilityMode && !fes._snapshotRendering.play) {
+//             fes._bundleList.run(fes._mainRenderPassWrapper.renderPass);
+//             fes._bundleList.reset();
+//         }
+//         fes._mainRenderPassWrapper.renderPass.end();
+//         if (fes.dbgVerboseLogsForFirstFrames) {
+//             if ((fes as any)._count === undefined) {
+//                 (fes as any)._count = 0;
+//             }
+//             if (!(fes as any)._count || (fes as any)._count < fes.dbgVerboseLogsNumFrames) {
+//                 console.log("frame #" + (fes as any)._count + " - main end pass");
+//             }
+//         }
+//         _debugPopGroup?.(fes, 0);
+//         _resetCurrentViewport(fes, 0);
+//         _resetCurrentScissor(fes, 0);
+//         _resetCurrentStencilRef(fes, 0);
+//         _resetCurrentColorBlend(fes, 0);
+//         if (fes._mainRenderPassWrapper.renderPass === fes._currentRenderPass) {
+//             fes._currentRenderPass = null;
+//         }
+//         fes._mainRenderPassWrapper.reset(false);
+//     }
+// }
 
 /**
  * @internal
@@ -1408,49 +1404,104 @@ export function _setDepthTextureFormat(engineState: IWebGPUEnginePublic, wrapper
     fes._depthTextureFormat = wrapper.depthTextureFormat;
 }
 
-//------------------------------------------------------------------------------
-//                              Dynamic WebGPU States
-//------------------------------------------------------------------------------
+// //------------------------------------------------------------------------------
+// //                              Dynamic WebGPU States
+// //------------------------------------------------------------------------------
 
-function _resetCurrentViewport(engineState: IWebGPUEnginePublic, index: number) {
-    const fes = engineState as WebGPUEngineStateFull;
-    fes._viewportsCurrent[index].x = 0;
-    fes._viewportsCurrent[index].y = 0;
-    fes._viewportsCurrent[index].w = 0;
-    fes._viewportsCurrent[index].h = 0;
-}
-
-// function _mustUpdateViewport(engineState: IWebGPUEnginePublic, renderPass: GPURenderPassEncoder): boolean {
+// function _resetCurrentViewport(engineState: IWebGPUEnginePublic, index: number) {
 //     const fes = engineState as WebGPUEngineStateFull;
-//     const index = renderPass === fes._mainRenderPassWrapper.renderPass ? 0 : 1;
-
-//     const x = fes._viewportCached.x,
-//         y = fes._viewportCached.y,
-//         w = fes._viewportCached.z,
-//         h = fes._viewportCached.w;
-
-//     const update = fes._viewportsCurrent[index].x !== x || fes._viewportsCurrent[index].y !== y || fes._viewportsCurrent[index].w !== w || fes._viewportsCurrent[index].h !== h;
-
-//     if (update) {
-//         fes._viewportsCurrent[index].x = fes._viewportCached.x;
-//         fes._viewportsCurrent[index].y = fes._viewportCached.y;
-//         fes._viewportsCurrent[index].w = fes._viewportCached.z;
-//         fes._viewportsCurrent[index].h = fes._viewportCached.w;
-//     }
-
-//     return update;
+//     fes._viewportsCurrent[index].x = 0;
+//     fes._viewportsCurrent[index].y = 0;
+//     fes._viewportsCurrent[index].w = 0;
+//     fes._viewportsCurrent[index].h = 0;
 // }
 
-// function _applyViewport(engineState: IWebGPUEnginePublic, renderPass: GPURenderPassEncoder): void {
+// // function _mustUpdateViewport(engineState: IWebGPUEnginePublic, renderPass: GPURenderPassEncoder): boolean {
+// //     const fes = engineState as WebGPUEngineStateFull;
+// //     const index = renderPass === fes._mainRenderPassWrapper.renderPass ? 0 : 1;
+
+// //     const x = fes._viewportCached.x,
+// //         y = fes._viewportCached.y,
+// //         w = fes._viewportCached.z,
+// //         h = fes._viewportCached.w;
+
+// //     const update = fes._viewportsCurrent[index].x !== x || fes._viewportsCurrent[index].y !== y || fes._viewportsCurrent[index].w !== w || fes._viewportsCurrent[index].h !== h;
+
+// //     if (update) {
+// //         fes._viewportsCurrent[index].x = fes._viewportCached.x;
+// //         fes._viewportsCurrent[index].y = fes._viewportCached.y;
+// //         fes._viewportsCurrent[index].w = fes._viewportCached.z;
+// //         fes._viewportsCurrent[index].h = fes._viewportCached.w;
+// //     }
+
+// //     return update;
+// // }
+
+// // function _applyViewport(engineState: IWebGPUEnginePublic, renderPass: GPURenderPassEncoder): void {
+// //     const fes = engineState as WebGPUEngineStateFull;
+// //     let y = Math.floor(fes._viewportCached.y);
+// //     const h = Math.floor(fes._viewportCached.w);
+
+// //     if (!fes._currentRenderTarget) {
+// //         y = getRenderHeight(fes, true) - y - h;
+// //     }
+
+// //     renderPass.setViewport(Math.floor(fes._viewportCached.x), y, Math.floor(fes._viewportCached.z), h, 0, 1);
+
+// //     if (fes.dbgVerboseLogsForFirstFrames) {
+// //         if ((fes as any)._count === undefined) {
+// //             (fes as any)._count = 0;
+// //         }
+// //         if (!(fes as any)._count || (fes as any)._count < fes.dbgVerboseLogsNumFrames) {
+// //             console.log(
+// //                 "frame #" + (fes as any)._count + " - viewport applied - (",
+// //                 fes._viewportCached.x,
+// //                 fes._viewportCached.y,
+// //                 fes._viewportCached.z,
+// //                 fes._viewportCached.w,
+// //                 ") current pass is main pass=" + (renderPass === fes._mainRenderPassWrapper.renderPass)
+// //             );
+// //         }
+// //     }
+// // }
+
+// function _resetCurrentScissor(engineState: IWebGPUEnginePublic, index: number) {
 //     const fes = engineState as WebGPUEngineStateFull;
-//     let y = Math.floor(fes._viewportCached.y);
-//     const h = Math.floor(fes._viewportCached.w);
+//     fes._scissorsCurrent[index].x = 0;
+//     fes._scissorsCurrent[index].y = 0;
+//     fes._scissorsCurrent[index].w = 0;
+//     fes._scissorsCurrent[index].h = 0;
+// }
 
-//     if (!fes._currentRenderTarget) {
-//         y = getRenderHeight(fes, true) - y - h;
-//     }
+// // function _mustUpdateScissor(engineState: IWebGPUEnginePublic, renderPass: GPURenderPassEncoder): boolean {
+// //     const fes = engineState as WebGPUEngineStateFull;
+// //     const index = renderPass === fes._mainRenderPassWrapper.renderPass ? 0 : 1;
 
-//     renderPass.setViewport(Math.floor(fes._viewportCached.x), y, Math.floor(fes._viewportCached.z), h, 0, 1);
+// //     const x = fes._scissorCached.x,
+// //         y = fes._scissorCached.y,
+// //         w = fes._scissorCached.z,
+// //         h = fes._scissorCached.w;
+
+// //     const update = fes._scissorsCurrent[index].x !== x || fes._scissorsCurrent[index].y !== y || fes._scissorsCurrent[index].w !== w || fes._scissorsCurrent[index].h !== h;
+
+// //     if (update) {
+// //         fes._scissorsCurrent[index].x = fes._scissorCached.x;
+// //         fes._scissorsCurrent[index].y = fes._scissorCached.y;
+// //         fes._scissorsCurrent[index].w = fes._scissorCached.z;
+// //         fes._scissorsCurrent[index].h = fes._scissorCached.w;
+// //     }
+
+// //     return update;
+// // }
+
+// function _applyScissor(engineState: IWebGPUEnginePublic, renderPass: GPURenderPassEncoder): void {
+//     const fes = engineState as WebGPUEngineStateFull;
+//     renderPass.setScissorRect(
+//         fes._scissorCached.x,
+//         fes._currentRenderTarget ? fes._scissorCached.y : getRenderHeight(fes) - fes._scissorCached.w - fes._scissorCached.y,
+//         fes._scissorCached.z,
+//         fes._scissorCached.w
+//     );
 
 //     if (fes.dbgVerboseLogsForFirstFrames) {
 //         if ((fes as any)._count === undefined) {
@@ -1458,239 +1509,184 @@ function _resetCurrentViewport(engineState: IWebGPUEnginePublic, index: number) 
 //         }
 //         if (!(fes as any)._count || (fes as any)._count < fes.dbgVerboseLogsNumFrames) {
 //             console.log(
-//                 "frame #" + (fes as any)._count + " - viewport applied - (",
-//                 fes._viewportCached.x,
-//                 fes._viewportCached.y,
-//                 fes._viewportCached.z,
-//                 fes._viewportCached.w,
+//                 "frame #" + (fes as any)._count + " - scissor applied - (",
+//                 fes._scissorCached.x,
+//                 fes._scissorCached.y,
+//                 fes._scissorCached.z,
+//                 fes._scissorCached.w,
 //                 ") current pass is main pass=" + (renderPass === fes._mainRenderPassWrapper.renderPass)
 //             );
 //         }
 //     }
 // }
 
-function _resetCurrentScissor(engineState: IWebGPUEnginePublic, index: number) {
-    const fes = engineState as WebGPUEngineStateFull;
-    fes._scissorsCurrent[index].x = 0;
-    fes._scissorsCurrent[index].y = 0;
-    fes._scissorsCurrent[index].w = 0;
-    fes._scissorsCurrent[index].h = 0;
-}
-
-// function _mustUpdateScissor(engineState: IWebGPUEnginePublic, renderPass: GPURenderPassEncoder): boolean {
+// function _scissorIsActive(engineState: IWebGPUEnginePublic) {
 //     const fes = engineState as WebGPUEngineStateFull;
-//     const index = renderPass === fes._mainRenderPassWrapper.renderPass ? 0 : 1;
+//     return fes._scissorCached.x !== 0 || fes._scissorCached.y !== 0 || fes._scissorCached.z !== 0 || fes._scissorCached.w !== 0;
+// }
 
-//     const x = fes._scissorCached.x,
-//         y = fes._scissorCached.y,
-//         w = fes._scissorCached.z,
-//         h = fes._scissorCached.w;
+// export function enableScissor(engineState: IWebGPUEnginePublic, x: number, y: number, width: number, height: number): void {
+//     const fes = engineState as WebGPUEngineStateFull;
+//     fes._scissorCached.x = x;
+//     fes._scissorCached.y = y;
+//     fes._scissorCached.z = width;
+//     fes._scissorCached.w = height;
+// }
 
-//     const update = fes._scissorsCurrent[index].x !== x || fes._scissorsCurrent[index].y !== y || fes._scissorsCurrent[index].w !== w || fes._scissorsCurrent[index].h !== h;
+// export function disableScissor(engineState: IWebGPUEnginePublic) {
+//     const fes = engineState as WebGPUEngineStateFull;
+//     fes._scissorCached.x = 0;
+//     fes._scissorCached.y = 0;
+//     fes._scissorCached.z = 0;
+//     fes._scissorCached.w = 0;
 
-//     if (update) {
-//         fes._scissorsCurrent[index].x = fes._scissorCached.x;
-//         fes._scissorsCurrent[index].y = fes._scissorCached.y;
-//         fes._scissorsCurrent[index].w = fes._scissorCached.z;
-//         fes._scissorsCurrent[index].h = fes._scissorCached.w;
+//     _resetCurrentScissor(fes, 0);
+//     _resetCurrentScissor(fes, 1);
+// }
+
+// function _resetCurrentStencilRef(engineState: IWebGPUEnginePublic, index: number): void {
+//     (engineState as WebGPUEngineStateFull)._stencilRefsCurrent[index] = -1;
+// }
+
+// // function _mustUpdateStencilRef(engineState: IWebGPUEnginePublic, renderPass: GPURenderPassEncoder): boolean {
+// //     const fes = engineState as WebGPUEngineStateFull;
+// //     const index = renderPass === fes._mainRenderPassWrapper.renderPass ? 0 : 1;
+// //     const update = fes._stencilStateComposer?.funcRef !== fes._stencilRefsCurrent[index];
+// //     if (update) {
+// //         fes._stencilRefsCurrent[index] = fes._stencilStateComposer!.funcRef;
+// //     }
+// //     return update;
+// // }
+
+// /**
+//  * @internal
+//  */
+// export function _applyStencilRef(engineState: IWebGPUEnginePublic, renderPass: GPURenderPassEncoder): void {
+//     renderPass.setStencilReference((engineState as WebGPUEngineStateFull)._stencilStateComposer?.funcRef ?? 0);
+// }
+
+// function _resetCurrentColorBlend(engineState: IWebGPUEnginePublic, index: number): void {
+//     const fes = engineState as WebGPUEngineStateFull;
+//     fes._blendColorsCurrent[index][0] = fes._blendColorsCurrent[index][1] = fes._blendColorsCurrent[index][2] = fes._blendColorsCurrent[index][3] = null;
+// }
+
+// // function _mustUpdateBlendColor(engineState: IWebGPUEnginePublic, renderPass: GPURenderPassEncoder): boolean {
+// //     const fes = engineState as WebGPUEngineStateFull;
+// //     const index = renderPass === fes._mainRenderPassWrapper.renderPass ? 0 : 1;
+// //     const colorBlend = fes._alphaState._blendConstants;
+
+// //     const update =
+// //         colorBlend[0] !== fes._blendColorsCurrent[index][0] ||
+// //         colorBlend[1] !== fes._blendColorsCurrent[index][1] ||
+// //         colorBlend[2] !== fes._blendColorsCurrent[index][2] ||
+// //         colorBlend[3] !== fes._blendColorsCurrent[index][3];
+
+// //     if (update) {
+// //         fes._blendColorsCurrent[index][0] = colorBlend[0];
+// //         fes._blendColorsCurrent[index][1] = colorBlend[1];
+// //         fes._blendColorsCurrent[index][2] = colorBlend[2];
+// //         fes._blendColorsCurrent[index][3] = colorBlend[3];
+// //     }
+
+// //     return update;
+// // }
+
+// // function _applyBlendColor(engineState: IWebGPUEnginePublic, renderPass: GPURenderPassEncoder): void {
+// //     renderPass.setBlendConstant((engineState as WebGPUEngineStateFull)._alphaState._blendConstants as GPUColor);
+// // }
+
+// /**
+//  * Clear the current render buffer or the current render target (if any is set up)
+//  * @param color defines the color to use
+//  * @param backBuffer defines if the back buffer must be cleared
+//  * @param depth defines if the depth buffer must be cleared
+//  * @param stencil defines if the stencil buffer must be cleared
+//  */
+// export function clear(engineState: IWebGPUEnginePublic, color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+//     const fes = engineState as WebGPUEngineStateFull;
+//     // Some PGs are using color3...
+//     if (color && color.a === undefined) {
+//         color.a = 1;
 //     }
 
-//     return update;
-// }
+//     const hasScissor = _scissorIsActive(fes);
 
-function _applyScissor(engineState: IWebGPUEnginePublic, renderPass: GPURenderPassEncoder): void {
-    const fes = engineState as WebGPUEngineStateFull;
-    renderPass.setScissorRect(
-        fes._scissorCached.x,
-        fes._currentRenderTarget ? fes._scissorCached.y : getRenderHeight(fes) - fes._scissorCached.w - fes._scissorCached.y,
-        fes._scissorCached.z,
-        fes._scissorCached.w
-    );
-
-    if (fes.dbgVerboseLogsForFirstFrames) {
-        if ((fes as any)._count === undefined) {
-            (fes as any)._count = 0;
-        }
-        if (!(fes as any)._count || (fes as any)._count < fes.dbgVerboseLogsNumFrames) {
-            console.log(
-                "frame #" + (fes as any)._count + " - scissor applied - (",
-                fes._scissorCached.x,
-                fes._scissorCached.y,
-                fes._scissorCached.z,
-                fes._scissorCached.w,
-                ") current pass is main pass=" + (renderPass === fes._mainRenderPassWrapper.renderPass)
-            );
-        }
-    }
-}
-
-function _scissorIsActive(engineState: IWebGPUEnginePublic) {
-    const fes = engineState as WebGPUEngineStateFull;
-    return fes._scissorCached.x !== 0 || fes._scissorCached.y !== 0 || fes._scissorCached.z !== 0 || fes._scissorCached.w !== 0;
-}
-
-export function enableScissor(engineState: IWebGPUEnginePublic, x: number, y: number, width: number, height: number): void {
-    const fes = engineState as WebGPUEngineStateFull;
-    fes._scissorCached.x = x;
-    fes._scissorCached.y = y;
-    fes._scissorCached.z = width;
-    fes._scissorCached.w = height;
-}
-
-export function disableScissor(engineState: IWebGPUEnginePublic) {
-    const fes = engineState as WebGPUEngineStateFull;
-    fes._scissorCached.x = 0;
-    fes._scissorCached.y = 0;
-    fes._scissorCached.z = 0;
-    fes._scissorCached.w = 0;
-
-    _resetCurrentScissor(fes, 0);
-    _resetCurrentScissor(fes, 1);
-}
-
-function _resetCurrentStencilRef(engineState: IWebGPUEnginePublic, index: number): void {
-    (engineState as WebGPUEngineStateFull)._stencilRefsCurrent[index] = -1;
-}
-
-// function _mustUpdateStencilRef(engineState: IWebGPUEnginePublic, renderPass: GPURenderPassEncoder): boolean {
-//     const fes = engineState as WebGPUEngineStateFull;
-//     const index = renderPass === fes._mainRenderPassWrapper.renderPass ? 0 : 1;
-//     const update = fes._stencilStateComposer?.funcRef !== fes._stencilRefsCurrent[index];
-//     if (update) {
-//         fes._stencilRefsCurrent[index] = fes._stencilStateComposer!.funcRef;
-//     }
-//     return update;
-// }
-
-/**
- * @internal
- */
-export function _applyStencilRef(engineState: IWebGPUEnginePublic, renderPass: GPURenderPassEncoder): void {
-    renderPass.setStencilReference((engineState as WebGPUEngineStateFull)._stencilStateComposer?.funcRef ?? 0);
-}
-
-function _resetCurrentColorBlend(engineState: IWebGPUEnginePublic, index: number): void {
-    const fes = engineState as WebGPUEngineStateFull;
-    fes._blendColorsCurrent[index][0] = fes._blendColorsCurrent[index][1] = fes._blendColorsCurrent[index][2] = fes._blendColorsCurrent[index][3] = null;
-}
-
-// function _mustUpdateBlendColor(engineState: IWebGPUEnginePublic, renderPass: GPURenderPassEncoder): boolean {
-//     const fes = engineState as WebGPUEngineStateFull;
-//     const index = renderPass === fes._mainRenderPassWrapper.renderPass ? 0 : 1;
-//     const colorBlend = fes._alphaState._blendConstants;
-
-//     const update =
-//         colorBlend[0] !== fes._blendColorsCurrent[index][0] ||
-//         colorBlend[1] !== fes._blendColorsCurrent[index][1] ||
-//         colorBlend[2] !== fes._blendColorsCurrent[index][2] ||
-//         colorBlend[3] !== fes._blendColorsCurrent[index][3];
-
-//     if (update) {
-//         fes._blendColorsCurrent[index][0] = colorBlend[0];
-//         fes._blendColorsCurrent[index][1] = colorBlend[1];
-//         fes._blendColorsCurrent[index][2] = colorBlend[2];
-//         fes._blendColorsCurrent[index][3] = colorBlend[3];
+//     if (fes.dbgVerboseLogsForFirstFrames) {
+//         if ((fes as any)._count === undefined) {
+//             (fes as any)._count = 0;
+//         }
+//         if (!(fes as any)._count || (fes as any)._count < fes.dbgVerboseLogsNumFrames) {
+//             console.log("frame #" + (fes as any)._count + " - clear called - backBuffer=", backBuffer, " depth=", depth, " stencil=", stencil, " scissor is active=", hasScissor);
+//         }
 //     }
 
-//     return update;
+//     // We need to recreate the render pass so that the new parameters for clear color / depth / stencil are taken into account
+//     if (fes._currentRenderTarget) {
+//         if (hasScissor) {
+//             if (!fes._rttRenderPassWrapper.renderPass) {
+//                 _startRenderTargetRenderPass(fes, fes._currentRenderTarget!, false, backBuffer ? color : null, depth, stencil);
+//             }
+//             if (!fes.compatibilityMode) {
+//                 fes._bundleListRenderTarget.addItem(new WebGPURenderItemScissor(fes._scissorCached.x, fes._scissorCached.y, fes._scissorCached.z, fes._scissorCached.w));
+//             } else {
+//                 _applyScissor(fes, fes._currentRenderPass!);
+//             }
+//             _clearFullQuad(fes, backBuffer ? color : null, depth, stencil);
+//         } else {
+//             if (fes._currentRenderPass) {
+//                 _endRenderTargetRenderPass(fes);
+//             }
+//             _startRenderTargetRenderPass(fes, fes._currentRenderTarget!, true, backBuffer ? color : null, depth, stencil);
+//         }
+//     } else {
+//         if (!fes._mainRenderPassWrapper.renderPass || !hasScissor) {
+//             _startMainRenderPass(fes, !hasScissor, backBuffer ? color : null, depth, stencil);
+//         }
+//         if (hasScissor) {
+//             if (!fes.compatibilityMode) {
+//                 fes._bundleList.addItem(new WebGPURenderItemScissor(fes._scissorCached.x, fes._scissorCached.y, fes._scissorCached.z, fes._scissorCached.w));
+//             } else {
+//                 _applyScissor(fes, fes._currentRenderPass!);
+//             }
+//             _clearFullQuad(fes, backBuffer ? color : null, depth, stencil);
+//         }
+//     }
 // }
 
-// function _applyBlendColor(engineState: IWebGPUEnginePublic, renderPass: GPURenderPassEncoder): void {
-//     renderPass.setBlendConstant((engineState as WebGPUEngineStateFull)._alphaState._blendConstants as GPUColor);
+// function _clearFullQuad(engineState: IWebGPUEnginePublic, clearColor?: Nullable<IColor4Like>, clearDepth?: boolean, clearStencil?: boolean): void {
+//     const fes = engineState as WebGPUEngineStateFull;
+//     const renderPass = !fes.compatibilityMode ? null : _getCurrentRenderPass(fes);
+
+//     fes._clearQuad.setColorFormat(fes._colorFormat);
+//     fes._clearQuad.setDepthStencilFormat(fes._depthTextureFormat);
+//     fes._clearQuad.setMRTAttachments(fes._cacheRenderPipeline.mrtAttachments ?? [], fes._cacheRenderPipeline.mrtTextureArray ?? [], fes._cacheRenderPipeline.mrtTextureCount);
+
+//     if (!fes.compatibilityMode) {
+//         fes._bundleList.addItem(new WebGPURenderItemStencilRef(fes._clearStencilValue));
+//     } else {
+//         renderPass!.setStencilReference(fes._clearStencilValue);
+//     }
+
+//     const bundle = fes._clearQuad.clear(renderPass, clearColor, clearDepth, clearStencil, fes.currentSampleCount);
+
+//     if (!fes.compatibilityMode) {
+//         fes._bundleList.addBundle(bundle!);
+//         _applyStencilRef(fes, fes._bundleList);
+//         _reportDrawCall(fes);
+//     } else {
+//         _applyStencilRef(fes, null);
+//     }
 // }
-
-/**
- * Clear the current render buffer or the current render target (if any is set up)
- * @param color defines the color to use
- * @param backBuffer defines if the back buffer must be cleared
- * @param depth defines if the depth buffer must be cleared
- * @param stencil defines if the stencil buffer must be cleared
- */
-export function clear(engineState: IWebGPUEnginePublic, color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
-    const fes = engineState as WebGPUEngineStateFull;
-    // Some PGs are using color3...
-    if (color && color.a === undefined) {
-        color.a = 1;
-    }
-
-    const hasScissor = _scissorIsActive(fes);
-
-    if (fes.dbgVerboseLogsForFirstFrames) {
-        if ((fes as any)._count === undefined) {
-            (fes as any)._count = 0;
-        }
-        if (!(fes as any)._count || (fes as any)._count < fes.dbgVerboseLogsNumFrames) {
-            console.log("frame #" + (fes as any)._count + " - clear called - backBuffer=", backBuffer, " depth=", depth, " stencil=", stencil, " scissor is active=", hasScissor);
-        }
-    }
-
-    // We need to recreate the render pass so that the new parameters for clear color / depth / stencil are taken into account
-    if (fes._currentRenderTarget) {
-        if (hasScissor) {
-            if (!fes._rttRenderPassWrapper.renderPass) {
-                _startRenderTargetRenderPass(fes, fes._currentRenderTarget!, false, backBuffer ? color : null, depth, stencil);
-            }
-            if (!fes.compatibilityMode) {
-                fes._bundleListRenderTarget.addItem(new WebGPURenderItemScissor(fes._scissorCached.x, fes._scissorCached.y, fes._scissorCached.z, fes._scissorCached.w));
-            } else {
-                _applyScissor(fes, fes._currentRenderPass!);
-            }
-            _clearFullQuad(fes, backBuffer ? color : null, depth, stencil);
-        } else {
-            if (fes._currentRenderPass) {
-                _endRenderTargetRenderPass(fes);
-            }
-            _startRenderTargetRenderPass(fes, fes._currentRenderTarget!, true, backBuffer ? color : null, depth, stencil);
-        }
-    } else {
-        if (!fes._mainRenderPassWrapper.renderPass || !hasScissor) {
-            _startMainRenderPass(fes, !hasScissor, backBuffer ? color : null, depth, stencil);
-        }
-        if (hasScissor) {
-            if (!fes.compatibilityMode) {
-                fes._bundleList.addItem(new WebGPURenderItemScissor(fes._scissorCached.x, fes._scissorCached.y, fes._scissorCached.z, fes._scissorCached.w));
-            } else {
-                _applyScissor(fes, fes._currentRenderPass!);
-            }
-            _clearFullQuad(fes, backBuffer ? color : null, depth, stencil);
-        }
-    }
-}
-
-function _clearFullQuad(engineState: IWebGPUEnginePublic, clearColor?: Nullable<IColor4Like>, clearDepth?: boolean, clearStencil?: boolean): void {
-    const fes = engineState as WebGPUEngineStateFull;
-    const renderPass = !fes.compatibilityMode ? null : _getCurrentRenderPass(fes);
-
-    fes._clearQuad.setColorFormat(fes._colorFormat);
-    fes._clearQuad.setDepthStencilFormat(fes._depthTextureFormat);
-    fes._clearQuad.setMRTAttachments(fes._cacheRenderPipeline.mrtAttachments ?? [], fes._cacheRenderPipeline.mrtTextureArray ?? [], fes._cacheRenderPipeline.mrtTextureCount);
-
-    if (!fes.compatibilityMode) {
-        fes._bundleList.addItem(new WebGPURenderItemStencilRef(fes._clearStencilValue));
-    } else {
-        renderPass!.setStencilReference(fes._clearStencilValue);
-    }
-
-    const bundle = fes._clearQuad.clear(renderPass, clearColor, clearDepth, clearStencil, fes.currentSampleCount);
-
-    if (!fes.compatibilityMode) {
-        fes._bundleList.addBundle(bundle!);
-        _applyStencilRef(fes, fes._bundleList);
-        _reportDrawCall(fes);
-    } else {
-        _applyStencilRef(fes, null);
-    }
-}
 
 // TEMP - this is a part of an extension
-function _debugPushGroup(..._ags: any[]): void {
-    // no-op
-}
+// function _debugPushGroup(..._ags: any[]): void {
+//     // no-op
+// }
 
 function _debugPopGroup(..._ags: any[]): void {
     // no-op
 }
 
-function _debugFlushPendingCommands(..._ags: any[]): void {
-    // no-op
-}
+// function _debugFlushPendingCommands(..._ags: any[]): void {
+//     // no-op
+// }
