@@ -21,7 +21,7 @@ function getBabylonCamera(path: FlowGraphPath, context: FlowGraphContext): { bab
     if (!camera) {
         throw new Error(`Invalid camera index for path ${fullPath}`);
     }
-    const babylonCamera = (camera as any)._babylonCamera;
+    const babylonCamera = camera._babylonCamera;
     if (!babylonCamera) {
         throw new Error(`No Babylon camera found for path ${fullPath}`);
     }

@@ -31,8 +31,11 @@ function getBabylonMaterial(path: FlowGraphPath, context: FlowGraphContext) {
         throw new Error(`Invalid material index for path ${fullPath}`);
     }
     const babylonMaterials = [];
-    for (const data of Object.keys((material as any)._data)) {
-        const babylonMaterial = (material as any)._data[data].babylonMaterial as PBRMaterial;
+    if (!material._data) {
+        throw new Error(`No Babylon materials found for path ${fullPath}`);
+    }
+    for (const data of Object.keys(material._data)) {
+        const babylonMaterial = material._data[parseInt(data)].babylonMaterial as PBRMaterial;
         if (babylonMaterial) {
             babylonMaterials.push(babylonMaterial);
         }

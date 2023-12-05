@@ -22,11 +22,6 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
      * Defines whether this extension is enabled.
      */
     public enabled: boolean;
-    /**
-     * Defines a number that determines the order the extensions are applied.
-     */
-    // TODO: correct value?
-    public order = 195;
 
     /**
      * @internal

@@ -20,7 +20,7 @@ function getBabylonTransformNode(path: FlowGraphPath, context: FlowGraphContext)
     if (!node) {
         throw new Error(`Invalid node index for path ${fullPath}`);
     }
-    const babylonNode = (node as any)._babylonTransformNode as TransformNode;
+    const babylonNode = node._babylonTransformNode as TransformNode;
     if (!babylonNode) {
         throw new Error(`No Babylon node found for path ${fullPath}`);
     }
