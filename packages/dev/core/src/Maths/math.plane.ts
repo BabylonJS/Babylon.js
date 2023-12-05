@@ -138,18 +138,6 @@ export class Plane {
     }
 
     /**
-     * Updates the current Plane from an origin point and a normal.
-     * @param origin origin of the plane to be constructed
-     * @param normal the normalized normals of the plane to be constructed
-     * @returns the updated Plane.
-     */
-    public copyFromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>) {
-        this.normal.copyFrom(normal);
-        this.d = -origin.dot(normal);
-        return this;
-    }
-
-    /**
      * Checks if the plane is facing a given direction (meaning if the plane's normal is pointing in the opposite direction of the given vector).
      * Note that for this function to work as expected you should make sure that:
      *   - direction and the plane normal are normalized
