@@ -1,7 +1,6 @@
-import type { Material } from "../../Materials/material";
 import { Effect } from "../../Materials/effect";
 import { ShaderMaterial } from "../../Materials/shaderMaterial";
-import { Matrix, Quaternion, Vector2 } from "../../Maths/math.vector";
+import { Matrix, Quaternion, TmpVectors, Vector2 } from "../../Maths/math.vector";
 import { Mesh } from "../../Meshes/mesh";
 import { VertexData } from "../../Meshes/mesh.vertexData";
 import type { Observer } from "../../Misc/observable";
@@ -18,9 +17,9 @@ export class GaussianSplatting {
     private _uBuffer: Uint8Array;
     private _covA: Float32Array;
     private _covB: Float32Array;
-    private _mesh: Nullable<Mesh>;
     private _sceneDisposeObserver: Nullable<Observer<Scene>>;
-
+    private _sceneBeforeRenderObserver: Nullable<Observer<Scene>>;
+    private _material: ShaderMaterial;
     /**
      *
      */
@@ -29,6 +28,10 @@ export class GaussianSplatting {
      *
      */
     public readonly scene: Scene;
+    /**
+     *
+     */
+    public mesh: Nullable<Mesh>;
 
     /**
      * return the number of splattings used
@@ -37,28 +40,25 @@ export class GaussianSplatting {
         return this._vertexCount;
     }
 
-    private _getMaterial(scene: Scene): Material {
-        if (!GaussianSplatting._Material) {
-            Effect.ShadersStore["customVertexShader"] = GaussianSplatting._VertexShaderSource;
-            Effect.ShadersStore["customFragmentShader"] = GaussianSplatting._FragmentShaderSource;
-            const shaderMaterial = new ShaderMaterial(
-                "GaussianSplattingShader",
-                scene,
-                {
-                    vertex: "custom",
-                    fragment: "custom",
-                },
-                {
-                    attributes: ["position", "normal", "uv"],
-                    uniforms: ["view", "projection"],
-                }
-            );
-            shaderMaterial.setVector2("focal", new Vector2(1132, 1132));
-            shaderMaterial.backFaceCulling = false;
-            shaderMaterial.alpha = 0.9999;
-            GaussianSplatting._Material = shaderMaterial;
-        }
-        return GaussianSplatting._Material;
+    private _createMaterial(scene: Scene) {
+        Effect.ShadersStore["customVertexShader"] = GaussianSplatting._VertexShaderSource;
+        Effect.ShadersStore["customFragmentShader"] = GaussianSplatting._FragmentShaderSource;
+        const shaderMaterial = new ShaderMaterial(
+            "GaussianSplattingShader",
+            scene,
+            {
+                vertex: "custom",
+                fragment: "custom",
+            },
+            {
+                attributes: ["position", "normal", "uv"],
+                uniforms: ["view", "projection", "modelView"],
+            }
+        );
+        shaderMaterial.setVector2("focal", new Vector2(1132, 1132));
+        shaderMaterial.backFaceCulling = false;
+        shaderMaterial.alpha = 0.9999;
+        this._material = shaderMaterial;
     }
 
     private _getMesh(scene: Scene): Mesh {
@@ -68,13 +68,12 @@ export class GaussianSplatting {
         vertexData.indices = [0, 1, 2, 0, 2, 3];
         vertexData.applyToMesh(mesh);
 
-        mesh.material = this._getMaterial(scene);
+        mesh.material = this._material;
         mesh.alwaysSelectAsActiveMesh = true;
         return mesh;
     }
 
     protected static _Worker: Nullable<Worker> = null;
-    protected static _Material: Nullable<ShaderMaterial>;
     protected static _VertexShaderSource = `
         precision mediump float;
         attribute vec2 position;
@@ -84,7 +83,7 @@ export class GaussianSplatting {
         attribute vec4 world2;
         attribute vec4 world3;
 
-        uniform mat4 projection, view;
+        uniform mat4 projection, modelView;
         uniform vec2 focal;
         uniform vec2 viewport;
 
@@ -96,7 +95,7 @@ export class GaussianSplatting {
         vec3 covA = world2.xyz;
         vec3 covB = world3.xyz;
 
-        vec4 camspace = view * vec4(center, 1);
+        vec4 camspace = modelView * vec4(center, 1);
         vec4 pos2d = projection * camspace;
 
         float bounds = 1.2 * pos2d.w;
@@ -120,7 +119,7 @@ export class GaussianSplatting {
 
         mat3 invy = mat3(1,0,0, 0,-1,0,0,0,1);
 
-        mat3 T = invy * transpose(mat3(view)) * J;
+        mat3 T = invy * transpose(mat3(modelView)) * J;
         mat3 cov2d = transpose(T) * Vrk * T;
 
         float mid = (cov2d[0][0] + cov2d[1][1]) / 2.0;
@@ -152,25 +151,22 @@ export class GaussianSplatting {
         gl_FragColor = vec4(vColor.rgb, B);
         }`;
 
-    protected static _CreateWorker(self: any) {
+    protected static _CreateWorker = function (self: Worker) {
         let viewProj: number[];
         let lastProj: number[] = [];
-        const depthMix = new BigInt64Array();
         let vertexCount = 0;
         let positions: Float32Array;
 
         const runSort = (viewProj: number[]) => {
             vertexCount = positions.length;
-            if (depthMix.length !== vertexCount) {
-                const depthMix = new BigInt64Array(vertexCount);
-                const indices = new Uint32Array(depthMix.buffer);
-                for (let j = 0; j < vertexCount; j++) {
-                    indices[2 * j] = j;
-                }
-            }
             const dot = lastProj[2] * viewProj[2] + lastProj[6] * viewProj[6] + lastProj[10] * viewProj[10];
             if (Math.abs(dot - 1) < 0.01) {
                 return;
+            }
+            const depthMix = new BigInt64Array(vertexCount);
+            const indices = new Uint32Array(depthMix.buffer);
+            for (let j = 0; j < vertexCount; j++) {
+                indices[2 * j] = j;
             }
 
             const floatMix = new Float32Array(depthMix.buffer);
@@ -206,7 +202,7 @@ export class GaussianSplatting {
             positions = e.data.positions;
             throttledSort();
         };
-    }
+    };
 
     protected _setData(binaryData: Uint8Array) {
         const rowLength = 3 * 4 + 3 * 4 + 4 + 4;
@@ -256,6 +252,9 @@ export class GaussianSplatting {
     public constructor(name: string, scene: Scene) {
         this.scene = scene;
         this.name = name;
+        this._createMaterial(scene);
+        GaussianSplatting._Worker?.terminate();
+        GaussianSplatting._Worker = null;
     }
 
     /**
@@ -265,7 +264,7 @@ export class GaussianSplatting {
      */
     public loadAsync(url: string): Promise<void> {
         return Tools.LoadFileAsync(url, true).then((data: string | ArrayBuffer) => {
-            if (this._mesh) {
+            if (this.mesh) {
                 this.dispose();
             }
             this._setData(new Uint8Array(data as any));
@@ -293,17 +292,17 @@ export class GaussianSplatting {
                     matricesData[index + 14] = this._covB[i * 3 + 2];
                 }
 
-                if (!this._mesh) {
-                    this._mesh = this._getMesh(this.scene);
-                    this._mesh.thinInstanceSetBuffer("matrix", matricesData, 16, false);
-                } else {
-                    this._mesh.thinInstanceBufferUpdated("matrix");
-                }
+                this.mesh?.thinInstanceBufferUpdated("matrix");
             };
+
+            // update so this.mesh is valid when exiting this function
+            this.mesh = this._getMesh(this.scene);
+            this.mesh.thinInstanceSetBuffer("matrix", matricesData, 16, false);
 
             if (GaussianSplatting._Worker) {
                 GaussianSplatting._Worker.terminate();
             }
+
             GaussianSplatting._Worker = new Worker(
                 URL.createObjectURL(
                     new Blob(["(", GaussianSplatting._CreateWorker.toString(), ")(self)"], {
@@ -316,12 +315,12 @@ export class GaussianSplatting {
                 const indexMix = new Uint32Array(e.data.depthMix.buffer);
                 updateInstances(indexMix);
             };
-            this.scene.onBeforeRenderObservable.add(() => {
-                if (this._mesh && GaussianSplatting._Worker) {
-                    const engine = this.scene.getEngine();
-                    GaussianSplatting._Material?.setVector2("viewport", new Vector2(engine.getRenderWidth(), engine.getRenderHeight()));
-                    GaussianSplatting._Worker.postMessage({ view: this.scene.activeCamera?.getViewMatrix().m, positions: this._positions });
-                }
+            this._sceneBeforeRenderObserver = this.scene.onBeforeRenderObservable.add(() => {
+                const engine = this.scene.getEngine();
+                this._material.setVector2("viewport", new Vector2(engine.getRenderWidth(), engine.getRenderHeight()));
+                this.mesh!.getWorldMatrix().multiplyToRef(this.scene.activeCamera!.getViewMatrix(), TmpVectors.Matrix[0]);
+                this._material.setMatrix("modelView", TmpVectors.Matrix[0]);
+                GaussianSplatting._Worker?.postMessage({ view: TmpVectors.Matrix[0].m, positions: this._positions });
             });
             this._sceneDisposeObserver = this.scene.onDisposeObservable.add(() => {
                 this.dispose();
@@ -334,9 +333,10 @@ export class GaussianSplatting {
      */
     public dispose(): void {
         this.scene.onDisposeObservable.remove(this._sceneDisposeObserver);
+        this.scene.onBeforeRenderObservable.remove(this._sceneBeforeRenderObserver);
         GaussianSplatting._Worker?.terminate();
         GaussianSplatting._Worker = null;
-        this._mesh?.dispose();
-        this._mesh = null;
+        this.mesh?.dispose();
+        this.mesh = null;
     }
 }
