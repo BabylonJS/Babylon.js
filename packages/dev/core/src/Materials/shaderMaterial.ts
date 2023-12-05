@@ -131,7 +131,6 @@ export class ShaderMaterial extends PushMaterial {
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _multiview = false;
-    private _useLogarithmicDepth: boolean;
 
     /**
      * @internal
@@ -233,21 +232,6 @@ export class ShaderMaterial extends PushMaterial {
      */
     public needAlphaTesting(): boolean {
         return this._options.needAlphaTesting;
-    }
-
-    /**
-     * In case the depth buffer does not allow enough depth precision for your scene (might be the case in large scenes)
-     * You can try switching to logarithmic depth.
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/logarithmicDepthBuffer
-     */
-    public get useLogarithmicDepth(): boolean {
-        return this._useLogarithmicDepth;
-    }
-
-    public set useLogarithmicDepth(value: boolean) {
-        this._useLogarithmicDepth = value && this.getScene().getEngine().getCaps().fragmentDepthSupported;
-
-        this._markAllSubMeshesAsMiscDirty();
     }
 
     private _checkUniform(uniformName: string): void {
@@ -1455,7 +1439,6 @@ export class ShaderMaterial extends PushMaterial {
         serializationObject.options = this._options;
         serializationObject.shaderPath = this._shaderPath;
         serializationObject.storeEffectOnSubMeshes = this._storeEffectOnSubMeshes;
-        serializationObject.useLogarithmicDepth = this._useLogarithmicDepth;
 
         let name: string;
 
@@ -1615,8 +1598,6 @@ export class ShaderMaterial extends PushMaterial {
             scene,
             rootUrl
         );
-
-        material._useLogarithmicDepth = !!source.useLogarithmicDepth;
 
         let name: string;
 

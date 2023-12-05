@@ -763,7 +763,6 @@ export class StandardMaterial extends PushMaterial {
     protected _renderTargets = new SmartArray<RenderTargetTexture>(16);
     protected _worldViewProjectionMatrix = Matrix.Zero();
     protected _globalAmbientColor = new Color3(0, 0, 0);
-    protected _useLogarithmicDepth: boolean;
     protected _cacheHasRenderTargetTextures = false;
 
     /**
@@ -823,22 +822,6 @@ export class StandardMaterial extends PushMaterial {
      */
     public getClassName(): string {
         return "StandardMaterial";
-    }
-
-    /**
-     * In case the depth buffer does not allow enough depth precision for your scene (might be the case in large scenes)
-     * You can try switching to logarithmic depth.
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/logarithmicDepthBuffer
-     */
-    @serialize()
-    public get useLogarithmicDepth(): boolean {
-        return this._useLogarithmicDepth;
-    }
-
-    public set useLogarithmicDepth(value: boolean) {
-        this._useLogarithmicDepth = value && this.getScene().getEngine().getCaps().fragmentDepthSupported;
-
-        this._markAllSubMeshesAsMiscDirty();
     }
 
     /**
