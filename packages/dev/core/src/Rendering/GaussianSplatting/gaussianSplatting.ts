@@ -182,6 +182,7 @@ export class GaussianSplatting {
             self.postMessage({ depthMix }, [depthMix.buffer]);
         };
 
+        let sortRunning: boolean = false;
         const throttledSort = () => {
             if (!sortRunning) {
                 sortRunning = true;
@@ -196,7 +197,6 @@ export class GaussianSplatting {
             }
         };
 
-        let sortRunning: boolean = false;
         self.onmessage = (e: any) => {
             viewProj = e.data.view;
             positions = e.data.positions;
