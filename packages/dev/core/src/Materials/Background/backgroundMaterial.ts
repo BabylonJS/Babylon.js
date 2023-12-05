@@ -958,7 +958,7 @@ export class BackgroundMaterial extends PushMaterial {
                 "diffuseMatrix",
 
                 "projectedGroundInfos",
-                "logarithmicDepthConstant",                
+                "logarithmicDepthConstant",
             ];
 
             addClipPlaneUniforms(uniforms);
