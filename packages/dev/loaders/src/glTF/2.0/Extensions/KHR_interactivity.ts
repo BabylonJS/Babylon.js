@@ -44,8 +44,8 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
 
         // Fill out the array of extensions that the FlowGraphPath can use
         for (const extension of interactivityPathExensions) {
-            if (!FlowGraphPath._Extensions.includes(extension)) {
-                FlowGraphPath._Extensions.push(extension);
+            if (!FlowGraphPath.Extensions.includes(extension)) {
+                FlowGraphPath.Extensions.push(extension);
             }
         }
         const json = convertGLTFToSerializedFlowGraph(definition);
@@ -56,7 +56,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
         if (!context._userVariables) {
             context._userVariables = {};
         }
-        context._userVariables.gltf = this._loader.gltf;
+        context.setVariable("gltf", this._loader.gltf);
 
         coordinator.start();
     }

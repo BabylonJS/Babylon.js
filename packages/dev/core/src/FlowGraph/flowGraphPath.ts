@@ -32,7 +32,7 @@ export class FlowGraphPath {
     /**
      * Extensions that can be used to extend the functionality of the path.
      */
-    static _Extensions: IPathExtension[] = [];
+    static Extensions: IPathExtension[] = [];
 
     private _path: string;
     private _templateSubstitutions: {
@@ -154,7 +154,7 @@ export class FlowGraphPath {
     }
 
     getProperty(context: FlowGraphContext): any {
-        for (const extension of FlowGraphPath._Extensions) {
+        for (const extension of FlowGraphPath.Extensions) {
             if (extension.shouldProcess(this)) {
                 return extension.processGet(this, context);
             }
@@ -164,7 +164,7 @@ export class FlowGraphPath {
     }
 
     setProperty(context: FlowGraphContext, value: any) {
-        for (const extension of FlowGraphPath._Extensions) {
+        for (const extension of FlowGraphPath.Extensions) {
             if (extension.shouldProcess(this)) {
                 extension.processSet(this, context, value);
                 return;
