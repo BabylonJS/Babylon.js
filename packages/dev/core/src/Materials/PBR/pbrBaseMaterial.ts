@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { serialize, serializeAsImageProcessingConfiguration, expandToProperty } from "../../Misc/decorators";
+import { serializeAsImageProcessingConfiguration, expandToProperty } from "../../Misc/decorators";
 import type { Observer } from "../../Misc/observable";
 import { Logger } from "../../Misc/logger";
 import { SmartArray } from "../../Misc/smartArray";
