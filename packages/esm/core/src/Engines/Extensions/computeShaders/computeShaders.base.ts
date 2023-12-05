@@ -1,7 +1,7 @@
-import type { Nullable } from "@babylonjs/core/types.js";
-import type { ComputeEffect, IComputeEffectCreationOptions } from "@babylonjs/core/Compute/computeEffect.js";
-import type { IComputeContext } from "@babylonjs/core/Compute/IComputeContext.js";
-import type { IComputePipelineContext } from "@babylonjs/core/Compute/IComputePipelineContext.js";
+import type { Nullable } from "core/types.js";
+import type { ComputeEffect, IComputeEffectCreationOptions } from "core/Compute/computeEffect.js";
+import type { IComputeContext } from "core/Compute/IComputeContext.js";
+import type { IComputePipelineContext } from "core/Compute/IComputePipelineContext.js";
 import type { IBaseEnginePublic } from "../../engine.base.js";
 
 /**

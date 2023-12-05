@@ -1,6 +1,6 @@
-import type { DataBuffer } from "@babylonjs/core/Buffers/dataBuffer.js";
-import type { StorageBuffer } from "@babylonjs/core/Buffers/storageBuffer.js";
-import type { DataArray, Nullable } from "@babylonjs/core/types.js";
+import type { DataBuffer } from "core/Buffers/dataBuffer.js";
+import type { StorageBuffer } from "core/Buffers/storageBuffer.js";
+import type { DataArray, Nullable } from "core/types.js";
 import type { IBaseEnginePublic } from "../../engine.base.js";
 
 export interface IStoreBufferEngineExtension {

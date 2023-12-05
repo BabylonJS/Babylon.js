@@ -1,6 +1,6 @@
-import type { WebGLRenderTargetWrapper } from "@babylonjs/core/Engines/WebGL/webGLRenderTargetWrapper.js";
-import type { RenderTargetWrapper } from "@babylonjs/core/Engines/renderTargetWrapper.js";
-import { InternalTexture, InternalTextureSource } from "@babylonjs/core/Materials/Textures/internalTexture.js";
+import type { WebGLRenderTargetWrapper } from "core/Engines/WebGL/webGLRenderTargetWrapper.js";
+import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper.js";
+import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture.js";
 import { bindFramebuffer, type IWebGLEnginePublic, type WebGLEngineState } from "../../engine.webgl.js";
 import { _createHardwareRenderTargetWrapper } from "../renderTarget/renderTarget.webgl.js";
 import type { IMultiviewEngineExtension } from "../../../Extensions/multiview/multiview.base.js";

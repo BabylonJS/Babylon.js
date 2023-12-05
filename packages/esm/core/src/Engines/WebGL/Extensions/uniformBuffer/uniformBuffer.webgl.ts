@@ -1,8 +1,8 @@
-import type { DataBuffer } from "@babylonjs/core/Buffers/dataBuffer.js";
-import type { IPipelineContext } from "@babylonjs/core/Engines/IPipelineContext.js";
-import type { WebGLPipelineContext } from "@babylonjs/core/Engines/WebGL/webGLPipelineContext.js";
-import { WebGLDataBuffer } from "@babylonjs/core/Meshes/WebGL/webGLDataBuffer.js";
-import type { FloatArray, Nullable } from "@babylonjs/core/types.js";
+import type { DataBuffer } from "core/Buffers/dataBuffer.js";
+import type { IPipelineContext } from "core/Engines/IPipelineContext.js";
+import type { WebGLPipelineContext } from "core/Engines/WebGL/webGLPipelineContext.js";
+import { WebGLDataBuffer } from "core/Meshes/WebGL/webGLDataBuffer.js";
+import type { FloatArray, Nullable } from "core/types.js";
 import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl.js";
 import type { IUniformBufferEngineExtension } from "../../../Extensions/uniformBuffer/uniformBuffer.base.js";
 

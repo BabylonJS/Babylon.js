@@ -1,14 +1,14 @@
-import type { RenderTargetWrapper } from "@babylonjs/core/Engines/renderTargetWrapper.js";
+import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper.js";
 import type { IBaseEnginePublic } from "../../engine.base.js";
-import { Camera } from "@babylonjs/core/Cameras/camera.js";
-import { Scene } from "@babylonjs/core/scene.js";
-import type { Engine } from "@babylonjs/core/Engines/engine.js";
-import type { RenderTargetTexture } from "@babylonjs/core/Materials/Textures/renderTargetTexture.js";
-import { UniformBuffer } from "@babylonjs/core/Materials/uniformBuffer.js";
-import { Frustum } from "@babylonjs/core/Maths/math.frustum.js";
-import { Matrix, TmpVectors } from "@babylonjs/core/Maths/math.vector.js";
-import type { Nullable } from "@babylonjs/core/types.js";
-import { MultiviewRenderTarget } from "@babylonjs/core/Materials/Textures/MultiviewRenderTarget.js";
+import { Camera } from "core/Cameras/camera.js";
+import { Scene } from "core/scene.js";
+import type { Engine } from "core/Engines/engine.js";
+import type { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture.js";
+import { UniformBuffer } from "core/Materials/uniformBuffer.js";
+import { Frustum } from "core/Maths/math.frustum.js";
+import { Matrix, TmpVectors } from "core/Maths/math.vector.js";
+import type { Nullable } from "core/types.js";
+import { MultiviewRenderTarget } from "core/Materials/Textures/MultiviewRenderTarget.js";
 
 export interface IMultiviewEngineExtension {
     /**
@@ -37,7 +37,7 @@ export interface IMultiviewEngineExtension {
      */
     bindSpaceWarpFramebuffer(engineState: IBaseEnginePublic, spaceWarpTexture: RenderTargetWrapper): void;
 }
-declare module "@babylonjs/core/Cameras/camera.js" {
+declare module "core/Cameras/camera.js" {
     export interface Camera {
         /**
          * @internal
@@ -66,7 +66,7 @@ declare module "@babylonjs/core/Cameras/camera.js" {
     }
 }
 
-declare module "@babylonjs/core/scene.js" {
+declare module "core/scene.js" {
     export interface Scene {
         /** @internal */
         _transformMatrixR: Matrix;

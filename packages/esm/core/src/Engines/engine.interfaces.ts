@@ -1,4 +1,4 @@
-import type { IOfflineProvider } from "@babylonjs/core/Offline/IOfflineProvider.js";
+import type { IOfflineProvider } from "core/Offline/IOfflineProvider.js";
 
 export enum EngineType {
     BASE,

@@ -1,7 +1,7 @@
-import { _TimeToken } from "@babylonjs/core/Instrumentation/timeToken.js";
-import type { Nullable, int } from "@babylonjs/core/types.js";
+import { _TimeToken } from "core/Instrumentation/timeToken.js";
+import type { Nullable, int } from "core/types.js";
 import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl.js";
-import { AbstractMesh } from "@babylonjs/core/Meshes/abstractMesh.js";
+import { AbstractMesh } from "core/Meshes/abstractMesh.js";
 import type { OcclusionQuery, IQueryEngineExtension } from "../../../Extensions/query/query.base.js";
 import { _getExtensionState } from "../../../Extensions/query/query.base.js";
 

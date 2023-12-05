@@ -3,13 +3,13 @@
  * Adapters can be used to simulate a real engine object.
  */
 
-import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine.js";
+import type { ThinEngine } from "core/Engines/thinEngine.js";
 import type * as baseTypes from "./engine.base.js";
 import type * as webGLTypes from "./WebGL/engine.webgl.js";
 import type * as webGPUTypes from "./WebGPU/engine.webgpu.js";
 import type * as toolsTypes from "./engine.tools.js";
-import type { WebGPUEngine } from "public/@babylonjs/core/Engines/webgpuEngine.js";
-import type { Engine } from "public/@babylonjs/core/Engines/engine.js";
+import type { WebGPUEngine } from "core/Engines/webgpuEngine.js";
+import type { Engine } from "core/Engines/engine.js";
 
 type PickMatching<T, V> = { [K in keyof T as T[K] extends V ? K : never]: T[K] };
 type ExtractMethods<T> = PickMatching<T, Function>;

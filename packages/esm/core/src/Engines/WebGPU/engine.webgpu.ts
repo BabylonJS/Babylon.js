@@ -1,8 +1,8 @@
-import type { IShaderProcessor } from "@babylonjs/core/Engines/Processors/iShaderProcessor.js";
-import { ShaderLanguage } from "@babylonjs/core/Materials/shaderLanguage.js";
-import type { DataArray, Nullable } from "@babylonjs/core/types.js";
-import { WebGPUShaderProcessorWGSL } from "@babylonjs/core/Engines/WebGPU/webgpuShaderProcessorsWGSL.js";
-import { WebGPUShaderProcessorGLSL } from "@babylonjs/core/Engines/WebGPU/webgpuShaderProcessorsGLSL.js";
+import type { IShaderProcessor } from "core/Engines/Processors/iShaderProcessor.js";
+import { ShaderLanguage } from "core/Materials/shaderLanguage.js";
+import type { DataArray, Nullable } from "core/types.js";
+import { WebGPUShaderProcessorWGSL } from "core/Engines/WebGPU/webgpuShaderProcessorsWGSL.js";
+import { WebGPUShaderProcessorGLSL } from "core/Engines/WebGPU/webgpuShaderProcessorsGLSL.js";
 import type { IBaseEngineProtected, IBaseEnginePublic, IBaseEngineInternals, IBaseEngineOptions } from "../engine.base.js";
 import {
     _getGlobalDefines,
@@ -15,54 +15,54 @@ import {
     resize,
     setDepthFunctionToGreaterOrEqual,
 } from "../engine.base.js";
-import { WebGPUSnapshotRendering } from "@babylonjs/core/Engines/WebGPU/webgpuSnapshotRendering.js";
-import type { IDrawContext } from "@babylonjs/core/Engines/IDrawContext.js";
-import type { IMaterialContext } from "@babylonjs/core/Engines/IMaterialContext.js";
+import { WebGPUSnapshotRendering } from "core/Engines/WebGPU/webgpuSnapshotRendering.js";
+import type { IDrawContext } from "core/Engines/IDrawContext.js";
+import type { IMaterialContext } from "core/Engines/IMaterialContext.js";
 import { Version } from "../engine.static.js";
-import { Logger } from "@babylonjs/core/Misc/logger.js";
+import { Logger } from "core/Misc/logger.js";
 
 // TODO the next two can move to this file
-import type { GlslangOptions, WebGPUEngine } from "@babylonjs/core/Engines/webgpuEngine.js";
-import { WebGPUTintWASM, type TwgslOptions } from "@babylonjs/core/Engines/WebGPU/webgpuTintWASM.js";
+import type { GlslangOptions, WebGPUEngine } from "core/Engines/webgpuEngine.js";
+import { WebGPUTintWASM, type TwgslOptions } from "core/Engines/WebGPU/webgpuTintWASM.js";
 import { EngineType } from "../engine.interfaces.js";
 import { IsWindowObjectExist } from "../runtimeEnvironment.js";
-import { Tools } from "@babylonjs/core/Misc/tools.js";
+import { Tools } from "core/Misc/tools.js";
 import { BufferUsage, CanvasAlphaMode, FeatureName, LoadOp, StoreOp, TextureDimension, TextureFormat, TextureUsage } from "./engine.webgpu.constants.js";
-import { VertexBuffer } from "@babylonjs/core/Buffers/buffer.js";
-import { WebGPUBufferManager } from "@babylonjs/core/Engines/WebGPU/webgpuBufferManager.js";
-import { WebGPUBundleList, WebGPURenderItemScissor, WebGPURenderItemStencilRef } from "@babylonjs/core/Engines/WebGPU/webgpuBundleList.js";
-import { WebGPUCacheSampler } from "@babylonjs/core/Engines/WebGPU/webgpuCacheSampler.js";
-import { WebGPUOcclusionQuery } from "@babylonjs/core/Engines/WebGPU/webgpuOcclusionQuery.js";
-import { WebGPUTextureHelper } from "@babylonjs/core/Engines/WebGPU/webgpuTextureHelper.js";
-import { WebGPUTimestampQuery } from "@babylonjs/core/Engines/WebGPU/webgpuTimestampQuery.js";
+import { VertexBuffer } from "core/Buffers/buffer.js";
+import { WebGPUBufferManager } from "core/Engines/WebGPU/webgpuBufferManager.js";
+import { WebGPUBundleList, WebGPURenderItemScissor, WebGPURenderItemStencilRef } from "core/Engines/WebGPU/webgpuBundleList.js";
+import { WebGPUCacheSampler } from "core/Engines/WebGPU/webgpuCacheSampler.js";
+import { WebGPUOcclusionQuery } from "core/Engines/WebGPU/webgpuOcclusionQuery.js";
+import { WebGPUTextureHelper } from "core/Engines/WebGPU/webgpuTextureHelper.js";
+import { WebGPUTimestampQuery } from "core/Engines/WebGPU/webgpuTimestampQuery.js";
 import { Constants } from "../engine.constants.js";
 import { _restoreEngineAfterContextLost } from "../engine.extendable.js";
-import type { ComputeEffect } from "@babylonjs/core/Compute/computeEffect.js";
-import type { WebGPUCacheRenderPipeline } from "@babylonjs/core/Engines/WebGPU/webgpuCacheRenderPipeline.js";
-import type { WebGPUDataBuffer } from "@babylonjs/core/Meshes/WebGPU/webgpuDataBuffer.js";
-import { Observable } from "@babylonjs/core/Misc/observable.js";
-import type { DataBuffer } from "@babylonjs/core/Buffers/dataBuffer.js";
-import { WebGPUClearQuad } from "@babylonjs/core/Engines/WebGPU/webgpuClearQuad.js";
-import { WebGPUDrawContext } from "@babylonjs/core/Engines/WebGPU/webgpuDrawContext.js";
-import { WebGPUMaterialContext } from "@babylonjs/core/Engines/WebGPU/webgpuMaterialContext.js";
-import { WebGPUCacheBindGroups } from "@babylonjs/core/Engines/WebGPU/webgpuCacheBindGroups.js";
-import { WebGPUCacheRenderPipelineTree } from "@babylonjs/core/Engines/WebGPU/webgpuCacheRenderPipelineTree.js";
-import { WebGPUDepthCullingState } from "@babylonjs/core/Engines/WebGPU/webgpuDepthCullingState.js";
-import { WebGPUStencilStateComposer } from "@babylonjs/core/Engines/WebGPU/webgpuStencilStateComposer.js";
+import type { ComputeEffect } from "core/Compute/computeEffect.js";
+import type { WebGPUCacheRenderPipeline } from "core/Engines/WebGPU/webgpuCacheRenderPipeline.js";
+import type { WebGPUDataBuffer } from "core/Meshes/WebGPU/webgpuDataBuffer.js";
+import { Observable } from "core/Misc/observable.js";
+import type { DataBuffer } from "core/Buffers/dataBuffer.js";
+import { WebGPUClearQuad } from "core/Engines/WebGPU/webgpuClearQuad.js";
+import { WebGPUDrawContext } from "core/Engines/WebGPU/webgpuDrawContext.js";
+import { WebGPUMaterialContext } from "core/Engines/WebGPU/webgpuMaterialContext.js";
+import { WebGPUCacheBindGroups } from "core/Engines/WebGPU/webgpuCacheBindGroups.js";
+import { WebGPUCacheRenderPipelineTree } from "core/Engines/WebGPU/webgpuCacheRenderPipelineTree.js";
+import { WebGPUDepthCullingState } from "core/Engines/WebGPU/webgpuDepthCullingState.js";
+import { WebGPUStencilStateComposer } from "core/Engines/WebGPU/webgpuStencilStateComposer.js";
 import { wipeCaches } from "../WebGL/engine.webgl.js";
 import type { WebGPUEngineMethods } from "../engine.adapters.js";
 import { augmentEngineState } from "../engine.adapters.js";
 import { _reportDrawCall } from "../engine.tools.js";
-import type { IEffectCreationOptions } from "@babylonjs/core/Materials/effect.js";
-import { Effect } from "@babylonjs/core/Materials/effect.js";
-import type { EffectFallbacks } from "@babylonjs/core/Materials/effectFallbacks.js";
+import type { IEffectCreationOptions } from "core/Materials/effect.js";
+import { Effect } from "core/Materials/effect.js";
+import type { EffectFallbacks } from "core/Materials/effectFallbacks.js";
 import { effectWebGPUAdapter } from "../WebGL/engine.adapterHelpers.js";
-import type { Engine } from "@babylonjs/core/Engines/engine.js";
-import { WebGPUHardwareTexture } from "@babylonjs/core/Engines/WebGPU/webgpuHardwareTexture.js";
-import { Color4 } from "@babylonjs/core/Maths/math.color.js";
-import type { RenderTargetWrapper } from "@babylonjs/core/Engines/renderTargetWrapper.js";
-import type { IColor4Like } from "@babylonjs/core/Maths/math.like.js";
-import type { WebGPURenderTargetWrapper } from "@babylonjs/core/Engines/WebGPU/webgpuRenderTargetWrapper.js";
+import type { Engine } from "core/Engines/engine.js";
+import { WebGPUHardwareTexture } from "core/Engines/WebGPU/webgpuHardwareTexture.js";
+import { Color4 } from "core/Maths/math.color.js";
+import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper.js";
+import type { IColor4Like } from "core/Maths/math.like.js";
+import type { WebGPURenderTargetWrapper } from "core/Engines/WebGPU/webgpuRenderTargetWrapper.js";
 
 declare function importScripts(jsPath: string): void;
 

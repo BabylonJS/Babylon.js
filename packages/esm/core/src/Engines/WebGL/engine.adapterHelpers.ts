@@ -21,11 +21,11 @@ import {
     setTextureFromPostProcess,
 } from "./engine.webgl.js";
 import { getCaps, getHostDocument, getLoadedTexturesCache, getRenderingCanvas } from "../engine.base.js";
-import type { InternalTexture } from "@babylonjs/core/Materials/Textures/internalTexture.js";
-import { InternalTextureSource } from "@babylonjs/core/Materials/Textures/internalTexture.js";
-import type { Scene } from "@babylonjs/core/scene.js";
-import type { Nullable } from "@babylonjs/core/types.js";
-import { _createPrefilteredCubeTexture } from "@babylonjs/core/Misc/dds.js";
+import type { InternalTexture } from "core/Materials/Textures/internalTexture.js";
+import { InternalTextureSource } from "core/Materials/Textures/internalTexture.js";
+import type { Scene } from "core/scene.js";
+import type { Nullable } from "core/types.js";
+import { _createPrefilteredCubeTexture } from "core/Misc/dds.js";
 import { augmentEngineState } from "../engine.adapters.js";
 import { _loadFile } from "../engine.tools.js";
 import { bindUniformBufferBase } from "./Extensions/uniformBuffer/uniformBuffer.webgl.js";

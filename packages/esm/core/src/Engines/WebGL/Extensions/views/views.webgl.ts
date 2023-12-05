@@ -1,6 +1,6 @@
-import type { Camera } from "@babylonjs/core/Cameras/camera.js";
-import type { Scene } from "@babylonjs/core/scene.js";
-import type { Nullable } from "@babylonjs/core/types.js";
+import type { Camera } from "core/Cameras/camera.js";
+import type { Scene } from "core/scene.js";
+import type { Nullable } from "core/types.js";
 import { flushFramebuffer, type IWebGLEnginePublic, type WebGLEngineState } from "../../engine.webgl.js";
 import type { EngineView } from "../../../Extensions/views/views.base.js";
 import { _getExtensionState } from "../../../Extensions/views/views.base.js";

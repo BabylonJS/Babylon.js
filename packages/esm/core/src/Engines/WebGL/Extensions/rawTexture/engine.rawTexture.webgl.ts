@@ -1,5 +1,5 @@
-import { InternalTexture, InternalTextureSource } from "@babylonjs/core/Materials/Textures/internalTexture.js";
-import type { Nullable } from "@babylonjs/core/types.js";
+import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture.js";
+import type { Nullable } from "core/types.js";
 import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl.js";
 import {
     _bindTextureDirectly,
@@ -10,10 +10,10 @@ import {
     _getWebGLTextureType,
     _unpackFlipY,
 } from "../../engine.webgl.js";
-import { Logger } from "@babylonjs/core/Misc/logger.js";
-import { Tools } from "@babylonjs/core/Misc/tools.js";
-import type { Scene } from "@babylonjs/core/scene.js";
-import type { IWebRequest } from "@babylonjs/core/Misc/interfaces/iWebRequest.js";
+import { Logger } from "core/Misc/logger.js";
+import { Tools } from "core/Misc/tools.js";
+import type { Scene } from "core/scene.js";
+import type { IWebRequest } from "core/Misc/interfaces/iWebRequest.js";
 import type { IRawTextureEngineExtension } from "../../../Extensions/rawTexture/engine.rawTexture.base.js";
 import { augmentEngineState } from "../../../engine.adapters.js";
 import { Constants } from "../../../engine.constants.js";

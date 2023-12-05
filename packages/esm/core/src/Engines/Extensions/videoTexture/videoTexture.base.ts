@@ -1,6 +1,6 @@
-import type { ExternalTexture } from "@babylonjs/core/Materials/Textures/externalTexture.js";
-import type { InternalTexture } from "@babylonjs/core/Materials/Textures/internalTexture.js";
-import type { Nullable } from "@babylonjs/core/types.js";
+import type { ExternalTexture } from "core/Materials/Textures/externalTexture.js";
+import type { InternalTexture } from "core/Materials/Textures/internalTexture.js";
+import type { Nullable } from "core/types.js";
 import type { IBaseEnginePublic } from "../../engine.base.js";
 
 export interface IVideoTextureEngineExtension {

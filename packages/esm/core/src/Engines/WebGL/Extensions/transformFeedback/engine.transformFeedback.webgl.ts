@@ -1,6 +1,6 @@
-import type { DataBuffer } from "@babylonjs/core/Buffers/dataBuffer.js";
+import type { DataBuffer } from "core/Buffers/dataBuffer.js";
 import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl.js";
-import type { Nullable } from "@babylonjs/core/types.js";
+import type { Nullable } from "core/types.js";
 import type { ITransformFeedbackEngineExtension } from "../../../Extensions/transformFeedback/engine.transformFeedback.base.js";
 
 export const createTransformFeedback: ITransformFeedbackEngineExtension["createTransformFeedback"] = (engineState: IWebGLEnginePublic): WebGLTransformFeedback => {

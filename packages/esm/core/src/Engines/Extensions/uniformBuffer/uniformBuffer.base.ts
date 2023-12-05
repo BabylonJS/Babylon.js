@@ -1,6 +1,6 @@
-import type { DataBuffer } from "@babylonjs/core/Buffers/dataBuffer.js";
-import type { IPipelineContext } from "@babylonjs/core/Engines/IPipelineContext.js";
-import type { FloatArray, Nullable } from "@babylonjs/core/types.js";
+import type { DataBuffer } from "core/Buffers/dataBuffer.js";
+import type { IPipelineContext } from "core/Engines/IPipelineContext.js";
+import type { FloatArray, Nullable } from "core/types.js";
 import type { IBaseEnginePublic } from "../../engine.base.js";
 
 export interface IUniformBufferEngineExtension {

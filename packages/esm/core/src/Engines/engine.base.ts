@@ -3,37 +3,37 @@
  */
 
 /* eslint-disable jsdoc/require-jsdoc */
-import { Effect } from "@babylonjs/core/Materials/effect.js";
-import type { InternalTexture } from "@babylonjs/core/Materials/Textures/internalTexture.js";
-import type { Nullable } from "@babylonjs/core/types.js";
-import type { IShaderProcessor } from "@babylonjs/core/Engines/Processors/iShaderProcessor.js";
-import type { UniformBuffer } from "@babylonjs/core/Materials/uniformBuffer.js";
-import { Observable } from "@babylonjs/core/Misc/observable.js";
+import { Effect } from "core/Materials/effect.js";
+import type { InternalTexture } from "core/Materials/Textures/internalTexture.js";
+import type { Nullable } from "core/types.js";
+import type { IShaderProcessor } from "core/Engines/Processors/iShaderProcessor.js";
+import type { UniformBuffer } from "core/Materials/uniformBuffer.js";
+import { Observable } from "core/Misc/observable.js";
 import { Constants } from "./engine.constants.js";
-import { PrecisionDate } from "@babylonjs/core/Misc/precisionDate.js";
-import type { PerfCounter } from "@babylonjs/core/Misc/perfCounter.js";
-import type { StorageBuffer } from "@babylonjs/core/Buffers/storageBuffer.js";
-import type { EngineCapabilities } from "@babylonjs/core/Engines/engineCapabilities.js";
-import type { EngineFeatures } from "@babylonjs/core/Engines/engineFeatures.js";
-import type { DepthCullingState } from "@babylonjs/core/States/depthCullingState.js";
-import { AlphaState } from "@babylonjs/core/States/alphaCullingState.js";
-import type { RenderTargetWrapper } from "@babylonjs/core/Engines/renderTargetWrapper.js";
-import type { IViewportLike } from "@babylonjs/core/Maths/math.like.js";
-import type { ICanvas, ICanvasRenderingContext } from "@babylonjs/core/Engines/ICanvas.js";
-import type { IFileRequest } from "@babylonjs/core/Misc/fileRequest.js";
+import { PrecisionDate } from "core/Misc/precisionDate.js";
+import type { PerfCounter } from "core/Misc/perfCounter.js";
+import type { StorageBuffer } from "core/Buffers/storageBuffer.js";
+import type { EngineCapabilities } from "core/Engines/engineCapabilities.js";
+import type { EngineFeatures } from "core/Engines/engineFeatures.js";
+import type { DepthCullingState } from "core/States/depthCullingState.js";
+import { AlphaState } from "core/States/alphaCullingState.js";
+import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper.js";
+import type { IViewportLike } from "core/Maths/math.like.js";
+import type { ICanvas, ICanvasRenderingContext } from "core/Engines/ICanvas.js";
+import type { IFileRequest } from "core/Misc/fileRequest.js";
 import type { IRawTextureEngineExtension } from "./Extensions/rawTexture/engine.rawTexture.base.js";
-import type { Texture } from "@babylonjs/core/Materials/Textures/texture.js";
+import type { Texture } from "core/Materials/Textures/texture.js";
 import { EngineType } from "./engine.interfaces.js";
 import { IsDocumentAvailable, IsWindowObjectExist, hostInformation } from "./runtimeEnvironment.js";
-import { PerformanceConfigurator } from "@babylonjs/core/Engines/performanceConfigurator.js";
+import { PerformanceConfigurator } from "core/Engines/performanceConfigurator.js";
 import { EngineStore, _CreateCanvas, _ExitFullscreen, _ExitPointerlock, _RequestFullscreen, _RequestPointerlock } from "./engine.static.js";
-import { PerformanceMonitor } from "@babylonjs/core/Misc/performanceMonitor.js";
-import type { StencilStateComposer } from "@babylonjs/core/States/stencilStateComposer.js";
-import { StencilState } from "@babylonjs/core/States/stencilState.js";
-import type { Scene } from "@babylonjs/core/scene.js";
-import type { PostProcess } from "@babylonjs/core/PostProcesses/postProcess.js";
-import type { ICustomAnimationFrameRequester } from "@babylonjs/core/Misc/customAnimationFrameRequester.js";
-import type { ILoadingScreen } from "@babylonjs/core/Loading/loadingScreen.js";
+import { PerformanceMonitor } from "core/Misc/performanceMonitor.js";
+import type { StencilStateComposer } from "core/States/stencilStateComposer.js";
+import { StencilState } from "core/States/stencilState.js";
+import type { Scene } from "core/scene.js";
+import type { PostProcess } from "core/PostProcesses/postProcess.js";
+import type { ICustomAnimationFrameRequester } from "core/Misc/customAnimationFrameRequester.js";
+import type { ILoadingScreen } from "core/Loading/loadingScreen.js";
 
 export interface IBaseEngineOptions {
     /**

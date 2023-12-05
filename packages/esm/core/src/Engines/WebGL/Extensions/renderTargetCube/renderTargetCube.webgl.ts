@@ -1,4 +1,4 @@
-import type { WebGLRenderTargetWrapper } from "@babylonjs/core/Engines/WebGL/webGLRenderTargetWrapper.js";
+import type { WebGLRenderTargetWrapper } from "core/Engines/WebGL/webGLRenderTargetWrapper.js";
 import {
     _bindTextureDirectly,
     _bindUnboundFramebuffer,
@@ -11,10 +11,10 @@ import {
     type WebGLEngineState,
 } from "../../engine.webgl.js";
 import { _createHardwareRenderTargetWrapper } from "../renderTarget/renderTarget.webgl.js";
-import { InternalTexture, InternalTextureSource } from "@babylonjs/core/Materials/Textures/internalTexture.js";
-import { Logger } from "@babylonjs/core/Misc/logger.js";
-import type { RenderTargetWrapper } from "@babylonjs/core/Engines/renderTargetWrapper.js";
-import type { RenderTargetCreationOptions } from "@babylonjs/core/Materials/Textures/textureCreationOptions.js";
+import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture.js";
+import { Logger } from "core/Misc/logger.js";
+import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper.js";
+import type { RenderTargetCreationOptions } from "core/Materials/Textures/textureCreationOptions.js";
 import { getInternalTextureWebGLAdapter } from "../../engine.adapterHelpers.js";
 import type { IRenderTargetCubeEngineExtension } from "../../../Extensions/renderTargetCube/renderTargetCube.base.js";
 import { augmentEngineState } from "../../../engine.adapters.js";

@@ -3,20 +3,20 @@
  */
 
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Effect } from "@babylonjs/core/Materials/effect.js";
-import type { IInternalTextureLoader } from "@babylonjs/core/Materials/Textures/internalTextureLoader.js";
+import { Effect } from "core/Materials/effect.js";
+import type { IInternalTextureLoader } from "core/Materials/Textures/internalTextureLoader.js";
 import { IsWindowObjectExist } from "./runtimeEnvironment.js";
 import { Constants } from "./engine.constants.js";
-import type { Nullable } from "@babylonjs/core/types.js";
+import type { Nullable } from "core/types.js";
 import type { IBaseEnginePublic } from "./engine.base.js";
-import type { Scene } from "@babylonjs/core/scene.js";
-import { Observable } from "@babylonjs/core/Misc/observable.js";
-import type { ICanvas } from "@babylonjs/core/Engines/ICanvas.js";
-import type { Material } from "@babylonjs/core/Materials/material.js";
-import type { IOfflineProvider } from "@babylonjs/core/Offline/IOfflineProvider.js";
-import type { IAudioEngine } from "@babylonjs/core/Audio/Interfaces/IAudioEngine.js";
-import type { ILoadingScreen } from "@babylonjs/core/Loading/loadingScreen.js";
-import type { PostProcess } from "@babylonjs/core/PostProcesses/postProcess.js";
+import type { Scene } from "core/scene.js";
+import { Observable } from "core/Misc/observable.js";
+import type { ICanvas } from "core/Engines/ICanvas.js";
+import type { Material } from "core/Materials/material.js";
+import type { IOfflineProvider } from "core/Offline/IOfflineProvider.js";
+import type { IAudioEngine } from "core/Audio/Interfaces/IAudioEngine.js";
+import type { ILoadingScreen } from "core/Loading/loadingScreen.js";
+import type { PostProcess } from "core/PostProcesses/postProcess.js";
 
 export interface IEngineStore<T extends IBaseEnginePublic = IBaseEnginePublic> {
     /** Gets the list of created engines */

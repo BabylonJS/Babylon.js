@@ -3,28 +3,28 @@
  * Think super.??? without classes.
  */
 
-import type { Nullable } from "@babylonjs/core/types.js";
+import type { Nullable } from "core/types.js";
 import type { BaseEngineState, BaseEngineStateFull, IBaseEnginePublic } from "./engine.base.js";
 import { _renderFrame, _viewport, endFrame, getHostWindow, getRenderHeight, getRenderWidth } from "./engine.base.js";
-import { InternalTextureSource, InternalTexture } from "@babylonjs/core/Materials/Textures/internalTexture.js";
-import type { PostProcess } from "@babylonjs/core/PostProcesses/postProcess.js";
-import type { ThinTexture } from "@babylonjs/core/Materials/Textures/thinTexture.js";
-import type { RenderTargetTexture } from "@babylonjs/core/Materials/Textures/renderTargetTexture.js";
-import type { IViewportLike } from "@babylonjs/core/Maths/math.like.js";
+import { InternalTextureSource, InternalTexture } from "core/Materials/Textures/internalTexture.js";
+import type { PostProcess } from "core/PostProcesses/postProcess.js";
+import type { ThinTexture } from "core/Materials/Textures/thinTexture.js";
+import type { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture.js";
+import type { IViewportLike } from "core/Maths/math.like.js";
 import { EngineStore, QueueNewFrame, _TextureLoaders } from "./engine.static.js";
-import type { IPipelineContext } from "@babylonjs/core/Engines/IPipelineContext.js";
-import { Effect } from "@babylonjs/core/Materials/effect.js";
+import type { IPipelineContext } from "core/Engines/IPipelineContext.js";
+import { Effect } from "core/Materials/effect.js";
 import { Constants } from "./engine.constants.js";
-import type { IInternalTextureLoader } from "@babylonjs/core/Materials/Textures/internalTextureLoader.js";
-import { LoadImage } from "@babylonjs/core/Misc/fileTools.js";
-import type { IWebRequest } from "@babylonjs/core/Misc/interfaces/iWebRequest.js";
-import type { Observer } from "@babylonjs/core/Misc/observable.js";
+import type { IInternalTextureLoader } from "core/Materials/Textures/internalTextureLoader.js";
+import { LoadImage } from "core/Misc/fileTools.js";
+import type { IWebRequest } from "core/Misc/interfaces/iWebRequest.js";
+import type { Observer } from "core/Misc/observable.js";
 import type { ISceneLike } from "./engine.interfaces.js";
 import { _loadFile } from "./engine.tools.js";
-import { Logger } from "@babylonjs/core/Misc/logger.js";
+import { Logger } from "core/Misc/logger.js";
 import { EngineExtensions, getEngineExtension } from "./Extensions/engine.extensions.js";
 import type { EngineBaseType } from "./engine.adapters.js";
-import type { ThinEngine } from "@babylonjs/core/Engines/thinEngine.js";
+import type { ThinEngine } from "core/Engines/thinEngine.js";
 
 /**
  * Defines the interface used by objects containing a viewport (like a camera)

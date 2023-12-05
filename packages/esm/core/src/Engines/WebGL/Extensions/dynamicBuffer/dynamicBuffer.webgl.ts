@@ -1,5 +1,5 @@
-import type { DataBuffer } from "@babylonjs/core/Buffers/dataBuffer.js";
-import type { DataArray, IndicesArray } from "@babylonjs/core/types.js";
+import type { DataBuffer } from "core/Buffers/dataBuffer.js";
+import type { DataArray, IndicesArray } from "core/types.js";
 import type { IDynamicBufferEngineExtension } from "../../../Extensions/dynamicBuffer/dynamicBuffer.base";
 import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl";
 import { _bindIndexBuffer, _resetIndexBufferBinding, bindArrayBuffer, _resetVertexBufferBinding } from "../../engine.webgl";

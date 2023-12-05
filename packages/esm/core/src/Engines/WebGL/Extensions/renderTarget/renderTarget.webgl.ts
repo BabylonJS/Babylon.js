@@ -1,9 +1,9 @@
-import type { WebGLHardwareTexture } from "@babylonjs/core/Engines/WebGL/webGLHardwareTexture.js";
-import { WebGLRenderTargetWrapper } from "@babylonjs/core/Engines/WebGL/webGLRenderTargetWrapper.js";
-import type { RenderTargetWrapper } from "@babylonjs/core/Engines/renderTargetWrapper.js";
-import { InternalTexture, InternalTextureSource } from "@babylonjs/core/Materials/Textures/internalTexture.js";
-import type { TextureSize, RenderTargetCreationOptions, DepthTextureCreationOptions } from "@babylonjs/core/Materials/Textures/textureCreationOptions.js";
-import type { Nullable } from "@babylonjs/core/types.js";
+import type { WebGLHardwareTexture } from "core/Engines/WebGL/webGLHardwareTexture.js";
+import { WebGLRenderTargetWrapper } from "core/Engines/WebGL/webGLRenderTargetWrapper.js";
+import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper.js";
+import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture.js";
+import type { TextureSize, RenderTargetCreationOptions, DepthTextureCreationOptions } from "core/Materials/Textures/textureCreationOptions.js";
+import type { Nullable } from "core/types.js";
 
 import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl.js";
 import {
@@ -15,7 +15,7 @@ import {
     _setupDepthStencilTexture,
     _setupFramebufferDepthAttachments,
 } from "../../engine.webgl.js";
-import { Logger } from "@babylonjs/core/Misc/logger.js";
+import { Logger } from "core/Misc/logger.js";
 import { _createDepthStencilCubeTexture } from "../cubeTexture/cubeTexture.webgl.js";
 import type { IRenderTargetEngineExtension } from "../../../Extensions/renderTarget/renderTarget.base.js";
 import { augmentEngineState } from "../../../engine.adapters.js";
