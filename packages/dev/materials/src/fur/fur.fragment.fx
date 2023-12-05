@@ -40,6 +40,12 @@ uniform sampler2D furTexture;
 varying vec2 vFurUV;
 #endif
 
+#ifdef LOGARITHMICDEPTH
+#extension GL_EXT_frag_depth : enable
+#endif
+
+#include<logDepthDeclaration>
+
 #include<lightsFragmentFunctions>
 #include<shadowsFragmentFunctions>
 #include<fogFragmentDeclaration>
@@ -135,6 +141,7 @@ void main(void) {
 	vec4 color = vec4(finalDiffuse * (0.5 + r), alpha);
 	#endif
 	
+#include<logDepthFragment>
 #include<fogFragment>
 
 	gl_FragColor = color;

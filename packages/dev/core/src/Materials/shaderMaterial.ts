@@ -1034,7 +1034,7 @@ export class ShaderMaterial extends PushMaterial {
 
             // Misc
             if (this._useLogarithmicDepth) {
-                MaterialHelper.BindLogDepth(effect.defines, effect, scene);
+                MaterialHelper.BindLogDepth(storeEffectOnSubMeshes ? subMesh.materialDefines : effect.defines, effect, scene);
             }
 
             let name: string;

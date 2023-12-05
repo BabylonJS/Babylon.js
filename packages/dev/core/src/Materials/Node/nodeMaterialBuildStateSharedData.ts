@@ -3,12 +3,17 @@ import type { NodeMaterialBlock } from "./nodeMaterialBlock";
 import type { InputBlock } from "./Blocks/Input/inputBlock";
 import type { Scene } from "../../scene";
 import type { Immutable } from "../../types";
-import type { NodeMaterialTextureBlocks } from "./nodeMaterial";
+import type { NodeMaterial, NodeMaterialTextureBlocks } from "./nodeMaterial";
 
 /**
  * Class used to store shared data between 2 NodeMaterialBuildState
  */
 export class NodeMaterialBuildStateSharedData {
+    /**
+     * The node material we are currently building
+     */
+    public nodeMaterial: NodeMaterial;
+
     /**
      * Gets the list of emitted varyings
      */

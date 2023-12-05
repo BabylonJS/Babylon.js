@@ -753,6 +753,7 @@ export class NodeMaterial extends PushMaterial {
 
         // Shared data
         this._sharedData = new NodeMaterialBuildStateSharedData();
+        this._sharedData.nodeMaterial = this;
         this._sharedData.fragmentOutputNodes = this._fragmentOutputNodes;
         this._vertexCompilationState.sharedData = this._sharedData;
         this._fragmentCompilationState.sharedData = this._sharedData;
