@@ -198,10 +198,11 @@ export class MeshUVSpaceRenderer {
         // Create the diffuse render target texture if it doesn't exist
         if (!this.texture && !this._options.uvEdgeBlending && !this._decalTexture) {
             this._updateRTT();
-        }
-        else if(this.texture && !this._userCreatedTextureSetup && !this._options.uvEdgeBlending && !this._decalTexture) { 
+        } else if(this.texture && !this._userCreatedTextureSetup && !this._options.uvEdgeBlending && !this._decalTexture) { 
             this._updateRTT();
-        } else if(!this._decalTexture) {
+        } else if(this.texture && !this._userCreatedTextureSetup && this._options.uvEdgeBlending && !this._decalTexture) {
+            this._createDecalDiffuseRTT();
+        } else if(!this.texture && this._options.uvEdgeBlending && !this._decalTexture) {
             this._createDecalDiffuseRTT();
         }
 
