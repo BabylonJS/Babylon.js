@@ -5937,30 +5937,6 @@ export class ThinEngine {
     /**
      * @internal
      */
-    public _getRGBAMultiSampleBufferFormat(type: number, format = Constants.TEXTUREFORMAT_RGBA): number {
-        switch (type) {
-            case Constants.TEXTURETYPE_FLOAT:
-                switch (format) {
-                    case Constants.TEXTUREFORMAT_R:
-                        return this._gl.R32F;
-                    default:
-                        return this._gl.RGBA32F;
-                }
-            case Constants.TEXTURETYPE_HALF_FLOAT:
-                switch (format) {
-                    case Constants.TEXTUREFORMAT_R:
-                        return this._gl.R16F;
-                    default:
-                        return this._gl.RGBA16F;
-                }
-        }
-
-        return this._gl.RGBA8;
-    }
-
-    /**
-     * @internal
-     */
     public _loadFile(
         url: string,
         onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
