@@ -233,7 +233,7 @@ export class GaussianSplatting {
 
             Matrix.ScalingToRef(f_buffer[8 * i + 3 + 0] * 2, f_buffer[8 * i + 3 + 1] * 2, f_buffer[8 * i + 3 + 2] * 2, matrixScale);
 
-            const M = matrixRotation.multiply(matrixScale).m;
+            const M = matrixRotation.multiplyToRef(matrixScale, TmpVectors.Matrix[0]).m;
 
             this._covA[i * 3 + 0] = M[0] * M[0] + M[1] * M[1] + M[2] * M[2];
             this._covA[i * 3 + 1] = M[0] * M[4] + M[1] * M[5] + M[2] * M[6];
