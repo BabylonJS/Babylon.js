@@ -131,6 +131,7 @@ export class ShaderMaterial extends PushMaterial {
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _multiview = false;
+    private _useLogarithmicDepth: boolean;
 
     /**
      * @internal
@@ -232,6 +233,21 @@ export class ShaderMaterial extends PushMaterial {
      */
     public needAlphaTesting(): boolean {
         return this._options.needAlphaTesting;
+    }
+
+    /**
+     * In case the depth buffer does not allow enough depth precision for your scene (might be the case in large scenes)
+     * You can try switching to logarithmic depth.
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/logarithmicDepthBuffer
+     */
+    public get useLogarithmicDepth(): boolean {
+        return this._useLogarithmicDepth;
+    }
+
+    public set useLogarithmicDepth(value: boolean) {
+        this._useLogarithmicDepth = value && this.getScene().getEngine().getCaps().fragmentDepthSupported;
+
+        this._markAllSubMeshesAsMiscDirty();
     }
 
     private _checkUniform(uniformName: string): void {
@@ -853,6 +869,14 @@ export class ShaderMaterial extends PushMaterial {
             prepareStringDefinesForClipPlanes(this, scene, defines);
         }
 
+        // Misc
+        if (this._useLogarithmicDepth) {
+            defines.push("#define LOGARITHMICDEPTH");
+            if (this._options.uniforms.indexOf("logarithmicDepthConstant") === -1) {
+                this._options.uniforms.push("logarithmicDepthConstant");
+            }
+        }
+
         if (this.customShaderNameResolve) {
             uniforms = uniforms.slice();
             uniformBuffers = uniformBuffers.slice();
@@ -967,6 +991,8 @@ export class ShaderMaterial extends PushMaterial {
             return;
         }
 
+        const scene = this.getScene();
+
         this._activeEffect = effect;
 
         this.bindOnlyWorldMatrix(world, effectOverride);
@@ -975,7 +1001,7 @@ export class ShaderMaterial extends PushMaterial {
 
         let useSceneUBO = false;
 
-        if (effect && uniformBuffers && uniformBuffers.length > 0 && this.getScene().getEngine().supportsUniformBuffers) {
+        if (effect && uniformBuffers && uniformBuffers.length > 0 && scene.getEngine().supportsUniformBuffers) {
             for (let i = 0; i < uniformBuffers.length; ++i) {
                 const bufferName = uniformBuffers[i];
                 switch (bufferName) {
@@ -986,41 +1012,46 @@ export class ShaderMaterial extends PushMaterial {
                         }
                         break;
                     case "Scene":
-                        MaterialHelper.BindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
-                        this.getScene().finalizeSceneUbo();
+                        MaterialHelper.BindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
+                        scene.finalizeSceneUbo();
                         useSceneUBO = true;
                         break;
                 }
             }
         }
 
-        const mustRebind = mesh && storeEffectOnSubMeshes ? this._mustRebind(this.getScene(), effect, mesh.visibility) : this.getScene().getCachedMaterial() !== this;
+        const mustRebind = mesh && storeEffectOnSubMeshes ? this._mustRebind(scene, effect, mesh.visibility) : scene.getCachedMaterial() !== this;
 
         if (effect && mustRebind) {
             if (!useSceneUBO && this._options.uniforms.indexOf("view") !== -1) {
-                effect.setMatrix("view", this.getScene().getViewMatrix());
+                effect.setMatrix("view", scene.getViewMatrix());
             }
 
             if (!useSceneUBO && this._options.uniforms.indexOf("projection") !== -1) {
-                effect.setMatrix("projection", this.getScene().getProjectionMatrix());
+                effect.setMatrix("projection", scene.getProjectionMatrix());
             }
 
             if (!useSceneUBO && this._options.uniforms.indexOf("viewProjection") !== -1) {
-                effect.setMatrix("viewProjection", this.getScene().getTransformMatrix());
+                effect.setMatrix("viewProjection", scene.getTransformMatrix());
                 if (this._multiview) {
-                    effect.setMatrix("viewProjectionR", this.getScene()._transformMatrixR);
+                    effect.setMatrix("viewProjectionR", scene._transformMatrixR);
                 }
             }
 
-            if (this.getScene().activeCamera && this._options.uniforms.indexOf("cameraPosition") !== -1) {
-                effect.setVector3("cameraPosition", this.getScene().activeCamera!.globalPosition);
+            if (scene.activeCamera && this._options.uniforms.indexOf("cameraPosition") !== -1) {
+                effect.setVector3("cameraPosition", scene.activeCamera!.globalPosition);
             }
 
             // Bones
             MaterialHelper.BindBonesParameters(mesh, effect);
 
             // Clip plane
-            bindClipPlane(effect, this, this.getScene());
+            bindClipPlane(effect, this, scene);
+
+            // Misc
+            if (this._useLogarithmicDepth) {
+                MaterialHelper.BindLogDepth(effect.defines, effect, scene);
+            }
 
             let name: string;
             // Texture
@@ -1424,6 +1455,7 @@ export class ShaderMaterial extends PushMaterial {
         serializationObject.options = this._options;
         serializationObject.shaderPath = this._shaderPath;
         serializationObject.storeEffectOnSubMeshes = this._storeEffectOnSubMeshes;
+        serializationObject.useLogarithmicDepth = this._useLogarithmicDepth;
 
         let name: string;
 
@@ -1583,6 +1615,8 @@ export class ShaderMaterial extends PushMaterial {
             scene,
             rootUrl
         );
+
+        material._useLogarithmicDepth = !!source.useLogarithmicDepth;
 
         let name: string;
 
