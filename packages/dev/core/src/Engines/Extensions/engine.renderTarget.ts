@@ -263,7 +263,7 @@ ThinEngine.prototype.updateRenderTargetTextureSampleCount = function (rtWrapper:
             rtWrapper.texture.height,
             samples,
             -1 /* not used */,
-            this._getRGBAMultiSampleBufferFormat(rtWrapper.texture.type),
+            this._getRGBABufferInternalSizedFormat(rtWrapper.texture.type, rtWrapper.texture.format, rtWrapper.texture._useSRGBBuffer),
             gl.COLOR_ATTACHMENT0,
             false
         );
