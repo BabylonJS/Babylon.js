@@ -203,7 +203,7 @@ export class Plane {
     static FromPositionAndNormalToRef<T extends Plane>(origin: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>, result: T): T {
         result.normal.copyFrom(normal);
         result.normal.normalize();
-        result.d = -origin.dot(normal);
+        result.d = -origin.dot(result.normal);
         return result;
     }
 
