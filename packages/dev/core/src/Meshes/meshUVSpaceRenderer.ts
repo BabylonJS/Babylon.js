@@ -198,11 +198,11 @@ export class MeshUVSpaceRenderer {
         // Create the diffuse render target texture if it doesn't exist
         if (!this.texture && !this._options.uvEdgeBlending && !this._decalTexture) {
             this._updateRTT();
-        } else if(this.texture && !this._userCreatedTextureSetup && !this._options.uvEdgeBlending && !this._decalTexture) { 
+        } else if (this.texture && !this._userCreatedTextureSetup && !this._options.uvEdgeBlending && !this._decalTexture) {
             this._updateRTT();
-        } else if(this.texture && !this._userCreatedTextureSetup && this._options.uvEdgeBlending && !this._decalTexture) {
+        } else if (this.texture && !this._userCreatedTextureSetup && this._options.uvEdgeBlending && !this._decalTexture) {
             this._createDecalDiffuseRTT();
-        } else if(!this.texture && this._options.uvEdgeBlending && !this._decalTexture) {
+        } else if (!this.texture && this._options.uvEdgeBlending && !this._decalTexture) {
             this._createDecalDiffuseRTT();
         }
 
@@ -214,7 +214,6 @@ export class MeshUVSpaceRenderer {
         const projectionMatrix = this._createProjectionMatrix(position, normal, size, angle);
         shader.setMatrix("projMatrix", projectionMatrix);
 
-        
         if (!this._options.uvEdgeBlending) {
             if (this.texture instanceof RenderTargetTexture) {
                 this.texture.render();
@@ -233,7 +232,7 @@ export class MeshUVSpaceRenderer {
      * Creates a texture RTT if one doesn't exist,
      */
     _updateRTT() {
-        if(!this.texture) {
+        if (!this.texture) {
             this.texture = this._createRenderTargetTexture(this._options.width, this._options.height);
         } else {
             this._userCreatedTextureSetup = true;
@@ -356,12 +355,8 @@ export class MeshUVSpaceRenderer {
         texture.setMaterialForRendering(this._mesh, MeshUVSpaceRenderer._GetShader(this._scene));
 
         this._decalTexture = texture;
-        if(!this.texture) {
-            this.texture = new RenderTargetTexture(
-                this._mesh.name + "_finalUVSpaceTexture",
-                { width: this._options.width, height: this._options.height },
-                this._scene,
-            );
+        if (!this.texture) {
+            this.texture = new RenderTargetTexture(this._mesh.name + "_finalUVSpaceTexture", { width: this._options.width, height: this._options.height }, this._scene);
             this._textureCreatedInternally = true;
         }
     }
