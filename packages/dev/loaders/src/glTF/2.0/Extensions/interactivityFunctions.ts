@@ -119,7 +119,7 @@ export function convertGLTFToSerializedFlowGraph(gltf: IKHRInteractivity): ISeri
             const socketOut: ISerializedFlowGraphConnection = {
                 uniqueId: RandomGUID(),
                 name: socketOutName,
-                _connectionType: 1, // Output
+                _connectionType: FlowGraphConnectionType.Output, // Output
                 connectedPointIds: [],
             };
             fgBlock.signalOutputs.push(socketOut);
@@ -140,7 +140,7 @@ export function convertGLTFToSerializedFlowGraph(gltf: IKHRInteractivity): ISeri
                 socketIn = {
                     uniqueId: RandomGUID(),
                     name: nodeInSocketName,
-                    _connectionType: 0, // Input
+                    _connectionType: FlowGraphConnectionType.Input, // Input
                     connectedPointIds: [],
                 };
                 nodeIn.signalInputs.push(socketIn);
