@@ -87,6 +87,10 @@ export class EditAnimationComponent extends React.Component<IEditAnimationCompon
                 animation.loopMode = Animation.ANIMATIONLOOPMODE_RELATIVE;
                 break;
             }
+            case "Relative from current": {
+                animation.loopMode = Animation.ANIMATIONLOOPMODE_RELATIVE_FROM_CURRENT;
+                break;
+            }
             case "Constant": {
                 animation.loopMode = Animation.ANIMATIONLOOPMODE_CONSTANT;
                 break;
@@ -101,7 +105,7 @@ export class EditAnimationComponent extends React.Component<IEditAnimationCompon
             return null;
         }
 
-        const loopModes = ["Relative", "Cycle", "Constant"];
+        const loopModes = ["Relative", "Relative from current", "Cycle", "Constant"];
 
         return (
             <div id="edit-animation-pane" ref={this._root}>
