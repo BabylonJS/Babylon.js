@@ -195,7 +195,7 @@ export class MeshUVSpaceRenderer {
     public renderTexture(texture: BaseTexture, position: Vector3, normal: Vector3, size: Vector3, angle = 0): void {
         if (!this.texture) {
             this._createDiffuseRTT();
-        } else if (this.texture && !this._userCreatedTextureConfigured) {
+        } else if (!this._userCreatedTextureConfigured) {
             this._configureUserCreatedRTT();
         }
 
