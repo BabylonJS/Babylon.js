@@ -133,7 +133,7 @@ export class FireMaterial extends PushMaterial {
         if (defines._areMiscDirty) {
             defines.POINTSIZE = this.pointsCloud || scene.forcePointsCloud;
             defines.FOG = scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled;
-            defines.LOGARITHMICDEPTH = this.useLogarithmicDepth;
+            defines.LOGARITHMICDEPTH = this._useLogarithmicDepth;
         }
 
         // Values that need to be evaluated on every frame
@@ -277,7 +277,7 @@ export class FireMaterial extends PushMaterial {
             }
 
             // Log. depth
-            if (this.useLogarithmicDepth) {
+            if (this._useLogarithmicDepth) {
                 MaterialHelper.BindLogDepth(defines, effect, scene);
             }
 

@@ -31,6 +31,7 @@ class GridMaterialDefines extends MaterialDefines {
     public THIN_INSTANCES = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
+    public LOGARITHMICDEPTH = false;
 
     constructor() {
         super();
@@ -183,7 +184,7 @@ export class GridMaterial extends PushMaterial {
             }
         }
 
-        MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, false, this.fogEnabled, false, defines);
+        MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, false, this.fogEnabled, false, defines);
 
         // Values that need to be evaluated on every frame
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, scene.getEngine(), this, defines, !!useInstances);
@@ -229,6 +230,7 @@ export class GridMaterial extends PushMaterial {
                             "opacityMatrix",
                             "vOpacityInfos",
                             "visibility",
+                            "logarithmicDepthConstant",
                         ],
                         ["opacitySampler"],
                         join,
@@ -292,6 +294,11 @@ export class GridMaterial extends PushMaterial {
                 this._activeEffect.setTexture("opacitySampler", this._opacityTexture);
                 this._activeEffect.setFloat2("vOpacityInfos", this._opacityTexture.coordinatesIndex, this._opacityTexture.level);
                 this._activeEffect.setMatrix("opacityMatrix", this._opacityTexture.getTextureMatrix());
+            }
+
+            // Log. depth
+            if (this._useLogarithmicDepth) {
+                MaterialHelper.BindLogDepth(defines, effect, scene);
             }
         }
         // Fog

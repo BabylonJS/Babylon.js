@@ -212,7 +212,7 @@ export class FurMaterial extends PushMaterial {
         }
 
         // Misc.
-        MaterialHelper.PrepareDefinesForMisc(mesh, scene, this.useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
+        MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
         // Lights
         defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
@@ -379,7 +379,7 @@ export class FurMaterial extends PushMaterial {
             }
 
             // Log. depth
-            if (this.useLogarithmicDepth) {
+            if (this._useLogarithmicDepth) {
                 MaterialHelper.BindLogDepth(defines, effect, scene);
             }
 

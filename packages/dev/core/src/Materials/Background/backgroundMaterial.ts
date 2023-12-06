@@ -876,7 +876,7 @@ export class BackgroundMaterial extends PushMaterial {
         }
 
         // Misc.
-        MaterialHelper.PrepareDefinesForMisc(mesh, scene, this.useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
+        MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
         // Values that need to be evaluated on every frame
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
@@ -1227,7 +1227,7 @@ export class BackgroundMaterial extends PushMaterial {
             MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect, true);
 
             // Log. depth
-            if (this.useLogarithmicDepth) {
+            if (this._useLogarithmicDepth) {
                 MaterialHelper.BindLogDepth(defines, effect, scene);
             }
 
