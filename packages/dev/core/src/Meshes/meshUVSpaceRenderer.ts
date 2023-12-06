@@ -5,7 +5,7 @@ import type { AbstractMesh } from "./abstractMesh";
 import type { ThinTexture } from "core/Materials/Textures/thinTexture";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { Nullable } from "core/types";
-import { Matrix, Vector2 } from "core/Maths/math.vector";
+import { Matrix } from "core/Maths/math.vector";
 import { Constants } from "core/Engines/constants";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
@@ -24,9 +24,6 @@ import "../Shaders/meshUVSpaceRendererFinaliser.fragment";
 import "../Shaders/meshUVSpaceRendererFinaliser.vertex";
 
 declare module "../scene" {
-    /**
-     *
-     */
     export interface Scene {
         /** @internal */
         _meshUVSpaceRendererShader: Nullable<ShaderMaterial>;
@@ -196,13 +193,20 @@ export class MeshUVSpaceRenderer {
      */
     public renderTexture(texture: BaseTexture, position: Vector3, normal: Vector3, size: Vector3, angle = 0): void {
         // Create the diffuse render target texture if it doesn't exist
-        if (!this.texture && !this._options.uvEdgeBlending && !this._decalTexture) {
+        // Check if the user has not provided a texture, has not selected uvEdgeBlending and there is no decal texture
+        if (!this.texture && !this._options.uvEdgeBlending) {
             this._updateRTT();
-        } else if (this.texture && !this._userCreatedTextureSetup && !this._options.uvEdgeBlending && !this._decalTexture) {
+        }
+        // Check if the user has provided a texture, that texture has not been configured here, and there is no uvEdgeBlending
+        else if (this.texture && !this._userCreatedTextureSetup && !this._options.uvEdgeBlending) {
             this._updateRTT();
-        } else if (this.texture && !this._userCreatedTextureSetup && this._options.uvEdgeBlending && !this._decalTexture) {
+        }
+        // Check if the user has provided a texture, that texture has not been configured here, and there is uvEdgeBlending
+        else if (this.texture && !this._userCreatedTextureSetup && this._options.uvEdgeBlending && !this._decalTexture) {
             this._createDecalDiffuseRTT();
-        } else if (!this.texture && this._options.uvEdgeBlending && !this._decalTexture) {
+        }
+        // Check if the user has not provided a texture, has selected uvEdgeBlending and there is no decal texture
+        else if (!this.texture && this._options.uvEdgeBlending && !this._decalTexture) {
             this._createDecalDiffuseRTT();
         }
 
@@ -215,35 +219,33 @@ export class MeshUVSpaceRenderer {
         shader.setMatrix("projMatrix", projectionMatrix);
 
         if (!this._options.uvEdgeBlending) {
-            if (this.texture instanceof RenderTargetTexture) {
+            if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture)) {
                 this.texture.render();
             }
         } else {
             if (MeshUVSpaceRenderer._IsRenderTargetTexture(this._decalTexture)) {
-                if (this._options.uvEdgeBlending) {
-                    this._decalTexture.render();
-                    this._createMaskTexture();
-                    this._createFinalTexture();
-                }
+                this._decalTexture.render();
+                this._createMaskTexture();
+                this._createFinalTexture();
             }
         }
     }
     /**
-     * Creates a texture RTT if one doesn't exist,
+     * Creates an RTT if one doesn't exist,
      */
-    _updateRTT() {
+    private _updateRTT() {
         if (!this.texture) {
             this.texture = this._createRenderTargetTexture(this._options.width, this._options.height);
-        } else {
+        } else if (this.texture && !this._userCreatedTextureSetup) {
             this._userCreatedTextureSetup = true;
         }
-        if (this.texture instanceof RenderTargetTexture) {
+        if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture)) {
             this.texture.renderList = [this._mesh];
             this.texture.setMaterialForRendering(this._mesh, MeshUVSpaceRenderer._GetShader(this._scene));
             this.texture.onClearObservable.addOnce(() => {
                 this._scene.getEngine().clear(this.clearColor, true, true, true);
-                if (this.texture instanceof RenderTargetTexture) {
-                    this.texture.onClearObservable.add(() => {});
+                if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture)) {
+                    this.texture.onClearObservable.add(() => {}); // this disables clearing the texture for the next frames
                 }
             });
         }
@@ -314,10 +316,10 @@ export class MeshUVSpaceRenderer {
                 this._options.textureType
             );
 
-            this._finalPostProcess.onApply = (effect: { setTexture: (arg0: string, arg1: Texture) => void; setVector2: (arg0: string, arg1: Vector2) => void }) => {
+            this._finalPostProcess.onApply = (effect) => {
                 effect.setTexture("textureSampler", this._decalTexture);
                 effect.setTexture("maskTextureSampler", this._maskTexture);
-                effect.setVector2("textureSize", new Vector2(this._options.width, this._options.height));
+                effect.setFloat2("textureSize", this._options.width, this._options.height);
             };
             if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture)) {
                 this.texture.addPostProcess(this._finalPostProcess);
@@ -338,6 +340,18 @@ export class MeshUVSpaceRenderer {
             engine.clear(this.clearColor, true, true, true);
             engine.unBindFramebuffer(this.texture.renderTarget);
         }
+        if (MeshUVSpaceRenderer._IsRenderTargetTexture(this._decalTexture) && this._decalTexture.renderTarget) {
+            const engine = this._scene.getEngine();
+            engine.bindFramebuffer(this._decalTexture.renderTarget);
+            engine.clear(this.clearColor, true, true, true);
+            engine.unBindFramebuffer(this._decalTexture.renderTarget);
+        }
+        if (MeshUVSpaceRenderer._IsRenderTargetTexture(this._maskTexture) && this._maskTexture.renderTarget) {
+            const engine = this._scene.getEngine();
+            engine.bindFramebuffer(this._maskTexture.renderTarget);
+            engine.clear(this.clearColor, true, true, true);
+            engine.unBindFramebuffer(this._maskTexture.renderTarget);
+        }
     }
     /**
      * Disposes of the resources
@@ -347,14 +361,21 @@ export class MeshUVSpaceRenderer {
             this.texture.dispose();
             this._textureCreatedInternally = false;
         }
+        if (this._maskTexture) {
+            this._maskTexture.dispose();
+        }
+        if (this._decalTexture) {
+            this._decalTexture.dispose();
+        }
     }
 
     private _createDecalDiffuseRTT(): void {
-        const texture = this._createRenderTargetTexture(this._options.width, this._options.height);
+        if (this._options.uvEdgeBlending) {
+            const texture = this._createRenderTargetTexture(this._options.width, this._options.height);
+            texture.setMaterialForRendering(this._mesh, MeshUVSpaceRenderer._GetShader(this._scene));
+            this._decalTexture = texture;
+        }
 
-        texture.setMaterialForRendering(this._mesh, MeshUVSpaceRenderer._GetShader(this._scene));
-
-        this._decalTexture = texture;
         if (!this.texture) {
             this.texture = new RenderTargetTexture(this._mesh.name + "_finalUVSpaceTexture", { width: this._options.width, height: this._options.height }, this._scene);
             this._textureCreatedInternally = true;
