@@ -8,6 +8,7 @@
         "skipLibCheck": true,
         "paths": {
             "core/*": ["dev/core/src/*"],
+            "esm/*": ["dev/core/src/esm/*"],
         }
     },
 

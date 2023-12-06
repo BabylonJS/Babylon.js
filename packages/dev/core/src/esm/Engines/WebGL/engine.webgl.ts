@@ -68,6 +68,7 @@ import {
     setViewportBase,
 } from "../engine.extendable.js";
 import type { Engine } from "core/Engines/engine.js";
+import type { IStencilState } from "core/States/IStencilState.js";
 
 const _TempClearColorUint32 = new Uint32Array(4);
 const _TempClearColorInt32 = new Int32Array(4);
@@ -1227,7 +1228,7 @@ export function _releaseBuffer(engineState: IWebGLEnginePublic, buffer: DataBuff
 }
 
 // was protected
-function _deleteBuffer(engineState: IWebGLEnginePublic, buffer: DataBuffer): void {
+export function _deleteBuffer(engineState: IWebGLEnginePublic, buffer: DataBuffer): void {
     (engineState as WebGLEngineStateFull)._gl.deleteBuffer(buffer.underlyingResource);
 }
 
@@ -1518,7 +1519,7 @@ export function createEffect(
         return compiledEffect;
     }
 
-    const engineAdapter = augmentEngineState(engineState, {
+    const engineAdapter = augmentEngineState<Engine>(engineState, {
         getHostDocument,
         _getShaderProcessor: (engineState: IWebGLEnginePublic) => (engineState as WebGLEngineState)._shaderProcessor,
         _loadFile,
@@ -1685,7 +1686,7 @@ export function createPipelineContext(engineState: IWebGLEnginePublic, shaderPro
     const fes = engineState as WebGLEngineState;
     const pipelineContext = new WebGLPipelineContext();
     // TODO applying engine to pipeline context
-    const engineAdapter = augmentEngineState(engineState, {
+    const engineAdapter = augmentEngineState<ThinEngine>(engineState, {
         // This needs to include all the functions that are used in the shader processing context
     });
     pipelineContext.engine = engineAdapter;
@@ -2187,7 +2188,7 @@ export function _createInternalTexture(
     }
 
     const gl = fes._gl;
-    const engineAdapter = augmentEngineState(engineState, {
+    const engineAdapter = augmentEngineState<Engine>(engineState, {
         _releaseTexture,
         getLoadedTexturesCache,
         createTexture,
@@ -5000,4 +5001,89 @@ export function _readPixelsAsync(engineState: IWebGLEnginePublic, x: number, y: 
 
         return outputBuffer;
     });
+}
+
+export function setState(
+    engineState: IWebGLEnginePublic,
+    culling: boolean,
+    zOffset: number = 0,
+    force?: boolean,
+    reverseSide = false,
+    cullBackFaces?: boolean,
+    stencil?: IStencilState,
+    zOffsetUnits: number = 0
+): void {
+    const fes = engineState as WebGLEngineStateFull;
+    // Culling
+    if (fes._depthCullingState.cull !== culling || force) {
+        fes._depthCullingState.cull = culling;
+    }
+
+    // Cull face
+    const cullFace = fes.cullBackFaces ?? cullBackFaces ?? true ? fes._gl.BACK : fes._gl.FRONT;
+    if (fes._depthCullingState.cullFace !== cullFace || force) {
+        fes._depthCullingState.cullFace = cullFace;
+    }
+
+    // Z offset
+    setZOffset(fes, zOffset);
+    setZOffsetUnits(fes, zOffsetUnits);
+
+    // Front face
+    const frontFace = reverseSide ? fes._gl.CW : fes._gl.CCW;
+    if (fes._depthCullingState.frontFace !== frontFace || force) {
+        fes._depthCullingState.frontFace = frontFace;
+    }
+
+    fes._stencilStateComposer.stencilMaterial = stencil;
+}
+
+/**
+ * Gets a boolean indicating if depth testing is enabled
+ * @returns the current state
+ */
+export function getDepthBuffer(engineState: IWebGLEnginePublic): boolean {
+    return (engineState as WebGLEngineState)._depthCullingState.depthTest;
+}
+
+/**
+ * Enable or disable depth buffering
+ * @param enable defines the state to set
+ */
+export function setDepthBuffer(engineState: IWebGLEnginePublic, enable: boolean): void {
+    (engineState as WebGLEngineState)._depthCullingState.depthTest = enable;
+}
+
+/**
+ * Set the z offset Factor to apply to current rendering
+ * @param value defines the offset to apply
+ */
+export function setZOffset(engineState: IWebGLEnginePublic, value: number): void {
+    (engineState as WebGLEngineState)._depthCullingState.zOffset = engineState.useReverseDepthBuffer ? -value : value;
+}
+
+/**
+ * Gets the current value of the zOffset Factor
+ * @returns the current zOffset Factor state
+ */
+export function getZOffset(engineState: IWebGLEnginePublic): number {
+    const zOffset = (engineState as WebGLEngineState)._depthCullingState.zOffset;
+    return engineState.useReverseDepthBuffer ? -zOffset : zOffset;
+}
+
+/**
+ * Set the z offset Units to apply to current rendering
+ * @param value defines the offset to apply
+ */
+export function setZOffsetUnits(engineState: IWebGLEnginePublic, value: number): void {
+    (engineState as WebGLEngineState)._depthCullingState.zOffsetUnits = engineState.useReverseDepthBuffer ? -value : value;
+}
+
+/**
+ * Gets the current value of the zOffset Units
+ * @returns the current zOffset Units state
+ */
+export function getZOffsetUnits(engineState: IWebGLEnginePublic): number {
+    const zOffsetUnits = (engineState as WebGLEngineState)._depthCullingState.zOffsetUnits;
+    return engineState.useReverseDepthBuffer ? -zOffsetUnits : zOffsetUnits;
 }

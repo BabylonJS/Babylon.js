@@ -28,6 +28,7 @@
             "viewer/*":["tools/viewer/src/*"],
             "ktx2decoder/*":["tools/ktx2Decoder/src/*"],
             "shared-ui-components/*": ["dev/sharedUiComponents/src/*"],
+            "esm/*": ["dev/core/src/esm/*"],
             "@tools/gui-editor/*": ["tools/guiEditor/src/*"],
             "@tools/node-editor/*": ["tools/nodeEditor/src/*"],
             "@tools/node-geometry-editor/*": ["tools/nodeGeometryEditor/src/*"],
