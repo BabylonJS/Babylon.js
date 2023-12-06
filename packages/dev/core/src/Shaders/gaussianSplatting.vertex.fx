@@ -15,10 +15,6 @@ uniform vec2 viewport;
 varying vec3 vPositionW;
 varying vec4 vColor;
 
-#include<clipPlaneVertexDeclaration>
-
-#include<fogVertexDeclaration>
-
 #define CUSTOM_VERTEX_DEFINITIONS
 
 void main(void) {
@@ -73,12 +69,6 @@ void main(void) {
         vCenter 
         + (position.x * majorAxis * 1. / viewport 
         + position.y * minorAxis * 1. / viewport) * pos2d.w, pos2d.zw);
-
-    // Clip plane
-#include<clipPlaneVertex>
-
-    // Fog
-#include<fogVertex>
 
 #define CUSTOM_VERTEX_MAIN_END
 }

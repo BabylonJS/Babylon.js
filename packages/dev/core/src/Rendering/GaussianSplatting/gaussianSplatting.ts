@@ -69,7 +69,7 @@ export class GaussianSplatting {
     }
 
     protected static _Worker: Nullable<Worker> = null;
-    
+
     protected static _CreateWorker = function (self: Worker) {
         let viewProj: number[];
         let lastProj: number[] = [];
