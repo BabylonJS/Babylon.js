@@ -186,11 +186,10 @@ export class Plane {
      * @param origin origin of the plane to be constructed
      * @param normal normal of the plane to be constructed
      * @returns a new Plane the normal vector to this plane at the given origin point.
-     * Note : the vector "normal" is updated because normalized.
      */
     static FromPositionAndNormal(origin: DeepImmutable<Vector3>, normal: Vector3): Plane {
-        normal.normalize();
-        return new Plane(normal.x, normal.y, normal.z, -origin.dot(normal));
+        const plane = new Plane(0.0, 0.0, 0.0, 0.0);
+        return this.FromPositionAndNormalToRef(origin, normal, plane);
     }
 
     /**
@@ -202,7 +201,8 @@ export class Plane {
      */
     static FromPositionAndNormalToRef<T extends Plane>(origin: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>, result: T): T {
         result.normal.copyFrom(normal);
-        result.d = -origin.dot(normal);
+        result.normal.normalize();
+        result.d = -origin.dot(result.normal);
         return result;
     }
 
