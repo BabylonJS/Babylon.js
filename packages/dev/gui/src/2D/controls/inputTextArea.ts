@@ -21,6 +21,8 @@ export class InputTextArea extends InputText {
     private _textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
     private _textVerticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
 
+    private _prevText: string = this.text;
+
     private _lines: any[];
     private _lineSpacing: ValueAndUnit = new ValueAndUnit(0);
     private _outlineWidth: number = 0;
@@ -220,7 +222,7 @@ export class InputTextArea extends InputText {
                     this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
                     this._cursorInfo.globalStartIndex--;
                 }
-
+                this._prevText = this._textWrapper.text;
                 this._textWrapper.removePart(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex);
 
                 this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
@@ -238,7 +240,7 @@ export class InputTextArea extends InputText {
                 if (!this._isTextHighlightOn && this._cursorInfo.globalEndIndex < this.text.length) {
                     this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex + 1;
                 }
-
+                this._prevText = this._textWrapper.text;
                 this._textWrapper.removePart(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex);
 
                 this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
@@ -253,6 +255,7 @@ export class InputTextArea extends InputText {
                 this._textHasChanged();
                 break;
             case "Enter": // RETURN
+                this._prevText = this._textWrapper.text;
                 this._textWrapper.removePart(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex, "\n");
                 this._cursorInfo.globalStartIndex++;
                 this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
@@ -520,7 +523,7 @@ export class InputTextArea extends InputText {
             if (this._addKey) {
                 this._isTextHighlightOn = false;
                 this._blinkIsEven = false;
-
+                this._prevText = this._textWrapper.text;
                 this._textWrapper.removePart(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex, key);
                 this._cursorInfo.globalStartIndex += key.length;
                 this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
@@ -573,7 +576,7 @@ export class InputTextArea extends InputText {
 
     protected _breakLines(refWidth: number, context: ICanvasRenderingContext): object[] {
         const lines: { text: string; width: number; lineEnding: string }[] = [];
-        const _lines = this.text.split("\n");
+        const _lines = (this.text || this.placeholderText).split("\n");
 
         if (this.clipContent) {
             for (const _line of _lines) {
@@ -609,12 +612,8 @@ export class InputTextArea extends InputText {
         let text = this._beforeRenderText(this._textWrapper).text;
 
         // placeholder conditions and color setting
-        if (!this._isFocused && !this.text && this._placeholderText) {
+        if (!this.text && this._placeholderText) {
             text = this._placeholderText;
-
-            if (this._placeholderColor) {
-                context.fillStyle = this._placeholderColor;
-            }
         }
 
         // measures the textlength -> this.measure.width
@@ -668,6 +667,17 @@ export class InputTextArea extends InputText {
                 }
             }
         }
+    }
+
+    protected _textHasChanged() {
+        if (!this._prevText && this._textWrapper.text && this.placeholderText) {
+            this._cursorInfo.currentLineIndex = 0;
+            this._cursorInfo.globalStartIndex = 1;
+            this._cursorInfo.globalEndIndex = 1;
+            this._cursorInfo.relativeStartIndex = 1;
+            this._cursorInfo.relativeEndIndex = 1;
+        }
+        super._textHasChanged();
     }
 
     private _computeScroll() {
@@ -767,7 +777,7 @@ export class InputTextArea extends InputText {
         } catch {} //pass
 
         this._host.clipboardData = this._highlightedText;
-
+        this._prevText = this._textWrapper.text;
         this._textWrapper.removePart(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex);
 
         this._textHasChanged();
@@ -789,7 +799,7 @@ export class InputTextArea extends InputText {
         }
 
         this._isTextHighlightOn = false;
-
+        this._prevText = this._textWrapper.text;
         this._textWrapper.removePart(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex, data);
 
         const deltaIndex = data.length - (this._cursorInfo.globalEndIndex - this._cursorInfo.globalStartIndex);
@@ -859,7 +869,9 @@ export class InputTextArea extends InputText {
         context.save();
         context.beginPath();
         context.fillStyle = this.fontStyle;
-
+        if (!this._textWrapper.text && this.placeholderText) {
+            context.fillStyle = this._placeholderColor;
+        }
         // here we define the visible reactangle to clip it in next line
         context.rect(this._clipTextLeft, this._clipTextTop, this._availableWidth + 2, this._availableHeight + 2);
         context.clip();
