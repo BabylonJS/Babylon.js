@@ -201,11 +201,11 @@ export class MeshUVSpaceRenderer {
         else if (this.texture && !this._userCreatedTextureSetup && !this._options.uvEdgeBlending) {
             this._updateRTT();
         }
-        // Check if the user has provided a texture, that texture has not been configured here, and there is uvEdgeBlending 
+        // Check if the user has provided a texture, that texture has not been configured here, and there is uvEdgeBlending
         else if (this.texture && !this._userCreatedTextureSetup && this._options.uvEdgeBlending && !this._decalTexture) {
             this._createDecalDiffuseRTT();
         }
-        // Check if the user has not provided a texture, has selected uvEdgeBlending and there is no decal texture 
+        // Check if the user has not provided a texture, has selected uvEdgeBlending and there is no decal texture
         else if (!this.texture && this._options.uvEdgeBlending && !this._decalTexture) {
             this._createDecalDiffuseRTT();
         }
@@ -236,7 +236,7 @@ export class MeshUVSpaceRenderer {
     private _updateRTT() {
         if (!this.texture) {
             this.texture = this._createRenderTargetTexture(this._options.width, this._options.height);
-        } else if(this.texture && !this._userCreatedTextureSetup) {
+        } else if (this.texture && !this._userCreatedTextureSetup) {
             this._userCreatedTextureSetup = true;
         }
         if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture)) {
@@ -361,16 +361,16 @@ export class MeshUVSpaceRenderer {
             this.texture.dispose();
             this._textureCreatedInternally = false;
         }
-        if(this._maskTexture)   {
+        if (this._maskTexture) {
             this._maskTexture.dispose();
         }
-        if(this._decalTexture)  {
+        if (this._decalTexture) {
             this._decalTexture.dispose();
         }
     }
 
     private _createDecalDiffuseRTT(): void {
-        if(this._options.uvEdgeBlending) {
+        if (this._options.uvEdgeBlending) {
             const texture = this._createRenderTargetTexture(this._options.width, this._options.height);
             texture.setMaterialForRendering(this._mesh, MeshUVSpaceRenderer._GetShader(this._scene));
             this._decalTexture = texture;
