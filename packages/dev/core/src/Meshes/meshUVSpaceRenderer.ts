@@ -196,7 +196,7 @@ export class MeshUVSpaceRenderer {
         if (!this.texture) {
             this._createDiffuseRTT();
         } else if (this.texture && !this._userCreatedTextureConfigured) {
-           this._configureUserCreatedRTT();
+            this._configureUserCreatedRTT();
         }
 
         if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture)) {
@@ -216,14 +216,14 @@ export class MeshUVSpaceRenderer {
     public clear(): void {
         if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture) && this.texture.renderTarget) {
             const engine = this._scene.getEngine();
-            
+
             engine.bindFramebuffer(this.texture.renderTarget);
             engine.clear(this.clearColor, true, true, true);
             engine.unBindFramebuffer(this.texture.renderTarget);
         }
         if (this._finalPostProcess?.inputTexture) {
             const engine = this._scene.getEngine();
-            
+
             engine.bindFramebuffer(this._finalPostProcess?.inputTexture);
             engine.clear(this.clearColor, true, true, true);
             engine.unBindFramebuffer(this._finalPostProcess?.inputTexture);
@@ -256,7 +256,7 @@ export class MeshUVSpaceRenderer {
                 }
             });
             this.texture.renderList = [this._mesh];
-            if(this._options.uvEdgeBlending) {
+            if (this._options.uvEdgeBlending) {
                 this._createMaskTexture();
                 this._createPostProcess();
                 this.texture.addPostProcess(this._finalPostProcess!);
@@ -276,7 +276,7 @@ export class MeshUVSpaceRenderer {
         if (this._options.uvEdgeBlending) {
             this._createMaskTexture();
             this._createPostProcess();
-            if(MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture)) {
+            if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture)) {
                 this.texture.addPostProcess(this._finalPostProcess!);
             }
         }
