@@ -161,7 +161,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
         const refractionIntensity = refractionBlock?.intensity.isConnected ? refractionBlock.intensity.associatedVariableName : "1.";
         const refractionView = refractionBlock?.view.isConnected ? refractionBlock.view.associatedVariableName : "";
 
-        const dispersion = ssBlock?.dispersion;
+        const dispersion = ssBlock?.dispersion.isConnected ? ssBlock?.dispersion.associatedVariableName : "0.0";
 
         code += refractionBlock?.getCode(state) ?? "";
 

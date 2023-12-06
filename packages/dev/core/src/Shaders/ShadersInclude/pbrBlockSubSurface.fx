@@ -340,11 +340,14 @@ struct subSurfaceOutParams
         #endif
 
         #ifdef SS_DISPERSION
-        float realIOR = 1.0 / ior;
-            float iorDispersionSpread = 0.02 * dispersion * (realIOR - 1.0);
-            vec3 iors = vec3(ior + iorDispersionSpread, ior, ior - iorDispersionSpread);
+            float realIOR = 1.0 / ior;
+            // The 0.04 value is completely empirical
+            float iorDispersionSpread = 0.04 * dispersion * (realIOR - 1.0);
+            vec3 iors = vec3(1.0/(realIOR - iorDispersionSpread), ior, 1.0/(realIOR + iorDispersionSpread));
             for (int i = 0; i < 3; i++) {
-                vec4 envSample = sampleEnvironmentRefraction(iors[i], thickness, refractionLOD, normalW, vPositionW, viewDirectionW, view, vRefractionInfos, refractionMatrix, vRefractionMicrosurfaceInfos, alphaG
+                ior = iors[i];
+        #endif
+                vec4 envSample = sampleEnvironmentRefraction(ior, thickness, refractionLOD, normalW, vPositionW, viewDirectionW, view, vRefractionInfos, refractionMatrix, vRefractionMicrosurfaceInfos, alphaG
                 #ifdef SS_REFRACTIONMAP_3D
                     , refractionSampler
                     #ifndef LODBASEDMICROSFURACE
@@ -369,34 +372,12 @@ struct subSurfaceOutParams
                     , refractionSize
                 #endif
                 );
+                
+        #ifdef SS_DISPERSION
                 environmentRefraction[i] = envSample[i];
             }
         #else
-            environmentRefraction = sampleEnvironmentRefraction(ior, thickness, refractionLOD, normalW, vPositionW, viewDirectionW, view, vRefractionInfos, refractionMatrix, vRefractionMicrosurfaceInfos, alphaG
-            #ifdef SS_REFRACTIONMAP_3D
-                , refractionSampler
-                #ifndef LODBASEDMICROSFURACE
-                    , refractionSamplerLow
-                    , refractionSamplerHigh
-                #endif
-            #else
-                , refractionSampler
-                #ifndef LODBASEDMICROSFURACE
-                    , refractionSamplerLow
-                    , refractionSamplerHigh
-                #endif
-            #endif
-            #ifdef ANISOTROPIC
-                , anisotropicOut
-            #endif
-            #ifdef REALTIME_FILTERING
-                , vRefractionFilteringInfo
-            #endif
-            #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
-                , refractionPosition
-                , refractionSize
-            #endif
-            );
+            environmentRefraction = envSample;
         #endif
 
         // _____________________________ Levels _____________________________________

@@ -10,8 +10,8 @@ import type { IKHRMaterialsDispersion } from "babylonjs-gltf2interface";
 const NAME = "KHR_materials_dispersion";
 
 /**
- * [Specification](TODO)
- * @since 5.0.0
+ * [Specification](https://github.com/KhronosGroup/glTF/blob/87bd64a7f5e23c84b6aef2e6082069583ed0ddb4/extensions/2.0/Khronos/KHR_materials_dispersion/README.md)
+ * @experimental
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_dispersion implements IGLTFLoaderExtension {
@@ -38,17 +38,10 @@ export class KHR_materials_dispersion implements IGLTFLoaderExtension {
     constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
-        if (this.enabled) {
-            // We need to disable instance usage because the attenuation factor depends on the node scale of each individual mesh
-            this._loader._disableInstancedMesh++;
-        }
     }
 
     /** @internal */
     public dispose() {
-        if (this.enabled) {
-            this._loader._disableInstancedMesh--;
-        }
         (this._loader as any) = null;
     }
 
