@@ -57,7 +57,7 @@ export interface IMeshUVSpaceRendererOptions {
      */
     optimizeUVAllocation?: boolean;
     /**
-     * If true, a post processing will be applied to the texture to fix seams. Default: false
+     * If true, a post processing effect will be applied to the texture to fix seams. Default: false
      */
     uvEdgeBlending?: boolean;
 }
