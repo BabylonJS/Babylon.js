@@ -1089,6 +1089,15 @@ declare module BABYLON.GLTF2 {
     }
 
     /**
+     * Interfaces from the KHR_materials_dispersion extension
+     */
+
+    /** @internal */
+    interface IKHRMaterialsDispersion extends IMaterialExtension {
+        dispersion?: number;
+    }
+
+    /**
      * Interfaces from the KHR_materials_specular extension
      */
 

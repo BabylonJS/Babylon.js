@@ -32,6 +32,127 @@ struct subSurfaceOutParams
 #ifdef SUBSURFACE
     #define pbr_inline
     #define inline
+    #ifdef SS_REFRACTION
+        vec4 sampleEnvironmentRefraction(
+            in float ior
+            , in float thickness
+            , in float refractionLOD
+            , in vec3 normalW
+            , in vec3 vPositionW
+            , in vec3 viewDirectionW
+            , in mat4 view
+            , in vec4 vRefractionInfos
+            , in mat4 refractionMatrix
+            , in vec4 vRefractionMicrosurfaceInfos
+            , in float alphaG
+            #ifdef SS_REFRACTIONMAP_3D
+                , in samplerCube refractionSampler
+                #ifndef LODBASEDMICROSFURACE
+                    , in samplerCube refractionSamplerLow
+                    , in samplerCube refractionSamplerHigh
+                #endif
+            #else
+                , in sampler2D refractionSampler
+                #ifndef LODBASEDMICROSFURACE
+                    , in sampler2D refractionSamplerLow
+                    , in sampler2D refractionSamplerHigh
+                #endif
+            #endif
+            #ifdef ANISOTROPIC
+                , in anisotropicOutParams anisotropicOut
+            #endif
+            #ifdef REALTIME_FILTERING
+                , in vec2 vRefractionFilteringInfo
+            #endif
+            #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
+                , in vec3 refractionPosition
+                , in vec3 refractionSize
+            #endif
+        ) {
+            vec4 environmentRefraction = vec4(0., 0., 0., 0.);
+            #ifdef ANISOTROPIC
+                vec3 refractionVector = refract(-viewDirectionW, anisotropicOut.anisotropicNormal, ior);
+            #else
+                vec3 refractionVector = refract(-viewDirectionW, normalW, ior);
+            #endif
+
+            #ifdef SS_REFRACTIONMAP_OPPOSITEZ
+                refractionVector.z *= -1.0;
+            #endif
+
+            // _____________________________ 2D vs 3D Maps ________________________________
+            #ifdef SS_REFRACTIONMAP_3D
+                #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
+                    refractionVector = parallaxCorrectNormal(vPositionW, refractionVector, refractionSize, refractionPosition);
+                #endif
+                refractionVector.y = refractionVector.y * vRefractionInfos.w;
+                vec3 refractionCoords = refractionVector;
+                refractionCoords = vec3(refractionMatrix * vec4(refractionCoords, 0));
+            #else
+                #ifdef SS_USE_THICKNESS_AS_DEPTH
+                    vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * thickness, 1.0)));
+                #else
+                    vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * vRefractionInfos.z, 1.0)));
+                #endif
+                vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
+                refractionCoords.y = 1.0 - refractionCoords.y;
+            #endif
+            
+            #ifdef LODBASEDMICROSFURACE
+                // Apply environment convolution scale/offset filter tuning parameters to the mipmap LOD selection
+                refractionLOD = refractionLOD * vRefractionMicrosurfaceInfos.y + vRefractionMicrosurfaceInfos.z;
+
+                #ifdef SS_LODINREFRACTIONALPHA
+                    // Automatic LOD adjustment to ensure that the smoothness-based environment LOD selection
+                    // is constrained to appropriate LOD levels in order to prevent aliasing.
+                    // The environment map is first sampled without custom LOD selection to determine
+                    // the hardware-selected LOD, and this is then used to constrain the final LOD selection
+                    // so that excessive surface smoothness does not cause aliasing (e.g. on curved geometry
+                    // where the normal is varying rapidly).
+
+                    // Note: Shader Model 4.1 or higher can provide this directly via CalculateLevelOfDetail(), and
+                    // manual calculation via derivatives is also possible, but for simplicity we use the 
+                    // hardware LOD calculation with the alpha channel containing the LOD for each mipmap.
+                    float automaticRefractionLOD = UNPACK_LOD(sampleRefraction(refractionSampler, refractionCoords).a);
+                    float requestedRefractionLOD = max(automaticRefractionLOD, refractionLOD);
+                #else
+                    float requestedRefractionLOD = refractionLOD;
+                #endif
+
+                #if defined(REALTIME_FILTERING) && defined(SS_REFRACTIONMAP_3D)
+                    environmentRefraction = vec4(radiance(alphaG, refractionSampler, refractionCoords, vRefractionFilteringInfo), 1.0);
+                #else
+                    environmentRefraction = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD);
+                #endif
+            #else
+                float lodRefractionNormalized = saturate(refractionLOD / log2(vRefractionMicrosurfaceInfos.x));
+                float lodRefractionNormalizedDoubled = lodRefractionNormalized * 2.0;
+
+                vec4 environmentRefractionMid = sampleRefraction(refractionSampler, refractionCoords);
+                if (lodRefractionNormalizedDoubled < 1.0){
+                    environmentRefraction = mix(
+                        sampleRefraction(refractionSamplerHigh, refractionCoords),
+                        environmentRefractionMid,
+                        lodRefractionNormalizedDoubled
+                    );
+                } else {
+                    environmentRefraction = mix(
+                        environmentRefractionMid,
+                        sampleRefraction(refractionSamplerLow, refractionCoords),
+                        lodRefractionNormalizedDoubled - 1.0
+                    );
+                }
+            #endif
+            #ifdef SS_RGBDREFRACTION
+                environmentRefraction.rgb = fromRGBD(environmentRefraction);
+            #endif
+
+            #ifdef SS_GAMMAREFRACTION
+                environmentRefraction.rgb = toLinearSpace(environmentRefraction.rgb);
+            #endif
+            return environmentRefraction;
+        }
+    #endif
     void subSurfaceBlock(
         in vec3 vSubSurfaceIntensity,
         in vec2 vThicknessParam,
@@ -111,6 +232,9 @@ struct subSurfaceOutParams
         #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
             in vec3 refractionPosition,
             in vec3 refractionSize,
+        #endif
+        #ifdef SS_DISPERSION
+            in float dispersion,
         #endif
     #endif
     #ifdef SS_TRANSLUCENCY
@@ -192,34 +316,6 @@ struct subSurfaceOutParams
     #ifdef SS_REFRACTION
         vec4 environmentRefraction = vec4(0., 0., 0., 0.);
 
-        #ifdef ANISOTROPIC
-            vec3 refractionVector = refract(-viewDirectionW, anisotropicOut.anisotropicNormal, vRefractionInfos.y);
-        #else
-            vec3 refractionVector = refract(-viewDirectionW, normalW, vRefractionInfos.y);
-        #endif
-
-        #ifdef SS_REFRACTIONMAP_OPPOSITEZ
-            refractionVector.z *= -1.0;
-        #endif
-
-        // _____________________________ 2D vs 3D Maps ________________________________
-        #ifdef SS_REFRACTIONMAP_3D
-            #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
-	            refractionVector = parallaxCorrectNormal(vPositionW, refractionVector, refractionSize, refractionPosition);
-            #endif
-            refractionVector.y = refractionVector.y * vRefractionInfos.w;
-            vec3 refractionCoords = refractionVector;
-            refractionCoords = vec3(refractionMatrix * vec4(refractionCoords, 0));
-        #else
-            #ifdef SS_USE_THICKNESS_AS_DEPTH
-                vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * thickness, 1.0)));
-            #else
-                vec3 vRefractionUVW = vec3(refractionMatrix * (view * vec4(vPositionW + refractionVector * vRefractionInfos.z, 1.0)));
-            #endif
-            vec2 refractionCoords = vRefractionUVW.xy / vRefractionUVW.z;
-            refractionCoords.y = 1.0 - refractionCoords.y;
-        #endif
-
         // vRefractionInfos.y is the IOR of the volume.
         // vRefractionMicrosurfaceInfos.w is the IOR of the surface.
         #ifdef SS_HAS_THICKNESS
@@ -243,58 +339,45 @@ struct subSurfaceOutParams
             float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, refractionAlphaG);
         #endif
 
-        #ifdef LODBASEDMICROSFURACE
-            // Apply environment convolution scale/offset filter tuning parameters to the mipmap LOD selection
-            refractionLOD = refractionLOD * vRefractionMicrosurfaceInfos.y + vRefractionMicrosurfaceInfos.z;
-
-            #ifdef SS_LODINREFRACTIONALPHA
-                // Automatic LOD adjustment to ensure that the smoothness-based environment LOD selection
-                // is constrained to appropriate LOD levels in order to prevent aliasing.
-                // The environment map is first sampled without custom LOD selection to determine
-                // the hardware-selected LOD, and this is then used to constrain the final LOD selection
-                // so that excessive surface smoothness does not cause aliasing (e.g. on curved geometry
-                // where the normal is varying rapidly).
-
-                // Note: Shader Model 4.1 or higher can provide this directly via CalculateLevelOfDetail(), and
-                // manual calculation via derivatives is also possible, but for simplicity we use the 
-                // hardware LOD calculation with the alpha channel containing the LOD for each mipmap.
-                float automaticRefractionLOD = UNPACK_LOD(sampleRefraction(refractionSampler, refractionCoords).a);
-                float requestedRefractionLOD = max(automaticRefractionLOD, refractionLOD);
-            #else
-                float requestedRefractionLOD = refractionLOD;
-            #endif
-
-            #if defined(REALTIME_FILTERING) && defined(SS_REFRACTIONMAP_3D)
-                environmentRefraction = vec4(radiance(alphaG, refractionSampler, refractionCoords, vRefractionFilteringInfo), 1.0);
-            #else
-                environmentRefraction = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD);
-            #endif
-        #else
-            float lodRefractionNormalized = saturate(refractionLOD / log2(vRefractionMicrosurfaceInfos.x));
-            float lodRefractionNormalizedDoubled = lodRefractionNormalized * 2.0;
-
-            vec4 environmentRefractionMid = sampleRefraction(refractionSampler, refractionCoords);
-            if (lodRefractionNormalizedDoubled < 1.0){
-                environmentRefraction = mix(
-                    sampleRefraction(refractionSamplerHigh, refractionCoords),
-                    environmentRefractionMid,
-                    lodRefractionNormalizedDoubled
+        #ifdef SS_DISPERSION
+            float realIOR = 1.0 / ior;
+            // The 0.04 value is completely empirical
+            float iorDispersionSpread = 0.04 * dispersion * (realIOR - 1.0);
+            vec3 iors = vec3(1.0/(realIOR - iorDispersionSpread), ior, 1.0/(realIOR + iorDispersionSpread));
+            for (int i = 0; i < 3; i++) {
+                ior = iors[i];
+        #endif
+                vec4 envSample = sampleEnvironmentRefraction(ior, thickness, refractionLOD, normalW, vPositionW, viewDirectionW, view, vRefractionInfos, refractionMatrix, vRefractionMicrosurfaceInfos, alphaG
+                #ifdef SS_REFRACTIONMAP_3D
+                    , refractionSampler
+                    #ifndef LODBASEDMICROSFURACE
+                        , refractionSamplerLow
+                        , refractionSamplerHigh
+                    #endif
+                #else
+                    , refractionSampler
+                    #ifndef LODBASEDMICROSFURACE
+                        , refractionSamplerLow
+                        , refractionSamplerHigh
+                    #endif
+                #endif
+                #ifdef ANISOTROPIC
+                    , anisotropicOut
+                #endif
+                #ifdef REALTIME_FILTERING
+                    , vRefractionFilteringInfo
+                #endif
+                #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
+                    , refractionPosition
+                    , refractionSize
+                #endif
                 );
-            } else {
-                environmentRefraction = mix(
-                    environmentRefractionMid,
-                    sampleRefraction(refractionSamplerLow, refractionCoords),
-                    lodRefractionNormalizedDoubled - 1.0
-                );
+                
+        #ifdef SS_DISPERSION
+                environmentRefraction[i] = envSample[i];
             }
-        #endif
-
-        #ifdef SS_RGBDREFRACTION
-            environmentRefraction.rgb = fromRGBD(environmentRefraction);
-        #endif
-
-        #ifdef SS_GAMMAREFRACTION
-            environmentRefraction.rgb = toLinearSpace(environmentRefraction.rgb);
+        #else
+            environmentRefraction = envSample;
         #endif
 
         // _____________________________ Levels _____________________________________

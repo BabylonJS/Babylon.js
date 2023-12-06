@@ -33,6 +33,7 @@ export class MaterialSubSurfaceDefines extends MaterialDefines {
     public SS_TRANSLUCENCY = false;
     public SS_TRANSLUCENCY_USE_INTENSITY_FROM_TEXTURE = false;
     public SS_SCATTERING = false;
+    public SS_DISPERSION = false;
 
     public SS_THICKNESSANDMASK_TEXTURE = false;
     public SS_THICKNESSANDMASK_TEXTUREDIRECTUV = 0;
@@ -79,6 +80,14 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public isTranslucencyEnabled = false;
+
+    private _isDispersionEnabled = false;
+    /**
+     * Defines if dispersion is enabled in the material.
+     */
+    @serialize()
+    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
+    public isDispersionEnabled = false;
 
     private _isScatteringEnabled = false;
     /**
@@ -254,6 +263,12 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
     public tintColorAtDistance = 1;
 
     /**
+     * Defines the Abbe number for the volume.
+     */
+    @serialize()
+    public dispersion = 0;
+
+    /**
      * Defines how far each channel transmit through the media.
      * It is defined as a color to simplify it selection.
      */
@@ -354,6 +369,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
     public prepareDefinesBeforeAttributes(defines: MaterialSubSurfaceDefines, scene: Scene): void {
         if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
             defines.SUBSURFACE = false;
+            defines.SS_DISPERSION = false;
             defines.SS_TRANSLUCENCY = false;
             defines.SS_SCATTERING = false;
             defines.SS_REFRACTION = false;
@@ -385,6 +401,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         if (defines._areTexturesDirty) {
             defines.SUBSURFACE = true;
 
+            defines.SS_DISPERSION = this._isDispersionEnabled;
             defines.SS_TRANSLUCENCY = this._isTranslucencyEnabled;
             defines.SS_TRANSLUCENCY_USE_INTENSITY_FROM_TEXTURE = false;
             defines.SS_SCATTERING = this._isScatteringEnabled;
@@ -562,6 +579,8 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
             uniformBuffer.updateFloat4("vTintColor", this.tintColor.r, this.tintColor.g, this.tintColor.b, Math.max(0.00001, this.tintColorAtDistance));
 
             uniformBuffer.updateFloat3("vSubSurfaceIntensity", this.refractionIntensity, this.translucencyIntensity, 0);
+
+            uniformBuffer.updateFloat("dispersion", this.dispersion);
         }
 
         // Textures
@@ -715,6 +734,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
                 { name: "vRefractionPosition", size: 3, type: "vec3" },
                 { name: "vRefractionSize", size: 3, type: "vec3" },
                 { name: "scatteringDiffusionProfile", size: 1, type: "float" },
+                { name: "dispersion", size: 1, type: "float" },
             ],
         };
     }

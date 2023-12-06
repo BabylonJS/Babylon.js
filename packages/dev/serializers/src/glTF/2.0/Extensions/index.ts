@@ -8,6 +8,7 @@ export * from "./KHR_materials_unlit";
 export * from "./KHR_materials_ior";
 export * from "./KHR_materials_specular";
 export * from "./KHR_materials_volume";
+export * from "./KHR_materials_dispersion";
 export * from "./KHR_materials_transmission";
 export * from "./EXT_mesh_gpu_instancing";
 export * from "./KHR_materials_emissive_strength";
