@@ -90,6 +90,12 @@ varying vec3 vNormalW;
 #include<shadowsFragmentFunctions>
 #include<imageProcessingFunctions>
 
+#ifdef LOGARITHMICDEPTH
+#extension GL_EXT_frag_depth : enable
+#endif
+
+#include<logDepthDeclaration>
+
 #include<clipPlaneFragmentDeclaration>
 
 // Fog
@@ -370,6 +376,7 @@ void main(void) {
     vec4 color = vec4(vPrimaryColor.rgb, (1.0 - clamp(globalShadow, 0., 1.)) * alpha);
 #endif
 
+#include<logDepthFragment>
 #include<fogFragment>
 
 #ifdef IMAGEPROCESSINGPOSTPROCESS

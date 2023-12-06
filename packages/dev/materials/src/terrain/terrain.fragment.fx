@@ -52,6 +52,12 @@ uniform sampler2D bump3Sampler;
 #include<shadowsFragmentFunctions>
 #include<clipPlaneFragmentDeclaration>
 
+#ifdef LOGARITHMICDEPTH
+#extension GL_EXT_frag_depth : enable
+#endif
+
+#include<logDepthDeclaration>
+
 // Fog
 #include<fogFragmentDeclaration>
 
@@ -185,6 +191,7 @@ void main(void) {
 	// Composition
 	vec4 color = vec4(finalDiffuse + finalSpecular, alpha);
 
+#include<logDepthFragment>
 #include<fogFragment>
 
 	gl_FragColor = color;

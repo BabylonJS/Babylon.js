@@ -35,6 +35,7 @@ class SkyMaterialDefines extends MaterialDefines {
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
     public DITHER = false;
+    public LOGARITHMICDEPTH = false;
 
     constructor() {
         super();
@@ -195,7 +196,7 @@ export class SkyMaterial extends PushMaterial {
             return true;
         }
 
-        MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, false, defines);
+        MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, false, defines);
 
         // Attribs
         MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, false);
@@ -238,6 +239,7 @@ export class SkyMaterial extends PushMaterial {
                 "view",
                 "vFogInfos",
                 "vFogColor",
+                "logarithmicDepthConstant",
                 "pointSize",
                 "luminance",
                 "turbidity",
@@ -294,6 +296,11 @@ export class SkyMaterial extends PushMaterial {
             // Point size
             if (this.pointsCloud) {
                 this._activeEffect.setFloat("pointSize", this.pointSize);
+            }
+
+            // Log. depth
+            if (this._useLogarithmicDepth) {
+                MaterialHelper.BindLogDepth(defines, effect, scene);
             }
         }
 

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { serialize, serializeAsImageProcessingConfiguration, expandToProperty } from "../../Misc/decorators";
+import { serializeAsImageProcessingConfiguration, expandToProperty } from "../../Misc/decorators";
 import type { Observer } from "../../Misc/observable";
 import { Logger } from "../../Misc/logger";
 import { SmartArray } from "../../Misc/smartArray";
@@ -816,11 +816,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     private _globalAmbientColor = new Color3(0, 0, 0);
 
     /**
-     * Enables the use of logarithmic depth buffers, which is good for wide depth buffers.
-     */
-    private _useLogarithmicDepth: boolean = false;
-
-    /**
      * If set to true, no lighting calculations will be applied.
      */
     private _unlit = false;
@@ -960,21 +955,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      */
     public getClassName(): string {
         return "PBRBaseMaterial";
-    }
-
-    /**
-     * Enabled the use of logarithmic depth buffers, which is good for wide depth buffers.
-     */
-    @serialize()
-    public get useLogarithmicDepth(): boolean {
-        return this._useLogarithmicDepth;
-    }
-
-    /**
-     * Enabled the use of logarithmic depth buffers, which is good for wide depth buffers.
-     */
-    public set useLogarithmicDepth(value: boolean) {
-        this._useLogarithmicDepth = value && this.getScene().getEngine().getCaps().fragmentDepthSupported;
     }
 
     /**
