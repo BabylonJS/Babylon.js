@@ -346,12 +346,6 @@ export class MeshUVSpaceRenderer {
             engine.clear(this.clearColor, true, true, true);
             engine.unBindFramebuffer(this._decalTexture.renderTarget);
         }
-        if (MeshUVSpaceRenderer._IsRenderTargetTexture(this._maskTexture) && this._maskTexture.renderTarget) {
-            const engine = this._scene.getEngine();
-            engine.bindFramebuffer(this._maskTexture.renderTarget);
-            engine.clear(this.clearColor, true, true, true);
-            engine.unBindFramebuffer(this._maskTexture.renderTarget);
-        }
     }
     /**
      * Disposes of the resources
