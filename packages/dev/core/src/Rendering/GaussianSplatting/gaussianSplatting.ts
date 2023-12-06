@@ -1,6 +1,5 @@
-import { Effect } from "../../Materials/effect";
-import { ShaderMaterial } from "../../Materials/shaderMaterial";
-import { Matrix, Quaternion, TmpVectors, Vector2 } from "../../Maths/math.vector";
+import { GaussianSplattingMaterial } from "../../Materials/GaussianSplatting/gaussianSplattingMaterial";
+import { Matrix, Quaternion, TmpVectors } from "../../Maths/math.vector";
 import { Mesh } from "../../Meshes/mesh";
 import { VertexData } from "../../Meshes/mesh.vertexData";
 import type { Observer } from "../../Misc/observable";
@@ -19,7 +18,7 @@ export class GaussianSplatting {
     private _covB: Float32Array;
     private _sceneDisposeObserver: Nullable<Observer<Scene>>;
     private _sceneBeforeRenderObserver: Nullable<Observer<Scene>>;
-    private _material: ShaderMaterial;
+    private _material: GaussianSplattingMaterial;
     private _modelViewMatrix = Matrix.Identity();
     /**
      * Name of the GS that is also used to name a mesh for rendering it
@@ -42,27 +41,14 @@ export class GaussianSplatting {
     }
 
     /**
-     * Shader material with alpha blending
+     * GaussianSplatting material with alpha blending
      * @param scene parent scene
      */
     private _createMaterial(scene: Scene) {
-        Effect.ShadersStore["customVertexShader"] = GaussianSplatting._VertexShaderSource;
-        Effect.ShadersStore["customFragmentShader"] = GaussianSplatting._FragmentShaderSource;
-        const shaderMaterial = new ShaderMaterial(
-            "GaussianSplattingShader",
-            scene,
-            {
-                vertex: "custom",
-                fragment: "custom",
-            },
-            {
-                attributes: ["position"],
-                uniforms: ["projection", "modelView"],
-            }
-        );
-        shaderMaterial.backFaceCulling = false;
-        shaderMaterial.alpha = 0.9999;
-        this._material = shaderMaterial;
+        const material = new GaussianSplattingMaterial("GaussianSplattingMaterial", scene);
+        material.backFaceCulling = false;
+        material.alpha = 0.9999;
+        this._material = material;
     }
 
     /**
@@ -83,82 +69,7 @@ export class GaussianSplatting {
     }
 
     protected static _Worker: Nullable<Worker> = null;
-    protected static _VertexShaderSource = `
-        precision mediump float;
-        attribute vec2 position;
-
-        attribute vec4 world0;
-        attribute vec4 world1;
-        attribute vec4 world2;
-        attribute vec4 world3;
-
-        uniform mat4 projection, modelView;
-        uniform vec2 viewport;
-
-        varying vec4 vColor;
-        varying vec2 vPosition;
-        void main () {
-        vec3 center = world0.xyz;
-        vec4 color = world1;
-        vec3 covA = world2.xyz;
-        vec3 covB = world3.xyz;
-
-        vec4 camspace = modelView * vec4(center, 1);
-        vec4 pos2d = projection * camspace;
-
-        float bounds = 1.2 * pos2d.w;
-        if (pos2d.z < -pos2d.w || pos2d.x < -bounds || pos2d.x > bounds
-            || pos2d.y < -bounds || pos2d.y > bounds) {
-            gl_Position = vec4(0.0, 0.0, 2.0, 1.0);
-            return;
-        }
-
-        mat3 Vrk = mat3(
-            covA.x, covA.y, covA.z, 
-            covA.y, covB.x, covB.y,
-            covA.z, covB.y, covB.z
-        );
-        vec2 focal = vec2(1132., 1132.);
-        mat3 J = mat3(
-            focal.x / camspace.z, 0., -(focal.x * camspace.x) / (camspace.z * camspace.z), 
-            0., focal.y / camspace.z, -(focal.y * camspace.y) / (camspace.z * camspace.z), 
-            0., 0., 0.
-        );
-
-        mat3 invy = mat3(1,0,0, 0,-1,0,0,0,1);
-
-        mat3 T = invy * transpose(mat3(modelView)) * J;
-        mat3 cov2d = transpose(T) * Vrk * T;
-
-        float mid = (cov2d[0][0] + cov2d[1][1]) / 2.0;
-        float radius = length(vec2((cov2d[0][0] - cov2d[1][1]) / 2.0, cov2d[0][1]));
-        float lambda1 = mid + radius, lambda2 = mid - radius;
-
-        if(lambda2 < 0.0) return;
-        vec2 diagonalVector = normalize(vec2(cov2d[0][1], lambda1 - cov2d[0][0]));
-        vec2 majorAxis = min(sqrt(2.0 * lambda1), 1024.0) * diagonalVector;
-        vec2 minorAxis = min(sqrt(2.0 * lambda2), 1024.0) * vec2(diagonalVector.y, -diagonalVector.x);
-
-        vColor = color;
-        vPosition = position;
-        vec2 vCenter = vec2(pos2d);
-        gl_Position = vec4(
-            vCenter 
-            + (position.x * majorAxis * 1. / viewport 
-            + position.y * minorAxis * 1. / viewport) * pos2d.w, pos2d.zw);
-        }`;
-
-    protected static _FragmentShaderSource = `
-        precision highp float;
-        varying vec4 vColor;
-        varying vec2 vPosition;
-        void main () {    
-        float A = -dot(vPosition, vPosition);
-        if (A < -4.0) discard;
-        float B = exp(A) * vColor.a;
-        gl_FragColor = vec4(vColor.rgb, B);
-        }`;
-
+    
     protected static _CreateWorker = function (self: Worker) {
         let viewProj: number[];
         let lastProj: number[] = [];
@@ -324,9 +235,11 @@ export class GaussianSplatting {
             };
             this._sceneBeforeRenderObserver = this.scene.onBeforeRenderObservable.add(() => {
                 const engine = this.scene.getEngine();
-                this._material.setVector2("viewport", new Vector2(engine.getRenderWidth(), engine.getRenderHeight()));
+                //this._material.setVector2("viewport", new Vector2(engine.getRenderWidth(), engine.getRenderHeight()));
+                this._material.setViewport(engine.getRenderWidth(), engine.getRenderHeight());
                 this.mesh!.getWorldMatrix().multiplyToRef(this.scene.activeCamera!.getViewMatrix(), this._modelViewMatrix);
-                this._material.setMatrix("modelView", this._modelViewMatrix);
+                //this._material.setMatrix("modelView", this._modelViewMatrix);
+                this._material.setModelView(this._modelViewMatrix);
                 GaussianSplatting._Worker?.postMessage({ view: this._modelViewMatrix.m, positions: this._positions });
             });
             this._sceneDisposeObserver = this.scene.onDisposeObservable.add(() => {

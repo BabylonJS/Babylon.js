@@ -1,1 +1,1 @@
-export * from "./backgroundMaterial";
+export * from "./gaussianSplattingMaterial";
