@@ -68,10 +68,6 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
             const evt = <IPointerEvent>p.event;
             const isTouch = evt.pointerType === "touch";
 
-            if (engine.isInVRExclusivePointerMode) {
-                return;
-            }
-
             if (p.type !== PointerEventTypes.POINTERMOVE && this.buttons.indexOf(evt.button) === -1) {
                 return;
             }
@@ -232,7 +228,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
             this.onLostFocus();
         };
 
-        this._contextMenuBind = this.onContextMenu.bind(this);
+        this._contextMenuBind = (evt: Event) => this.onContextMenu(evt as PointerEvent);
 
         element && element.addEventListener("contextmenu", this._contextMenuBind, false);
 

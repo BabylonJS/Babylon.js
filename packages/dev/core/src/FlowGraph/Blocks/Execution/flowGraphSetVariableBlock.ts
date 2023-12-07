@@ -2,6 +2,8 @@ import { RichTypeString, RichTypeAny } from "../../flowGraphRichTypes";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
+import { RegisterClass } from "core/Misc/typeStore";
+import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 
 /**
  * Block to set a variable.
@@ -17,11 +19,11 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphWithOnDoneExecutionBl
      */
     public readonly input: FlowGraphDataConnection<T>;
 
-    constructor() {
-        super();
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(config);
 
-        this.variableName = this._registerDataInput("variableName", RichTypeString);
-        this.input = this._registerDataInput("input", RichTypeAny);
+        this.variableName = this.registerDataInput("variableName", RichTypeString);
+        this.input = this.registerDataInput("input", RichTypeAny);
     }
 
     public _execute(context: FlowGraphContext): void {
@@ -30,4 +32,9 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphWithOnDoneExecutionBl
         context.setVariable(variableNameValue, inputValue);
         this.onDone._activateSignal(context);
     }
+
+    public getClassName(): string {
+        return "FGSetVariableBlock";
+    }
 }
+RegisterClass("FGSetVariableBlock", FlowGraphSetVariableBlock);

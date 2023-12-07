@@ -13,7 +13,7 @@ import { EngineStore } from "../Engines/engineStore";
 AbstractScene.AddParser(SceneComponentConstants.NAME_EFFECTLAYER, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
     if (parsedData.effectLayers) {
         if (!container.effectLayers) {
-            container.effectLayers = new Array<EffectLayer>();
+            container.effectLayers = [] as EffectLayer[];
         }
 
         for (let index = 0; index < parsedData.effectLayers.length; index++) {
@@ -90,7 +90,7 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
             return;
         }
         this._engine = this.scene.getEngine();
-        this.scene.effectLayers = new Array<EffectLayer>();
+        this.scene.effectLayers = [] as EffectLayer[];
     }
 
     /**

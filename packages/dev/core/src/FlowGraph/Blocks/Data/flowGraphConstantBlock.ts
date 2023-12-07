@@ -2,12 +2,13 @@ import { FlowGraphBlock } from "core/FlowGraph/flowGraphBlock";
 import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { getRichTypeFromValue } from "core/FlowGraph/flowGraphRichTypes";
-
+import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
+import { RegisterClass } from "../../../Misc/typeStore";
 /**
  * @experimental
  * Configuration for a constant block.
  */
-export interface IFlowGraphConstantBlockConfiguration<T> {
+export interface IFlowGraphConstantBlockConfiguration<T> extends IFlowGraphBlockConfiguration {
     /**
      * The value of the constant.
      */
@@ -23,13 +24,18 @@ export class FlowGraphConstantBlock<T> extends FlowGraphBlock {
      */
     public readonly output: FlowGraphDataConnection<T>;
 
-    constructor(private _config: IFlowGraphConstantBlockConfiguration<T>) {
-        super();
+    constructor(public config: IFlowGraphConstantBlockConfiguration<T>) {
+        super(config);
 
-        this.output = this._registerDataOutput("output", getRichTypeFromValue(_config.value));
+        this.output = this.registerDataOutput("output", getRichTypeFromValue(config.value));
     }
 
     public _updateOutputs(context: FlowGraphContext): void {
-        this.output.setValue(this._config.value, context);
+        this.output.setValue(this.config.value, context);
+    }
+
+    public getClassName(): string {
+        return "FGConstantBlock";
     }
 }
+RegisterClass("FGConstantBlock", FlowGraphConstantBlock);

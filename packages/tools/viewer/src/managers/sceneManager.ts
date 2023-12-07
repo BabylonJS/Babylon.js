@@ -165,7 +165,11 @@ export class SceneManager {
         return this._vrHelper;
     }
 
-    constructor(private _engine: Engine, private _configurationContainer: ConfigurationContainer, private _observablesManager?: ObservablesManager) {
+    constructor(
+        private _engine: Engine,
+        private _configurationContainer: ConfigurationContainer,
+        private _observablesManager?: ObservablesManager
+    ) {
         this.models = [];
 
         this.onCameraConfiguredObservable = new Observable();
@@ -819,32 +823,6 @@ export class SceneManager {
             const floorMeshName = vrConfig.overrideFloorMeshName || "BackgroundPlane";
             this._vrHelper.enableTeleportation({
                 floorMeshName,
-            });
-        }
-        if (vrConfig.rotateUsingControllers) {
-            let rotationOffset: Quaternion | null;
-            this._vrHelper.onControllerMeshLoadedObservable.add((controller) => {
-                controller.onTriggerStateChangedObservable.add((data) => {
-                    if (controller.mesh && controller.mesh.rotationQuaternion) {
-                        if (data.pressed) {
-                            if (!rotationOffset) {
-                                this.models[0].rootMesh.rotationQuaternion = this.models[0].rootMesh.rotationQuaternion || new Quaternion();
-                                rotationOffset = controller.mesh.rotationQuaternion.conjugate().multiply(this.models[0].rootMesh.rotationQuaternion!);
-                            }
-                        } else {
-                            rotationOffset = null;
-                        }
-                    }
-                });
-                this.scene.registerBeforeRender(() => {
-                    if (this.models[0]) {
-                        if (rotationOffset && controller.mesh && controller.mesh.rotationQuaternion) {
-                            this.models[0].rootMesh.rotationQuaternion!.copyFrom(controller.mesh.rotationQuaternion).multiplyInPlace(rotationOffset);
-                        } else {
-                            this.models[0].rootMesh.rotationQuaternion = null;
-                        }
-                    }
-                });
             });
         }
         this._vrHelper.onEnteringVRObservable.add(() => {

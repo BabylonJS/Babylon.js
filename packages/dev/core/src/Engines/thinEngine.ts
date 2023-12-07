@@ -53,7 +53,7 @@ import type { RenderTargetTexture } from "../Materials/Textures/renderTargetText
 import type { WebRequest } from "../Misc/webRequest";
 import type { LoadFileError } from "../Misc/fileTools";
 import type { Texture } from "../Materials/Textures/texture";
-import { PrecisionDate } from "core/Misc/precisionDate";
+import { PrecisionDate } from "../Misc/precisionDate";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -161,11 +161,6 @@ export interface ThinEngineOptions {
 /** Interface defining initialization parameters for Engine class */
 export interface EngineOptions extends ThinEngineOptions, WebGLContextAttributes {
     /**
-     * Defines if webvr should be enabled automatically
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/webVRCamera
-     */
-    autoEnableWebVR?: boolean;
-    /**
      * Defines if webgl2 should be turned off even if supported
      * @see https://doc.babylonjs.com/setup/support/webGL2
      */
@@ -191,6 +186,12 @@ export interface EngineOptions extends ThinEngineOptions, WebGLContextAttributes
      * This will not influence NativeEngine and WebGPUEngine which set the behavior to true during construction.
      */
     forceSRGBBufferSupportState?: boolean;
+
+    /**
+     * Defines if the gl context should be released.
+     * It's false by default for backward compatibility, but you should probably pass true (see https://registry.khronos.org/webgl/extensions/WEBGL_lose_context/)
+     */
+    loseContextOnDispose?: boolean;
 }
 
 /**
@@ -225,14 +226,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@6.22.1";
+        return "babylonjs@6.33.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "6.22.1";
+        return "6.33.0";
     }
 
     /**
@@ -551,7 +552,7 @@ export class ThinEngine {
     protected _cachedEffectForVertexBuffers: Nullable<Effect>;
 
     /** @internal */
-    public _currentRenderTarget: Nullable<RenderTargetWrapper>;
+    public _currentRenderTarget: Nullable<RenderTargetWrapper> = null;
     private _uintIndicesCurrentlySet = false;
     protected _currentBoundBuffer = new Array<Nullable<DataBuffer>>();
     /** @internal */
@@ -908,7 +909,7 @@ export class ThinEngine {
                 };
 
                 this._onContextRestored = () => {
-                    this._restoreEngineAfterContextLost(this._initGLContext.bind(this));
+                    this._restoreEngineAfterContextLost(() => this._initGLContext());
                 };
 
                 canvas.addEventListener("webglcontextlost", this._onContextLost, false);
@@ -1193,6 +1194,7 @@ export class ThinEngine {
             drawBuffersExtension: false,
             maxMSAASamples: 1,
             colorBufferFloat: !!(this._webGLVersion > 1 && this._gl.getExtension("EXT_color_buffer_float")),
+            supportFloatTexturesResolve: false,
             colorBufferHalfFloat: !!(this._webGLVersion > 1 && this._gl.getExtension("EXT_color_buffer_half_float")),
             textureFloat: this._webGLVersion > 1 || this._gl.getExtension("OES_texture_float") ? true : false,
             textureHalfFloat: this._webGLVersion > 1 || this._gl.getExtension("OES_texture_half_float") ? true : false,
@@ -1217,6 +1219,8 @@ export class ThinEngine {
             texture2DArrayMaxLayerCount: this._webGLVersion > 1 ? this._gl.getParameter(this._gl.MAX_ARRAY_TEXTURE_LAYERS) : 128,
             disableMorphTargetTexture: false,
         };
+
+        this._caps.supportFloatTexturesResolve = this._caps.colorBufferFloat;
 
         // Infos
         this._glVersion = this._gl.getParameter(this._gl.VERSION);
@@ -1441,6 +1445,7 @@ export class ThinEngine {
             needToAlwaysBindUniformBuffers: false,
             supportRenderPasses: false,
             supportSpriteInstancing: true,
+            forceVertexBufferStrideMultiple4Bytes: false,
             _collectUbosUpdatedInFrame: false,
         };
     }
@@ -1708,7 +1713,7 @@ export class ThinEngine {
 
         if (!this._renderingQueueLaunched) {
             this._renderingQueueLaunched = true;
-            this._boundRenderFunction = this._renderLoop.bind(this);
+            this._boundRenderFunction = () => this._renderLoop();
             this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
         }
     }
@@ -1933,6 +1938,9 @@ export class ThinEngine {
                     rtWrapper.texture!._hardwareTexture?.underlyingResource,
                     lodLevel
                 );
+            } else if (webglRTWrapper._currentLOD !== lodLevel) {
+                gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, rtWrapper.texture!._hardwareTexture?.underlyingResource, lodLevel);
+                webglRTWrapper._currentLOD = lodLevel;
             }
         }
 
@@ -2153,9 +2161,11 @@ export class ThinEngine {
     /**
      * Creates a vertex buffer
      * @param data the data for the vertex buffer
+     * @param _updatable whether the buffer should be created as updatable
+     * @param _label defines the label of the buffer (for debug purpose)
      * @returns the new WebGL static buffer
      */
-    public createVertexBuffer(data: DataArray): DataBuffer {
+    public createVertexBuffer(data: DataArray, _updatable?: boolean, _label?: string): DataBuffer {
         return this._createVertexBuffer(data, this._gl.STATIC_DRAW);
     }
 
@@ -2184,9 +2194,10 @@ export class ThinEngine {
     /**
      * Creates a dynamic vertex buffer
      * @param data the data for the dynamic vertex buffer
+     * @param _label defines the label of the buffer (for debug purpose)
      * @returns the new WebGL dynamic buffer
      */
-    public createDynamicVertexBuffer(data: DataArray): DataBuffer {
+    public createDynamicVertexBuffer(data: DataArray, _label?: string): DataBuffer {
         return this._createVertexBuffer(data, this._gl.DYNAMIC_DRAW);
     }
 
@@ -2199,9 +2210,10 @@ export class ThinEngine {
      * Creates a new index buffer
      * @param indices defines the content of the index buffer
      * @param updatable defines if the index buffer must be updatable
+     * @param _label defines the label of the buffer (for debug purpose)
      * @returns a new webGL buffer
      */
-    public createIndexBuffer(indices: IndicesArray, updatable?: boolean): DataBuffer {
+    public createIndexBuffer(indices: IndicesArray, updatable?: boolean, _label?: string): DataBuffer {
         const vbo = this._gl.createBuffer();
         const dataBuffer = new WebGLDataBuffer(vbo!);
 
@@ -4379,21 +4391,9 @@ export class ThinEngine {
                 const gl = this._gl;
                 const isPot = img.width === potWidth && img.height === potHeight;
 
-                const internalFormat = format
-                    ? this._getInternalFormat(format, texture._useSRGBBuffer)
-                    : extension === ".jpg" && !texture._useSRGBBuffer
-                    ? gl.RGB
-                    : texture._useSRGBBuffer
-                    ? this._glSRGBExtensionValues.SRGB8_ALPHA8
-                    : gl.RGBA;
-                let texelFormat = format ? this._getInternalFormat(format) : extension === ".jpg" && !texture._useSRGBBuffer ? gl.RGB : gl.RGBA;
-
-                if (texture._useSRGBBuffer && this.webGLVersion === 1) {
-                    texelFormat = internalFormat;
-                }
-
+                const tip = this._getTexImageParametersForCreateTexture(format, extension, texture._useSRGBBuffer);
                 if (isPot) {
-                    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, texelFormat, gl.UNSIGNED_BYTE, img as any);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, tip.internalFormat, tip.format, tip.type, img as any);
                     return false;
                 }
 
@@ -4409,7 +4409,7 @@ export class ThinEngine {
                     this._workingCanvas.height = potHeight;
 
                     this._workingContext.drawImage(img as any, 0, 0, img.width, img.height, 0, 0, potWidth, potHeight);
-                    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, texelFormat, gl.UNSIGNED_BYTE, this._workingCanvas as TexImageSource);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, tip.internalFormat, tip.format, tip.type, this._workingCanvas as TexImageSource);
 
                     texture.width = potWidth;
                     texture.height = potHeight;
@@ -4419,9 +4419,9 @@ export class ThinEngine {
                     // Using shaders when possible to rescale because canvas.drawImage is lossy
                     const source = new InternalTexture(this, InternalTextureSource.Temp);
                     this._bindTextureDirectly(gl.TEXTURE_2D, source, true);
-                    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, texelFormat, gl.UNSIGNED_BYTE, img as any);
+                    gl.texImage2D(gl.TEXTURE_2D, 0, tip.internalFormat, tip.format, tip.type, img as any);
 
-                    this._rescaleTexture(source, texture, scene, internalFormat, () => {
+                    this._rescaleTexture(source, texture, scene, tip.format, () => {
                         this._releaseTexture(source);
                         this._bindTextureDirectly(gl.TEXTURE_2D, texture, true);
 
@@ -4439,6 +4439,43 @@ export class ThinEngine {
             loaderOptions,
             useSRGBBuffer
         );
+    }
+
+    /**
+     * Calls to the GL texImage2D and texImage3D functions require three arguments describing the pixel format of the texture.
+     * createTexture derives these from the babylonFormat and useSRGBBuffer arguments and also the file extension of the URL it's working with.
+     * This function encapsulates that derivation for easy unit testing.
+     * @param babylonFormat Babylon's format enum, as specified in ITextureCreationOptions.
+     * @param fileExtension The file extension including the dot, e.g. .jpg.
+     * @param useSRGBBuffer Use SRGB not linear.
+     * @returns The options to pass to texImage2D or texImage3D calls.
+     * @internal
+     */
+    public _getTexImageParametersForCreateTexture(babylonFormat: Nullable<number>, fileExtension: string, useSRGBBuffer: boolean): TexImageParameters {
+        if (babylonFormat === undefined || babylonFormat === null) {
+            babylonFormat = fileExtension === ".jpg" && !useSRGBBuffer ? Constants.TEXTUREFORMAT_RGB : Constants.TEXTUREFORMAT_RGBA;
+        }
+
+        let format: number, internalFormat: number;
+        if (this.webGLVersion === 1) {
+            // In WebGL 1, format and internalFormat must be the same and taken from a limited set of values, see https://docs.gl/es2/glTexImage2D.
+            // The SRGB extension (https://developer.mozilla.org/en-US/docs/Web/API/EXT_sRGB) adds some extra values, hence passing useSRGBBuffer
+            // to getInternalFormat.
+            format = this._getInternalFormat(babylonFormat, useSRGBBuffer);
+            internalFormat = format;
+        } else {
+            // In WebGL 2, format has a wider range of values and internal format can be one of the sized formats, see
+            // https://registry.khronos.org/OpenGL-Refpages/es3.0/html/glTexImage2D.xhtml.
+            // SRGB is included in the sized format and should not be passed in "format", hence always passing useSRGBBuffer as false.
+            format = this._getInternalFormat(babylonFormat, false);
+            internalFormat = this._getRGBABufferInternalSizedFormat(Constants.TEXTURETYPE_UNSIGNED_BYTE, babylonFormat, useSRGBBuffer);
+        }
+
+        return {
+            internalFormat,
+            format,
+            type: this._gl.UNSIGNED_BYTE,
+        };
     }
 
     /**
@@ -5516,6 +5553,10 @@ export class ThinEngine {
 
         this.onDisposeObservable.notifyObservers(this);
         this.onDisposeObservable.clear();
+
+        if (this._creationOptions.loseContextOnDispose) {
+            this._gl.getExtension("WEBGL_lose_context")?.loseContext();
+        }
     }
 
     /**
@@ -5896,30 +5937,6 @@ export class ThinEngine {
     /**
      * @internal
      */
-    public _getRGBAMultiSampleBufferFormat(type: number, format = Constants.TEXTUREFORMAT_RGBA): number {
-        switch (type) {
-            case Constants.TEXTURETYPE_FLOAT:
-                switch (format) {
-                    case Constants.TEXTUREFORMAT_R:
-                        return this._gl.R32F;
-                    default:
-                        return this._gl.RGBA32F;
-                }
-            case Constants.TEXTURETYPE_HALF_FLOAT:
-                switch (format) {
-                    case Constants.TEXTUREFORMAT_R:
-                        return this._gl.R16F;
-                    default:
-                        return this._gl.RGBA16F;
-                }
-        }
-
-        return this._gl.RGBA8;
-    }
-
-    /**
-     * @internal
-     */
     public _loadFile(
         url: string,
         onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
@@ -6148,4 +6165,10 @@ export class ThinEngine {
 
         return IsDocumentAvailable() ? document : null;
     }
+}
+
+interface TexImageParameters {
+    internalFormat: number;
+    format: number;
+    type: number;
 }

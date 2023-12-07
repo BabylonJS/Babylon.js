@@ -37,7 +37,11 @@ export class VertexOutputBlock extends NodeMaterialBlock {
         return this._inputs[0];
     }
 
-    private _isLogarithmicDepthEnabled(nodeList: Immutable<NodeMaterialBlock[]>): boolean {
+    private _isLogarithmicDepthEnabled(nodeList: Immutable<NodeMaterialBlock[]>, useLogarithmicDepth: boolean): boolean {
+        if (useLogarithmicDepth) {
+            return true;
+        }
+
         for (const node of nodeList) {
             if ((node as FragmentOutputBlock).useLogarithmicDepth) {
                 return true;
@@ -53,7 +57,7 @@ export class VertexOutputBlock extends NodeMaterialBlock {
 
         state.compilationString += `gl_Position = ${input.associatedVariableName};\n`;
 
-        if (this._isLogarithmicDepthEnabled(state.sharedData.fragmentOutputNodes)) {
+        if (this._isLogarithmicDepthEnabled(state.sharedData.fragmentOutputNodes, state.sharedData.nodeMaterial.useLogarithmicDepth)) {
             state._emitUniformFromString("logarithmicDepthConstant", "float");
             state._emitVaryingFromString("vFragmentDepth", "float");
 

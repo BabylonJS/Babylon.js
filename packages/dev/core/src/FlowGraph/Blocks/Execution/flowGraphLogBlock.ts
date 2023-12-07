@@ -2,6 +2,8 @@ import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
 import { RichTypeAny } from "../../flowGraphRichTypes";
+import { RegisterClass } from "../../../Misc/typeStore";
+import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 
 /**
  * @experimental
@@ -13,9 +15,9 @@ export class FlowGraphLogBlock extends FlowGraphWithOnDoneExecutionBlock {
      */
     public readonly message: FlowGraphDataConnection<any>;
 
-    public constructor() {
-        super();
-        this.message = this._registerDataInput("message", RichTypeAny);
+    public constructor(config?: IFlowGraphBlockConfiguration) {
+        super(config);
+        this.message = this.registerDataInput("message", RichTypeAny);
     }
 
     /**
@@ -27,4 +29,9 @@ export class FlowGraphLogBlock extends FlowGraphWithOnDoneExecutionBlock {
         // activate the output flow block
         this.onDone._activateSignal(context);
     }
+
+    public getClassName(): string {
+        return "FGLogBlock";
+    }
 }
+RegisterClass("FGLogBlock", FlowGraphLogBlock);

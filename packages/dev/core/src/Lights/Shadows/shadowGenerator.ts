@@ -954,7 +954,12 @@ export class ShadowGenerator implements IShadowGenerator {
         }
 
         // Custom render function.
-        this._shadowMap.customRenderFunction = this._renderForShadowMap.bind(this);
+        this._shadowMap.customRenderFunction = (
+            opaqueSubMeshes: SmartArray<SubMesh>,
+            alphaTestSubMeshes: SmartArray<SubMesh>,
+            transparentSubMeshes: SmartArray<SubMesh>,
+            depthOnlySubMeshes: SmartArray<SubMesh>
+        ) => this._renderForShadowMap(opaqueSubMeshes, alphaTestSubMeshes, transparentSubMeshes, depthOnlySubMeshes);
 
         // Force the mesh is ready function to true as we are double checking it
         // in the custom render function. Also it prevents side effects and useless
@@ -1356,7 +1361,7 @@ export class ShadowGenerator implements IShadowGenerator {
             return;
         }
 
-        const subMeshes = new Array<SubMesh>();
+        const subMeshes: SubMesh[] = [];
         for (const mesh of renderList) {
             subMeshes.push(...mesh.subMeshes);
         }
@@ -1773,6 +1778,20 @@ export class ShadowGenerator implements IShadowGenerator {
             this.getLight().getDepthMinZ(camera) + this.getLight().getDepthMaxZ(camera),
             lightIndex
         );
+    }
+
+    /**
+     * Gets the view matrix used to render the shadow map.
+     */
+    public get viewMatrix() {
+        return this._viewMatrix;
+    }
+
+    /**
+     * Gets the projection matrix used to render the shadow map.
+     */
+    public get projectionMatrix() {
+        return this._projectionMatrix;
     }
 
     /**

@@ -2,8 +2,7 @@ import type { IEasingFunction, EasingFunction } from "./easing";
 import { Vector3, Quaternion, Vector2, Matrix, TmpVectors } from "../Maths/math.vector";
 import { Color3, Color4 } from "../Maths/math.color";
 import { Scalar } from "../Maths/math.scalar";
-
-import type { Nullable } from "../types";
+import type { DeepImmutable, Nullable } from "../types";
 import type { Scene } from "../scene";
 import { SerializationHelper } from "../Misc/decorators";
 import { RegisterClass } from "../Misc/typeStore";
@@ -17,9 +16,28 @@ import { Size } from "../Maths/math.size";
 import { BezierCurve } from "../Maths/math.path";
 import { WebRequest } from "../Misc/webRequest";
 import { Constants } from "../Engines/constants";
-
 import type { Animatable } from "./animatable";
 import type { RuntimeAnimation } from "./runtimeAnimation";
+
+// Static values to help the garbage collector
+
+// Quaternion
+export const _staticOffsetValueQuaternion: DeepImmutable<Quaternion> = Object.freeze(new Quaternion(0, 0, 0, 0));
+
+// Vector3
+export const _staticOffsetValueVector3: DeepImmutable<Vector3> = Object.freeze(Vector3.Zero());
+
+// Vector2
+export const _staticOffsetValueVector2: DeepImmutable<Vector2> = Object.freeze(Vector2.Zero());
+
+// Size
+export const _staticOffsetValueSize: DeepImmutable<Size> = Object.freeze(Size.Zero());
+
+// Color3
+export const _staticOffsetValueColor3: DeepImmutable<Color3> = Object.freeze(Color3.Black());
+
+// Color4
+export const _staticOffsetValueColor4: DeepImmutable<Color4> = Object.freeze(new Color4(0, 0, 0, 0));
 
 /**
  * Options to be used when creating an additive animation
@@ -61,7 +79,7 @@ export interface IMakeAnimationAdditiveOptions {
  * @internal
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export class _IAnimationState {
+export interface _IAnimationState {
     key: number;
     repeatCount: number;
     workValue?: any;
@@ -1102,7 +1120,7 @@ export class Animation {
         let gradient = (currentFrame - startKey.frame) / frameDelta;
 
         // check for easingFunction and correction of gradient
-        const easingFunction = this.getEasingFunction();
+        const easingFunction = startKey.easingFunction || this.getEasingFunction();
         if (easingFunction !== null) {
             gradient = easingFunction.ease(gradient);
         }
@@ -1191,7 +1209,8 @@ export class Animation {
                         }
                         return startValue;
                     }
-                    case Animation.ANIMATIONLOOPMODE_RELATIVE: {
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE:
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE_FROM_CURRENT: {
                         return startValue;
                     }
                 }
@@ -1211,7 +1230,8 @@ export class Animation {
                     case Animation.ANIMATIONLOOPMODE_YOYO:
                         return interpolatedValue;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                        return state.offsetValue * state.repeatCount + interpolatedValue;
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE_FROM_CURRENT:
+                        return (state.offsetValue ?? 0) * state.repeatCount + interpolatedValue;
                 }
                 break;
             }
@@ -1223,7 +1243,8 @@ export class Animation {
                     case Animation.ANIMATIONLOOPMODE_YOYO:
                         return interpolatedValue;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                        return interpolatedValue.addInPlace(state.offsetValue.scale(state.repeatCount));
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE_FROM_CURRENT:
+                        return interpolatedValue.addInPlace((state.offsetValue || _staticOffsetValueQuaternion).scale(state.repeatCount));
                 }
 
                 return interpolatedValue;
@@ -1236,7 +1257,8 @@ export class Animation {
                     case Animation.ANIMATIONLOOPMODE_YOYO:
                         return interpolatedValue;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                        return interpolatedValue.add(state.offsetValue.scale(state.repeatCount));
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE_FROM_CURRENT:
+                        return interpolatedValue.add((state.offsetValue || _staticOffsetValueVector3).scale(state.repeatCount));
                 }
                 break;
             }
@@ -1248,7 +1270,8 @@ export class Animation {
                     case Animation.ANIMATIONLOOPMODE_YOYO:
                         return interpolatedValue;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                        return interpolatedValue.add(state.offsetValue.scale(state.repeatCount));
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE_FROM_CURRENT:
+                        return interpolatedValue.add((state.offsetValue || _staticOffsetValueVector2).scale(state.repeatCount));
                 }
                 break;
             }
@@ -1260,7 +1283,8 @@ export class Animation {
                     case Animation.ANIMATIONLOOPMODE_YOYO:
                         return interpolatedValue;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                        return interpolatedValue.add(state.offsetValue.scale(state.repeatCount));
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE_FROM_CURRENT:
+                        return interpolatedValue.add((state.offsetValue || _staticOffsetValueSize).scale(state.repeatCount));
                 }
                 break;
             }
@@ -1272,7 +1296,8 @@ export class Animation {
                     case Animation.ANIMATIONLOOPMODE_YOYO:
                         return interpolatedValue;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                        return interpolatedValue.add(state.offsetValue.scale(state.repeatCount));
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE_FROM_CURRENT:
+                        return interpolatedValue.add((state.offsetValue || _staticOffsetValueColor3).scale(state.repeatCount));
                 }
                 break;
             }
@@ -1284,7 +1309,8 @@ export class Animation {
                     case Animation.ANIMATIONLOOPMODE_YOYO:
                         return interpolatedValue;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
-                        return interpolatedValue.add(state.offsetValue.scale(state.repeatCount));
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE_FROM_CURRENT:
+                        return interpolatedValue.add((state.offsetValue || _staticOffsetValueColor4).scale(state.repeatCount));
                 }
                 break;
             }
@@ -1522,6 +1548,10 @@ export class Animation {
      * Yoyo Loop Mode
      */
     public static readonly ANIMATIONLOOPMODE_YOYO = 4;
+    /**
+     * Relative Loop Mode (add to current value of animated object, unlike ANIMATIONLOOPMODE_RELATIVE)
+     */
+    public static readonly ANIMATIONLOOPMODE_RELATIVE_FROM_CURRENT = 5;
 
     /**
      * @internal
@@ -1701,7 +1731,7 @@ export class Animation {
                         }
 
                         if (serializationObject.length) {
-                            const output = new Array<Animation>();
+                            const output: Animation[] = [];
                             for (const serializedAnimation of serializationObject) {
                                 output.push(this.Parse(serializedAnimation));
                             }
@@ -1742,7 +1772,7 @@ export class Animation {
 
                         if (snippet.animations) {
                             const serializationObject = JSON.parse(snippet.animations);
-                            const outputs = new Array<Animation>();
+                            const outputs: Animation[] = [];
                             for (const serializedAnimation of serializationObject.animations) {
                                 const output = this.Parse(serializedAnimation);
                                 output.snippetId = snippetId;

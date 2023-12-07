@@ -18,7 +18,7 @@ export class PathCursor {
     /**
      * The animation array of the path cursor
      */
-    animations = new Array<Animation>();
+    animations = [] as Animation[];
 
     /**
      * Initializes the path cursor

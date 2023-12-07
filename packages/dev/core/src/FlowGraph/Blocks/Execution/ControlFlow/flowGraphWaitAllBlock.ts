@@ -1,14 +1,15 @@
 import type { FlowGraphContext } from "../../../flowGraphContext";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneExecutionBlock";
-
+import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import { RegisterClass } from "../../../../Misc/typeStore";
 /**
  * @experimental
  * Configuration for the wait all block.
  */
-export interface IFlowGraphWaitAllBlockConfiguration {
+export interface IFlowGraphWaitAllBlockConfiguration extends IFlowGraphBlockConfiguration {
     /**
-     * The number of input flows.
+     * The number of input flows. There will always be at least one input flow.
      */
     numberInputFlows: number;
 }
@@ -28,13 +29,15 @@ export class FlowGraphWaitAllBlock extends FlowGraphWithOnDoneExecutionBlock {
     public readonly inFlows: FlowGraphSignalConnection[] = [];
     private _cachedActivationState: boolean[] = [];
 
-    constructor(private _config: IFlowGraphWaitAllBlockConfiguration) {
-        super();
+    constructor(public config: IFlowGraphWaitAllBlockConfiguration) {
+        super(config);
 
         this.reset = this._registerSignalInput("reset");
+    }
 
+    configure(): void {
         // The first inFlow is the default input signal all execution blocks have
-        for (let i = 1; i < this._config.numberInputFlows; i++) {
+        for (let i = 1; i < this.config.numberInputFlows; i++) {
             this.inFlows.push(this._registerSignalInput(`in${i}`));
         }
     }
@@ -43,7 +46,7 @@ export class FlowGraphWaitAllBlock extends FlowGraphWithOnDoneExecutionBlock {
         const activationState = this._cachedActivationState;
         activationState.length = 0;
         if (!context._hasExecutionVariable(this, "activationState")) {
-            for (let i = 0; i < this._config.numberInputFlows; i++) {
+            for (let i = 0; i < this.config.numberInputFlows; i++) {
                 activationState.push(false);
             }
         } else {
@@ -58,7 +61,7 @@ export class FlowGraphWaitAllBlock extends FlowGraphWithOnDoneExecutionBlock {
     public _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {
         const activationState = this._getCurrentActivationState(context);
         if (callingSignal === this.reset) {
-            for (let i = 0; i < this._config.numberInputFlows; i++) {
+            for (let i = 0; i < this.config.numberInputFlows; i++) {
                 activationState[i] = false;
             }
         } else if (callingSignal === this.onStart) {
@@ -74,9 +77,19 @@ export class FlowGraphWaitAllBlock extends FlowGraphWithOnDoneExecutionBlock {
 
         if (activationState.every((value: boolean) => value)) {
             this.onDone._activateSignal(context);
-            for (let i = 0; i < this._config.numberInputFlows; i++) {
+            for (let i = 0; i < this.config.numberInputFlows; i++) {
                 activationState[i] = false;
             }
         }
     }
+
+    public getClassName(): string {
+        return "FGWaitAllBlock";
+    }
+
+    public serialize(serializationObject?: any): void {
+        super.serialize(serializationObject);
+        serializationObject.config.numberInputFlows = this.config.numberInputFlows;
+    }
 }
+RegisterClass("FGWaitAllBlock", FlowGraphWaitAllBlock);

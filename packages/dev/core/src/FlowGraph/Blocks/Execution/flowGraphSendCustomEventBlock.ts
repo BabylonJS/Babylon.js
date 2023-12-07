@@ -2,6 +2,8 @@ import { RichTypeAny, RichTypeString } from "core/FlowGraph/flowGraphRichTypes";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
 import type { FlowGraphContext } from "../../flowGraphContext";
+import { RegisterClass } from "../../../Misc/typeStore";
+import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 
 /**
  * @experimental
@@ -16,19 +18,24 @@ export class FlowGraphSendCustomEventBlock extends FlowGraphWithOnDoneExecutionB
      */
     public readonly eventData: FlowGraphDataConnection<any>;
 
-    public constructor() {
-        super();
+    public constructor(config?: IFlowGraphBlockConfiguration) {
+        super(config);
 
-        this.eventId = this._registerDataInput("eventId", RichTypeString);
-        this.eventData = this._registerDataInput("eventData", RichTypeAny);
+        this.eventId = this.registerDataInput("eventId", RichTypeString);
+        this.eventData = this.registerDataInput("eventData", RichTypeAny);
     }
 
     public _execute(context: FlowGraphContext): void {
         const eventId = this.eventId.getValue(context);
         const eventData = this.eventData.getValue(context);
 
-        context.graphVariables.eventCoordinator.notifyCustomEvent(eventId, eventData);
+        context.configuration.coordinator.notifyCustomEvent(eventId, eventData);
 
         this.onDone._activateSignal(context);
     }
+
+    public getClassName(): string {
+        return "FGSendCustomEventBlock";
+    }
 }
+RegisterClass("FGSendCustomEventBlock", FlowGraphSendCustomEventBlock);

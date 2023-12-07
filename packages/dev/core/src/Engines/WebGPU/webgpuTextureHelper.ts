@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable babylonjs/available */
+/* eslint-disable jsdoc/require-jsdoc */
 // License for the mipmap generation code:
 //
 // Copyright 2020 Brandon Jones
@@ -288,9 +290,10 @@ export const renderableTextureFormatToIndex: { [name: string]: number } = {
     stencil8: 33,
     depth16unorm: 34,
     depth24plus: 35,
-    depth32float: 36,
+    "depth24plus-stencil8": 36,
+    depth32float: 37,
 
-    "depth32float-stencil8": 37,
+    "depth32float-stencil8": 38,
 };
 
 /** @internal */
@@ -330,7 +333,11 @@ export class WebGPUTextureHelper {
 
         this._mipmapSampler = device.createSampler({ minFilter: WebGPUConstants.FilterMode.Linear });
         this._videoSampler = device.createSampler({ minFilter: WebGPUConstants.FilterMode.Linear });
-        this._ubCopyWithOfst = this._bufferManager.createBuffer(4 * 4, WebGPUConstants.BufferUsage.Uniform | WebGPUConstants.BufferUsage.CopyDst).underlyingResource;
+        this._ubCopyWithOfst = this._bufferManager.createBuffer(
+            4 * 4,
+            WebGPUConstants.BufferUsage.Uniform | WebGPUConstants.BufferUsage.CopyDst,
+            "UBCopyWithOffset"
+        ).underlyingResource;
 
         this._getPipeline(WebGPUConstants.TextureFormat.RGBA8Unorm);
         this._getVideoPipeline(WebGPUConstants.TextureFormat.RGBA8Unorm);
@@ -341,12 +348,12 @@ export class WebGPUTextureHelper {
             type === PipelineType.MipMap
                 ? 1 << 0
                 : type === PipelineType.InvertYPremultiplyAlpha
-                ? ((params!.invertY ? 1 : 0) << 1) + ((params!.premultiplyAlpha ? 1 : 0) << 2)
-                : type === PipelineType.Clear
-                ? 1 << 3
-                : type === PipelineType.InvertYPremultiplyAlphaWithOfst
-                ? ((params!.invertY ? 1 : 0) << 4) + ((params!.premultiplyAlpha ? 1 : 0) << 5)
-                : 0;
+                  ? ((params!.invertY ? 1 : 0) << 1) + ((params!.premultiplyAlpha ? 1 : 0) << 2)
+                  : type === PipelineType.Clear
+                    ? 1 << 3
+                    : type === PipelineType.InvertYPremultiplyAlphaWithOfst
+                      ? ((params!.invertY ? 1 : 0) << 4) + ((params!.premultiplyAlpha ? 1 : 0) << 5)
+                      : 0;
 
         if (!this._pipelines[format]) {
             this._pipelines[format] = [];
@@ -458,7 +465,7 @@ export class WebGPUTextureHelper {
         return pipelineAndBGL;
     }
 
-    private static _GetTextureTypeFromFormat(format: GPUTextureFormat): number {
+    public static GetTextureTypeFromFormat(format: GPUTextureFormat): number {
         switch (format) {
             // One Component = 8 bits
             case WebGPUConstants.TextureFormat.R8Unorm:
@@ -480,7 +487,6 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.RGB10A2Unorm: // composite format - let's say it's byte...
             case WebGPUConstants.TextureFormat.RGB9E5UFloat: // composite format - let's say it's byte...
             case WebGPUConstants.TextureFormat.RG11B10UFloat: // composite format - let's say it's byte...
-            case WebGPUConstants.TextureFormat.Depth32FloatStencil8: // composite format - let's say it's byte...
             case WebGPUConstants.TextureFormat.BC7RGBAUnorm:
             case WebGPUConstants.TextureFormat.BC7RGBAUnormSRGB:
             case WebGPUConstants.TextureFormat.BC6HRGBUFloat:
@@ -533,6 +539,7 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.ASTC12x10UnormSRGB:
             case WebGPUConstants.TextureFormat.ASTC12x12Unorm:
             case WebGPUConstants.TextureFormat.ASTC12x12UnormSRGB:
+            case WebGPUConstants.TextureFormat.Stencil8:
                 return Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
             // One component = 16 bits
@@ -563,14 +570,10 @@ export class WebGPUTextureHelper {
             case WebGPUConstants.TextureFormat.RG32Float:
             case WebGPUConstants.TextureFormat.RGBA32Float:
             case WebGPUConstants.TextureFormat.Depth32Float:
-                return Constants.TEXTURETYPE_FLOAT;
-
-            case WebGPUConstants.TextureFormat.Stencil8:
-                throw "No fixed size for Stencil8 format!";
+            case WebGPUConstants.TextureFormat.Depth32FloatStencil8:
             case WebGPUConstants.TextureFormat.Depth24Plus:
-                throw "No fixed size for Depth24Plus format!";
             case WebGPUConstants.TextureFormat.Depth24PlusStencil8:
-                throw "No fixed size for Depth24PlusStencil8 format!";
+                return Constants.TEXTURETYPE_FLOAT;
         }
 
         return Constants.TEXTURETYPE_UNSIGNED_BYTE;
@@ -1158,6 +1161,11 @@ export class WebGPUTextureHelper {
         return format;
     }
 
+    public static GetSample(sampleCount: number) {
+        // WebGPU only supports 1 or 4
+        return sampleCount > 1 ? 4 : 1;
+    }
+
     public copyVideoToTexture(video: ExternalTexture, texture: InternalTexture, format: GPUTextureFormat, invertY = false, commandEncoder?: GPUCommandEncoder): void {
         const useOwnCommandEncoder = commandEncoder === undefined;
         const [pipeline, bindGroupLayout] = this._getVideoPipeline(format, invertY ? VideoPipelineType.InvertY : VideoPipelineType.DontInvertY);
@@ -1436,10 +1444,7 @@ export class WebGPUTextureHelper {
         additionalUsages = 0,
         label?: string
     ): GPUTexture {
-        if (sampleCount > 1) {
-            // WebGPU only supports 1 or 4
-            sampleCount = 4;
-        }
+        sampleCount = WebGPUTextureHelper.GetSample(sampleCount);
 
         const layerCount = (imageBitmap as any).layers || 1;
         const textureSize = {
@@ -1496,10 +1501,7 @@ export class WebGPUTextureHelper {
         additionalUsages = 0,
         label?: string
     ): GPUTexture {
-        if (sampleCount > 1) {
-            // WebGPU only supports 1 or 4
-            sampleCount = 4;
-        }
+        sampleCount = WebGPUTextureHelper.GetSample(sampleCount);
 
         const width = WebGPUTextureHelper.IsImageBitmapArray(imageBitmaps) ? imageBitmaps[0].width : imageBitmaps.width;
         const height = WebGPUTextureHelper.IsImageBitmapArray(imageBitmaps) ? imageBitmaps[0].height : imageBitmaps.height;
@@ -1682,8 +1684,8 @@ export class WebGPUTextureHelper {
             texture._source === InternalTextureSource.RenderTarget || texture.source === InternalTextureSource.MultiRenderTarget
                 ? WebGPUConstants.TextureUsage.TextureBinding | WebGPUConstants.TextureUsage.CopySrc | WebGPUConstants.TextureUsage.RenderAttachment
                 : texture._source === InternalTextureSource.DepthStencil
-                ? WebGPUConstants.TextureUsage.TextureBinding | WebGPUConstants.TextureUsage.RenderAttachment
-                : -1;
+                  ? WebGPUConstants.TextureUsage.TextureBinding | WebGPUConstants.TextureUsage.RenderAttachment
+                  : -1;
 
         gpuTextureWrapper.textureAdditionalUsages = isStorageTexture ? WebGPUConstants.TextureUsage.StorageBinding : 0;
 
@@ -1747,8 +1749,8 @@ export class WebGPUTextureHelper {
                     dimension: texture.is2DArray
                         ? WebGPUConstants.TextureViewDimension.E2dArray
                         : texture.is3D
-                        ? WebGPUConstants.TextureDimension.E3d
-                        : WebGPUConstants.TextureViewDimension.E2d,
+                          ? WebGPUConstants.TextureDimension.E3d
+                          : WebGPUConstants.TextureViewDimension.E2d,
                     mipLevelCount: mipmapCount,
                     baseArrayLayer: 0,
                     baseMipLevel: 0,
@@ -1869,7 +1871,12 @@ export class WebGPUTextureHelper {
             if (aligned) {
                 const commandEncoder = this._device.createCommandEncoder({});
 
-                const buffer = this._bufferManager.createRawBuffer(imageBitmap.byteLength, WebGPUConstants.BufferUsage.MapWrite | WebGPUConstants.BufferUsage.CopySrc, true);
+                const buffer = this._bufferManager.createRawBuffer(
+                    imageBitmap.byteLength,
+                    WebGPUConstants.BufferUsage.MapWrite | WebGPUConstants.BufferUsage.CopySrc,
+                    true,
+                    "TempBufferForUpdateTexture" + (gpuTexture ? "_" + gpuTexture.label : "")
+                );
 
                 const arrayBuffer = buffer.getMappedRange();
 
@@ -2035,7 +2042,12 @@ export class WebGPUTextureHelper {
 
         const size = bytesPerRowAligned * height;
 
-        const gpuBuffer = this._bufferManager.createRawBuffer(size, WebGPUConstants.BufferUsage.MapRead | WebGPUConstants.BufferUsage.CopyDst);
+        const gpuBuffer = this._bufferManager.createRawBuffer(
+            size,
+            WebGPUConstants.BufferUsage.MapRead | WebGPUConstants.BufferUsage.CopyDst,
+            undefined,
+            "TempBufferForReadPixels" + (texture.label ? "_" + texture.label : "")
+        );
 
         const commandEncoder = this._device.createCommandEncoder({});
 
@@ -2070,7 +2082,7 @@ export class WebGPUTextureHelper {
             height,
             bytesPerRow,
             bytesPerRowAligned,
-            WebGPUTextureHelper._GetTextureTypeFromFormat(format),
+            WebGPUTextureHelper.GetTextureTypeFromFormat(format),
             0,
             buffer,
             true,

@@ -3,7 +3,8 @@ import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import { RichTypeNumber } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneExecutionBlock";
-
+import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import { RegisterClass } from "../../../../Misc/typeStore";
 /**
  * @experimental
  * A block that throttles the execution of its output flow.
@@ -22,11 +23,11 @@ export class FlowGraphThrottleBlock extends FlowGraphWithOnDoneExecutionBlock {
      */
     public readonly timeRemaining: FlowGraphDataConnection<number>;
 
-    constructor() {
-        super();
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(config);
         this.reset = this._registerSignalInput("reset");
-        this.duration = this._registerDataInput("duration", RichTypeNumber);
-        this.timeRemaining = this._registerDataOutput("timeRemaining", RichTypeNumber);
+        this.duration = this.registerDataInput("duration", RichTypeNumber);
+        this.timeRemaining = this.registerDataOutput("timeRemaining", RichTypeNumber);
     }
     public _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {
         const lastExecutedTime = context._getExecutionVariable(this, "lastExecutedTime");
@@ -43,4 +44,8 @@ export class FlowGraphThrottleBlock extends FlowGraphWithOnDoneExecutionBlock {
             this.timeRemaining.setValue(remaining, context);
         }
     }
+    public getClassName(): string {
+        return "FGThrottleBlock";
+    }
 }
+RegisterClass("FGThrottleBlock", FlowGraphThrottleBlock);

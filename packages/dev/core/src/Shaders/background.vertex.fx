@@ -51,6 +51,7 @@ varying vec3 vPositionUVW;
 varying vec3 vDirectionW;
 #endif
 
+#include<logDepthDeclaration>
 
 #define CUSTOM_VERTEX_DEFINITIONS
 
@@ -149,6 +150,8 @@ void main(void) {
 #if defined(POINTSIZE) && !defined(WEBGPU)
     gl_PointSize = pointSize;
 #endif
+
+	#include<logDepthVertex>
 
 #define CUSTOM_VERTEX_MAIN_END
 }

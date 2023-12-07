@@ -282,7 +282,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
 
         // Tell the engine's render loop to be driven by the xr session's refresh rate and provide xr pose information
         this._engine.customAnimationFrameRequester = {
-            requestAnimationFrame: this.session.requestAnimationFrame.bind(this.session),
+            requestAnimationFrame: (callback: FrameRequestCallback) => this.session.requestAnimationFrame(callback),
             renderFunction: (timestamp: number, xrFrame: Nullable<XRFrame>) => {
                 if (!this.inXRSession || !this._engine) {
                     return;

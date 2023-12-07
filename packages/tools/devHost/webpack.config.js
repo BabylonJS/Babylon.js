@@ -4,19 +4,19 @@ const webpackTools = require("@dev/build-tools").webpackTools;
 
 module.exports = (env) => {
     const source = env.source || process.env.SOURCE || "dev";
-    const production = env.mode === "production" || process.env.NODE_ENV === "production";
     const commonConfig = {
-        mode: env.mode === "production" ? "production" : "development",
-        devtool: production ? "source-map" : "eval-cheap-module-source-map",
         entry: "./src/index.ts",
-        output: {
-            path: path.resolve(__dirname, "dist"),
-            filename: "main.js",
-            // library: { type: "module" },
-            // environment: { module: true },
-            // module: true,
-            devtoolModuleFilenameTemplate: production ? "webpack://[namespace]/[resource-path]?[loaders]" : "file:///[absolute-resource-path]",
-        },
+        ...webpackTools.commonDevWebpackConfiguration(
+            {
+                ...env,
+                outputFilename: "main.js",
+                dirName: __dirname,
+            },
+            {
+                static: ["public"],
+                port: process.env.TOOLS_PORT || 1338,
+            }
+        ),
         resolve: {
             extensions: [".ts", ".js"],
             alias: {
@@ -36,37 +36,8 @@ module.exports = (env) => {
         experiments: {
             outputModule: true,
         },
-        // externalsType: "module",
-        // externals: [
-        //     function ({ context, request }, callback) {
-        //         if (/^core\//.test(request)) {
-        //             // Externalize to a commonjs module using the request path
-        //             const changed = request.replace(/^core\//, "core/dist/");
-        //             return callback(null, "../../dev/" + changed + ".js");
-        //         }
-
-        //         // Continue without externalizing the import
-        //         callback();
-        //     },
-        // ],
         module: {
             rules: webpackTools.getRules(),
-        },
-        devServer: {
-            client: {
-                overlay: process.env.DISABLE_DEV_OVERLAY ? false : {
-                    warnings: false,
-                    errors: true,
-                },
-            },
-            static: ["public"],
-            port: process.env.TOOLS_PORT || 1338,
-            server: env.enableHttps !== undefined || process.env.ENABLE_HTTPS === "true" ? "https" : "http",
-            hot: (env.enableHotReload !== undefined || process.env.ENABLE_HOT_RELOAD === "true") && !production ? true : false,
-            liveReload: (env.enableLiveReload !== undefined || process.env.ENABLE_LIVE_RELOAD === "true") && !production ? true : false,
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-            },
         },
         plugins: [
             new HtmlWebpackPlugin({

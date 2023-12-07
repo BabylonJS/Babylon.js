@@ -14,7 +14,7 @@ The first golden rule is a really important one because we want our users to tru
 
 ### Performance
 
-Babylon.js is a 3D rendering engine. So every piece of code has to be scrutinized to look for potential bottlenecks or slow downs. Ultimately the goal is to render more with less resources.
+Babylon.js is a 3D rendering engine. So every piece of code has to be scrutinized to look for potential bottlenecks or slowdowns. Ultimately the goal is to render more with less resources.
 
 ### Simplicity
 
@@ -58,7 +58,7 @@ If you intend to only update the doc, this [documentation](https://doc.babylonjs
 
 To validate your PR, please follow these steps:
 
-- Run "npm run build:dev" locally and make sure that no error is generated
+- Run `npm run build:dev` locally and make sure that no error is generated
 - Make sure that all public functions and classes are commented using JSDoc/TSDoc syntax
 - Run `npm run test:unit` for unit tests, and check the buildSystem.md file for information regarding the visualization tests.
 
@@ -71,4 +71,4 @@ In order to not bloat the core engine with unwanted or unnecessary features (tha
 - Is there a general use case for this feature?
 - Does this feature already exist in a similar framework?
 
-If your PR is does not fall into the core category you can consider using our [Extensions repo](https://github.com/BabylonJS/Extensions) for more high level features.
+If your PR does not fall into the core category you can consider using our [Extensions repo](https://github.com/BabylonJS/Extensions) for more high level features.

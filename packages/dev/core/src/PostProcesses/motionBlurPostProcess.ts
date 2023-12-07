@@ -156,7 +156,7 @@ export class MotionBlurPostProcess extends PostProcess {
             scene.enableGeometryBufferRenderer();
 
             if (this._geometryBufferRenderer) {
-                this._geometryBufferRenderer.enableVelocity = true;
+                this._geometryBufferRenderer.enableVelocity = this._isObjectBased;
             }
         } else {
             scene.enablePrePassRenderer();
@@ -235,6 +235,10 @@ export class MotionBlurPostProcess extends PostProcess {
             // We can't get a velocity or depth texture. So, work as a passthrough.
             Logger.Warn("Multiple Render Target support needed to compute object based motion blur");
             return this.updateEffect();
+        }
+
+        if (this._geometryBufferRenderer) {
+            this._geometryBufferRenderer.enableVelocity = this._isObjectBased;
         }
 
         this._updateEffect();

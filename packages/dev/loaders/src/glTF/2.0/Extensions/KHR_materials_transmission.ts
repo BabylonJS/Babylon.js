@@ -239,9 +239,19 @@ class TransmissionHelper {
     }
 
     /**
+     * @internal
+     * Check if the opaque render target has not been disposed and can still be used.
+     * @returns
+     */
+    public _isRenderTargetValid() {
+        return this._opaqueRenderTarget?.getInternalTexture() !== null;
+    }
+
+    /**
+     * @internal
      * Setup the render targets according to the specified options.
      */
-    private _setupRenderTargets(): void {
+    public _setupRenderTargets(): void {
         if (this._opaqueRenderTarget) {
             this._opaqueRenderTarget.dispose();
         }
@@ -260,6 +270,8 @@ class TransmissionHelper {
         this._opaqueRenderTarget.lodGenerationScale = this._options.lodGenerationScale;
         this._opaqueRenderTarget.lodGenerationOffset = this._options.lodGenerationOffset;
         this._opaqueRenderTarget.samples = this._options.samples;
+        this._opaqueRenderTarget.renderSprites = true;
+        this._opaqueRenderTarget.renderParticles = true;
 
         let sceneImageProcessingapplyByPostProcess: boolean;
 
@@ -375,6 +387,9 @@ export class KHR_materials_transmission implements IGLTFLoaderExtension {
             const scene = pbrMaterial.getScene() as unknown as ITransmissionHelperHolder;
             if (pbrMaterial.subSurface.refractionIntensity && !scene._transmissionHelper) {
                 new TransmissionHelper({}, pbrMaterial.getScene());
+            } else if (pbrMaterial.subSurface.refractionIntensity && !scene._transmissionHelper?._isRenderTargetValid()) {
+                // If the render target is not valid, recreate it.
+                scene._transmissionHelper?._setupRenderTargets();
             }
         } else {
             pbrMaterial.subSurface.refractionIntensity = 0.0;

@@ -93,6 +93,11 @@ export class SetNormalsBlock extends NodeGeometryBlock implements INodeGeometryE
             state.pushExecutionContext(this);
 
             this._vertexData = this.geometry.getConnectedValue(state);
+
+            if (this._vertexData) {
+                this._vertexData = this._vertexData.clone(); // Preserve source data
+            }
+
             state.pushGeometryContext(this._vertexData);
 
             if (!this._vertexData || !this._vertexData.positions) {

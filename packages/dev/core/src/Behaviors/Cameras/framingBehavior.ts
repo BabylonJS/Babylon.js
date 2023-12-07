@@ -10,7 +10,7 @@ import { PointerEventTypes } from "../../Events/pointerEvents";
 import { PrecisionDate } from "../../Misc/precisionDate";
 
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Vector3, Vector2 } from "../../Maths/math.vector";
+import { Vector3 } from "../../Maths/math.vector";
 import type { Animatable } from "../../Animations/animatable";
 import { Animation } from "../../Animations/animation";
 
@@ -395,25 +395,13 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
      *		 to fully enclose the mesh in the viewing frustum.
      */
     protected _calculateLowerRadiusFromModelBoundingSphere(minimumWorld: Vector3, maximumWorld: Vector3): number {
-        const size = maximumWorld.subtract(minimumWorld);
-        const boxVectorGlobalDiagonal = size.length();
-        const frustumSlope: Vector2 = this._getFrustumSlope();
-
-        // Formula for setting distance
-        // (Good explanation: http://stackoverflow.com/questions/2866350/move-camera-to-fit-3d-scene)
-        const radiusWithoutFraming = boxVectorGlobalDiagonal * 0.5;
-
-        // Horizon distance
-        const radius = radiusWithoutFraming * this._radiusScale;
-        const distanceForHorizontalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlope.x * frustumSlope.x));
-        const distanceForVerticalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlope.y * frustumSlope.y));
-        let distance = Math.max(distanceForHorizontalFrustum, distanceForVerticalFrustum);
         const camera = this._attachedCamera;
 
         if (!camera) {
             return 0;
         }
 
+        let distance = camera._calculateLowerRadiusFromModelBoundingSphere(minimumWorld, maximumWorld, this._radiusScale);
         if (camera.lowerRadiusLimit && this._mode === FramingBehavior.IgnoreBoundsSizeMode) {
             // Don't exceed the requested limit
             distance = distance < camera.lowerRadiusLimit ? camera.lowerRadiusLimit : distance;
@@ -469,34 +457,6 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
                 this._animatables.push(animatabe);
             }
         }
-    }
-
-    /**
-     * Returns the frustum slope based on the canvas ratio and camera FOV
-     * @returns The frustum slope represented as a Vector2 with X and Y slopes
-     */
-    private _getFrustumSlope(): Vector2 {
-        // Calculate the viewport ratio
-        // Aspect Ratio is Height/Width.
-        const camera = this._attachedCamera;
-
-        if (!camera) {
-            return Vector2.Zero();
-        }
-
-        const engine = camera.getScene().getEngine();
-        const aspectRatio = engine.getAspectRatio(camera);
-
-        // Camera FOV is the vertical field of view (top-bottom) in radians.
-        // Slope of the frustum top/bottom planes in view space, relative to the forward vector.
-        const frustumSlopeY = Math.tan(camera.fov / 2);
-
-        // Slope of the frustum left/right planes in view space, relative to the forward vector.
-        // Provides the amount that one side (e.g. left) of the frustum gets wider for every unit
-        // along the forward vector.
-        const frustumSlopeX = frustumSlopeY * aspectRatio;
-
-        return new Vector2(frustumSlopeX, frustumSlopeY);
     }
 
     /**

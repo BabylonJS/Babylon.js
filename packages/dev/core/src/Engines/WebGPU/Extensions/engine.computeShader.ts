@@ -63,14 +63,7 @@ WebGPUEngine.prototype.computeDispatch = function (
     z?: number,
     bindingsMapping?: ComputeBindingMapping
 ): void {
-    if (this._currentRenderTarget) {
-        // A render target pass is currently in effect (meaning beingRenderPass has been called on the command encoder this._renderTargetEncoder): we are not allowed to open
-        // another pass on this command encoder (even if it's a compute pass) until endPass has been called, so we need to defer the compute pass for after the current render target pass is closed
-        this._onAfterUnbindFrameBufferObservable.addOnce(() => {
-            this.computeDispatch(effect, context, bindings, x, y, z, bindingsMapping);
-        });
-        return;
-    }
+    this._endCurrentRenderPass();
 
     const contextPipeline = effect._pipelineContext as WebGPUComputePipelineContext;
     const computeContext = context as WebGPUComputeContext;
@@ -82,8 +75,7 @@ WebGPUEngine.prototype.computeDispatch = function (
         });
     }
 
-    const commandEncoder = this._renderTargetEncoder;
-    const computePass = commandEncoder.beginComputePass();
+    const computePass = this._renderEncoder.beginComputePass();
 
     computePass.setPipeline(contextPipeline.computePipeline);
 

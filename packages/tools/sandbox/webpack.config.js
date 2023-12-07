@@ -2,16 +2,19 @@ const path = require("path");
 const webpackTools = require("@dev/build-tools").webpackTools;
 
 module.exports = (env) => {
-    const production = env.mode === "production" || process.env.NODE_ENV === "production";
     const commonConfig = {
-        mode: production ? "production" : "development",
         entry: "./src/legacy/legacy.ts",
-        devtool: production ? "source-map" : "eval-cheap-module-source-map",
-        output: {
-            path: path.resolve(__dirname, "dist"),
-            filename: "babylon.sandbox.js",
-            devtoolModuleFilenameTemplate: production ? "webpack://[namespace]/[resource-path]?[loaders]" : "file:///[absolute-resource-path]",
-        },
+        ...webpackTools.commonDevWebpackConfiguration(
+            {
+                ...env,
+                outputFilename: "babylon.sandbox.js",
+                dirName: __dirname,
+            },
+            {
+                static: ["public"],
+                port: process.env.SANDBOX_PORT || 1339,
+            }
+        ),
         resolve: {
             extensions: [".js", ".ts", ".tsx"],
             alias: {
@@ -45,26 +48,6 @@ module.exports = (env) => {
         ],
         module: {
             rules: webpackTools.getRules(),
-        },
-        devServer: {
-            client: {
-                overlay: process.env.DISABLE_DEV_OVERLAY ? false : {
-                    warnings: false,
-                    errors: true,
-                },
-            },
-            static: {
-                directory: path.join(__dirname, "public"),
-                watch: false,
-            },
-            // hot: true,
-            port: process.env.SANDBOX_PORT || 1339,
-            server: env.enableHttps !== undefined || process.env.ENABLE_HTTPS === "true" ? "https" : "http",
-            hot: (env.enableHotReload !== undefined || process.env.ENABLE_HOT_RELOAD === "true") && !production ? true : false,
-            liveReload: (env.enableLiveReload !== undefined || process.env.ENABLE_LIVE_RELOAD === "true") && !production ? true : false,
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-            },
         },
         plugins: [],
     };

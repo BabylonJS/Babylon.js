@@ -222,7 +222,19 @@ export class DebugLayer {
      * By default it uses the babylonjs CDN.
      * @ignoreNaming
      */
-    public static InspectorURL = `https://unpkg.com/babylonjs-inspector@${Engine.Version}/babylon.inspector.bundle.js`;
+    public static InspectorURL = `${Tools._DefaultCdnUrl}/v${Engine.Version}/inspector/babylon.inspector.bundle.js`;
+
+    /**
+     * The default configuration of the inspector
+     */
+    public static Config: IInspectorOptions = {
+        overlay: false,
+        showExplorer: true,
+        showInspector: true,
+        embedMode: false,
+        handleResize: true,
+        enablePopup: true,
+    };
 
     private _scene: Scene;
 
@@ -307,12 +319,7 @@ export class DebugLayer {
         }
 
         const userOptions: IInspectorOptions = {
-            overlay: false,
-            showExplorer: true,
-            showInspector: true,
-            embedMode: false,
-            handleResize: true,
-            enablePopup: true,
+            ...DebugLayer.Config,
             ...config,
         };
 
@@ -391,7 +398,7 @@ export class DebugLayer {
                 const inspectorUrl = config && config.inspectorURL ? config.inspectorURL : DebugLayer.InspectorURL;
 
                 // Load inspector and add it to the DOM
-                Tools.LoadScript(inspectorUrl, () => {
+                Tools.LoadBabylonScript(inspectorUrl, () => {
                     this._createInspector(config);
                     resolve(this);
                 });

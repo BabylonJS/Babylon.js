@@ -19,7 +19,7 @@ export class MorphTarget implements IAnimatable {
     /**
      * Gets or sets the list of animations
      */
-    public animations = new Array<Animation>();
+    public animations: Animation[] = [];
 
     private _scene: Nullable<Scene>;
     private _positions: Nullable<FloatArray> = null;

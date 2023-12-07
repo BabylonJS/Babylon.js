@@ -16,6 +16,12 @@ uniform vec3 gridOffset;
 varying vec3 vPosition;
 varying vec3 vNormal;
 
+#ifdef LOGARITHMICDEPTH
+#extension GL_EXT_frag_depth : enable
+#endif
+
+#include<logDepthDeclaration>
+
 #include<fogFragmentDeclaration>
 
 // Samplers
@@ -132,6 +138,8 @@ void main(void) {
     #endif
 #else
 #endif
+
+#include<logDepthFragment>
 
 #include<imageProcessingCompatibility>
 

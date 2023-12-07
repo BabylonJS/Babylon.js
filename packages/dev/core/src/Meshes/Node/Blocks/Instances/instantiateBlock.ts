@@ -1,27 +1,17 @@
-import { NodeGeometryBlock } from "../../nodeGeometryBlock";
 import type { NodeGeometryConnectionPoint } from "../../nodeGeometryBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryConnectionPointTypes";
 import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
-import type { INodeGeometryExecutionContext } from "../../Interfaces/nodeGeometryExecutionContext";
 import type { VertexData } from "../../../mesh.vertexData";
 import { Vector3 } from "../../../../Maths/math.vector";
-import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
-import type { INodeGeometryInstancingContext } from "../../Interfaces/nodeGeometryInstancingContext";
+import { InstantiateBaseBlock } from "./instantiateBaseBlock";
 
 /**
  * Block used to instantiate a geometry inside a loop
  */
-export class InstantiateBlock extends NodeGeometryBlock implements INodeGeometryExecutionContext, INodeGeometryInstancingContext {
-    private _vertexData: VertexData;
-    private _currentIndex: number;
-
-    /**
-     * Gets or sets a boolean indicating that this block can evaluate context
-     * Build performance is improved when this value is set to false as the system will cache values instead of reevaluating everything per context change
-     */
-    @editableInPropertyPage("Evaluate context", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { rebuild: true } })
-    public evaluateContext = true;
+export class InstantiateBlock extends InstantiateBaseBlock {
+    protected _vertexData: VertexData;
+    protected _currentIndex: number;
 
     /**
      * Create a new InstantiateBlock
@@ -30,15 +20,12 @@ export class InstantiateBlock extends NodeGeometryBlock implements INodeGeometry
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("instance", NodeGeometryBlockConnectionPointTypes.Geometry, true);
-        this.registerInput("count", NodeGeometryBlockConnectionPointTypes.Int, true, 1);
         this.registerInput("matrix", NodeGeometryBlockConnectionPointTypes.Matrix, true);
         this.registerInput("position", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.Zero());
         this.registerInput("rotation", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.Zero());
         this.registerInput("scaling", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.One());
 
         this.scaling.acceptedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Float);
-        this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Geometry);
     }
 
     /**
@@ -82,20 +69,6 @@ export class InstantiateBlock extends NodeGeometryBlock implements INodeGeometry
     }
 
     /**
-     * Gets the instance input component
-     */
-    public get instance(): NodeGeometryConnectionPoint {
-        return this._inputs[0];
-    }
-
-    /**
-     * Gets the instance input component
-     */
-    public get count(): NodeGeometryConnectionPoint {
-        return this._inputs[1];
-    }
-
-    /**
      * Gets the matrix input component
      */
     public get matrix(): NodeGeometryConnectionPoint {
@@ -121,13 +94,6 @@ export class InstantiateBlock extends NodeGeometryBlock implements INodeGeometry
      */
     public get scaling(): NodeGeometryConnectionPoint {
         return this._inputs[5];
-    }
-
-    /**
-     * Gets the geometry output component
-     */
-    public get output(): NodeGeometryConnectionPoint {
-        return this._outputs[0];
     }
 
     protected _buildBlock(state: NodeGeometryBuildState) {
@@ -184,31 +150,6 @@ export class InstantiateBlock extends NodeGeometryBlock implements INodeGeometry
         } else {
             this.output._storedFunction = null;
             this.output._storedValue = func(state);
-        }
-    }
-
-    protected _dumpPropertiesCode() {
-        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.evaluateContext = ${this.evaluateContext ? "true" : "false"};\n`;
-        return codeString;
-    }
-
-    /**
-     * Serializes this block in a JSON representation
-     * @returns the serialized block object
-     */
-    public serialize(): any {
-        const serializationObject = super.serialize();
-
-        serializationObject.evaluateContext = this.evaluateContext;
-
-        return serializationObject;
-    }
-
-    public _deserialize(serializationObject: any) {
-        super._deserialize(serializationObject);
-
-        if (serializationObject.evaluateContext !== undefined) {
-            this.evaluateContext = serializationObject.evaluateContext;
         }
     }
 }

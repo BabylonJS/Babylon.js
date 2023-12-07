@@ -60,12 +60,19 @@ export class BloomEffect extends PostProcessRenderEffect {
      * Creates a new instance of @see BloomEffect
      * @param scene The scene the effect belongs to.
      * @param _bloomScale The ratio of the blur texture to the input texture that should be used to compute the bloom.
-     * @param bloomWeight The the strength of bloom.
+     * @param bloomWeight The strength of bloom.
      * @param bloomKernel The size of the kernel to be used when applying the blur.
      * @param pipelineTextureType The type of texture to be used when performing the post processing.
      * @param blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
      */
-    constructor(scene: Scene, private _bloomScale: number, bloomWeight: number, bloomKernel: number, pipelineTextureType = 0, blockCompilation = false) {
+    constructor(
+        scene: Scene,
+        private _bloomScale: number,
+        bloomWeight: number,
+        bloomKernel: number,
+        pipelineTextureType = 0,
+        blockCompilation = false
+    ) {
         super(
             scene.getEngine(),
             "bloom",

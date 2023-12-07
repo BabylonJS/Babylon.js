@@ -230,7 +230,10 @@ class DecimationVertex {
 
     public originalOffsets: Array<number>;
 
-    constructor(public position: Vector3, public id: number) {
+    constructor(
+        public position: Vector3,
+        public id: number
+    ) {
         this.isBorder = true;
         this.q = new QuadraticMatrix();
         this.triangleCount = 0;
@@ -299,7 +302,10 @@ class QuadraticMatrix {
 }
 
 class Reference {
-    constructor(public vertexId: number, public triangleId: number) {}
+    constructor(
+        public vertexId: number,
+        public triangleId: number
+    ) {}
 }
 
 /**
@@ -414,7 +420,7 @@ export class QuadraticErrorSimplification implements ISimplifier {
 
                             this._calculateError(v0, v1, p);
 
-                            const delTr = new Array<DecimationTriangle>();
+                            const delTr: DecimationTriangle[] = [];
 
                             if (this._isFlipped(v0, v1, p, deleted0, delTr)) {
                                 continue;
@@ -427,7 +433,7 @@ export class QuadraticErrorSimplification implements ISimplifier {
                                 continue;
                             }
 
-                            const uniqueArray = new Array<DecimationTriangle>();
+                            const uniqueArray: DecimationTriangle[] = [];
                             delTr.forEach((deletedT) => {
                                 if (uniqueArray.indexOf(deletedT) === -1) {
                                     deletedT.deletePending = true;

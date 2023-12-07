@@ -1,23 +1,34 @@
 import type { FlowGraphContext } from "../../../flowGraphContext";
-import type { Animatable, Animation, IAnimatable } from "../../../../Animations";
+import type { Animatable } from "../../../../Animations";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import { FlowGraphAsyncExecutionBlock } from "../../../flowGraphAsyncExecutionBlock";
 import { RichTypeAny, RichTypeNumber, RichTypeBoolean } from "../../../flowGraphRichTypes";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import type { FlowGraphPath } from "../../../flowGraphPath";
+import { FlowGraphPathComponent } from "../../../flowGraphPathComponent";
 
+/**
+ * @experimental
+ */
+export interface IFlowGraphPlayAnimationBlockConfiguration extends IFlowGraphBlockConfiguration {
+    targetPath: FlowGraphPath;
+    animationPath: FlowGraphPath;
+}
 /**
  * @experimental
  * A block that plays an animation on an animatable object.
  */
 export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     /**
-     * Input connection: The target to play the animation on.
+     * The substitution inputs for template strings in the target
      */
-    public readonly target: FlowGraphDataConnection<IAnimatable>;
+    public readonly templateTargetComponent: FlowGraphPathComponent;
     /**
-     * Input connection: The animation to play.
+     * The substitution inputs for template strings in the animation
      */
-    public readonly animation: FlowGraphDataConnection<Animation>;
+    public readonly templateAnimationComponent: FlowGraphPathComponent;
     /**
      * Input connection: The speed of the animation.
      */
@@ -45,18 +56,19 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      */
     public readonly runningAnimatable: FlowGraphDataConnection<Animatable>;
 
-    public constructor() {
-        super();
+    public constructor(public config: IFlowGraphPlayAnimationBlockConfiguration) {
+        super(config);
 
-        this.target = this._registerDataInput("target", RichTypeAny);
-        this.animation = this._registerDataInput("animation", RichTypeAny);
-        this.speed = this._registerDataInput("speed", RichTypeNumber);
-        this.loop = this._registerDataInput("loop", RichTypeBoolean);
-        this.from = this._registerDataInput("from", RichTypeNumber);
-        this.to = this._registerDataInput("to", RichTypeNumber);
+        this.templateTargetComponent = new FlowGraphPathComponent(config.targetPath, this);
+        this.templateAnimationComponent = new FlowGraphPathComponent(config.animationPath, this);
+
+        this.speed = this.registerDataInput("speed", RichTypeNumber);
+        this.loop = this.registerDataInput("loop", RichTypeBoolean);
+        this.from = this.registerDataInput("from", RichTypeNumber);
+        this.to = this.registerDataInput("to", RichTypeNumber);
 
         this.onAnimationEnd = this._registerSignalOutput("onAnimationEnd");
-        this.runningAnimatable = this._registerDataOutput("runningAnimatable", RichTypeAny);
+        this.runningAnimatable = this.registerDataOutput("runningAnimatable", RichTypeAny);
     }
 
     /**
@@ -64,8 +76,8 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      * @param context
      */
     public _preparePendingTasks(context: FlowGraphContext): void {
-        const targetValue = this.target.getValue(context);
-        const animationValue = this.animation.getValue(context) as Animation;
+        const targetValue = this.templateTargetComponent.getProperty(context);
+        const animationValue = this.templateAnimationComponent.getProperty(context);
 
         if (!targetValue || !animationValue) {
             throw new Error("Cannot play animation without target or animation");
@@ -78,7 +90,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
         if (existingAnimatable && existingAnimatable.paused) {
             existingAnimatable.restart();
         } else {
-            const scene = context.graphVariables.scene;
+            const scene = context.configuration.scene;
             const animatable = scene.beginDirectAnimation(
                 targetValue,
                 [animationValue],
@@ -122,4 +134,16 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
         }
         context._deleteExecutionVariable(this, "runningAnimatables");
     }
+
+    public getClassName(): string {
+        return "FGPlayAnimationBlock";
+    }
+
+    public serialize(serializationObject: any = {}) {
+        super.serialize(serializationObject);
+        serializationObject.config.targetPath = this.config.targetPath.serialize();
+        serializationObject.config.animationPath = this.config.animationPath.serialize();
+    }
 }
+
+RegisterClass("FGPlayAnimationBlock", FlowGraphPlayAnimationBlock);

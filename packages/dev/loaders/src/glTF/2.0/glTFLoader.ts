@@ -194,6 +194,9 @@ export class GLTFLoader implements IGLTFLoader {
     /** @internal */
     public _disableInstancedMesh = 0;
 
+    /** @internal */
+    public _allMaterialsDirtyRequired = false;
+
     private readonly _parent: GLTFFileLoader;
     private readonly _extensions = new Array<IGLTFLoaderExtension>();
     private _disposed = false;
@@ -387,6 +390,7 @@ export class GLTFLoader implements IGLTFLoader {
                 this._rootUrl = rootUrl;
                 this._uniqueRootUrl = !rootUrl.startsWith("file:") && fileName ? rootUrl : `${rootUrl}${Date.now()}/`;
                 this._fileName = fileName;
+                this._allMaterialsDirtyRequired = false;
 
                 this._loadExtensions();
                 this._checkExtensions();
@@ -426,7 +430,15 @@ export class GLTFLoader implements IGLTFLoader {
                 }
 
                 // Restore the blocking of material dirty.
-                this._babylonScene.blockMaterialDirtyMechanism = oldBlockMaterialDirtyMechanism;
+                if (this._allMaterialsDirtyRequired) {
+                    // This can happen if we add a light for instance as it will impact the whole scene.
+                    // This automatically resets everything if needed.
+                    this._babylonScene.blockMaterialDirtyMechanism = oldBlockMaterialDirtyMechanism;
+                } else {
+                    // By default a newly created material is dirty so there is no need to flag the full scene as dirty.
+                    // For perf reasons, we then bypass blockMaterialDirtyMechanism as this would "dirty" the entire scene.
+                    this._babylonScene._forceBlockMaterialDirtyMechanism(oldBlockMaterialDirtyMechanism);
+                }
 
                 if (this._parent.compileMaterials) {
                     promises.push(this._compileMaterialsAsync());
@@ -562,7 +574,7 @@ export class GLTFLoader implements IGLTFLoader {
             for (const name of this._gltf.extensionsRequired) {
                 const available = this._extensions.some((extension) => extension.name === name && extension.enabled);
                 if (!available) {
-                    throw new Error(`Require extension ${name} is not available`);
+                    throw new Error(`Required extension ${name} is not available`);
                 }
             }
         }
@@ -649,7 +661,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _getGeometries(): Geometry[] {
-        const geometries = new Array<Geometry>();
+        const geometries: Geometry[] = [];
 
         const nodes = this._gltf.nodes;
         if (nodes) {
@@ -667,7 +679,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _getMeshes(): AbstractMesh[] {
-        const meshes = new Array<AbstractMesh>();
+        const meshes: AbstractMesh[] = [];
 
         // Root mesh is always first, if available.
         if (this._rootBabylonMesh) {
@@ -687,7 +699,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _getTransformNodes(): TransformNode[] {
-        const transformNodes = new Array<TransformNode>();
+        const transformNodes: TransformNode[] = [];
 
         const nodes = this._gltf.nodes;
         if (nodes) {
@@ -705,7 +717,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _getSkeletons(): Skeleton[] {
-        const skeletons = new Array<Skeleton>();
+        const skeletons: Skeleton[] = [];
 
         const skins = this._gltf.skins;
         if (skins) {
@@ -720,7 +732,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _getAnimationGroups(): AnimationGroup[] {
-        const animationGroups = new Array<AnimationGroup>();
+        const animationGroups: AnimationGroup[] = [];
 
         const animations = this._gltf.animations;
         if (animations) {
@@ -1350,7 +1362,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         const paths: { [joint: number]: Array<INode> } = {};
         for (const index of joints) {
-            const path = new Array<INode>();
+            const path: INode[] = [];
             let node = ArrayItem.Get(`${context}/${index}`, this._gltf.nodes, index);
             while (node.index !== -1) {
                 path.unshift(node);
@@ -1469,7 +1481,8 @@ export class GLTFLoader implements IGLTFLoader {
         babylonCamera.ignoreParentScaling = true;
         camera._babylonCamera = babylonCamera;
 
-        babylonCamera.rotation = new Vector3(0, Math.PI, 0);
+        // Rotation by 180 as glTF has a different convention than Babylon.
+        babylonCamera.rotation.set(0, Math.PI, 0);
 
         switch (camera.type) {
             case CameraType.PERSPECTIVE: {
@@ -1979,35 +1992,28 @@ export class GLTFLoader implements IGLTFLoader {
 
         const engine = this._babylonScene.getEngine();
 
-        if (accessor.sparse) {
-            accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync(context, accessor).then((data) => {
-                return new VertexBuffer(engine, data, kind, false);
-            });
-        }
-        // Load joint indices as a float array since the shaders expect float data but glTF uses unsigned byte/short.
-        // This prevents certain platforms (e.g. D3D) from having to convert the data to float on the fly.
-        else if (kind === VertexBuffer.MatricesIndicesKind || kind === VertexBuffer.MatricesIndicesExtraKind) {
+        if (accessor.sparse || accessor.bufferView == undefined) {
             accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync(context, accessor).then((data) => {
                 return new VertexBuffer(engine, data, kind, false);
             });
         } else {
             const bufferView = ArrayItem.Get(`${context}/bufferView`, this._gltf.bufferViews, accessor.bufferView);
             accessor._babylonVertexBuffer[kind] = this._loadVertexBufferViewAsync(bufferView).then((babylonBuffer) => {
-                const size = GLTFLoader._GetNumComponents(context, accessor.type);
+                const numComponents = GLTFLoader._GetNumComponents(context, accessor.type);
                 return new VertexBuffer(
                     engine,
                     babylonBuffer,
                     kind,
                     false,
-                    false,
+                    undefined,
                     bufferView.byteStride,
-                    false,
+                    undefined,
                     accessor.byteOffset,
-                    size,
+                    numComponents,
                     accessor.componentType,
                     accessor.normalized,
                     true,
-                    1,
+                    undefined,
                     true
                 );
             });

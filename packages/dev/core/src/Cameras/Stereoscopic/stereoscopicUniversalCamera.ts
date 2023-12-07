@@ -38,5 +38,5 @@ export class StereoscopicUniversalCamera extends UniversalCamera {
         return "StereoscopicUniversalCamera";
     }
 
-    protected _setRigMode = setStereoscopicRigMode.bind(null, this);
+    protected _setRigMode = () => setStereoscopicRigMode(this);
 }

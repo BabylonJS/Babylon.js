@@ -371,11 +371,15 @@ export class LightBlock extends NodeMaterialBlock {
 
         if (this.light) {
             state.compilationString += state._emitCodeFromInclude("lightFragment", comments, {
-                replaceStrings: [{ search: /{X}/g, replace: this._lightId.toString() }],
+                replaceStrings: [
+                    { search: /{X}/g, replace: this._lightId.toString() },
+                    { search: /vPositionW/g, replace: worldPosVariableName + ".xyz" },
+                ],
             });
         } else {
             state.compilationString += state._emitCodeFromInclude("lightFragment", comments, {
                 repeatKey: "maxSimultaneousLights",
+                substitutionVars: `vPositionW,${worldPosVariableName}.xyz`,
             });
         }
 

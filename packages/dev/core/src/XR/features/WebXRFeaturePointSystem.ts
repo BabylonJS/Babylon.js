@@ -115,8 +115,8 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
             }
 
             const numberOfFeaturePoints: number = featurePointRawData.length / 5;
-            const updatedFeaturePoints = new Array();
-            const addedFeaturePoints = new Array();
+            const updatedFeaturePoints = [];
+            const addedFeaturePoints = [];
             for (let i = 0; i < numberOfFeaturePoints; i++) {
                 const rawIndex: number = i * 5;
                 const id = featurePointRawData[rawIndex + 4];

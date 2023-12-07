@@ -15,11 +15,11 @@ export class MSCTranscoder extends Transcoder {
     /**
      * URL to use when loading the MSC transcoder
      */
-    public static JSModuleURL = "https://preview.babylonjs.com/ktx2Transcoders/1/msc_basis_transcoder.js";
+    public static JSModuleURL = "https://cdn.babylonjs.com/ktx2Transcoders/1/msc_basis_transcoder.js";
     /**
      * URL to use when loading the wasm module for the transcoder
      */
-    public static WasmModuleURL = "https://preview.babylonjs.com/ktx2Transcoders/1/msc_basis_transcoder.wasm";
+    public static WasmModuleURL = "https://cdn.babylonjs.com/ktx2Transcoders/1/msc_basis_transcoder.wasm";
 
     public static UseFromWorkerThread = true;
 
@@ -37,9 +37,9 @@ export class MSCTranscoder extends Transcoder {
             return this._mscBasisTranscoderPromise;
         }
 
-        this._mscBasisTranscoderPromise = WASMMemoryManager.LoadWASM(MSCTranscoder.WasmModuleURL).then((wasmBinary) => {
+        this._mscBasisTranscoderPromise = WASMMemoryManager.LoadWASM(Transcoder.GetWasmUrl(MSCTranscoder.WasmModuleURL)).then((wasmBinary) => {
             if (MSCTranscoder.UseFromWorkerThread) {
-                importScripts(MSCTranscoder.JSModuleURL);
+                importScripts(Transcoder.GetWasmUrl(MSCTranscoder.JSModuleURL));
             }
             // Worker Number = 0 and MSC_TRANSCODER has not been loaded yet.
             else if (typeof MSC_TRANSCODER === "undefined") {
@@ -47,7 +47,7 @@ export class MSCTranscoder extends Transcoder {
                     const head = document.getElementsByTagName("head")[0];
                     const script = document.createElement("script");
                     script.setAttribute("type", "text/javascript");
-                    script.setAttribute("src", MSCTranscoder.JSModuleURL);
+                    script.setAttribute("src", Transcoder.GetWasmUrl(MSCTranscoder.JSModuleURL));
 
                     script.onload = () => {
                         MSC_TRANSCODER({ wasmBinary }).then((basisModule: any) => {

@@ -943,8 +943,14 @@ export class ArcRotateCamera extends TargetCamera {
             this._viewMatrix.invertToRef(this._cameraTransformMatrix);
             localDirection.multiplyInPlace(this.panningAxis);
             Vector3.TransformNormalToRef(localDirection, this._cameraTransformMatrix, this._transformedDirection);
-            // Eliminate y if mapPanning is enabled
-            if (this.mapPanning || !this.panningAxis.y) {
+
+            // If mapPanning is enabled, we need to take the upVector into account and
+            // make sure we're not panning in the y direction
+            if (this.mapPanning) {
+                const up = this.upVector;
+                const right = Vector3.CrossToRef(this._transformedDirection, up, this._transformedDirection);
+                Vector3.CrossToRef(up, right, this._transformedDirection);
+            } else if (!this.panningAxis.y) {
                 this._transformedDirection.y = 0;
             }
 
@@ -1207,8 +1213,10 @@ export class ArcRotateCamera extends TargetCamera {
         meshes = meshes || this.getScene().meshes;
 
         const minMaxVector = Mesh.MinMax(meshes);
-        const distance = Vector3.Distance(minMaxVector.min, minMaxVector.max);
+        let distance = this._calculateLowerRadiusFromModelBoundingSphere(minMaxVector.min, minMaxVector.max);
 
+        // If there are defined limits, we need to take them into account
+        distance = Math.max(Math.min(distance, this.upperRadiusLimit || Number.MAX_VALUE), this.lowerRadiusLimit || 0);
         this.radius = distance * this.zoomOnFactor;
 
         this.focusOn({ min: minMaxVector.min, max: minMaxVector.max, distance: distance }, doNotUpdateMaxZ);
@@ -1302,6 +1310,29 @@ export class ArcRotateCamera extends TargetCamera {
                 break;
         }
         super._updateRigCameras();
+    }
+
+    /**
+     * @internal
+     */
+    public _calculateLowerRadiusFromModelBoundingSphere(minimumWorld: Vector3, maximumWorld: Vector3, radiusScale: number = 1): number {
+        const boxVectorGlobalDiagonal = Vector3.Distance(minimumWorld, maximumWorld);
+
+        // Get aspect ratio in order to calculate frustum slope
+        const engine = this.getScene().getEngine();
+        const aspectRatio = engine.getAspectRatio(this);
+        const frustumSlopeY = Math.tan(this.fov / 2);
+        const frustumSlopeX = frustumSlopeY * aspectRatio;
+
+        // Formula for setting distance
+        // (Good explanation: http://stackoverflow.com/questions/2866350/move-camera-to-fit-3d-scene)
+        const radiusWithoutFraming = boxVectorGlobalDiagonal * 0.5;
+
+        // Horizon distance
+        const radius = radiusWithoutFraming * radiusScale;
+        const distanceForHorizontalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlopeX * frustumSlopeX));
+        const distanceForVerticalFrustum = radius * Math.sqrt(1.0 + 1.0 / (frustumSlopeY * frustumSlopeY));
+        return Math.max(distanceForHorizontalFrustum, distanceForVerticalFrustum);
     }
 
     /**

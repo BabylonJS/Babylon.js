@@ -192,7 +192,10 @@ export class GraphNode {
         }
     }
 
-    public constructor(public content: INodeData, stateManager: StateManager) {
+    public constructor(
+        public content: INodeData,
+        stateManager: StateManager
+    ) {
         this._stateManager = stateManager;
 
         this._onSelectionChangedObserver = this._stateManager.onSelectionChangedObservable.add((options) => {

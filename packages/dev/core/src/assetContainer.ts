@@ -5,7 +5,7 @@ import { TransformNode } from "./Meshes/transformNode";
 import type { Skeleton } from "./Bones/skeleton";
 import type { AnimationGroup } from "./Animations/animationGroup";
 import type { Animatable } from "./Animations/animatable";
-import type { AbstractMesh } from "./Meshes/abstractMesh";
+import { AbstractMesh } from "./Meshes/abstractMesh";
 import type { MultiMaterial } from "./Materials/multiMaterial";
 import type { Material } from "./Materials/material";
 import { Logger } from "./Misc/logger";
@@ -694,7 +694,7 @@ export class AssetContainer extends AbstractScene {
             if (predicate && !predicate(o)) {
                 return;
             }
-            this.scene.removeMesh(o);
+            this.scene.removeMesh(o, true);
         });
         this.skeletons.forEach((o) => {
             if (predicate && !predicate(o)) {
@@ -981,7 +981,7 @@ export class AssetContainer extends AbstractScene {
             }
         });
 
-        const newAnimationGroups = new Array<AnimationGroup>();
+        const newAnimationGroups: AnimationGroup[] = [];
 
         // Copy new animation groups
         this.animationGroups.slice().forEach((animationGroupInAC) => {
@@ -1049,5 +1049,67 @@ export class AssetContainer extends AbstractScene {
                 this.rootNodes.push(c);
             }
         });
+    }
+
+    /**
+     * @since 6.26.0
+     * Given a root asset, this method will traverse its hierarchy and add it, its children and any materials/skeletons/animation groups to the container.
+     * @param root
+     */
+    public addAllAssetsToContainer(root: Node) {
+        if (!root) {
+            return;
+        }
+
+        const nodesToVisit: Node[] = [];
+        const visitedNodes = new Set<Node>();
+
+        nodesToVisit.push(root);
+
+        while (nodesToVisit.length > 0) {
+            const nodeToVisit = nodesToVisit.pop()!;
+
+            if (nodeToVisit instanceof Mesh) {
+                if (nodeToVisit.geometry && this.geometries.indexOf(nodeToVisit.geometry) === -1) {
+                    this.geometries.push(nodeToVisit.geometry);
+                }
+                this.meshes.push(nodeToVisit);
+            } else if (nodeToVisit instanceof TransformNode) {
+                this.transformNodes.push(nodeToVisit);
+            } else if (nodeToVisit instanceof Light) {
+                this.lights.push(nodeToVisit);
+            } else if (nodeToVisit instanceof Camera) {
+                this.cameras.push(nodeToVisit);
+            }
+
+            if (nodeToVisit instanceof AbstractMesh) {
+                if (nodeToVisit.material && this.materials.indexOf(nodeToVisit.material) === -1) {
+                    this.materials.push(nodeToVisit.material);
+                    for (const texture of nodeToVisit.material.getActiveTextures()) {
+                        if (this.textures.indexOf(texture) === -1) {
+                            this.textures.push(texture);
+                        }
+                    }
+                }
+
+                if (nodeToVisit.skeleton && this.skeletons.indexOf(nodeToVisit.skeleton) === -1) {
+                    this.skeletons.push(nodeToVisit.skeleton);
+                }
+
+                if (nodeToVisit.morphTargetManager && this.morphTargetManagers.indexOf(nodeToVisit.morphTargetManager) === -1) {
+                    this.morphTargetManagers.push(nodeToVisit.morphTargetManager);
+                }
+            }
+
+            for (const child of nodeToVisit.getChildren()) {
+                if (!visitedNodes.has(child)) {
+                    nodesToVisit.push(child);
+                }
+            }
+
+            visitedNodes.add(nodeToVisit);
+        }
+
+        this.populateRootNodes();
     }
 }

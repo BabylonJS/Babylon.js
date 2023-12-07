@@ -3,6 +3,8 @@ import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import { RichTypeNumber } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneExecutionBlock";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 
 /**
  * A block that executes a branch a set number of times.
@@ -22,11 +24,11 @@ export class FlowGraphDoNBlock extends FlowGraphWithOnDoneExecutionBlock {
      */
     public readonly currentCount: FlowGraphDataConnection<number>;
 
-    constructor() {
-        super();
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(config);
         this.reset = this._registerSignalInput("reset");
-        this.maxNumberOfExecutions = this._registerDataInput("numberOfExecutions", RichTypeNumber);
-        this.currentCount = this._registerDataOutput("currentCount", RichTypeNumber);
+        this.maxNumberOfExecutions = this.registerDataInput("numberOfExecutions", RichTypeNumber);
+        this.currentCount = this.registerDataOutput("currentCount", RichTypeNumber);
     }
 
     public _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {
@@ -40,4 +42,9 @@ export class FlowGraphDoNBlock extends FlowGraphWithOnDoneExecutionBlock {
             }
         }
     }
+
+    public getClassName(): string {
+        return "FGDoNBlock";
+    }
 }
+RegisterClass("FGDoNBlock", FlowGraphDoNBlock);

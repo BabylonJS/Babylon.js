@@ -30,7 +30,11 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     public BJSCANNON: any;
 
-    public constructor(private _useDeltaForWorldStep: boolean = true, iterations: number = 10, cannonInjection = CANNON) {
+    public constructor(
+        private _useDeltaForWorldStep: boolean = true,
+        iterations: number = 10,
+        cannonInjection = CANNON
+    ) {
         this.BJSCANNON = cannonInjection;
         if (!this.isSupported()) {
             Logger.Error("CannonJS is not available. Please make sure you included the js file.");
@@ -388,7 +392,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
 
                 const transform = object.computeWorldMatrix(true);
                 // convert rawVerts to object space
-                const transformedVertices = new Array<number>();
+                const transformedVertices: number[] = [];
                 let index: number;
                 for (index = 0; index < rawVerts.length; index += 3) {
                     Vector3.TransformCoordinates(Vector3.FromArray(rawVerts, index), transform).toArray(transformedVertices, index);
@@ -434,7 +438,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         let pos = <FloatArray>object.getVerticesData(VertexBuffer.PositionKind);
         const transform = object.computeWorldMatrix(true);
         // convert rawVerts to object space
-        const transformedVertices = new Array<number>();
+        const transformedVertices: number[] = [];
         let index: number;
         for (index = 0; index < pos.length; index += 3) {
             Vector3.TransformCoordinates(Vector3.FromArray(pos, index), transform).toArray(transformedVertices, index);

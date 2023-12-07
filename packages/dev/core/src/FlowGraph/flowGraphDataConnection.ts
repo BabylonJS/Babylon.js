@@ -1,7 +1,8 @@
+import { RegisterClass } from "../Misc/typeStore";
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import { FlowGraphConnection, FlowGraphConnectionType } from "./flowGraphConnection";
 import type { FlowGraphContext } from "./flowGraphContext";
-import type { RichType } from "./flowGraphRichTypes";
+import { RichType } from "./flowGraphRichTypes";
 /**
  * @experimental
  * Represents a connection point for data.
@@ -11,19 +12,18 @@ import type { RichType } from "./flowGraphRichTypes";
  */
 export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlock, FlowGraphDataConnection<T>> {
     /**
-     * Verifies if the connection has had a value set or not, either through a connection or by
-     * setting it directly.
-     */
-    private _isSet: boolean = false;
-
-    /**
      * Create a new data connection point.
      * @param name
      * @param connectionType
      * @param ownerBlock
      * @param richType
      */
-    public constructor(name: string, connectionType: FlowGraphConnectionType, ownerBlock: FlowGraphBlock, public richType: RichType<T>) {
+    public constructor(
+        name: string,
+        connectionType: FlowGraphConnectionType,
+        ownerBlock: FlowGraphBlock,
+        public richType: RichType<T>
+    ) {
         super(name, connectionType, ownerBlock);
     }
 
@@ -41,20 +41,18 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
      * @param context the context to which the value is set
      */
     public setValue(value: T, context: FlowGraphContext): void {
-        this._isSet = true;
         context._setConnectionValue(this, value);
     }
 
     public connectTo(point: FlowGraphDataConnection<T>): void {
         super.connectTo(point);
-        this._isSet = true;
     }
 
     private _getValueOrDefault(context: FlowGraphContext): T {
         if (context._hasConnectionValue(this)) {
             return context._getConnectionValue(this);
         } else {
-            return this.richType.defaultValueBuilder();
+            return this.richType.defaultValue;
         }
     }
 
@@ -65,6 +63,7 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
      */
     public getValue(context: FlowGraphContext): T {
         if (this.connectionType === FlowGraphConnectionType.Output) {
+            context._notifyExecuteNode(this._ownerBlock);
             this._ownerBlock._updateOutputs(context);
             return this._getValueOrDefault(context);
         }
@@ -76,11 +75,21 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
         }
     }
 
-    /**
-     * Verifies if the connection has had a value set or not, either through a connection or by
-     * setting it directly.
-     */
-    public get isSet(): boolean {
-        return this._isSet;
+    public getClassName(): string {
+        return "FGDataConnection";
+    }
+
+    public serialize(serializationObject: any = {}) {
+        super.serialize(serializationObject);
+        serializationObject.richType = {};
+        this.richType.serialize(serializationObject.richType);
+    }
+
+    public static Parse(serializationObject: any, ownerBlock: FlowGraphBlock): FlowGraphDataConnection<any> {
+        const obj = FlowGraphConnection.Parse(serializationObject, ownerBlock);
+        obj.richType = RichType.Parse(serializationObject.richType);
+        return obj;
     }
 }
+
+RegisterClass("FGDataConnection", FlowGraphDataConnection);

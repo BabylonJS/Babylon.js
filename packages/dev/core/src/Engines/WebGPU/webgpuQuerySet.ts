@@ -29,10 +29,17 @@ export class WebGPUQuerySet {
             count,
         });
 
-        this._queryBuffer = bufferManager.createRawBuffer(8 * count, WebGPUConstants.BufferUsage.QueryResolve | WebGPUConstants.BufferUsage.CopySrc);
+        this._queryBuffer = bufferManager.createRawBuffer(8 * count, WebGPUConstants.BufferUsage.QueryResolve | WebGPUConstants.BufferUsage.CopySrc, undefined, "QueryBuffer");
 
         if (!canUseMultipleBuffers) {
-            this._dstBuffers.push(this._bufferManager.createRawBuffer(8 * this._count, WebGPUConstants.BufferUsage.MapRead | WebGPUConstants.BufferUsage.CopyDst));
+            this._dstBuffers.push(
+                this._bufferManager.createRawBuffer(
+                    8 * this._count,
+                    WebGPUConstants.BufferUsage.MapRead | WebGPUConstants.BufferUsage.CopyDst,
+                    undefined,
+                    "QueryBufferNoMultipleBuffers"
+                )
+            );
         }
     }
 
@@ -45,7 +52,12 @@ export class WebGPUQuerySet {
 
         let buffer: GPUBuffer;
         if (this._dstBuffers.length === 0) {
-            buffer = this._bufferManager.createRawBuffer(8 * this._count, WebGPUConstants.BufferUsage.MapRead | WebGPUConstants.BufferUsage.CopyDst);
+            buffer = this._bufferManager.createRawBuffer(
+                8 * this._count,
+                WebGPUConstants.BufferUsage.MapRead | WebGPUConstants.BufferUsage.CopyDst,
+                undefined,
+                "QueryBufferAdditionalBuffer"
+            );
         } else {
             buffer = this._dstBuffers[this._dstBuffers.length - 1];
             this._dstBuffers.length--;

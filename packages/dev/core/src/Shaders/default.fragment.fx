@@ -13,9 +13,6 @@
 #extension GL_EXT_frag_depth : enable
 #endif
 
-// Constants
-#define RECIPROCAL_PI2 0.15915494
-
 // Input
 varying vec3 vPositionW;
 

@@ -10,9 +10,10 @@ declare module "../../Engines/thinEngine" {
          * Creates a storage buffer
          * @param data the data for the storage buffer or the size of the buffer
          * @param creationFlags flags to use when creating the buffer (see Constants.BUFFER_CREATIONFLAG_XXX). The BUFFER_CREATIONFLAG_STORAGE flag will be automatically added
+         * @param label defines the label of the buffer (for debug purpose)
          * @returns the new buffer
          */
-        createStorageBuffer(data: DataArray | number, creationFlags: number): DataBuffer;
+        createStorageBuffer(data: DataArray | number, creationFlags: number, label?: string): DataBuffer;
 
         /**
          * Updates a storage buffer

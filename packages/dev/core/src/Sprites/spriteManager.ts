@@ -114,7 +114,7 @@ export class SpriteManager implements ISpriteManager {
     public snippetId: string;
 
     /** Gets the list of sprites */
-    public sprites = new Array<Sprite>();
+    public sprites: Sprite[] = [];
     /** Gets or sets the rendering group id (0 by default) */
     public renderingGroupId = 0;
     /** Gets or sets camera layer mask */

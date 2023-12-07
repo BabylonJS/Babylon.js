@@ -264,6 +264,11 @@
     #if defined(WEBGL2) || defined(WEBGPU) || defined(NATIVE)
         #define GREATEST_LESS_THAN_ONE 0.99999994
 
+        // We need to disable uniformity analysis when using CSM, as there's no textureLod overload that takes a sampler2DArrayShadow.
+        // And the workaround that uses textureGrad (which does work with sampler2DArrayShadow) is not supported by the SpirV to WGSL conversion (from Tint)
+
+        /* disable_uniformity_analysis */
+
         // Shadow PCF kernel size 1 with a single tap (lowest quality)
         #define inline
         float computeShadowWithCSMPCF1(float layer, vec4 vPositionFromLight, float depthMetric, highp sampler2DArrayShadow shadowSampler, float darkness, float frustumEdgeFalloff)

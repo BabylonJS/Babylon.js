@@ -619,6 +619,26 @@ export class Container extends Control {
         this._measureForChildren.copyFrom(this._currentMeasure);
     }
 
+    protected _getAdaptDimTo(dim: "width" | "height"): boolean {
+        if (dim === "width") {
+            return this.adaptWidthToChildren;
+        } else {
+            return this.adaptHeightToChildren;
+        }
+    }
+
+    public isDimensionFullyDefined(dim: "width" | "height"): boolean {
+        if (this._getAdaptDimTo(dim)) {
+            for (const child of this.children) {
+                if (!child.isDimensionFullyDefined(dim)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return super.isDimensionFullyDefined(dim);
+    }
+
     /**
      * Serializes the current control
      * @param serializationObject defined the JSON serialized object

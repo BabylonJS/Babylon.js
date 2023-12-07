@@ -883,6 +883,27 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     )}
 
                     <CheckBoxLineComponent
+                        label="Dispersion Enabled"
+                        target={material.subSurface}
+                        propertyName="isDispersionEnabled"
+                        onValueChanged={() => this.forceUpdate()}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
+                    {material.subSurface.isDispersionEnabled && (
+                        <div className="fragment">
+                            <SliderLineComponent
+                                lockObject={this.props.lockObject}
+                                label="Intensity"
+                                target={material.subSurface}
+                                propertyName="dispersion"
+                                minimum={0}
+                                maximum={5}
+                                step={0.01}
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                            />
+                        </div>
+                    )}
+                    <CheckBoxLineComponent
                         label="Translucency Enabled"
                         target={material.subSurface}
                         propertyName="isTranslucencyEnabled"

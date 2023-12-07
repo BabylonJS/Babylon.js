@@ -8,7 +8,6 @@ import type { Nullable } from "../types";
 import type { Matrix } from "../Maths/math.vector";
 import { EngineStore } from "../Engines/engineStore";
 import { SubMesh } from "../Meshes/subMesh";
-import type { Geometry } from "../Meshes/geometry";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { UniformBuffer } from "./uniformBuffer";
 import type { Effect } from "./effect";
@@ -768,6 +767,30 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      */
     public readonly stencil = new MaterialStencilState();
 
+    protected _useLogarithmicDepth: boolean;
+
+    /**
+     * In case the depth buffer does not allow enough depth precision for your scene (might be the case in large scenes)
+     * You can try switching to logarithmic depth.
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/logarithmicDepthBuffer
+     */
+    @serialize()
+    public get useLogarithmicDepth(): boolean {
+        return this._useLogarithmicDepth;
+    }
+
+    public set useLogarithmicDepth(value: boolean) {
+        const fragmentDepthSupported = this.getScene().getEngine().getCaps().fragmentDepthSupported;
+
+        if (value && !fragmentDepthSupported) {
+            Logger.Warn("Logarithmic depth has been requested for a material on a device that doesn't support it.");
+        }
+
+        this._useLogarithmicDepth = value && fragmentDepthSupported;
+
+        this._markAllSubMeshesAsMiscDirty();
+    }
+
     /**
      * @internal
      * Stores the effects for the material
@@ -1398,7 +1421,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      */
     public getBindedMeshes(): AbstractMesh[] {
         if (this.meshMap) {
-            const result = new Array<AbstractMesh>();
+            const result: AbstractMesh[] = [];
             for (const meshId in this.meshMap) {
                 const mesh = this.meshMap[meshId];
                 if (mesh) {
@@ -1828,13 +1851,15 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private releaseVertexArrayObject(mesh: AbstractMesh, forceDisposeEffect?: boolean) {
-        if ((<Mesh>mesh).geometry) {
-            const geometry = <Geometry>(<Mesh>mesh).geometry;
+        const geometry = (<Mesh>mesh).geometry;
+        if (geometry) {
             if (this._storeEffectOnSubMeshes) {
-                for (const subMesh of mesh.subMeshes) {
-                    geometry._releaseVertexArrayObject(subMesh.effect);
-                    if (forceDisposeEffect && subMesh.effect) {
-                        subMesh.effect.dispose();
+                if (mesh.subMeshes) {
+                    for (const subMesh of mesh.subMeshes) {
+                        geometry._releaseVertexArrayObject(subMesh.effect);
+                        if (forceDisposeEffect && subMesh.effect) {
+                            subMesh.effect.dispose();
+                        }
                     }
                 }
             } else {

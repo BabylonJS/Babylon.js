@@ -105,7 +105,10 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
      */
     public onMeshUpdatedObservable: Observable<IWebXRVertexData> = new Observable();
 
-    constructor(_xrSessionManager: WebXRSessionManager, private _options: IWebXRMeshDetectorOptions = {}) {
+    constructor(
+        _xrSessionManager: WebXRSessionManager,
+        private _options: IWebXRMeshDetectorOptions = {}
+    ) {
         super(_xrSessionManager);
         this.xrNativeFeatureName = "mesh-detection";
         if (this._xrSessionManager.session) {

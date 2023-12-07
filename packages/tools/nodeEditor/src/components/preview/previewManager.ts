@@ -30,17 +30,21 @@ import { ParticleTextureBlock } from "core/Materials/Node/Blocks/Particle/partic
 import { ReadFile } from "core/Misc/fileTools";
 import type { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
 import type { StandardMaterial } from "core/Materials/standardMaterial";
+import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Layer } from "core/Layers/layer";
 import { DataStorage } from "core/Misc/dataStorage";
 import type { NodeMaterialBlock } from "core/Materials/Node/nodeMaterialBlock";
 import { CreateTorus } from "core/Meshes/Builders/torusBuilder";
 import type { TextureBlock } from "core/Materials/Node/Blocks/Dual/textureBlock";
 import { FilesInput } from "core/Misc/filesInput";
-
+import "core/Helpers/sceneHelpers";
 import "core/Rendering/depthRendererSceneComponent";
 
 const dontSerializeTextureContent = true;
 
+/**
+ *
+ */
 export class PreviewManager {
     private _nodeMaterial: NodeMaterial;
     private _onBuildObserver: Nullable<Observer<NodeMaterial>>;
@@ -52,6 +56,7 @@ export class PreviewManager {
     private _onBackFaceCullingChangedObserver: Nullable<Observer<void>>;
     private _onDepthPrePassChangedObserver: Nullable<Observer<void>>;
     private _onLightUpdatedObserver: Nullable<Observer<void>>;
+    private _onBackgroundHDRUpdatedObserver: Nullable<Observer<void>>;
     private _engine: Engine;
     private _scene: Scene;
     private _meshes: AbstractMesh[];
@@ -64,6 +69,8 @@ export class PreviewManager {
     private _proceduralTexture: Nullable<ProceduralTexture>;
     private _particleSystem: Nullable<IParticleSystem>;
     private _layer: Nullable<Layer>;
+    private _hdrSkyBox: Mesh;
+    private _hdrTexture: CubeTexture;
 
     private _serializeMaterial(): any {
         const nodeMaterial = this._nodeMaterial;
@@ -124,6 +131,9 @@ export class PreviewManager {
 
         this._onLightUpdatedObserver = globalState.onLightUpdated.add(() => {
             this._prepareLights();
+        });
+        this._onBackgroundHDRUpdatedObserver = globalState.onBackgroundHDRUpdated.add(() => {
+            this._prepareBackgroundHDR();
         });
 
         this._onUpdateRequiredObserver = globalState.stateManager.onUpdateRequiredObservable.add(() => {
@@ -193,9 +203,7 @@ export class PreviewManager {
             };
             canvas.addEventListener("drop", onDrop, false);
         }
-
         this._refreshPreviewMesh();
-
         this._engine.runRenderLoop(() => {
             this._engine.resize();
             this._scene.render();
@@ -229,6 +237,7 @@ export class PreviewManager {
     }
 
     private _reset() {
+        this._globalState.envType = PreviewType.Room;
         this._globalState.previewType = PreviewType.Box;
         this._globalState.listOfCustomPreviewFiles = [];
         this._scene.meshes.forEach((m) => m.dispose());
@@ -284,12 +293,28 @@ export class PreviewManager {
         }
     }
 
+    private _prepareBackgroundHDR() {
+        this._scene.environmentTexture = null;
+        if (this._hdrSkyBox) {
+            this._scene.removeMesh(this._hdrSkyBox);
+        }
+
+        if (this._globalState.backgroundHDR) {
+            this._scene.environmentTexture = this._hdrTexture;
+            this._hdrSkyBox = this._scene.createDefaultSkybox(this._hdrTexture) as Mesh;
+        }
+
+        this._updatePreview();
+    }
     private _prepareScene() {
         this._camera.useFramingBehavior = this._globalState.mode === NodeMaterialModes.Material;
-
         switch (this._globalState.mode) {
             case NodeMaterialModes.Material: {
                 this._prepareLights();
+                if (!this._globalState.envFile) {
+                    this._globalState.backgroundHDR = false;
+                }
+                this._prepareBackgroundHDR();
 
                 const framingBehavior = this._camera.getBehaviorByName("Framing") as FramingBehavior;
 
@@ -334,7 +359,31 @@ export class PreviewManager {
         this._updatePreview();
     }
 
+    /**
+     * Default Environment URL
+     */
+    public static DefaultEnvironmentURL = "https://assets.babylonjs.com/environments/environmentSpecular.env";
+
     private _refreshPreviewMesh(force?: boolean) {
+        switch (this._globalState.envType) {
+            case PreviewType.Room:
+                this._hdrTexture = new CubeTexture(PreviewManager.DefaultEnvironmentURL, this._scene);
+                if (this._hdrTexture) {
+                    this._prepareBackgroundHDR();
+                }
+                break;
+            case PreviewType.Custom: {
+                const blob = new Blob([this._globalState.envFile], { type: "octet/stream" });
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    const dataurl = evt.target!.result as string;
+                    this._hdrTexture = new CubeTexture(dataurl, this._scene, undefined, false, undefined, undefined, undefined, undefined, undefined, ".env");
+                    this._prepareBackgroundHDR();
+                };
+                reader.readAsDataURL(blob);
+                break;
+            }
+        }
         if (this._currentType !== this._globalState.previewType || this._currentType === PreviewType.Custom || force) {
             this._currentType = this._globalState.previewType;
             if (this._meshes && this._meshes.length) {
@@ -647,6 +696,7 @@ export class PreviewManager {
         this._globalState.onBackFaceCullingChanged.remove(this._onBackFaceCullingChangedObserver);
         this._globalState.onDepthPrePassChanged.remove(this._onDepthPrePassChangedObserver);
         this._globalState.onLightUpdated.remove(this._onLightUpdatedObserver);
+        this._globalState.onBackgroundHDRUpdated.remove(this._onBackgroundHDRUpdatedObserver);
 
         if (this._material) {
             this._material.dispose(false, true);

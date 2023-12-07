@@ -1,4 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+
+import { Transcoder } from "./transcoder";
+
 /**
  * From https://github.com/donmccurdy/zstddec by Don McCurdy
  */
@@ -27,7 +30,7 @@ const IMPORT_OBJECT = {
  * ZSTD (Zstandard) decoder.
  */
 export class ZSTDDecoder {
-    public static WasmModuleURL = "https://preview.babylonjs.com/zstddec.wasm";
+    public static WasmModuleURL = "https://cdn.babylonjs.com/zstddec.wasm";
 
     init(): Promise<void> {
         if (init) {
@@ -37,7 +40,7 @@ export class ZSTDDecoder {
         if (typeof fetch !== "undefined") {
             // Web.
 
-            init = fetch(ZSTDDecoder.WasmModuleURL)
+            init = fetch(Transcoder.GetWasmUrl(ZSTDDecoder.WasmModuleURL))
                 .then((response) => {
                     if (response.ok) {
                         return response.arrayBuffer();

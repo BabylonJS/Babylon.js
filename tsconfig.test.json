@@ -2,6 +2,5 @@
     "extends": "./tsconfig.build.json",
 
     "compilerOptions": {
-        "target": "es5"
     }
 }

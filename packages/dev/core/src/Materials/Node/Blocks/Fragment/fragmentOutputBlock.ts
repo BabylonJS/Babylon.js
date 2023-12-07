@@ -90,7 +90,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
     }
 
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
-        if (this.useLogarithmicDepth && mesh) {
+        if ((this.useLogarithmicDepth || nodeMaterial.useLogarithmicDepth) && mesh) {
             MaterialHelper.BindLogDepth(undefined, effect, mesh.getScene());
         }
     }
@@ -104,7 +104,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
 
         state.sharedData.hints.needAlphaBlending = rgba.isConnected || a.isConnected;
         state.sharedData.blocksWithDefines.push(this);
-        if (this.useLogarithmicDepth) {
+        if (this.useLogarithmicDepth || state.sharedData.nodeMaterial.useLogarithmicDepth) {
             state._emitUniformFromString("logarithmicDepthConstant", "float");
             state._emitVaryingFromString("vFragmentDepth", "float");
             state.sharedData.bindableBlocks.push(this);
@@ -145,7 +145,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         state.compilationString += `gl_FragColor = toGammaSpace(gl_FragColor);\n`;
         state.compilationString += `#endif\n`;
 
-        if (this.useLogarithmicDepth) {
+        if (this.useLogarithmicDepth || state.sharedData.nodeMaterial.useLogarithmicDepth) {
             state.compilationString += `gl_FragDepthEXT = log2(vFragmentDepth) * logarithmicDepthConstant * 0.5;\n`;
         }
 

@@ -21,9 +21,7 @@ WebGPUEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (
     const attachments = rtWrapper._attachments!;
     const count = attachments.length;
 
-    if (this._currentRenderPass && this._currentRenderPass !== this._mainRenderPassWrapper.renderPass) {
-        this._endRenderTargetRenderPass();
-    }
+    this._endCurrentRenderPass();
 
     for (let i = 0; i < count; i++) {
         const texture = rtWrapper.textures![i];
@@ -37,9 +35,6 @@ WebGPUEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (
     this._mrtAttachments = [];
     this._cacheRenderPipeline.setMRT([]);
     this._cacheRenderPipeline.setMRTAttachments(this._mrtAttachments);
-    this._currentRenderPass = this._mainRenderPassWrapper.renderPass;
-    this._setDepthTextureFormat(this._mainRenderPassWrapper);
-    this._setColorFormat(this._mainRenderPassWrapper);
 };
 
 WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, options: IMultiRenderTargetOptions, initializeBuffers?: boolean): RenderTargetWrapper {
@@ -56,14 +51,15 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
     const defaultFormat = Constants.TEXTUREFORMAT_RGBA;
     const defaultTarget = Constants.TEXTURE_2D;
 
-    let types = new Array<number>();
-    let samplingModes = new Array<number>();
-    let useSRGBBuffers = new Array<boolean>();
-    let formats = new Array<number>();
-    let targets = new Array<number>();
-    let faceIndex = new Array<number>();
-    let layerIndex = new Array<number>();
-    let layers = new Array<number>();
+    let types: number[] = [];
+    let samplingModes: number[] = [];
+    let useSRGBBuffers: boolean[] = [];
+    let formats: number[] = [];
+    let targets: number[] = [];
+    let faceIndex: number[] = [];
+    let layerIndex: number[] = [];
+    let layers: number[] = [];
+    let labels: string[] = [];
 
     const rtWrapper = this._createHardwareRenderTargetWrapper(true, false, size) as WebGPURenderTargetWrapper;
 
@@ -99,6 +95,8 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
         if (options.layerCounts) {
             layers = options.layerCounts;
         }
+
+        labels = options.labels ?? labels;
     }
 
     const width = (<{ width: number; height: number }>size).width || <number>size;
@@ -117,7 +115,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
                 depthTextureFormat = Constants.TEXTUREFORMAT_STENCIL8;
             }
         }
-        depthStencilTexture = rtWrapper.createDepthStencilTexture(0, false, generateStencilBuffer, 1, depthTextureFormat);
+        depthStencilTexture = rtWrapper.createDepthStencilTexture(0, false, generateStencilBuffer, 1, depthTextureFormat, "MultipleRenderTargetDepthStencil");
     }
 
     const textures: InternalTexture[] = [];
@@ -189,6 +187,7 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
         texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         texture._useSRGBBuffer = useSRGBBuffer;
         texture.format = format;
+        texture.label = labels[i];
 
         this._internalTexturesCache.push(texture);
 

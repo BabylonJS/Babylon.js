@@ -271,7 +271,10 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
      * @param _xrSessionManager an instance of WebXRSessionManager
      * @param _options configuration object for this feature
      */
-    constructor(_xrSessionManager: WebXRSessionManager, private _options: IWebXRTeleportationOptions) {
+    constructor(
+        _xrSessionManager: WebXRSessionManager,
+        private _options: IWebXRTeleportationOptions
+    ) {
         super(_xrSessionManager);
         // create default mesh if not provided
         if (!this._options.teleportationTargetMesh) {

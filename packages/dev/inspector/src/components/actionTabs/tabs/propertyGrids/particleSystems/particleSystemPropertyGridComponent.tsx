@@ -768,7 +768,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     />
                     {system instanceof ParticleSystem && (
                         <>
-                            <CheckBoxLineComponent label="Enable ramp grandients" target={system} propertyName="useRampGradients" />
+                            <CheckBoxLineComponent label="Enable ramp gradients" target={system} propertyName="useRampGradients" />
                             {system.useRampGradients && (
                                 <>
                                     <ValueGradientGridComponent

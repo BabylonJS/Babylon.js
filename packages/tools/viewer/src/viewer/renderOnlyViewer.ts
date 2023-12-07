@@ -3,7 +3,10 @@ import { AbstractViewer } from "./viewer";
 import "core/Misc/observable.extensions";
 
 export class RenderOnlyViewer extends AbstractViewer {
-    constructor(public containerElement: Element, initialConfiguration: ViewerConfiguration = {}) {
+    constructor(
+        public containerElement: Element,
+        initialConfiguration: ViewerConfiguration = {}
+    ) {
         super(containerElement, initialConfiguration);
         this._canvas = containerElement as HTMLCanvasElement;
     }

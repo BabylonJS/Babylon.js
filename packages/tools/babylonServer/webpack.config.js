@@ -67,10 +67,22 @@ module.exports = (env) => {
         exclude: /node_modules/,
         sideEffects: true,
     });
-    const production = env.mode === "production" || process.env.NODE_ENV === "production";
     const commonConfig = {
-        mode: production ? "production" : "development",
-        devtool: production ? "source-map" : "eval-cheap-module-source-map",
+        ...buildTools.webpackTools.commonDevWebpackConfiguration(
+            {
+                mode: env.mode,
+                outputFilename: "[name].js",
+                dirName: __dirname,
+                enableHotReload: env.enableHotReload,
+                enableHttps: env.enableHttps,
+                enableLiveReload: env.enableLiveReload,
+            },
+            {
+                port: env.cdnPort || env.CDN_PORT || 1337,
+                static: ["public", "declarations", "../playground/public"],
+                showBuildProcess: true,
+            }
+        ),
         entry: {
             sceneTs: "./src/sceneTs.ts",
             sceneJs: "./src/sceneJs.js",
@@ -89,11 +101,6 @@ module.exports = (env) => {
             "babylon.ktx2Decoder": `./src/ktx2Decoder/index.ts`,
             // "babylonjs-gltf2interface": `./src/babylon.glTF2Interface.d.ts`,
         },
-        output: {
-            path: path.resolve(__dirname, "dist"),
-            filename: "[name].js",
-            devtoolModuleFilenameTemplate: production ? "webpack://[namespace]/[resource-path]?[loaders]" : "file:///[absolute-resource-path]",
-        },
         resolve: {
             extensions: [".js", ".ts", ".tsx"],
             alias: {
@@ -109,7 +116,7 @@ module.exports = (env) => {
                 "node-editor": path.resolve(basePathForTools, "nodeEditor", outputDirectoryForAliases),
                 "node-geometry-editor": path.resolve(basePathForTools, "nodeGeometryEditor", outputDirectoryForAliases),
                 "gui-editor": path.resolve(basePathForTools, "guiEditor", outputDirectoryForAliases),
-                "accessibility": path.resolve(basePathForTools, "accessibility", outputDirectoryForAliases),
+                accessibility: path.resolve(basePathForTools, "accessibility", outputDirectoryForAliases),
             },
             symlinks: false,
             // modules: [path.resolve(__dirname, "../../dev/"), 'node_modules'],
@@ -138,26 +145,6 @@ module.exports = (env) => {
         },
         module: {
             rules,
-        },
-        devServer: {
-            static: ["public", "declarations", "../playground/public"],
-            webSocketServer: production ? false : "ws",
-            compress: production,
-            port: env.cdnPort || env.CDN_PORT || 1337,
-            server: env.enableHttps !== undefined || process.env.ENABLE_HTTPS === "true" ? "https" : "http",
-            hot: (env.enableHotReload !== undefined || process.env.ENABLE_HOT_RELOAD === "true") && !production ? true : false,
-            liveReload: (env.enableLiveReload !== undefined || process.env.ENABLE_LIVE_RELOAD === "true") && !production ? true : false,
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-            },
-            client: {
-                overlay: process.env.DISABLE_DEV_OVERLAY ? false : {
-                    warnings: false,
-                    errors: true,
-                },
-                logging: production ? "error" : "info",
-                progress: true,
-            },
         },
         plugins: [],
     };
@@ -222,7 +209,7 @@ module.exports = (env) => {
         {
             from: "/nodeGeometryEditor/babylon.nodeGeometryEditor.d.ts",
             to: "/node-geometry-editor.d.ts",
-        },        
+        },
         {
             from: "/guiEditor/babylon.guiEditor.js",
             to: "/guiEditor/babylon.guiEditor.min.js",

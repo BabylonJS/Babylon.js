@@ -82,8 +82,11 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
             }
         } else {
             for (let index = 0; index < this._skeletonViewers.length; index++) {
-                this._skeletonViewers[index].mesh.reservedDataStore.skeletonViewer = null;
-                this._skeletonViewers[index].dispose();
+                const skeletonViewer = this._skeletonViewers[index];
+                if (skeletonViewer.mesh) {
+                    skeletonViewer.mesh.reservedDataStore.skeletonViewer = null;
+                }
+                skeletonViewer.dispose();
             }
             this._skeletonViewers = [];
         }

@@ -48,7 +48,7 @@ export class Control implements IAnimatable {
     public _currentMeasure = Measure.Empty();
     /** @internal */
     public _tempPaddingMeasure = Measure.Empty();
-    private _fontFamily = "Arial";
+    private _fontFamily = "";
     private _fontStyle = "";
     private _fontWeight = "";
     private _fontSize = new ValueAndUnit(18, ValueAndUnit.UNITMODE_PIXEL, false);
@@ -120,6 +120,11 @@ export class Control implements IAnimatable {
     private _gradient: Nullable<BaseGradient> = null;
     /** @internal */
     protected _rebuildLayout = false;
+
+    /**
+     * Observable that fires when the control's enabled state changes
+     */
+    public onEnabledStateChangedObservable = new Observable<boolean>();
 
     /** @internal */
     public _customData: any = {};
@@ -1235,6 +1240,7 @@ export class Control implements IAnimatable {
             }
         };
         recursivelyFirePointerOut(this);
+        this.onEnabledStateChangedObservable.notifyObservers(value);
     }
     /** Gets or sets background color of control if it's disabled. Only applies to Button class. */
     @serialize()
@@ -1437,7 +1443,7 @@ export class Control implements IAnimatable {
      * @returns all child controls
      */
     public getDescendants(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): Control[] {
-        const results = new Array<Control>();
+        const results: Control[] = [];
 
         this.getDescendantsToRef(results, directDescendantsOnly, predicate);
 
@@ -1845,6 +1851,10 @@ export class Control implements IAnimatable {
         this._preMeasure(this._tempPaddingMeasure, context);
 
         this._measure();
+
+        // Let children take some post-measurement actions
+        this._postMeasure(this._tempPaddingMeasure, context);
+
         this._computeAlignment(this._tempPaddingMeasure, context);
 
         // Convert to int values
@@ -2007,6 +2017,13 @@ export class Control implements IAnimatable {
      * @internal
      */
     protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext): void {
+        // Do nothing
+    }
+
+    /**
+     * @internal
+     */
+    protected _postMeasure(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         // Do nothing
     }
 
@@ -2376,21 +2393,58 @@ export class Control implements IAnimatable {
         return false;
     }
 
+    private _getStyleProperty(propName: "fontStyle" | "fontWeight" | "fontFamily", defaultValue: string): string {
+        const prop = (this._style && this._style[propName]) ?? this[propName];
+        if (!prop && this.parent) {
+            return this.parent._getStyleProperty(propName, defaultValue);
+        } else if (!this.parent) {
+            return defaultValue;
+        } else {
+            return prop;
+        }
+    }
+
     private _prepareFont() {
         if (!this._font && !this._fontSet) {
             return;
         }
 
-        if (this._style) {
-            this._font = this._style.fontStyle + " " + this._style.fontWeight + " " + this.fontSizeInPixels + "px " + this._style.fontFamily;
-        } else {
-            this._font = this._fontStyle + " " + this._fontWeight + " " + this.fontSizeInPixels + "px " + this._fontFamily;
-        }
+        this._font =
+            this._getStyleProperty("fontStyle", "") +
+            " " +
+            this._getStyleProperty("fontWeight", "") +
+            " " +
+            this.fontSizeInPixels +
+            "px " +
+            this._getStyleProperty("fontFamily", "Arial");
 
         this._fontOffset = Control._GetFontOffset(this._font);
 
         //children need to be refreshed
         this.getDescendants().forEach((child) => child._markAllAsDirty());
+    }
+
+    /**
+     * A control has a dimension fully defined if that dimension doesn't depend on the parent's dimension.
+     * As an example, a control that has dimensions in pixels is fully defined, while in percentage is not fully defined.
+     * @param dim the dimension to check (width or height)
+     * @returns if the dimension is fully defined
+     */
+    public isDimensionFullyDefined(dim: "width" | "height"): boolean {
+        return this.getDimension(dim).isPixel;
+    }
+
+    /**
+     * Gets the dimension of the control along a specified axis
+     * @param dim the dimension to retrieve (width or height)
+     * @returns the dimension value along the specified axis
+     */
+    public getDimension(dim: "width" | "height"): ValueAndUnit {
+        if (dim === "width") {
+            return this._width;
+        } else {
+            return this._height;
+        }
     }
 
     /**

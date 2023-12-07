@@ -75,7 +75,11 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * @param ammoInjection can be used to inject your own ammo reference
      * @param overlappingPairCache can be used to specify your own overlapping pair cache
      */
-    public constructor(private _useDeltaForWorldStep: boolean = true, ammoInjection: any = Ammo, overlappingPairCache: any = null) {
+    public constructor(
+        private _useDeltaForWorldStep: boolean = true,
+        ammoInjection: any = Ammo,
+        overlappingPairCache: any = null
+    ) {
         if (typeof ammoInjection === "function") {
             Logger.Error("AmmoJS is not ready. Please make sure you await Ammo() before using the plugin.");
             return;

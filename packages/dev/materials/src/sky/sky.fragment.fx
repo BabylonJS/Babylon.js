@@ -20,6 +20,12 @@ uniform float mieCoefficient;
 uniform float mieDirectionalG;
 uniform vec3 sunPosition;
 
+#ifdef LOGARITHMICDEPTH
+#extension GL_EXT_frag_depth : enable
+#endif
+
+#include<logDepthDeclaration>
+
 // Fog
 #include<fogFragmentDeclaration>
 
@@ -177,6 +183,8 @@ void main(void) {
 
 	// Composition
 	vec4 color = clamp(vec4(retColor.rgb, alpha), 0.0, 1.0);
+
+#include<logDepthFragment>
 
     // Fog
 #include<fogFragment>

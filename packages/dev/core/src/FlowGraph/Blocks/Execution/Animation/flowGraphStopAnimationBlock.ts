@@ -3,7 +3,8 @@ import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneExecutionBlock";
 import type { Animatable } from "../../../../Animations";
 import { RichTypeAny } from "../../../flowGraphRichTypes";
-
+import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import { RegisterClass } from "../../../../Misc/typeStore";
 /**
  * @experimental
  * Block that stops a running animation
@@ -14,9 +15,9 @@ export class FlowGraphStopAnimationBlock extends FlowGraphWithOnDoneExecutionBlo
      */
     public readonly animationToStop: FlowGraphDataConnection<Animatable>;
 
-    constructor() {
-        super();
-        this.animationToStop = this._registerDataInput("animationToStop", RichTypeAny);
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(config);
+        this.animationToStop = this.registerDataInput("animationToStop", RichTypeAny);
     }
 
     public _execute(context: FlowGraphContext): void {
@@ -24,4 +25,9 @@ export class FlowGraphStopAnimationBlock extends FlowGraphWithOnDoneExecutionBlo
         animationToStopValue.stop();
         this.onDone._activateSignal(context);
     }
+
+    public getClassName(): string {
+        return "FGStopAnimationBlock";
+    }
 }
+RegisterClass("FGStopAnimationBlock", FlowGraphStopAnimationBlock);

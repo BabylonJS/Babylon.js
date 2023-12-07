@@ -1,3 +1,4 @@
+import type { IFlowGraphBlockConfiguration } from "./flowGraphBlock";
 import type { FlowGraphContext } from "./flowGraphContext";
 import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 import type { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
@@ -13,8 +14,8 @@ export abstract class FlowGraphAsyncExecutionBlock extends FlowGraphExecutionBlo
      */
     public onDone: FlowGraphSignalConnection;
 
-    constructor() {
-        super();
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(config);
         this.onDone = this._registerSignalOutput("onDone");
     }
     /**

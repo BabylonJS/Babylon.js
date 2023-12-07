@@ -194,7 +194,7 @@ export class ProceduralTexture extends Texture {
 
     /**
      * The effect that is created when initializing the post process.
-     * @returns The created effect corresponding the the postprocess.
+     * @returns The created effect corresponding the postprocess.
      */
     public getEffect(): Effect {
         return this._drawWrapper.effect!;
@@ -272,6 +272,24 @@ export class ProceduralTexture extends Texture {
 
     protected _getDefines(): string {
         return "";
+    }
+
+    /**
+     * Executes a function when the texture will be ready to be drawn.
+     * @param func The callback to be used.
+     */
+    public executeWhenReady(func: (texture: ProceduralTexture) => void): void {
+        if (this.isReady()) {
+            func(this);
+            return;
+        }
+
+        const effect = this.getEffect();
+        if (effect) {
+            effect.executeWhenCompiled(() => {
+                func(this);
+            });
+        }
     }
 
     /**

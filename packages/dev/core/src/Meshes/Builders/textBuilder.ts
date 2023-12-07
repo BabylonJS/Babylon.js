@@ -5,6 +5,7 @@ import type { Vector4 } from "../../Maths/math.vector";
 import type { Scene } from "../../scene";
 import type { Nullable } from "../../types";
 import { Mesh } from "../mesh";
+import { TransformNode } from "../transformNode";
 import { ExtrudePolygon } from "./polygonBuilder";
 
 declare let earcut: any;
@@ -336,16 +337,23 @@ export function CreateText(
     const newMesh = Mesh.MergeMeshes(meshes, true, true);
 
     if (newMesh) {
-        // Move pivot to center
-        const bbox = newMesh?.getBoundingInfo();
-        newMesh.position.x = -bbox?.boundingBox.extendSizeWorld._x;
-        newMesh.position.y = -bbox?.boundingBox.extendSizeWorld._y;
-        newMesh.position.z = -bbox?.boundingBox.extendSizeWorld._z;
+        // Move pivot to desired center / bottom / center position
+        const bbox = newMesh.getBoundingInfo().boundingBox;
+        newMesh.position.x += -(bbox.minimumWorld.x + bbox.maximumWorld.x) / 2; // Mid X
+        newMesh.position.y += -(bbox.minimumWorld.y + bbox.maximumWorld.y) / 2; // Mid Z as it will rotate
+        newMesh.position.z += -(bbox.minimumWorld.z + bbox.maximumWorld.z) / 2 + bbox.extendSize.z; // Bottom Y as it will rotate
         newMesh.name = name;
 
-        newMesh.rotation.x = -Math.PI / 2;
+        // Rotate 90° Up
+        const pivot = new TransformNode("pivot", scene);
+        pivot.rotation.x = -Math.PI / 2;
+        newMesh.parent = pivot;
 
         newMesh.bakeCurrentTransformIntoVertices();
+
+        // Remove the pivot
+        newMesh.parent = null;
+        pivot.dispose();
     }
 
     return newMesh;

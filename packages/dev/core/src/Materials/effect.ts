@@ -7,6 +7,7 @@ import type { IDisposable } from "../scene";
 import type { IPipelineContext } from "../Engines/IPipelineContext";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { ShaderProcessor } from "../Engines/Processors/shaderProcessor";
+import type { IShaderProcessor } from "../Engines/Processors/iShaderProcessor";
 import type { ProcessingOptions, ShaderCustomProcessingFunction, ShaderProcessingContext } from "../Engines/Processors/shaderProcessingOptions";
 import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IQuaternionLike } from "../Maths/math.like";
 import type { ThinEngine } from "../Engines/thinEngine";
@@ -57,7 +58,7 @@ export interface IEffectCreationOptions {
      */
     onError: Nullable<(effect: Effect, errors: string) => void>;
     /**
-     * Parameters to be used with Babylons include syntax to iterate over an array (eg. {lights: 10})
+     * Parameters to be used with Babylons include syntax to iterate over an array (eg. \{lights: 10\})
      */
     indexParameters?: any;
     /**
@@ -228,6 +229,9 @@ export class Effect implements IDisposable {
     private static _BaseCache: { [key: number]: DataBuffer } = {};
     private _processingContext: Nullable<ShaderProcessingContext>;
 
+    private _processCodeAfterIncludes: ShaderCustomProcessingFunction | undefined = undefined;
+    private _processFinalCode: Nullable<ShaderCustomProcessingFunction> = null;
+
     /**
      * Instantiates an effect.
      * An effect can be used to create/manage/execute vertex and fragment shaders.
@@ -240,7 +244,7 @@ export class Effect implements IDisposable {
      * @param fallbacks Possible fallbacks for this effect to improve performance when needed.
      * @param onCompiled Callback that will be called when the shader is compiled.
      * @param onError Callback that will be called if an error occurs during shader compilation.
-     * @param indexParameters Parameters to be used with Babylons include syntax to iterate over an array (eg. {lights: 10})
+     * @param indexParameters Parameters to be used with Babylons include syntax to iterate over an array (eg. \{lights: 10\})
      * @param key Effect Key identifying uniquely compiled shader variants
      * @param shaderLanguage the language the shader is written in (default: GLSL)
      */
@@ -260,9 +264,6 @@ export class Effect implements IDisposable {
     ) {
         this.name = baseName;
         this._key = key;
-
-        let processCodeAfterIncludes: ShaderCustomProcessingFunction | undefined = undefined;
-        let processFinalCode: Nullable<ShaderCustomProcessingFunction> = null;
 
         if ((<IEffectCreationOptions>attributesNamesOrOptions).attributes) {
             const options = <IEffectCreationOptions>attributesNamesOrOptions;
@@ -287,8 +288,8 @@ export class Effect implements IDisposable {
                 }
             }
 
-            processFinalCode = options.processFinalCode ?? null;
-            processCodeAfterIncludes = options.processCodeAfterIncludes ?? undefined;
+            this._processFinalCode = options.processFinalCode ?? null;
+            this._processCodeAfterIncludes = options.processCodeAfterIncludes ?? undefined;
         } else {
             this._engine = <Engine>engine;
             this.defines = defines == null ? "" : defines;
@@ -309,9 +310,15 @@ export class Effect implements IDisposable {
 
         this.uniqueId = Effect._UniqueIdSeed++;
 
+        this._processShaderCode();
+    }
+
+    /** @internal */
+    public _processShaderCode(shaderProcessor: Nullable<IShaderProcessor> = null, keepExistingPipelineContext = false) {
         let vertexSource: any;
         let fragmentSource: any;
 
+        const baseName = this.name;
         const hostDocument = IsWindowObjectExist() ? this._engine.getHostDocument() : null;
 
         if (baseName.vertexSource) {
@@ -345,7 +352,7 @@ export class Effect implements IDisposable {
             indexParameters: this._indexParameters,
             isFragment: false,
             shouldUseHighPrecisionShader: this._engine._shouldUseHighPrecisionShader,
-            processor: this._engine._getShaderProcessor(this._shaderLanguage),
+            processor: shaderProcessor ?? this._engine._getShaderProcessor(this._shaderLanguage),
             supportsUniformBuffers: this._engine.supportsUniformBuffers,
             shadersRepository: EngineShaderStore.GetShadersRepository(this._shaderLanguage),
             includesShadersStore: EngineShaderStore.GetIncludesShadersStore(this._shaderLanguage),
@@ -354,7 +361,7 @@ export class Effect implements IDisposable {
             processingContext: this._processingContext,
             isNDCHalfZRange: this._engine.isNDCHalfZRange,
             useReverseDepthBuffer: this._engine.useReverseDepthBuffer,
-            processCodeAfterIncludes,
+            processCodeAfterIncludes: this._processCodeAfterIncludes,
         };
 
         const shaderCodes: [string | undefined, string | undefined] = [undefined, undefined];
@@ -367,12 +374,12 @@ export class Effect implements IDisposable {
                     processorOptions,
                     (migratedFragmentCode, codeBeforeMigration) => {
                         this._fragmentSourceCodeBeforeMigration = codeBeforeMigration;
-                        if (processFinalCode) {
-                            migratedFragmentCode = processFinalCode("fragment", migratedFragmentCode);
+                        if (this._processFinalCode) {
+                            migratedFragmentCode = this._processFinalCode("fragment", migratedFragmentCode);
                         }
                         const finalShaders = ShaderProcessor.Finalize(migratedVertexCode, migratedFragmentCode, processorOptions);
                         processorOptions = null as any;
-                        this._useFinalCode(finalShaders.vertexCode, finalShaders.fragmentCode, baseName);
+                        this._useFinalCode(finalShaders.vertexCode, finalShaders.fragmentCode, baseName, keepExistingPipelineContext);
                     },
                     this._engine
                 );
@@ -386,8 +393,8 @@ export class Effect implements IDisposable {
                 (migratedVertexCode, codeBeforeMigration) => {
                     this._rawVertexSourceCode = vertexCode;
                     this._vertexSourceCodeBeforeMigration = codeBeforeMigration;
-                    if (processFinalCode) {
-                        migratedVertexCode = processFinalCode("vertex", migratedVertexCode);
+                    if (this._processFinalCode) {
+                        migratedVertexCode = this._processFinalCode("vertex", migratedVertexCode);
                     }
                     shaderCodes[0] = migratedVertexCode;
                     shadersLoaded();
@@ -402,7 +409,7 @@ export class Effect implements IDisposable {
         });
     }
 
-    private _useFinalCode(migratedVertexCode: string, migratedFragmentCode: string, baseName: any) {
+    private _useFinalCode(migratedVertexCode: string, migratedFragmentCode: string, baseName: any, keepExistingPipelineContext = false) {
         if (baseName) {
             const vertex = baseName.vertexElement || baseName.vertex || baseName.spectorName || baseName;
             const fragment = baseName.fragmentElement || baseName.fragment || baseName.spectorName || baseName;
@@ -413,7 +420,7 @@ export class Effect implements IDisposable {
             this._vertexSourceCode = migratedVertexCode;
             this._fragmentSourceCode = migratedFragmentCode;
         }
-        this._prepareEffect();
+        this._prepareEffect(keepExistingPipelineContext);
     }
 
     /**
@@ -737,7 +744,7 @@ export class Effect implements IDisposable {
      * Prepares the effect
      * @internal
      */
-    public _prepareEffect() {
+    public _prepareEffect(keepExistingPipelineContext = false) {
         const attributesNames = this._attributesNames;
         const defines = this.defines;
 
@@ -748,10 +755,15 @@ export class Effect implements IDisposable {
         try {
             const engine = this._engine;
 
-            this._pipelineContext = engine.createPipelineContext(this._processingContext);
-            this._pipelineContext._name = this._key;
+            this._pipelineContext = (keepExistingPipelineContext ? previousPipelineContext : undefined) ?? engine.createPipelineContext(this._processingContext);
+            this._pipelineContext._name = this._key.replace(/\r/g, "").replace(/\n/g, "|");
 
-            const rebuildRebind = this._rebuildProgram.bind(this);
+            const rebuildRebind = (
+                vertexSourceCode: string,
+                fragmentSourceCode: string,
+                onCompiled: (pipelineContext: IPipelineContext) => void,
+                onError: (message: string) => void
+            ) => this._rebuildProgram(vertexSourceCode, fragmentSourceCode, onCompiled, onError);
             if (this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride) {
                 engine._preparePipelineContext(
                     this._pipelineContext,
@@ -816,7 +828,7 @@ export class Effect implements IDisposable {
                     this._fallbacks.unBindMesh();
                 }
 
-                if (previousPipelineContext) {
+                if (previousPipelineContext && !keepExistingPipelineContext) {
                     this.getEngine()._deletePipelineContext(previousPipelineContext);
                 }
             });

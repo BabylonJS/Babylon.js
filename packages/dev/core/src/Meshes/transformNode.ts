@@ -219,6 +219,13 @@ export class TransformNode extends Node {
     }
 
     /**
+     * return true if pivot matrix must be cancelled in the world matrix. When this parameter is set to true (default), the inverse of the pivot matrix is also applied at the end to cancel the transformation effect.
+     */
+    public isUsingPostMultiplyPivotMatrix(): boolean {
+        return this._postMultiplyPivotMatrix;
+    }
+
+    /**
      * Gets or sets the rotation property : a Vector3 defining the rotation value in radians around each local axis X, Y, Z  (default is (0.0, 0.0, 0.0)).
      * If rotation quaternion is set, this Vector3 will be ignored and copy from the quaternion
      */
@@ -906,9 +913,14 @@ export class TransformNode extends Node {
             this.rotationQuaternion.multiplyToRef(rotationQuaternion, this.rotationQuaternion);
         } else {
             if (this.parent) {
+                const parentWorldMatrix = this.parent.getWorldMatrix();
                 const invertParentWorldMatrix = TmpVectors.Matrix[0];
-                this.parent.getWorldMatrix().invertToRef(invertParentWorldMatrix);
+                parentWorldMatrix.invertToRef(invertParentWorldMatrix);
                 axis = Vector3.TransformNormal(axis, invertParentWorldMatrix);
+
+                if (parentWorldMatrix.determinant() < 0) {
+                    amount *= -1;
+                }
             }
             rotationQuaternion = Quaternion.RotationAxisToRef(axis, amount, TransformNode._RotationAxisCache);
             rotationQuaternion.multiplyToRef(this.rotationQuaternion, this.rotationQuaternion);

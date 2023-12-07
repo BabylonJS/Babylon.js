@@ -12,6 +12,8 @@ import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComp
 import type { MeshBlock } from "core/Meshes/Node/Blocks/Sources/meshBlock";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { Mesh } from "core/Meshes/mesh";
+import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
+import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineComponent";
 
 export class MeshPropertyTabComponent extends React.Component<IPropertyComponentProps, { isLoading: boolean }> {
     constructor(props: IPropertyComponentProps) {
@@ -47,6 +49,13 @@ export class MeshPropertyTabComponent extends React.Component<IPropertyComponent
         }
 
         this.forceUpdate();
+    }
+
+    removeData() {
+        const block = this.props.nodeData.data as MeshBlock;
+        block.cleanData();
+        this.forceUpdate();
+        this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
     }
 
     render() {
@@ -110,6 +119,17 @@ export class MeshPropertyTabComponent extends React.Component<IPropertyComponent
                     )}
                     {!scene && !!block.mesh && <TextLineComponent ignoreValue={true} label={`Mesh ${block.mesh.name} defined by code`} />}
                     {!scene && !!block.isUsingCachedData && <TextLineComponent ignoreValue={true} label={`Block is using cached data`} />}
+                    {!this.state.isLoading && (!!block.mesh || !!block.isUsingCachedData) && <ButtonLineComponent label="Remove" onClick={() => this.removeData()} />}
+                </LineContainerComponent>
+                <LineContainerComponent title="ADVANCED">
+                    <CheckBoxLineComponent
+                        label="Serialized cached data"
+                        target={block}
+                        propertyName="serializedCachedData"
+                        onValueChanged={() => {
+                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+                        }}
+                    />
                 </LineContainerComponent>
             </div>
         );

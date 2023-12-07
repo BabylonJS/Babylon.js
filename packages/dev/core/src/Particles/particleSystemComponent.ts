@@ -135,7 +135,7 @@ declare module "../Meshes/mesh" {
 }
 
 Mesh.prototype.getEmittedParticleSystems = function (): IParticleSystem[] {
-    const results = new Array<IParticleSystem>();
+    const results: IParticleSystem[] = [];
     for (let index = 0; index < this.getScene().particleSystems.length; index++) {
         const particleSystem = this.getScene().particleSystems[index];
         if (particleSystem.emitter === this) {
@@ -146,7 +146,7 @@ Mesh.prototype.getEmittedParticleSystems = function (): IParticleSystem[] {
 };
 
 Mesh.prototype.getHierarchyEmittedParticleSystems = function (): IParticleSystem[] {
-    const results = new Array<IParticleSystem>();
+    const results: IParticleSystem[] = [];
     const descendants = this.getDescendants();
     descendants.push(this);
 

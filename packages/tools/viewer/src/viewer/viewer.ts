@@ -183,7 +183,10 @@ export abstract class AbstractViewer {
         return new RenderOnlyConfigurationLoader();
     }
 
-    constructor(public containerElement: Element, initialConfiguration: ViewerConfiguration = {}) {
+    constructor(
+        public containerElement: Element,
+        initialConfiguration: ViewerConfiguration = {}
+    ) {
         // if exists, use the container id. otherwise, generate a random string.
         if (containerElement.id) {
             this.baseId = containerElement.id;

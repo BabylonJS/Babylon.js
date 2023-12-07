@@ -5,6 +5,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Mesh } from "../../../../Meshes/mesh";
 import { VertexData } from "../../../../Meshes/mesh.vertexData";
 import type { Nullable } from "../../../../types";
+import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
 
 /**
  * Defines a block used to generate a user defined mesh geometry data
@@ -12,6 +13,17 @@ import type { Nullable } from "../../../../types";
 export class MeshBlock extends NodeGeometryBlock {
     private _mesh: Nullable<Mesh>;
     private _cachedVertexData: Nullable<VertexData> = null;
+
+    /**
+     * Gets or sets a boolean indicating that winding order needs to be reserved
+     */
+    public reverseWindingOrder = false;
+
+    /**
+     * Gets or sets a boolean indicating that this block should serialize its cached data
+     */
+    @editableInPropertyPage("Serialize cached data", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { rebuild: true } })
+    public serializedCachedData = false;
 
     /**
      * Gets or sets the mesh to use to get vertex data
@@ -56,6 +68,14 @@ export class MeshBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
+    /**
+     * Remove stored data
+     */
+    public cleanData() {
+        this._mesh = null;
+        this._cachedVertexData = null;
+    }
+
     protected _buildBlock() {
         if (!this._mesh) {
             if (this._cachedVertexData) {
@@ -69,6 +89,14 @@ export class MeshBlock extends NodeGeometryBlock {
         const vertexData = VertexData.ExtractFromMesh(this._mesh, false, true);
         this._cachedVertexData = null;
 
+        if (this.reverseWindingOrder && vertexData.indices) {
+            for (let index = 0; index < vertexData.indices.length; index += 3) {
+                const tmp = vertexData.indices[index];
+                vertexData.indices[index] = vertexData.indices[index + 2];
+                vertexData.indices[index + 2] = tmp;
+            }
+        }
+
         this.geometry._storedFunction = () => {
             return vertexData.clone();
         };
@@ -76,19 +104,21 @@ export class MeshBlock extends NodeGeometryBlock {
 
     /**
      * Serializes this block in a JSON representation
-     * @param saveMeshData defines a boolean indicating that mesh data must be saved as well
      * @returns the serialized block object
      */
-    public serialize(saveMeshData?: boolean): any {
+    public serialize(): any {
         const serializationObject = super.serialize();
+        serializationObject.serializedCachedData = this.serializedCachedData;
 
-        if (saveMeshData) {
+        if (this.serializedCachedData) {
             if (this._mesh) {
                 serializationObject.cachedVertexData = VertexData.ExtractFromMesh(this._mesh, false, true).serialize();
             } else if (this._cachedVertexData) {
                 serializationObject.cachedVertexData = this._cachedVertexData.serialize();
             }
         }
+
+        serializationObject.reverseWindingOrder = this.reverseWindingOrder;
 
         return serializationObject;
     }
@@ -99,6 +129,9 @@ export class MeshBlock extends NodeGeometryBlock {
         if (serializationObject.cachedVertexData) {
             this._cachedVertexData = VertexData.Parse(serializationObject.cachedVertexData);
         }
+
+        this.serializedCachedData = !!serializationObject.serializedCachedData;
+        this.reverseWindingOrder = serializationObject.reverseWindingOrder;
     }
 }
 

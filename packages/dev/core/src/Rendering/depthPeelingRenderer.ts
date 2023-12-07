@@ -190,13 +190,30 @@ export class DepthPeelingRenderer {
         };
 
         // 2 for ping pong
-        this._depthMrts = [new MultiRenderTarget("depthPeelingDepth0", size, 3, this._scene), new MultiRenderTarget("depthPeelingDepth1", size, 3, this._scene)];
-        this._colorMrts = [
-            new MultiRenderTarget("depthPeelingColor0", size, 2, this._scene, { generateDepthBuffer: false }),
-            new MultiRenderTarget("depthPeelingColor1", size, 2, this._scene, { generateDepthBuffer: false }),
+        this._depthMrts = [
+            new MultiRenderTarget("depthPeelingDepth0MRT", size, 3, this._scene, undefined, [
+                "depthPeelingDepth0MRT_depth",
+                "depthPeelingDepth0MRT_frontColor",
+                "depthPeelingDepth0MRT_backColor",
+            ]),
+            new MultiRenderTarget("depthPeelingDepth1MRT", size, 3, this._scene, undefined, [
+                "depthPeelingDepth1MRT_depth",
+                "depthPeelingDepth1MRT_frontColor",
+                "depthPeelingDepth1MRT_backColor",
+            ]),
         ];
-        this._blendBackMrt = new MultiRenderTarget("depthPeelingBack", size, 1, this._scene, { generateDepthBuffer: false });
-        this._outputRT = new RenderTargetTexture("depthPeelingOutput", size, this._scene, false);
+        this._colorMrts = [
+            new MultiRenderTarget("depthPeelingColor0MRT", size, 2, this._scene, { generateDepthBuffer: false }, [
+                "depthPeelingColor0MRT_frontColor",
+                "depthPeelingColor0MRT_backColor",
+            ]),
+            new MultiRenderTarget("depthPeelingColor1MRT", size, 2, this._scene, { generateDepthBuffer: false }, [
+                "depthPeelingColor1MRT_frontColor",
+                "depthPeelingColor1MRT_backColor",
+            ]),
+        ];
+        this._blendBackMrt = new MultiRenderTarget("depthPeelingBackMRT", size, 1, this._scene, { generateDepthBuffer: false }, ["depthPeelingBackMRT_blendBack"]);
+        this._outputRT = new RenderTargetTexture("depthPeelingOutputRTT", size, this._scene, false);
 
         // 0 is a depth texture
         // 1 is a color texture
@@ -408,6 +425,19 @@ export class DepthPeelingRenderer {
     }
 
     /**
+     * Checks if the depth peeling renderer is ready to render transparent meshes
+     * @returns true if the depth peeling renderer is ready to render the transparent meshes
+     */
+    public isReady() {
+        return (
+            this._blendBackEffectWrapper.effect.isReady() &&
+            this._blendBackEffectWrapperPingPong.effect.isReady() &&
+            this._finalEffectWrapper.effect.isReady() &&
+            this._updateTextures()
+        );
+    }
+
+    /**
      * Renders transparent submeshes with depth peeling
      * @param transparentSubMeshes List of transparent meshes to render
      * @returns The array of submeshes that could not be handled by this renderer
@@ -415,12 +445,7 @@ export class DepthPeelingRenderer {
     public render(transparentSubMeshes: SmartArray<SubMesh>): SmartArray<SubMesh> {
         this._candidateSubMeshes.length = 0;
         this._excludedSubMeshes.length = 0;
-        if (
-            !this._blendBackEffectWrapper.effect.isReady() ||
-            !this._blendBackEffectWrapperPingPong.effect.isReady() ||
-            !this._finalEffectWrapper.effect.isReady() ||
-            !this._updateTextures()
-        ) {
+        if (!this.isReady()) {
             return this._excludedSubMeshes;
         }
 

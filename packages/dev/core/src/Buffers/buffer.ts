@@ -16,6 +16,7 @@ export class Buffer {
     private _divisor: number;
     private _isAlreadyOwned = false;
     private _isDisposed = false;
+    private _label?: string;
 
     /**
      * Gets a boolean indicating if the Buffer is disposed
@@ -39,16 +40,18 @@ export class Buffer {
      * @param instanced whether the buffer is instanced (optional)
      * @param useBytes set to true if the stride in in bytes (optional)
      * @param divisor sets an optional divisor for instances (1 by default)
+     * @param label defines the label of the buffer (for debug purpose)
      */
     constructor(
         engine: ThinEngine,
         data: DataArray | DataBuffer,
         updatable: boolean,
         stride = 0,
-        postponeInternalCreation = !engine,
+        postponeInternalCreation = false,
         instanced = false,
         useBytes = false,
-        divisor?: number
+        divisor?: number,
+        label?: string
     ) {
         if (engine && (engine as unknown as Mesh).getScene) {
             // old versions of VertexBuffer accepted 'mesh' instead of 'engine'
@@ -60,6 +63,7 @@ export class Buffer {
         this._updatable = updatable;
         this._instanced = instanced;
         this._divisor = divisor || 1;
+        this._label = label;
 
         if (data instanceof DataBuffer) {
             this._data = null;
@@ -167,10 +171,10 @@ export class Buffer {
         if (!this._buffer) {
             // create buffer
             if (this._updatable) {
-                this._buffer = this._engine.createDynamicVertexBuffer(data);
+                this._buffer = this._engine.createDynamicVertexBuffer(data, this._label);
                 this._data = data;
             } else {
-                this._buffer = this._engine.createVertexBuffer(data);
+                this._buffer = this._engine.createVertexBuffer(data, undefined, this._label);
             }
         } else if (this._updatable) {
             // update buffer
@@ -255,6 +259,60 @@ export class Buffer {
 }
 
 /**
+ * Options to be used when creating a vertex buffer
+ */
+export interface IVertexBufferOptions {
+    /**
+     * whether the data is updatable (default: false)
+     */
+    updatable?: boolean;
+    /**
+     * whether to postpone creating the internal WebGL buffer (default: false)
+     */
+    postponeInternalCreation?: boolean;
+    /**
+     * the stride (will be automatically computed from the kind parameter if not specified)
+     */
+    stride?: number;
+    /**
+     * whether the buffer is instanced (default: false)
+     */
+    instanced?: boolean;
+    /**
+     * the offset of the data (default: 0)
+     */
+    offset?: number;
+    /**
+     * the number of components (will be automatically computed from the kind parameter if not specified)
+     */
+    size?: number;
+    /**
+     * the type of the component (will be deduce from the data parameter if not specified)
+     */
+    type?: number;
+    /**
+     * whether the data contains normalized data (default: false)
+     */
+    normalized?: boolean;
+    /**
+     * set to true if stride and offset are in bytes (default: false)
+     */
+    useBytes?: boolean;
+    /**
+     * defines the instance divisor to use (default: 1, only used if instanced is true)
+     */
+    divisor?: number;
+    /**
+     * defines if the buffer should be released when the vertex buffer is disposed (default: false)
+     */
+    takeBufferOwnership?: boolean;
+    /**
+     * label to use for this vertex buffer (debugging purpose)
+     */
+    label?: string;
+}
+
+/**
  * Specialized buffer used to store vertex data
  */
 export class VertexBuffer {
@@ -266,10 +324,14 @@ export class VertexBuffer {
     public _validOffsetRange: boolean; // used internally by the engine
     private _kind: string;
     private _size: number;
-    private _ownsBuffer: boolean;
+    /** @internal */
+    public _ownsBuffer: boolean;
     private _instanced: boolean;
     private _instanceDivisor: number;
-    private _isDisposed = false;
+    /** @internal */
+    public _isDisposed = false;
+    /** @internal */
+    public _label?: string;
 
     /**
      * The byte type.
@@ -362,6 +424,28 @@ export class VertexBuffer {
     public readonly hashCode: number;
 
     /**
+     * Gets the engine associated with the buffer
+     */
+    public readonly engine: ThinEngine;
+
+    /**
+     * Gets the number of vertices in the buffer
+     */
+    public get totalVertices() {
+        const data = this.getData();
+        if (!data) {
+            return 0;
+        }
+
+        if (Array.isArray(data)) {
+            // data is a regular number[] with float values
+            return data.length / (this.byteStride / 4) - this.byteOffset / 4;
+        }
+
+        return (data.byteLength - this.byteOffset) / this.byteStride;
+    }
+
+    /**
      * Constructor
      * @param engine the engine
      * @param data the data to use for this vertex buffer
@@ -389,23 +473,71 @@ export class VertexBuffer {
         offset?: number,
         size?: number,
         type?: number,
+        normalized?: boolean,
+        useBytes?: boolean,
+        divisor?: number,
+        takeBufferOwnership?: boolean
+    );
+
+    /**
+     * Constructor
+     * @param engine the engine
+     * @param data the data to use for this vertex buffer
+     * @param kind the vertex buffer kind
+     * @param options defines the rest of the options used to create the buffer
+     */
+    constructor(engine: ThinEngine, data: DataArray | Buffer | DataBuffer, kind: string, options?: IVertexBufferOptions);
+
+    /** @internal */
+    constructor(
+        engine: ThinEngine,
+        data: DataArray | Buffer | DataBuffer,
+        kind: string,
+        updatableOrOptions?: boolean | IVertexBufferOptions,
+        postponeInternalCreation?: boolean,
+        stride?: number,
+        instanced?: boolean,
+        offset?: number,
+        size?: number,
+        type?: number,
         normalized = false,
         useBytes = false,
         divisor = 1,
         takeBufferOwnership = false
     ) {
+        let updatable = false;
+
+        this.engine = engine;
+
+        if (typeof updatableOrOptions === "object" && updatableOrOptions !== null) {
+            updatable = updatableOrOptions.updatable ?? false;
+            postponeInternalCreation = updatableOrOptions.postponeInternalCreation;
+            stride = updatableOrOptions.stride;
+            instanced = updatableOrOptions.instanced;
+            offset = updatableOrOptions.offset;
+            size = updatableOrOptions.size;
+            type = updatableOrOptions.type;
+            normalized = updatableOrOptions.normalized ?? false;
+            useBytes = updatableOrOptions.useBytes ?? false;
+            divisor = updatableOrOptions.divisor ?? 1;
+            takeBufferOwnership = updatableOrOptions.takeBufferOwnership ?? false;
+            this._label = updatableOrOptions.label;
+        } else {
+            updatable = !!updatableOrOptions;
+        }
+
         if (data instanceof Buffer) {
             this._buffer = data;
             this._ownsBuffer = takeBufferOwnership;
         } else {
-            this._buffer = new Buffer(engine, data, updatable, stride, postponeInternalCreation, instanced, useBytes);
+            this._buffer = new Buffer(engine, data, updatable, stride, postponeInternalCreation, instanced, useBytes, divisor, this._label);
             this._ownsBuffer = true;
         }
 
         this.uniqueId = VertexBuffer._Counter++;
         this._kind = kind;
 
-        if (type == undefined) {
+        if (type === undefined) {
             const vertexData = this.getData();
             this.type = vertexData ? VertexBuffer.GetDataType(vertexData) : VertexBuffer.FLOAT;
         } else {
@@ -429,6 +561,7 @@ export class VertexBuffer {
         this._instanced = instanced !== undefined ? instanced : false;
         this._instanceDivisor = instanced ? divisor : 0;
 
+        this._alignBuffer();
         this._computeHashCode();
     }
 
@@ -445,11 +578,7 @@ export class VertexBuffer {
 
     /** @internal */
     public _rebuild(): void {
-        if (!this._buffer) {
-            return;
-        }
-
-        this._buffer._rebuild();
+        this._buffer?._rebuild();
     }
 
     /**
@@ -484,11 +613,13 @@ export class VertexBuffer {
      * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
      * @returns a float array containing vertex data
      */
-    public getFloatData(totalVertices: number, forceCopy?: boolean): Nullable<FloatArray> {
+    public getFloatData(totalVertices?: number, forceCopy?: boolean): Nullable<FloatArray> {
         const data = this.getData();
         if (!data) {
             return null;
         }
+
+        totalVertices = totalVertices ?? this.totalVertices;
 
         return VertexBuffer.GetFloatData(data, this._size, this.type, this.byteOffset, this.byteStride, this.normalized, totalVertices, forceCopy);
     }
@@ -553,6 +684,7 @@ export class VertexBuffer {
      */
     public create(data?: DataArray): void {
         this._buffer.create(data);
+        this._alignBuffer();
     }
 
     /**
@@ -562,6 +694,7 @@ export class VertexBuffer {
      */
     public update(data: DataArray): void {
         this._buffer.update(data);
+        this._alignBuffer();
     }
 
     /**
@@ -573,6 +706,7 @@ export class VertexBuffer {
      */
     public updateDirectly(data: DataArray, offset: number, useBytes: boolean = false): void {
         this._buffer.updateDirectly(data, offset, undefined, useBytes);
+        this._alignBuffer();
     }
 
     /**
@@ -594,6 +728,9 @@ export class VertexBuffer {
     public forEach(count: number, callback: (value: number, index: number) => void): void {
         VertexBuffer.ForEach(this._buffer.getData()!, this.byteOffset, this.byteStride, this._size, this.type, count, this.normalized, callback);
     }
+
+    /** @internal */
+    public _alignBuffer() {}
 
     // Enums
     /**
@@ -675,6 +812,7 @@ export class VertexBuffer {
             case VertexBuffer.PositionKind:
                 return 3;
             case VertexBuffer.ColorKind:
+            case VertexBuffer.ColorInstanceKind:
             case VertexBuffer.MatricesIndicesKind:
             case VertexBuffer.MatricesIndicesExtraKind:
             case VertexBuffer.MatricesWeightsKind:

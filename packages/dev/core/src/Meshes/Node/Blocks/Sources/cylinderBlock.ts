@@ -160,8 +160,10 @@ export class CylinderBlock extends NodeGeometryBlock {
         if (this.evaluateContext) {
             this.geometry._storedFunction = func;
         } else {
+            const value = func(state);
             this.geometry._storedFunction = () => {
-                return func(state).clone();
+                this.geometry._executionCount = 1;
+                return value.clone();
             };
         }
     }
