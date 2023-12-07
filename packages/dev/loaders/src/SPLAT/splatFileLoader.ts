@@ -78,7 +78,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
      * @returns The loaded asset container
      */
     public loadAssetContainerAsync(_scene: Scene, _data: string, _rootUrl: string): Promise<AssetContainer> {
-        return {} as any;
+        throw new Error("loadAssetContainerAsync not implemented for Gaussian Splatting loading");
     }
 }
 

@@ -1,6 +1,6 @@
 import { Effect } from "../../Materials/effect";
 import { ShaderMaterial } from "../../Materials/shaderMaterial";
-import { Matrix, Quaternion, TmpVectors, Vector2 } from "../../Maths/math.vector";
+import { Matrix, Quaternion, TmpVectors, Vector2, Vector3 } from "../../Maths/math.vector";
 import { Mesh } from "../../Meshes/mesh";
 import { VertexData } from "../../Meshes/mesh.vertexData";
 import type { Observer } from "../../Misc/observable";
@@ -22,6 +22,8 @@ export class GaussianSplatting {
     private _sceneBeforeRenderObserver: Nullable<Observer<Scene>>;
     private _material: ShaderMaterial;
     private _modelViewMatrix = Matrix.Identity();
+    private _minimum = new Vector3();
+    private _maximum = new Vector3();
     /**
      * Name of the GS that is also used to name a mesh for rendering it
      */
@@ -78,8 +80,9 @@ export class GaussianSplatting {
         vertexData.indices = [0, 1, 2, 0, 2, 3];
         vertexData.applyToMesh(mesh);
 
+        mesh.getBoundingInfo().reConstruct(this._minimum, this._maximum);
+        mesh.computeWorldMatrix(true);
         mesh.material = this._material;
-        mesh.alwaysSelectAsActiveMesh = true;
         return mesh;
     }
 
@@ -225,10 +228,21 @@ export class GaussianSplatting {
         const matrixRotation = Matrix.Zero();
         const matrixScale = Matrix.Zero();
         const quaternion = Quaternion.Identity();
+
+        this._minimum.set(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+        this._maximum.set(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+
         for (let i = 0; i < vertexCount; i++) {
-            this._positions[3 * i + 0] = f_buffer[8 * i + 0];
-            this._positions[3 * i + 1] = -f_buffer[8 * i + 1];
-            this._positions[3 * i + 2] = f_buffer[8 * i + 2];
+            const x = f_buffer[8 * i + 0];
+            const y = -f_buffer[8 * i + 1];
+            const z = f_buffer[8 * i + 2];
+
+            this._positions[3 * i + 0] = x;
+            this._positions[3 * i + 1] = y;
+            this._positions[3 * i + 2] = z;
+
+            this._minimum.minimizeInPlaceFromFloats(x, y, z);
+            this._maximum.maximizeInPlaceFromFloats(x, y, z);
 
             quaternion.set(
                 (this._uBuffer[32 * i + 28 + 1] - 128) / 128,
@@ -336,10 +350,7 @@ export class GaussianSplatting {
      */
 
     public loadDataAsync(data: ArrayBuffer): Promise<void> {
-        return new Promise((resolve) => {
-            this._loadData(data);
-            resolve();
-        });
+        return Promise.resolve(this._loadData(data));
     }
     /**
      * Loads a .splat Gaussian Splatting file asynchronously
