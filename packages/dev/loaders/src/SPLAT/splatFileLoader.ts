@@ -1,6 +1,6 @@
 import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderPlugin, ISceneLoaderAsyncResult, ISceneLoaderPluginExtensions } from "core/Loading/sceneLoader";
 import { SceneLoader } from "core/Loading/sceneLoader";
-import { GaussianSplatting } from "core/Rendering";
+import { GaussianSplatting } from "core/Rendering/GaussianSplatting";
 import type { AssetContainer } from "core/assetContainer";
 import type { Scene } from "core/scene";
 
