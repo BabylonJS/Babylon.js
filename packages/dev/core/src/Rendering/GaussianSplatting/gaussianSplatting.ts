@@ -1,3 +1,4 @@
+import { BoundingInfo } from "../../Culling/boundingInfo";
 import { Effect } from "../../Materials/effect";
 import { ShaderMaterial } from "../../Materials/shaderMaterial";
 import { Matrix, Quaternion, TmpVectors, Vector2, Vector3 } from "../../Maths/math.vector";
@@ -79,9 +80,10 @@ export class GaussianSplatting {
         vertexData.positions = [-2, -2, 0, 2, -2, 0, 2, 2, 0, -2, 2, 0];
         vertexData.indices = [0, 1, 2, 0, 2, 3];
         vertexData.applyToMesh(mesh);
-
-        mesh.getBoundingInfo().reConstruct(this._minimum, this._maximum);
-        mesh.computeWorldMatrix(true);
+        const binfo = new BoundingInfo(this._minimum, this._maximum);
+        binfo.isLocked = true;
+        mesh.setBoundingInfo(binfo);
+        mesh.doNotSyncBoundingInfo = true;
         mesh.material = this._material;
         return mesh;
     }
