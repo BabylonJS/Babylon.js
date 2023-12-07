@@ -1,6 +1,322 @@
 {
-    "fromTag": "6.32.0",
+    "fromTag": "6.32.1",
     "changelog": {
+        "6.33.0": [
+            {
+                "pr": "14588",
+                "title": "Fix reentrance of  updated vertex data",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setColorsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setNormalsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setPositionsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setTangentsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setUVsBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/mergeGeometryBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14586",
+                "title": "Fix attribute set difference",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.vertexData.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14581",
+                "title": "Materials: Add support for logarithmic depth to all materials",
+                "description": "See https://forum.babylonjs.com/t/log-depth-buffer-makes-overlapping-meshes-edge-disappear/46152",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Background/backgroundMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/vertexOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildStateSharedData.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Shaders/background.fragment.fx",
+                    "packages/dev/core/src/Shaders/background.vertex.fx",
+                    "packages/dev/core/src/Shaders/line.fragment.fx",
+                    "packages/dev/core/src/Shaders/line.vertex.fx",
+                    "packages/dev/materials/src/cell/cell.fragment.fx",
+                    "packages/dev/materials/src/cell/cell.vertex.fx",
+                    "packages/dev/materials/src/cell/cellMaterial.ts",
+                    "packages/dev/materials/src/fire/fire.fragment.fx",
+                    "packages/dev/materials/src/fire/fire.vertex.fx",
+                    "packages/dev/materials/src/fire/fireMaterial.ts",
+                    "packages/dev/materials/src/fur/fur.fragment.fx",
+                    "packages/dev/materials/src/fur/fur.vertex.fx",
+                    "packages/dev/materials/src/fur/furMaterial.ts",
+                    "packages/dev/materials/src/gradient/gradient.fragment.fx",
+                    "packages/dev/materials/src/gradient/gradient.vertex.fx",
+                    "packages/dev/materials/src/gradient/gradientMaterial.ts",
+                    "packages/dev/materials/src/grid/grid.fragment.fx",
+                    "packages/dev/materials/src/grid/grid.vertex.fx",
+                    "packages/dev/materials/src/grid/gridMaterial.ts",
+                    "packages/dev/materials/src/lava/lava.fragment.fx",
+                    "packages/dev/materials/src/lava/lava.vertex.fx",
+                    "packages/dev/materials/src/lava/lavaMaterial.ts",
+                    "packages/dev/materials/src/mix/mix.fragment.fx",
+                    "packages/dev/materials/src/mix/mix.vertex.fx",
+                    "packages/dev/materials/src/mix/mixMaterial.ts",
+                    "packages/dev/materials/src/normal/normal.fragment.fx",
+                    "packages/dev/materials/src/normal/normal.vertex.fx",
+                    "packages/dev/materials/src/normal/normalMaterial.ts",
+                    "packages/dev/materials/src/shadowOnly/shadowOnly.fragment.fx",
+                    "packages/dev/materials/src/shadowOnly/shadowOnly.vertex.fx",
+                    "packages/dev/materials/src/shadowOnly/shadowOnlyMaterial.ts",
+                    "packages/dev/materials/src/simple/simple.fragment.fx",
+                    "packages/dev/materials/src/simple/simple.vertex.fx",
+                    "packages/dev/materials/src/simple/simpleMaterial.ts",
+                    "packages/dev/materials/src/sky/sky.fragment.fx",
+                    "packages/dev/materials/src/sky/sky.vertex.fx",
+                    "packages/dev/materials/src/sky/skyMaterial.ts",
+                    "packages/dev/materials/src/terrain/terrain.fragment.fx",
+                    "packages/dev/materials/src/terrain/terrain.vertex.fx",
+                    "packages/dev/materials/src/terrain/terrainMaterial.ts",
+                    "packages/dev/materials/src/triPlanar/triPlanarMaterial.ts",
+                    "packages/dev/materials/src/triPlanar/triplanar.fragment.fx",
+                    "packages/dev/materials/src/triPlanar/triplanar.vertex.fx",
+                    "packages/dev/materials/src/water/waterMaterial.ts"
+                ],
+                "tags": [
+                    "materials",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14584",
+                "title": "Animations: Use a new mode for \"relative from current\" animation loop",
+                "description": "Follow up to #14563 \r\n\r\nIt was breaking existing code (see https://forum.babylonjs.com/t/camera-animation-bug/46211 among others), so this PR adds a new loop mode for \"relative from current\".",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animatable.ts",
+                    "packages/dev/core/src/Animations/animation.ts",
+                    "packages/dev/core/src/Animations/runtimeAnimation.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/addAnimationComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/editAnimationComponent.tsx"
+                ],
+                "tags": [
+                    "animations",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14578",
+                "title": "Gaussian Splatting",
+                "description": "PG to test: https://playground.babylonjs.com/#Y54RPQ\r\nwith snapshot : https://playground.babylonjs.com/?snapshot=refs/pull/14578/merge#Y54RPQ#0\r\nI'm not very experienced with webworkers and array sharing/detaching, so thank you for an extra care on that part in your review.\r\nKnown issue: when manipulating the GS with a gizmo, it disappears. It's under investigation.\r\n",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/GaussianSplatting/gaussianSplatting.ts",
+                    "packages/dev/core/src/Rendering/GaussianSplatting/index.ts",
+                    "packages/dev/core/src/Rendering/index.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14583",
+                "title": "Factorize",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.plane.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14501",
+                "title": "Quick KHR_materials_dispersion implementation",
+                "description": "Here's a go at implementing dispersion in the renderer as well as support for the glTF KHR_materials_dispersion extension.\r\n\r\nI'm not completely satisfied with the implementation in the shader. It's a bit ugly but creating another function was the only way I could see to avoid duplicating lots of code.\r\nTo mimic the dispersion effect, I compute the refraction coords 3 times with slightly different IOR's and then sample the environment refraction with each of these. The final refraction is a combination of R from the first, G from the second and B from the last.\r\n<img width=\"670\" alt=\"Screenshot 2023-11-07 at 4 26 55 PM\" src=\"https://github.com/BabylonJS/Babylon.js/assets/1069125/34daa5bb-7225-4014-8bae-8c35c75392b8\">\r\n",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/subSurfaceBlock.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrSubSurfaceConfiguration.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockSubSurface.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrFragmentDeclaration.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/tools/gltfComponent.tsx",
+                    "packages/dev/inspector/src/components/globalState.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_animation_pointer.data.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_dispersion.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/index.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_dispersion.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/index.ts",
+                    "packages/public/glTF2Interface/babylon.glTF2Interface.d.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14570",
+                "title": "feat (plane):  copyFromPositionAndNormal",
+                "description": "It's also common to update planes based on points and normal, so the `copyFromPositionAndNormal` method has been added",
+                "author": {
+                    "name": "GuoBinyong",
+                    "url": "https://github.com/GuoBinyong"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.plane.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14582",
+                "title": "Fix random generator bug",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/randomBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14580",
+                "title": "Fix missing internal sized formats for MSAA render targets",
+                "description": "Original issue described here: https://forum.babylonjs.com/t/using-msaa-causes-opengl-errors-with-certain-color-renderable-formats/45994\r\n\r\nFixed by removing `thinEngine._getRGBAMultiSampleBufferFormat` as when creating an MSAA render target, I think you always want the same format in your resolved render target, as in your MSAA render target.\r\n\r\nDoes not validate the formats are color-renderable. But it didn't do that before either, and the function for creating normal render targets doesn't do that either, as far as I can see.",
+                "author": {
+                    "name": "rapid-images-tore-levenstam",
+                    "url": "https://github.com/rapid-images-tore-levenstam"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14559",
+                "title": "Gizmo fixes/improvements",
+                "description": "November 23 edition\r\n\r\n- https://forum.babylonjs.com/t/use-customrotationquaternion-to-modify-gizmos-posture-but-not-avalible/46021\r\n- https://forum.babylonjs.com/t/gizmo-wrong-rotation-after-usage-of-position-gizmo/45985\r\n- https://forum.babylonjs.com/t/few-gizmo-bugs-and-improvements-requests/45955\r\n- https://forum.babylonjs.com/t/absolute-value-of-snapdistance-in-onsnapobservable-of-positiongizmo/44124\r\n- https://forum.babylonjs.com/t/bug-with-gizmo-after-setpivotmatrix-function/45249",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Meshes/pointerDragBehavior.ts",
+                    "packages/dev/core/src/Gizmos/axisDragGizmo.ts",
+                    "packages/dev/core/src/Gizmos/axisScaleGizmo.ts",
+                    "packages/dev/core/src/Gizmos/gizmo.ts",
+                    "packages/dev/core/src/Gizmos/positionGizmo.ts",
+                    "packages/dev/core/src/Gizmos/rotationGizmo.ts",
+                    "packages/dev/core/src/Gizmos/scaleGizmo.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/src/Meshes/transformNode.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "enhancement",
+                    "gizmos"
+                ]
+            },
+            {
+                "pr": "14573",
+                "title": "Mesh Pick event bubbling",
+                "description": "# Changes\r\n\r\nAdds the functionality of \"event bubbling\" to the FlowGraphMeshPickEventBlock. With this, picking a child mesh will lead to any of its parents' picks also being fired. The ordering is that first the child mesh event fires, then the parents, no matter in what order the event blocks were added to the graph. For this, when we start a graph, we need to recompute the order where the event blocks fire for each context. The reordering is done so that, if two FlowGraphMeshPickEventBlocks appear in the ordering, the first one's referenced mesh is a descendant of the second one's reference mesh.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphMeshPickEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraph.ts",
+                    "packages/dev/core/src/FlowGraph/utils.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphEventNodes.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14576",
+                "title": "PBR custom materials: Fix default shader name",
+                "description": "See https://forum.babylonjs.com/t/compute-shaders-ocean-demo-is-not-working/46139\r\n\r\nThere was a name collision with the `CustomMaterial`, which also uses \"custom_\" as the prefix name.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/materials/src/custom/pbrCustomMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "14574",
+                "title": "Fix dynamic texture when context restored",
+                "description": "https://forum.babylonjs.com/t/restoring-webgl-context-fails-for-dynamictextures/46093",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.dynamicTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/internalTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "14575",
+                "title": "Detect procedural texture readyness.",
+                "description": "https://forum.babylonjs.com/t/webgl-warning-when-binding-procedural-texture-to-postprocess/46047/6",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/Procedurals/proceduralTexture.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "texture"
+                ]
+            }
+        ],
         "6.32.1": [
             {
                 "pr": "14571",

@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-node-editor",
-    "version": "6.32.1",
+    "version": "6.33.0",
     "main": "babylon.nodeEditor.js",
     "types": "babylon.nodeEditor.module.d.ts",
     "files": [
@@ -14,7 +14,7 @@
         "clean": "rimraf dist && rimraf babylon*.*"
     },
     "dependencies": {
-        "babylonjs": "^6.32.1"
+        "babylonjs": "^6.33.0"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
