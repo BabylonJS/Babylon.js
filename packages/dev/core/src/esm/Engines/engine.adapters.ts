@@ -28,7 +28,7 @@ export type EngineBaseType<T = EngineType> = T extends WebGPUEngine
     ? webGPUTypes.IWebGPUEnginePublic
     : T extends Engine
       ? webGLTypes.IWebGLEnginePublic
-      : baseTypes.IBaseEnginePublic;
+      : webGLTypes.IWebGLEnginePublic; // was IBase, but since ThinEngine is WebGL-based, i leave it as is for now
 /**
  * Augment an engineState object with methods to simulate a real engine object
  *

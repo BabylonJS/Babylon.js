@@ -5,7 +5,6 @@ import { InternalTexture, InternalTextureSource } from "../Materials/Textures/in
 import type { IOfflineProvider } from "../Offline/IOfflineProvider";
 import type { ILoadingScreen } from "../Loading/loadingScreen";
 import { IsDocumentAvailable, IsWindowObjectExist } from "../Misc/domManagement";
-import { EngineStore } from "./engineStore";
 import { _WarnImport } from "../Misc/devTools";
 import type { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
 import type { IPipelineContext } from "./IPipelineContext";
@@ -30,6 +29,9 @@ import type { IAudioEngine } from "../Audio/Interfaces/IAudioEngine";
 
 import type { Material } from "../Materials/material";
 import type { PostProcess } from "../PostProcesses/postProcess";
+import { endFrame } from "esm/Engines/WebGL/engine.webgl";
+import { beginFrame } from "esm/Engines/engine.base";
+import { EngineStore } from "esm/Engines/engine.static";
 
 /**
  * Defines the interface used by objects containing a viewport (like a camera)
@@ -265,7 +267,7 @@ export class Engine extends ThinEngine {
 
     /** Gets the list of created engines */
     public static get Instances(): Engine[] {
-        return EngineStore.Instances;
+        return EngineStore.Instances.map((e) => EngineStore._engineMappings.get(e)!);
     }
 
     /**
@@ -1323,20 +1325,15 @@ export class Engine extends ThinEngine {
     /**
      * Begin a new frame
      */
-    public beginFrame(): void {
-        this._measureFps();
-
-        this.onBeginFrameObservable.notifyObservers(this);
-        super.beginFrame();
+    public beginFrame = () => {
+        beginFrame(this._engineState);
     }
 
     /**
      * End the current frame
      */
-    public endFrame(): void {
-        super.endFrame();
-
-        this.onEndFrameObservable.notifyObservers(this);
+    public endFrame = () => {
+        endFrame(this._engineState)
     }
 
     /**
@@ -1612,12 +1609,6 @@ export class Engine extends ThinEngine {
         return this._deltaTime;
     }
 
-    private _measureFps(): void {
-        this._performanceMonitor.sampleFrame();
-        this._fps = this._performanceMonitor.averageFPS;
-        this._deltaTime = this._performanceMonitor.instantaneousFrameTime || 0;
-    }
-
     /**
      * Wraps an external web gl texture in a Babylon texture.
      * @param texture defines the external texture
@@ -1800,83 +1791,83 @@ export class Engine extends ThinEngine {
         });
     }
 
-    public dispose(): void {
-        this.hideLoadingUI();
+    // public dispose(): void {
+    //     this.hideLoadingUI();
 
-        this.onNewSceneAddedObservable.clear();
+    //     this.onNewSceneAddedObservable.clear();
 
-        // Release postProcesses
-        while (this.postProcesses.length) {
-            this.postProcesses[0].dispose();
-        }
+    //     // Release postProcesses
+    //     while (this.postProcesses.length) {
+    //         this.postProcesses[0].dispose();
+    //     }
 
-        // Rescale PP
-        if (this._rescalePostProcess) {
-            this._rescalePostProcess.dispose();
-        }
+    //     // Rescale PP
+    //     if (this._rescalePostProcess) {
+    //         this._rescalePostProcess.dispose();
+    //     }
 
-        // Release scenes
-        while (this.scenes.length) {
-            this.scenes[0].dispose();
-        }
+    //     // Release scenes
+    //     while (this.scenes.length) {
+    //         this.scenes[0].dispose();
+    //     }
 
-        while (this._virtualScenes.length) {
-            this._virtualScenes[0].dispose();
-        }
+    //     while (this._virtualScenes.length) {
+    //         this._virtualScenes[0].dispose();
+    //     }
 
-        // Release audio engine
-        if (EngineStore.Instances.length === 1 && Engine.audioEngine) {
-            Engine.audioEngine.dispose();
-            Engine.audioEngine = null;
-        }
+    //     // Release audio engine
+    //     if (EngineStore.Instances.length === 1 && Engine.audioEngine) {
+    //         Engine.audioEngine.dispose();
+    //         Engine.audioEngine = null;
+    //     }
 
-        // Events
-        const hostWindow = this.getHostWindow(); // it calls IsWindowObjectExist()
-        if (hostWindow && typeof hostWindow.removeEventListener === "function") {
-            hostWindow.removeEventListener("blur", this._onBlur);
-            hostWindow.removeEventListener("focus", this._onFocus);
-        }
+    //     // Events
+    //     const hostWindow = this.getHostWindow(); // it calls IsWindowObjectExist()
+    //     if (hostWindow && typeof hostWindow.removeEventListener === "function") {
+    //         hostWindow.removeEventListener("blur", this._onBlur);
+    //         hostWindow.removeEventListener("focus", this._onFocus);
+    //     }
 
-        if (this._renderingCanvas) {
-            this._renderingCanvas.removeEventListener("focus", this._onCanvasFocus);
-            this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
-            this._renderingCanvas.removeEventListener("pointerout", this._onCanvasPointerOut);
-            this._renderingCanvas.removeEventListener("contextmenu", this._onCanvasContextMenu);
-        }
+    //     if (this._renderingCanvas) {
+    //         this._renderingCanvas.removeEventListener("focus", this._onCanvasFocus);
+    //         this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
+    //         this._renderingCanvas.removeEventListener("pointerout", this._onCanvasPointerOut);
+    //         this._renderingCanvas.removeEventListener("contextmenu", this._onCanvasContextMenu);
+    //     }
 
-        if (IsDocumentAvailable()) {
-            document.removeEventListener("fullscreenchange", this._onFullscreenChange);
-            document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
-            document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
-            document.removeEventListener("msfullscreenchange", this._onFullscreenChange);
-            document.removeEventListener("pointerlockchange", this._onPointerLockChange);
-            document.removeEventListener("mspointerlockchange", this._onPointerLockChange);
-            document.removeEventListener("mozpointerlockchange", this._onPointerLockChange);
-            document.removeEventListener("webkitpointerlockchange", this._onPointerLockChange);
-        }
+    //     if (IsDocumentAvailable()) {
+    //         document.removeEventListener("fullscreenchange", this._onFullscreenChange);
+    //         document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
+    //         document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
+    //         document.removeEventListener("msfullscreenchange", this._onFullscreenChange);
+    //         document.removeEventListener("pointerlockchange", this._onPointerLockChange);
+    //         document.removeEventListener("mspointerlockchange", this._onPointerLockChange);
+    //         document.removeEventListener("mozpointerlockchange", this._onPointerLockChange);
+    //         document.removeEventListener("webkitpointerlockchange", this._onPointerLockChange);
+    //     }
 
-        super.dispose();
+    //     super.dispose();
 
-        // Remove from Instances
-        const index = EngineStore.Instances.indexOf(this);
+    //     // Remove from Instances
+    //     const index = EngineStore.Instances.indexOf(this._engineState);
 
-        if (index >= 0) {
-            EngineStore.Instances.splice(index, 1);
-        }
+    //     if (index >= 0) {
+    //         EngineStore.Instances.splice(index, 1);
+    //     }
 
-        // no more engines left in the engine store? Notify!
-        if (!Engine.Instances.length) {
-            EngineStore.OnEnginesDisposedObservable.notifyObservers(this);
-        }
+    //     // no more engines left in the engine store? Notify!
+    //     if (!Engine.Instances.length) {
+    //         EngineStore.OnEnginesDisposedObservable.notifyObservers(this);
+    //     }
 
-        // Observables
-        this.onResizeObservable.clear();
-        this.onCanvasBlurObservable.clear();
-        this.onCanvasFocusObservable.clear();
-        this.onCanvasPointerOutObservable.clear();
-        this.onBeginFrameObservable.clear();
-        this.onEndFrameObservable.clear();
-    }
+    //     // Observables
+    //     this.onResizeObservable.clear();
+    //     this.onCanvasBlurObservable.clear();
+    //     this.onCanvasFocusObservable.clear();
+    //     this.onCanvasPointerOutObservable.clear();
+    //     this.onBeginFrameObservable.clear();
+    //     this.onEndFrameObservable.clear();
+    // }
 
     private _disableTouchAction(): void {
         if (!this._renderingCanvas || !this._renderingCanvas.setAttribute) {

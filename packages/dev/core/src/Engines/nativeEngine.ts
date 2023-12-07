@@ -21,7 +21,6 @@ import type { IPipelineContext } from "./IPipelineContext";
 import type { IColor3Like, IColor4Like, IViewportLike } from "../Maths/math.like";
 import { Logger } from "../Misc/logger";
 import { Constants } from "./constants";
-import type { ISceneLike } from "./thinEngine";
 import { ThinEngine } from "./thinEngine";
 import type { IWebRequest } from "../Misc/interfaces/iWebRequest";
 import { EngineStore } from "./engineStore";
@@ -50,6 +49,7 @@ import {
     getNativeStencilOpFail,
     getNativeAddressMode,
 } from "./Native/nativeHelpers";
+import type { ISceneLike } from "core/esm/Engines/engine.interfaces";
 
 declare const _native: INative;
 

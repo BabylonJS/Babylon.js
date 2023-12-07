@@ -1431,46 +1431,6 @@ function _drawMode(gl: IWebGLEngineInternals["_gl"], fillMode: number): number {
     }
 }
 
-// /** @internal */
-// export function _getGlobalDefines(engineState: IWebGLEnginePublic, defines?: { [key: string]: string }): string | undefined {
-//     if (defines) {
-//         if (engineState.isNDCHalfZRange) {
-//             defines["IS_NDC_HALF_ZRANGE"] = "";
-//         } else {
-//             delete defines["IS_NDC_HALF_ZRANGE"];
-//         }
-//         if (engineState.useReverseDepthBuffer) {
-//             defines["USE_REVERSE_DEPTHBUFFER"] = "";
-//         } else {
-//             delete defines["USE_REVERSE_DEPTHBUFFER"];
-//         }
-//         if (engineState.useExactSrgbConversions) {
-//             defines["USE_EXACT_SRGB_CONVERSIONS"] = "";
-//         } else {
-//             delete defines["USE_EXACT_SRGB_CONVERSIONS"];
-//         }
-//         return;
-//     } else {
-//         let s = "";
-//         if (engineState.isNDCHalfZRange) {
-//             s += "#define IS_NDC_HALF_ZRANGE";
-//         }
-//         if (engineState.useReverseDepthBuffer) {
-//             if (s) {
-//                 s += "\n";
-//             }
-//             s += "#define USE_REVERSE_DEPTHBUFFER";
-//         }
-//         if (engineState.useExactSrgbConversions) {
-//             if (s) {
-//                 s += "\n";
-//             }
-//             s += "#define USE_EXACT_SRGB_CONVERSIONS";
-//         }
-//         return s;
-//     }
-// }
-
 /**
  * Create a new effect (used to store vertex/fragment shaders)
  * @param baseName defines the base name of the effect (The name of file without .fragment.fx or .vertex.fx)
@@ -1706,7 +1666,40 @@ export function _getUseSRGBBuffer(engineState: IWebGLEnginePublic, useSRGBBuffer
     return useSRGBBuffer && (engineState as WebGLEngineState)._caps.supportSRGBBuffers && (engineState.webGLVersion > 1 || noMipmap);
 }
 
-function _createShaderProgram(
+export function _createShaderProgramThin(
+    engineState: WebGLEngineState,
+    pipelineContext: WebGLPipelineContext,
+    vertexShader: WebGLShader,
+    fragmentShader: WebGLShader,
+    context: WebGLRenderingContext,
+    _transformFeedbackVaryings: Nullable<string[]> = null
+): WebGLProgram {
+    // This was in thin engine!
+
+    const shaderProgram = context.createProgram();
+    pipelineContext.program = shaderProgram;
+
+    if (!shaderProgram) {
+        throw new Error("Unable to create program");
+    }
+
+    context.attachShader(shaderProgram, vertexShader);
+    context.attachShader(shaderProgram, fragmentShader);
+
+    context.linkProgram(shaderProgram);
+
+    pipelineContext.context = context;
+    pipelineContext.vertexShader = vertexShader;
+    pipelineContext.fragmentShader = fragmentShader;
+
+    if (!pipelineContext.isParallelCompiled) {
+        _finalizePipelineContext(engineState, pipelineContext);
+    }
+
+    return shaderProgram;
+}
+
+export function _createShaderProgram(
     engineState: WebGLEngineState,
     pipelineContext: WebGLPipelineContext,
     vertexShader: WebGLShader,
@@ -1714,30 +1707,6 @@ function _createShaderProgram(
     context: WebGLRenderingContext,
     transformFeedbackVaryings: Nullable<string[]> = null
 ): WebGLProgram {
-    // This was in thin engine!
-
-    // const shaderProgram = context.createProgram();
-    // pipelineContext.program = shaderProgram;
-
-    // if (!shaderProgram) {
-    //     throw new Error("Unable to create program");
-    // }
-
-    // context.attachShader(shaderProgram, vertexShader);
-    // context.attachShader(shaderProgram, fragmentShader);
-
-    // context.linkProgram(shaderProgram);
-
-    // pipelineContext.context = context;
-    // pipelineContext.vertexShader = vertexShader;
-    // pipelineContext.fragmentShader = fragmentShader;
-
-    // if (!pipelineContext.isParallelCompiled) {
-    //     _finalizePipelineContext(engineState, pipelineContext);
-    // }
-
-    // return shaderProgram;
-
     const shaderProgram = context.createProgram();
     pipelineContext.program = shaderProgram;
 
@@ -1775,7 +1744,7 @@ function _createShaderProgram(
     return shaderProgram;
 }
 
-function _finalizePipelineContext(engineState: WebGLEngineState, pipelineContext: WebGLPipelineContext) {
+export function _finalizePipelineContext(engineState: WebGLEngineState, pipelineContext: WebGLPipelineContext) {
     const context = pipelineContext.context!;
     const vertexShader = pipelineContext.vertexShader!;
     const fragmentShader = pipelineContext.fragmentShader!;
@@ -1843,12 +1812,12 @@ export function _preparePipelineContext(
     vertexSourceCode: string,
     fragmentSourceCode: string,
     createAsRaw: boolean,
-    rawVertexSourceCode: string,
-    rawFragmentSourceCode: string,
+    _rawVertexSourceCode: string,
+    _rawFragmentSourceCode: string,
     rebuildRebind: any,
     defines: Nullable<string>,
     transformFeedbackVaryings: Nullable<string[]>,
-    key: string
+    _key: string
 ) {
     const webGLRenderingState = pipelineContext as WebGLPipelineContext;
 
@@ -2122,7 +2091,7 @@ export function _getSamplingParameters(engineState: WebGLEngineState, samplingMo
 }
 
 /** @internal */
-function _createTexture(engineState: WebGLEngineState): WebGLTexture {
+export function _createTexture(engineState: WebGLEngineState): WebGLTexture {
     const texture = engineState._gl.createTexture();
 
     if (!texture) {
@@ -2800,20 +2769,20 @@ export function _uploadArrayBufferViewToTexture(
     _bindTextureDirectly(engineState, bindTarget, null, true);
 }
 
-function _prepareWebGLTextureContinuation(
-    engineState: WebGLEngineState,
+export function _prepareWebGLTextureContinuation(
+    engineState: IWebGLEnginePublic,
     texture: InternalTexture,
     scene: Nullable<ISceneLike>,
     noMipmap: boolean,
     isCompressed: boolean,
     samplingMode: number
 ): void {
-    const gl = engineState._gl;
+    const gl = (engineState as WebGLEngineState)._gl;
     if (!gl) {
         return;
     }
 
-    const filters = _getSamplingParameters(engineState, samplingMode, !noMipmap);
+    const filters = _getSamplingParameters(engineState as WebGLEngineState, samplingMode, !noMipmap);
 
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filters.mag);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filters.min);
@@ -3009,16 +2978,17 @@ export function _releaseTexture(engineState: IWebGLEnginePublic, texture: Intern
     }
 }
 
-function _deleteTexture(engineState: WebGLEngineState, texture: Nullable<WebGLTexture>): void {
+export function _deleteTexture(engineState: IWebGLEnginePublic, texture: Nullable<WebGLTexture>): void {
     if (texture) {
-        engineState._gl.deleteTexture(texture);
+        (engineState as WebGLEngineState)._gl.deleteTexture(texture);
     }
 }
 
-function _setProgram(engineState: WebGLEngineState, program: WebGLProgram): void {
-    if (engineState._currentProgram !== program) {
-        engineState._gl.useProgram(program);
-        engineState._currentProgram = program;
+export function _setProgram(engineState: IWebGLEnginePublic, program: WebGLProgram): void {
+    const fes = engineState as WebGLEngineState;
+    if (fes._currentProgram !== program) {
+        fes._gl.useProgram(program);
+        fes._currentProgram = program;
     }
 }
 
@@ -3143,44 +3113,46 @@ export function setTexture(engineState: IWebGLEnginePublic, channel: number, uni
     _setTexture(fes, channel, texture);
 }
 
-function _bindSamplerUniformToChannel(engineState: WebGLEngineStateFull, sourceSlot: number, destination: number) {
-    const uniform = engineState._boundUniforms[sourceSlot];
+function _bindSamplerUniformToChannel(engineState: IWebGLEnginePublic, sourceSlot: number, destination: number) {
+    const uniform = (engineState as WebGLEngineStateFull)._boundUniforms[sourceSlot];
     if (!uniform || uniform._currentState === destination) {
         return;
     }
-    engineState._gl.uniform1i(uniform, destination);
+    (engineState as WebGLEngineState)._gl.uniform1i(uniform, destination);
     uniform._currentState = destination;
 }
 
-function _getTextureWrapMode(engineState: WebGLEngineState, mode: number): number {
+function _getTextureWrapMode(engineState: IWebGLEnginePublic, mode: number): number {
+    const gl = (engineState as WebGLEngineState)._gl;
     switch (mode) {
         case Constants.TEXTURE_WRAP_ADDRESSMODE:
-            return engineState._gl.REPEAT;
+            return gl.REPEAT;
         case Constants.TEXTURE_CLAMP_ADDRESSMODE:
-            return engineState._gl.CLAMP_TO_EDGE;
+            return gl.CLAMP_TO_EDGE;
         case Constants.TEXTURE_MIRROR_ADDRESSMODE:
-            return engineState._gl.MIRRORED_REPEAT;
+            return gl.MIRRORED_REPEAT;
     }
-    return engineState._gl.REPEAT;
+    return gl.REPEAT;
 }
 
-function _setTexture(
-    engineState: WebGLEngineStateFull,
+export function _setTexture(
+    engineState: IWebGLEnginePublic,
     channel: number,
     texture: Nullable<ThinTexture>,
     isPartOfTextureArray = false,
     depthStencilTexture = false,
-    name = ""
+    _name = ""
 ): boolean {
+    const fes = engineState as WebGLEngineStateFull;
     // Not ready?
     if (!texture) {
-        if (engineState._boundTexturesCache[channel] != null) {
-            engineState._activeChannel = channel;
-            _bindTextureDirectly(engineState, engineState._gl.TEXTURE_2D, null);
-            _bindTextureDirectly(engineState, engineState._gl.TEXTURE_CUBE_MAP, null);
+        if (fes._boundTexturesCache[channel] != null) {
+            fes._activeChannel = channel;
+            _bindTextureDirectly(fes, fes._gl.TEXTURE_2D, null);
+            _bindTextureDirectly(fes, fes._gl.TEXTURE_CUBE_MAP, null);
             if (engineState.webGLVersion > 1) {
-                _bindTextureDirectly(engineState, engineState._gl.TEXTURE_3D, null);
-                _bindTextureDirectly(engineState, engineState._gl.TEXTURE_2D_ARRAY, null);
+                _bindTextureDirectly(engineState, fes._gl.TEXTURE_3D, null);
+                _bindTextureDirectly(engineState, fes._gl.TEXTURE_2D_ARRAY, null);
             }
         }
         return false;
@@ -3188,7 +3160,7 @@ function _setTexture(
 
     // Video
     if ((<VideoTexture>texture).video) {
-        engineState._activeChannel = channel;
+        fes._activeChannel = channel;
         const videoInternalTexture = (<VideoTexture>texture).getInternalTexture();
         if (videoInternalTexture) {
             videoInternalTexture._associatedChannel = channel;
@@ -3206,13 +3178,13 @@ function _setTexture(
     } else if (texture.isReady()) {
         internalTexture = <InternalTexture>texture.getInternalTexture();
     } else if (texture.isCube) {
-        internalTexture = engineState._emptyCubeTexture as InternalTexture;
+        internalTexture = fes._emptyCubeTexture as InternalTexture;
     } else if (texture.is3D) {
-        internalTexture = engineState._emptyTexture3D as InternalTexture;
+        internalTexture = fes._emptyTexture3D as InternalTexture;
     } else if (texture.is2DArray) {
-        internalTexture = engineState._emptyTexture2DArray as InternalTexture;
+        internalTexture = fes._emptyTexture2DArray as InternalTexture;
     } else {
-        internalTexture = engineState._emptyTexture as InternalTexture;
+        internalTexture = fes._emptyTexture as InternalTexture;
     }
 
     if (!isPartOfTextureArray && internalTexture) {
@@ -3220,7 +3192,7 @@ function _setTexture(
     }
 
     let needToBind = true;
-    if (engineState._boundTexturesCache[channel] === internalTexture) {
+    if (fes._boundTexturesCache[channel] === internalTexture) {
         if (!isPartOfTextureArray) {
             _bindSamplerUniformToChannel(engineState, internalTexture._associatedChannel, channel);
         }
@@ -3228,7 +3200,7 @@ function _setTexture(
         needToBind = false;
     }
 
-    engineState._activeChannel = channel;
+    fes._activeChannel = channel;
     const target = _getTextureTarget(engineState, internalTexture);
     if (needToBind) {
         _bindTextureDirectly(engineState, target, internalTexture, isPartOfTextureArray);
@@ -3249,17 +3221,17 @@ function _setTexture(
 
         if (internalTexture._cachedWrapU !== texture.wrapU) {
             internalTexture._cachedWrapU = texture.wrapU;
-            _setTextureParameterInteger(engineState, target, engineState._gl.TEXTURE_WRAP_S, _getTextureWrapMode(engineState, texture.wrapU), internalTexture);
+            _setTextureParameterInteger(engineState, target, fes._gl.TEXTURE_WRAP_S, _getTextureWrapMode(engineState, texture.wrapU), internalTexture);
         }
 
         if (internalTexture._cachedWrapV !== texture.wrapV) {
             internalTexture._cachedWrapV = texture.wrapV;
-            _setTextureParameterInteger(engineState, target, engineState._gl.TEXTURE_WRAP_T, _getTextureWrapMode(engineState, texture.wrapV), internalTexture);
+            _setTextureParameterInteger(engineState, target, fes._gl.TEXTURE_WRAP_T, _getTextureWrapMode(engineState, texture.wrapV), internalTexture);
         }
 
         if (internalTexture.is3D && internalTexture._cachedWrapR !== texture.wrapR) {
             internalTexture._cachedWrapR = texture.wrapR;
-            _setTextureParameterInteger(engineState, target, engineState._gl.TEXTURE_WRAP_R, _getTextureWrapMode(engineState, texture.wrapR), internalTexture);
+            _setTextureParameterInteger(engineState, target, fes._gl.TEXTURE_WRAP_R, _getTextureWrapMode(engineState, texture.wrapR), internalTexture);
         }
 
         _setAnisotropicLevel(engineState, target, internalTexture, texture.anisotropicFilteringLevel);
@@ -3327,16 +3299,16 @@ export function _setAnisotropicLevel(engineState: IWebGLEnginePublic, target: nu
     }
 }
 
-export function _setTextureParameterFloat(engineState: WebGLEngineState, target: number, parameter: number, value: number, texture: InternalTexture): void {
+export function _setTextureParameterFloat(engineState: IWebGLEnginePublic, target: number, parameter: number, value: number, texture: InternalTexture): void {
     _bindTextureDirectly(engineState, target, texture, true, true);
-    engineState._gl.texParameterf(target, parameter, value);
+    (engineState as WebGLEngineState)._gl.texParameterf(target, parameter, value);
 }
 
-export function _setTextureParameterInteger(engineState: WebGLEngineState, target: number, parameter: number, value: number, texture?: InternalTexture) {
+export function _setTextureParameterInteger(engineState: IWebGLEnginePublic, target: number, parameter: number, value: number, texture?: InternalTexture) {
     if (texture) {
         _bindTextureDirectly(engineState, target, texture, true, true);
     }
-    engineState._gl.texParameteri(target, parameter, value);
+    (engineState as WebGLEngineState)._gl.texParameteri(target, parameter, value);
 }
 
 /**

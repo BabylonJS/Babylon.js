@@ -21,7 +21,7 @@ import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptio
 import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingContext";
 import { Tools } from "../Misc/tools";
 import { WebGPUTextureHelper } from "./WebGPU/webgpuTextureHelper";
-import type { ISceneLike, ThinEngineOptions } from "./thinEngine";
+import type { ThinEngineOptions } from "./thinEngine";
 import { WebGPUBufferManager } from "./WebGPU/webgpuBufferManager";
 import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import { WebGPUHardwareTexture } from "./WebGPU/webgpuHardwareTexture";
@@ -60,6 +60,7 @@ import "../ShadersWGSL/postprocess.vertex";
 import type { VideoTexture } from "../Materials/Textures/videoTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { RenderTargetWrapper } from "./renderTargetWrapper";
+import type { ISceneLike } from "core/esm/Engines/engine.interfaces";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
@@ -517,12 +518,16 @@ export class WebGPUEngine extends Engine {
     /**
      * Indicates if the z range in NDC space is 0..1 (value: true) or -1..1 (value: false)
      */
-    public readonly isNDCHalfZRange: boolean = true;
+    public get isNDCHalfZRange(): boolean {
+        return true;
+    }
 
     /**
      * Indicates that the origin of the texture/framebuffer space is the bottom left corner. If false, the origin is top left
      */
-    public readonly hasOriginBottomLeft: boolean = false;
+    public get hasOriginBottomLeft(): boolean {
+        return false;
+    }
 
     /**
      * Create a new instance of the gpu engine.
@@ -2548,16 +2553,9 @@ export class WebGPUEngine extends Engine {
     //------------------------------------------------------------------------------
 
     /**
-     * Begin a new frame
-     */
-    public beginFrame(): void {
-        super.beginFrame();
-    }
-
-    /**
      * End the current frame
      */
-    public endFrame() {
+    public endFrame = () => {
         this._endCurrentRenderPass();
 
         this._snapshotRendering.endFrame();

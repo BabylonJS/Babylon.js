@@ -17,6 +17,7 @@ import type { IOfflineProvider } from "core/Offline/IOfflineProvider.js";
 import type { IAudioEngine } from "core/Audio/Interfaces/IAudioEngine.js";
 import type { ILoadingScreen } from "core/Loading/loadingScreen.js";
 import type { PostProcess } from "core/PostProcesses/postProcess.js";
+import type { Engine } from "core/Engines/engine.js";
 
 export interface IEngineStore<T extends IBaseEnginePublic = IBaseEnginePublic> {
     /** Gets the list of created engines */
@@ -29,7 +30,7 @@ export interface IEngineStore<T extends IBaseEnginePublic = IBaseEnginePublic> {
     /**
      * Gets the latest created engine
      */
-    readonly LastCreatedEngine: Nullable<T>;
+    readonly LastCreatedEngine: Nullable<Engine>;
     /**
      * Gets the latest created scene
      */
@@ -80,6 +81,8 @@ export interface IEngineStore<T extends IBaseEnginePublic = IBaseEnginePublic> {
      * Method called to create the default rescale post process on each engine.
      */
     _RescalePostProcessFactory: Nullable<(engine: T) => PostProcess>;
+
+    _engineMappings: WeakMap<T, Engine>;
 }
 
 export const EngineStore: IEngineStore = {
@@ -89,7 +92,7 @@ export const EngineStore: IEngineStore = {
             return null;
         }
 
-        return EngineStore.Instances[EngineStore.Instances.length - 1];
+        return EngineStore._engineMappings.get(EngineStore.Instances[EngineStore.Instances.length - 1])!;
     },
     LastCreatedScene: null,
     UseFallbackTexture: true,
@@ -97,6 +100,7 @@ export const EngineStore: IEngineStore = {
     OnEnginesDisposedObservable: new Observable(),
     audioEngine: null,
     _RescalePostProcessFactory: null,
+    _engineMappings: new WeakMap(),
 };
 
 // used to be WebGL only, a single array
@@ -473,6 +477,11 @@ export function resizeImageBitmap(
     // Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
     const buffer = <Uint8Array>(<any>context.getImageData(0, 0, bufferWidth, bufferHeight).data);
     return buffer;
+}
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function _ConcatenateShader(source: string, defines: Nullable<string>, shaderVersion: string = ""): string {
+    return shaderVersion + (defines ? defines + "\n" : "") + source;
 }
 
 // TODO is this needed? this will allow `import Statics from "package/Engines"`.

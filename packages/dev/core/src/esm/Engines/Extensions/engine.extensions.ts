@@ -59,11 +59,11 @@ export function getEngineExtension<K extends keyof IEngineExtensions>(engineStat
     return getEngineExtensions(engineState)[type];
 }
 
-export function setExtension<K extends keyof IEngineExtensions>(engineState: IBaseEnginePublic, type: K, extension: IEngineExtensions[K]) {
+export function setExtension<K extends keyof IEngineExtensions, T extends IBaseEnginePublic>(engineState: T, type: K, extension: IEngineExtensions[K]) {
     const extensions = getEngineExtensions(engineState);
     // the any cast is required to avoid TS error when setting the extension
     extensions[type] = extension;
     // augment the engine state with these functions
     // casted to any, as this is a legacy solution and is not part of the engine interface
-    augmentEngineState(engineState, extension as any);
+    augmentEngineState(engineState as any, extension as any);
 }

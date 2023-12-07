@@ -10,11 +10,11 @@ import { Constants } from "./constants";
 import type { IPipelineContext } from "./IPipelineContext";
 import { DataBuffer } from "../Buffers/dataBuffer";
 import type { IColor4Like, IViewportLike } from "../Maths/math.like";
-import type { ISceneLike } from "./thinEngine";
 import { PerformanceConfigurator } from "./performanceConfigurator";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { RenderTargetWrapper } from "./renderTargetWrapper";
 import type { IStencilState } from "../States/IStencilState";
+import type { ISceneLike } from "core/esm/Engines/engine.interfaces";
 
 declare const global: any;
 

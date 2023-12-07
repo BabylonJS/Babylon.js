@@ -193,8 +193,8 @@ export interface IBaseEngineInternals {
     _uniformBuffers: Array<UniformBuffer>;
     _storageBuffers: Array<StorageBuffer>;
     _shouldUseHighPrecisionShader: boolean;
-    _badOS?: boolean;
-    _badDesktopOS?: boolean;
+    _badOS: boolean;
+    _badDesktopOS: boolean;
     _hardwareScalingLevel: number;
     _caps: EngineCapabilities; // TODO
     _features: EngineFeatures;
@@ -511,7 +511,15 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
         // module: {},
         uniqueId: engineCounter++,
         _type: EngineType.BASE,
-        description: "Babylon.js Base Engine",
+        get description() {
+            let description = engineState.name + engineState._version;
+
+            if (engineState._caps.parallelShaderCompile) {
+                description += " - Parallel shader compilation";
+            }
+
+            return description;
+        },
         name: "Base",
         _version: 1,
         _isDisposed: false,
@@ -997,8 +1005,27 @@ export function endFrame(engineState: IBaseEnginePublic): void {
     fes._frameId++;
 }
 
+// Just for thin engine reconstruction
+export function _cancelFrameThin(engineState: IBaseEnginePublic): void {
+    const fes = engineState as BaseEngineState;
+    if (fes._renderingQueueLaunched && fes._frameHandler) {
+        fes._renderingQueueLaunched = false;
+        if (!IsWindowObjectExist()) {
+            if (typeof cancelAnimationFrame === "function") {
+                return cancelAnimationFrame(fes._frameHandler);
+            }
+        } else {
+            const { cancelAnimationFrame } = getHostWindow(fes) || window;
+            if (typeof cancelAnimationFrame === "function") {
+                return cancelAnimationFrame(fes._frameHandler);
+            }
+        }
+        return clearTimeout(fes._frameHandler);
+    }
+}
+
 // Was protected, now passed as a variable
-function _cancelFrame(engineState: IBaseEnginePublic) {
+export function _cancelFrame(engineState: IBaseEnginePublic) {
     const fes = engineState as BaseEngineState;
     if (fes._renderingQueueLaunched && fes.customAnimationFrameRequester) {
         fes._renderingQueueLaunched = false;
