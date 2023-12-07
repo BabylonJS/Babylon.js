@@ -1344,10 +1344,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             attribs.push(VertexBuffer.ColorKind);
         }
 
-        if (defines.INSTANCESCOLOR) {
-            attribs.push(VertexBuffer.ColorInstanceKind);
-        }
-
         MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
         MaterialHelper.PrepareAttributesForInstances(attribs, defines);
         MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
