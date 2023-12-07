@@ -71,7 +71,7 @@ export class MeshUVSpaceRenderer {
     private _scene: Scene;
     private _options: Required<IMeshUVSpaceRendererOptions>;
     private _textureCreatedInternally = false;
-    private _userCreatedTextureConfigured = false;
+    private _configureUserCreatedTexture = true;
     private _maskTexture: Nullable<RenderTargetTexture> = null;
     private _finalPostProcess: Nullable<PostProcess> = null;
 
@@ -195,7 +195,7 @@ export class MeshUVSpaceRenderer {
     public renderTexture(texture: BaseTexture, position: Vector3, normal: Vector3, size: Vector3, angle = 0): void {
         if (!this.texture) {
             this._createDiffuseRTT();
-        } else if (!this._userCreatedTextureConfigured) {
+        } else if (this._configureUserCreatedTexture) {
             this._configureUserCreatedRTT();
         }
 
@@ -238,7 +238,7 @@ export class MeshUVSpaceRenderer {
             this.texture.dispose();
             this._textureCreatedInternally = false;
         }
-        this._userCreatedTextureConfigured = false;
+        this._configureUserCreatedTexture = true;
         this._maskTexture?.dispose();
         this._maskTexture = null;
         this._finalPostProcess?.dispose();
@@ -246,15 +246,10 @@ export class MeshUVSpaceRenderer {
     }
 
     private _configureUserCreatedRTT(): void {
-        this._userCreatedTextureConfigured = true;
+        this._configureUserCreatedTexture = false;
         if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture)) {
             this.texture.setMaterialForRendering(this._mesh, MeshUVSpaceRenderer._GetShader(this._scene));
-            this.texture.onClearObservable.addOnce(() => {
-                this._scene.getEngine().clear(this.clearColor, true, true, true);
-                if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture)) {
-                    this.texture.onClearObservable.add(() => {});
-                }
-            });
+            this.texture.onClearObservable.add(() => {});
             this.texture.renderList = [this._mesh];
             if (this._options.uvEdgeBlending) {
                 this._createMaskTexture();
@@ -272,13 +267,11 @@ export class MeshUVSpaceRenderer {
         texture.setMaterialForRendering(this._mesh, MeshUVSpaceRenderer._GetShader(this._scene));
 
         this.texture = texture;
-
+        this._configureUserCreatedTexture = false;
         if (this._options.uvEdgeBlending) {
             this._createMaskTexture();
             this._createPostProcess();
-            if (MeshUVSpaceRenderer._IsRenderTargetTexture(this.texture)) {
-                this.texture.addPostProcess(this._finalPostProcess!);
-            }
+            texture.addPostProcess(this._finalPostProcess!);
         }
     }
 
