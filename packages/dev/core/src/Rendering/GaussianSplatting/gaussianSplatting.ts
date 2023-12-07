@@ -9,6 +9,7 @@ import type { Scene } from "../../scene";
 import type { Nullable } from "../../types";
 
 /**
+ * @experimental
  * Helper class that loads, creates and manipulates a Gaussian Splatting
  */
 export class GaussianSplatting {
@@ -263,75 +264,91 @@ export class GaussianSplatting {
         GaussianSplatting._Worker = null;
     }
 
+    private _loadData(data: ArrayBuffer) {
+        if (this.mesh) {
+            this.dispose();
+        }
+        this._setData(new Uint8Array(data as any));
+        const matricesData = new Float32Array(this.vertexCount * 16);
+
+        const updateInstances = (indexMix: Uint32Array) => {
+            for (let j = 0; j < this.vertexCount; j++) {
+                const i = indexMix[2 * j];
+                const index = j * 16;
+                matricesData[index + 0] = this._positions[i * 3 + 0];
+                matricesData[index + 1] = this._positions[i * 3 + 1];
+                matricesData[index + 2] = this._positions[i * 3 + 2];
+
+                matricesData[index + 4] = this._uBuffer[32 * i + 24 + 0] / 255;
+                matricesData[index + 5] = this._uBuffer[32 * i + 24 + 1] / 255;
+                matricesData[index + 6] = this._uBuffer[32 * i + 24 + 2] / 255;
+                matricesData[index + 7] = this._uBuffer[32 * i + 24 + 3] / 255;
+
+                matricesData[index + 8] = this._covA[i * 3 + 0];
+                matricesData[index + 9] = this._covA[i * 3 + 1];
+                matricesData[index + 10] = this._covA[i * 3 + 2];
+
+                matricesData[index + 12] = this._covB[i * 3 + 0];
+                matricesData[index + 13] = this._covB[i * 3 + 1];
+                matricesData[index + 14] = this._covB[i * 3 + 2];
+            }
+
+            this.mesh?.thinInstanceBufferUpdated("matrix");
+        };
+
+        // update so this.mesh is valid when exiting this function
+        this.mesh = this._getMesh(this.scene);
+        this.mesh.thinInstanceSetBuffer("matrix", matricesData, 16, false);
+
+        if (GaussianSplatting._Worker) {
+            console.warn("Only one web worker possible. Previous Gaussian Splatting instance might not be rendered correctly.");
+            GaussianSplatting._Worker.terminate();
+        }
+
+        GaussianSplatting._Worker = new Worker(
+            URL.createObjectURL(
+                new Blob(["(", GaussianSplatting._CreateWorker.toString(), ")(self)"], {
+                    type: "application/javascript",
+                })
+            )
+        );
+
+        GaussianSplatting._Worker.onmessage = (e) => {
+            const indexMix = new Uint32Array(e.data.depthMix.buffer);
+            updateInstances(indexMix);
+        };
+        this._sceneBeforeRenderObserver = this.scene.onBeforeRenderObservable.add(() => {
+            const engine = this.scene.getEngine();
+            this._material.setVector2("viewport", new Vector2(engine.getRenderWidth(), engine.getRenderHeight()));
+            this.mesh!.getWorldMatrix().multiplyToRef(this.scene.activeCamera!.getViewMatrix(), this._modelViewMatrix);
+            this._material.setMatrix("modelView", this._modelViewMatrix);
+            GaussianSplatting._Worker?.postMessage({ view: this._modelViewMatrix.m, positions: this._positions });
+        });
+        this._sceneDisposeObserver = this.scene.onDisposeObservable.add(() => {
+            this.dispose();
+        });
+    }
+
+    /**
+     * Loads a .splat Gaussian Splatting array buffer asynchronously
+     * @param data arraybuffer containing splat file
+     * @returns a promise that resolves when the operation is complete
+     */
+
+    public loadDataAsync(data: ArrayBuffer): Promise<void> {
+        return new Promise((resolve) => {
+            this._loadData(data);
+            resolve();
+        });
+    }
     /**
      * Loads a .splat Gaussian Splatting file asynchronously
      * @param url path to the splat file to load
      * @returns a promise that resolves when the operation is complete
      */
-    public loadAsync(url: string): Promise<void> {
+    public loadFileAsync(url: string): Promise<void> {
         return Tools.LoadFileAsync(url, true).then((data: string | ArrayBuffer) => {
-            if (this.mesh) {
-                this.dispose();
-            }
-            this._setData(new Uint8Array(data as any));
-            const matricesData = new Float32Array(this.vertexCount * 16);
-
-            const updateInstances = (indexMix: Uint32Array) => {
-                for (let j = 0; j < this.vertexCount; j++) {
-                    const i = indexMix[2 * j];
-                    const index = j * 16;
-                    matricesData[index + 0] = this._positions[i * 3 + 0];
-                    matricesData[index + 1] = this._positions[i * 3 + 1];
-                    matricesData[index + 2] = this._positions[i * 3 + 2];
-
-                    matricesData[index + 4] = this._uBuffer[32 * i + 24 + 0] / 255;
-                    matricesData[index + 5] = this._uBuffer[32 * i + 24 + 1] / 255;
-                    matricesData[index + 6] = this._uBuffer[32 * i + 24 + 2] / 255;
-                    matricesData[index + 7] = this._uBuffer[32 * i + 24 + 3] / 255;
-
-                    matricesData[index + 8] = this._covA[i * 3 + 0];
-                    matricesData[index + 9] = this._covA[i * 3 + 1];
-                    matricesData[index + 10] = this._covA[i * 3 + 2];
-
-                    matricesData[index + 12] = this._covB[i * 3 + 0];
-                    matricesData[index + 13] = this._covB[i * 3 + 1];
-                    matricesData[index + 14] = this._covB[i * 3 + 2];
-                }
-
-                this.mesh?.thinInstanceBufferUpdated("matrix");
-            };
-
-            // update so this.mesh is valid when exiting this function
-            this.mesh = this._getMesh(this.scene);
-            this.mesh.thinInstanceSetBuffer("matrix", matricesData, 16, false);
-
-            if (GaussianSplatting._Worker) {
-                console.warn("Only one web worker possible. Previous Gaussian Splatting instance might not be rendered correctly.");
-                GaussianSplatting._Worker.terminate();
-            }
-
-            GaussianSplatting._Worker = new Worker(
-                URL.createObjectURL(
-                    new Blob(["(", GaussianSplatting._CreateWorker.toString(), ")(self)"], {
-                        type: "application/javascript",
-                    })
-                )
-            );
-
-            GaussianSplatting._Worker.onmessage = (e) => {
-                const indexMix = new Uint32Array(e.data.depthMix.buffer);
-                updateInstances(indexMix);
-            };
-            this._sceneBeforeRenderObserver = this.scene.onBeforeRenderObservable.add(() => {
-                const engine = this.scene.getEngine();
-                this._material.setVector2("viewport", new Vector2(engine.getRenderWidth(), engine.getRenderHeight()));
-                this.mesh!.getWorldMatrix().multiplyToRef(this.scene.activeCamera!.getViewMatrix(), this._modelViewMatrix);
-                this._material.setMatrix("modelView", this._modelViewMatrix);
-                GaussianSplatting._Worker?.postMessage({ view: this._modelViewMatrix.m, positions: this._positions });
-            });
-            this._sceneDisposeObserver = this.scene.onDisposeObservable.add(() => {
-                this.dispose();
-            });
+            this._loadData(data as ArrayBuffer);
         });
     }
 
