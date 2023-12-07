@@ -136,7 +136,7 @@ export class FlowGraphPath {
 
         const entityChain = [];
         const splitPath = [];
-        let currentTarget = context._userVariables;
+        let currentTarget = context.userVariables;
         for (const pathPart of this._pathParts) {
             if (currentTarget === undefined) {
                 throw new Error(`Could not find path ${this.getFinalPath()} in target context`);

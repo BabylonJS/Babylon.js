@@ -53,9 +53,6 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
         const coordinator = new FlowGraphCoordinator({ scene });
         const graph = FlowGraph.Parse(json, coordinator);
         const context = graph.getContext(0);
-        if (!context._userVariables) {
-            context._userVariables = {};
-        }
         context.setVariable("gltf", this._loader.gltf);
 
         coordinator.start();

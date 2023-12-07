@@ -38,10 +38,9 @@ export class FlowGraphContext {
     @serialize()
     public uniqueId = RandomGUID();
     /**
-     * @internal
      * These are the variables defined by a user.
      */
-    public _userVariables: { [key: string]: any } = {};
+    private _userVariables: { [key: string]: any } = {};
     /**
      * These are the variables set by the blocks.
      */
@@ -97,6 +96,13 @@ export class FlowGraphContext {
      */
     public getVariable(name: string): any {
         return this._userVariables[name];
+    }
+
+    /**
+     * Gets all user variables map
+     */
+    public get userVariables() {
+        return this._userVariables;
     }
 
     private _getUniqueIdPrefixedName(obj: FlowGraphBlock, name: string): string {

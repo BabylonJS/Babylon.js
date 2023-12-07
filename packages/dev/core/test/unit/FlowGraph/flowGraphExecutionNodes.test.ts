@@ -258,10 +258,9 @@ describe("Flow Graph Execution Nodes", () => {
         const sceneReady = new FlowGraphSceneReadyEventBlock();
         flowGraph.addEventBlock(sceneReady);
 
-        flowGraphContext._userVariables = {
-            0: mesh0,
-            1: mesh1,
-        };
+        flowGraphContext.setVariable("0", mesh0);
+        flowGraphContext.setVariable("1", mesh1);
+
         const path = new FlowGraphPath("/{nodeIndex}/position");
 
         const setProperty = new FlowGraphSetPropertyBlock<Vector3>({
