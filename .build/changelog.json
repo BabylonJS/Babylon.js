@@ -1,6 +1,94 @@
 {
-    "fromTag": "6.32.1",
+    "fromTag": "6.33.0",
     "changelog": {
+        "6.33.1": [
+            {
+                "pr": "14589",
+                "title": "Gaussian Splatting file loader",
+                "description": "with  `@experimental` flag\r\nMore file format are expected to be supported in (near) future like .PLY format.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/GaussianSplatting/gaussianSplatting.ts",
+                    "packages/dev/loaders/src/SPLAT/index.ts",
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts",
+                    "packages/dev/loaders/src/index.ts"
+                ],
+                "tags": [
+                    "loaders"
+                ]
+            },
+            {
+                "pr": "14591",
+                "title": "PBR material: Fix duplication of colorinstance in attribute array",
+                "description": "See https://forum.babylonjs.com/t/data-transfer-from-compute-shader-to-renderer/45576",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "14577",
+                "title": "MeshUVSpaceRenderer UV Edge Blending",
+                "description": "This PR fixes the UV island seam issue by introducing an optional blending step where the edges of the UVs are blended, enabled using the flag: uvEdgeBlending. Very useful for UV islands.\r\n\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/51108458/0b562012-3299-4905-acf5-e6ae73080ff4)\r\n\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/51108458/69a8370b-6f00-4dc4-9fce-4283efe5a7e4)\r\n\r\n\r\n## How to enable the Flag:\r\nmesh.decalMap = new MeshUVSpaceRenderer(m, scene, {width: 4096, height: 4096, uvEdgeBlending: true});\r\n\r\n## Caveats\r\nRTT must have same dimensions as the Mesh UV Space Renderer for the UV Edge Blending to work.\r\nThere may be a way around this, but it would make sense to let the user know through JSDoc comment.\r\n\r\n## Optimisations\r\nMask texture, and final post processing effect only generated once\r\n\r\n## Playground to test:\r\nhttp://localhost:1338/#N10DXG#365\r\n\r\nThe following guidelines have been followed:\r\nhttps://github.com/BabylonJS/Babylon.js/blob/d01337f9d3428033e4d723f9a10187bfddf381e5/contributing.md",
+                "author": {
+                    "name": "torchesburn",
+                    "url": "https://github.com/torchesburn"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/meshUVSpaceRenderer.ts",
+                    "packages/dev/core/src/Shaders/meshUVSpaceRenderer.vertex.fx",
+                    "packages/dev/core/src/Shaders/meshUVSpaceRendererFinaliser.fragment.fx",
+                    "packages/dev/core/src/Shaders/meshUVSpaceRendererFinaliser.vertex.fx",
+                    "packages/dev/core/src/Shaders/meshUVSpaceRendererMasker.fragment.fx",
+                    "packages/dev/core/src/Shaders/meshUVSpaceRendererMasker.vertex.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14587",
+                "title": "Make inputTextArea show placeholder",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/gui-inputtextarea-placeholder-does-not-work/46196",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/inputTextArea.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gui-inputtextarea-withplaceholder.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "14590",
+                "title": "Mesh: Fix calculation for targets other than position in getNormalsData",
+                "description": "See https://forum.babylonjs.com/t/ray-tracing-for-nested-meshes/46088/16",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            }
+        ],
         "6.33.0": [
             {
                 "pr": "14588",
