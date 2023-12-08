@@ -1,4 +1,3 @@
-import { BoundingInfo } from "../../Culling/boundingInfo";
 import { Effect } from "../../Materials/effect";
 import { ShaderMaterial } from "../../Materials/shaderMaterial";
 import { Matrix, Quaternion, TmpVectors, Vector2, Vector3 } from "../../Maths/math.vector";
