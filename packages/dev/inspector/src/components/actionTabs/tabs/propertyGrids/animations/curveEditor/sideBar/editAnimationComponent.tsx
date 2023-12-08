@@ -105,7 +105,7 @@ export class EditAnimationComponent extends React.Component<IEditAnimationCompon
             return null;
         }
 
-        const loopModes = ["Relative", "Relative from current", "Cycle", "Constant"];
+        const loopModes = ["Relative", "Cycle", "Constant", "", "Yoyo", "Relative from current"];
 
         return (
             <div id="edit-animation-pane" ref={this._root}>
@@ -115,13 +115,15 @@ export class EditAnimationComponent extends React.Component<IEditAnimationCompon
                 <input type="text" id="edit-animation-name" ref={this._displayName} className="input-text" defaultValue={this.state.animation!.name || ""} />
                 <input type="text" id="edit-animation-property" ref={this._property} className="input-text" defaultValue={this.state.animation!.targetProperty} />
                 <select id="edit-animation-loop-mode" className="option" ref={this._loopModeElement} defaultValue={loopModes[this.state.animation!.loopMode ?? 1]}>
-                    {loopModes.map((loopMode, i) => {
-                        return (
-                            <option key={loopMode + i} value={loopMode} title={loopMode}>
-                                {loopMode}
-                            </option>
-                        );
-                    })}
+                    {loopModes
+                        .filter((value) => value !== "")
+                        .map((loopMode, i) => {
+                            return (
+                                <option key={loopMode + i} value={loopMode} title={loopMode}>
+                                    {loopMode}
+                                </option>
+                            );
+                        })}
                 </select>
                 <div id="edit-animation">
                     <button className="simple-button" id="edit-animation-ok" type="button" onClick={() => this.validate()}>
