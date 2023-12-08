@@ -66,7 +66,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
      * @returns a promise which completes when objects have been loaded to the scene
      */
     public loadAsync(scene: Scene, data: any, _rootUrl: string): Promise<void> {
-        const gaussianSplatting = new GaussianSplatting("", scene);
+        const gaussianSplatting = new GaussianSplatting("GaussianSplatting", scene);
         return gaussianSplatting.loadDataAsync(data);
     }
 

@@ -28,7 +28,7 @@ export class GaussianSplatting {
     /**
      * Name of the GS that is also used to name a mesh for rendering it
      */
-    public readonly name: string;
+    public readonly name: string = 'GaussianSplatting';
     /**
      * The scene the Gaussian Splatting mesh belongs to
      */
@@ -88,7 +88,7 @@ export class GaussianSplatting {
         return mesh;
     }
 
-    protected static _Worker: Nullable<Worker> = null;
+    protected _worker: Nullable<Worker> = null;
     protected static _VertexShaderSource = `
         precision mediump float;
         attribute vec2 position;
@@ -276,8 +276,8 @@ export class GaussianSplatting {
         this.scene = scene;
         this.name = name;
         this._createMaterial(scene);
-        GaussianSplatting._Worker?.terminate();
-        GaussianSplatting._Worker = null;
+        this._worker?.terminate();
+        this._worker = null;
     }
 
     private _loadData(data: ArrayBuffer) {
@@ -316,12 +316,7 @@ export class GaussianSplatting {
         this.mesh = this._getMesh(this.scene);
         this.mesh.thinInstanceSetBuffer("matrix", matricesData, 16, false);
 
-        if (GaussianSplatting._Worker) {
-            console.warn("Only one web worker possible. Previous Gaussian Splatting instance might not be rendered correctly.");
-            GaussianSplatting._Worker.terminate();
-        }
-
-        GaussianSplatting._Worker = new Worker(
+        this._worker = new Worker(
             URL.createObjectURL(
                 new Blob(["(", GaussianSplatting._CreateWorker.toString(), ")(self)"], {
                     type: "application/javascript",
@@ -329,7 +324,7 @@ export class GaussianSplatting {
             )
         );
 
-        GaussianSplatting._Worker.onmessage = (e) => {
+        this._worker.onmessage = (e) => {
             const indexMix = new Uint32Array(e.data.depthMix.buffer);
             updateInstances(indexMix);
         };
@@ -338,7 +333,7 @@ export class GaussianSplatting {
             this._material.setVector2("viewport", new Vector2(engine.getRenderWidth(), engine.getRenderHeight()));
             this.mesh!.getWorldMatrix().multiplyToRef(this.scene.activeCamera!.getViewMatrix(), this._modelViewMatrix);
             this._material.setMatrix("modelView", this._modelViewMatrix);
-            GaussianSplatting._Worker?.postMessage({ view: this._modelViewMatrix.m, positions: this._positions });
+            this._worker?.postMessage({ view: this._modelViewMatrix.m, positions: this._positions });
         });
         this._sceneDisposeObserver = this.scene.onDisposeObservable.add(() => {
             this.dispose();
@@ -371,8 +366,8 @@ export class GaussianSplatting {
     public dispose(): void {
         this.scene.onDisposeObservable.remove(this._sceneDisposeObserver);
         this.scene.onBeforeRenderObservable.remove(this._sceneBeforeRenderObserver);
-        GaussianSplatting._Worker?.terminate();
-        GaussianSplatting._Worker = null;
+        this._worker?.terminate();
+        this._worker = null;
         this.mesh?.dispose();
         this.mesh = null;
     }
