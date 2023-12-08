@@ -1,6 +1,5 @@
 import { getAlphaEquation, getAlphaMode, setAlphaConstants, setAlphaEquation, setAlphaMode } from "core/esm/Engines/WebGL/Extensions/alpha/alpha.webgl";
 import { ThinEngine } from "../../Engines/thinEngine";
-import { Constants } from "../constants";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {

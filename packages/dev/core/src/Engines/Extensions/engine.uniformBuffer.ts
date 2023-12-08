@@ -12,7 +12,6 @@ import {
     createUniformBuffer,
     updateUniformBuffer,
 } from "core/esm/Engines/WebGL/Extensions/uniformBuffer/uniformBuffer.webgl";
-import { setExtension } from "core/esm/Engines/Extensions/engine.extensions";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {

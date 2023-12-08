@@ -423,10 +423,10 @@ export class Engine extends ThinEngine {
         return this._engineState.scenes;
     }
 
-    public get virtualScenes(): Scene[] {
+    public get _virtualScenes(): Scene[] {
         return this._engineState._virtualScenes;
     }
-    public set virtualScenes(value: Scene[]) {
+    public set _virtualScenes(value: Scene[]) {
         this._engineState._virtualScenes = value;
     }
 
