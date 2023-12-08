@@ -28,7 +28,7 @@ export class GaussianSplatting {
     /**
      * Name of the GS that is also used to name a mesh for rendering it
      */
-    public readonly name: string = 'GaussianSplatting';
+    public readonly name: string = "GaussianSplatting";
     /**
      * The scene the Gaussian Splatting mesh belongs to
      */
@@ -80,9 +80,9 @@ export class GaussianSplatting {
         vertexData.positions = [-2, -2, 0, 2, -2, 0, 2, 2, 0, -2, 2, 0];
         vertexData.indices = [0, 1, 2, 0, 2, 3];
         vertexData.applyToMesh(mesh);
-        const binfo = new BoundingInfo(this._minimum, this._maximum);
+        const binfo = mesh.getBoundingInfo();
+        binfo.reConstruct(this._minimum, this._maximum);
         binfo.isLocked = true;
-        mesh.setBoundingInfo(binfo);
         mesh.doNotSyncBoundingInfo = true;
         mesh.material = this._material;
         return mesh;
@@ -331,7 +331,11 @@ export class GaussianSplatting {
         this._sceneBeforeRenderObserver = this.scene.onBeforeRenderObservable.add(() => {
             const engine = this.scene.getEngine();
             this._material.setVector2("viewport", new Vector2(engine.getRenderWidth(), engine.getRenderHeight()));
-            this.mesh!.getWorldMatrix().multiplyToRef(this.scene.activeCamera!.getViewMatrix(), this._modelViewMatrix);
+            const meshWorldMatrix = this.mesh!.getWorldMatrix();
+            meshWorldMatrix.multiplyToRef(this.scene.activeCamera!.getViewMatrix(), this._modelViewMatrix);
+            const binfo = this.mesh!.getBoundingInfo();
+            binfo.reConstruct(this._minimum, this._maximum, meshWorldMatrix);
+            binfo.isLocked = true;
             this._material.setMatrix("modelView", this._modelViewMatrix);
             this._worker?.postMessage({ view: this._modelViewMatrix.m, positions: this._positions });
         });
