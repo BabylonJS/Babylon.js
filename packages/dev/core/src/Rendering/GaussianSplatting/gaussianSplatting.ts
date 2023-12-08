@@ -327,9 +327,11 @@ export class GaussianSplatting {
             const indexMix = new Uint32Array(e.data.depthMix.buffer);
             updateInstances(indexMix);
         };
+        const viewport = new Vector2();
         this._sceneBeforeRenderObserver = this.scene.onBeforeRenderObservable.add(() => {
             const engine = this.scene.getEngine();
-            this._material.setVector2("viewport", new Vector2(engine.getRenderWidth(), engine.getRenderHeight()));
+            viewport.set(engine.getRenderWidth(), engine.getRenderHeight());
+            this._material.setVector2("viewport", viewport);
             const meshWorldMatrix = this.mesh!.getWorldMatrix();
             meshWorldMatrix.multiplyToRef(this.scene.activeCamera!.getViewMatrix(), this._modelViewMatrix);
             const binfo = this.mesh!.getBoundingInfo();
