@@ -98,6 +98,7 @@ export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFile
             continue;
         }
         test(testCase.title, async ({ page }) => {
+            console.log("Running test: " + testCase.title, "Meta: ", testCase.playgroundId || testCase.scriptToRun || testCase.sceneFilename);
             test.setTimeout(timeout);
             await page.evaluate(evaluatePrepareScene, {
                 sceneMetadata: testCase,
