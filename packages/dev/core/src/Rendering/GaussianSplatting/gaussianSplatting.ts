@@ -1,6 +1,6 @@
 import { Effect } from "../../Materials/effect";
 import { ShaderMaterial } from "../../Materials/shaderMaterial";
-import { Matrix, Quaternion, TmpVectors, Vector2 } from "../../Maths/math.vector";
+import { Matrix, Quaternion, TmpVectors, Vector2, Vector3 } from "../../Maths/math.vector";
 import { Mesh } from "../../Meshes/mesh";
 import { VertexData } from "../../Meshes/mesh.vertexData";
 import type { Observer } from "../../Misc/observable";
@@ -9,6 +9,7 @@ import type { Scene } from "../../scene";
 import type { Nullable } from "../../types";
 
 /**
+ * @experimental
  * Helper class that loads, creates and manipulates a Gaussian Splatting
  */
 export class GaussianSplatting {
@@ -21,10 +22,12 @@ export class GaussianSplatting {
     private _sceneBeforeRenderObserver: Nullable<Observer<Scene>>;
     private _material: ShaderMaterial;
     private _modelViewMatrix = Matrix.Identity();
+    private _minimum = new Vector3();
+    private _maximum = new Vector3();
     /**
      * Name of the GS that is also used to name a mesh for rendering it
      */
-    public readonly name: string;
+    public readonly name: string = "GaussianSplatting";
     /**
      * The scene the Gaussian Splatting mesh belongs to
      */
@@ -46,18 +49,18 @@ export class GaussianSplatting {
      * @param scene parent scene
      */
     private _createMaterial(scene: Scene) {
-        Effect.ShadersStore["customVertexShader"] = GaussianSplatting._VertexShaderSource;
-        Effect.ShadersStore["customFragmentShader"] = GaussianSplatting._FragmentShaderSource;
+        Effect.ShadersStore["gaussianSplattingVertexShader"] = GaussianSplatting._VertexShaderSource;
+        Effect.ShadersStore["gaussianSplattingFragmentShader"] = GaussianSplatting._FragmentShaderSource;
         const shaderMaterial = new ShaderMaterial(
             "GaussianSplattingShader",
             scene,
             {
-                vertex: "custom",
-                fragment: "custom",
+                vertex: "gaussianSplatting",
+                fragment: "gaussianSplatting",
             },
             {
                 attributes: ["position"],
-                uniforms: ["projection", "modelView"],
+                uniforms: ["projection", "modelView", "viewport"],
             }
         );
         shaderMaterial.backFaceCulling = false;
@@ -76,13 +79,15 @@ export class GaussianSplatting {
         vertexData.positions = [-2, -2, 0, 2, -2, 0, 2, 2, 0, -2, 2, 0];
         vertexData.indices = [0, 1, 2, 0, 2, 3];
         vertexData.applyToMesh(mesh);
-
+        const binfo = mesh.getBoundingInfo();
+        binfo.reConstruct(this._minimum, this._maximum);
+        binfo.isLocked = true;
+        mesh.doNotSyncBoundingInfo = true;
         mesh.material = this._material;
-        mesh.alwaysSelectAsActiveMesh = true;
         return mesh;
     }
 
-    protected static _Worker: Nullable<Worker> = null;
+    protected _worker: Nullable<Worker> = null;
     protected static _VertexShaderSource = `
         precision mediump float;
         attribute vec2 position;
@@ -224,10 +229,21 @@ export class GaussianSplatting {
         const matrixRotation = Matrix.Zero();
         const matrixScale = Matrix.Zero();
         const quaternion = Quaternion.Identity();
+
+        this._minimum.set(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+        this._maximum.set(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+
         for (let i = 0; i < vertexCount; i++) {
-            this._positions[3 * i + 0] = f_buffer[8 * i + 0];
-            this._positions[3 * i + 1] = -f_buffer[8 * i + 1];
-            this._positions[3 * i + 2] = f_buffer[8 * i + 2];
+            const x = f_buffer[8 * i + 0];
+            const y = -f_buffer[8 * i + 1];
+            const z = f_buffer[8 * i + 2];
+
+            this._positions[3 * i + 0] = x;
+            this._positions[3 * i + 1] = y;
+            this._positions[3 * i + 2] = z;
+
+            this._minimum.minimizeInPlaceFromFloats(x, y, z);
+            this._maximum.maximizeInPlaceFromFloats(x, y, z);
 
             quaternion.set(
                 (this._uBuffer[32 * i + 28 + 1] - 128) / 128,
@@ -259,79 +275,93 @@ export class GaussianSplatting {
         this.scene = scene;
         this.name = name;
         this._createMaterial(scene);
-        GaussianSplatting._Worker?.terminate();
-        GaussianSplatting._Worker = null;
+        this._worker?.terminate();
+        this._worker = null;
     }
 
+    private _loadData(data: ArrayBuffer) {
+        if (this.mesh) {
+            this.dispose();
+        }
+        this._setData(new Uint8Array(data as any));
+        const matricesData = new Float32Array(this.vertexCount * 16);
+
+        const updateInstances = (indexMix: Uint32Array) => {
+            for (let j = 0; j < this.vertexCount; j++) {
+                const i = indexMix[2 * j];
+                const index = j * 16;
+                matricesData[index + 0] = this._positions[i * 3 + 0];
+                matricesData[index + 1] = this._positions[i * 3 + 1];
+                matricesData[index + 2] = this._positions[i * 3 + 2];
+
+                matricesData[index + 4] = this._uBuffer[32 * i + 24 + 0] / 255;
+                matricesData[index + 5] = this._uBuffer[32 * i + 24 + 1] / 255;
+                matricesData[index + 6] = this._uBuffer[32 * i + 24 + 2] / 255;
+                matricesData[index + 7] = this._uBuffer[32 * i + 24 + 3] / 255;
+
+                matricesData[index + 8] = this._covA[i * 3 + 0];
+                matricesData[index + 9] = this._covA[i * 3 + 1];
+                matricesData[index + 10] = this._covA[i * 3 + 2];
+
+                matricesData[index + 12] = this._covB[i * 3 + 0];
+                matricesData[index + 13] = this._covB[i * 3 + 1];
+                matricesData[index + 14] = this._covB[i * 3 + 2];
+            }
+
+            this.mesh?.thinInstanceBufferUpdated("matrix");
+        };
+
+        // update so this.mesh is valid when exiting this function
+        this.mesh = this._getMesh(this.scene);
+        this.mesh.thinInstanceSetBuffer("matrix", matricesData, 16, false);
+
+        this._worker = new Worker(
+            URL.createObjectURL(
+                new Blob(["(", GaussianSplatting._CreateWorker.toString(), ")(self)"], {
+                    type: "application/javascript",
+                })
+            )
+        );
+
+        this._worker.onmessage = (e) => {
+            const indexMix = new Uint32Array(e.data.depthMix.buffer);
+            updateInstances(indexMix);
+        };
+        const viewport = new Vector2();
+        this._sceneBeforeRenderObserver = this.scene.onBeforeRenderObservable.add(() => {
+            const engine = this.scene.getEngine();
+            viewport.set(engine.getRenderWidth(), engine.getRenderHeight());
+            this._material.setVector2("viewport", viewport);
+            const meshWorldMatrix = this.mesh!.getWorldMatrix();
+            meshWorldMatrix.multiplyToRef(this.scene.activeCamera!.getViewMatrix(), this._modelViewMatrix);
+            const binfo = this.mesh!.getBoundingInfo();
+            binfo.reConstruct(this._minimum, this._maximum, meshWorldMatrix);
+            binfo.isLocked = true;
+            this._material.setMatrix("modelView", this._modelViewMatrix);
+            this._worker?.postMessage({ view: this._modelViewMatrix.m, positions: this._positions });
+        });
+        this._sceneDisposeObserver = this.scene.onDisposeObservable.add(() => {
+            this.dispose();
+        });
+    }
+
+    /**
+     * Loads a .splat Gaussian Splatting array buffer asynchronously
+     * @param data arraybuffer containing splat file
+     * @returns a promise that resolves when the operation is complete
+     */
+
+    public loadDataAsync(data: ArrayBuffer): Promise<void> {
+        return Promise.resolve(this._loadData(data));
+    }
     /**
      * Loads a .splat Gaussian Splatting file asynchronously
      * @param url path to the splat file to load
      * @returns a promise that resolves when the operation is complete
      */
-    public loadAsync(url: string): Promise<void> {
+    public loadFileAsync(url: string): Promise<void> {
         return Tools.LoadFileAsync(url, true).then((data: string | ArrayBuffer) => {
-            if (this.mesh) {
-                this.dispose();
-            }
-            this._setData(new Uint8Array(data as any));
-            const matricesData = new Float32Array(this.vertexCount * 16);
-
-            const updateInstances = (indexMix: Uint32Array) => {
-                for (let j = 0; j < this.vertexCount; j++) {
-                    const i = indexMix[2 * j];
-                    const index = j * 16;
-                    matricesData[index + 0] = this._positions[i * 3 + 0];
-                    matricesData[index + 1] = this._positions[i * 3 + 1];
-                    matricesData[index + 2] = this._positions[i * 3 + 2];
-
-                    matricesData[index + 4] = this._uBuffer[32 * i + 24 + 0] / 255;
-                    matricesData[index + 5] = this._uBuffer[32 * i + 24 + 1] / 255;
-                    matricesData[index + 6] = this._uBuffer[32 * i + 24 + 2] / 255;
-                    matricesData[index + 7] = this._uBuffer[32 * i + 24 + 3] / 255;
-
-                    matricesData[index + 8] = this._covA[i * 3 + 0];
-                    matricesData[index + 9] = this._covA[i * 3 + 1];
-                    matricesData[index + 10] = this._covA[i * 3 + 2];
-
-                    matricesData[index + 12] = this._covB[i * 3 + 0];
-                    matricesData[index + 13] = this._covB[i * 3 + 1];
-                    matricesData[index + 14] = this._covB[i * 3 + 2];
-                }
-
-                this.mesh?.thinInstanceBufferUpdated("matrix");
-            };
-
-            // update so this.mesh is valid when exiting this function
-            this.mesh = this._getMesh(this.scene);
-            this.mesh.thinInstanceSetBuffer("matrix", matricesData, 16, false);
-
-            if (GaussianSplatting._Worker) {
-                console.warn("Only one web worker possible. Previous Gaussian Splatting instance might not be rendered correctly.");
-                GaussianSplatting._Worker.terminate();
-            }
-
-            GaussianSplatting._Worker = new Worker(
-                URL.createObjectURL(
-                    new Blob(["(", GaussianSplatting._CreateWorker.toString(), ")(self)"], {
-                        type: "application/javascript",
-                    })
-                )
-            );
-
-            GaussianSplatting._Worker.onmessage = (e) => {
-                const indexMix = new Uint32Array(e.data.depthMix.buffer);
-                updateInstances(indexMix);
-            };
-            this._sceneBeforeRenderObserver = this.scene.onBeforeRenderObservable.add(() => {
-                const engine = this.scene.getEngine();
-                this._material.setVector2("viewport", new Vector2(engine.getRenderWidth(), engine.getRenderHeight()));
-                this.mesh!.getWorldMatrix().multiplyToRef(this.scene.activeCamera!.getViewMatrix(), this._modelViewMatrix);
-                this._material.setMatrix("modelView", this._modelViewMatrix);
-                GaussianSplatting._Worker?.postMessage({ view: this._modelViewMatrix.m, positions: this._positions });
-            });
-            this._sceneDisposeObserver = this.scene.onDisposeObservable.add(() => {
-                this.dispose();
-            });
+            this._loadData(data as ArrayBuffer);
         });
     }
 
@@ -341,8 +371,8 @@ export class GaussianSplatting {
     public dispose(): void {
         this.scene.onDisposeObservable.remove(this._sceneDisposeObserver);
         this.scene.onBeforeRenderObservable.remove(this._sceneBeforeRenderObserver);
-        GaussianSplatting._Worker?.terminate();
-        GaussianSplatting._Worker = null;
+        this._worker?.terminate();
+        this._worker = null;
         this.mesh?.dispose();
         this.mesh = null;
     }
