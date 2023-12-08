@@ -3,37 +3,37 @@
  */
 
 /* eslint-disable jsdoc/require-jsdoc */
-import { Effect } from "core/Materials/effect.js";
-import type { InternalTexture } from "core/Materials/Textures/internalTexture.js";
-import type { Nullable } from "core/types.js";
-import type { IShaderProcessor } from "core/Engines/Processors/iShaderProcessor.js";
-import type { UniformBuffer } from "core/Materials/uniformBuffer.js";
-import { Observable } from "core/Misc/observable.js";
-import { Constants } from "./engine.constants.js";
-import { PrecisionDate } from "core/Misc/precisionDate.js";
-import type { PerfCounter } from "core/Misc/perfCounter.js";
-import type { StorageBuffer } from "core/Buffers/storageBuffer.js";
-import type { EngineCapabilities } from "core/Engines/engineCapabilities.js";
-import type { EngineFeatures } from "core/Engines/engineFeatures.js";
-import type { DepthCullingState } from "core/States/depthCullingState.js";
-import { AlphaState } from "core/States/alphaCullingState.js";
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper.js";
-import type { IViewportLike } from "core/Maths/math.like.js";
-import type { ICanvas, ICanvasRenderingContext } from "core/Engines/ICanvas.js";
-import type { IFileRequest } from "core/Misc/fileRequest.js";
-import type { IRawTextureEngineExtension } from "./Extensions/rawTexture/engine.rawTexture.base.js";
-import type { Texture } from "core/Materials/Textures/texture.js";
-import { EngineType } from "./engine.interfaces.js";
-import { IsDocumentAvailable, IsWindowObjectExist, hostInformation } from "./runtimeEnvironment.js";
-import { PerformanceConfigurator } from "core/Engines/performanceConfigurator.js";
-import { EngineStore, _CreateCanvas, _ExitFullscreen, _ExitPointerlock, _RequestFullscreen, _RequestPointerlock } from "./engine.static.js";
-import { PerformanceMonitor } from "core/Misc/performanceMonitor.js";
-import type { StencilStateComposer } from "core/States/stencilStateComposer.js";
-import { StencilState } from "core/States/stencilState.js";
-import type { Scene } from "core/scene.js";
-import type { PostProcess } from "core/PostProcesses/postProcess.js";
-import type { ICustomAnimationFrameRequester } from "core/Misc/customAnimationFrameRequester.js";
-import type { ILoadingScreen } from "core/Loading/loadingScreen.js";
+import { Effect } from "core/Materials/effect";
+import type { InternalTexture } from "core/Materials/Textures/internalTexture";
+import type { Nullable } from "core/types";
+import type { IShaderProcessor } from "core/Engines/Processors/iShaderProcessor";
+import type { UniformBuffer } from "core/Materials/uniformBuffer";
+import { Observable } from "core/Misc/observable";
+import { Constants } from "./engine.constants";
+import { PrecisionDate } from "core/Misc/precisionDate";
+import type { PerfCounter } from "core/Misc/perfCounter";
+import type { StorageBuffer } from "core/Buffers/storageBuffer";
+import type { EngineCapabilities } from "core/Engines/engineCapabilities";
+import type { EngineFeatures } from "core/Engines/engineFeatures";
+import type { DepthCullingState } from "core/States/depthCullingState";
+import { AlphaState } from "core/States/alphaCullingState";
+import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
+import type { IViewportLike } from "core/Maths/math.like";
+import type { ICanvas, ICanvasRenderingContext } from "core/Engines/ICanvas";
+import type { IFileRequest } from "core/Misc/fileRequest";
+import type { IRawTextureEngineExtension } from "./Extensions/rawTexture/engine.rawTexture.base";
+import type { Texture } from "core/Materials/Textures/texture";
+import { EngineType } from "./engine.interfaces";
+import { IsDocumentAvailable, IsWindowObjectExist, hostInformation } from "./runtimeEnvironment";
+import { PerformanceConfigurator } from "core/Engines/performanceConfigurator";
+import { EngineStore, _CreateCanvas, _ExitFullscreen, _ExitPointerlock, _RequestFullscreen, _RequestPointerlock } from "./engine.static";
+import { PerformanceMonitor } from "core/Misc/performanceMonitor";
+import type { StencilStateComposer } from "core/States/stencilStateComposer";
+import { StencilState } from "core/States/stencilState";
+import type { Scene } from "core/scene";
+import type { PostProcess } from "core/PostProcesses/postProcess";
+import type { ICustomAnimationFrameRequester } from "core/Misc/customAnimationFrameRequester";
+import type { ILoadingScreen } from "core/Loading/loadingScreen";
 
 export interface IBaseEngineOptions {
     /**
@@ -1476,7 +1476,7 @@ export function _sharedInit(engineState: IBaseEnginePublic, canvas: HTMLCanvasEl
         document.addEventListener("webkitpointerlockchange", fes._onPointerLockChange, false);
     }
 
-    // fes.enableOfflineSupport = Engine.OfflineProviderFactory !== undefined;
+    // fes.enableOfflineSupport = Engine.OfflineProviderFactory !== undefined; // ESMTODO
 
     fes._deterministicLockstep = !!fes._creationOptions.deterministicLockstep;
     fes._lockstepMaxSteps = fes._creationOptions.lockstepMaxSteps || 0;

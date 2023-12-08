@@ -1,4 +1,4 @@
-import type { WebGLRenderTargetWrapper } from "core/Engines/WebGL/webGLRenderTargetWrapper.js";
+import type { WebGLRenderTargetWrapper } from "core/Engines/WebGL/webGLRenderTargetWrapper";
 import {
     _bindTextureDirectly,
     _bindUnboundFramebuffer,
@@ -11,19 +11,19 @@ import {
     _setupFramebufferDepthAttachments,
     type IWebGLEnginePublic,
     type WebGLEngineState,
-} from "../../engine.webgl.js";
-import type { WebGLHardwareTexture } from "core/Engines/WebGL/webGLHardwareTexture.js";
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper.js";
-import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture.js";
-import type { IMultiRenderTargetOptions } from "core/Materials/Textures/multiRenderTarget.js";
-import type { TextureSize } from "core/Materials/Textures/textureCreationOptions.js";
-import type { Nullable } from "core/types.js";
-import { _createHardwareRenderTargetWrapper } from "../renderTarget/renderTarget.webgl.js";
-import { Logger } from "core/Misc/logger.js";
-import type { IMultiRenderEngineExtension } from "../../../Extensions/multiRender/multiRender.base.js";
-import { augmentEngineState } from "../../../engine.adapters.js";
-import { resetTextureCache } from "../../../engine.base.js";
-import { Constants } from "../../../engine.constants.js";
+} from "../../engine.webgl";
+import type { WebGLHardwareTexture } from "core/Engines/WebGL/webGLHardwareTexture";
+import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
+import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
+import type { IMultiRenderTargetOptions } from "core/Materials/Textures/multiRenderTarget";
+import type { TextureSize } from "core/Materials/Textures/textureCreationOptions";
+import type { Nullable } from "core/types";
+import { _createHardwareRenderTargetWrapper } from "../renderTarget/renderTarget.webgl";
+import { Logger } from "core/Misc/logger";
+import type { IMultiRenderEngineExtension } from "../../../Extensions/multiRender/multiRender.base";
+import { augmentEngineState } from "../../../engine.adapters";
+import { resetTextureCache } from "../../../engine.base";
+import { Constants } from "../../../engine.constants";
 
 export const restoreSingleAttachment: IMultiRenderEngineExtension["restoreSingleAttachment"] = function (engineState: IWebGLEnginePublic): void {
     const fes = engineState as WebGLEngineState;

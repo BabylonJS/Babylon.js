@@ -1,3 +1,4 @@
+import { getAlphaEquation, getAlphaMode, setAlphaConstants, setAlphaEquation, setAlphaMode } from "core/esm/Engines/WebGL/Extensions/alpha/alpha.webgl";
 import { ThinEngine } from "../../Engines/thinEngine";
 import { Constants } from "../constants";
 
@@ -42,143 +43,21 @@ declare module "../../Engines/thinEngine" {
 }
 
 ThinEngine.prototype.setAlphaConstants = function (r: number, g: number, b: number, a: number) {
-    this._alphaState.setAlphaBlendConstants(r, g, b, a);
+    setAlphaConstants(this._engineState, r, g, b, a);
 };
 
 ThinEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange: boolean = false): void {
-    if (this._alphaMode === mode) {
-        if (!noDepthWriteChange) {
-            // Make sure we still have the correct depth mask according to the alpha mode (a transparent material could have forced writting to the depth buffer, for instance)
-            const depthMask = mode === Constants.ALPHA_DISABLE;
-            if (this.depthCullingState.depthMask !== depthMask) {
-                this.depthCullingState.depthMask = depthMask;
-            }
-        }
-        return;
-    }
-
-    switch (mode) {
-        case Constants.ALPHA_DISABLE:
-            this._alphaState.alphaBlend = false;
-            break;
-        case Constants.ALPHA_PREMULTIPLIED:
-            this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
-            this._alphaState.alphaBlend = true;
-            break;
-        case Constants.ALPHA_PREMULTIPLIED_PORTERDUFF:
-            this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
-            this._alphaState.alphaBlend = true;
-            break;
-        case Constants.ALPHA_COMBINE:
-            this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE);
-            this._alphaState.alphaBlend = true;
-            break;
-        case Constants.ALPHA_ONEONE:
-            this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
-            this._alphaState.alphaBlend = true;
-            break;
-        case Constants.ALPHA_ADD:
-            this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE, this._gl.ZERO, this._gl.ONE);
-            this._alphaState.alphaBlend = true;
-            break;
-        case Constants.ALPHA_SUBTRACT:
-            this._alphaState.setAlphaBlendFunctionParameters(this._gl.ZERO, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE);
-            this._alphaState.alphaBlend = true;
-            break;
-        case Constants.ALPHA_MULTIPLY:
-            this._alphaState.setAlphaBlendFunctionParameters(this._gl.DST_COLOR, this._gl.ZERO, this._gl.ONE, this._gl.ONE);
-            this._alphaState.alphaBlend = true;
-            break;
-        case Constants.ALPHA_MAXIMIZED:
-            this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE);
-            this._alphaState.alphaBlend = true;
-            break;
-        case Constants.ALPHA_INTERPOLATE:
-            this._alphaState.setAlphaBlendFunctionParameters(
-                this._gl.CONSTANT_COLOR,
-                this._gl.ONE_MINUS_CONSTANT_COLOR,
-                this._gl.CONSTANT_ALPHA,
-                this._gl.ONE_MINUS_CONSTANT_ALPHA
-            );
-            this._alphaState.alphaBlend = true;
-            break;
-        case Constants.ALPHA_SCREENMODE:
-            this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
-            this._alphaState.alphaBlend = true;
-            break;
-        case Constants.ALPHA_ONEONE_ONEONE:
-            this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE, this._gl.ONE, this._gl.ONE);
-            this._alphaState.alphaBlend = true;
-            break;
-        case Constants.ALPHA_ALPHATOCOLOR:
-            this._alphaState.setAlphaBlendFunctionParameters(this._gl.DST_ALPHA, this._gl.ONE, this._gl.ZERO, this._gl.ZERO);
-            this._alphaState.alphaBlend = true;
-            break;
-        case Constants.ALPHA_REVERSEONEMINUS:
-            this._alphaState.setAlphaBlendFunctionParameters(
-                this._gl.ONE_MINUS_DST_COLOR,
-                this._gl.ONE_MINUS_SRC_COLOR,
-                this._gl.ONE_MINUS_DST_ALPHA,
-                this._gl.ONE_MINUS_SRC_ALPHA
-            );
-            this._alphaState.alphaBlend = true;
-            break;
-        case Constants.ALPHA_SRC_DSTONEMINUSSRCALPHA:
-            this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
-            this._alphaState.alphaBlend = true;
-            break;
-        case Constants.ALPHA_ONEONE_ONEZERO:
-            this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE, this._gl.ONE, this._gl.ONE, this._gl.ZERO);
-            this._alphaState.alphaBlend = true;
-            break;
-        case Constants.ALPHA_EXCLUSION:
-            this._alphaState.setAlphaBlendFunctionParameters(this._gl.ONE_MINUS_DST_COLOR, this._gl.ONE_MINUS_SRC_COLOR, this._gl.ZERO, this._gl.ONE);
-            this._alphaState.alphaBlend = true;
-            break;
-        case Constants.ALPHA_LAYER_ACCUMULATE:
-            // Same as ALPHA_COMBINE but accumulates (1 - alpha) values in the alpha channel for a later readout in order independant transparency
-            this._alphaState.setAlphaBlendFunctionParameters(this._gl.SRC_ALPHA, this._gl.ONE_MINUS_SRC_ALPHA, this._gl.ONE, this._gl.ONE_MINUS_SRC_ALPHA);
-            this._alphaState.alphaBlend = true;
-            break;
-    }
-    if (!noDepthWriteChange) {
-        this.depthCullingState.depthMask = mode === Constants.ALPHA_DISABLE;
-    }
-    this._alphaMode = mode;
+    setAlphaMode(this._engineState, mode, noDepthWriteChange);
 };
 
 ThinEngine.prototype.getAlphaMode = function (): number {
-    return this._alphaMode;
+    return getAlphaMode(this._engineState);
 };
 
 ThinEngine.prototype.setAlphaEquation = function (equation: number): void {
-    if (this._alphaEquation === equation) {
-        return;
-    }
-
-    switch (equation) {
-        case Constants.ALPHA_EQUATION_ADD:
-            this._alphaState.setAlphaEquationParameters(Constants.GL_ALPHA_EQUATION_ADD, Constants.GL_ALPHA_EQUATION_ADD);
-            break;
-        case Constants.ALPHA_EQUATION_SUBSTRACT:
-            this._alphaState.setAlphaEquationParameters(Constants.GL_ALPHA_EQUATION_SUBTRACT, Constants.GL_ALPHA_EQUATION_SUBTRACT);
-            break;
-        case Constants.ALPHA_EQUATION_REVERSE_SUBTRACT:
-            this._alphaState.setAlphaEquationParameters(Constants.GL_ALPHA_EQUATION_REVERSE_SUBTRACT, Constants.GL_ALPHA_EQUATION_REVERSE_SUBTRACT);
-            break;
-        case Constants.ALPHA_EQUATION_MAX:
-            this._alphaState.setAlphaEquationParameters(Constants.GL_ALPHA_EQUATION_MAX, Constants.GL_ALPHA_EQUATION_MAX);
-            break;
-        case Constants.ALPHA_EQUATION_MIN:
-            this._alphaState.setAlphaEquationParameters(Constants.GL_ALPHA_EQUATION_MIN, Constants.GL_ALPHA_EQUATION_MIN);
-            break;
-        case Constants.ALPHA_EQUATION_DARKEN:
-            this._alphaState.setAlphaEquationParameters(Constants.GL_ALPHA_EQUATION_MIN, Constants.GL_ALPHA_EQUATION_ADD);
-            break;
-    }
-    this._alphaEquation = equation;
+    setAlphaEquation(this._engineState, equation);
 };
 
 ThinEngine.prototype.getAlphaEquation = function () {
-    return this._alphaEquation;
+    return getAlphaEquation(this._engineState);
 };

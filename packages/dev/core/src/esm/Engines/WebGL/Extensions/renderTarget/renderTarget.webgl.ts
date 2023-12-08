@@ -1,11 +1,11 @@
-import type { WebGLHardwareTexture } from "core/Engines/WebGL/webGLHardwareTexture.js";
-import { WebGLRenderTargetWrapper } from "core/Engines/WebGL/webGLRenderTargetWrapper.js";
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper.js";
-import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture.js";
-import type { TextureSize, RenderTargetCreationOptions, DepthTextureCreationOptions } from "core/Materials/Textures/textureCreationOptions.js";
-import type { Nullable } from "core/types.js";
+import type { WebGLHardwareTexture } from "core/Engines/WebGL/webGLHardwareTexture";
+import { WebGLRenderTargetWrapper } from "core/Engines/WebGL/webGLRenderTargetWrapper";
+import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
+import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
+import type { TextureSize, RenderTargetCreationOptions, DepthTextureCreationOptions } from "core/Materials/Textures/textureCreationOptions";
+import type { Nullable } from "core/types";
 
-import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl.js";
+import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl";
 import {
     _bindTextureDirectly,
     _bindUnboundFramebuffer,
@@ -14,12 +14,12 @@ import {
     _getRGBAMultiSampleBufferFormat,
     _setupDepthStencilTexture,
     _setupFramebufferDepthAttachments,
-} from "../../engine.webgl.js";
-import { Logger } from "core/Misc/logger.js";
-import { _createDepthStencilCubeTexture } from "../cubeTexture/cubeTexture.webgl.js";
-import type { IRenderTargetEngineExtension } from "../../../Extensions/renderTarget/renderTarget.base.js";
-import { augmentEngineState } from "../../../engine.adapters.js";
-import { Constants } from "../../../engine.constants.js";
+} from "../../engine.webgl";
+import { Logger } from "core/Misc/logger";
+import { _createDepthStencilCubeTexture } from "../cubeTexture/cubeTexture.webgl";
+import type { IRenderTargetEngineExtension } from "../../../Extensions/renderTarget/renderTarget.base";
+import { augmentEngineState } from "../../../engine.adapters";
+import { Constants } from "../../../engine.constants";
 
 export const _createHardwareRenderTargetWrapper: IRenderTargetEngineExtension["_createHardwareRenderTargetWrapper"] = function (
     engineState: IWebGLEnginePublic,

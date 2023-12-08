@@ -1,8 +1,8 @@
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper.js";
-import type { IMultiRenderTargetOptions } from "core/Materials/Textures/multiRenderTarget.js";
-import type { TextureSize } from "core/Materials/Textures/textureCreationOptions.js";
-import type { Nullable } from "core/types.js";
-import type { IBaseEnginePublic } from "../../engine.base.js";
+import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
+import type { IMultiRenderTargetOptions } from "core/Materials/Textures/multiRenderTarget";
+import type { TextureSize } from "core/Materials/Textures/textureCreationOptions";
+import type { Nullable } from "core/types";
+import type { IBaseEnginePublic } from "../../engine.base";
 
 export interface IMultiRenderEngineExtension {
     /**

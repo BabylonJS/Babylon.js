@@ -1,9 +1,18 @@
 import { ThinEngine } from "../../Engines/thinEngine";
 import type { FloatArray, Nullable } from "../../types";
 import type { DataBuffer } from "../../Buffers/dataBuffer";
-import { WebGLDataBuffer } from "../../Meshes/WebGL/webGLDataBuffer";
+import type { WebGLDataBuffer } from "../../Meshes/WebGL/webGLDataBuffer";
 import type { IPipelineContext } from "../IPipelineContext";
 import type { WebGLPipelineContext } from "../WebGL/webGLPipelineContext";
+import {
+    bindUniformBlock,
+    bindUniformBuffer,
+    bindUniformBufferBase,
+    createDynamicUniformBuffer,
+    createUniformBuffer,
+    updateUniformBuffer,
+} from "core/esm/Engines/WebGL/Extensions/uniformBuffer/uniformBuffer.webgl";
+import { setExtension } from "core/esm/Engines/Extensions/engine.extensions";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -60,88 +69,26 @@ declare module "../../Engines/thinEngine" {
 }
 
 ThinEngine.prototype.createUniformBuffer = function (elements: FloatArray, _label?: string): DataBuffer {
-    const ubo = this._gl.createBuffer();
-
-    if (!ubo) {
-        throw new Error("Unable to create uniform buffer");
-    }
-    const result = new WebGLDataBuffer(ubo);
-
-    this.bindUniformBuffer(result);
-
-    if (elements instanceof Float32Array) {
-        this._gl.bufferData(this._gl.UNIFORM_BUFFER, <Float32Array>elements, this._gl.STATIC_DRAW);
-    } else {
-        this._gl.bufferData(this._gl.UNIFORM_BUFFER, new Float32Array(<number[]>elements), this._gl.STATIC_DRAW);
-    }
-
-    this.bindUniformBuffer(null);
-
-    result.references = 1;
-    return result;
+    return createUniformBuffer(this._engineState, elements);
 };
 
 ThinEngine.prototype.createDynamicUniformBuffer = function (elements: FloatArray, _label?: string): DataBuffer {
-    const ubo = this._gl.createBuffer();
-
-    if (!ubo) {
-        throw new Error("Unable to create dynamic uniform buffer");
-    }
-
-    const result = new WebGLDataBuffer(ubo);
-    this.bindUniformBuffer(result);
-
-    if (elements instanceof Float32Array) {
-        this._gl.bufferData(this._gl.UNIFORM_BUFFER, <Float32Array>elements, this._gl.DYNAMIC_DRAW);
-    } else {
-        this._gl.bufferData(this._gl.UNIFORM_BUFFER, new Float32Array(<number[]>elements), this._gl.DYNAMIC_DRAW);
-    }
-
-    this.bindUniformBuffer(null);
-
-    result.references = 1;
-    return result;
+    return createDynamicUniformBuffer(this._engineState, elements);
 };
 
 ThinEngine.prototype.updateUniformBuffer = function (uniformBuffer: DataBuffer, elements: FloatArray, offset?: number, count?: number): void {
-    this.bindUniformBuffer(uniformBuffer);
-
-    if (offset === undefined) {
-        offset = 0;
-    }
-
-    if (count === undefined) {
-        if (elements instanceof Float32Array) {
-            this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, offset, <Float32Array>elements);
-        } else {
-            this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, offset, new Float32Array(<number[]>elements));
-        }
-    } else {
-        if (elements instanceof Float32Array) {
-            this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, 0, <Float32Array>elements.subarray(offset, offset + count));
-        } else {
-            this._gl.bufferSubData(this._gl.UNIFORM_BUFFER, 0, new Float32Array(<number[]>elements).subarray(offset, offset + count));
-        }
-    }
-
-    this.bindUniformBuffer(null);
+    updateUniformBuffer(this._engineState, uniformBuffer as WebGLDataBuffer, elements, offset, count);
 };
 
 ThinEngine.prototype.bindUniformBuffer = function (buffer: Nullable<DataBuffer>): void {
-    this._gl.bindBuffer(this._gl.UNIFORM_BUFFER, buffer ? buffer.underlyingResource : null);
+    bindUniformBuffer(this._engineState, buffer);
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 ThinEngine.prototype.bindUniformBufferBase = function (buffer: DataBuffer, location: number, name: string): void {
-    this._gl.bindBufferBase(this._gl.UNIFORM_BUFFER, location, buffer ? buffer.underlyingResource : null);
+    bindUniformBufferBase(this._engineState, buffer as WebGLDataBuffer, location, name);
 };
 
 ThinEngine.prototype.bindUniformBlock = function (pipelineContext: IPipelineContext, blockName: string, index: number): void {
-    const program = (pipelineContext as WebGLPipelineContext).program!;
-
-    const uniformLocation = this._gl.getUniformBlockIndex(program, blockName);
-
-    if (uniformLocation !== 0xffffffff) {
-        this._gl.uniformBlockBinding(program, uniformLocation, index);
-    }
+    bindUniformBlock(this._engineState, pipelineContext as WebGLPipelineContext, blockName, index);
 };

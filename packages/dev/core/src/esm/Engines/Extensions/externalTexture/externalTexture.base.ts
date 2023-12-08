@@ -1,5 +1,5 @@
-import type { ExternalTexture } from "core/Materials/Textures/externalTexture.js";
-import type { Nullable } from "core/types.js";
+import type { ExternalTexture } from "core/Materials/Textures/externalTexture";
+import type { Nullable } from "core/types";
 
 export interface IExternalTextureEngineExtension {
     /**

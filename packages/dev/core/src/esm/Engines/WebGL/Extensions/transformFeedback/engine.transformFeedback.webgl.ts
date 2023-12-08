@@ -1,7 +1,7 @@
-import type { DataBuffer } from "core/Buffers/dataBuffer.js";
-import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl.js";
-import type { Nullable } from "core/types.js";
-import type { ITransformFeedbackEngineExtension } from "../../../Extensions/transformFeedback/engine.transformFeedback.base.js";
+import type { DataBuffer } from "core/Buffers/dataBuffer";
+import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl";
+import type { Nullable } from "core/types";
+import type { ITransformFeedbackEngineExtension } from "../../../Extensions/transformFeedback/engine.transformFeedback.base";
 
 export const createTransformFeedback: ITransformFeedbackEngineExtension["createTransformFeedback"] = (engineState: IWebGLEnginePublic): WebGLTransformFeedback => {
     const gl = (engineState as WebGLEngineState)._gl;

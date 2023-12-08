@@ -1,7 +1,7 @@
-import type { InternalTexture } from "core/Materials/Textures/internalTexture.js";
-import type { ICanvas } from "core/Engines/ICanvas.js";
-import type { Nullable } from "core/types.js";
-import type { IBaseEnginePublic } from "../../engine.base.js";
+import type { InternalTexture } from "core/Materials/Textures/internalTexture";
+import type { ICanvas } from "core/Engines/ICanvas";
+import type { Nullable } from "core/types";
+import type { IBaseEnginePublic } from "../../engine.base";
 
 export interface IDynamicTextureEngineExtension {
     /**

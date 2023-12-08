@@ -2,12 +2,12 @@
  * This file will include general engine tools, like reporters and loadFile
  */
 
-import { PerfCounter } from "core/Misc/perfCounter.js";
-import type { BaseEngineState, BaseEngineStateFull, IBaseEnginePublic } from "./engine.base.js";
-import type { IOfflineProvider } from "core/Offline/IOfflineProvider.js";
-import type { IWebRequest } from "core/Misc/interfaces/iWebRequest.js";
-import type { IFileRequest } from "core/Misc/fileRequest.js";
-import { LoadFile } from "core/Misc/fileTools.js";
+import { PerfCounter } from "core/Misc/perfCounter";
+import type { BaseEngineState, BaseEngineStateFull, IBaseEnginePublic } from "./engine.base";
+import type { IOfflineProvider } from "core/Offline/IOfflineProvider";
+import type { IWebRequest } from "core/Misc/interfaces/iWebRequest";
+import type { IFileRequest } from "core/Misc/fileRequest";
+import { LoadFile } from "core/Misc/fileTools";
 /**
  * @internal
  */

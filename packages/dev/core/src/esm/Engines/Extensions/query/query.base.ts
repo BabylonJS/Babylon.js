@@ -1,9 +1,9 @@
-import type { Nullable, int } from "core/types.js";
-import type { Observer } from "core/Misc/observable.js";
-import { PerfCounter } from "core/Misc/perfCounter.js";
-import type { _TimeToken } from "core/Instrumentation/timeToken.js";
-import type { IBaseEnginePublic } from "../../engine.base.js";
-import { AbstractMesh } from "core/Meshes/abstractMesh.js";
+import type { Nullable, int } from "core/types";
+import type { Observer } from "core/Misc/observable";
+import { PerfCounter } from "core/Misc/perfCounter";
+import type { _TimeToken } from "core/Instrumentation/timeToken";
+import type { IBaseEnginePublic } from "../../engine.base";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
 
 // TODO there is a breaking change here - returning engine state instead of engine
 

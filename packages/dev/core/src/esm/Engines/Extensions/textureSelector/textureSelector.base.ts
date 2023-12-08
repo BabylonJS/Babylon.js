@@ -1,5 +1,5 @@
-import type { Nullable } from "core/types.js";
-import type { BaseEngineStateFull, IBaseEnginePublic } from "../../engine.base.js";
+import type { Nullable } from "core/types";
+import type { BaseEngineStateFull, IBaseEnginePublic } from "../../engine.base";
 
 export interface ITextureSelectorExtensionState {
     /** @internal */

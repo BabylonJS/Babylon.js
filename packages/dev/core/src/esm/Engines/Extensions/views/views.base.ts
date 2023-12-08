@@ -1,7 +1,7 @@
-import type { Camera } from "core/Cameras/camera.js";
-import type { IBaseEnginePublic } from "../../engine.base.js";
-import { Observable } from "core/Misc/observable.js";
-import type { Nullable } from "core/types.js";
+import type { Camera } from "core/Cameras/camera";
+import type { IBaseEnginePublic } from "../../engine.base";
+import { Observable } from "core/Misc/observable";
+import type { Nullable } from "core/types";
 
 /**
  * Class used to define an additional view for the engine

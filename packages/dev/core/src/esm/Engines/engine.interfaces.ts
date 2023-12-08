@@ -1,4 +1,4 @@
-import type { IOfflineProvider } from "core/Offline/IOfflineProvider.js";
+import type { IOfflineProvider } from "core/Offline/IOfflineProvider";
 
 export enum EngineType {
     BASE,

@@ -1,6 +1,6 @@
-import type { TextureSampler } from "core/Materials/Textures/textureSampler.js";
-import type { Nullable } from "core/types.js";
-import type { IBaseEnginePublic } from "../../engine.base.js";
+import type { TextureSampler } from "core/Materials/Textures/textureSampler";
+import type { Nullable } from "core/types";
+import type { IBaseEnginePublic } from "../../engine.base";
 
 export interface ITextureSamplerEngineExtension {
     /**

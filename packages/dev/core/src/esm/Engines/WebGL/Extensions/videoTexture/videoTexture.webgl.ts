@@ -1,10 +1,10 @@
-import type { InternalTexture } from "core/Materials/Textures/internalTexture.js";
-import type { Nullable } from "core/types.js";
-import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl.js";
-import { _bindTextureDirectly, _getInternalFormat, _getRGBABufferInternalSizedFormat, _unpackFlipY } from "../../engine.webgl.js";
-import type { IVideoTextureEngineExtension } from "../../../Extensions/videoTexture/videoTexture.base.js";
-import { Constants } from "../../../engine.constants.js";
-import { _CreateCanvas } from "../../../engine.static.js";
+import type { InternalTexture } from "core/Materials/Textures/internalTexture";
+import type { Nullable } from "core/types";
+import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl";
+import { _bindTextureDirectly, _getInternalFormat, _getRGBABufferInternalSizedFormat, _unpackFlipY } from "../../engine.webgl";
+import type { IVideoTextureEngineExtension } from "../../../Extensions/videoTexture/videoTexture.base";
+import { Constants } from "../../../engine.constants";
+import { _CreateCanvas } from "../../../engine.static";
 
 export const updateVideoTexture: IVideoTextureEngineExtension["updateVideoTexture"] = function (
     engineState: IWebGLEnginePublic,

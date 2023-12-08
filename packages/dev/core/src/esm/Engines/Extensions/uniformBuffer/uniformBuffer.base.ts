@@ -1,7 +1,7 @@
-import type { DataBuffer } from "core/Buffers/dataBuffer.js";
-import type { IPipelineContext } from "core/Engines/IPipelineContext.js";
-import type { FloatArray, Nullable } from "core/types.js";
-import type { IBaseEnginePublic } from "../../engine.base.js";
+import type { DataBuffer } from "core/Buffers/dataBuffer";
+import type { IPipelineContext } from "core/Engines/IPipelineContext";
+import type { FloatArray, Nullable } from "core/types";
+import type { IBaseEnginePublic } from "../../engine.base";
 
 export interface IUniformBufferEngineExtension {
     /**

@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable jsdoc/require-jsdoc */
 /* eslint-disable babylonjs/available */
-import type { DataArray, IndicesArray, Nullable } from "core/types.js";
-import type { IBaseEngineProtected, IBaseEnginePublic, IBaseEngineInternals, IBaseEngineOptions } from "../engine.base.js";
+import type { DataArray, IndicesArray, Nullable } from "core/types";
+import type { IBaseEngineProtected, IBaseEnginePublic, IBaseEngineInternals, IBaseEngineOptions } from "../engine.base";
 import {
     initBaseEngineState,
     endFrame as endFrameBase,
@@ -18,46 +18,47 @@ import {
     _setupMobileChecks,
     _getGlobalDefines,
     getLoadedTexturesCache,
-} from "../engine.base.js";
-import { WebGLShaderProcessor } from "core/Engines/WebGL/webGLShaderProcessors.js";
-import type { DataBuffer } from "core/Buffers/dataBuffer.js";
-import type { IEffectCreationOptions } from "core/Materials/effect.js";
-import { Effect } from "core/Materials/effect.js";
-import type { IColor4Like, IViewportLike } from "core/Maths/math.like.js";
-import { Constants } from "../engine.constants.js";
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper.js";
-import type { WebGLRenderTargetWrapper } from "core/Engines/WebGL/webGLRenderTargetWrapper.js";
+    getCaps,
+} from "../engine.base";
+import { WebGLShaderProcessor } from "core/Engines/WebGL/webGLShaderProcessors";
+import type { DataBuffer } from "core/Buffers/dataBuffer";
+import type { IEffectCreationOptions } from "core/Materials/effect";
+import { Effect } from "core/Materials/effect";
+import type { IColor4Like, IViewportLike } from "core/Maths/math.like";
+import { Constants } from "../engine.constants";
+import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
+import type { WebGLRenderTargetWrapper } from "core/Engines/WebGL/webGLRenderTargetWrapper";
 import * as _ from "lodash";
-import { WebGLDataBuffer } from "core/Meshes/WebGL/webGLDataBuffer.js";
-import { WebGLPipelineContext } from "core/Engines/WebGL/webGLPipelineContext.js";
-import type { IPipelineContext } from "core/Engines/IPipelineContext.js";
-import type { VertexBuffer } from "core/Buffers/buffer.js";
-import type { InstancingAttributeInfo } from "core/Engines/instancingAttributeInfo.js";
-import { InternalTextureSource, InternalTexture } from "core/Materials/Textures/internalTexture.js";
-import { _loadFile, _reportDrawCall } from "../engine.tools.js";
-import type { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture.js";
-import type { ThinTexture } from "core/Materials/Textures/thinTexture.js";
-import type { VideoTexture } from "core/Materials/Textures/videoTexture.js";
-import type { ISceneLike } from "../engine.interfaces.js";
-import { EngineStore, ExceptionList, GetExponentOfTwo, Version } from "../engine.static.js";
-import type { Scene } from "core/scene.js";
-import type { InternalTextureCreationOptions, TextureSize } from "core/Materials/Textures/textureCreationOptions.js";
-import { Logger } from "core/Misc/logger.js";
-import type { HardwareTextureWrapper } from "core/Materials/Textures/hardwareTextureWrapper.js";
-import { WebGLHardwareTexture } from "core/Engines/WebGL/webGLHardwareTexture.js";
-import { DrawWrapper } from "core/Materials/drawWrapper.js";
-import type { IEffectFallbacks } from "core/Materials/iEffectFallbacks.js";
-import { ShaderLanguage } from "core/Materials/shaderLanguage.js";
-import { augmentEngineState } from "../engine.adapters.js";
-import { StencilStateComposer } from "core/States/stencilStateComposer.js";
-import { DepthCullingState } from "core/States/depthCullingState.js";
-import type { ThinEngine } from "core/Engines/thinEngine.js";
-import { EngineExtensions, getEngineExtension } from "../Extensions/engine.extensions.js";
-import type { ShaderProcessingContext } from "core/Engines/Processors/shaderProcessingOptions.js";
-import type { PostProcess } from "core/PostProcesses/postProcess.js";
-import type { IShaderProcessor } from "core/Engines/Processors/iShaderProcessor.js";
-import { IsWindowObjectExist } from "../runtimeEnvironment.js";
-import { PerfCounter } from "core/Misc/perfCounter.js";
+import { WebGLDataBuffer } from "core/Meshes/WebGL/webGLDataBuffer";
+import { WebGLPipelineContext } from "core/Engines/WebGL/webGLPipelineContext";
+import type { IPipelineContext } from "core/Engines/IPipelineContext";
+import type { VertexBuffer } from "core/Buffers/buffer";
+import type { InstancingAttributeInfo } from "core/Engines/instancingAttributeInfo";
+import { InternalTextureSource, InternalTexture } from "core/Materials/Textures/internalTexture";
+import { _loadFile, _reportDrawCall } from "../engine.tools";
+import type { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import type { ThinTexture } from "core/Materials/Textures/thinTexture";
+import type { VideoTexture } from "core/Materials/Textures/videoTexture";
+import type { ISceneLike } from "../engine.interfaces";
+import { EngineStore, ExceptionList, GetExponentOfTwo, Version } from "../engine.static";
+import type { Scene } from "core/scene";
+import type { InternalTextureCreationOptions, TextureSize } from "core/Materials/Textures/textureCreationOptions";
+import { Logger } from "core/Misc/logger";
+import type { HardwareTextureWrapper } from "core/Materials/Textures/hardwareTextureWrapper";
+import { WebGLHardwareTexture } from "core/Engines/WebGL/webGLHardwareTexture";
+import { DrawWrapper } from "core/Materials/drawWrapper";
+import type { IEffectFallbacks } from "core/Materials/iEffectFallbacks";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { augmentEngineState } from "../engine.adapters";
+import { StencilStateComposer } from "core/States/stencilStateComposer";
+import { DepthCullingState } from "core/States/depthCullingState";
+import type { ThinEngine } from "core/Engines/thinEngine";
+import { EngineExtensions, getEngineExtension } from "../Extensions/engine.extensions";
+import type { ShaderProcessingContext } from "core/Engines/Processors/shaderProcessingOptions";
+import type { PostProcess } from "core/PostProcesses/postProcess";
+import type { IShaderProcessor } from "core/Engines/Processors/iShaderProcessor";
+import { IsWindowObjectExist } from "../runtimeEnvironment";
+import { PerfCounter } from "core/Misc/perfCounter";
 import {
     _createTextureBase,
     _restoreEngineAfterContextLost,
@@ -66,9 +67,10 @@ import {
     setTextureFromPostProcessBase,
     setTextureFromPostProcessOutputBase,
     setViewportBase,
-} from "../engine.extendable.js";
-import type { Engine } from "core/Engines/engine.js";
-import type { IStencilState } from "core/States/IStencilState.js";
+} from "../engine.extendable";
+import type { Engine } from "core/Engines/engine";
+import type { IStencilState } from "core/States/IStencilState";
+import { WebGL2ShaderProcessor } from "core/Engines/WebGL/webGL2ShaderProcessors";
 
 const _TempClearColorUint32 = new Uint32Array(4);
 const _TempClearColorInt32 = new Int32Array(4);
@@ -202,7 +204,6 @@ export function initWebGLEngineState(
 
     // private
     const ps = baseEngineState as WebGLEngineStateFull;
-    ps._shaderProcessor = new WebGLShaderProcessor();
     ps.enableUnpackFlipYCached = true;
     ps._uintIndicesCurrentlySet = false;
     ps._currentBoundBuffer = [];
@@ -361,6 +362,8 @@ export function initWebGLEngineState(
             options.stencil = attributes.stencil;
         }
     }
+
+    ps._shaderProcessor = ps._webGLVersion > 1 ? new WebGL2ShaderProcessor() : new WebGLShaderProcessor();
 
     // Ensures a consistent color space unpacking of textures cross browser.
     ps._gl.pixelStorei(ps._gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, ps._gl.NONE);
@@ -1484,6 +1487,35 @@ export function createEffect(
         _getShaderProcessor: (engineState: IWebGLEnginePublic) => (engineState as WebGLEngineState)._shaderProcessor,
         _loadFile,
         createPipelineContext,
+        _getShaderSource,
+        _isRenderingStateCompiled,
+        _getGlobalDefines,
+        getCaps,
+        _preparePipelineContext,
+        _executeWhenRenderingStateIsCompiled,
+        getUniforms,
+        getAttributes,
+        bindSamplers,
+        setMatrices,
+        setInt,
+        setIntArray,
+        setIntArray2,
+        setIntArray3,
+        setIntArray4,
+        setFloat,
+        setFloat2,
+        setFloat3,
+        setFloat4,
+        setTexture,
+        setTextureArray,
+        setUInt,
+        setUInt2,
+        setUInt3,
+        setUInt4,
+        setArray,
+        setArray2,
+        setArray3,
+        setArray4,
     });
 
     const effect = new Effect(
@@ -2161,6 +2193,7 @@ export function _createInternalTexture(
         _releaseTexture,
         getLoadedTexturesCache,
         createTexture,
+        _createHardwareTexture,
     });
     const texture = new InternalTexture(engineAdapter, source);
     const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;

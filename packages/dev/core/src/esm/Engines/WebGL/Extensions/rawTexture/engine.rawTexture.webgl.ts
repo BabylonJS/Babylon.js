@@ -1,6 +1,6 @@
-import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture.js";
-import type { Nullable } from "core/types.js";
-import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl.js";
+import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
+import type { Nullable } from "core/types";
+import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl";
 import {
     _bindTextureDirectly,
     _getInternalFormat,
@@ -9,15 +9,15 @@ import {
     _getUseSRGBBuffer,
     _getWebGLTextureType,
     _unpackFlipY,
-} from "../../engine.webgl.js";
-import { Logger } from "core/Misc/logger.js";
-import { Tools } from "core/Misc/tools.js";
-import type { Scene } from "core/scene.js";
-import type { IWebRequest } from "core/Misc/interfaces/iWebRequest.js";
-import type { IRawTextureEngineExtension } from "../../../Extensions/rawTexture/engine.rawTexture.base.js";
-import { augmentEngineState } from "../../../engine.adapters.js";
-import { Constants } from "../../../engine.constants.js";
-import { _loadFile } from "../../../engine.tools.js";
+} from "../../engine.webgl";
+import { Logger } from "core/Misc/logger";
+import { Tools } from "core/Misc/tools";
+import type { Scene } from "core/scene";
+import type { IWebRequest } from "core/Misc/interfaces/iWebRequest";
+import type { IRawTextureEngineExtension } from "../../../Extensions/rawTexture/engine.rawTexture.base";
+import { augmentEngineState } from "../../../engine.adapters";
+import { Constants } from "../../../engine.constants";
+import { _loadFile } from "../../../engine.tools";
 
 export const updateRawTexture: IRawTextureEngineExtension["updateRawTexture"] = function (
     engineState: IWebGLEnginePublic,

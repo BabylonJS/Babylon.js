@@ -1,7 +1,7 @@
-import type { DataBuffer } from "core/Buffers/dataBuffer.js";
-import type { StorageBuffer } from "core/Buffers/storageBuffer.js";
-import type { DataArray, Nullable } from "core/types.js";
-import type { IBaseEnginePublic } from "../../engine.base.js";
+import type { DataBuffer } from "core/Buffers/dataBuffer";
+import type { StorageBuffer } from "core/Buffers/storageBuffer";
+import type { DataArray, Nullable } from "core/types";
+import type { IBaseEnginePublic } from "../../engine.base";
 
 export interface IStoreBufferEngineExtension {
     /**

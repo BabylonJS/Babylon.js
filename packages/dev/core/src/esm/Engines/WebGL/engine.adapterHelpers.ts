@@ -1,7 +1,7 @@
-import { createCubeTexture } from "./Extensions/cubeTexture/cubeTexture.webgl.js";
-import { createDynamicTexture, updateDynamicTexture } from "./Extensions/dynamicTexture/dynamicTexture.webgl.js";
-import { createRawTexture, createRawTexture3D, createRawTexture2DArray, createRawCubeTexture } from "./Extensions/rawTexture/engine.rawTexture.webgl.js";
-import type { IWebGLEnginePublic } from "./engine.webgl.js";
+import { createCubeTexture } from "./Extensions/cubeTexture/cubeTexture.webgl";
+import { createDynamicTexture, updateDynamicTexture } from "./Extensions/dynamicTexture/dynamicTexture.webgl";
+import { createRawTexture, createRawTexture3D, createRawTexture2DArray, createRawCubeTexture } from "./Extensions/rawTexture/engine.rawTexture.webgl";
+import type { IWebGLEnginePublic } from "./engine.webgl";
 import {
     createTexture,
     _createHardwareTexture,
@@ -19,16 +19,16 @@ import {
     setTexture,
     setTextureArray,
     setTextureFromPostProcess,
-} from "./engine.webgl.js";
-import { getCaps, getHostDocument, getLoadedTexturesCache, getRenderingCanvas } from "../engine.base.js";
-import type { InternalTexture } from "core/Materials/Textures/internalTexture.js";
-import { InternalTextureSource } from "core/Materials/Textures/internalTexture.js";
-import type { Scene } from "core/scene.js";
-import type { Nullable } from "core/types.js";
-import { _createPrefilteredCubeTexture } from "core/Misc/dds.js";
-import { augmentEngineState } from "../engine.adapters.js";
-import { _loadFile } from "../engine.tools.js";
-import { bindUniformBufferBase } from "./Extensions/uniformBuffer/uniformBuffer.webgl.js";
+} from "./engine.webgl";
+import { getCaps, getHostDocument, getLoadedTexturesCache, getRenderingCanvas } from "../engine.base";
+import type { InternalTexture } from "core/Materials/Textures/internalTexture";
+import { InternalTextureSource } from "core/Materials/Textures/internalTexture";
+import type { Scene } from "core/scene";
+import type { Nullable } from "core/types";
+import { _createPrefilteredCubeTexture } from "core/Misc/dds";
+import { augmentEngineState } from "../engine.adapters";
+import { _loadFile } from "../engine.tools";
+import { bindUniformBufferBase } from "./Extensions/uniformBuffer/uniformBuffer.webgl";
 
 export const createPrefilteredCubeTextureWebGLAdapter = {
     getCaps,

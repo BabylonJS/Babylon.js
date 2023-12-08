@@ -1,6 +1,6 @@
-import { getHostDocument } from "../engine.base.js";
-import { _createPrefilteredCubeTexture } from "core/Misc/dds.js";
-import { _loadFile } from "../engine.tools.js";
+import { getHostDocument } from "../engine.base";
+import { _createPrefilteredCubeTexture } from "core/Misc/dds";
+import { _loadFile } from "../engine.tools";
 
 export const effectWebGPUAdapter = {
     getHostDocument,

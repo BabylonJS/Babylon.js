@@ -1,9 +1,9 @@
-import type { IShaderProcessor } from "core/Engines/Processors/iShaderProcessor.js";
-import { ShaderLanguage } from "core/Materials/shaderLanguage.js";
-import type { DataArray, Nullable } from "core/types.js";
-import { WebGPUShaderProcessorWGSL } from "core/Engines/WebGPU/webgpuShaderProcessorsWGSL.js";
-import { WebGPUShaderProcessorGLSL } from "core/Engines/WebGPU/webgpuShaderProcessorsGLSL.js";
-import type { IBaseEngineProtected, IBaseEnginePublic, IBaseEngineInternals, IBaseEngineOptions } from "../engine.base.js";
+import type { IShaderProcessor } from "core/Engines/Processors/iShaderProcessor";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import type { DataArray, Nullable } from "core/types";
+import { WebGPUShaderProcessorWGSL } from "core/Engines/WebGPU/webgpuShaderProcessorsWGSL";
+import { WebGPUShaderProcessorGLSL } from "core/Engines/WebGPU/webgpuShaderProcessorsGLSL";
+import type { IBaseEngineProtected, IBaseEnginePublic, IBaseEngineInternals, IBaseEngineOptions } from "../engine.base";
 import {
     _getGlobalDefines,
     _setupMobileChecks,
@@ -13,52 +13,52 @@ import {
     getRenderWidth,
     initBaseEngineState,
     resize,
-} from "../engine.base.js";
-import { WebGPUSnapshotRendering } from "core/Engines/WebGPU/webgpuSnapshotRendering.js";
-import type { IDrawContext } from "core/Engines/IDrawContext.js";
-import type { IMaterialContext } from "core/Engines/IMaterialContext.js";
-import { Version } from "../engine.static.js";
-import { Logger } from "core/Misc/logger.js";
+} from "../engine.base";
+import { WebGPUSnapshotRendering } from "core/Engines/WebGPU/webgpuSnapshotRendering";
+import type { IDrawContext } from "core/Engines/IDrawContext";
+import type { IMaterialContext } from "core/Engines/IMaterialContext";
+import { Version } from "../engine.static";
+import { Logger } from "core/Misc/logger";
 
 // TODO the next two can move to this file
-import type { GlslangOptions, WebGPUEngine } from "core/Engines/webgpuEngine.js";
-import { WebGPUTintWASM, type TwgslOptions } from "core/Engines/WebGPU/webgpuTintWASM.js";
-import { EngineType } from "../engine.interfaces.js";
-import { IsWindowObjectExist } from "../runtimeEnvironment.js";
-import { Tools } from "core/Misc/tools.js";
-import { BufferUsage, CanvasAlphaMode, FeatureName, LoadOp, StoreOp, TextureDimension, TextureFormat, TextureUsage } from "./engine.webgpu.constants.js";
-import { VertexBuffer } from "core/Buffers/buffer.js";
-import { WebGPUBufferManager } from "core/Engines/WebGPU/webgpuBufferManager.js";
-import { WebGPUBundleList } from "core/Engines/WebGPU/webgpuBundleList.js";
-import { WebGPUCacheSampler } from "core/Engines/WebGPU/webgpuCacheSampler.js";
-import { WebGPUOcclusionQuery } from "core/Engines/WebGPU/webgpuOcclusionQuery.js";
-import { WebGPUTextureHelper } from "core/Engines/WebGPU/webgpuTextureHelper.js";
-import { WebGPUTimestampQuery } from "core/Engines/WebGPU/webgpuTimestampQuery.js";
-import { Constants } from "../engine.constants.js";
-import { _restoreEngineAfterContextLost } from "../engine.extendable.js";
-import type { ComputeEffect } from "core/Compute/computeEffect.js";
-import type { WebGPUCacheRenderPipeline } from "core/Engines/WebGPU/webgpuCacheRenderPipeline.js";
-import type { WebGPUDataBuffer } from "core/Meshes/WebGPU/webgpuDataBuffer.js";
-import { Observable } from "core/Misc/observable.js";
-import type { DataBuffer } from "core/Buffers/dataBuffer.js";
-import { WebGPUClearQuad } from "core/Engines/WebGPU/webgpuClearQuad.js";
-import { WebGPUDrawContext } from "core/Engines/WebGPU/webgpuDrawContext.js";
-import { WebGPUMaterialContext } from "core/Engines/WebGPU/webgpuMaterialContext.js";
-import { WebGPUCacheBindGroups } from "core/Engines/WebGPU/webgpuCacheBindGroups.js";
-import { WebGPUCacheRenderPipelineTree } from "core/Engines/WebGPU/webgpuCacheRenderPipelineTree.js";
-import { WebGPUDepthCullingState } from "core/Engines/WebGPU/webgpuDepthCullingState.js";
-import { WebGPUStencilStateComposer } from "core/Engines/WebGPU/webgpuStencilStateComposer.js";
-import { wipeCaches } from "../WebGL/engine.webgl.js";
-import type { WebGPUEngineMethods } from "../engine.adapters.js";
-import { augmentEngineState } from "../engine.adapters.js";
-import { _reportDrawCall } from "../engine.tools.js";
-import type { IEffectCreationOptions } from "core/Materials/effect.js";
-import { Effect } from "core/Materials/effect.js";
-import type { EffectFallbacks } from "core/Materials/effectFallbacks.js";
-import { effectWebGPUAdapter } from "../WebGL/engine.adapterHelpers.js";
-import type { Engine } from "core/Engines/engine.js";
-import { WebGPUHardwareTexture } from "core/Engines/WebGPU/webgpuHardwareTexture.js";
-import { Color4 } from "core/Maths/math.color.js";
+import type { GlslangOptions, WebGPUEngine } from "core/Engines/webgpuEngine";
+import { WebGPUTintWASM, type TwgslOptions } from "core/Engines/WebGPU/webgpuTintWASM";
+import { EngineType } from "../engine.interfaces";
+import { IsWindowObjectExist } from "../runtimeEnvironment";
+import { Tools } from "core/Misc/tools";
+import { BufferUsage, CanvasAlphaMode, FeatureName, LoadOp, StoreOp, TextureDimension, TextureFormat, TextureUsage } from "./engine.webgpu.constants";
+import { VertexBuffer } from "core/Buffers/buffer";
+import { WebGPUBufferManager } from "core/Engines/WebGPU/webgpuBufferManager";
+import { WebGPUBundleList } from "core/Engines/WebGPU/webgpuBundleList";
+import { WebGPUCacheSampler } from "core/Engines/WebGPU/webgpuCacheSampler";
+import { WebGPUOcclusionQuery } from "core/Engines/WebGPU/webgpuOcclusionQuery";
+import { WebGPUTextureHelper } from "core/Engines/WebGPU/webgpuTextureHelper";
+import { WebGPUTimestampQuery } from "core/Engines/WebGPU/webgpuTimestampQuery";
+import { Constants } from "../engine.constants";
+import { _restoreEngineAfterContextLost } from "../engine.extendable";
+import type { ComputeEffect } from "core/Compute/computeEffect";
+import type { WebGPUCacheRenderPipeline } from "core/Engines/WebGPU/webgpuCacheRenderPipeline";
+import type { WebGPUDataBuffer } from "core/Meshes/WebGPU/webgpuDataBuffer";
+import { Observable } from "core/Misc/observable";
+import type { DataBuffer } from "core/Buffers/dataBuffer";
+import { WebGPUClearQuad } from "core/Engines/WebGPU/webgpuClearQuad";
+import { WebGPUDrawContext } from "core/Engines/WebGPU/webgpuDrawContext";
+import { WebGPUMaterialContext } from "core/Engines/WebGPU/webgpuMaterialContext";
+import { WebGPUCacheBindGroups } from "core/Engines/WebGPU/webgpuCacheBindGroups";
+import { WebGPUCacheRenderPipelineTree } from "core/Engines/WebGPU/webgpuCacheRenderPipelineTree";
+import { WebGPUDepthCullingState } from "core/Engines/WebGPU/webgpuDepthCullingState";
+import { WebGPUStencilStateComposer } from "core/Engines/WebGPU/webgpuStencilStateComposer";
+import { wipeCaches } from "../WebGL/engine.webgl";
+import type { WebGPUEngineMethods } from "../engine.adapters";
+import { augmentEngineState } from "../engine.adapters";
+import { _reportDrawCall } from "../engine.tools";
+import type { IEffectCreationOptions } from "core/Materials/effect";
+import { Effect } from "core/Materials/effect";
+import type { EffectFallbacks } from "core/Materials/effectFallbacks";
+import { effectWebGPUAdapter } from "../WebGL/engine.adapterHelpers";
+import type { Engine } from "core/Engines/engine";
+import { WebGPUHardwareTexture } from "core/Engines/WebGPU/webgpuHardwareTexture";
+import { Color4 } from "core/Maths/math.color";
 
 declare function importScripts(jsPath: string): void;
 

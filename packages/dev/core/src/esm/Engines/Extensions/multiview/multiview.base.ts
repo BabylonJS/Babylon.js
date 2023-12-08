@@ -1,14 +1,14 @@
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper.js";
-import type { IBaseEnginePublic } from "../../engine.base.js";
-import { Camera } from "core/Cameras/camera.js";
-import { Scene } from "core/scene.js";
-import type { Engine } from "core/Engines/engine.js";
-import type { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture.js";
-import { UniformBuffer } from "core/Materials/uniformBuffer.js";
-import { Frustum } from "core/Maths/math.frustum.js";
-import { Matrix, TmpVectors } from "core/Maths/math.vector.js";
-import type { Nullable } from "core/types.js";
-import { MultiviewRenderTarget } from "core/Materials/Textures/MultiviewRenderTarget.js";
+import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
+import type { IBaseEnginePublic } from "../../engine.base";
+import { Camera } from "core/Cameras/camera";
+import { Scene } from "core/scene";
+import type { Engine } from "core/Engines/engine";
+import type { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
+import { UniformBuffer } from "core/Materials/uniformBuffer";
+import { Frustum } from "core/Maths/math.frustum";
+import { Matrix, TmpVectors } from "core/Maths/math.vector";
+import type { Nullable } from "core/types";
+import { MultiviewRenderTarget } from "core/Materials/Textures/MultiviewRenderTarget";
 
 export interface IMultiviewEngineExtension {
     /**

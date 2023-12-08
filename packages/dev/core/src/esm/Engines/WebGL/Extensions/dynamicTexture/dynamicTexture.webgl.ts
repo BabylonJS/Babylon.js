@@ -1,6 +1,6 @@
-import { ThinEngine } from "core/Engines/thinEngine.js";
-import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture.js";
-import type { Nullable } from "core/types.js";
+import { ThinEngine } from "core/Engines/thinEngine";
+import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
+import type { Nullable } from "core/types";
 import type { IDynamicTextureEngineExtension } from "../../../Extensions/dynamicTexture/dynamicTexture.base";
 import { augmentEngineState } from "../../../engine.adapters";
 import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl";

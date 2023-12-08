@@ -1,9 +1,9 @@
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper.js";
-import type { InternalTexture } from "core/Materials/Textures/internalTexture.js";
-import type { DepthTextureCreationOptions } from "core/Materials/Textures/textureCreationOptions.js";
-import type { Scene } from "core/scene.js";
-import type { Nullable } from "core/types.js";
-import type { IBaseEnginePublic } from "../../engine.base.js";
+import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
+import type { InternalTexture } from "core/Materials/Textures/internalTexture";
+import type { DepthTextureCreationOptions } from "core/Materials/Textures/textureCreationOptions";
+import type { Scene } from "core/scene";
+import type { Nullable } from "core/types";
+import type { IBaseEnginePublic } from "../../engine.base";
 
 export interface ICubeTextureEngineExtension {
     /**

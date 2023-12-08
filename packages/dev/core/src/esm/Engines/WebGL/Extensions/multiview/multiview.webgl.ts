@@ -1,11 +1,11 @@
-import type { WebGLRenderTargetWrapper } from "core/Engines/WebGL/webGLRenderTargetWrapper.js";
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper.js";
-import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture.js";
-import { bindFramebuffer, type IWebGLEnginePublic, type WebGLEngineState } from "../../engine.webgl.js";
-import { _createHardwareRenderTargetWrapper } from "../renderTarget/renderTarget.webgl.js";
-import type { IMultiviewEngineExtension } from "../../../Extensions/multiview/multiview.base.js";
-import { augmentEngineState } from "../../../engine.adapters.js";
-import { getInternalTextureWebGLAdapter } from "../../engine.adapterHelpers.js";
+import type { WebGLRenderTargetWrapper } from "core/Engines/WebGL/webGLRenderTargetWrapper";
+import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
+import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
+import { bindFramebuffer, type IWebGLEnginePublic, type WebGLEngineState } from "../../engine.webgl";
+import { _createHardwareRenderTargetWrapper } from "../renderTarget/renderTarget.webgl";
+import type { IMultiviewEngineExtension } from "../../../Extensions/multiview/multiview.base";
+import { augmentEngineState } from "../../../engine.adapters";
+import { getInternalTextureWebGLAdapter } from "../../engine.adapterHelpers";
 
 export const createMultiviewRenderTargetTexture: IMultiviewEngineExtension["createMultiviewRenderTargetTexture"] = function (
     engineState: IWebGLEnginePublic,

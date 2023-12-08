@@ -1,10 +1,9 @@
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
-import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
+import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import type { IOfflineProvider } from "../Offline/IOfflineProvider";
 import type { ILoadingScreen } from "../Loading/loadingScreen";
-import { IsDocumentAvailable, IsWindowObjectExist } from "../Misc/domManagement";
 import { _WarnImport } from "../Misc/devTools";
 import type { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
 import type { IPipelineContext } from "./IPipelineContext";
@@ -14,13 +13,9 @@ import { ThinEngine } from "./thinEngine";
 import { Constants } from "./constants";
 import type { IViewportLike, IColor4Like } from "../Maths/math.like";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { PerformanceMonitor } from "../Misc/performanceMonitor";
+import type { PerformanceMonitor } from "../Misc/performanceMonitor";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { PerfCounter } from "../Misc/perfCounter";
-import { WebGLDataBuffer } from "../Meshes/WebGL/webGLDataBuffer";
-import { Logger } from "../Misc/logger";
-import type { RenderTargetWrapper } from "./renderTargetWrapper";
-import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 
 import "./Extensions/engine.alpha";
 import "./Extensions/engine.readTexture";
@@ -29,9 +24,69 @@ import type { IAudioEngine } from "../Audio/Interfaces/IAudioEngine";
 
 import type { Material } from "../Materials/material";
 import type { PostProcess } from "../PostProcesses/postProcess";
-import { endFrame } from "esm/Engines/WebGL/engine.webgl";
-import { beginFrame } from "esm/Engines/engine.base";
-import { EngineStore } from "esm/Engines/engine.static";
+import {
+    _createShaderProgram,
+    _readPixelsAsync,
+    _rescaleTexture,
+    _uploadImageToTexture,
+    createInstancesBuffer,
+    createShaderProgram,
+    deleteInstancesBuffer,
+    disableScissor,
+    enableScissor,
+    endFrame,
+    generateMipMapsForCubemap,
+    getFragmentShaderSource,
+    getRenderHeight,
+    getRenderWidth,
+    getVertexShaderSource,
+    scissorClear,
+    setDepthStencilTexture,
+    setDirectViewport,
+    setDitheringState,
+    setRasterizerState,
+    setSize,
+    setTextureFromPostProcess,
+    setTextureFromPostProcessOutput,
+    updateTextureComparisonFunction,
+    wrapWebGLTexture,
+} from "core/esm/Engines/WebGL/engine.webgl";
+import {
+    _cancelFrame,
+    _renderFrame,
+    _verifyPointerLock,
+    beginFrame,
+    cacheStencilState,
+    createRenderPassId,
+    displayLoadingUI,
+    enterFullscreen,
+    enterPointerlock,
+    exitFullscreen,
+    getCurrentRenderPassName,
+    getInputElementClientRect,
+    getLoadingScreen,
+    getRenderPassNames,
+    getRenderingCanvasClientRect,
+    hideLoadingUI,
+    releaseRenderPassId,
+    restoreStencilState,
+    setLoadingScreen,
+    switchFullscreen,
+} from "core/esm/Engines/engine.base";
+import {
+    EngineStore,
+    MarkAllMaterialsAsDirty,
+    _CreateCanvas,
+    _ExitFullscreen,
+    _ExitPointerlock,
+    _RequestFullscreen,
+    _RequestPointerlock,
+    _createImageBitmapFromSource,
+    getFontOffset,
+    resizeImageBitmap,
+} from "core/esm/Engines/engine.static";
+import { getAspectRatioBase, getScreenAspectRatioBase } from "core/esm/Engines/engine.extendable";
+import { _loadFile, _reportDrawCall } from "core/esm/Engines/engine.tools";
 
 /**
  * Defines the interface used by objects containing a viewport (like a camera)
@@ -292,23 +347,7 @@ export class Engine extends ThinEngine {
      * @returns ImageBitmap.
      */
     public _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
-        const promise = new Promise<ImageBitmap>((resolve, reject) => {
-            const image = new Image();
-            image.onload = () => {
-                image.decode().then(() => {
-                    this.createImageBitmap(image, options).then((imageBitmap) => {
-                        resolve(imageBitmap);
-                    });
-                });
-            };
-            image.onerror = () => {
-                reject(`Error loading image ${image.src}`);
-            };
-
-            image.src = imageSource;
-        });
-
-        return promise;
+        return _createImageBitmapFromSource({ createImageBitmap }, imageSource, options);
     }
 
     /**
@@ -329,19 +368,7 @@ export class Engine extends ThinEngine {
      * @returns an uint8array containing RGBA values of bufferWidth * bufferHeight size
      */
     public resizeImageBitmap(image: HTMLImageElement | ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array {
-        const canvas = this.createCanvas(bufferWidth, bufferHeight);
-        const context = canvas.getContext("2d");
-
-        if (!context) {
-            throw new Error("Unable to get 2d context for resizeImageBitmap");
-        }
-
-        context.drawImage(image, 0, 0);
-
-        // Create VertexData from map data
-        // Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
-        const buffer = <Uint8Array>(<any>context.getImageData(0, 0, bufferWidth, bufferHeight).data);
-        return buffer;
+        return resizeImageBitmap({ createCanvas: _CreateCanvas }, image, bufferWidth, bufferHeight);
     }
 
     /**
@@ -350,13 +377,7 @@ export class Engine extends ThinEngine {
      * @param predicate defines a predicate used to filter which materials should be affected
      */
     public static MarkAllMaterialsAsDirty(flag: number, predicate?: (mat: Material) => boolean): void {
-        for (let engineIndex = 0; engineIndex < Engine.Instances.length; engineIndex++) {
-            const engine = Engine.Instances[engineIndex];
-
-            for (let sceneIndex = 0; sceneIndex < engine.scenes.length; sceneIndex++) {
-                engine.scenes[sceneIndex].markAllMaterialsAsDirty(flag, predicate);
-            }
-        }
+        MarkAllMaterialsAsDirty(flag, predicate);
     }
 
     /**
@@ -377,28 +398,37 @@ export class Engine extends ThinEngine {
 
     // Members
 
-    /**
-     * Gets or sets a boolean to enable/disable IndexedDB support and avoid XHR on .manifest
-     **/
-    public enableOfflineSupport = false;
+    public get enableOfflineSupport(): boolean {
+        return this._engineState.enableOfflineSupport;
+    }
+    public set enableOfflineSupport(value: boolean) {
+        this._engineState.enableOfflineSupport = value;
+    }
 
-    /**
-     * Gets or sets a boolean to enable/disable checking manifest if IndexedDB support is enabled (js will always consider the database is up to date)
-     **/
-    public disableManifestCheck = false;
+    public get disableManifestCheck(): boolean {
+        return this._engineState.disableManifestCheck;
+    }
+    public set disableManifestCheck(value: boolean) {
+        this._engineState.disableManifestCheck = value;
+    }
 
-    /**
-     * Gets or sets a boolean to enable/disable the context menu (right-click) from appearing on the main canvas
-     */
-    public disableContextMenu: boolean = true;
+    public get disableContextMenu(): boolean {
+        return this._engineState.disableContextMenu;
+    }
+    public set disableContextMenu(value: boolean) {
+        this._engineState.disableContextMenu = value;
+    }
 
-    /**
-     * Gets the list of created scenes
-     */
-    public scenes: Scene[] = [];
+    public get scenes(): Scene[] {
+        return this._engineState.scenes;
+    }
 
-    /** @internal */
-    public _virtualScenes = new Array<Scene>();
+    public get virtualScenes(): Scene[] {
+        return this._engineState._virtualScenes;
+    }
+    public set virtualScenes(value: Scene[]) {
+        this._engineState._virtualScenes = value;
+    }
 
     /**
      * Event raised when a new scene is created
@@ -408,12 +438,16 @@ export class Engine extends ThinEngine {
     /**
      * Gets the list of created postprocesses
      */
-    public postProcesses: PostProcess[] = [];
+    public get postProcesses(): PostProcess[] {
+        return this._engineState.postProcesses;
+    }
 
     /**
      * Gets a boolean indicating if the pointer is currently locked
      */
-    public isPointerLock = false;
+    public get isPointerLock(): boolean {
+        return this._engineState.isPointerLock;
+    }
 
     // Observables
 
@@ -486,10 +520,6 @@ export class Engine extends ThinEngine {
      */
     public static OfflineProviderFactory: (urlToScene: string, callbackManifestChecked: (checked: boolean) => any, disableManifestCheck: boolean) => IOfflineProvider;
 
-    private _loadingScreen: ILoadingScreen;
-    private _pointerLockRequested: boolean;
-    private _rescalePostProcess: Nullable<PostProcess>;
-
     // Deterministic lockstepMaxSteps
     protected _deterministicLockstep: boolean = false;
     protected _lockstepMaxSteps: number = 4;
@@ -498,10 +528,6 @@ export class Engine extends ThinEngine {
     protected get _supportsHardwareTextureRescaling() {
         return !!Engine._RescalePostProcessFactory;
     }
-
-    // FPS
-    private _fps = 60;
-    private _deltaTime = 0;
 
     /** @internal */
     public _drawCalls = new PerfCounter();
@@ -513,26 +539,13 @@ export class Engine extends ThinEngine {
      * Turn this value on if you want to pause FPS computation when in background
      */
     public disablePerformanceMonitorInBackground = false;
-
-    private _performanceMonitor = new PerformanceMonitor();
     /**
      * Gets the performance monitor attached to this engine
      * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimize_your_scene#engineinstrumentation
      */
     public get performanceMonitor(): PerformanceMonitor {
-        return this._performanceMonitor;
+        return this._engineState._performanceMonitor!;
     }
-
-    // Focus
-    private _onFocus: () => void;
-    private _onBlur: () => void;
-    private _onCanvasPointerOut: (event: PointerEvent) => void;
-    private _onCanvasBlur: () => void;
-    private _onCanvasFocus: () => void;
-    private _onCanvasContextMenu: (evt: Event) => void;
-
-    private _onFullscreenChange: () => void;
-    private _onPointerLockChange: () => void;
 
     protected _compatibilityMode = true;
 
@@ -575,125 +588,38 @@ export class Engine extends ThinEngine {
     ) {
         super(canvasOrContext, antialias, options, adaptToDeviceRatio);
 
-        Engine.Instances.push(this);
-
-        if (!canvasOrContext) {
-            return;
-        }
-
-        this._features.supportRenderPasses = true;
-
-        options = this._creationOptions;
-
-        if ((<any>canvasOrContext).getContext) {
-            const canvas = <HTMLCanvasElement>canvasOrContext;
-
-            this._sharedInit(canvas);
-        }
-    }
-
-    protected _initGLContext(): void {
-        super._initGLContext();
-
-        this._rescalePostProcess = null;
-    }
-
-    /**
-     * Shared initialization across engines types.
-     * @param canvas The canvas associated with this instance of the engine.
-     */
-    protected _sharedInit(canvas: HTMLCanvasElement) {
-        super._sharedInit(canvas);
-
-        this._onCanvasFocus = () => {
-            this.onCanvasFocusObservable.notifyObservers(this);
-        };
-
-        this._onCanvasBlur = () => {
+        this._engineState.onBeginFrameObservable.add(() => {
+            this.onBeginFrameObservable.notifyObservers(this);
+        });
+        this._engineState.onEndFrameObservable.add(() => {
+            this.onEndFrameObservable.notifyObservers(this);
+        });
+        this._engineState.onBeforeShaderCompilationObservable.add(() => {
+            this.onBeforeShaderCompilationObservable.notifyObservers(this);
+        });
+        this._engineState.onAfterShaderCompilationObservable.add(() => {
+            this.onAfterShaderCompilationObservable.notifyObservers(this);
+        });
+        this._engineState.onResizeObservable.add(() => {
+            this.onResizeObservable.notifyObservers(this);
+        });
+        this._engineState.onCanvasBlurObservable.add(() => {
             this.onCanvasBlurObservable.notifyObservers(this);
-        };
-
-        this._onCanvasContextMenu = (evt: Event) => {
-            if (this.disableContextMenu) {
-                evt.preventDefault();
-            }
-        };
-
-        canvas.addEventListener("focus", this._onCanvasFocus);
-        canvas.addEventListener("blur", this._onCanvasBlur);
-        canvas.addEventListener("contextmenu", this._onCanvasContextMenu);
-
-        this._onBlur = () => {
-            if (this.disablePerformanceMonitorInBackground) {
-                this._performanceMonitor.disable();
-            }
-            this._windowIsBackground = true;
-        };
-
-        this._onFocus = () => {
-            if (this.disablePerformanceMonitorInBackground) {
-                this._performanceMonitor.enable();
-            }
-            this._windowIsBackground = false;
-        };
-
-        this._onCanvasPointerOut = (ev) => {
-            // Check that the element at the point of the pointer out isn't the canvas and if it isn't, notify observers
-            // Note: This is a workaround for a bug with Safari
-            if (document.elementFromPoint(ev.clientX, ev.clientY) !== canvas) {
-                this.onCanvasPointerOutObservable.notifyObservers(ev);
-            }
-        };
-
-        const hostWindow = this.getHostWindow(); // it calls IsWindowObjectExist()
-        if (hostWindow && typeof hostWindow.addEventListener === "function") {
-            hostWindow.addEventListener("blur", this._onBlur);
-            hostWindow.addEventListener("focus", this._onFocus);
-        }
-
-        canvas.addEventListener("pointerout", this._onCanvasPointerOut);
-
-        if (!this._creationOptions.doNotHandleTouchAction) {
-            this._disableTouchAction();
-        }
-
-        // Create Audio Engine if needed.
-        if (!Engine.audioEngine && this._creationOptions.audioEngine && Engine.AudioEngineFactory) {
-            Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas(), this.getAudioContext(), this.getAudioDestination());
-        }
-        if (IsDocumentAvailable()) {
-            // Fullscreen
-            this._onFullscreenChange = () => {
-                this.isFullscreen = !!document.fullscreenElement;
-
-                // Pointer lock
-                if (this.isFullscreen && this._pointerLockRequested && canvas) {
-                    Engine._RequestPointerlock(canvas);
-                }
-            };
-
-            document.addEventListener("fullscreenchange", this._onFullscreenChange, false);
-            document.addEventListener("webkitfullscreenchange", this._onFullscreenChange, false);
-
-            // Pointer lock
-            this._onPointerLockChange = () => {
-                this.isPointerLock = document.pointerLockElement === canvas;
-            };
-
-            document.addEventListener("pointerlockchange", this._onPointerLockChange, false);
-            document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
-        }
-
-        this.enableOfflineSupport = Engine.OfflineProviderFactory !== undefined;
-
-        this._deterministicLockstep = !!this._creationOptions.deterministicLockstep;
-        this._lockstepMaxSteps = this._creationOptions.lockstepMaxSteps || 0;
-        this._timeStep = this._creationOptions.timeStep || 1 / 60;
+        });
+        this._engineState.onCanvasFocusObservable.add(() => {
+            this.onCanvasFocusObservable.notifyObservers(this);
+        });
     }
+
+    // protected _initGLContext(): void {
+    //     super._initGLContext();
+
+    //     this._rescalePostProcess = null;
+    // }
 
     /** @internal */
     public _verifyPointerLock(): void {
-        this._onPointerLockChange?.();
+        _verifyPointerLock(this._engineState);
     }
 
     /**
@@ -703,8 +629,7 @@ export class Engine extends ThinEngine {
      * @returns a number defining the aspect ratio
      */
     public getAspectRatio(viewportOwner: IViewportOwnerLike, useScreen = false): number {
-        const viewport = viewportOwner.viewport;
-        return (this.getRenderWidth(useScreen) * viewport.width) / (this.getRenderHeight(useScreen) * viewport.height);
+        return getAspectRatioBase({ getRenderHeightFunc: getRenderHeight, getRenderWidthFunc: getRenderWidth }, this._engineState, viewportOwner, useScreen);
     }
 
     /**
@@ -712,7 +637,7 @@ export class Engine extends ThinEngine {
      * @returns a number defining the aspect ratio
      */
     public getScreenAspectRatio(): number {
-        return this.getRenderWidth(true) / this.getRenderHeight(true);
+        return getScreenAspectRatioBase({ getRenderHeightFunc: getRenderHeight, getRenderWidthFunc: getRenderWidth }, this._engineState);
     }
 
     /**
@@ -720,10 +645,7 @@ export class Engine extends ThinEngine {
      * @returns a client rectangle
      */
     public getRenderingCanvasClientRect(): Nullable<ClientRect> {
-        if (!this._renderingCanvas) {
-            return null;
-        }
-        return this._renderingCanvas.getBoundingClientRect();
+        return getRenderingCanvasClientRect(this._engineState);
     }
 
     /**
@@ -731,10 +653,7 @@ export class Engine extends ThinEngine {
      * @returns a client rectangle
      */
     public getInputElementClientRect(): Nullable<ClientRect> {
-        if (!this._renderingCanvas) {
-            return null;
-        }
-        return this.getInputElement()!.getBoundingClientRect();
+        return getInputElementClientRect(this._engineState);
     }
 
     /**
@@ -743,7 +662,7 @@ export class Engine extends ThinEngine {
      * @returns true if engine is in deterministic lock step mode
      */
     public isDeterministicLockStep(): boolean {
-        return this._deterministicLockstep;
+        return this._engineState._deterministicLockstep;
     }
 
     /**
@@ -752,7 +671,7 @@ export class Engine extends ThinEngine {
      * @returns the max steps
      */
     public getLockstepMaxSteps(): number {
-        return this._lockstepMaxSteps;
+        return this._engineState._lockstepMaxSteps;
     }
 
     /**
@@ -760,7 +679,7 @@ export class Engine extends ThinEngine {
      * @returns time step in (ms)
      */
     public getTimeStep(): number {
-        return this._timeStep * 1000;
+        return this._engineState._timeStep * 1000;
     }
 
     /**
@@ -769,14 +688,7 @@ export class Engine extends ThinEngine {
      * @param unbind defines whether or not to unbind the texture after generation. Defaults to true.
      */
     public generateMipMapsForCubemap(texture: InternalTexture, unbind = true) {
-        if (texture.generateMipMaps) {
-            const gl = this._gl;
-            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
-            gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-            if (unbind) {
-                this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
-            }
-        }
+        generateMipMapsForCubemap(this._engineState, texture, unbind);
     }
 
     /** States */
@@ -786,7 +698,7 @@ export class Engine extends ThinEngine {
      * @returns the current depth writing state
      */
     public getDepthWrite(): boolean {
-        return this._depthCullingState.depthMask;
+        return this._engineState._depthCullingState.depthMask;
     }
 
     /**
@@ -794,7 +706,7 @@ export class Engine extends ThinEngine {
      * @param enable defines the state to set
      */
     public setDepthWrite(enable: boolean): void {
-        this._depthCullingState.depthMask = enable;
+        this._engineState._depthCullingState.depthMask = enable;
     }
 
     /**
@@ -802,7 +714,7 @@ export class Engine extends ThinEngine {
      * @returns the current stencil buffer state
      */
     public getStencilBuffer(): boolean {
-        return this._stencilState.stencilTest;
+        return this._engineState._stencilState.stencilTest;
     }
 
     /**
@@ -810,7 +722,7 @@ export class Engine extends ThinEngine {
      * @param enable defines if the stencil buffer must be enabled or disabled
      */
     public setStencilBuffer(enable: boolean): void {
-        this._stencilState.stencilTest = enable;
+        this._engineState._stencilState.stencilTest = enable;
     }
 
     /**
@@ -818,7 +730,7 @@ export class Engine extends ThinEngine {
      * @returns a number defining the new stencil mask to use
      */
     public getStencilMask(): number {
-        return this._stencilState.stencilMask;
+        return this._engineState._stencilState.stencilMask;
     }
 
     /**
@@ -826,7 +738,7 @@ export class Engine extends ThinEngine {
      * @param mask defines the new stencil mask to use
      */
     public setStencilMask(mask: number): void {
-        this._stencilState.stencilMask = mask;
+        this._engineState._stencilState.stencilMask = mask;
     }
 
     /**
@@ -834,7 +746,7 @@ export class Engine extends ThinEngine {
      * @returns a number defining the stencil function to use
      */
     public getStencilFunction(): number {
-        return this._stencilState.stencilFunc;
+        return this._engineState._stencilState.stencilFunc;
     }
 
     /**
@@ -842,7 +754,7 @@ export class Engine extends ThinEngine {
      * @returns a number defining the stencil reference value to use
      */
     public getStencilFunctionReference(): number {
-        return this._stencilState.stencilFuncRef;
+        return this._engineState._stencilState.stencilFuncRef;
     }
 
     /**
@@ -850,7 +762,7 @@ export class Engine extends ThinEngine {
      * @returns a number defining the stencil mask to use
      */
     public getStencilFunctionMask(): number {
-        return this._stencilState.stencilFuncMask;
+        return this._engineState._stencilState.stencilFuncMask;
     }
 
     /**
@@ -858,7 +770,7 @@ export class Engine extends ThinEngine {
      * @param stencilFunc defines the new stencil function to use
      */
     public setStencilFunction(stencilFunc: number) {
-        this._stencilState.stencilFunc = stencilFunc;
+        this._engineState._stencilState.stencilFunc = stencilFunc;
     }
 
     /**
@@ -866,7 +778,7 @@ export class Engine extends ThinEngine {
      * @param reference defines the new stencil reference to use
      */
     public setStencilFunctionReference(reference: number) {
-        this._stencilState.stencilFuncRef = reference;
+        this._engineState._stencilState.stencilFuncRef = reference;
     }
 
     /**
@@ -874,7 +786,7 @@ export class Engine extends ThinEngine {
      * @param mask defines the new stencil mask to use
      */
     public setStencilFunctionMask(mask: number) {
-        this._stencilState.stencilFuncMask = mask;
+        this._engineState._stencilState.stencilFuncMask = mask;
     }
 
     /**
@@ -882,7 +794,7 @@ export class Engine extends ThinEngine {
      * @returns a number defining stencil operation to use when stencil fails
      */
     public getStencilOperationFail(): number {
-        return this._stencilState.stencilOpStencilFail;
+        return this._engineState._stencilState.stencilOpStencilFail;
     }
 
     /**
@@ -890,7 +802,7 @@ export class Engine extends ThinEngine {
      * @returns a number defining stencil operation to use when depth fails
      */
     public getStencilOperationDepthFail(): number {
-        return this._stencilState.stencilOpDepthFail;
+        return this._engineState._stencilState.stencilOpDepthFail;
     }
 
     /**
@@ -898,7 +810,7 @@ export class Engine extends ThinEngine {
      * @returns a number defining stencil operation to use when stencil passes
      */
     public getStencilOperationPass(): number {
-        return this._stencilState.stencilOpStencilDepthPass;
+        return this._engineState._stencilState.stencilOpStencilDepthPass;
     }
 
     /**
@@ -906,7 +818,7 @@ export class Engine extends ThinEngine {
      * @param operation defines the stencil operation to use when stencil fails
      */
     public setStencilOperationFail(operation: number): void {
-        this._stencilState.stencilOpStencilFail = operation;
+        this._engineState._stencilState.stencilOpStencilFail = operation;
     }
 
     /**
@@ -914,7 +826,7 @@ export class Engine extends ThinEngine {
      * @param operation defines the stencil operation to use when depth fails
      */
     public setStencilOperationDepthFail(operation: number): void {
-        this._stencilState.stencilOpDepthFail = operation;
+        this._engineState._stencilState.stencilOpDepthFail = operation;
     }
 
     /**
@@ -922,7 +834,7 @@ export class Engine extends ThinEngine {
      * @param operation defines the stencil operation to use when stencil passes
      */
     public setStencilOperationPass(operation: number): void {
-        this._stencilState.stencilOpStencilDepthPass = operation;
+        this._engineState._stencilState.stencilOpStencilDepthPass = operation;
     }
 
     /**
@@ -930,11 +842,7 @@ export class Engine extends ThinEngine {
      * @param value defines the dithering state
      */
     public setDitheringState(value: boolean): void {
-        if (value) {
-            this._gl.enable(this._gl.DITHER);
-        } else {
-            this._gl.disable(this._gl.DITHER);
-        }
+        setDitheringState(this._engineState, value);
     }
 
     /**
@@ -942,11 +850,7 @@ export class Engine extends ThinEngine {
      * @param value defines the rasterizer state
      */
     public setRasterizerState(value: boolean): void {
-        if (value) {
-            this._gl.disable(this._gl.RASTERIZER_DISCARD);
-        } else {
-            this._gl.enable(this._gl.RASTERIZER_DISCARD);
-        }
+        setRasterizerState(this._engineState, value);
     }
 
     /**
@@ -954,7 +858,7 @@ export class Engine extends ThinEngine {
      * @returns a number defining the depth function
      */
     public getDepthFunction(): Nullable<number> {
-        return this._depthCullingState.depthFunc;
+        return this._engineState._depthCullingState.depthFunc;
     }
 
     /**
@@ -962,7 +866,7 @@ export class Engine extends ThinEngine {
      * @param depthFunc defines the function to use
      */
     public setDepthFunction(depthFunc: number) {
-        this._depthCullingState.depthFunc = depthFunc;
+        this._engineState._depthCullingState.depthFunc = depthFunc;
     }
 
     /**
@@ -993,38 +897,18 @@ export class Engine extends ThinEngine {
         this.setDepthFunction(Constants.LEQUAL);
     }
 
-    private _cachedStencilBuffer: boolean;
-    private _cachedStencilFunction: number;
-    private _cachedStencilMask: number;
-    private _cachedStencilOperationPass: number;
-    private _cachedStencilOperationFail: number;
-    private _cachedStencilOperationDepthFail: number;
-    private _cachedStencilReference: number;
-
     /**
      * Caches the state of the stencil buffer
      */
     public cacheStencilState() {
-        this._cachedStencilBuffer = this.getStencilBuffer();
-        this._cachedStencilFunction = this.getStencilFunction();
-        this._cachedStencilMask = this.getStencilMask();
-        this._cachedStencilOperationPass = this.getStencilOperationPass();
-        this._cachedStencilOperationFail = this.getStencilOperationFail();
-        this._cachedStencilOperationDepthFail = this.getStencilOperationDepthFail();
-        this._cachedStencilReference = this.getStencilFunctionReference();
+        cacheStencilState(this._engineState);
     }
 
     /**
      * Restores the state of the stencil buffer
      */
     public restoreStencilState() {
-        this.setStencilFunction(this._cachedStencilFunction);
-        this.setStencilMask(this._cachedStencilMask);
-        this.setStencilBuffer(this._cachedStencilBuffer);
-        this.setStencilOperationPass(this._cachedStencilOperationPass);
-        this.setStencilOperationFail(this._cachedStencilOperationFail);
-        this.setStencilOperationDepthFail(this._cachedStencilOperationDepthFail);
-        this.setStencilFunctionReference(this._cachedStencilReference);
+        restoreStencilState(this._engineState);
     }
 
     /**
@@ -1036,12 +920,7 @@ export class Engine extends ThinEngine {
      * @returns the current viewport Object (if any) that is being replaced by this call. You can restore this viewport later on to go back to the original state
      */
     public setDirectViewport(x: number, y: number, width: number, height: number): Nullable<IViewportLike> {
-        const currentViewport = this._cachedViewport;
-        this._cachedViewport = null;
-
-        this._viewport(x, y, width, height);
-
-        return currentViewport;
+        return setDirectViewport(this._engineState, x, y, width, height);
     }
 
     /**
@@ -1053,9 +932,7 @@ export class Engine extends ThinEngine {
      * @param clearColor defines the clear color
      */
     public scissorClear(x: number, y: number, width: number, height: number, clearColor: IColor4Like): void {
-        this.enableScissor(x, y, width, height);
-        this.clear(clearColor, true, true, true);
-        this.disableScissor();
+        scissorClear(this._engineState, x, y, width, height, clearColor);
     }
 
     /**
@@ -1066,27 +943,21 @@ export class Engine extends ThinEngine {
      * @param height defines the height of the clear rectangle
      */
     public enableScissor(x: number, y: number, width: number, height: number): void {
-        const gl = this._gl;
-
-        // Change state
-        gl.enable(gl.SCISSOR_TEST);
-        gl.scissor(x, y, width, height);
+        enableScissor(this._engineState, x, y, width, height);
     }
 
     /**
      * Disable previously set scissor test rectangle
      */
     public disableScissor() {
-        const gl = this._gl;
-
-        gl.disable(gl.SCISSOR_TEST);
+        disableScissor(this._engineState);
     }
 
     /**
      * @internal
      */
     public _reportDrawCall(numDrawCalls = 1) {
-        this._drawCalls.addCount(numDrawCalls, false);
+        _reportDrawCall(this._engineState, numDrawCalls);
     }
 
     /**
@@ -1094,7 +965,8 @@ export class Engine extends ThinEngine {
      */
     public _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: boolean): Promise<string | ArrayBuffer> {
         return new Promise((resolve, reject) => {
-            this._loadFile(
+            _loadFile(
+                this._engineState,
                 url,
                 (data) => {
                     resolve(data);
@@ -1115,13 +987,7 @@ export class Engine extends ThinEngine {
      * @returns a string containing the source code of the vertex shader associated with the program
      */
     public getVertexShaderSource(program: WebGLProgram): Nullable<string> {
-        const shaders = this._gl.getAttachedShaders(program);
-
-        if (!shaders) {
-            return null;
-        }
-
-        return this._gl.getShaderSource(shaders[0]);
+        return getVertexShaderSource(this._engineState, program);
     }
 
     /**
@@ -1130,13 +996,7 @@ export class Engine extends ThinEngine {
      * @returns a string containing the source code of the fragment shader associated with the program
      */
     public getFragmentShaderSource(program: WebGLProgram): Nullable<string> {
-        const shaders = this._gl.getAttachedShaders(program);
-
-        if (!shaders) {
-            return null;
-        }
-
-        return this._gl.getShaderSource(shaders[1]);
+        return getFragmentShaderSource(this._engineState, program);
     }
 
     /**
@@ -1147,19 +1007,7 @@ export class Engine extends ThinEngine {
      * @param name The texture name
      */
     public setDepthStencilTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<RenderTargetTexture>, name?: string): void {
-        if (channel === undefined) {
-            return;
-        }
-
-        if (uniform) {
-            this._boundUniforms[channel] = uniform;
-        }
-
-        if (!texture || !texture.depthStencilTexture) {
-            this._setTexture(channel, null, undefined, undefined, name);
-        } else {
-            this._setTexture(channel, texture, false, true, name);
-        }
+        setDepthStencilTexture(this._engineState, channel, uniform, texture, name);
     }
 
     /**
@@ -1169,16 +1017,7 @@ export class Engine extends ThinEngine {
      * @param name name of the channel
      */
     public setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
-        let postProcessInput = null;
-        if (postProcess) {
-            if (postProcess._forcedOutputTexture) {
-                postProcessInput = postProcess._forcedOutputTexture;
-            } else if (postProcess._textures.data[postProcess._currentRenderTextureInd]) {
-                postProcessInput = postProcess._textures.data[postProcess._currentRenderTextureInd];
-            }
-        }
-
-        this._bindTexture(channel, postProcessInput?.texture ?? null, name);
+        setTextureFromPostProcess(this._engineState, channel, postProcess, name);
     }
 
     /**
@@ -1188,84 +1027,72 @@ export class Engine extends ThinEngine {
      * @param name name of the channel
      */
     public setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
-        this._bindTexture(channel, postProcess?._outputTexture?.texture ?? null, name);
+        setTextureFromPostProcessOutput(this._engineState, channel, postProcess, name);
     }
 
-    protected _rebuildBuffers(): void {
-        // Index / Vertex
-        for (const scene of this.scenes) {
-            scene.resetCachedMaterial();
-            scene._rebuildGeometries();
-            scene._rebuildTextures();
-        }
+    // protected _rebuildBuffers(): void {
+    //     // Index / Vertex
+    //     for (const scene of this.scenes) {
+    //         scene.resetCachedMaterial();
+    //         scene._rebuildGeometries();
+    //         scene._rebuildTextures();
+    //     }
 
-        for (const scene of this._virtualScenes) {
-            scene.resetCachedMaterial();
-            scene._rebuildGeometries();
-            scene._rebuildTextures();
-        }
+    //     for (const scene of this._virtualScenes) {
+    //         scene.resetCachedMaterial();
+    //         scene._rebuildGeometries();
+    //         scene._rebuildTextures();
+    //     }
 
-        super._rebuildBuffers();
-    }
+    //     super._rebuildBuffers();
+    // }
 
     /** @internal */
     public _renderFrame() {
-        for (let index = 0; index < this._activeRenderLoops.length; index++) {
-            const renderFunction = this._activeRenderLoops[index];
-
-            renderFunction();
-        }
+        _renderFrame(this._engineState);
     }
 
     protected _cancelFrame() {
-        if (this._renderingQueueLaunched && this.customAnimationFrameRequester) {
-            this._renderingQueueLaunched = false;
-            const { cancelAnimationFrame } = this.customAnimationFrameRequester;
-            if (cancelAnimationFrame) {
-                cancelAnimationFrame(this.customAnimationFrameRequester.requestID);
-            }
-        } else {
-            super._cancelFrame();
-        }
+        _cancelFrame(this._engineState);
     }
 
-    public _renderLoop(): void {
-        if (!this._contextWasLost) {
-            let shouldRender = true;
-            if (this.isDisposed || (!this.renderEvenInBackground && this._windowIsBackground)) {
-                shouldRender = false;
-            }
+    // public _renderLoop(): void {
+    //     if (!this._contextWasLost) {
+    //         let shouldRender = true;
+    //         if (this.isDisposed || (!this.renderEvenInBackground && this._windowIsBackground)) {
+    //             shouldRender = false;
+    //         }
 
-            if (shouldRender) {
-                // Start new frame
-                this.beginFrame();
+    //         if (shouldRender) {
+    //             // Start new frame
+    //             this.beginFrame();
 
-                // Child canvases
-                if (!this._renderViews()) {
-                    // Main frame
-                    this._renderFrame();
-                }
+    //             // Child canvases
+    //             if (!this._renderViews()) {
+    //                 // Main frame
+    //                 this._renderFrame();
+    //             }
 
-                // Present
-                this.endFrame();
-            }
-        }
+    //             // Present
+    //             this.endFrame();
+    //         }
+    //     }
 
-        if (this._activeRenderLoops.length > 0) {
-            // Register new frame
-            if (this.customAnimationFrameRequester) {
-                this.customAnimationFrameRequester.requestID = this._queueNewFrame(
-                    this.customAnimationFrameRequester.renderFunction || this._boundRenderFunction,
-                    this.customAnimationFrameRequester
-                );
-                this._frameHandler = this.customAnimationFrameRequester.requestID;
-            } else {
-                this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
-            }
-        } else {
-            this._renderingQueueLaunched = false;
-        }
-    }
+    //     if (this._activeRenderLoops.length > 0) {
+    //         // Register new frame
+    //         if (this.customAnimationFrameRequester) {
+    //             this.customAnimationFrameRequester.requestID = this._queueNewFrame(
+    //                 this.customAnimationFrameRequester.renderFunction || this._boundRenderFunction,
+    //                 this.customAnimationFrameRequester
+    //             );
+    //             this._frameHandler = this.customAnimationFrameRequester.requestID;
+    //         } else {
+    //             this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
+    //         }
+    //     } else {
+    //         this._renderingQueueLaunched = false;
+    //     }
+    // }
 
     /** @internal */
     public _renderViews() {
@@ -1277,11 +1104,7 @@ export class Engine extends ThinEngine {
      * @param requestPointerLock defines if a pointer lock should be requested from the user
      */
     public switchFullscreen(requestPointerLock: boolean): void {
-        if (this.isFullscreen) {
-            this.exitFullscreen();
-        } else {
-            this.enterFullscreen(requestPointerLock);
-        }
+        switchFullscreen(this._engineState, requestPointerLock);
     }
 
     /**
@@ -1289,37 +1112,28 @@ export class Engine extends ThinEngine {
      * @param requestPointerLock defines if a pointer lock should be requested from the user
      */
     public enterFullscreen(requestPointerLock: boolean): void {
-        if (!this.isFullscreen) {
-            this._pointerLockRequested = requestPointerLock;
-            if (this._renderingCanvas) {
-                Engine._RequestFullscreen(this._renderingCanvas);
-            }
-        }
+        enterFullscreen(this._engineState, requestPointerLock);
     }
 
     /**
      * Exits full screen mode
      */
     public exitFullscreen(): void {
-        if (this.isFullscreen) {
-            Engine._ExitFullscreen();
-        }
+        exitFullscreen(this._engineState);
     }
 
     /**
      * Enters Pointerlock mode
      */
     public enterPointerlock(): void {
-        if (this._renderingCanvas) {
-            Engine._RequestPointerlock(this._renderingCanvas);
-        }
+        enterPointerlock(this._engineState);
     }
 
     /**
      * Exits Pointerlock mode
      */
     public exitPointerlock(): void {
-        Engine._ExitPointerlock();
+        _ExitPointerlock();
     }
 
     /**
@@ -1327,14 +1141,14 @@ export class Engine extends ThinEngine {
      */
     public beginFrame = () => {
         beginFrame(this._engineState);
-    }
+    };
 
     /**
      * End the current frame
      */
     public endFrame = () => {
-        endFrame(this._engineState)
-    }
+        endFrame(this._engineState);
+    };
 
     /**
      * Force a specific size of the canvas
@@ -1344,43 +1158,19 @@ export class Engine extends ThinEngine {
      * @returns true if the size was changed
      */
     public setSize(width: number, height: number, forceSetSize = false): boolean {
-        if (!this._renderingCanvas) {
-            return false;
-        }
-
-        if (!super.setSize(width, height, forceSetSize)) {
-            return false;
-        }
-
-        if (this.scenes) {
-            for (let index = 0; index < this.scenes.length; index++) {
-                const scene = this.scenes[index];
-
-                for (let camIndex = 0; camIndex < scene.cameras.length; camIndex++) {
-                    const cam = scene.cameras[camIndex];
-
-                    cam._currentRenderId = 0;
-                }
-            }
-
-            if (this.onResizeObservable.hasObservers()) {
-                this.onResizeObservable.notifyObservers(this);
-            }
-        }
-
-        return true;
+        return setSize(this._engineState, width, height, forceSetSize);
     }
 
-    public _deletePipelineContext(pipelineContext: IPipelineContext): void {
-        const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
-        if (webGLPipelineContext && webGLPipelineContext.program) {
-            if (webGLPipelineContext.transformFeedback) {
-                this.deleteTransformFeedback(webGLPipelineContext.transformFeedback);
-                webGLPipelineContext.transformFeedback = null;
-            }
-        }
-        super._deletePipelineContext(pipelineContext);
-    }
+    // public _deletePipelineContext(pipelineContext: IPipelineContext): void {
+    //     const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
+    //     if (webGLPipelineContext && webGLPipelineContext.program) {
+    //         if (webGLPipelineContext.transformFeedback) {
+    //             this.deleteTransformFeedback(webGLPipelineContext.transformFeedback);
+    //             webGLPipelineContext.transformFeedback = null;
+    //         }
+    //     }
+    //     super._deletePipelineContext(pipelineContext);
+    // }
 
     public createShaderProgram(
         pipelineContext: IPipelineContext,
@@ -1390,14 +1180,7 @@ export class Engine extends ThinEngine {
         context?: WebGLRenderingContext,
         transformFeedbackVaryings: Nullable<string[]> = null
     ): WebGLProgram {
-        context = context || this._gl;
-
-        this.onBeforeShaderCompilationObservable.notifyObservers(this);
-
-        const program = super.createShaderProgram(pipelineContext, vertexCode, fragmentCode, defines, context, transformFeedbackVaryings);
-        this.onAfterShaderCompilationObservable.notifyObservers(this);
-
-        return program;
+        return createShaderProgram(this._engineState, pipelineContext, vertexCode, fragmentCode, defines, context, transformFeedbackVaryings);
     }
 
     protected _createShaderProgram(
@@ -1407,72 +1190,40 @@ export class Engine extends ThinEngine {
         context: WebGLRenderingContext,
         transformFeedbackVaryings: Nullable<string[]> = null
     ): WebGLProgram {
-        const shaderProgram = context.createProgram();
-        pipelineContext.program = shaderProgram;
-
-        if (!shaderProgram) {
-            throw new Error("Unable to create program");
-        }
-
-        context.attachShader(shaderProgram, vertexShader);
-        context.attachShader(shaderProgram, fragmentShader);
-
-        if (this.webGLVersion > 1 && transformFeedbackVaryings) {
-            const transformFeedback = this.createTransformFeedback();
-
-            this.bindTransformFeedback(transformFeedback);
-            this.setTranformFeedbackVaryings(shaderProgram, transformFeedbackVaryings);
-            pipelineContext.transformFeedback = transformFeedback;
-        }
-
-        context.linkProgram(shaderProgram);
-
-        if (this.webGLVersion > 1 && transformFeedbackVaryings) {
-            this.bindTransformFeedback(null);
-        }
-
-        pipelineContext.context = context;
-        pipelineContext.vertexShader = vertexShader;
-        pipelineContext.fragmentShader = fragmentShader;
-
-        if (!pipelineContext.isParallelCompiled) {
-            this._finalizePipelineContext(pipelineContext);
-        }
-
-        return shaderProgram;
+        return _createShaderProgram(this._engineState, pipelineContext, vertexShader, fragmentShader, context, transformFeedbackVaryings);
     }
+
+    // /**
+    //  * @internal
+    //  */
+    // public _releaseTexture(texture: InternalTexture): void {
+    //     super._releaseTexture(texture);
+    // }
 
     /**
      * @internal
      */
-    public _releaseTexture(texture: InternalTexture): void {
-        super._releaseTexture(texture);
-    }
+    // public _releaseRenderTargetWrapper(rtWrapper: RenderTargetWrapper): void {
+    //     super._releaseRenderTargetWrapper(rtWrapper);
 
-    /**
-     * @internal
-     */
-    public _releaseRenderTargetWrapper(rtWrapper: RenderTargetWrapper): void {
-        super._releaseRenderTargetWrapper(rtWrapper);
-
-        // Set output texture of post process to null if the framebuffer has been released/disposed
-        this.scenes.forEach((scene) => {
-            scene.postProcesses.forEach((postProcess) => {
-                if (postProcess._outputTexture === rtWrapper) {
-                    postProcess._outputTexture = null;
-                }
-            });
-            scene.cameras.forEach((camera) => {
-                camera._postProcesses.forEach((postProcess) => {
-                    if (postProcess) {
-                        if (postProcess._outputTexture === rtWrapper) {
-                            postProcess._outputTexture = null;
-                        }
-                    }
-                });
-            });
-        });
-    }
+    //     // Set output texture of post process to null if the framebuffer has been released/disposed
+    //     this.scenes.forEach((scene) => {
+    //         scene.postProcesses.forEach((postProcess) => {
+    //             if (postProcess._outputTexture === rtWrapper) {
+    //                 postProcess._outputTexture = null;
+    //             }
+    //         });
+    //         scene.cameras.forEach((camera) => {
+    //             camera._postProcesses.forEach((postProcess) => {
+    //                 if (postProcess) {
+    //                     if (postProcess._outputTexture === rtWrapper) {
+    //                         postProcess._outputTexture = null;
+    //                     }
+    //                 }
+    //             });
+    //         });
+    //     });
+    // }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     protected static _RenderPassIdCounter = 0;
@@ -1480,14 +1231,12 @@ export class Engine extends ThinEngine {
      * Gets or sets the current render pass id
      */
     public currentRenderPassId = Constants.RENDERPASS_MAIN;
-
-    private _renderPassNames: string[] = ["main"];
     /**
      * Gets the names of the render passes that are currently created
      * @returns list of the render pass names
      */
     public getRenderPassNames(): string[] {
-        return this._renderPassNames;
+        return getRenderPassNames(this._engineState);
     }
 
     /**
@@ -1495,7 +1244,7 @@ export class Engine extends ThinEngine {
      * @returns name of the current render pass
      */
     public getCurrentRenderPassName(): string {
-        return this._renderPassNames[this.currentRenderPassId];
+        return getCurrentRenderPassName(this._engineState);
     }
 
     /**
@@ -1504,10 +1253,7 @@ export class Engine extends ThinEngine {
      * @returns the id of the new render pass
      */
     public createRenderPassId(name?: string) {
-        // Note: render pass id == 0 is always for the main render pass
-        const id = ++Engine._RenderPassIdCounter;
-        this._renderPassNames[id] = name ?? "NONAME";
-        return id;
+        return createRenderPassId(this._engineState, name);
     }
 
     /**
@@ -1515,20 +1261,7 @@ export class Engine extends ThinEngine {
      * @param id id of the render pass to release
      */
     public releaseRenderPassId(id: number): void {
-        this._renderPassNames[id] = undefined as any;
-
-        for (let s = 0; s < this.scenes.length; ++s) {
-            const scene = this.scenes[s];
-            for (let m = 0; m < scene.meshes.length; ++m) {
-                const mesh = scene.meshes[m];
-                if (mesh.subMeshes) {
-                    for (let b = 0; b < mesh.subMeshes.length; ++b) {
-                        const subMesh = mesh.subMeshes[b];
-                        subMesh._removeDrawWrapper(id);
-                    }
-                }
-            }
-        }
+        releaseRenderPassId(this._engineState, id);
     }
 
     /**
@@ -1541,54 +1274,7 @@ export class Engine extends ThinEngine {
      * @param onComplete callback to be called when resize has completed
      */
     public _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<any>, internalFormat: number, onComplete: () => void): void {
-        this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, this._gl.LINEAR);
-        this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, this._gl.LINEAR);
-        this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.CLAMP_TO_EDGE);
-        this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_T, this._gl.CLAMP_TO_EDGE);
-
-        const rtt = this.createRenderTargetTexture(
-            {
-                width: destination.width,
-                height: destination.height,
-            },
-            {
-                generateMipMaps: false,
-                type: Constants.TEXTURETYPE_UNSIGNED_INT,
-                samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
-                generateDepthBuffer: false,
-                generateStencilBuffer: false,
-            }
-        );
-
-        if (!this._rescalePostProcess && Engine._RescalePostProcessFactory) {
-            this._rescalePostProcess = Engine._RescalePostProcessFactory(this);
-        }
-
-        if (this._rescalePostProcess) {
-            this._rescalePostProcess.externalTextureSamplerBinding = true;
-            this._rescalePostProcess.getEffect().executeWhenCompiled(() => {
-                this._rescalePostProcess!.onApply = function (effect) {
-                    effect._bindTexture("textureSampler", source);
-                };
-
-                let hostingScene: Scene = scene;
-
-                if (!hostingScene) {
-                    hostingScene = this.scenes[this.scenes.length - 1];
-                }
-                hostingScene.postProcessManager.directRender([this._rescalePostProcess!], rtt, true);
-
-                this._bindTextureDirectly(this._gl.TEXTURE_2D, destination, true);
-                this._gl.copyTexImage2D(this._gl.TEXTURE_2D, 0, internalFormat, 0, 0, destination.width, destination.height, 0);
-
-                this.unBindFramebuffer(rtt);
-                rtt.dispose();
-
-                if (onComplete) {
-                    onComplete();
-                }
-            });
-        }
+        _rescaleTexture(this._engineState, source, destination, scene, internalFormat, onComplete);
     }
 
     // FPS
@@ -1598,7 +1284,7 @@ export class Engine extends ThinEngine {
      * @returns a number representing the framerate
      */
     public getFps(): number {
-        return this._fps;
+        return this._engineState._fps;
     }
 
     /**
@@ -1606,7 +1292,7 @@ export class Engine extends ThinEngine {
      * @returns a number representing the delta time in ms
      */
     public getDeltaTime(): number {
-        return this._deltaTime;
+        return this._engineState._deltaTime;
     }
 
     /**
@@ -1625,41 +1311,14 @@ export class Engine extends ThinEngine {
         width: number = 0,
         height: number = 0
     ): InternalTexture {
-        const hardwareTexture = new WebGLHardwareTexture(texture, this._gl);
-        const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
-        internalTexture._hardwareTexture = hardwareTexture;
-        internalTexture.baseWidth = width;
-        internalTexture.baseHeight = height;
-        internalTexture.width = width;
-        internalTexture.height = height;
-        internalTexture.isReady = true;
-        internalTexture.useMipMaps = hasMipMaps;
-        this.updateTextureSamplingMode(samplingMode, internalTexture);
-        return internalTexture;
+        return wrapWebGLTexture(this._engineState, texture, hasMipMaps, samplingMode, width, height);
     }
 
     /**
      * @internal
      */
     public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement | ImageBitmap, faceIndex: number = 0, lod: number = 0) {
-        const gl = this._gl;
-
-        const textureType = this._getWebGLTextureType(texture.type);
-        const format = this._getInternalFormat(texture.format);
-        const internalFormat = this._getRGBABufferInternalSizedFormat(texture.type, format);
-
-        const bindTarget = texture.isCube ? gl.TEXTURE_CUBE_MAP : gl.TEXTURE_2D;
-
-        this._bindTextureDirectly(bindTarget, texture, true);
-        this._unpackFlipY(texture.invertY);
-
-        let target: GLenum = gl.TEXTURE_2D;
-        if (texture.isCube) {
-            target = gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex;
-        }
-
-        gl.texImage2D(target, lod, internalFormat, format, textureType, image);
-        this._bindTextureDirectly(bindTarget, null, true);
+        _uploadImageToTexture(this._engineState, texture, image, faceIndex, lod);
     }
 
     /**
@@ -1670,40 +1329,7 @@ export class Engine extends ThinEngine {
      * @param comparisonFunction The comparison function to set, 0 if no comparison required
      */
     public updateTextureComparisonFunction(texture: InternalTexture, comparisonFunction: number): void {
-        if (this.webGLVersion === 1) {
-            Logger.Error("WebGL 1 does not support texture comparison.");
-            return;
-        }
-
-        const gl = this._gl;
-
-        if (texture.isCube) {
-            this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, texture, true);
-
-            if (comparisonFunction === 0) {
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_MODE, gl.NONE);
-            } else {
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
-            }
-
-            this._bindTextureDirectly(this._gl.TEXTURE_CUBE_MAP, null);
-        } else {
-            this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
-
-            if (comparisonFunction === 0) {
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.NONE);
-            } else {
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
-            }
-
-            this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
-        }
-
-        texture._comparisonFunction = comparisonFunction;
+        updateTextureComparisonFunction(this._engineState, texture, comparisonFunction);
     }
 
     /**
@@ -1712,21 +1338,7 @@ export class Engine extends ThinEngine {
      * @returns the webGL buffer
      */
     public createInstancesBuffer(capacity: number): DataBuffer {
-        const buffer = this._gl.createBuffer();
-
-        if (!buffer) {
-            throw new Error("Unable to create instance buffer");
-        }
-
-        const result = new WebGLDataBuffer(buffer);
-        result.capacity = capacity;
-
-        this.bindArrayBuffer(result);
-        this._gl.bufferData(this._gl.ARRAY_BUFFER, capacity, this._gl.DYNAMIC_DRAW);
-
-        result.references = 1;
-
-        return result;
+        return createInstancesBuffer(this._engineState, capacity);
     }
 
     /**
@@ -1734,61 +1346,14 @@ export class Engine extends ThinEngine {
      * @param buffer defines the webGL buffer to delete
      */
     public deleteInstancesBuffer(buffer: WebGLBuffer): void {
-        this._gl.deleteBuffer(buffer);
-    }
-
-    private _clientWaitAsync(sync: WebGLSync, flags = 0, intervalms = 10): Promise<void> {
-        const gl = <WebGL2RenderingContext>(this._gl as any);
-        return new Promise((resolve, reject) => {
-            const check = () => {
-                const res = gl.clientWaitSync(sync, flags, 0);
-                if (res == gl.WAIT_FAILED) {
-                    reject();
-                    return;
-                }
-                if (res == gl.TIMEOUT_EXPIRED) {
-                    setTimeout(check, intervalms);
-                    return;
-                }
-                resolve();
-            };
-
-            check();
-        });
+        deleteInstancesBuffer(this._engineState, buffer);
     }
 
     /**
      * @internal
      */
     public _readPixelsAsync(x: number, y: number, w: number, h: number, format: number, type: number, outputBuffer: ArrayBufferView) {
-        if (this._webGLVersion < 2) {
-            throw new Error("_readPixelsAsync only work on WebGL2+");
-        }
-
-        const gl = <WebGL2RenderingContext>(this._gl as any);
-        const buf = gl.createBuffer();
-        gl.bindBuffer(gl.PIXEL_PACK_BUFFER, buf);
-        gl.bufferData(gl.PIXEL_PACK_BUFFER, outputBuffer.byteLength, gl.STREAM_READ);
-        gl.readPixels(x, y, w, h, format, type, 0);
-        gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
-
-        const sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
-        if (!sync) {
-            return null;
-        }
-
-        gl.flush();
-
-        return this._clientWaitAsync(sync, 0, 10).then(() => {
-            gl.deleteSync(sync);
-
-            gl.bindBuffer(gl.PIXEL_PACK_BUFFER, buf);
-            gl.getBufferSubData(gl.PIXEL_PACK_BUFFER, 0, outputBuffer);
-            gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
-            gl.deleteBuffer(buf);
-
-            return outputBuffer;
-        });
+        return _readPixelsAsync(this._engineState, x, y, w, h, format, type, outputBuffer);
     }
 
     // public dispose(): void {
@@ -1869,16 +1434,6 @@ export class Engine extends ThinEngine {
     //     this.onEndFrameObservable.clear();
     // }
 
-    private _disableTouchAction(): void {
-        if (!this._renderingCanvas || !this._renderingCanvas.setAttribute) {
-            return;
-        }
-
-        this._renderingCanvas.setAttribute("touch-action", "none");
-        this._renderingCanvas.style.touchAction = "none";
-        (this._renderingCanvas.style as any).webkitTapHighlightColor = "transparent";
-    }
-
     // Loading screen
 
     /**
@@ -1886,13 +1441,7 @@ export class Engine extends ThinEngine {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
      */
     public displayLoadingUI(): void {
-        if (!IsWindowObjectExist()) {
-            return;
-        }
-        const loadingScreen = this.loadingScreen;
-        if (loadingScreen) {
-            loadingScreen.displayLoadingUI();
-        }
+        displayLoadingUI(this._engineState);
     }
 
     /**
@@ -1900,13 +1449,7 @@ export class Engine extends ThinEngine {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
      */
     public hideLoadingUI(): void {
-        if (!IsWindowObjectExist()) {
-            return;
-        }
-        const loadingScreen = this._loadingScreen;
-        if (loadingScreen) {
-            loadingScreen.hideLoadingUI();
-        }
+        hideLoadingUI(this._engineState);
     }
 
     /**
@@ -1914,10 +1457,7 @@ export class Engine extends ThinEngine {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
      */
     public get loadingScreen(): ILoadingScreen {
-        if (!this._loadingScreen && this._renderingCanvas) {
-            this._loadingScreen = Engine.DefaultLoadingScreenFactory(this._renderingCanvas);
-        }
-        return this._loadingScreen;
+        return getLoadingScreen(this._engineState);
     }
 
     /**
@@ -1925,7 +1465,7 @@ export class Engine extends ThinEngine {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
      */
     public set loadingScreen(loadingScreen: ILoadingScreen) {
-        this._loadingScreen = loadingScreen;
+        setLoadingScreen(this._engineState, loadingScreen);
     }
 
     /**
@@ -1961,27 +1501,14 @@ export class Engine extends ThinEngine {
      * @param element defines the DOM element to promote
      */
     static _RequestPointerlock(element: HTMLElement): void {
-        if (element.requestPointerLock) {
-            // In some browsers, requestPointerLock returns a promise.
-            // Handle possible rejections to avoid an unhandled top-level exception.
-            const promise: unknown = element.requestPointerLock();
-            if (promise instanceof Promise)
-                promise
-                    .then(() => {
-                        element.focus();
-                    })
-                    .catch(() => {});
-            else element.focus();
-        }
+        _RequestPointerlock(element);
     }
 
     /**
      * Asks the browser to exit pointerlock mode
      */
     static _ExitPointerlock(): void {
-        if (document.exitPointerLock) {
-            document.exitPointerLock();
-        }
+        _ExitPointerlock();
     }
 
     /**
@@ -1989,24 +1516,14 @@ export class Engine extends ThinEngine {
      * @param element defines the DOM element to promote
      */
     static _RequestFullscreen(element: HTMLElement): void {
-        const requestFunction = element.requestFullscreen || (<any>element).webkitRequestFullscreen;
-        if (!requestFunction) {
-            return;
-        }
-        requestFunction.call(element);
+        _RequestFullscreen(element);
     }
 
     /**
      * Asks the browser to exit fullscreen mode
      */
     static _ExitFullscreen(): void {
-        const anyDoc = document as any;
-
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if (anyDoc.webkitCancelFullScreen) {
-            anyDoc.webkitCancelFullScreen();
-        }
+        _ExitFullscreen();
     }
 
     /**
@@ -2015,32 +1532,6 @@ export class Engine extends ThinEngine {
      * @returns an object containing ascent, height and descent
      */
     public getFontOffset(font: string): { ascent: number; height: number; descent: number } {
-        const text = document.createElement("span");
-        text.innerHTML = "Hg";
-        text.setAttribute("style", `font: ${font} !important`);
-
-        const block = document.createElement("div");
-        block.style.display = "inline-block";
-        block.style.width = "1px";
-        block.style.height = "0px";
-        block.style.verticalAlign = "bottom";
-
-        const div = document.createElement("div");
-        div.style.whiteSpace = "nowrap";
-        div.appendChild(text);
-        div.appendChild(block);
-
-        document.body.appendChild(div);
-
-        let fontAscent = 0;
-        let fontHeight = 0;
-        try {
-            fontHeight = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
-            block.style.verticalAlign = "baseline";
-            fontAscent = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
-        } finally {
-            document.body.removeChild(div);
-        }
-        return { ascent: fontAscent, height: fontHeight, descent: fontHeight - fontAscent };
+        return getFontOffset(font);
     }
 }

@@ -3,21 +3,21 @@
  */
 
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Effect } from "core/Materials/effect.js";
-import type { IInternalTextureLoader } from "core/Materials/Textures/internalTextureLoader.js";
-import { IsWindowObjectExist } from "./runtimeEnvironment.js";
-import { Constants } from "./engine.constants.js";
-import type { Nullable } from "core/types.js";
-import type { IBaseEnginePublic } from "./engine.base.js";
-import type { Scene } from "core/scene.js";
-import { Observable } from "core/Misc/observable.js";
-import type { ICanvas } from "core/Engines/ICanvas.js";
-import type { Material } from "core/Materials/material.js";
-import type { IOfflineProvider } from "core/Offline/IOfflineProvider.js";
-import type { IAudioEngine } from "core/Audio/Interfaces/IAudioEngine.js";
-import type { ILoadingScreen } from "core/Loading/loadingScreen.js";
-import type { PostProcess } from "core/PostProcesses/postProcess.js";
-import type { Engine } from "core/Engines/engine.js";
+import { Effect } from "core/Materials/effect";
+import type { IInternalTextureLoader } from "core/Materials/Textures/internalTextureLoader";
+import { IsWindowObjectExist } from "./runtimeEnvironment";
+import { Constants } from "./engine.constants";
+import type { Nullable } from "core/types";
+import type { IBaseEnginePublic } from "./engine.base";
+import type { Scene } from "core/scene";
+import { Observable } from "core/Misc/observable";
+import type { ICanvas } from "core/Engines/ICanvas";
+import type { Material } from "core/Materials/material";
+import type { IOfflineProvider } from "core/Offline/IOfflineProvider";
+import type { IAudioEngine } from "core/Audio/Interfaces/IAudioEngine";
+import type { ILoadingScreen } from "core/Loading/loadingScreen";
+import type { PostProcess } from "core/PostProcesses/postProcess";
+import type { Engine } from "core/Engines/engine";
 
 export interface IEngineStore<T extends IBaseEnginePublic = IBaseEnginePublic> {
     /** Gets the list of created engines */

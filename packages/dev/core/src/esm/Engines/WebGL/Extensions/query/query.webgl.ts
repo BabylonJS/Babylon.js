@@ -1,9 +1,9 @@
-import { _TimeToken } from "core/Instrumentation/timeToken.js";
-import type { Nullable, int } from "core/types.js";
-import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl.js";
-import { AbstractMesh } from "core/Meshes/abstractMesh.js";
-import type { OcclusionQuery, IQueryEngineExtension } from "../../../Extensions/query/query.base.js";
-import { _getExtensionState } from "../../../Extensions/query/query.base.js";
+import { _TimeToken } from "core/Instrumentation/timeToken";
+import type { Nullable, int } from "core/types";
+import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { OcclusionQuery, IQueryEngineExtension } from "../../../Extensions/query/query.base";
+import { _getExtensionState } from "../../../Extensions/query/query.base";
 
 export const createQuery = function (engineState: IWebGLEnginePublic): OcclusionQuery {
     const query = (engineState as WebGLEngineState)._gl.createQuery();

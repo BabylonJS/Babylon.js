@@ -1,8 +1,8 @@
-import type { Nullable } from "core/types.js";
-import type { ComputeEffect, IComputeEffectCreationOptions } from "core/Compute/computeEffect.js";
-import type { IComputeContext } from "core/Compute/IComputeContext.js";
-import type { IComputePipelineContext } from "core/Compute/IComputePipelineContext.js";
-import type { IBaseEnginePublic } from "../../engine.base.js";
+import type { Nullable } from "core/types";
+import type { ComputeEffect, IComputeEffectCreationOptions } from "core/Compute/computeEffect";
+import type { IComputeContext } from "core/Compute/IComputeContext";
+import type { IComputePipelineContext } from "core/Compute/IComputePipelineContext";
+import type { IBaseEnginePublic } from "../../engine.base";
 
 /**
  * Type used to locate a resource in a compute shader.

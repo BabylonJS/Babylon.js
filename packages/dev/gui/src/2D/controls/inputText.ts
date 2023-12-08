@@ -887,7 +887,7 @@ export class InputText extends Control implements IFocusableControl {
         }
 
         if (!this._fontOffset || this._wasDirty) {
-            this._fontOffset = Control._GetFontOffset(context.font);
+            this._fontOffset = Control._GetFontOffset(context.font, this.host.getScene()?.getEngine());
         }
 
         // Text

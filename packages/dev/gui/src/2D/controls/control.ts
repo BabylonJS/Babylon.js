@@ -26,6 +26,7 @@ import type { IPointerEvent } from "core/Events/deviceInputEvents";
 import type { IAnimatable } from "core/Animations/animatable.interface";
 import type { Animation } from "core/Animations/animation";
 import type { BaseGradient } from "./gradient/BaseGradient";
+import type { Engine } from "core/Engines/engine";
 
 /**
  * Root class used for all 2D controls
@@ -2418,7 +2419,7 @@ export class Control implements IAnimatable {
             "px " +
             this._getStyleProperty("fontFamily", "Arial");
 
-        this._fontOffset = Control._GetFontOffset(this._font);
+        this._fontOffset = Control._GetFontOffset(this._font, this.host.getScene()?.getEngine());
 
         //children need to be refreshed
         this.getDescendants().forEach((child) => child._markAllAsDirty());
@@ -2639,12 +2640,12 @@ export class Control implements IAnimatable {
     /**
      * @internal
      */
-    public static _GetFontOffset(font: string): { ascent: number; height: number; descent: number } {
+    public static _GetFontOffset(font: string, engine?: Nullable<Engine>): { ascent: number; height: number; descent: number } {
         if (Control._FontHeightSizes[font]) {
             return Control._FontHeightSizes[font];
         }
 
-        const engine = EngineStore.LastCreatedEngine;
+        engine = engine || EngineStore.LastCreatedEngine;
         if (!engine) {
             throw new Error("Invalid engine. Unable to create a canvas.");
         }

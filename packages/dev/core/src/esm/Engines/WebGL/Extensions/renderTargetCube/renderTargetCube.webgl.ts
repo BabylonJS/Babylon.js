@@ -1,4 +1,4 @@
-import type { WebGLRenderTargetWrapper } from "core/Engines/WebGL/webGLRenderTargetWrapper.js";
+import type { WebGLRenderTargetWrapper } from "core/Engines/WebGL/webGLRenderTargetWrapper";
 import {
     _bindTextureDirectly,
     _bindUnboundFramebuffer,
@@ -9,16 +9,16 @@ import {
     _setupFramebufferDepthAttachments,
     type IWebGLEnginePublic,
     type WebGLEngineState,
-} from "../../engine.webgl.js";
-import { _createHardwareRenderTargetWrapper } from "../renderTarget/renderTarget.webgl.js";
-import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture.js";
-import { Logger } from "core/Misc/logger.js";
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper.js";
-import type { RenderTargetCreationOptions } from "core/Materials/Textures/textureCreationOptions.js";
-import { getInternalTextureWebGLAdapter } from "../../engine.adapterHelpers.js";
-import type { IRenderTargetCubeEngineExtension } from "../../../Extensions/renderTargetCube/renderTargetCube.base.js";
-import { augmentEngineState } from "../../../engine.adapters.js";
-import { Constants } from "../../../engine.constants.js";
+} from "../../engine.webgl";
+import { _createHardwareRenderTargetWrapper } from "../renderTarget/renderTarget.webgl";
+import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
+import { Logger } from "core/Misc/logger";
+import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
+import type { RenderTargetCreationOptions } from "core/Materials/Textures/textureCreationOptions";
+import { getInternalTextureWebGLAdapter } from "../../engine.adapterHelpers";
+import type { IRenderTargetCubeEngineExtension } from "../../../Extensions/renderTargetCube/renderTargetCube.base";
+import { augmentEngineState } from "../../../engine.adapters";
+import { Constants } from "../../../engine.constants";
 
 export const createRenderTargetCubeTexture: IRenderTargetCubeEngineExtension["createRenderTargetCubeTexture"] = function (
     engineState: IWebGLEnginePublic,

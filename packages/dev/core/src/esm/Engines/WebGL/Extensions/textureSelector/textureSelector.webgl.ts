@@ -1,7 +1,7 @@
-import type { Nullable } from "core/types.js";
-import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl.js";
-import type { ITextureSelectorEngineExtension } from "../../../Extensions/textureSelector/textureSelector.base.js";
-import { _getExtensionState, _transformTextureUrl } from "../../../Extensions/textureSelector/textureSelector.base.js";
+import type { Nullable } from "core/types";
+import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl";
+import type { ITextureSelectorEngineExtension } from "../../../Extensions/textureSelector/textureSelector.base";
+import { _getExtensionState, _transformTextureUrl } from "../../../Extensions/textureSelector/textureSelector.base";
 
 export const setCompressedTextureExclusions: ITextureSelectorEngineExtension["setCompressedTextureExclusions"] = function (
     engineState: IWebGLEnginePublic,

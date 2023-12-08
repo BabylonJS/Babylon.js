@@ -603,7 +603,7 @@ export class InputTextArea extends InputText {
      */
     protected _preMeasure(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         if (!this._fontOffset || this._wasDirty) {
-            this._fontOffset = Control._GetFontOffset(context.font);
+            this._fontOffset = Control._GetFontOffset(context.font, this.host.getScene()?.getEngine());
         }
 
         let text = this._beforeRenderText(this._textWrapper).text;

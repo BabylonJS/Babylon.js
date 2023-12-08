@@ -1,6 +1,7 @@
 import { ThinEngine } from "../../Engines/thinEngine";
 import type { DataBuffer } from "../../Buffers/dataBuffer";
 import type { IndicesArray, DataArray } from "../../types";
+import { updateDynamicIndexBuffer, updateDynamicVertexBuffer } from "core/esm/Engines/WebGL/Extensions/dynamicBuffer/dynamicBuffer.webgl";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -25,52 +26,9 @@ declare module "../../Engines/thinEngine" {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 ThinEngine.prototype.updateDynamicIndexBuffer = function (this: ThinEngine, indexBuffer: DataBuffer, indices: IndicesArray, offset: number = 0): void {
-    // Force cache update
-    this._currentBoundBuffer[this._gl.ELEMENT_ARRAY_BUFFER] = null;
-    this.bindIndexBuffer(indexBuffer);
-
-    let view: ArrayBufferView;
-    if (indexBuffer.is32Bits) {
-        // anything else than Uint32Array needs to be converted to Uint32Array
-        view = indices instanceof Uint32Array ? indices : new Uint32Array(indices);
-    } else {
-        // anything else than Uint16Array needs to be converted to Uint16Array
-        view = indices instanceof Uint16Array ? indices : new Uint16Array(indices);
-    }
-
-    this._gl.bufferData(this._gl.ELEMENT_ARRAY_BUFFER, view, this._gl.DYNAMIC_DRAW);
-
-    this._resetIndexBufferBinding();
+    updateDynamicIndexBuffer(this._engineState, indexBuffer, indices, offset);
 };
 
 ThinEngine.prototype.updateDynamicVertexBuffer = function (this: ThinEngine, vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
-    this.bindArrayBuffer(vertexBuffer);
-
-    if (byteOffset === undefined) {
-        byteOffset = 0;
-    }
-
-    const dataLength = (data as ArrayBuffer).byteLength || (data as number[]).length;
-
-    if (byteLength === undefined || (byteLength >= dataLength && byteOffset === 0)) {
-        if (data instanceof Array) {
-            this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, new Float32Array(data));
-        } else {
-            this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, <ArrayBuffer>data);
-        }
-    } else {
-        if (data instanceof Array) {
-            this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, new Float32Array(data).subarray(byteOffset, byteOffset + byteLength));
-        } else {
-            if (data instanceof ArrayBuffer) {
-                data = new Uint8Array(data, byteOffset, byteLength);
-            } else {
-                data = new Uint8Array(data.buffer, data.byteOffset + byteOffset, byteLength);
-            }
-
-            this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, <ArrayBuffer>data);
-        }
-    }
-
-    this._resetVertexBufferBinding();
+    updateDynamicVertexBuffer(this._engineState, vertexBuffer, data, byteOffset, byteLength);
 };

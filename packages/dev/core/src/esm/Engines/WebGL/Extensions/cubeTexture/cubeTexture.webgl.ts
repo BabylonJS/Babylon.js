@@ -1,21 +1,21 @@
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper.js";
-import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture.js";
-import type { IInternalTextureLoader } from "core/Materials/Textures/internalTextureLoader.js";
-import type { DepthTextureCreationOptions } from "core/Materials/Textures/textureCreationOptions.js";
-import { LoadImage } from "core/Misc/fileTools.js";
-import { RandomGUID } from "core/Misc/guid.js";
-import type { IWebRequest } from "core/Misc/interfaces/iWebRequest.js";
-import type { Scene } from "core/scene.js";
-import type { Nullable } from "core/types.js";
-import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl.js";
-import { _bindTextureDirectly, _getInternalFormat, _setupDepthStencilTexture, _unpackFlipY } from "../../engine.webgl.js";
-import { Logger } from "core/Misc/logger.js";
-import type { ICubeTextureEngineExtension } from "../../../Extensions/cubeTexture/cubeTexture.base.js";
-import { augmentEngineState } from "../../../engine.adapters.js";
-import { _prepareWorkingCanvas } from "../../../engine.base.js";
-import { Constants } from "../../../engine.constants.js";
-import { _TextureLoaders, GetExponentOfTwo } from "../../../engine.static.js";
-import { _loadFile } from "../../../engine.tools.js";
+import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
+import { InternalTexture, InternalTextureSource } from "core/Materials/Textures/internalTexture";
+import type { IInternalTextureLoader } from "core/Materials/Textures/internalTextureLoader";
+import type { DepthTextureCreationOptions } from "core/Materials/Textures/textureCreationOptions";
+import { LoadImage } from "core/Misc/fileTools";
+import { RandomGUID } from "core/Misc/guid";
+import type { IWebRequest } from "core/Misc/interfaces/iWebRequest";
+import type { Scene } from "core/scene";
+import type { Nullable } from "core/types";
+import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl";
+import { _bindTextureDirectly, _getInternalFormat, _setupDepthStencilTexture, _unpackFlipY } from "../../engine.webgl";
+import { Logger } from "core/Misc/logger";
+import type { ICubeTextureEngineExtension } from "../../../Extensions/cubeTexture/cubeTexture.base";
+import { augmentEngineState } from "../../../engine.adapters";
+import { _prepareWorkingCanvas } from "../../../engine.base";
+import { Constants } from "../../../engine.constants";
+import { _TextureLoaders, GetExponentOfTwo } from "../../../engine.static";
+import { _loadFile } from "../../../engine.tools";
 
 export const _createDepthStencilCubeTexture: ICubeTextureEngineExtension["_createDepthStencilCubeTexture"] = function (
     engineState: IWebGLEnginePublic,

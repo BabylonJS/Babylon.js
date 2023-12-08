@@ -219,7 +219,6 @@ import {
 } from "core/esm/Engines/engine.base";
 import { createRawCubeTexture, createRawTexture, createRawTexture2DArray, createRawTexture3D } from "core/esm/Engines/WebGL/Extensions/rawTexture/engine.rawTexture.webgl";
 import { _createTextureBase, _releaseEffectBase, _renderLoopBase, _restoreEngineAfterContextLost, runRenderLoopBase } from "core/esm/Engines/engine.extendable";
-import * as _ from "lodash";
 import { _loadFile } from "core/esm/Engines/engine.tools";
 import type { ISceneLike } from "core/esm/Engines/engine.interfaces";
 import { hostInformation } from "core/esm/Engines/runtimeEnvironment";
@@ -343,7 +342,8 @@ export interface EngineOptions extends ThinEngineOptions, WebGLContextAttributes
  * The base engine class (root of all engines)
  */
 export class ThinEngine {
-    protected _engineState: WebGLEngineState;
+    /** @internal */
+    public _engineState: WebGLEngineState;
     /** Use this array to turn off some WebGL2 features on known buggy browsers version */
     public static ExceptionList = ExceptionList;
 
@@ -536,9 +536,29 @@ export class ThinEngine {
         this._engineState._webGLVersion = value;
     }
 
-    protected _renderingCanvas: Nullable<HTMLCanvasElement>;
-    protected _windowIsBackground = false;
-    protected _creationOptions: EngineOptions;
+    protected get _renderingCanvas(): Nullable<HTMLCanvasElement> {
+        return this._engineState._renderingCanvas;
+    }
+
+    protected set _renderingCanvas(value: Nullable<HTMLCanvasElement>) {
+        this._engineState._renderingCanvas = value;
+    }
+
+    protected get _windowIsBackground(): boolean {
+        return this._engineState._windowIsBackground;
+    }
+
+    protected set _windowIsBackground(value: boolean) {
+        this._engineState._windowIsBackground = value;
+    }
+
+    protected get _creationOptions(): EngineOptions {
+        return this._engineState._creationOptions;
+    }
+
+    protected set _creationOptions(value: EngineOptions) {
+        this._engineState._creationOptions = value;
+    }
     protected _audioContext: Nullable<AudioContext>;
     protected _audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>;
     /** @internal */
@@ -1058,27 +1078,6 @@ export class ThinEngine {
         this._engineState.onContextRestoredObservable.add(() => {
             this.onContextRestoredObservable.notifyObservers(this);
         });
-        // this._engineState.onBeginFrameObservable.add(() => {
-        //     this.onBeginFrameObservable.notifyObservers(this);
-        // });
-        // this._engineState.onEndFrameObservable.add(() => {
-        //     this.onEndFrameObservable.notifyObservers(this);
-        // });
-        // this._engineState.onBeforeShaderCompilationObservable.add(() => {
-        //     this.onBeforeShaderCompilationObservable.notifyObservers(this);
-        // });
-        // this._engineState.onAfterShaderCompilationObservable.add(() => {
-        //     this.onAfterShaderCompilationObservable.notifyObservers(this);
-        // });
-        // this._engineState.onResizeObservable.add(() => {
-        //     this.onResizeObservable.notifyObservers(this);
-        // });
-        // this._engineState.onCanvasBlurObservable.add(() => {
-        //     this.onCanvasBlurObservable.notifyObservers(this);
-        // });
-        // this._engineState.onCanvasFocusObservable.add(() => {
-        //     this.onCanvasFocusObservable.notifyObservers(this);
-        // });
     }
 
     protected _setupMobileChecks(): void {
@@ -1347,7 +1346,7 @@ export class ThinEngine {
     /**
      * Begin a new frame
      */
-    public beginFrame = () => {}
+    public beginFrame = () => {};
 
     /**
      * Enf the current frame

@@ -1,9 +1,9 @@
-import type { InternalTexture } from "core/Materials/Textures/internalTexture.js";
-import type { Nullable } from "core/types.js";
-import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl.js";
-import { _getWebGLTextureType, flushFramebuffer } from "../../engine.webgl.js";
-import { Constants } from "../../../engine.constants.js";
-import type { IReadTextureEngineExtension } from "../../../Extensions/readTexture/readTexture.base.js";
+import type { InternalTexture } from "core/Materials/Textures/internalTexture";
+import type { Nullable } from "core/types";
+import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl";
+import { _getWebGLTextureType, flushFramebuffer } from "../../engine.webgl";
+import { Constants } from "../../../engine.constants";
+import type { IReadTextureEngineExtension } from "../../../Extensions/readTexture/readTexture.base";
 
 /**
  * Allocate a typed array depending on a texture type. Optionally can copy existing data in the buffer.

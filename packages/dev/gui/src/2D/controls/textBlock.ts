@@ -351,7 +351,7 @@ export class TextBlock extends Control {
 
     protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         if (!this._fontOffset || this.isDirty) {
-            this._fontOffset = Control._GetFontOffset(context.font);
+            this._fontOffset = Control._GetFontOffset(context.font, this.host.getScene()?.getEngine());
         }
         super._processMeasures(parentMeasure, context);
 
@@ -664,7 +664,7 @@ export class TextBlock extends Control {
             if (context) {
                 this._applyStates(context);
                 if (!this._fontOffset) {
-                    this._fontOffset = Control._GetFontOffset(context.font);
+                    this._fontOffset = Control._GetFontOffset(context.font, this.host.getScene()?.getEngine());
                 }
                 const lines = this._lines
                     ? this._lines

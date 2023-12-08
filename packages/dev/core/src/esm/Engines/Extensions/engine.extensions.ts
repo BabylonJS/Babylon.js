@@ -1,16 +1,16 @@
 /* eslint-disable jsdoc/require-jsdoc */
-import { augmentEngineState } from "../engine.adapters.js";
-import type { IBaseEnginePublic } from "../engine.base.js";
-import type { ICubeTextureEngineExtension } from "./cubeTexture/cubeTexture.base.js";
-import type { IRawTextureEngineExtension } from "./rawTexture/engine.rawTexture.base.js";
-import type { IMultiRenderEngineExtension } from "./multiRender/multiRender.base.js";
-import type { IRenderTargetEngineExtension } from "./renderTarget/renderTarget.base.js";
-import type { ITransformFeedbackEngineExtension } from "./transformFeedback/engine.transformFeedback.base.js";
-import type { IAlphaEngineExtension } from "./alpha/alpha.base.js";
-import type { IDynamicBufferEngineExtension } from "./dynamicBuffer/dynamicBuffer.base.js";
-import type { IQueryEngineExtension } from "./query/query.base.js";
-import type { IDynamicTextureEngineExtension } from "./dynamicTexture/dynamicTexture.base.js";
-import type { IViewsEngineExtension } from "./views/views.base.js";
+import { augmentEngineState } from "../engine.adapters";
+import type { IBaseEnginePublic } from "../engine.base";
+import type { ICubeTextureEngineExtension } from "./cubeTexture/cubeTexture.base";
+import type { IRawTextureEngineExtension } from "./rawTexture/engine.rawTexture.base";
+import type { IMultiRenderEngineExtension } from "./multiRender/multiRender.base";
+import type { IRenderTargetEngineExtension } from "./renderTarget/renderTarget.base";
+import type { ITransformFeedbackEngineExtension } from "./transformFeedback/engine.transformFeedback.base";
+import type { IAlphaEngineExtension } from "./alpha/alpha.base";
+import type { IDynamicBufferEngineExtension } from "./dynamicBuffer/dynamicBuffer.base";
+import type { IQueryEngineExtension } from "./query/query.base";
+import type { IDynamicTextureEngineExtension } from "./dynamicTexture/dynamicTexture.base";
+import type { IViewsEngineExtension } from "./views/views.base";
 
 export const enum EngineExtensions {
     RAW_TEXTURE = 0,

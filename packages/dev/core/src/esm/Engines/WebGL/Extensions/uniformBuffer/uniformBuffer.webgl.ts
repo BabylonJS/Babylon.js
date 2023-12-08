@@ -1,10 +1,10 @@
-import type { DataBuffer } from "core/Buffers/dataBuffer.js";
-import type { IPipelineContext } from "core/Engines/IPipelineContext.js";
-import type { WebGLPipelineContext } from "core/Engines/WebGL/webGLPipelineContext.js";
-import { WebGLDataBuffer } from "core/Meshes/WebGL/webGLDataBuffer.js";
-import type { FloatArray, Nullable } from "core/types.js";
-import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl.js";
-import type { IUniformBufferEngineExtension } from "../../../Extensions/uniformBuffer/uniformBuffer.base.js";
+import type { DataBuffer } from "core/Buffers/dataBuffer";
+import type { IPipelineContext } from "core/Engines/IPipelineContext";
+import type { WebGLPipelineContext } from "core/Engines/WebGL/webGLPipelineContext";
+import { WebGLDataBuffer } from "core/Meshes/WebGL/webGLDataBuffer";
+import type { FloatArray, Nullable } from "core/types";
+import type { IWebGLEnginePublic, WebGLEngineState } from "../../engine.webgl";
+import type { IUniformBufferEngineExtension } from "../../../Extensions/uniformBuffer/uniformBuffer.base";
 
 const _createUniformBuffer = function (engineState: IWebGLEnginePublic, elements: FloatArray, dynamic?: boolean): DataBuffer {
     const fes = engineState as WebGLEngineState;
