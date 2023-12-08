@@ -49,18 +49,18 @@ export class GaussianSplatting {
      * @param scene parent scene
      */
     private _createMaterial(scene: Scene) {
-        Effect.ShadersStore["customVertexShader"] = GaussianSplatting._VertexShaderSource;
-        Effect.ShadersStore["customFragmentShader"] = GaussianSplatting._FragmentShaderSource;
+        Effect.ShadersStore["gaussianSplattingVertexShader"] = GaussianSplatting._VertexShaderSource;
+        Effect.ShadersStore["gaussianSplattingFragmentShader"] = GaussianSplatting._FragmentShaderSource;
         const shaderMaterial = new ShaderMaterial(
             "GaussianSplattingShader",
             scene,
             {
-                vertex: "custom",
-                fragment: "custom",
+                vertex: "gaussianSplatting",
+                fragment: "gaussianSplatting",
             },
             {
                 attributes: ["position"],
-                uniforms: ["projection", "modelView"],
+                uniforms: ["projection", "modelView", "viewport"],
             }
         );
         shaderMaterial.backFaceCulling = false;
