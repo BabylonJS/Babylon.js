@@ -1,6 +1,7 @@
 import { serialize, SerializationHelper, serializeAsColor3, expandToProperty } from "../Misc/decorators";
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
+import type { Matrix } from "../Maths/math.vector";
 import { Vector3 } from "../Maths/math.vector";
 import { Color3, TmpColors } from "../Maths/math.color";
 import { Node } from "../node";
@@ -312,6 +313,26 @@ export abstract class Light extends Node implements ISortableLight {
 
         this._lightmapMode = value;
         this._markMeshesAsLightDirty();
+    }
+
+    /**
+     * Returns the view matrix.
+     * @param _faceIndex The index of the face for which we want to extract the view matrix. Only used for point light types.
+     * @returns The view matrix. Can be null, if a view matrix cannot be defined for the type of light considered (as for a hemispherical light, for example).
+     */
+    public getViewMatrix(_faceIndex?: number): Nullable<Matrix> {
+        return null;
+    }
+
+    /**
+     * Returns the projection matrix.
+     * Note that viewMatrix and renderList are optional and are only used by lights that calculate the projection matrix from a list of meshes (e.g. directional lights with automatic extents calculation).
+     * @param _viewMatrix The view transform matrix of the light (optional).
+     * @param _renderList The list of meshes to take into account when calculating the projection matrix (optional).
+     * @returns The projection matrix. Can be null, if a projection matrix cannot be defined for the type of light considered (as for a hemispherical light, for example).
+     */
+    public getProjectionMatrix(_viewMatrix?: Matrix, _renderList?: Array<AbstractMesh>): Nullable<Matrix> {
+        return null;
     }
 
     /**
