@@ -2597,7 +2597,7 @@ export class WebGPUEngine extends Engine {
 
         this._pendingDebugCommands.length = 0;
 
-        super.endFrame();
+        this._engineState._frameId++; // Was a call to super
 
         if (this.dbgVerboseLogsForFirstFrames) {
             if ((this as any)._count === undefined) {
@@ -2613,7 +2613,7 @@ export class WebGPUEngine extends Engine {
                 }
             }
         }
-    }
+    };
 
     /**
      * Force a WebGPU flush (ie. a flush of all waiting commands)

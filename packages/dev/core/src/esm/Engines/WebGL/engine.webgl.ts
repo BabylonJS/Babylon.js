@@ -4541,7 +4541,7 @@ export function setFloat4(engineState: IWebGLEnginePublic, uniform: Nullable<Web
     if (!uniform) {
         return false;
     }
-    
+
     (engineState as WebGLEngineStateFull)._gl.uniform4f(uniform, x, y, z, w);
 
     return true;
@@ -4549,7 +4549,7 @@ export function setFloat4(engineState: IWebGLEnginePublic, uniform: Nullable<Web
 
 /**
  * Dispose and release all associated resources
-*/
+ */
 export function dispose(engineState: IWebGLEnginePublic): void {
     const fes = engineState as WebGLEngineStateFull;
     disposeBase(fes);
@@ -4598,7 +4598,6 @@ export function dispose(engineState: IWebGLEnginePublic): void {
     if (fes._creationOptions.loseContextOnDispose) {
         fes._gl.getExtension("WEBGL_lose_context")?.loseContext();
     }
-
 }
 
 // From Engine
