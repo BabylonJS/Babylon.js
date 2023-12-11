@@ -807,25 +807,81 @@ export class ThinEngine {
         this._engineState._renderTargetWrapperCache = value;
     }
     /** @internal */
-    protected _activeChannel = 0;
+    protected get _activeChannel(): number {
+        return this._engineState._activeChannel;
+    }
+
+    protected set _activeChannel(value: number) {
+        this._engineState._activeChannel = value;
+    }
+
     /** @internal */
-    protected _boundTexturesCache: { [key: string]: Nullable<InternalTexture> } = {};
-    protected _currentEffect: Nullable<Effect>;
+    protected get _boundTexturesCache(): { [key: string]: Nullable<InternalTexture> } {
+        return this._engineState._boundTexturesCache;
+    }
+
+    protected set _boundTexturesCache(value: { [key: string]: Nullable<InternalTexture> }) {
+        this._engineState._boundTexturesCache = value;
+    }
+
+    protected get _currentEffect(): Nullable<Effect> {
+        return this._engineState._currentEffect;
+    }
+
+    protected set _currentEffect(value: Nullable<Effect>) {
+        this._engineState._currentEffect = value;
+    }
     /** @internal */
     public _currentDrawContext: IDrawContext; // WebGPU only
     /** @internal */
     public _currentMaterialContext: IMaterialContext; // WebGPU only
     /** @internal */
-    protected _currentProgram: Nullable<WebGLProgram>;
-    protected _compiledEffects: { [key: string]: Effect } = {};
+    protected get _currentProgram(): Nullable<WebGLProgram> {
+        return this._engineState._currentProgram;
+    }
+
+    protected set _currentProgram(value: Nullable<WebGLProgram>) {
+        this._engineState._currentProgram = value;
+    }
+    protected get _compiledEffects(): { [key: string]: Effect } {
+        return this._engineState._compiledEffects;
+    }
+
+    protected set _compiledEffects(value: { [key: string]: Effect }) {
+        this._engineState._compiledEffects = value;
+    }
     /** @internal */
-    protected _cachedViewport: Nullable<IViewportLike>;
+    protected get _cachedViewport(): Nullable<IViewportLike> {
+        return this._engineState._cachedViewport;
+    }
+
+    protected set _cachedViewport(value: Nullable<IViewportLike>) {
+        this._engineState._cachedViewport = value;
+    }
     /** @internal */
-    protected _cachedVertexBuffers: any;
+    protected get _cachedVertexBuffers(): any {
+        return this._engineState._cachedVertexBuffers;
+    }
+
+    protected set _cachedVertexBuffers(value: any) {
+        this._engineState._cachedVertexBuffers = value;
+    }
     /** @internal */
-    protected _cachedIndexBuffer: Nullable<DataBuffer>;
+    protected get _cachedIndexBuffer(): Nullable<DataBuffer> {
+        return this._engineState._cachedIndexBuffer;
+    }
+
+    protected set _cachedIndexBuffer(value: Nullable<DataBuffer>) {
+        this._engineState._cachedIndexBuffer = value;
+    }
     /** @internal */
-    protected _cachedEffectForVertexBuffers: Nullable<Effect>;
+    protected get _cachedEffectForVertexBuffers(): Nullable<Effect> {
+        return this._engineState._cachedEffectForVertexBuffers;
+    }
+
+    protected set _cachedEffectForVertexBuffers(value: Nullable<Effect>) {
+        this._engineState._cachedEffectForVertexBuffers = value;
+    }
 
     /** @internal */
     public get _currentRenderTarget(): Nullable<RenderTargetWrapper> {
@@ -929,7 +985,9 @@ export class ThinEngine {
     /**
      * Gets information about the current host
      */
-    public hostInformation: HostInformation = hostInformation;
+    public get hostInformation(): HostInformation {
+        return hostInformation;
+    }
 
     protected get _supportsHardwareTextureRescaling() {
         return false;
@@ -1010,12 +1068,19 @@ export class ThinEngine {
     }
 
     /** @internal */
-    protected _shaderPlatformName: string;
+    protected get _shaderPlatformName(): string {
+        return this._engineState._shaderPlatformName;
+    }
+
+    /** @internal */
+    protected set _shaderPlatformName(value: string) {
+        this._engineState._shaderPlatformName = value;
+    }
     /**
      * Gets the shader platform name used by the effects.
      */
     public get shaderPlatformName(): string {
-        return this._shaderPlatformName;
+        return this._engineState.shaderPlatformName;
     }
 
     /**
@@ -1046,7 +1111,9 @@ export class ThinEngine {
     /**
      * Gets a boolean indicating if the exact sRGB conversions or faster approximations are used for converting to and from linear space.
      */
-    public readonly useExactSrgbConversions: boolean;
+    public get useExactSrgbConversions(): boolean {
+        return this._engineState.useExactSrgbConversions;
+    }
 
     /**
      * Creates a new snapshot at the next frame using the current snapshotRenderingMode
@@ -1342,7 +1409,13 @@ export class ThinEngine {
         clear(this._engineState, color, backBuffer, depth, stencil);
     }
 
-    protected _viewportCached = { x: 0, y: 0, z: 0, w: 0 };
+    protected get _viewportCached(): { x: number; y: number; z: number; w: number } {
+        return this._engineState._viewportCached;
+    }
+
+    protected set _viewportCached(value: { x: number; y: number; z: number; w: number }) {
+        this._engineState._viewportCached = value;
+    }
 
     /**
      * @internal

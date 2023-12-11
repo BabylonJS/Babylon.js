@@ -4,16 +4,7 @@ import type { DataArray, Nullable } from "core/types";
 import { WebGPUShaderProcessorWGSL } from "core/Engines/WebGPU/webgpuShaderProcessorsWGSL";
 import { WebGPUShaderProcessorGLSL } from "core/Engines/WebGPU/webgpuShaderProcessorsGLSL";
 import type { IBaseEngineProtected, IBaseEnginePublic, IBaseEngineInternals, IBaseEngineOptions } from "../engine.base";
-import {
-    _getGlobalDefines,
-    _setupMobileChecks,
-    _sharedInit,
-    _viewport,
-    getRenderHeight,
-    getRenderWidth,
-    initBaseEngineState,
-    resize,
-} from "../engine.base";
+import { _getGlobalDefines, _setupMobileChecks, _sharedInit, _viewport, getRenderHeight, getRenderWidth, initBaseEngineState, setSizeBase } from "../engine.base";
 import { WebGPUSnapshotRendering } from "core/Engines/WebGPU/webgpuSnapshotRendering";
 import type { IDrawContext } from "core/Engines/IDrawContext";
 import type { IMaterialContext } from "core/Engines/IMaterialContext";
@@ -35,7 +26,7 @@ import { WebGPUOcclusionQuery } from "core/Engines/WebGPU/webgpuOcclusionQuery";
 import { WebGPUTextureHelper } from "core/Engines/WebGPU/webgpuTextureHelper";
 import { WebGPUTimestampQuery } from "core/Engines/WebGPU/webgpuTimestampQuery";
 import { Constants } from "../engine.constants";
-import { _restoreEngineAfterContextLost } from "../engine.extendable";
+import { _restoreEngineAfterContextLost, resizeBase } from "../engine.extendable";
 import type { ComputeEffect } from "core/Compute/computeEffect";
 import type { WebGPUCacheRenderPipeline } from "core/Engines/WebGPU/webgpuCacheRenderPipeline";
 import type { WebGPUDataBuffer } from "core/Meshes/WebGPU/webgpuDataBuffer";
@@ -649,6 +640,41 @@ export function isWebGPU(engineState: IWebGPUEnginePublic): engineState is WebGP
 
 export function resetSnapshotRendering(engineState: IWebGPUEnginePublic) {
     (engineState as WebGPUEngineStateFull)._snapshotRendering.reset();
+}
+
+export function resize(engineState: IWebGPUEnginePublic, forceSetSize = false): void {
+    resizeBase({ setSize }, engineState, forceSetSize);
+}
+
+/**
+ * Force a specific size of the canvas
+ * @param width defines the new canvas' width
+ * @param height defines the new canvas' height
+ * @param forceSetSize true to force setting the sizes of the underlying canvas
+ * @returns true if the size was changed
+ */
+export function setSize(engineState: IWebGPUEnginePublic, width: number, height: number, forceSetSize = false): boolean {
+    if (!setSizeBase(engineState, width, height, forceSetSize)) {
+        return false;
+    }
+
+    if (engineState.dbgVerboseLogsForFirstFrames) {
+        if ((engineState as any)._count === undefined) {
+            (engineState as any)._count = 0;
+        }
+        if (!(engineState as any)._count || (engineState as any)._count < engineState.dbgVerboseLogsNumFrames) {
+            console.log("frame #" + (engineState as any)._count + " - setSize -", width, height);
+        }
+    }
+
+    _initializeMainAttachments(engineState);
+
+    if (engineState.snapshotRendering) {
+        // reset snapshot rendering so that the next frame will record a new list of bundles
+        // snapshotRenderingReset(); // ESMTODO
+    }
+
+    return true;
 }
 
 /**

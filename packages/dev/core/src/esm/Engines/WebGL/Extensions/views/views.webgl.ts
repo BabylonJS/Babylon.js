@@ -1,10 +1,10 @@
 import type { Camera } from "core/Cameras/camera";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
-import { flushFramebuffer, type IWebGLEnginePublic, type WebGLEngineState } from "../../engine.webgl";
+import { flushFramebuffer, setSize, type IWebGLEnginePublic, type WebGLEngineState } from "../../engine.webgl";
 import type { EngineView } from "../../../Extensions/views/views.base";
 import { _getExtensionState } from "../../../Extensions/views/views.base";
-import { _renderFrame, getRenderingCanvas, setSize } from "../../../engine.base";
+import { _renderFrame, getRenderingCanvas } from "../../../engine.base";
 
 export const getInputElement = function (engineState: IWebGLEnginePublic): Nullable<HTMLElement> {
     const extensionState = _getExtensionState(engineState);
