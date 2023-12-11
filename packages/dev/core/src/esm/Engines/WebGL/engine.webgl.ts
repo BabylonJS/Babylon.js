@@ -72,6 +72,7 @@ import {
 import type { Engine } from "core/Engines/engine";
 import type { IStencilState } from "core/States/IStencilState";
 import { WebGL2ShaderProcessor } from "core/Engines/WebGL/webGL2ShaderProcessors";
+import { getInternalTextureWebGLAdapter } from "./engine.adapterHelpers";
 
 const _TempClearColorUint32 = new Uint32Array(4);
 const _TempClearColorInt32 = new Int32Array(4);
@@ -2190,12 +2191,7 @@ export function _createInternalTexture(
     }
 
     const gl = fes._gl;
-    const engineAdapter = augmentEngineState<Engine>(engineState, {
-        _releaseTexture,
-        getLoadedTexturesCache,
-        createTexture,
-        _createHardwareTexture,
-    });
+    const engineAdapter = augmentEngineState<Engine>(engineState, getInternalTextureWebGLAdapter(source));
     const texture = new InternalTexture(engineAdapter, source);
     const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
     const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
@@ -2289,12 +2285,7 @@ export function createTexture(
     useSRGBBuffer?: boolean
 ): InternalTexture {
     const fes = engineState as WebGLEngineStateFull;
-    const engineAdapter = augmentEngineState<Engine>(engineState, {
-        _releaseTexture,
-        getLoadedTexturesCache,
-        createTexture,
-        _createHardwareTexture,
-    });
+    const engineAdapter = augmentEngineState<Engine>(engineState, getInternalTextureWebGLAdapter(InternalTextureSource.Temp));
     return _createTextureBase(
         {
             getUseSRGBBuffer: _getUseSRGBBuffer,
@@ -4847,7 +4838,11 @@ export function wrapWebGLTexture(
 ): InternalTexture {
     const fes = engineState as WebGLEngineStateFull;
     const hardwareTexture = new WebGLHardwareTexture(texture, fes._gl);
-    const internalTexture = new InternalTexture(augmentEngineState(engineState), InternalTextureSource.Unknown, true);
+    const internalTexture = new InternalTexture(
+        augmentEngineState(engineState, getInternalTextureWebGLAdapter(InternalTextureSource.Unknown)),
+        InternalTextureSource.Unknown,
+        true
+    );
     internalTexture._hardwareTexture = hardwareTexture;
     internalTexture._hardwareTexture = hardwareTexture;
     internalTexture.baseWidth = width;
