@@ -5,7 +5,7 @@ import { PointerEventTypes, PointerInfo } from "core/Events";
 import type { FlowGraph, FlowGraphContext } from "core/FlowGraph";
 import {
     FlowGraphCoordinator,
-    FlowGraphLogBlock,
+    FlowGraphConsoleLogBlock,
     FlowGraphMeshPickEventBlock,
     FlowGraphPath,
     FlowGraphReceiveCustomEventBlock,
@@ -44,17 +44,20 @@ describe("Flow Graph Event Nodes", () => {
         const sceneReady = new FlowGraphSceneReadyEventBlock({ name: "SceneReady" });
         flowGraph.addEventBlock(sceneReady);
 
-        const sendEvent = new FlowGraphSendCustomEventBlock({ name: "SendEvent" });
-        sendEvent.eventId.setValue("testEvent", flowGraphContext);
-        sendEvent.eventData.setValue(42, flowGraphContext);
-        sceneReady.onDone.connectTo(sendEvent.onStart);
+        const sendEvent = new FlowGraphSendCustomEventBlock({ eventId: "testEvent", eventData: ["testData"] });
+        const sendEventDataNode = sendEvent.getDataInput("testData");
+        expect(sendEventDataNode).toBeDefined();
+        sendEventDataNode?.setValue(42, flowGraphContext);
+        sceneReady.out.connectTo(sendEvent.in);
 
-        const receiveEvent = new FlowGraphReceiveCustomEventBlock({ eventId: "testEvent", name: "ReceiveEvent" });
+        const receiveEvent = new FlowGraphReceiveCustomEventBlock({ eventId: "testEvent", eventData: ["testData"] });
         receiverGraph.addEventBlock(receiveEvent);
 
-        const runCustomFunction = new FlowGraphLogBlock({ name: "Log" });
-        receiveEvent.onDone.connectTo(runCustomFunction.onStart);
-        receiveEvent.eventData.connectTo(runCustomFunction.message);
+        const consoleLogBlock = new FlowGraphConsoleLogBlock({ name: "Log" });
+        receiveEvent.out.connectTo(consoleLogBlock.in);
+        const receiveEventDataNode = receiveEvent.getDataOutput("testData");
+        expect(receiveEventDataNode).toBeDefined();
+        receiveEventDataNode?.connectTo(consoleLogBlock.message);
 
         flowGraph.start();
         receiverGraph.start();
@@ -85,11 +88,11 @@ describe("Flow Graph Event Nodes", () => {
         graph.addEventBlock(meshPick3);
 
         // Create a console log block for each mesh pick
-        const meshLog1 = new FlowGraphLogBlock({ name: "MeshLog1" });
-        meshPick1.onDone.connectTo(meshLog1.onStart);
+        const meshLog1 = new FlowGraphConsoleLogBlock({ name: "MeshLog1" });
+        meshPick1.out.connectTo(meshLog1.in);
         meshLog1.message.setValue("Mesh 1 was picked", context);
-        const meshLog3 = new FlowGraphLogBlock({ name: "MeshLog3" });
-        meshPick3.onDone.connectTo(meshLog3.onStart);
+        const meshLog3 = new FlowGraphConsoleLogBlock({ name: "MeshLog3" });
+        meshPick3.out.connectTo(meshLog3.in);
         meshLog3.message.setValue("Mesh 3 was picked", context);
 
         // Start the graph
@@ -99,7 +102,6 @@ describe("Flow Graph Event Nodes", () => {
         const pickInfo = new PickingInfo();
         pickInfo.hit = true;
         pickInfo.pickedMesh = mesh3;
-        // const mouseEvent = jest.mock("core/Events/") as any;
         const mouseEvent = {} as any;
         const pointerInfo = new PointerInfo(PointerEventTypes.POINTERPICK, mouseEvent, pickInfo);
         scene.onPointerObservable.notifyObservers(pointerInfo);

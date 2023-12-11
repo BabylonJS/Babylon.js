@@ -1,7 +1,6 @@
 import type { FlowGraphContext } from "../../../flowGraphContext";
 import type { Animatable } from "../../../../Animations";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
-import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import { FlowGraphAsyncExecutionBlock } from "../../../flowGraphAsyncExecutionBlock";
 import { RichTypeAny, RichTypeNumber, RichTypeBoolean } from "../../../flowGraphRichTypes";
 import { RegisterClass } from "../../../../Misc/typeStore";
@@ -47,11 +46,6 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     public readonly to: FlowGraphDataConnection<number>;
 
     /**
-     * Output connection: The signal that is triggered when the animation ends.
-     */
-    public readonly onAnimationEnd: FlowGraphSignalConnection;
-
-    /**
      * Output connection: The animatable that is currently running.
      */
     public readonly runningAnimatable: FlowGraphDataConnection<Animatable>;
@@ -67,7 +61,6 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
         this.from = this.registerDataInput("from", RichTypeNumber);
         this.to = this.registerDataInput("to", RichTypeNumber);
 
-        this.onAnimationEnd = this._registerSignalOutput("onAnimationEnd");
         this.runningAnimatable = this.registerDataOutput("runningAnimatable", RichTypeAny);
     }
 
@@ -110,7 +103,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     public _execute(context: FlowGraphContext): void {
         this._startPendingTasks(context);
 
-        this.onDone._activateSignal(context);
+        this.out._activateSignal(context);
     }
 
     private _onAnimationEnd(animatable: Animatable, context: FlowGraphContext) {
@@ -120,7 +113,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             contextAnims.splice(index, 1);
         }
         context._removePendingBlock(this);
-        this.onAnimationEnd._activateSignal(context);
+        this.done._activateSignal(context);
     }
 
     /**

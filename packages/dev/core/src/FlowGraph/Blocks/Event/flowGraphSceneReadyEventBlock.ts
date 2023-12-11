@@ -30,7 +30,9 @@ export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
     }
 
     public getClassName() {
-        return "FGSceneReadyEventBlock";
+        return FlowGraphSceneReadyEventBlock.ClassName;
     }
+
+    public static ClassName = "FGSceneReadyEventBlock";
 }
 RegisterClass("FGSceneReadyEventBlock", FlowGraphSceneReadyEventBlock);

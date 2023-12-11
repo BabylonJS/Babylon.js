@@ -8,6 +8,7 @@ import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 import type { FlowGraphCoordinator } from "./flowGraphCoordinator";
 import type { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
+import type { ISerializedFlowGraph } from "./typeDefinitions";
 import { FlowGraphMeshPickEventBlock } from "./Blocks/Event/flowGraphMeshPickEventBlock";
 import { _isADescendantOf } from "./utils";
 
@@ -79,12 +80,18 @@ export class FlowGraph {
         return context;
     }
 
+    public getContext(index: number) {
+        return this._executionContexts[index];
+    }
+
     /**
      * Add an event block. When the graph is started, it will start listening to events
      * from the block and execute the graph when they are triggered.
      * @param block
      */
     public addEventBlock(block: FlowGraphEventBlock): void {
+        // todo: when adding a mesh pick block, check if the target of the pick is child of a mesh that is already on the list
+        // if it is, put the child before the parent
         this._eventBlocks.push(block);
     }
 
@@ -190,7 +197,6 @@ export class FlowGraph {
      * @param valueSerializeFunction a function to serialize complex values
      */
     public serialize(serializationObject: any = {}, valueSerializeFunction?: (key: string, value: any, serializationObject: any) => void) {
-        serializationObject.variableDefinitions = {};
         serializationObject.allBlocks = [];
         this.visitAllBlocks((block) => {
             const serializedBlock: any = {};
@@ -248,12 +254,16 @@ export class FlowGraph {
      * @param valueParseFunction a function to parse complex values in a scene
      * @returns
      */
-    public static Parse(serializationObject: any, coordinator: FlowGraphCoordinator, valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any): FlowGraph {
+    public static Parse(
+        serializationObject: ISerializedFlowGraph,
+        coordinator: FlowGraphCoordinator,
+        valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any
+    ): FlowGraph {
         const graph = coordinator.createGraph();
         const blocks: FlowGraphBlock[] = [];
         // Parse all blocks
         for (const serializedBlock of serializationObject.allBlocks) {
-            const block = FlowGraphBlock.Parse(serializedBlock);
+            const block = FlowGraphBlock.Parse(serializedBlock, coordinator.config.scene, valueParseFunction);
             blocks.push(block);
             if (block instanceof FlowGraphEventBlock) {
                 graph.addEventBlock(block);

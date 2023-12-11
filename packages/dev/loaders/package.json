@@ -11,6 +11,7 @@
     ],
     "scripts": {
         "build": "npm run clean && npm run compile",
+        "test": "jest -c ../../../jest.config.ts",
         "clean": "rimraf dist && rimraf *.tsbuildinfo",
         "compile": "tsc -b tsconfig.build.json",
         "watch": "tsc -b tsconfig.build.json -w",
@@ -20,6 +21,5 @@
         "@dev/core": "^1.0.0"
     },
     "sideEffects": false,
-    "dependencies": {
-    }
+    "dependencies": {}
 }
