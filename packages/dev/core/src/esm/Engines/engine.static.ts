@@ -125,8 +125,8 @@ export const ExceptionList = {
 // elements added to this array will persist between imports
 export const _TextureLoaders: IInternalTextureLoader[] = [];
 
-export const NpmPackage = "@babylonjs/esm@6.31.1";
-export const Version = "6.31.1";
+export const NpmPackage = "@babylonjs/esm@6.32.1";
+export const Version = "6.32.1";
 
 export const CollisionEpsilon = 0.001;
 
