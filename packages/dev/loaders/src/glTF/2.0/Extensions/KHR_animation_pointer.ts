@@ -1,6 +1,6 @@
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import type { IAnimationTargetInfo } from "../glTFLoader";
+// import type { IAnimationTargetInfo } from "../glTFLoader";
 import type { Nullable } from "core/types";
 import type { Animation } from "core/Animations/animation";
 import type { IAnimatable } from "core/Animations/animatable.interface";
@@ -8,7 +8,8 @@ import type { IAnimation, IAnimationChannel } from "../glTFLoaderInterfaces";
 import type { IKHRAnimationPointer } from "babylonjs-gltf2interface";
 import { AnimationChannelTargetPath } from "babylonjs-gltf2interface";
 import { Logger } from "core/Misc/logger";
-import { animationPointerTree } from "./KHR_animation_pointer.data";
+// import { animationPointerTree } from "./KHR_animation_pointer.data";
+import { AnimationPointerPathToObjectConverter } from "./animationPointerPathToObjectConverter";
 
 const NAME = "KHR_animation_pointer";
 
@@ -80,13 +81,16 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
             throw new Error(`${extensionContext}: Pointer is missing`);
         }
 
-        const targetInfo = this._parseAnimationPointer(`${extensionContext}/pointer`, pointer);
+        const pathToObjConverter = new AnimationPointerPathToObjectConverter(this._loader.gltf);
+        const targetInfo = pathToObjConverter.convert(pointer);
+        // const targetInfo = this._parseAnimationPointer(`${extensionContext}/pointer`, pointer);
         if (!targetInfo) {
             Logger.Warn(`${extensionContext}/pointer: Invalid pointer (${pointer}) skipped`);
             return null;
         }
 
-        return this._loader._loadAnimationChannelFromTargetInfoAsync(context, animationContext, animation, channel, targetInfo, onLoad);
+        return this._loader._newLoadAnimationChannelFromTargetInfoAsync(context, animationContext, animation, channel, targetInfo, onLoad);
+        // return this._loader._loadAnimationChannelFromTargetInfoAsync(context, animationContext, animation, channel, targetInfo, onLoad);
     }
 
     /**
@@ -106,46 +110,46 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
      *  - "/materials/2/pbrMetallicRoughness/baseColorFactor"
      *  - "/materials/2/extensions/KHR_materials_emissive_strength/emissiveStrength"
      */
-    private _parseAnimationPointer(context: string, pointer: string): Nullable<IAnimationTargetInfo> {
-        if (!pointer.startsWith("/")) {
-            Logger.Warn(`${context}: Value (${pointer}) must start with a slash`);
-            return null;
-        }
+    // private _parseAnimationPointer(context: string, pointer: string): Nullable<IAnimationTargetInfo> {
+    //     if (!pointer.startsWith("/")) {
+    //         Logger.Warn(`${context}: Value (${pointer}) must start with a slash`);
+    //         return null;
+    //     }
 
-        const parts = pointer.split("/");
+    //     const parts = pointer.split("/");
 
-        // Remove the first part since it will be empty string as pointers must start with a slash.
-        parts.shift();
+    //     // Remove the first part since it will be empty string as pointers must start with a slash.
+    //     parts.shift();
 
-        let node: any = animationPointerTree;
-        let gltfCurrentNode: any = this._loader.gltf;
-        let gltfTargetNode: any = undefined;
-        for (const part of parts) {
-            if (node.__array__) {
-                node = node.__array__;
-            } else {
-                node = node[part];
-                if (!node) {
-                    return null;
-                }
-            }
+    //     let node: any = animationPointerTree;
+    //     let gltfCurrentNode: any = this._loader.gltf;
+    //     let gltfTargetNode: any = undefined;
+    //     for (const part of parts) {
+    //         if (node.__array__) {
+    //             node = node.__array__;
+    //         } else {
+    //             node = node[part];
+    //             if (!node) {
+    //                 return null;
+    //             }
+    //         }
 
-            gltfCurrentNode = gltfCurrentNode && gltfCurrentNode[part];
+    //         gltfCurrentNode = gltfCurrentNode && gltfCurrentNode[part];
 
-            if (node.__target__) {
-                gltfTargetNode = gltfCurrentNode;
-            }
-        }
+    //         if (node.__target__) {
+    //             gltfTargetNode = gltfCurrentNode;
+    //         }
+    //     }
 
-        if (!gltfTargetNode || !Array.isArray(node)) {
-            return null;
-        }
+    //     if (!gltfTargetNode || !Array.isArray(node)) {
+    //         return null;
+    //     }
 
-        return {
-            target: gltfTargetNode,
-            properties: node,
-        };
-    }
+    //     return {
+    //         target: gltfTargetNode,
+    //         properties: node,
+    //     };
+    // }
 }
 
 GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_animation_pointer(loader));
