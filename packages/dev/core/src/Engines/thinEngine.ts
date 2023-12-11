@@ -192,6 +192,8 @@ import {
     _getRGBABufferInternalSizedFormat,
     _getRGBAMultiSampleBufferFormat,
     readPixels,
+    setHardwareScalingLevel,
+    resize,
 } from "core/esm/Engines/WebGL/engine.webgl";
 import {
     _cancelFrameThin,
@@ -212,9 +214,7 @@ import {
     getHostDocument,
     getHostWindow,
     resetTextureCache,
-    resize,
     setColorWrite,
-    setHardwareScalingLevel,
     stopRenderLoop,
 } from "core/esm/Engines/engine.base";
 import { createRawCubeTexture, createRawTexture, createRawTexture2DArray, createRawTexture3D } from "core/esm/Engines/WebGL/Extensions/rawTexture/engine.rawTexture.webgl";
@@ -431,12 +431,24 @@ export class ThinEngine {
     /**
      * Gets or sets a boolean that indicates if textures must be forced to power of 2 size even if not required
      */
-    public forcePOTTextures = false;
+    public get forcePOTTextures(): boolean {
+        return this._engineState.forcePOTTextures;
+    }
+
+    public set forcePOTTextures(value: boolean) {
+        this._engineState.forcePOTTextures = value;
+    }
 
     /**
      * Gets a boolean indicating if the engine is currently rendering in fullscreen mode
      */
-    public isFullscreen = false;
+    public get isFullscreen(): boolean {
+        return this._engineState.isFullscreen;
+    }
+
+    public set isFullscreen(value: boolean) {
+        this._engineState.isFullscreen = value;
+    }
 
     /**
      * Gets or sets a boolean indicating if back faces must be culled. If false, front faces are culled instead (true by default)
@@ -485,7 +497,13 @@ export class ThinEngine {
     /**
      * Gets or sets a boolean indicating that uniform buffers must be disabled even if they are supported
      */
-    public disableUniformBuffers = false;
+    public get disableUniformBuffers(): boolean {
+        return this._engineState.disableUniformBuffers;
+    }
+
+    public set disableUniformBuffers(value: boolean) {
+        this._engineState.disableUniformBuffers = value;
+    }
 
     /**
      * An event triggered when the engine is disposed.

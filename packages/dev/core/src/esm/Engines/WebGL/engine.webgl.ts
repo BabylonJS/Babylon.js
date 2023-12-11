@@ -8,13 +8,12 @@ import {
     endFrame as endFrameBase,
     getRenderWidth as getRenderWidthBase,
     getRenderHeight as getRenderHeightBase,
-    setSize as setSizeBase,
+    setSizeBase,
     _viewport as _viewportBase,
     dispose as disposeBase,
     resetTextureCache,
     _prepareWorkingCanvas,
     getHostDocument,
-    resize,
     _setupMobileChecks,
     _getGlobalDefines,
     getLoadedTexturesCache,
@@ -62,11 +61,13 @@ import { PerfCounter } from "core/Misc/perfCounter";
 import {
     _createTextureBase,
     _restoreEngineAfterContextLost,
+    resizeBase,
     setDepthStencilTextureBase,
     setDirectViewportBase,
     setTextureFromPostProcessBase,
     setTextureFromPostProcessOutputBase,
     setViewportBase,
+    setHardwareScalingLevelBase,
 } from "../engine.extendable";
 import type { Engine } from "core/Engines/engine";
 import type { IStencilState } from "core/States/IStencilState";
@@ -4540,7 +4541,7 @@ export function setFloat4(engineState: IWebGLEnginePublic, uniform: Nullable<Web
     if (!uniform) {
         return false;
     }
-
+    
     (engineState as WebGLEngineStateFull)._gl.uniform4f(uniform, x, y, z, w);
 
     return true;
@@ -4548,9 +4549,10 @@ export function setFloat4(engineState: IWebGLEnginePublic, uniform: Nullable<Web
 
 /**
  * Dispose and release all associated resources
- */
+*/
 export function dispose(engineState: IWebGLEnginePublic): void {
     const fes = engineState as WebGLEngineStateFull;
+    disposeBase(fes);
 
     // Empty texture
     if (fes._emptyTexture) {
@@ -4597,7 +4599,6 @@ export function dispose(engineState: IWebGLEnginePublic): void {
         fes._gl.getExtension("WEBGL_lose_context")?.loseContext();
     }
 
-    disposeBase(fes);
 }
 
 // From Engine
@@ -4785,6 +4786,13 @@ export function setTextureFromPostProcessOutput(engineState: IWebGLEnginePublic,
     setTextureFromPostProcessOutputBase(bindTextureInjection, engineState, channel, postProcess, name);
 }
 
+export function resize(engineState: IWebGLEnginePublic, forceSetSize = false): void {
+    resizeBase({ setSize }, engineState, forceSetSize);
+}
+
+export function setHardwareScalingLevel(engineState: IWebGLEnginePublic, level: number): void {
+    setHardwareScalingLevelBase({ resize }, engineState, level);
+}
 /**
  * Force a specific size of the canvas
  * @param width defines the new canvas' width

@@ -5,7 +5,7 @@
 
 import type { Nullable } from "core/types";
 import type { BaseEngineState, BaseEngineStateFull, IBaseEnginePublic } from "./engine.base";
-import { _renderFrame, _viewport, endFrame, getHostWindow, getRenderHeight, getRenderWidth } from "./engine.base";
+import { _renderFrame, _viewport, endFrame, getHostWindow, getRenderHeight, getRenderWidth, setSizeBase } from "./engine.base";
 import { InternalTextureSource, InternalTexture } from "core/Materials/Textures/internalTexture";
 import type { PostProcess } from "core/PostProcesses/postProcess";
 import type { ThinTexture } from "core/Materials/Textures/thinTexture";
@@ -25,6 +25,7 @@ import { Logger } from "core/Misc/logger";
 import { EngineExtensions, getEngineExtension } from "./Extensions/engine.extensions";
 import type { EngineBaseType } from "./engine.adapters";
 import type { ThinEngine } from "core/Engines/thinEngine";
+import { IsDocumentAvailable, IsWindowObjectExist } from "./runtimeEnvironment";
 
 /**
  * Defines the interface used by objects containing a viewport (like a camera)
@@ -94,6 +95,72 @@ export function setViewportBase<T extends IBaseEnginePublic = IBaseEnginePublic>
     (engineState as BaseEngineState<T>)._cachedViewport = viewport;
 
     viewportChangedFunc(engineState, x * width, y * height, width * viewport.width, height * viewport.height);
+}
+
+/**
+ * Resize the view according to the canvas' size
+ * @param engineState defines the engine state
+ * @param forceSetSize true to force setting the sizes of the underlying canvas
+ */
+export function resizeBase<T extends IBaseEnginePublic = IBaseEnginePublic>(
+    {
+        setSize = setSizeBase,
+    }: {
+        setSize: (engineState: T, width: number, height: number, forceSetSize?: boolean) => boolean;
+    },
+    engineState: T,
+    forceSetSize = false
+): void {
+    let width: number;
+    let height: number;
+    const fes = engineState as BaseEngineState<T>;
+
+    // Re-query hardware scaling level to handle zoomed-in resizing.
+    if (engineState.adaptToDeviceRatio) {
+        const devicePixelRatio = IsWindowObjectExist() ? window.devicePixelRatio || 1.0 : 1.0;
+        const changeRatio = fes._lastDevicePixelRatio / devicePixelRatio;
+        fes._lastDevicePixelRatio = devicePixelRatio;
+        fes._hardwareScalingLevel *= changeRatio;
+    }
+
+    if (IsWindowObjectExist() && IsDocumentAvailable()) {
+        // make sure it is a Node object, and is a part of the document.
+        if (fes._renderingCanvas) {
+            const boundingRect = fes._renderingCanvas.getBoundingClientRect
+                ? fes._renderingCanvas.getBoundingClientRect()
+                : {
+                      // fallback to last solution in case the function doesn't exist
+                      width: fes._renderingCanvas.width * fes._hardwareScalingLevel,
+                      height: fes._renderingCanvas.height * fes._hardwareScalingLevel,
+                  };
+            width = fes._renderingCanvas.clientWidth || boundingRect.width || fes._renderingCanvas.width || 100;
+            height = fes._renderingCanvas.clientHeight || boundingRect.height || fes._renderingCanvas.height || 100;
+        } else {
+            width = window.innerWidth;
+            height = window.innerHeight;
+        }
+    } else {
+        width = fes._renderingCanvas ? fes._renderingCanvas.width : 100;
+        height = fes._renderingCanvas ? fes._renderingCanvas.height : 100;
+    }
+
+    setSize(engineState, width / fes._hardwareScalingLevel, height / fes._hardwareScalingLevel, forceSetSize);
+}
+
+/**
+ * Defines the hardware scaling level.
+ * By default the hardware scaling level is computed from the window device ratio.
+ * if level = 1 then the engine will render at the exact resolution of the canvas. If level = 0.5 then the engine will render at twice the size of the canvas.
+ * @param level defines the level to use
+ */
+export function setHardwareScalingLevelBase<T extends IBaseEnginePublic = IBaseEnginePublic>(
+    { resize }: { resize: (engineState: T, forceResize?: boolean) => void },
+    engineState: T,
+    level: number
+): void {
+    const fes = engineState as BaseEngineStateFull<T>;
+    fes._hardwareScalingLevel = level;
+    resize(engineState);
 }
 
 /** @internal */
