@@ -1672,101 +1672,6 @@ export class GLTFLoader implements IGLTFLoader {
         animationContext: string,
         animation: IAnimation,
         channel: IAnimationChannel,
-        targetInfo: IAnimationTargetInfo,
-        onLoad: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void
-    ): Promise<void> {
-        const fps = this.parent.targetFps;
-        const invfps = 1 / fps;
-
-        const sampler = ArrayItem.Get(`${context}/sampler`, animation.samplers, channel.sampler);
-        return this._loadAnimationSamplerAsync(`${animationContext}/samplers/${channel.sampler}`, sampler).then((data) => {
-            let numAnimations = 0;
-
-            // Extract the corresponding values from the read value.
-            // GLTF values may be dispatched to several Babylon properties.
-            // For example, baseColorFactor [`r`, `g`, `b`, `a`] is dispatched to
-            // - albedoColor as Color3(`r`, `g`, `b`)
-            // - alpha as `a`
-            for (const property of targetInfo.properties) {
-                const stride = property.getStride(targetInfo.target);
-                const input = data.input;
-                const output = data.output;
-                const keys = new Array<IAnimationKey>(input.length);
-                let outputOffset = 0;
-
-                switch (data.interpolation) {
-                    case AnimationSamplerInterpolation.STEP: {
-                        for (let index = 0; index < input.length; index++) {
-                            const value = property.getValue(targetInfo.target, output, outputOffset, 1);
-                            outputOffset += stride;
-
-                            keys[index] = {
-                                frame: input[index] * fps,
-                                value: value,
-                                interpolation: AnimationKeyInterpolation.STEP,
-                            };
-                        }
-                        break;
-                    }
-                    case AnimationSamplerInterpolation.CUBICSPLINE: {
-                        for (let index = 0; index < input.length; index++) {
-                            const inTangent = property.getValue(targetInfo.target, output, outputOffset, invfps);
-                            outputOffset += stride;
-                            const value = property.getValue(targetInfo.target, output, outputOffset, 1);
-                            outputOffset += stride;
-                            const outTangent = property.getValue(targetInfo.target, output, outputOffset, invfps);
-                            outputOffset += stride;
-
-                            keys[index] = {
-                                frame: input[index] * fps,
-                                inTangent: inTangent,
-                                value: value,
-                                outTangent: outTangent,
-                            };
-                        }
-                        break;
-                    }
-                    case AnimationSamplerInterpolation.LINEAR: {
-                        for (let index = 0; index < input.length; index++) {
-                            const value = property.getValue(targetInfo.target, output, outputOffset, 1);
-                            outputOffset += stride;
-
-                            keys[index] = {
-                                frame: input[index] * fps,
-                                value: value,
-                            };
-                        }
-                        break;
-                    }
-                }
-
-                if (outputOffset > 0) {
-                    const name = `${animation.name || `animation${animation.index}`}_channel${channel.index}_${numAnimations}`;
-                    property.buildAnimations(targetInfo.target, name, fps, keys, (babylonAnimatable, babylonAnimation) => {
-                        ++numAnimations;
-                        onLoad(babylonAnimatable, babylonAnimation);
-                    });
-                }
-            }
-        });
-    }
-
-    /**
-     * @hidden
-     * Loads a glTF animation channel.
-     * @param context The context when loading the asset
-     * @param animationContext The context of the animation when loading the asset
-     * @param animation The glTF animation property
-     * @param channel The glTF animation channel property
-     * @param targetInfo The glTF target and properties
-     * @param onLoad Called for each animation loaded
-     * @returns A void promise that resolves when the load is complete
-     */
-    public _newLoadAnimationChannelFromTargetInfoAsync(
-        context: string,
-        animationContext: string,
-        animation: IAnimation,
-        channel: IAnimationChannel,
         targetInfo: IObjectAccessor,
         onLoad: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void
     ): Promise<void> {
@@ -1777,14 +1682,16 @@ export class GLTFLoader implements IGLTFLoader {
         return this._loadAnimationSamplerAsync(`${animationContext}/samplers/${channel.sampler}`, sampler).then((data) => {
             let numAnimations = 0;
 
+            const target = targetInfo.object;
+            const propertyInfos = targetInfo.get();
             // Extract the corresponding values from the read value.
             // GLTF values may be dispatched to several Babylon properties.
             // For example, baseColorFactor [`r`, `g`, `b`, `a`] is dispatched to
             // - albedoColor as Color3(`r`, `g`, `b`)
             // - alpha as `a`
-            for (let i = 0; i < targetInfo.extras.babylonPropertyNames.length; i++) {
-                const property = targetInfo.extras.babylonPropertyNames[i];
-                const stride = targetInfo.extras.strides[i](targetInfo.object);
+            for (let i = 0; i < propertyInfos.length; i++) {
+                const propertyInfo = propertyInfos[i];
+                const stride = propertyInfo.getStride(target);
                 const input = data.input;
                 const output = data.output;
                 const keys = new Array<IAnimationKey>(input.length);
@@ -1793,7 +1700,8 @@ export class GLTFLoader implements IGLTFLoader {
                 switch (data.interpolation) {
                     case AnimationSamplerInterpolation.STEP: {
                         for (let index = 0; index < input.length; index++) {
-                            const value = targetInfo.get(targetInfo.object, property, output, outputOffset, 1);
+                            // const value = targetInfo.get(targetInfo.object, property, output, outputOffset, 1);
+                            const value = propertyInfo.getValue(target, output, outputOffset, 1);
                             outputOffset += stride;
 
                             keys[index] = {
@@ -1806,11 +1714,14 @@ export class GLTFLoader implements IGLTFLoader {
                     }
                     case AnimationSamplerInterpolation.CUBICSPLINE: {
                         for (let index = 0; index < input.length; index++) {
-                            const inTangent = targetInfo.get(targetInfo.object, property, output, outputOffset, invfps);
+                            // const inTangent = targetInfo.get(targetInfo.object, property, output, outputOffset, invfps);
+                            const inTangent = propertyInfo.getValue(target, output, outputOffset, invfps);
                             outputOffset += stride;
-                            const value = targetInfo.get(targetInfo.object, property, output, outputOffset, 1);
+                            // const value = targetInfo.get(targetInfo.object, property, output, outputOffset, 1);
+                            const value = propertyInfo.getValue(target, output, outputOffset, 1);
                             outputOffset += stride;
-                            const outTangent = targetInfo.get(targetInfo.object, property, output, outputOffset, invfps);
+                            // const outTangent = targetInfo.get(targetInfo.object, property, output, outputOffset, invfps);
+                            const outTangent = propertyInfo.getValue(target, output, outputOffset, invfps);
                             outputOffset += stride;
 
                             keys[index] = {
@@ -1824,7 +1735,8 @@ export class GLTFLoader implements IGLTFLoader {
                     }
                     case AnimationSamplerInterpolation.LINEAR: {
                         for (let index = 0; index < input.length; index++) {
-                            const value = targetInfo.get(targetInfo.object, property, output, outputOffset, 1);
+                            // const value = targetInfo.get(targetInfo.object, property, output, outputOffset, 1);
+                            const value = propertyInfo.getValue(target, output, outputOffset, 1);
                             outputOffset += stride;
 
                             keys[index] = {
@@ -1838,7 +1750,7 @@ export class GLTFLoader implements IGLTFLoader {
 
                 if (outputOffset > 0) {
                     const name = `${animation.name || `animation${animation.index}`}_channel${channel.index}_${numAnimations}`;
-                    targetInfo.extras.buildAnimations(targetInfo.object, name, property, fps, keys, (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => {
+                    propertyInfo.buildAnimations(target, name, fps, keys, (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => {
                         ++numAnimations;
                         onLoad(babylonAnimatable, babylonAnimation);
                     });

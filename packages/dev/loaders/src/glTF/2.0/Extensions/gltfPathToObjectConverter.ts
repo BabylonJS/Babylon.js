@@ -7,6 +7,23 @@ export class GLTFPathToObjectConverter implements IPathToObjectConverter {
         public infoTree: any
     ) {}
 
+    /**
+     * The pointer string is represented by a [JSON pointer](https://datatracker.ietf.org/doc/html/rfc6901).
+     * <animationPointer> := /<rootNode>/<assetIndex>/<propertyPath>
+     * <rootNode> := "nodes" | "materials" | "meshes" | "cameras" | "extensions"
+     * <assetIndex> := <digit> | <name>
+     * <propertyPath> := <extensionPath> | <standardPath>
+     * <extensionPath> := "extensions"/<name>/<standardPath>
+     * <standardPath> := <name> | <name>/<standardPath>
+     * <name> := W+
+     * <digit> := D+
+     *
+     * Examples:
+     *  - "/nodes/0/rotation"
+     *  - "/materials/2/emissiveFactor"
+     *  - "/materials/2/pbrMetallicRoughness/baseColorFactor"
+     *  - "/materials/2/extensions/KHR_materials_emissive_strength/emissiveStrength"
+     */
     convert(path: string): IObjectAccessor | undefined {
         let objectTree: any = this.gltf;
         let infoTree: any = this.infoTree;
@@ -39,10 +56,9 @@ export class GLTFPathToObjectConverter implements IPathToObjectConverter {
 
         return {
             object: target,
-            type: infoTree.type,
-            get: (...args) => infoTree.get(...args),
-            set: (value: any, ...args) => infoTree.set(value, ...args),
-            extras: { ...infoTree.extras },
+            get() {
+                return infoTree;
+            },
         };
     }
 }

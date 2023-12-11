@@ -4,14 +4,24 @@ import { GLTFLoader } from "../glTFLoader";
 import type { Nullable } from "core/types";
 import type { Animation } from "core/Animations/animation";
 import type { IAnimatable } from "core/Animations/animatable.interface";
-import type { IAnimation, IAnimationChannel } from "../glTFLoaderInterfaces";
+import type { IAnimation, IAnimationChannel, IGLTF } from "../glTFLoaderInterfaces";
 import type { IKHRAnimationPointer } from "babylonjs-gltf2interface";
 import { AnimationChannelTargetPath } from "babylonjs-gltf2interface";
 import { Logger } from "core/Misc/logger";
-// import { animationPointerTree } from "./KHR_animation_pointer.data";
-import { AnimationPointerPathToObjectConverter } from "./animationPointerPathToObjectConverter";
+import { animationPointerTree } from "./KHR_animation_pointer.data";
+import { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
 
 const NAME = "KHR_animation_pointer";
+
+/**
+ * Class to convert an animation pointer path to a smart object that
+ * gets data from the animation buffer and creates animations.
+ */
+export class AnimationPointerPathToObjectConverter extends GLTFPathToObjectConverter {
+    constructor(public gltf: IGLTF) {
+        super(gltf, animationPointerTree);
+    }
+}
 
 /**
  * [Specification PR](https://github.com/KhronosGroup/glTF/pull/2147)
@@ -83,73 +93,13 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
 
         const pathToObjConverter = new AnimationPointerPathToObjectConverter(this._loader.gltf);
         const targetInfo = pathToObjConverter.convert(pointer);
-        // const targetInfo = this._parseAnimationPointer(`${extensionContext}/pointer`, pointer);
         if (!targetInfo) {
             Logger.Warn(`${extensionContext}/pointer: Invalid pointer (${pointer}) skipped`);
             return null;
         }
 
-        return this._loader._newLoadAnimationChannelFromTargetInfoAsync(context, animationContext, animation, channel, targetInfo, onLoad);
-        // return this._loader._loadAnimationChannelFromTargetInfoAsync(context, animationContext, animation, channel, targetInfo, onLoad);
+        return this._loader._loadAnimationChannelFromTargetInfoAsync(context, animationContext, animation, channel, targetInfo, onLoad);
     }
-
-    /**
-     * The pointer string is represented by a [JSON pointer](https://datatracker.ietf.org/doc/html/rfc6901).
-     * <animationPointer> := /<rootNode>/<assetIndex>/<propertyPath>
-     * <rootNode> := "nodes" | "materials" | "meshes" | "cameras" | "extensions"
-     * <assetIndex> := <digit> | <name>
-     * <propertyPath> := <extensionPath> | <standardPath>
-     * <extensionPath> := "extensions"/<name>/<standardPath>
-     * <standardPath> := <name> | <name>/<standardPath>
-     * <name> := W+
-     * <digit> := D+
-     *
-     * Examples:
-     *  - "/nodes/0/rotation"
-     *  - "/materials/2/emissiveFactor"
-     *  - "/materials/2/pbrMetallicRoughness/baseColorFactor"
-     *  - "/materials/2/extensions/KHR_materials_emissive_strength/emissiveStrength"
-     */
-    // private _parseAnimationPointer(context: string, pointer: string): Nullable<IAnimationTargetInfo> {
-    //     if (!pointer.startsWith("/")) {
-    //         Logger.Warn(`${context}: Value (${pointer}) must start with a slash`);
-    //         return null;
-    //     }
-
-    //     const parts = pointer.split("/");
-
-    //     // Remove the first part since it will be empty string as pointers must start with a slash.
-    //     parts.shift();
-
-    //     let node: any = animationPointerTree;
-    //     let gltfCurrentNode: any = this._loader.gltf;
-    //     let gltfTargetNode: any = undefined;
-    //     for (const part of parts) {
-    //         if (node.__array__) {
-    //             node = node.__array__;
-    //         } else {
-    //             node = node[part];
-    //             if (!node) {
-    //                 return null;
-    //             }
-    //         }
-
-    //         gltfCurrentNode = gltfCurrentNode && gltfCurrentNode[part];
-
-    //         if (node.__target__) {
-    //             gltfTargetNode = gltfCurrentNode;
-    //         }
-    //     }
-
-    //     if (!gltfTargetNode || !Array.isArray(node)) {
-    //         return null;
-    //     }
-
-    //     return {
-    //         target: gltfTargetNode,
-    //         properties: node,
-    //     };
-    // }
 }
 
 GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_animation_pointer(loader));
