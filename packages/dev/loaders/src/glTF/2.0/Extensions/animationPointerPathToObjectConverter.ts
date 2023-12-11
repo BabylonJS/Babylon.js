@@ -42,10 +42,10 @@ const nodesTree = {
             extras: {
                 babylonPropertyNames: ["influence"],
                 strides: [(target: any) => target._numMorphTargets!],
-                buildAnimations: (target: INode, name: string, _propertyName: string, fps: number, keys: any[], callback: AnimationCallback) => {
+                buildAnimations: (target: INode, name: string, propertyName: string, fps: number, keys: any[], callback: AnimationCallback) => {
                     if (target._numMorphTargets) {
                         for (let targetIndex = 0; targetIndex < target._numMorphTargets; targetIndex++) {
-                            const babylonAnimation = new Animation(`${name}_${targetIndex}`, name, fps, Animation.ANIMATIONTYPE_FLOAT);
+                            const babylonAnimation = new Animation(`${name}_${targetIndex}`, propertyName, fps, Animation.ANIMATIONTYPE_FLOAT);
                             babylonAnimation.setKeys(
                                 keys.map((key) => ({
                                     frame: key.frame,
