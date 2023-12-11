@@ -145,7 +145,7 @@ export class AnimationGroup implements IDisposable {
         for (let i = 0; i < this._animatables.length; ++i) {
             const animatable = this._animatables[i];
 
-            if (this.mask.retainsTarget(animatable.target.name)) {
+            if (this.mask.disabled || this.mask.retainsTarget(animatable.target.name)) {
                 this._numActiveAnimatables++;
                 if (animatable.paused) {
                     animatable.restart();
@@ -163,7 +163,7 @@ export class AnimationGroup implements IDisposable {
      * Use this function if you know you won't need those animations anymore and if you want to free memory.
      */
     public removeUnmaskedAnimations() {
-        if (!this.mask) {
+        if (!this.mask || this.mask.disabled) {
             return;
         }
 

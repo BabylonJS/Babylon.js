@@ -24,6 +24,11 @@ export class AnimationGroupMask {
     private _targetNames: Set<String>;
 
     /**
+     * Gets or sets a boolean indicating if the mask is disabled (default is false)
+     */
+    public disabled = false;
+
+    /**
      * Creates a new mask
      * @param names The list of target names to add to the mask (optional)
      * @param mode Defines the mode for the mask (default: AnimationGroupMaskMode.Include)
