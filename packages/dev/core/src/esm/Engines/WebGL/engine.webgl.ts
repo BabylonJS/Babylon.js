@@ -16,7 +16,6 @@ import {
     getHostDocument,
     _setupMobileChecks,
     _getGlobalDefines,
-    getLoadedTexturesCache,
     getCaps,
 } from "../engine.base";
 import { WebGLShaderProcessor } from "core/Engines/WebGL/webGLShaderProcessors";

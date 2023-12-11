@@ -79,6 +79,7 @@ const internalTextureWebGLAdapter: { [key: string]: Function } = {
     updateTextureDimensions: () => {},
     getLoadedTexturesCache,
     _releaseTexture,
+    getCaps,
 };
 
 const createPrefilteredCubeTexture = (
@@ -123,7 +124,6 @@ export function getInternalTextureWebGLAdapter(type?: InternalTextureSource) {
             internalTextureWebGLAdapter["createCubeTexture"] = createCubeTexture;
             internalTextureWebGLAdapter["createRawCubeTexture"] = createRawCubeTexture;
             internalTextureWebGLAdapter["createPrefilteredCubeTexture"] = createPrefilteredCubeTexture;
-
             break;
         case InternalTextureSource.Url:
             internalTextureWebGLAdapter["createTexture"] = createTexture;
