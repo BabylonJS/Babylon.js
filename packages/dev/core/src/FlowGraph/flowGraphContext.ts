@@ -5,6 +5,7 @@ import type { FlowGraphAsyncExecutionBlock } from "./flowGraphAsyncExecutionBloc
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import type { FlowGraph } from "./flowGraph";
+import type { ISerializedFlowGraphContext } from "./typeDefinitions";
 import { defaultValueParseFunction, defaultValueSerializationFunction } from "./serialization";
 import type { FlowGraphCoordinator } from "./flowGraphCoordinator";
 import { Observable } from "../Misc/observable";
@@ -37,10 +38,9 @@ export class FlowGraphContext {
     @serialize()
     public uniqueId = RandomGUID();
     /**
-     * @internal
      * These are the variables defined by a user.
      */
-    public _userVariables: { [key: string]: any } = {};
+    private _userVariables: { [key: string]: any } = {};
     /**
      * These are the variables set by the blocks.
      */
@@ -96,6 +96,13 @@ export class FlowGraphContext {
      */
     public getVariable(name: string): any {
         return this._userVariables[name];
+    }
+
+    /**
+     * Gets all user variables map
+     */
+    public get userVariables() {
+        return this._userVariables;
     }
 
     private _getUniqueIdPrefixedName(obj: FlowGraphBlock, name: string): string {
@@ -271,7 +278,7 @@ export class FlowGraphContext {
      * @returns
      */
     public static Parse(
-        serializationObject: any = {},
+        serializationObject: ISerializedFlowGraphContext,
         graph: FlowGraph,
         valueParseFunction: (key: string, serializationObject: any, scene: Scene) => any = defaultValueParseFunction
     ): FlowGraphContext {

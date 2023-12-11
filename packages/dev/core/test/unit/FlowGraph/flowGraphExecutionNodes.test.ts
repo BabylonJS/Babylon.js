@@ -7,7 +7,7 @@ import {
     FlowGraphDoNBlock,
     FlowGraphFlipFlopBlock,
     FlowGraphForLoopBlock,
-    FlowGraphLogBlock,
+    FlowGraphConsoleLogBlock,
     FlowGraphMultiGateBlock,
     FlowGraphPath,
     FlowGraphSceneReadyEventBlock,
@@ -51,15 +51,15 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.addEventBlock(sceneReady);
 
         const branch = new FlowGraphBranchBlock();
-        sceneReady.onDone.connectTo(branch.onStart);
+        sceneReady.out.connectTo(branch.in);
         branch.condition.setValue(true, flowGraphContext); // will execute onTrue
 
-        const onTrue = new FlowGraphLogBlock();
+        const onTrue = new FlowGraphConsoleLogBlock();
         onTrue.message.setValue("onTrue", flowGraphContext);
-        branch.onTrue.connectTo(onTrue.onStart);
-        const onFalse = new FlowGraphLogBlock();
+        branch.onTrue.connectTo(onTrue.in);
+        const onFalse = new FlowGraphConsoleLogBlock();
         onFalse.message.setValue("onFalse", flowGraphContext);
-        branch.onFalse.connectTo(onFalse.onStart);
+        branch.onFalse.connectTo(onFalse.in);
 
         flowGraph.start();
         scene.onReadyObservable.notifyObservers(scene);
@@ -73,16 +73,16 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.addEventBlock(sceneReady);
 
         const doN = new FlowGraphDoNBlock();
-        sceneReady.onDone.connectTo(doN.onStart);
+        sceneReady.out.connectTo(doN.in);
 
-        const nIsDone = new FlowGraphLogBlock();
-        doN.onDone.connectTo(nIsDone.onStart);
-        doN.currentCount.connectTo(nIsDone.message);
+        const nIsDone = new FlowGraphConsoleLogBlock();
+        doN.out.connectTo(nIsDone.in);
+        doN.value.connectTo(nIsDone.message);
 
         flowGraph.start();
 
         const numCalls = 5;
-        doN.maxNumberOfExecutions.setValue(numCalls, flowGraphContext);
+        doN.n.setValue(numCalls, flowGraphContext);
 
         const extraCalls = 2;
 
@@ -98,17 +98,17 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.addEventBlock(sceneReady);
 
         const forLoop = new FlowGraphForLoopBlock();
-        sceneReady.onDone.connectTo(forLoop.onStart);
+        sceneReady.out.connectTo(forLoop.in);
         forLoop.startIndex.setValue(1, flowGraphContext);
         forLoop.endIndex.setValue(7, flowGraphContext);
         forLoop.step.setValue(2, flowGraphContext);
 
-        const loop = new FlowGraphLogBlock();
-        forLoop.onLoop.connectTo(loop.onStart);
+        const loop = new FlowGraphConsoleLogBlock();
+        forLoop.onLoop.connectTo(loop.in);
         forLoop.index.connectTo(loop.message);
 
-        const done = new FlowGraphLogBlock();
-        forLoop.onDone.connectTo(done.onStart);
+        const done = new FlowGraphConsoleLogBlock();
+        forLoop.out.connectTo(done.in);
         done.message.setValue("done", flowGraphContext);
 
         flowGraph.start();
@@ -126,17 +126,17 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.addEventBlock(sceneReady);
 
         const multiGate = new FlowGraphMultiGateBlock({ numberOutputFlows: 3, loop: true });
-        sceneReady.onDone.connectTo(multiGate.onStart);
+        sceneReady.out.connectTo(multiGate.in);
 
-        const customFunction1 = new FlowGraphLogBlock();
+        const customFunction1 = new FlowGraphConsoleLogBlock();
         customFunction1.message.setValue("custom1", flowGraphContext);
-        multiGate.outFlows[0].connectTo(customFunction1.onStart);
-        const customFunction2 = new FlowGraphLogBlock();
+        multiGate.outFlows[0].connectTo(customFunction1.in);
+        const customFunction2 = new FlowGraphConsoleLogBlock();
         customFunction2.message.setValue("custom2", flowGraphContext);
-        multiGate.outFlows[1].connectTo(customFunction2.onStart);
-        const customFunction3 = new FlowGraphLogBlock();
+        multiGate.outFlows[1].connectTo(customFunction2.in);
+        const customFunction3 = new FlowGraphConsoleLogBlock();
         customFunction3.message.setValue("custom3", flowGraphContext);
-        multiGate.outFlows[2].connectTo(customFunction3.onStart);
+        multiGate.outFlows[2].connectTo(customFunction3.in);
 
         flowGraph.start();
 
@@ -160,18 +160,18 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.addEventBlock(sceneReady);
 
         const switchBlock = new FlowGraphSwitchBlock({ cases: [1, 2, 3] });
-        sceneReady.onDone.connectTo(switchBlock.onStart);
+        sceneReady.out.connectTo(switchBlock.in);
         switchBlock.selection.setValue(2, flowGraphContext);
 
-        const customFunctionBlock1 = new FlowGraphLogBlock();
+        const customFunctionBlock1 = new FlowGraphConsoleLogBlock();
         customFunctionBlock1.message.setValue("custom1", flowGraphContext);
-        switchBlock.outputFlows[0].connectTo(customFunctionBlock1.onStart);
-        const customFunctionBlock2 = new FlowGraphLogBlock();
+        switchBlock.outputFlows[0].connectTo(customFunctionBlock1.in);
+        const customFunctionBlock2 = new FlowGraphConsoleLogBlock();
         customFunctionBlock2.message.setValue("custom2", flowGraphContext);
-        switchBlock.outputFlows[1].connectTo(customFunctionBlock2.onStart);
-        const customFunctionBlock3 = new FlowGraphLogBlock();
+        switchBlock.outputFlows[1].connectTo(customFunctionBlock2.in);
+        const customFunctionBlock3 = new FlowGraphConsoleLogBlock();
         customFunctionBlock3.message.setValue("custom3", flowGraphContext);
-        switchBlock.outputFlows[2].connectTo(customFunctionBlock3.onStart);
+        switchBlock.outputFlows[2].connectTo(customFunctionBlock3.in);
 
         flowGraph.start();
         scene.onReadyObservable.notifyObservers(scene);
@@ -188,16 +188,16 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.addEventBlock(sceneReady);
 
         const timer = new FlowGraphTimerBlock();
-        sceneReady.onDone.connectTo(timer.onStart);
+        sceneReady.out.connectTo(timer.in);
         timer.timeout.setValue(0, flowGraphContext);
 
-        const customFunctionBlock = new FlowGraphLogBlock();
-        customFunctionBlock.message.setValue("custom", flowGraphContext);
-        timer.onDone.connectTo(customFunctionBlock.onStart);
+        const consoleLogBlock = new FlowGraphConsoleLogBlock();
+        consoleLogBlock.message.setValue("custom", flowGraphContext);
+        timer.out.connectTo(consoleLogBlock.in);
 
-        const customFunctionBlock2 = new FlowGraphLogBlock();
-        customFunctionBlock2.message.setValue("custom2", flowGraphContext);
-        timer.onTimerDone.connectTo(customFunctionBlock2.onStart);
+        const consoleLog2Block = new FlowGraphConsoleLogBlock();
+        consoleLog2Block.message.setValue("custom2", flowGraphContext);
+        timer.done.connectTo(consoleLog2Block.in);
 
         flowGraph.start();
         // this will run the onReadyObservable and the onBeforeRenderObservable
@@ -212,14 +212,14 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.addEventBlock(sceneTick);
 
         const flipFlop = new FlowGraphFlipFlopBlock();
-        sceneTick.onDone.connectTo(flipFlop.onStart);
+        sceneTick.out.connectTo(flipFlop.in);
 
-        const onTrue = new FlowGraphLogBlock();
+        const onTrue = new FlowGraphConsoleLogBlock();
         onTrue.message.setValue("onTrue", flowGraphContext);
-        flipFlop.onOn.connectTo(onTrue.onStart);
-        const onFalse = new FlowGraphLogBlock();
+        flipFlop.onOn.connectTo(onTrue.in);
+        const onFalse = new FlowGraphConsoleLogBlock();
         onFalse.message.setValue("onFalse", flowGraphContext);
-        flipFlop.onOff.connectTo(onFalse.onStart);
+        flipFlop.onOff.connectTo(onFalse.in);
 
         flowGraph.start();
         scene.render();
@@ -236,10 +236,10 @@ describe("Flow Graph Execution Nodes", () => {
 
         const throttle = new FlowGraphThrottleBlock();
         throttle.duration.setValue(1000, flowGraphContext);
-        sceneTick.onDone.connectTo(throttle.onStart);
+        sceneTick.out.connectTo(throttle.in);
 
-        const customFunction = new FlowGraphLogBlock();
-        throttle.onDone.connectTo(customFunction.onStart);
+        const customFunction = new FlowGraphConsoleLogBlock();
+        throttle.out.connectTo(customFunction.in);
 
         flowGraph.start();
         scene.render();
@@ -258,22 +258,21 @@ describe("Flow Graph Execution Nodes", () => {
         const sceneReady = new FlowGraphSceneReadyEventBlock();
         flowGraph.addEventBlock(sceneReady);
 
-        flowGraphContext._userVariables = {
-            0: mesh0,
-            1: mesh1,
-        };
+        flowGraphContext.setVariable("0", mesh0);
+        flowGraphContext.setVariable("1", mesh1);
+
         const path = new FlowGraphPath("/{nodeIndex}/position");
 
         const setProperty = new FlowGraphSetPropertyBlock<Vector3>({
             path,
         });
-        sceneReady.onDone.connectTo(setProperty.onStart);
+        sceneReady.out.connectTo(setProperty.in);
 
         const nodeIndexInput = setProperty.getDataInput("nodeIndex");
         expect(nodeIndexInput).toBeDefined();
 
         nodeIndexInput!.setValue(1, flowGraphContext);
-        setProperty.value.setValue(new Vector3(1, 2, 3), flowGraphContext);
+        setProperty.a.setValue(new Vector3(1, 2, 3), flowGraphContext);
 
         flowGraph.start();
 

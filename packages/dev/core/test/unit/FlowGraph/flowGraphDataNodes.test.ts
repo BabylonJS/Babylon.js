@@ -1,14 +1,7 @@
 import type { Engine } from "core/Engines";
 import { NullEngine } from "core/Engines";
 import type { FlowGraph, FlowGraphContext } from "core/FlowGraph";
-import {
-    FlowGraphCoordinator,
-    FlowGraphGetVariableBlock,
-    FlowGraphSceneReadyEventBlock,
-    FlowGraphLogBlock,
-    FlowGraphAddNumberBlock,
-    FlowGraphRandomNumberBlock,
-} from "core/FlowGraph";
+import { FlowGraphCoordinator, FlowGraphGetVariableBlock, FlowGraphSceneReadyEventBlock, FlowGraphConsoleLogBlock, FlowGraphAddBlock, FlowGraphRandomBlock } from "core/FlowGraph";
 import { Scene } from "core/scene";
 
 describe("Flow Graph Data Nodes", () => {
@@ -38,18 +31,16 @@ describe("Flow Graph Data Nodes", () => {
         const sceneReady = new FlowGraphSceneReadyEventBlock({ name: "SceneReady" });
         flowGraph.addEventBlock(sceneReady);
 
-        const runCustomFunction = new FlowGraphLogBlock({ name: "Log" });
-        sceneReady.onDone.connectTo(runCustomFunction.onStart);
+        const consoleLog = new FlowGraphConsoleLogBlock({ name: "Log" });
+        sceneReady.out.connectTo(consoleLog.in);
 
-        const getVariable = new FlowGraphGetVariableBlock();
-        getVariable.variableName.setValue("testVariable", flowGraphContext);
+        const getVariable = new FlowGraphGetVariableBlock({ variableName: "testVariable" });
 
         flowGraphContext.setVariable("testVariable", 42);
-        runCustomFunction.message.connectTo(getVariable.output);
+        consoleLog.message.connectTo(getVariable.output);
 
         // Test in a different context
         const flowGraphContext2 = flowGraph.createContext();
-        getVariable.variableName.setValue("testVariable", flowGraphContext2);
         flowGraphContext2.setVariable("testVariable", 43);
 
         flowGraph.start();
@@ -63,20 +54,18 @@ describe("Flow Graph Data Nodes", () => {
         const sceneReady = new FlowGraphSceneReadyEventBlock({ name: "SceneReady" });
         flowGraph.addEventBlock(sceneReady);
 
-        const add = new FlowGraphAddNumberBlock();
+        const add = new FlowGraphAddBlock();
 
-        const rnd = new FlowGraphRandomNumberBlock();
-        rnd.leftInput.setValue(0, flowGraphContext);
-        rnd.rightInput.setValue(1, flowGraphContext);
+        const rnd = new FlowGraphRandomBlock();
 
         // add a number to itself, which should only trigger the random number block once and cache the result
-        add.leftInput.connectTo(rnd.output);
-        add.rightInput.connectTo(rnd.output);
+        add.a.connectTo(rnd.value);
+        add.b.connectTo(rnd.value);
 
         // log ther result
-        const log = new FlowGraphLogBlock();
-        log.message.connectTo(add.output);
-        sceneReady.onDone.connectTo(log.onStart);
+        const log = new FlowGraphConsoleLogBlock();
+        log.message.connectTo(add.value);
+        sceneReady.out.connectTo(log.in);
 
         flowGraph.start();
 
