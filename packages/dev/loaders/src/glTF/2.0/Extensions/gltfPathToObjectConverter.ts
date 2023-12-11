@@ -1,4 +1,4 @@
-import type { IObjectAccessor, IPathToObjectConverter } from "core/ObjectModel/objectModelInterfaces";
+import type { IObjectAccessor, IObjectAccessorContainer, IPathToObjectConverter } from "core/ObjectModel/objectModelInterfaces";
 import type { IGLTF } from "../glTFLoaderInterfaces";
 
 export class GLTFPathToObjectConverter implements IPathToObjectConverter {
@@ -6,6 +6,10 @@ export class GLTFPathToObjectConverter implements IPathToObjectConverter {
         public gltf: IGLTF,
         public infoTree: any
     ) {}
+
+    public beforeConvertPath(path: string): string {
+        return path;
+    }
 
     /**
      * The pointer string is represented by a [JSON pointer](https://datatracker.ietf.org/doc/html/rfc6901).
@@ -24,7 +28,8 @@ export class GLTFPathToObjectConverter implements IPathToObjectConverter {
      *  - "/materials/2/pbrMetallicRoughness/baseColorFactor"
      *  - "/materials/2/extensions/KHR_materials_emissive_strength/emissiveStrength"
      */
-    convert(path: string): IObjectAccessor | undefined {
+    convert(prePath: string): IObjectAccessorContainer | undefined {
+        const path = this.beforeConvertPath(prePath);
         let objectTree: any = this.gltf;
         let infoTree: any = this.infoTree;
         let target: any = undefined;
@@ -56,9 +61,7 @@ export class GLTFPathToObjectConverter implements IPathToObjectConverter {
 
         return {
             object: target,
-            get() {
-                return infoTree;
-            },
+            accessor: infoTree as IObjectAccessor,
         };
     }
 }

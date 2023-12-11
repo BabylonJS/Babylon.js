@@ -5,6 +5,8 @@ import type { ISerializedFlowGraph, ISerializedFlowGraphBlock, ISerializedFlowGr
 import { RandomGUID } from "core/Misc/guid";
 import { gltfToFlowGraphTypeMap, gltfTypeToBabylonType } from "./interactivityUtils";
 import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
+import { InteractivityPathToObjectConverter } from "./interactivityPathToObjectConverter";
+import type { IGLTF } from "../glTFLoaderInterfaces";
 
 function convertValueWithType(configObject: IKHRInteractivity_Configuration, definition: IKHRInteractivity, context: string) {
     if (configObject.type !== undefined) {
@@ -27,7 +29,7 @@ function convertValueWithType(configObject: IKHRInteractivity_Configuration, def
     }
 }
 
-function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKHRInteractivity, id: string): IFlowGraphBlockConfiguration {
+function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKHRInteractivity, id: string, gltf: IGLTF): IFlowGraphBlockConfiguration {
     const converted: IFlowGraphBlockConfiguration = {};
     const configurationList: IKHRInteractivity_Configuration[] = gltfBlock.configuration ?? [];
     for (const configObject of configurationList) {
@@ -47,10 +49,9 @@ function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKH
         } else if (configObject.id === "path") {
             // Convert from a GLTF path to a reference to the Babylon.js object
             const pathValue = configObject.value as string;
-            converted.path = {
-                path: pathValue,
-                className: "FGPath",
-            };
+            converted.path = pathValue;
+            const pathAccessor = new InteractivityPathToObjectConverter(gltf);
+            converted.pathAccessor = pathAccessor;
         } else {
             converted[configObject.id] = convertValueWithType(configObject, definition, `/extensions/KHR_interactivity/nodes/${id}`);
         }
@@ -58,13 +59,13 @@ function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKH
     return converted;
 }
 
-function convertBlock(id: number, gltfBlock: IKHRInteractivity_Node, definition: IKHRInteractivity): ISerializedFlowGraphBlock {
+function convertBlock(id: number, gltfBlock: IKHRInteractivity_Node, definition: IKHRInteractivity, gltf: IGLTF): ISerializedFlowGraphBlock {
     const className = gltfToFlowGraphTypeMap[gltfBlock.type];
     if (!className) {
         throw new Error(`/extensions/KHR_interactivity/nodes/${id}: Unknown block type: ${gltfBlock.type}`);
     }
     const uniqueId = id.toString();
-    const config = convertConfiguration(gltfBlock, definition, uniqueId);
+    const config = convertConfiguration(gltfBlock, definition, uniqueId, gltf);
     const metadata = gltfBlock.metadata;
     const dataInputs: ISerializedFlowGraphConnection[] = [];
     const dataOutputs: ISerializedFlowGraphConnection[] = [];
@@ -88,7 +89,7 @@ function convertBlock(id: number, gltfBlock: IKHRInteractivity_Node, definition:
  * @param gltf the interactivity data
  * @returns a serialized flow graph
  */
-export function convertGLTFToSerializedFlowGraph(gltf: IKHRInteractivity): ISerializedFlowGraph {
+export function convertGLTFToSerializedFlowGraph(gltf: IKHRInteractivity, gltfDefinition: IGLTF): ISerializedFlowGraph {
     // create an empty serialized context to store the values of the connections
     const context: ISerializedFlowGraphContext = {
         uniqueId: RandomGUID(),
@@ -102,7 +103,7 @@ export function convertGLTFToSerializedFlowGraph(gltf: IKHRInteractivity): ISeri
 
     for (let i = 0; i < gltf.nodes.length; i++) {
         const gltfBlock = gltf.nodes[i];
-        const flowGraphJsonBlock = convertBlock(i, gltfBlock, gltf);
+        const flowGraphJsonBlock = convertBlock(i, gltfBlock, gltf, gltfDefinition);
         flowGraphJsonBlocks.push(flowGraphJsonBlock);
     }
 

@@ -75,7 +75,7 @@ import { BoundingInfo } from "core/Culling/boundingInfo";
 import type { AssetContainer } from "core/assetContainer";
 import type { AnimationPropertyInfo } from "./glTFLoaderAnimation";
 import { nodeAnimationData } from "./glTFLoaderAnimation";
-import type { IObjectAccessor } from "core/ObjectModel/objectModelInterfaces";
+import type { IObjectAccessorContainer } from "core/ObjectModel/objectModelInterfaces";
 
 interface TypedArrayLike extends ArrayBufferView {
     readonly length: number;
@@ -1648,9 +1648,9 @@ export class GLTFLoader implements IGLTFLoader {
             }
         }
 
-        const targetInfo: IAnimationTargetInfo = {
-            target: targetNode,
-            properties: properties,
+        const targetInfo: IObjectAccessorContainer = {
+            object: targetNode,
+            accessor: properties as any,
         };
 
         return this._loadAnimationChannelFromTargetInfoAsync(context, animationContext, animation, channel, targetInfo, onLoad);
@@ -1672,7 +1672,7 @@ export class GLTFLoader implements IGLTFLoader {
         animationContext: string,
         animation: IAnimation,
         channel: IAnimationChannel,
-        targetInfo: IObjectAccessor,
+        targetInfo: IObjectAccessorContainer,
         onLoad: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void
     ): Promise<void> {
         const fps = this.parent.targetFps;
@@ -1683,7 +1683,7 @@ export class GLTFLoader implements IGLTFLoader {
             let numAnimations = 0;
 
             const target = targetInfo.object;
-            const propertyInfos = targetInfo.get();
+            const propertyInfos = targetInfo.accessor as any;
             // Extract the corresponding values from the read value.
             // GLTF values may be dispatched to several Babylon properties.
             // For example, baseColorFactor [`r`, `g`, `b`, `a`] is dispatched to
