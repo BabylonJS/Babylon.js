@@ -72,7 +72,6 @@ import {
 import type { Engine } from "core/Engines/engine";
 import type { IStencilState } from "core/States/IStencilState";
 import { WebGL2ShaderProcessor } from "core/Engines/WebGL/webGL2ShaderProcessors";
-import { getInternalTextureWebGLAdapter } from "./engine.adapterHelpers";
 
 const _TempClearColorUint32 = new Uint32Array(4);
 const _TempClearColorInt32 = new Int32Array(4);
@@ -4846,11 +4845,7 @@ export function wrapWebGLTexture(
 ): InternalTexture {
     const fes = engineState as WebGLEngineStateFull;
     const hardwareTexture = new WebGLHardwareTexture(texture, fes._gl);
-    const internalTexture = new InternalTexture(
-        augmentEngineState(engineState, internalTextureWebGLAdapter),
-        InternalTextureSource.Unknown,
-        true
-    );
+    const internalTexture = new InternalTexture(augmentEngineState(engineState, internalTextureWebGLAdapter), InternalTextureSource.Unknown, true);
     internalTexture._hardwareTexture = hardwareTexture;
     internalTexture._hardwareTexture = hardwareTexture;
     internalTexture.baseWidth = width;
