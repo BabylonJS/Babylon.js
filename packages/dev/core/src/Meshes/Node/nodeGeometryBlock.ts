@@ -7,6 +7,7 @@ import type { NodeGeometryBuildState } from "./nodeGeometryBuildState";
 import { Observable } from "../../Misc/observable";
 import { PrecisionDate } from "../../Misc/precisionDate";
 import type { Nullable } from "../../types";
+import type { GeometryInputBlock } from "./Blocks/geometryInputBlock";
 
 /**
  * Defines a block that can be used inside a node based geometry
@@ -518,7 +519,14 @@ export class NodeGeometryBlock {
         if (this.comments) {
             codeString += `// ${this.comments}\n`;
         }
-        codeString += `var ${this._codeVariableName} = new BABYLON.${this.getClassName()}("${this.name}");\n`;
+        const className = this.getClassName();
+        if (className === "GeometryInputBlock") {
+            const block = this as unknown as GeometryInputBlock;
+            const blockType = block.type;
+            codeString += `var ${this._codeVariableName} = new BABYLON.GeometryInputBlock("${this.name}", ${blockType});\n`;
+        } else {
+            codeString += `var ${this._codeVariableName} = new BABYLON.${className}("${this.name}");\n`;
+        }
 
         // Properties
         codeString += this._dumpPropertiesCode();

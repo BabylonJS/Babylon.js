@@ -21,6 +21,8 @@ export class InputTextArea extends InputText {
     private _textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
     private _textVerticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
 
+    private _prevText: string = this.text;
+
     private _lines: any[];
     private _lineSpacing: ValueAndUnit = new ValueAndUnit(0);
     private _outlineWidth: number = 0;
@@ -220,7 +222,7 @@ export class InputTextArea extends InputText {
                     this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
                     this._cursorInfo.globalStartIndex--;
                 }
-
+                this._prevText = this._textWrapper.text;
                 this._textWrapper.removePart(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex);
 
                 this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
@@ -238,7 +240,7 @@ export class InputTextArea extends InputText {
                 if (!this._isTextHighlightOn && this._cursorInfo.globalEndIndex < this.text.length) {
                     this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex + 1;
                 }
-
+                this._prevText = this._textWrapper.text;
                 this._textWrapper.removePart(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex);
 
                 this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
@@ -253,6 +255,7 @@ export class InputTextArea extends InputText {
                 this._textHasChanged();
                 break;
             case "Enter": // RETURN
+                this._prevText = this._textWrapper.text;
                 this._textWrapper.removePart(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex, "\n");
                 this._cursorInfo.globalStartIndex++;
                 this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
@@ -520,7 +523,7 @@ export class InputTextArea extends InputText {
             if (this._addKey) {
                 this._isTextHighlightOn = false;
                 this._blinkIsEven = false;
-
+                this._prevText = this._textWrapper.text;
                 this._textWrapper.removePart(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex, key);
                 this._cursorInfo.globalStartIndex += key.length;
                 this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
@@ -573,7 +576,7 @@ export class InputTextArea extends InputText {
 
     protected _breakLines(refWidth: number, context: ICanvasRenderingContext): object[] {
         const lines: { text: string; width: number; lineEnding: string }[] = [];
-        const _lines = this.text.split("\n");
+        const _lines = (this.text || this.placeholderText).split("\n");
 
         if (this.clipContent) {
             for (const _line of _lines) {
@@ -609,12 +612,8 @@ export class InputTextArea extends InputText {
         let text = this._beforeRenderText(this._textWrapper).text;
 
         // placeholder conditions and color setting
-        if (!this._isFocused && !this.text && this._placeholderText) {
+        if (!this.text && this._placeholderText) {
             text = this._placeholderText;
-
-            if (this._placeholderColor) {
-                context.fillStyle = this._placeholderColor;
-            }
         }
 
         // measures the textlength -> this.measure.width
@@ -668,6 +667,17 @@ export class InputTextArea extends InputText {
                 }
             }
         }
+    }
+
+    protected _textHasChanged() {
+        if (!this._prevText && this._textWrapper.text && this.placeholderText) {
+            this._cursorInfo.currentLineIndex = 0;
+            this._cursorInfo.globalStartIndex = 1;
+            this._cursorInfo.globalEndIndex = 1;
+            this._cursorInfo.relativeStartIndex = 1;
+            this._cursorInfo.relativeEndIndex = 1;
+        }
+        super._textHasChanged();
     }
 
     private _computeScroll() {
@@ -767,7 +777,7 @@ export class InputTextArea extends InputText {
         } catch {} //pass
 
         this._host.clipboardData = this._highlightedText;
-
+        this._prevText = this._textWrapper.text;
         this._textWrapper.removePart(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex);
 
         this._textHasChanged();
@@ -789,7 +799,7 @@ export class InputTextArea extends InputText {
         }
 
         this._isTextHighlightOn = false;
-
+        this._prevText = this._textWrapper.text;
         this._textWrapper.removePart(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex, data);
 
         const deltaIndex = data.length - (this._cursorInfo.globalEndIndex - this._cursorInfo.globalStartIndex);
@@ -859,7 +869,9 @@ export class InputTextArea extends InputText {
         context.save();
         context.beginPath();
         context.fillStyle = this.fontStyle;
-
+        if (!this._textWrapper.text && this.placeholderText) {
+            context.fillStyle = this._placeholderColor;
+        }
         // here we define the visible reactangle to clip it in next line
         context.rect(this._clipTextLeft, this._clipTextTop, this._availableWidth + 2, this._availableHeight + 2);
         context.clip();
@@ -1070,94 +1082,88 @@ export class InputTextArea extends InputText {
             return;
         }
 
-        if (this._clickedCoordinateX && this._clickedCoordinateY) {
-            if (!this._isTextHighlightOn) {
-                this._cursorInfo = {
-                    globalStartIndex: 0,
-                    globalEndIndex: 0,
-                    relativeStartIndex: 0,
-                    relativeEndIndex: 0,
-                    currentLineIndex: 0,
-                };
-            }
+        if (!this._textWrapper.text && this.placeholderText) {
+            this._cursorInfo.currentLineIndex = 0;
+            this._cursorInfo.globalStartIndex = 0;
+            this._cursorInfo.globalEndIndex = 0;
+            this._cursorInfo.relativeStartIndex = 0;
+            this._cursorInfo.relativeEndIndex = 0;
+        } else {
+            if (this._clickedCoordinateX && this._clickedCoordinateY) {
+                if (!this._isTextHighlightOn) {
+                    this._cursorInfo = {
+                        globalStartIndex: 0,
+                        globalEndIndex: 0,
+                        relativeStartIndex: 0,
+                        relativeEndIndex: 0,
+                        currentLineIndex: 0,
+                    };
+                }
 
-            let globalIndex = 0;
-            let relativeIndex = 0;
+                let globalIndex = 0;
+                let relativeIndex = 0;
 
-            const lastClickedCoordinateY = this._clickedCoordinateY - (this._scrollTop as number);
+                const lastClickedCoordinateY = this._clickedCoordinateY - (this._scrollTop as number);
 
-            const relativeCoordinateY = Math.floor(lastClickedCoordinateY / this._fontOffset.height);
-            this._cursorInfo.currentLineIndex = Math.min(Math.max(relativeCoordinateY, 0), this._lines.length - 1);
+                const relativeCoordinateY = Math.floor(lastClickedCoordinateY / this._fontOffset.height);
+                this._cursorInfo.currentLineIndex = Math.min(Math.max(relativeCoordinateY, 0), this._lines.length - 1);
 
-            let currentSize = 0;
+                let currentSize = 0;
 
-            const relativeXPosition = this._clickedCoordinateX - (this._scrollLeft ?? 0);
+                const relativeXPosition = this._clickedCoordinateX - (this._scrollLeft ?? 0);
 
-            let previousDist = 0;
+                let previousDist = 0;
 
-            for (let index = 0; index < this._cursorInfo.currentLineIndex; index++) {
-                const line = this._lines[index];
-                globalIndex += line.text.length + line.lineEnding.length;
-            }
+                for (let index = 0; index < this._cursorInfo.currentLineIndex; index++) {
+                    const line = this._lines[index];
+                    globalIndex += line.text.length + line.lineEnding.length;
+                }
 
-            while (currentSize < relativeXPosition && this._lines[this._cursorInfo.currentLineIndex].text.length > relativeIndex) {
-                relativeIndex++;
-                previousDist = Math.abs(relativeXPosition - currentSize);
-                currentSize = this._contextForBreakLines.measureText(this._lines[this._cursorInfo.currentLineIndex].text.substr(0, relativeIndex)).width;
-            }
+                while (currentSize < relativeXPosition && this._lines[this._cursorInfo.currentLineIndex].text.length > relativeIndex) {
+                    relativeIndex++;
+                    previousDist = Math.abs(relativeXPosition - currentSize);
+                    currentSize = this._contextForBreakLines.measureText(this._lines[this._cursorInfo.currentLineIndex].text.substr(0, relativeIndex)).width;
+                }
 
-            // Find closest move
-            if (Math.abs(relativeXPosition - currentSize) > previousDist && relativeIndex > 0) {
-                relativeIndex--;
-            }
+                // Find closest move
+                if (Math.abs(relativeXPosition - currentSize) > previousDist && relativeIndex > 0) {
+                    relativeIndex--;
+                }
 
-            globalIndex += relativeIndex;
+                globalIndex += relativeIndex;
 
-            if (!this._isTextHighlightOn) {
-                this._cursorInfo.globalStartIndex = globalIndex;
-                this._cursorInfo.relativeStartIndex = relativeIndex;
-                this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
-                this._cursorInfo.relativeEndIndex = this._cursorInfo.relativeStartIndex;
-            } else {
-                if (globalIndex < this._highlightCursorInfo.initialStartIndex) {
+                if (!this._isTextHighlightOn) {
                     this._cursorInfo.globalStartIndex = globalIndex;
                     this._cursorInfo.relativeStartIndex = relativeIndex;
-                    this._cursorInfo.globalEndIndex = this._highlightCursorInfo.initialStartIndex;
-                    this._cursorInfo.relativeEndIndex = this._highlightCursorInfo.initialRelativeStartIndex;
+                    this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
+                    this._cursorInfo.relativeEndIndex = this._cursorInfo.relativeStartIndex;
                 } else {
-                    this._cursorInfo.globalStartIndex = this._highlightCursorInfo.initialStartIndex;
-                    this._cursorInfo.relativeStartIndex = this._highlightCursorInfo.initialRelativeStartIndex;
-                    this._cursorInfo.globalEndIndex = globalIndex;
-                    this._cursorInfo.relativeEndIndex = relativeIndex;
+                    if (globalIndex < this._highlightCursorInfo.initialStartIndex) {
+                        this._cursorInfo.globalStartIndex = globalIndex;
+                        this._cursorInfo.relativeStartIndex = relativeIndex;
+                        this._cursorInfo.globalEndIndex = this._highlightCursorInfo.initialStartIndex;
+                        this._cursorInfo.relativeEndIndex = this._highlightCursorInfo.initialRelativeStartIndex;
+                    } else {
+                        this._cursorInfo.globalStartIndex = this._highlightCursorInfo.initialStartIndex;
+                        this._cursorInfo.relativeStartIndex = this._highlightCursorInfo.initialRelativeStartIndex;
+                        this._cursorInfo.globalEndIndex = globalIndex;
+                        this._cursorInfo.relativeEndIndex = relativeIndex;
+                    }
                 }
-            }
 
-            // Avoid the caret during highlighting
-            this._blinkIsEven = this._isTextHighlightOn;
-            this._clickedCoordinateX = null;
-            this._clickedCoordinateY = null;
-        } else {
-            // Standard behavior same as Current line is at least above the initial highlight index
-            this._cursorInfo.relativeStartIndex = 0;
-            this._cursorInfo.currentLineIndex = 0;
+                // Avoid the caret during highlighting
+                this._blinkIsEven = this._isTextHighlightOn;
+                this._clickedCoordinateX = null;
+                this._clickedCoordinateY = null;
+            } else {
+                // Standard behavior same as Current line is at least above the initial highlight index
+                this._cursorInfo.relativeStartIndex = 0;
+                this._cursorInfo.currentLineIndex = 0;
 
-            let lineLength = this._lines[this._cursorInfo.currentLineIndex].text.length + this._lines[this._cursorInfo.currentLineIndex].lineEnding.length;
-            let tmpLength = 0;
+                let lineLength = this._lines[this._cursorInfo.currentLineIndex].text.length + this._lines[this._cursorInfo.currentLineIndex].lineEnding.length;
+                let tmpLength = 0;
 
-            while (tmpLength + lineLength <= this._cursorInfo.globalStartIndex) {
-                tmpLength += lineLength;
-
-                if (this._cursorInfo.currentLineIndex < this._lines.length - 1) {
-                    this._cursorInfo.currentLineIndex++;
-                    lineLength = this._lines[this._cursorInfo.currentLineIndex].text.length + this._lines[this._cursorInfo.currentLineIndex].lineEnding.length;
-                }
-            }
-
-            this._cursorInfo.relativeStartIndex = this._cursorInfo.globalStartIndex - tmpLength;
-
-            if (this._highlightCursorInfo.initialStartIndex !== -1 && this._cursorInfo.globalStartIndex >= this._highlightCursorInfo.initialStartIndex) {
-                // Current line is at least below the initial highlight index
-                while (tmpLength + lineLength <= this._cursorInfo.globalEndIndex) {
+                while (tmpLength + lineLength <= this._cursorInfo.globalStartIndex) {
                     tmpLength += lineLength;
 
                     if (this._cursorInfo.currentLineIndex < this._lines.length - 1) {
@@ -1166,10 +1172,24 @@ export class InputTextArea extends InputText {
                     }
                 }
 
-                this._cursorInfo.relativeEndIndex = this._cursorInfo.globalEndIndex - tmpLength;
-            } else if (!this._isTextHighlightOn) {
-                this._cursorInfo.relativeEndIndex = this._cursorInfo.relativeStartIndex;
-                this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
+                this._cursorInfo.relativeStartIndex = this._cursorInfo.globalStartIndex - tmpLength;
+
+                if (this._highlightCursorInfo.initialStartIndex !== -1 && this._cursorInfo.globalStartIndex >= this._highlightCursorInfo.initialStartIndex) {
+                    // Current line is at least below the initial highlight index
+                    while (tmpLength + lineLength <= this._cursorInfo.globalEndIndex) {
+                        tmpLength += lineLength;
+
+                        if (this._cursorInfo.currentLineIndex < this._lines.length - 1) {
+                            this._cursorInfo.currentLineIndex++;
+                            lineLength = this._lines[this._cursorInfo.currentLineIndex].text.length + this._lines[this._cursorInfo.currentLineIndex].lineEnding.length;
+                        }
+                    }
+
+                    this._cursorInfo.relativeEndIndex = this._cursorInfo.globalEndIndex - tmpLength;
+                } else if (!this._isTextHighlightOn) {
+                    this._cursorInfo.relativeEndIndex = this._cursorInfo.relativeStartIndex;
+                    this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
+                }
             }
         }
     }

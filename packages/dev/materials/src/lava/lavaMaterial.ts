@@ -87,6 +87,7 @@ class LavaMaterialDefines extends MaterialDefines {
     public UNLIT = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
+    public LOGARITHMICDEPTH = false;
 
     constructor() {
         super();
@@ -193,7 +194,7 @@ export class LavaMaterial extends PushMaterial {
         }
 
         // Misc.
-        MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
+        MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
         // Lights
         defines._needNormals = true;
@@ -264,6 +265,7 @@ export class LavaMaterial extends PushMaterial {
                 "vDiffuseInfos",
                 "mBones",
                 "diffuseMatrix",
+                "logarithmicDepthConstant",
                 "time",
                 "speed",
                 "movingSpeed",
@@ -358,6 +360,11 @@ export class LavaMaterial extends PushMaterial {
             // Point size
             if (this.pointsCloud) {
                 this._activeEffect.setFloat("pointSize", this.pointSize);
+            }
+
+            // Log. depth
+            if (this._useLogarithmicDepth) {
+                MaterialHelper.BindLogDepth(defines, effect, scene);
             }
 
             scene.bindEyePosition(effect);

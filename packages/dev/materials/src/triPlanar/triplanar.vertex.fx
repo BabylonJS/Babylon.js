@@ -50,6 +50,7 @@ varying vec4 vColor;
 
 #include<clipPlaneVertexDeclaration>
 
+#include<logDepthDeclaration>
 #include<fogVertexDeclaration>
 #include<__decl__lightFragment>[0..maxSimultaneousLights]
 
@@ -117,6 +118,8 @@ void main(void)
 
 	// Clip plane
 	#include<clipPlaneVertex>
+
+	#include<logDepthVertex>
 
 	// Fog
 	#include<fogVertex>

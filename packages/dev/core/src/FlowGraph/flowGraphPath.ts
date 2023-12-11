@@ -11,6 +11,17 @@ interface IPathPart {
     replacedValue?: string;
     separator: string;
 }
+
+/**
+ * @experimental
+ * An extension to add new functionality to path resolution
+ */
+export interface IPathExtension {
+    shouldProcess(path: FlowGraphPath): boolean;
+    processGet(path: FlowGraphPath, context: FlowGraphContext): any;
+    processSet(path: FlowGraphPath, context: FlowGraphContext, value: any): void;
+}
+
 /*
  * @experimental
  * This class represents a path of type /x/{y}/z/.../w that is evaluated
@@ -18,6 +29,11 @@ interface IPathPart {
  * is a special template string that is replaced during runtime.
  */
 export class FlowGraphPath {
+    /**
+     * Extensions that can be used to extend the functionality of the path.
+     */
+    static Extensions: IPathExtension[] = [];
+
     private _path: string;
     private _templateSubstitutions: {
         [key: string]: number;
@@ -93,7 +109,11 @@ export class FlowGraphPath {
         }
     }
 
-    private _getFinalPath() {
+    /**
+     * Gets the final path after all template strings have been substituted.
+     * @returns a string representing the final path.
+     */
+    public getFinalPath() {
         let finalPath = "";
         for (const pathPart of this._pathParts) {
             finalPath += pathPart.separator;
@@ -116,14 +136,14 @@ export class FlowGraphPath {
 
         const entityChain = [];
         const splitPath = [];
-        let currentTarget = context._userVariables;
+        let currentTarget = context.userVariables;
         for (const pathPart of this._pathParts) {
             if (currentTarget === undefined) {
-                throw new Error(`Could not find path ${this._getFinalPath()} in target context`);
+                throw new Error(`Could not find path ${this.getFinalPath()} in target context`);
             }
             const value = pathPart.isTemplate ? pathPart.replacedValue : pathPart.value;
             if (!value) {
-                throw new Error(`Invalid path ${this._getFinalPath()}`);
+                throw new Error(`Invalid path ${this.getFinalPath()}`);
             }
             currentTarget = currentTarget[value];
             entityChain.push(currentTarget);
@@ -134,11 +154,22 @@ export class FlowGraphPath {
     }
 
     getProperty(context: FlowGraphContext): any {
+        for (const extension of FlowGraphPath.Extensions) {
+            if (extension.shouldProcess(this)) {
+                return extension.processGet(this, context);
+            }
+        }
         const { entityChain } = this._evaluatePath(context);
         return entityChain[entityChain.length - 1];
     }
 
     setProperty(context: FlowGraphContext, value: any) {
+        for (const extension of FlowGraphPath.Extensions) {
+            if (extension.shouldProcess(this)) {
+                extension.processSet(this, context, value);
+                return;
+            }
+        }
         const { entityChain, splitPath } = this._evaluatePath(context);
         const target = entityChain[entityChain.length - 2];
         const property = splitPath[splitPath.length - 1];
@@ -146,7 +177,7 @@ export class FlowGraphPath {
     }
 
     getClassName() {
-        return "FGPath";
+        return FlowGraphPath.ClassName;
     }
 
     serialize(serializationObject: any = {}) {
@@ -155,8 +186,10 @@ export class FlowGraphPath {
         return serializationObject;
     }
 
-    Parse(serializationObject: any) {
+    static Parse(serializationObject: any) {
         return new FlowGraphPath(serializationObject.path);
     }
+
+    public static ClassName = "FGPath";
 }
-RegisterClass("FGPath", FlowGraphPath);
+RegisterClass(FlowGraphPath.ClassName, FlowGraphPath);

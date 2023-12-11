@@ -16,13 +16,17 @@ describe("Flow Graph Utilities Test", () => {
     });
 
     it("Flow Graph Valid Path", () => {
-        context._userVariables = {
-            x: {
-                1: {
-                    z: 1,
-                },
+        // x: {
+        //     1: {
+        //         z: 1,
+        //     },
+        // },
+        const object = {
+            1: {
+                z: 1,
             },
         };
+        context.setVariable("x", object);
 
         const path = new FlowGraphPath("/x/{y}/z");
 
@@ -35,7 +39,7 @@ describe("Flow Graph Utilities Test", () => {
         expect(path.getProperty(context)).toBe(1);
 
         path.setProperty(context, 2);
-        expect(context._userVariables.x[1].z).toBe(2);
+        expect(context.userVariables.x[1].z).toBe(2);
         expect(path.getProperty(context)).toBe(2);
 
         const path2 = new FlowGraphPath("/x/1.z"); // the path can also be separated by dots
@@ -43,13 +47,17 @@ describe("Flow Graph Utilities Test", () => {
     });
 
     it("Flow Graph Invalid Path", () => {
-        context._userVariables = {
-            a: {
-                k: {
-                    c: 1,
-                },
+        // a: {
+        //     k: {
+        //         c: 1,
+        //     },
+        // },
+        const obj = {
+            k: {
+                c: 1,
             },
         };
+        context.setVariable("a", obj);
 
         const path = new FlowGraphPath("/a/b/c");
 

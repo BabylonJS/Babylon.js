@@ -30,7 +30,9 @@ export class FlowGraphSceneTickEventBlock extends FlowGraphEventBlock {
     }
 
     public getClassName(): string {
-        return "FGSceneTickEventBlock";
+        return FlowGraphSceneTickEventBlock.ClassName;
     }
+
+    public static ClassName = "FGSceneTickEventBlock";
 }
-RegisterClass("FGSceneTickEventBlock", FlowGraphSceneTickEventBlock);
+RegisterClass(FlowGraphSceneTickEventBlock.ClassName, FlowGraphSceneTickEventBlock);

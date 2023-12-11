@@ -45,6 +45,7 @@ class SimpleMaterialDefines extends MaterialDefines {
     public INSTANCESCOLOR = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
+    public LOGARITHMICDEPTH = false;
 
     constructor() {
         super();
@@ -124,7 +125,7 @@ export class SimpleMaterial extends PushMaterial {
         }
 
         // Misc.
-        MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
+        MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
         // Lights
         defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
@@ -191,6 +192,7 @@ export class SimpleMaterial extends PushMaterial {
                 "vDiffuseInfos",
                 "mBones",
                 "diffuseMatrix",
+                "logarithmicDepthConstant",
             ];
             const samplers = ["diffuseSampler"];
             const uniformBuffers: string[] = [];
@@ -270,6 +272,11 @@ export class SimpleMaterial extends PushMaterial {
             // Point size
             if (this.pointsCloud) {
                 this._activeEffect.setFloat("pointSize", this.pointSize);
+            }
+
+            // Log. depth
+            if (this._useLogarithmicDepth) {
+                MaterialHelper.BindLogDepth(defines, effect, scene);
             }
 
             scene.bindEyePosition(effect);

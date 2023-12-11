@@ -10,3 +10,4 @@ export * from "./flowGraphCounterBlock";
 export * from "./flowGraphWhileLoopBlock";
 export * from "./flowGraphDebounceBlock";
 export * from "./flowGraphFlipFlopBlock";
+export * from "./flowGraphSequenceBlock";

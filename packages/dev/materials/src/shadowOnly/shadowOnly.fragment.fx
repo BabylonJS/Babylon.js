@@ -23,6 +23,12 @@ varying vec3 vNormalW;
 
 #include<clipPlaneFragmentDeclaration>
 
+#ifdef LOGARITHMICDEPTH
+#extension GL_EXT_frag_depth : enable
+#endif
+
+#include<logDepthDeclaration>
+
 // Fog
 #include<fogFragmentDeclaration>
 
@@ -57,6 +63,7 @@ void main(void) {
 	// Composition
 	vec4 color = vec4(shadowColor, (1.0 - clamp(shadow, 0., 1.)) * alpha);
 
+#include<logDepthFragment>
 #include<fogFragment>
 
 	gl_FragColor = color;

@@ -3107,13 +3107,6 @@ export class ThinEngine {
     /**
      * @internal
      */
-    public _getRGBAMultiSampleBufferFormat(type: number, format = Constants.TEXTUREFORMAT_RGBA): number {
-        return _getRGBAMultiSampleBufferFormat(this._engineState, type, format);
-    }
-
-    /**
-     * @internal
-     */
     public _loadFile(
         url: string,
         onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,

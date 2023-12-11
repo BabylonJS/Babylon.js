@@ -1500,9 +1500,23 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                     const targetMorph = this.morphTargetManager.getTarget(targetCount);
                     const influence = targetMorph.influence;
                     if (influence > 0.0) {
-                        const morphTargetPositions = targetMorph.getPositions();
-                        if (morphTargetPositions) {
-                            data[vertexCount] += (morphTargetPositions[vertexCount] - data[vertexCount]) * influence;
+                        let morphTargetData: Nullable<FloatArray> = null;
+                        switch (kind) {
+                            case VertexBuffer.PositionKind:
+                                morphTargetData = targetMorph.getPositions();
+                                break;
+                            case VertexBuffer.NormalKind:
+                                morphTargetData = targetMorph.getNormals();
+                                break;
+                            case VertexBuffer.TangentKind:
+                                morphTargetData = targetMorph.getTangents();
+                                break;
+                            case VertexBuffer.UVKind:
+                                morphTargetData = targetMorph.getUVs();
+                                break;
+                        }
+                        if (morphTargetData) {
+                            data[vertexCount] += (morphTargetData[vertexCount] - data[vertexCount]) * influence;
                         }
                     }
                 }

@@ -4,10 +4,14 @@ import type { FlowGraphContext } from "./flowGraphContext";
 import { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import type { RichType } from "./flowGraphRichTypes";
 import { Tools } from "core/Misc/tools";
+import type { ISerializedFlowGraphBlock } from "./typeDefinitions";
 import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
+import { defaultValueParseFunction, defaultValueSerializationFunction } from "./serialization";
+import type { Scene } from "../scene";
 
 export interface IFlowGraphBlockConfiguration {
     name?: string;
+    [extraPropertyKey: string]: any;
 }
 
 /**
@@ -33,6 +37,8 @@ export class FlowGraphBlock {
      * The data outputs of the block.
      */
     public dataOutputs: FlowGraphDataConnection<any>[];
+
+    public metadata: any;
 
     /** Constructor is protected so only subclasses can be instantiated */
     protected constructor(public config?: IFlowGraphBlockConfiguration) {
@@ -69,7 +75,11 @@ export class FlowGraphBlock {
         return this.dataInputs.find((i) => i.name === name);
     }
 
-    public serialize(serializationObject: any = {}) {
+    public getDataOutput(name: string): FlowGraphDataConnection<any> | undefined {
+        return this.dataOutputs.find((i) => i.name === name);
+    }
+
+    public serialize(serializationObject: any = {}, _valueSerializeFunction: (key: string, value: any, serializationObject: any) => any = defaultValueSerializationFunction) {
         serializationObject.uniqueId = this.uniqueId;
         serializationObject.config = {};
         if (this.config) {
@@ -94,34 +104,53 @@ export class FlowGraphBlock {
         return "FGBlock";
     }
 
-    public static Parse(serializationObject: any): FlowGraphBlock {
+    public static Parse(
+        serializationObject: ISerializedFlowGraphBlock,
+        scene: Scene,
+        valueParseFunction: (key: string, serializationObject: any, scene: Scene) => any = defaultValueParseFunction
+    ): FlowGraphBlock {
         const classType = Tools.Instantiate(serializationObject.className);
         const parsedConfig: any = {};
         if (serializationObject.config) {
             for (const key in serializationObject.config) {
-                const value = serializationObject.config[key];
-                if (value && value.className) {
-                    const valueClassType = Tools.Instantiate(value.className);
-                    parsedConfig[key] = valueClassType.prototype.Parse(value);
-                } else {
-                    parsedConfig[key] = value;
-                }
+                parsedConfig[key] = valueParseFunction(key, serializationObject.config, scene);
             }
         }
         const obj = new classType(parsedConfig);
         obj.uniqueId = serializationObject.uniqueId;
         for (let i = 0; i < serializationObject.dataInputs.length; i++) {
-            obj.dataInputs[i].deserialize(serializationObject.dataInputs[i]);
+            const dataInput = obj.getDataInput(serializationObject.dataInputs[i].name);
+            if (dataInput) {
+                dataInput.deserialize(serializationObject.dataInputs[i]);
+            } else {
+                throw new Error("Could not find data input with name " + serializationObject.dataInputs[i].name + " in block " + serializationObject.className);
+            }
         }
         for (let i = 0; i < serializationObject.dataOutputs.length; i++) {
-            obj.dataOutputs[i].deserialize(serializationObject.dataOutputs[i]);
+            const dataOutput = obj.getDataOutput(serializationObject.dataOutputs[i].name);
+            if (dataOutput) {
+                dataOutput.deserialize(serializationObject.dataOutputs[i]);
+            } else {
+                throw new Error("Could not find data output with name " + serializationObject.dataOutputs[i].name + " in block " + serializationObject.className);
+            }
         }
+        obj.metadata = serializationObject.metadata;
         if (obj instanceof FlowGraphExecutionBlock) {
             for (let i = 0; i < serializationObject.signalInputs.length; i++) {
-                obj.signalInputs[i].deserialize(serializationObject.signalInputs[i]);
+                const signalInput = obj.getSignalInput(serializationObject.signalInputs[i].name);
+                if (signalInput) {
+                    signalInput.deserialize(serializationObject.signalInputs[i]);
+                } else {
+                    throw new Error("Could not find signal input with name " + serializationObject.signalInputs[i].name + " in block " + serializationObject.className);
+                }
             }
             for (let i = 0; i < serializationObject.signalOutputs.length; i++) {
-                obj.signalOutputs[i].deserialize(serializationObject.signalOutputs[i]);
+                const signalOutput = obj.getSignalOutput(serializationObject.signalOutputs[i].name);
+                if (signalOutput) {
+                    signalOutput.deserialize(serializationObject.signalOutputs[i]);
+                } else {
+                    throw new Error("Could not find signal output with name " + serializationObject.signalOutputs[i].name + " in block " + serializationObject.className);
+                }
             }
         }
         return obj;
