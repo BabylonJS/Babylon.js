@@ -60,7 +60,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         if (headerEndIndex < 0 || !header) {
             return data;
         }
-        const vertexCount = parseInt(/element vertex (\d+)\n/.exec(header)![1]);        
+        const vertexCount = parseInt(/element vertex (\d+)\n/.exec(header)![1]);
 
         let rowOffset = 0;
         const offsets: Record<string, number> = {
