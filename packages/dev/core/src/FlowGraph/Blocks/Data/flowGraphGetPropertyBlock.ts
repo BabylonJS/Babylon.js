@@ -15,7 +15,6 @@ export interface IFlowGraphGetPropertyBlockConfiguration extends IFlowGraphBlock
      * The variable path of the entity whose property will be set. Needs a corresponding
      * entity on the context variables with that variable name.
      */
-    // path: FlowGraphPath;
     path: string;
     pathAccessor: IPathToObjectConverter;
 }
@@ -27,17 +26,14 @@ export class FlowGraphGetPropertyBlock extends FlowGraphBlock {
     public constructor(public config: IFlowGraphGetPropertyBlockConfiguration) {
         super(config);
         this.value = this.registerDataOutput("value", RichTypeAny);
-        // this.templateComponent = new FlowGraphPathComponent(config.path, this);
         this.templateComponent = new FlowGraphPathConverterComponent(config.pathAccessor, config.path, this);
     }
 
     public _updateOutputs(context: FlowGraphContext) {
-        // const value = this.templateComponent.getProperty(context);
         const accessorContainer = this.templateComponent.getAccessor(context);
         if (!accessorContainer) {
             throw new Error("Get property block requires a valid path");
         }
-        // const value = accessor.get(accessor.object);
         const value = accessorContainer.accessor.get(accessorContainer.object);
         this.value.setValue(value, context);
     }

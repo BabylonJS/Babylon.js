@@ -1,4 +1,4 @@
-import type { IObjectAccessor, IObjectAccessorContainer, IPathToObjectConverter } from "core/ObjectModel/objectModelInterfaces";
+import type { IObjectAccessorContainer, IPathToObjectConverter } from "core/ObjectModel/objectModelInterfaces";
 import type { IGLTF } from "../glTFLoaderInterfaces";
 
 export class GLTFPathToObjectConverter implements IPathToObjectConverter {
@@ -61,7 +61,7 @@ export class GLTFPathToObjectConverter implements IPathToObjectConverter {
 
         return {
             object: target,
-            accessor: infoTree as IObjectAccessor,
+            accessor: infoTree,
         };
     }
 }

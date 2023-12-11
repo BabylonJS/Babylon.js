@@ -2,7 +2,7 @@ export interface IObjectAccessorContainer {
     object: any;
     type?: any;
     extras?: any;
-    accessor: IObjectAccessor;
+    accessor: any; // Ideally, IObjectAccessor
 }
 
 export interface IObjectAccessor {
@@ -18,7 +18,7 @@ export interface IPathToObjectConverter {
  * Interface for holding parameters that can substitute part of paths.
  */
 export interface ITemplatedPath {
-    substitutionTemplates: { [key: string]: string };
+    substitutionTemplates: { [key: string]: number };
 }
 
 export function isTemplated(x: any): x is ITemplatedPath {

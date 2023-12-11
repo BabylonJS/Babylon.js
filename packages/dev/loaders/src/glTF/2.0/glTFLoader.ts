@@ -1650,7 +1650,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         const targetInfo: IObjectAccessorContainer = {
             object: targetNode,
-            accessor: properties as any,
+            accessor: properties,
         };
 
         return this._loadAnimationChannelFromTargetInfoAsync(context, animationContext, animation, channel, targetInfo, onLoad);
@@ -1683,7 +1683,7 @@ export class GLTFLoader implements IGLTFLoader {
             let numAnimations = 0;
 
             const target = targetInfo.object;
-            const propertyInfos = targetInfo.accessor as any;
+            const propertyInfos = targetInfo.accessor;
             // Extract the corresponding values from the read value.
             // GLTF values may be dispatched to several Babylon properties.
             // For example, baseColorFactor [`r`, `g`, `b`, `a`] is dispatched to
