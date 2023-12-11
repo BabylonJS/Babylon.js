@@ -17,6 +17,7 @@ import {
     _setupMobileChecks,
     _getGlobalDefines,
     getCaps,
+    getLoadedTexturesCache,
 } from "../engine.base";
 import { WebGLShaderProcessor } from "core/Engines/WebGL/webGLShaderProcessors";
 import type { DataBuffer } from "core/Buffers/dataBuffer";
@@ -132,6 +133,14 @@ interface TexImageParameters {
     format: number;
     type: number;
 }
+
+const internalTextureWebGLAdapter: { [key: string]: Function } = {
+    _createHardwareTexture,
+    updateTextureDimensions: () => {},
+    getLoadedTexturesCache,
+    _releaseTexture,
+    getCaps,
+};
 
 export interface IWebGLEngineInternals extends IBaseEngineInternals {
     /** @internal */
@@ -2190,7 +2199,7 @@ export function _createInternalTexture(
     }
 
     const gl = fes._gl;
-    const engineAdapter = augmentEngineState<Engine>(engineState, getInternalTextureWebGLAdapter(source));
+    const engineAdapter = augmentEngineState<Engine>(engineState, internalTextureWebGLAdapter);
     const texture = new InternalTexture(engineAdapter, source);
     const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
     const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
@@ -2284,7 +2293,7 @@ export function createTexture(
     useSRGBBuffer?: boolean
 ): InternalTexture {
     const fes = engineState as WebGLEngineStateFull;
-    const engineAdapter = augmentEngineState<Engine>(engineState, getInternalTextureWebGLAdapter(InternalTextureSource.Temp));
+    const engineAdapter = augmentEngineState<Engine>(engineState, internalTextureWebGLAdapter);
     return _createTextureBase(
         {
             getUseSRGBBuffer: _getUseSRGBBuffer,
@@ -4838,7 +4847,7 @@ export function wrapWebGLTexture(
     const fes = engineState as WebGLEngineStateFull;
     const hardwareTexture = new WebGLHardwareTexture(texture, fes._gl);
     const internalTexture = new InternalTexture(
-        augmentEngineState(engineState, getInternalTextureWebGLAdapter(InternalTextureSource.Unknown)),
+        augmentEngineState(engineState, internalTextureWebGLAdapter),
         InternalTextureSource.Unknown,
         true
     );
