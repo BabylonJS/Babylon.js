@@ -38,11 +38,12 @@ export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFile
     });
 
     function log(msg: any, title?: string) {
+        const titleToLog = title ? `[${title}]` : "";
         if (logToConsole) {
-            console.log(title? `[${title}]` : '', msg);
+            console.log(titleToLog, msg);
         }
         if (logToFile) {
-            fs.appendFileSync(logPath, msg + "\r\n", "utf8");
+            fs.appendFileSync(logPath, titleToLog + " " + msg + "\n", "utf8");
         }
     }
 
