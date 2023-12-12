@@ -8,8 +8,6 @@ import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 import { InteractivityPathToObjectConverter } from "./interactivityPathToObjectConverter";
 import type { IGLTF } from "../glTFLoaderInterfaces";
 
-const pathHasTemplatesRegex = /\{(\w+)\}/g;
-
 function convertValueWithType(configObject: IKHRInteractivity_Configuration, definition: IKHRInteractivity, context: string) {
     if (configObject.type !== undefined) {
         // get the type on the gltf definition
@@ -52,16 +50,7 @@ function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKH
             // Convert from a GLTF path to a reference to the Babylon.js object
             const pathValue = configObject.value as string;
             converted.path = pathValue;
-            const templateMatches = [...pathValue.matchAll(pathHasTemplatesRegex)];
             const pathAccessor = new InteractivityPathToObjectConverter(gltf);
-            if (templateMatches) {
-                for (const match of templateMatches) {
-                    const [, matchGroup] = match;
-                    if (matchGroup) {
-                        pathAccessor.substitutionTemplates[matchGroup] = 0;
-                    }
-                }
-            }
             converted.pathAccessor = pathAccessor;
         } else {
             converted[configObject.id] = convertValueWithType(configObject, definition, `/extensions/KHR_interactivity/nodes/${id}`);

@@ -1,20 +1,10 @@
-import type { ITemplatedPath } from "core/ObjectModel";
 import type { IGLTF, INode } from "../glTFLoaderInterfaces";
 import { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
 import type { TransformNode } from "core/Meshes";
 
-export class InteractivityPathToObjectConverter extends GLTFPathToObjectConverter implements ITemplatedPath {
-    public substitutionTemplates: { [key: string]: string } = {};
-
+export class InteractivityPathToObjectConverter extends GLTFPathToObjectConverter {
     constructor(public gltf: IGLTF) {
         super(gltf, gltfTree);
-    }
-
-    public beforeConvertPath(path: string): string {
-        for (const template in this.substitutionTemplates) {
-            path = path.replace(`{${template}}`, this.substitutionTemplates[template]);
-        }
-        return path;
     }
 }
 

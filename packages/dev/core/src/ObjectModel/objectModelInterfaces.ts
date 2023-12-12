@@ -13,14 +13,3 @@ export interface IObjectAccessor {
 export interface IPathToObjectConverter {
     convert(path: string): IObjectAccessorContainer | undefined;
 }
-
-/**
- * Interface for holding parameters that can substitute part of paths.
- */
-export interface ITemplatedPath {
-    substitutionTemplates: { [key: string]: number };
-}
-
-export function isTemplated(x: any): x is ITemplatedPath {
-    return x.substitutionTemplates !== undefined;
-}

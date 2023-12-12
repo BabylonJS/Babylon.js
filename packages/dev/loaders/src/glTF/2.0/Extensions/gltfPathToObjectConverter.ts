@@ -7,10 +7,6 @@ export class GLTFPathToObjectConverter implements IPathToObjectConverter {
         public infoTree: any
     ) {}
 
-    public beforeConvertPath(path: string): string {
-        return path;
-    }
-
     /**
      * The pointer string is represented by a [JSON pointer](https://datatracker.ietf.org/doc/html/rfc6901).
      * <animationPointer> := /<rootNode>/<assetIndex>/<propertyPath>
@@ -28,8 +24,7 @@ export class GLTFPathToObjectConverter implements IPathToObjectConverter {
      *  - "/materials/2/pbrMetallicRoughness/baseColorFactor"
      *  - "/materials/2/extensions/KHR_materials_emissive_strength/emissiveStrength"
      */
-    convert(prePath: string): IObjectAccessorContainer | undefined {
-        const path = this.beforeConvertPath(prePath);
+    convert(path: string): IObjectAccessorContainer | undefined {
         let objectTree: any = this.gltf;
         let infoTree: any = this.infoTree;
         let target: any = undefined;

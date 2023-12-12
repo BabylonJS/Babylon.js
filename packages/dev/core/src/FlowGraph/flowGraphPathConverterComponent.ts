@@ -1,30 +1,35 @@
-import type { IObjectAccessorContainer } from "../ObjectModel/objectModelInterfaces";
-import { isTemplated, type IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
+import type { IObjectAccessorContainer, IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import type { FlowGraphContext } from "./flowGraphContext";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import { RichTypeNumber } from "./flowGraphRichTypes";
 
+const pathHasTemplatesRegex = /\{(\w+)\}/g;
+
 export class FlowGraphPathConverterComponent {
     public readonly templatedInputs: FlowGraphDataConnection<number>[] = [];
+    public readonly templateStrings: string[] = [];
     constructor(
         public pathConverter: IPathToObjectConverter,
         public path: string,
         public ownerBlock: FlowGraphBlock
     ) {
-        if (isTemplated(pathConverter)) {
-            for (const key in pathConverter.substitutionTemplates) {
-                this.templatedInputs.push(ownerBlock.registerDataInput(key, RichTypeNumber));
+        const templateMatches = [...path.matchAll(pathHasTemplatesRegex)];
+        if (templateMatches && templateMatches.length > 0) {
+            for (const [, matchGroup] of templateMatches) {
+                this.templatedInputs.push(ownerBlock.registerDataInput(matchGroup, RichTypeNumber));
             }
         }
     }
 
     getAccessor(context: FlowGraphContext): IObjectAccessorContainer | undefined {
+        let finalPath = this.path;
         for (const templatedInput of this.templatedInputs) {
-            (this.pathConverter as any).substitutionTemplates[templatedInput.name] = templatedInput.getValue(context);
+            const valueToReplace = templatedInput.getValue(context);
+            finalPath = finalPath.replace(`{${templatedInput.name}}`, valueToReplace.toString());
         }
         if (this.pathConverter) {
-            return this.pathConverter.convert(this.path);
+            return this.pathConverter.convert(finalPath);
         }
         return undefined;
     }
