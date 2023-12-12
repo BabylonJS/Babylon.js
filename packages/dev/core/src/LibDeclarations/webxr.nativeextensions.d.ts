@@ -30,6 +30,7 @@ interface XRPlane {
 interface XRMesh {
     normals?: Float32Array;
     parentSceneObject?: XRSceneObject;
+    positions: Float32Array; // Babylon native!
 }
 
 interface XRFrustumDetectionBoundary {

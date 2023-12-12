@@ -1219,7 +1219,7 @@ interface XRWebGLBinding {
 
 interface XRMesh {
     meshSpace: XRSpace;
-    positions: Float32Array;
+    vertices: Float32Array;
     indices: Uint32Array;
     lastChangedTime: number;
 }

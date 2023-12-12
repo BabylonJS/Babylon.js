@@ -233,14 +233,15 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
     private _updateVertexDataWithXRMesh(xrMesh: XRMesh, mesh: Partial<IWebXRVertexData>, xrFrame: XRFrame): IWebXRVertexData {
         mesh.xrMesh = xrMesh;
         mesh.worldParentNode = this._options.worldParentNode;
+        const positions = xrMesh.vertices || xrMesh.positions;
 
         if (this._options.convertCoordinateSystems) {
             if (!this._xrSessionManager.scene.useRightHandedSystem) {
-                mesh.positions = new Float32Array(xrMesh.positions.length);
-                for (let i = 0; i < xrMesh.positions.length; i += 3) {
-                    mesh.positions[i] = xrMesh.positions[i];
-                    mesh.positions[i + 1] = xrMesh.positions[i + 1];
-                    mesh.positions[i + 2] = -1 * xrMesh.positions[i + 2];
+                mesh.positions = new Float32Array(positions.length);
+                for (let i = 0; i < positions.length; i += 3) {
+                    mesh.positions[i] = positions[i];
+                    mesh.positions[i + 1] = positions[i + 1];
+                    mesh.positions[i + 2] = -1 * positions[i + 2];
                 }
 
                 if (xrMesh.normals) {
@@ -252,7 +253,7 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
                     }
                 }
             } else {
-                mesh.positions = xrMesh.positions;
+                mesh.positions = positions;
                 mesh.normals = xrMesh.normals;
             }
 
