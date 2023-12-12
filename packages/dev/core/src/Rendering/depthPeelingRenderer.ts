@@ -394,7 +394,7 @@ export class DepthPeelingRenderer {
                 if (drawWrapper.materialContext) {
                     let newMaterialContext = mapMaterialContext![drawWrapper.materialContext.uniqueId];
                     if (!newMaterialContext) {
-                        newMaterialContext = mapMaterialContext![drawWrapper.materialContext.uniqueId] = this._engine.createMaterialContext();
+                        newMaterialContext = mapMaterialContext![drawWrapper.materialContext.uniqueId] = this._engine.createMaterialContext?.();
                     }
                     subMesh._getDrawWrapper()!.materialContext = newMaterialContext;
                 }

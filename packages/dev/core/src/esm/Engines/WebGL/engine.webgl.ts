@@ -2873,6 +2873,9 @@ function _prepareWebGLTexture(
 
     _bindTextureDirectly(engineState, gl.TEXTURE_2D, texture, true);
     _unpackFlipY(engineState, invertY === undefined ? true : invertY ? true : false);
+    augmentEngineState(engineState, {
+        createEffect,
+    });
 
     texture.baseWidth = img.width;
     texture.baseHeight = img.height;

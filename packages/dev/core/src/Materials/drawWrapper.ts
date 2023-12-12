@@ -24,9 +24,9 @@ export class DrawWrapper {
     constructor(engine: ThinEngine, createMaterialContext = true) {
         this.effect = null;
         this.defines = null;
-        this.drawContext = engine.createDrawContext();
+        this.drawContext = engine.createDrawContext?.();
         if (createMaterialContext) {
-            this.materialContext = engine.createMaterialContext();
+            this.materialContext = engine.createMaterialContext?.();
         }
     }
 

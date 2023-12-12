@@ -928,7 +928,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
 
         this.id = name || Tools.RandomId();
         this.uniqueId = this._scene.getUniqueId();
-        this._materialContext = this._scene.getEngine().createMaterialContext();
+        this._materialContext = this._scene.getEngine().createMaterialContext?.();
         this._drawWrapper = new DrawWrapper(this._scene.getEngine(), false);
         this._drawWrapper.materialContext = this._materialContext;
 
