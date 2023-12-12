@@ -68,6 +68,7 @@ import {
     setTextureFromPostProcessOutputBase,
     setViewportBase,
     setHardwareScalingLevelBase,
+    _releaseEffectBase,
 } from "../engine.extendable";
 import type { Engine } from "core/Engines/engine";
 import type { IStencilState } from "core/States/IStencilState";
@@ -5100,4 +5101,8 @@ export function setZOffsetUnits(engineState: IWebGLEnginePublic, value: number):
 export function getZOffsetUnits(engineState: IWebGLEnginePublic): number {
     const zOffsetUnits = (engineState as WebGLEngineState)._depthCullingState.zOffsetUnits;
     return engineState.useReverseDepthBuffer ? -zOffsetUnits : zOffsetUnits;
+}
+
+export function _releaseEffect(engineState: IWebGLEnginePublic, effect: Effect) {
+    _releaseEffectBase({ _deletePipelineContext }, engineState, effect);
 }
