@@ -1,5 +1,5 @@
 import { GaussianSplattingMaterial } from "../../Materials/GaussianSplatting/gaussianSplattingMaterial";
-import { Matrix, Quaternion, TmpVectors, Vector2, Vector3 } from "../../Maths/math.vector";
+import { Matrix, Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { Mesh } from "../../Meshes/mesh";
 import { VertexData } from "../../Meshes/mesh.vertexData";
 import type { Observer } from "../../Misc/observable";
