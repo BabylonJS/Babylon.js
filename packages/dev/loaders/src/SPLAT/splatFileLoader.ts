@@ -107,7 +107,8 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             let r2: number = 0;
             let r3: number = 0;
 
-            properties.forEach((property) => {
+            for (let propertyIndex = 0; propertyIndex < properties.length; propertyIndex++) {
+                const property = properties[propertyIndex];
                 let value;
                 switch (property.type) {
                     case "float":
@@ -176,7 +177,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                         r3 = value;
                         break;
                 }
-            });
+            }
 
             q.set(r1, r2, r3, r0);
             q.normalize();
