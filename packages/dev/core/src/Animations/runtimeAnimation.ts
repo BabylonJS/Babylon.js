@@ -402,7 +402,7 @@ export class RuntimeAnimation {
         if (weight !== -1.0) {
             this._scene._registerTargetForLateAnimationBinding(this, this._originalValue[targetIndex]);
         } else {
-            if (this._animationState.loopMode === Animation.ANIMATIONLOOPMODE_RELATIVE) {
+            if (this._animationState.loopMode === Animation.ANIMATIONLOOPMODE_RELATIVE_FROM_CURRENT) {
                 if (this._currentValue.addToRef) {
                     this._currentValue.addToRef(this._originalValue[targetIndex], destination[this._targetPath]);
                 } else {

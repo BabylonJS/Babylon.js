@@ -5252,7 +5252,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param filter defines a predicate used to filter results
      * @returns an array of Mesh
      */
-    public getMeshesByTags(tagsQuery: string, filter?: (mesh: AbstractMesh) => boolean): Mesh[] {
+    public getMeshesByTags(tagsQuery: string, filter?: (mesh: AbstractMesh) => boolean): AbstractMesh[] {
         return this._getByTags(this.meshes, tagsQuery, filter);
     }
 

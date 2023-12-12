@@ -702,14 +702,77 @@ export class VertexData {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         let root: VertexData = this;
 
+        if (enableCompletion) {
+            // First let's make sure we have the max set of attributes on the main vertex data
+            for (const other of others) {
+                if (!other) {
+                    continue;
+                }
+
+                other._validate();
+
+                if (!this.normals && other.normals) {
+                    this.normals = new Float32Array(this.positions!.length);
+                }
+
+                if (!this.tangents && other.tangents) {
+                    this.tangents = new Float32Array((this.positions!.length / 3) * 4);
+                }
+
+                if (!this.uvs && other.uvs) {
+                    this.uvs = new Float32Array((this.positions!.length / 3) * 2);
+                }
+
+                if (!this.uvs2 && other.uvs2) {
+                    this.uvs2 = new Float32Array((this.positions!.length / 3) * 2);
+                }
+
+                if (!this.uvs3 && other.uvs3) {
+                    this.uvs3 = new Float32Array((this.positions!.length / 3) * 2);
+                }
+
+                if (!this.uvs4 && other.uvs4) {
+                    this.uvs4 = new Float32Array((this.positions!.length / 3) * 2);
+                }
+
+                if (!this.uvs5 && other.uvs5) {
+                    this.uvs5 = new Float32Array((this.positions!.length / 3) * 2);
+                }
+
+                if (!this.uvs6 && other.uvs6) {
+                    this.uvs6 = new Float32Array((this.positions!.length / 3) * 2);
+                }
+
+                if (!this.colors && other.colors) {
+                    this.colors = new Float32Array((this.positions!.length / 3) * 4);
+                    this.colors.fill(1); // Set to white by default
+                }
+
+                if (!this.matricesIndices && other.matricesIndices) {
+                    this.matricesIndices = new Float32Array((this.positions!.length / 3) * 4);
+                }
+
+                if (!this.matricesWeights && other.matricesWeights) {
+                    this.matricesWeights = new Float32Array((this.positions!.length / 3) * 4);
+                }
+
+                if (!this.matricesIndicesExtra && other.matricesIndicesExtra) {
+                    this.matricesIndicesExtra = new Float32Array((this.positions!.length / 3) * 4);
+                }
+
+                if (!this.matricesWeightsExtra && other.matricesWeightsExtra) {
+                    this.matricesWeightsExtra = new Float32Array((this.positions!.length / 3) * 4);
+                }
+            }
+        }
+
         for (const other of others) {
             if (!other) {
                 continue;
             }
 
-            other._validate();
-
             if (!enableCompletion) {
+                other._validate();
                 if (
                     !this.normals !== !other.normals ||
                     !this.tangents !== !other.tangents ||
@@ -728,107 +791,56 @@ export class VertexData {
                     throw new Error("Cannot merge vertex data that do not have the same set of attributes");
                 }
             } else {
-                if (!this.normals !== !other.normals) {
-                    if (!this.normals) {
-                        this.normals = new Float32Array(this.positions!.length);
-                    } else {
-                        other.normals = new Float32Array(other.positions!.length);
-                    }
+                // Align the others with main set of attributes
+                if (this.normals && !other.normals) {
+                    other.normals = new Float32Array(other.positions!.length);
                 }
 
-                if (!this.tangents !== !other.tangents) {
-                    if (!this.tangents) {
-                        this.tangents = new Float32Array((this.positions!.length / 3) * 4);
-                    } else {
-                        other.tangents = new Float32Array((other.positions!.length / 3) * 4);
-                    }
-                }
-                if (!this.uvs !== !other.uvs) {
-                    if (!this.uvs) {
-                        this.uvs = new Float32Array((this.positions!.length / 3) * 2);
-                    } else {
-                        other.uvs = new Float32Array((other.positions!.length / 3) * 2);
-                    }
+                if (this.tangents && !other.tangents) {
+                    other.tangents = new Float32Array((other.positions!.length / 3) * 4);
                 }
 
-                if (!this.uvs2 !== !other.uvs2) {
-                    if (!this.uvs2) {
-                        this.uvs2 = new Float32Array((this.positions!.length / 3) * 2);
-                    } else {
-                        other.uvs2 = new Float32Array((other.positions!.length / 3) * 2);
-                    }
+                if (this.uvs && !other.uvs) {
+                    other.uvs = new Float32Array((other.positions!.length / 3) * 2);
                 }
 
-                if (!this.uvs3 !== !other.uvs3) {
-                    if (!this.uvs3) {
-                        this.uvs3 = new Float32Array((this.positions!.length / 3) * 2);
-                    } else {
-                        other.uvs3 = new Float32Array((other.positions!.length / 3) * 2);
-                    }
+                if (this.uvs2 && !other.uvs2) {
+                    other.uvs2 = new Float32Array((other.positions!.length / 3) * 2);
                 }
 
-                if (!this.uvs4 !== !other.uvs4) {
-                    if (!this.uvs4) {
-                        this.uvs4 = new Float32Array((this.positions!.length / 3) * 2);
-                    } else {
-                        other.uvs4 = new Float32Array((other.positions!.length / 3) * 2);
-                    }
-                }
-                if (!this.uvs5 !== !other.uvs5) {
-                    if (!this.uvs5) {
-                        this.uvs5 = new Float32Array((this.positions!.length / 3) * 2);
-                    } else {
-                        other.uvs5 = new Float32Array((other.positions!.length / 3) * 2);
-                    }
+                if (this.uvs3 && !other.uvs3) {
+                    other.uvs3 = new Float32Array((other.positions!.length / 3) * 2);
                 }
 
-                if (!this.uvs6 !== !other.uvs6) {
-                    if (!this.uvs6) {
-                        this.uvs6 = new Float32Array((this.positions!.length / 3) * 2);
-                    } else {
-                        other.uvs6 = new Float32Array((other.positions!.length / 3) * 2);
-                    }
+                if (this.uvs4 && !other.uvs4) {
+                    other.uvs4 = new Float32Array((other.positions!.length / 3) * 2);
+                }
+                if (this.uvs5 && !other.uvs5) {
+                    other.uvs5 = new Float32Array((other.positions!.length / 3) * 2);
                 }
 
-                if (!this.colors !== !other.colors) {
-                    if (!this.colors) {
-                        this.colors = new Float32Array((this.positions!.length / 3) * 4);
-                        this.colors.fill(1); // Set to white by default
-                    } else {
-                        other.colors = new Float32Array((other.positions!.length / 3) * 4);
-                        other.colors.fill(1); // Set to white by default
-                    }
+                if (this.uvs6 && !other.uvs6) {
+                    other.uvs6 = new Float32Array((other.positions!.length / 3) * 2);
                 }
 
-                if (!this.matricesIndices !== !other.matricesIndices) {
-                    if (!this.matricesIndices) {
-                        this.matricesIndices = new Float32Array((this.positions!.length / 3) * 4);
-                    } else {
-                        other.matricesIndices = new Float32Array((other.positions!.length / 3) * 4);
-                    }
-                }
-                if (!this.matricesWeights !== !other.matricesWeights) {
-                    if (!this.matricesWeights) {
-                        this.matricesWeights = new Float32Array((this.positions!.length / 3) * 4);
-                    } else {
-                        other.matricesWeights = new Float32Array((other.positions!.length / 3) * 4);
-                    }
+                if (this.colors && !other.colors) {
+                    other.colors = new Float32Array((other.positions!.length / 3) * 4);
+                    other.colors.fill(1); // Set to white by default
                 }
 
-                if (!this.matricesIndicesExtra !== !other.matricesIndicesExtra) {
-                    if (!this.matricesIndicesExtra) {
-                        this.matricesIndicesExtra = new Float32Array((this.positions!.length / 3) * 4);
-                    } else {
-                        other.matricesIndicesExtra = new Float32Array((other.positions!.length / 3) * 4);
-                    }
+                if (this.matricesIndices && !other.matricesIndices) {
+                    other.matricesIndices = new Float32Array((other.positions!.length / 3) * 4);
+                }
+                if (this.matricesWeights && !other.matricesWeights) {
+                    other.matricesWeights = new Float32Array((other.positions!.length / 3) * 4);
                 }
 
-                if (!this.matricesWeightsExtra !== !other.matricesWeightsExtra) {
-                    if (!this.matricesWeightsExtra) {
-                        this.matricesWeightsExtra = new Float32Array((this.positions!.length / 3) * 4);
-                    } else {
-                        other.matricesWeightsExtra = new Float32Array((other.positions!.length / 3) * 4);
-                    }
+                if (this.matricesIndicesExtra && !other.matricesIndicesExtra) {
+                    other.matricesIndicesExtra = new Float32Array((other.positions!.length / 3) * 4);
+                }
+
+                if (this.matricesWeightsExtra && !other.matricesWeightsExtra) {
+                    other.matricesWeightsExtra = new Float32Array((other.positions!.length / 3) * 4);
                 }
             }
         }

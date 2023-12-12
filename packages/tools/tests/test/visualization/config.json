@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "GUI Input Text Area with Placeholder",
+            "playgroundId": "#NVAEWD#364",
+            "referenceImage": "gui-inputtextarea-withplaceholder.png"
+        },
+        {
             "title": "Ground Projection",
             "playgroundId": "#XG08YC#0",
             "referenceImage": "groundProjection.png"
@@ -1393,7 +1398,7 @@
             "title": "Instances + GBR + motion blur",
             "renderCount": 10,
             "playgroundId": "#YB006J#549",
-            "excludedEngines": ["webgl1","webgpu"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "instances-gbr-mb.png"
         },
         {
@@ -1815,7 +1820,7 @@
         },
         {
             "title": "sphere-with-custom-shader-to-display-wireframe-using-glow-layer",
-           "renderCount": 5,
+            "renderCount": 5,
             "playgroundId": "#Y05E2C#6"
         },
         {

@@ -84,6 +84,7 @@ class NormalMaterialDefines extends MaterialDefines {
     public LIGHTING = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
+    public LOGARITHMICDEPTH = false;
 
     constructor() {
         super();
@@ -167,7 +168,7 @@ export class NormalMaterial extends PushMaterial {
         }
 
         // Misc.
-        MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
+        MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
         // Lights
         defines._needNormals = true;
@@ -235,6 +236,7 @@ export class NormalMaterial extends PushMaterial {
                 "vDiffuseInfos",
                 "mBones",
                 "diffuseMatrix",
+                "logarithmicDepthConstant",
             ];
             const samplers = ["diffuseSampler"];
             const uniformBuffers: string[] = [];
@@ -314,6 +316,11 @@ export class NormalMaterial extends PushMaterial {
             // Point size
             if (this.pointsCloud) {
                 this._activeEffect.setFloat("pointSize", this.pointSize);
+            }
+
+            // Log. depth
+            if (this._useLogarithmicDepth) {
+                MaterialHelper.BindLogDepth(defines, effect, scene);
             }
 
             scene.bindEyePosition(effect);

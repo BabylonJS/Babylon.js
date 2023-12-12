@@ -27,14 +27,14 @@ export class FlowGraphCoordinator {
 
     private _customEventsMap: Map<string, Observable<any>> = new Map();
 
-    constructor(private _config: IFlowGraphCoordinatorConfiguration) {
+    constructor(public config: IFlowGraphCoordinatorConfiguration) {
         // When the scene is disposed, dispose all graphs currently running on it.
-        this._config.scene.onDisposeObservable.add(() => {
+        this.config.scene.onDisposeObservable.add(() => {
             this.dispose();
         });
 
         // Add itself to the SceneCoordinators list for the Inspector.
-        const coordinators = FlowGraphCoordinator.SceneCoordinators.get(this._config.scene) ?? [];
+        const coordinators = FlowGraphCoordinator.SceneCoordinators.get(this.config.scene) ?? [];
         coordinators.push(this);
     }
 
@@ -43,7 +43,7 @@ export class FlowGraphCoordinator {
      * @returns a new flow graph
      */
     createGraph(): FlowGraph {
-        const graph = new FlowGraph({ scene: this._config.scene, coordinator: this });
+        const graph = new FlowGraph({ scene: this.config.scene, coordinator: this });
         this._flowGraphs.push(graph);
         return graph;
     }
@@ -75,7 +75,7 @@ export class FlowGraphCoordinator {
         this._flowGraphs.length = 0;
 
         // Remove itself from the SceneCoordinators list for the Inspector.
-        const coordinators = FlowGraphCoordinator.SceneCoordinators.get(this._config.scene) ?? [];
+        const coordinators = FlowGraphCoordinator.SceneCoordinators.get(this.config.scene) ?? [];
         const index = coordinators.indexOf(this);
         if (index !== -1) {
             coordinators.splice(index, 1);
@@ -100,7 +100,13 @@ export class FlowGraphCoordinator {
     }
 
     /**
-     * Get an observable that will be notified when the event with the given id is fired.
+     * Gets the list of flow graphs
+     */
+    public get flowGraphs() {
+        return this._flowGraphs;
+    }
+
+    /* Get an observable that will be notified when the event with the given id is fired.
      * @param id the id of the event
      * @returns the observable for the event
      */

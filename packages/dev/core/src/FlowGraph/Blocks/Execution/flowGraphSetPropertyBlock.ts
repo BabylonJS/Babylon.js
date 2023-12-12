@@ -1,7 +1,7 @@
 import { RichTypeAny } from "../../flowGraphRichTypes";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
+import { FlowGraphExecutionBlockWithOutSignal } from "../../flowGraphWithOnDoneExecutionBlock";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import type { FlowGraphPath } from "../../flowGraphPath";
@@ -23,11 +23,11 @@ export interface IFlowGraphSetPropertyBlockConfiguration extends IFlowGraphBlock
  * @experimental
  * Block that sets a property on a target object.
  */
-export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphWithOnDoneExecutionBlock {
+export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphExecutionBlockWithOutSignal {
     /**
      * Input connection: The value to set on the property.
      */
-    public readonly value: FlowGraphDataConnection<ValueT>;
+    public readonly a: FlowGraphDataConnection<ValueT>;
     /**
      * The component with the templated inputs for the provided path.
      */
@@ -36,15 +36,15 @@ export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphWithOnDoneExecut
     public constructor(public config: IFlowGraphSetPropertyBlockConfiguration) {
         super(config);
 
-        this.value = this.registerDataInput("value", RichTypeAny);
+        this.a = this.registerDataInput("a", RichTypeAny);
         this.templateComponent = new FlowGraphPathComponent(config.path, this);
     }
 
     public _execute(context: FlowGraphContext): void {
-        const value = this.value.getValue(context);
+        const value = this.a.getValue(context);
         this.templateComponent.setProperty(context, value);
 
-        this.onDone._activateSignal(context);
+        this.out._activateSignal(context);
     }
 
     public serialize(serializationObject: any = {}) {
@@ -53,7 +53,9 @@ export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphWithOnDoneExecut
     }
 
     public getClassName(): string {
-        return "FGSetPropertyBlock";
+        return FlowGraphSetPropertyBlock.ClassName;
     }
+
+    public static ClassName = "FGSetPropertyBlock";
 }
 RegisterClass("FGSetPropertyBlock", FlowGraphSetPropertyBlock);

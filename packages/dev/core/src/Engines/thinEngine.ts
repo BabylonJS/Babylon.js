@@ -212,6 +212,7 @@ export class ThinEngine {
         { key: "Mac OS.+Chrome/71", capture: null, captureConstraint: null, targets: ["vao"] },
         { key: "Mac OS.+Chrome/72", capture: null, captureConstraint: null, targets: ["vao"] },
         { key: "Mac OS.+Chrome", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
+        { key: "Chrome/12\\d\\..+?Mobile", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
         // desktop osx safari 15.4
         { key: ".*AppleWebKit.*(15.4).*Safari", capture: null, captureConstraint: null, targets: ["antialias", "maxMSAASamples"] },
         // mobile browsers using safari 15.4 on ios
@@ -226,14 +227,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@6.32.1";
+        return "babylonjs@6.33.1";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "6.32.1";
+        return "6.33.1";
     }
 
     /**

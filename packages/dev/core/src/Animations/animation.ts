@@ -1020,6 +1020,7 @@ export class Animation {
                     case Animation.ANIMATIONLOOPMODE_YOYO:
                         return floatValue;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE_FROM_CURRENT:
                         return (state.offsetValue ?? 0) * state.repeatCount + floatValue;
                 }
                 break;
@@ -1035,6 +1036,7 @@ export class Animation {
                     case Animation.ANIMATIONLOOPMODE_YOYO:
                         return quatValue;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE_FROM_CURRENT:
                         return quatValue.addInPlace((state.offsetValue || _staticOffsetValueQuaternion).scale(state.repeatCount));
                 }
 
@@ -1051,6 +1053,7 @@ export class Animation {
                     case Animation.ANIMATIONLOOPMODE_YOYO:
                         return vec3Value;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE_FROM_CURRENT:
                         return vec3Value.add((state.offsetValue || _staticOffsetValueVector3).scale(state.repeatCount));
                 }
                 break;
@@ -1066,6 +1069,7 @@ export class Animation {
                     case Animation.ANIMATIONLOOPMODE_YOYO:
                         return vec2Value;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE_FROM_CURRENT:
                         return vec2Value.add((state.offsetValue || _staticOffsetValueVector2).scale(state.repeatCount));
                 }
                 break;
@@ -1078,6 +1082,7 @@ export class Animation {
                     case Animation.ANIMATIONLOOPMODE_YOYO:
                         return this.sizeInterpolateFunction(startValue, endValue, gradient);
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE_FROM_CURRENT:
                         return this.sizeInterpolateFunction(startValue, endValue, gradient).add((state.offsetValue || _staticOffsetValueSize).scale(state.repeatCount));
                 }
                 break;
@@ -1093,6 +1098,7 @@ export class Animation {
                     case Animation.ANIMATIONLOOPMODE_YOYO:
                         return color3Value;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE_FROM_CURRENT:
                         return color3Value.add((state.offsetValue || _staticOffsetValueColor3).scale(state.repeatCount));
                 }
                 break;
@@ -1108,6 +1114,7 @@ export class Animation {
                     case Animation.ANIMATIONLOOPMODE_YOYO:
                         return color4Value;
                     case Animation.ANIMATIONLOOPMODE_RELATIVE:
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE_FROM_CURRENT:
                         return color4Value.add((state.offsetValue || _staticOffsetValueColor4).scale(state.repeatCount));
                 }
                 break;
@@ -1123,7 +1130,8 @@ export class Animation {
                         }
                         return startValue;
                     }
-                    case Animation.ANIMATIONLOOPMODE_RELATIVE: {
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE:
+                    case Animation.ANIMATIONLOOPMODE_RELATIVE_FROM_CURRENT: {
                         return startValue;
                     }
                 }
@@ -1363,6 +1371,10 @@ export class Animation {
      * Yoyo Loop Mode
      */
     public static readonly ANIMATIONLOOPMODE_YOYO = 4;
+    /**
+     * Relative Loop Mode (add to current value of animated object, unlike ANIMATIONLOOPMODE_RELATIVE)
+     */
+    public static readonly ANIMATIONLOOPMODE_RELATIVE_FROM_CURRENT = 5;
 
     /**
      * @internal
