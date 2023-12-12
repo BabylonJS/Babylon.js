@@ -48,7 +48,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
     }
 
     /**
-     * Code from https://github.com/dylanebert/gsplat.js/blob/main/src/loaders/PLYLoader.ts
+     * Code from https://github.com/dylanebert/gsplat.js/blob/main/src/loaders/PLYLoader.ts Under MIT license
      * Loads a .ply from data array buffer
      * if data array buffer is not ply, returns the original buffer
      */
@@ -94,6 +94,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
         const dataView = new DataView(data, headerEndIndex + headerEnd.length);
         const buffer = new ArrayBuffer(rowLength * vertexCount);
+        const q = new Quaternion();
 
         for (let i = 0; i < vertexCount; i++) {
             const position = new Float32Array(buffer, i * rowLength, 3);
@@ -177,7 +178,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
                 }
             });
 
-            const q = new Quaternion(r1, r2, r3, r0);
+            q.set(r1, r2, r3, r0);
             q.normalize();
             rot[0] = q.w * 128 + 128;
             rot[1] = q.x * 128 + 128;
