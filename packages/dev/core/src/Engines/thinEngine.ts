@@ -1181,7 +1181,7 @@ export class ThinEngine {
             _releaseRenderTargetWrapper,
             _createHardwareTexture,
             createTexture,
-            _releaseTexture
+            _releaseTexture,
         });
         getEmptyCubeTexture(this._engineState, { createRawCubeTexture });
         getEmptyTexture(this._engineState, { createRawTexture });

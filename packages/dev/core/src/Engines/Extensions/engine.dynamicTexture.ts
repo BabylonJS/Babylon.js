@@ -1,7 +1,7 @@
 import * as extension from "core/esm/Engines/WebGL/Extensions/dynamicTexture/dynamicTexture.webgl";
 import { ThinEngine } from "../../Engines/thinEngine";
 import { EngineExtensions, loadExtension } from "core/esm/Engines/Extensions/engine.extensions";
-import type { InternalTexture} from "../../Materials/Textures/internalTexture";
+import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import type { Nullable } from "../../types";
 import type { ICanvas } from "../ICanvas";
 
