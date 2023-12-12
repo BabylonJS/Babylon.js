@@ -26,13 +26,11 @@ interface XRPlane {
     parentSceneObject?: XRSceneObject;
 }
 
+// extending the webxr XRMesh with babylon native properties
 interface XRMesh {
-    meshSpace: XRSpace;
-    positions: Float32Array;
-    indices: Uint32Array;
     normals?: Float32Array;
-    lastChangedTime: number;
     parentSceneObject?: XRSceneObject;
+    positions: Float32Array; // Babylon native!
 }
 
 interface XRFrustumDetectionBoundary {
@@ -67,8 +65,6 @@ interface XRSession {
 interface XRFrame {
     featurePointCloud?: Array<number> | undefined;
 }
-
-type XRMeshSet = Set<XRMesh>;
 
 interface XRWorldInformation {
     detectedMeshes?: XRMeshSet;
