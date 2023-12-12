@@ -1179,7 +1179,14 @@ export class ThinEngine {
             setTexture,
             restoreDefaultFramebuffer,
             _releaseRenderTargetWrapper,
+            _createHardwareTexture,
+            createTexture,
+            _releaseTexture
         });
+        getEmptyCubeTexture(this._engineState, { createRawCubeTexture });
+        getEmptyTexture(this._engineState, { createRawTexture });
+        getEmptyTexture3D(this._engineState, { createRawTexture3D });
+        getEmptyTexture2DArray(this._engineState, { createRawTexture2DArray });
     }
 
     protected _setupMobileChecks(): void {
