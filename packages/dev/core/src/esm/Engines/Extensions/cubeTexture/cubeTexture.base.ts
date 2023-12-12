@@ -112,7 +112,7 @@ export interface ICubeTextureEngineExtension {
         rootUrl: string,
         scene: Nullable<Scene>,
         files: Nullable<string[]>,
-        noMipmap: boolean,
+        noMipmap: boolean | undefined,
         onLoad: Nullable<(data?: any) => void>,
         onError: Nullable<(message?: string, exception?: any) => void>,
         format: number | undefined,

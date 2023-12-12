@@ -34,6 +34,7 @@ import type { Scene } from "core/scene";
 import type { PostProcess } from "core/PostProcesses/postProcess";
 import type { ICustomAnimationFrameRequester } from "core/Misc/customAnimationFrameRequester";
 import type { ILoadingScreen } from "core/Loading/loadingScreen";
+import { augmentEngineStateWithExtensions } from "./Extensions/engine.extensions";
 
 export interface IBaseEngineOptions {
     /**
@@ -695,6 +696,8 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
     // populateBaseModule(engineState);
 
     EngineStore.Instances.push(engineState);
+
+    augmentEngineStateWithExtensions(engineState);
 
     return engineState;
 }

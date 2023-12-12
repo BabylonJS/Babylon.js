@@ -1,5 +1,6 @@
-import { getAlphaEquation, getAlphaMode, setAlphaConstants, setAlphaEquation, setAlphaMode } from "core/esm/Engines/WebGL/Extensions/alpha/alpha.webgl";
+import * as extension from "core/esm/Engines/WebGL/Extensions/alpha/alpha.webgl";
 import { ThinEngine } from "../../Engines/thinEngine";
+import { EngineExtensions, loadExtension } from "core/esm/Engines/Extensions/engine.extensions";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -42,21 +43,23 @@ declare module "../../Engines/thinEngine" {
 }
 
 ThinEngine.prototype.setAlphaConstants = function (r: number, g: number, b: number, a: number) {
-    setAlphaConstants(this._engineState, r, g, b, a);
+    extension.setAlphaConstants(this._engineState, r, g, b, a);
 };
 
 ThinEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange: boolean = false): void {
-    setAlphaMode(this._engineState, mode, noDepthWriteChange);
+    extension.setAlphaMode(this._engineState, mode, noDepthWriteChange);
 };
 
 ThinEngine.prototype.getAlphaMode = function (): number {
-    return getAlphaMode(this._engineState);
+    return extension.getAlphaMode(this._engineState);
 };
 
 ThinEngine.prototype.setAlphaEquation = function (equation: number): void {
-    setAlphaEquation(this._engineState, equation);
+    extension.setAlphaEquation(this._engineState, equation);
 };
 
 ThinEngine.prototype.getAlphaEquation = function () {
-    return getAlphaEquation(this._engineState);
+    return extension.getAlphaEquation(this._engineState);
 };
+
+loadExtension(EngineExtensions.ALPHA, extension);

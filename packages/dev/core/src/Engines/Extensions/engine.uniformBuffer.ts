@@ -4,14 +4,8 @@ import type { DataBuffer } from "../../Buffers/dataBuffer";
 import type { WebGLDataBuffer } from "../../Meshes/WebGL/webGLDataBuffer";
 import type { IPipelineContext } from "../IPipelineContext";
 import type { WebGLPipelineContext } from "../WebGL/webGLPipelineContext";
-import {
-    bindUniformBlock,
-    bindUniformBuffer,
-    bindUniformBufferBase,
-    createDynamicUniformBuffer,
-    createUniformBuffer,
-    updateUniformBuffer,
-} from "core/esm/Engines/WebGL/Extensions/uniformBuffer/uniformBuffer.webgl";
+import * as extension from "core/esm/Engines/WebGL/Extensions/uniformBuffer/uniformBuffer.webgl";
+import { EngineExtensions, loadExtension } from "core/esm/Engines/Extensions/engine.extensions";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -68,26 +62,28 @@ declare module "../../Engines/thinEngine" {
 }
 
 ThinEngine.prototype.createUniformBuffer = function (elements: FloatArray, _label?: string): DataBuffer {
-    return createUniformBuffer(this._engineState, elements);
+    return extension.createUniformBuffer(this._engineState, elements);
 };
 
 ThinEngine.prototype.createDynamicUniformBuffer = function (elements: FloatArray, _label?: string): DataBuffer {
-    return createDynamicUniformBuffer(this._engineState, elements);
+    return extension.createDynamicUniformBuffer(this._engineState, elements);
 };
 
 ThinEngine.prototype.updateUniformBuffer = function (uniformBuffer: DataBuffer, elements: FloatArray, offset?: number, count?: number): void {
-    updateUniformBuffer(this._engineState, uniformBuffer as WebGLDataBuffer, elements, offset, count);
+    extension.updateUniformBuffer(this._engineState, uniformBuffer as WebGLDataBuffer, elements, offset, count);
 };
 
 ThinEngine.prototype.bindUniformBuffer = function (buffer: Nullable<DataBuffer>): void {
-    bindUniformBuffer(this._engineState, buffer);
+    extension.bindUniformBuffer(this._engineState, buffer);
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 ThinEngine.prototype.bindUniformBufferBase = function (buffer: DataBuffer, location: number, name: string): void {
-    bindUniformBufferBase(this._engineState, buffer as WebGLDataBuffer, location, name);
+    extension.bindUniformBufferBase(this._engineState, buffer as WebGLDataBuffer, location, name);
 };
 
 ThinEngine.prototype.bindUniformBlock = function (pipelineContext: IPipelineContext, blockName: string, index: number): void {
-    bindUniformBlock(this._engineState, pipelineContext as WebGLPipelineContext, blockName, index);
+    extension.bindUniformBlock(this._engineState, pipelineContext as WebGLPipelineContext, blockName, index);
 };
+
+loadExtension(EngineExtensions.UNIFORM_BUFFER, extension);

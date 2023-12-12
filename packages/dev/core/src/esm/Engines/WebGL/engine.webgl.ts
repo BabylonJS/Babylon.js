@@ -373,6 +373,7 @@ export function initWebGLEngineState(
     }
 
     ps._shaderProcessor = ps._webGLVersion > 1 ? new WebGL2ShaderProcessor() : new WebGLShaderProcessor();
+    ps.webGLVersion = ps._webGLVersion;
 
     // Ensures a consistent color space unpacking of textures cross browser.
     ps._gl.pixelStorei(ps._gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, ps._gl.NONE);
@@ -694,7 +695,7 @@ export function unBindFramebuffer(engineState: IWebGLEnginePublic, texture: Rend
         if (texture.isMulti) {
             const extension = getEngineExtension(engineState, EngineExtensions.MULTI_RENDER);
             // This texture is part of a MRT texture, we need to treat all attachments
-            extension.unBindMultiColorAttachmentFramebuffer(engineState, texture, disableGenerateMipMaps, onBeforeUnbind);
+            extension?.unBindMultiColorAttachmentFramebuffer(engineState, texture, disableGenerateMipMaps, onBeforeUnbind);
             return;
         }
         gl.bindFramebuffer(gl.READ_FRAMEBUFFER, webglRTWrapper._MSAAFramebuffer);
@@ -1620,7 +1621,7 @@ export function _deletePipelineContext(engineState: IWebGLEnginePublic, pipeline
     if (webGLPipelineContext && webGLPipelineContext.program) {
         if (webGLPipelineContext.transformFeedback) {
             const extension = getEngineExtension(engineState, EngineExtensions.TRANSFORM_FEEDBACK);
-            extension.deleteTransformFeedback(engineState, webGLPipelineContext.transformFeedback);
+            extension?.deleteTransformFeedback(engineState, webGLPipelineContext.transformFeedback);
             webGLPipelineContext.transformFeedback = null;
         }
         webGLPipelineContext.program.__SPECTOR_rebuildProgram = null;
@@ -1760,10 +1761,10 @@ export function _createShaderProgram(
 
     if (engineState.webGLVersion > 1 && transformFeedbackVaryings) {
         const extension = getEngineExtension(engineState, EngineExtensions.TRANSFORM_FEEDBACK);
-        const transformFeedback = extension.createTransformFeedback(engineState);
+        const transformFeedback = extension?.createTransformFeedback(engineState);
 
-        extension.bindTransformFeedback(engineState, transformFeedback);
-        extension.setTransformFeedbackVaryings(engineState, shaderProgram, transformFeedbackVaryings);
+        extension?.bindTransformFeedback(engineState, transformFeedback!);
+        extension?.setTransformFeedbackVaryings(engineState, shaderProgram, transformFeedbackVaryings);
         pipelineContext.transformFeedback = transformFeedback;
     }
 
@@ -1771,7 +1772,7 @@ export function _createShaderProgram(
 
     if (engineState.webGLVersion > 1 && transformFeedbackVaryings) {
         const extension = getEngineExtension(engineState, EngineExtensions.TRANSFORM_FEEDBACK);
-        extension.bindTransformFeedback(engineState, null);
+        extension?.bindTransformFeedback(engineState, null);
     }
 
     pipelineContext.context = context;
@@ -2429,7 +2430,7 @@ export function _rescaleTexture(
     fes._gl.texParameteri(fes._gl.TEXTURE_2D, fes._gl.TEXTURE_WRAP_S, fes._gl.CLAMP_TO_EDGE);
     fes._gl.texParameteri(fes._gl.TEXTURE_2D, fes._gl.TEXTURE_WRAP_T, fes._gl.CLAMP_TO_EDGE);
     const extension = getEngineExtension(engineState, EngineExtensions.RENDER_TARGET);
-    const rtt = extension.createRenderTargetTexture(
+    const rtt = extension?.createRenderTargetTexture(
         engineState,
         {
             width: destination.width,
@@ -2465,8 +2466,8 @@ export function _rescaleTexture(
             _bindTextureDirectly(engineState, fes._gl.TEXTURE_2D, destination, true);
             fes._gl.copyTexImage2D(fes._gl.TEXTURE_2D, 0, internalFormat, 0, 0, destination.width, destination.height, 0);
 
-            unBindFramebuffer(engineState, rtt);
-            rtt.dispose();
+            unBindFramebuffer(engineState, rtt!);
+            rtt!.dispose();
 
             if (onComplete) {
                 onComplete();

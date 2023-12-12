@@ -1,14 +1,14 @@
 import { Camera } from "../../Cameras/camera";
 import { Engine } from "../../Engines/engine";
+import * as extension from "core/esm/Engines/WebGL/Extensions/multiview/multiview.webgl";
+import { EngineExtensions, loadExtension } from "core/esm/Engines/Extensions/engine.extensions";
 import { Scene } from "../../scene";
-import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import type { Nullable } from "../../types";
 import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { Matrix, TmpVectors } from "../../Maths/math.vector";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import { MultiviewRenderTarget } from "../../Materials/Textures/MultiviewRenderTarget";
 import { Frustum } from "../../Maths/math.frustum";
-import type { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
 import type { RenderTargetWrapper } from "../renderTargetWrapper";
 
 declare module "../../Engines/engine" {
@@ -36,89 +36,18 @@ declare module "../../Engines/engine" {
 }
 
 Engine.prototype.createMultiviewRenderTargetTexture = function (width: number, height: number, colorTexture?: WebGLTexture, depthStencilTexture?: WebGLTexture) {
-    const gl = this._gl;
-
-    if (!this.getCaps().multiview) {
-        throw "Multiview is not supported";
-    }
-
-    const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, { width, height }) as WebGLRenderTargetWrapper;
-
-    rtWrapper._framebuffer = gl.createFramebuffer();
-
-    const internalTexture = new InternalTexture(this, InternalTextureSource.Unknown, true);
-    internalTexture.width = width;
-    internalTexture.height = height;
-    internalTexture.isMultiview = true;
-
-    if (!colorTexture) {
-        colorTexture = gl.createTexture() as WebGLTexture;
-        gl.bindTexture(gl.TEXTURE_2D_ARRAY, colorTexture);
-        (gl as any).texStorage3D(gl.TEXTURE_2D_ARRAY, 1, gl.RGBA8, width, height, 2);
-    }
-
-    rtWrapper._colorTextureArray = colorTexture;
-
-    if (!depthStencilTexture) {
-        depthStencilTexture = gl.createTexture() as WebGLTexture;
-        gl.bindTexture(gl.TEXTURE_2D_ARRAY, depthStencilTexture);
-        (gl as any).texStorage3D(gl.TEXTURE_2D_ARRAY, 1, (gl as any).DEPTH24_STENCIL8, width, height, 2);
-    }
-
-    rtWrapper._depthStencilTextureArray = depthStencilTexture;
-
-    internalTexture.isReady = true;
-
-    rtWrapper.setTextures(internalTexture);
-    rtWrapper._depthStencilTexture = internalTexture;
-
-    return rtWrapper;
+    return extension.createMultiviewRenderTargetTexture(this._engineState, width, height, colorTexture, depthStencilTexture);
 };
 
 Engine.prototype.bindMultiviewFramebuffer = function (_multiviewTexture: RenderTargetWrapper) {
-    const multiviewTexture = _multiviewTexture as WebGLRenderTargetWrapper;
-
-    const gl: any = this._gl;
-    const ext = this.getCaps().oculusMultiview || this.getCaps().multiview;
-
-    this.bindFramebuffer(multiviewTexture, undefined, undefined, undefined, true);
-    gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, multiviewTexture._framebuffer);
-    if (multiviewTexture._colorTextureArray && multiviewTexture._depthStencilTextureArray) {
-        if (this.getCaps().oculusMultiview) {
-            ext.framebufferTextureMultisampleMultiviewOVR(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, multiviewTexture._colorTextureArray, 0, multiviewTexture.samples, 0, 2);
-            ext.framebufferTextureMultisampleMultiviewOVR(
-                gl.DRAW_FRAMEBUFFER,
-                gl.DEPTH_STENCIL_ATTACHMENT,
-                multiviewTexture._depthStencilTextureArray,
-                0,
-                multiviewTexture.samples,
-                0,
-                2
-            );
-        } else {
-            ext.framebufferTextureMultiviewOVR(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, multiviewTexture._colorTextureArray, 0, 0, 2);
-            ext.framebufferTextureMultiviewOVR(gl.DRAW_FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, multiviewTexture._depthStencilTextureArray, 0, 0, 2);
-        }
-    } else {
-        throw "Invalid multiview frame buffer";
-    }
+    extension.bindMultiviewFramebuffer(this._engineState, _multiviewTexture);
 };
 
 Engine.prototype.bindSpaceWarpFramebuffer = function (_spaceWarpTexture: RenderTargetWrapper) {
-    const spaceWarpTexture = _spaceWarpTexture as WebGLRenderTargetWrapper;
-
-    const gl: any = this._gl;
-    const ext = this.getCaps().oculusMultiview || this.getCaps().multiview;
-
-    this.bindFramebuffer(spaceWarpTexture, undefined, undefined, undefined, true);
-    gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, spaceWarpTexture._framebuffer);
-    if (spaceWarpTexture._colorTextureArray && spaceWarpTexture._depthStencilTextureArray) {
-        ext.framebufferTextureMultiviewOVR(gl.DRAW_FRAMEBUFFER, gl.COLOR_ATTACHMENT0, spaceWarpTexture._colorTextureArray, 0, 0, 2);
-        ext.framebufferTextureMultiviewOVR(gl.DRAW_FRAMEBUFFER, gl.DEPTH_ATTACHMENT, spaceWarpTexture._depthStencilTextureArray, 0, 0, 2);
-    } else {
-        throw new Error("Invalid Space Warp framebuffer");
-    }
+    extension.bindSpaceWarpFramebuffer(this._engineState, _spaceWarpTexture);
 };
+
+loadExtension(EngineExtensions.MULTIVIEW, extension);
 
 declare module "../../Cameras/camera" {
     export interface Camera {

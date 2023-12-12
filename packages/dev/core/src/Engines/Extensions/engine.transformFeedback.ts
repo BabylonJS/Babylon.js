@@ -1,6 +1,8 @@
 import type { Nullable } from "../../types";
 import { Engine } from "../../Engines/engine";
 import type { DataBuffer } from "../../Buffers/dataBuffer";
+import * as extension from "core/esm/Engines/WebGL/Extensions/transformFeedback/engine.transformFeedback.webgl";
+import { EngineExtensions, loadExtension } from "core/esm/Engines/Extensions/engine.extensions";
 
 /** @internal */
 // eslint-disable-next-line no-var
@@ -54,33 +56,31 @@ declare module "../../Engines/engine" {
 }
 
 Engine.prototype.createTransformFeedback = function (): WebGLTransformFeedback {
-    const transformFeedback = this._gl.createTransformFeedback();
-    if (!transformFeedback) {
-        throw new Error("Unable to create Transform Feedback");
-    }
-    return transformFeedback;
+    return extension.createTransformFeedback(this._engineState);
 };
 
 Engine.prototype.deleteTransformFeedback = function (value: WebGLTransformFeedback): void {
-    this._gl.deleteTransformFeedback(value);
+    extension.deleteTransformFeedback(this._engineState, value);
 };
 
 Engine.prototype.bindTransformFeedback = function (value: Nullable<WebGLTransformFeedback>): void {
-    this._gl.bindTransformFeedback(this._gl.TRANSFORM_FEEDBACK, value);
+    extension.bindTransformFeedback(this._engineState, value);
 };
 
 Engine.prototype.beginTransformFeedback = function (usePoints: boolean = true): void {
-    this._gl.beginTransformFeedback(usePoints ? this._gl.POINTS : this._gl.TRIANGLES);
+    extension.beginTransformFeedback(this._engineState, usePoints);
 };
 
 Engine.prototype.endTransformFeedback = function (): void {
-    this._gl.endTransformFeedback();
+    extension.endTransformFeedback(this._engineState);
 };
 
 Engine.prototype.setTranformFeedbackVaryings = function (program: WebGLProgram, value: string[]): void {
-    this._gl.transformFeedbackVaryings(program, value, this._gl.INTERLEAVED_ATTRIBS);
+    extension.setTranformFeedbackVaryings(this._engineState, program, value);
 };
 
 Engine.prototype.bindTransformFeedbackBuffer = function (value: Nullable<DataBuffer>): void {
-    this._gl.bindBufferBase(this._gl.TRANSFORM_FEEDBACK_BUFFER, 0, value ? value.underlyingResource : null);
+    extension.bindTransformFeedbackBuffer(this._engineState, value);
 };
+
+loadExtension(EngineExtensions.TRANSFORM_FEEDBACK, extension);

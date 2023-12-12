@@ -11,7 +11,7 @@ export const getInputElement = function (engineState: IWebGLEnginePublic): Nulla
     return extensionState.inputElement || getRenderingCanvas(engineState);
 };
 
-export const registerView = function (engineState: IWebGLEnginePublic, canvas: HTMLCanvasElement, camera?: Camera, clearBeforeCopy?: boolean): EngineView {
+export const registerView = function (engineState: IWebGLEnginePublic, canvas: HTMLCanvasElement, camera?: Camera | Camera[], clearBeforeCopy?: boolean): EngineView {
     const extensionState = _getExtensionState(engineState);
     if (!extensionState.views) {
         extensionState.views = [];
@@ -32,7 +32,7 @@ export const registerView = function (engineState: IWebGLEnginePublic, canvas: H
     const newView = { target: canvas, camera, clearBeforeCopy, enabled: true, id: (Math.random() * 100000).toFixed() };
     extensionState.views.push(newView);
 
-    if (camera) {
+    if (camera && !Array.isArray(camera)) {
         camera.onDisposeObservable.add(() => {
             unRegisterView(engineState, canvas);
         });
@@ -74,18 +74,22 @@ export const _renderViewStep = function (engineState: IWebGLEnginePublic, view: 
     extensionState.onBeforeViewRenderObservable.notifyObservers(view);
     const camera = view.camera;
     let previewCamera: Nullable<Camera> = null;
+    let previewCameras: Nullable<Camera[]> = null;
     let scene: Nullable<Scene> = null;
     if (camera) {
-        scene = camera.getScene();
+        scene = Array.isArray(camera) ? camera[0].getScene() : camera.getScene();
 
-        if (!scene || (scene.activeCameras && scene.activeCameras.length)) {
-            return true;
-        }
+        previewCamera = scene.activeCamera;
+        previewCameras = scene.activeCameras;
 
         extensionState.activeView = view;
 
-        previewCamera = scene.activeCamera;
-        scene.activeCamera = camera;
+        if (Array.isArray(camera)) {
+            scene.activeCameras = camera;
+        } else {
+            scene.activeCamera = camera;
+            scene.activeCameras = null;
+        }
     }
 
     if (view.customResize) {
@@ -119,7 +123,8 @@ export const _renderViewStep = function (engineState: IWebGLEnginePublic, view: 
     context.drawImage(parent, 0, 0);
 
     // Restore
-    if (previewCamera && scene) {
+    if (scene) {
+        scene.activeCameras = previewCameras;
         scene.activeCamera = previewCamera;
     }
     extensionState.onAfterViewRenderObservable.notifyObservers(view);

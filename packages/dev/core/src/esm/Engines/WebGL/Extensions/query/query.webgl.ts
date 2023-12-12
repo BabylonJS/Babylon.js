@@ -45,7 +45,7 @@ export const endOcclusionQuery = function (engineState: IWebGLEnginePublic, algo
     return fes;
 };
 
-const _createTimeQuery = function (engineState: IWebGLEnginePublic): WebGLQuery {
+export const _createTimeQuery = function (engineState: IWebGLEnginePublic): WebGLQuery {
     const fes = engineState as WebGLEngineState;
     const timerQuery = <EXT_disjoint_timer_query>fes._caps.timerQuery;
 
@@ -56,7 +56,7 @@ const _createTimeQuery = function (engineState: IWebGLEnginePublic): WebGLQuery 
     return createQuery(fes);
 };
 
-const _deleteTimeQuery = function (engineState: IWebGLEnginePublic, query: WebGLQuery): void {
+export const _deleteTimeQuery = function (engineState: IWebGLEnginePublic, query: WebGLQuery): void {
     const fes = engineState as WebGLEngineState;
     const timerQuery = <EXT_disjoint_timer_query>fes._caps.timerQuery;
 
@@ -68,7 +68,7 @@ const _deleteTimeQuery = function (engineState: IWebGLEnginePublic, query: WebGL
     deleteQuery(fes, query);
 };
 
-const _getTimeQueryResult = function (engineState: IWebGLEnginePublic, query: WebGLQuery): any {
+export const _getTimeQueryResult = function (engineState: IWebGLEnginePublic, query: WebGLQuery): any {
     const fes = engineState as WebGLEngineState;
     const timerQuery = <EXT_disjoint_timer_query>fes._caps.timerQuery;
 
@@ -229,7 +229,7 @@ export const captureGPUFrameTime = function (engineState: IWebGLEnginePublic, va
     }
 };
 
-const _getGlAlgorithmType = function (engineState: IWebGLEnginePublic, algorithmType: number): number {
+export const _getGlAlgorithmType = function (engineState: IWebGLEnginePublic, algorithmType: number): number {
     const fes = engineState as WebGLEngineState;
     return algorithmType === AbstractMesh.OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE ? fes._gl.ANY_SAMPLES_PASSED_CONSERVATIVE : fes._gl.ANY_SAMPLES_PASSED;
 };

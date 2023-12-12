@@ -222,6 +222,7 @@ import { _createTextureBase, _releaseEffectBase, _renderLoopBase, _restoreEngine
 import { _loadFile } from "core/esm/Engines/engine.tools";
 import type { ISceneLike } from "core/esm/Engines/engine.interfaces";
 import { hostInformation } from "core/esm/Engines/runtimeEnvironment";
+import { augmentEngineState } from "core/esm/Engines/engine.adapters";
 
 /**
  * Information about the current host
@@ -1162,6 +1163,22 @@ export class ThinEngine {
         });
         this._engineState.onContextRestoredObservable.add(() => {
             this.onContextRestoredObservable.notifyObservers(this);
+        });
+
+        augmentEngineState(this._engineState, {
+            // add all of the thinEngine functions here
+            _unpackFlipY,
+            updateTextureSamplingMode,
+            _getRGBABufferInternalSizedFormat,
+            _uploadDataToTextureDirectly,
+            enableEffect,
+            setState,
+            setDepthBuffer,
+            createEffect,
+            _bindTexture,
+            setTexture,
+            restoreDefaultFramebuffer,
+            _releaseRenderTargetWrapper,
         });
     }
 

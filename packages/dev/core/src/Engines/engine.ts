@@ -70,6 +70,7 @@ import {
     hideLoadingUI,
     releaseRenderPassId,
     restoreStencilState,
+    setDepthWrite,
     setLoadingScreen,
     switchFullscreen,
 } from "core/esm/Engines/engine.base";
@@ -87,6 +88,7 @@ import {
 } from "core/esm/Engines/engine.static";
 import { getAspectRatioBase, getScreenAspectRatioBase } from "core/esm/Engines/engine.extendable";
 import { _loadFile, _reportDrawCall } from "core/esm/Engines/engine.tools";
+import { augmentEngineState } from "core/esm/Engines/engine.adapters";
 
 /**
  * Defines the interface used by objects containing a viewport (like a camera)
@@ -608,6 +610,10 @@ export class Engine extends ThinEngine {
         });
         this._engineState.onCanvasFocusObservable.add(() => {
             this.onCanvasFocusObservable.notifyObservers(this);
+        });
+
+        augmentEngineState(this._engineState, {
+            setDepthWrite,
         });
     }
 
