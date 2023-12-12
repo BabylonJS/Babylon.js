@@ -79,10 +79,11 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             offset: number;
         };
         const properties: PlyProperty[] = [];
-        for (const prop of header
+        const filtered = header
             .slice(0, headerEndIndex)
             .split("\n")
-            .filter((k) => k.startsWith("property "))) {
+            .filter((k) => k.startsWith("property "));
+        for (const prop of filtered) {
             const [_p, type, name] = prop.split(" ");
             properties.push({ name, type, offset: rowOffset });
             if (!offsets[type]) throw new Error(`Unsupported property type: ${type}`);
