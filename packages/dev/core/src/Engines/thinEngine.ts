@@ -1184,6 +1184,8 @@ export class ThinEngine {
             createTexture,
             _releaseTexture,
             _releaseEffect,
+            _bindUnboundFramebuffer,
+            getUniforms,
         });
         getEmptyCubeTexture(this._engineState, { createRawCubeTexture });
         getEmptyTexture(this._engineState, { createRawTexture });

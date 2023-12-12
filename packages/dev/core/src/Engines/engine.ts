@@ -90,6 +90,8 @@ import { getAspectRatioBase, getScreenAspectRatioBase } from "core/esm/Engines/e
 import { _loadFile, _reportDrawCall } from "core/esm/Engines/engine.tools";
 import { augmentEngineState } from "core/esm/Engines/engine.adapters";
 
+import { EngineStore as EngineStoreLegacy } from "./engineStore";
+
 /**
  * Defines the interface used by objects containing a viewport (like a camera)
  */
@@ -615,6 +617,8 @@ export class Engine extends ThinEngine {
         augmentEngineState(this._engineState, {
             setDepthWrite,
         });
+
+        EngineStoreLegacy.Instances.push(this);
     }
 
     // protected _initGLContext(): void {
@@ -1362,7 +1366,9 @@ export class Engine extends ThinEngine {
         return _readPixelsAsync(this._engineState, x, y, w, h, format, type, outputBuffer);
     }
 
-    // public dispose(): void {
+    public dispose(): void {
+        EngineStoreLegacy.Instances.splice(EngineStoreLegacy.Instances.indexOf(this), 1);
+    }
     //     this.hideLoadingUI();
 
     //     this.onNewSceneAddedObservable.clear();
