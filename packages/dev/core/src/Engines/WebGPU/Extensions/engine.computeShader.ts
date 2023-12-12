@@ -88,7 +88,9 @@ WebGPUEngine.prototype.computeDispatch = function (
         computePass.setBindGroup(i, bindGroup);
     }
 
-    computePass.dispatchWorkgroups(x, y, z);
+    if (x + (y || 0) + (z || 0) > 0) {
+        computePass.dispatchWorkgroups(x, y, z);
+    }
     computePass.end();
 };
 
