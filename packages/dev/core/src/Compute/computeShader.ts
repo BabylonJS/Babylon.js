@@ -336,11 +336,11 @@ export class ComputeShader {
      * @returns True if the dispatch could be done, else false (meaning either the compute effect or at least one of the bound resources was not ready)
      */
     public dispatch(x: number, y?: number, z?: number): boolean {
-        if (!this.fastMode && !this.isReady()) {
-            return false;
-        }
-
         if (!this.fastMode) {
+            if (!this.isReady()) {
+                return false;
+            }
+
             // If the sampling parameters of a texture bound to the shader have changed, we must clear the compute context so that it is recreated with the updated values
             // Also, if the actual (gpu) buffer used by a uniform buffer has changed, we must clear the compute context so that it is recreated with the updated value
             for (const key in this._bindings) {
