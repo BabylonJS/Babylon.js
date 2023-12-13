@@ -44,7 +44,6 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
         const pathConverter = new InteractivityPathToObjectConverter(this._loader.gltf);
 
         const json = convertGLTFToSerializedFlowGraph(interactivityDefinition);
-        console.log("flow graph json", json);
         const coordinator = new FlowGraphCoordinator({ scene });
         const graph = FlowGraph.Parse(json, { coordinator, pathConverter });
         const context = graph.getContext(0);

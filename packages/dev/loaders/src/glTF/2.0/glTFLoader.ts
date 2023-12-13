@@ -1700,7 +1700,6 @@ export class GLTFLoader implements IGLTFLoader {
                 switch (data.interpolation) {
                     case AnimationSamplerInterpolation.STEP: {
                         for (let index = 0; index < input.length; index++) {
-                            // const value = targetInfo.get(targetInfo.object, property, output, outputOffset, 1);
                             const value = propertyInfo.getValue(target, output, outputOffset, 1);
                             outputOffset += stride;
 
@@ -1714,13 +1713,10 @@ export class GLTFLoader implements IGLTFLoader {
                     }
                     case AnimationSamplerInterpolation.CUBICSPLINE: {
                         for (let index = 0; index < input.length; index++) {
-                            // const inTangent = targetInfo.get(targetInfo.object, property, output, outputOffset, invfps);
                             const inTangent = propertyInfo.getValue(target, output, outputOffset, invfps);
                             outputOffset += stride;
-                            // const value = targetInfo.get(targetInfo.object, property, output, outputOffset, 1);
                             const value = propertyInfo.getValue(target, output, outputOffset, 1);
                             outputOffset += stride;
-                            // const outTangent = targetInfo.get(targetInfo.object, property, output, outputOffset, invfps);
                             const outTangent = propertyInfo.getValue(target, output, outputOffset, invfps);
                             outputOffset += stride;
 
@@ -1735,7 +1731,6 @@ export class GLTFLoader implements IGLTFLoader {
                     }
                     case AnimationSamplerInterpolation.LINEAR: {
                         for (let index = 0; index < input.length; index++) {
-                            // const value = targetInfo.get(targetInfo.object, property, output, outputOffset, 1);
                             const value = propertyInfo.getValue(target, output, outputOffset, 1);
                             outputOffset += stride;
 

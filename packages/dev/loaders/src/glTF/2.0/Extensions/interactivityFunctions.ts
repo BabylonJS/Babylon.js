@@ -5,7 +5,6 @@ import type { ISerializedFlowGraph, ISerializedFlowGraphBlock, ISerializedFlowGr
 import { RandomGUID } from "core/Misc/guid";
 import { gltfToFlowGraphTypeMap, gltfTypeToBabylonType } from "./interactivityUtils";
 import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
-import type { IGLTF } from "../glTFLoaderInterfaces";
 
 function convertValueWithType(configObject: IKHRInteractivity_Configuration, definition: IKHRInteractivity, context: string) {
     if (configObject.type !== undefined) {

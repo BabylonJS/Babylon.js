@@ -51,7 +51,7 @@ class CameraAnimationPropertyInfo extends AnimationPropertyInfo {
     }
 }
 
-export class MaterialAnimationPropertyInfo extends AnimationPropertyInfo {
+class MaterialAnimationPropertyInfo extends AnimationPropertyInfo {
     /** @internal */
     public buildAnimations(target: IMaterial, name: string, fps: number, keys: any[], callback: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void): void {
         for (const fillMode in target._data!) {
