@@ -14,8 +14,7 @@ import { FlowGraphPathConverterComponent } from "core/FlowGraph/flowGraphPathCon
 export interface IFlowGraphPlayAnimationBlockConfiguration extends IFlowGraphBlockConfiguration {
     targetPath: string;
     animationPath: string;
-    targetAccessor: IPathToObjectConverter<IObjectAccessor>;
-    animationAccessor: IPathToObjectConverter<IObjectAccessor>;
+    pathConverter: IPathToObjectConverter<IObjectAccessor>;
 }
 /**
  * @experimental
@@ -71,9 +70,9 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      * @param context
      */
     public _preparePendingTasks(context: FlowGraphContext): void {
-        const targetAccessor = this.templateTargetComponent.getAccessor(this.config.targetAccessor, context);
+        const targetAccessor = this.templateTargetComponent.getAccessor(this.config.pathConverter, context);
         const targetValue = targetAccessor.accessor.getObject(targetAccessor.object);
-        const animationAccessor = this.templateAnimationComponent.getAccessor(this.config.targetAccessor, context);
+        const animationAccessor = this.templateAnimationComponent.getAccessor(this.config.pathConverter, context);
         const animationValue = animationAccessor.accessor.get(animationAccessor.object);
 
         if (!targetValue || !animationValue) {
@@ -133,7 +132,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     }
 
     public getClassName(): string {
-        return "FGPlayAnimationBlock";
+        return FlowGraphPlayAnimationBlock.ClassName;
     }
 
     public serialize(serializationObject: any = {}) {
@@ -141,6 +140,8 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
         serializationObject.config.targetPath = this.config.targetPath;
         serializationObject.config.animationPath = this.config.animationPath;
     }
+
+    public static ClassName = "FGPlayAnimationBlock";
 }
 
-RegisterClass("FGPlayAnimationBlock", FlowGraphPlayAnimationBlock);
+RegisterClass(FlowGraphPlayAnimationBlock.ClassName, FlowGraphPlayAnimationBlock);

@@ -9,7 +9,6 @@ import {
     FlowGraphForLoopBlock,
     FlowGraphConsoleLogBlock,
     FlowGraphMultiGateBlock,
-    FlowGraphPath,
     FlowGraphSceneReadyEventBlock,
     FlowGraphSceneTickEventBlock,
     FlowGraphSetPropertyBlock,

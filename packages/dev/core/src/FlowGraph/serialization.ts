@@ -82,3 +82,16 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
     }
     return finalValue;
 }
+
+/**
+ * Given a name of a flow graph block class, return if this
+ * class needs to be created with a path converter. Used in
+ * parsing.
+ * @param className the name of the flow graph block class
+ * @returns a boolean indicating if the class needs a path converter
+ */
+export function needsPathConverter(className: string) {
+    // I am not using the ClassName property here because it was causing a circular dependency
+    // that jest didn't like!
+    return className === "FGSetPropertyBlock" || className === "FGGetPropertyBlock" || className === "FGPlayAnimationBlock" || className === "FGMeshPickEventBlock";
+}

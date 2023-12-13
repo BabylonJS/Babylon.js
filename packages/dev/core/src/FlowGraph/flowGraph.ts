@@ -11,6 +11,8 @@ import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import type { ISerializedFlowGraph } from "./typeDefinitions";
 import { FlowGraphMeshPickEventBlock } from "./Blocks/Event/flowGraphMeshPickEventBlock";
 import { _isADescendantOf } from "./utils";
+import type { IObjectAccessor, IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
+import { defaultValueParseFunction } from "./serialization";
 
 export enum FlowGraphState {
     /**
@@ -27,7 +29,7 @@ export enum FlowGraphState {
  * @experimental
  * Parameters used to create a flow graph.
  */
-export interface FlowGraphParams {
+export interface IFlowGraphParams {
     /**
      * The scene that the flow graph belongs to.
      */
@@ -36,6 +38,16 @@ export interface FlowGraphParams {
      * The event coordinator used by the flow graph.
      */
     coordinator: FlowGraphCoordinator;
+}
+
+/**
+ * @experimental
+ * Options for parsing a flow graph.
+ */
+export interface IFlowGraphParseOptions {
+    valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any;
+    coordinator: FlowGraphCoordinator;
+    pathConverter: IPathToObjectConverter<IObjectAccessor>;
 }
 /**
  * @experimental
@@ -64,7 +76,7 @@ export class FlowGraph {
      * Construct a Flow Graph
      * @param params construction parameters. currently only the scene
      */
-    public constructor(params: FlowGraphParams) {
+    public constructor(params: IFlowGraphParams) {
         this._scene = params.scene;
         this._coordinator = params.coordinator;
         this._sceneDisposeObserver = this._scene.onDisposeObservable.add(() => this.dispose());
@@ -252,16 +264,13 @@ export class FlowGraph {
      * @param valueParseFunction a function to parse complex values in a scene
      * @returns
      */
-    public static Parse(
-        serializationObject: ISerializedFlowGraph,
-        coordinator: FlowGraphCoordinator,
-        valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any
-    ): FlowGraph {
-        const graph = coordinator.createGraph();
+    public static Parse(serializationObject: ISerializedFlowGraph, options: IFlowGraphParseOptions): FlowGraph {
+        const graph = options.coordinator.createGraph();
         const blocks: FlowGraphBlock[] = [];
+        const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
         // Parse all blocks
         for (const serializedBlock of serializationObject.allBlocks) {
-            const block = FlowGraphBlock.Parse(serializedBlock, coordinator.config.scene, valueParseFunction);
+            const block = FlowGraphBlock.Parse(serializedBlock, { scene: options.coordinator.config.scene, pathConverter: options.pathConverter, valueParseFunction });
             blocks.push(block);
             if (block instanceof FlowGraphEventBlock) {
                 graph.addEventBlock(block);
@@ -285,7 +294,7 @@ export class FlowGraph {
             }
         }
         for (const serializedContext of serializationObject.executionContexts) {
-            FlowGraphContext.Parse(serializedContext, graph, valueParseFunction);
+            FlowGraphContext.Parse(serializedContext, { graph, valueParseFunction });
         }
         return graph;
     }

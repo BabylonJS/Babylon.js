@@ -7,7 +7,6 @@ import {
     FlowGraphCoordinator,
     FlowGraphConsoleLogBlock,
     FlowGraphMeshPickEventBlock,
-    FlowGraphPath,
     FlowGraphReceiveCustomEventBlock,
     FlowGraphSceneReadyEventBlock,
     FlowGraphSendCustomEventBlock,

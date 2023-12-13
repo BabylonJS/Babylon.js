@@ -4,7 +4,7 @@ import type { FlowGraphContext } from "./flowGraphContext";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import { RichTypeNumber } from "./flowGraphRichTypes";
 
-const pathHasTemplatesRegex = /\{(\w+)\}/g;
+const pathHasTemplatesRegex = new RegExp(/\{(\w+)\}/g);
 
 /**
  * @experimental
@@ -19,11 +19,11 @@ export class FlowGraphPathConverterComponent {
         public path: string,
         public ownerBlock: FlowGraphBlock
     ) {
-        const templateMatches = [...path.matchAll(pathHasTemplatesRegex)];
-        if (templateMatches && templateMatches.length > 0) {
-            for (const [, matchGroup] of templateMatches) {
-                this.templatedInputs.push(ownerBlock.registerDataInput(matchGroup, RichTypeNumber));
-            }
+        let match = pathHasTemplatesRegex.exec(path);
+        while (match) {
+            const [, matchGroup] = match;
+            this.templatedInputs.push(ownerBlock.registerDataInput(matchGroup, RichTypeNumber));
+            match = pathHasTemplatesRegex.exec(path);
         }
     }
 

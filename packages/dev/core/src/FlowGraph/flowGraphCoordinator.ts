@@ -1,6 +1,8 @@
 import { Observable } from "core/Misc/observable";
 import type { Scene } from "../scene";
 import { FlowGraph } from "./flowGraph";
+import type { IObjectAccessor, IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
+import { defaultValueParseFunction } from "./serialization";
 
 /**
  * @experimental
@@ -10,6 +12,12 @@ export class IFlowGraphCoordinatorConfiguration {
     /**
      * The scene that the flow graph engine belongs to.
      */
+    scene: Scene;
+}
+
+export class IFlowGraphCoordinatorParseOptions {
+    valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any;
+    pathConverter: IPathToObjectConverter<IObjectAccessor>;
     scene: Scene;
 }
 /**
@@ -91,10 +99,11 @@ export class FlowGraphCoordinator {
         });
     }
 
-    public static Parse(serializedObject: any, scene: Scene, valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any) {
-        const coordinator = new FlowGraphCoordinator({ scene });
+    public static Parse(serializedObject: any, options: IFlowGraphCoordinatorParseOptions) {
+        const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
+        const coordinator = new FlowGraphCoordinator({ scene: options.scene });
         serializedObject._flowGraphs?.forEach((serializedGraph: any) => {
-            FlowGraph.Parse(serializedGraph, coordinator, valueParseFunction);
+            FlowGraph.Parse(serializedGraph, { coordinator, valueParseFunction, pathConverter: options.pathConverter });
         });
         return coordinator;
     }
