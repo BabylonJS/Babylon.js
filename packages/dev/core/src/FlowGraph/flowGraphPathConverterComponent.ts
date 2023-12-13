@@ -1,4 +1,4 @@
-import type { IObjectAccessorContainer, IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
+import type { IObjectAccessor, IObjectAccessorContainer, IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import type { FlowGraphContext } from "./flowGraphContext";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
@@ -6,11 +6,16 @@ import { RichTypeNumber } from "./flowGraphRichTypes";
 
 const pathHasTemplatesRegex = /\{(\w+)\}/g;
 
+/**
+ * @experimental
+ * A component that converts a path to an object accessor.
+ */
 export class FlowGraphPathConverterComponent {
+    /**
+     * The templated inputs for the provided path.
+     */
     public readonly templatedInputs: FlowGraphDataConnection<number>[] = [];
-    public readonly templateStrings: string[] = [];
-    constructor(
-        public pathConverter: IPathToObjectConverter,
+    public constructor(
         public path: string,
         public ownerBlock: FlowGraphBlock
     ) {
@@ -22,15 +27,12 @@ export class FlowGraphPathConverterComponent {
         }
     }
 
-    getAccessor(context: FlowGraphContext): IObjectAccessorContainer | undefined {
+    public getAccessor(pathConverter: IPathToObjectConverter<IObjectAccessor>, context: FlowGraphContext): IObjectAccessorContainer<IObjectAccessor> {
         let finalPath = this.path;
         for (const templatedInput of this.templatedInputs) {
             const valueToReplace = templatedInput.getValue(context);
             finalPath = finalPath.replace(`{${templatedInput.name}}`, valueToReplace.toString());
         }
-        if (this.pathConverter) {
-            return this.pathConverter.convert(finalPath);
-        }
-        return undefined;
+        return pathConverter.convert(finalPath);
     }
 }

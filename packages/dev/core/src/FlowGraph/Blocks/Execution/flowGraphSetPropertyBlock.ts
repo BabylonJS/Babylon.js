@@ -5,7 +5,7 @@ import { FlowGraphExecutionBlockWithOutSignal } from "../../flowGraphWithOnDoneE
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { FlowGraphPathConverterComponent } from "../../flowGraphPathConverterComponent";
-import type { IPathToObjectConverter } from "core/ObjectModel/objectModelInterfaces";
+import type { IObjectAccessor, IPathToObjectConverter } from "core/ObjectModel/objectModelInterfaces";
 
 /**
  * @experimental
@@ -17,7 +17,10 @@ export interface IFlowGraphSetPropertyBlockConfiguration extends IFlowGraphBlock
      * entity on the context variables.
      */
     path: string;
-    pathAccessor: IPathToObjectConverter;
+    /**
+     * The path converter to use to convert the path to an object accessor.
+     */
+    pathConverter: IPathToObjectConverter<IObjectAccessor>;
 }
 
 /**
@@ -38,24 +41,20 @@ export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphExecutionBlockWi
         super(config);
 
         this.a = this.registerDataInput("a", RichTypeAny);
-        this.templateComponent = new FlowGraphPathConverterComponent(config.pathAccessor, config.path, this);
+        this.templateComponent = new FlowGraphPathConverterComponent(config.path, this);
     }
 
     public _execute(context: FlowGraphContext): void {
         const value = this.a.getValue(context);
-        const accessor = this.templateComponent.getAccessor(context);
-        if (accessor?.accessor && accessor.accessor.set) {
-            accessor.accessor.set(accessor.object, value);
-        } else {
-            throw new Error("Set property block requires a valid path");
-        }
+        const accessor = this.templateComponent.getAccessor(this.config.pathConverter, context);
+        accessor.accessor.set(value, accessor.object);
 
         this.out._activateSignal(context);
     }
 
     public serialize(serializationObject: any = {}) {
-        // super.serialize(serializationObject);
-        // serializationObject.config.path = this.config.path.serialize();
+        super.serialize(serializationObject);
+        serializationObject.config.path = this.config.path;
     }
 
     public getClassName(): string {

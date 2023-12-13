@@ -1,8 +1,14 @@
 import type { IObjectAccessorContainer, IPathToObjectConverter } from "core/ObjectModel/objectModelInterfaces";
 import type { IGLTF } from "../glTFLoaderInterfaces";
 
-export class GLTFPathToObjectConverter implements IPathToObjectConverter {
-    constructor(
+/**
+ * A converter that takes a glTF Object Model JSON Pointer
+ * and transforms it into an ObjectAccessorContainer, allowing
+ * objects referenced in the glTF to be associated with their
+ * respective Babylon.js objects.
+ */
+export class GLTFPathToObjectConverter<T> implements IPathToObjectConverter<T> {
+    public constructor(
         public gltf: IGLTF,
         public infoTree: any
     ) {}
@@ -24,13 +30,13 @@ export class GLTFPathToObjectConverter implements IPathToObjectConverter {
      *  - "/materials/2/pbrMetallicRoughness/baseColorFactor"
      *  - "/materials/2/extensions/KHR_materials_emissive_strength/emissiveStrength"
      */
-    convert(path: string): IObjectAccessorContainer | undefined {
+    convert(path: string): IObjectAccessorContainer<T> {
         let objectTree: any = this.gltf;
         let infoTree: any = this.infoTree;
         let target: any = undefined;
 
         if (!path.startsWith("/")) {
-            return undefined;
+            throw new Error("Path must start with a /");
         }
         const parts = path.split("/");
         parts.shift();
@@ -41,11 +47,11 @@ export class GLTFPathToObjectConverter implements IPathToObjectConverter {
             } else {
                 infoTree = infoTree[part];
                 if (!infoTree) {
-                    return undefined;
+                    throw new Error(`Path ${path} is invalid`);
                 }
             }
             if (objectTree === undefined) {
-                return undefined;
+                throw new Error(`Path ${path} is invalid`);
             }
             objectTree = objectTree[part];
 

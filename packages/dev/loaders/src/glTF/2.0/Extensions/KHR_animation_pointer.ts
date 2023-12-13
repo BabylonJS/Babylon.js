@@ -1,6 +1,5 @@
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-// import type { IAnimationTargetInfo } from "../glTFLoader";
 import type { Nullable } from "core/types";
 import type { Animation } from "core/Animations/animation";
 import type { IAnimatable } from "core/Animations/animatable.interface";
@@ -10,6 +9,7 @@ import { AnimationChannelTargetPath } from "babylonjs-gltf2interface";
 import { Logger } from "core/Misc/logger";
 import { animationPointerTree } from "./KHR_animation_pointer.data";
 import { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
+import type { AnimationPropertyInfo } from "../glTFLoaderAnimation";
 
 const NAME = "KHR_animation_pointer";
 
@@ -17,7 +17,7 @@ const NAME = "KHR_animation_pointer";
  * Class to convert an animation pointer path to a smart object that
  * gets data from the animation buffer and creates animations.
  */
-export class AnimationPointerPathToObjectConverter extends GLTFPathToObjectConverter {
+class AnimationPointerPathToObjectConverter extends GLTFPathToObjectConverter<AnimationPropertyInfo[]> {
     constructor(public gltf: IGLTF) {
         super(gltf, animationPointerTree);
     }
@@ -92,13 +92,13 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
         }
 
         const pathToObjConverter = new AnimationPointerPathToObjectConverter(this._loader.gltf);
-        const targetInfo = pathToObjConverter.convert(pointer);
-        if (!targetInfo) {
+        try {
+            const targetInfo = pathToObjConverter.convert(pointer);
+            return this._loader._loadAnimationChannelFromTargetInfoAsync(context, animationContext, animation, channel, targetInfo, onLoad);
+        } catch (e) {
             Logger.Warn(`${extensionContext}/pointer: Invalid pointer (${pointer}) skipped`);
             return null;
         }
-
-        return this._loader._loadAnimationChannelFromTargetInfoAsync(context, animationContext, animation, channel, targetInfo, onLoad);
     }
 }
 

@@ -1,9 +1,10 @@
+import type { IObjectAccessor } from "core/ObjectModel";
 import type { IGLTF, INode } from "../glTFLoaderInterfaces";
 import { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
 import type { TransformNode } from "core/Meshes";
 
-export class InteractivityPathToObjectConverter extends GLTFPathToObjectConverter {
-    constructor(public gltf: IGLTF) {
+export class InteractivityPathToObjectConverter extends GLTFPathToObjectConverter<IObjectAccessor> {
+    public constructor(public gltf: IGLTF) {
         super(gltf, gltfTree);
     }
 }
@@ -17,9 +18,12 @@ const nodesTree = {
                 const babylonObject = node._babylonTransformNode as TransformNode;
                 return babylonObject.position;
             },
-            set: (node: INode, value: any) => {
+            set: (value: any, node: INode) => {
                 const babylonObject = node._babylonTransformNode as TransformNode;
                 babylonObject.position = value;
+            },
+            getObject(node: INode) {
+                return node._babylonTransformNode;
             },
         },
     },

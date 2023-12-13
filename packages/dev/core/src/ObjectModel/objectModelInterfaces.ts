@@ -1,15 +1,29 @@
-export interface IObjectAccessorContainer {
+/**
+ * A container with an original object and an accessor that allows modifying properties
+ * on some other object.
+ */
+export interface IObjectAccessorContainer<T> {
     object: any;
-    type?: any;
-    extras?: any;
-    accessor: any; // Ideally, IObjectAccessor
+    accessor: T;
 }
 
+/**
+ * An accessor that allows modifying properties on some other object.
+ */
 export interface IObjectAccessor {
+    /**
+     * The type of the object that is converted
+     */
+    type: string;
     get(...args: any[]): any;
-    set?(value: any, ...args: any[]): void;
+    set(value: any, ...args: any[]): void;
+    getObject(obj: any): any;
 }
 
-export interface IPathToObjectConverter {
-    convert(path: string): IObjectAccessorContainer | undefined;
+/**
+ * Interface for a converter that takes a string path and transforms
+ * it into an ObjectAccessorContainer.
+ */
+export interface IPathToObjectConverter<T> {
+    convert(path: string): IObjectAccessorContainer<T>;
 }

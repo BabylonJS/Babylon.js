@@ -1648,7 +1648,7 @@ export class GLTFLoader implements IGLTFLoader {
             }
         }
 
-        const targetInfo: IObjectAccessorContainer = {
+        const targetInfo = {
             object: targetNode,
             accessor: properties,
         };
@@ -1672,7 +1672,7 @@ export class GLTFLoader implements IGLTFLoader {
         animationContext: string,
         animation: IAnimation,
         channel: IAnimationChannel,
-        targetInfo: IObjectAccessorContainer,
+        targetInfo: IObjectAccessorContainer<AnimationPropertyInfo[]>,
         onLoad: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void
     ): Promise<void> {
         const fps = this.parent.targetFps;

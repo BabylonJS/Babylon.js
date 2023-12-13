@@ -50,8 +50,8 @@ function convertConfiguration(gltfBlock: IKHRInteractivity_Node, definition: IKH
             // Convert from a GLTF path to a reference to the Babylon.js object
             const pathValue = configObject.value as string;
             converted.path = pathValue;
-            const pathAccessor = new InteractivityPathToObjectConverter(gltf);
-            converted.pathAccessor = pathAccessor;
+            const pathConverter = new InteractivityPathToObjectConverter(gltf);
+            converted.pathConverter = pathConverter;
         } else {
             converted[configObject.id] = convertValueWithType(configObject, definition, `/extensions/KHR_interactivity/nodes/${id}`);
         }
