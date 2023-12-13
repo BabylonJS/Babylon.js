@@ -485,6 +485,23 @@ export interface IBaseEnginePublic {
      * Gets the current alpha state object
      */
     readonly alphaState: AlphaState;
+
+    /**
+     * Gets the default empty texture
+     */
+    readonly emptyTexture: Nullable<InternalTexture>;
+    /**
+     * Gets the default empty 3D texture
+     */
+    readonly emptyCubeTexture: Nullable<InternalTexture>;
+    /**
+     * Gets the default empty 2D array texture
+     */
+    readonly emptyTexture3D: Nullable<InternalTexture>;
+    /**
+     * Gets the default empty cube texture
+     */
+    readonly emptyTexture2DArray: Nullable<InternalTexture>;
 }
 
 export type BaseEngineState<T extends IBaseEnginePublic = IBaseEnginePublic> = T & IBaseEngineInternals & IBaseEngineProtected;
@@ -613,7 +630,10 @@ export function initBaseEngineState(overrides: Partial<BaseEngineState> = {}, op
         get alphaState(): AlphaState {
             return engineState._alphaState;
         },
-
+        emptyTexture: null,
+        emptyCubeTexture: null,
+        emptyTexture3D: null,
+        emptyTexture2DArray: null,
         // internals
         _uniformBuffers: [],
         _storageBuffers: [],

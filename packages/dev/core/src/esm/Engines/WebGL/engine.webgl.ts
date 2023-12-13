@@ -18,6 +18,10 @@ import {
     _getGlobalDefines,
     getCaps,
     getLoadedTexturesCache,
+    getEmptyCubeTexture,
+    getEmptyTexture,
+    getEmptyTexture2DArray,
+    getEmptyTexture3D,
 } from "../engine.base";
 import { WebGLShaderProcessor } from "core/Engines/WebGL/webGLShaderProcessors";
 import type { DataBuffer } from "core/Buffers/dataBuffer";
@@ -73,6 +77,7 @@ import {
 import type { Engine } from "core/Engines/engine";
 import type { IStencilState } from "core/States/IStencilState";
 import { WebGL2ShaderProcessor } from "core/Engines/WebGL/webGL2ShaderProcessors";
+import { createRawTexture, createRawTexture3D, createRawTexture2DArray, createRawCubeTexture } from "./Extensions/rawTexture/engine.rawTexture.webgl";
 
 const _TempClearColorUint32 = new Uint32Array(4);
 const _TempClearColorInt32 = new Int32Array(4);
@@ -240,6 +245,35 @@ export function initWebGLEngineState(
     ps._currentInstanceBuffers = [];
 
     ps._stencilStateComposer.stencilGlobal = ps._stencilState;
+
+    // ESMTODO - this is only here for legacy reasons
+    Object.defineProperty(ps, "emptyTexture", {
+        value: () => {
+            return getEmptyTexture(ps, { createRawTexture })!;
+        },
+        enumerable: true,
+    });
+
+    Object.defineProperty(ps, "emptyTexture3D", {
+        value: () => {
+            return getEmptyTexture3D(ps, { createRawTexture3D })!;
+        },
+        enumerable: true,
+    });
+
+    Object.defineProperty(ps, "emptyTexture2DArray", {
+        value: () => {
+            return getEmptyTexture2DArray(ps, { createRawTexture2DArray })!;
+        },
+        enumerable: true,
+    });
+
+    Object.defineProperty(ps, "emptyCubeTexture", {
+        value: () => {
+            return getEmptyCubeTexture(ps, { createRawCubeTexture })!;
+        },
+        enumerable: true,
+    });
 
     let canvas: Nullable<HTMLCanvasElement> = null;
 
@@ -3221,13 +3255,13 @@ export function _setTexture(
     } else if (texture.isReady()) {
         internalTexture = <InternalTexture>texture.getInternalTexture();
     } else if (texture.isCube) {
-        internalTexture = fes._emptyCubeTexture as InternalTexture;
+        internalTexture = fes.emptyCubeTexture as InternalTexture;
     } else if (texture.is3D) {
-        internalTexture = fes._emptyTexture3D as InternalTexture;
+        internalTexture = fes.emptyTexture3D as InternalTexture;
     } else if (texture.is2DArray) {
-        internalTexture = fes._emptyTexture2DArray as InternalTexture;
+        internalTexture = fes.emptyTexture2DArray as InternalTexture;
     } else {
-        internalTexture = fes._emptyTexture as InternalTexture;
+        internalTexture = fes.emptyTexture as InternalTexture;
     }
 
     if (!isPartOfTextureArray && internalTexture) {

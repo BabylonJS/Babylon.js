@@ -1020,28 +1020,28 @@ export class ThinEngine {
      * Gets the default empty texture
      */
     public get emptyTexture(): InternalTexture {
-        return getEmptyTexture(this._engineState, { createRawTexture })!;
+        return this._engineState.emptyTexture!;
     }
 
     /**
      * Gets the default empty 3D texture
      */
     public get emptyTexture3D(): InternalTexture {
-        return getEmptyTexture3D(this._engineState, { createRawTexture3D })!;
+        return this._engineState.emptyTexture3D!;
     }
 
     /**
      * Gets the default empty 2D array texture
      */
     public get emptyTexture2DArray(): InternalTexture {
-        return getEmptyTexture2DArray(this._engineState, { createRawTexture2DArray })!;
+        return this._engineState.emptyTexture2DArray!;
     }
 
     /**
      * Gets the default empty cube texture
      */
     public get emptyCubeTexture(): InternalTexture {
-        return getEmptyCubeTexture(this._engineState, { createRawCubeTexture })!;
+        return this._engineState.emptyCubeTexture!;
     }
 
     /**
@@ -1188,10 +1188,6 @@ export class ThinEngine {
             getUniforms,
             getAttributes,
         });
-        getEmptyCubeTexture(this._engineState, { createRawCubeTexture });
-        getEmptyTexture(this._engineState, { createRawTexture });
-        getEmptyTexture3D(this._engineState, { createRawTexture3D });
-        getEmptyTexture2DArray(this._engineState, { createRawTexture2DArray });
     }
 
     protected _setupMobileChecks(): void {
