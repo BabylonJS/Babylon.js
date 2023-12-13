@@ -215,6 +215,7 @@ export function initWebGLEngineState(
     // private
     const ps = baseEngineState as WebGLEngineStateFull;
     ps.enableUnpackFlipYCached = true;
+    ps._webGLVersion = 1;
     ps._uintIndicesCurrentlySet = false;
     ps._currentBoundBuffer = [];
     ps._currentFramebuffer = null;
