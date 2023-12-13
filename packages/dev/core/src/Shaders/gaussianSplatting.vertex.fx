@@ -4,12 +4,14 @@
 
 // Attributes
 attribute vec3 position;
+//#include<instancesDeclaration>
+attribute vec4 world0;
+attribute vec4 world1;
+attribute vec4 world2;
+attribute vec4 world3;
 
 uniform mat4 projection, modelView;
 uniform vec2 viewport;
-
-// Uniforms
-#include<instancesDeclaration>
 
 // Output
 varying vec3 vPositionW;

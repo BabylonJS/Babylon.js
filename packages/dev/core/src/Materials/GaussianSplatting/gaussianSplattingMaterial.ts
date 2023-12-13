@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { SerializationHelper } from "../../Misc/decorators";
-import { Logger } from "../../Misc/logger";
 import type { Scene } from "../../scene";
-import type { Matrix } from "../../Maths/math.vector";
+import { Matrix } from "../../Maths/math.vector";
 import { VertexBuffer } from "../../Buffers/buffer";
 import type { SubMesh } from "../../Meshes/subMesh";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
@@ -11,162 +10,18 @@ import type { IEffectCreationOptions } from "../../Materials/effect";
 import { MaterialHelper } from "../../Materials/materialHelper";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
-import type { IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
-import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { RegisterClass } from "../../Misc/typeStore";
 
-import "../../Shaders/background.fragment";
-import "../../Shaders/background.vertex";
-import { EffectFallbacks } from "../effectFallbacks";
-import { addClipPlaneUniforms, bindClipPlane } from "../clipPlaneMaterialHelper";
+import "../../Shaders/gaussianSplatting.fragment";
+import "../../Shaders/gaussianSplatting.vertex";
+import { addClipPlaneUniforms } from "../clipPlaneMaterialHelper";
 
 /**
  * GaussianSplattingMaterial material defines definition.
  * @internal Mainly internal Use
  */
-class GaussianSplattingMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
-    /**
-     * True if the diffuse texture is in use.
-     */
-    public DIFFUSE = false;
-
-    /**
-     * The direct UV channel to use.
-     */
-    public DIFFUSEDIRECTUV = 0;
-
-    /**
-     * True if the diffuse texture is in gamma space.
-     */
-    public GAMMADIFFUSE = false;
-
-    /**
-     * True if the diffuse texture has opacity in the alpha channel.
-     */
-    public DIFFUSEHASALPHA = false;
-
-    /**
-     * True if you want the material to fade to transparent at grazing angle.
-     */
-    public OPACITYFRESNEL = false;
-
-    /**
-     * True if an extra blur needs to be added in the reflection.
-     */
-    public REFLECTIONBLUR = false;
-
-    /**
-     * True if you want the material to fade to reflection at grazing angle.
-     */
-    public REFLECTIONFRESNEL = false;
-
-    /**
-     * True if you want the material to falloff as far as you move away from the scene center.
-     */
-    public REFLECTIONFALLOFF = false;
-
-    /**
-     * False if the current Webgl implementation does not support the texture lod extension.
-     */
-    public TEXTURELODSUPPORT = false;
-
-    /**
-     * True to ensure the data are premultiplied.
-     */
-    public PREMULTIPLYALPHA = false;
-
-    /**
-     * True if the texture contains cooked RGB values and not gray scaled multipliers.
-     */
-    public USERGBCOLOR = false;
-
-    /**
-     * True if highlight and shadow levels have been specified. It can help ensuring the main perceived color
-     * stays aligned with the desired configuration.
-     */
-    public USEHIGHLIGHTANDSHADOWCOLORS = false;
-
-    /**
-     * True if only shadows must be rendered
-     */
-    public BACKMAT_SHADOWONLY = false;
-
-    /**
-     * True to add noise in order to reduce the banding effect.
-     */
-    public NOISE = false;
-
-    /**
-     * is the reflection texture in BGR color scheme?
-     * Mainly used to solve a bug in ios10 video tag
-     */
-    public REFLECTIONBGR = false;
-
-    /**
-     * True if ground projection has been enabled.
-     */
-    public PROJECTED_GROUND = false;
-
-    public IMAGEPROCESSING = false;
-    public VIGNETTE = false;
-    public VIGNETTEBLENDMODEMULTIPLY = false;
-    public VIGNETTEBLENDMODEOPAQUE = false;
-    public TONEMAPPING = false;
-    public TONEMAPPING_ACES = false;
-    public CONTRAST = false;
-    public COLORCURVES = false;
-    public COLORGRADING = false;
-    public COLORGRADING3D = false;
-    public SAMPLER3DGREENDEPTH = false;
-    public SAMPLER3DBGRMAP = false;
-    public DITHER = false;
-    public IMAGEPROCESSINGPOSTPROCESS = false;
-    public SKIPFINALCOLORCLAMP = false;
-    public EXPOSURE = false;
-    public MULTIVIEW = false;
-
-    // Reflection.
-    public REFLECTION = false;
-    public REFLECTIONMAP_3D = false;
-    public REFLECTIONMAP_SPHERICAL = false;
-    public REFLECTIONMAP_PLANAR = false;
-    public REFLECTIONMAP_CUBIC = false;
-    public REFLECTIONMAP_PROJECTION = false;
-    public REFLECTIONMAP_SKYBOX = false;
-    public REFLECTIONMAP_EXPLICIT = false;
-    public REFLECTIONMAP_EQUIRECTANGULAR = false;
-    public REFLECTIONMAP_EQUIRECTANGULAR_FIXED = false;
-    public REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED = false;
-    public INVERTCUBICMAP = false;
-    public REFLECTIONMAP_OPPOSITEZ = false;
-    public LODINREFLECTIONALPHA = false;
-    public GAMMAREFLECTION = false;
-    public RGBDREFLECTION = false;
-    public EQUIRECTANGULAR_RELFECTION_FOV = false;
-
-    // Default BJS.
-    public MAINUV1 = false;
-    public MAINUV2 = false;
-    public UV1 = false;
-    public UV2 = false;
-    public CLIPPLANE = false;
-    public CLIPPLANE2 = false;
-    public CLIPPLANE3 = false;
-    public CLIPPLANE4 = false;
-    public CLIPPLANE5 = false;
-    public CLIPPLANE6 = false;
-    public POINTSIZE = false;
-    public FOG = false;
-    public NORMAL = false;
-    public NUM_BONE_INFLUENCERS = 0;
-    public BonesPerMesh = 0;
-    public INSTANCES = false;
-    public SHADOWFLOAT = false;
-    public LOGARITHMICDEPTH = false;
-    public NONUNIFORMSCALING = false;
-    public ALPHATEST = false;
-
+class GaussianSplattingMaterialDefines extends MaterialDefines {
     /**
      * Constructor of the defines.
      */
@@ -180,12 +35,9 @@ class GaussianSplattingMaterialDefines extends MaterialDefines implements IImage
  * GaussianSplattingMaterial material used to render Gaussian Splatting
  */
 export class GaussianSplattingMaterial extends PushMaterial {
-    /**
-     * Due to a bug in iOS10, video tags (which are using the background material) are in BGR and not RGB.
-     * Setting this flag to true (not done automatically!) will convert it back to RGB.
-     */
-    public switchToBGR: boolean = false;
-
+    private _width: number = 0;
+    private _height: number = 0;
+    private _modelView: Matrix = new Matrix();
     /**
      * Instantiates a Background Material in the given scene
      * @param name The friendly name of the material
@@ -217,18 +69,28 @@ export class GaussianSplattingMaterial extends PushMaterial {
     public needAlphaBlending(): boolean {
         return true;
     }
+
+    /**
+     * Defines the maximum number of lights that can be used in the material
+     */
+    public maxSimultaneousLights: number = 4;
     /**
      * set viewport size
      * @param width
      * @param height
      */
-    public setViewport(width: number, height: number) {}
+    public setViewport(width: number, height: number) {
+        this._width = width;
+        this._height = height;
+    }
 
     /**
      * setModelView
      * @param modelView
      */
-    public setModelView(modelView: Matrix) {}
+    public setModelView(modelView: Matrix) {
+        this._modelView.copyFrom(modelView);
+    }
 
     /**
      * Checks whether the material is ready to be rendered for a given mesh.
@@ -257,75 +119,26 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
         const engine = scene.getEngine();
 
-        if (defines._areMiscDirty) {
-            if (defines.REFLECTIONMAP_3D) {
-                defines.PROJECTED_GROUND = true;
-                defines.REFLECTIONMAP_SKYBOX = true;
-            } else {
-                defines.PROJECTED_GROUND = false;
-            }
-        }
-
         // Values that need to be evaluated on every frame
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
 
         // Attribs
-        if (MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true, false)) {
-            if (mesh) {
-                if (!scene.getEngine().getCaps().standardDerivatives && !mesh.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-                    mesh.createNormals(true);
-                    Logger.Warn("GaussianSplattingMaterial: Normals have been created for the mesh: " + mesh.name);
-                }
-            }
-        }
+        MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, false);
 
         // Get correct effect
         if (defines.isDirty) {
             defines.markAsProcessed();
             scene.resetCachedMaterial();
 
-            // Fallbacks
-            const fallbacks = new EffectFallbacks();
-            if (defines.FOG) {
-                fallbacks.addFallback(0, "FOG");
-            }
-
-            if (defines.POINTSIZE) {
-                fallbacks.addFallback(1, "POINTSIZE");
-            }
-
-            if (defines.MULTIVIEW) {
-                fallbacks.addFallback(0, "MULTIVIEW");
-            }
-
             //Attributes
             const attribs = [VertexBuffer.PositionKind];
 
-            if (defines.NORMAL) {
-                attribs.push(VertexBuffer.NormalKind);
-            }
-
-            if (defines.UV1) {
-                attribs.push(VertexBuffer.UVKind);
-            }
-
-            if (defines.UV2) {
-                attribs.push(VertexBuffer.UV2Kind);
-            }
-
-            MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
 
-            const uniforms = ["projection", "modelView"];
+            const uniforms = ["projection", "modelView", "viewport"];
 
-            addClipPlaneUniforms(uniforms);
             const samplers = [""];
             const uniformBuffers = ["Material", "Scene"];
-
-            if (ImageProcessingConfiguration) {
-                ImageProcessingConfiguration.PrepareUniforms(uniforms, defines);
-                ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
-            }
 
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
@@ -336,14 +149,13 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
             const join = defines.toString();
             const effect = scene.getEngine().createEffect(
-                "background",
+                "gaussianSplatting",
                 <IEffectCreationOptions>{
                     attributes: attribs,
                     uniformsNames: uniforms,
                     uniformBuffersNames: uniformBuffers,
                     samplers: samplers,
                     defines: join,
-                    fallbacks: fallbacks,
                     onCompiled: this.onCompiled,
                     onError: this.onError,
                 },
@@ -371,22 +183,6 @@ export class GaussianSplattingMaterial extends PushMaterial {
      * Build the uniform buffer used in the material.
      */
     public buildUniformLayout(): void {
-        // Order is important !
-        this._uniformBuffer.addUniform("vPrimaryColor", 4);
-        this._uniformBuffer.addUniform("vPrimaryColorShadow", 4);
-        this._uniformBuffer.addUniform("vDiffuseInfos", 2);
-        this._uniformBuffer.addUniform("vReflectionInfos", 2);
-        this._uniformBuffer.addUniform("diffuseMatrix", 16);
-        this._uniformBuffer.addUniform("reflectionMatrix", 16);
-        this._uniformBuffer.addUniform("vReflectionMicrosurfaceInfos", 3);
-        this._uniformBuffer.addUniform("fFovMultiplier", 1);
-        this._uniformBuffer.addUniform("pointSize", 1);
-        this._uniformBuffer.addUniform("shadowLevel", 1);
-        this._uniformBuffer.addUniform("alpha", 1);
-        this._uniformBuffer.addUniform("vBackgroundCenter", 3);
-        this._uniformBuffer.addUniform("vReflectionControl", 4);
-        this._uniformBuffer.addUniform("projectedGroundInfos", 2);
-
         this._uniformBuffer.create();
     }
 
@@ -437,16 +233,6 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
             this.bindViewProjection(effect);
 
-            this._uniformBuffer.updateFloat("alpha", this.alpha);
-
-            // Point size
-            if (this.pointsCloud) {
-                this._uniformBuffer.updateFloat("pointSize", this.pointSize);
-            }
-
-            // Clip plane
-            bindClipPlane(this._activeEffect, this, scene);
-
             scene.bindEyePosition(effect);
         } else if (scene.getEngine()._features.needToAlwaysBindUniformBuffers) {
             this._uniformBuffer.bindToEffect(effect, "Material");
@@ -456,11 +242,10 @@ export class GaussianSplattingMaterial extends PushMaterial {
         if (mustRebind || !this.isFrozen) {
             // View
             this.bindView(effect);
-
-            // Fog
-            MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect, true);
         }
-
+        effect.setMatrix("modelView", this._modelView);
+        effect.setFloat2("viewport", this._width, this._height);
+        effect.setMatrix("projection", scene.getProjectionMatrix());
         this._afterBind(mesh, this._activeEffect);
 
         this._uniformBuffer.update();
@@ -484,7 +269,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
      * @param forceDisposeEffect Force disposal of the associated effect.
      * @param forceDisposeTextures Force disposal of the associated textures.
      */
-    public dispose(forceDisposeEffect: boolean = false, forceDisposeTextures: boolean = false): void {
+    public dispose(forceDisposeEffect: boolean = false): void {
         super.dispose(forceDisposeEffect);
     }
 
