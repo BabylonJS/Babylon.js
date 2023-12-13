@@ -15,7 +15,6 @@ import { RegisterClass } from "../../Misc/typeStore";
 
 import "../../Shaders/gaussianSplatting.fragment";
 import "../../Shaders/gaussianSplatting.vertex";
-import { addClipPlaneUniforms } from "../clipPlaneMaterialHelper";
 
 /**
  * GaussianSplattingMaterial material defines definition.
@@ -33,13 +32,14 @@ class GaussianSplattingMaterialDefines extends MaterialDefines {
 
 /**
  * GaussianSplattingMaterial material used to render Gaussian Splatting
+ * @experimental
  */
 export class GaussianSplattingMaterial extends PushMaterial {
     private _width: number = 0;
     private _height: number = 0;
     private _modelView: Matrix = new Matrix();
     /**
-     * Instantiates a Background Material in the given scene
+     * Instantiates a Gaussian Splatting Material in the given scene
      * @param name The friendly name of the material
      * @param scene The scene to add the material to
      */
@@ -301,7 +301,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
     }
 
     /**
-     * Parse a JSON input to create back a background material.
+     * Parse a JSON input to create back a Gaussian Splatting material.
      * @param source The JSON data to parse
      * @param scene The scene to create the parsed material in
      * @param rootUrl The root url of the assets the material depends upon
