@@ -1509,6 +1509,9 @@ export function createEffect(
         bindSamplers,
         setMatrices,
         setInt,
+        setInt2,
+        setInt3,
+        setInt4,
         setIntArray,
         setIntArray2,
         setIntArray3,
@@ -1527,6 +1530,8 @@ export function createEffect(
         setArray2,
         setArray3,
         setArray4,
+        setMatrix3x3,
+        setMatrix2x2,
     });
 
     const effect = new Effect(
@@ -2497,7 +2502,7 @@ export function _getUnpackAlignement(engineState: IWebGLEnginePublic): number {
     return fes._gl.getParameter(fes._gl.UNPACK_ALIGNMENT);
 }
 
-function _getTextureTarget(engineState: IWebGLEnginePublic, texture: InternalTexture): number {
+export function _getTextureTarget(engineState: IWebGLEnginePublic, texture: InternalTexture): number {
     const fes = engineState as WebGLEngineStateFull;
     if (texture.isCube) {
         return fes._gl.TEXTURE_CUBE_MAP;
