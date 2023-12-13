@@ -1,6 +1,259 @@
 {
-    "fromTag": "6.33.0",
+    "fromTag": "6.33.1",
     "changelog": {
+        "6.33.2": [
+            {
+                "pr": "14604",
+                "title": "ComputeShader: Add a fastMode switch",
+                "description": "See https://forum.babylonjs.com/t/i-am-writing-webgpu-ray-tracer-is-anyone-interested-in-this-topic/42188/16",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Compute/computeShader.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.computeShader.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "14543",
+                "title": "WebXR mesh detection",
+                "description": "This PR augments the current implementation of the WebXR mesh detection to support the webxr specs - https://immersive-web.github.io/real-world-meshing/\n\nA new option was added - generate mesh based on the geometry provided. The mesh will be updated if the vertex data is updated by the underlying system.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/webxr.d.ts",
+                    "packages/dev/core/src/LibDeclarations/webxr.nativeextensions.d.ts",
+                    "packages/dev/core/src/XR/features/WebXRMeshDetector.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "VR/AR/XR"
+                ]
+            },
+            {
+                "pr": "14601",
+                "title": "GaussianSplat .PLY file format support",
+                "description": ".ply file format support\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/1312968/ce063bb5-ede0-4722-be8c-14641f5af30d)\r\n",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts"
+                ],
+                "tags": [
+                    "loaders",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14603",
+                "title": "Disable UBOs in Chrome mobile...",
+                "description": "UBOs are broken on Chrome Mobile 120+\r\n\r\nhttps://forum.babylonjs.com/t/problems-on-chrome-mobile-since-december-7th-2023/46288/16",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14602",
+                "title": "AnimationGroupMask: Add a disabled property",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animationGroup.ts",
+                    "packages/dev/core/src/Animations/animationGroupMask.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "14592",
+                "title": "Add a log with the test name when using playwright",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/tests/test/playwright/visualizationPlaywright.utils.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14500",
+                "title": "Flow Graph: glTF parsing v1",
+                "description": "I'm opening the PR early on so I can collect some feedback on it. \r\nThe main method of parsing is to first convert from the glTF format to a serialized Flow Graph format, then, parse that serialized graph.\r\nSome additional changes are: \r\n- Many node sockets had their names changed so they match better the glTF names, such as \"onStart\" -> \"in\", \"onDone\" -> \"out\", \"leftInput\" -> \"a\", \"rightInput\" -> b.\r\n- Most math nodes were deleted and new math nodes are being added that are polymorphic, so the type of the operation inputs doesn't need to be known in advance. The rest of the math nodes will be added later.\r\n- GetProperty node was added.\r\n- Some nodes had input values moved to configuration values, such as the GetVariable node.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphMathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphMatrixBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphNumberMathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphVector2MathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphVector3MathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphVector4MathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphBinaryOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphCachedOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphConstantBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphGetPropertyBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphGetVariableBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphTernaryOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphReceiveCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphSceneReadyEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphSceneTickEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPauseAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPlayAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphStopAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Audio/flowGraphPlayAudioBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Audio/flowGraphStopAudioBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphCounterBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphDebounceBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphDoNBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphForLoopBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphSequenceBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphThrottleBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphTimerBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphWaitAllBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphWhileLoopBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/index.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphConsoleLogBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSendCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetPropertyBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetVariableBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/index.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraph.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphAsyncExecutionBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphContext.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphCoordinator.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphExecutionBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphPath.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphWithOnDoneExecutionBlock.ts",
+                    "packages/dev/core/src/FlowGraph/index.ts",
+                    "packages/dev/core/src/FlowGraph/serialization.ts",
+                    "packages/dev/core/src/FlowGraph/typeDefinitions.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphDataNodes.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphEventNodes.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphExecutionNodes.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphSerialization.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphUtils.test.ts",
+                    "packages/dev/loaders/package.json",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/index.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/interactivityFunctions.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/interactivityPathCameraExtensions.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/interactivityPathExtensions.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/interactivityPathMaterialExtensions.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/interactivityPathTransformNodeExtensions.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/interactivityUtils.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/babylon.interactivity.test.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/testData.ts",
+                    "packages/public/glTF2Interface/babylon.glTF2Interface.d.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14600",
+                "title": "Fix code generation in GeometryInputBlock.",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/nodegeometry-connector-error-and-a-question-on-mapping-height/46275",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlock.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "14598",
+                "title": "Light: Add helper methods to retrieve view and projection matrices",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/light.ts",
+                    "packages/dev/core/src/Lights/shadowLight.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14599",
+                "title": "Scene: Fix return type of getMeshesByTags",
+                "description": "See https://forum.babylonjs.com/t/inconsistent-getmeshesbyxxx-functions-return-types/46324",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14594",
+                "title": "ACE: Fixed incorrect display of loop mode when editing a property",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/sideBar/editAnimationComponent.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "ace"
+                ]
+            },
+            {
+                "pr": "14593",
+                "title": "PBRCustomMaterial & CustomMaterial support MaterialPlugin",
+                "description": "`PBRCustomMaterial` is a subclass of `PBRMaterial`,  but does not support MaterialPlugin.\r\n\r\nIn the implementation of PBRCustomMaterial, the shader injection point is removed ,  causing material plugin to be unable to inject custom code.\r\n\r\n`CustomMaterial` has the same problem.\r\n\r\nThis playground https://www.babylonjs-playground.com/#VNLCRN can reproduce the issue. \r\nIn the playground, PBRCustomMaterial using MeshDebugPluginMaterial, does not rendering wireframe.\r\n\r\nThe playgroud rendering result is as follows\r\n<img width=\"406\" alt=\"截屏2023-12-08 23 33 18\" src=\"https://github.com/BabylonJS/Babylon.js/assets/33159342/3f31574c-d501-417e-a125-8998c0f71594\">\r\n**red** mesh use `PBRCustomMaterial`, **green** mesh use `PBRMaterial`\r\n**yellow** mesh use `CustomMaterial`, **blue** mesh use `StandardMaterial`\r\n\r\nI hope to fix the problem by this commit.\r\nIn the commit, \r\n1. reorganize the shader creation  in `PBRCustomMaterial` and `CustomMaterial`\r\n2. replace the shader code only if the corresponding injected code is not empty\r\n3. retain injection points\r\n\r\nAfter fixing this issue, the above plaground rendering result is as follows\r\n\r\n<img width=\"406\" alt=\"截屏2023-12-08 23 38 49\" src=\"https://github.com/BabylonJS/Babylon.js/assets/33159342/2aec0c4d-a3e8-46f8-a029-aff3b7737a99\">\r\n\r\n",
+                "author": {
+                    "name": "Starryi",
+                    "url": "https://github.com/Starryi"
+                },
+                "files": [
+                    "packages/dev/materials/src/custom/customMaterial.ts",
+                    "packages/dev/materials/src/custom/pbrCustomMaterial.ts"
+                ],
+                "tags": []
+            }
+        ],
         "6.33.1": [
             {
                 "pr": "14589",

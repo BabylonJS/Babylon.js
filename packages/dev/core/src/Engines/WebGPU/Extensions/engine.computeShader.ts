@@ -59,8 +59,8 @@ WebGPUEngine.prototype.computeDispatch = function (
     context: IComputeContext,
     bindings: ComputeBindingList,
     x: number,
-    y?: number,
-    z?: number,
+    y = 1,
+    z = 1,
     bindingsMapping?: ComputeBindingMapping
 ): void {
     this._endCurrentRenderPass();
@@ -88,7 +88,9 @@ WebGPUEngine.prototype.computeDispatch = function (
         computePass.setBindGroup(i, bindGroup);
     }
 
-    computePass.dispatchWorkgroups(x, y, z);
+    if (x + y + z > 0) {
+        computePass.dispatchWorkgroups(x, y, z);
+    }
     computePass.end();
 };
 
