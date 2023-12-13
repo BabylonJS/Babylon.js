@@ -208,17 +208,12 @@ import {
     clearInternalTexturesCache,
     endFrame,
     getColorWrite,
-    getEmptyCubeTexture,
-    getEmptyTexture,
-    getEmptyTexture2DArray,
-    getEmptyTexture3D,
     getHostDocument,
     getHostWindow,
     resetTextureCache,
     setColorWrite,
     stopRenderLoop,
 } from "core/esm/Engines/engine.base";
-import { createRawCubeTexture, createRawTexture, createRawTexture2DArray, createRawTexture3D } from "core/esm/Engines/WebGL/Extensions/rawTexture/engine.rawTexture.webgl";
 import { _createTextureBase, _renderLoopBase, _restoreEngineAfterContextLost, runRenderLoopBase } from "core/esm/Engines/engine.extendable";
 import { _loadFile } from "core/esm/Engines/engine.tools";
 import type { ISceneLike } from "core/esm/Engines/engine.interfaces";
