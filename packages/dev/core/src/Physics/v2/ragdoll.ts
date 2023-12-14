@@ -154,10 +154,8 @@ export class Ragdoll {
                 // Offset value.
                 let boxOffset = 0;
                 if ((config[i].putBoxInBoneCenter !== undefined && config[i].putBoxInBoneCenter) || this._putBoxesInBoneCenter) {
-                    // If the current box has the putBoxInBoneCenter config set to true, we will use the bone length to determine the bone position.
-                    // NOTE: Some bones don't have the .length property defined, so this may not work.
                     if (currentBone.length === undefined) {
-                        console.log("The length property is not defined for bone", currentBone.name, ". putBox(es)InBoneCenter will not work :(");
+                        console.log("The length property is not defined for bone", currentBone.name);
                     }
                     boxOffset = currentBone.length / 2;
                 } else if (config[i].boxOffset !== undefined) {
@@ -205,7 +203,6 @@ export class Ragdoll {
 
             const nearestParent = this._findNearestParent(i);
 
-            // Sanity check. This honestly can never be null, because if the rootBone is defined, the rootBone will act as a last resort nearest parent.
             if (nearestParent == null) {
                 console.warn("Couldn't find a nearest parent bone in the configs for bone called", this._boneNames[i]);
                 return;
@@ -272,14 +269,14 @@ export class Ragdoll {
     private _defineRootBone(): boolean {
         const skeletonRoots = this._skeleton.getChildren();
         if (skeletonRoots.length != 1) {
-            console.log("Ragdoll creation failed: there can only be 1 root in the skeleton :(");
+            console.log("Ragdoll creation failed: there can only be one root in the skeleton.");
             return false;
         }
 
         this._rootBoneName = skeletonRoots[0].name;
         this._rootBoneIndex = this._boneNames.indexOf(this._rootBoneName);
         if (this._rootBoneIndex == -1) {
-            console.log("Ragdoll creation failed: the array boneNames doesn't have the root bone in it :( - the root bone is", this._skeleton.getChildren());
+            console.log("Ragdoll creation failed: the array boneNames doesn't have the root bone. The root bone is", this._skeleton.getChildren());
             return false;
         }
 
