@@ -248,28 +248,28 @@ export function initWebGLEngineState(
 
     // ESMTODO - this is only here for legacy reasons
     Object.defineProperty(ps, "emptyTexture", {
-        value: () => {
+        get: () => {
             return getEmptyTexture(ps, { createRawTexture })!;
         },
         enumerable: true,
     });
 
     Object.defineProperty(ps, "emptyTexture3D", {
-        value: () => {
+        get: () => {
             return getEmptyTexture3D(ps, { createRawTexture3D })!;
         },
         enumerable: true,
     });
 
     Object.defineProperty(ps, "emptyTexture2DArray", {
-        value: () => {
+        get: () => {
             return getEmptyTexture2DArray(ps, { createRawTexture2DArray })!;
         },
         enumerable: true,
     });
 
     Object.defineProperty(ps, "emptyCubeTexture", {
-        value: () => {
+        get: () => {
             return getEmptyCubeTexture(ps, { createRawCubeTexture })!;
         },
         enumerable: true,
