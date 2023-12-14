@@ -1215,7 +1215,7 @@ export class Animation {
 
         if (!value) {
             // A key corresponding to this frame already exists
-            return evaluateAnimationState.key === frame ? evaluateAnimationState.key : evaluateAnimationState.key + 1;
+            return this._keys[evaluateAnimationState.key].frame === frame ? evaluateAnimationState.key : evaluateAnimationState.key + 1;
         }
 
         // The frame is between two keys, so create a new key
