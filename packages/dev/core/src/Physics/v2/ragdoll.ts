@@ -10,6 +10,7 @@ import { Axis, Space } from "core/Maths/math.axis";
 import { PhysicsShapeType, PhysicsConstraintType } from "./IPhysicsEnginePlugin";
 import type { Nullable } from "../../types";
 import type { Bone } from "../../Bones/bone";
+import { Logger } from "../../Misc/logger";
 
 /**
  * Ragdoll bone properties
@@ -155,7 +156,7 @@ export class Ragdoll {
                 let boxOffset = 0;
                 if ((config[i].putBoxInBoneCenter !== undefined && config[i].putBoxInBoneCenter) || this._putBoxesInBoneCenter) {
                     if (currentBone.length === undefined) {
-                        console.log("The length property is not defined for bone", currentBone.name);
+                        Logger.Log("The length property is not defined for bone " + currentBone.name);
                     }
                     boxOffset = currentBone.length / 2;
                 } else if (config[i].boxOffset !== undefined) {
@@ -184,7 +185,6 @@ export class Ragdoll {
                 );
                 aggregate.body.setCollisionCallbackEnabled(true);
                 aggregate.body.disablePreStep = false;
-                (aggregate.body as any).collisionArray = new Array<number>(1);
                 this._aggregates.push(aggregate);
                 this._bones.push(currentBone);
                 this._boneNames.push(currentBone.name);
@@ -204,7 +204,7 @@ export class Ragdoll {
             const nearestParent = this._findNearestParent(i);
 
             if (nearestParent == null) {
-                console.warn("Couldn't find a nearest parent bone in the configs for bone called", this._boneNames[i]);
+                Logger.Warn("Couldn't find a nearest parent bone in the configs for bone called " + this._boneNames[i]);
                 return;
             }
 
@@ -269,14 +269,14 @@ export class Ragdoll {
     private _defineRootBone(): boolean {
         const skeletonRoots = this._skeleton.getChildren();
         if (skeletonRoots.length != 1) {
-            console.log("Ragdoll creation failed: there can only be one root in the skeleton.");
+            Logger.Log("Ragdoll creation failed: there can only be one root in the skeleton.");
             return false;
         }
 
         this._rootBoneName = skeletonRoots[0].name;
         this._rootBoneIndex = this._boneNames.indexOf(this._rootBoneName);
         if (this._rootBoneIndex == -1) {
-            console.log("Ragdoll creation failed: the array boneNames doesn't have the root bone. The root bone is", this._skeleton.getChildren());
+            Logger.Log("Ragdoll creation failed: the array boneNames doesn't have the root bone. The root bone is " + this._skeleton.getChildren());
             return false;
         }
 
@@ -286,7 +286,7 @@ export class Ragdoll {
     private _findNearestParent(boneIndex: number): any {
         let nearestParent: Nullable<Bone> | undefined = this._bones[boneIndex].getParent();
         do {
-            if (nearestParent != null && (this._boneNames as any).includes(nearestParent.name)) {
+            if (nearestParent != null && this._boneNames.includes(nearestParent.name)) {
                 break;
             }
 
