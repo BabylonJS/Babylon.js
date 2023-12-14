@@ -1,3 +1,4 @@
+import { Logger } from "core/Misc/logger";
 import type { IComputeEffectCreationOptions } from "../../../Compute/computeEffect";
 import { ComputeEffect } from "../../../Compute/computeEffect";
 import type { IComputeContext } from "../../../Compute/IComputeContext";
@@ -113,8 +114,8 @@ WebGPUEngine.prototype._prepareComputePipelineContext = function (
     const webGpuContext = pipelineContext as WebGPUComputePipelineContext;
 
     if (this.dbgShowShaderCode) {
-        console.log(defines);
-        console.log(computeSourceCode);
+        Logger.Log(defines!);
+        Logger.Log(computeSourceCode);
     }
 
     webGpuContext.sources = {

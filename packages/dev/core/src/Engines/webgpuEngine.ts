@@ -693,7 +693,7 @@ export class WebGPUEngine extends Engine {
                 if (this.dbgVerboseLogsForFirstFrames) {
                     if ((this as any)._count === undefined) {
                         (this as any)._count = 0;
-                        console.log("%c frame #" + (this as any)._count + " - begin", "background: #ffff00");
+                        Logger.Log(["%c frame #" + (this as any)._count + " - begin", "background: #ffff00"]);
                     }
                 }
 
@@ -729,9 +729,8 @@ export class WebGPUEngine extends Engine {
             .catch((e: any) => {
                 Logger.Error("Can not create WebGPU Device and/or context.");
                 Logger.Error(e);
-                if (console.trace) {
-                    console.trace();
-                }
+                // eslint-disable-next-line no-console
+                console?.trace?.();
             });
     }
 
@@ -991,7 +990,7 @@ export class WebGPUEngine extends Engine {
                 (this as any)._count = 0;
             }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log("frame #" + (this as any)._count + " - setSize -", width, height);
+                Logger.Log(["frame #" + (this as any)._count + " - setSize -", width, height]);
             }
         }
 
@@ -1155,14 +1154,14 @@ export class WebGPUEngine extends Engine {
                 (this as any)._count = 0;
             }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log(
+                Logger.Log([
                     "frame #" + (this as any)._count + " - viewport applied - (",
                     this._viewportCached.x,
                     this._viewportCached.y,
                     this._viewportCached.z,
                     this._viewportCached.w,
-                    ") current pass is main pass=" + this._currentPassIsMainPass()
-                );
+                    ") current pass is main pass=" + this._currentPassIsMainPass(),
+                ]);
             }
         }
     }
@@ -1212,14 +1211,14 @@ export class WebGPUEngine extends Engine {
                 (this as any)._count = 0;
             }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log(
+                Logger.Log([
                     "frame #" + (this as any)._count + " - scissor applied - (",
                     this._scissorCached.x,
                     this._scissorCached.y,
                     this._scissorCached.z,
                     this._scissorCached.w,
-                    ") current pass is main pass=" + this._currentPassIsMainPass()
-                );
+                    ") current pass is main pass=" + this._currentPassIsMainPass(),
+                ]);
             }
         }
     }
@@ -1314,7 +1313,7 @@ export class WebGPUEngine extends Engine {
                 (this as any)._count = 0;
             }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log("frame #" + (this as any)._count + " - clear - backBuffer=", backBuffer, " depth=", depth, " stencil=", stencil, " scissor is active=", hasScissor);
+                Logger.Log(["frame #" + (this as any)._count + " - clear - backBuffer=", backBuffer, " depth=", depth, " stencil=", stencil, " scissor is active=", hasScissor]);
             }
         }
 
@@ -1730,10 +1729,10 @@ export class WebGPUEngine extends Engine {
         const shaderLanguage = webGpuContext.shaderProcessingContext.shaderLanguage;
 
         if (this.dbgShowShaderCode) {
-            console.log(defines);
-            console.log(vertexSourceCode);
-            console.log(fragmentSourceCode);
-            console.log("***********************************************");
+            Logger.Log(["defines", defines]);
+            Logger.Log(vertexSourceCode);
+            Logger.Log(fragmentSourceCode);
+            Logger.Log("***********************************************");
         }
 
         webGpuContext.sources = {
@@ -1804,7 +1803,7 @@ export class WebGPUEngine extends Engine {
                 !this._forceEnableEffect)
         ) {
             if (!effect.effect && this.dbgShowEmptyEnableEffectCalls) {
-                console.error("drawWrapper=", effect);
+                Logger.Log(["drawWrapper=", effect]);
                 throw "Invalid call to enableEffect: the effect property is empty!";
             }
             return;
@@ -1815,7 +1814,7 @@ export class WebGPUEngine extends Engine {
             this._currentDrawContext = effect.drawContext as WebGPUDrawContext;
             this._counters.numEnableDrawWrapper++;
             if (!this._currentMaterialContext) {
-                console.error("drawWrapper=", effect);
+                Logger.Log(["drawWrapper=", effect]);
                 throw `Invalid call to enableEffect: the materialContext property is empty!`;
             }
         }
@@ -2311,7 +2310,7 @@ export class WebGPUEngine extends Engine {
                     (this as any)._count = 0;
                 }
                 if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                    console.log("frame #" + (this as any)._count + " - _setTexture called with a null _currentEffect! texture=", texture);
+                    Logger.Log(["frame #" + (this as any)._count + " - _setTexture called with a null _currentEffect! texture=", texture]);
                 }
             }
         }
@@ -2372,7 +2371,7 @@ export class WebGPUEngine extends Engine {
                 (this as any)._count = 0;
             }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log(
+                Logger.Log(
                     "frame #" +
                         (this as any)._count +
                         " - generate mipmaps - width=" +
@@ -2579,7 +2578,7 @@ export class WebGPUEngine extends Engine {
                     for (const name in UniformBuffer._UpdatedUbosInFrame) {
                         list.push(name + ":" + UniformBuffer._UpdatedUbosInFrame[name]);
                     }
-                    console.log("frame #" + (this as any)._count + " - updated ubos -", list.join(", "));
+                    Logger.Log(["frame #" + (this as any)._count + " - updated ubos -", list.join(", ")]);
                 }
             }
             UniformBuffer._UpdatedUbosInFrame = {};
@@ -2606,12 +2605,12 @@ export class WebGPUEngine extends Engine {
                 (this as any)._count = 0;
             }
             if ((this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log("%c frame #" + (this as any)._count + " - end", "background: #ffff00");
+                Logger.Log(["%c frame #" + (this as any)._count + " - end", "background: #ffff00"]);
             }
             if ((this as any)._count < this.dbgVerboseLogsNumFrames) {
                 (this as any)._count++;
                 if ((this as any)._count !== this.dbgVerboseLogsNumFrames) {
-                    console.log("%c frame #" + (this as any)._count + " - begin", "background: #ffff00");
+                    Logger.Log(["%c frame #" + (this as any)._count + " - begin", "background: #ffff00"]);
                 }
             }
         }
@@ -2782,7 +2781,7 @@ export class WebGPUEngine extends Engine {
             }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                 const internalTexture = rtWrapper.texture!;
-                console.log(
+                Logger.Log([
                     "frame #" +
                         (this as any)._count +
                         " - render target begin pass - rtt name=" +
@@ -2796,8 +2795,8 @@ export class WebGPUEngine extends Engine {
                         ", setClearStates=" +
                         setClearStates,
                     "renderPassDescriptor=",
-                    this._rttRenderPassWrapper.renderPassDescriptor
-                );
+                    this._rttRenderPassWrapper.renderPassDescriptor,
+                ]);
             }
         }
 
@@ -2854,12 +2853,12 @@ export class WebGPUEngine extends Engine {
                 (this as any)._count = 0;
             }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log(
+                Logger.Log([
                     "frame #" + (this as any)._count + " - main begin pass - texture width=" + (this._mainTextureExtends as any).width,
                     " height=" + (this._mainTextureExtends as any).height + ", setClearStates=" + setClearStates,
                     "renderPassDescriptor=",
-                    this._mainRenderPassWrapper.renderPassDescriptor
-                );
+                    this._mainRenderPassWrapper.renderPassDescriptor,
+                ]);
             }
         }
 
@@ -2897,7 +2896,7 @@ export class WebGPUEngine extends Engine {
                 (this as any)._count = 0;
             }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log(
+                Logger.Log(
                     "frame #" +
                         (this as any)._count +
                         " - " +
@@ -2974,7 +2973,7 @@ export class WebGPUEngine extends Engine {
                 (this as any)._count = 0;
             }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log(
+                Logger.Log([
                     "frame #" +
                         (this as any)._count +
                         " - bindFramebuffer - rtt name=" +
@@ -2990,8 +2989,8 @@ export class WebGPUEngine extends Engine {
                     "colorAttachmentViewDescriptor=",
                     this._rttRenderPassWrapper.colorAttachmentViewDescriptor,
                     "depthAttachmentViewDescriptor=",
-                    this._rttRenderPassWrapper.depthAttachmentViewDescriptor
-                );
+                    this._rttRenderPassWrapper.depthAttachmentViewDescriptor,
+                ]);
             }
         }
 
@@ -3049,7 +3048,7 @@ export class WebGPUEngine extends Engine {
                 (this as any)._count = 0;
             }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log("frame #" + (this as any)._count + " - unBindFramebuffer - rtt name=" + texture.label + ", internalTexture.uniqueId=", texture.texture?.uniqueId);
+                Logger.Log("frame #" + (this as any)._count + " - unBindFramebuffer - rtt name=" + texture.label + ", internalTexture.uniqueId=", texture.texture?.uniqueId);
             }
         }
 

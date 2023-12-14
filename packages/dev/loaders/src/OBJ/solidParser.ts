@@ -11,6 +11,7 @@ import { VertexData } from "core/Meshes/mesh.vertexData";
 import type { Scene } from "core/scene";
 import type { FloatArray, IndicesArray, Nullable } from "core/types";
 import type { OBJLoadingOptions } from "./objLoadingOptions";
+import { Logger } from "core/Misc/logger";
 
 type MeshObject = {
     name: string;
@@ -715,7 +716,7 @@ export class SolidParser {
                 // With the obj file  an integer is set
             } else {
                 //If there is another possibility
-                console.log("Unhandled expression at line : " + line);
+                Logger.Log("Unhandled expression at line : " + line);
             }
         }
 

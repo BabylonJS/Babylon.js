@@ -6,6 +6,7 @@ import { Matrix, Quaternion } from "../../Maths/math";
 import { Observable } from "../../Misc/observable";
 import { Mesh } from "../../Meshes/mesh";
 import { VertexBuffer } from "core/Buffers/buffer";
+import { Logger } from "core/Misc/logger";
 
 /**
  * Options used in the mesh detector module
@@ -213,7 +214,7 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
                 });
             }
         } catch (error) {
-            console.log(error.stack);
+            Logger.Log(error.stack);
         }
     }
 

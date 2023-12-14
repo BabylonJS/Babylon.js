@@ -21,6 +21,7 @@ import { PointerEventTypes } from "../Events/pointerEvents";
 import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
 import { CreateCylinder } from "../Meshes/Builders/cylinderBuilder";
+import { Logger } from "core/Misc/logger";
 
 /**
  * Interface for light gizmo
@@ -86,7 +87,7 @@ export class LightGizmo extends Gizmo implements ILightGizmo {
         return this.attachedMesh;
     }
     public set attachedNode(value: Nullable<Node>) {
-        console.warn("Nodes cannot be attached to LightGizmo. Attach to a mesh instead.");
+        Logger.Warn("Nodes cannot be attached to LightGizmo. Attach to a mesh instead.");
     }
 
     /**

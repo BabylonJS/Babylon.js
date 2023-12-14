@@ -1,6 +1,7 @@
 import type { ViewerConfiguration } from "../configuration/configuration";
 import { AbstractViewer } from "./viewer";
 import "core/Misc/observable.extensions";
+import { Logger } from "core/Misc/logger";
 
 export class RenderOnlyViewer extends AbstractViewer {
     constructor(
@@ -32,7 +33,7 @@ export class RenderOnlyViewer extends AbstractViewer {
                 return this.onInitDoneObservable.notifyObserversWithPromise(this);
             })
             .catch((e) => {
-                console.log(e.toString());
+                Logger.Log(e.toString());
                 return this;
             });
     }

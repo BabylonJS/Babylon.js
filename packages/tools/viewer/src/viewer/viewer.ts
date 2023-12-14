@@ -24,6 +24,7 @@ import type { IObserversConfiguration } from "../configuration/interfaces/observ
 import type { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
 import type { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
 import "core/Misc/observable.extensions";
+import { Logger } from "core/Misc/logger";
 
 /**
  * The AbstractViewer is the center of Babylon's viewer.
@@ -504,14 +505,14 @@ export abstract class AbstractViewer {
                         const newData = JSON.parse(data.toString()) as ViewerConfiguration;
                         return this.updateConfiguration(newData);
                     } catch (e) {
-                        console.log("Error parsing file " + newConfiguration);
+                        Logger.Log("Error parsing file " + newConfiguration);
                     }
                 },
                 undefined,
                 undefined,
                 undefined,
                 (error) => {
-                    console.log("Error parsing file " + newConfiguration, error);
+                    Logger.Log(["Error parsing file " + newConfiguration, error]);
                 }
             );
         } else {

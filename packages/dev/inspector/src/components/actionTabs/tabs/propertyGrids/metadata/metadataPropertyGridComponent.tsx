@@ -8,6 +8,7 @@ import { TextLineComponent } from "shared-ui-components/lines/textLineComponent"
 import copyIcon from "shared-ui-components/lines/copy.svg";
 
 import "./metadataPropertyGrid.scss";
+import { Logger } from "core/Misc/logger";
 
 interface IMetadataComponentProps {
     globalState: GlobalState;
@@ -100,7 +101,7 @@ export class MetadataGridComponent extends React.Component<
                 textAreaElement.disabled = disabled;
             }
         } catch (error) {
-            console.error(error);
+            Logger.Error(error);
         }
     }
 
@@ -239,7 +240,7 @@ export class MetadataGridComponent extends React.Component<
             navigator.clipboard.writeText(textAreaElement.value);
         } catch (error) {
             window.alert("Could not copy to clipboard, see log.");
-            console.error(error);
+            Logger.Error(error);
         }
     }
 

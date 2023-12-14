@@ -4806,7 +4806,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         try {
             this.onDisposeObservable.notifyObservers(this);
         } catch (e) {
-            console.error("An error occurred while calling onDisposeObservable!", e);
+            Logger.Error("An error occurred while calling onDisposeObservable!", e);
         }
 
         this.detachControl();

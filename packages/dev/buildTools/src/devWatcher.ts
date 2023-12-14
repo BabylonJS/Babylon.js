@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { checkArgs, findRootDirectory } from "./utils.js";
 import { spawn } from "child_process";
 

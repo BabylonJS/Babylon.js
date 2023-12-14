@@ -89,7 +89,7 @@ export class ScreenSpaceCurvaturePostProcess extends PostProcess {
             Logger.Error("Multiple Render Target support needed for screen space curvature post process. Please use IsSupported test first.");
         } else {
             if (this._geometryBufferRenderer.generateNormalsInWorldSpace) {
-                console.error("ScreenSpaceCurvaturePostProcess does not support generateNormalsInWorldSpace=true for the geometry buffer renderer!");
+                Logger.Error("ScreenSpaceCurvaturePostProcess does not support generateNormalsInWorldSpace=true for the geometry buffer renderer!");
             }
 
             // Geometry buffer renderer is supported.

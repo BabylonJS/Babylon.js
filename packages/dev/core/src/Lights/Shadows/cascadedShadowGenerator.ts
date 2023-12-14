@@ -79,7 +79,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             return filter;
         }
 
-        console.error('Unsupported filter "' + filter + '"!');
+        Logger.Error('Unsupported filter "' + filter + '"!');
 
         return ShadowGenerator.FILTER_NONE;
     }

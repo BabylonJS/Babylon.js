@@ -7,6 +7,7 @@ export default { component: CommandBarComponent };
 export const Default: StoryObj<typeof CommandBarComponent> = {};
 
 const artBoardColorChange = (color: string) => {
+    // eslint-disable-next-line no-console
     console.log("new color", color);
 };
 

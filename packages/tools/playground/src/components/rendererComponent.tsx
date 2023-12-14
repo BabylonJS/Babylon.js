@@ -34,6 +34,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
         // Create the global handleException
         (window as any).handleException = (e: Error) => {
+            // eslint-disable-next-line no-console
             console.error(e);
             this.props.globalState.onErrorObservable.notifyObservers(e);
         };
@@ -361,6 +362,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 });
             }
         } catch (err) {
+            // eslint-disable-next-line no-console
             console.error(err, "Retrying if possible. If this error persists please notify the team.");
             this.props.globalState.onErrorObservable.notifyObservers(this._tmpErrorEvent || err);
         }

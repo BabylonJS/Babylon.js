@@ -31,6 +31,7 @@ import type { RefractionBlock } from "./refractionBlock";
 import type { PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
 import { Constants } from "../../../../Engines/constants";
 import { Color3, TmpColors } from "../../../../Maths/math.color";
+import { Logger } from "core/Misc/logger";
 
 const mapOutputToVariable: { [name: string]: [string, string] } = {
     ambientClr: ["finalAmbient", ""],
@@ -62,7 +63,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         if (that.worldPosition.isConnected) {
             that.generateOnlyFragmentCode = !that.generateOnlyFragmentCode;
-            console.error("The worldPosition input must not be connected to be able to switch!");
+            Logger.Error("The worldPosition input must not be connected to be able to switch!");
             return false;
         }
 
@@ -1399,7 +1400,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                         state.compilationString += `#endif\n`;
                     }
                 } else {
-                    console.error(`There's no remapping for the ${output.name} end point! No code generated`);
+                    Logger.Error(`There's no remapping for the ${output.name} end point! No code generated`);
                 }
             }
         }

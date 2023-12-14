@@ -6,6 +6,7 @@ import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import type { Scene } from "../../../../scene";
+import { Logger } from "core/Misc/logger";
 
 /**
  * Block used to convert a height vector to a normal
@@ -105,7 +106,7 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
         const output = this._outputs[0];
 
         if (!this.generateInWorldSpace && !this.worldTangent.isConnected) {
-            console.error(`You must connect the 'worldTangent' input of the ${this.name} block!`);
+            Logger.Error(`You must connect the 'worldTangent' input of the ${this.name} block!`);
         }
 
         const startCode = this.generateInWorldSpace
