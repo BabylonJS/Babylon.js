@@ -914,7 +914,7 @@ export class ArcRotateCamera extends TargetCamera {
             const handednessMultiplier = this._calculateHandednessMultiplier();
             let inertialAlphaOffset = this.inertialAlphaOffset * handednessMultiplier;
 
-            if (this.beta <= 0) {
+            if (this.beta < 0) {
                 inertialAlphaOffset *= -1;
             }
 
