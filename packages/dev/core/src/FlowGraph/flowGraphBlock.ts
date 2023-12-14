@@ -5,7 +5,6 @@ import { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import type { RichType } from "./flowGraphRichTypes";
 import { Tools } from "core/Misc/tools";
 import type { ISerializedFlowGraphBlock } from "./typeDefinitions";
-import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 import { defaultValueParseFunction, defaultValueSerializationFunction } from "./serialization";
 import type { Scene } from "../scene";
 
@@ -135,24 +134,7 @@ export class FlowGraphBlock {
             }
         }
         obj.metadata = serializationObject.metadata;
-        if (obj instanceof FlowGraphExecutionBlock) {
-            for (let i = 0; i < serializationObject.signalInputs.length; i++) {
-                const signalInput = obj.getSignalInput(serializationObject.signalInputs[i].name);
-                if (signalInput) {
-                    signalInput.deserialize(serializationObject.signalInputs[i]);
-                } else {
-                    throw new Error("Could not find signal input with name " + serializationObject.signalInputs[i].name + " in block " + serializationObject.className);
-                }
-            }
-            for (let i = 0; i < serializationObject.signalOutputs.length; i++) {
-                const signalOutput = obj.getSignalOutput(serializationObject.signalOutputs[i].name);
-                if (signalOutput) {
-                    signalOutput.deserialize(serializationObject.signalOutputs[i]);
-                } else {
-                    throw new Error("Could not find signal output with name " + serializationObject.signalOutputs[i].name + " in block " + serializationObject.className);
-                }
-            }
-        }
+        obj.deserialize && obj.deserialize(serializationObject);
         return obj;
     }
 }

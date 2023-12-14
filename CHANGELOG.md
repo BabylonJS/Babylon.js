@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.34.0
+
+### Core
+
+- Morph: Fix baking of morph data when multiple non zero influences - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14605](https://github.com/BabylonJS/Babylon.js/pull/14605))
+
 ## 6.33.2
 
 ### Core

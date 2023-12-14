@@ -1496,6 +1496,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             let faceIndexCount = 0;
             let positionIndex = 0;
             for (let vertexCount = 0; vertexCount < data.length; vertexCount++) {
+                let value = data[vertexCount];
                 for (let targetCount = 0; targetCount < this.morphTargetManager.numTargets; targetCount++) {
                     const targetMorph = this.morphTargetManager.getTarget(targetCount);
                     const influence = targetMorph.influence;
@@ -1516,10 +1517,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                                 break;
                         }
                         if (morphTargetData) {
-                            data[vertexCount] += (morphTargetData[vertexCount] - data[vertexCount]) * influence;
+                            value += (morphTargetData[vertexCount] - data[vertexCount]) * influence;
                         }
                     }
                 }
+                data[vertexCount] = value;
 
                 faceIndexCount++;
                 if (kind === VertexBuffer.PositionKind) {

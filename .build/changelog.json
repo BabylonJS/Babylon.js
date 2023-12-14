@@ -1,6 +1,40 @@
 {
-    "fromTag": "6.33.1",
+    "fromTag": "6.33.2",
     "changelog": {
+        "6.34.0": [
+            {
+                "pr": "14607",
+                "title": "Fixing two issues",
+                "description": "See https://forum.babylonjs.com/t/malformed-regular-expression-and-reassignment-issue-in-inspector/46269",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/lines/textInputLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/stringTools.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14605",
+                "title": "Morph: Fix baking of morph data when multiple non zero influences",
+                "description": "See https://forum.babylonjs.com/t/ray-tracing-for-nested-meshes/46088/28",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            }
+        ],
         "6.33.2": [
             {
                 "pr": "14604",
