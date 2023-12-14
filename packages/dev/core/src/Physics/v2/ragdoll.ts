@@ -17,49 +17,50 @@ import type { Bone } from "../../Bones/bone";
  */
 export class RagdollBoneProperties {
     /**
-     *
+     * Width of the box shape
      */
     width?: number;
     /**
-     *
+     * depth of the box shape
      */
     depth?: number;
     /**
-     *
+     * height of the box shape
      */
     height?: number;
     /**
-     *
+     * size that will be used of width, depth and height of the shape box
      */
     size?: number;
     /**
-     *
+     * Type of Physics Constraint used between bones
      */
     joint?: number | undefined;
     /**
-     *
+     * Main rotation axis used by the constraint, in local space
      */
     rotationAxis?: Vector3;
     /**
-     *
+     * Minimum rotation angle value
      */
     min?: number;
     /**
-     *
+     * Maximum rotation angle value
      */
     max?: number;
     /**
-     *
+     * Offset along local axis
      */
     boxOffset?: number;
     /**
-     *
+     * Axis that need an offset
      */
     boneOffsetAxis?: Vector3;
 }
 
 /**
  * Ragdoll for Physics V2
+ * Current known limitation is scene must be using Right hand coordinates
  * @experimental
  */
 export class Ragdoll {
@@ -79,7 +80,6 @@ export class Ragdoll {
     private _boneNames: string[] = [];
     private _boxes: Array<Mesh> = new Array<Mesh>();
     private _aggregates: Array<PhysicsAggregate> = new Array<PhysicsAggregate>();
-    private _mainPivotSphereSize: number;
     private _ragdollMode: boolean = false;
     private _rootBoneName: string = "";
     private _rootBoneIndex: number = -1;
@@ -95,24 +95,20 @@ export class Ragdoll {
     private _boneOffsetAxis: Vector3;
 
     /**
-     *
-     * @param skeleton
-     * @param mesh
-     * @param config
-     * @param showBoxes
-     * @param mainPivotSphereSize
+     * Construct a new Ragdoll object. Once ready, it can be made dynamic by calling `Ragdoll` method
+     * @param skeleton The skeleton containing bones to be physicalized
+     * @param mesh The mesh used by the skeleton
+     * @param config an array of `RagdollBoneProperties` corresponding to bones and their properties used to instanciate physics bodies
      */
-    constructor(skeleton: Skeleton, mesh: Mesh, config: RagdollBoneProperties[], mainPivotSphereSize = 0) {
+    constructor(skeleton: Skeleton, mesh: Mesh, config: RagdollBoneProperties[]) {
         this._skeleton = skeleton;
         this._scene = skeleton.getScene();
         this._mesh = mesh;
         this._config = config; // initial, user defined box configs. May have several box configs jammed into 1 index.
         this._boxConfigs = []; // final box configs. Every element is a separate box config (this.config may have several configs jammed into 1 index).
-        this._mainPivotSphereSize = mainPivotSphereSize;
         this._putBoxesInBoneCenter = false;
         this._defaultJoint = PhysicsConstraintType.HINGE;
         this._boneOffsetAxis = Axis.Y;
-        this._init();
     }
 
     /**
@@ -235,13 +231,6 @@ export class Ragdoll {
                 this._scene
             );
             this._aggregates[boneParentIndex].body.addConstraint(this._aggregates[i].body, joint);
-
-            // Show the main pivots for the joints. For debugging purposes.
-            if (this._mainPivotSphereSize != 0) {
-                const mainPivotSphere = MeshBuilder.CreateSphere("mainPivot", { diameter: this._mainPivotSphereSize }, this._scene);
-                mainPivotSphere.position = this._bones[i].getAbsolutePosition(this._mesh);
-                this._boxes[boneParentIndex].addChild(mainPivotSphere);
-            }
         }
     }
 
@@ -325,15 +314,17 @@ export class Ragdoll {
     }
 
     /**
-     * isRagdoll
-     * retusn
+     * Enable ragdoll mode. Create physics objects and make them dynamic.
      */
     public ragdoll(): void {
-        this._ragdollMode = true;
+        if (!this._ragdollMode) {
+            this._ragdollMode = true;
+            this._init();
+        }
     }
 
     /**
-     *
+     * Dispose resources and remove physics objects
      */
     dispose(): void {
         this._aggregates.forEach((aggregate: PhysicsAggregate) => {
