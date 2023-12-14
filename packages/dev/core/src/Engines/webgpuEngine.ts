@@ -2629,6 +2629,11 @@ export class WebGPUEngine extends Engine {
 
         this._device.queue.submit(this._commandBuffers);
 
+        // Now that the command buffers have been submitted, we can reset the ubo as we can reuse the same GPU buffer(s)
+        for (let i = 0; i < this._uniformBuffers.length; ++i) {
+            this._uniformBuffers[i]._checkNewFrame(true);
+        }
+
         this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
         this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
 
@@ -2767,8 +2772,8 @@ export class WebGPUEngine extends Engine {
                           stencilLoadOp: !depthTextureHasStencil
                               ? undefined
                               : rtWrapper._depthStencilTextureWithStencil && mustClearStencil
-                                ? WebGPUConstants.LoadOp.Clear
-                                : WebGPUConstants.LoadOp.Load,
+                              ? WebGPUConstants.LoadOp.Clear
+                              : WebGPUConstants.LoadOp.Load,
                           stencilStoreOp: !depthTextureHasStencil ? undefined : WebGPUConstants.StoreOp.Store,
                       }
                     : undefined,
@@ -2833,8 +2838,8 @@ export class WebGPUEngine extends Engine {
         this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.stencilLoadOp = !this.isStencilEnable
             ? undefined
             : mustClearStencil
-              ? WebGPUConstants.LoadOp.Clear
-              : WebGPUConstants.LoadOp.Load;
+            ? WebGPUConstants.LoadOp.Clear
+            : WebGPUConstants.LoadOp.Load;
         this._mainRenderPassWrapper.renderPassDescriptor!.occlusionQuerySet = this._occlusionQuery?.hasQueries ? this._occlusionQuery.querySet : undefined;
 
         const swapChainTexture = this._context.getCurrentTexture();
