@@ -71,6 +71,25 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
         }
     }
 
+    public deserialize(serializationObject: any) {
+        for (let i = 0; i < serializationObject.signalInputs.length; i++) {
+            const signalInput = this.getSignalInput(serializationObject.signalInputs[i].name);
+            if (signalInput) {
+                signalInput.deserialize(serializationObject.signalInputs[i]);
+            } else {
+                throw new Error("Could not find signal input with name " + serializationObject.signalInputs[i].name + " in block " + serializationObject.className);
+            }
+        }
+        for (let i = 0; i < serializationObject.signalOutputs.length; i++) {
+            const signalOutput = this.getSignalOutput(serializationObject.signalOutputs[i].name);
+            if (signalOutput) {
+                signalOutput.deserialize(serializationObject.signalOutputs[i]);
+            } else {
+                throw new Error("Could not find signal output with name " + serializationObject.signalOutputs[i].name + " in block " + serializationObject.className);
+            }
+        }
+    }
+
     public getClassName(): string {
         return "FGExecutionBlock";
     }
