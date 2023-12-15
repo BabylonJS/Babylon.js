@@ -521,7 +521,7 @@ export class DDSTools {
                 }
                 // eslint-disable-next-line no-fallthrough
                 default:
-                    console.error("Unsupported FourCC code:", Int32ToFourCC(fourCC));
+                    Logger.Error(["Unsupported FourCC code:", Int32ToFourCC(fourCC)]);
                     return;
             }
         }

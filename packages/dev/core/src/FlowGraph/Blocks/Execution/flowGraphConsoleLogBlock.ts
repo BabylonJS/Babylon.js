@@ -4,6 +4,7 @@ import { FlowGraphExecutionBlockWithOutSignal } from "../../flowGraphWithOnDoneE
 import { RichTypeAny } from "../../flowGraphRichTypes";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
+import { Logger } from "core/Misc/logger";
 
 /**
  * @experimental
@@ -25,7 +26,7 @@ export class FlowGraphConsoleLogBlock extends FlowGraphExecutionBlockWithOutSign
      */
     public _execute(context: FlowGraphContext): void {
         const messageValue = this.message.getValue(context);
-        console.log(messageValue);
+        Logger.Log(messageValue);
         // activate the output flow block
         this.out._activateSignal(context);
     }

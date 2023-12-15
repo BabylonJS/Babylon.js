@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import type { Page } from "puppeteer";
 import type { StacktracedObject } from "./window";
 

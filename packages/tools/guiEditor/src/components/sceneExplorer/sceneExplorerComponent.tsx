@@ -10,6 +10,7 @@ import type { GlobalState } from "../../globalState";
 import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 
 import "./sceneExplorer.scss";
+import { Logger } from "core/Misc/logger";
 
 interface ISceneExplorerFilterComponentProps {
     onFilter: (filter: string) => void;
@@ -179,7 +180,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
             case "ArrowLeft":
                 this.props.globalState.selectedControls.forEach((node) => {
                     const reservedDataStore = (node as any).reservedDataStore;
-                    console.log(reservedDataStore);
+                    Logger.Log(reservedDataStore);
                     if (reservedDataStore && reservedDataStore.setExpandedState) {
                         reservedDataStore.setExpandedState(false);
                     }

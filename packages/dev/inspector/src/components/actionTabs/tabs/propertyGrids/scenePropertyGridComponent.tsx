@@ -29,6 +29,7 @@ import { AnimationGridComponent } from "./animations/animationPropertyGridCompon
 import "core/Physics/physicsEngineComponent";
 import "core/Physics/v1/physicsEngineComponent";
 import "core/Physics/v1/physicsEngineComponent";
+import { Logger } from "core/Misc/logger";
 
 interface IScenePropertyGridComponentProps {
     globalState: GlobalState;
@@ -68,7 +69,7 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
         const isFileDDS = file.name.toLowerCase().indexOf(".dds") > 0;
         const isFileEnv = file.name.toLowerCase().indexOf(".env") > 0;
         if (!isFileDDS && !isFileEnv) {
-            console.error("Unable to update environment texture. Please select a dds or env file.");
+            Logger.Error("Unable to update environment texture. Please select a dds or env file.");
             return;
         }
 
@@ -90,7 +91,7 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                         () => {},
                         (message) => {
                             if (message) {
-                                console.error(message);
+                                Logger.Error(message);
                             }
                         },
                         undefined,

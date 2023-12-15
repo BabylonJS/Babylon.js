@@ -12,6 +12,7 @@ export class LogAction extends BaseAction {
     }
 
     public execute(): void {
+        // eslint-disable-next-line no-console
         console.log(this._message);
     }
 }

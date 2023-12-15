@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import type ts from "typescript";
 import transformer from "./pathTransform.js";
 import type { BuildType, DevPackageName, UMDPackageName } from "./packageMapping.js";

@@ -30,9 +30,10 @@ declare module "../../Engines/thinEngine" {
          * @param offset The offset in the storage buffer to start reading from (default: 0)
          * @param size  The number of bytes to read from the storage buffer (default: capacity of the buffer)
          * @param buffer The buffer to write the data we have read from the storage buffer to (optional)
+         * @param noDelay If true, a call to flushFramebuffer will be issued so that the data can be read back immediately and not in engine.onEndFrameObservable. This can speed up data retrieval, at the cost of a small perf penalty (default: false).
          * @returns If not undefined, returns the (promise) buffer (as provided by the 4th parameter) filled with the data, else it returns a (promise) Uint8Array with the data read from the storage buffer
          */
-        readFromStorageBuffer(storageBuffer: DataBuffer, offset?: number, size?: number, buffer?: ArrayBufferView): Promise<ArrayBufferView>;
+        readFromStorageBuffer(storageBuffer: DataBuffer, offset?: number, size?: number, buffer?: ArrayBufferView, noDelay?: boolean): Promise<ArrayBufferView>;
 
         /**
          * Sets a storage buffer in the shader

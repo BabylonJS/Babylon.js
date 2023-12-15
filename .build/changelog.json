@@ -1,6 +1,228 @@
 {
-    "fromTag": "6.33.2",
+    "fromTag": "6.34.0",
     "changelog": {
+        "6.34.1": [
+            {
+                "pr": "14614",
+                "title": "No console es lint rule",
+                "description": "Avoid using console.log, especially in our core libraries. \nTools can use Logger, as they are served in the browser",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".eslintrc",
+                    ".eslintrc.js",
+                    "package.json",
+                    "packages/dev/buildTools/src/addJSToCompiledFiles.ts",
+                    "packages/dev/buildTools/src/buildShaders.ts",
+                    "packages/dev/buildTools/src/copyAssets.ts",
+                    "packages/dev/buildTools/src/declarationsEs6.ts",
+                    "packages/dev/buildTools/src/devWatcher.ts",
+                    "packages/dev/buildTools/src/generateDeclaration.ts",
+                    "packages/dev/buildTools/src/index.ts",
+                    "packages/dev/buildTools/src/ltsTransformer.ts",
+                    "packages/dev/buildTools/src/prepareEs6Build.ts",
+                    "packages/dev/buildTools/src/utils.ts",
+                    "packages/dev/buildTools/src/webpackTools.ts",
+                    "packages/dev/core/src/Cameras/Inputs/followCameraMouseWheelInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/followCameraPointersInput.ts",
+                    "packages/dev/core/src/Cameras/followCameraInputsManager.ts",
+                    "packages/dev/core/src/Debug/skeletonViewer.ts",
+                    "packages/dev/core/src/Engines/Processors/shaderCodeInliner.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.computeShader.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessor.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTintWASM.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphConsoleLogBlock.ts",
+                    "packages/dev/core/src/Gizmos/lightGizmo.ts",
+                    "packages/dev/core/src/Gizmos/rotationGizmo.ts",
+                    "packages/dev/core/src/Lights/Shadows/cascadedShadowGenerator.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/lightBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragDepthBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/heightToNormalBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/anisotropyBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/reflectionBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlock.ts",
+                    "packages/dev/core/src/Misc/assetsManager.ts",
+                    "packages/dev/core/src/Misc/dds.ts",
+                    "packages/dev/core/src/Misc/logger.ts",
+                    "packages/dev/core/src/Misc/sceneSerializer.ts",
+                    "packages/dev/core/src/Navigation/Plugins/recastJSPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/screenSpaceCurvaturePostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/screenSpaceReflectionPostProcess.ts",
+                    "packages/dev/core/src/XR/features/WebXRControllerPhysics.ts",
+                    "packages/dev/core/src/XR/features/WebXRMeshDetector.ts",
+                    "packages/dev/core/src/XR/features/WebXRWalkingLocomotion.ts",
+                    "packages/dev/core/src/XR/webXRExperienceHelper.ts",
+                    "packages/dev/core/src/assetContainer.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphDataNodes.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphEventNodes.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphExecutionNodes.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphSerialization.test.ts",
+                    "packages/dev/gui/src/2D/controls/sliders/baseSlider.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/metadata/metadataPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/scenePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/toolsTabComponent.tsx",
+                    "packages/dev/inspector/src/components/graph/canvasGraphComponent.tsx",
+                    "packages/dev/inspector/src/components/popupComponent.tsx",
+                    "packages/dev/loaders/src/OBJ/solidParser.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/babylon.interactivity.test.ts",
+                    "packages/dev/sharedUiComponents/src/colorPicker/colorPicker.tsx",
+                    "packages/dev/sharedUiComponents/src/components/bars/CommandDropdownComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/colorPicker/ColorPicker.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/popup.ts",
+                    "packages/dev/sharedUiComponents/src/stories/bars/CommandBarComponent.stories.tsx",
+                    "packages/tools/babylonServer/src/sceneJs.js",
+                    "packages/tools/devHost/src/createScene.ts",
+                    "packages/tools/guiEditor/src/components/sceneExplorer/sceneExplorerComponent.tsx",
+                    "packages/tools/guiEditor/src/workbenchEditor.tsx",
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts",
+                    "packages/tools/playground/src/components/rendererComponent.tsx",
+                    "packages/tools/playground/src/tools/monacoManager.ts",
+                    "packages/tools/reflector/src/index.ts",
+                    "packages/tools/sandbox/src/components/reflectorZone.tsx",
+                    "packages/tools/testTools/src/utils.ts",
+                    "packages/tools/testTools/src/visualizationUtils.ts",
+                    "packages/tools/testsMemoryLeaks/src/index.ts",
+                    "packages/tools/viewer/src/index.ts",
+                    "packages/tools/viewer/src/viewer/defaultViewer.ts",
+                    "packages/tools/viewer/src/viewer/renderOnlyViewer.ts",
+                    "packages/tools/viewer/src/viewer/viewer.ts",
+                    "packages/tools/vsm/src/actions/actions/LogAction.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14617",
+                "title": "ArcRotateCamera: Fix alpha offset inversion to not include beta = 0",
+                "description": "User @Starryi found a bug where the camera work invert alpha rotation when the beta angle was 0.  Based on their approach, I've generalized their fix to just exclude a 0 beta angle from that inversion.\r\n\r\nOriginal PR: https://github.com/BabylonJS/Babylon.js/pull/14609\r\n(Thanks for @Starryi for the find and initial fix)",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "14616",
+                "title": "Always use volume IOR for refraction",
+                "description": "I noticed that, after my PR that added dispersion rendering, we were no longer using the volume's IOR for refraction. Instead, the surface's IOR was always being used. This is incorrect.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockSubSurface.fx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14611",
+                "title": "WebGPU: ubos and storage buffers optimizations",
+                "description": "See https://forum.babylonjs.com/t/i-am-writing-webgpu-ray-tracer-is-anyone-interested-in-this-topic/42188/25",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/storageBuffer.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.storageBuffer.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.storageBuffer.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/uniformBuffer.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "14615",
+                "title": "Animation: Fix return value of createKeyForFrame when key already exists",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animation.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "14613",
+                "title": "Keep initial value for incremental scaling",
+                "description": "follow up https://forum.babylonjs.com/t/incrementalsnap-resets-mesh-scaling/46290",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/axisScaleGizmo.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "gizmos"
+                ]
+            },
+            {
+                "pr": "14606",
+                "title": "Physics V2 ragdolls",
+                "description": "Experimental\r\n\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/1312968/9e1fb827-eaac-4149-9ee6-78fe916fe276)\r\n\r\nTest PG : https://playground.babylonjs.com/#PS5DF6",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/index.ts",
+                    "packages/dev/core/src/Physics/v2/ragdoll.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "physics",
+                    "animations",
+                    "new feature",
+                    "bones"
+                ]
+            },
+            {
+                "pr": "14612",
+                "title": "fix circular dependency",
+                "description": null,
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/flowGraphBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphExecutionBlock.ts"
+                ],
+                "tags": []
+            }
+        ],
         "6.34.0": [
             {
                 "pr": "14607",

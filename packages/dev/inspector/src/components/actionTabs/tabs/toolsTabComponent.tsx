@@ -41,6 +41,7 @@ import GIF from "gif.js.optimized";
 import { Camera } from "core/Cameras/camera";
 import { Light } from "core/Lights/light";
 import { GLTFFileLoader } from "loaders/glTF/glTFFileLoader";
+import { Logger } from "core/Misc/logger";
 
 const envExportImageTypes = [
     { label: "PNG", value: 0, imageType: "image/png" },
@@ -315,7 +316,7 @@ export class ToolsTabComponent extends PaneComponent {
                 Tools.Download(blob, "environment.env");
             })
             .catch((error: any) => {
-                console.error(error);
+                Logger.Error(error);
                 alert(error);
             });
     }

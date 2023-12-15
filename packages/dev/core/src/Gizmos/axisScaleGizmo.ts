@@ -101,6 +101,7 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
     protected _disableMaterial: StandardMaterial;
     protected _dragging: boolean = false;
     private _tmpVector = new Vector3(0, 0, 0);
+    private _incrementalStartupValue = Vector3.Zero();
 
     /** Default material used to render when gizmo is not disabled or hovered */
     public get coloredMaterial() {
@@ -235,6 +236,12 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
                     // get current scaling
                     this.attachedNode.getWorldMatrix().decompose(undefined, TmpVectors.Quaternion[0], TmpVectors.Vector3[2], Gizmo.PreserveScaling ? transformNode : undefined);
                     // apply incrementaly, without taking care of current scaling value
+                    tmpVector.addInPlace(this._incrementalStartupValue);
+                    tmpVector.addInPlaceFromFloats(-1, -1, -1);
+                    // keep same sign or stretching close to 0 will change orientation at each drag and scaling will oscilate around 0
+                    tmpVector.x = Math.abs(tmpVector.x) * (this._incrementalStartupValue.x > 0 ? 1 : -1);
+                    tmpVector.y = Math.abs(tmpVector.y) * (this._incrementalStartupValue.y > 0 ? 1 : -1);
+                    tmpVector.z = Math.abs(tmpVector.z) * (this._incrementalStartupValue.z > 0 ? 1 : -1);
                     Matrix.ComposeToRef(tmpVector, TmpVectors.Quaternion[0], TmpVectors.Vector3[2], TmpVectors.Matrix[1]);
                 } else {
                     Matrix.ScalingToRef(tmpVector.x, tmpVector.y, tmpVector.z, TmpVectors.Matrix[2]);
@@ -260,6 +267,10 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
         // On Drag Listener: to move gizmo mesh with user action
         this.dragBehavior.onDragStartObservable.add(() => {
             this._dragging = true;
+            const transformNode = (<Mesh>this.attachedNode)._isMesh ? (this.attachedNode as TransformNode) : undefined;
+            this.attachedNode?.getWorldMatrix().decompose(this._incrementalStartupValue, undefined, undefined, Gizmo.PreserveScaling ? transformNode : undefined);
+            currentSnapDragDistance = 0;
+            currentSnapDragDistanceIncremental = 0;
         });
         this.dragBehavior.onDragObservable.add((e) => increaseGizmoMesh(e.dragDistance));
         this.dragBehavior.onDragEndObservable.add(resetGizmoMesh);

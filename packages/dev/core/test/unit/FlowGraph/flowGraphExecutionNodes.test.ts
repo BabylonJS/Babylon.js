@@ -20,6 +20,7 @@ import {
 import { FlowGraphBranchBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphBranchBlock";
 import { Vector3 } from "core/Maths/math.vector";
 import { Mesh } from "core/Meshes";
+import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
 
 describe("Flow Graph Execution Nodes", () => {
@@ -30,7 +31,6 @@ describe("Flow Graph Execution Nodes", () => {
     let flowGraphContext: FlowGraphContext;
 
     beforeEach(() => {
-        console.log = jest.fn();
         engine = new NullEngine({
             renderHeight: 256,
             renderWidth: 256,
@@ -38,7 +38,8 @@ describe("Flow Graph Execution Nodes", () => {
             deterministicLockstep: false,
             lockstepMaxSteps: 1,
         });
-
+        
+        Logger.Log = jest.fn();
         scene = new Scene(engine);
         flowGraphCoordinator = new FlowGraphCoordinator({ scene });
         flowGraph = flowGraphCoordinator.createGraph();
@@ -64,8 +65,8 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.start();
         scene.onReadyObservable.notifyObservers(scene);
 
-        expect(console.log).toHaveBeenCalledTimes(1);
-        expect(console.log).toHaveBeenCalledWith("onTrue");
+        expect(Logger.Log).toHaveBeenCalledTimes(1);
+        expect(Logger.Log).toHaveBeenCalledWith("onTrue");
     });
 
     it("DoN Block", () => {
@@ -90,7 +91,7 @@ describe("Flow Graph Execution Nodes", () => {
             scene.onReadyObservable.notifyObservers(scene);
         }
 
-        expect(console.log).toHaveBeenCalledTimes(numCalls);
+        expect(Logger.Log).toHaveBeenCalledTimes(numCalls);
     });
 
     it("ForLoop Block", () => {
@@ -114,11 +115,11 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.start();
         scene.onReadyObservable.notifyObservers(scene);
 
-        expect(console.log).toHaveBeenCalledTimes(4);
-        expect(console.log).toHaveBeenNthCalledWith(1, 1);
-        expect(console.log).toHaveBeenNthCalledWith(2, 3);
-        expect(console.log).toHaveBeenNthCalledWith(3, 5);
-        expect(console.log).toHaveBeenNthCalledWith(4, "done");
+        expect(Logger.Log).toHaveBeenCalledTimes(4);
+        expect(Logger.Log).toHaveBeenNthCalledWith(1, 1);
+        expect(Logger.Log).toHaveBeenNthCalledWith(2, 3);
+        expect(Logger.Log).toHaveBeenNthCalledWith(3, 5);
+        expect(Logger.Log).toHaveBeenNthCalledWith(4, "done");
     });
 
     it("MultiGate Block", () => {
@@ -143,16 +144,16 @@ describe("Flow Graph Execution Nodes", () => {
         // notify twice so two of the multi gate blocks will be activated
         scene.onReadyObservable.notifyObservers(scene);
         scene.onReadyObservable.notifyObservers(scene);
-        expect(console.log).toHaveBeenNthCalledWith(1, "custom1");
-        expect(console.log).toHaveBeenNthCalledWith(2, "custom2");
+        expect(Logger.Log).toHaveBeenNthCalledWith(1, "custom1");
+        expect(Logger.Log).toHaveBeenNthCalledWith(2, "custom2");
 
         // activate the third gate
         scene.onReadyObservable.notifyObservers(scene);
-        expect(console.log).toHaveBeenNthCalledWith(3, "custom3");
+        expect(Logger.Log).toHaveBeenNthCalledWith(3, "custom3");
 
         // activate the first gate again
         scene.onReadyObservable.notifyObservers(scene);
-        expect(console.log).toHaveBeenNthCalledWith(4, "custom1");
+        expect(Logger.Log).toHaveBeenNthCalledWith(4, "custom1");
     });
 
     it("Switch Block", () => {
@@ -176,11 +177,11 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.start();
         scene.onReadyObservable.notifyObservers(scene);
 
-        expect(console.log).toHaveBeenNthCalledWith(1, "custom2");
+        expect(Logger.Log).toHaveBeenNthCalledWith(1, "custom2");
 
         switchBlock.selection.setValue(3, flowGraphContext);
         scene.onReadyObservable.notifyObservers(scene);
-        expect(console.log).toHaveBeenNthCalledWith(2, "custom3");
+        expect(Logger.Log).toHaveBeenNthCalledWith(2, "custom3");
     });
 
     it("Timer Block", () => {
@@ -203,8 +204,8 @@ describe("Flow Graph Execution Nodes", () => {
         // this will run the onReadyObservable and the onBeforeRenderObservable
         scene.render();
 
-        expect(console.log).toHaveBeenNthCalledWith(1, "custom");
-        expect(console.log).toHaveBeenNthCalledWith(2, "custom2");
+        expect(Logger.Log).toHaveBeenNthCalledWith(1, "custom");
+        expect(Logger.Log).toHaveBeenNthCalledWith(2, "custom2");
     });
 
     it("Flip Flop Block", () => {
@@ -224,10 +225,10 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.start();
         scene.render();
 
-        expect(console.log).toHaveBeenNthCalledWith(1, "onTrue");
+        expect(Logger.Log).toHaveBeenNthCalledWith(1, "onTrue");
 
         scene.render();
-        expect(console.log).toHaveBeenNthCalledWith(2, "onFalse");
+        expect(Logger.Log).toHaveBeenNthCalledWith(2, "onFalse");
     });
 
     it("Throttle Block", () => {
@@ -244,11 +245,11 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.start();
         scene.render();
 
-        expect(console.log).toHaveBeenCalledTimes(1);
+        expect(Logger.Log).toHaveBeenCalledTimes(1);
 
         // Check if the execution is throttled
         scene.render();
-        expect(console.log).toHaveBeenCalledTimes(1);
+        expect(Logger.Log).toHaveBeenCalledTimes(1);
     });
 
     it("SetPropertyBlock", () => {

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import * as glob from "glob";
 import * as fs from "fs";
 import * as path from "path";

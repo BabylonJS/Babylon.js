@@ -1243,7 +1243,7 @@ export class AssetsManager {
             this.onProgressObservable.notifyObservers(new AssetsProgressEvent(this._waitingTasksCount, this._totalTasksCount, task));
         } catch (e) {
             Logger.Error("Error running progress callbacks.");
-            console.log(e);
+            Logger.Log(e);
         }
 
         if (this._waitingTasksCount === 0) {
@@ -1269,7 +1269,7 @@ export class AssetsManager {
                 this.onTasksDoneObservable.notifyObservers(this._tasks);
             } catch (e) {
                 Logger.Error("Error running tasks-done callbacks.");
-                console.log(e);
+                Logger.Log(e);
             }
             this._isLoading = false;
             if (this.autoHideLoadingUI) {

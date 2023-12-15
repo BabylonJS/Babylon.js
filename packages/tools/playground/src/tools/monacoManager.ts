@@ -291,6 +291,7 @@ class Playground {
                 if (fallbackResponse.ok) {
                     libContent += await fallbackResponse.text();
                 } else {
+                    // eslint-disable-next-line no-console
                     console.log("missing declaration", response.url);
                 }
             } else {

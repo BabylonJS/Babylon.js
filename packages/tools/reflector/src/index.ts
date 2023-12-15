@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { WebSocketServer } from "ws";
 import { readFileSync } from "fs";
 import { createServer } from "https";

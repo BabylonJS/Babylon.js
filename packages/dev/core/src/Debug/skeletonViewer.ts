@@ -21,6 +21,7 @@ import type { Observer } from "../Misc/observable";
 import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 import { ExtrudeShapeCustom } from "../Meshes/Builders/shapeBuilder";
 import { TransformNode } from "../Meshes/transformNode";
+import { Logger } from "core/Misc/logger";
 
 /**
  * Class used to render a debug view of a given skeleton
@@ -805,7 +806,7 @@ export class SkeletonViewer {
             this._revert(animationState);
             this.ready = true;
         } catch (err) {
-            console.error(err);
+            Logger.Error(err);
             this._revert(animationState);
             this.dispose();
         }

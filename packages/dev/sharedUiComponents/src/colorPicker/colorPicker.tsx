@@ -5,6 +5,7 @@ import { HexColor } from "./hexColor";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
 
 import "./colorPicker.scss";
+import { Logger } from "core/Misc/logger";
 
 /**
  * Interface used to specify creation options for color picker
@@ -95,8 +96,8 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
         const value = Math.min(1, Math.max(0.0001, 1 - top / this._saturationRef.current!.clientHeight));
 
         if (this.props.debugMode) {
-            console.log("Saturation: " + saturation);
-            console.log("Value: " + value);
+            Logger.Log("Saturation: " + saturation);
+            Logger.Log("Value: " + value);
         }
 
         const hsv = this.state.color.toHSV();
@@ -113,7 +114,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
         const hue = 360 * Math.min(0.9999, Math.max(0.0001, left / this._hueRef.current!.clientWidth));
 
         if (this.props.debugMode) {
-            console.log("Hue: " + hue);
+            Logger.Log("Hue: " + hue);
         }
 
         const hsv = this.state.color.toHSV();

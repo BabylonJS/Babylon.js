@@ -676,8 +676,11 @@ export class UniformBuffer {
         }
     }
 
-    private _checkNewFrame(): void {
-        if (this._engine._features.trackUbosInFrame && this._currentFrameId !== this._engine.frameId) {
+    /**
+     * @internal
+     */
+    public _checkNewFrame(force = false): void {
+        if (force || (this._engine._features.trackUbosInFrame && this._currentFrameId !== this._engine.frameId)) {
             this._currentFrameId = this._engine.frameId;
             this._createBufferOnWrite = false;
             if (this._buffers && this._buffers.length > 0) {
