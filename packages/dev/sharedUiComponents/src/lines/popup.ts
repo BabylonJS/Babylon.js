@@ -72,6 +72,7 @@ export class Popup {
                     targetDoc.head!.appendChild(newLinkEl);
                 }
             } catch (e) {
+                // eslint-disable-next-line no-console
                 console.log(e);
             }
         }

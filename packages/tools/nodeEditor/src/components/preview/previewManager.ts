@@ -520,6 +520,7 @@ export class PreviewManager {
                             undefined,
                             false,
                             (error) => {
+                                // eslint-disable-next-line no-console
                                 console.log(error);
                             }
                         );

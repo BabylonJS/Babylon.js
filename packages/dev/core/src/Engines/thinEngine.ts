@@ -1008,7 +1008,7 @@ export class ThinEngine {
         // }
 
         const versionToLog = `Babylon.js v${ThinEngine.Version}`;
-        console.log(versionToLog + ` - ${this.description}`);
+        Logger.Log(versionToLog + ` - ${this.description}`);
 
         // Check setAttribute in case of workers
         if (this._renderingCanvas && this._renderingCanvas.setAttribute) {
@@ -5198,7 +5198,7 @@ export class ThinEngine {
 
             if (texture && texture.isMultiview) {
                 //this._gl.bindTexture(target, texture ? texture._colorTextureArray : null);
-                console.error(target, texture);
+                Logger.Error(["_bindTextureDirectly called with a multiview texture!", target, texture]);
                 throw "_bindTextureDirectly called with a multiview texture!";
             } else {
                 this._gl.bindTexture(target, texture?._hardwareTexture?.underlyingResource ?? null);

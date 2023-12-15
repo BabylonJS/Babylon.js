@@ -615,7 +615,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                     }
                 }
             } catch (e) {
-                console.log(`Syncing transform failed for node ${transformNode.name}: ${e.message}...`);
+                Logger.Error(`Syncing transform failed for node ${transformNode.name}: ${e.message}...`);
             }
         }
     }

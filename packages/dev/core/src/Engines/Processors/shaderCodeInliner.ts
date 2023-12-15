@@ -1,3 +1,4 @@
+import { Logger } from "core/Misc/logger";
 import { EscapeRegExp, ExtractBetweenMarkers, FindBackward, IsIdentifierChar, RemoveComments, SkipWhitespaces } from "../../Misc/codeStringParsingTools";
 
 interface IInlineFunctionDescr {
@@ -46,12 +47,12 @@ export class ShaderCodeInliner {
      */
     public processCode() {
         if (this.debug) {
-            console.log(`Start inlining process (code size=${this._sourceCode.length})...`);
+            Logger.Log(`Start inlining process (code size=${this._sourceCode.length})...`);
         }
         this._collectFunctions();
         this._processInlining(this._numMaxIterations);
         if (this.debug) {
-            console.log("End of inlining process.");
+            Logger.Log("End of inlining process.");
         }
     }
 
@@ -68,7 +69,7 @@ export class ShaderCodeInliner {
             const funcParamsStartIndex = this._sourceCode.indexOf("(", inlineTokenIndex + this.inlineToken.length);
             if (funcParamsStartIndex < 0) {
                 if (this.debug) {
-                    console.warn(`Could not find the opening parenthesis after the token. startIndex=${startIndex}`);
+                    Logger.Warn(`Could not find the opening parenthesis after the token. startIndex=${startIndex}`);
                 }
                 startIndex = inlineTokenIndex + this.inlineToken.length;
                 continue;
@@ -79,7 +80,7 @@ export class ShaderCodeInliner {
             );
             if (!funcNameMatch) {
                 if (this.debug) {
-                    console.warn(
+                    Logger.Warn(
                         `Could not extract the name/type of the function from: ${this._sourceCode.substring(inlineTokenIndex + this.inlineToken.length, funcParamsStartIndex)}`
                     );
                 }
@@ -92,7 +93,7 @@ export class ShaderCodeInliner {
             const funcParamsEndIndex = ExtractBetweenMarkers("(", ")", this._sourceCode, funcParamsStartIndex);
             if (funcParamsEndIndex < 0) {
                 if (this.debug) {
-                    console.warn(`Could not extract the parameters the function '${funcName}' (type=${funcType}). funcParamsStartIndex=${funcParamsStartIndex}`);
+                    Logger.Warn(`Could not extract the parameters the function '${funcName}' (type=${funcType}). funcParamsStartIndex=${funcParamsStartIndex}`);
                 }
                 startIndex = inlineTokenIndex + this.inlineToken.length;
                 continue;
@@ -103,7 +104,7 @@ export class ShaderCodeInliner {
             const funcBodyStartIndex = SkipWhitespaces(this._sourceCode, funcParamsEndIndex + 1);
             if (funcBodyStartIndex === this._sourceCode.length) {
                 if (this.debug) {
-                    console.warn(`Could not extract the body of the function '${funcName}' (type=${funcType}). funcParamsEndIndex=${funcParamsEndIndex}`);
+                    Logger.Warn(`Could not extract the body of the function '${funcName}' (type=${funcType}). funcParamsEndIndex=${funcParamsEndIndex}`);
                 }
                 startIndex = inlineTokenIndex + this.inlineToken.length;
                 continue;
@@ -112,7 +113,7 @@ export class ShaderCodeInliner {
             const funcBodyEndIndex = ExtractBetweenMarkers("{", "}", this._sourceCode, funcBodyStartIndex);
             if (funcBodyEndIndex < 0) {
                 if (this.debug) {
-                    console.warn(`Could not extract the body of the function '${funcName}' (type=${funcType}). funcBodyStartIndex=${funcBodyStartIndex}`);
+                    Logger.Warn(`Could not extract the body of the function '${funcName}' (type=${funcType}). funcBodyStartIndex=${funcBodyStartIndex}`);
                 }
                 startIndex = inlineTokenIndex + this.inlineToken.length;
                 continue;
@@ -158,7 +159,7 @@ export class ShaderCodeInliner {
         }
 
         if (this.debug) {
-            console.log(`Collect functions: ${this._functionDescr.length} functions found. functionDescr=`, this._functionDescr);
+            Logger.Log(`Collect functions: ${this._functionDescr.length} functions found. functionDescr=${this._functionDescr}`);
         }
     }
 
@@ -170,7 +171,7 @@ export class ShaderCodeInliner {
         }
 
         if (this.debug) {
-            console.log(`numMaxIterations is ${numMaxIterations} after inlining process`);
+            Logger.Log(`numMaxIterations is ${numMaxIterations} after inlining process`);
         }
 
         return numMaxIterations >= 0;
@@ -209,7 +210,7 @@ export class ShaderCodeInliner {
                 const callParamsEndIndex = ExtractBetweenMarkers("(", ")", this._sourceCode, callParamsStartIndex);
                 if (callParamsEndIndex < 0) {
                     if (this.debug) {
-                        console.warn(`Could not extract the parameters of the function call. Function '${name}' (type=${type}). callParamsStartIndex=${callParamsStartIndex}`);
+                        Logger.Warn(`Could not extract the parameters of the function call. Function '${name}' (type=${type}). callParamsStartIndex=${callParamsStartIndex}`);
                     }
                     startIndex = functionCallIndex + name.length;
                     continue;
@@ -247,7 +248,7 @@ export class ShaderCodeInliner {
 
                 if (params === null) {
                     if (this.debug) {
-                        console.warn(
+                        Logger.Warn(
                             `Invalid function call: can't extract the parameters of the function call. Function '${name}' (type=${type}). callParamsStartIndex=${callParamsStartIndex}, callParams=` +
                                 callParams
                         );
@@ -271,7 +272,7 @@ export class ShaderCodeInliner {
 
                 if (paramNames.length !== parameters.length) {
                     if (this.debug) {
-                        console.warn(
+                        Logger.Warn(
                             `Invalid function call: not the same number of parameters for the call than the number expected by the function. Function '${name}' (type=${type}). function parameters=${parameters}, call parameters=${paramNames}`
                         );
                     }
@@ -300,7 +301,7 @@ export class ShaderCodeInliner {
                     this._sourceCode = partBefore + type + " " + retParamName + ";\n" + funcBody + "\n" + partBetween + retParamName + partAfter;
 
                     if (this.debug) {
-                        console.log(
+                        Logger.Log(
                             `Replace function call by code. Function '${name}' (type=${type}). injectDeclarationIndex=${injectDeclarationIndex}, call parameters=${paramNames}`
                         );
                     }
@@ -311,7 +312,7 @@ export class ShaderCodeInliner {
                     startIndex += funcBody.length - (callParamsEndIndex + 1 - functionCallIndex);
 
                     if (this.debug) {
-                        console.log(`Replace function call by code. Function '${name}' (type=${type}). functionCallIndex=${functionCallIndex}, call parameters=${paramNames}`);
+                        Logger.Log(`Replace function call by code. Function '${name}' (type=${type}). functionCallIndex=${functionCallIndex}, call parameters=${paramNames}`);
                     }
                 }
 

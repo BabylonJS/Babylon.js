@@ -2,6 +2,7 @@ import type { Engine } from "core/Engines";
 import { NullEngine } from "core/Engines";
 import type { FlowGraph, FlowGraphContext } from "core/FlowGraph";
 import { FlowGraphCoordinator, FlowGraphGetVariableBlock, FlowGraphSceneReadyEventBlock, FlowGraphConsoleLogBlock, FlowGraphAddBlock, FlowGraphRandomBlock } from "core/FlowGraph";
+import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
 
 describe("Flow Graph Data Nodes", () => {
@@ -12,7 +13,6 @@ describe("Flow Graph Data Nodes", () => {
     let flowGraphContext: FlowGraphContext;
 
     beforeEach(() => {
-        console.log = jest.fn();
         engine = new NullEngine({
             renderHeight: 256,
             renderWidth: 256,
@@ -20,6 +20,7 @@ describe("Flow Graph Data Nodes", () => {
             deterministicLockstep: false,
             lockstepMaxSteps: 1,
         });
+        Logger.Log = jest.fn();
 
         scene = new Scene(engine);
         flowGraphCoordinator = new FlowGraphCoordinator({ scene });
@@ -46,8 +47,8 @@ describe("Flow Graph Data Nodes", () => {
         flowGraph.start();
         scene.onReadyObservable.notifyObservers(scene);
 
-        expect(console.log).toHaveBeenCalledWith(42);
-        expect(console.log).toHaveBeenCalledWith(43);
+        expect(Logger.Log).toHaveBeenCalledWith(42);
+        expect(Logger.Log).toHaveBeenCalledWith(43);
     });
 
     it("Values are cached for the same execution id", () => {
@@ -80,7 +81,7 @@ describe("Flow Graph Data Nodes", () => {
         scene.onReadyObservable.notifyObservers(scene);
 
         expect(random).toHaveBeenCalledTimes(1);
-        expect(console.log).toHaveBeenCalledWith(2); // 1 + 1
+        expect(Logger.Log).toHaveBeenCalledWith(2); // 1 + 1
 
         random.mockRestore();
     });

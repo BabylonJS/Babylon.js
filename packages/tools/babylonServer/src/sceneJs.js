@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { loadPlayground, getPlaygroundId } from "./playground";
 const canvas = document.getElementById("babylon-canvas"); // Get the canvas element
 import { createScene } from "./createScene";

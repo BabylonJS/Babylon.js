@@ -6,6 +6,7 @@ import { CanvasGraphService } from "./canvasGraphService";
 import type { IPerfLayoutSize, IVisibleRangeChangedObservableProps } from "./graphSupportingTypes";
 import type { IPerfMetadata } from "core/Misc/interfaces/iPerfViewer";
 import type { Scene } from "core/scene";
+import { Logger } from "core/Misc/logger";
 
 interface ICanvasGraphComponentProps {
     id: string;
@@ -36,7 +37,7 @@ export const CanvasGraphComponent: React.FC<ICanvasGraphComponentProps> = (props
         try {
             cs = new CanvasGraphService(canvasRef.current, { datasets: collector.datasets, onVisibleRangeChangedObservable });
         } catch (error) {
-            console.error(error);
+            Logger.Error(error);
             return;
         }
 
