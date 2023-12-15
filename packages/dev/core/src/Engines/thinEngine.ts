@@ -213,6 +213,7 @@ import {
     resetTextureCache,
     setColorWrite,
     stopRenderLoop,
+    getCaps,
 } from "core/esm/Engines/engine.base";
 import { _createTextureBase, _renderLoopBase, _restoreEngineAfterContextLost, runRenderLoopBase } from "core/esm/Engines/engine.extendable";
 import { _loadFile } from "core/esm/Engines/engine.tools";
@@ -1182,6 +1183,7 @@ export class ThinEngine {
             _bindUnboundFramebuffer,
             getUniforms,
             getAttributes,
+            getCaps,
         });
     }
 
