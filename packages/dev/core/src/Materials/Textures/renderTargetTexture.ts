@@ -1027,7 +1027,6 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
         if (sceneCamera) {
             scene.activeCamera = sceneCamera;
-            // Do not avoid setting uniforms when multiple scenes are active as another camera may have overwrite these
             if (this.activeCamera && this.activeCamera !== scene.activeCamera) {
                 scene.setTransformMatrix(scene.activeCamera.getViewMatrix(), scene.activeCamera.getProjectionMatrix(true));
             }
