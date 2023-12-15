@@ -4300,6 +4300,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         // Restore framebuffer after rendering to targets
         if (needRebind && !this.prePass) {
             this._bindFrameBuffer(this._activeCamera, false);
+            this.updateTransformMatrix();
         }
 
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
