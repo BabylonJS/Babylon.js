@@ -2330,7 +2330,7 @@ export class NodeMaterial extends PushMaterial {
         const material = targetMaterial ?? new NodeMaterial(name, scene);
 
         const data = await scene._loadFileAsync(url);
-        const serializationObject = JSON.parse(data as string);
+        const serializationObject = JSON.parse(data);
         material.parseSerializedObject(serializationObject, rootUrl);
         if (!skipBuild) {
             material.build();

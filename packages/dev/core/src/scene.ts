@@ -5399,6 +5399,22 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return request;
     }
 
+    public _loadFileAsync(
+        fileOrUrl: File | string,
+        onProgress?: (data: any) => void,
+        useOfflineSupport?: boolean,
+        useArrayBuffer?: false,
+        onOpened?: (request: WebRequest) => void
+    ): Promise<string>;
+
+    public _loadFileAsync(
+        fileOrUrl: File | string,
+        onProgress?: (data: any) => void,
+        useOfflineSupport?: boolean,
+        useArrayBuffer?: true,
+        onOpened?: (request: WebRequest) => void
+    ): Promise<ArrayBuffer>;
+
     /**
      * @internal
      */
