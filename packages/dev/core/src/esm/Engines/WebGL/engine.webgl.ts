@@ -3113,7 +3113,7 @@ export function _bindTextureDirectly(engineState: IWebGLEnginePublic, target: nu
 
         if (texture && texture.isMultiview) {
             //(engineState as WebGLEngineStateFull)._gl.bindTexture(target, texture ? texture._colorTextureArray : null);
-            console.error(target, texture);
+            Logger.Error(["_bindTextureDirectly called with a multiview texture!", target, texture]);
             throw "_bindTextureDirectly called with a multiview texture!";
         } else {
             fes._gl.bindTexture(target, texture?._hardwareTexture?.underlyingResource ?? null);
