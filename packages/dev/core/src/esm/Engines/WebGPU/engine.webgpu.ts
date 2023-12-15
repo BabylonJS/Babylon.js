@@ -663,7 +663,7 @@ export function setSize(engineState: IWebGPUEnginePublic, width: number, height:
             (engineState as any)._count = 0;
         }
         if (!(engineState as any)._count || (engineState as any)._count < engineState.dbgVerboseLogsNumFrames) {
-            console.log("frame #" + (engineState as any)._count + " - setSize -", width, height);
+            Logger.Log(["frame #" + (engineState as any)._count + " - setSize -", width, height]);
         }
     }
 
@@ -1099,14 +1099,14 @@ export function _endCurrentRenderPass(engineState: IWebGPUEnginePublic): number 
             (fes as any)._count = 0;
         }
         if (!(fes as any)._count || (fes as any)._count < fes.dbgVerboseLogsNumFrames) {
-            console.log(
+            Logger.Log([
                 "frame #" +
                     (fes as any)._count +
                     " - " +
                     (currentPassIndex === 2 ? "main" : "render target") +
                     " end pass" +
-                    (currentPassIndex === 1 ? " - internalTexture.uniqueId=" + fes._currentRenderTarget?.texture?.uniqueId : "")
-            );
+                    (currentPassIndex === 1 ? " - internalTexture.uniqueId=" + fes._currentRenderTarget?.texture?.uniqueId : ""),
+            ]);
         }
     }
     _debugPopGroup?.(0);
