@@ -1184,6 +1184,9 @@ export class ThinEngine {
             getUniforms,
             getAttributes,
             getCaps,
+            _bindTextureDirectly,
+            _uploadCompressedDataToTextureDirectly,
+            setFloat2,
         });
     }
 

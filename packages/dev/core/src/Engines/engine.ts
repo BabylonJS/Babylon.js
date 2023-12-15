@@ -26,6 +26,7 @@ import type { Material } from "../Materials/material";
 import type { PostProcess } from "../PostProcesses/postProcess";
 import {
     _createShaderProgram,
+    _getTextureTarget,
     _readPixelsAsync,
     _rescaleTexture,
     _uploadImageToTexture,
@@ -616,6 +617,7 @@ export class Engine extends ThinEngine {
 
         augmentEngineState(this._engineState, {
             setDepthWrite,
+            _getTextureTarget,
         });
 
         EngineStoreLegacy.Instances.push(this);
