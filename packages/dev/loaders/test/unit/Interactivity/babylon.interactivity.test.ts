@@ -7,6 +7,7 @@ import { FlowGraph } from "core/FlowGraph/flowGraph";
 import { Vector3, Vector4 } from "core/Maths";
 import { Mesh } from "core/Meshes";
 import { ArcRotateCamera } from "core/Cameras";
+import { Logger } from "core/Misc";
 
 describe("Babylon Interactivity", () => {
     let engine;
@@ -16,7 +17,7 @@ describe("Babylon Interactivity", () => {
         engine = new NullEngine();
         scene = new Scene(engine);
         new ArcRotateCamera("", 0, 0, 0, new Vector3(0, 0, 0));
-        log = jest.spyOn(global.console, "log");
+        log = jest.spyOn(Logger, "Log");
     });
 
     it("should load a basic graph", () => {

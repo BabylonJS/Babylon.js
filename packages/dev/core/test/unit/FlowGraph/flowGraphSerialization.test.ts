@@ -22,14 +22,14 @@ import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 import { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { Vector3 } from "core/Maths";
 import { Mesh } from "core/Meshes";
+import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
 
 describe("Flow Graph Serialization", () => {
     let engine: Engine;
     let scene: Scene;
     beforeEach(() => {
-        console.log = jest.fn();
-
+        
         engine = new NullEngine({
             renderHeight: 256,
             renderWidth: 256,
@@ -37,6 +37,7 @@ describe("Flow Graph Serialization", () => {
             deterministicLockstep: false,
             lockstepMaxSteps: 1,
         });
+        Logger.Log = jest.fn();
 
         scene = new Scene(engine);
     });
@@ -192,7 +193,7 @@ describe("Flow Graph Serialization", () => {
         parsed.start();
 
         scene.onReadyObservable.notifyObservers(scene);
-        expect(console.log).toHaveBeenCalledWith(42);
+        expect(Logger.Log).toHaveBeenCalledWith(42);
     });
 
     it("Serializes and parses a graph with vector and mesh references", () => {
