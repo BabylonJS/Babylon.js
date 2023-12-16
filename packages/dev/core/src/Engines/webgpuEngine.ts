@@ -670,7 +670,7 @@ export class WebGPUEngine extends Engine {
                 }
             )
             .then(() => {
-                this._bufferManager = new WebGPUBufferManager(this._device);
+                this._bufferManager = new WebGPUBufferManager(this, this._device);
                 this._textureHelper = new WebGPUTextureHelper(this._device, this._glslang, this._tintWASM, this._bufferManager, this._deviceEnabledExtensions);
                 this._cacheSampler = new WebGPUCacheSampler(this._device);
                 this._cacheBindGroups = new WebGPUCacheBindGroups(this._device, this._cacheSampler, this);
