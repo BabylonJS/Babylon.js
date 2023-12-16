@@ -5,6 +5,7 @@ import type { Nullable } from "../types";
 import { Constants } from "./constants";
 import type { ThinEngine } from "./thinEngine";
 import type { IMultiRenderTargetOptions } from "../Materials/Textures/multiRenderTarget";
+import type { IGPUFrameTime } from "./IGPUFrameTime";
 
 /**
  * An interface enforcing the renderTarget accessor to used by render target textures.
@@ -19,7 +20,7 @@ export interface IRenderTargetTexture {
 /**
  * Wrapper around a render target (either single or multi textures)
  */
-export class RenderTargetWrapper {
+export class RenderTargetWrapper implements IGPUFrameTime {
     protected _engine: ThinEngine;
     private _size: TextureSize;
     private _isCube: boolean;
@@ -144,6 +145,15 @@ export class RenderTargetWrapper {
     public get samples(): number {
         return this._samples;
     }
+
+    /**
+     * Gets the GPU time spent rendering this render target in the last frame (in nanoseconds).
+     * Only works with the WebGPU engine, if you enabled the "timestamp-query" extension in the engine constructor options and set engine.enableGPUTimingMeasurements = true.
+     */
+    public readonly gpuTimeInFrame = 0;
+
+    /** @internal */
+    public _gpuTimeInFrameId = -1;
 
     /**
      * Sets the sample count of the render target

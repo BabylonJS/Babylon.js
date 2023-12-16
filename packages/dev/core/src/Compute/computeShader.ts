@@ -17,6 +17,7 @@ import { TextureSampler } from "../Materials/Textures/textureSampler";
 import type { DataBuffer } from "core/Buffers/dataBuffer";
 import type { ExternalTexture } from "core/Materials/Textures/externalTexture";
 import type { VideoTexture } from "core/Materials/Textures/videoTexture";
+import type { IGPUFrameTime } from "core/Engines/IGPUFrameTime";
 
 /**
  * Defines the options associated with the creation of a compute shader.
@@ -50,7 +51,7 @@ type ComputeBindingListInternal = { [key: string]: { type: ComputeBindingType; o
 /**
  * The ComputeShader object lets you execute a compute shader on your GPU (if supported by the engine)
  */
-export class ComputeShader {
+export class ComputeShader implements IGPUFrameTime {
     private _engine: ThinEngine;
     private _shaderPath: any;
     private _options: IComputeShaderOptions;
@@ -102,6 +103,14 @@ export class ComputeShader {
      * Callback triggered when an error occurs
      */
     public onError: Nullable<(effect: ComputeEffect, errors: string) => void> = null;
+
+    /**
+     * Gets the GPU time spent running the compute shader for the last frame rendered (in nanoseconds).
+     */
+    public readonly gpuTimeInFrame = 0;
+
+    /** @internal */
+    public _gpuTimeInFrameId = -1;
 
     /**
      * Instantiates a new compute shader.
@@ -390,7 +399,7 @@ export class ComputeShader {
             }
         }
 
-        this._engine.computeDispatch(this._effect, this._context, this._bindings, x, y, z, this._options.bindingsMapping);
+        this._engine.computeDispatch(this._effect, this._context, this._bindings, x, y, z, this._options.bindingsMapping, this);
 
         return true;
     }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { EngineStore } from "./engineStore";
 import type { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
@@ -54,6 +55,7 @@ import type { WebRequest } from "../Misc/webRequest";
 import type { LoadFileError } from "../Misc/fileTools";
 import type { Texture } from "../Materials/Textures/texture";
 import { PrecisionDate } from "../Misc/precisionDate";
+import type { IGPUFrameTime } from "./IGPUFrameTime";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -197,7 +199,7 @@ export interface EngineOptions extends ThinEngineOptions, WebGLContextAttributes
 /**
  * The base engine class (root of all engines)
  */
-export class ThinEngine {
+export class ThinEngine implements IGPUFrameTime {
     private static _TempClearColorUint32 = new Uint32Array(4);
     private static _TempClearColorInt32 = new Int32Array(4);
 
@@ -1521,6 +1523,27 @@ export class ThinEngine {
             version: this._glVersion,
         };
     }
+
+    /**
+     * Enables or disables GPU timing measurements.
+     * Not supported in WebGL1/2.
+     */
+    public get enableGPUTimingMeasurements(): boolean {
+        return false;
+    }
+
+    public set enableGPUTimingMeasurements(_enable: boolean) {
+        // not supported in WebGL
+    }
+
+    /**
+     * Gets the GPU time spent in the main render pass for the last frame rendered.
+     * Not supported in WebGL1/2.
+     */
+    public readonly gpuTimeInFrame = 0;
+
+    /** @internal */
+    public _gpuTimeInFrameId = -1;
 
     /**
      * Defines the hardware scaling level.

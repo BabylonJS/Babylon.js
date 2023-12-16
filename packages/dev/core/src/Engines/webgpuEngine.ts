@@ -1,3 +1,4 @@
+/* eslint-disable babylonjs/available */
 import { Logger } from "../Misc/logger";
 import type { Nullable, DataArray, IndicesArray, Immutable } from "../types";
 import { Color4 } from "../Maths/math";
@@ -7,6 +8,7 @@ import type { IEffectCreationOptions } from "../Materials/effect";
 import { Effect } from "../Materials/effect";
 import type { EffectFallbacks } from "../Materials/effectFallbacks";
 import { Constants } from "./constants";
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import * as WebGPUConstants from "./WebGPU/webgpuConstants";
 import { VertexBuffer } from "../Buffers/buffer";
 import type { IWebGPURenderPipelineStageDescriptor } from "./WebGPU/webgpuPipelineContext";
@@ -60,6 +62,7 @@ import "../ShadersWGSL/postprocess.vertex";
 import type { VideoTexture } from "../Materials/Textures/videoTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { RenderTargetWrapper } from "./renderTargetWrapper";
+import type { IGPUFrameTime } from "./IGPUFrameTime";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
@@ -224,6 +227,8 @@ export class WebGPUEngine extends Engine {
     public _mrtAttachments: number[];
     /** @internal */
     public _timestampQuery: WebGPUTimestampQuery;
+    /** @internal */
+    public _timestampIndex = 0;
     /** @internal */
     public _occlusionQuery: WebGPUOcclusionQuery;
     /** @internal */
@@ -495,6 +500,25 @@ export class WebGPUEngine extends Engine {
         this._compatibilityMode = mode;
     }
 
+    /**
+     * Enables or disables GPU timing measurements.
+     * Note that this is only supported if the "timestamp-query" extension is enabled in the options.
+     */
+    public get enableGPUTimingMeasurements(): boolean {
+        return this._timestampQuery.enable;
+    }
+
+    public set enableGPUTimingMeasurements(enable: boolean) {
+        this._timestampQuery.enable = enable;
+    }
+
+    /**
+     * Gets the GPU time spent in the main render pass for the last frame rendered (in nanoseconds).
+     * Note that this is only supported if the "timestamp-query" extension is enabled in the options.
+     * It will only return time spent in the main pass, not in additional render target / compute passes (if any)!
+     */
+    public readonly gpuTimeInFrame = 0;
+
     /** @internal */
     public get currentSampleCount(): number {
         return this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount;
@@ -674,7 +698,7 @@ export class WebGPUEngine extends Engine {
                 this._textureHelper = new WebGPUTextureHelper(this._device, this._glslang, this._tintWASM, this._bufferManager, this._deviceEnabledExtensions);
                 this._cacheSampler = new WebGPUCacheSampler(this._device);
                 this._cacheBindGroups = new WebGPUCacheBindGroups(this._device, this._cacheSampler, this);
-                this._timestampQuery = new WebGPUTimestampQuery(this._device, this._bufferManager);
+                this._timestampQuery = new WebGPUTimestampQuery(this, this._device, this._bufferManager);
                 this._occlusionQuery = (this._device as any).createQuerySet ? new WebGPUOcclusionQuery(this, this._device, this._bufferManager) : (undefined as any);
                 this._bundleList = new WebGPUBundleList(this._device);
                 this._snapshotRendering = new WebGPUSnapshotRendering(this, this._snapshotRenderingMode, this._bundleList);
@@ -1409,7 +1433,7 @@ export class WebGPUEngine extends Engine {
     /**
      * Creates a new index buffer
      * @param indices defines the content of the index buffer
-     * @param updatable defines if the index buffer must be updatable
+     * @param _updatable defines if the index buffer must be updatable
      * @param label defines the label of the buffer (for debug purpose)
      * @returns a new buffer
      */
@@ -2562,6 +2586,7 @@ export class WebGPUEngine extends Engine {
         this._snapshotRendering.endFrame();
 
         this._timestampQuery.endFrame(this._renderEncoder);
+        this._timestampIndex = 0;
 
         this.flushFramebuffer();
 
@@ -2627,11 +2652,6 @@ export class WebGPUEngine extends Engine {
         this._commandBuffers[1] = this._renderEncoder.finish();
 
         this._device.queue.submit(this._commandBuffers);
-
-        // Now that the command buffers have been submitted, we can reset the ubo as we can reuse the same GPU buffer(s)
-        for (let i = 0; i < this._uniformBuffers.length; ++i) {
-            this._uniformBuffers[i]._checkNewFrame(true);
-        }
 
         this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
         this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
@@ -2755,7 +2775,7 @@ export class WebGPUEngine extends Engine {
             }
         }
 
-        this._debugPushGroup?.("render target pass", 1);
+        this._debugPushGroup?.("render target pass" + (renderTargetWrapper.label ? " (" + renderTargetWrapper.label + ")" : ""), 1);
 
         this._rttRenderPassWrapper.renderPassDescriptor = {
             label: (renderTargetWrapper.label ?? "RTT") + "RenderPass",
@@ -2778,6 +2798,7 @@ export class WebGPUEngine extends Engine {
                     : undefined,
             occlusionQuerySet: this._occlusionQuery?.hasQueries ? this._occlusionQuery.querySet : undefined,
         };
+        this._timestampQuery.startPass(this._rttRenderPassWrapper.renderPassDescriptor, this._timestampIndex);
         this._currentRenderPass = this._renderEncoder.beginRenderPass(this._rttRenderPassWrapper.renderPassDescriptor);
 
         if (this.dbgVerboseLogsForFirstFrames) {
@@ -2869,6 +2890,7 @@ export class WebGPUEngine extends Engine {
 
         this._debugPushGroup?.("main pass", 0);
 
+        this._timestampQuery.startPass(this._mainRenderPassWrapper.renderPassDescriptor!, this._timestampIndex);
         this._currentRenderPass = this._renderEncoder.beginRenderPass(this._mainRenderPassWrapper.renderPassDescriptor!);
 
         this._setDepthTextureFormat(this._mainRenderPassWrapper);
@@ -2896,6 +2918,25 @@ export class WebGPUEngine extends Engine {
             this._bundleList.reset();
         }
         this._currentRenderPass.end();
+
+        if (this._timestampQuery.enable) {
+            const currentFrameId = this.frameId;
+            const frameTimeObject: IGPUFrameTime = this._currentRenderTarget ?? this;
+
+            this._timestampQuery.endPass(this._timestampIndex).then((duration) => {
+                if (currentFrameId < frameTimeObject._gpuTimeInFrameId) {
+                    return;
+                }
+                if (frameTimeObject._gpuTimeInFrameId !== currentFrameId) {
+                    frameTimeObject.gpuTimeInFrame = duration;
+                    frameTimeObject._gpuTimeInFrameId = currentFrameId;
+                } else {
+                    frameTimeObject.gpuTimeInFrame += duration;
+                }
+            });
+        }
+        this._timestampIndex += 2;
+
         if (this.dbgVerboseLogsForFirstFrames) {
             if ((this as any)._count === undefined) {
                 (this as any)._count = 0;
@@ -3327,8 +3368,11 @@ export class WebGPUEngine extends Engine {
      */
     public dispose(): void {
         this._isDisposed = true;
+        this._timestampQuery.dispose();
         this._mainTexture?.destroy();
         this._depthTexture?.destroy();
+        this._textureHelper.destroyDeferredTextures();
+        this._bufferManager.destroyDeferredBuffers();
         this._device.destroy();
         super.dispose();
     }
