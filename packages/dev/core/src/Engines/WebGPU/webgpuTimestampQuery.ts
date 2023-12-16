@@ -6,8 +6,6 @@ import { PerfCounter } from "../../Misc/perfCounter";
 import { WebGPUQuerySet } from "./webgpuQuerySet";
 import type { WebGPUEngine } from "../webgpuEngine";
 
-let counter = 0;
-
 /** @internal */
 export class WebGPUTimestampQuery {
     private _engine: WebGPUEngine;
@@ -18,7 +16,6 @@ export class WebGPUTimestampQuery {
     private _gpuFrameTimeCounter: PerfCounter = new PerfCounter();
     private _measureDuration: WebGPUDurationMeasure;
     private _measureDurationState = 0;
-    private _tata = counter++;
 
     public get gpuFrameTimeCounter() {
         return this._gpuFrameTimeCounter;
