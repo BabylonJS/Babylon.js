@@ -4300,6 +4300,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         // Restore framebuffer after rendering to targets
         if (needRebind && !this.prePass) {
             this._bindFrameBuffer(this._activeCamera, false);
+            this.updateTransformMatrix();
         }
 
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
@@ -5398,6 +5399,22 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         });
         return request;
     }
+
+    public _loadFileAsync(
+        fileOrUrl: File | string,
+        onProgress?: (data: any) => void,
+        useOfflineSupport?: boolean,
+        useArrayBuffer?: false,
+        onOpened?: (request: WebRequest) => void
+    ): Promise<string>;
+
+    public _loadFileAsync(
+        fileOrUrl: File | string,
+        onProgress?: (data: any) => void,
+        useOfflineSupport?: boolean,
+        useArrayBuffer?: true,
+        onOpened?: (request: WebRequest) => void
+    ): Promise<ArrayBuffer>;
 
     /**
      * @internal

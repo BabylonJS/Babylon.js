@@ -462,6 +462,10 @@ export class Tools {
         return FileToolsLoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
     }
 
+    // Note that this must come first since useArrayBuffer defaults to true below.
+    public static LoadFileAsync(url: string, useArrayBuffer?: true): Promise<ArrayBuffer>;
+    public static LoadFileAsync(url: string, useArrayBuffer?: false): Promise<string>;
+
     /**
      * Loads a file from a url
      * @param url the file url to load

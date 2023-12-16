@@ -2955,6 +2955,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param uvOffset is an optional vector2 used to offset UV.
      * @param uvScale is an optional vector2 used to scale UV.
      * @param forceUpdate defines whether or not to force an update of the generated buffers. This is useful to apply on a deserialized model for instance.
+     * @param onError defines a callback called when an error occurs during the processing of the request.
      * @returns the Mesh.
      */
     public applyDisplacementMap(
@@ -2964,7 +2965,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         onSuccess?: (mesh: Mesh) => void,
         uvOffset?: Vector2,
         uvScale?: Vector2,
-        forceUpdate = false
+        forceUpdate = false,
+        onError?: (message?: string, exception?: any) => void
     ): Mesh {
         const scene = this.getScene();
 
@@ -2988,7 +2990,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
         };
 
-        Tools.LoadImage(url, onload, () => {}, scene.offlineProvider);
+        Tools.LoadImage(url, onload, onError ? onError : () => {}, scene.offlineProvider);
         return this;
     }
 
