@@ -88,6 +88,10 @@ export interface IMultiRenderTargetOptions {
      * Define the names of the textures (used for debugging purpose)
      */
     labels?: string[];
+    /**
+     * Label of the RenderTargetWrapper (used for debugging only)
+     */
+    label?: string;
 }
 
 /**
@@ -212,6 +216,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
             layerIndex: layerIndex,
             layerCounts: layerCounts,
             labels: textureNames,
+            label: name,
         };
 
         this._count = count;

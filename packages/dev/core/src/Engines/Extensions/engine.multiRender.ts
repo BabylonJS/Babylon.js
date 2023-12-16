@@ -225,6 +225,9 @@ ThinEngine.prototype.createMultipleRenderTarget = function (size: TextureSize, o
             depthTextureFormat = options.depthTextureFormat;
         }
     }
+
+    rtWrapper.label = options?.label ?? "MultiRenderTargetWrapper";
+
     const gl = this._gl;
     // Create the framebuffer
     const framebuffer = gl.createFramebuffer();
