@@ -2065,9 +2065,16 @@ export class NativeEngine extends Engine {
                     }
                 };
 
-                this._loadFile(rootUrl, (data) => {
-                    onloaddata(new Uint8Array(data as ArrayBuffer, 0, (data as ArrayBuffer).byteLength));
-                }, undefined, undefined, true, onInternalError);
+                this._loadFile(
+                    rootUrl,
+                    (data) => {
+                        onloaddata(new Uint8Array(data as ArrayBuffer, 0, (data as ArrayBuffer).byteLength));
+                    },
+                    undefined,
+                    undefined,
+                    true,
+                    onInternalError
+                );
             }
         } else {
             if (!files || files.length !== 6) {

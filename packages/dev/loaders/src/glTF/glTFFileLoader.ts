@@ -643,7 +643,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
                 scene,
                 fileOrUrl as File | string,
                 (data) => {
-                    this._validate(scene, new Uint8Array((data as ArrayBuffer), 0, (data as ArrayBuffer).byteLength), rootUrl, fileName);
+                    this._validate(scene, new Uint8Array(data as ArrayBuffer, 0, (data as ArrayBuffer).byteLength), rootUrl, fileName);
                     this._unpackBinaryAsync(
                         new DataReader({
                             readAsync: (byteOffset, byteLength) => readAsync(data as ArrayBuffer, byteOffset, byteLength),
