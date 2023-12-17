@@ -6,6 +6,7 @@ import { Constants } from "./constants";
 import type { ThinEngine } from "./thinEngine";
 import type { IMultiRenderTargetOptions } from "../Materials/Textures/multiRenderTarget";
 import type { IGPUFrameTime } from "./IGPUFrameTime";
+import { PerfCounter } from "core/Misc/perfCounter";
 
 /**
  * An interface enforcing the renderTarget accessor to used by render target textures.
@@ -150,7 +151,7 @@ export class RenderTargetWrapper implements IGPUFrameTime {
      * Gets the GPU time spent rendering this render target in the last frame (in nanoseconds).
      * Only works with the WebGPU engine, if you enabled the "timestamp-query" extension in the engine constructor options and set engine.enableGPUTimingMeasurements = true.
      */
-    public readonly gpuTimeInFrame = 0;
+    public readonly gpuTimeInFrame = new PerfCounter();
 
     /** @internal */
     public _gpuTimeInFrameId = -1;

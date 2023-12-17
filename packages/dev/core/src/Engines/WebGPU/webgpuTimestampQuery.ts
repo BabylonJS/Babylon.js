@@ -87,10 +87,12 @@ export class WebGPUTimestampQuery {
                 return;
             }
             if (frameTimeObject._gpuTimeInFrameId !== currentFrameId) {
-                frameTimeObject.gpuTimeInFrame = duration;
+                frameTimeObject.gpuTimeInFrame._fetchResult();
+                frameTimeObject.gpuTimeInFrame.fetchNewFrame();
+                frameTimeObject.gpuTimeInFrame.addCount(duration, false);
                 frameTimeObject._gpuTimeInFrameId = currentFrameId;
             } else {
-                frameTimeObject.gpuTimeInFrame += duration;
+                frameTimeObject.gpuTimeInFrame.addCount(duration, false);
             }
         });
     }

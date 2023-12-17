@@ -18,6 +18,7 @@ import type { DataBuffer } from "core/Buffers/dataBuffer";
 import type { ExternalTexture } from "core/Materials/Textures/externalTexture";
 import type { VideoTexture } from "core/Materials/Textures/videoTexture";
 import type { IGPUFrameTime } from "core/Engines/IGPUFrameTime";
+import { PerfCounter } from "core/Misc/perfCounter";
 
 /**
  * Defines the options associated with the creation of a compute shader.
@@ -107,7 +108,7 @@ export class ComputeShader implements IGPUFrameTime {
     /**
      * Gets the GPU time spent running the compute shader for the last frame rendered (in nanoseconds).
      */
-    public readonly gpuTimeInFrame = 0;
+    public readonly gpuTimeInFrame = new PerfCounter();
 
     /** @internal */
     public _gpuTimeInFrameId = -1;

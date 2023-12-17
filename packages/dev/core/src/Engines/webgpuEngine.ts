@@ -62,7 +62,7 @@ import "../ShadersWGSL/postprocess.vertex";
 import type { VideoTexture } from "../Materials/Textures/videoTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { RenderTargetWrapper } from "./renderTargetWrapper";
-import type { IGPUFrameTime } from "./IGPUFrameTime";
+import { PerfCounter } from "core/Misc/perfCounter";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
@@ -517,7 +517,7 @@ export class WebGPUEngine extends Engine {
      * Note that this is only supported if the "timestamp-query" extension is enabled in the options.
      * It will only return time spent in the main pass, not in additional render target / compute passes (if any)!
      */
-    public readonly gpuTimeInFrame = 0;
+    public readonly gpuTimeInFrame = new PerfCounter();
 
     /** @internal */
     public get currentSampleCount(): number {

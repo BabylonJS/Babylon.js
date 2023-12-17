@@ -56,6 +56,7 @@ import type { LoadFileError } from "../Misc/fileTools";
 import type { Texture } from "../Materials/Textures/texture";
 import { PrecisionDate } from "../Misc/precisionDate";
 import type { IGPUFrameTime } from "./IGPUFrameTime";
+import { PerfCounter } from "core/Misc/perfCounter";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -1540,7 +1541,7 @@ export class ThinEngine implements IGPUFrameTime {
      * Gets the GPU time spent in the main render pass for the last frame rendered.
      * Not supported in WebGL1/2.
      */
-    public readonly gpuTimeInFrame = 0;
+    public readonly gpuTimeInFrame = new PerfCounter();
 
     /** @internal */
     public _gpuTimeInFrameId = -1;
