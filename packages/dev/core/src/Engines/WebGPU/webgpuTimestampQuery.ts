@@ -5,6 +5,7 @@ import * as WebGPUConstants from "./webgpuConstants";
 import { PerfCounter } from "../../Misc/perfCounter";
 import { WebGPUQuerySet } from "./webgpuQuerySet";
 import type { WebGPUEngine } from "../webgpuEngine";
+import type { IGPUFrameTime } from "../IGPUFrameTime";
 
 /** @internal */
 export class WebGPUTimestampQuery {
@@ -73,14 +74,23 @@ export class WebGPUTimestampQuery {
         }
     }
 
-    public endPass(index: number): Promise<number> {
-        return new Promise((resolve) => {
-            if (this._enabled) {
-                this._measureDuration.stopPass(index).then((duration) => {
-                    resolve(duration !== null && duration > 0 ? duration : 0);
-                });
+    public endPass(index: number, frameTimeObject: IGPUFrameTime): void {
+        if (!this._enabled) {
+            return;
+        }
+
+        const currentFrameId = this._engine.frameId;
+
+        this._measureDuration.stopPass(index).then((duration_) => {
+            const duration = duration_ !== null && duration_ > 0 ? duration_ : 0;
+            if (currentFrameId < frameTimeObject._gpuTimeInFrameId) {
+                return;
+            }
+            if (frameTimeObject._gpuTimeInFrameId !== currentFrameId) {
+                frameTimeObject.gpuTimeInFrame = duration;
+                frameTimeObject._gpuTimeInFrameId = currentFrameId;
             } else {
-                resolve(0);
+                frameTimeObject.gpuTimeInFrame += duration;
             }
         });
     }

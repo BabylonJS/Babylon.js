@@ -103,21 +103,7 @@ WebGPUEngine.prototype.computeDispatch = function (
     computePass.end();
 
     if (frameTimeObject) {
-        if (this._timestampQuery.enable) {
-            const currentFrameId = this.frameId;
-
-            this._timestampQuery.endPass(this._timestampIndex).then((duration) => {
-                if (currentFrameId < frameTimeObject._gpuTimeInFrameId) {
-                    return;
-                }
-                if (frameTimeObject._gpuTimeInFrameId !== currentFrameId) {
-                    frameTimeObject.gpuTimeInFrame = duration;
-                    frameTimeObject._gpuTimeInFrameId = currentFrameId;
-                } else {
-                    frameTimeObject.gpuTimeInFrame += duration;
-                }
-            });
-        }
+        this._timestampQuery.endPass(this._timestampIndex, frameTimeObject);
         this._timestampIndex += 2;
     }
 };

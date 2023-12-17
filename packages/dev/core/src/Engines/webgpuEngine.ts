@@ -2919,22 +2919,7 @@ export class WebGPUEngine extends Engine {
         }
         this._currentRenderPass.end();
 
-        if (this._timestampQuery.enable) {
-            const currentFrameId = this.frameId;
-            const frameTimeObject: IGPUFrameTime = this._currentRenderTarget ?? this;
-
-            this._timestampQuery.endPass(this._timestampIndex).then((duration) => {
-                if (currentFrameId < frameTimeObject._gpuTimeInFrameId) {
-                    return;
-                }
-                if (frameTimeObject._gpuTimeInFrameId !== currentFrameId) {
-                    frameTimeObject.gpuTimeInFrame = duration;
-                    frameTimeObject._gpuTimeInFrameId = currentFrameId;
-                } else {
-                    frameTimeObject.gpuTimeInFrame += duration;
-                }
-            });
-        }
+        this._timestampQuery.endPass(this._timestampIndex, this._currentRenderTarget ?? this);
         this._timestampIndex += 2;
 
         if (this.dbgVerboseLogsForFirstFrames) {
