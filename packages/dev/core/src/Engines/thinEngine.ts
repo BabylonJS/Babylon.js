@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { EngineStore } from "./engineStore";
 import type { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
