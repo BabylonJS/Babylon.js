@@ -17,7 +17,6 @@ import { TextureSampler } from "../Materials/Textures/textureSampler";
 import type { DataBuffer } from "core/Buffers/dataBuffer";
 import type { ExternalTexture } from "core/Materials/Textures/externalTexture";
 import type { VideoTexture } from "core/Materials/Textures/videoTexture";
-import type { GPUPerfCounter } from "core/Misc/gpuPerfCounter";
 import { WebGPUPerfCounter } from "core/Engines/WebGPU/webgpuPerfCounter";
 
 /**
@@ -109,7 +108,7 @@ export class ComputeShader {
      * Gets the GPU time spent running the compute shader for the last frame rendered (in nanoseconds).
      * You have to enable the "timestamp-query" extension in the engine constructor options and set engine.enableGPUTimingMeasurements = true.
      */
-    public readonly gpuTimeInFrame?: GPUPerfCounter;
+    public readonly gpuTimeInFrame?: WebGPUPerfCounter;
 
     /**
      * Instantiates a new compute shader.

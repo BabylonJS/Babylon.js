@@ -1,5 +1,4 @@
 import type { TextureSize } from "../../Materials/Textures/textureCreationOptions";
-import type { GPUPerfCounter } from "../../Misc/gpuPerfCounter";
 import type { WebGPUEngine } from "../webgpuEngine";
 import { RenderTargetWrapper } from "../renderTargetWrapper";
 import { WebGPUPerfCounter } from "./webgpuPerfCounter";
@@ -15,7 +14,7 @@ export class WebGPURenderTargetWrapper extends RenderTargetWrapper {
      * Gets the GPU time spent rendering this render target in the last frame (in nanoseconds).
      * You have to enable the "timestamp-query" extension in the engine constructor options and set engine.enableGPUTimingMeasurements = true.
      */
-    public readonly gpuTimeInFrame?: GPUPerfCounter;
+    public readonly gpuTimeInFrame?: WebGPUPerfCounter;
 
     /**
      * Initializes the render target wrapper

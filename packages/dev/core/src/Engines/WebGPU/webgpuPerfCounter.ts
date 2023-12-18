@@ -1,10 +1,15 @@
-import { GPUPerfCounter } from "../../Misc/gpuPerfCounter";
+import type { PerfCounter } from "../../Misc/perfCounter";
 
 /**
  * Class used to define a WebGPU performance counter
  */
-export class WebGPUPerfCounter extends GPUPerfCounter {
+export class WebGPUPerfCounter {
     private _gpuTimeInFrameId = -1;
+
+    /**
+     * The GPU time in nanoseconds spent in the last frame
+     */
+    public counter: PerfCounter;
 
     /**
      * @internal
