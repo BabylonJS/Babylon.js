@@ -806,8 +806,8 @@ export class RecastJSCrowd implements ICrowd {
                 const ceilingY = this._agentDestination[index].y + this.reachRadii[index];
                 const distanceXZSquared = dx * dx + dz * dz;
                 if (agentPosition.y > groundY && agentPosition.y < ceilingY && distanceXZSquared < radius * radius) {
-                    this.onReachTargetObservable.notifyObservers({ agentIndex: agentIndex, destination: this._agentDestination[index] });
                     this._agentDestinationArmed[index] = false;
+                    this.onReachTargetObservable.notifyObservers({ agentIndex: agentIndex, destination: this._agentDestination[index] });
                 }
             }
         }
