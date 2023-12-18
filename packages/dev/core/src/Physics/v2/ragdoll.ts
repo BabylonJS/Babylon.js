@@ -1,6 +1,5 @@
 import type { Skeleton } from "../../Bones/skeleton";
-import { MeshBuilder } from "../..//Meshes/meshBuilder";
-import { Vector3, Matrix } from "../../Maths/math.vector";
+import { Vector3, Matrix, TmpVectors } from "../../Maths/math.vector";
 import type { Quaternion } from "../../Maths/math.vector";
 import type { Scene } from "../../scene";
 import { PhysicsAggregate } from "./physicsAggregate";
@@ -11,6 +10,7 @@ import { PhysicsShapeType, PhysicsConstraintType } from "./IPhysicsEnginePlugin"
 import type { Nullable } from "../../types";
 import type { Bone } from "../../Bones/bone";
 import { Logger } from "../../Misc/logger";
+import { TransformNode } from "../../Meshes/transformNode";
 
 /**
  * Ragdoll bone properties
@@ -65,11 +65,6 @@ export class RagdollBoneProperties {
  * @experimental
  */
 export class Ragdoll {
-    /**
-     * Opacity of debug boxes
-     */
-    public boxVisibility: number = 0.6;
-
     private _skeleton: Skeleton;
     private _scene: Scene;
     private _mesh: Mesh;
@@ -79,14 +74,18 @@ export class Ragdoll {
     private _bones: Array<Bone> = new Array<Bone>();
     private _initialRotation: Array<Quaternion> = new Array<Quaternion>();
     private _boneNames: string[] = [];
-    private _boxes: Array<Mesh> = new Array<Mesh>();
+    private _transforms: Array<TransformNode> = new Array<TransformNode>();
     private _aggregates: Array<PhysicsAggregate> = new Array<PhysicsAggregate>();
     private _ragdollMode: boolean = false;
     private _rootBoneName: string = "";
     private _rootBoneIndex: number = -1;
     private _mass: number = 10;
     private _restitution: number = 0;
-    private _pauseSync: boolean = false;
+
+    /**
+     * Pause synchronization between physics and bone position/orientation
+     */
+    public pauseSync: boolean = false;
 
     private _putBoxesInBoneCenter: boolean;
     private _defaultJoint: number = PhysicsConstraintType.HINGE;
@@ -112,15 +111,6 @@ export class Ragdoll {
         this._boneOffsetAxis = Axis.Y;
     }
 
-    /**
-     * Set the debug boxes visibility
-     */
-    public set boxesVisibility(visible: boolean) {
-        for (const box of this._boxes) {
-            box.visibility = visible ? this.boxVisibility : 0;
-        }
-    }
-
     private _createColliders(): void {
         this._mesh.computeWorldMatrix();
 
@@ -142,9 +132,10 @@ export class Ragdoll {
                     size: this._config[i].size,
                 };
 
-                const box = MeshBuilder.CreateBox(boneNames[ii] + "_box", currentRagdollBoneProperties, this._scene);
-
-                box.visibility = 0;
+                currentRagdollBoneProperties.width = currentRagdollBoneProperties.width ?? currentRagdollBoneProperties.size;
+                currentRagdollBoneProperties.depth = currentRagdollBoneProperties.depth ?? currentRagdollBoneProperties.size;
+                currentRagdollBoneProperties.height = currentRagdollBoneProperties.height ?? currentRagdollBoneProperties.size;
+                const transform = new TransformNode(boneNames[ii] + "_transform", this._scene);
 
                 // Define the rest of the box properties.
                 currentRagdollBoneProperties.joint = config[i].joint !== undefined ? config[i].joint : this._defaultJoint;
@@ -169,17 +160,18 @@ export class Ragdoll {
                 const boneDir = currentBone.getDirection(boneOffsetAxis, this._mesh);
                 currentRagdollBoneProperties.boneOffsetAxis = boneOffsetAxis;
 
-                box.position = currentBone.getAbsolutePosition(this._mesh).add(boneDir.scale(boxOffset));
+                transform.position = currentBone.getAbsolutePosition(this._mesh).add(boneDir.scale(boxOffset));
 
                 const mass = config[i].mass !== undefined ? config[i].mass : this._mass;
                 const restitution = config[i].restitution !== undefined ? config[i].restitution : this._restitution;
                 const aggregate = new PhysicsAggregate(
-                    box,
+                    transform,
                     PhysicsShapeType.BOX,
                     {
                         mass: mass,
                         restitution: restitution,
                         friction: 0.6,
+                        extents: new Vector3(currentRagdollBoneProperties.width, currentRagdollBoneProperties.height, currentRagdollBoneProperties.depth),
                     },
                     this._scene
                 );
@@ -188,7 +180,7 @@ export class Ragdoll {
                 this._aggregates.push(aggregate);
                 this._bones.push(currentBone);
                 this._boneNames.push(currentBone.name);
-                this._boxes.push(box);
+                this._transforms.push(transform);
                 this._boxConfigs.push(currentRagdollBoneProperties);
                 this._initialRotation.push(currentBone.getRotationQuaternion(Space.WORLD, this._mesh));
             }
@@ -210,14 +202,14 @@ export class Ragdoll {
 
             const boneParentIndex = this._boneNames.indexOf(nearestParent.name);
 
-            let distanceFromParentBoxToBone = this._bones[i].getAbsolutePosition(this._mesh).subtract(this._boxes[boneParentIndex].position);
+            let distanceFromParentBoxToBone = this._bones[i].getAbsolutePosition(this._mesh).subtract(this._transforms[boneParentIndex].position);
 
-            const wmat = this._boxes[boneParentIndex].computeWorldMatrix();
+            const wmat = this._transforms[boneParentIndex].computeWorldMatrix();
             const invertedWorldMat = Matrix.Invert(wmat);
             distanceFromParentBoxToBone = Vector3.TransformCoordinates(this._bones[i].getAbsolutePosition(this._mesh), invertedWorldMat);
 
             const boneAbsPos = this._bones[i].getAbsolutePosition(this._mesh);
-            const boxAbsPos = this._boxes[i].position.clone();
+            const boxAbsPos = this._transforms[i].position.clone();
             const myConnectedPivot = boneAbsPos.subtract(boxAbsPos);
 
             const joint = new BallAndSocketConstraint(
@@ -232,24 +224,24 @@ export class Ragdoll {
     }
 
     private _syncBonesAndBoxes(): void {
-        if (this._pauseSync) {
+        if (this.pauseSync) {
             return;
         }
 
         if (this._ragdollMode) {
-            const rootBoneDirection = this._bones[this._rootBoneIndex].getDirection(this._boxConfigs[this._rootBoneIndex].boneOffsetAxis as any, this._mesh);
-            const rootBoneOffsetPosition = this._bones[this._rootBoneIndex]
-                .getAbsolutePosition(this._mesh)
-                .add(rootBoneDirection.scale(this._boxConfigs[this._rootBoneIndex].boxOffset as any));
+            this._bones[this._rootBoneIndex].getDirectionToRef(this._boxConfigs[this._rootBoneIndex].boneOffsetAxis!, this._mesh, TmpVectors.Vector3[0]);
+            TmpVectors.Vector3[0].scaleInPlace(this._boxConfigs[this._rootBoneIndex].boxOffset!);
+            this._bones[this._rootBoneIndex].getAbsolutePositionToRef(this._mesh, TmpVectors.Vector3[1]);
+            TmpVectors.Vector3[1].addInPlace(TmpVectors.Vector3[0]);
 
-            this._bones[this._rootBoneIndex].setAbsolutePosition(this._boxes[this._rootBoneIndex].position, this._mesh);
+            this._bones[this._rootBoneIndex].setAbsolutePosition(this._transforms[this._rootBoneIndex].position, this._mesh);
             this._addImpostorRotationToBone(this._rootBoneIndex);
 
             const rootPos = this._aggregates[this._rootBoneIndex].body.transformNode.position;
 
             // Move the mesh, to guarantee alignment between root bone and impostor box position
-            const dist = rootBoneOffsetPosition.subtract(rootPos);
-            this._mesh.position = this._mesh.position.subtract(dist);
+            TmpVectors.Vector3[1].subtractToRef(rootPos, TmpVectors.Vector3[0]);
+            this._mesh.position.subtractToRef(TmpVectors.Vector3[0], this._mesh.position);
 
             for (let i = 0; i < this._bones.length; i++) {
                 if (i == this._rootBoneIndex) continue;
@@ -259,10 +251,8 @@ export class Ragdoll {
     }
 
     private _addImpostorRotationToBone(boneIndex: number): void {
-        const newRotQuat = this._aggregates[boneIndex].body?.transformNode?.rotationQuaternion?.multiply(this._initialRotation[boneIndex]);
-        if (newRotQuat) {
-            this._bones[boneIndex].setRotationQuaternion(newRotQuat, Space.WORLD, this._mesh);
-        }
+        this._aggregates[boneIndex].body?.transformNode?.rotationQuaternion?.multiplyToRef(this._initialRotation[boneIndex], TmpVectors.Quaternion[0]);
+        this._bones[boneIndex].setRotationQuaternion(TmpVectors.Quaternion[0], Space.WORLD, this._mesh);
     }
 
     // Return true if root bone is valid/exists in this.bonesNames. false otherwise.
