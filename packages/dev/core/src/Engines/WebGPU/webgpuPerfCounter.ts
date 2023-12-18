@@ -1,12 +1,15 @@
 import { GPUPerfCounter } from "../../Misc/gpuPerfCounter";
 
 /**
- * @internal
+ * Class used to define a WebGPU performance counter
  */
 export class WebGPUPerfCounter extends GPUPerfCounter {
     private _gpuTimeInFrameId = -1;
 
-    public addDuration(currentFrameId: number, duration: number) {
+    /**
+     * @internal
+     */
+    public _addDuration(currentFrameId: number, duration: number) {
         if (currentFrameId < this._gpuTimeInFrameId) {
             return;
         }

@@ -82,7 +82,7 @@ export class WebGPUTimestampQuery {
         const currentFrameId = this._engine.frameId;
 
         this._measureDuration.stopPass(index).then((duration_) => {
-            gpuPerfCounter.addDuration(currentFrameId, duration_ !== null && duration_ > 0 ? duration_ : 0);
+            gpuPerfCounter._addDuration(currentFrameId, duration_ !== null && duration_ > 0 ? duration_ : 0);
         });
     }
 

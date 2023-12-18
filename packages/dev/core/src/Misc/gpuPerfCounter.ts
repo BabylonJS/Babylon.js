@@ -9,6 +9,9 @@ export class GPUPerfCounter {
      */
     public counter: PerfCounter;
 
+    /**
+     * Creates a new GPU performance counter
+     */
     constructor() {
         this.counter = new PerfCounter();
     }
