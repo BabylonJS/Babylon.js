@@ -2263,6 +2263,7 @@ export class GLTFLoader implements IGLTFLoader {
         switch (alphaMode) {
             case MaterialAlphaMode.OPAQUE: {
                 babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_OPAQUE;
+                babylonMaterial.alpha = 1.0; // Force alpha to 1.0 for opaque mode.
                 break;
             }
             case MaterialAlphaMode.MASK: {
