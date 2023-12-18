@@ -88,7 +88,13 @@ WebGPUEngine.prototype.readFromStorageBuffer = function (
                     this._bufferManager.releaseBuffer(gpuBuffer);
                     resolve(data!);
                 },
-                (reason) => reject(reason)
+                (reason) => {
+                    if (this.isDisposed) {
+                        resolve(new Uint8Array());
+                    } else {
+                        reject(reason);
+                    }
+                }
             );
         };
 

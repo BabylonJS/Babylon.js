@@ -30,9 +30,9 @@ struct subSurfaceOutParams
 };
 
 #ifdef SUBSURFACE
-    #define pbr_inline
-    #define inline
     #ifdef SS_REFRACTION
+        #define pbr_inline
+        #define inline
         vec4 sampleEnvironmentRefraction(
             in float ior
             , in float thickness
@@ -153,6 +153,8 @@ struct subSurfaceOutParams
             return environmentRefraction;
         }
     #endif
+    #define pbr_inline
+    #define inline
     void subSurfaceBlock(
         in vec3 vSubSurfaceIntensity,
         in vec2 vThicknessParam,
