@@ -474,7 +474,12 @@ export class ComputeShader {
      * @returns a new compute shader
      */
     public static Parse(source: any, scene: Scene, rootUrl: string): ComputeShader {
-        const compute = SerializationHelper.Parse(() => new ComputeShader(source.name, scene.getEngine() as WebGPUEngine, source.shaderPath, source.options), source, scene, rootUrl);
+        const compute = SerializationHelper.Parse(
+            () => new ComputeShader(source.name, scene.getEngine() as WebGPUEngine, source.shaderPath, source.options),
+            source,
+            scene,
+            rootUrl
+        );
 
         for (const key in source.textures) {
             const binding = source.bindings[key];
