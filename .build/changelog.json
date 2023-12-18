@@ -1,6 +1,142 @@
 {
-    "fromTag": "6.34.0",
+    "fromTag": "6.34.1",
     "changelog": {
+        "6.34.2": [
+            {
+                "pr": "14627",
+                "title": "add isDisposed method to physicsbody",
+                "description": "Forum issue: https://forum.babylonjs.com/t/safe-way-to-check-if-a-physicsbody-object-has-been-disposed-in-babylon-js/46512 ",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "14626",
+                "title": "small improvements for ragdoll",
+                "description": null,
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/ragdoll.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14625",
+                "title": "Fix rearm for crowd agent onreach observable",
+                "description": "follow up https://forum.babylonjs.com/t/question-about-crowd-agentgoto/46532",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Navigation/Plugins/recastJSPlugin.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "14622",
+                "title": "Fix broken glTF validator array buffer management",
+                "description": "Fixes #14597\r\n\r\nThis change also adds better type safety to load file async functions.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCompression.ts",
+                    "packages/dev/core/src/Misc/tools.ts",
+                    "packages/dev/core/src/Rendering/GaussianSplatting/gaussianSplatting.ts",
+                    "packages/dev/core/src/XR/motionController/webXRMotionControllerManager.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/loaders/src/glTF/glTFFileLoader.ts",
+                    "packages/dev/loaders/src/glTF/glTFValidation.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "14623",
+                "title": "WebGPU: Reseting ubos in flushFramebuffer does not work",
+                "description": "Rollback one of the change from #14611 ([this PG](https://playground.babylonjs.com/?webgpu#XDNVAY#0) fails because of it, for eg).",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/uniformBuffer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "14621",
+                "title": "RenderTargetTexture: Fix wrong transformation matrix set on scene when multiple scenes are defined",
+                "description": "This PR set the scene transformation matrix at the end of the `RenderTargetTexture.render` call as soon as two or more scenes are created:\r\n\r\n#6363 \r\n\r\nWithout this change, this PG does not work: https://playground.babylonjs.com/#01KDKN\r\n\r\nHowever, the PG is wrong! As `scene2.render()` is never called, the scene transformation matrix is not updated. In this case, it's the user responsibility to call `scene.updateTransformationMatrix(true)` so that the transformation matrix is up to date.\r\n\r\nHere's the corrected PG: https://playground.babylonjs.com/#01KDKN#14\r\n\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "14596",
+                "title": "Allow triangle list with glTF draco",
+                "description": "See https://forum.babylonjs.com/t/draco-compressed-triangle-strips-not-loaded/46182.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_draco_mesh_compression.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14620",
+                "title": "Add buffer based variants of displacement and height",
+                "description": "Closes #14610 by adding a buffer based version of the images based process for heightmap and displacement.\r\n",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/groundBuilder.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Misc/fileTools.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            }
+        ],
         "6.34.1": [
             {
                 "pr": "14614",
