@@ -1,5 +1,5 @@
 import type { UniformBuffer } from "../Materials/uniformBuffer";
-import type { WebGPUEngine } from "core/Engines/webgpuEngine";
+import type { WebGPUEngine } from "../Engines/webgpuEngine";
 import type { Scene } from "../scene";
 import type { Nullable } from "../types";
 import { SerializationHelper, serialize } from "../Misc/decorators";
@@ -107,6 +107,7 @@ export class ComputeShader {
 
     /**
      * Gets the GPU time spent running the compute shader for the last frame rendered (in nanoseconds).
+     * You have to enable the "timestamp-query" extension in the engine constructor options and set engine.enableGPUTimingMeasurements = true.
      */
     public readonly gpuTimeInFrame?: GPUPerfCounter;
 

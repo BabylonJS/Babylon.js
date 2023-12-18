@@ -518,7 +518,7 @@ export class WebGPUEngine extends Engine {
 
     /**
      * Gets the GPU time spent in the main render pass for the last frame rendered (in nanoseconds).
-     * Note that this is only supported if the "timestamp-query" extension is enabled in the options.
+     * You have to enable the "timestamp-query" extension in the engine constructor options and set engine.enableGPUTimingMeasurements = true.
      * It will only return time spent in the main pass, not additional render target / compute passes (if any)!
      */
     public readonly gpuTimeInFrameForMainPass?: WebGPUPerfCounter;

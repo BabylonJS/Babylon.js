@@ -535,18 +535,6 @@ export class Engine extends ThinEngine {
     protected _compatibilityMode = true;
 
     /**
-     * Enables or disables GPU timing measurements.
-     * Not supported in WebGL1/2.
-     */
-    public get enableGPUTimingMeasurements(): boolean {
-        return false;
-    }
-
-    public set enableGPUTimingMeasurements(_enable: boolean) {
-        // not supported in WebGL
-    }
-
-    /**
      * (WebGPU only) True (default) to be in compatibility mode, meaning rendering all existing scenes without artifacts (same rendering than WebGL).
      * Setting the property to false will improve performances but may not work in some scenes if some precautions are not taken.
      * See https://doc.babylonjs.com/setup/support/webGPU/webGPUOptimization/webGPUNonCompatibilityMode for more details
