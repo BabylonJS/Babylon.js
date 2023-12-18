@@ -4,7 +4,7 @@ import type { IComputeContext } from "../../Compute/IComputeContext";
 import type { IComputePipelineContext } from "../../Compute/IComputePipelineContext";
 import { ThinEngine } from "../../Engines/thinEngine";
 import type { Nullable } from "../../types";
-import type { GPUPerfCounter } from "../../Misc/gpuPerfCounter";
+import type { WebGPUPerfCounter } from "../WebGPU/webgpuPerfCounter";
 
 /**
  * Type used to locate a resource in a compute shader.
@@ -73,7 +73,7 @@ declare module "../../Engines/thinEngine" {
             y?: number,
             z?: number,
             bindingsMapping?: ComputeBindingMapping,
-            gpuPerfCounter?: GPUPerfCounter
+            gpuPerfCounter?: WebGPUPerfCounter
         ): void;
 
         /**

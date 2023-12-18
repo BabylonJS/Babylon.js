@@ -1,4 +1,5 @@
 import type { ThinEngine } from "../Engines/thinEngine";
+import type { WebGPUEngine } from "../Engines/webgpuEngine";
 import { StorageBuffer } from "../Buffers/storageBuffer";
 import { ComputeShader } from "../Compute/computeShader";
 import { UniformBuffer } from "../Materials/uniformBuffer";
@@ -73,7 +74,7 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
             bindingsMapping["noiseTexture"] = { group: 1, binding: 11 };
         }
 
-        this._updateComputeShader = new ComputeShader("updateParticles", this._engine, "gpuUpdateParticles", { bindingsMapping, defines: defines.split("\n") });
+        this._updateComputeShader = new ComputeShader("updateParticles", this._engine as WebGPUEngine, "gpuUpdateParticles", { bindingsMapping, defines: defines.split("\n") });
 
         this._simParamsComputeShader?.dispose();
         this._simParamsComputeShader = new UniformBuffer(this._engine);
