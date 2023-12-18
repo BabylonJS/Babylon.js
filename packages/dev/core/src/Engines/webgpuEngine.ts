@@ -62,7 +62,7 @@ import "../ShadersWGSL/postprocess.vertex";
 import type { VideoTexture } from "../Materials/Textures/videoTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { RenderTargetWrapper } from "./renderTargetWrapper";
-import { PerfCounter } from "core/Misc/perfCounter";
+import { WebGPUPerfCounter } from "./WebGPU/webgpuPerfCounter";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
@@ -509,15 +509,26 @@ export class WebGPUEngine extends Engine {
     }
 
     public set enableGPUTimingMeasurements(enable: boolean) {
+        if (this._timestampQuery.enable === enable) {
+            return;
+        }
+        (this.gpuTimeInFrameForMainPass as any) = enable ? this._createGPUPerfCounter() : undefined;
         this._timestampQuery.enable = enable;
+    }
+
+    /**
+     * @internal
+     */
+    public _createGPUPerfCounter() {
+        return new WebGPUPerfCounter();
     }
 
     /**
      * Gets the GPU time spent in the main render pass for the last frame rendered (in nanoseconds).
      * Note that this is only supported if the "timestamp-query" extension is enabled in the options.
-     * It will only return time spent in the main pass, not in additional render target / compute passes (if any)!
+     * It will only return time spent in the main pass, not additional render target / compute passes (if any)!
      */
-    public readonly gpuTimeInFrame = new PerfCounter();
+    public readonly gpuTimeInFrameForMainPass?: WebGPUPerfCounter;
 
     /** @internal */
     public get currentSampleCount(): number {
@@ -2919,7 +2930,7 @@ export class WebGPUEngine extends Engine {
         }
         this._currentRenderPass.end();
 
-        this._timestampQuery.endPass(this._timestampIndex, this._currentRenderTarget ?? this);
+        this._timestampQuery.endPass(this._timestampIndex, (this._currentRenderTarget?.gpuTimeInFrame ?? this.gpuTimeInFrameForMainPass) as WebGPUPerfCounter);
         this._timestampIndex += 2;
 
         if (this.dbgVerboseLogsForFirstFrames) {

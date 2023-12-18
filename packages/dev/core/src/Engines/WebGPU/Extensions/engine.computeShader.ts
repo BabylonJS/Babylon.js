@@ -9,7 +9,7 @@ import { WebGPUEngine } from "../../webgpuEngine";
 import { WebGPUComputeContext } from "../webgpuComputeContext";
 import { WebGPUComputePipelineContext } from "../webgpuComputePipelineContext";
 import * as WebGPUConstants from "../webgpuConstants";
-import type { IGPUFrameTime } from "core/Engines/IGPUFrameTime";
+import type { WebGPUPerfCounter } from "../webgpuPerfCounter";
 
 declare module "../../webgpuEngine" {
     export interface WebGPUEngine {
@@ -66,7 +66,7 @@ WebGPUEngine.prototype.computeDispatch = function (
     y = 1,
     z = 1,
     bindingsMapping?: ComputeBindingMapping,
-    frameTimeObject?: IGPUFrameTime
+    gpuPerfCounter?: WebGPUPerfCounter
 ): void {
     this._endCurrentRenderPass();
 
@@ -80,7 +80,7 @@ WebGPUEngine.prototype.computeDispatch = function (
         });
     }
 
-    if (frameTimeObject) {
+    if (gpuPerfCounter) {
         this._timestampQuery.startPass(computePassDescriptor, this._timestampIndex);
     }
 
@@ -102,8 +102,8 @@ WebGPUEngine.prototype.computeDispatch = function (
     }
     computePass.end();
 
-    if (frameTimeObject) {
-        this._timestampQuery.endPass(this._timestampIndex, frameTimeObject);
+    if (gpuPerfCounter) {
+        this._timestampQuery.endPass(this._timestampIndex, gpuPerfCounter);
         this._timestampIndex += 2;
     }
 };

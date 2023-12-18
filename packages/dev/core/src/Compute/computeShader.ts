@@ -17,8 +17,8 @@ import { TextureSampler } from "../Materials/Textures/textureSampler";
 import type { DataBuffer } from "core/Buffers/dataBuffer";
 import type { ExternalTexture } from "core/Materials/Textures/externalTexture";
 import type { VideoTexture } from "core/Materials/Textures/videoTexture";
-import type { IGPUFrameTime } from "core/Engines/IGPUFrameTime";
-import { PerfCounter } from "core/Misc/perfCounter";
+import type { GPUPerfCounter } from "core/Misc/gpuPerfCounter";
+import type { Engine } from "core/Engines/engine";
 
 /**
  * Defines the options associated with the creation of a compute shader.
@@ -52,7 +52,7 @@ type ComputeBindingListInternal = { [key: string]: { type: ComputeBindingType; o
 /**
  * The ComputeShader object lets you execute a compute shader on your GPU (if supported by the engine)
  */
-export class ComputeShader implements IGPUFrameTime {
+export class ComputeShader {
     private _engine: ThinEngine;
     private _shaderPath: any;
     private _options: IComputeShaderOptions;
@@ -108,10 +108,7 @@ export class ComputeShader implements IGPUFrameTime {
     /**
      * Gets the GPU time spent running the compute shader for the last frame rendered (in nanoseconds).
      */
-    public readonly gpuTimeInFrame = new PerfCounter();
-
-    /** @internal */
-    public _gpuTimeInFrameId = -1;
+    public readonly gpuTimeInFrame?: GPUPerfCounter;
 
     /**
      * Instantiates a new compute shader.
@@ -128,6 +125,9 @@ export class ComputeShader implements IGPUFrameTime {
         this.name = name;
         this._engine = engine;
         this.uniqueId = UniqueIdGenerator.UniqueId;
+        if ((engine as Engine).enableGPUTimingMeasurements) {
+            this.gpuTimeInFrame = (engine as Engine)._createGPUPerfCounter();
+        }
 
         if (!this._engine.getCaps().supportComputeShaders) {
             Logger.Error("This engine does not support compute shaders!");
@@ -400,7 +400,7 @@ export class ComputeShader implements IGPUFrameTime {
             }
         }
 
-        this._engine.computeDispatch(this._effect, this._context, this._bindings, x, y, z, this._options.bindingsMapping, this);
+        this._engine.computeDispatch(this._effect, this._context, this._bindings, x, y, z, this._options.bindingsMapping, this.gpuTimeInFrame);
 
         return true;
     }

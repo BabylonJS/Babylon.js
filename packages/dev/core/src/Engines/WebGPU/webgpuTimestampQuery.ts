@@ -5,7 +5,7 @@ import * as WebGPUConstants from "./webgpuConstants";
 import { PerfCounter } from "../../Misc/perfCounter";
 import { WebGPUQuerySet } from "./webgpuQuerySet";
 import type { WebGPUEngine } from "../webgpuEngine";
-import type { IGPUFrameTime } from "../IGPUFrameTime";
+import type { WebGPUPerfCounter } from "./webgpuPerfCounter";
 
 /** @internal */
 export class WebGPUTimestampQuery {
@@ -74,26 +74,15 @@ export class WebGPUTimestampQuery {
         }
     }
 
-    public endPass(index: number, frameTimeObject: IGPUFrameTime): void {
-        if (!this._enabled) {
+    public endPass(index: number, gpuPerfCounter?: WebGPUPerfCounter): void {
+        if (!this._enabled || !gpuPerfCounter) {
             return;
         }
 
         const currentFrameId = this._engine.frameId;
 
         this._measureDuration.stopPass(index).then((duration_) => {
-            const duration = duration_ !== null && duration_ > 0 ? duration_ : 0;
-            if (currentFrameId < frameTimeObject._gpuTimeInFrameId) {
-                return;
-            }
-            if (frameTimeObject._gpuTimeInFrameId !== currentFrameId) {
-                frameTimeObject.gpuTimeInFrame._fetchResult();
-                frameTimeObject.gpuTimeInFrame.fetchNewFrame();
-                frameTimeObject.gpuTimeInFrame.addCount(duration, false);
-                frameTimeObject._gpuTimeInFrameId = currentFrameId;
-            } else {
-                frameTimeObject.gpuTimeInFrame.addCount(duration, false);
-            }
+            gpuPerfCounter.addDuration(currentFrameId, duration_ !== null && duration_ > 0 ? duration_ : 0);
         });
     }
 

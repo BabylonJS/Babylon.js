@@ -4,7 +4,7 @@ import type { IComputeContext } from "../../Compute/IComputeContext";
 import type { IComputePipelineContext } from "../../Compute/IComputePipelineContext";
 import { ThinEngine } from "../../Engines/thinEngine";
 import type { Nullable } from "../../types";
-import type { IGPUFrameTime } from "../IGPUFrameTime";
+import type { GPUPerfCounter } from "../../Misc/gpuPerfCounter";
 
 /**
  * Type used to locate a resource in a compute shader.
@@ -63,7 +63,7 @@ declare module "../../Engines/thinEngine" {
          * @param y The number of workgroups to execute on the Y dimension
          * @param z The number of workgroups to execute on the Z dimension
          * @param bindingsMapping list of bindings mapping (key is property name, value is binding location)
-         * @param gpuFrameTimeObject GPU time computed for the compute shader will be assigned to this object
+         * @param gpuPerfCounter GPU time computed for the compute shader will be assigned to this object
          */
         computeDispatch(
             effect: ComputeEffect,
@@ -73,7 +73,7 @@ declare module "../../Engines/thinEngine" {
             y?: number,
             z?: number,
             bindingsMapping?: ComputeBindingMapping,
-            gpuFrameTimeObject?: IGPUFrameTime
+            gpuPerfCounter?: GPUPerfCounter
         ): void;
 
         /**
