@@ -5,8 +5,6 @@ import type { Nullable } from "../types";
 import { Constants } from "./constants";
 import type { ThinEngine } from "./thinEngine";
 import type { IMultiRenderTargetOptions } from "../Materials/Textures/multiRenderTarget";
-import type { GPUPerfCounter } from "../Misc/gpuPerfCounter";
-import type { Engine } from "./engine";
 
 /**
  * An interface enforcing the renderTarget accessor to used by render target textures.
@@ -148,12 +146,6 @@ export class RenderTargetWrapper {
     }
 
     /**
-     * Gets the GPU time spent rendering this render target in the last frame (in nanoseconds).
-     * Only works with the WebGPU engine, if you enabled the "timestamp-query" extension in the engine constructor options and set engine.enableGPUTimingMeasurements = true.
-     */
-    public readonly gpuTimeInFrame?: GPUPerfCounter;
-
-    /**
      * Sets the sample count of the render target
      * @param value sample count
      * @param initializeBuffers If set to true, the engine will make an initializing call to drawBuffers (only used when isMulti=true).
@@ -187,9 +179,6 @@ export class RenderTargetWrapper {
         this._engine = engine;
         this._depthStencilTexture = null;
         this.label = label;
-        if ((engine as Engine).enableGPUTimingMeasurements) {
-            this.gpuTimeInFrame = (engine as Engine)._createGPUPerfCounter();
-        }
     }
 
     /**

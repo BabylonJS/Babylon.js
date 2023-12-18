@@ -512,15 +512,8 @@ export class WebGPUEngine extends Engine {
         if (this._timestampQuery.enable === enable) {
             return;
         }
-        (this.gpuTimeInFrameForMainPass as any) = enable ? this._createGPUPerfCounter() : undefined;
+        (this.gpuTimeInFrameForMainPass as any) = enable ? new WebGPUPerfCounter() : undefined;
         this._timestampQuery.enable = enable;
-    }
-
-    /**
-     * @internal
-     */
-    public _createGPUPerfCounter() {
-        return new WebGPUPerfCounter();
     }
 
     /**
@@ -2802,8 +2795,8 @@ export class WebGPUEngine extends Engine {
                           stencilLoadOp: !depthTextureHasStencil
                               ? undefined
                               : rtWrapper._depthStencilTextureWithStencil && mustClearStencil
-                                ? WebGPUConstants.LoadOp.Clear
-                                : WebGPUConstants.LoadOp.Load,
+                              ? WebGPUConstants.LoadOp.Clear
+                              : WebGPUConstants.LoadOp.Load,
                           stencilStoreOp: !depthTextureHasStencil ? undefined : WebGPUConstants.StoreOp.Store,
                       }
                     : undefined,
@@ -2869,8 +2862,8 @@ export class WebGPUEngine extends Engine {
         this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.stencilLoadOp = !this.isStencilEnable
             ? undefined
             : mustClearStencil
-              ? WebGPUConstants.LoadOp.Clear
-              : WebGPUConstants.LoadOp.Load;
+            ? WebGPUConstants.LoadOp.Clear
+            : WebGPUConstants.LoadOp.Load;
         this._mainRenderPassWrapper.renderPassDescriptor!.occlusionQuerySet = this._occlusionQuery?.hasQueries ? this._occlusionQuery.querySet : undefined;
 
         const swapChainTexture = this._context.getCurrentTexture();
@@ -2930,7 +2923,12 @@ export class WebGPUEngine extends Engine {
         }
         this._currentRenderPass.end();
 
-        this._timestampQuery.endPass(this._timestampIndex, (this._currentRenderTarget?.gpuTimeInFrame ?? this.gpuTimeInFrameForMainPass) as WebGPUPerfCounter);
+        this._timestampQuery.endPass(
+            this._timestampIndex,
+            (this._currentRenderTarget && (this._currentRenderTarget as WebGPURenderTargetWrapper).gpuTimeInFrame
+                ? (this._currentRenderTarget as WebGPURenderTargetWrapper).gpuTimeInFrame
+                : this.gpuTimeInFrameForMainPass) as WebGPUPerfCounter
+        );
         this._timestampIndex += 2;
 
         if (this.dbgVerboseLogsForFirstFrames) {

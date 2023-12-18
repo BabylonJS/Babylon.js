@@ -30,7 +30,6 @@ import type { IAudioEngine } from "../Audio/Interfaces/IAudioEngine";
 
 import type { Material } from "../Materials/material";
 import type { PostProcess } from "../PostProcesses/postProcess";
-import { GPUPerfCounter } from "core/Misc/gpuPerfCounter";
 
 /**
  * Defines the interface used by objects containing a viewport (like a camera)
@@ -545,19 +544,6 @@ export class Engine extends ThinEngine {
 
     public set enableGPUTimingMeasurements(_enable: boolean) {
         // not supported in WebGL
-    }
-
-    /**
-     * Gets the GPU time spent in the main render pass for the last frame rendered.
-     * Not supported in WebGL1/2.
-     */
-    public readonly gpuTimeInFrameForMainPass?: GPUPerfCounter;
-
-    /**
-     * @internal
-     */
-    public _createGPUPerfCounter() {
-        return new GPUPerfCounter();
     }
 
     /**
