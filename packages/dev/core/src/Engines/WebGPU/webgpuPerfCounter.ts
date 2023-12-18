@@ -1,4 +1,4 @@
-import type { PerfCounter } from "../../Misc/perfCounter";
+import { PerfCounter } from "../../Misc/perfCounter";
 
 /**
  * Class used to define a WebGPU performance counter
@@ -9,7 +9,7 @@ export class WebGPUPerfCounter {
     /**
      * The GPU time in nanoseconds spent in the last frame
      */
-    public counter: PerfCounter;
+    public counter = new PerfCounter();
 
     /**
      * @internal
