@@ -1702,7 +1702,7 @@ export class _Exporter {
                         meshPrimitive.indices = this._accessors.length - 1;
                     }
 
-                    if (materialIndex != null && Object.keys(meshPrimitive.attributes).length > 0) {
+                    if (Object.keys(meshPrimitive.attributes).length > 0) {
                         const sideOrientation = bufferMesh.overrideMaterialSideOrientation !== null ? bufferMesh.overrideMaterialSideOrientation : babylonMaterial.sideOrientation;
 
                         if (sideOrientation === (this._babylonScene.useRightHandedSystem ? Material.ClockWiseSideOrientation : Material.CounterClockWiseSideOrientation)) {
@@ -1727,7 +1727,9 @@ export class _Exporter {
                             }
                         }
 
-                        meshPrimitive.material = materialIndex;
+                        if (materialIndex != null) {
+                            meshPrimitive.material = materialIndex;
+                        }
                     }
                     if (morphTargetManager) {
                         // By convention, morph target names are stored in the mesh extras.
