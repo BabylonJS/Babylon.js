@@ -7,8 +7,8 @@ import type { IObjectAccessor } from "core/FlowGraph";
  * Class to convert an interactivity pointer path to a smart object
  */
 export class InteractivityPathToObjectConverter extends GLTFPathToObjectConverter<IObjectAccessor> {
-    public constructor(_gltf: IGLTF) {
-        super(_gltf, gltfTree);
+    public constructor(gltf: IGLTF) {
+        super(gltf, gltfTree);
     }
 }
 

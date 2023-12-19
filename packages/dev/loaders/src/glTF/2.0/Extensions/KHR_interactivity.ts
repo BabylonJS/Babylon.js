@@ -22,12 +22,15 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
      */
     public enabled: boolean;
 
+    private _pathConverter: InteractivityPathToObjectConverter;
+
     /**
      * @internal
      * @param _loader
      */
     constructor(private _loader: GLTFLoader) {
         this.enabled = this._loader.isExtensionUsed(NAME);
+        this._pathConverter = new InteractivityPathToObjectConverter(this._loader.gltf);
     }
 
     public dispose() {
@@ -41,13 +44,9 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
         const scene = this._loader.babylonScene;
         const interactivityDefinition = this._loader.gltf.extensions?.KHR_interactivity as IKHRInteractivity;
 
-        const pathConverter = new InteractivityPathToObjectConverter(this._loader.gltf);
-
         const json = convertGLTFToSerializedFlowGraph(interactivityDefinition);
         const coordinator = new FlowGraphCoordinator({ scene });
-        const graph = FlowGraph.Parse(json, { coordinator, pathConverter });
-        const context = graph.getContext(0);
-        context.setVariable("gltf", this._loader.gltf);
+        FlowGraph.Parse(json, { coordinator, pathConverter: this._pathConverter });
 
         coordinator.start();
     }

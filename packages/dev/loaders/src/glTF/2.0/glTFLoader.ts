@@ -1648,9 +1648,9 @@ export class GLTFLoader implements IGLTFLoader {
             }
         }
 
-        const targetInfo: IObjectAccessorContainer<AnimationPropertyInfo[]> = {
+        const targetInfo: IObjectInfo<AnimationPropertyInfo[]> = {
             object: targetNode,
-            accessor: properties,
+            info: properties,
         };
 
         return this._loadAnimationChannelFromTargetInfoAsync(context, animationContext, animation, channel, targetInfo, onLoad);

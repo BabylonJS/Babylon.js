@@ -9,7 +9,7 @@ import type { IObjectAccessor } from "./typeDefinitions";
  * @experimental
  * Parameters used to create a flow graph engine.
  */
-export class IFlowGraphCoordinatorConfiguration {
+export interface IFlowGraphCoordinatorConfiguration {
     /**
      * The scene that the flow graph engine belongs to.
      */
@@ -20,7 +20,7 @@ export class IFlowGraphCoordinatorConfiguration {
  * @experimental
  * Parameters used to parse a flow graph coordinator.
  */
-export class IFlowGraphCoordinatorParseOptions {
+export interface FlowGraphCoordinatorParseOptions {
     /**
      * A function that will be called to parse the value of a property.
      */
@@ -113,7 +113,7 @@ export class FlowGraphCoordinator {
         });
     }
 
-    public static Parse(serializedObject: any, options: IFlowGraphCoordinatorParseOptions) {
+    public static Parse(serializedObject: any, options: FlowGraphCoordinatorParseOptions) {
         const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
         const coordinator = new FlowGraphCoordinator({ scene: options.scene });
         serializedObject._flowGraphs?.forEach((serializedGraph: any) => {

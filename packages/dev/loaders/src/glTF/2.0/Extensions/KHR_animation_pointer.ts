@@ -18,8 +18,8 @@ const NAME = "KHR_animation_pointer";
  * gets data from the animation buffer and creates animations.
  */
 class AnimationPointerPathToObjectConverter extends GLTFPathToObjectConverter<AnimationPropertyInfo[]> {
-    constructor(_gltf: IGLTF) {
-        super(_gltf, animationPointerTree);
+    public constructor(gltf: IGLTF) {
+        super(gltf, animationPointerTree);
     }
 }
 
