@@ -1,6 +1,42 @@
 {
-    "fromTag": "6.34.1",
+    "fromTag": "6.34.2",
     "changelog": {
+        "6.34.3": [
+            {
+                "pr": "14624",
+                "title": "WebGPU: Add support for GPU timing for compute shaders, render targets and main render pass",
+                "description": "This PR adds a `gpuTimeInFrame` property on `ComputeShader`, `RenderTargetWrapper` and `WebGPUEngine` and is updated with the corresponding GPU time for the last frame (for `WebGPUEngine`, it is the time we spend in the main render pass).\r\n\r\nFor this to work, the \"timestamp-query\" extension must be supported by the browser and enabled when creating the device (the Playground does it automatically if the browser supports it, because it enables all supported extensions). At the time, only Canary supports it. You must enable the feature at runtime by doing `engine.enableGPUTimingMeasurements = true` (will do nothing in WebGL of course!).\r\n\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/4152247/e06e6beb-9ea1-4b5b-a5e2-008b69cb8385)\r\n\r\nI also performed some changes so that we don't generate errors for mapped buffers when the device is destroyed.\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Compute/computeShader.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.computeShader.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.computeShader.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.storageBuffer.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuBufferManager.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuOcclusionQuery.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuPerfCounter.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuQuerySet.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuRenderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTimestampQuery.ts",
+                    "packages/dev/core/src/Engines/index.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/LibDeclarations/webgpu.d.ts",
+                    "packages/dev/core/src/Materials/Textures/multiRenderTarget.ts",
+                    "packages/dev/core/src/Misc/perfCounter.ts",
+                    "packages/dev/core/src/Particles/computeShaderParticleSystem.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockSubSurface.fx"
+                ],
+                "tags": [
+                    "new feature",
+                    "WebGPU"
+                ]
+            }
+        ],
         "6.34.2": [
             {
                 "pr": "14627",

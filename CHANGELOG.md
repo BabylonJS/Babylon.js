@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.34.3
+
+### Core
+
+- WebGPU: Add support for GPU timing for compute shaders, render targets and main render pass - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#14624](https://github.com/BabylonJS/Babylon.js/pull/14624))
+
 ## 6.34.2
 
 ### Core
