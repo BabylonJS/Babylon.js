@@ -1,11 +1,14 @@
-import type { IObjectAccessor } from "core/ObjectModel";
 import type { IGLTF, INode } from "../glTFLoaderInterfaces";
 import { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
 import type { TransformNode } from "core/Meshes";
+import type { IObjectAccessor } from "core/FlowGraph";
 
+/**
+ * Class to convert an interactivity pointer path to a smart object
+ */
 export class InteractivityPathToObjectConverter extends GLTFPathToObjectConverter<IObjectAccessor> {
-    public constructor(public gltf: IGLTF) {
-        super(gltf, gltfTree);
+    public constructor(_gltf: IGLTF) {
+        super(_gltf, gltfTree);
     }
 }
 

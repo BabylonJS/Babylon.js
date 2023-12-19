@@ -75,7 +75,7 @@ import { BoundingInfo } from "core/Culling/boundingInfo";
 import type { AssetContainer } from "core/assetContainer";
 import type { AnimationPropertyInfo } from "./glTFLoaderAnimation";
 import { nodeAnimationData } from "./glTFLoaderAnimation";
-import type { IObjectAccessorContainer } from "core/ObjectModel/objectModelInterfaces";
+import type { IObjectInfo } from "core/ObjectModel/objectModelInterfaces";
 
 interface TypedArrayLike extends ArrayBufferView {
     readonly length: number;
@@ -1672,7 +1672,7 @@ export class GLTFLoader implements IGLTFLoader {
         animationContext: string,
         animation: IAnimation,
         channel: IAnimationChannel,
-        targetInfo: IObjectAccessorContainer<AnimationPropertyInfo[]>,
+        targetInfo: IObjectInfo<AnimationPropertyInfo[]>,
         onLoad: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void
     ): Promise<void> {
         const fps = this.parent.targetFps;
@@ -1683,7 +1683,7 @@ export class GLTFLoader implements IGLTFLoader {
             let numAnimations = 0;
 
             const target = targetInfo.object;
-            const propertyInfos = targetInfo.accessor;
+            const propertyInfos = targetInfo.info;
             // Extract the corresponding values from the read value.
             // GLTF values may be dispatched to several Babylon properties.
             // For example, baseColorFactor [`r`, `g`, `b`, `a`] is dispatched to
@@ -1744,7 +1744,7 @@ export class GLTFLoader implements IGLTFLoader {
 
                 if (outputOffset > 0) {
                     const name = `${animation.name || `animation${animation.index}`}_channel${channel.index}_${numAnimations}`;
-                    propertyInfo.buildAnimations(target, name, fps, keys, (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => {
+                    propertyInfo.buildAnimations(target, name, fps, keys, (babylonAnimatable, babylonAnimation) => {
                         ++numAnimations;
                         onLoad(babylonAnimatable, babylonAnimation);
                     });

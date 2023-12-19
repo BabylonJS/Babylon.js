@@ -8,10 +8,10 @@ import { FlowGraphExecutionBlock } from "./flowGraphExecutionBlock";
 import type { FlowGraphCoordinator } from "./flowGraphCoordinator";
 import type { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
-import type { ISerializedFlowGraph } from "./typeDefinitions";
+import type { ISerializedFlowGraph, IObjectAccessor } from "./typeDefinitions";
 import { FlowGraphMeshPickEventBlock } from "./Blocks/Event/flowGraphMeshPickEventBlock";
 import { _isADescendantOf } from "./utils";
-import type { IObjectAccessor, IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
+import type { IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
 import { defaultValueParseFunction } from "./serialization";
 
 export enum FlowGraphState {
@@ -45,8 +45,17 @@ export interface IFlowGraphParams {
  * Options for parsing a flow graph.
  */
 export interface IFlowGraphParseOptions {
+    /**
+     * A function that parses complex values in a scene.
+     */
     valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any;
+    /**
+     * The flow graph coordinator.
+     */
     coordinator: FlowGraphCoordinator;
+    /**
+     * A function that converts a path to an object accessor.
+     */
     pathConverter: IPathToObjectConverter<IObjectAccessor>;
 }
 /**
@@ -117,14 +126,14 @@ export class FlowGraph {
             this.createContext();
         }
         for (const context of this._executionContexts) {
-            const contextualOrder = this._getContextualOrder(context);
+            const contextualOrder = this._getContextualOrder();
             for (const block of contextualOrder) {
                 block._startPendingTasks(context);
             }
         }
     }
 
-    private _getContextualOrder(context: FlowGraphContext): FlowGraphEventBlock[] {
+    private _getContextualOrder(): FlowGraphEventBlock[] {
         const order: FlowGraphEventBlock[] = [];
 
         for (const block1 of this._eventBlocks) {
@@ -260,8 +269,7 @@ export class FlowGraph {
     /**
      * Parses a graph from a given serialization object
      * @param serializationObject the object where the values are written
-     * @param coordinator the flow graph coordinator
-     * @param valueParseFunction a function to parse complex values in a scene
+     * @param options options for parsing the graph
      * @returns
      */
     public static Parse(serializationObject: ISerializedFlowGraph, options: IFlowGraphParseOptions): FlowGraph {

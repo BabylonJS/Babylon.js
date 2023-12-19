@@ -1,4 +1,4 @@
-import type { IObjectAccessorContainer, IPathToObjectConverter } from "core/ObjectModel/objectModelInterfaces";
+import type { IObjectInfo, IPathToObjectConverter } from "core/ObjectModel/objectModelInterfaces";
 import type { IGLTF } from "../glTFLoaderInterfaces";
 
 /**
@@ -9,8 +9,8 @@ import type { IGLTF } from "../glTFLoaderInterfaces";
  */
 export class GLTFPathToObjectConverter<T> implements IPathToObjectConverter<T> {
     public constructor(
-        public gltf: IGLTF,
-        public infoTree: any
+        private _gltf: IGLTF,
+        private _infoTree: any
     ) {}
 
     /**
@@ -30,9 +30,9 @@ export class GLTFPathToObjectConverter<T> implements IPathToObjectConverter<T> {
      *  - "/materials/2/pbrMetallicRoughness/baseColorFactor"
      *  - "/materials/2/extensions/KHR_materials_emissive_strength/emissiveStrength"
      */
-    convert(path: string): IObjectAccessorContainer<T> {
-        let objectTree: any = this.gltf;
-        let infoTree: any = this.infoTree;
+    public convert(path: string): IObjectInfo<T> {
+        let objectTree: any = this._gltf;
+        let infoTree: any = this._infoTree;
         let target: any = undefined;
 
         if (!path.startsWith("/")) {
@@ -62,7 +62,7 @@ export class GLTFPathToObjectConverter<T> implements IPathToObjectConverter<T> {
 
         return {
             object: target,
-            accessor: infoTree,
+            info: infoTree,
         };
     }
 }

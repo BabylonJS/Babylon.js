@@ -18,8 +18,8 @@ const NAME = "KHR_animation_pointer";
  * gets data from the animation buffer and creates animations.
  */
 class AnimationPointerPathToObjectConverter extends GLTFPathToObjectConverter<AnimationPropertyInfo[]> {
-    constructor(public gltf: IGLTF) {
-        super(gltf, animationPointerTree);
+    constructor(_gltf: IGLTF) {
+        super(_gltf, animationPointerTree);
     }
 }
 
@@ -35,12 +35,14 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
     public readonly name = NAME;
 
     private _loader: GLTFLoader;
+    private _pathToObjectConverter: AnimationPointerPathToObjectConverter;
 
     /**
      * @internal
      */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
+        this._pathToObjectConverter = new AnimationPointerPathToObjectConverter(this._loader.gltf);
     }
 
     /**
@@ -91,9 +93,8 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
             throw new Error(`${extensionContext}: Pointer is missing`);
         }
 
-        const pathToObjConverter = new AnimationPointerPathToObjectConverter(this._loader.gltf);
         try {
-            const targetInfo = pathToObjConverter.convert(pointer);
+            const targetInfo = this._pathToObjectConverter.convert(pointer);
             return this._loader._loadAnimationChannelFromTargetInfoAsync(context, animationContext, animation, channel, targetInfo, onLoad);
         } catch (e) {
             Logger.Warn(`${extensionContext}/pointer: Invalid pointer (${pointer}) skipped`);

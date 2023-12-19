@@ -1,5 +1,6 @@
 import type { FlowGraphContext } from "./flowGraphContext";
-import type { IPathToObjectConverter, IObjectAccessor, IObjectAccessorContainer } from "../ObjectModel/objectModelInterfaces";
+import type { IPathToObjectConverter, IObjectInfo } from "../ObjectModel/objectModelInterfaces";
+import type { IObjectAccessor } from "./typeDefinitions";
 
 /**
  * @experimental
@@ -11,7 +12,7 @@ export class FlowGraphPathConverter implements IPathToObjectConverter<IObjectAcc
         public separator: string = "/"
     ) {}
 
-    convert(path: string): IObjectAccessorContainer<IObjectAccessor> {
+    public convert(path: string): IObjectInfo<IObjectAccessor> {
         const parts = path.split(this.separator);
         if (parts.length < 2) {
             throw new Error(`Path ${path} is invalid`);
@@ -23,10 +24,10 @@ export class FlowGraphPathConverter implements IPathToObjectConverter<IObjectAcc
         }
         return {
             object: currentObject,
-            accessor: {
+            info: {
                 type: "object",
                 get: () => currentObject[property],
-                set: (value) => (currentObject[property] = value),
+                set: (value: any) => (currentObject[property] = value),
                 getObject: () => currentObject,
             },
         };

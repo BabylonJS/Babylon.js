@@ -4,8 +4,9 @@ import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import { RichTypeAny } from "../../flowGraphRichTypes";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import type { IObjectAccessor, IPathToObjectConverter } from "../../../ObjectModel/objectModelInterfaces";
+import type { IPathToObjectConverter } from "../../../ObjectModel/objectModelInterfaces";
 import { FlowGraphPathConverterComponent } from "../../flowGraphPathConverterComponent";
+import type { IObjectAccessor } from "../../typeDefinitions";
 
 /**
  * @experimental
@@ -42,7 +43,7 @@ export class FlowGraphGetPropertyBlock extends FlowGraphBlock {
 
     public _updateOutputs(context: FlowGraphContext) {
         const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
-        const value = accessorContainer.accessor.get(accessorContainer.object);
+        const value = accessorContainer.info.get(accessorContainer.object);
         this.value.setValue(value, context);
     }
 
@@ -55,6 +56,9 @@ export class FlowGraphGetPropertyBlock extends FlowGraphBlock {
         serializationObject.config.path = this.config.path;
     }
 
+    /**
+     * Class name of the block.
+     */
     public static ClassName = "FGGetPropertyBlock";
 }
 RegisterClass(FlowGraphGetPropertyBlock.ClassName, FlowGraphGetPropertyBlock);

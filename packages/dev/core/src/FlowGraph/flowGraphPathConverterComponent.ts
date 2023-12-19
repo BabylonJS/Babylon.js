@@ -1,8 +1,9 @@
-import type { IObjectAccessor, IObjectAccessorContainer, IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
+import type { IObjectInfo, IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
 import type { FlowGraphBlock } from "./flowGraphBlock";
 import type { FlowGraphContext } from "./flowGraphContext";
 import type { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import { RichTypeNumber } from "./flowGraphRichTypes";
+import type { IObjectAccessor } from "./typeDefinitions";
 
 const pathHasTemplatesRegex = new RegExp(/\{(\w+)\}/g);
 
@@ -27,7 +28,7 @@ export class FlowGraphPathConverterComponent {
         }
     }
 
-    public getAccessor(pathConverter: IPathToObjectConverter<IObjectAccessor>, context: FlowGraphContext): IObjectAccessorContainer<IObjectAccessor> {
+    public getAccessor(pathConverter: IPathToObjectConverter<IObjectAccessor>, context: FlowGraphContext): IObjectInfo<IObjectAccessor> {
         let finalPath = this.path;
         for (const templatedInput of this.templatedInputs) {
             const valueToReplace = templatedInput.getValue(context);

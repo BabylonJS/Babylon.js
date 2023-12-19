@@ -5,15 +5,25 @@ import { FlowGraphAsyncExecutionBlock } from "../../../flowGraphAsyncExecutionBl
 import { RichTypeAny, RichTypeNumber, RichTypeBoolean } from "../../../flowGraphRichTypes";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
-import type { IObjectAccessor, IPathToObjectConverter } from "../../../../ObjectModel/objectModelInterfaces";
-import { FlowGraphPathConverterComponent } from "core/FlowGraph/flowGraphPathConverterComponent";
+import type { IPathToObjectConverter } from "../../../../ObjectModel/objectModelInterfaces";
+import { FlowGraphPathConverterComponent } from "../../../flowGraphPathConverterComponent";
+import type { IObjectAccessor } from "../../../typeDefinitions";
 
 /**
  * @experimental
  */
 export interface IFlowGraphPlayAnimationBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * The path to the target object that will be animated.
+     */
     targetPath: string;
+    /**
+     * The path to the animation that will be played.
+     */
     animationPath: string;
+    /**
+     * The path converter to use to convert the path to an object accessor.
+     */
     pathConverter: IPathToObjectConverter<IObjectAccessor>;
 }
 /**
@@ -71,9 +81,9 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      */
     public _preparePendingTasks(context: FlowGraphContext): void {
         const targetAccessor = this.templateTargetComponent.getAccessor(this.config.pathConverter, context);
-        const targetValue = targetAccessor.accessor.getObject(targetAccessor.object);
+        const targetValue = targetAccessor.info.getObject(targetAccessor.object);
         const animationAccessor = this.templateAnimationComponent.getAccessor(this.config.pathConverter, context);
-        const animationValue = animationAccessor.accessor.get(animationAccessor.object);
+        const animationValue = animationAccessor.info.get(animationAccessor.object);
 
         if (!targetValue || !animationValue) {
             throw new Error("Cannot play animation without target or animation");
@@ -141,6 +151,9 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
         serializationObject.config.animationPath = this.config.animationPath;
     }
 
+    /**
+     * Class name of the block.
+     */
     public static ClassName = "FGPlayAnimationBlock";
 }
 

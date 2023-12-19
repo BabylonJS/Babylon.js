@@ -4,18 +4,38 @@ import type { FlowGraphContext } from "./flowGraphContext";
 import { FlowGraphDataConnection } from "./flowGraphDataConnection";
 import type { RichType } from "./flowGraphRichTypes";
 import { Tools } from "../Misc/tools";
-import type { ISerializedFlowGraphBlock } from "./typeDefinitions";
+import type { ISerializedFlowGraphBlock, IObjectAccessor } from "./typeDefinitions";
 import { defaultValueParseFunction, defaultValueSerializationFunction, needsPathConverter } from "./serialization";
 import type { Scene } from "../scene";
-import type { IObjectAccessor, IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
+import type { IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
 
+/**
+ * @experimental
+ * Options for parsing a block.
+ */
 export interface IFlowGraphBlockParseOptions {
+    /**
+     * A function that parses a value from a serialization object.
+     */
     valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any;
+    /**
+     * The scene that the block is being parsed in.
+     */
     scene: Scene;
+    /**
+     * The path converter to use to convert the path to an object accessor.
+     */
     pathConverter: IPathToObjectConverter<IObjectAccessor>;
 }
 
+/**
+ * @experimental
+ * Configuration for a block.
+ */
 export interface IFlowGraphBlockConfiguration {
+    /**
+     * The name of the block.
+     */
     name?: string;
     [extraPropertyKey: string]: any;
 }
@@ -44,6 +64,9 @@ export class FlowGraphBlock {
      */
     public dataOutputs: FlowGraphDataConnection<any>[];
 
+    /**
+     * Metadata that can be used by the block.
+     */
     public metadata: any;
 
     /** Constructor is protected so only subclasses can be instantiated */

@@ -5,7 +5,8 @@ import { FlowGraphExecutionBlockWithOutSignal } from "../../flowGraphExecutionBl
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { FlowGraphPathConverterComponent } from "../../flowGraphPathConverterComponent";
-import type { IObjectAccessor, IPathToObjectConverter } from "core/ObjectModel/objectModelInterfaces";
+import type { IPathToObjectConverter } from "../../../ObjectModel/objectModelInterfaces";
+import type { IObjectAccessor } from "../../typeDefinitions";
 
 /**
  * @experimental
@@ -47,7 +48,7 @@ export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphExecutionBlockWi
     public _execute(context: FlowGraphContext): void {
         const value = this.a.getValue(context);
         const accessor = this.templateComponent.getAccessor(this.config.pathConverter, context);
-        accessor.accessor.set(value, accessor.object);
+        accessor.info.set(value, accessor.object);
 
         this.out._activateSignal(context);
     }
@@ -61,6 +62,9 @@ export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphExecutionBlockWi
         return FlowGraphSetPropertyBlock.ClassName;
     }
 
+    /**
+     * Class name of the block.
+     */
     public static ClassName = "FGSetPropertyBlock";
 }
 RegisterClass("FGSetPropertyBlock", FlowGraphSetPropertyBlock);
