@@ -1689,8 +1689,7 @@ export class GLTFLoader implements IGLTFLoader {
             // For example, baseColorFactor [`r`, `g`, `b`, `a`] is dispatched to
             // - albedoColor as Color3(`r`, `g`, `b`)
             // - alpha as `a`
-            for (let i = 0; i < propertyInfos.length; i++) {
-                const propertyInfo = propertyInfos[i];
+            for (const propertyInfo of propertyInfos) {
                 const stride = propertyInfo.getStride(target);
                 const input = data.input;
                 const output = data.output;
