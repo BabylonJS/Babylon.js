@@ -30,9 +30,9 @@ struct subSurfaceOutParams
 };
 
 #ifdef SUBSURFACE
-    #define pbr_inline
-    #define inline
     #ifdef SS_REFRACTION
+        #define pbr_inline
+        #define inline
         vec4 sampleEnvironmentRefraction(
             in float ior
             , in float thickness
@@ -153,6 +153,8 @@ struct subSurfaceOutParams
             return environmentRefraction;
         }
     #endif
+    #define pbr_inline
+    #define inline
     void subSurfaceBlock(
         in vec3 vSubSurfaceIntensity,
         in vec2 vThicknessParam,
@@ -339,15 +341,16 @@ struct subSurfaceOutParams
             float refractionLOD = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, refractionAlphaG);
         #endif
 
+        float refraction_ior = vRefractionInfos.y;
         #ifdef SS_DISPERSION
-            float realIOR = 1.0 / ior;
+            float realIOR = 1.0 / refraction_ior;
             // The 0.04 value is completely empirical
             float iorDispersionSpread = 0.04 * dispersion * (realIOR - 1.0);
-            vec3 iors = vec3(1.0/(realIOR - iorDispersionSpread), ior, 1.0/(realIOR + iorDispersionSpread));
+            vec3 iors = vec3(1.0/(realIOR - iorDispersionSpread), refraction_ior, 1.0/(realIOR + iorDispersionSpread));
             for (int i = 0; i < 3; i++) {
-                ior = iors[i];
+                refraction_ior = iors[i];
         #endif
-                vec4 envSample = sampleEnvironmentRefraction(ior, thickness, refractionLOD, normalW, vPositionW, viewDirectionW, view, vRefractionInfos, refractionMatrix, vRefractionMicrosurfaceInfos, alphaG
+                vec4 envSample = sampleEnvironmentRefraction(refraction_ior, thickness, refractionLOD, normalW, vPositionW, viewDirectionW, view, vRefractionInfos, refractionMatrix, vRefractionMicrosurfaceInfos, alphaG
                 #ifdef SS_REFRACTIONMAP_3D
                     , refractionSampler
                     #ifndef LODBASEDMICROSFURACE

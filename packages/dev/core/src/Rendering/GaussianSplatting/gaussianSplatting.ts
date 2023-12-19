@@ -360,8 +360,8 @@ export class GaussianSplatting {
      * @returns a promise that resolves when the operation is complete
      */
     public loadFileAsync(url: string): Promise<void> {
-        return Tools.LoadFileAsync(url, true).then((data: string | ArrayBuffer) => {
-            this._loadData(data as ArrayBuffer);
+        return Tools.LoadFileAsync(url, true).then((data) => {
+            this._loadData(data);
         });
     }
 

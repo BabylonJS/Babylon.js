@@ -175,6 +175,11 @@ export const LoadImage = (
     mimeType: string = "",
     imageBitmapOptions?: ImageBitmapOptions
 ): Nullable<HTMLImageElement> => {
+    if (typeof HTMLImageElement === "undefined") {
+        onError("Displacement map is only supported in web environment.");
+        return null;
+    }
+
     let url: string;
     let usingObjectURL = false;
 

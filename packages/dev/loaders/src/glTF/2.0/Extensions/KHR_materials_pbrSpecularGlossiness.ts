@@ -52,13 +52,13 @@ export class KHR_materials_pbrSpecularGlossiness implements IGLTFLoaderExtension
         return GLTFLoader.LoadExtensionAsync<IKHRMaterialsPbrSpecularGlossiness>(context, material, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
-            promises.push(this._loadSpecularGlossinessPropertiesAsync(extensionContext, material, extension, babylonMaterial));
+            promises.push(this._loadSpecularGlossinessPropertiesAsync(extensionContext, extension, babylonMaterial));
             this._loader.loadMaterialAlphaProperties(context, material, babylonMaterial);
             return Promise.all(promises).then(() => {});
         });
     }
 
-    private _loadSpecularGlossinessPropertiesAsync(context: string, material: IMaterial, properties: IKHRMaterialsPbrSpecularGlossiness, babylonMaterial: Material): Promise<void> {
+    private _loadSpecularGlossinessPropertiesAsync(context: string, properties: IKHRMaterialsPbrSpecularGlossiness, babylonMaterial: Material): Promise<void> {
         if (!(babylonMaterial instanceof PBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }

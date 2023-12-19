@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Logger used throughout the application to allow configuration of
  * the log level required for the messages.
@@ -90,37 +91,40 @@ export class Logger {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private static _LogDisabled(message: string, limit?: number): void {
+    private static _LogDisabled(message: string | any[], limit?: number): void {
         // nothing to do
     }
-    private static _LogEnabled(level: number = 1, message: string, limit?: number): void {
-        if (limit !== undefined && !Logger._CheckLimit(message, limit)) {
+    private static _LogEnabled(level: number = 1, message: string | any[], limit?: number): void {
+        // take first message if array
+        const msg = Array.isArray(message) ? message[0] : message;
+        if (limit !== undefined && !Logger._CheckLimit(msg, limit)) {
             return;
         }
 
-        const formattedMessage = Logger._FormatMessage(message);
+        const formattedMessage = Logger._FormatMessage(msg);
         const type = this._Levels[level];
-        type.logFunc && type.logFunc("BJS - " + formattedMessage);
+        const optionals = Array.isArray(message) ? message.slice(1) : [];
+        type.logFunc && type.logFunc("BJS - " + formattedMessage, ...optionals);
 
         const entry = `<div style='color:${type.color}'>${formattedMessage}</div><br>`;
         Logger._AddLogEntry(entry);
-        Logger._GenerateLimitMessage(message, level);
+        Logger._GenerateLimitMessage(msg, level);
     }
 
     /**
      * Log a message to the console
      */
-    public static Log: (message: string, limit?: number) => void = Logger._LogEnabled.bind(Logger, Logger.MessageLogLevel);
+    public static Log: (message: string | any[], limit?: number) => void = Logger._LogEnabled.bind(Logger, Logger.MessageLogLevel);
 
     /**
      * Write a warning message to the console
      */
-    public static Warn: (message: string, limit?: number) => void = Logger._LogEnabled.bind(Logger, Logger.WarningLogLevel);
+    public static Warn: (message: string | any[], limit?: number) => void = Logger._LogEnabled.bind(Logger, Logger.WarningLogLevel);
 
     /**
      * Write an error message to the console
      */
-    public static Error: (message: string, limit?: number) => void = Logger._LogEnabled.bind(Logger, Logger.ErrorLogLevel);
+    public static Error: (message: string | any[], limit?: number) => void = Logger._LogEnabled.bind(Logger, Logger.ErrorLogLevel);
 
     /**
      * Gets current log cache (list of logs)

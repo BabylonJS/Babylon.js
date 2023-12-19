@@ -99,6 +99,8 @@ WebGPUEngine.prototype.createMultipleRenderTarget = function (size: TextureSize,
         labels = options.labels ?? labels;
     }
 
+    rtWrapper.label = options?.label ?? "MultiRenderTargetWrapper";
+
     const width = (<{ width: number; height: number }>size).width || <number>size;
     const height = (<{ width: number; height: number }>size).height || <number>size;
 

@@ -587,6 +587,14 @@ export class PhysicsBody {
     }
 
     /**
+     * Returns if the body has been disposed.
+     * @returns true if disposed, false otherwise.
+     */
+    public get isDisposed() {
+        return this._isDisposed;
+    }
+
+    /**
      * Disposes the body from the physics engine.
      *
      * This method is useful for cleaning up the physics engine when a body is no longer needed. Disposing the body will free up resources and prevent memory leaks.

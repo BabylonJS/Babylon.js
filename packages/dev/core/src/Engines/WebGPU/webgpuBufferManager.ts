@@ -4,10 +4,12 @@ import { FromHalfFloat } from "../../Misc/textureTools";
 import type { Nullable } from "../../types";
 import { Constants } from "../constants";
 import { allocateAndCopyTypedBuffer } from "../Extensions/engine.readTexture";
+import type { WebGPUEngine } from "../webgpuEngine";
 import * as WebGPUConstants from "./webgpuConstants";
 
 /** @internal */
 export class WebGPUBufferManager {
+    private _engine: WebGPUEngine;
     private _device: GPUDevice;
     private _deferredReleaseBuffers: Array<GPUBuffer> = [];
 
@@ -30,7 +32,8 @@ export class WebGPUBufferManager {
         return result;
     }
 
-    constructor(device: GPUDevice) {
+    constructor(engine: WebGPUEngine, device: GPUDevice) {
+        this._engine = engine;
         this._device = device;
     }
 
@@ -195,7 +198,13 @@ export class WebGPUBufferManager {
                     }
                     resolve(data!);
                 },
-                (reason) => reject(reason)
+                (reason) => {
+                    if (this._engine.isDisposed) {
+                        resolve(new Uint8Array());
+                    } else {
+                        reject(reason);
+                    }
+                }
             );
         });
     }

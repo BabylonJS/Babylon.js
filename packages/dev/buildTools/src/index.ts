@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-console */
 import { addJsExtensionsToCompiledFilesCommand } from "./addJSToCompiledFiles.js";
 import { generateDeclaration } from "./generateDeclaration.js";
 import { transformLtsCommand } from "./ltsTransformer.js";

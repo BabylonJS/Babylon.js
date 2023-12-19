@@ -46,7 +46,7 @@ export class StringTools {
                 if (popup) {
                     popup.location.href = url;
                 } else {
-                    location = url;
+                    location.href = url;
                 }
                 popup = null;
             };

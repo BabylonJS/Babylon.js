@@ -25,6 +25,7 @@ import "../../../../Shaders/ShadersInclude/helperFunctions";
 import "../../../../Shaders/ShadersInclude/lightsFragmentFunctions";
 import "../../../../Shaders/ShadersInclude/shadowsFragmentFunctions";
 import "../../../../Shaders/ShadersInclude/shadowsVertex";
+import { Logger } from "core/Misc/logger";
 
 /**
  * Block used to add light in the fragment shader
@@ -48,7 +49,7 @@ export class LightBlock extends NodeMaterialBlock {
 
         if (that.worldPosition.isConnected) {
             that.generateOnlyFragmentCode = !that.generateOnlyFragmentCode;
-            console.error("The worldPosition input must not be connected to be able to switch!");
+            Logger.Error("The worldPosition input must not be connected to be able to switch!");
             return false;
         }
 

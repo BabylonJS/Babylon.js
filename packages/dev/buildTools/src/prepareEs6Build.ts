@@ -1,4 +1,4 @@
-// import * as mv from "mv";
+/* eslint-disable no-console */
 import * as path from "path";
 import * as glob from "glob";
 import * as fs from "fs-extra";

@@ -295,7 +295,7 @@ class Walker {
             if (!this._walker) {
                 this._walker = new WalkingTracker(event.leftApex, event.rightApex, event.currentPosition, event.currentStepDirection);
                 this._walker.onFootfall.add(() => {
-                    console.log("Footfall!");
+                    Logger.Log("Footfall!");
                 });
                 this._walker.onMovement.add((event) => {
                     this._walker!.forward.scaleAndAddToRef(0.024 * event.deltaT, this._movement);

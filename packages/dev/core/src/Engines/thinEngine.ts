@@ -212,6 +212,7 @@ export class ThinEngine {
         { key: "Mac OS.+Chrome/71", capture: null, captureConstraint: null, targets: ["vao"] },
         { key: "Mac OS.+Chrome/72", capture: null, captureConstraint: null, targets: ["vao"] },
         { key: "Mac OS.+Chrome", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
+        { key: "Chrome/12\\d\\..+?Mobile", capture: null, captureConstraint: null, targets: ["uniformBuffer"] },
         // desktop osx safari 15.4
         { key: ".*AppleWebKit.*(15.4).*Safari", capture: null, captureConstraint: null, targets: ["antialias", "maxMSAASamples"] },
         // mobile browsers using safari 15.4 on ios
@@ -226,14 +227,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@6.33.1";
+        return "babylonjs@6.34.3";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "6.33.1";
+        return "6.34.3";
     }
 
     /**
@@ -1007,7 +1008,7 @@ export class ThinEngine {
         // }
 
         const versionToLog = `Babylon.js v${ThinEngine.Version}`;
-        console.log(versionToLog + ` - ${this.description}`);
+        Logger.Log(versionToLog + ` - ${this.description}`);
 
         // Check setAttribute in case of workers
         if (this._renderingCanvas && this._renderingCanvas.setAttribute) {
@@ -5197,7 +5198,7 @@ export class ThinEngine {
 
             if (texture && texture.isMultiview) {
                 //this._gl.bindTexture(target, texture ? texture._colorTextureArray : null);
-                console.error(target, texture);
+                Logger.Error(["_bindTextureDirectly called with a multiview texture!", target, texture]);
                 throw "_bindTextureDirectly called with a multiview texture!";
             } else {
                 this._gl.bindTexture(target, texture?._hardwareTexture?.underlyingResource ?? null);

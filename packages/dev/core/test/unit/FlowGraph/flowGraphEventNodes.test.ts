@@ -13,6 +13,7 @@ import {
 } from "core/FlowGraph";
 import { FlowGraphPathConverter } from "core/FlowGraph/flowGraphPathConverter";
 import { Mesh } from "core/Meshes";
+import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
 
 describe("Flow Graph Event Nodes", () => {
@@ -23,7 +24,6 @@ describe("Flow Graph Event Nodes", () => {
     let flowGraphContext: FlowGraphContext;
 
     beforeEach(() => {
-        console.log = jest.fn();
         engine = new NullEngine({
             renderHeight: 256,
             renderWidth: 256,
@@ -31,6 +31,7 @@ describe("Flow Graph Event Nodes", () => {
             deterministicLockstep: false,
             lockstepMaxSteps: 1,
         });
+        Logger.Log = jest.fn();
 
         scene = new Scene(engine);
         flowGraphCoordinator = new FlowGraphCoordinator({ scene });
@@ -65,7 +66,7 @@ describe("Flow Graph Event Nodes", () => {
         // This will activate the sendEvent block and send the event to the receiverGraph
         scene.onReadyObservable.notifyObservers(scene);
 
-        expect(console.log).toHaveBeenCalledWith(42);
+        expect(Logger.Log).toHaveBeenCalledWith(42);
     });
 
     it("Mesh Pick Event Bubbling", () => {
@@ -109,7 +110,7 @@ describe("Flow Graph Event Nodes", () => {
         scene.onPointerObservable.notifyObservers(pointerInfo);
 
         // Mesh3 was picked, so we expect the pick to "bubble up" to mesh1
-        expect(console.log).toHaveBeenNthCalledWith(1, "Mesh 3 was picked");
-        expect(console.log).toHaveBeenNthCalledWith(2, "Mesh 1 was picked");
+        expect(Logger.Log).toHaveBeenNthCalledWith(1, "Mesh 3 was picked");
+        expect(Logger.Log).toHaveBeenNthCalledWith(2, "Mesh 1 was picked");
     });
 });

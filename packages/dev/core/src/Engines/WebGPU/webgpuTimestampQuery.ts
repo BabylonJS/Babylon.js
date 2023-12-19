@@ -1,10 +1,15 @@
+/* eslint-disable babylonjs/available */
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { WebGPUBufferManager } from "./webgpuBufferManager";
 import * as WebGPUConstants from "./webgpuConstants";
 import { PerfCounter } from "../../Misc/perfCounter";
 import { WebGPUQuerySet } from "./webgpuQuerySet";
+import type { WebGPUEngine } from "../webgpuEngine";
+import type { WebGPUPerfCounter } from "./webgpuPerfCounter";
 
 /** @internal */
 export class WebGPUTimestampQuery {
+    private _engine: WebGPUEngine;
     private _device: GPUDevice;
     private _bufferManager: WebGPUBufferManager;
 
@@ -17,7 +22,8 @@ export class WebGPUTimestampQuery {
         return this._gpuFrameTimeCounter;
     }
 
-    constructor(device: GPUDevice, bufferManager: WebGPUBufferManager) {
+    constructor(engine: WebGPUEngine, device: GPUDevice, bufferManager: WebGPUBufferManager) {
+        this._engine = engine;
         this._device = device;
         this._bufferManager = bufferManager;
     }
@@ -34,7 +40,7 @@ export class WebGPUTimestampQuery {
         this._enabled = value;
         this._measureDurationState = 0;
         if (value) {
-            this._measureDuration = new WebGPUDurationMeasure(this._device, this._bufferManager);
+            this._measureDuration = new WebGPUDurationMeasure(this._engine, this._device, this._bufferManager, 2000, "QuerySet_TimestampQuery");
         } else {
             this._measureDuration.dispose();
         }
@@ -59,24 +65,66 @@ export class WebGPUTimestampQuery {
             });
         }
     }
+
+    public startPass(descriptor: GPURenderPassDescriptor | GPUComputePassDescriptor, index: number): void {
+        if (this._enabled) {
+            this._measureDuration.startPass(descriptor, index);
+        } else {
+            descriptor.timestampWrites = undefined;
+        }
+    }
+
+    public endPass(index: number, gpuPerfCounter?: WebGPUPerfCounter): void {
+        if (!this._enabled || !gpuPerfCounter) {
+            return;
+        }
+
+        const currentFrameId = this._engine.frameId;
+
+        this._measureDuration.stopPass(index).then((duration_) => {
+            gpuPerfCounter._addDuration(currentFrameId, duration_ !== null && duration_ > 0 ? duration_ : 0);
+        });
+    }
+
+    public dispose() {
+        this._measureDuration?.dispose();
+    }
 }
 
 /** @internal */
 export class WebGPUDurationMeasure {
     private _querySet: WebGPUQuerySet;
+    private _count: number;
 
-    constructor(device: GPUDevice, bufferManager: WebGPUBufferManager) {
-        this._querySet = new WebGPUQuerySet(2, WebGPUConstants.QueryType.Timestamp, device, bufferManager);
+    constructor(engine: WebGPUEngine, device: GPUDevice, bufferManager: WebGPUBufferManager, count = 2, querySetLabel?: string) {
+        this._count = count;
+        this._querySet = new WebGPUQuerySet(engine, count, WebGPUConstants.QueryType.Timestamp, device, bufferManager, true, querySetLabel);
     }
 
     public start(encoder: GPUCommandEncoder): void {
-        encoder.writeTimestamp(this._querySet.querySet, 0);
+        encoder.writeTimestamp?.(this._querySet.querySet, 0);
     }
 
     public async stop(encoder: GPUCommandEncoder): Promise<number | null> {
-        encoder.writeTimestamp(this._querySet.querySet, 1);
+        encoder.writeTimestamp?.(this._querySet.querySet, 1);
 
-        return this._querySet.readTwoValuesAndSubtract(0);
+        return encoder.writeTimestamp ? this._querySet.readTwoValuesAndSubtract(0) : 0;
+    }
+
+    public startPass(descriptor: GPURenderPassDescriptor | GPUComputePassDescriptor, index: number): void {
+        if (index + 3 > this._count) {
+            throw new Error("WebGPUDurationMeasure: index out of range (" + index + ")");
+        }
+
+        descriptor.timestampWrites = {
+            querySet: this._querySet.querySet,
+            beginningOfPassWriteIndex: index + 2,
+            endOfPassWriteIndex: index + 3,
+        };
+    }
+
+    public async stopPass(index: number): Promise<number | null> {
+        return this._querySet.readTwoValuesAndSubtract(index + 2);
     }
 
     public dispose() {

@@ -22,6 +22,7 @@ import "../postProcessRenderPipelineManagerSceneComponent";
 import "../../../Shaders/screenSpaceReflection2.fragment";
 import "../../../Shaders/screenSpaceReflection2Blur.fragment";
 import "../../../Shaders/screenSpaceReflection2BlurCombiner.fragment";
+import { Logger } from "core/Misc/logger";
 
 const trs = Matrix.Compose(new Vector3(0.5, 0.5, 0.5), Quaternion.Identity(), new Vector3(0.5, 0.5, 0.5));
 const trsWebGPU = Matrix.Compose(new Vector3(0.5, 0.5, 1), Quaternion.Identity(), new Vector3(0.5, 0.5, 0));
@@ -652,7 +653,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                     geometryBufferRenderer.enableReflectivity = true;
                     geometryBufferRenderer.useSpecificClearForDepthTexture = true;
                     if (geometryBufferRenderer.generateNormalsInWorldSpace) {
-                        console.error("SSRRenderingPipeline does not support generateNormalsInWorldSpace=true for the geometry buffer renderer!");
+                        Logger.Error("SSRRenderingPipeline does not support generateNormalsInWorldSpace=true for the geometry buffer renderer!");
                     }
                 }
             } else {
@@ -661,7 +662,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                     prePassRenderer.useSpecificClearForDepthTexture = true;
                     prePassRenderer.markAsDirty();
                     if (prePassRenderer.generateNormalsInWorldSpace) {
-                        console.error("SSRRenderingPipeline does not support generateNormalsInWorldSpace=true for the prepass renderer!");
+                        Logger.Error("SSRRenderingPipeline does not support generateNormalsInWorldSpace=true for the prepass renderer!");
                     }
                 }
             }

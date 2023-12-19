@@ -8,6 +8,7 @@ import { Observable } from "../../Misc/observable";
 import { PrecisionDate } from "../../Misc/precisionDate";
 import type { Nullable } from "../../types";
 import type { GeometryInputBlock } from "./Blocks/geometryInputBlock";
+import { Logger } from "core/Misc/logger";
 
 /**
  * Defines a block that can be used inside a node based geometry
@@ -306,7 +307,7 @@ export class NodeGeometryBlock {
 
         // Logs
         if (state.verbose) {
-            console.log(`Building ${this.name} [${this.getClassName()}]`);
+            Logger.Log(`Building ${this.name} [${this.getClassName()}]`);
         }
 
         const now = PrecisionDate.Now;

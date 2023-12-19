@@ -1215,7 +1215,17 @@ interface XRWebGLBinding {
     getCameraImage(camera: XRCamera): WebGLTexture | undefined;
 }
 
-/**
- * END: WebXR Depth Sensing Moudle
- * https://www.w3.org/TR/webxr-depth-sensing-1/
- */
+// Mesh Detection
+
+interface XRMesh {
+    meshSpace: XRSpace;
+    vertices: Float32Array;
+    indices: Uint32Array;
+    lastChangedTime: number;
+}
+
+type XRMeshSet = Set<XRMesh>;
+
+interface XRFrame {
+    detectedMeshes?: XRMeshSet;
+}

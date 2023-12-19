@@ -1,5 +1,91 @@
 # Changelog
 
+## 6.34.3
+
+### Core
+
+- WebGPU: Add support for GPU timing for compute shaders, render targets and main render pass - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#14624](https://github.com/BabylonJS/Babylon.js/pull/14624))
+
+## 6.34.2
+
+### Core
+
+- add isDisposed method to physicsbody - by [carolhmj](https://github.com/carolhmj) ([#14627](https://github.com/BabylonJS/Babylon.js/pull/14627))
+- Fix rearm for crowd agent onreach observable - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#14625](https://github.com/BabylonJS/Babylon.js/pull/14625))
+- Fix broken glTF validator array buffer management - [_Bug Fix_] by [bghgary](https://github.com/bghgary) ([#14622](https://github.com/BabylonJS/Babylon.js/pull/14622))
+- WebGPU: Reseting ubos in flushFramebuffer does not work - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14623](https://github.com/BabylonJS/Babylon.js/pull/14623))
+- RenderTargetTexture: Fix wrong transformation matrix set on scene when multiple scenes are defined - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14621](https://github.com/BabylonJS/Babylon.js/pull/14621))
+- Add buffer based variants of displacement and height - [_New Feature_] by [sebavan](https://github.com/sebavan) ([#14620](https://github.com/BabylonJS/Babylon.js/pull/14620))
+
+### Loaders
+
+- Fix broken glTF validator array buffer management - [_Bug Fix_] by [bghgary](https://github.com/bghgary) ([#14622](https://github.com/BabylonJS/Babylon.js/pull/14622))
+- Allow triangle list with glTF draco - by [bghgary](https://github.com/bghgary) ([#14596](https://github.com/BabylonJS/Babylon.js/pull/14596))
+
+## 6.34.1
+
+### Core
+
+- ArcRotateCamera: Fix alpha offset inversion to not include beta = 0 - [_Bug Fix_] by [PolygonalSun](https://github.com/PolygonalSun) ([#14617](https://github.com/BabylonJS/Babylon.js/pull/14617))
+- WebGPU: ubos and storage buffers optimizations - by [Popov72](https://github.com/Popov72) ([#14611](https://github.com/BabylonJS/Babylon.js/pull/14611))
+- Animation: Fix return value of createKeyForFrame when key already exists - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14615](https://github.com/BabylonJS/Babylon.js/pull/14615))
+- Keep initial value for incremental scaling - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#14613](https://github.com/BabylonJS/Babylon.js/pull/14613))
+- Physics V2 ragdolls - [_New Feature_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#14606](https://github.com/BabylonJS/Babylon.js/pull/14606))
+- fix circular dependency - by [carolhmj](https://github.com/carolhmj) ([#14612](https://github.com/BabylonJS/Babylon.js/pull/14612))
+
+### GUI
+
+
+### GUI Editor
+
+
+### Inspector
+
+
+### Loaders
+
+
+### Node Editor
+
+
+### Playground
+
+
+### Viewer
+
+
+## 6.34.0
+
+### Core
+
+- Morph: Fix baking of morph data when multiple non zero influences - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14605](https://github.com/BabylonJS/Babylon.js/pull/14605))
+
+## 6.33.2
+
+### Core
+
+- ComputeShader: Add a fastMode switch - by [Popov72](https://github.com/Popov72) ([#14604](https://github.com/BabylonJS/Babylon.js/pull/14604))
+- WebXR mesh detection - by [RaananW](https://github.com/RaananW) ([#14543](https://github.com/BabylonJS/Babylon.js/pull/14543))
+- Disable UBOs in Chrome mobile... - by [sebavan](https://github.com/sebavan) ([#14603](https://github.com/BabylonJS/Babylon.js/pull/14603))
+- AnimationGroupMask: Add a disabled property - by [Popov72](https://github.com/Popov72) ([#14602](https://github.com/BabylonJS/Babylon.js/pull/14602))
+- Flow Graph: glTF parsing v1 - by [carolhmj](https://github.com/carolhmj) ([#14500](https://github.com/BabylonJS/Babylon.js/pull/14500))
+- Fix code generation in GeometryInputBlock. - [_Bug Fix_] by [carolhmj](https://github.com/carolhmj) ([#14600](https://github.com/BabylonJS/Babylon.js/pull/14600))
+- Light: Add helper methods to retrieve view and projection matrices - by [Popov72](https://github.com/Popov72) ([#14598](https://github.com/BabylonJS/Babylon.js/pull/14598))
+- Scene: Fix return type of getMeshesByTags - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14599](https://github.com/BabylonJS/Babylon.js/pull/14599))
+
+### Inspector
+
+- ACE: Fixed incorrect display of loop mode when editing a property - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14594](https://github.com/BabylonJS/Babylon.js/pull/14594))
+
+### Loaders
+
+- GaussianSplat .PLY file format support - [_New Feature_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#14601](https://github.com/BabylonJS/Babylon.js/pull/14601))
+- Flow Graph: glTF parsing v1 - by [carolhmj](https://github.com/carolhmj) ([#14500](https://github.com/BabylonJS/Babylon.js/pull/14500))
+
+### Materials
+
+- PBRCustomMaterial & CustomMaterial support MaterialPlugin - by [Starryi](https://github.com/Starryi) ([#14593](https://github.com/BabylonJS/Babylon.js/pull/14593))
+
 ## 6.33.1
 
 ### Core

@@ -1087,6 +1087,9 @@ export class Engine extends ThinEngine {
         this._drawCalls.addCount(numDrawCalls, false);
     }
 
+    public _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: false): Promise<string>;
+    public _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: true): Promise<ArrayBuffer>;
+
     /**
      * @internal
      */

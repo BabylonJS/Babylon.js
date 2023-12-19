@@ -22,6 +22,7 @@ import "./scss/header.scss";
 import toolbarExpandIcon from "./imgs/toolbarExpandIcon.svg";
 import toolbarCollapseIcon from "./imgs/toolbarCollapseIcon.svg";
 import type { Observer } from "core/Misc/observable";
+import { Logger } from "core/Misc/logger";
 
 interface IGraphEditorProps {
     globalState: GlobalState;
@@ -246,7 +247,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
                     styleContainer.push(newStyleEl);
                 }
             } catch (e) {
-                console.log(e);
+                Logger.Log(e);
             }
         }
     };

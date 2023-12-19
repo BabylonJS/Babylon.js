@@ -413,6 +413,7 @@ export function CreateTiledGround(
  * @param options.alphaFilter
  * @param options.updatable
  * @param options.onReady
+ * @param options.onError
  * @param scene defines the hosting scene
  * @returns the ground mesh
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set/height_map
@@ -420,7 +421,7 @@ export function CreateTiledGround(
  */
 export function CreateGroundFromHeightMap(
     name: string,
-    url: string,
+    url: string | { data: Uint8Array; width: number; height: number },
     options: {
         width?: number;
         height?: number;
@@ -431,6 +432,7 @@ export function CreateGroundFromHeightMap(
         alphaFilter?: number;
         updatable?: boolean;
         onReady?: (mesh: GroundMesh) => void;
+        onError?: (message?: string, exception?: any) => void;
     } = {},
     scene: Nullable<Scene> = null
 ): GroundMesh {
@@ -458,16 +460,7 @@ export function CreateGroundFromHeightMap(
 
     ground._setReady(false);
 
-    const onload = (img: HTMLImageElement | ImageBitmap) => {
-        const bufferWidth = img.width;
-        const bufferHeight = img.height;
-
-        if (scene!.isDisposed) {
-            return;
-        }
-
-        const buffer = <Uint8Array>scene?.getEngine().resizeImageBitmap(img, bufferWidth, bufferHeight);
-
+    const onBufferLoaded = (buffer: Uint8Array, bufferWidth: number, bufferHeight: number) => {
         const vertexData = CreateGroundFromHeightMapVertexData({
             width: width,
             height: height,
@@ -491,7 +484,24 @@ export function CreateGroundFromHeightMap(
         ground._setReady(true);
     };
 
-    Tools.LoadImage(url, onload, () => {}, scene.offlineProvider);
+    if (typeof url === "string") {
+        const onload = (img: HTMLImageElement | ImageBitmap) => {
+            const bufferWidth = img.width;
+            const bufferHeight = img.height;
+
+            if (scene!.isDisposed) {
+                return;
+            }
+
+            const buffer = <Uint8Array>scene?.getEngine().resizeImageBitmap(img, bufferWidth, bufferHeight);
+
+            onBufferLoaded(buffer, bufferWidth, bufferHeight);
+        };
+
+        Tools.LoadImage(url, onload, options.onError ? options.onError : () => {}, scene.offlineProvider);
+    } else {
+        onBufferLoaded(url.data, url.width, url.height);
+    }
 
     return ground;
 }
