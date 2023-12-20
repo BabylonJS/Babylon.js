@@ -1,6 +1,6 @@
 import type { Skeleton } from "../../Bones/skeleton";
 import { Vector3, Matrix, TmpVectors } from "../../Maths/math.vector";
-import type { Quaternion } from "../../Maths/math.vector";
+import { Quaternion } from "../../Maths/math.vector";
 import type { Scene } from "../../scene";
 import { PhysicsAggregate } from "./physicsAggregate";
 import { BallAndSocketConstraint } from "./physicsConstraint";
@@ -182,7 +182,7 @@ export class Ragdoll {
                 this._boneNames.push(currentBone.name);
                 this._transforms.push(transform);
                 this._boxConfigs.push(currentRagdollBoneProperties);
-                this._initialRotation.push(currentBone.getRotationQuaternion(Space.WORLD, this._mesh));
+                this._initialRotation.push(currentBone.getRotationQuaternion(Space.WORLD));
             }
         }
     }
@@ -251,7 +251,15 @@ export class Ragdoll {
     }
 
     private _addImpostorRotationToBone(boneIndex: number): void {
-        this._aggregates[boneIndex].body?.transformNode?.rotationQuaternion?.multiplyToRef(this._initialRotation[boneIndex], TmpVectors.Quaternion[0]);
+        const qmesh = this._mesh.rotationQuaternion ?? Quaternion.FromEulerAngles(this._mesh.rotation.x, this._mesh.rotation.y, this._mesh.rotation.z);
+        const qbind = this._initialRotation[boneIndex];
+        const qphys = this._aggregates[boneIndex].body?.transformNode?.rotationQuaternion!;
+
+        // TmpVectors.Quaternion[1] = mesh.rotation * this._initialRotation[boneIndex]
+        // TmpVectors.Quaternion[0] = body.rotation *  TmpVectors.Quaternion[1]
+        qmesh.multiplyToRef(qbind, TmpVectors.Quaternion[1]);
+        qphys.multiplyToRef(TmpVectors.Quaternion[1], TmpVectors.Quaternion[0]);
+
         this._bones[boneIndex].setRotationQuaternion(TmpVectors.Quaternion[0], Space.WORLD, this._mesh);
     }
 
