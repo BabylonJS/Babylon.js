@@ -61,7 +61,6 @@ export class RagdollBoneProperties {
 
 /**
  * Ragdoll for Physics V2
- * Current known limitation is scene must be using Right hand coordinates
  * @experimental
  */
 export class Ragdoll {
