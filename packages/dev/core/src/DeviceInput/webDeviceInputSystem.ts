@@ -508,9 +508,6 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
             const pointer = this._inputs[deviceType][deviceSlot];
             if (pointer) {
-                const previousHorizontal = pointer[PointerInput.Horizontal];
-                const previousVertical = pointer[PointerInput.Vertical];
-
                 if (deviceType === DeviceType.Mouse) {
                     // Mouse; Set pointerId if undefined
                     if (evt.pointerId === undefined) {
@@ -547,11 +544,6 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
                 deviceEvent.inputIndex = evt.button + 2;
 
                 this._onInputChanged(deviceType, deviceSlot, deviceEvent);
-
-                if (previousHorizontal !== evt.clientX || previousVertical !== evt.clientY) {
-                    deviceEvent.inputIndex = PointerInput.Move;
-                    this._onInputChanged(deviceType, deviceSlot, deviceEvent);
-                }
             }
         };
 
