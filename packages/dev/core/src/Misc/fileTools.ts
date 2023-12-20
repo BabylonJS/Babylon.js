@@ -177,7 +177,8 @@ export const LoadImage = (
     mimeType: string = "",
     imageBitmapOptions?: ImageBitmapOptions
 ): Nullable<HTMLImageElement> => {
-    if (typeof HTMLImageElement === "undefined" && typeof _native === "undefined") {
+    const engine = EngineStore.LastCreatedEngine;
+    if (typeof HTMLImageElement === "undefined" && !engine?._features.forceBitmapOverHTMLImageElement) {
         onError("LoadImage is only supported in web or BabylonNative environments.");
         return null;
     }
@@ -200,8 +201,6 @@ export const LoadImage = (
         url = FileToolsOptions.PreprocessUrl(input);
     }
 
-    const engine = EngineStore.LastCreatedEngine;
-
     const onErrorHandler = (exception: any) => {
         if (onError) {
             const inputText = url || input.toString();
@@ -209,7 +208,7 @@ export const LoadImage = (
         }
     };
 
-    if (typeof Image === "undefined" || (engine?._features.forceBitmapOverHTMLImageElement ?? false)) {
+    if (engine?._features.forceBitmapOverHTMLImageElement) {
         LoadFile(
             url,
             (data) => {
