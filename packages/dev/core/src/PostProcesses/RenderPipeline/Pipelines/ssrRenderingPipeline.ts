@@ -1000,8 +1000,8 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 return;
             }
 
-            const viewMatrix = camera.getViewMatrix(true);
-            const projectionMatrix = camera.getProjectionMatrix(true);
+            const viewMatrix = camera.getViewMatrix();
+            const projectionMatrix = camera.getProjectionMatrix();
 
             projectionMatrix.invertToRef(TmpVectors.Matrix[0]);
             viewMatrix.invertToRef(TmpVectors.Matrix[1]);
