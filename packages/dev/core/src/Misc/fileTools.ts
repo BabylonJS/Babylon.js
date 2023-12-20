@@ -178,7 +178,7 @@ export const LoadImage = (
     imageBitmapOptions?: ImageBitmapOptions
 ): Nullable<HTMLImageElement> => {
     if (typeof HTMLImageElement === "undefined" && typeof _native === "undefined") {
-        onError("Displacement map is only supported in web or BabylonNative environments.");
+        onError("LoadImage is only supported in web or BabylonNative environments.");
         return null;
     }
 
