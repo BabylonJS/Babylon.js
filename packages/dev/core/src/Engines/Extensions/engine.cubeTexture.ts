@@ -365,6 +365,9 @@ ThinEngine.prototype.createCubeTextureBase = function (
     const extension = forcedExtension ? forcedExtension : lastDot > -1 ? rootUrlWithoutUriParams.substring(lastDot).toLowerCase() : "";
 
     let loader: Nullable<IInternalTextureLoader> = null;
+    if (ThinEngine._TextureLoaders.length === 0) {
+        Logger.Warn("No texture loader registered. Perhaps you forgot to import one?");
+    }
     for (const availableLoader of ThinEngine._TextureLoaders) {
         if (availableLoader.canLoad(extension)) {
             loader = availableLoader;

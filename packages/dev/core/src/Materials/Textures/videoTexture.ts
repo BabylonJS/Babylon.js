@@ -192,7 +192,10 @@ export class VideoTexture extends Texture {
         this._currentSrc = src;
         this.name = name || this._getName(src);
         this.video = this._getVideo(src);
-        this._externalTexture = this._engine?.createExternalTexture(this.video) ?? null;
+        this._externalTexture = (this._engine?.createExternalTexture && this._engine.createExternalTexture(this.video)) ?? null;
+        if (this._externalTexture === null) {
+            Logger.Warn("Failed to create external texture. Perhaps you forgot an import?");
+        }
         if (!this._settings.independentVideoSource) {
             if (this._settings.poster) {
                 this.video.poster = this._settings.poster;
