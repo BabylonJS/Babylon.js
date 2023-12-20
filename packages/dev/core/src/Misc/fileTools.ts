@@ -14,8 +14,10 @@ import { ThinEngine } from "../Engines/thinEngine";
 import { EngineStore } from "../Engines/engineStore";
 import { Logger } from "./logger";
 import { TimingTools } from "./timingTools";
+import type { INative } from "../Engines/Native/nativeInterfaces";
 
 const Base64DataUrlRegEx = new RegExp(/^data:([^,]+\/[^,]+)?;base64,/i);
+declare const _native: INative;
 
 /** @ignore */
 export class LoadFileError extends RuntimeError {
@@ -175,8 +177,8 @@ export const LoadImage = (
     mimeType: string = "",
     imageBitmapOptions?: ImageBitmapOptions
 ): Nullable<HTMLImageElement> => {
-    if (typeof HTMLImageElement === "undefined") {
-        onError("Displacement map is only supported in web environment.");
+    if (typeof HTMLImageElement === "undefined" && typeof _native === "undefined") {
+        onError("LoadImage is only supported in web or BabylonNative environments.");
         return null;
     }
 
