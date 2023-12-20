@@ -280,7 +280,7 @@ export class NativeEngine extends Engine {
         };
 
         this._features = {
-            forceBitmapOverHTMLImageElement: false,
+            forceBitmapOverHTMLImageElement: true,
             supportRenderAndCopyToLodForFloatTextures: false,
             supportDepthStencilTexture: false,
             supportShadowSamplers: false,
