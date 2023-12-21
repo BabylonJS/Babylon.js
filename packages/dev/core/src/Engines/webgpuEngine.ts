@@ -55,6 +55,10 @@ import { WebGPUSnapshotRendering } from "./WebGPU/webgpuSnapshotRendering";
 import type { WebGPUDataBuffer } from "../Meshes/WebGPU/webgpuDataBuffer";
 import type { WebGPURenderTargetWrapper } from "./WebGPU/webgpuRenderTargetWrapper";
 
+import "./WebGPU/Extensions/engine.alpha";
+import "./WebGPU/Extensions/engine.uniformBuffer";
+import "./WebGPU/Extensions/engine.dynamicBuffer";
+
 import "../Buffers/buffer.align";
 
 import "../ShadersWGSL/postprocess.vertex";
