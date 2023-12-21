@@ -1,5 +1,20 @@
 # Changelog
 
+## 6.35.0
+
+### Core
+
+- SSR: Don't recalculate the camera view/projection matrices each frame - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14633](https://github.com/BabylonJS/Babylon.js/pull/14633))
+- Bake morph data: allow negative influences - by [Popov72](https://github.com/Popov72) ([#14632](https://github.com/BabylonJS/Babylon.js/pull/14632))
+
+### Loaders
+
+- Force alpha to be 1 with opaque alpha mode in glTF - [_Bug Fix_] by [bghgary](https://github.com/bghgary) ([#14628](https://github.com/BabylonJS/Babylon.js/pull/14628))
+
+### Serializers
+
+- Fix issue when exporting to glTF with a node material - by [bghgary](https://github.com/bghgary) ([#14629](https://github.com/BabylonJS/Babylon.js/pull/14629))
+
 ## 6.34.3
 
 ### Core

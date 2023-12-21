@@ -1,5 +1,5 @@
 {
-    "fromTag": "6.34.2",
+    "fromTag": "6.34.3",
     "changelog": {
         "6.34.3": [
             {
@@ -34,6 +34,141 @@
                 "tags": [
                     "new feature",
                     "WebGPU"
+                ]
+            }
+        ],
+        "6.35.0": [
+            {
+                "pr": "14638",
+                "title": "refactor(scaleGizmo): isHovered",
+                "description": "Optimize `isHovered` execution efficiency and readability",
+                "author": {
+                    "name": "GuoBinyong",
+                    "url": "https://github.com/GuoBinyong"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/positionGizmo.ts",
+                    "packages/dev/core/src/Gizmos/rotationGizmo.ts",
+                    "packages/dev/core/src/Gizmos/scaleGizmo.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14636",
+                "title": "Nit",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.cubeTexture.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Materials/Textures/videoTexture.ts",
+                    "packages/dev/core/src/Misc/environmentTextureTools.ts",
+                    "packages/dev/core/src/Misc/fileTools.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14634",
+                "title": "fix Loading Image for Native",
+                "description": "fix regression for Native introduced with https://github.com/BabylonJS/Babylon.js/pull/14620",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/fileTools.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14633",
+                "title": "SSR: Don't recalculate the camera view/projection matrices each frame",
+                "description": "See https://forum.babylonjs.com/t/problems-when-ssr-is-enabled/46587",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "14632",
+                "title": "Bake morph data: allow negative influences",
+                "description": "See https://forum.babylonjs.com/t/getpositiondata-false-true-does-not-return-updated-morphtarget-vertices-when-influences-are-negative/46580",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14631",
+                "title": "LH/RH support for Ragdolls",
+                "description": "Removed LH/RH limitation.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/ragdoll.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14629",
+                "title": "Fix issue when exporting to glTF with a node material",
+                "description": "Fixes #14618",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14628",
+                "title": "Force alpha to be 1 with opaque alpha mode in glTF",
+                "description": "See https://forum.babylonjs.com/t/why-do-importing-the-same-glb-model-have-different-rendering-details-on-the-sandbox-page-and-locally/46422",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_pbrSpecularGlossiness.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfMaterialMetallicRoughness0.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfMaterialMetallicRoughness1.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfMaterialSpecularGlossiness0.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfMaterialSpecularGlossiness1.png"
+                ],
+                "tags": [
+                    "bug",
+                    "loaders",
+                    "glTF"
                 ]
             }
         ],
