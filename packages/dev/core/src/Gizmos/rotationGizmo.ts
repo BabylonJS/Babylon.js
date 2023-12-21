@@ -170,11 +170,7 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
      * True when the mouse pointer is hovering a gizmo mesh
      */
     public get isHovered() {
-        let hovered = false;
-        [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
-            hovered = hovered || gizmo.isHovered;
-        });
-        return hovered;
+        return this.xGizmo.isHovered || this.yGizmo.isHovered || this.zGizmo.isHovered;
     }
 
     /**
