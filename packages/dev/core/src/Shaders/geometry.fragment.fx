@@ -88,6 +88,10 @@ void main() {
         normalOutput = normalize(vNormalV);
     #endif
 
+    #ifdef ENCODE_NORMAL
+        normalOutput = normalOutput * 0.5 + 0.5;
+    #endif
+
     #ifdef PREPASS
         #ifdef PREPASS_DEPTH
             gl_FragData[DEPTH_INDEX] = vec4(vViewPos.z / vViewPos.w, 0.0, 0.0, 1.0);

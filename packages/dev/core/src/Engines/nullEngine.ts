@@ -132,6 +132,7 @@ export class NullEngine extends Engine {
             highPrecisionShaderSupported: true,
             colorBufferFloat: false,
             supportFloatTexturesResolve: false,
+            rg11b10ufColorRenderable: false,
             textureFloat: false,
             textureFloatLinearFiltering: false,
             textureFloatRender: false,
