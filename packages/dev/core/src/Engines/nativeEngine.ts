@@ -253,6 +253,7 @@ export class NativeEngine extends Engine {
             highPrecisionShaderSupported: true,
             colorBufferFloat: false,
             supportFloatTexturesResolve: false,
+            rg11b10ufColorRenderable: false,
             textureFloat: true,
             textureFloatLinearFiltering: false,
             textureFloatRender: true,
