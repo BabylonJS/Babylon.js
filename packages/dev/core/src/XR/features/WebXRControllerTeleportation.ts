@@ -14,22 +14,19 @@ import { Ray } from "../../Culling/ray";
 import type { Material } from "../../Materials/material";
 import { DynamicTexture } from "../../Materials/Textures/dynamicTexture";
 import { CreateCylinder } from "../../Meshes/Builders/cylinderBuilder";
-import { SineEase, EasingFunction } from "../../Animations/easing";
-import { Animation } from "../../Animations/animation";
-import { Axis } from "../../Maths/math.axis";
 import { StandardMaterial } from "../../Materials/standardMaterial";
 import { CreateGround } from "../../Meshes/Builders/groundBuilder";
-import { CreateTorus } from "../../Meshes/Builders/torusBuilder";
 import type { PickingInfo } from "../../Collisions/pickingInfo";
 import { Curve3 } from "../../Maths/math.path";
 import { CreateLines } from "../../Meshes/Builders/linesBuilder";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
-import { Color3, Color4 } from "../../Maths/math.color";
+import { Color4 } from "../../Maths/math.color";
 import type { Scene } from "../../scene";
 import { UtilityLayerRenderer } from "../../Rendering/utilityLayerRenderer";
 import { PointerEventTypes } from "../../Events/pointerEvents";
 import { setAndStartTimer } from "../../Misc/timer";
 import type { LinesMesh } from "../../Meshes/linesMesh";
+import { Mesh } from "../../Meshes/mesh";
 
 /**
  * The options container for the teleportation module
@@ -60,9 +57,9 @@ export interface IWebXRTeleportationOptions {
          */
         disableLighting?: boolean;
         /**
-         * Override the default material of the torus and arrow
+         * Override the default material of the holographic cylinder
          */
-        torusArrowMaterial?: Material;
+        cylinderMaterial?: Material;
         /**
          * Override the default material of the Landing Zone
          */
@@ -252,7 +249,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         this._rotationEnabled = enabled;
 
         if (this._options.teleportationTargetMesh) {
-            const children = this._options.teleportationTargetMesh.getChildMeshes(false, (node) => node.name === "rotationCone");
+            const children = this._options.teleportationTargetMesh.getChildMeshes(false, (node) => node.name === "holographicCylinder");
             if (children[0]) {
                 children[0].setEnabled(enabled);
             }
@@ -726,98 +723,93 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         const sceneToRenderTo = this._options.useUtilityLayer
             ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene
             : this._xrSessionManager.scene;
-        const teleportationTarget = CreateGround("teleportationTarget", { width: 2, height: 2, subdivisions: 2 }, sceneToRenderTo);
+
+        const planeSize = 2;
+        const length = 512;
+        const fillColor: string = this._options.defaultTargetMeshOptions.teleportationFillColor || "transparent";
+        const borderColor: string = this._options.defaultTargetMeshOptions.teleportationBorderColor || "#FFFFFF";
+
+        const teleportationTarget = CreateGround("teleportationTarget", { width: planeSize, height: planeSize, subdivisions: 2 }, sceneToRenderTo);
         teleportationTarget.isPickable = false;
 
         if (this._options.defaultTargetMeshOptions.teleportationCircleMaterial) {
             teleportationTarget.material = this._options.defaultTargetMeshOptions.teleportationCircleMaterial;
         } else {
-            const length = 512;
             const dynamicTexture = new DynamicTexture("teleportationPlaneDynamicTexture", length, sceneToRenderTo, true);
             dynamicTexture.hasAlpha = true;
             const context = dynamicTexture.getContext();
             const centerX = length / 2;
             const centerY = length / 2;
-            const radius = 200;
+
+            const arrowSize = centerX / 6;
+            const arrowHeight = arrowSize / 2;
+
+            const radius = centerX / 3;
+
+            // Draw arrow
+            context.beginPath();
+            context.moveTo(centerX - arrowSize / 2, arrowHeight);
+            context.lineTo(centerX, 0);
+            context.lineTo(centerX + arrowSize / 2, arrowHeight);
+            context.fillStyle = fillColor;
+            context.fill();
+
+            // Draw landing circle
+            const grd = context.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+            grd.addColorStop(0, fillColor);
+            grd.addColorStop(0.8, fillColor);
+            grd.addColorStop(0.95, borderColor);
+            grd.addColorStop(1, borderColor);
             context.beginPath();
             context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
-            context.fillStyle = this._options.defaultTargetMeshOptions.teleportationFillColor || "#444444";
+            context.fillStyle = grd;
             context.fill();
-            context.lineWidth = 10;
-            context.strokeStyle = this._options.defaultTargetMeshOptions.teleportationBorderColor || "#FFFFFF";
-            context.stroke();
-            context.closePath();
+
             dynamicTexture.update();
             const teleportationCircleMaterial = new StandardMaterial("teleportationPlaneMaterial", sceneToRenderTo);
             teleportationCircleMaterial.diffuseTexture = dynamicTexture;
+            teleportationCircleMaterial.emissiveTexture = dynamicTexture;
+            teleportationCircleMaterial.disableLighting = true;
             teleportationTarget.material = teleportationCircleMaterial;
         }
 
-        const torus = CreateTorus(
-            "torusTeleportation",
-            {
-                diameter: 0.75,
-                thickness: 0.1,
-                tessellation: 20,
-            },
-            sceneToRenderTo
-        );
-        torus.isPickable = false;
-        torus.parent = teleportationTarget;
-        if (!this._options.defaultTargetMeshOptions.disableAnimation) {
-            const animationInnerCircle = new Animation("animationInnerCircle", "position.y", 30, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE);
-            const keys = [];
-            keys.push({
-                frame: 0,
-                value: 0,
-            });
-            keys.push({
-                frame: 30,
-                value: 0.4,
-            });
-            keys.push({
-                frame: 60,
-                value: 0,
-            });
-            animationInnerCircle.setKeys(keys);
-            const easingFunction = new SineEase();
-            easingFunction.setEasingMode(EasingFunction.EASINGMODE_EASEINOUT);
-            animationInnerCircle.setEasingFunction(easingFunction);
-            torus.animations = [];
-            torus.animations.push(animationInnerCircle);
-            sceneToRenderTo.beginAnimation(torus, 0, 60, true);
-        }
+        // Cylinder Effect
+        const height = 0.1;
+        const diameter = planeSize * 0.8;
+        const cylinder = CreateCylinder("holographicCylinder", { height, diameter, cap: Mesh.NO_CAP });
+        cylinder.position.y = height / 2;
 
-        const cone = CreateCylinder("rotationCone", { diameterTop: 0, tessellation: 4 }, sceneToRenderTo);
-        cone.isPickable = false;
-        cone.scaling.set(0.5, 0.12, 0.2);
+        cylinder.isPickable = false;
+        cylinder.parent = teleportationTarget;
 
-        cone.rotate(Axis.X, Math.PI / 2);
-
-        cone.position.z = 0.6;
-        cone.parent = torus;
-
-        if (this._options.defaultTargetMeshOptions.torusArrowMaterial) {
-            torus.material = this._options.defaultTargetMeshOptions.torusArrowMaterial;
-            cone.material = this._options.defaultTargetMeshOptions.torusArrowMaterial;
+        if (this._options.defaultTargetMeshOptions.cylinderMaterial) {
+            cylinder.material = this._options.defaultTargetMeshOptions.cylinderMaterial;
         } else {
-            const torusConeMaterial = new StandardMaterial("torusConsMat", sceneToRenderTo);
-            torusConeMaterial.disableLighting = !!this._options.defaultTargetMeshOptions.disableLighting;
-            if (torusConeMaterial.disableLighting) {
-                torusConeMaterial.emissiveColor = new Color3(0.3, 0.3, 1.0);
-            } else {
-                torusConeMaterial.diffuseColor = new Color3(0.3, 0.3, 1.0);
-            }
-            torusConeMaterial.alpha = 0.9;
-            torus.material = torusConeMaterial;
-            cone.material = torusConeMaterial;
-            this._teleportationRingMaterial = torusConeMaterial;
+            // Create dynamic texture
+            const textureCylinder = new DynamicTexture("holographicTexture", length, sceneToRenderTo);
+            textureCylinder.hasAlpha = true;
+            const context = textureCylinder.getContext();
+
+            const grd = context.createLinearGradient(0, 0, 0, length);
+            grd.addColorStop(0.2, "transparent");
+            grd.addColorStop(1, borderColor);
+
+            context.fillStyle = grd;
+            context.fillRect(0, 0, length, length);
+            textureCylinder.update();
+
+            const cylinderMaterial = new StandardMaterial("holographicMaterial", sceneToRenderTo);
+            cylinderMaterial.diffuseTexture = textureCylinder;
+            cylinderMaterial.useAlphaFromDiffuseTexture = true;
+            cylinderMaterial.backFaceCulling = false;
+            cylinder.material = cylinderMaterial;
+
+            this._teleportationRingMaterial = cylinderMaterial;
         }
 
         if (this._options.renderingGroupId !== undefined) {
             teleportationTarget.renderingGroupId = this._options.renderingGroupId;
-            torus.renderingGroupId = this._options.renderingGroupId;
-            cone.renderingGroupId = this._options.renderingGroupId;
+            cylinder.renderingGroupId = this._options.renderingGroupId;
         }
 
         this._options.teleportationTargetMesh = teleportationTarget;
