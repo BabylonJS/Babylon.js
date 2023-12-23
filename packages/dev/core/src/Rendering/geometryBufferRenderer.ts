@@ -111,6 +111,15 @@ export class GeometryBufferRenderer {
      */
     public generateNormalsInWorldSpace = false;
 
+    private _normalsAreUnsigned = false;
+
+    /**
+     * Gets a boolean indicating if normals are encoded in the [0,1] range in the render target. If true, you should do `normal = normal_rt * 2.0 - 1.0` to get the right normal
+     */
+    public get normalsAreUnsigned() {
+        return this._normalsAreUnsigned;
+    }
+
     private _scene: Scene;
     private _resizeObserver: Nullable<Observer<Engine>> = null;
     private _multiRenderTarget: MultiRenderTarget;
@@ -122,7 +131,6 @@ export class GeometryBufferRenderer {
     private _depthFormat: number;
     private _clearColor = new Color4(0, 0, 0, 0);
     private _clearDepthColor = new Color4(1e8, 0, 0, 1); // "infinity" value - depth in the depth texture is view.z, not a 0..1 value!
-    private _encodeNormals = false;
 
     private _positionIndex: number = -1;
     private _velocityIndex: number = -1;
@@ -580,7 +588,7 @@ export class GeometryBufferRenderer {
             defines.push("#define NORMAL_WORLDSPACE");
         }
 
-        if (this._encodeNormals) {
+        if (this._normalsAreUnsigned) {
             defines.push("#define ENCODE_NORMAL");
         }
 
@@ -761,7 +769,7 @@ export class GeometryBufferRenderer {
             }
         }
 
-        this._encodeNormals =
+        this._normalsAreUnsigned =
             textureTypes[GeometryBufferRenderer.NORMAL_TEXTURE_TYPE] === Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV ||
             textureTypes[GeometryBufferRenderer.NORMAL_TEXTURE_TYPE] === Constants.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV;
 
