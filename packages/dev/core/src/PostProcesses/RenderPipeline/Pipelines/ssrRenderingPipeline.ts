@@ -22,7 +22,6 @@ import "../postProcessRenderPipelineManagerSceneComponent";
 import "../../../Shaders/screenSpaceReflection2.fragment";
 import "../../../Shaders/screenSpaceReflection2Blur.fragment";
 import "../../../Shaders/screenSpaceReflection2BlurCombiner.fragment";
-import { Logger } from "core/Misc/logger";
 
 const trs = Matrix.Compose(new Vector3(0.5, 0.5, 0.5), Quaternion.Identity(), new Vector3(0.5, 0.5, 0.5));
 const trsWebGPU = Matrix.Compose(new Vector3(0.5, 0.5, 1), Quaternion.Identity(), new Vector3(0.5, 0.5, 0));
