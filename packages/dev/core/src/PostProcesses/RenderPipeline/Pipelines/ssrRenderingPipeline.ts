@@ -652,18 +652,12 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 if (geometryBufferRenderer) {
                     geometryBufferRenderer.enableReflectivity = true;
                     geometryBufferRenderer.useSpecificClearForDepthTexture = true;
-                    if (geometryBufferRenderer.generateNormalsInWorldSpace) {
-                        Logger.Error("SSRRenderingPipeline does not support generateNormalsInWorldSpace=true for the geometry buffer renderer!");
-                    }
                 }
             } else {
                 const prePassRenderer = scene.enablePrePassRenderer();
                 if (prePassRenderer) {
                     prePassRenderer.useSpecificClearForDepthTexture = true;
                     prePassRenderer.markAsDirty();
-                    if (prePassRenderer.generateNormalsInWorldSpace) {
-                        Logger.Error("SSRRenderingPipeline does not support generateNormalsInWorldSpace=true for the prepass renderer!");
-                    }
                 }
             }
 
@@ -797,6 +791,14 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         }
         if (this._reflectivityThreshold === 0) {
             defines.push("#define SSR_DISABLE_REFLECTIVITY_TEST");
+        }
+
+        if (this._geometryBufferRenderer?.generateNormalsInWorldSpace ?? this._prePassRenderer?.generateNormalsInWorldSpace) {
+            defines.push("#define SSR_NORMAL_IS_IN_WORLDSPACE");
+        }
+
+        if (this._geometryBufferRenderer?.normalsAreUnsigned) {
+            defines.push("#define SSR_DECODE_NORMAL");
         }
 
         this._ssrPostProcess?.updateEffect(defines.join("\n"));
