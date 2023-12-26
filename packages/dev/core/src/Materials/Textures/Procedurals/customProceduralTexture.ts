@@ -3,9 +3,21 @@ import type { Scene } from "../../../scene";
 import { Vector3, Vector2 } from "../../../Maths/math.vector";
 import { Color4, Color3 } from "../../../Maths/math.color";
 import { Texture } from "../../../Materials/Textures/texture";
+import type { IProceduralTextureCreationOptions } from "./proceduralTexture";
 import { ProceduralTexture } from "./proceduralTexture";
 import { WebRequest } from "../../../Misc/webRequest";
 import type { TextureSize } from "../../../Materials/Textures/textureCreationOptions";
+
+/**
+ * Options to create a Custom Procedural Texture.
+ */
+export interface ICustomProceduralTextureCreationOptions extends IProceduralTextureCreationOptions {
+    /**
+     * Define a boolena indicating that there is no json config file to load
+     */
+    skipJson?: boolean;
+}
+
 /**
  * Procedural texturing is a way to programmatically create a texture. There are 2 types of procedural textures: code-only, and code that references some classic 2D images, sometimes called 'refMaps' or 'sampler' images.
  * Custom Procedural textures are the easiest way to create your own procedural in your application.
@@ -30,9 +42,21 @@ export class CustomProceduralTexture extends ProceduralTexture {
      * @param generateMipMaps Define if the texture should creates mip maps or not
      * @param skipJson Define a boolena indicating that there is no json config file to load
      */
-    constructor(name: string, texturePath: string, size: TextureSize, scene: Scene, fallbackTexture?: Texture, generateMipMaps?: boolean, skipJson?: boolean) {
+    constructor(
+        name: string,
+        texturePath: string,
+        size: TextureSize,
+        scene: Scene,
+        fallbackTexture?: Texture | ICustomProceduralTextureCreationOptions,
+        generateMipMaps?: boolean,
+        skipJson?: boolean
+    ) {
         super(name, size, null, scene, fallbackTexture, generateMipMaps);
         this._texturePath = texturePath;
+
+        if (fallbackTexture && !(fallbackTexture instanceof Texture)) {
+            skipJson = !!fallbackTexture.skipJson;
+        }
 
         if (!skipJson) {
             //Try to load json
