@@ -893,7 +893,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             useCameraPostProcess = this.useCameraPostProcesses;
         }
 
-        if (this._waitingRenderList) {
+        if (this._waitingRenderList && !this.renderListPredicate) {
             this.renderList = [];
             for (let index = 0; index < this._waitingRenderList.length; index++) {
                 const id = this._waitingRenderList[index];
@@ -902,9 +902,9 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                     this.renderList.push(mesh);
                 }
             }
-
-            this._waitingRenderList = undefined;
         }
+
+        this._waitingRenderList = undefined;
 
         // Is predicate defined?
         if (this.renderListPredicate) {
@@ -1222,10 +1222,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             // Clear
             if (this.onClearObservable.hasObservers()) {
                 this.onClearObservable.notifyObservers(engine);
-            } else {
-                if (!this.skipInitialClear) {
-                    engine.clear(this.clearColor || scene.clearColor, true, true, true);
-                }
+            } else if (!this.skipInitialClear) {
+                engine.clear(this.clearColor || scene.clearColor, true, true, true);
             }
 
             if (!this._doNotChangeAspectRatio) {

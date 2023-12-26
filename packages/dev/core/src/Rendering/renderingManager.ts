@@ -200,7 +200,7 @@ export class RenderingManager {
                 continue;
             }
 
-            const renderingGroupMask = Math.pow(2, index);
+            const renderingGroupMask = 2 ** index;
             info.renderingGroupId = index;
 
             // Before Observable
