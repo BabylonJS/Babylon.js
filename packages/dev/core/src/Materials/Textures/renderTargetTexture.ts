@@ -893,18 +893,19 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             useCameraPostProcess = this.useCameraPostProcesses;
         }
 
-        if (this._waitingRenderList && !this.renderListPredicate) {
-            this.renderList = [];
-            for (let index = 0; index < this._waitingRenderList.length; index++) {
-                const id = this._waitingRenderList[index];
-                const mesh = scene.getMeshById(id);
-                if (mesh) {
-                    this.renderList.push(mesh);
+        if (this._waitingRenderList) {
+            if (!this.renderListPredicate) {
+                this.renderList = [];
+                for (let index = 0; index < this._waitingRenderList.length; index++) {
+                    const id = this._waitingRenderList[index];
+                    const mesh = scene.getMeshById(id);
+                    if (mesh) {
+                        this.renderList.push(mesh);
+                    }
                 }
             }
+            this._waitingRenderList = undefined;
         }
-
-        this._waitingRenderList = undefined;
 
         // Is predicate defined?
         if (this.renderListPredicate) {
