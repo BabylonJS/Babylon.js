@@ -13,6 +13,7 @@ import type { IWheelEvent } from "../../Events/deviceInputEvents";
 import { EventConstants } from "../../Events/deviceInputEvents";
 import { Scalar } from "../../Maths/math.scalar";
 import { Tools } from "../../Misc/tools";
+import { Ray } from "../../Culling/ray";
 
 /**
  * Firefox uses a different scheme to report scroll distances to other
@@ -171,6 +172,12 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
             // the hit plane.
             this._updateHitPlane();
 
+            //update camera‘s target in zoomToMouseLocation mode
+            //it only needs to be updated when the mouse wheel is rolling
+            if (camera.inertialRadiusOffset) {
+                this._updateCameraTarget();
+            }
+
             // Note we cannot  use arcRotateCamera.inertialPlanning here because arcRotateCamera panning
             // uses a different panningInertia which could cause this panning to get out of sync with
             // the zooming, and for this to work they must be exactly in sync.
@@ -200,6 +207,16 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         const camera = this.camera;
         const direction = camera.target.subtract(camera.position);
         this._hitPlane = Plane.FromPositionAndNormal(camera.target, direction);
+    }
+
+    private _updateCameraTarget() {
+        const camera = this.camera;
+        const direction = camera.target.subtract(camera.position).normalize();
+        const ray = new Ray(camera.position, direction, Number.MAX_SAFE_INTEGER);
+        const groundPlane = Plane.FromPositionAndNormal(Vector3.Zero(), camera.upVector);
+        const distance = ray.intersectsPlane(groundPlane) ?? 0;
+        const intersectionPoint = ray.origin.add(ray.direction.scale(distance));
+        camera.setTarget(intersectionPoint);
     }
 
     // Get position on the hit plane
