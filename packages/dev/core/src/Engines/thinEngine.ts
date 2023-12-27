@@ -1068,6 +1068,8 @@ export class ThinEngine {
             // Rebuild textures
             this._rebuildInternalTextures();
             // Rebuild textures
+            this._rebuildTextures();
+            // Rebuild textures
             this._rebuildRenderTargetWrappers();
 
             // Reset engine states after all the buffer/textures/... have been rebuilt
@@ -1146,13 +1148,15 @@ export class ThinEngine {
     protected _rebuildBuffers(): void {
         // Uniforms
         for (const uniformBuffer of this._uniformBuffers) {
-            uniformBuffer._rebuild();
+            uniformBuffer._rebuildAfterContextLost();
         }
         // Storage buffers
         for (const storageBuffer of this._storageBuffers) {
             storageBuffer._rebuild();
         }
     }
+
+    protected _rebuildTextures(): void {}
 
     protected _initGLContext(): void {
         // Caps

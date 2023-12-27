@@ -149,6 +149,7 @@ export class HDRFiltering {
 
         texture._texture!.type = type;
         texture._texture!.format = format;
+        texture._texture!.isReady = true;
 
         // New settings
         texture.gammaSpace = false;
@@ -205,6 +206,8 @@ export class HDRFiltering {
             Logger.Warn("HDR prefiltering is not available in WebGL 1., you can use real time filtering instead.");
             return Promise.reject("HDR prefiltering is not available in WebGL 1., you can use real time filtering instead.");
         }
+
+        texture._texture!.isReady = false;
 
         return new Promise((resolve) => {
             this._effectRenderer = new EffectRenderer(this._engine);

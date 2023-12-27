@@ -2,7 +2,6 @@ import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import type { Scene } from "../scene";
 import { RGBDTextureTools } from "./rgbdTextureTools";
-import { Tools } from "./tools";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const _environmentBRDFBase64Texture =
@@ -50,14 +49,18 @@ export const GetEnvironmentBRDFTexture = (scene: Scene): BaseTexture => {
 
         const observer = scene.getEngine().onContextRestoredObservable.add(() => {
             texture.isRGBD = true;
-            const checkReady = () => {
+            /**
+             * Using scene.onBeforeRenderObservable instead of Tools.SetImmediate to check the texture's state of readiness allows us to check before any rendering occurs.
+             * When a context restore occurs, it gives ExpandRGBDTexture the ability to reset the state to false, preventing the texture from being used in any rendering.
+             * In WebGPU, not doing so would generate an error because ExpandRGBDTexture performs a _swapAndDie on the texture, which causes WebGPU caches to fail if the texture has already been used for rendering.
+             * Only when ExpandRGBDTexture has finished its work, the texture is ready to be used again.
+             */
+            const oo = scene.onBeforeRenderObservable.add(() => {
                 if (texture.isReady()) {
+                    scene.onBeforeRenderObservable.remove(oo);
                     RGBDTextureTools.ExpandRGBDTexture(texture);
-                } else {
-                    Tools.SetImmediate(checkReady);
                 }
-            };
-            checkReady();
+            });
         });
 
         scene.onDisposeObservable.add(() => {

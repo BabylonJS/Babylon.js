@@ -519,7 +519,7 @@ export class InternalTexture extends TextureSampler {
     public _swapAndDie(target: InternalTexture, swapAll = true): void {
         // TODO what about refcount on target?
 
-        this._hardwareTexture?.setUsage(target._source, this.generateMipMaps, this.isCube, this.width, this.height);
+        this._hardwareTexture?.setUsage(target._source, this.generateMipMaps, this.is2DArray, this.isCube, this.is3D, this.width, this.height);
 
         target._hardwareTexture = this._hardwareTexture;
         if (swapAll) {

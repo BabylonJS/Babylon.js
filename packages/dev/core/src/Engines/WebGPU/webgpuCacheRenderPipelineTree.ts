@@ -1,4 +1,4 @@
-import type { VertexBuffer } from "../../Buffers/buffer";
+/* eslint-disable babylonjs/available */
 import type { Nullable } from "../../types";
 import { WebGPUCacheRenderPipeline } from "./webgpuCacheRenderPipeline";
 
@@ -56,10 +56,14 @@ export class WebGPUCacheRenderPipelineTree extends WebGPUCacheRenderPipeline {
         return pipelines;
     }
 
-    constructor(device: GPUDevice, emptyVertexBuffer: VertexBuffer) {
-        super(device, emptyVertexBuffer);
+    public static ResetCache() {
+        WebGPUCacheRenderPipelineTree._Cache = new NodeState();
+    }
+
+    public reset(): void {
         this._nodeStack = [];
         this._nodeStack[0] = WebGPUCacheRenderPipelineTree._Cache;
+        super.reset();
     }
 
     protected _getRenderPipeline(param: { token: any; pipeline: Nullable<GPURenderPipeline> }): void {

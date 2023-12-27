@@ -560,8 +560,12 @@ export class UniformBuffer {
 
     private _getNames() {
         const names = [];
+        let i = 0;
         for (const name in this._uniformLocations) {
             names.push(name);
+            if (++i === 10) {
+                break;
+            }
         }
         return names.join(",");
     }
@@ -583,6 +587,15 @@ export class UniformBuffer {
             this._bufferIndex = this._buffers.length - 1;
             this._createBufferOnWrite = false;
         }
+    }
+
+    /** @internal */
+    public _rebuildAfterContextLost(): void {
+        if (this._engine._features.trackUbosInFrame) {
+            this._buffers = [];
+            this._currentFrameId = 0;
+        }
+        this._rebuild();
     }
 
     /** @internal */

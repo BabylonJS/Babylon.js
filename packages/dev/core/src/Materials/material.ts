@@ -795,7 +795,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * @internal
      * Stores the effects for the material
      */
-    protected _materialContext: IMaterialContext | undefined;
+    public _materialContext: IMaterialContext | undefined;
 
     protected _drawWrapper: DrawWrapper;
     /** @internal */

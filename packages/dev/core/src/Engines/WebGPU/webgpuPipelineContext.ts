@@ -85,12 +85,6 @@ export class WebGPUPipelineContext implements IPipelineContext {
     ) {
         const engine = this.engine;
 
-        // Prevent Memory Leak by reducing the number of string, refer to the string instead of copy.
-        effect._fragmentSourceCode = "";
-        effect._vertexSourceCode = "";
-        // this._fragmentSourceCodeOverride = "";
-        // this._vertexSourceCodeOverride = "";
-
         const foundSamplers = this.shaderProcessingContext.availableTextures;
         let index: number;
         for (index = 0; index < samplerList.length; index++) {

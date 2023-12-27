@@ -34,6 +34,7 @@ import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 import type { WebGPUTintWASM } from "./webgpuTintWASM";
 import type { ExternalTexture } from "../../Materials/Textures/externalTexture";
+import type { WebGPUEngine } from "../webgpuEngine";
 
 // TODO WEBGPU improve mipmap generation by using compute shaders
 
@@ -298,6 +299,7 @@ export const renderableTextureFormatToIndex: { [name: string]: number } = {
 
 /** @internal */
 export class WebGPUTextureHelper {
+    private _engine: WebGPUEngine;
     private _device: GPUDevice;
     private _glslang: any;
     private _tintWASM: Nullable<WebGPUTintWASM>;
@@ -320,7 +322,15 @@ export class WebGPUTextureHelper {
     //                         Initialization / Helpers
     //------------------------------------------------------------------------------
 
-    constructor(device: GPUDevice, glslang: any, tintWASM: Nullable<WebGPUTintWASM>, bufferManager: WebGPUBufferManager, enabledExtensions: GPUFeatureName[]) {
+    constructor(
+        engine: WebGPUEngine,
+        device: GPUDevice,
+        glslang: any,
+        tintWASM: Nullable<WebGPUTintWASM>,
+        bufferManager: WebGPUBufferManager,
+        enabledExtensions: GPUFeatureName[]
+    ) {
+        this._engine = engine;
         this._device = device;
         this._glslang = glslang;
         this._tintWASM = tintWASM;
@@ -438,7 +448,7 @@ export class WebGPUTextureHelper {
             }
 
             const pipeline = this._device.createRenderPipeline({
-                label: `CopyVideoToTexture_${format}_${index === 0 ? "DontInvertY" : "InvertY"}`,
+                label: `BabylonWebGPUDevice${this._engine.uniqueId}_CopyVideoToTexture_${format}_${index === 0 ? "DontInvertY" : "InvertY"}`,
                 layout: WebGPUConstants.AutoLayoutMode.Auto,
                 vertex: {
                     module: modules[0],
@@ -1466,9 +1476,9 @@ export class WebGPUTextureHelper {
         }
 
         const gpuTexture = this._device.createTexture({
-            label: `Texture${is3D ? "3D" : "2D"}_${label ? label + "_" : ""}${textureSize.width}x${textureSize.height}x${textureSize.depthOrArrayLayers}_${
-                hasMipmaps ? "wmips" : "womips"
-            }_${format}_samples${sampleCount}`,
+            label: `BabylonWebGPUDevice${this._engine.uniqueId}_Texture${is3D ? "3D" : "2D"}_${label ? label + "_" : ""}${textureSize.width}x${textureSize.height}x${
+                textureSize.depthOrArrayLayers
+            }_${hasMipmaps ? "wmips" : "womips"}_${format}_samples${sampleCount}`,
             size: textureSize,
             dimension: is3D ? WebGPUConstants.TextureDimension.E3d : WebGPUConstants.TextureDimension.E2d,
             format,
@@ -1519,7 +1529,9 @@ export class WebGPUTextureHelper {
         }
 
         const gpuTexture = this._device.createTexture({
-            label: `TextureCube_${label ? label + "_" : ""}${width}x${height}x6_${hasMipmaps ? "wmips" : "womips"}_${format}_samples${sampleCount}`,
+            label: `BabylonWebGPUDevice${this._engine.uniqueId}_TextureCube_${label ? label + "_" : ""}${width}x${height}x6_${
+                hasMipmaps ? "wmips" : "womips"
+            }_${format}_samples${sampleCount}`,
             size: {
                 width,
                 height,

@@ -50,64 +50,64 @@ export class RGBDTextureTools {
 
         const expandRGBDTexture = () => {
             // Expand the texture if possible
-            if (expandTexture) {
-                // Simply run through the decode PP.
-                const rgbdPostProcess = new PostProcess(
-                    "rgbdDecode",
-                    "rgbdDecode",
-                    null,
-                    null,
-                    1,
-                    null,
-                    Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-                    engine,
-                    false,
-                    undefined,
-                    internalTexture.type,
-                    undefined,
-                    null,
-                    false
-                );
-                rgbdPostProcess.externalTextureSamplerBinding = true;
+            // Simply run through the decode PP.
+            const rgbdPostProcess = new PostProcess(
+                "rgbdDecode",
+                "rgbdDecode",
+                null,
+                null,
+                1,
+                null,
+                Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+                engine,
+                false,
+                undefined,
+                internalTexture.type,
+                undefined,
+                null,
+                false
+            );
+            rgbdPostProcess.externalTextureSamplerBinding = true;
 
-                // Hold the output of the decoding.
-                const expandedTexture = engine.createRenderTargetTexture(internalTexture.width, {
-                    generateDepthBuffer: false,
-                    generateMipMaps: false,
-                    generateStencilBuffer: false,
-                    samplingMode: internalTexture.samplingMode,
-                    type: internalTexture.type,
-                    format: Constants.TEXTUREFORMAT_RGBA,
-                });
+            // Hold the output of the decoding.
+            const expandedTexture = engine.createRenderTargetTexture(internalTexture.width, {
+                generateDepthBuffer: false,
+                generateMipMaps: false,
+                generateStencilBuffer: false,
+                samplingMode: internalTexture.samplingMode,
+                type: internalTexture.type,
+                format: Constants.TEXTUREFORMAT_RGBA,
+            });
 
-                rgbdPostProcess.getEffect().executeWhenCompiled(() => {
-                    // PP Render Pass
-                    rgbdPostProcess.onApply = (effect) => {
-                        effect._bindTexture("textureSampler", internalTexture);
-                        effect.setFloat2("scale", 1, 1);
-                    };
-                    texture.getScene()!.postProcessManager.directRender([rgbdPostProcess!], expandedTexture, true);
+            rgbdPostProcess.getEffect().executeWhenCompiled(() => {
+                // PP Render Pass
+                rgbdPostProcess.onApply = (effect) => {
+                    effect._bindTexture("textureSampler", internalTexture);
+                    effect.setFloat2("scale", 1, 1);
+                };
+                texture.getScene()!.postProcessManager.directRender([rgbdPostProcess!], expandedTexture, true);
 
-                    // Cleanup
-                    engine.restoreDefaultFramebuffer();
-                    engine._releaseTexture(internalTexture);
-                    if (rgbdPostProcess) {
-                        rgbdPostProcess.dispose();
-                    }
+                // Cleanup
+                engine.restoreDefaultFramebuffer();
+                engine._releaseTexture(internalTexture);
+                if (rgbdPostProcess) {
+                    rgbdPostProcess.dispose();
+                }
 
-                    // Internal Swap
-                    expandedTexture._swapAndDie(internalTexture);
+                // Internal Swap
+                expandedTexture._swapAndDie(internalTexture);
 
-                    // Ready to get rolling again.
-                    internalTexture.isReady = true;
-                });
-            }
+                // Ready to get rolling again.
+                internalTexture.isReady = true;
+            });
         };
 
-        if (isReady) {
-            expandRGBDTexture();
-        } else {
-            texture.onLoadObservable.addOnce(expandRGBDTexture);
+        if (expandTexture) {
+            if (isReady) {
+                expandRGBDTexture();
+            } else {
+                texture.onLoadObservable.addOnce(expandRGBDTexture);
+            }
         }
     }
 

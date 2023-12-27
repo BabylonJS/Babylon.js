@@ -1,3 +1,4 @@
+/* eslint-disable babylonjs/available */
 import type { DataBuffer } from "../../Buffers/dataBuffer";
 import { WebGPUDataBuffer } from "../../Meshes/WebGPU/webgpuDataBuffer";
 import { FromHalfFloat } from "../../Misc/textureTools";
@@ -5,6 +6,7 @@ import type { Nullable } from "../../types";
 import { Constants } from "../constants";
 import { allocateAndCopyTypedBuffer } from "../Extensions/engine.readTexture";
 import type { WebGPUEngine } from "../webgpuEngine";
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import * as WebGPUConstants from "./webgpuConstants";
 
 /** @internal */
@@ -40,7 +42,7 @@ export class WebGPUBufferManager {
     public createRawBuffer(viewOrSize: ArrayBufferView | number, flags: GPUBufferUsageFlags, mappedAtCreation = false, label?: string): GPUBuffer {
         const alignedLength = (viewOrSize as ArrayBufferView).byteLength !== undefined ? ((viewOrSize as ArrayBufferView).byteLength + 3) & ~3 : ((viewOrSize as number) + 3) & ~3; // 4 bytes alignments (because of the upload which requires this)
         const verticesBufferDescriptor = {
-            label: WebGPUBufferManager._FlagsToString(flags, label ?? "Buffer") + "_size" + alignedLength,
+            label: "BabylonWebGPUDevice" + this._engine.uniqueId + "_" + WebGPUBufferManager._FlagsToString(flags, label ?? "Buffer") + "_size" + alignedLength,
             mappedAtCreation,
             size: alignedLength,
             usage: flags,
