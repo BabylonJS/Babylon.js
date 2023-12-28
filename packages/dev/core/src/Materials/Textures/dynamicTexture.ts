@@ -214,13 +214,14 @@ export class DynamicTexture extends Texture {
      * Disposes the dynamic texture.
      */
     public dispose(): void {
-        super.dispose();
-
-        if (this._ownCanvas) {
+        if (this._ownCanvas && this._canvas) {
             this._canvas.remove();
         }
+
         (this._canvas as any) = null;
         (this._context as any) = null;
+
+        super.dispose();
     }
 
     /**
