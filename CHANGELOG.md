@@ -1,5 +1,19 @@
 # Changelog
 
+## 6.36.0
+
+### Core
+
+- WebGPU: Fix breaking change in the constructor of ComputeShader - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14652](https://github.com/BabylonJS/Babylon.js/pull/14652))
+- ProceduralTexture: Add options when creating a (custom) procedural texture - by [Popov72](https://github.com/Popov72) ([#14651](https://github.com/BabylonJS/Babylon.js/pull/14651))
+- fix comments - by [Starryi](https://github.com/Starryi) ([#14649](https://github.com/BabylonJS/Babylon.js/pull/14649))
+- DynamicTexture: Add a dispose method - by [Popov72](https://github.com/Popov72) ([#14647](https://github.com/BabylonJS/Babylon.js/pull/14647))
+- SSR: Add support for world/unsigned normals - by [Popov72](https://github.com/Popov72) ([#14646](https://github.com/BabylonJS/Babylon.js/pull/14646))
+- GeometryBufferRenderer: Add a getter for "unsigned normals" - by [Popov72](https://github.com/Popov72) ([#14645](https://github.com/BabylonJS/Babylon.js/pull/14645))
+- GeometryBufferRenderer: Allow to define texture type and format - by [Popov72](https://github.com/Popov72) ([#14644](https://github.com/BabylonJS/Babylon.js/pull/14644))
+- Incremental bounding box scaling - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#14642](https://github.com/BabylonJS/Babylon.js/pull/14642))
+- WebGPU: Inject dynamic and uniform buffer extensions in WebGPU engine - by [Popov72](https://github.com/Popov72) ([#14640](https://github.com/BabylonJS/Babylon.js/pull/14640))
+
 ## 6.35.0
 
 ### Core
