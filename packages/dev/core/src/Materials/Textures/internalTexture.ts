@@ -221,6 +221,10 @@ export class InternalTexture extends TextureSampler {
     public _lodGenerationOffset: number = 0;
     /** @internal */
     public _useSRGBBuffer: boolean = false;
+    /** @internal */
+    public _creationFlags: number = 0;
+    /** @internal */
+    public _originalFormat?: number;
 
     // The following three fields helps sharing generated fixed LODs for texture filtering
     // In environment not supporting the textureLOD extension like EDGE. They are for internal use only.
@@ -396,7 +400,7 @@ export class InternalTexture extends TextureSampler {
                     this.samplingMode,
                     this._compression,
                     this.type,
-                    undefined,
+                    this._creationFlags,
                     this._useSRGBBuffer
                 );
                 proxy._swapAndDie(this, false);
@@ -476,7 +480,7 @@ export class InternalTexture extends TextureSampler {
                 proxy = this._engine.createRawCubeTexture(
                     this._bufferViewArray!,
                     this.width,
-                    this.format,
+                    this._originalFormat ?? this.format,
                     this.type,
                     this.generateMipMaps,
                     this.invertY,
@@ -519,7 +523,7 @@ export class InternalTexture extends TextureSampler {
     public _swapAndDie(target: InternalTexture, swapAll = true): void {
         // TODO what about refcount on target?
 
-        this._hardwareTexture?.setUsage(target._source, this.generateMipMaps, this.is2DArray, this.isCube, this.is3D, this.width, this.height);
+        this._hardwareTexture?.setUsage(target._source, this.generateMipMaps, this.is2DArray, this.isCube, this.is3D, this.width, this.height, this.depth);
 
         target._hardwareTexture = this._hardwareTexture;
         if (swapAll) {

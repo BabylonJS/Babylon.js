@@ -760,7 +760,12 @@ export class WebGPUEngine extends Engine {
 
                 this._initializeLimits();
 
-                this._emptyVertexBuffer = new VertexBuffer(this, [0], "", false, false, 1, false, 0, 1);
+                this._emptyVertexBuffer = new VertexBuffer(this, [0], "", {
+                    stride: 1,
+                    offset: 0,
+                    size: 1,
+                    label: "EmptyVertexBuffer",
+                });
 
                 this._cacheRenderPipeline = new WebGPUCacheRenderPipelineTree(this._device, this._emptyVertexBuffer);
 
@@ -1030,6 +1035,17 @@ export class WebGPUEngine extends Engine {
             usage: WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.CopySrc,
             alphaMode: this.premultipliedAlpha ? WebGPUConstants.CanvasAlphaMode.Premultiplied : WebGPUConstants.CanvasAlphaMode.Opaque,
         });
+    }
+
+    protected _rebuildBuffers(): void {
+        super._rebuildBuffers();
+
+        for (const storageBuffer of this._storageBuffers) {
+            // The buffer can already be rebuilt by the call to _rebuildGeometries(), which recreates the storage buffers for the ComputeShaderParticleSystem
+            if ((storageBuffer.getBuffer() as WebGPUDataBuffer).engineId !== this.uniqueId) {
+                storageBuffer._rebuild();
+            }
+        }
     }
 
     protected _restoreEngineAfterContextLost(initEngine: () => void) {
@@ -2288,6 +2304,7 @@ export class WebGPUEngine extends Engine {
                 texture.height = imageBitmap.height;
                 texture.format = texture.format !== -1 ? texture.format : format ?? Constants.TEXTUREFORMAT_RGBA;
                 texture.type = texture.type !== -1 ? texture.type : Constants.TEXTURETYPE_UNSIGNED_BYTE;
+                texture._creationFlags = creationFlags ?? 0;
 
                 processFunction(texture.width, texture.height, imageBitmap, extension, texture, () => {});
 

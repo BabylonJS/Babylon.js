@@ -79,23 +79,29 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
         this._webgpuTexture = hardwareTexture;
     }
 
-    public setUsage(_textureSource: number, generateMipMaps: boolean, is2DArray: boolean, isCube: boolean, is3D: boolean, width: number, height: number): void {
+    public setUsage(_textureSource: number, generateMipMaps: boolean, is2DArray: boolean, isCube: boolean, is3D: boolean, width: number, height: number, depth: number): void {
         let viewDimension: GPUTextureViewDimension = WebGPUConstants.TextureViewDimension.E2d;
+        let arrayLayerCount = 1;
         if (isCube) {
             viewDimension = is2DArray ? WebGPUConstants.TextureViewDimension.CubeArray : WebGPUConstants.TextureViewDimension.Cube;
+            arrayLayerCount = 6 * (depth || 1);
         } else if (is3D) {
             viewDimension = WebGPUConstants.TextureViewDimension.E3d;
         } else if (is2DArray) {
             viewDimension = WebGPUConstants.TextureViewDimension.E2dArray;
+            arrayLayerCount = depth;
         }
 
         this.createView({
+            label: `TextureView${is3D ? "3D" : isCube ? "Cube" : "2D"}${is2DArray ? "_Array" + arrayLayerCount : ""}_${width}x${height}_${generateMipMaps ? "wmips" : "womips"}_${
+                this.format
+            }_${viewDimension}`,
             format: this.format,
             dimension: viewDimension,
             mipLevelCount: generateMipMaps ? Scalar.ILog2(Math.max(width, height)) + 1 : 1,
             baseArrayLayer: 0,
             baseMipLevel: 0,
-            arrayLayerCount: isCube ? 6 : 1,
+            arrayLayerCount,
             aspect: WebGPUConstants.TextureAspect.All,
         });
     }

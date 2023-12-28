@@ -1726,15 +1726,24 @@ export class WebGPUTextureHelper {
             );
 
             gpuTextureWrapper.set(gpuTexture);
+
+            const arrayLayerCount = texture.is3D ? 1 : layerCount;
+            const format = WebGPUTextureHelper.GetDepthFormatOnly(gpuTextureWrapper.format);
+            const aspect = WebGPUTextureHelper.HasDepthAndStencilAspects(gpuTextureWrapper.format) ? WebGPUConstants.TextureAspect.DepthOnly : WebGPUConstants.TextureAspect.All;
+            const dimension = texture.is2DArray ? WebGPUConstants.TextureViewDimension.CubeArray : WebGPUConstants.TextureViewDimension.Cube;
+
             gpuTextureWrapper.createView(
                 {
-                    format: WebGPUTextureHelper.GetDepthFormatOnly(gpuTextureWrapper.format),
-                    dimension: WebGPUConstants.TextureViewDimension.Cube,
+                    label: `BabylonWebGPUDevice${this._engine.uniqueId}_TextureViewCube${texture.is2DArray ? "_Array" + arrayLayerCount : ""}_${width}x${height}_${
+                        hasMipMaps ? "wmips" : "womips"
+                    }_${format}_${dimension}_${aspect}`,
+                    format,
+                    dimension,
                     mipLevelCount: mipmapCount,
                     baseArrayLayer: 0,
                     baseMipLevel: 0,
                     arrayLayerCount: 6,
-                    aspect: WebGPUTextureHelper.HasDepthAndStencilAspects(gpuTextureWrapper.format) ? WebGPUConstants.TextureAspect.DepthOnly : WebGPUConstants.TextureAspect.All,
+                    aspect,
                 },
                 isStorageTexture
             );
@@ -1755,19 +1764,28 @@ export class WebGPUTextureHelper {
             );
 
             gpuTextureWrapper.set(gpuTexture);
+
+            const arrayLayerCount = texture.is3D ? 1 : layerCount;
+            const format = WebGPUTextureHelper.GetDepthFormatOnly(gpuTextureWrapper.format);
+            const aspect = WebGPUTextureHelper.HasDepthAndStencilAspects(gpuTextureWrapper.format) ? WebGPUConstants.TextureAspect.DepthOnly : WebGPUConstants.TextureAspect.All;
+            const dimension = texture.is2DArray
+                ? WebGPUConstants.TextureViewDimension.E2dArray
+                : texture.is3D
+                  ? WebGPUConstants.TextureDimension.E3d
+                  : WebGPUConstants.TextureViewDimension.E2d;
+
             gpuTextureWrapper.createView(
                 {
-                    format: WebGPUTextureHelper.GetDepthFormatOnly(gpuTextureWrapper.format),
-                    dimension: texture.is2DArray
-                        ? WebGPUConstants.TextureViewDimension.E2dArray
-                        : texture.is3D
-                          ? WebGPUConstants.TextureDimension.E3d
-                          : WebGPUConstants.TextureViewDimension.E2d,
+                    label: `BabylonWebGPUDevice${this._engine.uniqueId}_TextureView${texture.is3D ? "3D" : "2D"}${
+                        texture.is2DArray ? "_Array" + arrayLayerCount : ""
+                    }_${width}x${height}_${hasMipMaps ? "wmips" : "womips"}_${format}_${dimension}_${aspect}`,
+                    format,
+                    dimension,
                     mipLevelCount: mipmapCount,
                     baseArrayLayer: 0,
                     baseMipLevel: 0,
-                    arrayLayerCount: texture.is3D ? 1 : layerCount,
-                    aspect: WebGPUTextureHelper.HasDepthAndStencilAspects(gpuTextureWrapper.format) ? WebGPUConstants.TextureAspect.DepthOnly : WebGPUConstants.TextureAspect.All,
+                    arrayLayerCount,
+                    aspect,
                 },
                 isStorageTexture
             );
@@ -1839,7 +1857,7 @@ export class WebGPUTextureHelper {
 
     // TODO WEBGPU handle data source not being in the same format than the destination texture?
     public updateTexture(
-        imageBitmap: ImageBitmap | Uint8Array | HTMLCanvasElement | OffscreenCanvas,
+        imageBitmap: ImageBitmap | Uint8Array | ImageData | HTMLImageElement | HTMLVideoElement | VideoFrame | HTMLCanvasElement | OffscreenCanvas,
         texture: GPUTexture | InternalTexture,
         width: number,
         height: number,
@@ -1949,7 +1967,7 @@ export class WebGPUTextureHelper {
                 }
             }
         } else {
-            imageBitmap = imageBitmap as ImageBitmap | HTMLCanvasElement | OffscreenCanvas;
+            imageBitmap = imageBitmap as ImageBitmap | ImageData | HTMLImageElement | HTMLVideoElement | VideoFrame | HTMLCanvasElement | OffscreenCanvas;
 
             if (invertY) {
                 textureCopyView.premultipliedAlpha = false; // we are going to handle premultiplyAlpha ourselves

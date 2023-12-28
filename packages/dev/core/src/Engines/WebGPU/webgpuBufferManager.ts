@@ -57,6 +57,7 @@ export class WebGPUBufferManager {
         const dataBuffer = new WebGPUDataBuffer(buffer);
         dataBuffer.references = 1;
         dataBuffer.capacity = isView ? (viewOrSize as ArrayBufferView).byteLength : (viewOrSize as number);
+        dataBuffer.engineId = this._engine.uniqueId;
 
         if (isView) {
             this.setSubData(dataBuffer, 0, viewOrSize as ArrayBufferView);
@@ -128,6 +129,7 @@ export class WebGPUBufferManager {
         noDataConversion = false
     ): Promise<ArrayBufferView> {
         const floatFormat = type === Constants.TEXTURETYPE_FLOAT ? 2 : type === Constants.TEXTURETYPE_HALF_FLOAT ? 1 : 0;
+        const engineId = this._engine.uniqueId;
         return new Promise((resolve, reject) => {
             gpuBuffer.mapAsync(WebGPUConstants.MapMode.Read, offset, size).then(
                 () => {
@@ -201,7 +203,8 @@ export class WebGPUBufferManager {
                     resolve(data!);
                 },
                 (reason) => {
-                    if (this._engine.isDisposed) {
+                    if (this._engine.isDisposed || this._engine.uniqueId !== engineId) {
+                        // The engine was disposed while waiting for the promise, or a context loss/restoration has occurred: don't reject
                         resolve(new Uint8Array());
                     } else {
                         reject(reason);

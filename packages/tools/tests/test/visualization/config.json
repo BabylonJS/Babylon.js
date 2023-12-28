@@ -1130,7 +1130,7 @@
         },
         {
             "title": "Geometry buffer renderer",
-            "playgroundId": "#PIZ1GK#173",
+            "playgroundId": "#PIZ1GK#1620",
             "referenceImage": "geometrybufferrenderer.png",
             "renderCount": 10,
             "excludedEngines": ["webgl1"],
