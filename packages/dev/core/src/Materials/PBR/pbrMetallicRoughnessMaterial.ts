@@ -93,6 +93,8 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
         this.sheen.copyTo(clone.sheen);
         this.subSurface.copyTo(clone.subSurface);
 
+        this.onClonedObservable.notifyObservers(clone);
+
         return clone;
     }
 

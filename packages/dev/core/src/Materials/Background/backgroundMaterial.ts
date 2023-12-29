@@ -1293,7 +1293,11 @@ export class BackgroundMaterial extends PushMaterial {
      * @returns The cloned material.
      */
     public clone(name: string): BackgroundMaterial {
-        return SerializationHelper.Clone(() => new BackgroundMaterial(name, this.getScene()), this);
+        const result = SerializationHelper.Clone(() => new BackgroundMaterial(name, this.getScene()), this);
+
+        this.onClonedObservable.notifyObservers(result);
+
+        return result;
     }
 
     /**

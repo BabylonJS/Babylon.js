@@ -1995,6 +1995,8 @@ export class StandardMaterial extends PushMaterial {
 
         this._clonePlugins(result, rootUrl);
 
+        this.onClonedObservable.notifyObservers(result);
+
         return result;
     }
 
