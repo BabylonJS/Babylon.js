@@ -2265,6 +2265,8 @@ export class NodeMaterial extends PushMaterial {
         clone._buildId = this._buildId;
         clone.build(false, !shareEffect);
 
+        this.onClonedObservable.notifyObservers(clone);
+
         return clone;
     }
 

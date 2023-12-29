@@ -783,6 +783,8 @@ export class PBRMaterial extends PBRBaseMaterial {
 
         this._clonePlugins(clone, rootUrl);
 
+        this.onClonedObservable.notifyObservers(clone);
+
         return clone;
     }
 

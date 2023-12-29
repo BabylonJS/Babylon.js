@@ -180,6 +180,8 @@ export class MultiMaterial extends Material {
             newMultiMaterial.subMaterials.push(subMaterial);
         }
 
+        this.onClonedObservable.notifyObservers(newMultiMaterial);
+
         return newMultiMaterial;
     }
 

@@ -528,6 +528,19 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         return this._onEffectCreatedObservable;
     }
 
+    protected _onClonedObservable: Nullable<Observable<Material>>;
+
+    /**
+     * An event triggered when the material is cloned
+     */
+    public get onClonedObservable(): Observable<Material> {
+        if (!this._onClonedObservable) {
+            this._onClonedObservable = new Observable<Material>();
+        }
+
+        return this._onClonedObservable;
+    }
+
     /**
      * Stores the value of the alpha mode
      */

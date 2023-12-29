@@ -1398,6 +1398,8 @@ export class ShaderMaterial extends PushMaterial {
             result.setStorageBuffer(key, this._storageBuffers[key]);
         }
 
+        this.onClonedObservable.notifyObservers(result);
+
         return result;
     }
 
