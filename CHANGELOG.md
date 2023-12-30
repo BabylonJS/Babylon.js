@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.36.1
+
+### Core
+
+- Declaration generation for UMD - by [RaananW](https://github.com/RaananW) ([#14659](https://github.com/BabylonJS/Babylon.js/pull/14659))
+
 ## 6.36.0
 
 ### Core

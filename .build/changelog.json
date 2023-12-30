@@ -1,6 +1,25 @@
 {
-    "fromTag": "6.35.0",
+    "fromTag": "6.36.0",
     "changelog": {
+        "6.36.1": [
+            {
+                "pr": "14659",
+                "title": "Declaration generation for UMD",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPauseAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPlayAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphStopAnimationBlock.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineMesh.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineRibbonMesh.ts"
+                ],
+                "tags": []
+            }
+        ],
         "6.36.0": [
             {
                 "pr": "14652",
