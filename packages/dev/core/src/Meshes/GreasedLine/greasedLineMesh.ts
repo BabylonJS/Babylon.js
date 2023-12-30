@@ -11,6 +11,7 @@ import { DeepCopier } from "../../Misc/deepCopier";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
 import type { GreasedLineMeshOptions } from "./greasedLineBaseMesh";
 import { GreasedLineBaseMesh } from "./greasedLineBaseMesh";
+import type { VertexData } from "../mesh.vertexData";
 
 Mesh._GreasedLineMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
     return GreasedLineMesh.Parse(parsedMesh, scene);
@@ -368,7 +369,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
     }
 
     protected _createVertexBuffers() {
-        const vertexData = super._createVertexBuffers();
+        const vertexData: VertexData = super._createVertexBuffers();
 
         const engine = this._scene.getEngine();
 
