@@ -1,5 +1,7 @@
+import { Color3, Color4 } from "../Maths/math.color";
 import { Quaternion, Vector2, Vector3, Vector4 } from "../Maths/math.vector";
 import type { Scene } from "../scene";
+import { FlowGraphPath } from "./flowGraphPath";
 
 function isMeshClassName(className: string) {
     return (
@@ -15,7 +17,7 @@ function isMeshClassName(className: string) {
 }
 
 function isVectorClassName(className: string) {
-    return className === "Vector2" || className === "Vector3" || className === "Vector4" || className === "Quaternion";
+    return className === "Vector2" || className === "Vector3" || className === "Vector4" || className === "Quaternion" || className === "Color3" || className === "Color4";
 }
 
 function parseVector(className: string, value: Array<number>) {
@@ -27,6 +29,10 @@ function parseVector(className: string, value: Array<number>) {
         return Vector4.FromArray(value);
     } else if (className === "Quaternion") {
         return Quaternion.FromArray(value);
+    } else if (className === "Color3") {
+        return new Color3(value[0], value[1], value[2]);
+    } else if (className === "Color4") {
+        return new Color4(value[0], value[1], value[2], value[3]);
     } else {
         throw new Error(`Unknown vector class name ${className}`);
     }
@@ -63,15 +69,19 @@ export function defaultValueSerializationFunction(key: string, value: any, seria
  * @returns
  */
 export function defaultValueParseFunction(key: string, serializationObject: any, scene: Scene) {
-    const value = serializationObject[key];
+    const intermediateValue = serializationObject[key];
     let finalValue;
-    const className = value?.className;
+    const className = intermediateValue?.className;
     if (isMeshClassName(className)) {
-        finalValue = scene.getMeshByName(value.name);
+        finalValue = scene.getMeshByName(intermediateValue.name);
     } else if (isVectorClassName(className)) {
-        finalValue = parseVector(className, value.value);
+        finalValue = parseVector(className, intermediateValue.value);
+    } else if (className === FlowGraphPath.ClassName) {
+        finalValue = FlowGraphPath.Parse(intermediateValue);
+    } else if (intermediateValue && intermediateValue.value !== undefined) {
+        finalValue = intermediateValue.value;
     } else {
-        finalValue = value;
+        finalValue = intermediateValue;
     }
     return finalValue;
 }

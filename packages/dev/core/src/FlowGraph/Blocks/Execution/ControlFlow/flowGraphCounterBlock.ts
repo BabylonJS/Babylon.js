@@ -2,14 +2,14 @@ import type { FlowGraphContext } from "../../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import { RichTypeNumber } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
-import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneExecutionBlock";
+import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphWithOnDoneExecutionBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 /**
  * @experimental
  * A block that counts the number of times it has been called.
  */
-export class FlowGraphCounterBlock extends FlowGraphWithOnDoneExecutionBlock {
+export class FlowGraphCounterBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
      * Output connection: The number of times the block has been called.
      */
@@ -22,7 +22,7 @@ export class FlowGraphCounterBlock extends FlowGraphWithOnDoneExecutionBlock {
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
-        this.count = this._registerDataOutput("count", RichTypeNumber);
+        this.count = this.registerDataOutput("count", RichTypeNumber);
         this.reset = this._registerSignalInput("reset");
     }
 
@@ -36,7 +36,7 @@ export class FlowGraphCounterBlock extends FlowGraphWithOnDoneExecutionBlock {
 
         context._setExecutionVariable(this, "count", countValue);
         this.count.setValue(countValue, context);
-        this.onDone._activateSignal(context);
+        this.out._activateSignal(context);
     }
 
     public getClassName(): string {

@@ -48,6 +48,7 @@ class TerrainMaterialDefines extends MaterialDefines {
     public INSTANCESCOLOR = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
+    public LOGARITHMICDEPTH = false;
 
     constructor() {
         super();
@@ -186,7 +187,7 @@ export class TerrainMaterial extends PushMaterial {
         }
 
         // Misc.
-        MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
+        MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
         // Lights
         defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
@@ -259,7 +260,16 @@ export class TerrainMaterial extends PushMaterial {
                 "diffuse2Infos",
                 "diffuse3Infos",
             ];
-            const samplers = ["textureSampler", "diffuse1Sampler", "diffuse2Sampler", "diffuse3Sampler", "bump1Sampler", "bump2Sampler", "bump3Sampler"];
+            const samplers = [
+                "textureSampler",
+                "diffuse1Sampler",
+                "diffuse2Sampler",
+                "diffuse3Sampler",
+                "bump1Sampler",
+                "bump2Sampler",
+                "bump3Sampler",
+                "logarithmicDepthConstant",
+            ];
 
             const uniformBuffers: string[] = [];
 
@@ -365,6 +375,11 @@ export class TerrainMaterial extends PushMaterial {
             // Point size
             if (this.pointsCloud) {
                 this._activeEffect.setFloat("pointSize", this.pointSize);
+            }
+
+            // Log. depth
+            if (this._useLogarithmicDepth) {
+                MaterialHelper.BindLogDepth(defines, effect, scene);
             }
 
             scene.bindEyePosition(effect);

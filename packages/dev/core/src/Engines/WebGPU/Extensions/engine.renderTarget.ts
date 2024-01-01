@@ -4,7 +4,9 @@ import type { Nullable } from "../../../types";
 import { Constants } from "../../constants";
 import type { RenderTargetWrapper } from "../../renderTargetWrapper";
 import { WebGPUEngine } from "../../webgpuEngine";
+import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 import { WebGPURenderTargetWrapper } from "../webgpuRenderTargetWrapper";
+import { WebGPUTextureHelper } from "../webgpuTextureHelper";
 
 WebGPUEngine.prototype._createHardwareRenderTargetWrapper = function (isMulti: boolean, isCube: boolean, size: TextureSize): WebGPURenderTargetWrapper {
     const rtWrapper = new WebGPURenderTargetWrapper(isMulti, isCube, size, this);
@@ -47,16 +49,7 @@ WebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, 
     if (rtWrapper._generateDepthBuffer || rtWrapper._generateStencilBuffer) {
         rtWrapper.createDepthStencilTexture(
             0,
-            this._caps.textureFloatLinearFiltering &&
-                (fullOptions.samplingMode === undefined ||
-                    fullOptions.samplingMode === Constants.TEXTURE_BILINEAR_SAMPLINGMODE ||
-                    fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR ||
-                    fullOptions.samplingMode === Constants.TEXTURE_TRILINEAR_SAMPLINGMODE ||
-                    fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPLINEAR ||
-                    fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR_MIPNEAREST ||
-                    fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR_MIPLINEAR ||
-                    fullOptions.samplingMode === Constants.TEXTURE_NEAREST_LINEAR ||
-                    fullOptions.samplingMode === Constants.TEXTURE_LINEAR_LINEAR_MIPNEAREST),
+            false, // force false as filtering is not supported for depth textures
             rtWrapper._generateStencilBuffer,
             rtWrapper.samples,
             fullOptions.generateStencilBuffer ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT,
@@ -105,6 +98,11 @@ WebGPUEngine.prototype._createDepthStencilTexture = function (size: TextureSize,
     );
 
     this._textureHelper.createGPUTextureForInternalTexture(internalTexture);
+
+    // Now that the hardware texture is created, we can retrieve the GPU format and set the right type to the internal texture
+    const gpuTextureWrapper = internalTexture._hardwareTexture as WebGPUHardwareTexture;
+
+    internalTexture.type = WebGPUTextureHelper.GetTextureTypeFromFormat(gpuTextureWrapper.format);
 
     this._internalTexturesCache.push(internalTexture);
 

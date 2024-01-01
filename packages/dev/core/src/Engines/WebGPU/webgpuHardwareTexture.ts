@@ -3,22 +3,8 @@ import { Scalar } from "../../Maths/math.scalar";
 import type { Nullable } from "../../types";
 import * as WebGPUConstants from "./webgpuConstants";
 
-import type { WebGPUBundleList } from "./webgpuBundleList";
-
 /** @internal */
 export class WebGPUHardwareTexture implements HardwareTextureWrapper {
-    /**
-     * List of bundles collected in the snapshot rendering mode when the texture is a render target texture
-     * The index in this array is the current layer we are rendering into
-     * @internal
-     */
-    public _bundleLists: WebGPUBundleList[];
-    /**
-     * Current layer we are rendering into when in snapshot rendering mode (if the texture is a render target texture)
-     * @internal
-     */
-    public _currentLayer: number;
-
     /**
      * Cache of RenderPassDescriptor and BindGroup used when generating mipmaps (see WebGPUTextureHelper.generateMipmaps)
      * @internal

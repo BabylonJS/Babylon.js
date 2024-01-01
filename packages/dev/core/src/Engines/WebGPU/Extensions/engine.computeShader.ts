@@ -1,3 +1,4 @@
+import { Logger } from "core/Misc/logger";
 import type { IComputeEffectCreationOptions } from "../../../Compute/computeEffect";
 import { ComputeEffect } from "../../../Compute/computeEffect";
 import type { IComputeContext } from "../../../Compute/IComputeContext";
@@ -8,6 +9,7 @@ import { WebGPUEngine } from "../../webgpuEngine";
 import { WebGPUComputeContext } from "../webgpuComputeContext";
 import { WebGPUComputePipelineContext } from "../webgpuComputePipelineContext";
 import * as WebGPUConstants from "../webgpuConstants";
+import type { WebGPUPerfCounter } from "../webgpuPerfCounter";
 
 declare module "../../webgpuEngine" {
     export interface WebGPUEngine {
@@ -15,6 +17,8 @@ declare module "../../webgpuEngine" {
         _createComputePipelineStageDescriptor(computeShader: string, defines: Nullable<string>, entryPoint: string): GPUProgrammableStage;
     }
 }
+
+const computePassDescriptor: GPUComputePassDescriptor = {};
 
 WebGPUEngine.prototype.createComputeContext = function (): IComputeContext | undefined {
     return new WebGPUComputeContext(this._device, this._cacheSampler);
@@ -59,18 +63,12 @@ WebGPUEngine.prototype.computeDispatch = function (
     context: IComputeContext,
     bindings: ComputeBindingList,
     x: number,
-    y?: number,
-    z?: number,
-    bindingsMapping?: ComputeBindingMapping
+    y = 1,
+    z = 1,
+    bindingsMapping?: ComputeBindingMapping,
+    gpuPerfCounter?: WebGPUPerfCounter
 ): void {
-    if (this._currentRenderTarget) {
-        // A render target pass is currently in effect (meaning beingRenderPass has been called on the command encoder this._renderTargetEncoder): we are not allowed to open
-        // another pass on this command encoder (even if it's a compute pass) until endPass has been called, so we need to defer the compute pass for after the current render target pass is closed
-        this._onAfterUnbindFrameBufferObservable.addOnce(() => {
-            this.computeDispatch(effect, context, bindings, x, y, z, bindingsMapping);
-        });
-        return;
-    }
+    this._endCurrentRenderPass();
 
     const contextPipeline = effect._pipelineContext as WebGPUComputePipelineContext;
     const computeContext = context as WebGPUComputeContext;
@@ -82,8 +80,11 @@ WebGPUEngine.prototype.computeDispatch = function (
         });
     }
 
-    const commandEncoder = this._renderTargetEncoder;
-    const computePass = commandEncoder.beginComputePass();
+    if (gpuPerfCounter) {
+        this._timestampQuery.startPass(computePassDescriptor, this._timestampIndex);
+    }
+
+    const computePass = this._renderEncoder.beginComputePass(computePassDescriptor);
 
     computePass.setPipeline(contextPipeline.computePipeline);
 
@@ -96,8 +97,15 @@ WebGPUEngine.prototype.computeDispatch = function (
         computePass.setBindGroup(i, bindGroup);
     }
 
-    computePass.dispatchWorkgroups(x, y, z);
+    if (x + y + z > 0) {
+        computePass.dispatchWorkgroups(x, y, z);
+    }
     computePass.end();
+
+    if (gpuPerfCounter) {
+        this._timestampQuery.endPass(this._timestampIndex, gpuPerfCounter);
+        this._timestampIndex += 2;
+    }
 };
 
 WebGPUEngine.prototype.releaseComputeEffects = function () {
@@ -119,8 +127,8 @@ WebGPUEngine.prototype._prepareComputePipelineContext = function (
     const webGpuContext = pipelineContext as WebGPUComputePipelineContext;
 
     if (this.dbgShowShaderCode) {
-        console.log(defines);
-        console.log(computeSourceCode);
+        Logger.Log(defines!);
+        Logger.Log(computeSourceCode);
     }
 
     webGpuContext.sources = {

@@ -144,7 +144,8 @@ export class PerfCounter {
         this._fetchResult();
     }
 
-    private _fetchResult() {
+    /** @internal */
+    public _fetchResult() {
         this._totalAccumulated += this._current;
         this._lastSecAccumulated += this._current;
 

@@ -47,6 +47,7 @@ varying vec4 vColor;
 
 #include<clipPlaneVertexDeclaration>
 
+#include<logDepthDeclaration>
 #include<fogVertexDeclaration>
 #include<__decl__lightFragment>[0..maxSimultaneousLights]
 
@@ -105,6 +106,8 @@ void main(void) {
 #if defined(POINTSIZE) && !defined(WEBGPU)
 	gl_PointSize = pointSize;
 #endif
+
+	#include<logDepthVertex>
 
 #define CUSTOM_VERTEX_MAIN_END
 }

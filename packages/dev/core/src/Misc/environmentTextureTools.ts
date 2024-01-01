@@ -663,7 +663,7 @@ export function UploadLevelsAsync(texture: InternalTexture, imageData: ArrayBuff
             const url = URL.createObjectURL(blob);
             let promise: Promise<void>;
 
-            if (typeof Image === "undefined" || engine._features.forceBitmapOverHTMLImageElement) {
+            if (engine._features.forceBitmapOverHTMLImageElement) {
                 promise = engine.createImageBitmap(blob, { premultiplyAlpha: "none" }).then((img) => {
                     return _OnImageReadyAsync(img, engine, expandTexture, rgbdPostProcess, url, face, i, generateNonLODTextures, lodTextures, cubeRtt, texture);
                 });

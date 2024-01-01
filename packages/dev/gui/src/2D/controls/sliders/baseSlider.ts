@@ -5,6 +5,7 @@ import { Control } from "../control";
 import { ValueAndUnit } from "../../valueAndUnit";
 import type { PointerInfoBase } from "core/Events/pointerEvents";
 import { serialize } from "core/Misc/decorators";
+import { Logger } from "core/Misc/logger";
 
 /**
  * Class used to create slider controls
@@ -248,7 +249,7 @@ export class BaseSlider extends Control {
         }
         //throw error when height is less than width for vertical slider
         if (this.isVertical && this._currentMeasure.height < this._currentMeasure.width) {
-            console.error("Height should be greater than width");
+            Logger.Error("Height should be greater than width");
             return;
         }
         if (this._barOffset.isPixel) {

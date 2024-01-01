@@ -252,6 +252,8 @@ export class NativeEngine extends Engine {
             fragmentDepthSupported: false,
             highPrecisionShaderSupported: true,
             colorBufferFloat: false,
+            supportFloatTexturesResolve: false,
+            rg11b10ufColorRenderable: false,
             textureFloat: true,
             textureFloatLinearFiltering: false,
             textureFloatRender: true,
@@ -279,7 +281,7 @@ export class NativeEngine extends Engine {
         };
 
         this._features = {
-            forceBitmapOverHTMLImageElement: false,
+            forceBitmapOverHTMLImageElement: true,
             supportRenderAndCopyToLodForFloatTextures: false,
             supportDepthStencilTexture: false,
             supportShadowSamplers: false,
@@ -2064,7 +2066,16 @@ export class NativeEngine extends Engine {
                     }
                 };
 
-                this._loadFile(rootUrl, (data) => onloaddata(new Uint8Array(data as ArrayBuffer)), undefined, undefined, true, onInternalError);
+                this._loadFile(
+                    rootUrl,
+                    (data) => {
+                        onloaddata(new Uint8Array(data as ArrayBuffer, 0, (data as ArrayBuffer).byteLength));
+                    },
+                    undefined,
+                    undefined,
+                    true,
+                    onInternalError
+                );
             }
         } else {
             if (!files || files.length !== 6) {
@@ -2073,7 +2084,7 @@ export class NativeEngine extends Engine {
 
             // Reorder from [+X, +Y, +Z, -X, -Y, -Z] to [+X, -X, +Y, -Y, +Z, -Z].
             const reorderedFiles = [files[0], files[3], files[1], files[4], files[2], files[5]];
-            Promise.all(reorderedFiles.map((file) => Tools.LoadFileAsync(file).then((data) => new Uint8Array(data as ArrayBuffer))))
+            Promise.all(reorderedFiles.map((file) => this._loadFileAsync(file, undefined, true).then((data) => new Uint8Array(data, 0, data.byteLength))))
                 .then((data) => {
                     return new Promise<void>((resolve, reject) => {
                         this._engine.loadCubeTexture(texture._hardwareTexture!.underlyingResource, data, !noMipmap, true, texture._useSRGBBuffer, resolve, reject);

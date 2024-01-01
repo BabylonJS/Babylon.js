@@ -37,20 +37,17 @@ export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFile
         return !(externallyExcluded || test.excludeFromAutomaticTesting || (test.excludedEngines && test.excludedEngines.includes(engineType)));
     });
 
-    function log(msg: any) {
+    function log(msg: any, title?: string) {
+        const titleToLog = title ? `[${title}]` : "";
         if (logToConsole) {
-            console.log(msg);
+            console.log(titleToLog, msg);
         }
         if (logToFile) {
-            fs.appendFileSync(logPath, msg + "\r\n", "utf8");
+            fs.appendFileSync(logPath, titleToLog + " " + msg + "\n", "utf8");
         }
     }
 
     test.beforeEach(async ({ page }) => {
-        page.on("console", (msg) => {
-            log(msg);
-        });
-
         page.setViewportSize({ width: 600, height: 400 });
         page.setDefaultTimeout(0);
         await page.goto(getGlobalConfig({ root: config.root }).baseUrl + `/empty.html`, {
@@ -98,6 +95,12 @@ export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFile
             continue;
         }
         test(testCase.title, async ({ page }) => {
+            //defensive
+            const logCallback = (msg: any) => {
+                log(msg, testCase.title);
+            };
+            page.on("console", logCallback);
+            console.log("Running test: " + testCase.title, ". Meta: ", testCase.playgroundId || testCase.scriptToRun || testCase.sceneFilename);
             test.setTimeout(timeout);
             await page.evaluate(evaluatePrepareScene, {
                 sceneMetadata: testCase,
@@ -115,6 +118,7 @@ export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFile
                 threshold: 0.1,
                 maxDiffPixelRatio: (testCase.errorRatio || 3) / 100,
             });
+            page.off("console", logCallback);
         });
     }
 };

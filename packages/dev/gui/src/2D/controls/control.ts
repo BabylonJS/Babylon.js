@@ -2425,6 +2425,29 @@ export class Control implements IAnimatable {
     }
 
     /**
+     * A control has a dimension fully defined if that dimension doesn't depend on the parent's dimension.
+     * As an example, a control that has dimensions in pixels is fully defined, while in percentage is not fully defined.
+     * @param dim the dimension to check (width or height)
+     * @returns if the dimension is fully defined
+     */
+    public isDimensionFullyDefined(dim: "width" | "height"): boolean {
+        return this.getDimension(dim).isPixel;
+    }
+
+    /**
+     * Gets the dimension of the control along a specified axis
+     * @param dim the dimension to retrieve (width or height)
+     * @returns the dimension value along the specified axis
+     */
+    public getDimension(dim: "width" | "height"): ValueAndUnit {
+        if (dim === "width") {
+            return this._width;
+        } else {
+            return this._height;
+        }
+    }
+
+    /**
      * Clones a control and its descendants
      * @param host the texture where the control will be instantiated. Can be empty, in which case the control will be created on the same texture
      * @returns the cloned control

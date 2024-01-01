@@ -769,7 +769,7 @@ declare class GPUCommandEncoder implements GPUObjectBase, GPUCommandsMixin, GPUD
     copyTextureToTexture(source: GPUImageCopyTexture, destination: GPUImageCopyTexture, copySize: GPUExtent3D): void;
     clearBuffer(buffer: GPUBuffer, offset?: GPUSize64 /* default=0 */, size?: GPUSize64): void;
 
-    writeTimestamp(querySet: GPUQuerySet, queryIndex: GPUSize32): void;
+    writeTimestamp?(querySet: GPUQuerySet, queryIndex: GPUSize32): void;
 
     resolveQuerySet(querySet: GPUQuerySet, firstQuery: GPUSize32, queryCount: GPUSize32, destination: GPUBuffer, destinationOffset: GPUSize64): void;
 

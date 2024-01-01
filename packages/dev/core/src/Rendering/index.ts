@@ -15,3 +15,4 @@ export * from "./renderingGroup";
 export * from "./renderingManager";
 export * from "./utilityLayerRenderer";
 export * from "./fluidRenderer/index";
+export * from "./GaussianSplatting/index";

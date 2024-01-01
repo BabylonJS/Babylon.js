@@ -2,14 +2,14 @@ import type { FlowGraphContext } from "../../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import { RichTypeNumber } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
-import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneExecutionBlock";
+import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphWithOnDoneExecutionBlock";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 /**
  * @experimental
  * A block that throttles the execution of its output flow.
  */
-export class FlowGraphThrottleBlock extends FlowGraphWithOnDoneExecutionBlock {
+export class FlowGraphThrottleBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
      * Input connection: The duration of the throttle, in ms.
      */
@@ -26,8 +26,8 @@ export class FlowGraphThrottleBlock extends FlowGraphWithOnDoneExecutionBlock {
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
         this.reset = this._registerSignalInput("reset");
-        this.duration = this._registerDataInput("duration", RichTypeNumber);
-        this.timeRemaining = this._registerDataOutput("timeRemaining", RichTypeNumber);
+        this.duration = this.registerDataInput("duration", RichTypeNumber);
+        this.timeRemaining = this.registerDataOutput("timeRemaining", RichTypeNumber);
     }
     public _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {
         const lastExecutedTime = context._getExecutionVariable(this, "lastExecutedTime");
@@ -36,7 +36,7 @@ export class FlowGraphThrottleBlock extends FlowGraphWithOnDoneExecutionBlock {
         if (callingSignal === this.reset || lastExecutedTime === undefined || currentTime - lastExecutedTime > durationValue) {
             //activate the output flow
             this.timeRemaining.setValue(0, context);
-            this.onDone._activateSignal(context);
+            this.out._activateSignal(context);
             context._setExecutionVariable(this, "lastExecutedTime", currentTime);
         } else {
             //activate the output flow after the remaining time

@@ -72,7 +72,7 @@ class Reflector {
                 break;
             }
             default: {
-                console.error(`Unknown command: ${command}`);
+                Logger.Error(`Unknown command: ${command}`);
                 break;
             }
         }

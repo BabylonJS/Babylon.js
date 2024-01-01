@@ -615,7 +615,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                     }
                 }
             } catch (e) {
-                console.log(`Syncing transform failed for node ${transformNode.name}: ${e.message}...`);
+                Logger.Error(`Syncing transform failed for node ${transformNode.name}: ${e.message}...`);
             }
         }
     }
@@ -1840,7 +1840,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
 
         result.reset(from, to);
 
-        const hkQuery = [this._bVecToV3(from), this._bVecToV3(to), [queryMembership, queryCollideWith]];
+        const shouldHitTriggers = false;
+        const bodyToIgnore = [BigInt(0)];
+        const hkQuery = [this._bVecToV3(from), this._bVecToV3(to), [queryMembership, queryCollideWith], shouldHitTriggers, bodyToIgnore];
         this._hknp.HP_World_CastRayWithCollector(this.world, this._queryCollector, hkQuery);
 
         if (this._hknp.HP_QueryCollector_GetNumHits(this._queryCollector)[1] > 0) {

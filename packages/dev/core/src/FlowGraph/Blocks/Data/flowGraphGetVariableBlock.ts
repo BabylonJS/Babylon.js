@@ -2,18 +2,22 @@ import type { FlowGraphContext } from "../../flowGraphContext";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { FlowGraphBlock } from "../../flowGraphBlock";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import { RichTypeString, RichTypeAny } from "../../flowGraphRichTypes";
+import { RichTypeAny } from "../../flowGraphRichTypes";
 import { RegisterClass } from "../../../Misc/typeStore";
+
+/**
+ * @experimental
+ * The configuration of the FlowGraphGetVariableBlock.
+ */
+export interface IFlowGraphGetVariableBlockConfiguration extends IFlowGraphBlockConfiguration {
+    variableName: string;
+}
 
 /**
  * A block that gets the value of a variable.
  * @experimental
  */
 export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
-    /**
-     * Input connection: The name of the variable to get.
-     */
-    public readonly variableName: FlowGraphDataConnection<string>;
     /**
      * Output connection: The value of the variable.
      */
@@ -23,25 +27,32 @@ export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
      * Construct a FlowGraphGetVariableBlock.
      * @param params optional construction parameters
      */
-    constructor(config?: IFlowGraphBlockConfiguration) {
+    constructor(public config: IFlowGraphGetVariableBlockConfiguration) {
         super(config);
 
-        this.variableName = this._registerDataInput("variableName", RichTypeString);
-        this.output = this._registerDataOutput("output", RichTypeAny);
+        // The output connection has to have the name of the variable.
+        this.output = this.registerDataOutput(config.variableName, RichTypeAny);
     }
 
     /**
      * @internal
      */
     public _updateOutputs(context: FlowGraphContext): void {
-        const variableNameValue = this.variableName.getValue(context);
+        const variableNameValue = this.config.variableName;
         if (context.hasVariable(variableNameValue)) {
             this.output.setValue(context.getVariable(variableNameValue), context);
         }
     }
 
     public getClassName(): string {
-        return "FGGetVariableBlock";
+        return FlowGraphGetVariableBlock.ClassName;
     }
+
+    public serialize(serializationObject?: any): void {
+        super.serialize(serializationObject);
+        serializationObject.config.variableName = this.config.variableName;
+    }
+
+    public static ClassName = "FGGetVariableBlock";
 }
-RegisterClass("FGGetVariableBlock", FlowGraphGetVariableBlock);
+RegisterClass(FlowGraphGetVariableBlock.ClassName, FlowGraphGetVariableBlock);

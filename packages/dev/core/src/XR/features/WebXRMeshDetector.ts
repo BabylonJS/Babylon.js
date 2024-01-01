@@ -2,8 +2,11 @@ import { WebXRFeaturesManager, WebXRFeatureName } from "../webXRFeaturesManager"
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import type { WebXRSessionManager } from "../webXRSessionManager";
 import type { TransformNode } from "../../Meshes/transformNode";
-import { Matrix } from "../../Maths/math";
+import { Matrix, Quaternion } from "../../Maths/math";
 import { Observable } from "../../Misc/observable";
+import { Mesh } from "../../Meshes/mesh";
+import { VertexBuffer } from "core/Buffers/buffer";
+import { Logger } from "core/Misc/logger";
 
 /**
  * Options used in the mesh detector module
@@ -20,6 +23,7 @@ export interface IWebXRMeshDetectorOptions {
     doNotRemoveMeshesOnSessionEnded?: boolean;
     /**
      * Preferred detector configuration, not all preferred options will be supported by all platforms.
+     * Babylon native only!
      */
     preferredDetectorOptions?: XRGeometryDetectorOptions;
     /**
@@ -28,12 +32,18 @@ export interface IWebXRMeshDetectorOptions {
      * Right handed mesh data will be available through IWebXRVertexData.xrMesh.
      */
     convertCoordinateSystems?: boolean;
+
+    /**
+     * If set to true, the feature will generate meshes for the detected data.
+     * Note that this might be time consuming, as the mesh's vertex data will be updated on every change.
+     * Setting this to true will also set convertCoordinateSystems to true.
+     * Note - the meshes will NOT be disposed automatically when the feature is detached or the session ended.
+     */
+    generateMeshes?: boolean;
 }
 
 /**
  * A babylon interface for a XR mesh's vertex data.
- *
- * Currently not supported by WebXR, available only with BabylonNative
  */
 export interface IWebXRVertexData {
     /**
@@ -71,6 +81,12 @@ export interface IWebXRVertexData {
      * TransformationMatrix will only be calculated if convertCoordinateSystems is set to true in the IWebXRMeshDetectorOptions.
      */
     transformationMatrix?: Matrix;
+
+    /**
+     * If generateMeshes is set to true in the IWebXRMeshDetectorOptions, this will be the generated mesh.
+     * This mesh will be updated with the vertex data provided and not regenerated every time.
+     */
+    mesh?: Mesh;
 }
 
 let meshIdProvider = 0;
@@ -111,6 +127,9 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
     ) {
         super(_xrSessionManager);
         this.xrNativeFeatureName = "mesh-detection";
+        if (this._options.generateMeshes) {
+            this._options.convertCoordinateSystems = true;
+        }
         if (this._xrSessionManager.session) {
             this._init();
         } else {
@@ -155,7 +174,8 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
                 return;
             }
 
-            const detectedMeshes = frame.worldInformation?.detectedMeshes;
+            // babylon native XR and webxr support
+            const detectedMeshes = frame.detectedMeshes || frame.worldInformation?.detectedMeshes;
             if (detectedMeshes) {
                 const toRemove = new Set<XRMesh>();
                 this._detectedMeshes.forEach((vertexData, xrMesh) => {
@@ -194,7 +214,7 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
                 });
             }
         } catch (error) {
-            console.log(error.stack);
+            Logger.Log(error.stack);
         }
     }
 
@@ -214,14 +234,15 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
     private _updateVertexDataWithXRMesh(xrMesh: XRMesh, mesh: Partial<IWebXRVertexData>, xrFrame: XRFrame): IWebXRVertexData {
         mesh.xrMesh = xrMesh;
         mesh.worldParentNode = this._options.worldParentNode;
+        const positions = xrMesh.vertices || xrMesh.positions;
 
         if (this._options.convertCoordinateSystems) {
             if (!this._xrSessionManager.scene.useRightHandedSystem) {
-                mesh.positions = new Float32Array(xrMesh.positions.length);
-                for (let i = 0; i < xrMesh.positions.length; i += 3) {
-                    mesh.positions[i] = xrMesh.positions[i];
-                    mesh.positions[i + 1] = xrMesh.positions[i + 1];
-                    mesh.positions[i + 2] = -1 * xrMesh.positions[i + 2];
+                mesh.positions = new Float32Array(positions.length);
+                for (let i = 0; i < positions.length; i += 3) {
+                    mesh.positions[i] = positions[i];
+                    mesh.positions[i + 1] = positions[i + 1];
+                    mesh.positions[i + 2] = -1 * positions[i + 2];
                 }
 
                 if (xrMesh.normals) {
@@ -233,7 +254,7 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
                     }
                 }
             } else {
-                mesh.positions = xrMesh.positions;
+                mesh.positions = positions;
                 mesh.normals = xrMesh.normals;
             }
 
@@ -252,6 +273,31 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
                 if (this._options.worldParentNode) {
                     mat.multiplyToRef(this._options.worldParentNode.getWorldMatrix(), mat);
                 }
+            }
+
+            if (this._options.generateMeshes) {
+                if (!mesh.mesh) {
+                    const generatedMesh = new Mesh("xr mesh " + mesh.id, this._xrSessionManager.scene);
+                    generatedMesh.rotationQuaternion = new Quaternion();
+                    generatedMesh.setVerticesData(VertexBuffer.PositionKind, mesh.positions);
+                    if (mesh.normals) {
+                        generatedMesh.setVerticesData(VertexBuffer.NormalKind, mesh.normals);
+                    } else {
+                        generatedMesh.createNormals(true);
+                    }
+                    generatedMesh.setIndices(mesh.indices, undefined, true);
+                    mesh.mesh = generatedMesh;
+                } else {
+                    const generatedMesh = mesh.mesh;
+                    generatedMesh.updateVerticesData(VertexBuffer.PositionKind, mesh.positions);
+                    if (mesh.normals) {
+                        generatedMesh.updateVerticesData(VertexBuffer.NormalKind, mesh.normals);
+                    } else {
+                        generatedMesh.createNormals(true);
+                    }
+                    generatedMesh.updateIndices(mesh.indices);
+                }
+                mesh.transformationMatrix?.decompose(mesh.mesh.scaling, mesh.mesh.rotationQuaternion!, mesh.mesh.position);
             }
         }
 

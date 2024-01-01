@@ -3,14 +3,14 @@ import type { FlowGraphContext } from "../../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import { RichTypeAny } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
-import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneExecutionBlock";
+import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphWithOnDoneExecutionBlock";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 /**
  * Stops an audio.
  * @experimental
  */
-export class FlowGraphStopAudioBlock extends FlowGraphWithOnDoneExecutionBlock {
+export class FlowGraphStopAudioBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
      * Input connection: The audio to stop.
      */
@@ -19,7 +19,7 @@ export class FlowGraphStopAudioBlock extends FlowGraphWithOnDoneExecutionBlock {
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
-        this.audio = this._registerDataInput("audio", RichTypeAny);
+        this.audio = this.registerDataInput("audio", RichTypeAny);
     }
 
     public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {

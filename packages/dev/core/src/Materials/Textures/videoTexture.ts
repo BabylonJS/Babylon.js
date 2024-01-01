@@ -85,7 +85,7 @@ export class VideoTexture extends Texture {
      */
     public readonly video: HTMLVideoElement;
 
-    private _externalTexture: Nullable<ExternalTexture>;
+    private _externalTexture: Nullable<ExternalTexture> = null;
     private _onUserActionRequestedObservable: Nullable<Observable<Texture>> = null;
 
     /**
@@ -192,7 +192,10 @@ export class VideoTexture extends Texture {
         this._currentSrc = src;
         this.name = name || this._getName(src);
         this.video = this._getVideo(src);
-        this._externalTexture = this._engine?.createExternalTexture(this.video) ?? null;
+        if (this._engine?.createExternalTexture) {
+            this._externalTexture = this._engine.createExternalTexture(this.video);
+        }
+
         if (!this._settings.independentVideoSource) {
             if (this._settings.poster) {
                 this.video.poster = this._settings.poster;

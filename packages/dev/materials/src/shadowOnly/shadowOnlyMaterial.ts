@@ -37,6 +37,7 @@ class ShadowOnlyMaterialDefines extends MaterialDefines {
     public INSTANCES = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
+    public LOGARITHMICDEPTH = false;
 
     constructor() {
         super();
@@ -125,7 +126,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
 
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances ? true : false);
 
-        MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
+        MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
         defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, 1);
 
@@ -174,7 +175,20 @@ export class ShadowOnlyMaterial extends PushMaterial {
 
             const shaderName = "shadowOnly";
             const join = defines.toString();
-            const uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vFogInfos", "vFogColor", "pointSize", "alpha", "shadowColor", "mBones"];
+            const uniforms = [
+                "world",
+                "view",
+                "viewProjection",
+                "vEyePosition",
+                "vLightsType",
+                "vFogInfos",
+                "vFogColor",
+                "pointSize",
+                "alpha",
+                "shadowColor",
+                "mBones",
+                "logarithmicDepthConstant",
+            ];
             const samplers: string[] = [];
 
             const uniformBuffers: string[] = [];
@@ -251,6 +265,11 @@ export class ShadowOnlyMaterial extends PushMaterial {
 
             this._activeEffect.setFloat("alpha", this.alpha);
             this._activeEffect.setColor3("shadowColor", this.shadowColor);
+
+            // Log. depth
+            if (this._useLogarithmicDepth) {
+                MaterialHelper.BindLogDepth(defines, effect, scene);
+            }
 
             scene.bindEyePosition(effect);
         }

@@ -1,8 +1,6 @@
-import type { Nullable } from "../../types";
 import { Constants } from "../constants";
 import type { WebGPUEngine } from "../webgpuEngine";
 import type { WebGPUBundleList } from "./webgpuBundleList";
-import type { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 
 /** @internal */
 export class WebGPUSnapshotRendering {
@@ -10,19 +8,18 @@ export class WebGPUSnapshotRendering {
 
     private _record = false;
     private _play = false;
-    private _mainPassBundleList: WebGPUBundleList[] = [];
+    private _playBundleListIndex = 0;
+    private _allBundleLists: WebGPUBundleList[] = [];
     private _modeSaved: number;
     private _bundleList: WebGPUBundleList;
-    private _bundleListRenderTarget: WebGPUBundleList;
 
     private _enabled = false;
     private _mode: number;
 
-    constructor(engine: WebGPUEngine, renderingMode: number, bundleList: WebGPUBundleList, bundleListRenderTarget: WebGPUBundleList) {
+    constructor(engine: WebGPUEngine, renderingMode: number, bundleList: WebGPUBundleList) {
         this._engine = engine;
         this._mode = renderingMode;
         this._bundleList = bundleList;
-        this._bundleListRenderTarget = bundleListRenderTarget;
     }
 
     public get enabled(): boolean {
@@ -38,7 +35,7 @@ export class WebGPUSnapshotRendering {
     }
 
     public set enabled(activate: boolean) {
-        this._mainPassBundleList.length = 0;
+        this._allBundleLists.length = 0;
         this._record = this._enabled = activate;
         this._play = false;
         if (activate) {
@@ -59,47 +56,46 @@ export class WebGPUSnapshotRendering {
         }
     }
 
-    public endMainRenderPass(): void {
-        if (this._record) {
-            this._mainPassBundleList.push(this._bundleList.clone());
-        }
-    }
-
-    public endRenderTargetPass(currentRenderPass: GPURenderPassEncoder, gpuWrapper: WebGPUHardwareTexture): boolean {
-        if (this._play) {
-            gpuWrapper._bundleLists?.[gpuWrapper._currentLayer]?.run(currentRenderPass);
-            if (this._mode === Constants.SNAPSHOTRENDERING_FAST) {
-                this._engine._reportDrawCall(gpuWrapper._bundleLists?.[gpuWrapper._currentLayer]?.numDrawCalls);
-            }
-        } else if (this._record) {
-            if (!gpuWrapper._bundleLists) {
-                gpuWrapper._bundleLists = [];
-            }
-            gpuWrapper._bundleLists[gpuWrapper._currentLayer] = this._bundleListRenderTarget.clone();
-            gpuWrapper._bundleLists[gpuWrapper._currentLayer].run(currentRenderPass);
-            this._bundleListRenderTarget.reset();
-        } else {
+    public endRenderPass(currentRenderPass: GPURenderPassEncoder): boolean {
+        if (!this._record && !this._play) {
+            // Snapshot rendering mode is not enabled
             return false;
         }
+
+        let bundleList: WebGPUBundleList;
+
+        if (this._record) {
+            bundleList = this._bundleList.clone();
+            this._allBundleLists.push(bundleList);
+            this._bundleList.reset();
+        } else {
+            // We are playing the snapshot
+            if (this._playBundleListIndex >= this._allBundleLists.length) {
+                throw new Error(
+                    `Invalid playBundleListIndex! Your snapshot is no longer valid for the current frame, you should recreate a new one. playBundleListIndex=${this._playBundleListIndex}, allBundleLists.length=${this._allBundleLists.length}}`
+                );
+            }
+            bundleList = this._allBundleLists[this._playBundleListIndex++];
+        }
+
+        bundleList.run(currentRenderPass);
+
+        if (this._mode === Constants.SNAPSHOTRENDERING_FAST) {
+            this._engine._reportDrawCall(bundleList.numDrawCalls);
+        }
+
         return true;
     }
 
-    public endFrame(mainRenderPass: Nullable<GPURenderPassEncoder>): void {
+    public endFrame(): void {
         if (this._record) {
-            this._mainPassBundleList.push(this._bundleList.clone());
+            // We stop recording and switch to replay mode for the next frames
             this._record = false;
             this._play = true;
             this._mode = this._modeSaved;
         }
 
-        if (mainRenderPass !== null && this._play) {
-            for (let i = 0; i < this._mainPassBundleList.length; ++i) {
-                this._mainPassBundleList[i].run(mainRenderPass);
-                if (this._mode === Constants.SNAPSHOTRENDERING_FAST) {
-                    this._engine._reportDrawCall(this._mainPassBundleList[i].numDrawCalls);
-                }
-            }
-        }
+        this._playBundleListIndex = 0;
     }
 
     public reset(): void {

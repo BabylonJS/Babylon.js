@@ -31,6 +31,7 @@ export const createScene = async function () {
     button1.cornerRadius = 20;
     button1.background = "green";
     button1.onPointerUpObservable.add(function () {
+        // eslint-disable-next-line no-console
         console.log("you did it!");
     });
     advancedTexture.addControl(button1);

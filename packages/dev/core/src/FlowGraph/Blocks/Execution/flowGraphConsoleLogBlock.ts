@@ -1,15 +1,16 @@
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import { FlowGraphWithOnDoneExecutionBlock } from "../../flowGraphWithOnDoneExecutionBlock";
+import { FlowGraphExecutionBlockWithOutSignal } from "../../flowGraphWithOnDoneExecutionBlock";
 import { RichTypeAny } from "../../flowGraphRichTypes";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
+import { Logger } from "core/Misc/logger";
 
 /**
  * @experimental
  * Block that logs a message to the console.
  */
-export class FlowGraphLogBlock extends FlowGraphWithOnDoneExecutionBlock {
+export class FlowGraphConsoleLogBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
      * Input connection: The message to log.
      */
@@ -17,7 +18,7 @@ export class FlowGraphLogBlock extends FlowGraphWithOnDoneExecutionBlock {
 
     public constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
-        this.message = this._registerDataInput("message", RichTypeAny);
+        this.message = this.registerDataInput("message", RichTypeAny);
     }
 
     /**
@@ -25,13 +26,15 @@ export class FlowGraphLogBlock extends FlowGraphWithOnDoneExecutionBlock {
      */
     public _execute(context: FlowGraphContext): void {
         const messageValue = this.message.getValue(context);
-        console.log(messageValue);
+        Logger.Log(messageValue);
         // activate the output flow block
-        this.onDone._activateSignal(context);
+        this.out._activateSignal(context);
     }
 
     public getClassName(): string {
-        return "FGLogBlock";
+        return FlowGraphConsoleLogBlock.ClassName;
     }
+
+    public static ClassName = "FGConsoleLogBlock";
 }
-RegisterClass("FGLogBlock", FlowGraphLogBlock);
+RegisterClass(FlowGraphConsoleLogBlock.ClassName, FlowGraphConsoleLogBlock);

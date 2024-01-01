@@ -31,8 +31,8 @@ export class ShaderCodeNode {
                     options.isFragment && options.processor?.varyingFragmentKeywordName
                         ? options.processor?.varyingFragmentKeywordName
                         : !options.isFragment && options.processor?.varyingVertexKeywordName
-                        ? options.processor?.varyingVertexKeywordName
-                        : defaultVaryingKeywordName;
+                          ? options.processor?.varyingVertexKeywordName
+                          : defaultVaryingKeywordName;
 
                 if (!options.isFragment && processor.attributeProcessor && this.line.startsWith(attributeKeyword)) {
                     value = processor.attributeProcessor(this.line, preprocessors, options.processingContext);

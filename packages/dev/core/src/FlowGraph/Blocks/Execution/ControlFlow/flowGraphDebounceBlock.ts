@@ -2,7 +2,7 @@ import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
 import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
 import { RichTypeNumber } from "core/FlowGraph/flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "core/FlowGraph/flowGraphSignalConnection";
-import { FlowGraphWithOnDoneExecutionBlock } from "core/FlowGraph/flowGraphWithOnDoneExecutionBlock";
+import { FlowGraphExecutionBlockWithOutSignal } from "core/FlowGraph/flowGraphWithOnDoneExecutionBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 
@@ -10,7 +10,7 @@ import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
  * @experimental
  * This block debounces the execution of a input, i.e. ensures that the input is only executed once every X times
  */
-export class FlowGraphDebounceBlock extends FlowGraphWithOnDoneExecutionBlock {
+export class FlowGraphDebounceBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
      * Input: The number of times the input must be executed before the onDone signal is activated
      */
@@ -26,9 +26,9 @@ export class FlowGraphDebounceBlock extends FlowGraphWithOnDoneExecutionBlock {
 
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
-        this.count = this._registerDataInput("count", RichTypeNumber);
+        this.count = this.registerDataInput("count", RichTypeNumber);
         this.reset = this._registerSignalInput("reset");
-        this.currentCount = this._registerDataOutput("currentCount", RichTypeNumber);
+        this.currentCount = this.registerDataOutput("currentCount", RichTypeNumber);
     }
 
     public _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {
@@ -43,7 +43,7 @@ export class FlowGraphDebounceBlock extends FlowGraphWithOnDoneExecutionBlock {
         this.currentCount.setValue(newCount, context);
         context._setExecutionVariable(this, "debounceCount", newCount);
         if (newCount >= count) {
-            this.onDone._activateSignal(context);
+            this.out._activateSignal(context);
             context._setExecutionVariable(this, "debounceCount", 0);
         }
     }

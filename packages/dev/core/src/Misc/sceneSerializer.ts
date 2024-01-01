@@ -11,6 +11,7 @@ import type { CubeTexture } from "../Materials/Textures/cubeTexture";
 import type { Node } from "../node";
 import type { TransformNode } from "../Meshes/transformNode";
 import type { Camera } from "../Cameras/camera";
+import { Logger } from "core/Misc/logger";
 
 let serializedGeometries: Geometry[] = [];
 const SerializeGeometry = (geometry: Geometry, serializationGeometries: any): any => {
@@ -140,7 +141,7 @@ export class SceneSerializer {
         const serializationObject: any = {};
 
         if (checkSyncReadSupported && !scene.getEngine()._features.supportSyncTextureRead && Texture.ForceSerializeBuffers) {
-            console.warn("The serialization object may not contain the proper base64 encoded texture data! You should use the SerializeAsync method instead.");
+            Logger.Warn("The serialization object may not contain the proper base64 encoded texture data! You should use the SerializeAsync method instead.");
         }
 
         SceneSerializer.ClearCache();

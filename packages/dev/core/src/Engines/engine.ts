@@ -1000,7 +1000,7 @@ export class Engine extends ThinEngine {
     private _cachedStencilReference: number;
 
     /**
-     * Caches the the state of the stencil buffer
+     * Caches the state of the stencil buffer
      */
     public cacheStencilState() {
         this._cachedStencilBuffer = this.getStencilBuffer();
@@ -1086,6 +1086,9 @@ export class Engine extends ThinEngine {
     public _reportDrawCall(numDrawCalls = 1) {
         this._drawCalls.addCount(numDrawCalls, false);
     }
+
+    public _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: false): Promise<string>;
+    public _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: true): Promise<ArrayBuffer>;
 
     /**
      * @internal

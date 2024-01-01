@@ -32,19 +32,7 @@ export class WebGPUOcclusionQuery {
             return false;
         }
 
-        let canBegin = false;
-
-        const passIndex = this._engine._getCurrentRenderPassIndex();
-        switch (passIndex) {
-            case 0: {
-                canBegin = this._engine._mainRenderPassWrapper.renderPassDescriptor!.occlusionQuerySet !== undefined;
-                break;
-            }
-            case 1: {
-                canBegin = this._engine._rttRenderPassWrapper.renderPassDescriptor!.occlusionQuerySet !== undefined;
-                break;
-            }
-        }
+        const canBegin = this._engine._getCurrentRenderPassWrapper().renderPassDescriptor!.occlusionQuerySet !== undefined;
 
         if (canBegin) {
             this._queryFrameId[index] = this._engine.frameId;
@@ -114,6 +102,7 @@ export class WebGPUOcclusionQuery {
 
         this._currentTotalIndices += numIndices;
         this._querySet = new WebGPUQuerySet(
+            this._engine,
             this._currentTotalIndices,
             WebGPUConstants.QueryType.Occlusion,
             this._device,

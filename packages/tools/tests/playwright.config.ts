@@ -5,6 +5,7 @@ const browserType = process.env.BROWSER || (isCI ? "Firefox" : "Chrome");
 const numberOfWorkers = process.env.CIWORKERS ? +process.env.CIWORKERS : process.env.CI ? 1 : undefined;
 const customFlags = process.env.CUSTOM_FLAGS ? process.env.CUSTOM_FLAGS.split(" ") : [];
 const headless = process.env.HEADLESS !== "false";
+const forceChrome = process.env.FORCE_CHROME === "true";
 
 const args = browserType === "Chrome" ? ["--use-angle=default", "--js-flags=--expose-gc"] : ["-wait-for-browser"];
 args.push(...customFlags);
@@ -33,25 +34,43 @@ export default defineConfig({
         {
             name: "webgl2",
             testMatch: "**/*webgl2.test.ts",
-            use: {
-                ...devices["Desktop " + browserType],
-                headless,
-                launchOptions: {
-                    args
-                },
-            },
+            use: forceChrome
+                ? {
+                      // use real chrome (not chromium) for webgpu tests
+                      channel: "chrome",
+                      headless,
+                      launchOptions: {
+                          args,
+                      },
+                  }
+                : {
+                      ...devices["Desktop " + browserType],
+                      headless,
+                      launchOptions: {
+                          args,
+                      },
+                  },
         },
 
         {
             name: "webgl1",
             testMatch: "**/*webgl1.test.ts",
-            use: {
-                ...devices["Desktop " + browserType],
-                headless,
-                launchOptions: {
-                    args
-                },
-            },
+            use: forceChrome
+                ? {
+                      // use real chrome (not chromium) for webgpu tests
+                      channel: "chrome",
+                      headless,
+                      launchOptions: {
+                          args,
+                      },
+                  }
+                : {
+                      ...devices["Desktop " + browserType],
+                      headless,
+                      launchOptions: {
+                          args,
+                      },
+                  },
         },
 
         {
@@ -62,7 +81,7 @@ export default defineConfig({
                 channel: "chrome",
                 headless,
                 launchOptions: {
-                    args
+                    args,
                 },
             },
         },

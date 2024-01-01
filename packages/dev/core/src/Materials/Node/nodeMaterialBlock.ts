@@ -13,6 +13,7 @@ import { UniqueIdGenerator } from "../../Misc/uniqueIdGenerator";
 import type { Scene } from "../../scene";
 import { GetClass } from "../../Misc/typeStore";
 import type { EffectFallbacks } from "../effectFallbacks";
+import { Logger } from "core/Misc/logger";
 
 /**
  * Defines a block that can be used inside a node based material
@@ -659,7 +660,7 @@ export class NodeMaterialBlock {
 
         // Logs
         if (state.sharedData.verbose) {
-            console.log(`${state.target === NodeMaterialBlockTargets.Vertex ? "Vertex shader" : "Fragment shader"}: Building ${this.name} [${this.getClassName()}]`);
+            Logger.Log(`${state.target === NodeMaterialBlockTargets.Vertex ? "Vertex shader" : "Fragment shader"}: Building ${this.name} [${this.getClassName()}]`);
         }
 
         // Checks final outputs

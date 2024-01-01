@@ -29,7 +29,7 @@ export class FlowGraphFlipFlopBlock extends FlowGraphExecutionBlock {
 
         this.onOn = this._registerSignalOutput("onOn");
         this.onOff = this._registerSignalOutput("onOff");
-        this.isOn = this._registerDataOutput("isOn", RichTypeBoolean);
+        this.isOn = this.registerDataOutput("isOn", RichTypeBoolean);
     }
 
     public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {

@@ -4,6 +4,7 @@ import type { FollowCamera } from "../../Cameras/followCamera";
 import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import { BaseCameraPointersInput } from "../../Cameras/Inputs/BaseCameraPointersInput";
 import type { PointerTouch } from "../../Events/pointerEvents";
+import { Logger } from "core/Misc/logger";
 
 /**
  * Manage the pointers inputs to control an follow camera.
@@ -191,24 +192,39 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
         const warn =
             "It probably only makes sense to control ONE camera " + "property with each pointer axis. Set 'warningEnable = false' " + "if you are sure. Currently enabled: ";
 
-        console.assert(
-            <number>(<unknown>this.axisXControlRotation) + <number>(<unknown>this.axisXControlHeight) + <number>(<unknown>this.axisXControlRadius) <= 1,
-            warn + "axisXControlRotation: " + this.axisXControlRotation + ", axisXControlHeight: " + this.axisXControlHeight + ", axisXControlRadius: " + this.axisXControlRadius
-        );
-        console.assert(
-            <number>(<unknown>this.axisYControlRotation) + <number>(<unknown>this.axisYControlHeight) + <number>(<unknown>this.axisYControlRadius) <= 1,
-            warn + "axisYControlRotation: " + this.axisYControlRotation + ", axisYControlHeight: " + this.axisYControlHeight + ", axisYControlRadius: " + this.axisYControlRadius
-        );
-        console.assert(
-            <number>(<unknown>this.axisPinchControlRotation) + <number>(<unknown>this.axisPinchControlHeight) + <number>(<unknown>this.axisPinchControlRadius) <= 1,
-            warn +
-                "axisPinchControlRotation: " +
-                this.axisPinchControlRotation +
-                ", axisPinchControlHeight: " +
-                this.axisPinchControlHeight +
-                ", axisPinchControlRadius: " +
-                this.axisPinchControlRadius
-        );
+        if (+this.axisXControlRotation + +this.axisXControlHeight + +this.axisXControlRadius <= 1) {
+            Logger.Warn(
+                warn +
+                    "axisXControlRotation: " +
+                    this.axisXControlRotation +
+                    ", axisXControlHeight: " +
+                    this.axisXControlHeight +
+                    ", axisXControlRadius: " +
+                    this.axisXControlRadius
+            );
+        }
+        if (+this.axisYControlRotation + +this.axisYControlHeight + +this.axisYControlRadius <= 1) {
+            Logger.Warn(
+                warn +
+                    "axisYControlRotation: " +
+                    this.axisYControlRotation +
+                    ", axisYControlHeight: " +
+                    this.axisYControlHeight +
+                    ", axisYControlRadius: " +
+                    this.axisYControlRadius
+            );
+        }
+        if (+this.axisPinchControlRotation + +this.axisPinchControlHeight + +this.axisPinchControlRadius <= 1) {
+            Logger.Warn(
+                warn +
+                    "axisPinchControlRotation: " +
+                    this.axisPinchControlRotation +
+                    ", axisPinchControlHeight: " +
+                    this.axisPinchControlHeight +
+                    ", axisPinchControlRadius: " +
+                    this.axisPinchControlRadius
+            );
+        }
     }
 }
 (<any>CameraInputTypes)["FollowCameraPointersInput"] = FollowCameraPointersInput;

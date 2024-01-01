@@ -8,6 +8,7 @@ import type { PointerInfo } from "../../Events/pointerEvents";
 import { PointerEventTypes } from "../../Events/pointerEvents";
 import type { IWheelEvent } from "../../Events/deviceInputEvents";
 import { Tools } from "../../Misc/tools";
+import { Logger } from "core/Misc/logger";
 
 /**
  * Manage the mouse wheel inputs to control a follow camera.
@@ -70,18 +71,19 @@ export class FollowCameraMouseWheelInput implements ICameraInput<FollowCamera> {
 
             const wheelDelta = Math.max(-1, Math.min(1, event.deltaY));
             if (this.wheelDeltaPercentage) {
-                console.assert(
-                    <number>(<unknown>this.axisControlRadius) + <number>(<unknown>this.axisControlHeight) + <number>(<unknown>this.axisControlRotation) <= 1,
-                    "wheelDeltaPercentage only usable when mouse wheel " +
-                        "controls ONE axis. " +
-                        "Currently enabled: " +
-                        "axisControlRadius: " +
-                        this.axisControlRadius +
-                        ", axisControlHeightOffset: " +
-                        this.axisControlHeight +
-                        ", axisControlRotationOffset: " +
-                        this.axisControlRotation
-                );
+                if (+this.axisControlRadius + +this.axisControlHeight + +this.axisControlRotation) {
+                    Logger.Warn(
+                        "wheelDeltaPercentage only usable when mouse wheel " +
+                            "controls ONE axis. " +
+                            "Currently enabled: " +
+                            "axisControlRadius: " +
+                            this.axisControlRadius +
+                            ", axisControlHeightOffset: " +
+                            this.axisControlHeight +
+                            ", axisControlRotationOffset: " +
+                            this.axisControlRotation
+                    );
+                }
 
                 if (this.axisControlRadius) {
                     delta = wheelDelta * 0.01 * this.wheelDeltaPercentage * this.camera.radius;

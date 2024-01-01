@@ -14,12 +14,12 @@ export abstract class FlowGraphCachedOperationBlock<OutputT> extends FlowGraphBl
     /**
      * The output of the operation
      */
-    public readonly output: FlowGraphDataConnection<OutputT>;
+    public readonly value: FlowGraphDataConnection<OutputT>;
 
     constructor(outputRichType: RichType<OutputT>, config?: IFlowGraphBlockConfiguration) {
         super(config);
 
-        this.output = this._registerDataOutput("output", outputRichType);
+        this.value = this.registerDataOutput("value", outputRichType);
     }
 
     /**
@@ -33,12 +33,12 @@ export abstract class FlowGraphCachedOperationBlock<OutputT> extends FlowGraphBl
         const cachedExecutionId = context._getExecutionVariable(this, CACHE_EXEC_ID_NAME);
         const cachedValue = context._getExecutionVariable(this, CACHE_NAME);
         if (cachedValue !== undefined && cachedExecutionId === context.executionId) {
-            this.output.setValue(cachedValue, context);
+            this.value.setValue(cachedValue, context);
         } else {
             const calculatedValue = this._doOperation(context);
             context._setExecutionVariable(this, CACHE_NAME, calculatedValue);
             context._setExecutionVariable(this, CACHE_EXEC_ID_NAME, context.executionId);
-            this.output.setValue(calculatedValue, context);
+            this.value.setValue(calculatedValue, context);
         }
     }
 }

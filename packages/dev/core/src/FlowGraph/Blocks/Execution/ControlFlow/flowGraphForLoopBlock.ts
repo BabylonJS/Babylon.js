@@ -1,6 +1,6 @@
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
-import { FlowGraphWithOnDoneExecutionBlock } from "core/FlowGraph/flowGraphWithOnDoneExecutionBlock";
+import { FlowGraphExecutionBlockWithOutSignal } from "core/FlowGraph/flowGraphWithOnDoneExecutionBlock";
 import type { FlowGraphContext } from "../../../flowGraphContext";
 import { RichTypeNumber } from "../../../flowGraphRichTypes";
 import { RegisterClass } from "../../../../Misc/typeStore";
@@ -9,7 +9,7 @@ import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
  * @experimental
  * Block that executes an action in a loop.
  */
-export class FlowGraphForLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
+export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
      * Input connection: The start index of the loop.
      */
@@ -30,21 +30,16 @@ export class FlowGraphForLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
      * Output connection: The signal that is activated when the loop body is executed.
      */
     public readonly onLoop: FlowGraphSignalConnection;
-    /**
-     * Output connection: The signal that is activated when the loop is done.
-     */
-    public readonly onDone: FlowGraphSignalConnection;
 
     public constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
-        this.startIndex = this._registerDataInput("startIndex", RichTypeNumber);
-        this.endIndex = this._registerDataInput("endIndex", RichTypeNumber);
-        this.step = this._registerDataInput("step", RichTypeNumber);
+        this.startIndex = this.registerDataInput("startIndex", RichTypeNumber);
+        this.endIndex = this.registerDataInput("endIndex", RichTypeNumber);
+        this.step = this.registerDataInput("step", RichTypeNumber);
 
-        this.index = this._registerDataOutput("index", RichTypeNumber);
+        this.index = this.registerDataOutput("index", RichTypeNumber);
         this.onLoop = this._registerSignalOutput("onLoop");
-        this.onDone = this._registerSignalOutput("onDone");
     }
 
     private _executeLoop(context: FlowGraphContext) {
@@ -58,7 +53,7 @@ export class FlowGraphForLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
             context._setExecutionVariable(this, "index", index);
             this._executeLoop(context);
         } else {
-            this.onDone._activateSignal(context);
+            this.out._activateSignal(context);
         }
     }
 

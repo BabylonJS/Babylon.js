@@ -2,9 +2,9 @@ import type { FlowGraphContext } from "../../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import { RichTypeBoolean } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
-import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneExecutionBlock";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
+import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphWithOnDoneExecutionBlock";
 /**
  * @experimental
  * Configuration for the while loop block.
@@ -20,7 +20,7 @@ export interface IFlowGraphWhileLoopBlockConfiguration extends IFlowGraphBlockCo
  * @experimental
  * A block that executes a branch while a condition is true.
  */
-export class FlowGraphWhileLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
+export class FlowGraphWhileLoopBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
      * Input connection: The condition to evaluate.
      */
@@ -33,7 +33,7 @@ export class FlowGraphWhileLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
     constructor(public config?: IFlowGraphWhileLoopBlockConfiguration) {
         super(config);
 
-        this.condition = this._registerDataInput("condition", RichTypeBoolean);
+        this.condition = this.registerDataInput("condition", RichTypeBoolean);
         this.loopBody = this._registerSignalOutput("loopBody");
     }
 
@@ -46,11 +46,18 @@ export class FlowGraphWhileLoopBlock extends FlowGraphWithOnDoneExecutionBlock {
             this.loopBody._activateSignal(context);
             conditionValue = this.condition.getValue(context);
         }
-        this.onDone._activateSignal(context);
+        this.out._activateSignal(context);
     }
 
     public getClassName(): string {
-        return "FGWhileLoopBlock";
+        return FlowGraphWhileLoopBlock.ClassName;
+    }
+
+    public static ClassName = "FGWhileLoopBlock";
+
+    public serialize(serializationObject?: any): void {
+        super.serialize(serializationObject);
+        serializationObject.isDo = this.config?.isDo;
     }
 }
-RegisterClass("FGWhileLoopBlock", FlowGraphWhileLoopBlock);
+RegisterClass(FlowGraphWhileLoopBlock.ClassName, FlowGraphWhileLoopBlock);

@@ -294,12 +294,12 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         if (this._forceGeometryBuffer) {
             scene.enableGeometryBufferRenderer();
             if (scene.geometryBufferRenderer?.generateNormalsInWorldSpace) {
-                console.error("SSAO2RenderingPipeline does not support generateNormalsInWorldSpace=true for the geometry buffer renderer!");
+                Logger.Error("SSAO2RenderingPipeline does not support generateNormalsInWorldSpace=true for the geometry buffer renderer!");
             }
         } else {
             scene.enablePrePassRenderer();
             if (scene.prePassRenderer?.generateNormalsInWorldSpace) {
-                console.error("SSAO2RenderingPipeline does not support generateNormalsInWorldSpace=true for the prepass renderer!");
+                Logger.Error("SSAO2RenderingPipeline does not support generateNormalsInWorldSpace=true for the prepass renderer!");
             }
         }
 

@@ -767,6 +767,30 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      */
     public readonly stencil = new MaterialStencilState();
 
+    protected _useLogarithmicDepth: boolean;
+
+    /**
+     * In case the depth buffer does not allow enough depth precision for your scene (might be the case in large scenes)
+     * You can try switching to logarithmic depth.
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/logarithmicDepthBuffer
+     */
+    @serialize()
+    public get useLogarithmicDepth(): boolean {
+        return this._useLogarithmicDepth;
+    }
+
+    public set useLogarithmicDepth(value: boolean) {
+        const fragmentDepthSupported = this.getScene().getEngine().getCaps().fragmentDepthSupported;
+
+        if (value && !fragmentDepthSupported) {
+            Logger.Warn("Logarithmic depth has been requested for a material on a device that doesn't support it.");
+        }
+
+        this._useLogarithmicDepth = value && fragmentDepthSupported;
+
+        this._markAllSubMeshesAsMiscDirty();
+    }
+
     /**
      * @internal
      * Stores the effects for the material

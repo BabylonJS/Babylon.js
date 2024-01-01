@@ -421,8 +421,8 @@ ThinEngine.prototype.createCubeTextureBase = function (
             this._loadFile(rootUrl, (data) => onloaddata(new Uint8Array(data as ArrayBuffer)), undefined, undefined, true, onInternalError);
         }
     } else {
-        if (!files) {
-            throw new Error("Cannot load cubemap because files were not defined");
+        if (!files || files.length === 0) {
+            throw new Error("Cannot load cubemap because files were not defined, or the correct loader was not found.");
         }
 
         this._cascadeLoadImgs(

@@ -52,6 +52,7 @@ varying vec4 vColor;
 
 #include<clipPlaneVertexDeclaration>
 
+#include<logDepthDeclaration>
 #include<fogVertexDeclaration>
 #include<__decl__lightFragment>[0..maxSimultaneousLights]
 
@@ -221,6 +222,8 @@ void main(void) {
 
 	// Vertex color
 #include<vertexColorMixing>
+
+#include<logDepthVertex>
 
 	// Point size
 #if defined(POINTSIZE) && !defined(WEBGPU)

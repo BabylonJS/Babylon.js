@@ -6,8 +6,7 @@ WebGPUEngine.prototype._debugPushGroup = function (groupName: string, targetObje
     }
 
     if (targetObject === 0 || targetObject === 1) {
-        const encoder = targetObject === 0 ? this._renderEncoder : this._renderTargetEncoder;
-        encoder.pushDebugGroup(groupName);
+        this._renderEncoder.pushDebugGroup(groupName);
     } else if (this._currentRenderPass) {
         this._currentRenderPass.pushDebugGroup(groupName);
     } else {
@@ -21,8 +20,7 @@ WebGPUEngine.prototype._debugPopGroup = function (targetObject?: number): void {
     }
 
     if (targetObject === 0 || targetObject === 1) {
-        const encoder = targetObject === 0 ? this._renderEncoder : this._renderTargetEncoder;
-        encoder.popDebugGroup();
+        this._renderEncoder.popDebugGroup();
     } else if (this._currentRenderPass) {
         this._currentRenderPass.popDebugGroup();
     } else {
@@ -36,8 +34,7 @@ WebGPUEngine.prototype._debugInsertMarker = function (text: string, targetObject
     }
 
     if (targetObject === 0 || targetObject === 1) {
-        const encoder = targetObject === 0 ? this._renderEncoder : this._renderTargetEncoder;
-        encoder.insertDebugMarker(text);
+        this._renderEncoder.insertDebugMarker(text);
     } else if (this._currentRenderPass) {
         this._currentRenderPass.insertDebugMarker(text);
     } else {

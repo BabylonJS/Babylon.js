@@ -107,8 +107,8 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
         this.width = options.width
             ? options.width
             : options.sizeAttenuation && options.cameraFacing
-            ? GreasedLineMaterialDefaults.DEFAULT_WIDTH_ATTENUATED
-            : GreasedLineMaterialDefaults.DEFAULT_WIDTH;
+              ? GreasedLineMaterialDefaults.DEFAULT_WIDTH_ATTENUATED
+              : GreasedLineMaterialDefaults.DEFAULT_WIDTH;
         this.sizeAttenuation = options.sizeAttenuation ?? false;
         this.color = options.color ?? Color3.White();
         this.useColors = options.useColors ?? false;
@@ -121,6 +121,8 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
 
         if (options.colorsTexture) {
             this.colorsTexture = options.colorsTexture;
+        } else {
+            this.colorsTexture = GreasedLineTools.PrepareEmptyColorsTexture(scene);
         }
 
         if (this._colors) {
@@ -484,7 +486,7 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
         if (greasedLineMaterialOptions.colors) {
             this.colorsTexture = GreasedLineTools.CreateColorsTexture(`${this.name}-colors-texture`, greasedLineMaterialOptions.colors, this.colorsSampling, this.getScene());
         } else {
-            GreasedLineTools.PrepareEmptyColorsTexture(scene);
+            this.colorsTexture = GreasedLineTools.PrepareEmptyColorsTexture(scene);
         }
 
         this._cameraFacing = greasedLineMaterialOptions.cameraFacing ?? true;

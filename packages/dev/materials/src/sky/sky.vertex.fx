@@ -23,6 +23,7 @@ varying vec3 vPositionW;
 varying vec4 vColor;
 #endif
 
+#include<logDepthDeclaration>
 #include<clipPlaneVertexDeclaration>
 #include<fogVertexDeclaration>
 
@@ -40,6 +41,8 @@ void main(void) {
 
 	// Clip plane
 #include<clipPlaneVertex>
+
+#include<logDepthVertex>
 
 	// Fog
 #include<fogVertex>

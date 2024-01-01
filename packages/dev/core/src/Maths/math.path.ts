@@ -1,6 +1,7 @@
 import type { DeepImmutable, Nullable } from "../types";
 import { Scalar } from "./math.scalar";
 import { Vector2, Vector3, Quaternion, Matrix } from "./math.vector";
+import type { Vector4 } from "./math.vector";
 import { Epsilon } from "./math.constants";
 
 /**
@@ -82,7 +83,7 @@ export class Angle {
     }
 
     /**
-     * Gets a new Angle object valued with the gradient angle, in radians, of the line joining two points
+     * Gets a new Angle object with a value of the angle (in radians) between the line connecting the two points and the x-axis
      * @param a defines first point as the origin
      * @param b defines point
      * @returns a new Angle
@@ -91,6 +92,22 @@ export class Angle {
         const delta = b.subtract(a);
         const theta = Math.atan2(delta.y, delta.x);
         return new Angle(theta);
+    }
+
+    /**
+     * Gets the angle between the two vectors
+     * @param a defines first vector
+     * @param b defines vector
+     * @returns Returns an new Angle between 0 and PI
+     */
+    public static BetweenTwoVectors<Vec extends Vector2 | Vector3 | Vector4>(a: DeepImmutable<Vec>, b: DeepImmutable<Vec>): Angle {
+        let product = a.lengthSquared() * b.lengthSquared();
+        if (product === 0) return new Angle(Math.PI / 2);
+        product = Math.sqrt(product);
+        let cosVal = a.dot(b as any) / product;
+        cosVal = Scalar.Clamp(cosVal, -1, 1);
+        const angle = Math.acos(cosVal);
+        return new Angle(angle);
     }
 
     /**

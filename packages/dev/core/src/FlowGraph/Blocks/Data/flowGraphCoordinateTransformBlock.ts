@@ -34,10 +34,10 @@ export class FlowGraphCoordinateTransformBlock extends FlowGraphBlock {
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
 
-        this.sourceSystem = this._registerDataInput("sourceSystem", RichTypeAny);
-        this.destinationSystem = this._registerDataInput("destinationSystem", RichTypeAny);
-        this.inputCoordinates = this._registerDataInput("inputCoordinates", RichTypeVector3);
-        this.outputCoordinates = this._registerDataOutput("outputCoordinates", RichTypeVector3);
+        this.sourceSystem = this.registerDataInput("sourceSystem", RichTypeAny);
+        this.destinationSystem = this.registerDataInput("destinationSystem", RichTypeAny);
+        this.inputCoordinates = this.registerDataInput("inputCoordinates", RichTypeVector3);
+        this.outputCoordinates = this.registerDataOutput("outputCoordinates", RichTypeVector3);
     }
 
     public _updateOutputs(_context: FlowGraphContext): void {

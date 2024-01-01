@@ -1,6 +1,6 @@
 import type { FlowGraphContext } from "../../../flowGraphContext";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
-import { FlowGraphWithOnDoneExecutionBlock } from "../../../flowGraphWithOnDoneExecutionBlock";
+import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphWithOnDoneExecutionBlock";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 /**
@@ -18,7 +18,7 @@ export interface IFlowGraphWaitAllBlockConfiguration extends IFlowGraphBlockConf
  * @experimental
  * A block that waits for all input flows to be activated before activating its output flow.
  */
-export class FlowGraphWaitAllBlock extends FlowGraphWithOnDoneExecutionBlock {
+export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
      * Input connection: Resets the block.
      */
@@ -64,7 +64,7 @@ export class FlowGraphWaitAllBlock extends FlowGraphWithOnDoneExecutionBlock {
             for (let i = 0; i < this.config.numberInputFlows; i++) {
                 activationState[i] = false;
             }
-        } else if (callingSignal === this.onStart) {
+        } else if (callingSignal === this.in) {
             activationState[0] = true;
         } else {
             const index = this.inFlows.indexOf(callingSignal);
@@ -76,7 +76,7 @@ export class FlowGraphWaitAllBlock extends FlowGraphWithOnDoneExecutionBlock {
         context._setExecutionVariable(this, "activationState", activationState.slice());
 
         if (activationState.every((value: boolean) => value)) {
-            this.onDone._activateSignal(context);
+            this.out._activateSignal(context);
             for (let i = 0; i < this.config.numberInputFlows; i++) {
                 activationState[i] = false;
             }
@@ -85,6 +85,11 @@ export class FlowGraphWaitAllBlock extends FlowGraphWithOnDoneExecutionBlock {
 
     public getClassName(): string {
         return "FGWaitAllBlock";
+    }
+
+    public serialize(serializationObject?: any): void {
+        super.serialize(serializationObject);
+        serializationObject.config.numberInputFlows = this.config.numberInputFlows;
     }
 }
 RegisterClass("FGWaitAllBlock", FlowGraphWaitAllBlock);

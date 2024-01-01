@@ -30,6 +30,8 @@ attribute vec2 uv2;
 	varying vec4 vViewPos;
 #endif
 
+#include<pointCloudVertexDeclaration>
+
 varying float vDepthMetric;
 
 
@@ -72,4 +74,7 @@ void main(void)
 	vUV = vec2(diffuseMatrix * vec4(uv2, 1.0, 0.0));
 #endif
 #endif
+
+#include<pointCloudVertex>
+
 }

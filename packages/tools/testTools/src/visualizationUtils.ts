@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/naming-convention */
 declare const BABYLON: typeof window.BABYLON;
 

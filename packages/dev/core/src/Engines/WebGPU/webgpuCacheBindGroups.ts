@@ -157,7 +157,7 @@ export class WebGPUCacheBindGroups {
                             }
                             continue;
                         }
-                        entries[j].resource = this._cacheSampler.getSampler(sampler, false, bindingInfo.hashCode);
+                        entries[j].resource = this._cacheSampler.getSampler(sampler, false, bindingInfo.hashCode, sampler.label);
                     } else {
                         Logger.Error(
                             `Sampler "${name}" could not be bound. entry=${JSON.stringify(entry)}, materialContext=${JSON.stringify(materialContext, (key: string, value: any) =>

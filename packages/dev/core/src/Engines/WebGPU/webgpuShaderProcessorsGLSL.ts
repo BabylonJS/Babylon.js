@@ -194,10 +194,10 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
                 const sampleType = isComparisonSampler
                     ? WebGPUConstants.TextureSampleType.Depth
                     : componentType === "u"
-                    ? WebGPUConstants.TextureSampleType.Uint
-                    : componentType === "i"
-                    ? WebGPUConstants.TextureSampleType.Sint
-                    : WebGPUConstants.TextureSampleType.Float;
+                      ? WebGPUConstants.TextureSampleType.Uint
+                      : componentType === "i"
+                        ? WebGPUConstants.TextureSampleType.Sint
+                        : WebGPUConstants.TextureSampleType.Float;
 
                 textureInfo.sampleType = sampleType;
 

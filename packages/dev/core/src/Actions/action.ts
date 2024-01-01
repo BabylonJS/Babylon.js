@@ -309,12 +309,12 @@ export class Action implements IAction {
             targetType: (<Mesh>target)._isMesh
                 ? "MeshProperties"
                 : (<Light>target)._isLight
-                ? "LightProperties"
-                : (<Camera>target)._isCamera
-                ? "CameraProperties"
-                : (<Material>target)._isMaterial
-                ? "MaterialProperties"
-                : "SceneProperties",
+                  ? "LightProperties"
+                  : (<Camera>target)._isCamera
+                    ? "CameraProperties"
+                    : (<Material>target)._isMaterial
+                      ? "MaterialProperties"
+                      : "SceneProperties",
             value: (<Scene>target)._isScene ? "Scene" : (<Node>target).name,
         };
     };
