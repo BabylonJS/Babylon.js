@@ -148,11 +148,7 @@ export abstract class GreasedLineBaseMesh extends Mesh {
 
     protected _engine: Engine;
 
-    constructor(
-        public readonly name: string,
-        scene: Scene,
-        protected _options: GreasedLineMeshOptions
-    ) {
+    constructor(public readonly name: string, scene: Scene, protected _options: GreasedLineMeshOptions) {
         super(name, scene, null, null, false, false);
 
         this._engine = scene.getEngine();
@@ -227,7 +223,6 @@ export abstract class GreasedLineBaseMesh extends Mesh {
     }
 
     /**
-     *
      * @returns true if the mesh was created in lazy mode
      */
     public isLazy(): boolean {
@@ -235,7 +230,23 @@ export abstract class GreasedLineBaseMesh extends Mesh {
     }
 
     /**
-     * Return the points offsets
+     * Returns the uvs
+     */
+    get uvs() {
+        return this._uvs;
+    }
+
+    /**
+     * Sets the UVs
+     * @param uvs the UVs
+     */
+    set uvs(uvs: number[]) {
+        this._uvs = uvs;
+        this._createVertexBuffers();
+    }
+
+    /**
+     * Returns the points offsets
      */
     get offsets() {
         return this._offsets;
