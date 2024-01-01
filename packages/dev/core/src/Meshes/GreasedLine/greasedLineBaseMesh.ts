@@ -230,7 +230,7 @@ export abstract class GreasedLineBaseMesh extends Mesh {
     }
 
     /**
-     * Returns the uvs
+     * Returns the UVs
      */
     get uvs() {
         return this._uvs;
@@ -247,6 +247,7 @@ export abstract class GreasedLineBaseMesh extends Mesh {
 
     /**
      * Returns the points offsets
+     * Return the points offsets
      */
     get offsets() {
         return this._offsets;
