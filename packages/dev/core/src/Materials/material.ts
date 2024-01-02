@@ -1409,8 +1409,10 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         // Copy the properties of the current plugins to the cloned material's plugins
         if (this.pluginManager) {
             for (const plugin of this.pluginManager._plugins) {
-                const targetPlugin = targetMaterial.pluginManager!.getPlugin(plugin.name)!;
-                plugin.copyTo(targetPlugin);
+                const targetPlugin = targetMaterial.pluginManager!.getPlugin(plugin.name);
+                if (targetPlugin) {
+                    plugin.copyTo(targetPlugin);
+                }
             }
         }
     }
