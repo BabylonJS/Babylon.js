@@ -35,7 +35,7 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
     public readonly name = NAME;
 
     private _loader: GLTFLoader;
-    private _pathToObjectConverter: AnimationPointerPathToObjectConverter;
+    private _pathToObjectConverter?: AnimationPointerPathToObjectConverter;
 
     /**
      * @internal
@@ -55,6 +55,7 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
     /** @internal */
     public dispose() {
         (this._loader as any) = null;
+        delete this._pathToObjectConverter; // GC
     }
 
     /**
@@ -74,7 +75,7 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
         onLoad: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void
     ): Nullable<Promise<void>> {
         const extension = channel.target.extensions?.KHR_animation_pointer as IKHRAnimationPointer;
-        if (!extension) {
+        if (!extension || !this._pathToObjectConverter) {
             return null;
         }
 
