@@ -22,7 +22,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
      */
     public enabled: boolean;
 
-    private _pathConverter: InteractivityPathToObjectConverter;
+    private _pathConverter?: InteractivityPathToObjectConverter;
 
     /**
      * @internal
@@ -35,6 +35,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
 
     public dispose() {
         (this._loader as any) = null;
+        this._pathConverter = undefined; // GC
     }
 
     public onReady(): void {
@@ -46,7 +47,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
 
         const json = convertGLTFToSerializedFlowGraph(interactivityDefinition);
         const coordinator = new FlowGraphCoordinator({ scene });
-        FlowGraph.Parse(json, { coordinator, pathConverter: this._pathConverter });
+        FlowGraph.Parse(json, { coordinator, pathConverter: this._pathConverter! });
 
         coordinator.start();
     }
