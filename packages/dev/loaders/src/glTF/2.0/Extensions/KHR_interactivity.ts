@@ -35,7 +35,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
 
     public dispose() {
         (this._loader as any) = null;
-        this._pathConverter = undefined; // GC
+        delete this._pathConverter;
     }
 
     public onReady(): void {
