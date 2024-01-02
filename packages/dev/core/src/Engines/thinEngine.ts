@@ -227,14 +227,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@6.34.3";
+        return "babylonjs@6.36.1";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "6.34.3";
+        return "6.36.1";
     }
 
     /**
@@ -1196,6 +1196,7 @@ export class ThinEngine {
             maxMSAASamples: 1,
             colorBufferFloat: !!(this._webGLVersion > 1 && this._gl.getExtension("EXT_color_buffer_float")),
             supportFloatTexturesResolve: false,
+            rg11b10ufColorRenderable: false,
             colorBufferHalfFloat: !!(this._webGLVersion > 1 && this._gl.getExtension("EXT_color_buffer_half_float")),
             textureFloat: this._webGLVersion > 1 || this._gl.getExtension("OES_texture_float") ? true : false,
             textureHalfFloat: this._webGLVersion > 1 || this._gl.getExtension("OES_texture_half_float") ? true : false,
@@ -1222,6 +1223,7 @@ export class ThinEngine {
         };
 
         this._caps.supportFloatTexturesResolve = this._caps.colorBufferFloat;
+        this._caps.rg11b10ufColorRenderable = this._caps.colorBufferFloat;
 
         // Infos
         this._glVersion = this._gl.getParameter(this._gl.VERSION);

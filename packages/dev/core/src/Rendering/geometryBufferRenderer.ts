@@ -111,9 +111,19 @@ export class GeometryBufferRenderer {
      */
     public generateNormalsInWorldSpace = false;
 
+    private _normalsAreUnsigned = false;
+
+    /**
+     * Gets a boolean indicating if normals are encoded in the [0,1] range in the render target. If true, you should do `normal = normal_rt * 2.0 - 1.0` to get the right normal
+     */
+    public get normalsAreUnsigned() {
+        return this._normalsAreUnsigned;
+    }
+
     private _scene: Scene;
     private _resizeObserver: Nullable<Observer<Engine>> = null;
     private _multiRenderTarget: MultiRenderTarget;
+    private _textureTypesAndFormats: { [key: number]: { textureType: number; textureFormat: number } };
     private _ratioOrDimensions: number | { width: number; height: number };
     private _enablePosition: boolean = false;
     private _enableVelocity: boolean = false;
@@ -357,14 +367,21 @@ export class GeometryBufferRenderer {
     /**
      * Creates a new G Buffer for the scene
      * @param scene The scene the buffer belongs to
-     * @param ratioOrDimensions How big is the buffer related to the main canvas (default: 1). You can also directly pass a width and height for the generated textures @since
+     * @param ratioOrDimensions How big is the buffer related to the main canvas (default: 1). You can also directly pass a width and height for the generated textures
      * @param depthFormat Format of the depth texture (default: Constants.TEXTUREFORMAT_DEPTH16)
+     * @param textureTypesAndFormats The types and formats of textures to create as render targets. If not provided, all textures will be RGBA and float or half float, depending on the engine capabilities.
      */
-    constructor(scene: Scene, ratioOrDimensions: number | { width: number; height: number } = 1, depthFormat = Constants.TEXTUREFORMAT_DEPTH16) {
+    constructor(
+        scene: Scene,
+        ratioOrDimensions: number | { width: number; height: number } = 1,
+        depthFormat = Constants.TEXTUREFORMAT_DEPTH16,
+        textureTypesAndFormats?: { [key: number]: { textureType: number; textureFormat: number } }
+    ) {
         this._scene = scene;
         this._ratioOrDimensions = ratioOrDimensions;
         this._useUbo = scene.getEngine().supportsUniformBuffers;
         this._depthFormat = depthFormat;
+        this._textureTypesAndFormats = textureTypesAndFormats || {};
 
         GeometryBufferRenderer._SceneComponentInitialization(this._scene);
 
@@ -389,15 +406,16 @@ export class GeometryBufferRenderer {
         const attribs = [VertexBuffer.PositionKind, VertexBuffer.NormalKind];
         const mesh = subMesh.getMesh();
 
-        // Alpha test
         if (material) {
             let needUv = false;
+            // Alpha test
             if (material.needAlphaTesting() && material.getAlphaTestTexture()) {
                 defines.push("#define ALPHATEST");
                 defines.push(`#define ALPHATEST_UV${material.getAlphaTestTexture().coordinatesIndex + 1}`);
                 needUv = true;
             }
 
+            // Normal map texture
             if (material.bumpTexture && MaterialFlags.BumpTextureEnabled) {
                 defines.push("#define BUMP");
                 defines.push(`#define BUMP_UV${material.bumpTexture.coordinatesIndex + 1}`);
@@ -570,6 +588,10 @@ export class GeometryBufferRenderer {
             defines.push("#define NORMAL_WORLDSPACE");
         }
 
+        if (this._normalsAreUnsigned) {
+            defines.push("#define ENCODE_NORMAL");
+        }
+
         // Bones
         if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
             attribs.push(VertexBuffer.MatricesIndicesKind);
@@ -684,36 +706,43 @@ export class GeometryBufferRenderer {
         this.getGBuffer().dispose();
     }
 
-    private _assignRenderTargetIndices(): [number, string[]] {
+    private _assignRenderTargetIndices(): [number, string[], Array<{ textureType: number; textureFormat: number } | undefined>] {
         const textureNames: string[] = [];
+        const textureTypesAndFormats: Array<{ textureType: number; textureFormat: number } | undefined> = [];
         let count = 2;
 
         textureNames.push("gBuffer_Depth", "gBuffer_Normal");
+
+        textureTypesAndFormats.push(this._textureTypesAndFormats[GeometryBufferRenderer.DEPTH_TEXTURE_TYPE]);
+        textureTypesAndFormats.push(this._textureTypesAndFormats[GeometryBufferRenderer.NORMAL_TEXTURE_TYPE]);
 
         if (this._enablePosition) {
             this._positionIndex = count;
             count++;
             textureNames.push("gBuffer_Position");
+            textureTypesAndFormats.push(this._textureTypesAndFormats[GeometryBufferRenderer.POSITION_TEXTURE_TYPE]);
         }
 
         if (this._enableVelocity) {
             this._velocityIndex = count;
             count++;
             textureNames.push("gBuffer_Velocity");
+            textureTypesAndFormats.push(this._textureTypesAndFormats[GeometryBufferRenderer.VELOCITY_TEXTURE_TYPE]);
         }
 
         if (this._enableReflectivity) {
             this._reflectivityIndex = count;
             count++;
             textureNames.push("gBuffer_Reflectivity");
+            textureTypesAndFormats.push(this._textureTypesAndFormats[GeometryBufferRenderer.REFLECTIVITY_TEXTURE_TYPE]);
         }
 
-        return [count, textureNames];
+        return [count, textureNames, textureTypesAndFormats];
     }
 
     protected _createRenderTargets(): void {
         const engine = this._scene.getEngine();
-        const [count, textureNames] = this._assignRenderTargetIndices();
+        const [count, textureNames, textureTypesAndFormat] = this._assignRenderTargetIndices();
 
         let type = Constants.TEXTURETYPE_UNSIGNED_BYTE;
         if (engine._caps.textureFloat && engine._caps.textureFloatLinearFiltering) {
@@ -727,12 +756,29 @@ export class GeometryBufferRenderer {
                 ? (this._ratioOrDimensions as { width: number; height: number })
                 : { width: engine.getRenderWidth() * (this._ratioOrDimensions as number), height: engine.getRenderHeight() * (this._ratioOrDimensions as number) };
 
+        const textureTypes: number[] = [];
+        const textureFormats: number[] = [];
+
+        for (const typeAndFormat of textureTypesAndFormat) {
+            if (typeAndFormat) {
+                textureTypes.push(typeAndFormat.textureType);
+                textureFormats.push(typeAndFormat.textureFormat);
+            } else {
+                textureTypes.push(type);
+                textureFormats.push(Constants.TEXTUREFORMAT_RGBA);
+            }
+        }
+
+        this._normalsAreUnsigned =
+            textureTypes[GeometryBufferRenderer.NORMAL_TEXTURE_TYPE] === Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV ||
+            textureTypes[GeometryBufferRenderer.NORMAL_TEXTURE_TYPE] === Constants.TEXTURETYPE_UNSIGNED_INT_10F_11F_11F_REV;
+
         this._multiRenderTarget = new MultiRenderTarget(
             "gBuffer",
             dimensions,
             count,
             this._scene,
-            { generateMipMaps: false, generateDepthTexture: true, defaultType: type, depthTextureFormat: this._depthFormat },
+            { generateMipMaps: false, generateDepthTexture: true, types: textureTypes, formats: textureFormats, depthTextureFormat: this._depthFormat },
             textureNames.concat("gBuffer_DepthBuffer")
         );
         if (!this.isSupported) {

@@ -26,6 +26,11 @@ export interface ICanvas {
      * @returns string containing the requested data URI.
      */
     toDataURL(mime: string): string;
+
+    /**
+     * Removes the canvas from the document.
+     */
+    remove(): void;
 }
 
 /**

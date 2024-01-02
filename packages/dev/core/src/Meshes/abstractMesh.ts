@@ -1500,7 +1500,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
                 for (let targetCount = 0; targetCount < this.morphTargetManager.numTargets; targetCount++) {
                     const targetMorph = this.morphTargetManager.getTarget(targetCount);
                     const influence = targetMorph.influence;
-                    if (influence > 0.0) {
+                    if (influence !== 0.0) {
                         let morphTargetData: Nullable<FloatArray> = null;
                         switch (kind) {
                             case VertexBuffer.PositionKind:

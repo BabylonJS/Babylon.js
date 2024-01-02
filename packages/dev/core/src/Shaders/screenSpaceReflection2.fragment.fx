@@ -122,6 +122,12 @@ void main()
 
     // Compute the reflected vector
     vec3 csNormal = texelFetch(normalSampler, ivec2(vUV * texSize), 0).xyz; // already normalized in the texture
+    #ifdef SSR_DECODE_NORMAL
+        csNormal = csNormal * 2.0 - 1.0;
+    #endif
+    #ifdef SSR_NORMAL_IS_IN_WORLDSPACE
+        csNormal = (view * vec4(csNormal, 0.0)).xyz;
+    #endif
     float depth = texelFetch(depthSampler, ivec2(vUV * texSize), 0).r;
     vec3 csPosition = computeViewPosFromUVDepth(vUV, depth, projection, invProjectionMatrix);
     vec3 csViewDirection = normalize(csPosition);

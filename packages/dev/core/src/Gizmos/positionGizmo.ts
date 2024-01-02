@@ -141,11 +141,7 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
      * True when the mouse pointer is hovering a gizmo mesh
      */
     public get isHovered() {
-        let hovered = false;
-        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
-            hovered = hovered || gizmo.isHovered;
-        });
-        return hovered;
+        return this.xGizmo.isHovered || this.yGizmo.isHovered || this.zGizmo.isHovered || this.xPlaneGizmo.isHovered || this.yPlaneGizmo.isHovered || this.zPlaneGizmo.isHovered;
     }
 
     /**

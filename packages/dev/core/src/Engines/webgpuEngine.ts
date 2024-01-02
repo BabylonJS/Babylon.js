@@ -1,6 +1,6 @@
 /* eslint-disable babylonjs/available */
 import { Logger } from "../Misc/logger";
-import type { Nullable, DataArray, IndicesArray, Immutable } from "../types";
+import type { Nullable, DataArray, IndicesArray, Immutable, FloatArray } from "../types";
 import { Color4 } from "../Maths/math";
 import { Engine } from "../Engines/engine";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
@@ -814,6 +814,7 @@ export class WebGPUEngine extends Engine {
             highPrecisionShaderSupported: true,
             colorBufferFloat: true,
             supportFloatTexturesResolve: false, // See https://github.com/gpuweb/gpuweb/issues/3844
+            rg11b10ufColorRenderable: this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.RG11B10UFloatRenderable) >= 0,
             textureFloat: true,
             textureFloatLinearFiltering: this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.Float32Filterable) >= 0,
             textureFloatRender: true,
@@ -1465,6 +1466,61 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
+     * Update a dynamic index buffer
+     * @param indexBuffer defines the target index buffer
+     * @param indices defines the data to update
+     * @param offset defines the offset in the target index buffer where update should start
+     */
+    public updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset: number = 0): void {
+        const gpuBuffer = indexBuffer as WebGPUDataBuffer;
+
+        let view: ArrayBufferView;
+        if (indexBuffer.is32Bits) {
+            view = indices instanceof Uint32Array ? indices : new Uint32Array(indices);
+        } else {
+            view = indices instanceof Uint16Array ? indices : new Uint16Array(indices);
+        }
+
+        this._bufferManager.setSubData(gpuBuffer, offset, view);
+    }
+
+    /**
+     * Updates a dynamic vertex buffer.
+     * @param vertexBuffer the vertex buffer to update
+     * @param data the data used to update the vertex buffer
+     * @param byteOffset the byte offset of the data
+     * @param byteLength the byte length of the data
+     */
+    public updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
+        const dataBuffer = vertexBuffer as WebGPUDataBuffer;
+        if (byteOffset === undefined) {
+            byteOffset = 0;
+        }
+
+        let view: ArrayBufferView;
+        if (byteLength === undefined) {
+            if (data instanceof Array) {
+                view = new Float32Array(data);
+            } else if (data instanceof ArrayBuffer) {
+                view = new Uint8Array(data);
+            } else {
+                view = data;
+            }
+            byteLength = view.byteLength;
+        } else {
+            if (data instanceof Array) {
+                view = new Float32Array(data);
+            } else if (data instanceof ArrayBuffer) {
+                view = new Uint8Array(data);
+            } else {
+                view = data;
+            }
+        }
+
+        this._bufferManager.setSubData(dataBuffer, byteOffset, view, 0, byteLength);
+    }
+
+    /**
      * @internal
      */
     public _createBuffer(data: DataArray | number, creationFlags: number, label?: string): DataBuffer {
@@ -1539,6 +1595,88 @@ export class WebGPUEngine extends Engine {
     public _releaseBuffer(buffer: DataBuffer): boolean {
         return this._bufferManager.releaseBuffer(buffer);
     }
+
+    //------------------------------------------------------------------------------
+    //                              Uniform Buffers
+    //------------------------------------------------------------------------------
+
+    /**
+     * Create an uniform buffer
+     * @see https://doc.babylonjs.com/setup/support/webGL2#uniform-buffer-objets
+     * @param elements defines the content of the uniform buffer
+     * @param label defines a name for the buffer (for debugging purpose)
+     * @returns the webGL uniform buffer
+     */
+    public createUniformBuffer(elements: FloatArray, label?: string): DataBuffer {
+        let view: Float32Array;
+        if (elements instanceof Array) {
+            view = new Float32Array(elements);
+        } else {
+            view = elements;
+        }
+
+        const dataBuffer = this._bufferManager.createBuffer(view, WebGPUConstants.BufferUsage.Uniform | WebGPUConstants.BufferUsage.CopyDst, label);
+        return dataBuffer;
+    }
+
+    /**
+     * Create a dynamic uniform buffer (no different from a non dynamic uniform buffer in WebGPU)
+     * @see https://doc.babylonjs.com/setup/support/webGL2#uniform-buffer-objets
+     * @param elements defines the content of the uniform buffer
+     * @param label defines a name for the buffer (for debugging purpose)
+     * @returns the webGL uniform buffer
+     */
+    public createDynamicUniformBuffer(elements: FloatArray, label?: string): DataBuffer {
+        return this.createUniformBuffer(elements, label);
+    }
+
+    /**
+     * Update an existing uniform buffer
+     * @see https://doc.babylonjs.com/setup/support/webGL2#uniform-buffer-objets
+     * @param uniformBuffer defines the target uniform buffer
+     * @param elements defines the content to update
+     * @param offset defines the offset in the uniform buffer where update should start
+     * @param count defines the size of the data to update
+     */
+    public updateUniformBuffer(uniformBuffer: DataBuffer, elements: FloatArray, offset?: number, count?: number): void {
+        if (offset === undefined) {
+            offset = 0;
+        }
+
+        const dataBuffer = uniformBuffer as WebGPUDataBuffer;
+        let view: Float32Array;
+        if (count === undefined) {
+            if (elements instanceof Float32Array) {
+                view = elements;
+            } else {
+                view = new Float32Array(elements);
+            }
+            count = view.byteLength;
+        } else {
+            if (elements instanceof Float32Array) {
+                view = elements;
+            } else {
+                view = new Float32Array(elements);
+            }
+        }
+
+        this._bufferManager.setSubData(dataBuffer, offset, view, 0, count);
+    }
+
+    /**
+     * Bind a buffer to the current draw context
+     * @param buffer defines the buffer to bind
+     * @param _location not used in WebGPU
+     * @param name Name of the uniform variable to bind
+     */
+    public bindUniformBufferBase(buffer: DataBuffer, _location: number, name: string): void {
+        this._currentDrawContext.setBuffer(name, buffer as WebGPUDataBuffer);
+    }
+
+    /**
+     * Unused in WebGPU
+     */
+    public bindUniformBlock(): void {}
 
     //------------------------------------------------------------------------------
     //                              Effects

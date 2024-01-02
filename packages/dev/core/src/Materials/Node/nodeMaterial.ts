@@ -437,7 +437,7 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
-     * Get a block by its name
+     * Get a block using a predicate
      * @param predicate defines the predicate used to find the good candidate
      * @returns the required block or null if not found
      */
@@ -452,7 +452,7 @@ export class NodeMaterial extends PushMaterial {
     }
 
     /**
-     * Get an input block by its name
+     * Get an input block using a predicate
      * @param predicate defines the predicate used to find the good candidate
      * @returns the required input block or null if not found
      */

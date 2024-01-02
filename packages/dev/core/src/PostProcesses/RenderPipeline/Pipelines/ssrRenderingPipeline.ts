@@ -22,7 +22,6 @@ import "../postProcessRenderPipelineManagerSceneComponent";
 import "../../../Shaders/screenSpaceReflection2.fragment";
 import "../../../Shaders/screenSpaceReflection2Blur.fragment";
 import "../../../Shaders/screenSpaceReflection2BlurCombiner.fragment";
-import { Logger } from "core/Misc/logger";
 
 const trs = Matrix.Compose(new Vector3(0.5, 0.5, 0.5), Quaternion.Identity(), new Vector3(0.5, 0.5, 0.5));
 const trsWebGPU = Matrix.Compose(new Vector3(0.5, 0.5, 1), Quaternion.Identity(), new Vector3(0.5, 0.5, 0));
@@ -652,18 +651,12 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 if (geometryBufferRenderer) {
                     geometryBufferRenderer.enableReflectivity = true;
                     geometryBufferRenderer.useSpecificClearForDepthTexture = true;
-                    if (geometryBufferRenderer.generateNormalsInWorldSpace) {
-                        Logger.Error("SSRRenderingPipeline does not support generateNormalsInWorldSpace=true for the geometry buffer renderer!");
-                    }
                 }
             } else {
                 const prePassRenderer = scene.enablePrePassRenderer();
                 if (prePassRenderer) {
                     prePassRenderer.useSpecificClearForDepthTexture = true;
                     prePassRenderer.markAsDirty();
-                    if (prePassRenderer.generateNormalsInWorldSpace) {
-                        Logger.Error("SSRRenderingPipeline does not support generateNormalsInWorldSpace=true for the prepass renderer!");
-                    }
                 }
             }
 
@@ -797,6 +790,14 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
         }
         if (this._reflectivityThreshold === 0) {
             defines.push("#define SSR_DISABLE_REFLECTIVITY_TEST");
+        }
+
+        if (this._geometryBufferRenderer?.generateNormalsInWorldSpace ?? this._prePassRenderer?.generateNormalsInWorldSpace) {
+            defines.push("#define SSR_NORMAL_IS_IN_WORLDSPACE");
+        }
+
+        if (this._geometryBufferRenderer?.normalsAreUnsigned) {
+            defines.push("#define SSR_DECODE_NORMAL");
         }
 
         this._ssrPostProcess?.updateEffect(defines.join("\n"));
@@ -1000,8 +1001,8 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
                 return;
             }
 
-            const viewMatrix = camera.getViewMatrix(true);
-            const projectionMatrix = camera.getProjectionMatrix(true);
+            const viewMatrix = camera.getViewMatrix();
+            const projectionMatrix = camera.getProjectionMatrix();
 
             projectionMatrix.invertToRef(TmpVectors.Matrix[0]);
             viewMatrix.invertToRef(TmpVectors.Matrix[1]);
