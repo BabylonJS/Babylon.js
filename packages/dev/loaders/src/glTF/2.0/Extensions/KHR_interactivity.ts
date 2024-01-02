@@ -39,7 +39,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
     }
 
     public onReady(): void {
-        if (!this._loader.babylonScene) {
+        if (!this._loader.babylonScene || !this._pathConverter) {
             return;
         }
         const scene = this._loader.babylonScene;
@@ -47,7 +47,7 @@ export class KHR_interactivity implements IGLTFLoaderExtension {
 
         const json = convertGLTFToSerializedFlowGraph(interactivityDefinition);
         const coordinator = new FlowGraphCoordinator({ scene });
-        FlowGraph.Parse(json, { coordinator, pathConverter: this._pathConverter! });
+        FlowGraph.Parse(json, { coordinator, pathConverter: this._pathConverter });
 
         coordinator.start();
     }
