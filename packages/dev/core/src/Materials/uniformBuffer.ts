@@ -558,10 +558,18 @@ export class UniformBuffer {
         this._needSync = true;
     }
 
+    // The result of this method is used for debugging purpose, as part of the buffer name
+    // It is meant to more easily know what this buffer is about when debugging
+    // Some buffers can have a lot of uniforms (several dozens), so the method only returns the first 10 of them
+    // (should be enough to understand what the buffer is for)
     private _getNames() {
         const names = [];
+        let i = 0;
         for (const name in this._uniformLocations) {
             names.push(name);
+            if (++i === 10) {
+                break;
+            }
         }
         return names.join(",");
     }
@@ -583,6 +591,15 @@ export class UniformBuffer {
             this._bufferIndex = this._buffers.length - 1;
             this._createBufferOnWrite = false;
         }
+    }
+
+    /** @internal */
+    public _rebuildAfterContextLost(): void {
+        if (this._engine._features.trackUbosInFrame) {
+            this._buffers = [];
+            this._currentFrameId = 0;
+        }
+        this._rebuild();
     }
 
     /** @internal */

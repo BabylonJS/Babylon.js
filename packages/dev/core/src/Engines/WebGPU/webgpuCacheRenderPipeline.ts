@@ -11,7 +11,8 @@ import type { Nullable } from "../../types";
 import type { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 import type { WebGPUPipelineContext } from "./webgpuPipelineContext";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
-import { renderableTextureFormatToIndex, WebGPUTextureHelper } from "./webgpuTextureHelper";
+import { WebGPUTextureHelper } from "./webgpuTextureHelper";
+import { renderableTextureFormatToIndex } from "./webgpuTextureManager";
 
 enum StatePosition {
     StencilReadMask = 0,

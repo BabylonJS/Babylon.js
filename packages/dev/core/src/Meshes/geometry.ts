@@ -221,7 +221,7 @@ export class Geometry implements IGetSetVerticesData {
 
         // Index buffer
         if (this._meshes.length !== 0 && this._indices) {
-            this._indexBuffer = this._engine.createIndexBuffer(this._indices, this._updatable);
+            this._indexBuffer = this._engine.createIndexBuffer(this._indices, this._updatable, "Geometry_" + this.id + "_IndexBuffer");
         }
 
         // Vertex buffers
@@ -588,7 +588,7 @@ export class Geometry implements IGetSetVerticesData {
         this._indices = indices;
         this._indexBufferIsUpdatable = updatable;
         if (this._meshes.length !== 0 && this._indices) {
-            this._indexBuffer = this._engine.createIndexBuffer(this._indices, updatable);
+            this._indexBuffer = this._engine.createIndexBuffer(this._indices, updatable, "Geometry_" + this.id + "_IndexBuffer");
         }
 
         if (totalVertices != undefined) {
@@ -763,7 +763,7 @@ export class Geometry implements IGetSetVerticesData {
 
         // indexBuffer
         if (numOfMeshes === 1 && this._indices && this._indices.length > 0) {
-            this._indexBuffer = this._engine.createIndexBuffer(this._indices, this._updatable);
+            this._indexBuffer = this._engine.createIndexBuffer(this._indices, this._updatable, "Geometry_" + this.id + "_IndexBuffer");
         }
 
         // morphTargets

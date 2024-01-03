@@ -1043,6 +1043,10 @@ export class ThinEngine {
         // Adding a timeout to avoid race condition at browser level
         setTimeout(async () => {
             this._dummyFramebuffer = null;
+            this._emptyTexture = null;
+            this._emptyCubeTexture = null;
+            this._emptyTexture3D = null;
+            this._emptyTexture2DArray = null;
 
             const depthTest = this._depthCullingState.depthTest; // backup those values because the call to initEngine / wipeCaches will reset them
             const depthFunc = this._depthCullingState.depthFunc;
@@ -1067,6 +1071,8 @@ export class ThinEngine {
             this._rebuildBuffers();
             // Rebuild textures
             this._rebuildInternalTextures();
+            // Rebuild textures
+            this._rebuildTextures();
             // Rebuild textures
             this._rebuildRenderTargetWrappers();
 
@@ -1146,13 +1152,11 @@ export class ThinEngine {
     protected _rebuildBuffers(): void {
         // Uniforms
         for (const uniformBuffer of this._uniformBuffers) {
-            uniformBuffer._rebuild();
-        }
-        // Storage buffers
-        for (const storageBuffer of this._storageBuffers) {
-            storageBuffer._rebuild();
+            uniformBuffer._rebuildAfterContextLost();
         }
     }
+
+    protected _rebuildTextures(): void {}
 
     protected _initGLContext(): void {
         // Caps
@@ -4393,6 +4397,8 @@ export class ThinEngine {
             (potWidth, potHeight, img, extension, texture, continuationCallback) => {
                 const gl = this._gl;
                 const isPot = img.width === potWidth && img.height === potHeight;
+
+                texture._creationFlags = creationFlags ?? 0;
 
                 const tip = this._getTexImageParametersForCreateTexture(format, extension, texture._useSRGBBuffer);
                 if (isPot) {
