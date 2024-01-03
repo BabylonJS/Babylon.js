@@ -1,5 +1,5 @@
 import { Observable } from "../../Misc/observable";
-import type { Nullable, int } from "../../types";
+import type { ImageSource, Nullable, int } from "../../types";
 import type { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
 import type { HardwareTextureWrapper } from "./hardwareTextureWrapper";
 import { TextureSampler } from "./textureSampler";
@@ -259,7 +259,7 @@ export class InternalTexture extends TextureSampler {
     public _premulAlpha = false;
 
     /** @internal */
-    public _dynamicTextureSource: Nullable<ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas> = null;
+    public _dynamicTextureSource: Nullable<ImageSource> = null;
 
     private _engine: ThinEngine;
     private _uniqueId: number;

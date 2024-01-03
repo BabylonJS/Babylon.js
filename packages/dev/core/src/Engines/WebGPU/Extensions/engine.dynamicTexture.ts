@@ -1,6 +1,6 @@
 import { ThinEngine } from "core/Engines/thinEngine";
 import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
-import type { Nullable } from "../../../types";
+import type { ImageSource, Nullable } from "../../../types";
 import { WebGPUEngine } from "../../webgpuEngine";
 import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 
@@ -33,7 +33,7 @@ WebGPUEngine.prototype.createDynamicTexture = function (width: number, height: n
 
 WebGPUEngine.prototype.updateDynamicTexture = function (
     texture: Nullable<InternalTexture>,
-    source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas,
+    source: ImageSource,
     invertY: boolean,
     premulAlpha: boolean = false,
     format?: number,
