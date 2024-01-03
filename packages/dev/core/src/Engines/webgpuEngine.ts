@@ -23,6 +23,7 @@ import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptio
 import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingContext";
 import { Tools } from "../Misc/tools";
 import { WebGPUTextureHelper } from "./WebGPU/webgpuTextureHelper";
+import { WebGPUTextureManager } from "./WebGPU/webgpuTextureManager";
 import type { ISceneLike, ThinEngineOptions } from "./thinEngine";
 import { WebGPUBufferManager } from "./WebGPU/webgpuBufferManager";
 import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
@@ -221,7 +222,7 @@ export class WebGPUEngine extends Engine {
     private _glslangOptions?: GlslangOptions;
     private _twgslOptions?: TwgslOptions;
     /** @internal */
-    public _textureHelper: WebGPUTextureHelper;
+    public _textureHelper: WebGPUTextureManager;
     /** @internal */
     public _bufferManager: WebGPUBufferManager;
     private _clearQuad: WebGPUClearQuad;
@@ -729,7 +730,7 @@ export class WebGPUEngine extends Engine {
             )
             .then(() => {
                 this._bufferManager = new WebGPUBufferManager(this, this._device);
-                this._textureHelper = new WebGPUTextureHelper(this, this._device, this._glslang, this._tintWASM, this._bufferManager, this._deviceEnabledExtensions);
+                this._textureHelper = new WebGPUTextureManager(this, this._device, this._glslang, this._tintWASM, this._bufferManager, this._deviceEnabledExtensions);
                 this._cacheSampler = new WebGPUCacheSampler(this._device);
                 this._cacheBindGroups = new WebGPUCacheBindGroups(this._device, this._cacheSampler, this);
                 this._timestampQuery = new WebGPUTimestampQuery(this, this._device, this._bufferManager);

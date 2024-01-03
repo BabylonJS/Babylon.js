@@ -128,13 +128,7 @@ export class FluidRendererSceneComponent implements ISceneComponent {
      * context lost for instance.
      */
     public rebuild(): void {
-        if (this.scene._fluidRenderer) {
-            // Release resources first
-            this.scene.disableFluidRenderer();
-
-            // Re-enable
-            this.scene.enableFluidRenderer();
-        }
+        // Nothing to do for this component
     }
 
     /**

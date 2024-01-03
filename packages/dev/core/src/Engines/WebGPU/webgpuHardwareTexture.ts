@@ -5,6 +5,7 @@ import { Scalar } from "../../Maths/math.scalar";
 import type { Nullable } from "../../types";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import * as WebGPUConstants from "./webgpuConstants";
+import { WebGPUTextureHelper } from "./webgpuTextureHelper";
 
 /** @internal */
 export class WebGPUHardwareTexture implements HardwareTextureWrapper {
@@ -92,17 +93,20 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
             arrayLayerCount = depth;
         }
 
+        const format = WebGPUTextureHelper.GetDepthFormatOnly(this.format);
+        const aspect = WebGPUTextureHelper.HasDepthAndStencilAspects(this.format) ? WebGPUConstants.TextureAspect.DepthOnly : WebGPUConstants.TextureAspect.All;
+
         this.createView({
             label: `TextureView${is3D ? "3D" : isCube ? "Cube" : "2D"}${is2DArray ? "_Array" + arrayLayerCount : ""}_${width}x${height}_${generateMipMaps ? "wmips" : "womips"}_${
                 this.format
             }_${viewDimension}`,
-            format: this.format,
+            format,
             dimension: viewDimension,
             mipLevelCount: generateMipMaps ? Scalar.ILog2(Math.max(width, height)) + 1 : 1,
             baseArrayLayer: 0,
             baseMipLevel: 0,
             arrayLayerCount,
-            aspect: WebGPUConstants.TextureAspect.All,
+            aspect,
         });
     }
 

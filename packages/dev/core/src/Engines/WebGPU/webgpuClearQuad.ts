@@ -10,7 +10,8 @@ import type { WebGPUCacheRenderPipeline } from "./webgpuCacheRenderPipeline";
 import { WebGPUCacheRenderPipelineTree } from "./webgpuCacheRenderPipelineTree";
 import type { WebGPUPipelineContext } from "./webgpuPipelineContext";
 import { WebGPUShaderProcessingContext } from "./webgpuShaderProcessingContext";
-import { renderableTextureFormatToIndex, WebGPUTextureHelper } from "./webgpuTextureHelper";
+import { WebGPUTextureHelper } from "./webgpuTextureHelper";
+import { renderableTextureFormatToIndex } from "./webgpuTextureManager";
 
 import "../../Shaders/clearQuad.vertex";
 import "../../Shaders/clearQuad.fragment";
