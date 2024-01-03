@@ -172,9 +172,10 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
             // the hit plane.
             this._updateHitPlane();
 
-            //update camera‘s target in zoomToMouseLocation mode
-            //it only needs to be updated when the mouse wheel is rolling
-            if (camera.inertialRadiusOffset) {
+            //If the user manually set the camera target before
+            //in order to ensure the normal use of this function
+            //you need to automatically calculate the correct camera in this mode.
+            if (camera.targetSetManually && camera.inertialRadiusOffset) {
                 this._updateCameraTarget();
             }
 
@@ -213,8 +214,8 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         const camera = this.camera;
         const direction = camera.target.subtract(camera.position).normalize();
         const ray = new Ray(camera.position, direction, Number.MAX_SAFE_INTEGER);
-        const groundPlane = Plane.FromPositionAndNormal(Vector3.Zero(), camera.upVector);
-        const distance = ray.intersectsPlane(groundPlane) ?? 0;
+        const ground = Plane.FromPositionAndNormal(Vector3.Zero(), camera.upVector);
+        const distance = ray.intersectsPlane(ground) ?? 0;
         const intersectionPoint = ray.origin.add(ray.direction.scale(distance));
         camera.setTarget(intersectionPoint);
     }
