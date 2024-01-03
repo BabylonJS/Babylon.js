@@ -218,6 +218,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         const distance = ray.intersectsPlane(ground) ?? 0;
         const intersectionPoint = ray.origin.add(ray.direction.scale(distance));
         camera.setTarget(intersectionPoint);
+        camera.targetSetManually = false;
     }
 
     // Get position on the hit plane
