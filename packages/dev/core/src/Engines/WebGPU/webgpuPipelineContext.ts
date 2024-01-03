@@ -85,6 +85,11 @@ export class WebGPUPipelineContext implements IPipelineContext {
     ) {
         const engine = this.engine;
 
+        if (engine._doNotHandleContextLost) {
+            effect._fragmentSourceCode = "";
+            effect._vertexSourceCode = "";
+        }
+
         const foundSamplers = this.shaderProcessingContext.availableTextures;
         let index: number;
         for (index = 0; index < samplerList.length; index++) {
