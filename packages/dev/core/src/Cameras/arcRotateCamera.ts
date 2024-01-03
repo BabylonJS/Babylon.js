@@ -1087,15 +1087,14 @@ export class ArcRotateCamera extends TargetCamera {
     public setTarget(target: TransformNode | Vector3, toBoundingCenter = false, allowSamePosition = false, cloneAlphaBetaRadius = false): void {
         cloneAlphaBetaRadius = this.overrideCloneAlphaBetaRadius ?? cloneAlphaBetaRadius;
 
-        const canTakeHostPath = (!toBoundingCenter || (toBoundingCenter && (<any>target).getBoundingInfo)) && (target as TransformNode).computeWorldMatrix;
-        if (canTakeHostPath) {
-            if (toBoundingCenter) {
+        if ((target as TransformNode).computeWorldMatrix) {
+            if (toBoundingCenter && (<any>target).getBoundingInfo) {
                 this._targetBoundingCenter = (<any>target).getBoundingInfo().boundingBox.centerWorld.clone();
             } else {
                 this._targetBoundingCenter = null;
             }
             (<TransformNode>target).computeWorldMatrix();
-            this._targetHost = <AbstractMesh>target;
+            this._targetHost = <TransformNode>target;
             this._target = this._getTargetPosition();
 
             this.onMeshTargetChangedObservable.notifyObservers(this._targetHost);
