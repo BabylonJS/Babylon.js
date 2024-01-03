@@ -558,6 +558,10 @@ export class UniformBuffer {
         this._needSync = true;
     }
 
+    // The result of this method is used for debugging purpose, as part of the buffer name
+    // It is meant to more easily know what this buffer is about when debugging
+    // Some buffers can have a lot of uniforms (several dozens), so the method only returns the first 10 of them
+    // (should be enough to understand what the buffer is for)
     private _getNames() {
         const names = [];
         let i = 0;
