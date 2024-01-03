@@ -41,6 +41,7 @@ export class WebXRCamera extends FreeCamera {
      * Notice - will also be triggered when tracking has started (at the beginning of the session)
      */
     public onTrackingStateChanged = new Observable<WebXRTrackingState>();
+
     /**
      * Should position compensation execute on first frame.
      * This is used when copying the position from a native (non XR) camera
