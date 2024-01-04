@@ -1,3 +1,4 @@
+import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
@@ -13,9 +14,16 @@ export class GeometryArcTan2Block extends NodeGeometryBlock {
     public constructor(name: string) {
         super(name);
 
-        this.registerInput("x", NodeGeometryBlockConnectionPointTypes.Float);
-        this.registerInput("y", NodeGeometryBlockConnectionPointTypes.Float);
-        this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Float);
+        this.registerInput("x", NodeGeometryBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("y", NodeGeometryBlockConnectionPointTypes.AutoDetect);
+        this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.BasedOnInput);
+
+        this._outputs[0]._typeConnectionSource = this._inputs[0];
+        this._linkConnectionTypes(0, 1);
+
+        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Matrix);
+        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Geometry);
+        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Texture);
     }
 
     /**
@@ -48,19 +56,37 @@ export class GeometryArcTan2Block extends NodeGeometryBlock {
     }
 
     protected _buildBlock() {
-
         if (!this.x.isConnected || !this.y.isConnected) {
             this.output._storedFunction = null;
             this.output._storedValue = null;
             return;
         }
 
+        const func = (x: number, y: number) => {
+            return Math.atan2(x, y);
+        };
+
         this.output._storedFunction = (state) => {
             const x = this.x.getConnectedValue(state);
             const y = this.y.getConnectedValue(state);
 
+            switch (this.x.type) {
+                case NodeGeometryBlockConnectionPointTypes.Int:
+                case NodeGeometryBlockConnectionPointTypes.Float: {
+                    return func!(x, y);
+                }
+                case NodeGeometryBlockConnectionPointTypes.Vector2: {
+                    return new Vector2(func!(x.x, y.x), func!(x.y, y.y));
+                }
+                case NodeGeometryBlockConnectionPointTypes.Vector3: {
+                    return new Vector3(func!(x.x, y.x), func!(x.y, y.y), func!(x.z, y.z));
+                }
+                case NodeGeometryBlockConnectionPointTypes.Vector4: {
+                    return new Vector4(func!(x.x, y.x), func!(x.y, y.y), func!(x.z, y.z), func!(x.w, y.w));
+                }
+            }
 
-            return Math.atan2(x, y);
+            return 0;
         };
     }
 }

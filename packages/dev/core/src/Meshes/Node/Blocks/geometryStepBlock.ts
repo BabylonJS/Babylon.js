@@ -22,7 +22,7 @@ export class GeometryStepBlock extends NodeGeometryBlock {
         this._outputs[0]._typeConnectionSource = this._inputs[0];
         this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Matrix);
         this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Geometry);
-        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Texture);        
+        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Texture);
     }
 
     /**
@@ -66,7 +66,7 @@ export class GeometryStepBlock extends NodeGeometryBlock {
             }
 
             return 1;
-        }
+        };
 
         this.output._storedFunction = (state) => {
             const source = this.value.getConnectedValue(state);
@@ -88,7 +88,7 @@ export class GeometryStepBlock extends NodeGeometryBlock {
             }
 
             return 0;
-        }
+        };
 
         return this;
     }

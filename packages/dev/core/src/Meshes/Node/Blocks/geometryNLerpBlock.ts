@@ -1,4 +1,3 @@
-
 import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
@@ -25,7 +24,7 @@ export class GeometryNLerpBlock extends NodeGeometryBlock {
 
         this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Matrix);
         this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Geometry);
-        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Texture);    
+        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Texture);
     }
 
     /**
@@ -73,7 +72,7 @@ export class GeometryNLerpBlock extends NodeGeometryBlock {
 
         const func = (gradient: number, left: number, right: number) => {
             return (1 - gradient) * left + gradient * right;
-        }
+        };
 
         this.output._storedFunction = (state) => {
             const left = this.left.getConnectedValue(state);
@@ -97,7 +96,12 @@ export class GeometryNLerpBlock extends NodeGeometryBlock {
                     return result;
                 }
                 case NodeGeometryBlockConnectionPointTypes.Vector4: {
-                    const result = new Vector4(func!(gradient, left.x, right.x), func!(gradient, left.y, right.y), func!(gradient, left.z, right.z), func!(gradient, left.w, right.w));
+                    const result = new Vector4(
+                        func!(gradient, left.x, right.x),
+                        func!(gradient, left.y, right.y),
+                        func!(gradient, left.z, right.z),
+                        func!(gradient, left.w, right.w)
+                    );
                     result.normalize();
 
                     return result;
@@ -105,10 +109,10 @@ export class GeometryNLerpBlock extends NodeGeometryBlock {
             }
 
             return 0;
-        }
+        };
 
         return this;
-    }    
+    }
 }
 
 RegisterClass("BABYLON.GeometryNLerpBlock", GeometryNLerpBlock);

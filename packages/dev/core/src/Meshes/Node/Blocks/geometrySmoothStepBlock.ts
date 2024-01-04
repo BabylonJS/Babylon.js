@@ -22,7 +22,7 @@ export class GeometrySmoothStepBlock extends NodeGeometryBlock {
         this._outputs[0]._typeConnectionSource = this._inputs[0];
         this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Matrix);
         this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Geometry);
-        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Texture);    
+        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Texture);
     }
 
     /**
@@ -70,10 +70,10 @@ export class GeometrySmoothStepBlock extends NodeGeometryBlock {
 
         const func = (value: number, edge0: number, edge1: number) => {
             const x = Math.max(0, Math.min((value - edge0) / (edge1 - edge0), 1));
-  
+
             // Smoothstep formula: 3x^2 - 2x^3
             return x * x * (3 - 2 * x);
-        }
+        };
 
         this.output._storedFunction = (state) => {
             const source = this.value.getConnectedValue(state);
@@ -96,7 +96,7 @@ export class GeometrySmoothStepBlock extends NodeGeometryBlock {
             }
 
             return 0;
-        }
+        };
 
         return this;
     }

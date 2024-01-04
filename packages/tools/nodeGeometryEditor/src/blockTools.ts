@@ -57,6 +57,10 @@ import { GeometryTextureFetchBlock } from "core/Meshes/Node/Blocks/Textures/geom
 import { BoundingBlock } from "core/Meshes/Node/Blocks/boundingBlock";
 import { BooleanGeometryBlock } from "core/Meshes/Node/Blocks/booleanGeometryBlock";
 import { GeometryArcTan2Block } from "core/Meshes/Node/Blocks/geometryArcTan2Block";
+import { GeometryLerpBlock } from "core/Meshes/Node/Blocks/geometryLerpBlock";
+import { GeometryNLerpBlock } from "core/Meshes/Node/Blocks/geometryNLerpBlock";
+import { GeometrySmoothStepBlock } from "core/Meshes/Node/Blocks/geometrySmoothStepBlock";
+import { GeometryStepBlock } from "core/Meshes/Node/Blocks/geometryStepBlock";
 
 /**
  * Static class for BlockTools
@@ -135,6 +139,14 @@ export class BlockTools {
                 block.test = ConditionBlockTests.And;
                 return block;
             }
+            case "LerpBlock":
+                return new GeometryLerpBlock("Lerp");
+            case "NLerpBlock":
+                return new GeometryNLerpBlock("NLerp");
+            case "SmoothStepBlock":
+                return new GeometrySmoothStepBlock("SmoothStep");
+            case "StepBlock":
+                return new GeometryStepBlock("Step");
             case "MappingBlock":
                 return new MappingBlock("Mapping");
             case "SetMaterialIDBlock":
@@ -341,7 +353,7 @@ export class BlockTools {
             }
             case "ArcTan2Block": {
                 return new GeometryArcTan2Block("ArcTan2");
-            }            
+            }
             case "CosBlock": {
                 const block = new GeometryTrigonometryBlock("Cos");
                 block.operation = GeometryTrigonometryBlockOperations.Cos;

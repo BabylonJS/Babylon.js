@@ -85,6 +85,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         ArcTan2Block: "Trigonometry block set to Arc tan2 (using radians)",
         CosBlock: "Trigonometry block set to Cos (using radians)",
         ExpBlock: "Trigonometry block set to Exp (using radians)",
+        Exp2Block: "Trigonometry block set to Exp2 (using radians)",
         LogBlock: "Trigonometry block set to Log (using radians)",
         SinBlock: "Trigonometry block set to Sin (using radians)",
         TanBlock: "Trigonometry block set to Tan (using radians)",
@@ -129,6 +130,10 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         TextureBlock: "Provide a texture data source",
         TextureFetchBlock: "Fetch a color from a texture data source",
         BoundingBlock: "Compute the bounding box of a geometry",
+        LerpBlock: "Interpolate with a lerp",
+        NLerpBlock: "Interpolate with a normalized lerp",
+        SmoothStepBlock: "Interpolate with a smooth step",
+        StepBlock: "Interpolate with a step function",
     };
 
     private _customFrameList: { [key: string]: string };

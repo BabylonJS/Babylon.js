@@ -24,7 +24,7 @@ export class GeometryLerpBlock extends NodeGeometryBlock {
 
         this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Matrix);
         this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Geometry);
-        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Texture);    
+        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Texture);
     }
 
     /**
@@ -72,7 +72,7 @@ export class GeometryLerpBlock extends NodeGeometryBlock {
 
         const func = (gradient: number, left: number, right: number) => {
             return (1 - gradient) * left + gradient * right;
-        }
+        };
 
         this.output._storedFunction = (state) => {
             const left = this.left.getConnectedValue(state);
@@ -95,10 +95,10 @@ export class GeometryLerpBlock extends NodeGeometryBlock {
             }
 
             return 0;
-        }
+        };
 
         return this;
-    }    
+    }
 }
 
 RegisterClass("BABYLON.GeometryLerpBlock", GeometryLerpBlock);
