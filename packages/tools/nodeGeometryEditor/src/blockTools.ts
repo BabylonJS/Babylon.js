@@ -56,6 +56,7 @@ import { GeometryTextureBlock } from "core/Meshes/Node/Blocks/Textures/geometryT
 import { GeometryTextureFetchBlock } from "core/Meshes/Node/Blocks/Textures/geometryTextureFetchBlock";
 import { BoundingBlock } from "core/Meshes/Node/Blocks/boundingBlock";
 import { BooleanGeometryBlock } from "core/Meshes/Node/Blocks/booleanGeometryBlock";
+import { GeometryArcTan2Block } from "core/Meshes/Node/Blocks/geometryArcTan2Block";
 
 /**
  * Static class for BlockTools
@@ -338,6 +339,9 @@ export class BlockTools {
                 block.operation = GeometryTrigonometryBlockOperations.ArcTan;
                 return block;
             }
+            case "ArcTan2Block": {
+                return new GeometryArcTan2Block("ArcTan2");
+            }            
             case "CosBlock": {
                 const block = new GeometryTrigonometryBlock("Cos");
                 block.operation = GeometryTrigonometryBlockOperations.Cos;
@@ -346,6 +350,11 @@ export class BlockTools {
             case "ExpBlock": {
                 const block = new GeometryTrigonometryBlock("Exp");
                 block.operation = GeometryTrigonometryBlockOperations.Exp;
+                return block;
+            }
+            case "Exp2Block": {
+                const block = new GeometryTrigonometryBlock("Exp2");
+                block.operation = GeometryTrigonometryBlockOperations.Exp2;
                 return block;
             }
             case "LogBlock": {
