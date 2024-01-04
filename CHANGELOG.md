@@ -1,5 +1,12 @@
 # Changelog
 
+## 6.37.1
+
+### Core
+
+- Camera framing behavior: Fix crash - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14670](https://github.com/BabylonJS/Babylon.js/pull/14670))
+- ArcRotateCamera: Allow to pass a transform node to setTarget / targetHost - by [Popov72](https://github.com/Popov72) ([#14666](https://github.com/BabylonJS/Babylon.js/pull/14666))
+
 ## 6.37.0
 
 ### Core

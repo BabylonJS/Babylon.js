@@ -1,23 +1,71 @@
 {
-    "fromTag": "6.36.1",
+    "fromTag": "6.37.0",
     "changelog": {
-        "6.36.1": [
+        "6.37.1": [
             {
-                "pr": "14659",
-                "title": "Declaration generation for UMD",
-                "description": null,
+                "pr": "14670",
+                "title": "Camera framing behavior: Fix crash",
+                "description": "Fix after #14666",
                 "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPauseAnimationBlock.ts",
-                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPlayAnimationBlock.ts",
-                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphStopAnimationBlock.ts",
-                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineMesh.ts",
-                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineRibbonMesh.ts"
+                    "packages/dev/core/src/Behaviors/Cameras/framingBehavior.ts"
                 ],
-                "tags": []
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "14668",
+                "title": "Clean up ground mesh documentation",
+                "description": "I noticed some repetition between the option descriptions and option parameters, so I moved all the descriptions to inside the parameters to make it easier to read. Also added a clarification in `CreateGroundFromHeightMap` to make it clearer that the mesh creation is not immediate.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/groundBuilder.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14667",
+                "title": "Sandbox: Allow to drop .webp files",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/tools/sandbox/src/components/renderingZone.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "sandbox"
+                ]
+            },
+            {
+                "pr": "14666",
+                "title": "ArcRotateCamera: Allow to pass a transform node to setTarget / targetHost",
+                "description": "See https://forum.babylonjs.com/t/update-camera-position-as-an-orbit-around-a-transformnode/46773/3",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Cameras/bouncingBehavior.ts",
+                    "packages/dev/core/src/Behaviors/Cameras/framingBehavior.ts",
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "inputs"
+                ]
             }
         ],
         "6.37.0": [
@@ -218,6 +266,25 @@
                 "files": [
                     "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
                     "packages/dev/core/src/Rendering/renderingManager.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "6.36.1": [
+            {
+                "pr": "14659",
+                "title": "Declaration generation for UMD",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPauseAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPlayAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphStopAnimationBlock.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineMesh.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineRibbonMesh.ts"
                 ],
                 "tags": []
             }
