@@ -5,6 +5,7 @@ import { BackEase, EasingFunction } from "../../Animations/easing";
 import type { Nullable } from "../../types";
 import type { Observer } from "../../Misc/observable";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { TransformNode } from "../../Meshes/transformNode";
 import type { Animatable } from "../../Animations/animatable";
 import { Animation } from "../../Animations/animation";
 
@@ -71,16 +72,18 @@ export class BouncingBehavior implements Behavior<ArcRotateCamera> {
         }
 
         if (value) {
-            this._onMeshTargetChangedObserver = camera.onMeshTargetChangedObservable.add((mesh) => {
-                if (!mesh) {
+            this._onMeshTargetChangedObserver = camera.onMeshTargetChangedObservable.add((transformNode) => {
+                if (!transformNode) {
                     return;
                 }
 
-                mesh.computeWorldMatrix(true);
-                const diagonal = mesh.getBoundingInfo().diagonalLength;
+                transformNode.computeWorldMatrix(true);
+                if ((transformNode as AbstractMesh).getBoundingInfo) {
+                    const diagonal = (transformNode as AbstractMesh).getBoundingInfo().diagonalLength;
 
-                this.lowerRadiusTransitionRange = diagonal * 0.05;
-                this.upperRadiusTransitionRange = diagonal * 0.05;
+                    this.lowerRadiusTransitionRange = diagonal * 0.05;
+                    this.upperRadiusTransitionRange = diagonal * 0.05;
+                }
             });
         } else if (this._onMeshTargetChangedObserver) {
             camera.onMeshTargetChangedObservable.remove(this._onMeshTargetChangedObserver);
@@ -90,7 +93,7 @@ export class BouncingBehavior implements Behavior<ArcRotateCamera> {
     // Connection
     private _attachedCamera: Nullable<ArcRotateCamera>;
     private _onAfterCheckInputsObserver: Nullable<Observer<Camera>>;
-    private _onMeshTargetChangedObserver: Nullable<Observer<Nullable<AbstractMesh>>>;
+    private _onMeshTargetChangedObserver: Nullable<Observer<Nullable<TransformNode>>>;
 
     /**
      * Initializes the behavior.

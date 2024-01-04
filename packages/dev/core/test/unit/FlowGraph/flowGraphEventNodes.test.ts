@@ -7,11 +7,11 @@ import {
     FlowGraphCoordinator,
     FlowGraphConsoleLogBlock,
     FlowGraphMeshPickEventBlock,
-    FlowGraphPath,
     FlowGraphReceiveCustomEventBlock,
     FlowGraphSceneReadyEventBlock,
     FlowGraphSendCustomEventBlock,
 } from "core/FlowGraph";
+import { FlowGraphPathConverter } from "core/FlowGraph/flowGraphPathConverter";
 import { Mesh } from "core/Meshes";
 import { Logger } from "core/Misc/logger";
 import { Scene } from "core/scene";
@@ -82,10 +82,12 @@ describe("Flow Graph Event Nodes", () => {
 
         context.setVariable("meshes", [mesh1, mesh2, mesh3]);
 
+        const pathConverter = new FlowGraphPathConverter(context, "/");
+
         // Create a mesh pick event on mesh1 and mesh3
-        const meshPick1 = new FlowGraphMeshPickEventBlock({ name: "MeshPick1", path: new FlowGraphPath("/meshes/0") });
+        const meshPick1 = new FlowGraphMeshPickEventBlock({ name: "MeshPick1", path: "meshes/0/", pathConverter });
         graph.addEventBlock(meshPick1);
-        const meshPick3 = new FlowGraphMeshPickEventBlock({ name: "MeshPick3", path: new FlowGraphPath("/meshes/2") });
+        const meshPick3 = new FlowGraphMeshPickEventBlock({ name: "MeshPick3", path: "meshes/2/", pathConverter });
         graph.addEventBlock(meshPick3);
 
         // Create a console log block for each mesh pick

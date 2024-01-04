@@ -8,6 +8,7 @@ import { DeepCopier } from "../../Misc/deepCopier";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
 import type { GreasedLineMeshOptions, GreasedLineRibbonOptions } from "./greasedLineBaseMesh";
 import { GreasedLineBaseMesh, GreasedLineRibbonAutoDirectionMode, GreasedLineRibbonFacesMode, GreasedLineRibbonPointsMode } from "./greasedLineBaseMesh";
+import type { VertexData } from "../mesh.vertexData";
 
 Mesh._GreasedLineRibbonMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
     return GreasedLineRibbonMesh.Parse(parsedMesh, scene);
@@ -528,7 +529,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         return slopes;
     }
 
-    protected _createVertexBuffers() {
+    protected _createVertexBuffers(): VertexData {
         this._uvs = this._options.uvs ?? this._uvs;
         const vertexData = super._createVertexBuffers(this._options.ribbonOptions?.smoothShading);
 

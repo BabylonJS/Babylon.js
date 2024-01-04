@@ -62,3 +62,8 @@ export type DeepImmutableObject<T> = { readonly [K in keyof T]: DeepImmutable<T[
 interface DeepImmutableArray<T> extends ReadonlyArray<DeepImmutable<T>> {}
 /** @internal */
 /* interface DeepImmutableMap<K, V> extends ReadonlyMap<DeepImmutable<K>, DeepImmutable<V>> {} // es2015+ only */
+
+/**
+ * Alias type for image sources
+ */
+export type ImageSource = ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas;

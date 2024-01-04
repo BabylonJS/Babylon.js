@@ -894,15 +894,16 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         }
 
         if (this._waitingRenderList) {
-            this.renderList = [];
-            for (let index = 0; index < this._waitingRenderList.length; index++) {
-                const id = this._waitingRenderList[index];
-                const mesh = scene.getMeshById(id);
-                if (mesh) {
-                    this.renderList.push(mesh);
+            if (!this.renderListPredicate) {
+                this.renderList = [];
+                for (let index = 0; index < this._waitingRenderList.length; index++) {
+                    const id = this._waitingRenderList[index];
+                    const mesh = scene.getMeshById(id);
+                    if (mesh) {
+                        this.renderList.push(mesh);
+                    }
                 }
             }
-
             this._waitingRenderList = undefined;
         }
 
@@ -1222,10 +1223,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             // Clear
             if (this.onClearObservable.hasObservers()) {
                 this.onClearObservable.notifyObservers(engine);
-            } else {
-                if (!this.skipInitialClear) {
-                    engine.clear(this.clearColor || scene.clearColor, true, true, true);
-                }
+            } else if (!this.skipInitialClear) {
+                engine.clear(this.clearColor || scene.clearColor, true, true, true);
             }
 
             if (!this._doNotChangeAspectRatio) {

@@ -19,6 +19,7 @@ import { Epsilon } from "../Maths/math.constants";
 import { Tools } from "../Misc/tools";
 
 import type { Collider } from "../Collisions/collider";
+import type { TransformNode } from "core/Meshes/transformNode";
 
 Node.AddNodeConstructor("ArcRotateCamera", (name, scene) => {
     return () => new ArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), scene);
@@ -60,7 +61,7 @@ export class ArcRotateCamera extends TargetCamera {
     @serializeAsVector3("target")
     protected _target: Vector3;
     @serializeAsMeshReference("targetHost")
-    protected _targetHost: Nullable<AbstractMesh>;
+    protected _targetHost: Nullable<TransformNode>;
     @serialize("targetSetManually")
     protected _targetSetManually: Boolean;
 
@@ -76,14 +77,14 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     /**
-     * Defines the target mesh of the camera.
+     * Defines the target transform node of the camera.
      * The camera looks towards it from the radius distance.
      * Please note that setting a target host will disable panning.
      */
-    public get targetHost(): Nullable<AbstractMesh> {
+    public get targetHost(): Nullable<TransformNode> {
         return this._targetHost;
     }
-    public set targetHost(value: Nullable<AbstractMesh>) {
+    public set targetHost(value: Nullable<TransformNode>) {
         if (value) {
             this.setTarget(value);
         }
@@ -668,9 +669,9 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     /**
-     * Observable triggered when the mesh target has been changed on the camera.
+     * Observable triggered when the transform node target has been changed on the camera.
      */
-    public onMeshTargetChangedObservable = new Observable<Nullable<AbstractMesh>>();
+    public onMeshTargetChangedObservable = new Observable<Nullable<TransformNode>>();
 
     /**
      * Event raised when the camera is colliding with a mesh.
@@ -1091,23 +1092,23 @@ export class ArcRotateCamera extends TargetCamera {
      * Defines the target the camera should look at.
      * This will automatically adapt alpha beta and radius to fit within the new target.
      * Please note that setting a target as a mesh will disable panning.
-     * @param target Defines the new target as a Vector or a mesh
+     * @param target Defines the new target as a Vector or a transform node
      * @param toBoundingCenter In case of a mesh target, defines whether to target the mesh position or its bounding information center
      * @param allowSamePosition If false, prevents reapplying the new computed position if it is identical to the current one (optim)
      * @param cloneAlphaBetaRadius If true, replicate the current setup (alpha, beta, radius) on the new target
      * @param setManually Defines the target is Automatic calculation through the program or Setting by the user
      */
-    public setTarget(target: AbstractMesh | Vector3, toBoundingCenter = false, allowSamePosition = false, cloneAlphaBetaRadius = false, setManually = false): void {
+    public setTarget(target: TransformNode | Vector3, toBoundingCenter = false, allowSamePosition = false, cloneAlphaBetaRadius = false, setManually = false): void {
         cloneAlphaBetaRadius = this.overrideCloneAlphaBetaRadius ?? cloneAlphaBetaRadius;
         this._targetSetManually = setManually;
-        if ((<any>target).getBoundingInfo) {
-            if (toBoundingCenter) {
+        if ((target as TransformNode).computeWorldMatrix) {
+            if (toBoundingCenter && (<any>target).getBoundingInfo) {
                 this._targetBoundingCenter = (<any>target).getBoundingInfo().boundingBox.centerWorld.clone();
             } else {
                 this._targetBoundingCenter = null;
             }
-            (<AbstractMesh>target).computeWorldMatrix();
-            this._targetHost = <AbstractMesh>target;
+            (<TransformNode>target).computeWorldMatrix();
+            this._targetHost = <TransformNode>target;
             this._target = this._getTargetPosition();
 
             this.onMeshTargetChangedObservable.notifyObservers(this._targetHost);

@@ -77,7 +77,7 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
         this._updateComputeShader = new ComputeShader("updateParticles", this._engine as WebGPUEngine, "gpuUpdateParticles", { bindingsMapping, defines: defines.split("\n") });
 
         this._simParamsComputeShader?.dispose();
-        this._simParamsComputeShader = new UniformBuffer(this._engine);
+        this._simParamsComputeShader = new UniformBuffer(this._engine, undefined, undefined, "ComputeShaderParticleSystemUBO");
 
         this._simParamsComputeShader.addUniform("currentCount", 1);
         this._simParamsComputeShader.addUniform("timeDelta", 1);
@@ -119,7 +119,12 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
     }
 
     public createParticleBuffer(data: number[]): DataArray | DataBuffer {
-        const buffer = new StorageBuffer(this._engine, data.length * 4, Constants.BUFFER_CREATIONFLAG_READWRITE | Constants.BUFFER_CREATIONFLAG_VERTEX);
+        const buffer = new StorageBuffer(
+            this._engine,
+            data.length * 4,
+            Constants.BUFFER_CREATIONFLAG_READWRITE | Constants.BUFFER_CREATIONFLAG_VERTEX,
+            "ComputeShaderParticleSystemBuffer"
+        );
 
         buffer.update(data);
         this._bufferComputeShader.push(buffer);

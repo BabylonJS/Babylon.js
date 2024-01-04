@@ -237,6 +237,16 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
     private _rotationEnabled: boolean = true;
 
     /**
+     * Observable raised before camera rotation
+     */
+    public onBeforeCameraTeleportRotation = new Observable<Number>();
+
+    /**
+     *  Observable raised after camera rotation
+     */
+    public onAfterCameraTeleportRotation = new Observable<Quaternion>();
+
+    /**
      * Is rotation enabled when moving forward?
      * Disabling this feature will prevent the user from deciding the direction when teleporting
      */
@@ -651,10 +661,12 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                                         // rotate in the right direction positive is right
                                         controllerData.teleportationState.rotating = true;
                                         const rotation = this.rotationAngle * (axesData.x > 0 ? 1 : -1) * (this._xrSessionManager.scene.useRightHandedSystem ? -1 : 1);
+                                        this.onBeforeCameraTeleportRotation.notifyObservers(rotation);
                                         Quaternion.FromEulerAngles(0, rotation, 0).multiplyToRef(
                                             this._options.xrInput.xrCamera.rotationQuaternion,
                                             this._options.xrInput.xrCamera.rotationQuaternion
                                         );
+                                        this.onAfterCameraTeleportRotation.notifyObservers(this._options.xrInput.xrCamera.rotationQuaternion);
                                     }
                                 } else {
                                     if (this._currentTeleportationControllerId === controllerData.xrController.uniqueId) {

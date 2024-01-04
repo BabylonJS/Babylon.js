@@ -18,6 +18,7 @@ import type { DataBuffer } from "core/Buffers/dataBuffer";
 import type { ExternalTexture } from "core/Materials/Textures/externalTexture";
 import type { VideoTexture } from "core/Materials/Textures/videoTexture";
 import { WebGPUPerfCounter } from "core/Engines/WebGPU/webgpuPerfCounter";
+import type { ThinEngine } from "core/Engines/thinEngine";
 
 /**
  * Defines the options associated with the creation of a compute shader.
@@ -52,7 +53,7 @@ type ComputeBindingListInternal = { [key: string]: { type: ComputeBindingType; o
  * The ComputeShader object lets you execute a compute shader on your GPU (if supported by the engine)
  */
 export class ComputeShader {
-    private _engine: WebGPUEngine;
+    private _engine: ThinEngine;
     private _shaderPath: any;
     private _options: IComputeShaderOptions;
     private _effect: ComputeEffect;
@@ -121,11 +122,11 @@ export class ComputeShader {
      *  * string: try first to find the code in ShaderStore.ShadersStoreWGSL[shaderPath + "ComputeShader"]. If not, assumes it is a file with name shaderPath.compute.fx in index.html folder.
      * @param options Define the options used to create the shader
      */
-    constructor(name: string, engine: WebGPUEngine, shaderPath: any, options: Partial<IComputeShaderOptions> = {}) {
+    constructor(name: string, engine: ThinEngine, shaderPath: any, options: Partial<IComputeShaderOptions> = {}) {
         this.name = name;
         this._engine = engine;
         this.uniqueId = UniqueIdGenerator.UniqueId;
-        if (engine.enableGPUTimingMeasurements) {
+        if ((engine as WebGPUEngine).enableGPUTimingMeasurements) {
             this.gpuTimeInFrame = new WebGPUPerfCounter();
         }
 
