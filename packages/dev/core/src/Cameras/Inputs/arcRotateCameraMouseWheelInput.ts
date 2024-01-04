@@ -213,7 +213,9 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
     //Reset the camera's target (the direction of sight and the focus of the ground).
     private _updateCameraTarget() {
         const camera = this.camera;
-        const ray = new Ray(camera.position, camera.target.subtractInPlace(camera.position), Number.MAX_SAFE_INTEGER);
+        const direction = TmpVectors.Vector3[6];
+        camera.target.subtractToRef(camera.position, direction);
+        const ray = new Ray(camera.position, direction, Number.MAX_SAFE_INTEGER);
         this._hitPlane = Plane.FromPositionAndNormal(Vector3.Zero(), camera.upVector);
         camera.setTarget(this._getIntersectionPoint(ray, this._hitPlane));
     }
