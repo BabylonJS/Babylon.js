@@ -51,6 +51,8 @@ export enum GeometryTrigonometryBlockOperations {
     ToDegrees,
     /** ToRadians */
     ToRadians,
+    /** Fract */
+    Fract,
 }
 
 /**
@@ -208,6 +210,16 @@ export class GeometryTrigonometryBlock extends NodeGeometryBlock {
             }
             case GeometryTrigonometryBlockOperations.ToDegrees: {
                 func = (value: number) => (value * 180) / Math.PI;
+                break;
+            }
+            case GeometryTrigonometryBlockOperations.Fract: {
+                func = (value: number) => {
+                    if (value >= 0) {
+                        return value - Math.floor(value);
+                    } else {
+                        return value - Math.ceil(value);
+                    }
+                };
                 break;
             }
         }

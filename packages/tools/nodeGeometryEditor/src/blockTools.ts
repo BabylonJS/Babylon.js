@@ -61,6 +61,10 @@ import { GeometryLerpBlock } from "core/Meshes/Node/Blocks/geometryLerpBlock";
 import { GeometryNLerpBlock } from "core/Meshes/Node/Blocks/geometryNLerpBlock";
 import { GeometrySmoothStepBlock } from "core/Meshes/Node/Blocks/geometrySmoothStepBlock";
 import { GeometryStepBlock } from "core/Meshes/Node/Blocks/geometryStepBlock";
+import { GeometryModBlock } from "core/Meshes/Node/Blocks/geometryModBlock";
+import { GeometryPowBlock } from "core/Meshes/Node/Blocks/geometryPowBlock";
+import { GeometryClampBlock } from "core/Meshes/Node/Blocks/geometryClampBlock";
+import { GeometryCrossBlock } from "core/Meshes/Node/Blocks/geometryCrossBlock";
 
 /**
  * Static class for BlockTools
@@ -68,6 +72,10 @@ import { GeometryStepBlock } from "core/Meshes/Node/Blocks/geometryStepBlock";
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "CrossBlock":
+                return new GeometryCrossBlock("Cross");
+            case "ClampBlock":
+                return new GeometryClampBlock("Clamp");
             case "BooleanBlock":
                 return new BooleanGeometryBlock("Boolean");
             case "TextureFetchBlock":
@@ -221,6 +229,10 @@ export class BlockTools {
                 return new MergeGeometryBlock("Merge");
             case "TransformBlock":
                 return new GeometryTransformBlock("Transform");
+            case "ModBlock":
+                return new GeometryModBlock("Mod");
+            case "PowBlock":
+                return new GeometryPowBlock("Pow");
             case "PositionsBlock": {
                 const block = new GeometryInputBlock("Positions");
                 block.contextualValue = NodeGeometryContextualSources.Positions;
@@ -417,6 +429,11 @@ export class BlockTools {
             case "FloorBlock": {
                 const block = new GeometryTrigonometryBlock("Floor");
                 block.operation = GeometryTrigonometryBlockOperations.Floor;
+                return block;
+            }
+            case "FractBlock": {
+                const block = new GeometryTrigonometryBlock("Fract");
+                block.operation = GeometryTrigonometryBlockOperations.Fract;
                 return block;
             }
             case "CeilingBlock": {
