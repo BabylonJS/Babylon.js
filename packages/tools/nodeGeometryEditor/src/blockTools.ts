@@ -64,6 +64,7 @@ import { GeometryStepBlock } from "core/Meshes/Node/Blocks/geometryStepBlock";
 import { GeometryModBlock } from "core/Meshes/Node/Blocks/geometryModBlock";
 import { GeometryPowBlock } from "core/Meshes/Node/Blocks/geometryPowBlock";
 import { GeometryClampBlock } from "core/Meshes/Node/Blocks/geometryClampBlock";
+import { GeometryCrossBlock } from "core/Meshes/Node/Blocks/geometryCrossBlock";
 
 /**
  * Static class for BlockTools
@@ -71,6 +72,8 @@ import { GeometryClampBlock } from "core/Meshes/Node/Blocks/geometryClampBlock";
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "CrossBlock":
+                return new GeometryCrossBlock("Cross");
             case "ClampBlock":
                 return new GeometryClampBlock("Clamp");
             case "BooleanBlock":
