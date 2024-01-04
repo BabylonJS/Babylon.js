@@ -168,16 +168,16 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         const camera = this.camera;
         const motion = 0.0 + camera.inertialAlphaOffset + camera.inertialBetaOffset + camera.inertialRadiusOffset;
         if (motion) {
-            // if zooming is still happening as a result of inertia, then we also need to update
-            // the hit plane.
-            this._updateHitPlane();
-
             //If the user manually set the camera target before
             //in order to ensure the normal use of this function
             //you need to automatically calculate the correct camera in this mode.
             if (camera.targetSetManually && camera.inertialRadiusOffset) {
                 this._updateCameraTarget();
             }
+
+            // if zooming is still happening as a result of inertia, then we also need to update
+            // the hit plane.
+            this._updateHitPlane();
 
             // Note we cannot  use arcRotateCamera.inertialPlanning here because arcRotateCamera panning
             // uses a different panningInertia which could cause this panning to get out of sync with
