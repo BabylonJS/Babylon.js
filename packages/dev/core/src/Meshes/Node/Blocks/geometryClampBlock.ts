@@ -29,7 +29,7 @@ export class GeometryClampBlock extends NodeGeometryBlock {
         this._outputs[0]._typeConnectionSource = this._inputs[0];
         this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Matrix);
         this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Geometry);
-        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Texture);        
+        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Texture);
     }
 
     /**
@@ -90,9 +90,7 @@ export class GeometryClampBlock extends NodeGeometryBlock {
     }
 
     protected _dumpPropertiesCode() {
-        let codeString =
-            super._dumpPropertiesCode() +
-            `${this._codeVariableName}.minimum = ${this.minimum};\n`;
+        let codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.minimum = ${this.minimum};\n`;
         codeString += `${this._codeVariableName}.maximum = ${this.maximum};\n`;
         return codeString;
     }

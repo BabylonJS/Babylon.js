@@ -136,7 +136,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         StepBlock: "Interpolate with a step function",
         FractBlock: "Outputs only the fractional value of a floating point number",
         ModBlock: "Outputs the value of one parameter modulo another",
-        PowBlock: "Outputs the input value multiplied by itself the number of times equal to the power input (Exponent of power)",        
+        PowBlock: "Outputs the input value multiplied by itself the number of times equal to the power input (Exponent of power)",
         ClampBlock: "Outputs values above the maximum or below minimum as maximum or minimum values respectively",
     };
 
@@ -262,7 +262,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "CeilingBlock",
                 "IntFloatConverterBlock",
                 "ModBlock",
-                "ClampBlock"
+                "ClampBlock",
             ],
             Math__Scientific: [
                 "AbsBlock",
