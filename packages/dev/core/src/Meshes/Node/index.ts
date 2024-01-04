@@ -61,3 +61,8 @@ export * from "./Blocks/Textures/geometryTextureBlock";
 export * from "./Blocks/Textures/geometryTextureFetchBlock";
 export * from "./Blocks/boundingBlock";
 export * from "./Blocks/booleanGeometryBlock";
+export * from "./Blocks/geometryArcTan2Block";
+export * from "./Blocks/geometryLerpBlock";
+export * from "./Blocks/geometryNLerpBlock";
+export * from "./Blocks/geometryStepBlock";
+export * from "./Blocks/geometrySmoothStepBlock";
