@@ -210,7 +210,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
         });
 
         this._onMeshTargetChangedObserver = camera.onMeshTargetChangedObservable.add((transformNode) => {
-            if ((transformNode as AbstractMesh).getBoundingInfo) {
+            if (transformNode && (transformNode as AbstractMesh).getBoundingInfo) {
                 this.zoomOnMesh(transformNode as AbstractMesh, undefined, () => {
                     this.onTargetFramingAnimationEndObservable.notifyObservers();
                 });
