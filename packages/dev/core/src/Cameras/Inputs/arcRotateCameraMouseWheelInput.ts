@@ -210,15 +210,31 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         this._hitPlane = Plane.FromPositionAndNormal(camera.target, direction);
     }
 
+    //Reset the camera's target (the direction of sight and the focus of the ground).
     private _updateCameraTarget() {
         const camera = this.camera;
-        const direction = camera.target.subtract(camera.position).normalize();
-        const ray = new Ray(camera.position, direction, Number.MAX_SAFE_INTEGER);
-        const ground = Plane.FromPositionAndNormal(Vector3.Zero(), camera.upVector);
-        const distance = ray.intersectsPlane(ground) ?? 0;
-        const intersectionPoint = ray.origin.add(ray.direction.scale(distance));
-        camera.setTarget(intersectionPoint);
-        camera.targetSetManually = false;
+        const ray = new Ray(camera.position, camera.target.subtractInPlace(camera.position), Number.MAX_SAFE_INTEGER);
+        this._hitPlane = Plane.FromPositionAndNormal(Vector3.Zero(), camera.upVector);
+        camera.setTarget(this._getIntersectionPoint(ray, this._hitPlane));
+    }
+
+    // Get the intersection of the ray and the plane
+    private _getIntersectionPoint(ray: Ray, plane: Nullable<Plane>): Vector3 {
+        const camera = this.camera;
+        // Since the camera is the origin of the picking ray, we need to offset it by the camera's offset manually
+        // Because the offset is in view space, we need to convert it to world space first
+        if (camera.targetScreenOffset.x !== 0 || camera.targetScreenOffset.y !== 0) {
+            this._viewOffset.set(camera.targetScreenOffset.x, camera.targetScreenOffset.y, 0);
+            camera.getViewMatrix().invertToRef(camera._cameraTransformMatrix);
+            this._globalOffset = Vector3.TransformNormal(this._viewOffset, camera._cameraTransformMatrix);
+            ray.origin.addInPlace(this._globalOffset);
+        }
+        let distance = 0;
+        if (plane) {
+            distance = ray.intersectsPlane(plane) ?? 0;
+        }
+        // not using this ray again, so modifying its vectors here is fine
+        return ray.origin.addInPlace(ray.direction.scaleInPlace(distance));
     }
 
     // Get position on the hit plane
@@ -230,22 +246,8 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         // we don't have to worry about this ray shooting off to infinity. This ray creates
         // a vector defining where we want to zoom to.
         const ray = scene.createPickingRay(scene.pointerX, scene.pointerY, Matrix.Identity(), camera, false);
-        // Since the camera is the origin of the picking ray, we need to offset it by the camera's offset manually
-        // Because the offset is in view space, we need to convert it to world space first
-        if (camera.targetScreenOffset.x !== 0 || camera.targetScreenOffset.y !== 0) {
-            this._viewOffset.set(camera.targetScreenOffset.x, camera.targetScreenOffset.y, 0);
-            camera.getViewMatrix().invertToRef(camera._cameraTransformMatrix);
-            this._globalOffset = Vector3.TransformNormal(this._viewOffset, camera._cameraTransformMatrix);
-            ray.origin.addInPlace(this._globalOffset);
-        }
 
-        let distance = 0;
-        if (this._hitPlane) {
-            distance = ray.intersectsPlane(this._hitPlane) ?? 0;
-        }
-
-        // not using this ray again, so modifying its vectors here is fine
-        return ray.origin.addInPlace(ray.direction.scaleInPlace(distance));
+        return this._getIntersectionPoint(ray, this._hitPlane);
     }
 
     private _inertialPanning: Vector3 = Vector3.Zero();
