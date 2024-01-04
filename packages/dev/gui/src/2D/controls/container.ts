@@ -172,6 +172,13 @@ export class Container extends Control {
      * @param name defines the child name to look for
      * @returns the child control if found
      */
+    public getChildByName<T extends Control>(name: string): Nullable<T>;
+
+    /**
+     * Gets a child using its name
+     * @param name defines the child name to look for
+     * @returns the child control if found
+     */
     public getChildByName(name: string): Nullable<Control> {
         for (const child of this.children) {
             if (child.name === name) {
@@ -181,6 +188,14 @@ export class Container extends Control {
 
         return null;
     }
+
+    /**
+     * Gets a child using its type and its name
+     * @param name defines the child name to look for
+     * @param type defines the child type to look for
+     * @returns the child control if found
+     */
+    public getChildByType<T extends Control>(name: string, type: string): Nullable<T>;
 
     /**
      * Gets a child using its type and its name

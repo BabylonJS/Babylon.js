@@ -43,5 +43,11 @@ export interface IBehaviorAware<T> {
      * @param name defines the name to search
      * @returns the behavior or null if not found
      */
+    getBehaviorByName<B extends Behavior<T> = Behavior<T>>(name: string): Nullable<B>;
+    /**
+     * Gets a behavior using its name to search
+     * @param name defines the name to search
+     * @returns the behavior or null if not found
+     */
     getBehaviorByName(name: string): Nullable<Behavior<T>>;
 }

@@ -150,6 +150,13 @@ export class MaterialPluginManager {
      * @param name name of the plugin
      * @returns the plugin if found, else null
      */
+    public getPlugin<T extends MaterialPluginBase>(name: string): Nullable<T>;
+
+    /**
+     * Gets a plugin from the list of plugins managed by this manager
+     * @param name name of the plugin
+     * @returns the plugin if found, else null
+     */
     public getPlugin(name: string): Nullable<MaterialPluginBase> {
         for (let i = 0; i < this._plugins.length; ++i) {
             if (this._plugins[i].name === name) {

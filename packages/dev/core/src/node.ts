@@ -433,6 +433,14 @@ export class Node implements IBehaviorAware<Node> {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors
      * @returns null if behavior was not found else the requested behavior
      */
+    public getBehaviorByName<T extends Behavior<Node>>(name: string): Nullable<T>;
+
+    /**
+     * Gets an attached behavior by name
+     * @param name defines the name of the behavior to look for
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors
+     * @returns null if behavior was not found else the requested behavior
+     */
     public getBehaviorByName(name: string): Nullable<Behavior<Node>> {
         for (const behavior of this._behaviors) {
             if (behavior.name === name) {

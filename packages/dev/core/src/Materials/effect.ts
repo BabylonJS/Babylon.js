@@ -464,6 +464,12 @@ export class Effect implements IDisposable {
      * The pipeline context for this effect
      * @returns the associated pipeline context
      */
+    public getPipelineContext<T extends IPipelineContext>(): Nullable<T>;
+
+    /**
+     * The pipeline context for this effect
+     * @returns the associated pipeline context
+     */
     public getPipelineContext(): Nullable<IPipelineContext> {
         return this._pipelineContext;
     }

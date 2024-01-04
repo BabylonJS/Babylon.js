@@ -287,6 +287,15 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     public getChildren(): Array<Container> {
         return [this._rootContainer];
     }
+
+    /**
+     * Will return all controls that are inside this texture
+     * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
+     * @param predicate defines an optional predicate that will be called on every evaluated child, the predicate must return true for a given child to be part of the result, otherwise it will be ignored
+     * @returns all child controls
+     */
+    public getDescendants<T extends Control>(directDescendantsOnly?: boolean, predicate?: (control: Control) => boolean): T[];
+
     /**
      * Will return all controls that are inside this texture
      * @param directDescendantsOnly defines if true only direct descendants of 'this' will be considered, if false direct and also indirect (children of children, an so on in a recursive manner) descendants of 'this' will be considered
@@ -302,9 +311,23 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param typeName defines the type name to search for
      * @returns an array of all controls found
      */
+    public getControlsByType<T extends Control>(typeName: string): T[];
+
+    /**
+     * Will return all controls with the given type name
+     * @param typeName defines the type name to search for
+     * @returns an array of all controls found
+     */
     public getControlsByType(typeName: string): Control[] {
         return this._rootContainer.getDescendants(false, (control) => control.typeName === typeName);
     }
+
+    /**
+     * Will return the first control with the given name
+     * @param name defines the name to search for
+     * @returns the first control found or null
+     */
+    public getControlByName<T extends Control>(name: string): Nullable<T>;
 
     /**
      * Will return the first control with the given name

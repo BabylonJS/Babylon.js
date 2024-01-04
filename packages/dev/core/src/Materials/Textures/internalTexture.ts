@@ -281,6 +281,12 @@ export class InternalTexture extends TextureSampler {
      * Gets the Engine the texture belongs to.
      * @returns The babylon engine
      */
+    public getEngine<T extends ThinEngine>(): T;
+
+    /**
+     * Gets the Engine the texture belongs to.
+     * @returns The babylon engine
+     */
     public getEngine(): ThinEngine {
         return this._engine;
     }

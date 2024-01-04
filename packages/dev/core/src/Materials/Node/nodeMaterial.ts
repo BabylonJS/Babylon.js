@@ -420,6 +420,13 @@ export class NodeMaterial extends PushMaterial {
      * @param name defines the name of the block to retrieve
      * @returns the required block or null if not found
      */
+    public getBlockByName<T extends NodeMaterialBlock>(name: string): Nullable<T>;
+
+    /**
+     * Get a block by its name
+     * @param name defines the name of the block to retrieve
+     * @returns the required block or null if not found
+     */
     public getBlockByName(name: string) {
         let result = null;
         for (const block of this.attachedBlocks) {
@@ -435,6 +442,13 @@ export class NodeMaterial extends PushMaterial {
 
         return result;
     }
+
+    /**
+     * Get a block using a predicate
+     * @param predicate defines the predicate used to find the good candidate
+     * @returns the required block or null if not found
+     */
+    public getBlockByPredicate<T extends NodeMaterialBlock>(predicate: (block: NodeMaterialBlock) => boolean): Nullable<T>;
 
     /**
      * Get a block using a predicate

@@ -172,6 +172,14 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors
      * @returns null if behavior was not found else the requested behavior
      */
+    public getBehaviorByName<T extends Behavior<Control3D> = Behavior<Control3D>>(name: string): Nullable<T>;
+
+    /**
+     * Gets an attached behavior by name
+     * @param name defines the name of the behavior to look for
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/behaviors
+     * @returns null if behavior was not found else the requested behavior
+     */
     public getBehaviorByName(name: string): Nullable<Behavior<Control3D>> {
         for (const behavior of this._behaviors) {
             if (behavior.name === name) {

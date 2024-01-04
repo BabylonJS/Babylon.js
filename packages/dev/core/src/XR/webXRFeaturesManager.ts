@@ -453,6 +453,13 @@ export class WebXRFeaturesManager implements IDisposable {
      * @param featureName the name of the feature to load
      * @returns the feature class, if found
      */
+    public getEnabledFeature<T extends IWebXRFeature>(featureName: string): T;
+
+    /**
+     * get the implementation of an enabled feature.
+     * @param featureName the name of the feature to load
+     * @returns the feature class, if found
+     */
     public getEnabledFeature(featureName: string): IWebXRFeature {
         return this._features[featureName] && this._features[featureName].featureImplementation;
     }

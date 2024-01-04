@@ -1502,6 +1502,14 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param name defines the name of the component to retrieve
      * @returns the component or null if not present
      */
+    public _getComponent<T extends ISceneComponent>(name: string): Nullable<T>;
+
+    /**
+     * @internal
+     * Gets a component from the scene.
+     * @param name defines the name of the component to retrieve
+     * @returns the component or null if not present
+     */
     public _getComponent(name: string): Nullable<ISceneComponent> {
         for (const component of this._components) {
             if (component.name === name) {
@@ -1807,6 +1815,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public isCachedMaterialInvalid(material: Material, effect: Effect, visibility: number = 1) {
         return this._cachedEffect !== effect || this._cachedMaterial !== material || this._cachedVisibility !== visibility;
     }
+
+    /**
+     * Gets the engine associated with the scene
+     * @returns an Engine
+     */
+    public getEngine<T extends Engine>(): T;
 
     /**
      * Gets the engine associated with the scene
@@ -2938,6 +2952,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param id defines the camera's Id
      * @returns the new active camera or null if none found.
      */
+    public setActiveCameraById<T extends Camera>(id: string): Nullable<T>;
+
+    /**
+     * sets the active camera of the scene using its Id
+     * @param id defines the camera's Id
+     * @returns the new active camera or null if none found.
+     */
     public setActiveCameraById(id: string): Nullable<Camera> {
         const camera = this.getCameraById(id);
 
@@ -2948,6 +2969,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         return null;
     }
+
+    /**
+     * sets the active camera of the scene using its name
+     * @param name defines the camera's name
+     * @returns the new active camera or null if none found.
+     */
+    public setActiveCameraByName<T extends Camera>(name: string): Nullable<T>;
 
     /**
      * sets the active camera of the scene using its name
@@ -3005,9 +3033,25 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param allowMultiMaterials determines whether multimaterials should be considered
      * @returns the material or null if none found.
      */
+    public getMaterialByUniqueID<T extends Material>(uniqueId: number, allowMultiMaterials?: boolean): Nullable<T>;
+
+    /**
+     * Get a material using its unique id
+     * @param uniqueId defines the material's unique id
+     * @param allowMultiMaterials determines whether multimaterials should be considered
+     * @returns the material or null if none found.
+     */
     public getMaterialByUniqueID(uniqueId: number, allowMultiMaterials: boolean = false): Nullable<Material> {
         return this._getMaterial(allowMultiMaterials, (m) => m.uniqueId === uniqueId);
     }
+
+    /**
+     * get a material using its id
+     * @param id defines the material's Id
+     * @param allowMultiMaterials determines whether multimaterials should be considered
+     * @returns the material or null if none found.
+     */
+    public getMaterialById<T extends Material>(id: string, allowMultiMaterials?: boolean): Nullable<T>;
 
     /**
      * get a material using its id
@@ -3025,9 +3069,25 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param allowMultiMaterials determines whether multimaterials should be considered
      * @returns the material or null if none found.
      */
+    public getMaterialByName<T extends Material>(name: string, allowMultiMaterials?: boolean): Nullable<T>;
+
+    /**
+     * Gets a material using its name
+     * @param name defines the material's name
+     * @param allowMultiMaterials determines whether multimaterials should be considered
+     * @returns the material or null if none found.
+     */
     public getMaterialByName(name: string, allowMultiMaterials: boolean = false): Nullable<Material> {
         return this._getMaterial(allowMultiMaterials, (m) => m.name === name);
     }
+
+    /**
+     * Gets a last added material using a given id
+     * @param id defines the material's id
+     * @param allowMultiMaterials determines whether multimaterials should be considered
+     * @returns the last material with the given id or null if none found.
+     */
+    public getLastMaterialById<T extends Material>(id: string, allowMultiMaterials?: boolean): Nullable<T>;
 
     /**
      * Gets a last added material using a given id
@@ -3057,6 +3117,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param uniqueId defines the texture's unique id
      * @returns the texture or null if none found.
      */
+    public getTextureByUniqueId<T extends BaseTexture>(uniqueId: number): Nullable<T>;
+
+    /**
+     * Get a texture using its unique id
+     * @param uniqueId defines the texture's unique id
+     * @returns the texture or null if none found.
+     */
     public getTextureByUniqueId(uniqueId: number): Nullable<BaseTexture> {
         for (let index = 0; index < this.textures.length; index++) {
             if (this.textures[index].uniqueId === uniqueId) {
@@ -3066,6 +3133,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         return null;
     }
+
+    /**
+     * Gets a texture using its name
+     * @param name defines the texture's name
+     * @returns the texture or null if none found.
+     */
+    public getTextureByName<T extends BaseTexture>(name: string): Nullable<T>;
 
     /**
      * Gets a texture using its name
@@ -3087,6 +3161,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param id defines the Id to look for
      * @returns the camera or null if not found
      */
+    public getCameraById<T extends Camera>(id: string): Nullable<T>;
+
+    /**
+     * Gets a camera using its Id
+     * @param id defines the Id to look for
+     * @returns the camera or null if not found
+     */
     public getCameraById(id: string): Nullable<Camera> {
         for (let index = 0; index < this.cameras.length; index++) {
             if (this.cameras[index].id === id) {
@@ -3102,6 +3183,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param uniqueId defines the unique Id to look for
      * @returns the camera or null if not found
      */
+    public getCameraByUniqueId<T extends Camera>(uniqueId: number): Nullable<T>;
+
+    /**
+     * Gets a camera using its unique Id
+     * @param uniqueId defines the unique Id to look for
+     * @returns the camera or null if not found
+     */
     public getCameraByUniqueId(uniqueId: number): Nullable<Camera> {
         for (let index = 0; index < this.cameras.length; index++) {
             if (this.cameras[index].uniqueId === uniqueId) {
@@ -3111,6 +3199,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         return null;
     }
+
+    /**
+     * Gets a camera using its name
+     * @param name defines the camera's name
+     * @returns the camera or null if none found.
+     */
+    public getCameraByName<T extends Camera>(name: string): Nullable<T>;
 
     /**
      * Gets a camera using its name
@@ -3168,6 +3263,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param name defines the light's name
      * @returns the light or null if none found.
      */
+    public getLightByName<T extends Light>(name: string): Nullable<T>;
+
+    /**
+     * Gets a light node using its name
+     * @param name defines the light's name
+     * @returns the light or null if none found.
+     */
     public getLightByName(name: string): Nullable<Light> {
         for (let index = 0; index < this.lights.length; index++) {
             if (this.lights[index].name === name) {
@@ -3183,6 +3285,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param id defines the light's Id
      * @returns the light or null if none found.
      */
+    public getLightById<T extends Light>(id: string): Nullable<T>;
+
+    /**
+     * Gets a light node using its Id
+     * @param id defines the light's Id
+     * @returns the light or null if none found.
+     */
     public getLightById(id: string): Nullable<Light> {
         for (let index = 0; index < this.lights.length; index++) {
             if (this.lights[index].id === id) {
@@ -3192,6 +3301,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         return null;
     }
+
+    /**
+     * Gets a light node using its scene-generated unique Id
+     * @param uniqueId defines the light's unique Id
+     * @returns the light or null if none found.
+     */
+    public getLightByUniqueId<T extends Light>(uniqueId: number): Nullable<T>;
 
     /**
      * Gets a light node using its scene-generated unique Id
@@ -3325,6 +3441,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param id defines the Id to search for
      * @returns the mesh found or null if not found at all
      */
+    public getMeshById<T extends AbstractMesh>(id: string): Nullable<T>;
+
+    /**
+     * Gets the first added mesh found of a given Id
+     * @param id defines the Id to search for
+     * @returns the mesh found or null if not found at all
+     */
     public getMeshById(id: string): Nullable<AbstractMesh> {
         for (let index = 0; index < this.meshes.length; index++) {
             if (this.meshes[index].id === id) {
@@ -3392,6 +3515,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param uniqueId defines the unique Id to search for
      * @returns the found mesh or null if not found at all.
      */
+    public getMeshByUniqueId<T extends AbstractMesh>(uniqueId: number): Nullable<T>;
+
+    /**
+     * Gets a mesh with its auto-generated unique Id
+     * @param uniqueId defines the unique Id to search for
+     * @returns the found mesh or null if not found at all.
+     */
     public getMeshByUniqueId(uniqueId: number): Nullable<AbstractMesh> {
         for (let index = 0; index < this.meshes.length; index++) {
             if (this.meshes[index].uniqueId === uniqueId) {
@@ -3401,6 +3531,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         return null;
     }
+
+    /**
+     * Gets a the last added mesh using a given Id
+     * @param id defines the Id to search for
+     * @returns the found mesh or null if not found at all.
+     */
+    public getLastMeshById<T extends AbstractMesh>(id: string): Nullable<T>;
 
     /**
      * Gets a the last added mesh using a given Id
@@ -3533,6 +3670,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
         return null;
     }
+
+    /**
+     * Gets a mesh using a given name
+     * @param name defines the name to search for
+     * @returns the found mesh or null if not found at all.
+     */
+    public getMeshByName<T extends AbstractMesh>(name: string): Nullable<T>;
 
     /**
      * Gets a mesh using a given name
@@ -3674,6 +3818,13 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         }
         return null;
     }
+
+    /**
+     * Gets a post process using a given name (if many are found, this function will pick the first one)
+     * @param name defines the name to search for
+     * @returns the found post process or null if not found at all.
+     */
+    public getPostProcessByName<T extends PostProcess>(name: string): Nullable<T>;
 
     /**
      * Gets a post process using a given name (if many are found, this function will pick the first one)

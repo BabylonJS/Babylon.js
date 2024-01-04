@@ -136,6 +136,13 @@ export class NodeGeometry {
      * @param name defines the name of the block to retrieve
      * @returns the required block or null if not found
      */
+    public getBlockByName<T extends NodeGeometryBlock>(name: string): Nullable<T>;
+
+    /**
+     * Get a block by its name
+     * @param name defines the name of the block to retrieve
+     * @returns the required block or null if not found
+     */
     public getBlockByName(name: string) {
         let result = null;
         for (const block of this.attachedBlocks) {
@@ -151,6 +158,13 @@ export class NodeGeometry {
 
         return result;
     }
+
+    /**
+     * Get a block using a predicate
+     * @param predicate defines the predicate used to find the good candidate
+     * @returns the required block or null if not found
+     */
+    public getBlockByPredicate<T extends NodeGeometryBlock>(predicate: (block: NodeGeometryBlock) => boolean): Nullable<T>;
 
     /**
      * Get a block using a predicate
