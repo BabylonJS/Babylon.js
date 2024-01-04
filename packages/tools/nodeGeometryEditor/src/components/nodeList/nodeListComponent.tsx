@@ -134,6 +134,10 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         NLerpBlock: "Interpolate with a normalized lerp",
         SmoothStepBlock: "Interpolate with a smooth step",
         StepBlock: "Interpolate with a step function",
+        FractBlock: "Outputs only the fractional value of a floating point number",
+        ModBlock: "Outputs the value of one parameter modulo another",
+        PowBlock: "Outputs the input value multiplied by itself the number of times equal to the power input (Exponent of power)",        
+        ClampBlock: "Outputs values above the maximum or below minimum as maximum or minimum values respectively",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -257,6 +261,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "FloorBlock",
                 "CeilingBlock",
                 "IntFloatConverterBlock",
+                "ModBlock",
+                "ClampBlock"
             ],
             Math__Scientific: [
                 "AbsBlock",
@@ -272,6 +278,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "TanBlock",
                 "ToDegreesBlock",
                 "ToRadiansBlock",
+                "FractBlock",
+                "PowBlock",
             ],
             Math__Vector: ["TransformBlock", "VectorConverterBlock", "NormalizeBlock", "BoundingBlock"],
             Matrices: ["RotationXBlock", "RotationYBlock", "RotationZBlock", "ScalingBlock", "TranslationBlock", "AlignBlock", "MatrixComposeBlock"],

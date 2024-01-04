@@ -66,3 +66,6 @@ export * from "./Blocks/geometryLerpBlock";
 export * from "./Blocks/geometryNLerpBlock";
 export * from "./Blocks/geometryStepBlock";
 export * from "./Blocks/geometrySmoothStepBlock";
+export * from "./Blocks/geometryModBlock";
+export * from "./Blocks/geometryPowBlock";
+export * from "./Blocks/geometryClampBlock";
