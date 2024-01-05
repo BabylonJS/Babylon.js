@@ -1429,7 +1429,7 @@ export class ThinEngine {
 
     protected _initFeatures(): void {
         this._features = {
-            forceBitmapOverHTMLImageElement: false,
+            forceBitmapOverHTMLImageElement: typeof HTMLImageElement === "undefined",
             supportRenderAndCopyToLodForFloatTextures: this._webGLVersion !== 1,
             supportDepthStencilTexture: this._webGLVersion !== 1,
             supportShadowSamplers: this._webGLVersion !== 1,
@@ -4205,7 +4205,7 @@ export class ThinEngine {
                     texture.onLoadedObservable.remove(onLoadObserver);
                 }
 
-                if (EngineStore.UseFallbackTexture) {
+                if (EngineStore.UseFallbackTexture && url !== EngineStore.FallbackTexture) {
                     this._createTextureBase(
                         EngineStore.FallbackTexture,
                         noMipmap,
