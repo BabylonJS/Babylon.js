@@ -149,9 +149,9 @@ export class FluidRendererSceneComponent implements ISceneComponent {
             }
         }
 
-        for (const buffer of buffers) {
+        buffers.forEach((buffer) => {
             buffer._rebuild();
-        }
+        });
     }
 
     /**

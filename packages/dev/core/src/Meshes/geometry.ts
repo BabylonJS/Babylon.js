@@ -231,9 +231,9 @@ export class Geometry implements IGetSetVerticesData {
             buffers.add(this._vertexBuffers[key].getWrapperBuffer());
         }
 
-        for (const buffer of buffers) {
+        buffers.forEach((buffer) => {
             buffer._rebuild();
-        }
+        });
     }
 
     /**
