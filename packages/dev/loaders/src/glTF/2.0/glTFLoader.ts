@@ -291,6 +291,13 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /**
+     * The root url when loading the asset.
+     */
+    public get rootUrl(): Nullable<string> {
+        return this._rootUrl;
+    }
+
+    /**
      * @internal
      */
     constructor(parent: GLTFFileLoader) {
