@@ -89,7 +89,7 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
                 // position in local space
                 if (ownerNode.parent) {
                     const parentWorld = ownerNode.parent.getWorldMatrix();
-                    Vector3.TransformCoordinatesToRef(deltaToAdd, parentWorld, deltaToAddTransformed);
+                    Vector3.TransformNormalToRef(deltaToAdd, parentWorld, deltaToAddTransformed);
                 }
                 ownerNode.position.addInPlace(deltaToAddTransformed);
 
