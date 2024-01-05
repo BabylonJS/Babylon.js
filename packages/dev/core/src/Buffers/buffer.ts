@@ -429,9 +429,11 @@ export class VertexBuffer {
     public readonly engine: ThinEngine;
 
     /**
-     * Gets the number of vertices in the buffer
+     * Gets the max possible amount of vertices stored within the current vertex buffer.
+     * We do not have the end offset or count so this will be to big for concatenated vertex buffers.
+     * @internal
      */
-    public get totalVertices() {
+    public get _maxVerticesCount() {
         const data = this.getData();
         if (!data) {
             return 0;
@@ -613,13 +615,11 @@ export class VertexBuffer {
      * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
      * @returns a float array containing vertex data
      */
-    public getFloatData(totalVertices?: number, forceCopy?: boolean): Nullable<FloatArray> {
+    public getFloatData(totalVertices: number, forceCopy?: boolean): Nullable<FloatArray> {
         const data = this.getData();
         if (!data) {
             return null;
         }
-
-        totalVertices = totalVertices ?? this.totalVertices;
 
         return VertexBuffer.GetFloatData(data, this._size, this.type, this.byteOffset, this.byteStride, this.normalized, totalVertices, forceCopy);
     }

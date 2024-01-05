@@ -298,12 +298,12 @@ export class Geometry implements IGetSetVerticesData {
         const numOfMeshes = meshes.length;
 
         if (kind === VertexBuffer.PositionKind) {
-            this._totalVertices = totalVertices ?? buffer.totalVertices;
+            this._totalVertices = totalVertices ?? buffer._maxVerticesCount;
 
-            this._updateExtend(buffer.getFloatData());
+            this._updateExtend(buffer.getFloatData(this._totalVertices));
             this._resetPointsArrayCache();
 
-            // this._extend can be empty if buffer.getFloatData() returned null
+            // this._extend can be empty if buffer.getFloatData(this._totalVertices) returned null
             const minimum = (this._extend && this._extend.minimum) || new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
             const maximum = (this._extend && this._extend.maximum) || new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
 
