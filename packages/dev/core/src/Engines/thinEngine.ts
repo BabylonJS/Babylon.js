@@ -2167,16 +2167,16 @@ export class ThinEngine {
 
     /**
      * Creates a vertex buffer
-     * @param data the data for the vertex buffer
+     * @param data the data or size for the vertex buffer
      * @param _updatable whether the buffer should be created as updatable
      * @param _label defines the label of the buffer (for debug purpose)
      * @returns the new WebGL static buffer
      */
-    public createVertexBuffer(data: DataArray, _updatable?: boolean, _label?: string): DataBuffer {
+    public createVertexBuffer(data: DataArray | number, _updatable?: boolean, _label?: string): DataBuffer {
         return this._createVertexBuffer(data, this._gl.STATIC_DRAW);
     }
 
-    private _createVertexBuffer(data: DataArray, usage: number): DataBuffer {
+    private _createVertexBuffer(data: DataArray | number, usage: number): DataBuffer {
         const vbo = this._gl.createBuffer();
 
         if (!vbo) {
@@ -2186,10 +2186,17 @@ export class ThinEngine {
         const dataBuffer = new WebGLDataBuffer(vbo);
         this.bindArrayBuffer(dataBuffer);
 
-        if (data instanceof Array) {
-            this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(data), usage);
+        if (typeof data !== "number") {
+            if (data instanceof Array) {
+                this._gl.bufferData(this._gl.ARRAY_BUFFER, new Float32Array(data), usage);
+                dataBuffer.capacity = data.length * 4;
+            } else {
+                this._gl.bufferData(this._gl.ARRAY_BUFFER, <ArrayBuffer>data, usage);
+                dataBuffer.capacity = data.byteLength;
+            }
         } else {
-            this._gl.bufferData(this._gl.ARRAY_BUFFER, <ArrayBuffer>data, usage);
+            this._gl.bufferData(this._gl.ARRAY_BUFFER, new Uint8Array(data), usage);
+            dataBuffer.capacity = data;
         }
 
         this._resetVertexBufferBinding();
@@ -2204,7 +2211,7 @@ export class ThinEngine {
      * @param _label defines the label of the buffer (for debug purpose)
      * @returns the new WebGL dynamic buffer
      */
-    public createDynamicVertexBuffer(data: DataArray, _label?: string): DataBuffer {
+    public createDynamicVertexBuffer(data: DataArray | number, _label?: string): DataBuffer {
         return this._createVertexBuffer(data, this._gl.DYNAMIC_DRAW);
     }
 
