@@ -7,12 +7,15 @@ import { FlowGraph } from "core/FlowGraph/flowGraph";
 import { Vector3, Vector4 } from "core/Maths";
 import { Mesh } from "core/Meshes";
 import { ArcRotateCamera } from "core/Cameras";
+import { InteractivityPathToObjectConverter } from "loaders/glTF/2.0/Extensions/interactivityPathToObjectConverter";
 import { Logger } from "core/Misc";
 
 describe("Babylon Interactivity", () => {
     let engine;
     let scene: Scene;
     let log: jest.SpyInstance;
+    let mockGltf: any;
+
     beforeEach(() => {
         engine = new NullEngine();
         scene = new Scene(engine);
@@ -23,7 +26,8 @@ describe("Babylon Interactivity", () => {
     it("should load a basic graph", () => {
         const json = convertGLTFToSerializedFlowGraph(loggerExample);
         const coordinator = new FlowGraphCoordinator({ scene });
-        FlowGraph.Parse(json, coordinator);
+        const pathConverter = new InteractivityPathToObjectConverter(mockGltf);
+        FlowGraph.Parse(json, { coordinator, pathConverter });
 
         coordinator.start();
 
@@ -34,7 +38,8 @@ describe("Babylon Interactivity", () => {
     it("should load a math graph", () => {
         const json = convertGLTFToSerializedFlowGraph(mathExample);
         const coordinator = new FlowGraphCoordinator({ scene });
-        FlowGraph.Parse(json, coordinator);
+        const pathConverter = new InteractivityPathToObjectConverter(mockGltf);
+        FlowGraph.Parse(json, { coordinator, pathConverter });
 
         coordinator.start();
 
@@ -45,7 +50,8 @@ describe("Babylon Interactivity", () => {
     it("should load a custom event graph", () => {
         const json = convertGLTFToSerializedFlowGraph(customEventExample);
         const coordinator = new FlowGraphCoordinator({ scene });
-        FlowGraph.Parse(json, coordinator);
+        const pathConverter = new InteractivityPathToObjectConverter(mockGltf);
+        FlowGraph.Parse(json, { coordinator, pathConverter });
 
         coordinator.start();
 
@@ -54,13 +60,18 @@ describe("Babylon Interactivity", () => {
     });
 
     it("should resolve world pointers", () => {
+        const mesh = new Mesh("mesh", scene);
+        const gltf: any = {
+            nodes: [
+                {
+                    _babylonTransformNode: mesh,
+                },
+            ],
+        };
         const json = convertGLTFToSerializedFlowGraph(worldPointerExample);
         const coordinator = new FlowGraphCoordinator({ scene });
-        const graph = FlowGraph.Parse(json, coordinator);
-        const context = graph.getContext(0);
-
-        const mesh = new Mesh("mesh", scene);
-        context.setVariable("nodes", [mesh]);
+        const pathConverter = new InteractivityPathToObjectConverter(gltf);
+        FlowGraph.Parse(json, { coordinator, pathConverter });
 
         coordinator.start();
 
@@ -72,7 +83,8 @@ describe("Babylon Interactivity", () => {
     it("should execute an event N times with doN", () => {
         const json = convertGLTFToSerializedFlowGraph(doNExample);
         const coordinator = new FlowGraphCoordinator({ scene });
-        FlowGraph.Parse(json, coordinator);
+        const pathConverter = new InteractivityPathToObjectConverter(mockGltf);
+        FlowGraph.Parse(json, { coordinator, pathConverter });
 
         coordinator.start();
 

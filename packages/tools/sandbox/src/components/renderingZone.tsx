@@ -28,7 +28,7 @@ function isTextureAsset(name: string): boolean {
         name = name.substring(0, queryStringIndex);
     }
 
-    return name.endsWith(".ktx") || name.endsWith(".ktx2") || name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg");
+    return name.endsWith(".ktx") || name.endsWith(".ktx2") || name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".webp");
 }
 
 interface IRenderingZoneProps {

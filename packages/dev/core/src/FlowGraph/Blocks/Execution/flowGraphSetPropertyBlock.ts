@@ -1,11 +1,12 @@
 import { RichTypeAny } from "../../flowGraphRichTypes";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
-import { FlowGraphExecutionBlockWithOutSignal } from "../../flowGraphWithOnDoneExecutionBlock";
+import { FlowGraphExecutionBlockWithOutSignal } from "../../flowGraphExecutionBlockWithOutSignal";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
-import type { FlowGraphPath } from "../../flowGraphPath";
-import { FlowGraphPathComponent } from "../../flowGraphPathComponent";
+import { FlowGraphPathConverterComponent } from "../../flowGraphPathConverterComponent";
+import type { IPathToObjectConverter } from "../../../ObjectModel/objectModelInterfaces";
+import type { IObjectAccessor } from "../../typeDefinitions";
 
 /**
  * @experimental
@@ -16,7 +17,11 @@ export interface IFlowGraphSetPropertyBlockConfiguration extends IFlowGraphBlock
      * The path of the entity whose property will be set. Needs a corresponding
      * entity on the context variables.
      */
-    path: FlowGraphPath;
+    path: string;
+    /**
+     * The path converter to use to convert the path to an object accessor.
+     */
+    pathConverter: IPathToObjectConverter<IObjectAccessor>;
 }
 
 /**
@@ -31,31 +36,35 @@ export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphExecutionBlockWi
     /**
      * The component with the templated inputs for the provided path.
      */
-    public readonly templateComponent: FlowGraphPathComponent;
+    public readonly templateComponent: FlowGraphPathConverterComponent;
 
     public constructor(public config: IFlowGraphSetPropertyBlockConfiguration) {
         super(config);
 
         this.a = this.registerDataInput("a", RichTypeAny);
-        this.templateComponent = new FlowGraphPathComponent(config.path, this);
+        this.templateComponent = new FlowGraphPathConverterComponent(config.path, this);
     }
 
     public _execute(context: FlowGraphContext): void {
         const value = this.a.getValue(context);
-        this.templateComponent.setProperty(context, value);
+        const accessor = this.templateComponent.getAccessor(this.config.pathConverter, context);
+        accessor.info.set(value, accessor.object);
 
         this.out._activateSignal(context);
     }
 
     public serialize(serializationObject: any = {}) {
         super.serialize(serializationObject);
-        serializationObject.config.path = this.config.path.serialize();
+        serializationObject.config.path = this.config.path;
     }
 
     public getClassName(): string {
         return FlowGraphSetPropertyBlock.ClassName;
     }
 
+    /**
+     * Class name of the block.
+     */
     public static ClassName = "FGSetPropertyBlock";
 }
 RegisterClass("FGSetPropertyBlock", FlowGraphSetPropertyBlock);

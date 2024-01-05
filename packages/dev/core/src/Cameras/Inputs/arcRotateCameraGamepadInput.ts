@@ -71,6 +71,10 @@ export class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera
         });
 
         this.gamepad = manager.getGamepadByType(Gamepad.XBOX);
+        // if no xbox controller was found, but there are gamepad controllers, take the first one
+        if (!this.gamepad && manager.gamepads.length) {
+            this.gamepad = manager.gamepads[0];
+        }
     }
 
     /**

@@ -1,16 +1,27 @@
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import type { IAnimationTargetInfo } from "../glTFLoader";
 import type { Nullable } from "core/types";
 import type { Animation } from "core/Animations/animation";
 import type { IAnimatable } from "core/Animations/animatable.interface";
-import type { IAnimation, IAnimationChannel } from "../glTFLoaderInterfaces";
+import type { IAnimation, IAnimationChannel, IGLTF } from "../glTFLoaderInterfaces";
 import type { IKHRAnimationPointer } from "babylonjs-gltf2interface";
 import { AnimationChannelTargetPath } from "babylonjs-gltf2interface";
 import { Logger } from "core/Misc/logger";
 import { animationPointerTree } from "./KHR_animation_pointer.data";
+import { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
+import type { AnimationPropertyInfo } from "../glTFLoaderAnimation";
 
 const NAME = "KHR_animation_pointer";
+
+/**
+ * Class to convert an animation pointer path to a smart object that
+ * gets data from the animation buffer and creates animations.
+ */
+class AnimationPointerPathToObjectConverter extends GLTFPathToObjectConverter<AnimationPropertyInfo[]> {
+    public constructor(gltf: IGLTF) {
+        super(gltf, animationPointerTree);
+    }
+}
 
 /**
  * [Specification PR](https://github.com/KhronosGroup/glTF/pull/2147)
@@ -24,12 +35,14 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
     public readonly name = NAME;
 
     private _loader: GLTFLoader;
+    private _pathToObjectConverter?: AnimationPointerPathToObjectConverter;
 
     /**
      * @internal
      */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
+        this._pathToObjectConverter = new AnimationPointerPathToObjectConverter(this._loader.gltf);
     }
 
     /**
@@ -42,6 +55,7 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
     /** @internal */
     public dispose() {
         (this._loader as any) = null;
+        delete this._pathToObjectConverter; // GC
     }
 
     /**
@@ -61,7 +75,7 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
         onLoad: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void
     ): Nullable<Promise<void>> {
         const extension = channel.target.extensions?.KHR_animation_pointer as IKHRAnimationPointer;
-        if (!extension) {
+        if (!extension || !this._pathToObjectConverter) {
             return null;
         }
 
@@ -80,71 +94,13 @@ export class KHR_animation_pointer implements IGLTFLoaderExtension {
             throw new Error(`${extensionContext}: Pointer is missing`);
         }
 
-        const targetInfo = this._parseAnimationPointer(`${extensionContext}/pointer`, pointer);
-        if (!targetInfo) {
+        try {
+            const targetInfo = this._pathToObjectConverter.convert(pointer);
+            return this._loader._loadAnimationChannelFromTargetInfoAsync(context, animationContext, animation, channel, targetInfo, onLoad);
+        } catch (e) {
             Logger.Warn(`${extensionContext}/pointer: Invalid pointer (${pointer}) skipped`);
             return null;
         }
-
-        return this._loader._loadAnimationChannelFromTargetInfoAsync(context, animationContext, animation, channel, targetInfo, onLoad);
-    }
-
-    /**
-     * The pointer string is represented by a [JSON pointer](https://datatracker.ietf.org/doc/html/rfc6901).
-     * <animationPointer> := /<rootNode>/<assetIndex>/<propertyPath>
-     * <rootNode> := "nodes" | "materials" | "meshes" | "cameras" | "extensions"
-     * <assetIndex> := <digit> | <name>
-     * <propertyPath> := <extensionPath> | <standardPath>
-     * <extensionPath> := "extensions"/<name>/<standardPath>
-     * <standardPath> := <name> | <name>/<standardPath>
-     * <name> := W+
-     * <digit> := D+
-     *
-     * Examples:
-     *  - "/nodes/0/rotation"
-     *  - "/materials/2/emissiveFactor"
-     *  - "/materials/2/pbrMetallicRoughness/baseColorFactor"
-     *  - "/materials/2/extensions/KHR_materials_emissive_strength/emissiveStrength"
-     */
-    private _parseAnimationPointer(context: string, pointer: string): Nullable<IAnimationTargetInfo> {
-        if (!pointer.startsWith("/")) {
-            Logger.Warn(`${context}: Value (${pointer}) must start with a slash`);
-            return null;
-        }
-
-        const parts = pointer.split("/");
-
-        // Remove the first part since it will be empty string as pointers must start with a slash.
-        parts.shift();
-
-        let node: any = animationPointerTree;
-        let gltfCurrentNode: any = this._loader.gltf;
-        let gltfTargetNode: any = undefined;
-        for (const part of parts) {
-            if (node.__array__) {
-                node = node.__array__;
-            } else {
-                node = node[part];
-                if (!node) {
-                    return null;
-                }
-            }
-
-            gltfCurrentNode = gltfCurrentNode && gltfCurrentNode[part];
-
-            if (node.__target__) {
-                gltfTargetNode = gltfCurrentNode;
-            }
-        }
-
-        if (!gltfTargetNode || !Array.isArray(node)) {
-            return null;
-        }
-
-        return {
-            target: gltfTargetNode,
-            properties: node,
-        };
     }
 }
 

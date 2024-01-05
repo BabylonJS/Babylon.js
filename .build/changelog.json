@@ -1,38 +1,446 @@
 {
-    "fromTag": "6.34.3",
+    "fromTag": "6.37.0",
     "changelog": {
-        "6.34.3": [
+        "6.37.1": [
             {
-                "pr": "14624",
-                "title": "WebGPU: Add support for GPU timing for compute shaders, render targets and main render pass",
-                "description": "This PR adds a `gpuTimeInFrame` property on `ComputeShader`, `RenderTargetWrapper` and `WebGPUEngine` and is updated with the corresponding GPU time for the last frame (for `WebGPUEngine`, it is the time we spend in the main render pass).\r\n\r\nFor this to work, the \"timestamp-query\" extension must be supported by the browser and enabled when creating the device (the Playground does it automatically if the browser supports it, because it enables all supported extensions). At the time, only Canary supports it. You must enable the feature at runtime by doing `engine.enableGPUTimingMeasurements = true` (will do nothing in WebGL of course!).\r\n\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/4152247/e06e6beb-9ea1-4b5b-a5e2-008b69cb8385)\r\n\r\nI also performed some changes so that we don't generate errors for mapped buffers when the device is destroyed.\r\n",
+                "pr": "14670",
+                "title": "Camera framing behavior: Fix crash",
+                "description": "Fix after #14666",
                 "author": {
                     "name": "Popov72",
                     "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/Compute/computeShader.ts",
-                    "packages/dev/core/src/Engines/Extensions/engine.computeShader.ts",
-                    "packages/dev/core/src/Engines/Extensions/engine.multiRender.ts",
-                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.computeShader.ts",
-                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.multiRender.ts",
-                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.storageBuffer.ts",
-                    "packages/dev/core/src/Engines/WebGPU/webgpuBufferManager.ts",
-                    "packages/dev/core/src/Engines/WebGPU/webgpuOcclusionQuery.ts",
-                    "packages/dev/core/src/Engines/WebGPU/webgpuPerfCounter.ts",
-                    "packages/dev/core/src/Engines/WebGPU/webgpuQuerySet.ts",
-                    "packages/dev/core/src/Engines/WebGPU/webgpuRenderTargetWrapper.ts",
-                    "packages/dev/core/src/Engines/WebGPU/webgpuTimestampQuery.ts",
-                    "packages/dev/core/src/Engines/index.ts",
-                    "packages/dev/core/src/Engines/webgpuEngine.ts",
-                    "packages/dev/core/src/LibDeclarations/webgpu.d.ts",
-                    "packages/dev/core/src/Materials/Textures/multiRenderTarget.ts",
-                    "packages/dev/core/src/Misc/perfCounter.ts",
-                    "packages/dev/core/src/Particles/computeShaderParticleSystem.ts",
-                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockSubSurface.fx"
+                    "packages/dev/core/src/Behaviors/Cameras/framingBehavior.ts"
                 ],
                 "tags": [
-                    "new feature",
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "14668",
+                "title": "Clean up ground mesh documentation",
+                "description": "I noticed some repetition between the option descriptions and option parameters, so I moved all the descriptions to inside the parameters to make it easier to read. Also added a clarification in `CreateGroundFromHeightMap` to make it clearer that the mesh creation is not immediate.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/groundBuilder.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14667",
+                "title": "Sandbox: Allow to drop .webp files",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/tools/sandbox/src/components/renderingZone.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "sandbox"
+                ]
+            },
+            {
+                "pr": "14666",
+                "title": "ArcRotateCamera: Allow to pass a transform node to setTarget / targetHost",
+                "description": "See https://forum.babylonjs.com/t/update-camera-position-as-an-orbit-around-a-transformnode/46773/3",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Cameras/bouncingBehavior.ts",
+                    "packages/dev/core/src/Behaviors/Cameras/framingBehavior.ts",
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "inputs"
+                ]
+            }
+        ],
+        "6.37.0": [
+            {
+                "pr": "14660",
+                "title": "Add observers to WebXRCamera when a rotation is performed",
+                "description": "Add observables `onBeforeCameraTeleportRotation` and `onAfterCameraTeleportRotation` to `WebXRMotionControllerTeleportation`.\r\n\r\n```shell\r\nnpm run format:fix\r\n```",
+                "author": {
+                    "name": "yuripourre",
+                    "url": "https://github.com/yuripourre"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRControllerTeleportation.ts",
+                    "packages/dev/core/src/XR/webXRCamera.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14655",
+                "title": "WebGPU: Manage context lost and restoration",
+                "description": "There are still a number of visualization tests that fail after context loss/restoration, but they also fail in WebGL. I'll do another PR to fix them.\r\n\r\nNote: the update to the \"Geometry buffer renderer\" visualization test is due to the fact that it was still using the old SSR post-process. I've updated it with the SSR rendering pipeline.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.dynamicTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.dynamicTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.rawTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuBufferManager.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheBindGroups.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheRenderPipeline.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheRenderPipelineTree.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheSampler.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuClearQuad.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuHardwareTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuPipelineContext.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuQuerySet.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureHelper.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureManager.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/renderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/Textures/hardwareTextureWrapper.ts",
+                    "packages/dev/core/src/Materials/Textures/internalTexture.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Materials/uniformBuffer.ts",
+                    "packages/dev/core/src/Meshes/WebGPU/webgpuDataBuffer.ts",
+                    "packages/dev/core/src/Meshes/geometry.ts",
+                    "packages/dev/core/src/Misc/brdfTextureTools.ts",
+                    "packages/dev/core/src/Misc/rgbdTextureTools.ts",
+                    "packages/dev/core/src/Particles/computeShaderParticleSystem.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderer.ts",
+                    "packages/dev/core/src/types.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/geometrybufferrenderer.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "enhancement",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "14665",
+                "title": "Fix arcrotate gamepad input",
+                "description": "https://forum.babylonjs.com/t/gamepad-controller/34409/10",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/arcRotateCameraGamepadInput.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inputs"
+                ]
+            },
+            {
+                "pr": "14608",
+                "title": "Flow Graph/Interactivity/Animation Pointer Object model",
+                "description": "# Changes\r\n\r\nThis PR adds a new module, \"ObjectModel\", and interfaces, whose main objective is to perform the conversion between a string \"path\" and a object that can be manipulated. This is useful for some glTF extensions, such as Interactivity and Animation Pointer. For example, an Animation Pointer path, such as `/nodes/0/translation` is converted to a list of AnimationProperty objects which are used to construct a Babylon animation.\r\n\r\nThis translation is performed by the implementers of an interface IPathToObjectConverter, whose method `convert` takes a path and returns this special object. There are three implementations of it. One (FlowGraphPathConverter) is aimed to resolve paths in the FlowGraphContext, and two are aimed to resolve glTF paths.\r\n\r\nAs part of this change, the existing FlowGraphPath class was deleted, as its functionality is superseded by the FlowGraphPathConverter class. \r\n\r\nIn addition, the KHR_animation_pointer class was slightly tweaked to use its path converter.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphGetPropertyBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphMeshPickEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPauseAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPlayAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphStopAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Audio/flowGraphPlayAudioBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Audio/flowGraphStopAudioBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphCounterBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphDebounceBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphDoNBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphForLoopBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphThrottleBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphWaitAllBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphWhileLoopBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphConsoleLogBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSendCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetPropertyBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetVariableBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraph.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphContext.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphCoordinator.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphExecutionBlockWithOutSignal.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphPath.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphPathComponent.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphPathConverter.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphPathConverterComponent.ts",
+                    "packages/dev/core/src/FlowGraph/index.ts",
+                    "packages/dev/core/src/FlowGraph/serialization.ts",
+                    "packages/dev/core/src/FlowGraph/typeDefinitions.ts",
+                    "packages/dev/core/src/ObjectModel/index.ts",
+                    "packages/dev/core/src/ObjectModel/objectModelInterfaces.ts",
+                    "packages/dev/core/src/index.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphEventNodes.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphExecutionNodes.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphSerialization.test.ts",
+                    "packages/dev/core/test/unit/FlowGraph/flowGraphUtils.test.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_animation_pointer.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_interactivity.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/gltfPathToObjectConverter.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/interactivityFunctions.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/interactivityPathCameraExtensions.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/interactivityPathExtensions.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/interactivityPathMaterialExtensions.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/interactivityPathToObjectConverter.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/interactivityPathTransformNodeExtensions.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/babylon.interactivity.test.ts",
+                    "packages/dev/loaders/test/unit/Interactivity/testData.ts"
+                ],
+                "tags": [
+                    "flow graph"
+                ]
+            },
+            {
+                "pr": "14664",
+                "title": "Fix material plugin calls without register",
+                "description": "Superseds https://github.com/BabylonJS/Babylon.js/pull/14662",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/material.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "loaders"
+                ]
+            },
+            {
+                "pr": "14661",
+                "title": "fix(ShaderMaterial): correct serialization key spelling mistake",
+                "description": "correct spelling mistake of serializationObject of `ShaderMaterial`\r\nthe key about `floatsArray` in serialized and deserialized object are inconsistent，then deserializing `floatsArray` will fail.\r\n\r\nserialize\r\n<img width=\"595\" alt=\"截屏2024-01-01 04 49 18\" src=\"https://github.com/BabylonJS/Babylon.js/assets/33159342/e6d7a971-8298-4f71-9754-341b96436d04\">\r\n\r\nParse\r\n<img width=\"560\" alt=\"截屏2024-01-01 04 50 08\" src=\"https://github.com/BabylonJS/Babylon.js/assets/33159342/85ac61b9-16d7-4ce5-ac7e-07a4e212b884\">\r\n",
+                "author": {
+                    "name": "Starryi",
+                    "url": "https://github.com/Starryi"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/shaderMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14657",
+                "title": "DynamicTexture: add sanity check in dispose",
+                "description": "See https://forum.babylonjs.com/t/detached-element-memory-leak-when-disposing-dynamic-textures/46668/4",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/dynamicTexture.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "14650",
+                "title": "refactor(renderTargetTexture): optimized render",
+                "description": "improved the performance of render a bit",
+                "author": {
+                    "name": "GuoBinyong",
+                    "url": "https://github.com/GuoBinyong"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/Rendering/renderingManager.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "6.36.1": [
+            {
+                "pr": "14659",
+                "title": "Declaration generation for UMD",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPauseAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPlayAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphStopAnimationBlock.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineMesh.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineRibbonMesh.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "6.36.0": [
+            {
+                "pr": "14652",
+                "title": "WebGPU: Fix breaking change in the constructor of ComputeShader",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Compute/computeShader.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "14651",
+                "title": "ProceduralTexture: Add options when creating a (custom) procedural texture",
+                "description": "See https://forum.babylonjs.com/t/how-to-make-the-render-result-type-of-customproceduretexture-float/46724",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/Procedurals/customProceduralTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/Procedurals/proceduralTexture.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "14649",
+                "title": "fix comments",
+                "description": "just fix comments",
+                "author": {
+                    "name": "Starryi",
+                    "url": "https://github.com/Starryi"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14647",
+                "title": "DynamicTexture: Add a dispose method",
+                "description": "See https://forum.babylonjs.com/t/detached-element-memory-leak-when-disposing-dynamic-textures/46668",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/ICanvas.ts",
+                    "packages/dev/core/src/Materials/Textures/dynamicTexture.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "14646",
+                "title": "SSR: Add support for world/unsigned normals",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline.ts",
+                    "packages/dev/core/src/Shaders/screenSpaceReflection2.fragment.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "14645",
+                "title": "GeometryBufferRenderer: Add a getter for \"unsigned normals\"",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14644",
+                "title": "GeometryBufferRenderer: Allow to define texture type and format",
+                "description": "I also added a capability to know if RG11B10UFloat is color renderable.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engineCapabilities.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/nullEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRendererSceneComponent.ts",
+                    "packages/dev/core/src/Shaders/geometry.fragment.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14642",
+                "title": "Incremental bounding box scaling",
+                "description": "followup https://forum.babylonjs.com/t/incremental-snapping-for-bbox-gizmo/46527/3",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "gizmos"
+                ]
+            },
+            {
+                "pr": "14640",
+                "title": "WebGPU: Inject dynamic and uniform buffer extensions in WebGPU engine",
+                "description": "Replaces #14639 ",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.dynamicBuffer.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.uniformBuffer.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/index.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts"
+                ],
+                "tags": [
+                    "enhancement",
                     "WebGPU"
                 ]
             }
@@ -169,6 +577,42 @@
                     "bug",
                     "loaders",
                     "glTF"
+                ]
+            }
+        ],
+        "6.34.3": [
+            {
+                "pr": "14624",
+                "title": "WebGPU: Add support for GPU timing for compute shaders, render targets and main render pass",
+                "description": "This PR adds a `gpuTimeInFrame` property on `ComputeShader`, `RenderTargetWrapper` and `WebGPUEngine` and is updated with the corresponding GPU time for the last frame (for `WebGPUEngine`, it is the time we spend in the main render pass).\r\n\r\nFor this to work, the \"timestamp-query\" extension must be supported by the browser and enabled when creating the device (the Playground does it automatically if the browser supports it, because it enables all supported extensions). At the time, only Canary supports it. You must enable the feature at runtime by doing `engine.enableGPUTimingMeasurements = true` (will do nothing in WebGL of course!).\r\n\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/4152247/e06e6beb-9ea1-4b5b-a5e2-008b69cb8385)\r\n\r\nI also performed some changes so that we don't generate errors for mapped buffers when the device is destroyed.\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Compute/computeShader.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.computeShader.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.computeShader.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.storageBuffer.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuBufferManager.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuOcclusionQuery.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuPerfCounter.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuQuerySet.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuRenderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTimestampQuery.ts",
+                    "packages/dev/core/src/Engines/index.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/LibDeclarations/webgpu.d.ts",
+                    "packages/dev/core/src/Materials/Textures/multiRenderTarget.ts",
+                    "packages/dev/core/src/Misc/perfCounter.ts",
+                    "packages/dev/core/src/Particles/computeShaderParticleSystem.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockSubSurface.fx"
+                ],
+                "tags": [
+                    "new feature",
+                    "WebGPU"
                 ]
             }
         ],

@@ -24,6 +24,11 @@ export interface IFlowGraphContextConfiguration {
      */
     readonly coordinator: FlowGraphCoordinator;
 }
+
+export interface IFlowGraphContextParseOptions {
+    readonly valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any;
+    readonly graph: FlowGraph;
+}
 /**
  * @experimental
  * The context represents the current state and execution of the flow graph.
@@ -277,12 +282,9 @@ export class FlowGraphContext {
      * @param valueParseFunction a function to parse complex values
      * @returns
      */
-    public static Parse(
-        serializationObject: ISerializedFlowGraphContext,
-        graph: FlowGraph,
-        valueParseFunction: (key: string, serializationObject: any, scene: Scene) => any = defaultValueParseFunction
-    ): FlowGraphContext {
-        const result = graph.createContext();
+    public static Parse(serializationObject: ISerializedFlowGraphContext, options: IFlowGraphContextParseOptions): FlowGraphContext {
+        const result = options.graph.createContext();
+        const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
         result.uniqueId = serializationObject.uniqueId;
         for (const key in serializationObject._userVariables) {
             const value = valueParseFunction(key, serializationObject._userVariables, result._configuration.scene);

@@ -11,7 +11,6 @@ import {
     FlowGraphGetVariableBlock,
     FlowGraphConsoleLogBlock,
     FlowGraphMultiGateBlock,
-    FlowGraphPath,
     FlowGraphPlayAnimationBlock,
     FlowGraphSceneReadyEventBlock,
     FlowGraphSetPropertyBlock,
@@ -20,6 +19,7 @@ import {
 } from "core/FlowGraph";
 import { FlowGraphConnectionType } from "core/FlowGraph/flowGraphConnection";
 import { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnection";
+import { FlowGraphPathConverter } from "core/FlowGraph/flowGraphPathConverter";
 import { Vector3 } from "core/Maths";
 import { Mesh } from "core/Meshes";
 import { Logger } from "core/Misc/logger";
@@ -93,9 +93,13 @@ describe("Flow Graph Serialization", () => {
 
     it("Serializes and parses a block", () => {
         // Serialize a block with path
+        const mockContext: any = jest.mock("core/FlowGraph/flowGraphContext") as any;
+        const pathConverter = new FlowGraphPathConverter(mockContext);
+
         const block = new FlowGraphPlayAnimationBlock({
-            targetPath: new FlowGraphPath("test"),
-            animationPath: new FlowGraphPath("test2"),
+            targetPath: "test",
+            animationPath: "test2",
+            pathConverter,
         });
 
         const serialized: any = {};
@@ -106,8 +110,10 @@ describe("Flow Graph Serialization", () => {
         expect(serialized.dataInputs.length).toEqual(4);
         expect(serialized.dataOutputs.length).toEqual(1);
         expect(serialized.className).toEqual("FGPlayAnimationBlock");
+        expect(serialized.config.targetPath).toEqual("test");
+        expect(serialized.config.animationPath).toEqual("test2");
 
-        const parsed = FlowGraphBlock.Parse(serialized, scene);
+        const parsed = FlowGraphBlock.Parse(serialized, { scene, pathConverter });
         expect(parsed.uniqueId).toEqual(block.uniqueId);
         expect(parsed.getClassName()).toEqual("FGPlayAnimationBlock");
         expect(parsed.dataInputs.length).toEqual(4);
@@ -119,7 +125,7 @@ describe("Flow Graph Serialization", () => {
         const multiGateBlock = new FlowGraphMultiGateBlock({ numberOutputFlows: 3, name: "MultiGate" });
         const serialized2: any = {};
         multiGateBlock.serialize(serialized2);
-        const parsed2 = FlowGraphBlock.Parse(serialized2, scene) as any;
+        const parsed2 = FlowGraphBlock.Parse(serialized2, { scene, pathConverter }) as any;
         expect(parsed2.outFlows.length).toEqual(3);
     });
 
@@ -152,7 +158,7 @@ describe("Flow Graph Serialization", () => {
         expect(serialized._connectionValues[flowGraphAddBlock.a.uniqueId]).toEqual(1);
         expect(serialized._connectionValues[flowGraphAddBlock.b.uniqueId]).toEqual(2);
 
-        const parsed = FlowGraphContext.Parse(serialized, graph);
+        const parsed = FlowGraphContext.Parse(serialized, { graph });
 
         expect(parsed.uniqueId).toEqual(context.uniqueId);
         expect(parsed.getClassName()).toEqual("FGContext");
@@ -167,6 +173,9 @@ describe("Flow Graph Serialization", () => {
     });
 
     it("Serializes and parses a graph", () => {
+        const mockContext: any = jest.mock("core/FlowGraph/flowGraphContext") as any;
+        const pathConverter = new FlowGraphPathConverter(mockContext);
+
         const coordinator = new FlowGraphCoordinator({ scene });
         const graph = coordinator.createGraph();
         const context = graph.createContext();
@@ -188,7 +197,7 @@ describe("Flow Graph Serialization", () => {
         // Graph is serialized with all blocks
         expect(serialized.allBlocks.length).toBe(3);
 
-        const parsed = FlowGraph.Parse(serialized, coordinator);
+        const parsed = FlowGraph.Parse(serialized, { coordinator, pathConverter });
         expect(parsed._eventBlocks.length).toBe(1);
         parsed.start();
 
@@ -207,8 +216,8 @@ describe("Flow Graph Serialization", () => {
         const flowGraphSceneReadyBlock = new FlowGraphSceneReadyEventBlock();
         graph.addEventBlock(flowGraphSceneReadyBlock);
 
-        const path = new FlowGraphPath("/testMesh/position");
-        const setPropertyBlock = new FlowGraphSetPropertyBlock<Vector3>({ path });
+        const pathConverter = new FlowGraphPathConverter(context);
+        const setPropertyBlock = new FlowGraphSetPropertyBlock<Vector3>({ path: "testMesh/position", pathConverter });
         flowGraphSceneReadyBlock.out.connectTo(setPropertyBlock.in);
 
         const constBlock = new FlowGraphConstantBlock<Vector3>({ value: new Vector3(1, 2, 3) });
@@ -217,7 +226,7 @@ describe("Flow Graph Serialization", () => {
         const serialized: any = {};
         graph.serialize(serialized);
 
-        const parsed = FlowGraph.Parse(serialized, coordinator);
+        const parsed = FlowGraph.Parse(serialized, { coordinator, pathConverter });
         parsed.start();
 
         scene.onReadyObservable.notifyObservers(scene);
