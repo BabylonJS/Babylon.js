@@ -16,3 +16,5 @@ export * from "./renderingManager";
 export * from "./utilityLayerRenderer";
 export * from "./fluidRenderer/index";
 export * from "./GaussianSplatting/index";
+export * from "./reflectiveShadowMap";
+export * from "./GlobalIllumination/index";
