@@ -228,10 +228,7 @@ export class Geometry implements IGetSetVerticesData {
         // Vertex buffers
         const buffers = new Set<Buffer>();
         for (const key in this._vertexBuffers) {
-            const vertexBuffer = <VertexBuffer>this._vertexBuffers[key];
-            if (vertexBuffer._buffer) {
-                buffers.add(vertexBuffer.getWrapperBuffer());
-            }
+            buffers.add(this._vertexBuffers[key].getWrapperBuffer());
         }
 
         for (const buffer of buffers) {

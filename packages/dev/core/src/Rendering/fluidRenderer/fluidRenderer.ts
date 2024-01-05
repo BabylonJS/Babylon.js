@@ -138,21 +138,18 @@ export class FluidRendererSceneComponent implements ISceneComponent {
             return;
         }
 
-        const dbuffers = new Set<Buffer>();
+        const buffers = new Set<Buffer>();
         for (let i = 0; i < fluidRenderer.renderObjects.length; ++i) {
             const obj = fluidRenderer.renderObjects[i].object;
             if (IsCustomParticlesObject(obj)) {
-                const buffers = obj.vertexBuffers;
-                for (const name in buffers) {
-                    const vbuffer = buffers[name];
-                    if (vbuffer._buffer) {
-                        dbuffers.add(vbuffer._buffer);
-                    }
+                const vbuffers = obj.vertexBuffers;
+                for (const name in vbuffers) {
+                    buffers.add(vbuffers[name].getWrapperBuffer());
                 }
             }
         }
 
-        for (const buffer of dbuffers) {
+        for (const buffer of buffers) {
             buffer._rebuild();
         }
     }
