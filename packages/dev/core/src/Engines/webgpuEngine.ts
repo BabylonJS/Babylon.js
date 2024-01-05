@@ -1490,13 +1490,13 @@ export class WebGPUEngine extends Engine {
 
     /**
      * Creates a vertex buffer
-     * @param data the data for the vertex buffer
+     * @param data the data or the size for the vertex buffer
      * @param _updatable whether the buffer should be created as updatable
      * @param label defines the label of the buffer (for debug purpose)
      * @returns the new buffer
      */
-    public createVertexBuffer(data: DataArray, _updatable?: boolean, label?: string): DataBuffer {
-        let view: ArrayBufferView;
+    public createVertexBuffer(data: DataArray | number, _updatable?: boolean, label?: string): DataBuffer {
+        let view: ArrayBufferView | number;
 
         if (data instanceof Array) {
             view = new Float32Array(data);
@@ -2032,10 +2032,7 @@ export class WebGPUEngine extends Engine {
             return;
         }
 
-        let isNewEffect = true;
-
         if (!DrawWrapper.IsWrapper(effect)) {
-            isNewEffect = effect !== this._currentEffect;
             this._currentEffect = effect;
             this._currentMaterialContext = this._defaultMaterialContext;
             this._currentDrawContext = this._defaultDrawContext;
@@ -2059,7 +2056,6 @@ export class WebGPUEngine extends Engine {
             }
             return;
         } else {
-            isNewEffect = effect.effect !== this._currentEffect;
             this._currentEffect = effect.effect;
             this._currentMaterialContext = effect.materialContext as WebGPUMaterialContext;
             this._currentDrawContext = effect.drawContext as WebGPUDrawContext;
@@ -2072,15 +2068,13 @@ export class WebGPUEngine extends Engine {
 
         this._stencilStateComposer.stencilMaterial = undefined;
 
-        this._forceEnableEffect = isNewEffect || this._forceEnableEffect ? false : this._forceEnableEffect;
+        this._forceEnableEffect = false;
 
-        if (isNewEffect) {
-            if (this._currentEffect!.onBind) {
-                this._currentEffect!.onBind(this._currentEffect!);
-            }
-            if (this._currentEffect!._onBindObservable) {
-                this._currentEffect!._onBindObservable.notifyObservers(this._currentEffect!);
-            }
+        if (this._currentEffect!.onBind) {
+            this._currentEffect!.onBind(this._currentEffect!);
+        }
+        if (this._currentEffect!._onBindObservable) {
+            this._currentEffect!._onBindObservable.notifyObservers(this._currentEffect!);
         }
     }
 

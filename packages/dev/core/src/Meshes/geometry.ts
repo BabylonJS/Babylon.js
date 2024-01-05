@@ -22,6 +22,7 @@ import { EngineStore } from "../Engines/engineStore";
 import { CompatibilityOptions } from "../Compat/compatibilityOptions";
 
 import type { Mesh } from "../Meshes/mesh";
+import type { Buffer } from "../Buffers/buffer";
 
 /**
  * Class used to store geometry data (vertex buffers + index buffer)
@@ -225,9 +226,16 @@ export class Geometry implements IGetSetVerticesData {
         }
 
         // Vertex buffers
+        const buffers = new Set<Buffer>();
         for (const key in this._vertexBuffers) {
             const vertexBuffer = <VertexBuffer>this._vertexBuffers[key];
-            vertexBuffer._rebuild();
+            if (vertexBuffer._buffer) {
+                buffers.add(vertexBuffer.getWrapperBuffer());
+            }
+        }
+
+        for (const buffer of buffers) {
+            buffer._rebuild();
         }
     }
 

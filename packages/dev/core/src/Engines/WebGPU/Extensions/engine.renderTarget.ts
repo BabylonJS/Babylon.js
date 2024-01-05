@@ -73,7 +73,7 @@ WebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, 
 };
 
 WebGPUEngine.prototype._createDepthStencilTexture = function (size: TextureSize, options: DepthTextureCreationOptions): InternalTexture {
-    const internalTexture = new InternalTexture(this, InternalTextureSource.DepthStencil);
+    const internalTexture = new InternalTexture(this, options.generateStencil ? InternalTextureSource.DepthStencil : InternalTextureSource.Depth);
 
     internalTexture.label = options.label;
 

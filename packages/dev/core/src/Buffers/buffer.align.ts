@@ -77,6 +77,10 @@ VertexBuffer.prototype.dispose = function (): void {
     this._isDisposed = true;
 };
 
+VertexBuffer.prototype.getWrapperBuffer = function (): Buffer {
+    return this._alignedBuffer || this._buffer;
+};
+
 VertexBuffer.prototype._alignBuffer = function (): void {
     const data = this._buffer.getData();
 

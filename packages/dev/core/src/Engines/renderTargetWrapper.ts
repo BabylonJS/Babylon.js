@@ -323,10 +323,12 @@ export class RenderTargetWrapper {
             if (textureArray && textureArray.length > 0) {
                 let generateDepthTexture = false;
                 let textureCount = textureArray.length;
+                let depthTextureFormat = -1;
 
                 const lastTextureSource = textureArray[textureArray.length - 1]._source;
                 if (lastTextureSource === InternalTextureSource.Depth || lastTextureSource === InternalTextureSource.DepthStencil) {
                     generateDepthTexture = true;
+                    depthTextureFormat = textureArray[textureArray.length - 1].format;
                     textureCount--;
                 }
 
@@ -384,6 +386,7 @@ export class RenderTargetWrapper {
                     generateDepthBuffer: this._generateDepthBuffer,
                     generateStencilBuffer: this._generateStencilBuffer,
                     generateDepthTexture,
+                    depthTextureFormat,
                     types,
                     formats,
                     textureCount,
@@ -417,6 +420,7 @@ export class RenderTargetWrapper {
             options.samplingMode = this.texture?.samplingMode;
             options.type = this.texture?.type;
             options.format = this.texture?.format;
+            options.noColorAttachment = !this._textures;
             options.label = this.label;
 
             if (this.isCube) {
@@ -430,7 +434,9 @@ export class RenderTargetWrapper {
 
                 rtw = this._engine.createRenderTargetTexture(size, options);
             }
-            rtw.texture!.isReady = true;
+            if (rtw.texture) {
+                rtw.texture!.isReady = true;
+            }
         }
 
         return rtw;
