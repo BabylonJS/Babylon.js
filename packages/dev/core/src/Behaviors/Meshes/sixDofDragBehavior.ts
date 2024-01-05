@@ -81,18 +81,36 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
         this._sceneRenderObserver = ownerNode.getScene().onBeforeRenderObservable.add(() => {
             if (this.currentDraggingPointerIds.length === 1 && this._moving && !this.disableMovement) {
                 // 1 pointer only drags mesh
-                const oldParent = ownerNode.parent;
-                ownerNode.setParent(null);
-                ownerNode.position.addInPlace(this._targetPosition.subtract(ownerNode.position).scale(this.dragDeltaRatio));
+                const deltaToAdd = TmpVectors.Vector3[0];
+                deltaToAdd.copyFrom(this._targetPosition).subtractInPlace(ownerNode.absolutePosition).scaleInPlace(this.dragDeltaRatio);
+                const deltaToAddTransformed = TmpVectors.Vector3[1];
+                deltaToAddTransformed.copyFrom(deltaToAdd);
+                // If the node has a parent, transform the delta to local space, so it can be added to the
+                // position in local space
+                if (ownerNode.parent) {
+                    const parentWorld = ownerNode.parent.getWorldMatrix();
+                    Vector3.TransformNormalToRef(deltaToAdd, parentWorld, deltaToAddTransformed);
+                }
+                ownerNode.position.addInPlace(deltaToAddTransformed);
 
                 this.onPositionChangedObservable.notifyObservers({ position: ownerNode.absolutePosition });
 
                 // Only rotate the mesh if it's parent has uniform scaling
-                if (!oldParent || ((oldParent as Mesh).scaling && !(oldParent as Mesh).scaling.isNonUniformWithinEpsilon(0.001))) {
-                    Quaternion.SlerpToRef(ownerNode.rotationQuaternion!, this._targetOrientation, this.dragDeltaRatio, ownerNode.rotationQuaternion!);
+                if (!ownerNode.parent || ((ownerNode.parent as TransformNode).scaling && !(ownerNode.parent as TransformNode).scaling.isNonUniformWithinEpsilon(0.001))) {
+                    const rotationToApply = TmpVectors.Quaternion[0];
+                    rotationToApply.copyFrom(this._targetOrientation);
+                    // If the node has a parent, transform the rotation to local space so it can be applied
+                    // to the node's own rotation
+                    if (ownerNode.parent) {
+                        const parentWorld = ownerNode.parent?.getWorldMatrix();
+                        const rotation = TmpVectors.Matrix[0];
+                        this._targetOrientation.toRotationMatrix(rotation);
+                        const rotationTransformed = TmpVectors.Matrix[1];
+                        parentWorld?.multiplyToRef(rotation, rotationTransformed);
+                        Quaternion.FromRotationMatrixToRef(rotationTransformed, rotationToApply);
+                    }
+                    Quaternion.SlerpToRef(ownerNode.rotationQuaternion!, rotationToApply, this.dragDeltaRatio, ownerNode.rotationQuaternion!);
                 }
-
-                ownerNode.setParent(oldParent);
             }
         });
     }
