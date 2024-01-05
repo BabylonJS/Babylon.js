@@ -430,7 +430,7 @@ export class VertexBuffer {
 
     /**
      * Gets the max possible amount of vertices stored within the current vertex buffer.
-     * We do not have the end offset or count so this will be to big for concatenated vertex buffers.
+     * We do not have the end offset or count so this will be too big for concatenated vertex buffers.
      * @internal
      */
     public get _maxVerticesCount() {
