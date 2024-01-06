@@ -1425,7 +1425,7 @@
         {
             "title": "Thin instances + dynamic buffer resize",
             "renderCount": 10,
-            "playgroundId": "#217750#33",
+            "playgroundId": "#217750#217",
             "excludedEngines": ["webgl1"],
             "referenceImage": "thin-instances-buffer-resize.png"
         },
@@ -1439,7 +1439,7 @@
         {
             "title": "Thin instances + render self motion blur",
             "renderCount": 10,
-            "playgroundId": "#217750#35",
+            "playgroundId": "#217750#218",
             "excludedEngines": ["webgl1"],
             "referenceImage": "thin-instances-renderself-mb.png"
         },

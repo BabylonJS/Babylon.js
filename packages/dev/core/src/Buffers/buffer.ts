@@ -2,6 +2,7 @@ import type { Nullable, DataArray, FloatArray } from "../types";
 import type { ThinEngine } from "../Engines/thinEngine";
 import { DataBuffer } from "./dataBuffer";
 import type { Mesh } from "../Meshes/mesh";
+import { Logger } from "../Misc/logger";
 
 /**
  * Class used to store data that will be store in GPU memory
@@ -185,8 +186,26 @@ export class Buffer {
 
     /** @internal */
     public _rebuild(): void {
-        this._buffer = null;
-        this.create(this._data);
+        if (!this._data) {
+            if (!this._buffer) {
+                // Buffer was not yet created, nothing to do
+                return;
+            }
+            if (this._buffer.capacity > 0) {
+                // We can at least recreate the buffer with the right size, even if we don't have the data
+                if (this._updatable) {
+                    this._buffer = this._engine.createDynamicVertexBuffer(this._buffer.capacity, this._label);
+                } else {
+                    this._buffer = this._engine.createVertexBuffer(this._buffer.capacity, undefined, this._label);
+                }
+                return;
+            }
+            Logger.Warn(`Missing data for buffer "${this._label}" ${this._buffer ? "(uniqueId: " + this._buffer.uniqueId + ")" : ""}. Buffer reconstruction failed.`);
+            this._buffer = null;
+        } else {
+            this._buffer = null;
+            this.create(this._data);
+        }
     }
 
     /**
@@ -630,6 +649,14 @@ export class VertexBuffer {
      */
     public getBuffer(): Nullable<DataBuffer> {
         return this._buffer.getBuffer();
+    }
+
+    /**
+     * Gets the Buffer instance that wraps the native GPU buffer
+     * @returns the wrapper buffer
+     */
+    public getWrapperBuffer(): Buffer {
+        return this._buffer;
     }
 
     /**

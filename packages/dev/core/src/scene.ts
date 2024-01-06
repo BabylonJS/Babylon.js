@@ -5216,7 +5216,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /** @internal */
     public _rebuildTextures(): void {
         for (const texture of this.textures) {
-            texture._rebuild();
+            texture._rebuild(true);
         }
 
         this.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);

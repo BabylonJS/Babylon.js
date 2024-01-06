@@ -660,7 +660,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     }
 
     /** @internal */
-    public _rebuild(): void {}
+    public _rebuild(_fromContextLost = false): void {}
 
     /**
      * Clones the texture.

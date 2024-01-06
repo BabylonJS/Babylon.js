@@ -488,6 +488,7 @@ export class WebGPUTextureManager {
         const webgpuHardwareTexture = texture._hardwareTexture as WebGPUHardwareTexture;
 
         const renderPassDescriptor: GPURenderPassDescriptor = {
+            label: `BabylonWebGPUDevice${this._engine.uniqueId}_copyVideoToTexture_${format}_${invertY ? "InvertY" : "DontInvertY"}${texture.label ? "_" + texture.label : ""}`,
             colorAttachments: [
                 {
                     view: webgpuHardwareTexture.underlyingResource!.createView({
@@ -609,6 +610,9 @@ export class WebGPUTextureManager {
             );
 
         const renderPassDescriptor = webgpuHardwareTexture?._copyInvertYRenderPassDescr ?? {
+            label: `BabylonWebGPUDevice${this._engine.uniqueId}_invertYPreMultiplyAlpha_${format}_${invertY ? "InvertY" : "DontInvertY"}_${
+                premultiplyAlpha ? "PremultiplyAlpha" : "DontPremultiplyAlpha"
+            }`,
             colorAttachments: [
                 {
                     view: outputTexture.createView({
@@ -909,6 +913,7 @@ export class WebGPUTextureManager {
         const webgpuHardwareTexture = gpuOrHdwTexture as Nullable<WebGPUHardwareTexture>;
         for (let i = 1; i < mipLevelCount; ++i) {
             const renderPassDescriptor = webgpuHardwareTexture?._mipmapGenRenderPassDescr[faceIndex]?.[i - 1] ?? {
+                label: `BabylonWebGPUDevice${this._engine.uniqueId}_generateMipmaps_${format}_faceIndex${faceIndex}_level${i}`,
                 colorAttachments: [
                     {
                         view: gpuTexture.createView({

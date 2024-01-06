@@ -514,6 +514,12 @@ export class InternalTexture extends TextureSampler {
                 );
                 proxy._sphericalPolynomial = this._sphericalPolynomial;
                 return;
+
+            case InternalTextureSource.DepthStencil:
+            case InternalTextureSource.Depth: {
+                // Will be handled at the RenderTargetWrapper level
+                break;
+            }
         }
     }
 
