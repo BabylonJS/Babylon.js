@@ -16,6 +16,7 @@ import type { Scene } from "../scene";
 import type { PositionGizmo } from "./positionGizmo";
 import { Color3 } from "../Maths/math.color";
 import { TmpVectors } from "../Maths/math.vector";
+
 /**
  * Interface for axis drag gizmo
  */
@@ -55,7 +56,7 @@ export class AxisDragGizmo extends Gizmo implements IAxisDragGizmo {
     public snapDistance = 0;
     /**
      * Event that fires each time the gizmo snaps to a new location.
-     * * snapDistance is the the change in distance
+     * * snapDistance is the change in distance
      */
     public onSnapObservable = new Observable<{ snapDistance: number }>();
 
@@ -82,13 +83,32 @@ export class AxisDragGizmo extends Gizmo implements IAxisDragGizmo {
     public get disableMaterial() {
         return this._disableMaterial;
     }
+
     /**
      * @internal
      */
     public static _CreateArrow(scene: Scene, material: StandardMaterial, thickness: number = 1, isCollider = false): TransformNode {
         const arrow = new TransformNode("arrow", scene);
-        const cylinder = CreateCylinder("cylinder", { diameterTop: 0, height: 0.075, diameterBottom: 0.0375 * (1 + (thickness - 1) / 4), tessellation: 96 }, scene);
-        const line = CreateCylinder("cylinder", { diameterTop: 0.005 * thickness, height: 0.275, diameterBottom: 0.005 * thickness, tessellation: 96 }, scene);
+        const cylinder = CreateCylinder(
+            "cylinder",
+            {
+                diameterTop: 0,
+                height: 0.075,
+                diameterBottom: 0.0375 * (1 + (thickness - 1) / 4),
+                tessellation: 96,
+            },
+            scene
+        );
+        const line = CreateCylinder(
+            "cylinder",
+            {
+                diameterTop: 0.005 * thickness,
+                height: 0.275,
+                diameterBottom: 0.005 * thickness,
+                tessellation: 96,
+            },
+            scene
+        );
 
         // Position arrow pointing in its drag axis
         cylinder.parent = arrow;
@@ -127,13 +147,17 @@ export class AxisDragGizmo extends Gizmo implements IAxisDragGizmo {
      * @param gizmoLayer The utility layer the gizmo will be added to
      * @param parent
      * @param thickness display gizmo axis thickness
+     * @param hoverColor The color of the gizmo when hovering over and dragging
+     * @param disableColor The Color of the gizmo when its disabled
      */
     constructor(
         dragAxis: Vector3,
         color: Color3 = Color3.Gray(),
         gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer,
         parent: Nullable<PositionGizmo> = null,
-        thickness: number = 1
+        thickness: number = 1,
+        hoverColor: Color3 = Color3.Yellow(),
+        disableColor: Color3 = Color3.Gray()
     ) {
         super(gizmoLayer);
         this._parent = parent;
@@ -144,10 +168,10 @@ export class AxisDragGizmo extends Gizmo implements IAxisDragGizmo {
         this._coloredMaterial.specularColor = color.subtract(new Color3(0.1, 0.1, 0.1));
 
         this._hoverMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        this._hoverMaterial.diffuseColor = Color3.Yellow();
+        this._hoverMaterial.diffuseColor = hoverColor;
 
         this._disableMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        this._disableMaterial.diffuseColor = Color3.Gray();
+        this._disableMaterial.diffuseColor = disableColor;
         this._disableMaterial.alpha = 0.4;
 
         // Build Mesh + Collider
@@ -206,7 +230,7 @@ export class AxisDragGizmo extends Gizmo implements IAxisDragGizmo {
                         if (this.dragBehavior.validateDrag(TmpVectors.Vector3[2])) {
                             this.attachedNode.getWorldMatrix().addTranslationFromFloats(TmpVectors.Vector3[1].x, TmpVectors.Vector3[1].y, TmpVectors.Vector3[1].z);
                             this.attachedNode.updateCache();
-                            tmpSnapEvent.snapDistance = this.snapDistance * dragSteps;
+                            tmpSnapEvent.snapDistance = this.snapDistance * dragSteps * Math.sign(currentSnapDragDistance);
                             this.onSnapObservable.notifyObservers(tmpSnapEvent);
                             matrixChanged = true;
                         }
@@ -253,6 +277,7 @@ export class AxisDragGizmo extends Gizmo implements IAxisDragGizmo {
             this._setGizmoMeshMaterial(cache.gizmoMeshes, newState ? cache.material : cache.disableMaterial);
         });
     }
+
     protected _attachedNodeChanged(value: Nullable<Node>) {
         if (this.dragBehavior) {
             this.dragBehavior.enabled = value ? true : false;
@@ -274,6 +299,7 @@ export class AxisDragGizmo extends Gizmo implements IAxisDragGizmo {
             }
         }
     }
+
     public get isEnabled(): boolean {
         return this._isEnabled;
     }

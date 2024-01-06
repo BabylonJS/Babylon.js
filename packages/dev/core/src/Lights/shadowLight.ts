@@ -1,10 +1,11 @@
 import { serialize, serializeAsVector3 } from "../Misc/decorators";
 import type { Camera } from "../Cameras/camera";
 import type { Scene } from "../scene";
-import { Matrix, Vector3 } from "../Maths/math.vector";
+import { Matrix, TmpVectors, Vector3 } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Light } from "./light";
 import { Axis } from "../Maths/math.axis";
+import type { Nullable } from "core/types";
 /**
  * Interface describing all the common properties and methods a shadow light needs to implement.
  * This helps both the shadow generator and materials to generate the corresponding shadow maps
@@ -64,7 +65,7 @@ export interface IShadowLight extends Light {
 
     /**
      * Sets the shadow projection matrix in parameter to the generated projection matrix.
-     * @param matrix The matrix to updated with the projection information
+     * @param matrix The matrix to update with the projection information
      * @param viewMatrix The transform matrix of the light
      * @param renderList The list of mesh to render in the map
      * @returns The current light
@@ -395,5 +396,47 @@ export abstract class ShadowLight extends Light implements IShadowLight {
             (this.transformedPosition as any) = null;
             (this.transformedDirection as any) = null;
         }
+    }
+
+    protected _viewMatrix: Matrix = Matrix.Identity();
+    protected _projectionMatrix: Matrix = Matrix.Identity();
+
+    /**
+     * Returns the view matrix.
+     * @param faceIndex The index of the face for which we want to extract the view matrix. Only used for point light types.
+     * @returns The view matrix. Can be null, if a view matrix cannot be defined for the type of light considered (as for a hemispherical light, for example).
+     */
+    public getViewMatrix(faceIndex?: number): Nullable<Matrix> {
+        const lightDirection = TmpVectors.Vector3[0];
+
+        let lightPosition = this.position;
+        if (this.computeTransformedInformation()) {
+            lightPosition = this.transformedPosition;
+        }
+
+        Vector3.NormalizeToRef(this.getShadowDirection(faceIndex), lightDirection);
+        if (Math.abs(Vector3.Dot(lightDirection, Vector3.Up())) === 1.0) {
+            lightDirection.z = 0.0000000000001; // Required to avoid perfectly perpendicular light
+        }
+
+        const lightTarget = TmpVectors.Vector3[1];
+        lightPosition.addToRef(lightDirection, lightTarget);
+
+        Matrix.LookAtLHToRef(lightPosition, lightTarget, Vector3.Up(), this._viewMatrix);
+
+        return this._viewMatrix;
+    }
+
+    /**
+     * Returns the projection matrix.
+     * Note that viewMatrix and renderList are optional and are only used by lights that calculate the projection matrix from a list of meshes (e.g. directional lights with automatic extents calculation).
+     * @param viewMatrix The view transform matrix of the light (optional).
+     * @param renderList The list of meshes to take into account when calculating the projection matrix (optional).
+     * @returns The projection matrix. Can be null, if a projection matrix cannot be defined for the type of light considered (as for a hemispherical light, for example).
+     */
+    public getProjectionMatrix(viewMatrix?: Matrix, renderList?: Array<AbstractMesh>): Nullable<Matrix> {
+        this.setShadowProjectionMatrix(this._projectionMatrix, viewMatrix ?? this._viewMatrix, renderList ?? []);
+
+        return this._projectionMatrix;
     }
 }

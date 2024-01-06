@@ -1,5 +1,5 @@
 import type { UniformBuffer } from "../Materials/uniformBuffer";
-import type { ThinEngine } from "../Engines/thinEngine";
+import type { WebGPUEngine } from "../Engines/webgpuEngine";
 import type { Scene } from "../scene";
 import type { Nullable } from "../types";
 import { SerializationHelper, serialize } from "../Misc/decorators";
@@ -17,6 +17,8 @@ import { TextureSampler } from "../Materials/Textures/textureSampler";
 import type { DataBuffer } from "core/Buffers/dataBuffer";
 import type { ExternalTexture } from "core/Materials/Textures/externalTexture";
 import type { VideoTexture } from "core/Materials/Textures/videoTexture";
+import { WebGPUPerfCounter } from "core/Engines/WebGPU/webgpuPerfCounter";
+import type { ThinEngine } from "core/Engines/thinEngine";
 
 /**
  * Defines the options associated with the creation of a compute shader.
@@ -87,6 +89,13 @@ export class ComputeShader {
     }
 
     /**
+     * When set to true, dispatch won't call isReady anymore and won't check if the underlying GPU resources should be (re)created because of a change in the inputs (texture, uniform buffer, etc.)
+     * If you know that your inputs did not change since last time dispatch was called and that isReady() returns true, set this flag to true to improve performance
+     */
+    @serialize()
+    public fastMode = false;
+
+    /**
      * Callback triggered when the shader is compiled
      */
     public onCompiled: Nullable<(effect: ComputeEffect) => void> = null;
@@ -95,6 +104,12 @@ export class ComputeShader {
      * Callback triggered when an error occurs
      */
     public onError: Nullable<(effect: ComputeEffect, errors: string) => void> = null;
+
+    /**
+     * Gets the GPU time spent running the compute shader for the last frame rendered (in nanoseconds).
+     * You have to enable the "timestamp-query" extension in the engine constructor options and set engine.enableGPUTimingMeasurements = true.
+     */
+    public readonly gpuTimeInFrame?: WebGPUPerfCounter;
 
     /**
      * Instantiates a new compute shader.
@@ -111,6 +126,9 @@ export class ComputeShader {
         this.name = name;
         this._engine = engine;
         this.uniqueId = UniqueIdGenerator.UniqueId;
+        if ((engine as WebGPUEngine).enableGPUTimingMeasurements) {
+            this.gpuTimeInFrame = new WebGPUPerfCounter();
+        }
 
         if (!this._engine.getCaps().supportComputeShaders) {
             Logger.Error("This engine does not support compute shaders!");
@@ -329,59 +347,61 @@ export class ComputeShader {
      * @returns True if the dispatch could be done, else false (meaning either the compute effect or at least one of the bound resources was not ready)
      */
     public dispatch(x: number, y?: number, z?: number): boolean {
-        if (!this.isReady()) {
-            return false;
-        }
-
-        // If the sampling parameters of a texture bound to the shader have changed, we must clear the compute context so that it is recreated with the updated values
-        // Also, if the actual (gpu) buffer used by a uniform buffer has changed, we must clear the compute context so that it is recreated with the updated value
-        for (const key in this._bindings) {
-            const binding = this._bindings[key];
-
-            if (!this._options.bindingsMapping[key]) {
-                throw new Error("ComputeShader ('" + this.name + "'): No binding mapping has been provided for the property '" + key + "'");
+        if (!this.fastMode) {
+            if (!this.isReady()) {
+                return false;
             }
 
-            switch (binding.type) {
-                case ComputeBindingType.Texture: {
-                    const sampler = this._samplers[key];
-                    const texture = binding.object as BaseTexture;
+            // If the sampling parameters of a texture bound to the shader have changed, we must clear the compute context so that it is recreated with the updated values
+            // Also, if the actual (gpu) buffer used by a uniform buffer has changed, we must clear the compute context so that it is recreated with the updated value
+            for (const key in this._bindings) {
+                const binding = this._bindings[key];
 
-                    if (!sampler || !texture._texture || !sampler.compareSampler(texture._texture)) {
-                        this._samplers[key] = new TextureSampler().setParameters(
-                            texture.wrapU,
-                            texture.wrapV,
-                            texture.wrapR,
-                            texture.anisotropicFilteringLevel,
-                            texture._texture!.samplingMode,
-                            texture._texture?._comparisonFunction
-                        );
-                        this._contextIsDirty = true;
+                if (!this._options.bindingsMapping[key]) {
+                    throw new Error("ComputeShader ('" + this.name + "'): No binding mapping has been provided for the property '" + key + "'");
+                }
+
+                switch (binding.type) {
+                    case ComputeBindingType.Texture: {
+                        const sampler = this._samplers[key];
+                        const texture = binding.object as BaseTexture;
+
+                        if (!sampler || !texture._texture || !sampler.compareSampler(texture._texture)) {
+                            this._samplers[key] = new TextureSampler().setParameters(
+                                texture.wrapU,
+                                texture.wrapV,
+                                texture.wrapR,
+                                texture.anisotropicFilteringLevel,
+                                texture._texture!.samplingMode,
+                                texture._texture?._comparisonFunction
+                            );
+                            this._contextIsDirty = true;
+                        }
+                        break;
                     }
-                    break;
-                }
-                case ComputeBindingType.ExternalTexture: {
-                    // we must recreate the bind groups each time if there's an external texture, because device.importExternalTexture must be called each frame
-                    this._contextIsDirty = true;
-                    break;
-                }
-                case ComputeBindingType.UniformBuffer: {
-                    const ubo = binding.object as UniformBuffer;
-                    if (ubo.getBuffer() !== binding.buffer) {
-                        binding.buffer = ubo.getBuffer();
+                    case ComputeBindingType.ExternalTexture: {
+                        // we must recreate the bind groups each time if there's an external texture, because device.importExternalTexture must be called each frame
                         this._contextIsDirty = true;
+                        break;
                     }
-                    break;
+                    case ComputeBindingType.UniformBuffer: {
+                        const ubo = binding.object as UniformBuffer;
+                        if (ubo.getBuffer() !== binding.buffer) {
+                            binding.buffer = ubo.getBuffer();
+                            this._contextIsDirty = true;
+                        }
+                        break;
+                    }
                 }
+            }
+
+            if (this._contextIsDirty) {
+                this._contextIsDirty = false;
+                this._context.clear();
             }
         }
 
-        if (this._contextIsDirty) {
-            this._contextIsDirty = false;
-            this._context.clear();
-        }
-
-        this._engine.computeDispatch(this._effect, this._context, this._bindings, x, y, z, this._options.bindingsMapping);
+        this._engine.computeDispatch(this._effect, this._context, this._bindings, x, y, z, this._options.bindingsMapping, this.gpuTimeInFrame);
 
         return true;
     }
@@ -455,7 +475,12 @@ export class ComputeShader {
      * @returns a new compute shader
      */
     public static Parse(source: any, scene: Scene, rootUrl: string): ComputeShader {
-        const compute = SerializationHelper.Parse(() => new ComputeShader(source.name, scene.getEngine(), source.shaderPath, source.options), source, scene, rootUrl);
+        const compute = SerializationHelper.Parse(
+            () => new ComputeShader(source.name, scene.getEngine() as WebGPUEngine, source.shaderPath, source.options),
+            source,
+            scene,
+            rootUrl
+        );
 
         for (const key in source.textures) {
             const binding = source.bindings[key];

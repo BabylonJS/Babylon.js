@@ -4,6 +4,7 @@ import type { FlowGraphDataConnection } from "core/FlowGraph/flowGraphDataConnec
 import { getRichTypeFromValue } from "core/FlowGraph/flowGraphRichTypes";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { RegisterClass } from "../../../Misc/typeStore";
+import { defaultValueSerializationFunction } from "core/FlowGraph/serialization";
 /**
  * @experimental
  * Configuration for a constant block.
@@ -27,7 +28,7 @@ export class FlowGraphConstantBlock<T> extends FlowGraphBlock {
     constructor(public config: IFlowGraphConstantBlockConfiguration<T>) {
         super(config);
 
-        this.output = this._registerDataOutput("output", getRichTypeFromValue(config.value));
+        this.output = this.registerDataOutput("output", getRichTypeFromValue(config.value));
     }
 
     public _updateOutputs(context: FlowGraphContext): void {
@@ -36,6 +37,11 @@ export class FlowGraphConstantBlock<T> extends FlowGraphBlock {
 
     public getClassName(): string {
         return "FGConstantBlock";
+    }
+
+    public serialize(serializationObject: any = {}, valueSerializeFunction: (key: string, value: any, serializationObject: any) => any = defaultValueSerializationFunction) {
+        super.serialize(serializationObject);
+        valueSerializeFunction("value", this.config.value, serializationObject.config);
     }
 }
 RegisterClass("FGConstantBlock", FlowGraphConstantBlock);

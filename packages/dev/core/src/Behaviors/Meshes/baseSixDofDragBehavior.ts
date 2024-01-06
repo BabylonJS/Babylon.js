@@ -371,7 +371,7 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
                         if (this._pointerCamera.inputs && this._pointerCamera.inputs.attachedToElement) {
                             this._pointerCamera.detachControl();
                             this._attachedToElement = true;
-                        } else {
+                        } else if (!this.allowMultiPointer || this.currentDraggingPointerIds.length === 0) {
                             this._attachedToElement = false;
                         }
                     }

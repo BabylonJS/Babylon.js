@@ -48,6 +48,7 @@ import type { IPhysicsEnabledObject, PhysicsImpostor } from "../Physics/v1/physi
 import type { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
 import type { LinesMesh } from "./linesMesh";
 import type { GroundMesh } from "./groundMesh";
+import type { DataBuffer } from "core/Buffers/dataBuffer";
 
 /**
  * @internal
@@ -370,7 +371,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     public get hasThinInstances(): boolean {
-        return (this._thinInstanceDataStorage.instancesCount ?? 0) > 0;
+        return (this.forcedInstanceCount || this._thinInstanceDataStorage.instancesCount || 0) > 0;
     }
 
     // Members
@@ -1684,6 +1685,20 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
+     * Sets the index buffer of this mesh.
+     * @param indexBuffer Defines the index buffer to use for this mesh
+     * @param totalVertices Defines the total number of vertices used by the buffer
+     * @param totalIndices Defines the total number of indices in the index buffer
+     */
+    public setIndexBuffer(indexBuffer: DataBuffer, totalVertices: number, totalIndices: number): void {
+        let geometry = this._geometry;
+        if (!geometry) {
+            geometry = new Geometry(Geometry.RandomId(), this.getScene(), undefined, undefined, this);
+        }
+        geometry.setIndexBuffer(indexBuffer, totalVertices, totalIndices);
+    }
+
+    /**
      * Set the index buffer of this mesh
      * @param indices defines the source data
      * @param totalVertices defines the total number of vertices referenced by this index data (can be null)
@@ -2364,7 +2379,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         let sideOrientation: Nullable<number>;
 
-        if (!instanceDataStorage.isFrozen && (this._internalMeshDataInfo._effectiveMaterial.backFaceCulling || this.overrideMaterialSideOrientation !== null)) {
+        if (
+            !instanceDataStorage.isFrozen &&
+            (this._internalMeshDataInfo._effectiveMaterial.backFaceCulling ||
+                this.overrideMaterialSideOrientation !== null ||
+                (this._internalMeshDataInfo._effectiveMaterial as any).twoSidedLighting)
+        ) {
+            // Note: if two sided lighting is enabled, we need to ensure that the normal will point in the right direction even if the determinant of the world matrix is negative
             const mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
             sideOrientation = this.overrideMaterialSideOrientation;
             if (sideOrientation == null) {
@@ -2934,6 +2955,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param uvOffset is an optional vector2 used to offset UV.
      * @param uvScale is an optional vector2 used to scale UV.
      * @param forceUpdate defines whether or not to force an update of the generated buffers. This is useful to apply on a deserialized model for instance.
+     * @param onError defines a callback called when an error occurs during the processing of the request.
      * @returns the Mesh.
      */
     public applyDisplacementMap(
@@ -2943,7 +2965,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         onSuccess?: (mesh: Mesh) => void,
         uvOffset?: Vector2,
         uvScale?: Vector2,
-        forceUpdate = false
+        forceUpdate = false,
+        onError?: (message?: string, exception?: any) => void
     ): Mesh {
         const scene = this.getScene();
 
@@ -2967,7 +2990,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             }
         };
 
-        Tools.LoadImage(url, onload, () => {}, scene.offlineProvider);
+        Tools.LoadImage(url, onload, onError ? onError : () => {}, scene.offlineProvider);
         return this;
     }
 

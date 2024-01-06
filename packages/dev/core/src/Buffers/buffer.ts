@@ -2,6 +2,7 @@ import type { Nullable, DataArray, FloatArray } from "../types";
 import type { ThinEngine } from "../Engines/thinEngine";
 import { DataBuffer } from "./dataBuffer";
 import type { Mesh } from "../Meshes/mesh";
+import { Logger } from "../Misc/logger";
 
 /**
  * Class used to store data that will be store in GPU memory
@@ -185,8 +186,26 @@ export class Buffer {
 
     /** @internal */
     public _rebuild(): void {
-        this._buffer = null;
-        this.create(this._data);
+        if (!this._data) {
+            if (!this._buffer) {
+                // Buffer was not yet created, nothing to do
+                return;
+            }
+            if (this._buffer.capacity > 0) {
+                // We can at least recreate the buffer with the right size, even if we don't have the data
+                if (this._updatable) {
+                    this._buffer = this._engine.createDynamicVertexBuffer(this._buffer.capacity, this._label);
+                } else {
+                    this._buffer = this._engine.createVertexBuffer(this._buffer.capacity, undefined, this._label);
+                }
+                return;
+            }
+            Logger.Warn(`Missing data for buffer "${this._label}" ${this._buffer ? "(uniqueId: " + this._buffer.uniqueId + ")" : ""}. Buffer reconstruction failed.`);
+            this._buffer = null;
+        } else {
+            this._buffer = null;
+            this.create(this._data);
+        }
     }
 
     /**
@@ -429,9 +448,11 @@ export class VertexBuffer {
     public readonly engine: ThinEngine;
 
     /**
-     * Gets the number of vertices in the buffer
+     * Gets the max possible amount of vertices stored within the current vertex buffer.
+     * We do not have the end offset or count so this will be too big for concatenated vertex buffers.
+     * @internal
      */
-    public get totalVertices() {
+    public get _maxVerticesCount() {
         const data = this.getData();
         if (!data) {
             return 0;
@@ -613,13 +634,11 @@ export class VertexBuffer {
      * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
      * @returns a float array containing vertex data
      */
-    public getFloatData(totalVertices?: number, forceCopy?: boolean): Nullable<FloatArray> {
+    public getFloatData(totalVertices: number, forceCopy?: boolean): Nullable<FloatArray> {
         const data = this.getData();
         if (!data) {
             return null;
         }
-
-        totalVertices = totalVertices ?? this.totalVertices;
 
         return VertexBuffer.GetFloatData(data, this._size, this.type, this.byteOffset, this.byteStride, this.normalized, totalVertices, forceCopy);
     }
@@ -630,6 +649,14 @@ export class VertexBuffer {
      */
     public getBuffer(): Nullable<DataBuffer> {
         return this._buffer.getBuffer();
+    }
+
+    /**
+     * Gets the Buffer instance that wraps the native GPU buffer
+     * @returns the wrapper buffer
+     */
+    public getWrapperBuffer(): Buffer {
+        return this._buffer;
     }
 
     /**

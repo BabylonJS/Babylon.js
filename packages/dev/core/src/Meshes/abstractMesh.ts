@@ -1496,16 +1496,32 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
             let faceIndexCount = 0;
             let positionIndex = 0;
             for (let vertexCount = 0; vertexCount < data.length; vertexCount++) {
+                let value = data[vertexCount];
                 for (let targetCount = 0; targetCount < this.morphTargetManager.numTargets; targetCount++) {
                     const targetMorph = this.morphTargetManager.getTarget(targetCount);
                     const influence = targetMorph.influence;
-                    if (influence > 0.0) {
-                        const morphTargetPositions = targetMorph.getPositions();
-                        if (morphTargetPositions) {
-                            data[vertexCount] += (morphTargetPositions[vertexCount] - data[vertexCount]) * influence;
+                    if (influence !== 0.0) {
+                        let morphTargetData: Nullable<FloatArray> = null;
+                        switch (kind) {
+                            case VertexBuffer.PositionKind:
+                                morphTargetData = targetMorph.getPositions();
+                                break;
+                            case VertexBuffer.NormalKind:
+                                morphTargetData = targetMorph.getNormals();
+                                break;
+                            case VertexBuffer.TangentKind:
+                                morphTargetData = targetMorph.getTangents();
+                                break;
+                            case VertexBuffer.UVKind:
+                                morphTargetData = targetMorph.getUVs();
+                                break;
+                        }
+                        if (morphTargetData) {
+                            value += (morphTargetData[vertexCount] - data[vertexCount]) * influence;
                         }
                     }
                 }
+                data[vertexCount] = value;
 
                 faceIndexCount++;
                 if (kind === VertexBuffer.PositionKind) {

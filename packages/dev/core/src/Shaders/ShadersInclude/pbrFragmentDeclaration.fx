@@ -164,6 +164,9 @@ uniform mat4 view;
         #ifdef REALTIME_FILTERING
             uniform vec2 vRefractionFilteringInfo;
         #endif
+        #ifdef SS_DISPERSION
+            uniform float dispersion;
+        #endif
     #endif
 
     #ifdef SS_THICKNESSANDMASK_TEXTURE

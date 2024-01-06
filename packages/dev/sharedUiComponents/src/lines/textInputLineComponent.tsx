@@ -112,7 +112,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
             return;
         }
         if (this.props.numbersOnly) {
-            if (/[^0-9.\p\x%-]/g.test(value)) {
+            if (/[^0-9.px%-]/g.test(value)) {
                 return;
             }
             if (!value) {
@@ -121,7 +121,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
 
             //Removing starting zero if there is a number of a minus after it.
             if (value.search(/0+[0-9-]/g) === 0) {
-                value = value.substr(1);
+                value = value.substring(1);
             }
         }
 

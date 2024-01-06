@@ -1,5 +1,5 @@
 import { Observable } from "../../Misc/observable";
-import type { Nullable, int } from "../../types";
+import type { ImageSource, Nullable, int } from "../../types";
 import type { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
 import type { HardwareTextureWrapper } from "./hardwareTextureWrapper";
 import { TextureSampler } from "./textureSampler";
@@ -221,6 +221,10 @@ export class InternalTexture extends TextureSampler {
     public _lodGenerationOffset: number = 0;
     /** @internal */
     public _useSRGBBuffer: boolean = false;
+    /** @internal */
+    public _creationFlags: number = 0;
+    /** @internal */
+    public _originalFormat?: number;
 
     // The following three fields helps sharing generated fixed LODs for texture filtering
     // In environment not supporting the textureLOD extension like EDGE. They are for internal use only.
@@ -250,6 +254,12 @@ export class InternalTexture extends TextureSampler {
 
     /** @internal */
     public _gammaSpace: Nullable<boolean> = null;
+
+    /** @internal */
+    public _premulAlpha = false;
+
+    /** @internal */
+    public _dynamicTextureSource: Nullable<ImageSource> = null;
 
     private _engine: ThinEngine;
     private _uniqueId: number;
@@ -390,7 +400,7 @@ export class InternalTexture extends TextureSampler {
                     this.samplingMode,
                     this._compression,
                     this.type,
-                    undefined,
+                    this._creationFlags,
                     this._useSRGBBuffer
                 );
                 proxy._swapAndDie(this, false);
@@ -437,7 +447,9 @@ export class InternalTexture extends TextureSampler {
             case InternalTextureSource.Dynamic:
                 proxy = this._engine.createDynamicTexture(this.baseWidth, this.baseHeight, this.generateMipMaps, this.samplingMode);
                 proxy._swapAndDie(this, false);
-                this._engine.updateDynamicTexture(this, this._engine.getRenderingCanvas()!, this.invertY, undefined, undefined, true);
+                if (this._dynamicTextureSource) {
+                    this._engine.updateDynamicTexture(this, this._dynamicTextureSource, this.invertY, this._premulAlpha, this.format, true);
+                }
 
                 // The engine will make sure to update content so no need to flag it as isReady = true
                 break;
@@ -468,7 +480,7 @@ export class InternalTexture extends TextureSampler {
                 proxy = this._engine.createRawCubeTexture(
                     this._bufferViewArray!,
                     this.width,
-                    this.format,
+                    this._originalFormat ?? this.format,
                     this.type,
                     this.generateMipMaps,
                     this.invertY,
@@ -502,6 +514,12 @@ export class InternalTexture extends TextureSampler {
                 );
                 proxy._sphericalPolynomial = this._sphericalPolynomial;
                 return;
+
+            case InternalTextureSource.DepthStencil:
+            case InternalTextureSource.Depth: {
+                // Will be handled at the RenderTargetWrapper level
+                break;
+            }
         }
     }
 
@@ -511,7 +529,7 @@ export class InternalTexture extends TextureSampler {
     public _swapAndDie(target: InternalTexture, swapAll = true): void {
         // TODO what about refcount on target?
 
-        this._hardwareTexture?.setUsage(target._source, this.generateMipMaps, this.isCube, this.width, this.height);
+        this._hardwareTexture?.setUsage(target._source, this.generateMipMaps, this.is2DArray, this.isCube, this.is3D, this.width, this.height, this.depth);
 
         target._hardwareTexture = this._hardwareTexture;
         if (swapAll) {
@@ -568,6 +586,7 @@ export class InternalTexture extends TextureSampler {
         if (this._references === 0) {
             this._engine._releaseTexture(this);
             this._hardwareTexture = null;
+            this._dynamicTextureSource = null;
         }
     }
 }

@@ -63,13 +63,8 @@ export class KHR_draco_mesh_compression implements IGLTFLoaderExtension {
     public _loadVertexDataAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh): Nullable<Promise<Geometry>> {
         return GLTFLoader.LoadExtensionAsync<IKHRDracoMeshCompression, Geometry>(context, primitive, this.name, (extensionContext, extension) => {
             if (primitive.mode != undefined) {
-                if (primitive.mode !== MeshPrimitiveMode.TRIANGLE_STRIP && primitive.mode !== MeshPrimitiveMode.TRIANGLES) {
+                if (primitive.mode !== MeshPrimitiveMode.TRIANGLES && primitive.mode !== MeshPrimitiveMode.TRIANGLE_STRIP) {
                     throw new Error(`${context}: Unsupported mode ${primitive.mode}`);
-                }
-
-                // TODO: handle triangle strips
-                if (primitive.mode === MeshPrimitiveMode.TRIANGLE_STRIP) {
-                    throw new Error(`${context}: Mode ${primitive.mode} is not currently supported`);
                 }
             }
 

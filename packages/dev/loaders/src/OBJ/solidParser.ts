@@ -11,6 +11,7 @@ import { VertexData } from "core/Meshes/mesh.vertexData";
 import type { Scene } from "core/scene";
 import type { FloatArray, IndicesArray, Nullable } from "core/types";
 import type { OBJLoadingOptions } from "./objLoadingOptions";
+import { Logger } from "core/Misc/logger";
 
 type MeshObject = {
     name: string;
@@ -21,6 +22,8 @@ type MeshObject = {
     uvs?: Array<number>;
     materialName: string;
     directMaterial?: Nullable<Material>;
+    isObject: boolean; // If the entity is defined as an object ("o"), or group ("g")
+    _babylonMesh?: AbstractMesh; // The corresponding Babylon mesh
 };
 
 /**
@@ -655,6 +658,7 @@ export class SolidParser {
                     uvs: undefined,
                     colors: undefined,
                     materialName: this._materialNameFromObj,
+                    isObject: SolidParser.ObjectDescriptor.test(line),
                 };
                 this._addPreviousObjMesh();
 
@@ -686,6 +690,7 @@ export class SolidParser {
                             uvs: undefined,
                             colors: undefined,
                             materialName: this._materialNameFromObj,
+                            isObject: false,
                         };
                     this._increment++;
                     //If meshes are already defined
@@ -711,7 +716,7 @@ export class SolidParser {
                 // With the obj file  an integer is set
             } else {
                 //If there is another possibility
-                console.log("Unhandled expression at line : " + line);
+                Logger.Log("Unhandled expression at line : " + line);
             }
         }
 
@@ -792,6 +797,7 @@ export class SolidParser {
                 uvs: this._unwrappedUVForBabylon,
                 materialName: this._materialNameFromObj,
                 directMaterial: newMaterial,
+                isObject: true,
             });
         }
 
@@ -819,6 +825,16 @@ export class SolidParser {
             const babylonMesh = new Mesh(this._meshesFromObj[j].name, scene);
             babylonMesh._parentContainer = assetContainer;
             scene._blockEntityCollection = false;
+            this._handledMesh._babylonMesh = babylonMesh;
+            // If this is a group mesh, it should have an object mesh as a parent. So look for the first object mesh that appears before it.
+            if (!this._handledMesh.isObject) {
+                for (let k = j - 1; k >= 0; --k) {
+                    if (this._meshesFromObj[k].isObject && this._meshesFromObj[k]._babylonMesh) {
+                        babylonMesh.parent = this._meshesFromObj[k]._babylonMesh!;
+                        break;
+                    }
+                }
+            }
 
             //Push the name of the material to an array
             //This is indispensable for the importMesh function

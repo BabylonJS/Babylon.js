@@ -288,8 +288,8 @@ export class GreasedLineTools {
             what[0] instanceof Vector3
                 ? GreasedLineTools.GetLineSegments(what as Vector3[])
                 : typeof what[0] === "number"
-                ? GreasedLineTools.GetLineSegments(GreasedLineTools.ToVector3Array(what as number[]) as Vector3[])
-                : (what as { point1: Vector3; point2: Vector3; length: number }[]);
+                  ? GreasedLineTools.GetLineSegments(GreasedLineTools.ToVector3Array(what as number[]) as Vector3[])
+                  : (what as { point1: Vector3; point2: Vector3; length: number }[]);
         const points: Vector3[] = [];
         subLines.forEach((s) => {
             if (s.length > segmentLength) {

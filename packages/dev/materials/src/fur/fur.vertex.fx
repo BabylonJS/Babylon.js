@@ -62,6 +62,7 @@ varying vec4 vColor;
 #endif
 
 #include<clipPlaneVertexDeclaration>
+#include<logDepthDeclaration>
 #include<fogVertexDeclaration>
 #include<__decl__lightFragment>[0..maxSimultaneousLights]
 
@@ -160,6 +161,7 @@ float r = Rand(position);
 	// Clip plane
 	#include<clipPlaneVertex>
 
+	#include<logDepthVertex>
 	// Fog
 	#include<fogVertex>
 

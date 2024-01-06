@@ -10,10 +10,10 @@ import type { IKeyboardEvent, IPointerEvent, IWheelEvent } from "../../Events/de
 export type DeviceSourceEvent<T extends DeviceType> = T extends DeviceType.Keyboard
     ? IKeyboardEvent
     : T extends DeviceType.Mouse
-    ? IWheelEvent | IPointerEvent
-    : T extends DeviceType.Touch
-    ? IPointerEvent
-    : never;
+      ? IWheelEvent | IPointerEvent
+      : T extends DeviceType.Touch
+        ? IPointerEvent
+        : never;
 
 /**
  * Class that handles all input for a specific device

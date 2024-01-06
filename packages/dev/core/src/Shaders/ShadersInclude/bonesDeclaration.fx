@@ -12,9 +12,10 @@
             uniform float boneTextureWidth;
         #else
             uniform mat4 mBones[BonesPerMesh];
-            #ifdef BONES_VELOCITY_ENABLED
-                uniform mat4 mPreviousBones[BonesPerMesh];
-            #endif
+        #endif
+
+        #ifdef BONES_VELOCITY_ENABLED
+            uniform mat4 mPreviousBones[BonesPerMesh];
         #endif
 
         #ifdef BONETEXTURE

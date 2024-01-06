@@ -2,6 +2,11 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "GUI Input Text Area with Placeholder",
+            "playgroundId": "#NVAEWD#364",
+            "referenceImage": "gui-inputtextarea-withplaceholder.png"
+        },
+        {
             "title": "Ground Projection",
             "playgroundId": "#XG08YC#0",
             "referenceImage": "groundProjection.png"
@@ -1125,7 +1130,7 @@
         },
         {
             "title": "Geometry buffer renderer",
-            "playgroundId": "#PIZ1GK#173",
+            "playgroundId": "#PIZ1GK#1620",
             "referenceImage": "geometrybufferrenderer.png",
             "renderCount": 10,
             "excludedEngines": ["webgl1"],
@@ -1393,7 +1398,7 @@
             "title": "Instances + GBR + motion blur",
             "renderCount": 10,
             "playgroundId": "#YB006J#549",
-            "excludedEngines": ["webgl1","webgpu"],
+            "excludedEngines": ["webgl1", "webgpu"],
             "referenceImage": "instances-gbr-mb.png"
         },
         {
@@ -1420,7 +1425,7 @@
         {
             "title": "Thin instances + dynamic buffer resize",
             "renderCount": 10,
-            "playgroundId": "#217750#33",
+            "playgroundId": "#217750#217",
             "excludedEngines": ["webgl1"],
             "referenceImage": "thin-instances-buffer-resize.png"
         },
@@ -1434,7 +1439,7 @@
         {
             "title": "Thin instances + render self motion blur",
             "renderCount": 10,
-            "playgroundId": "#217750#35",
+            "playgroundId": "#217750#218",
             "excludedEngines": ["webgl1"],
             "referenceImage": "thin-instances-renderself-mb.png"
         },
@@ -1815,7 +1820,7 @@
         },
         {
             "title": "sphere-with-custom-shader-to-display-wireframe-using-glow-layer",
-           "renderCount": 5,
+            "renderCount": 5,
             "playgroundId": "#Y05E2C#6"
         },
         {

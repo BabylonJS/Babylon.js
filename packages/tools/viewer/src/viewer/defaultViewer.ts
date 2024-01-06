@@ -19,6 +19,7 @@ import type { ViewerConfiguration } from "../configuration/configuration";
 import type { ISceneConfiguration } from "../configuration/interfaces/sceneConfiguration";
 import type { IModelConfiguration } from "../configuration/interfaces/modelConfiguration";
 import type { Nullable } from "core/types";
+import { Logger } from "core/Misc/logger";
 
 import "core/Lights/Shadows/shadowGeneratorSceneComponent";
 
@@ -522,7 +523,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
         }
         this.showLoadingScreen();
         return super.loadModel(model!, true).catch((error) => {
-            console.log(error);
+            Logger.Log(error);
             this.hideLoadingScreen();
             this.showOverlayScreen("error");
             return Promise.reject(error);

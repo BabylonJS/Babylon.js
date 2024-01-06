@@ -33,7 +33,7 @@ export class FlowGraphSwitchBlock<T> extends FlowGraphExecutionBlock {
     constructor(public config: IFlowGraphSwitchBlockConfiguration<T>) {
         super(config);
 
-        this.selection = this._registerDataInput("selection", RichTypeAny);
+        this.selection = this.registerDataInput("selection", RichTypeAny);
     }
 
     public configure(): void {
@@ -60,6 +60,11 @@ export class FlowGraphSwitchBlock<T> extends FlowGraphExecutionBlock {
 
     public getClassName(): string {
         return "FGSwitchBlock";
+    }
+
+    public serialize(serializationObject?: any): void {
+        super.serialize(serializationObject);
+        serializationObject.cases = this.config.cases;
     }
 }
 RegisterClass("FGSwitchBlock", FlowGraphSwitchBlock);

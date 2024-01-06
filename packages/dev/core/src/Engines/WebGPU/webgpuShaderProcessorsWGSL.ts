@@ -214,10 +214,10 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             const sampleType = isDepthTexture
                 ? WebGPUConstants.TextureSampleType.Depth
                 : componentType === "u32"
-                ? WebGPUConstants.TextureSampleType.Uint
-                : componentType === "i32"
-                ? WebGPUConstants.TextureSampleType.Sint
-                : WebGPUConstants.TextureSampleType.Float;
+                  ? WebGPUConstants.TextureSampleType.Uint
+                  : componentType === "i32"
+                    ? WebGPUConstants.TextureSampleType.Sint
+                    : WebGPUConstants.TextureSampleType.Float;
 
             textureInfo.sampleType = sampleType;
 
@@ -472,8 +472,8 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
                 decoration === "read_write"
                     ? WebGPUConstants.BufferBindingType.Storage
                     : type === "storage"
-                    ? WebGPUConstants.BufferBindingType.ReadOnlyStorage
-                    : WebGPUConstants.BufferBindingType.Uniform,
+                      ? WebGPUConstants.BufferBindingType.ReadOnlyStorage
+                      : WebGPUConstants.BufferBindingType.Uniform,
                 isVertex
             );
 

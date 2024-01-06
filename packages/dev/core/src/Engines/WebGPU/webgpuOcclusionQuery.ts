@@ -102,6 +102,7 @@ export class WebGPUOcclusionQuery {
 
         this._currentTotalIndices += numIndices;
         this._querySet = new WebGPUQuerySet(
+            this._engine,
             this._currentTotalIndices,
             WebGPUConstants.QueryType.Occlusion,
             this._device,

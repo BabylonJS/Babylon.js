@@ -37,6 +37,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
             NodeMaterialBlockTargets.Fragment,
             new NodeMaterialConnectionPointCustomObject("refraction", this, NodeMaterialConnectionPointDirection.Input, RefractionBlock, "RefractionBlock")
         );
+        this.registerInput("dispersion", NodeMaterialBlockConnectionPointTypes.Float, true, NodeMaterialBlockTargets.Fragment);
 
         this.registerOutput(
             "subsurface",
@@ -55,6 +56,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
         state._excludeVariableName("vThicknessParam");
         state._excludeVariableName("vTintColor");
         state._excludeVariableName("vSubSurfaceIntensity");
+        state._excludeVariableName("dispersion");
     }
 
     /**
@@ -101,6 +103,13 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the dispersion input component
+     */
+    public get dispersion(): NodeMaterialConnectionPoint {
+        return this._inputs[5];
+    }
+
+    /**
      * Gets the sub surface object output component
      */
     public get subsurface(): NodeMaterialConnectionPoint {
@@ -127,6 +136,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
         defines.setValue("SS_TRANSLUCENCYINTENSITY_TEXTURE", false, true);
         defines.setValue("SS_MASK_FROM_THICKNESS_TEXTURE", false, true);
         defines.setValue("SS_USE_GLTF_TEXTURES", false, true);
+        defines.setValue("SS_DISPERSION", this.dispersion.isConnected, true);
     }
 
     /**
@@ -151,6 +161,8 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
         const refractionIntensity = refractionBlock?.intensity.isConnected ? refractionBlock.intensity.associatedVariableName : "1.";
         const refractionView = refractionBlock?.view.isConnected ? refractionBlock.view.associatedVariableName : "";
 
+        const dispersion = ssBlock?.dispersion.isConnected ? ssBlock?.dispersion.associatedVariableName : "0.0";
+
         code += refractionBlock?.getCode(state) ?? "";
 
         code += `subSurfaceOutParams subSurfaceOut;
@@ -159,7 +171,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
             vec2 vThicknessParam = vec2(0., ${thickness});
             vec4 vTintColor = vec4(${tintColor}, ${refractionTintAtDistance});
             vec3 vSubSurfaceIntensity = vec3(${refractionIntensity}, ${translucencyIntensity}, 0.);
-
+            float dispersion = ${dispersion};
             subSurfaceBlock(
                 vSubSurfaceIntensity,
                 vThicknessParam,
@@ -230,6 +242,9 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                 #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
                     vRefractionPosition,
                     vRefractionSize,
+                #endif
+                #ifdef SS_DISPERSION
+                    dispersion,
                 #endif
             #endif
             #ifdef SS_TRANSLUCENCY

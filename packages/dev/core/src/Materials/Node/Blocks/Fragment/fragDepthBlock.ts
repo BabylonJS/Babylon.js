@@ -4,6 +4,7 @@ import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
+import { Logger } from "core/Misc/logger";
 /**
  * Block used to write the fragment depth
  */
@@ -65,7 +66,7 @@ export class FragDepthBlock extends NodeMaterialBlock {
     
             `;
         } else {
-            console.warn("FragDepthBlock: either the depth input or both the worldPos and viewProjection inputs must be connected!");
+            Logger.Warn("FragDepthBlock: either the depth input or both the worldPos and viewProjection inputs must be connected!");
         }
 
         return this;

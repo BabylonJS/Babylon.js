@@ -20,6 +20,8 @@ import type { Observer } from "../Misc/observable";
 
 import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 import { ExtrudeShapeCustom } from "../Meshes/Builders/shapeBuilder";
+import { TransformNode } from "../Meshes/transformNode";
+import { Logger } from "core/Misc/logger";
 
 /**
  * Class used to render a debug view of a given skeleton
@@ -388,7 +390,7 @@ export class SkeletonViewer {
         /** defines the skeleton to render */
         public skeleton: Skeleton,
         /** defines the mesh attached to the skeleton */
-        public mesh: AbstractMesh,
+        public mesh: Nullable<AbstractMesh>,
         /** The Scene scope*/
         scene: Scene,
         /** defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
@@ -417,11 +419,12 @@ export class SkeletonViewer {
         options.computeBonesUsingShaders = options.computeBonesUsingShaders ?? true;
         options.useAllBones = options.useAllBones ?? true;
 
-        const initialMeshBoneIndices = mesh.getVerticesData(VertexBuffer.MatricesIndicesKind);
-        const initialMeshBoneWeights = mesh.getVerticesData(VertexBuffer.MatricesWeightsKind);
         this._boneIndices = new Set();
 
         if (!options.useAllBones) {
+            const initialMeshBoneIndices = mesh?.getVerticesData(VertexBuffer.MatricesIndicesKind);
+            const initialMeshBoneWeights = mesh?.getVerticesData(VertexBuffer.MatricesWeightsKind);
+
             if (initialMeshBoneIndices && initialMeshBoneWeights) {
                 for (let i = 0; i < initialMeshBoneIndices.length; ++i) {
                     const index = initialMeshBoneIndices[i],
@@ -527,11 +530,18 @@ export class SkeletonViewer {
         position.z = tmat.m[14];
     }
 
-    private _getLinesForBonesWithLength(bones: Bone[], meshMat: Matrix): void {
+    private _getLinesForBonesWithLength(bones: Bone[], mesh: Nullable<AbstractMesh>): void {
         const len = bones.length;
 
-        const mesh = this.mesh;
-        const meshPos = mesh.position;
+        let matrix;
+        let meshPos;
+        if (mesh) {
+            matrix = mesh.getWorldMatrix();
+            meshPos = mesh.position;
+        } else {
+            matrix = new Matrix();
+            meshPos = bones[0].position;
+        }
         let idx = 0;
         for (let i = 0; i < len; i++) {
             const bone = bones[i];
@@ -544,8 +554,8 @@ export class SkeletonViewer {
                 points = [Vector3.Zero(), Vector3.Zero()];
                 this._debugLines[idx] = points;
             }
-            this._getBonePosition(points[0], bone, meshMat);
-            this._getBonePosition(points[1], bone, meshMat, 0, bone.length, 0);
+            this._getBonePosition(points[0], bone, matrix);
+            this._getBonePosition(points[1], bone, matrix, 0, bone.length, 0);
             points[0].subtractInPlace(meshPos);
             points[1].subtractInPlace(meshPos);
             idx++;
@@ -557,7 +567,15 @@ export class SkeletonViewer {
         let boneNum = 0;
 
         const mesh = this.mesh;
-        const meshPos = mesh.position;
+        let transformNode;
+        let meshPos;
+        if (mesh) {
+            transformNode = mesh;
+            meshPos = mesh.position;
+        } else {
+            transformNode = new TransformNode("");
+            meshPos = bones[0].position;
+        }
         for (let i = len - 1; i >= 0; i--) {
             const childBone = bones[i];
             const parentBone = childBone.getParent();
@@ -569,11 +587,14 @@ export class SkeletonViewer {
                 points = [Vector3.Zero(), Vector3.Zero()];
                 this._debugLines[boneNum] = points;
             }
-            childBone.getAbsolutePositionToRef(mesh, points[0]);
-            parentBone.getAbsolutePositionToRef(mesh, points[1]);
+            childBone.getAbsolutePositionToRef(transformNode, points[0]);
+            parentBone.getAbsolutePositionToRef(transformNode, points[1]);
             points[0].subtractInPlace(meshPos);
             points[1].subtractInPlace(meshPos);
             boneNum++;
+        }
+        if (!mesh) {
+            transformNode.dispose();
         }
     }
 
@@ -785,7 +806,7 @@ export class SkeletonViewer {
             this._revert(animationState);
             this.ready = true;
         } catch (err) {
-            console.error(err);
+            Logger.Error(err);
             this._revert(animationState);
             this.dispose();
         }
@@ -878,7 +899,7 @@ export class SkeletonViewer {
         if (this.skeleton.bones[0].length === undefined) {
             this._getLinesForBonesNoLength(this.skeleton.bones);
         } else {
-            this._getLinesForBonesWithLength(this.skeleton.bones, this.mesh.getWorldMatrix());
+            this._getLinesForBonesWithLength(this.skeleton.bones, this.mesh);
         }
 
         const targetScene = this._utilityLayer.utilityLayerScene;
@@ -890,7 +911,11 @@ export class SkeletonViewer {
             } else {
                 CreateLineSystem("", { lines: this._debugLines, updatable: true, instance: this._debugMesh }, targetScene);
             }
-            this._debugMesh.position.copyFrom(this.mesh.position);
+            if (this.mesh) {
+                this._debugMesh.position.copyFrom(this.mesh.position);
+            } else {
+                this._debugMesh.position.copyFrom(this.skeleton.bones[0].position);
+            }
             this._debugMesh.color = this.color;
         }
     }

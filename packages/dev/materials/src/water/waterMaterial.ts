@@ -224,8 +224,6 @@ export class WaterMaterial extends PushMaterial {
     private _lastTime: number = 0;
     private _lastDeltaTime: number = 0;
 
-    private _useLogarithmicDepth: boolean;
-
     private _waitingRenderList: Nullable<string[]>;
 
     private _imageProcessingConfiguration: Nullable<ImageProcessingConfiguration>;
@@ -268,16 +266,6 @@ export class WaterMaterial extends PushMaterial {
                 this._markAllSubMeshesAsImageProcessingDirty();
             });
         }
-    }
-
-    @serialize()
-    public get useLogarithmicDepth(): boolean {
-        return this._useLogarithmicDepth;
-    }
-
-    public set useLogarithmicDepth(value: boolean) {
-        this._useLogarithmicDepth = value && this.getScene().getEngine().getCaps().fragmentDepthSupported;
-        this._markAllSubMeshesAsMiscDirty();
     }
 
     // Get / Set
@@ -593,6 +581,11 @@ export class WaterMaterial extends PushMaterial {
             // Point size
             if (this.pointsCloud) {
                 this._activeEffect.setFloat("pointSize", this.pointSize);
+            }
+
+            // Log. depth
+            if (this._useLogarithmicDepth) {
+                MaterialHelper.BindLogDepth(defines, effect, scene);
             }
 
             scene.bindEyePosition(effect);

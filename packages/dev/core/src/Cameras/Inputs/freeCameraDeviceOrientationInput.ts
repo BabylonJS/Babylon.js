@@ -173,8 +173,8 @@ export class FreeCameraDeviceOrientationInput implements ICameraInput<FreeCamera
             <any>window.orientation !== undefined
                 ? +(<any>window.orientation)
                 : (<any>window.screen).orientation && (<any>window.screen).orientation["angle"]
-                ? (<any>window.screen).orientation.angle
-                : 0;
+                  ? (<any>window.screen).orientation.angle
+                  : 0;
         this._screenOrientationAngle = -Tools.ToRadians(this._screenOrientationAngle / 2);
         this._screenQuaternion.copyFromFloats(0, Math.sin(this._screenOrientationAngle), 0, Math.cos(this._screenOrientationAngle));
     };

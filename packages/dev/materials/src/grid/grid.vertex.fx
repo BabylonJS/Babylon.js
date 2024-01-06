@@ -20,6 +20,7 @@ uniform mat4 view;
 varying vec3 vPosition;
 varying vec3 vNormal;
 
+#include<logDepthDeclaration>
 #include<fogVertexDeclaration>
 
 #ifdef OPACITY
@@ -60,6 +61,8 @@ void main(void) {
 		vOpacityUV = vec2(opacityMatrix * vec4(uv2, 1.0, 0.0));
 	}
 #endif    
+
+	#include<logDepthVertex>
 
     vPosition = position;
     vNormal = normal;

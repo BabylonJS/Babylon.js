@@ -96,17 +96,18 @@ export class Angle {
 
     /**
      * Gets the angle between the two vectors
-     * @param a defines first point as the origin
-     * @param b defines point
+     * @param a defines first vector
+     * @param b defines vector
      * @returns Returns an new Angle between 0 and PI
      */
     public static BetweenTwoVectors<Vec extends Vector2 | Vector3 | Vector4>(a: DeepImmutable<Vec>, b: DeepImmutable<Vec>): Angle {
-        const na = a.normalizeToNew() as Vec;
-        const nb = b.normalizeToNew() as Vec;
-        let cosv = na.dot(nb as any);
-        cosv = Scalar.Clamp(cosv, -1, 1);
-        const theta = Math.acos(cosv);
-        return new Angle(theta);
+        let product = a.lengthSquared() * b.lengthSquared();
+        if (product === 0) return new Angle(Math.PI / 2);
+        product = Math.sqrt(product);
+        let cosVal = a.dot(b as any) / product;
+        cosVal = Scalar.Clamp(cosVal, -1, 1);
+        const angle = Math.acos(cosVal);
+        return new Angle(angle);
     }
 
     /**

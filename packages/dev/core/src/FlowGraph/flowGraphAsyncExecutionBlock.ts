@@ -10,13 +10,18 @@ import type { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
  */
 export abstract class FlowGraphAsyncExecutionBlock extends FlowGraphExecutionBlock {
     /**
-     * Output connection: The signal that is triggered when the execution of this block is done.
+     * Output connection: The signal that is triggered when the synchronous execution of this block is done.
      */
-    public onDone: FlowGraphSignalConnection;
+    public out: FlowGraphSignalConnection;
+    /**
+     * Output connection: The signal that is triggered when the asynchronous execution of this block is done.
+     */
+    public done: FlowGraphSignalConnection;
 
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
-        this.onDone = this._registerSignalOutput("onDone");
+        this.out = this._registerSignalOutput("out");
+        this.done = this._registerSignalOutput("done");
     }
     /**
      * @internal

@@ -17,6 +17,7 @@ import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import type { ScaleGizmo } from "./scaleGizmo";
 import { Color3 } from "../Maths/math.color";
 import type { TransformNode } from "../Meshes/transformNode";
+import { Epsilon } from "../Maths/math.constants";
 
 /**
  * Interface for axis scale gizmo
@@ -26,9 +27,11 @@ export interface IAxisScaleGizmo extends IGizmo {
     dragBehavior: PointerDragBehavior;
     /** Drag distance in babylon units that the gizmo will snap to when dragged */
     snapDistance: number;
+    /** Incremental snap scaling. When true, with a snapDistance of 0.1, scaling will be 1.1,1.2,1.3 instead of, when false: 1.1,1.21,1.33,... */
+    incrementalSnap: boolean;
     /**
      * Event that fires each time the gizmo snaps to a new location.
-     * * snapDistance is the the change in distance
+     * * snapDistance is the change in distance
      */
     onSnapObservable: Observable<{ snapDistance: number }>;
     /** If the scaling operation should be done on all axis */
@@ -63,7 +66,7 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
     public snapDistance = 0;
     /**
      * Event that fires each time the gizmo snaps to a new location.
-     * * snapDistance is the the change in distance
+     * * snapDistance is the change in distance
      */
     public onSnapObservable = new Observable<{ snapDistance: number }>();
     /**
@@ -79,6 +82,16 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
      */
     public dragScale = 1;
 
+    /**
+     * The minimal absolute scale per component. can be positive or negative but never smaller.
+     */
+    public static MinimumAbsoluteScale = Epsilon;
+
+    /**
+     * Incremental snap scaling (default is false). When true, with a snapDistance of 0.1, scaling will be 1.1,1.2,1.3 instead of, when false: 1.1,1.21,1.33,...
+     */
+    public incrementalSnap = false;
+
     protected _isEnabled: boolean = true;
     protected _parent: Nullable<ScaleGizmo> = null;
 
@@ -88,6 +101,7 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
     protected _disableMaterial: StandardMaterial;
     protected _dragging: boolean = false;
     private _tmpVector = new Vector3(0, 0, 0);
+    private _incrementalStartupValue = Vector3.Zero();
 
     /** Default material used to render when gizmo is not disabled or hovered */
     public get coloredMaterial() {
@@ -103,6 +117,7 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
     public get disableMaterial() {
         return this._disableMaterial;
     }
+
     /**
      * Creates an AxisScaleGizmo
      * @param dragAxis The axis which the gizmo will be able to scale on
@@ -110,13 +125,17 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
      * @param gizmoLayer The utility layer the gizmo will be added to
      * @param parent
      * @param thickness display gizmo axis thickness
+     * @param hoverColor The color of the gizmo when hovering over and dragging
+     * @param disableColor The Color of the gizmo when its disabled
      */
     constructor(
         dragAxis: Vector3,
         color: Color3 = Color3.Gray(),
         gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer,
         parent: Nullable<ScaleGizmo> = null,
-        thickness: number = 1
+        thickness: number = 1,
+        hoverColor: Color3 = Color3.Yellow(),
+        disableColor: Color3 = Color3.Gray()
     ) {
         super(gizmoLayer);
         this._parent = parent;
@@ -126,10 +145,10 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
         this._coloredMaterial.specularColor = color.subtract(new Color3(0.1, 0.1, 0.1));
 
         this._hoverMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        this._hoverMaterial.diffuseColor = Color3.Yellow();
+        this._hoverMaterial.diffuseColor = hoverColor;
 
         this._disableMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
-        this._disableMaterial.diffuseColor = Color3.Gray();
+        this._disableMaterial.diffuseColor = disableColor;
         this._disableMaterial.alpha = 0.4;
 
         // Build mesh + Collider
@@ -170,6 +189,7 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
         this._rootMesh.addBehavior(this.dragBehavior);
 
         let currentSnapDragDistance = 0;
+        let currentSnapDragDistanceIncremental = 0;
 
         const tmpSnapEvent = { snapDistance: 0 };
         this.dragBehavior.onDragObservable.add((event) => {
@@ -189,9 +209,12 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
                     tmpVector.scaleToRef(dragStrength, tmpVector);
                 } else {
                     currentSnapDragDistance += dragStrength;
-                    if (Math.abs(currentSnapDragDistance) > this.snapDistance) {
-                        dragSteps = Math.floor(Math.abs(currentSnapDragDistance) / this.snapDistance);
-                        if (currentSnapDragDistance < 0) {
+                    currentSnapDragDistanceIncremental += dragStrength;
+                    const currentSnap = this.incrementalSnap ? currentSnapDragDistanceIncremental : currentSnapDragDistance;
+                    if (Math.abs(currentSnap) > this.snapDistance) {
+                        dragSteps = Math.floor(Math.abs(currentSnap) / this.snapDistance);
+
+                        if (currentSnap < 0) {
                             dragSteps *= -1;
                         }
                         currentSnapDragDistance = currentSnapDragDistance % this.snapDistance;
@@ -202,10 +225,30 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
                     }
                 }
 
-                Matrix.ScalingToRef(1 + tmpVector.x, 1 + tmpVector.y, 1 + tmpVector.z, TmpVectors.Matrix[2]);
+                tmpVector.addInPlaceFromFloats(1, 1, 1);
+                // can't use Math.sign here because Math.sign(0) is 0 and it needs to be positive
+                tmpVector.x = Math.abs(tmpVector.x) < AxisScaleGizmo.MinimumAbsoluteScale ? AxisScaleGizmo.MinimumAbsoluteScale * (tmpVector.x < 0 ? -1 : 1) : tmpVector.x;
+                tmpVector.y = Math.abs(tmpVector.y) < AxisScaleGizmo.MinimumAbsoluteScale ? AxisScaleGizmo.MinimumAbsoluteScale * (tmpVector.y < 0 ? -1 : 1) : tmpVector.y;
+                tmpVector.z = Math.abs(tmpVector.z) < AxisScaleGizmo.MinimumAbsoluteScale ? AxisScaleGizmo.MinimumAbsoluteScale * (tmpVector.z < 0 ? -1 : 1) : tmpVector.z;
 
-                TmpVectors.Matrix[2].multiplyToRef(this.attachedNode.getWorldMatrix(), TmpVectors.Matrix[1]);
                 const transformNode = (<Mesh>this.attachedNode)._isMesh ? (this.attachedNode as TransformNode) : undefined;
+                if (Math.abs(this.snapDistance) > 0 && this.incrementalSnap) {
+                    // get current scaling
+                    this.attachedNode.getWorldMatrix().decompose(undefined, TmpVectors.Quaternion[0], TmpVectors.Vector3[2], Gizmo.PreserveScaling ? transformNode : undefined);
+                    // apply incrementaly, without taking care of current scaling value
+                    tmpVector.addInPlace(this._incrementalStartupValue);
+                    tmpVector.addInPlaceFromFloats(-1, -1, -1);
+                    // keep same sign or stretching close to 0 will change orientation at each drag and scaling will oscilate around 0
+                    tmpVector.x = Math.abs(tmpVector.x) * (this._incrementalStartupValue.x > 0 ? 1 : -1);
+                    tmpVector.y = Math.abs(tmpVector.y) * (this._incrementalStartupValue.y > 0 ? 1 : -1);
+                    tmpVector.z = Math.abs(tmpVector.z) * (this._incrementalStartupValue.z > 0 ? 1 : -1);
+                    Matrix.ComposeToRef(tmpVector, TmpVectors.Quaternion[0], TmpVectors.Vector3[2], TmpVectors.Matrix[1]);
+                } else {
+                    Matrix.ScalingToRef(tmpVector.x, tmpVector.y, tmpVector.z, TmpVectors.Matrix[2]);
+                    TmpVectors.Matrix[2].multiplyToRef(this.attachedNode.getWorldMatrix(), TmpVectors.Matrix[1]);
+                }
+
+                // check scaling are not out of bounds. If not, copy resulting temp matrix to node world matrix
                 TmpVectors.Matrix[1].decompose(TmpVectors.Vector3[1], undefined, undefined, Gizmo.PreserveScaling ? transformNode : undefined);
 
                 const maxScale = 100000;
@@ -213,6 +256,7 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
                     this.attachedNode.getWorldMatrix().copyFrom(TmpVectors.Matrix[1]);
                 }
 
+                // notify observers
                 if (snapped) {
                     tmpSnapEvent.snapDistance = this.snapDistance * dragSteps;
                     this.onSnapObservable.notifyObservers(tmpSnapEvent);
@@ -223,6 +267,10 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
         // On Drag Listener: to move gizmo mesh with user action
         this.dragBehavior.onDragStartObservable.add(() => {
             this._dragging = true;
+            const transformNode = (<Mesh>this.attachedNode)._isMesh ? (this.attachedNode as TransformNode) : undefined;
+            this.attachedNode?.getWorldMatrix().decompose(this._incrementalStartupValue, undefined, undefined, Gizmo.PreserveScaling ? transformNode : undefined);
+            currentSnapDragDistance = 0;
+            currentSnapDragDistanceIncremental = 0;
         });
         this.dragBehavior.onDragObservable.add((e) => increaseGizmoMesh(e.dragDistance));
         this.dragBehavior.onDragEndObservable.add(resetGizmoMesh);
@@ -317,6 +365,7 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
             }
         }
     }
+
     public get isEnabled(): boolean {
         return this._isEnabled;
     }

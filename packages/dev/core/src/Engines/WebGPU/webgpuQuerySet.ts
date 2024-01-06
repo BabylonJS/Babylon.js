@@ -1,9 +1,13 @@
+/* eslint-disable babylonjs/available */
+/* eslint-disable @typescript-eslint/naming-convention */
+import type { WebGPUEngine } from "../webgpuEngine";
 import type { WebGPUBufferManager } from "./webgpuBufferManager";
 import * as WebGPUConstants from "./webgpuConstants";
 import type { QueryType } from "./webgpuConstants";
 
 /** @internal */
 export class WebGPUQuerySet {
+    private _engine: WebGPUEngine;
     private _device: GPUDevice;
     private _bufferManager: WebGPUBufferManager;
 
@@ -17,14 +21,15 @@ export class WebGPUQuerySet {
         return this._querySet;
     }
 
-    constructor(count: number, type: QueryType, device: GPUDevice, bufferManager: WebGPUBufferManager, canUseMultipleBuffers = true, label?: string) {
+    constructor(engine: WebGPUEngine, count: number, type: QueryType, device: GPUDevice, bufferManager: WebGPUBufferManager, canUseMultipleBuffers = true, label?: string) {
+        this._engine = engine;
         this._device = device;
         this._bufferManager = bufferManager;
         this._count = count;
         this._canUseMultipleBuffers = canUseMultipleBuffers;
 
         this._querySet = device.createQuerySet({
-            label,
+            label: label ?? "QuerySet",
             type,
             count,
         });
@@ -76,16 +81,26 @@ export class WebGPUQuerySet {
         if (buffer === null) {
             return null;
         }
+        const engineId = this._engine.uniqueId;
 
-        await buffer.mapAsync(WebGPUConstants.MapMode.Read);
+        return buffer.mapAsync(WebGPUConstants.MapMode.Read).then(
+            () => {
+                const arrayBuf = new BigUint64Array(buffer.getMappedRange()).slice();
 
-        const arrayBuf = new BigUint64Array(buffer.getMappedRange()).slice();
+                buffer.unmap();
 
-        buffer.unmap();
+                this._dstBuffers[this._dstBuffers.length] = buffer;
 
-        this._dstBuffers[this._dstBuffers.length] = buffer;
-
-        return arrayBuf;
+                return arrayBuf;
+            },
+            (err) => {
+                if (this._engine.isDisposed || this._engine.uniqueId !== engineId) {
+                    // Engine disposed or context loss/restoration
+                    return null;
+                }
+                throw err;
+            }
+        );
     }
 
     public async readValue(firstQuery = 0): Promise<number | null> {
@@ -93,17 +108,27 @@ export class WebGPUQuerySet {
         if (buffer === null) {
             return null;
         }
+        const engineId = this._engine.uniqueId;
 
-        await buffer.mapAsync(WebGPUConstants.MapMode.Read);
+        return buffer.mapAsync(WebGPUConstants.MapMode.Read).then(
+            () => {
+                const arrayBuf = new BigUint64Array(buffer.getMappedRange());
+                const value = Number(arrayBuf[0]);
 
-        const arrayBuf = new BigUint64Array(buffer.getMappedRange());
-        const value = Number(arrayBuf[0]);
+                buffer.unmap();
 
-        buffer.unmap();
+                this._dstBuffers[this._dstBuffers.length] = buffer;
 
-        this._dstBuffers[this._dstBuffers.length] = buffer;
-
-        return value;
+                return value;
+            },
+            (err) => {
+                if (this._engine.isDisposed || this._engine.uniqueId !== engineId) {
+                    // Engine disposed or context loss/restoration
+                    return 0;
+                }
+                throw err;
+            }
+        );
     }
 
     public async readTwoValuesAndSubtract(firstQuery = 0): Promise<number | null> {
@@ -111,17 +136,27 @@ export class WebGPUQuerySet {
         if (buffer === null) {
             return null;
         }
+        const engineId = this._engine.uniqueId;
 
-        await buffer.mapAsync(WebGPUConstants.MapMode.Read);
+        return buffer.mapAsync(WebGPUConstants.MapMode.Read).then(
+            () => {
+                const arrayBuf = new BigUint64Array(buffer.getMappedRange());
+                const value = Number(arrayBuf[1] - arrayBuf[0]);
 
-        const arrayBuf = new BigUint64Array(buffer.getMappedRange());
-        const value = Number(arrayBuf[1] - arrayBuf[0]);
+                buffer.unmap();
 
-        buffer.unmap();
+                this._dstBuffers[this._dstBuffers.length] = buffer;
 
-        this._dstBuffers[this._dstBuffers.length] = buffer;
-
-        return value;
+                return value;
+            },
+            (err) => {
+                if (this._engine.isDisposed || this._engine.uniqueId !== engineId) {
+                    // Engine disposed or context loss/restoration
+                    return 0;
+                }
+                throw err;
+            }
+        );
     }
 
     public dispose() {

@@ -1091,7 +1091,7 @@ export class PhysicsUpdraftEventOptions {
     height: number = 10;
 
     /**
-     * The mode for the the updraft.
+     * The mode for the updraft.
      */
     updraftMode: PhysicsUpdraftMode = PhysicsUpdraftMode.Center;
 }

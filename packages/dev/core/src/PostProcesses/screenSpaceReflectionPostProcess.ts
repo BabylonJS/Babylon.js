@@ -14,6 +14,7 @@ import { RegisterClass } from "../Misc/typeStore";
 
 import type { Engine } from "../Engines/engine";
 import type { Scene } from "../scene";
+import { Logger } from "core/Misc/logger";
 
 /**
  * The ScreenSpaceReflectionPostProcess performs realtime reflections using only and only the available informations on the screen (positions and normals).
@@ -130,7 +131,7 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
                     geometryBufferRenderer.enableReflectivity = true;
 
                     if (geometryBufferRenderer.generateNormalsInWorldSpace) {
-                        console.error("ScreenSpaceReflectionPostProcess does not support generateNormalsInWorldSpace=true for the geometry buffer renderer!");
+                        Logger.Error("ScreenSpaceReflectionPostProcess does not support generateNormalsInWorldSpace=true for the geometry buffer renderer!");
                     }
                 }
             }
@@ -138,7 +139,7 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
             const prePassRenderer = scene.enablePrePassRenderer();
             prePassRenderer?.markAsDirty();
             if (prePassRenderer?.generateNormalsInWorldSpace) {
-                console.error("ScreenSpaceReflectionPostProcess does not support generateNormalsInWorldSpace=true for the prepass renderer!");
+                Logger.Error("ScreenSpaceReflectionPostProcess does not support generateNormalsInWorldSpace=true for the prepass renderer!");
             }
             this._prePassEffectConfiguration = new ScreenSpaceReflectionsConfiguration();
         }

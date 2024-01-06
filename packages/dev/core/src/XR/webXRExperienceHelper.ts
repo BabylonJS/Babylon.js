@@ -212,8 +212,8 @@ export class WebXRExperienceHelper implements IDisposable {
             });
             return this.sessionManager;
         } catch (e) {
-            console.log(e);
-            console.log(e.message);
+            Logger.Log(e);
+            Logger.Log(e.message);
             this._setState(WebXRState.NOT_IN_XR);
             throw e;
         }

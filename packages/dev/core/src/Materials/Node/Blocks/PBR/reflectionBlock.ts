@@ -17,6 +17,7 @@ import type { Effect } from "../../../effect";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import type { Scene } from "../../../../scene";
 import { Scalar } from "../../../../Maths/math.scalar";
+import { Logger } from "core/Misc/logger";
 
 /**
  * Block used to implement the reflection module of the PBR material
@@ -66,7 +67,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     protected _onGenerateOnlyFragmentCodeChanged(): boolean {
         if (this.position.isConnected) {
             this.generateOnlyFragmentCode = !this.generateOnlyFragmentCode;
-            console.error("The position input must not be connected to be able to switch!");
+            Logger.Error("The position input must not be connected to be able to switch!");
             return false;
         }
 

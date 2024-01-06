@@ -1,29 +1,42 @@
-import type { AbstractMesh } from "../../../Meshes/abstractMesh";
+import { AbstractMesh } from "../../../Meshes/abstractMesh";
 import { FlowGraphEventBlock } from "../../flowGraphEventBlock";
 import { PointerEventTypes } from "../../../Events/pointerEvents";
-import type { FlowGraphContext } from "core/FlowGraph/flowGraphContext";
+import type { FlowGraphContext } from "../../flowGraphContext";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { RegisterClass } from "../../../Misc/typeStore";
+import { _isADescendantOf } from "../../utils";
+import type { IPathToObjectConverter } from "../../../ObjectModel/objectModelInterfaces";
+import type { IObjectAccessor } from "../../typeDefinitions";
 /**
  * @experimental
  */
 export interface IFlowGraphMeshPickEventBlockConfiguration extends IFlowGraphBlockConfiguration {
-    meshVariableName: string;
+    /**
+     * The path of the mesh to pick.
+     */
+    path: string;
+    /**
+     * The path converter to use to convert the path to an object accessor.
+     */
+    pathConverter: IPathToObjectConverter<IObjectAccessor>;
 }
 /**
  * @experimental
  * A block that activates when a mesh is picked.
  */
 export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
-    private _meshVariableName: string;
-
     public constructor(public config: IFlowGraphMeshPickEventBlockConfiguration) {
         super(config);
     }
 
-    public configure() {
-        super.configure();
-        this._meshVariableName = this.config.meshVariableName;
+    public _getReferencedMesh(): AbstractMesh {
+        const iAccessor = this.config.pathConverter.convert(this.config.path);
+
+        const mesh = iAccessor.info.getObject(iAccessor.object) as AbstractMesh;
+        if (!mesh || !(mesh instanceof AbstractMesh)) {
+            throw new Error("Mesh pick event block requires a valid mesh");
+        }
+        return mesh;
     }
 
     /**
@@ -32,9 +45,14 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
     public _preparePendingTasks(context: FlowGraphContext): void {
         let pickObserver = context._getExecutionVariable(this, "meshPickObserver");
         if (!pickObserver) {
-            const mesh = context.getVariable(this._meshVariableName) as AbstractMesh;
+            const mesh = this._getReferencedMesh();
+            context._setExecutionVariable(this, "mesh", mesh);
             pickObserver = mesh.getScene().onPointerObservable.add((pointerInfo) => {
-                if (pointerInfo.type === PointerEventTypes.POINTERPICK && pointerInfo.pickInfo?.pickedMesh === mesh) {
+                if (
+                    pointerInfo.type === PointerEventTypes.POINTERPICK &&
+                    pointerInfo.pickInfo?.pickedMesh &&
+                    (pointerInfo.pickInfo?.pickedMesh === mesh || _isADescendantOf(pointerInfo.pickInfo?.pickedMesh, mesh))
+                ) {
                     this._execute(context);
                 }
             });
@@ -53,19 +71,30 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
      * @internal
      */
     public _cancelPendingTasks(context: FlowGraphContext): void {
-        const mesh = context.getVariable(this._meshVariableName) as AbstractMesh;
+        const mesh = context._getExecutionVariable(this, "mesh");
         const pickObserver = context._getExecutionVariable(this, "meshPickObserver");
         const disposeObserver = context._getExecutionVariable(this, "meshDisposeObserver");
 
         mesh.getScene().onPointerObservable.remove(pickObserver);
         mesh.onDisposeObservable.remove(disposeObserver);
 
+        context._deleteExecutionVariable(this, "mesh");
         context._deleteExecutionVariable(this, "meshPickObserver");
         context._deleteExecutionVariable(this, "meshDisposeObserver");
     }
 
     public getClassName(): string {
-        return "FGMeshPickEventBlock";
+        return FlowGraphMeshPickEventBlock.ClassName;
     }
+
+    public serialize(serializationObject?: any): void {
+        super.serialize(serializationObject);
+        serializationObject.config.path = this.config.path;
+    }
+
+    /**
+     * Class name of the block.
+     */
+    public static ClassName = "FGMeshPickEventBlock";
 }
-RegisterClass("FGMeshPickEventBlock", FlowGraphMeshPickEventBlock);
+RegisterClass(FlowGraphMeshPickEventBlock.ClassName, FlowGraphMeshPickEventBlock);

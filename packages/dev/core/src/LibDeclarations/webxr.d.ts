@@ -1200,7 +1200,32 @@ interface XRSession {
     enabledFeatures: string[];
 }
 
-/**
- * END: WebXR Depth Sensing Moudle
- * https://www.w3.org/TR/webxr-depth-sensing-1/
- */
+// Raw camera access
+
+interface XRView {
+    readonly camera: XRCamera | undefined;
+}
+
+interface XRCamera {
+    readonly width: number;
+    readonly height: number;
+}
+
+interface XRWebGLBinding {
+    getCameraImage(camera: XRCamera): WebGLTexture | undefined;
+}
+
+// Mesh Detection
+
+interface XRMesh {
+    meshSpace: XRSpace;
+    vertices: Float32Array;
+    indices: Uint32Array;
+    lastChangedTime: number;
+}
+
+type XRMeshSet = Set<XRMesh>;
+
+interface XRFrame {
+    detectedMeshes?: XRMeshSet;
+}

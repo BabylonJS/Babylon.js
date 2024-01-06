@@ -1001,7 +1001,7 @@ export class Engine extends ThinEngine {
     private _cachedStencilReference: number;
 
     /**
-     * Caches the the state of the stencil buffer
+     * Caches the state of the stencil buffer
      */
     public cacheStencilState() {
         this._cachedStencilBuffer = this.getStencilBuffer();
@@ -1087,6 +1087,9 @@ export class Engine extends ThinEngine {
     public _reportDrawCall(numDrawCalls = 1) {
         this._drawCalls.addCount(numDrawCalls, false);
     }
+
+    public _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: false): Promise<string>;
+    public _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: true): Promise<ArrayBuffer>;
 
     /**
      * @internal
@@ -1195,16 +1198,26 @@ export class Engine extends ThinEngine {
         for (const scene of this.scenes) {
             scene.resetCachedMaterial();
             scene._rebuildGeometries();
-            scene._rebuildTextures();
         }
 
         for (const scene of this._virtualScenes) {
             scene.resetCachedMaterial();
             scene._rebuildGeometries();
-            scene._rebuildTextures();
         }
 
         super._rebuildBuffers();
+    }
+
+    protected _rebuildTextures(): void {
+        for (const scene of this.scenes) {
+            scene._rebuildTextures();
+        }
+
+        for (const scene of this._virtualScenes) {
+            scene._rebuildTextures();
+        }
+
+        super._rebuildTextures();
     }
 
     /** @internal */

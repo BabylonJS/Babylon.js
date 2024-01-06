@@ -44,6 +44,7 @@ class FireMaterialDefines extends MaterialDefines {
     public INSTANCESCOLOR = false;
     public IMAGEPROCESSINGPOSTPROCESS = false;
     public SKIPFINALCOLORCLAMP = false;
+    public LOGARITHMICDEPTH = false;
 
     constructor() {
         super();
@@ -132,6 +133,7 @@ export class FireMaterial extends PushMaterial {
         if (defines._areMiscDirty) {
             defines.POINTSIZE = this.pointsCloud || scene.forcePointsCloud;
             defines.FOG = scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE && this.fogEnabled;
+            defines.LOGARITHMICDEPTH = this._useLogarithmicDepth;
         }
 
         // Values that need to be evaluated on every frame
@@ -186,6 +188,7 @@ export class FireMaterial extends PushMaterial {
                 "vDiffuseInfos",
                 "mBones",
                 "diffuseMatrix",
+                "logarithmicDepthConstant",
                 // Fire
                 "time",
                 "speed",
@@ -271,6 +274,11 @@ export class FireMaterial extends PushMaterial {
             // Point size
             if (this.pointsCloud) {
                 this._activeEffect.setFloat("pointSize", this.pointSize);
+            }
+
+            // Log. depth
+            if (this._useLogarithmicDepth) {
+                MaterialHelper.BindLogDepth(defines, effect, scene);
             }
 
             scene.bindEyePosition(effect);

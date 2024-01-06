@@ -1,5 +1,6 @@
+/* eslint-disable babylonjs/available */
 import { Logger } from "../Misc/logger";
-import type { Nullable, DataArray, IndicesArray, Immutable } from "../types";
+import type { Nullable, DataArray, IndicesArray, Immutable, FloatArray } from "../types";
 import { Color4 } from "../Maths/math";
 import { Engine } from "../Engines/engine";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
@@ -7,6 +8,7 @@ import type { IEffectCreationOptions } from "../Materials/effect";
 import { Effect } from "../Materials/effect";
 import type { EffectFallbacks } from "../Materials/effectFallbacks";
 import { Constants } from "./constants";
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import * as WebGPUConstants from "./WebGPU/webgpuConstants";
 import { VertexBuffer } from "../Buffers/buffer";
 import type { IWebGPURenderPipelineStageDescriptor } from "./WebGPU/webgpuPipelineContext";
@@ -21,6 +23,7 @@ import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptio
 import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingContext";
 import { Tools } from "../Misc/tools";
 import { WebGPUTextureHelper } from "./WebGPU/webgpuTextureHelper";
+import { WebGPUTextureManager } from "./WebGPU/webgpuTextureManager";
 import type { ISceneLike, ThinEngineOptions } from "./thinEngine";
 import { WebGPUBufferManager } from "./WebGPU/webgpuBufferManager";
 import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
@@ -60,6 +63,8 @@ import "../ShadersWGSL/postprocess.vertex";
 import type { VideoTexture } from "../Materials/Textures/videoTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { RenderTargetWrapper } from "./renderTargetWrapper";
+import { WebGPUPerfCounter } from "./WebGPU/webgpuPerfCounter";
+import type { Scene } from "core/scene";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
@@ -175,8 +180,13 @@ export class WebGPUEngine extends Engine {
         wasmPath: `${Tools._DefaultCdnUrl}/glslang/glslang.wasm`,
     };
 
+    private static _InstanceId = 0;
+
     /** true to enable using TintWASM to convert Spir-V to WGSL */
     public static UseTWGSL = true;
+
+    /** A unique id to identify this instance */
+    public readonly uniqueId = -1;
 
     // Page Life cycle and constants
     private readonly _uploadEncoderDescriptor = { label: "upload" };
@@ -209,8 +219,10 @@ export class WebGPUEngine extends Engine {
     private _deviceLimits: GPUSupportedLimits;
     private _context: GPUCanvasContext;
     private _mainPassSampleCount: number;
+    private _glslangOptions?: GlslangOptions;
+    private _twgslOptions?: TwgslOptions;
     /** @internal */
-    public _textureHelper: WebGPUTextureHelper;
+    public _textureHelper: WebGPUTextureManager;
     /** @internal */
     public _bufferManager: WebGPUBufferManager;
     private _clearQuad: WebGPUClearQuad;
@@ -224,6 +236,8 @@ export class WebGPUEngine extends Engine {
     public _mrtAttachments: number[];
     /** @internal */
     public _timestampQuery: WebGPUTimestampQuery;
+    /** @internal */
+    public _timestampIndex = 0;
     /** @internal */
     public _occlusionQuery: WebGPUOcclusionQuery;
     /** @internal */
@@ -495,6 +509,29 @@ export class WebGPUEngine extends Engine {
         this._compatibilityMode = mode;
     }
 
+    /**
+     * Enables or disables GPU timing measurements.
+     * Note that this is only supported if the "timestamp-query" extension is enabled in the options.
+     */
+    public get enableGPUTimingMeasurements(): boolean {
+        return this._timestampQuery.enable;
+    }
+
+    public set enableGPUTimingMeasurements(enable: boolean) {
+        if (this._timestampQuery.enable === enable) {
+            return;
+        }
+        (this.gpuTimeInFrameForMainPass as any) = enable ? new WebGPUPerfCounter() : undefined;
+        this._timestampQuery.enable = enable;
+    }
+
+    /**
+     * Gets the GPU time spent in the main render pass for the last frame rendered (in nanoseconds).
+     * You have to enable the "timestamp-query" extension in the engine constructor options and set engine.enableGPUTimingMeasurements = true.
+     * It will only return time spent in the main pass, not additional render target / compute passes (if any)!
+     */
+    public readonly gpuTimeInFrameForMainPass?: WebGPUPerfCounter;
+
     /** @internal */
     public get currentSampleCount(): number {
         return this._currentRenderTarget ? this._currentRenderTarget.samples : this._mainPassSampleCount;
@@ -571,6 +608,9 @@ export class WebGPUEngine extends Engine {
      * @returns a promise notifying the readiness of the engine.
      */
     public initAsync(glslangOptions?: GlslangOptions, twgslOptions?: TwgslOptions): Promise<void> {
+        (this.uniqueId as number) = WebGPUEngine._InstanceId++;
+        this._glslangOptions = glslangOptions;
+        this._twgslOptions = twgslOptions;
         return this._initGlslang(glslangOptions ?? this._options?.glslangOptions)
             .then(
                 (glslang: any) => {
@@ -631,6 +671,8 @@ export class WebGPUEngine extends Engine {
                         }
                     }
 
+                    deviceDescriptor.label = `BabylonWebGPUDevice${this.uniqueId}`;
+
                     return this._adapter.requestDevice(deviceDescriptor);
                 }
             })
@@ -660,7 +702,24 @@ export class WebGPUEngine extends Engine {
                             this._contextWasLost = true;
                             Logger.Warn("WebGPU context lost. " + info);
                             this.onContextLostObservable.notifyObservers(this);
-                            this._restoreEngineAfterContextLost(() => this.initAsync());
+                            this._restoreEngineAfterContextLost(async () => {
+                                const snapshotRenderingMode = this.snapshotRenderingMode;
+                                const snapshotRendering = this.snapshotRendering;
+                                const disableCacheSamplers = this.disableCacheSamplers;
+                                const disableCacheRenderPipelines = this.disableCacheRenderPipelines;
+                                const disableCacheBindGroups = this.disableCacheBindGroups;
+                                const enableGPUTimingMeasurements = this.enableGPUTimingMeasurements;
+
+                                await this.initAsync(this._glslangOptions ?? this._options?.glslangOptions, this._twgslOptions ?? this._options?.twgslOptions);
+
+                                this.snapshotRenderingMode = snapshotRenderingMode;
+                                this.snapshotRendering = snapshotRendering;
+                                this.disableCacheSamplers = disableCacheSamplers;
+                                this.disableCacheRenderPipelines = disableCacheRenderPipelines;
+                                this.disableCacheBindGroups = disableCacheBindGroups;
+                                this.enableGPUTimingMeasurements = enableGPUTimingMeasurements;
+                                this._currentRenderPass = null;
+                            });
                         });
                     }
                 },
@@ -670,11 +729,11 @@ export class WebGPUEngine extends Engine {
                 }
             )
             .then(() => {
-                this._bufferManager = new WebGPUBufferManager(this._device);
-                this._textureHelper = new WebGPUTextureHelper(this._device, this._glslang, this._tintWASM, this._bufferManager, this._deviceEnabledExtensions);
+                this._bufferManager = new WebGPUBufferManager(this, this._device);
+                this._textureHelper = new WebGPUTextureManager(this, this._device, this._glslang, this._tintWASM, this._bufferManager, this._deviceEnabledExtensions);
                 this._cacheSampler = new WebGPUCacheSampler(this._device);
                 this._cacheBindGroups = new WebGPUCacheBindGroups(this._device, this._cacheSampler, this);
-                this._timestampQuery = new WebGPUTimestampQuery(this._device, this._bufferManager);
+                this._timestampQuery = new WebGPUTimestampQuery(this, this._device, this._bufferManager);
                 this._occlusionQuery = (this._device as any).createQuerySet ? new WebGPUOcclusionQuery(this, this._device, this._bufferManager) : (undefined as any);
                 this._bundleList = new WebGPUBundleList(this._device);
                 this._snapshotRendering = new WebGPUSnapshotRendering(this, this._snapshotRenderingMode, this._bundleList);
@@ -693,7 +752,7 @@ export class WebGPUEngine extends Engine {
                 if (this.dbgVerboseLogsForFirstFrames) {
                     if ((this as any)._count === undefined) {
                         (this as any)._count = 0;
-                        console.log("%c frame #" + (this as any)._count + " - begin", "background: #ffff00");
+                        Logger.Log(["%c frame #" + (this as any)._count + " - begin", "background: #ffff00"]);
                     }
                 }
 
@@ -702,7 +761,12 @@ export class WebGPUEngine extends Engine {
 
                 this._initializeLimits();
 
-                this._emptyVertexBuffer = new VertexBuffer(this, [0], "", false, false, 1, false, 0, 1);
+                this._emptyVertexBuffer = new VertexBuffer(this, [0], "", {
+                    stride: 1,
+                    offset: 0,
+                    size: 1,
+                    label: "EmptyVertexBuffer",
+                });
 
                 this._cacheRenderPipeline = new WebGPUCacheRenderPipelineTree(this._device, this._emptyVertexBuffer);
 
@@ -729,9 +793,8 @@ export class WebGPUEngine extends Engine {
             .catch((e: any) => {
                 Logger.Error("Can not create WebGPU Device and/or context.");
                 Logger.Error(e);
-                if (console.trace) {
-                    console.trace();
-                }
+                // eslint-disable-next-line no-console
+                console?.trace?.();
             });
     }
 
@@ -787,6 +850,7 @@ export class WebGPUEngine extends Engine {
             highPrecisionShaderSupported: true,
             colorBufferFloat: true,
             supportFloatTexturesResolve: false, // See https://github.com/gpuweb/gpuweb/issues/3844
+            rg11b10ufColorRenderable: this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.RG11B10UFloatRenderable) >= 0,
             textureFloat: true,
             textureFloatLinearFiltering: this._deviceEnabledExtensions.indexOf(WebGPUConstants.FeatureName.Float32Filterable) >= 0,
             textureFloatRender: true,
@@ -974,6 +1038,55 @@ export class WebGPUEngine extends Engine {
         });
     }
 
+    protected _rebuildBuffers(): void {
+        super._rebuildBuffers();
+
+        for (const storageBuffer of this._storageBuffers) {
+            // The buffer can already be rebuilt by the call to _rebuildGeometries(), which recreates the storage buffers for the ComputeShaderParticleSystem
+            if ((storageBuffer.getBuffer() as WebGPUDataBuffer).engineId !== this.uniqueId) {
+                storageBuffer._rebuild();
+            }
+        }
+    }
+
+    protected _restoreEngineAfterContextLost(initEngine: () => void) {
+        WebGPUCacheRenderPipelineTree.ResetCache();
+        WebGPUCacheBindGroups.ResetCache();
+
+        // Clear the draw wrappers and material contexts
+        const cleanScenes = (scenes: Scene[]) => {
+            for (const scene of scenes) {
+                for (const mesh of scene.meshes) {
+                    const subMeshes = mesh.subMeshes;
+                    if (!subMeshes) {
+                        continue;
+                    }
+                    for (const subMesh of subMeshes) {
+                        subMesh._drawWrappers = [];
+                    }
+                }
+
+                for (const material of scene.materials) {
+                    material._materialContext?.reset();
+                }
+            }
+        };
+
+        cleanScenes(this.scenes);
+        cleanScenes(this._virtualScenes);
+
+        // The leftOver uniform buffers are removed from the list because they will be recreated when we rebuild the effects
+        const uboList: UniformBuffer[] = [];
+        for (const uniformBuffer of this._uniformBuffers) {
+            if (uniformBuffer.name.indexOf("leftOver") < 0) {
+                uboList.push(uniformBuffer);
+            }
+        }
+        this._uniformBuffers = uboList;
+
+        super._restoreEngineAfterContextLost(initEngine);
+    }
+
     /**
      * Force a specific size of the canvas
      * @param width defines the new canvas' width
@@ -991,7 +1104,7 @@ export class WebGPUEngine extends Engine {
                 (this as any)._count = 0;
             }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log("frame #" + (this as any)._count + " - setSize -", width, height);
+                Logger.Log(["frame #" + (this as any)._count + " - setSize -", width, height]);
             }
         }
 
@@ -1155,14 +1268,14 @@ export class WebGPUEngine extends Engine {
                 (this as any)._count = 0;
             }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log(
+                Logger.Log([
                     "frame #" + (this as any)._count + " - viewport applied - (",
                     this._viewportCached.x,
                     this._viewportCached.y,
                     this._viewportCached.z,
                     this._viewportCached.w,
-                    ") current pass is main pass=" + this._currentPassIsMainPass()
-                );
+                    ") current pass is main pass=" + this._currentPassIsMainPass(),
+                ]);
             }
         }
     }
@@ -1212,14 +1325,14 @@ export class WebGPUEngine extends Engine {
                 (this as any)._count = 0;
             }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log(
+                Logger.Log([
                     "frame #" + (this as any)._count + " - scissor applied - (",
                     this._scissorCached.x,
                     this._scissorCached.y,
                     this._scissorCached.z,
                     this._scissorCached.w,
-                    ") current pass is main pass=" + this._currentPassIsMainPass()
-                );
+                    ") current pass is main pass=" + this._currentPassIsMainPass(),
+                ]);
             }
         }
     }
@@ -1314,7 +1427,7 @@ export class WebGPUEngine extends Engine {
                 (this as any)._count = 0;
             }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log("frame #" + (this as any)._count + " - clear - backBuffer=", backBuffer, " depth=", depth, " stencil=", stencil, " scissor is active=", hasScissor);
+                Logger.Log(["frame #" + (this as any)._count + " - clear - backBuffer=", backBuffer, " depth=", depth, " stencil=", stencil, " scissor is active=", hasScissor]);
             }
         }
 
@@ -1377,13 +1490,13 @@ export class WebGPUEngine extends Engine {
 
     /**
      * Creates a vertex buffer
-     * @param data the data for the vertex buffer
+     * @param data the data or the size for the vertex buffer
      * @param _updatable whether the buffer should be created as updatable
      * @param label defines the label of the buffer (for debug purpose)
      * @returns the new buffer
      */
-    public createVertexBuffer(data: DataArray, _updatable?: boolean, label?: string): DataBuffer {
-        let view: ArrayBufferView;
+    public createVertexBuffer(data: DataArray | number, _updatable?: boolean, label?: string): DataBuffer {
+        let view: ArrayBufferView | number;
 
         if (data instanceof Array) {
             view = new Float32Array(data);
@@ -1410,7 +1523,7 @@ export class WebGPUEngine extends Engine {
     /**
      * Creates a new index buffer
      * @param indices defines the content of the index buffer
-     * @param updatable defines if the index buffer must be updatable
+     * @param _updatable defines if the index buffer must be updatable
      * @param label defines the label of the buffer (for debug purpose)
      * @returns a new buffer
      */
@@ -1435,6 +1548,61 @@ export class WebGPUEngine extends Engine {
         const dataBuffer = this._bufferManager.createBuffer(view, WebGPUConstants.BufferUsage.Index | WebGPUConstants.BufferUsage.CopyDst, label);
         dataBuffer.is32Bits = is32Bits;
         return dataBuffer;
+    }
+
+    /**
+     * Update a dynamic index buffer
+     * @param indexBuffer defines the target index buffer
+     * @param indices defines the data to update
+     * @param offset defines the offset in the target index buffer where update should start
+     */
+    public updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset: number = 0): void {
+        const gpuBuffer = indexBuffer as WebGPUDataBuffer;
+
+        let view: ArrayBufferView;
+        if (indexBuffer.is32Bits) {
+            view = indices instanceof Uint32Array ? indices : new Uint32Array(indices);
+        } else {
+            view = indices instanceof Uint16Array ? indices : new Uint16Array(indices);
+        }
+
+        this._bufferManager.setSubData(gpuBuffer, offset, view);
+    }
+
+    /**
+     * Updates a dynamic vertex buffer.
+     * @param vertexBuffer the vertex buffer to update
+     * @param data the data used to update the vertex buffer
+     * @param byteOffset the byte offset of the data
+     * @param byteLength the byte length of the data
+     */
+    public updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
+        const dataBuffer = vertexBuffer as WebGPUDataBuffer;
+        if (byteOffset === undefined) {
+            byteOffset = 0;
+        }
+
+        let view: ArrayBufferView;
+        if (byteLength === undefined) {
+            if (data instanceof Array) {
+                view = new Float32Array(data);
+            } else if (data instanceof ArrayBuffer) {
+                view = new Uint8Array(data);
+            } else {
+                view = data;
+            }
+            byteLength = view.byteLength;
+        } else {
+            if (data instanceof Array) {
+                view = new Float32Array(data);
+            } else if (data instanceof ArrayBuffer) {
+                view = new Uint8Array(data);
+            } else {
+                view = data;
+            }
+        }
+
+        this._bufferManager.setSubData(dataBuffer, byteOffset, view, 0, byteLength);
     }
 
     /**
@@ -1512,6 +1680,88 @@ export class WebGPUEngine extends Engine {
     public _releaseBuffer(buffer: DataBuffer): boolean {
         return this._bufferManager.releaseBuffer(buffer);
     }
+
+    //------------------------------------------------------------------------------
+    //                              Uniform Buffers
+    //------------------------------------------------------------------------------
+
+    /**
+     * Create an uniform buffer
+     * @see https://doc.babylonjs.com/setup/support/webGL2#uniform-buffer-objets
+     * @param elements defines the content of the uniform buffer
+     * @param label defines a name for the buffer (for debugging purpose)
+     * @returns the webGL uniform buffer
+     */
+    public createUniformBuffer(elements: FloatArray, label?: string): DataBuffer {
+        let view: Float32Array;
+        if (elements instanceof Array) {
+            view = new Float32Array(elements);
+        } else {
+            view = elements;
+        }
+
+        const dataBuffer = this._bufferManager.createBuffer(view, WebGPUConstants.BufferUsage.Uniform | WebGPUConstants.BufferUsage.CopyDst, label);
+        return dataBuffer;
+    }
+
+    /**
+     * Create a dynamic uniform buffer (no different from a non dynamic uniform buffer in WebGPU)
+     * @see https://doc.babylonjs.com/setup/support/webGL2#uniform-buffer-objets
+     * @param elements defines the content of the uniform buffer
+     * @param label defines a name for the buffer (for debugging purpose)
+     * @returns the webGL uniform buffer
+     */
+    public createDynamicUniformBuffer(elements: FloatArray, label?: string): DataBuffer {
+        return this.createUniformBuffer(elements, label);
+    }
+
+    /**
+     * Update an existing uniform buffer
+     * @see https://doc.babylonjs.com/setup/support/webGL2#uniform-buffer-objets
+     * @param uniformBuffer defines the target uniform buffer
+     * @param elements defines the content to update
+     * @param offset defines the offset in the uniform buffer where update should start
+     * @param count defines the size of the data to update
+     */
+    public updateUniformBuffer(uniformBuffer: DataBuffer, elements: FloatArray, offset?: number, count?: number): void {
+        if (offset === undefined) {
+            offset = 0;
+        }
+
+        const dataBuffer = uniformBuffer as WebGPUDataBuffer;
+        let view: Float32Array;
+        if (count === undefined) {
+            if (elements instanceof Float32Array) {
+                view = elements;
+            } else {
+                view = new Float32Array(elements);
+            }
+            count = view.byteLength;
+        } else {
+            if (elements instanceof Float32Array) {
+                view = elements;
+            } else {
+                view = new Float32Array(elements);
+            }
+        }
+
+        this._bufferManager.setSubData(dataBuffer, offset, view, 0, count);
+    }
+
+    /**
+     * Bind a buffer to the current draw context
+     * @param buffer defines the buffer to bind
+     * @param _location not used in WebGPU
+     * @param name Name of the uniform variable to bind
+     */
+    public bindUniformBufferBase(buffer: DataBuffer, _location: number, name: string): void {
+        this._currentDrawContext.setBuffer(name, buffer as WebGPUDataBuffer);
+    }
+
+    /**
+     * Unused in WebGPU
+     */
+    public bindUniformBlock(): void {}
 
     //------------------------------------------------------------------------------
     //                              Effects
@@ -1730,10 +1980,10 @@ export class WebGPUEngine extends Engine {
         const shaderLanguage = webGpuContext.shaderProcessingContext.shaderLanguage;
 
         if (this.dbgShowShaderCode) {
-            console.log(defines);
-            console.log(vertexSourceCode);
-            console.log(fragmentSourceCode);
-            console.log("***********************************************");
+            Logger.Log(["defines", defines]);
+            Logger.Log(vertexSourceCode);
+            Logger.Log(fragmentSourceCode);
+            Logger.Log("***********************************************");
         }
 
         webGpuContext.sources = {
@@ -1782,10 +2032,7 @@ export class WebGPUEngine extends Engine {
             return;
         }
 
-        let isNewEffect = true;
-
         if (!DrawWrapper.IsWrapper(effect)) {
-            isNewEffect = effect !== this._currentEffect;
             this._currentEffect = effect;
             this._currentMaterialContext = this._defaultMaterialContext;
             this._currentDrawContext = this._defaultDrawContext;
@@ -1804,33 +2051,30 @@ export class WebGPUEngine extends Engine {
                 !this._forceEnableEffect)
         ) {
             if (!effect.effect && this.dbgShowEmptyEnableEffectCalls) {
-                console.error("drawWrapper=", effect);
+                Logger.Log(["drawWrapper=", effect]);
                 throw "Invalid call to enableEffect: the effect property is empty!";
             }
             return;
         } else {
-            isNewEffect = effect.effect !== this._currentEffect;
             this._currentEffect = effect.effect;
             this._currentMaterialContext = effect.materialContext as WebGPUMaterialContext;
             this._currentDrawContext = effect.drawContext as WebGPUDrawContext;
             this._counters.numEnableDrawWrapper++;
             if (!this._currentMaterialContext) {
-                console.error("drawWrapper=", effect);
+                Logger.Log(["drawWrapper=", effect]);
                 throw `Invalid call to enableEffect: the materialContext property is empty!`;
             }
         }
 
         this._stencilStateComposer.stencilMaterial = undefined;
 
-        this._forceEnableEffect = isNewEffect || this._forceEnableEffect ? false : this._forceEnableEffect;
+        this._forceEnableEffect = false;
 
-        if (isNewEffect) {
-            if (this._currentEffect!.onBind) {
-                this._currentEffect!.onBind(this._currentEffect!);
-            }
-            if (this._currentEffect!._onBindObservable) {
-                this._currentEffect!._onBindObservable.notifyObservers(this._currentEffect!);
-            }
+        if (this._currentEffect!.onBind) {
+            this._currentEffect!.onBind(this._currentEffect!);
+        }
+        if (this._currentEffect!._onBindObservable) {
+            this._currentEffect!._onBindObservable.notifyObservers(this._currentEffect!);
         }
     }
 
@@ -2055,6 +2299,7 @@ export class WebGPUEngine extends Engine {
                 texture.height = imageBitmap.height;
                 texture.format = texture.format !== -1 ? texture.format : format ?? Constants.TEXTUREFORMAT_RGBA;
                 texture.type = texture.type !== -1 ? texture.type : Constants.TEXTURETYPE_UNSIGNED_BYTE;
+                texture._creationFlags = creationFlags ?? 0;
 
                 processFunction(texture.width, texture.height, imageBitmap, extension, texture, () => {});
 
@@ -2311,7 +2556,7 @@ export class WebGPUEngine extends Engine {
                     (this as any)._count = 0;
                 }
                 if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                    console.log("frame #" + (this as any)._count + " - _setTexture called with a null _currentEffect! texture=", texture);
+                    Logger.Log(["frame #" + (this as any)._count + " - _setTexture called with a null _currentEffect! texture=", texture]);
                 }
             }
         }
@@ -2372,7 +2617,7 @@ export class WebGPUEngine extends Engine {
                 (this as any)._count = 0;
             }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log(
+                Logger.Log(
                     "frame #" +
                         (this as any)._count +
                         " - generate mipmaps - width=" +
@@ -2563,6 +2808,7 @@ export class WebGPUEngine extends Engine {
         this._snapshotRendering.endFrame();
 
         this._timestampQuery.endFrame(this._renderEncoder);
+        this._timestampIndex = 0;
 
         this.flushFramebuffer();
 
@@ -2579,7 +2825,7 @@ export class WebGPUEngine extends Engine {
                     for (const name in UniformBuffer._UpdatedUbosInFrame) {
                         list.push(name + ":" + UniformBuffer._UpdatedUbosInFrame[name]);
                     }
-                    console.log("frame #" + (this as any)._count + " - updated ubos -", list.join(", "));
+                    Logger.Log(["frame #" + (this as any)._count + " - updated ubos -", list.join(", ")]);
                 }
             }
             UniformBuffer._UpdatedUbosInFrame = {};
@@ -2606,12 +2852,12 @@ export class WebGPUEngine extends Engine {
                 (this as any)._count = 0;
             }
             if ((this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log("%c frame #" + (this as any)._count + " - end", "background: #ffff00");
+                Logger.Log(["%c frame #" + (this as any)._count + " - end", "background: #ffff00"]);
             }
             if ((this as any)._count < this.dbgVerboseLogsNumFrames) {
                 (this as any)._count++;
                 if ((this as any)._count !== this.dbgVerboseLogsNumFrames) {
-                    console.log("%c frame #" + (this as any)._count + " - begin", "background: #ffff00");
+                    Logger.Log(["%c frame #" + (this as any)._count + " - begin", "background: #ffff00"]);
                 }
             }
         }
@@ -2751,7 +2997,7 @@ export class WebGPUEngine extends Engine {
             }
         }
 
-        this._debugPushGroup?.("render target pass", 1);
+        this._debugPushGroup?.("render target pass" + (renderTargetWrapper.label ? " (" + renderTargetWrapper.label + ")" : ""), 1);
 
         this._rttRenderPassWrapper.renderPassDescriptor = {
             label: (renderTargetWrapper.label ?? "RTT") + "RenderPass",
@@ -2767,13 +3013,14 @@ export class WebGPUEngine extends Engine {
                           stencilLoadOp: !depthTextureHasStencil
                               ? undefined
                               : rtWrapper._depthStencilTextureWithStencil && mustClearStencil
-                              ? WebGPUConstants.LoadOp.Clear
-                              : WebGPUConstants.LoadOp.Load,
+                                ? WebGPUConstants.LoadOp.Clear
+                                : WebGPUConstants.LoadOp.Load,
                           stencilStoreOp: !depthTextureHasStencil ? undefined : WebGPUConstants.StoreOp.Store,
                       }
                     : undefined,
             occlusionQuerySet: this._occlusionQuery?.hasQueries ? this._occlusionQuery.querySet : undefined,
         };
+        this._timestampQuery.startPass(this._rttRenderPassWrapper.renderPassDescriptor, this._timestampIndex);
         this._currentRenderPass = this._renderEncoder.beginRenderPass(this._rttRenderPassWrapper.renderPassDescriptor);
 
         if (this.dbgVerboseLogsForFirstFrames) {
@@ -2782,7 +3029,7 @@ export class WebGPUEngine extends Engine {
             }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
                 const internalTexture = rtWrapper.texture!;
-                console.log(
+                Logger.Log([
                     "frame #" +
                         (this as any)._count +
                         " - render target begin pass - rtt name=" +
@@ -2796,8 +3043,8 @@ export class WebGPUEngine extends Engine {
                         ", setClearStates=" +
                         setClearStates,
                     "renderPassDescriptor=",
-                    this._rttRenderPassWrapper.renderPassDescriptor
-                );
+                    this._rttRenderPassWrapper.renderPassDescriptor,
+                ]);
             }
         }
 
@@ -2833,8 +3080,8 @@ export class WebGPUEngine extends Engine {
         this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.stencilLoadOp = !this.isStencilEnable
             ? undefined
             : mustClearStencil
-            ? WebGPUConstants.LoadOp.Clear
-            : WebGPUConstants.LoadOp.Load;
+              ? WebGPUConstants.LoadOp.Clear
+              : WebGPUConstants.LoadOp.Load;
         this._mainRenderPassWrapper.renderPassDescriptor!.occlusionQuerySet = this._occlusionQuery?.hasQueries ? this._occlusionQuery.querySet : undefined;
 
         const swapChainTexture = this._context.getCurrentTexture();
@@ -2854,17 +3101,18 @@ export class WebGPUEngine extends Engine {
                 (this as any)._count = 0;
             }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log(
+                Logger.Log([
                     "frame #" + (this as any)._count + " - main begin pass - texture width=" + (this._mainTextureExtends as any).width,
                     " height=" + (this._mainTextureExtends as any).height + ", setClearStates=" + setClearStates,
                     "renderPassDescriptor=",
-                    this._mainRenderPassWrapper.renderPassDescriptor
-                );
+                    this._mainRenderPassWrapper.renderPassDescriptor,
+                ]);
             }
         }
 
         this._debugPushGroup?.("main pass", 0);
 
+        this._timestampQuery.startPass(this._mainRenderPassWrapper.renderPassDescriptor!, this._timestampIndex);
         this._currentRenderPass = this._renderEncoder.beginRenderPass(this._mainRenderPassWrapper.renderPassDescriptor!);
 
         this._setDepthTextureFormat(this._mainRenderPassWrapper);
@@ -2892,12 +3140,21 @@ export class WebGPUEngine extends Engine {
             this._bundleList.reset();
         }
         this._currentRenderPass.end();
+
+        this._timestampQuery.endPass(
+            this._timestampIndex,
+            (this._currentRenderTarget && (this._currentRenderTarget as WebGPURenderTargetWrapper).gpuTimeInFrame
+                ? (this._currentRenderTarget as WebGPURenderTargetWrapper).gpuTimeInFrame
+                : this.gpuTimeInFrameForMainPass) as WebGPUPerfCounter
+        );
+        this._timestampIndex += 2;
+
         if (this.dbgVerboseLogsForFirstFrames) {
             if ((this as any)._count === undefined) {
                 (this as any)._count = 0;
             }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log(
+                Logger.Log(
                     "frame #" +
                         (this as any)._count +
                         " - " +
@@ -2974,7 +3231,7 @@ export class WebGPUEngine extends Engine {
                 (this as any)._count = 0;
             }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log(
+                Logger.Log([
                     "frame #" +
                         (this as any)._count +
                         " - bindFramebuffer - rtt name=" +
@@ -2990,8 +3247,8 @@ export class WebGPUEngine extends Engine {
                     "colorAttachmentViewDescriptor=",
                     this._rttRenderPassWrapper.colorAttachmentViewDescriptor,
                     "depthAttachmentViewDescriptor=",
-                    this._rttRenderPassWrapper.depthAttachmentViewDescriptor
-                );
+                    this._rttRenderPassWrapper.depthAttachmentViewDescriptor,
+                ]);
             }
         }
 
@@ -3049,7 +3306,7 @@ export class WebGPUEngine extends Engine {
                 (this as any)._count = 0;
             }
             if (!(this as any)._count || (this as any)._count < this.dbgVerboseLogsNumFrames) {
-                console.log("frame #" + (this as any)._count + " - unBindFramebuffer - rtt name=" + texture.label + ", internalTexture.uniqueId=", texture.texture?.uniqueId);
+                Logger.Log("frame #" + (this as any)._count + " - unBindFramebuffer - rtt name=" + texture.label + ", internalTexture.uniqueId=", texture.texture?.uniqueId);
             }
         }
 
@@ -3323,8 +3580,11 @@ export class WebGPUEngine extends Engine {
      */
     public dispose(): void {
         this._isDisposed = true;
+        this._timestampQuery.dispose();
         this._mainTexture?.destroy();
         this._depthTexture?.destroy();
+        this._textureHelper.destroyDeferredTextures();
+        this._bufferManager.destroyDeferredBuffers();
         this._device.destroy();
         super.dispose();
     }

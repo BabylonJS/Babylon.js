@@ -187,7 +187,7 @@ export class WebXRMotionControllerManager {
      */
     public static UpdateProfilesList() {
         this._ProfilesList = Tools.LoadFileAsync(this.BaseRepositoryUrl + "/profiles/profilesList.json", false).then((data) => {
-            return JSON.parse(data.toString());
+            return JSON.parse(data);
         });
         return this._ProfilesList;
     }
@@ -231,7 +231,7 @@ export class WebXRMotionControllerManager {
                 // load the profile
                 if (!this._ProfileLoadingPromises[profileToLoad]) {
                     this._ProfileLoadingPromises[profileToLoad] = Tools.LoadFileAsync(`${this.BaseRepositoryUrl}/profiles/${profileToLoad}/profile.json`, false).then(
-                        (data) => <IMotionControllerProfile>JSON.parse(data as string)
+                        (data) => <IMotionControllerProfile>JSON.parse(data)
                     );
                 }
                 return this._ProfileLoadingPromises[profileToLoad];

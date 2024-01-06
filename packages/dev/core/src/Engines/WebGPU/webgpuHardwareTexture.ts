@@ -1,7 +1,11 @@
+/* eslint-disable jsdoc/require-jsdoc */
+/* eslint-disable babylonjs/available */
 import type { HardwareTextureWrapper } from "../../Materials/Textures/hardwareTextureWrapper";
 import { Scalar } from "../../Maths/math.scalar";
 import type { Nullable } from "../../types";
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import * as WebGPUConstants from "./webgpuConstants";
+import { WebGPUTextureHelper } from "./webgpuTextureHelper";
 
 /** @internal */
 export class WebGPUHardwareTexture implements HardwareTextureWrapper {
@@ -76,15 +80,33 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
         this._webgpuTexture = hardwareTexture;
     }
 
-    public setUsage(_textureSource: number, generateMipMaps: boolean, isCube: boolean, width: number, height: number): void {
+    public setUsage(_textureSource: number, generateMipMaps: boolean, is2DArray: boolean, isCube: boolean, is3D: boolean, width: number, height: number, depth: number): void {
+        let viewDimension: GPUTextureViewDimension = WebGPUConstants.TextureViewDimension.E2d;
+        let arrayLayerCount = 1;
+        if (isCube) {
+            viewDimension = is2DArray ? WebGPUConstants.TextureViewDimension.CubeArray : WebGPUConstants.TextureViewDimension.Cube;
+            arrayLayerCount = 6 * (depth || 1);
+        } else if (is3D) {
+            viewDimension = WebGPUConstants.TextureViewDimension.E3d;
+        } else if (is2DArray) {
+            viewDimension = WebGPUConstants.TextureViewDimension.E2dArray;
+            arrayLayerCount = depth;
+        }
+
+        const format = WebGPUTextureHelper.GetDepthFormatOnly(this.format);
+        const aspect = WebGPUTextureHelper.HasDepthAndStencilAspects(this.format) ? WebGPUConstants.TextureAspect.DepthOnly : WebGPUConstants.TextureAspect.All;
+
         this.createView({
-            format: this.format,
-            dimension: isCube ? WebGPUConstants.TextureViewDimension.Cube : WebGPUConstants.TextureViewDimension.E2d,
+            label: `TextureView${is3D ? "3D" : isCube ? "Cube" : "2D"}${is2DArray ? "_Array" + arrayLayerCount : ""}_${width}x${height}_${generateMipMaps ? "wmips" : "womips"}_${
+                this.format
+            }_${viewDimension}`,
+            format,
+            dimension: viewDimension,
             mipLevelCount: generateMipMaps ? Scalar.ILog2(Math.max(width, height)) + 1 : 1,
             baseArrayLayer: 0,
             baseMipLevel: 0,
-            arrayLayerCount: isCube ? 6 : 1,
-            aspect: WebGPUConstants.TextureAspect.All,
+            arrayLayerCount,
+            aspect,
         });
     }
 

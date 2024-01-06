@@ -210,6 +210,32 @@ export class NodeGeometryConnectionPoint {
         return this._type;
     }
 
+    /** @internal */
+    public _callCount = 0;
+
+    /** @internal */
+    public _executionCount = 0;
+
+    /** @internal */
+    public _resetCounters() {
+        this._callCount = 0;
+        this._executionCount = 0;
+    }
+
+    /**
+     * Gets the number of times this point was called
+     */
+    public get callCount() {
+        return this._callCount;
+    }
+
+    /**
+     * Gets the number of times this point was executed
+     */
+    public get executionCount() {
+        return this._executionCount;
+    }
+
     /**
      * Gets the value represented by this connection point
      * @param state current evaluation state
@@ -218,10 +244,16 @@ export class NodeGeometryConnectionPoint {
     public getConnectedValue(state: NodeGeometryBuildState) {
         if (this.isConnected) {
             if (this._connectedPoint?._storedFunction) {
-                return this._connectedPoint?._storedFunction(state);
+                this._connectedPoint!._callCount++;
+                this._connectedPoint!._executionCount++;
+                return this._connectedPoint!._storedFunction(state);
             }
-            return this._connectedPoint?._storedValue;
+            this._connectedPoint!._callCount++;
+            this._connectedPoint!._executionCount = 1;
+            return this._connectedPoint!._storedValue;
         }
+        this._callCount++;
+        this._executionCount = 1;
         return this.value;
     }
 

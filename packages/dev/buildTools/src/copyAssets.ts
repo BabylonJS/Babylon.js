@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import * as glob from "glob";
 import * as path from "path";
 import { copyFile, checkArgs } from "./utils.js";

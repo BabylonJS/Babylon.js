@@ -75,6 +75,7 @@ import { BoundingInfo } from "core/Culling/boundingInfo";
 import type { AssetContainer } from "core/assetContainer";
 import type { AnimationPropertyInfo } from "./glTFLoaderAnimation";
 import { nodeAnimationData } from "./glTFLoaderAnimation";
+import type { IObjectInfo } from "core/ObjectModel/objectModelInterfaces";
 
 interface TypedArrayLike extends ArrayBufferView {
     readonly length: number;
@@ -287,6 +288,13 @@ export class GLTFLoader implements IGLTFLoader {
      */
     public get rootBabylonMesh(): Nullable<Mesh> {
         return this._rootBabylonMesh;
+    }
+
+    /**
+     * The root url when loading the asset.
+     */
+    public get rootUrl(): Nullable<string> {
+        return this._rootUrl;
     }
 
     /**
@@ -574,7 +582,7 @@ export class GLTFLoader implements IGLTFLoader {
             for (const name of this._gltf.extensionsRequired) {
                 const available = this._extensions.some((extension) => extension.name === name && extension.enabled);
                 if (!available) {
-                    throw new Error(`Require extension ${name} is not available`);
+                    throw new Error(`Required extension ${name} is not available`);
                 }
             }
         }
@@ -1481,7 +1489,8 @@ export class GLTFLoader implements IGLTFLoader {
         babylonCamera.ignoreParentScaling = true;
         camera._babylonCamera = babylonCamera;
 
-        babylonCamera.rotation = new Vector3(0, Math.PI, 0);
+        // Rotation by 180 as glTF has a different convention than Babylon.
+        babylonCamera.rotation.set(0, Math.PI, 0);
 
         switch (camera.type) {
             case CameraType.PERSPECTIVE: {
@@ -1646,9 +1655,9 @@ export class GLTFLoader implements IGLTFLoader {
             }
         }
 
-        const targetInfo: IAnimationTargetInfo = {
-            target: targetNode,
-            properties: properties,
+        const targetInfo: IObjectInfo<AnimationPropertyInfo[]> = {
+            object: targetNode,
+            info: properties,
         };
 
         return this._loadAnimationChannelFromTargetInfoAsync(context, animationContext, animation, channel, targetInfo, onLoad);
@@ -1670,7 +1679,7 @@ export class GLTFLoader implements IGLTFLoader {
         animationContext: string,
         animation: IAnimation,
         channel: IAnimationChannel,
-        targetInfo: IAnimationTargetInfo,
+        targetInfo: IObjectInfo<AnimationPropertyInfo[]>,
         onLoad: (babylonAnimatable: IAnimatable, babylonAnimation: Animation) => void
     ): Promise<void> {
         const fps = this.parent.targetFps;
@@ -1680,13 +1689,15 @@ export class GLTFLoader implements IGLTFLoader {
         return this._loadAnimationSamplerAsync(`${animationContext}/samplers/${channel.sampler}`, sampler).then((data) => {
             let numAnimations = 0;
 
+            const target = targetInfo.object;
+            const propertyInfos = targetInfo.info;
             // Extract the corresponding values from the read value.
             // GLTF values may be dispatched to several Babylon properties.
             // For example, baseColorFactor [`r`, `g`, `b`, `a`] is dispatched to
             // - albedoColor as Color3(`r`, `g`, `b`)
             // - alpha as `a`
-            for (const property of targetInfo.properties) {
-                const stride = property.getStride(targetInfo.target);
+            for (const propertyInfo of propertyInfos) {
+                const stride = propertyInfo.getStride(target);
                 const input = data.input;
                 const output = data.output;
                 const keys = new Array<IAnimationKey>(input.length);
@@ -1695,7 +1706,7 @@ export class GLTFLoader implements IGLTFLoader {
                 switch (data.interpolation) {
                     case AnimationSamplerInterpolation.STEP: {
                         for (let index = 0; index < input.length; index++) {
-                            const value = property.getValue(targetInfo.target, output, outputOffset, 1);
+                            const value = propertyInfo.getValue(target, output, outputOffset, 1);
                             outputOffset += stride;
 
                             keys[index] = {
@@ -1708,11 +1719,11 @@ export class GLTFLoader implements IGLTFLoader {
                     }
                     case AnimationSamplerInterpolation.CUBICSPLINE: {
                         for (let index = 0; index < input.length; index++) {
-                            const inTangent = property.getValue(targetInfo.target, output, outputOffset, invfps);
+                            const inTangent = propertyInfo.getValue(target, output, outputOffset, invfps);
                             outputOffset += stride;
-                            const value = property.getValue(targetInfo.target, output, outputOffset, 1);
+                            const value = propertyInfo.getValue(target, output, outputOffset, 1);
                             outputOffset += stride;
-                            const outTangent = property.getValue(targetInfo.target, output, outputOffset, invfps);
+                            const outTangent = propertyInfo.getValue(target, output, outputOffset, invfps);
                             outputOffset += stride;
 
                             keys[index] = {
@@ -1726,7 +1737,7 @@ export class GLTFLoader implements IGLTFLoader {
                     }
                     case AnimationSamplerInterpolation.LINEAR: {
                         for (let index = 0; index < input.length; index++) {
-                            const value = property.getValue(targetInfo.target, output, outputOffset, 1);
+                            const value = propertyInfo.getValue(target, output, outputOffset, 1);
                             outputOffset += stride;
 
                             keys[index] = {
@@ -1740,7 +1751,7 @@ export class GLTFLoader implements IGLTFLoader {
 
                 if (outputOffset > 0) {
                     const name = `${animation.name || `animation${animation.index}`}_channel${channel.index}_${numAnimations}`;
-                    property.buildAnimations(targetInfo.target, name, fps, keys, (babylonAnimatable, babylonAnimation) => {
+                    propertyInfo.buildAnimations(target, name, fps, keys, (babylonAnimatable, babylonAnimation) => {
                         ++numAnimations;
                         onLoad(babylonAnimatable, babylonAnimation);
                     });
@@ -2262,6 +2273,7 @@ export class GLTFLoader implements IGLTFLoader {
         switch (alphaMode) {
             case MaterialAlphaMode.OPAQUE: {
                 babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_OPAQUE;
+                babylonMaterial.alpha = 1.0; // Force alpha to 1.0 for opaque mode.
                 break;
             }
             case MaterialAlphaMode.MASK: {

@@ -9,7 +9,6 @@ import { RandomGUID } from "../../Misc/guid";
 import type { IWebRequest } from "../../Misc/interfaces/iWebRequest";
 import { Constants } from "../constants";
 import type { DepthTextureCreationOptions } from "../../Materials/Textures/textureCreationOptions";
-import type { RenderTargetWrapper } from "../renderTargetWrapper";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -18,10 +17,9 @@ declare module "../../Engines/thinEngine" {
          * This is only available in WebGL 2.
          * @param size The size of face edge in the cube texture.
          * @param options The options defining the cube texture.
-         * @param rtWrapper The render target wrapper for which the depth/stencil texture must be created
          * @returns The cube texture
          */
-        _createDepthStencilCubeTexture(size: number, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture;
+        _createDepthStencilCubeTexture(size: number, options: DepthTextureCreationOptions): InternalTexture;
 
         /**
          * Creates a cube texture
@@ -170,7 +168,7 @@ declare module "../../Engines/thinEngine" {
     }
 }
 
-ThinEngine.prototype._createDepthStencilCubeTexture = function (size: number, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
+ThinEngine.prototype._createDepthStencilCubeTexture = function (size: number, options: DepthTextureCreationOptions): InternalTexture {
     const internalTexture = new InternalTexture(this, InternalTextureSource.DepthStencil);
     internalTexture.isCube = true;
 
@@ -190,9 +188,6 @@ ThinEngine.prototype._createDepthStencilCubeTexture = function (size: number, op
     this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, internalTexture, true);
 
     this._setupDepthStencilTexture(internalTexture, size, internalOptions.generateStencil, internalOptions.bilinearFiltering, internalOptions.comparisonFunction);
-
-    rtWrapper._depthStencilTexture = internalTexture;
-    rtWrapper._depthStencilTextureWithStencil = internalOptions.generateStencil;
 
     // Create the depth/stencil buffer
     for (let face = 0; face < 6; face++) {
@@ -421,8 +416,8 @@ ThinEngine.prototype.createCubeTextureBase = function (
             this._loadFile(rootUrl, (data) => onloaddata(new Uint8Array(data as ArrayBuffer)), undefined, undefined, true, onInternalError);
         }
     } else {
-        if (!files) {
-            throw new Error("Cannot load cubemap because files were not defined");
+        if (!files || files.length === 0) {
+            throw new Error("Cannot load cubemap because files were not defined, or the correct loader was not found.");
         }
 
         this._cascadeLoadImgs(

@@ -2010,6 +2010,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         // Ensures that the pre-pass renderer is enabled if it is to be enabled.
         this.prePassRenderer?.update();
 
+        // OIT
+        if (this.useOrderIndependentTransparency && this.depthPeelingRenderer) {
+            isReady &&= this.depthPeelingRenderer.isReady();
+        }
+
         // Meshes
         if (checkRenderTargets) {
             this._processedMaterials.reset();
@@ -3160,7 +3165,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * Gets a light node using its name
-     * @param name defines the the light's name
+     * @param name defines the light's name
      * @returns the light or null if none found.
      */
     public getLightByName(name: string): Nullable<Light> {
@@ -4133,16 +4138,17 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param force defines a boolean used to force the update even if cache is up to date
      */
     public updateTransformMatrix(force?: boolean): void {
-        if (!this.activeCamera) {
+        const activeCamera = this.activeCamera;
+        if (!activeCamera) {
             return;
         }
 
-        if (this.activeCamera._renderingMultiview) {
-            const leftCamera = this.activeCamera._rigCameras[0];
-            const rightCamera = this.activeCamera._rigCameras[1];
+        if (activeCamera._renderingMultiview) {
+            const leftCamera = activeCamera._rigCameras[0];
+            const rightCamera = activeCamera._rigCameras[1];
             this.setTransformMatrix(leftCamera.getViewMatrix(), leftCamera.getProjectionMatrix(force), rightCamera.getViewMatrix(), rightCamera.getProjectionMatrix(force));
         } else {
-            this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix(force));
+            this.setTransformMatrix(activeCamera.getViewMatrix(), activeCamera.getProjectionMatrix(force));
         }
     }
 
@@ -4294,6 +4300,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         // Restore framebuffer after rendering to targets
         if (needRebind && !this.prePass) {
             this._bindFrameBuffer(this._activeCamera, false);
+            this.updateTransformMatrix();
         }
 
         this.onAfterRenderTargetsRenderObservable.notifyObservers(this);
@@ -4800,7 +4807,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         try {
             this.onDisposeObservable.notifyObservers(this);
         } catch (e) {
-            console.error("An error occurred while calling onDisposeObservable!", e);
+            Logger.Error("An error occurred while calling onDisposeObservable!", e);
         }
 
         this.detachControl();
@@ -5209,7 +5216,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     /** @internal */
     public _rebuildTextures(): void {
         for (const texture of this.textures) {
-            texture._rebuild();
+            texture._rebuild(true);
         }
 
         this.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
@@ -5246,7 +5253,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param filter defines a predicate used to filter results
      * @returns an array of Mesh
      */
-    public getMeshesByTags(tagsQuery: string, filter?: (mesh: AbstractMesh) => boolean): Mesh[] {
+    public getMeshesByTags(tagsQuery: string, filter?: (mesh: AbstractMesh) => boolean): AbstractMesh[] {
         return this._getByTags(this.meshes, tagsQuery, filter);
     }
 
@@ -5392,6 +5399,22 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         });
         return request;
     }
+
+    public _loadFileAsync(
+        fileOrUrl: File | string,
+        onProgress?: (data: any) => void,
+        useOfflineSupport?: boolean,
+        useArrayBuffer?: false,
+        onOpened?: (request: WebRequest) => void
+    ): Promise<string>;
+
+    public _loadFileAsync(
+        fileOrUrl: File | string,
+        onProgress?: (data: any) => void,
+        useOfflineSupport?: boolean,
+        useArrayBuffer?: true,
+        onOpened?: (request: WebRequest) => void
+    ): Promise<ArrayBuffer>;
 
     /**
      * @internal

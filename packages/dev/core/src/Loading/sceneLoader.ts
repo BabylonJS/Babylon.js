@@ -517,8 +517,8 @@ export class SceneLoader {
         const registeredPlugin = pluginExtension
             ? SceneLoader._GetPluginForExtension(pluginExtension)
             : directLoad
-            ? SceneLoader._GetPluginForDirectLoad(fileInfo.url)
-            : SceneLoader._GetPluginForFilename(fileInfo.url);
+              ? SceneLoader._GetPluginForDirectLoad(fileInfo.url)
+              : SceneLoader._GetPluginForFilename(fileInfo.url);
 
         if (fileInfo.rawData && !registeredPlugin.isBinary) {
             throw "Loading from ArrayBufferView can not be used with plugins that don't support binary loading.";

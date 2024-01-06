@@ -1,6 +1,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Inspector } from "../inspector";
+import { Logger } from "core/Misc/logger";
 
 export interface IPopupComponentProps {
     id: string;
@@ -86,7 +87,7 @@ export class PopupComponent extends React.Component<IPopupComponentProps, { isCo
             if (!this._window) {
                 this.setState({ blockedByBrowser: true }, () => {
                     if (this.state.blockedByBrowser) {
-                        console.warn("Popup window couldn't be created");
+                        Logger.Warn("Popup window couldn't be created");
                     }
                 });
             }

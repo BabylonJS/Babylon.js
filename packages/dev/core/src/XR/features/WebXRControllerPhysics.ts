@@ -342,7 +342,7 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
             }
             comparedPosition.copyFrom(controllerMesh.position);
             if (this._debugMode) {
-                console.log(this._tmpVector, "linear");
+                Logger.Log([this._tmpVector, "linear"]);
             }
 
             const comparedQuaternion = controllerData.oldRotation || controllerData.impostorMesh!.rotationQuaternion!;
@@ -370,7 +370,7 @@ export class WebXRControllerPhysics extends WebXRAbstractFeature {
             }
             comparedQuaternion.copyFrom(controllerMesh.rotationQuaternion!);
             if (this._debugMode) {
-                console.log(this._tmpVector, this._tmpQuaternion, "angular");
+                Logger.Log([this._tmpVector, this._tmpQuaternion, "angular"]);
             }
         });
     }

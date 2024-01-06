@@ -11,6 +11,7 @@ import { ILoaderPlugin } from "./loader/plugins/loaderPlugin";
 import { AbstractViewerNavbarButton } from "./templating/viewerTemplatePlugin";
 // eslint-disable-next-line import/no-internal-modules
 import { registerCustomOptimizer } from "./optimizer/custom/index";
+import { Logger } from "core/Misc/logger";
 
 /**
  * BabylonJS Viewer
@@ -44,7 +45,7 @@ function disposeAll() {
 
 const Version = viewerGlobals.version;
 
-console.log("Babylon.js viewer (v" + Version + ")");
+Logger.Log("Babylon.js viewer (v" + Version + ")");
 
 // public API for initialization
 export {

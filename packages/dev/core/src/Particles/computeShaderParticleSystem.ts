@@ -1,4 +1,5 @@
 import type { ThinEngine } from "../Engines/thinEngine";
+import type { WebGPUEngine } from "../Engines/webgpuEngine";
 import { StorageBuffer } from "../Buffers/storageBuffer";
 import { ComputeShader } from "../Compute/computeShader";
 import { UniformBuffer } from "../Materials/uniformBuffer";
@@ -73,10 +74,10 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
             bindingsMapping["noiseTexture"] = { group: 1, binding: 11 };
         }
 
-        this._updateComputeShader = new ComputeShader("updateParticles", this._engine, "gpuUpdateParticles", { bindingsMapping, defines: defines.split("\n") });
+        this._updateComputeShader = new ComputeShader("updateParticles", this._engine as WebGPUEngine, "gpuUpdateParticles", { bindingsMapping, defines: defines.split("\n") });
 
         this._simParamsComputeShader?.dispose();
-        this._simParamsComputeShader = new UniformBuffer(this._engine);
+        this._simParamsComputeShader = new UniformBuffer(this._engine, undefined, undefined, "ComputeShaderParticleSystemUBO");
 
         this._simParamsComputeShader.addUniform("currentCount", 1);
         this._simParamsComputeShader.addUniform("timeDelta", 1);
@@ -118,7 +119,12 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
     }
 
     public createParticleBuffer(data: number[]): DataArray | DataBuffer {
-        const buffer = new StorageBuffer(this._engine, data.length * 4, Constants.BUFFER_CREATIONFLAG_READWRITE | Constants.BUFFER_CREATIONFLAG_VERTEX);
+        const buffer = new StorageBuffer(
+            this._engine,
+            data.length * 4,
+            Constants.BUFFER_CREATIONFLAG_READWRITE | Constants.BUFFER_CREATIONFLAG_VERTEX,
+            "ComputeShaderParticleSystemBuffer"
+        );
 
         buffer.update(data);
         this._bufferComputeShader.push(buffer);

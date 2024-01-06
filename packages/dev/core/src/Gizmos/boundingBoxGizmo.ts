@@ -116,6 +116,8 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
     private _tmpQuaternion = new Quaternion();
     private _tmpVector = new Vector3(0, 0, 0);
     private _tmpRotationMatrix = new Matrix();
+    private _incrementalStartupValue = Vector3.Zero();
+    private _incrementalAnchorStartupValue = Vector3.Zero();
     /**
      * If child meshes should be ignored when calculating the bounding box. This should be set to true to avoid perf hits with heavily nested meshes (Default: false)
      */
@@ -183,6 +185,11 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
      * Scale factor used for masking some axis
      */
     protected _axisFactor = new Vector3(1, 1, 1);
+
+    /**
+     * Incremental snap scaling (default is false). When true, with a snapDistance of 0.1, scaling will be 1.1,1.2,1.3 instead of, when false: 1.1,1.21,1.33,...
+     */
+    public incrementalSnap = false;
 
     /**
      * Sets the axis factor
@@ -550,14 +557,22 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                             }
 
                             const deltaScale = new Vector3(relativeDragDistance, relativeDragDistance, relativeDragDistance);
+                            const fullScale = new Vector3(previousScale, previousScale, previousScale);
+
                             if (zeroAxisCount === 2) {
                                 // scale on 1 axis when using the anchor box in the face middle
                                 deltaScale.x *= Math.abs(dragAxis.x);
                                 deltaScale.y *= Math.abs(dragAxis.y);
                                 deltaScale.z *= Math.abs(dragAxis.z);
                             }
+
                             deltaScale.scaleInPlace(this._scaleDragSpeed);
                             deltaScale.multiplyInPlace(this._axisFactor);
+
+                            fullScale.scaleInPlace(this._scaleDragSpeed);
+                            fullScale.multiplyInPlace(this._axisFactor);
+                            fullScale.addInPlace(this._incrementalStartupValue);
+
                             this.updateBoundingBox();
                             if (this.scalePivot) {
                                 this.attachedMesh.getWorldMatrix().getRotationMatrixToRef(this._tmpRotationMatrix);
@@ -578,9 +593,23 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                             }
 
                             this._anchorMesh.addChild(this.attachedMesh);
-                            this._anchorMesh.scaling.addInPlace(deltaScale);
-                            if (this._anchorMesh.scaling.x < 0 || this._anchorMesh.scaling.y < 0 || this._anchorMesh.scaling.z < 0) {
-                                this._anchorMesh.scaling.subtractInPlace(deltaScale);
+                            if (this.incrementalSnap) {
+                                fullScale.x /= Math.abs(this._incrementalStartupValue.x) < Epsilon ? 1 : this._incrementalStartupValue.x;
+                                fullScale.y /= Math.abs(this._incrementalStartupValue.y) < Epsilon ? 1 : this._incrementalStartupValue.y;
+                                fullScale.z /= Math.abs(this._incrementalStartupValue.z) < Epsilon ? 1 : this._incrementalStartupValue.z;
+
+                                fullScale.x = Math.max(this._incrementalAnchorStartupValue.x * fullScale.x, this.scalingSnapDistance);
+                                fullScale.y = Math.max(this._incrementalAnchorStartupValue.y * fullScale.y, this.scalingSnapDistance);
+                                fullScale.z = Math.max(this._incrementalAnchorStartupValue.z * fullScale.z, this.scalingSnapDistance);
+
+                                this._anchorMesh.scaling.x += (fullScale.x - this._anchorMesh.scaling.x) * Math.abs(dragAxis.x);
+                                this._anchorMesh.scaling.y += (fullScale.y - this._anchorMesh.scaling.y) * Math.abs(dragAxis.y);
+                                this._anchorMesh.scaling.z += (fullScale.z - this._anchorMesh.scaling.z) * Math.abs(dragAxis.z);
+                            } else {
+                                this._anchorMesh.scaling.addInPlace(deltaScale);
+                                if (this._anchorMesh.scaling.x < 0 || this._anchorMesh.scaling.y < 0 || this._anchorMesh.scaling.z < 0) {
+                                    this._anchorMesh.scaling.subtractInPlace(deltaScale);
+                                }
                             }
                             this._anchorMesh.removeChild(this.attachedMesh);
                             this.attachedMesh.setParent(originalParent);
@@ -595,6 +624,8 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                         this._selectNode(box);
                         totalRelativeDragDistance = 0;
                         previousScale = 0;
+                        this._incrementalStartupValue.copyFrom(this.attachedMesh!.scaling);
+                        this._incrementalAnchorStartupValue.copyFrom(this._anchorMesh!.scaling);
                     });
                     _dragBehavior.onDragEndObservable.add((event) => {
                         this.onScaleBoxDragEndObservable.notifyObservers({});

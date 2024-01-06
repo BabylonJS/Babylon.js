@@ -6,6 +6,8 @@ import { StandardMaterial } from "core/Materials/standardMaterial";
 import type { Mesh } from "core/Meshes/mesh";
 import type { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
+import { Color3, Color4 } from "core/Maths/math.color";
+import type { Nullable } from "core/types";
 
 export class CustomShaderStructure {
     public FragmentStore: string;
@@ -53,7 +55,6 @@ export class ShaderSpecialParts {
 export class CustomMaterial extends StandardMaterial {
     public static ShaderIndexer = 1;
     public CustomParts: ShaderSpecialParts;
-    _isCreatedShader: boolean;
     _createdShaderName: string;
     _customUniform: string[];
     _newUniforms: string[];
@@ -71,8 +72,17 @@ export class CustomMaterial extends StandardMaterial {
                 if (ea[0] == "vec2") {
                     effect.setVector2(ea[1], this._newUniformInstances[el]);
                 } else if (ea[0] == "vec3") {
-                    effect.setVector3(ea[1], this._newUniformInstances[el]);
+                    if (this._newUniformInstances[el] instanceof Color3) {
+                        effect.setColor3(ea[1], this._newUniformInstances[el]);
+                    } else {
+                        effect.setVector3(ea[1], this._newUniformInstances[el]);
+                    }
                 } else if (ea[0] == "vec4") {
+                    if (this._newUniformInstances[el] instanceof Color4) {
+                        effect.setDirectColor4(ea[1], this._newUniformInstances[el]);
+                    } else {
+                        effect.setVector4(ea[1], this._newUniformInstances[el]);
+                    }
                     effect.setVector4(ea[1], this._newUniformInstances[el]);
                 } else if (ea[0] == "mat4") {
                     effect.setMatrix(ea[1], this._newUniformInstances[el]);
@@ -117,68 +127,55 @@ export class CustomMaterial extends StandardMaterial {
         this.ReviewUniform("uniform", uniforms);
         this.ReviewUniform("sampler", samplers);
 
-        if (this._isCreatedShader) {
-            return this._createdShaderName;
+        const name = this._createdShaderName;
+
+        if (Effect.ShadersStore[name + "VertexShader"] && Effect.ShadersStore[name + "PixelShader"]) {
+            return name;
         }
-        this._isCreatedShader = false;
-
-        CustomMaterial.ShaderIndexer++;
-        const name: string = "custom_" + CustomMaterial.ShaderIndexer;
-
-        const fn_afterBind = this._afterBind.bind(this);
-        this._afterBind = (m, e) => {
-            if (!e) {
-                return;
-            }
-            this.AttachAfterBind(m, e);
-            try {
-                fn_afterBind(m, e);
-            } catch (e) {}
-        };
-
-        Effect.ShadersStore[name + "VertexShader"] = this.VertexShader.replace("#define CUSTOM_VERTEX_BEGIN", this.CustomParts.Vertex_Begin ? this.CustomParts.Vertex_Begin : "")
-            .replace(
-                "#define CUSTOM_VERTEX_DEFINITIONS",
-                (this._customUniform ? this._customUniform.join("\n") : "") + (this.CustomParts.Vertex_Definitions ? this.CustomParts.Vertex_Definitions : "")
-            )
-            .replace("#define CUSTOM_VERTEX_MAIN_BEGIN", this.CustomParts.Vertex_MainBegin ? this.CustomParts.Vertex_MainBegin : "")
-            .replace("#define CUSTOM_VERTEX_UPDATE_POSITION", this.CustomParts.Vertex_Before_PositionUpdated ? this.CustomParts.Vertex_Before_PositionUpdated : "")
-            .replace("#define CUSTOM_VERTEX_UPDATE_NORMAL", this.CustomParts.Vertex_Before_NormalUpdated ? this.CustomParts.Vertex_Before_NormalUpdated : "")
-            .replace("#define CUSTOM_VERTEX_MAIN_END", this.CustomParts.Vertex_MainEnd ? this.CustomParts.Vertex_MainEnd : "");
-
-        if (this.CustomParts.Vertex_After_WorldPosComputed) {
-            Effect.ShadersStore[name + "VertexShader"] = Effect.ShadersStore[name + "VertexShader"].replace(
-                "#define CUSTOM_VERTEX_UPDATE_WORLDPOS",
-                this.CustomParts.Vertex_After_WorldPosComputed
-            );
-        }
-
-        Effect.ShadersStore[name + "PixelShader"] = this.FragmentShader.replace(
-            "#define CUSTOM_FRAGMENT_BEGIN",
-            this.CustomParts.Fragment_Begin ? this.CustomParts.Fragment_Begin : ""
-        )
-            .replace("#define CUSTOM_FRAGMENT_MAIN_BEGIN", this.CustomParts.Fragment_MainBegin ? this.CustomParts.Fragment_MainBegin : "")
-            .replace(
-                "#define CUSTOM_FRAGMENT_DEFINITIONS",
-                (this._customUniform ? this._customUniform.join("\n") : "") + (this.CustomParts.Fragment_Definitions ? this.CustomParts.Fragment_Definitions : "")
-            )
-            .replace("#define CUSTOM_FRAGMENT_UPDATE_DIFFUSE", this.CustomParts.Fragment_Custom_Diffuse ? this.CustomParts.Fragment_Custom_Diffuse : "")
-            .replace("#define CUSTOM_FRAGMENT_UPDATE_ALPHA", this.CustomParts.Fragment_Custom_Alpha ? this.CustomParts.Fragment_Custom_Alpha : "")
-            .replace("#define CUSTOM_FRAGMENT_BEFORE_LIGHTS", this.CustomParts.Fragment_Before_Lights ? this.CustomParts.Fragment_Before_Lights : "")
-            .replace("#define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR", this.CustomParts.Fragment_Before_FragColor ? this.CustomParts.Fragment_Before_FragColor : "")
-            .replace("#define CUSTOM_FRAGMENT_MAIN_END", this.CustomParts.Fragment_MainEnd ? this.CustomParts.Fragment_MainEnd : "");
-
-        if (this.CustomParts.Fragment_Before_Fog) {
-            Effect.ShadersStore[name + "PixelShader"] = Effect.ShadersStore[name + "PixelShader"].replace(
-                "#define CUSTOM_FRAGMENT_BEFORE_FOG",
-                this.CustomParts.Fragment_Before_Fog
-            );
-        }
-
-        this._isCreatedShader = true;
-        this._createdShaderName = name;
+        Effect.ShadersStore[name + "VertexShader"] = this._injectCustomCode(this.VertexShader, "vertex");
+        Effect.ShadersStore[name + "PixelShader"] = this._injectCustomCode(this.FragmentShader, "fragment");
 
         return name;
+    }
+
+    protected _injectCustomCode(code: string, shaderType: string): string {
+        const customCode = this._getCustomCode(shaderType);
+
+        for (const point in customCode) {
+            const injectedCode = customCode[point];
+
+            if (injectedCode && injectedCode.length > 0) {
+                const fullPointName = "#define " + point;
+                code = code.replace(fullPointName, "\n" + injectedCode + "\n" + fullPointName);
+            }
+        }
+
+        return code;
+    }
+
+    protected _getCustomCode(shaderType: string): { [pointName: string]: string } {
+        if (shaderType === "vertex") {
+            return {
+                CUSTOM_VERTEX_BEGIN: this.CustomParts.Vertex_Begin,
+                CUSTOM_VERTEX_DEFINITIONS: (this._customUniform?.join("\n") || "") + (this.CustomParts.Vertex_Definitions || ""),
+                CUSTOM_VERTEX_MAIN_BEGIN: this.CustomParts.Vertex_MainBegin,
+                CUSTOM_VERTEX_UPDATE_POSITION: this.CustomParts.Vertex_Before_PositionUpdated,
+                CUSTOM_VERTEX_UPDATE_NORMAL: this.CustomParts.Vertex_Before_NormalUpdated,
+                CUSTOM_VERTEX_MAIN_END: this.CustomParts.Vertex_MainEnd,
+                CUSTOM_VERTEX_UPDATE_WORLDPOS: this.CustomParts.Vertex_After_WorldPosComputed,
+            };
+        }
+        return {
+            CUSTOM_FRAGMENT_BEGIN: this.CustomParts.Fragment_Begin,
+            CUSTOM_FRAGMENT_DEFINITIONS: (this._customUniform?.join("\n") || "") + (this.CustomParts.Fragment_Definitions || ""),
+            CUSTOM_FRAGMENT_MAIN_BEGIN: this.CustomParts.Fragment_MainBegin,
+            CUSTOM_FRAGMENT_UPDATE_DIFFUSE: this.CustomParts.Fragment_Custom_Diffuse,
+            CUSTOM_FRAGMENT_UPDATE_ALPHA: this.CustomParts.Fragment_Custom_Alpha,
+            CUSTOM_FRAGMENT_BEFORE_LIGHTS: this.CustomParts.Fragment_Before_Lights,
+            CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR: this.CustomParts.Fragment_Before_FragColor,
+            CUSTOM_FRAGMENT_MAIN_END: this.CustomParts.Fragment_MainEnd,
+            CUSTOM_FRAGMENT_BEFORE_FOG: this.CustomParts.Fragment_Before_Fog,
+        };
     }
 
     constructor(name: string, scene?: Scene) {
@@ -188,6 +185,19 @@ export class CustomMaterial extends StandardMaterial {
 
         this.FragmentShader = Effect.ShadersStore["defaultPixelShader"];
         this.VertexShader = Effect.ShadersStore["defaultVertexShader"];
+
+        CustomMaterial.ShaderIndexer++;
+        this._createdShaderName = "custom_" + CustomMaterial.ShaderIndexer;
+    }
+
+    protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null): void {
+        if (!effect) {
+            return;
+        }
+        this.AttachAfterBind(mesh, effect);
+        try {
+            super._afterBind(mesh, effect);
+        } catch (e) {}
     }
 
     public AddUniform(name: string, kind: string, param: any): CustomMaterial {

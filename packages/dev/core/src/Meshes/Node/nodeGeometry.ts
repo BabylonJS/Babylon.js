@@ -376,7 +376,9 @@ export class NodeGeometry {
                 const id = teleportOut._tempEntryPointUniqueId;
                 if (id) {
                     const source = map[id] as TeleportInBlock;
-                    source.attachToEndpoint(teleportOut);
+                    if (source) {
+                        source.attachToEndpoint(teleportOut);
+                    }
                 }
             }
         }

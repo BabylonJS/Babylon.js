@@ -57,7 +57,13 @@ WebGPUEngine.prototype.updateStorageBuffer = function (buffer: DataBuffer, data:
     this._bufferManager.setSubData(dataBuffer, byteOffset, view, 0, byteLength);
 };
 
-WebGPUEngine.prototype.readFromStorageBuffer = function (storageBuffer: DataBuffer, offset?: number, size?: number, buffer?: ArrayBufferView): Promise<ArrayBufferView> {
+WebGPUEngine.prototype.readFromStorageBuffer = function (
+    storageBuffer: DataBuffer,
+    offset?: number,
+    size?: number,
+    buffer?: ArrayBufferView,
+    noDelay?: boolean
+): Promise<ArrayBufferView> {
     size = size || storageBuffer.capacity;
 
     const gpuBuffer = this._bufferManager.createRawBuffer(size, WebGPUConstants.BufferUsage.MapRead | WebGPUConstants.BufferUsage.CopyDst, undefined, "TempReadFromStorageBuffer");
@@ -65,9 +71,7 @@ WebGPUEngine.prototype.readFromStorageBuffer = function (storageBuffer: DataBuff
     this._renderEncoder.copyBufferToBuffer(storageBuffer.underlyingResource, offset ?? 0, gpuBuffer, 0, size);
 
     return new Promise((resolve, reject) => {
-        // we are using onEndFrameObservable because we need to map the gpuBuffer AFTER the command buffers
-        // have been submitted, else we get the error: "Buffer used in a submit while mapped"
-        this.onEndFrameObservable.addOnce(() => {
+        const readFromBuffer = () => {
             gpuBuffer.mapAsync(WebGPUConstants.MapMode.Read, 0, size).then(
                 () => {
                     const copyArrayBuffer = gpuBuffer.getMappedRange(0, size);
@@ -84,9 +88,26 @@ WebGPUEngine.prototype.readFromStorageBuffer = function (storageBuffer: DataBuff
                     this._bufferManager.releaseBuffer(gpuBuffer);
                     resolve(data!);
                 },
-                (reason) => reject(reason)
+                (reason) => {
+                    if (this.isDisposed) {
+                        resolve(new Uint8Array());
+                    } else {
+                        reject(reason);
+                    }
+                }
             );
-        });
+        };
+
+        if (noDelay) {
+            this.flushFramebuffer();
+            readFromBuffer();
+        } else {
+            // we are using onEndFrameObservable because we need to map the gpuBuffer AFTER the command buffers
+            // have been submitted, else we get the error: "Buffer used in a submit while mapped"
+            this.onEndFrameObservable.addOnce(() => {
+                readFromBuffer();
+            });
+        }
     });
 };
 

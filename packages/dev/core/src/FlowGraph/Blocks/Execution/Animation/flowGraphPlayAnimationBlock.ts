@@ -1,24 +1,44 @@
 import type { FlowGraphContext } from "../../../flowGraphContext";
-import type { Animatable, Animation, IAnimatable } from "../../../../Animations";
+import type { Animatable } from "../../../../Animations/animatable";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
-import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import { FlowGraphAsyncExecutionBlock } from "../../../flowGraphAsyncExecutionBlock";
 import { RichTypeAny, RichTypeNumber, RichTypeBoolean } from "../../../flowGraphRichTypes";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import type { IPathToObjectConverter } from "../../../../ObjectModel/objectModelInterfaces";
+import { FlowGraphPathConverterComponent } from "../../../flowGraphPathConverterComponent";
+import type { IObjectAccessor } from "../../../typeDefinitions";
+
+/**
+ * @experimental
+ */
+export interface IFlowGraphPlayAnimationBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * The path to the target object that will be animated.
+     */
+    targetPath: string;
+    /**
+     * The path to the animation that will be played.
+     */
+    animationPath: string;
+    /**
+     * The path converter to use to convert the path to an object accessor.
+     */
+    pathConverter: IPathToObjectConverter<IObjectAccessor>;
+}
 /**
  * @experimental
  * A block that plays an animation on an animatable object.
  */
 export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     /**
-     * Input connection: The target to play the animation on.
+     * The substitution inputs for template strings in the target
      */
-    public readonly target: FlowGraphDataConnection<IAnimatable>;
+    public readonly templateTargetComponent: FlowGraphPathConverterComponent;
     /**
-     * Input connection: The animation to play.
+     * The substitution inputs for template strings in the animation
      */
-    public readonly animation: FlowGraphDataConnection<Animation>;
+    public readonly templateAnimationComponent: FlowGraphPathConverterComponent;
     /**
      * Input connection: The speed of the animation.
      */
@@ -37,27 +57,22 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     public readonly to: FlowGraphDataConnection<number>;
 
     /**
-     * Output connection: The signal that is triggered when the animation ends.
-     */
-    public readonly onAnimationEnd: FlowGraphSignalConnection;
-
-    /**
      * Output connection: The animatable that is currently running.
      */
     public readonly runningAnimatable: FlowGraphDataConnection<Animatable>;
 
-    public constructor(config?: IFlowGraphBlockConfiguration) {
+    public constructor(public config: IFlowGraphPlayAnimationBlockConfiguration) {
         super(config);
 
-        this.target = this._registerDataInput("target", RichTypeAny);
-        this.animation = this._registerDataInput("animation", RichTypeAny);
-        this.speed = this._registerDataInput("speed", RichTypeNumber);
-        this.loop = this._registerDataInput("loop", RichTypeBoolean);
-        this.from = this._registerDataInput("from", RichTypeNumber);
-        this.to = this._registerDataInput("to", RichTypeNumber);
+        this.templateTargetComponent = new FlowGraphPathConverterComponent(config.targetPath, this);
+        this.templateAnimationComponent = new FlowGraphPathConverterComponent(config.animationPath, this);
 
-        this.onAnimationEnd = this._registerSignalOutput("onAnimationEnd");
-        this.runningAnimatable = this._registerDataOutput("runningAnimatable", RichTypeAny);
+        this.speed = this.registerDataInput("speed", RichTypeNumber);
+        this.loop = this.registerDataInput("loop", RichTypeBoolean);
+        this.from = this.registerDataInput("from", RichTypeNumber);
+        this.to = this.registerDataInput("to", RichTypeNumber);
+
+        this.runningAnimatable = this.registerDataOutput("runningAnimatable", RichTypeAny);
     }
 
     /**
@@ -65,8 +80,10 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      * @param context
      */
     public _preparePendingTasks(context: FlowGraphContext): void {
-        const targetValue = this.target.getValue(context);
-        const animationValue = this.animation.getValue(context) as Animation;
+        const targetAccessor = this.templateTargetComponent.getAccessor(this.config.pathConverter, context);
+        const targetValue = targetAccessor.info.getObject(targetAccessor.object);
+        const animationAccessor = this.templateAnimationComponent.getAccessor(this.config.pathConverter, context);
+        const animationValue = animationAccessor.info.get(animationAccessor.object);
 
         if (!targetValue || !animationValue) {
             throw new Error("Cannot play animation without target or animation");
@@ -99,7 +116,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     public _execute(context: FlowGraphContext): void {
         this._startPendingTasks(context);
 
-        this.onDone._activateSignal(context);
+        this.out._activateSignal(context);
     }
 
     private _onAnimationEnd(animatable: Animatable, context: FlowGraphContext) {
@@ -109,7 +126,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
             contextAnims.splice(index, 1);
         }
         context._removePendingBlock(this);
-        this.onAnimationEnd._activateSignal(context);
+        this.done._activateSignal(context);
     }
 
     /**
@@ -125,8 +142,19 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     }
 
     public getClassName(): string {
-        return "FGPlayAnimationBlock";
+        return FlowGraphPlayAnimationBlock.ClassName;
     }
+
+    public serialize(serializationObject: any = {}) {
+        super.serialize(serializationObject);
+        serializationObject.config.targetPath = this.config.targetPath;
+        serializationObject.config.animationPath = this.config.animationPath;
+    }
+
+    /**
+     * Class name of the block.
+     */
+    public static ClassName = "FGPlayAnimationBlock";
 }
 
-RegisterClass("FGPlayAnimationBlock", FlowGraphPlayAnimationBlock);
+RegisterClass(FlowGraphPlayAnimationBlock.ClassName, FlowGraphPlayAnimationBlock);

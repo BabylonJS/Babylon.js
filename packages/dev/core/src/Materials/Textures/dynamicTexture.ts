@@ -14,6 +14,7 @@ import type { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
 export class DynamicTexture extends Texture {
     private _generateMipMaps: boolean;
     private _canvas: ICanvas;
+    private _ownCanvas: boolean;
     private _context: ICanvasRenderingContext;
 
     /**
@@ -51,9 +52,11 @@ export class DynamicTexture extends Texture {
 
         if (options.getContext) {
             this._canvas = options;
+            this._ownCanvas = false;
             this._texture = engine.createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
         } else {
             this._canvas = engine.createCanvas(1, 1);
+            this._ownCanvas = true;
 
             if (options.width || options.width === 0) {
                 this._texture = engine.createDynamicTexture(options.width, options.height, generateMipMaps, samplingMode);
@@ -205,6 +208,19 @@ export class DynamicTexture extends Texture {
         if (update) {
             this.update(invertY);
         }
+    }
+
+    /**
+     * Disposes the dynamic texture.
+     */
+    public dispose(): void {
+        super.dispose();
+
+        if (this._ownCanvas) {
+            this._canvas?.remove();
+        }
+        (this._canvas as any) = null;
+        (this._context as any) = null;
     }
 
     /**

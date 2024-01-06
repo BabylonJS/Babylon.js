@@ -876,7 +876,7 @@ export class BackgroundMaterial extends PushMaterial {
         }
 
         // Misc.
-        MaterialHelper.PrepareDefinesForMisc(mesh, scene, false, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
+        MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
         // Values that need to be evaluated on every frame
         MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
@@ -958,6 +958,7 @@ export class BackgroundMaterial extends PushMaterial {
                 "diffuseMatrix",
 
                 "projectedGroundInfos",
+                "logarithmicDepthConstant",
             ];
 
             addClipPlaneUniforms(uniforms);
@@ -1224,6 +1225,11 @@ export class BackgroundMaterial extends PushMaterial {
 
             // Fog
             MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect, true);
+
+            // Log. depth
+            if (this._useLogarithmicDepth) {
+                MaterialHelper.BindLogDepth(defines, effect, scene);
+            }
 
             // image processing
             if (this._imageProcessingConfiguration) {
