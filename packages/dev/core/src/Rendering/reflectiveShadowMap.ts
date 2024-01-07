@@ -256,15 +256,21 @@ export class ReflectiveShadowMap {
 class MaterialRSMCreateDefines extends MaterialDefines {
     public RSMCREATE = false;
     public RSMCREATE_PROJTEXTURE = false;
+    public RSMCREATE_LIGHT_IS_SPOT = false;
 }
 
 /**
  * Plugin that implements the creation of the RSM textures
  */
-class RSMCreatePluginMaterial extends MaterialPluginBase {
+export class RSMCreatePluginMaterial extends MaterialPluginBase {
     private _varAlbedoName: string;
     private _lightColor = new Color3();
     private _hasProjectionTexture = false;
+
+    /**
+     * Defines the name of the plugin.
+     */
+    public static readonly Name = "RSMCreate";
 
     /**
      * Defines the light that should be used to generate the RSM textures.
@@ -288,7 +294,7 @@ class RSMCreatePluginMaterial extends MaterialPluginBase {
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
 
     constructor(material: Material | StandardMaterial | PBRBaseMaterial) {
-        super(material, "RSMCreate", 200, new MaterialRSMCreateDefines());
+        super(material, RSMCreatePluginMaterial.Name, 300, new MaterialRSMCreateDefines());
 
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
 
@@ -298,11 +304,16 @@ class RSMCreatePluginMaterial extends MaterialPluginBase {
     public prepareDefines(defines: MaterialRSMCreateDefines) {
         defines.RSMCREATE = this._isEnabled;
 
-        const projectionTexture = (this.light as SpotLight).projectionTexture;
+        this._hasProjectionTexture = false;
 
-        this._hasProjectionTexture = projectionTexture ? projectionTexture.isReady() : false;
+        const isSpot = this.light.getTypeID() === Light.LIGHTTYPEID_SPOTLIGHT;
+        if (isSpot) {
+            const spot = this.light as SpotLight;
+            this._hasProjectionTexture = spot.projectionTexture ? spot.projectionTexture.isReady() : false;
+        }
 
         defines.RSMCREATE_PROJTEXTURE = this._hasProjectionTexture;
+        defines.RSMCREATE_LIGHT_IS_SPOT = isSpot;
     }
 
     public getClassName() {
@@ -312,12 +323,16 @@ class RSMCreatePluginMaterial extends MaterialPluginBase {
     public getUniforms() {
         return {
             ubo: [
-                { name: "rsmLightColor", size: 3, type: "vec3" },
                 { name: "rsmTextureProjectionMatrix", size: 16, type: "mat4" },
+                { name: "rsmSpotInfo", size: 4, type: "vec4" },
+                { name: "rsmLightColor", size: 3, type: "vec3" },
+                { name: "rsmLightPosition", size: 3, type: "vec3" },
             ],
             fragment: `#ifdef RSMCREATE
-                    uniform vec3 rsmLightColor;
                     uniform mat4 rsmTextureProjectionMatrix;
+                    uniform vec4 rsmSpotInfo;
+                    uniform vec3 rsmLightColor;
+                    unfiorm vec3 rsmLightPosition;
                 #endif`,
         };
     }
@@ -334,9 +349,25 @@ class RSMCreatePluginMaterial extends MaterialPluginBase {
         this.light.diffuse.scaleToRef(this.light.getScaledIntensity(), this._lightColor);
         uniformBuffer.updateColor3("rsmLightColor", this._lightColor);
 
-        if (this._hasProjectionTexture) {
-            uniformBuffer.updateMatrix("rsmTextureProjectionMatrix", (this.light as SpotLight).projectionTextureMatrix);
-            uniformBuffer.setTexture("rsmTextureProjectionSampler", (this.light as SpotLight).projectionTexture);
+        if (this.light.getTypeID() === Light.LIGHTTYPEID_SPOTLIGHT) {
+            const spot = this.light as SpotLight;
+
+            if (this._hasProjectionTexture) {
+                uniformBuffer.updateMatrix("rsmTextureProjectionMatrix", spot.projectionTextureMatrix);
+                uniformBuffer.setTexture("rsmTextureProjectionSampler", spot.projectionTexture);
+            }
+
+            const normalizeDirection = TmpVectors.Vector3[0];
+
+            if (spot.computeTransformedInformation()) {
+                uniformBuffer.updateFloat3("rsmLightPosition", this.light.transformedPosition.x, this.light.transformedPosition.y, this.light.transformedPosition.z);
+                spot.transformedDirection.normalizeToRef(normalizeDirection);
+            } else {
+                uniformBuffer.updateFloat3("rsmLightPosition", this.light.position.x, this.light.position.y, this.light.position.z);
+                spot.direction.normalizeToRef(normalizeDirection);
+            }
+
+            uniformBuffer.updateFloat4("rsmSpotInfo", normalizeDirection.x, normalizeDirection.y, normalizeDirection.z, Math.cos(spot.angle * 0.5));
         }
     }
 
@@ -368,6 +399,12 @@ class RSMCreatePluginMaterial extends MaterialPluginBase {
                         vec4 strq = rsmTextureProjectionMatrix * vec4(vPositionW, 1.0);
                         strq /= strq.w;
                         rsmColor *= texture2D(rsmTextureProjectionSampler, strq.xy).rgb;
+                    }
+                    #endif
+                    #ifdef RSMCREATE_LIGHT_IS_SPOT
+                    {
+                        float cosAngle = max(0., dot(rsmSpotInfo.xyz, normalize(vPositionW - rsmLightPosition)));
+                        rsmColor = sign(cosAngle - rsmSpotInfo.w) * rsmColor;
                     }
                     #endif
                     glFragData[0] = vec4(vPositionW, 1.);
