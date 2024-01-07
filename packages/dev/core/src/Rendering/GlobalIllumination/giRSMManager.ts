@@ -28,13 +28,13 @@ import "../../Shaders/bilateralBlurQuality.fragment";
 import "../../Shaders/rsmGlobalIllumination.fragment";
 import "../../Shaders/rsmFullGlobalIllumination.fragment";
 
+/**
+ * Class used to manage the global illumination contribution calculated from reflective shadow maps (RSM).
+ */
 export class GIRSMManager {
     private _scene: Scene;
     private _engine: Engine;
     private _giRSM: GIRSM[] = [];
-    private _outputDimensions: { width: number; height: number };
-    private _giTextureDimensions: { width: number; height: number };
-    private _giTextureType: number;
     private _materialsWithRenderPlugin: Material[];
     private _sampleTexture: RawTexture;
     private _maxSamples: number;
@@ -54,14 +54,24 @@ export class GIRSMManager {
     private _geomBufferEnablePosition = false;
     private _tempMatrix = new Matrix();
 
-    private _enable: boolean;
+    private _enable = false;
 
-    public static GeometryBufferTextureTypesAndFormats = {
+    /**
+     * Defines the default texture types and formats used by the geometry buffer renderer.
+     */
+    public static GeometryBufferTextureTypesAndFormats: { [key: number]: { textureType: number; textureFormat: number } } = {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         0: { textureType: Constants.TEXTURETYPE_HALF_FLOAT, textureFormat: Constants.TEXTUREFORMAT_R }, // depth
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         1: { textureType: Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV, textureFormat: Constants.TEXTUREFORMAT_RGBA }, // normal
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         2: { textureType: Constants.TEXTURETYPE_HALF_FLOAT, textureFormat: Constants.TEXTUREFORMAT_RGBA }, // position
     };
 
+    /**
+     * Enables or disables the manager. Default is false.
+     * If disabled, the global illumination won't be calculated and the scene will be rendered normally, without any global illumination contribution.
+     */
     public get enable() {
         return this._enable;
     }
@@ -87,10 +97,18 @@ export class GIRSMManager {
         this.recreateResources(!enable);
     }
 
+    /**
+     * Defines if the global illumination calculation is paused or not.
+     * Use this setting to pause the global illumination calculation when you know that the scene (camera/mesh/light positions) is not changing anymore to save some GPU power.
+     * The scene will still be rendered with the latest global illumination contribution.
+     */
     public pause = false;
 
     private _enableBlur = true;
 
+    /**
+     * Defines if the global illumination contribution should be blurred or not (using a bilateral blur). Default is true.
+     */
     public get enableBlur() {
         return this._enableBlur;
     }
@@ -106,6 +124,9 @@ export class GIRSMManager {
 
     private _useQualityBlur = false;
 
+    /**
+     * Defines if the blur should be done with a better quality but slower or not. Default is false.
+     */
     public get useQualityBlur() {
         return this._useQualityBlur;
     }
@@ -119,27 +140,29 @@ export class GIRSMManager {
         this.recreateResources();
     }
 
+    /**
+     * Defines the depth threshold used by the bilateral blur post-processes (also used by the upsampling, if enabled).
+     * You may have to change this value, depending on your scene.
+     */
     public blurDepthThreshold = 0.05;
 
+    /**
+     * Defines the normal threshold used by the bilateral blur post-processes (also used by the upsampling, if enabled).
+     * You may have to change this value, depending on your scene.
+     */
     public blurNormalThreshold = 0.25;
 
-    private _blurKernel = 12;
-
-    public get blurKernel() {
-        return this._blurKernel;
-    }
-
-    public set blurKernel(kernel: number) {
-        if (this._blurKernel === kernel) {
-            return;
-        }
-
-        this._blurKernel = kernel;
-        this.recreateResources();
-    }
+    /**
+     * Defines the kernel size used by the bilateral blur post-processes. Default is 12.
+     */
+    public blurKernel = 12;
 
     private _forceFullSizeBlur = false;
 
+    /**
+     * Defines if the blur should be done at full resolution or not. Default is false.
+     * If this setting is eabled, upampling will be disabled (ignored) as it is not needed anymore.
+     */
     public get fullSizeBlur() {
         return this._forceFullSizeBlur;
     }
@@ -155,6 +178,9 @@ export class GIRSMManager {
 
     private _useQualityUpsampling = false;
 
+    /**
+     * Defines if the upsampling should be done with a better quality but slower or not. Default is false.
+     */
     public get useQualityUpsampling() {
         return this._useQualityUpsampling;
     }
@@ -168,10 +194,17 @@ export class GIRSMManager {
         this.recreateResources();
     }
 
+    /**
+     * Defines the kernel size used by the bilateral upsampling post-processes. Default is 6.
+     */
     public upsamplerKernel = 6;
 
     private _showOnlyGI = false;
 
+    /**
+     * Defines if the debug layer should be enabled or not. Default is false.
+     * Use this setting for debugging purpose, to show the global illumination contribution only.
+     */
     public get showOnlyGI() {
         return this._showOnlyGI;
     }
@@ -185,16 +218,33 @@ export class GIRSMManager {
         this._debugLayer.isEnabled = show;
     }
 
+    private _outputDimensions: { width: number; height: number };
+
+    /**
+     * Sets the output dimensions of the final process. It should normally be the same as the output dimensions of the screen.
+     * @param dimensions The dimensions of the output texture (width and height)
+     */
     public setOutputDimensions(dimensions: { width: number; height: number }) {
         this._outputDimensions = dimensions;
         this.recreateResources();
     }
 
+    private _giTextureDimensions: { width: number; height: number };
+
+    /**
+     * Sets the dimensions of the GI texture. Try to use the smallest size possible for better performance.
+     * @param dimensions The dimensions of the GI texture (width and height)
+     */
     public setGITextureDimensions(dimensions: { width: number; height: number }) {
         this._giTextureDimensions = dimensions;
         this.recreateResources();
     }
 
+    private _giTextureType: number;
+
+    /**
+     * Gets or sets the texture type used by the GI texture. Default is Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV.
+     */
     public get giTextureType() {
         return this._giTextureType;
     }
@@ -208,10 +258,17 @@ export class GIRSMManager {
         this.recreateResources();
     }
 
-    public get GIRSM() {
+    /**
+     * Gets the list of GIRSM used by the manager.
+     */
+    public get giRSM() {
         return this._giRSM;
     }
 
+    /**
+     * Adds a (list of) GIRSM to the manager.
+     * @param rsm The GIRSM (or array of GIRSM) to add to the manager
+     */
     public addGIRSM(rsm: GIRSM | GIRSM[]) {
         if (Array.isArray(rsm)) {
             this._giRSM.push(...rsm);
@@ -222,6 +279,10 @@ export class GIRSMManager {
         this.recreateResources();
     }
 
+    /**
+     * Removes a (list of) GIRSM from the manager.
+     * @param rsm The GIRSM (or array of GIRSM) to remove from the manager
+     */
     public removeGIRSM(rsm: GIRSM | GIRSM[]) {
         if (Array.isArray(rsm)) {
             for (let i = 0; i < rsm.length; ++i) {
@@ -244,28 +305,45 @@ export class GIRSMManager {
         }
     }
 
-    public addMaterial(material?: Material, enabled = false) {
+    /**
+     * Add a material to the manager. This will enable the global illumination contribution for the material.
+     * @param material Material that will be affected by the global illumination contribution. If not provided, all materials of the scene will be affected.
+     */
+    public addMaterial(material?: Material) {
         if (material) {
-            this._addGISupportToMaterial(material, enabled);
+            this._addGISupportToMaterial(material);
         } else {
             this._scene.meshes.forEach((mesh) => {
                 if (mesh.getTotalVertices() > 0 && mesh.isEnabled() && mesh.material) {
-                    this._addGISupportToMaterial(mesh.material, enabled);
+                    this._addGISupportToMaterial(mesh.material);
                 }
             });
         }
     }
 
+    /**
+     * Gets the list of GPU counters used by the manager.
+     * GPU timing measurements must be enabled for the counters to be filled (engine.enableGPUTimingMeasurements = true).
+     * Only available with WebGPU. You will still get the list of counters with other engines but the values will always be 0.
+     */
     public get countersGPU(): Array<{ name: string; value: number }> {
         return this._counters;
     }
 
-    public recreateResources(disposeGeometryBufferRenderer = false) {
-        this._disposePostProcesses(disposeGeometryBufferRenderer);
+    /**
+     * Recreates the resources used by the manager.
+     * You should normally not have to call this method manually, except if you change the useFullTexture property of a GIRSM, because the manager won't track this change.
+     */
+    public recreateResources(_disposeGeometryBufferRenderer = false) {
+        this._disposePostProcesses(_disposeGeometryBufferRenderer);
         this._createPostProcesses();
         this._setPluginParameters();
     }
 
+    /**
+     * Generates the sample texture used by the the global illumination calculation process.
+     * @param maxSamples The maximum number of samples to generate in the texture. Default value is 2048. The numSamples property of the GIRSM should be less than or equal to this value!
+     */
     public generateSampleTexture(maxSamples: number) {
         this._sampleTexture?.dispose();
 
@@ -299,6 +377,9 @@ export class GIRSMManager {
         this._sampleTexture.name = "GIRSMSamples";
     }
 
+    /**
+     * Disposes the manager.
+     */
     public dispose() {
         this._disposePostProcesses(true);
         this._debugLayer.texture?.dispose();
@@ -306,6 +387,14 @@ export class GIRSMManager {
         this._scene.onBeforeDrawPhaseObservable.remove(this._drawPhaseObserver);
     }
 
+    /**
+     * Creates a new GIRSMManager
+     * @param scene The scene
+     * @param outputDimensions The dimensions of the output texture (width and height). Should normally be the same as the output dimensions of the screen.
+     * @param giTextureDimensions The dimensions of the GI texture (width and height). Try to use the smallest size possible for better performance.
+     * @param maxSamples The maximum number of samples to generate in the sample texture. Default value is 2048. The numSamples property of the GIRSM should be less than or equal to this value!
+     * @param giTextureType The texture type used by the GI texture. Default is Constants.TEXTURETYPE_UNSIGNED_INT_2_10_10_10_REV.
+     */
     constructor(
         scene: Scene,
         outputDimensions: { width: number; height: number },
@@ -320,7 +409,6 @@ export class GIRSMManager {
         this._giTextureType = giTextureType;
         this._materialsWithRenderPlugin = [];
         this._maxSamples = maxSamples;
-        this._enable = false;
         this._debugLayer = new Layer("debug layer", null, this._scene, false);
         this._debugLayer.isEnabled = false;
         this._counters = [];
@@ -549,7 +637,7 @@ export class GIRSMManager {
             this._counters.push({ name: "GI blur", value: 0 });
             this._countersRTW.push(blurRTWs);
 
-            // Bilateral blur (it is an upsampling in the non advanced mode)
+            // Bilateral blur
             this._blurXPostprocess = new PostProcess(this._useQualityBlur ? "BilateralBlur" : "BilateralBlurX", this._useQualityBlur ? "bilateralBlurQuality" : "bilateralBlur", {
                 uniforms: ["filterSize", "blurDir", "depthThreshold", "normalThreshold"],
                 samplers: ["depthSampler", "normalSampler"],
@@ -707,20 +795,20 @@ export class GIRSMManager {
         this._debugLayer.texture = new BaseTexture(this._scene, this._enableBlur ? this._blurRTT!.renderTarget!.texture : this._ppGlobalIllumination[0].inputTexture.texture);
     }
 
-    protected _addGISupportToMaterial(material: Material, enabled: boolean) {
+    protected _addGISupportToMaterial(material: Material) {
         if (material.pluginManager?.getPlugin(GIRSMRenderPluginMaterial.Name)) {
             return;
         }
 
         const plugin = new GIRSMRenderPluginMaterial(material);
 
-        if (this._enable) {
+        if (this._enable && this._ppGlobalIllumination.length > 0) {
             plugin.textureGIContrib = this._ppGlobalIllumination[0].inputTexture.texture!;
             plugin.outputTextureWidth = this._outputDimensions.width;
             plugin.outputTextureHeight = this._outputDimensions.height;
         }
 
-        plugin.isEnabled = enabled && this._enable;
+        plugin.isEnabled = this._enable;
 
         this._materialsWithRenderPlugin.push(material);
     }
@@ -737,7 +825,7 @@ class MaterialGIRSMRenderDefines extends MaterialDefines {
 /**
  * Plugin used to render the global illumination contribution.
  */
-class GIRSMRenderPluginMaterial extends MaterialPluginBase {
+export class GIRSMRenderPluginMaterial extends MaterialPluginBase {
     private _isPBR;
 
     /**
@@ -751,8 +839,16 @@ class GIRSMRenderPluginMaterial extends MaterialPluginBase {
     @serialize()
     public textureGIContrib: InternalTexture;
 
+    /**
+     * The width of the output texture.
+     */
+    @serialize()
     public outputTextureWidth: number;
 
+    /**
+     * The height of the output texture.
+     */
+    @serialize()
     public outputTextureHeight: number;
 
     private _isEnabled = false;
@@ -771,7 +867,7 @@ class GIRSMRenderPluginMaterial extends MaterialPluginBase {
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
 
     constructor(material: Material | StandardMaterial | PBRBaseMaterial) {
-        super(material, GIRSMRenderPluginMaterial.Name, 210, new MaterialGIRSMRenderDefines());
+        super(material, GIRSMRenderPluginMaterial.Name, 310, new MaterialGIRSMRenderDefines());
 
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
 
@@ -788,21 +884,21 @@ class GIRSMRenderPluginMaterial extends MaterialPluginBase {
 
     public getUniforms() {
         return {
-            ubo: [{ name: "textureOutputSize", size: 2, type: "vec2" }],
+            ubo: [{ name: "girsmTextureOutputSize", size: 2, type: "vec2" }],
             fragment: `#ifdef RENDER_WITH_GIRSM
-                    uniform vec2 textureOutputSize;
+                    uniform vec2 girsmTextureOutputSize;
                 #endif`,
         };
     }
 
     public getSamplers(samplers: string[]) {
-        samplers.push("textureGIContrib");
+        samplers.push("girsmTextureGIContrib");
     }
 
     public bindForSubMesh(uniformBuffer: UniformBuffer) {
         if (this._isEnabled) {
-            uniformBuffer.bindTexture("textureGIContrib", this.textureGIContrib);
-            uniformBuffer.updateFloat2("textureOutputSize", this.outputTextureWidth, this.outputTextureHeight);
+            uniformBuffer.bindTexture("girsmTextureGIContrib", this.textureGIContrib);
+            uniformBuffer.updateFloat2("girsmTextureOutputSize", this.outputTextureWidth, this.outputTextureHeight);
         }
     }
 
@@ -810,11 +906,11 @@ class GIRSMRenderPluginMaterial extends MaterialPluginBase {
         const frag: { [name: string]: string } = {
             CUSTOM_FRAGMENT_DEFINITIONS: `
                 #ifdef RENDER_WITH_GIRSM
-                    uniform sampler2D textureGIContrib;
+                    uniform sampler2D girsmTextureGIContrib;
 
                     vec3 computeIndirect() {
-                        vec2 uv = gl_FragCoord.xy / textureOutputSize;
-                        return texture2D(textureGIContrib, uv).rgb;
+                        vec2 uv = gl_FragCoord.xy / girsmTextureOutputSize;
+                        return texture2D(girsmTextureGIContrib, uv).rgb;
                     }
                 #endif
             `,
