@@ -1,4 +1,6 @@
+import { Engine } from "../../Engines"
 import { Effect } from "../../Materials/effect";
+import { RawTexture } from "../..//Materials";
 import { ShaderMaterial } from "../../Materials/shaderMaterial";
 import { Matrix, Quaternion, TmpVectors, Vector2, Vector3 } from "../../Maths/math.vector";
 import { Mesh } from "../../Meshes/mesh";
@@ -59,8 +61,9 @@ export class GaussianSplatting {
                 fragment: "gaussianSplatting",
             },
             {
-                attributes: ["position"],
-                uniforms: ["projection", "modelView", "viewport"],
+                attributes: ["position", "splatIndex"],
+                uniforms: ["projection", "modelView", "viewport", "dataTextureSize"],
+                samplers: ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture"],
             }
         );
         shaderMaterial.backFaceCulling = false;
@@ -90,23 +93,35 @@ export class GaussianSplatting {
     protected _worker: Nullable<Worker> = null;
     protected static _VertexShaderSource = `
         precision mediump float;
+
+        attribute float splatIndex;
+
         attribute vec2 position;
 
-        attribute vec4 world0;
-        attribute vec4 world1;
-        attribute vec4 world2;
-        attribute vec4 world3;
+        uniform highp sampler2D covariancesATexture;
+        uniform highp sampler2D covariancesBTexture;
+        uniform highp sampler2D centersTexture;
+        uniform highp sampler2D colorsTexture;
+        uniform vec2 dataTextureSize;
 
         uniform mat4 projection, modelView;
         uniform vec2 viewport;
 
         varying vec4 vColor;
         varying vec2 vPosition;
+
+        ivec2 getDataUV(uint index, vec2 textureSize) {
+            uint y = uint(floor(float(index) / textureSize.x));
+            uint x = index - uint(float(y) * textureSize.x);
+            return ivec2(x, y);
+        }
+
         void main () {
-        vec3 center = world0.xyz;
-        vec4 color = world1;
-        vec3 covA = world2.xyz;
-        vec3 covB = world3.xyz;
+        ivec2 splatUV = getDataUV(uint(splatIndex), dataTextureSize);
+        vec3 center = texelFetch(centersTexture, splatUV, 0).xyz;
+        vec4 color = texelFetch(colorsTexture, splatUV, 0);
+        vec3 covA = texelFetch(covariancesATexture, splatUV, 0).xyz;
+        vec3 covB = texelFetch(covariancesBTexture, splatUV, 0).xyz;
 
         vec4 camspace = modelView * vec4(center, 1);
         vec4 pos2d = projection * camspace;
@@ -205,13 +220,21 @@ export class GaussianSplatting {
         };
 
         self.onmessage = (e: any) => {
-            viewProj = e.data.view;
-            const dot = lastProj[2] * viewProj[2] + lastProj[6] * viewProj[6] + lastProj[10] * viewProj[10];
-            if (Math.abs(dot - 1) < 0.01) {
-                return;
+            /// updated on init
+            if (e.data.positions) {
+                positions = e.data.positions;
             }
-            positions = e.data.positions;
-            throttledSort();
+            /// udpate on view changed
+            else if (e.data.view) {
+                viewProj = e.data.view;
+                const dot = lastProj[2] * viewProj[2] + lastProj[6] * viewProj[6] + lastProj[10] * viewProj[10];
+                if (Math.abs(dot - 1) < 0.01) {
+                    return;
+                }
+                if (positions) {
+                    throttledSort();
+                }
+            }
         };
     };
 
@@ -219,9 +242,12 @@ export class GaussianSplatting {
         const rowLength = 3 * 4 + 3 * 4 + 4 + 4;
         this._vertexCount = binaryData.length / rowLength;
         const vertexCount = this._vertexCount;
-        this._positions = new Float32Array(3 * vertexCount);
-        this._covA = new Float32Array(3 * vertexCount);
-        this._covB = new Float32Array(3 * vertexCount);
+
+        let textureSize = this.getTextureSize(vertexCount);
+        let textureLength = textureSize.x * textureSize.y;
+        this._positions = new Float32Array(3 * textureLength);
+        this._covA = new Float32Array(3 * textureLength);
+        this._covB = new Float32Array(3 * textureLength);
 
         const f_buffer = new Float32Array(binaryData.buffer);
         this._uBuffer = new Uint8Array(binaryData.buffer);
@@ -284,36 +310,47 @@ export class GaussianSplatting {
             this.dispose();
         }
         this._setData(new Uint8Array(data as any));
-        const matricesData = new Float32Array(this.vertexCount * 16);
+        const matricesData = new Float32Array(this.vertexCount * 1); // matrix is only used to allocate instances
+        const splatIndex = new Float32Array(this.vertexCount * 1);
 
         const updateInstances = (indexMix: Uint32Array) => {
             for (let j = 0; j < this.vertexCount; j++) {
-                const i = indexMix[2 * j];
-                const index = j * 16;
-                matricesData[index + 0] = this._positions[i * 3 + 0];
-                matricesData[index + 1] = this._positions[i * 3 + 1];
-                matricesData[index + 2] = this._positions[i * 3 + 2];
-
-                matricesData[index + 4] = this._uBuffer[32 * i + 24 + 0] / 255;
-                matricesData[index + 5] = this._uBuffer[32 * i + 24 + 1] / 255;
-                matricesData[index + 6] = this._uBuffer[32 * i + 24 + 2] / 255;
-                matricesData[index + 7] = this._uBuffer[32 * i + 24 + 3] / 255;
-
-                matricesData[index + 8] = this._covA[i * 3 + 0];
-                matricesData[index + 9] = this._covA[i * 3 + 1];
-                matricesData[index + 10] = this._covA[i * 3 + 2];
-
-                matricesData[index + 12] = this._covB[i * 3 + 0];
-                matricesData[index + 13] = this._covB[i * 3 + 1];
-                matricesData[index + 14] = this._covB[i * 3 + 2];
+                splatIndex[j] = indexMix[2 * j];
             }
-
-            this.mesh?.thinInstanceBufferUpdated("matrix");
+            this.mesh?.thinInstanceBufferUpdated("splatIndex"); // update splatIndex only
         };
 
         // update so this.mesh is valid when exiting this function
         this.mesh = this._getMesh(this.scene);
-        this.mesh.thinInstanceSetBuffer("matrix", matricesData, 16, false);
+        this.mesh.thinInstanceSetBuffer("matrix", matricesData, 1, true);
+        this.mesh.thinInstanceSetBuffer("splatIndex", splatIndex, 1, false);
+
+        /// create textures for gaussian info
+        if (this._material.name == "GaussianSplattingShader") {
+            let material = this.mesh.material as ShaderMaterial;
+
+            let textureSize = this.getTextureSize(this.vertexCount);
+            material.setVector2("dataTextureSize", textureSize);
+
+            let convATexture = new RawTexture(this._covA, textureSize.x, textureSize.y, Engine.TEXTUREFORMAT_RGB, this.scene, false, false, Engine.TEXTURE_BILINEAR_SAMPLINGMODE, Engine.TEXTURETYPE_FLOAT); // floating issue
+            material.setTexture("covariancesATexture", convATexture);
+
+            let convBTexture = new RawTexture(this._covB, textureSize.x, textureSize.y, Engine.TEXTUREFORMAT_RGB, this.scene, false, false, Engine.TEXTURE_BILINEAR_SAMPLINGMODE, Engine.TEXTURETYPE_FLOAT);
+            material.setTexture("covariancesBTexture", convBTexture);
+
+            let centersTexture = new RawTexture(this._positions, textureSize.x, textureSize.y, Engine.TEXTUREFORMAT_RGB, this.scene, false, false, Engine.TEXTURE_BILINEAR_SAMPLINGMODE, Engine.TEXTURETYPE_FLOAT);
+            material.setTexture("centersTexture", centersTexture);
+
+            let colorArray = new Float32Array(textureSize.x * textureSize.y * 4);
+            for (let i = 0; i < this.vertexCount; ++i) {
+                colorArray[i * 4 + 0] = this._uBuffer[32 * i + 24 + 0] / 255;
+                colorArray[i * 4 + 1] = this._uBuffer[32 * i + 24 + 1] / 255;
+                colorArray[i * 4 + 2] = this._uBuffer[32 * i + 24 + 2] / 255;
+                colorArray[i * 4 + 3] = this._uBuffer[32 * i + 24 + 3] / 255;
+            }
+            let colorsTexture = new RawTexture(colorArray, textureSize.x, textureSize.y, Engine.TEXTUREFORMAT_RGBA, this.scene, false, false, Engine.TEXTURE_BILINEAR_SAMPLINGMODE, Engine.TEXTURETYPE_FLOAT); // todo: 24
+            material.setTexture("colorsTexture", colorsTexture);
+        }
 
         this._worker = new Worker(
             URL.createObjectURL(
@@ -322,6 +359,9 @@ export class GaussianSplatting {
                 })
             )
         );
+
+        /// set positions only once, no need to update on view changed
+        this._worker?.postMessage({ positions: this._positions.slice(0, this._vertexCount * 3) });
 
         this._worker.onmessage = (e) => {
             const indexMix = new Uint32Array(e.data.depthMix.buffer);
@@ -338,7 +378,7 @@ export class GaussianSplatting {
             binfo.reConstruct(this._minimum, this._maximum, meshWorldMatrix);
             binfo.isLocked = true;
             this._material.setMatrix("modelView", this._modelViewMatrix);
-            this._worker?.postMessage({ view: this._modelViewMatrix.m, positions: this._positions });
+            this._worker?.postMessage({ view: this._modelViewMatrix.m });
         });
         this._sceneDisposeObserver = this.scene.onDisposeObservable.add(() => {
             this.dispose();
@@ -375,5 +415,18 @@ export class GaussianSplatting {
         this._worker = null;
         this.mesh?.dispose();
         this.mesh = null;
+    }
+
+    private getTextureSize(length: number): Vector2 {
+        let dim = 2;
+        while (dim * dim < length) {
+            dim *= 2;
+        }
+        if (dim * dim / 2 > length) {
+            return new Vector2(dim, dim / 2);
+        }
+        else {
+            return new Vector2(dim, dim);
+        }
     }
 }
