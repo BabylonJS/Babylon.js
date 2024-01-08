@@ -161,6 +161,22 @@ export class CameraGizmo extends Gizmo implements ICameraGizmo {
     private _invProjection = new Matrix();
 
     /**
+     * Disposes and replaces the current camera mesh in the gizmo with the specified mesh
+     * @param mesh The mesh to replace the default mesh of the camera gizmo
+     */
+    public setCustomMesh(mesh: Mesh) {
+        if (mesh.getScene() != this.gizmoLayer.utilityLayerScene) {
+            throw "When setting a custom mesh on a gizmo, the custom meshes scene must be the same as the gizmos (eg. gizmo.gizmoLayer.utilityLayerScene)";
+        }
+        if (this._cameraMesh) {
+            this._cameraMesh.dispose();
+        }
+        this._cameraMesh = mesh;
+        this._cameraMesh.parent = this._rootMesh;
+        this._customMeshSet = true;
+    }
+
+    /**
      * Disposes of the camera gizmo
      */
     public dispose() {
