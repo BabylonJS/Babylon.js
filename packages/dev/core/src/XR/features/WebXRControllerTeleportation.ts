@@ -101,7 +101,7 @@ export interface IWebXRTeleportationOptions {
      */
     teleportationTargetMesh?: AbstractMesh;
     /**
-     * If main component is used (no thumbstick), how long should the "long press" take before teleport
+     * If main component is used (no thumbstick), how long in miliseconds should the "long press" take before teleport
      */
     timeToTeleport?: number;
     /**
