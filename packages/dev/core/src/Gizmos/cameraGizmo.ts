@@ -39,7 +39,7 @@ export class CameraGizmo extends Gizmo implements ICameraGizmo {
     protected _cameraLinesMesh: Mesh;
     protected _material: StandardMaterial;
     protected _pointerObserver: Nullable<Observer<PointerInfo>> = null;
-    private _gizmoColor?: Color3;
+    private _frustumLinesColor?: Color3;
 
     /**
      * Event that fires each time the gizmo is clicked
@@ -49,12 +49,15 @@ export class CameraGizmo extends Gizmo implements ICameraGizmo {
     /**
      * Creates a CameraGizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
+     * @param gizmoColor Camera mesh color. Default is Gray
+     * @param frustumLinesColor Frustum lines color. Default is White
      */
-    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, gizmoColor?: Color3) {
+    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, gizmoColor?: Color3, frustumLinesColor?: Color3) {
         super(gizmoLayer);
 
         this._material = new StandardMaterial("cameraGizmoMaterial", this.gizmoLayer.utilityLayerScene);
-        this._gizmoColor = gizmoColor;
+        this._frustumLinesColor = frustumLinesColor;
+
         this._material.diffuseColor = gizmoColor ?? new Color3(0.5, 0.5, 0.5);
         this._material.specularColor = new Color3(0.1, 0.1, 0.1);
 
@@ -94,7 +97,7 @@ export class CameraGizmo extends Gizmo implements ICameraGizmo {
                 this._cameraLinesMesh.dispose();
             }
             this._cameraMesh = CameraGizmo._CreateCameraMesh(this.gizmoLayer.utilityLayerScene);
-            const linesColor = this._gizmoColor?.toColor4(1) ?? new Color4(1, 1, 1, 1);
+            const linesColor = this._frustumLinesColor?.toColor4(1) ?? new Color4(1, 1, 1, 1);
             this._cameraLinesMesh = CameraGizmo._CreateCameraFrustum(this.gizmoLayer.utilityLayerScene, linesColor);
 
             this._cameraMesh.getChildMeshes(false).forEach((m) => {
