@@ -1,3 +1,10 @@
+/**
+ * Reflective Shadow Maps were first described in http://www.klayge.org/material/3_12/GI/rsm.pdf by Carsten Dachsbacher and Marc Stamminger
+ * Further explanations and implementations can be found in:
+ * - Jaker video explaining RSM and its implementation: https://www.youtube.com/watch?v=LJQQdBsOYPM
+ * - C++ implementation by Luis Angel: https://github.com/imyoungmin/RSM
+ * - Javascript implementation by Erkaman: https://github.com/Erkaman/webgl-rsm
+ */
 import type { Scene } from "core/scene";
 import type { GIRSM } from "./giRSM";
 import type { Material } from "core/Materials/material";

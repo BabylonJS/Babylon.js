@@ -1,3 +1,6 @@
+/**
+ * The implementation is a direct application of the formula found in http://www.klayge.org/material/3_12/GI/rsm.pdf
+*/
 precision highp float;
 
 varying vec2 vUV;

@@ -1,3 +1,7 @@
+/**
+ * The implementation is an application of the formula found in http://www.klayge.org/material/3_12/GI/rsm.pdf
+ * For better results, it also adds a random (noise) rotation to the RSM samples (the noise artifacts are easier to remove than the banding artifacts).
+*/
 precision highp float;
 
 varying vec2 vUV;

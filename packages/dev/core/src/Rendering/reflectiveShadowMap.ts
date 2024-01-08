@@ -1,3 +1,8 @@
+/**
+ * Reflective Shadow Maps were first described in http://www.klayge.org/material/3_12/GI/rsm.pdf by Carsten Dachsbacher and Marc Stamminger
+ * The ReflectiveShadowMap class only implements the geometry buffer generation part.
+ * For the global illumination effect, see the GIRSMManager class.
+ */
 import { Constants } from "core/Engines/constants";
 import type { ShadowLight } from "core/Lights/shadowLight";
 import { MultiRenderTarget } from "core/Materials/Textures/multiRenderTarget";
