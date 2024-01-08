@@ -1144,10 +1144,10 @@ export class VertexData {
             kind === VertexBuffer.PositionKind
                 ? VertexData._TransformVector3Coordinates
                 : kind === VertexBuffer.NormalKind
-                  ? VertexData._TransformVector3Normals
-                  : kind === VertexBuffer.TangentKind
-                    ? VertexData._TransformVector4Normals
-                    : () => {};
+                ? VertexData._TransformVector3Normals
+                : kind === VertexBuffer.TangentKind
+                ? VertexData._TransformVector4Normals
+                : () => {};
 
         if (source instanceof Float32Array) {
             // use non-loop method when the source is Float32Array

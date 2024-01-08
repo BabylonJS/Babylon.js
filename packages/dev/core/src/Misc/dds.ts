@@ -581,8 +581,8 @@ export class DDSTools {
                                 (bpp === 128 || (bpp === 64 && !halfFloatAvailable)) && floatAvailable
                                     ? Constants.TEXTURETYPE_FLOAT
                                     : (bpp === 64 || (bpp === 128 && !floatAvailable)) && halfFloatAvailable
-                                      ? Constants.TEXTURETYPE_HALF_FLOAT
-                                      : Constants.TEXTURETYPE_UNSIGNED_BYTE;
+                                    ? Constants.TEXTURETYPE_HALF_FLOAT
+                                    : Constants.TEXTURETYPE_UNSIGNED_BYTE;
 
                             let dataGetter: (width: number, height: number, dataOffset: number, dataLength: number, arrayBuffer: ArrayBuffer, lod: number) => ArrayBufferView;
                             let dataGetterPolynomial: Nullable<
