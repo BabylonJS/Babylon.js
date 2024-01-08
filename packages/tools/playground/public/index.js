@@ -2,7 +2,7 @@
 // Version
 var Versions = {
     Latest: [
-        "https://preview.babylonjs.com/timestamp.js?t=" + Date.now(),
+        "https://cdn.babylonjs.com/timestamp.js?t=" + Date.now(),
         "https://preview.babylonjs.com/babylon.js",
         "https://preview.babylonjs.com/gui/babylon.gui.min.js",
         "https://preview.babylonjs.com/inspector/babylon.inspector.bundle.js",
@@ -138,6 +138,7 @@ let checkBabylonVersionAsync = function () {
     let activeVersion = readStringFromStore("version", "Latest");
 
     if ((window.location.hostname === "localhost" && window.location.search.indexOf("dist") === -1) || window.location.search.indexOf("local") !== -1) {
+        // eslint-disable-next-line no-console
         console.log("Using local version. To use preview add ?dist=true to the url");
         activeVersion = "local";
     }
@@ -145,17 +146,27 @@ let checkBabylonVersionAsync = function () {
     let snapshot = "";
     // see if a snapshot should be used
     if (window.location.search.indexOf("snapshot=") !== -1) {
-        snapshot = window.location.search.split("=")[1];
+        snapshot = window.location.search.split("snapshot=")[1];
         // cleanup, just in case
         snapshot = snapshot.split("&")[0];
         activeVersion = "Latest";
     }
 
-    let versions = Versions[activeVersion] || Versions["Latest"];
+    let version = "";
+    if (window.location.search.indexOf("version=") !== -1) {
+        version = window.location.search.split("version=")[1];
+        // cleanup, just in case
+        version = version.split("&")[0];
+        activeVersion = "Latest";
+    }
+
+    let frameworkScripts = Versions[activeVersion] || Versions["Latest"];
     if (snapshot) {
-        versions = versions.map((v) => v.replace("https://preview.babylonjs.com", "https://babylonsnapshots.z22.web.core.windows.net/" + snapshot));
+        frameworkScripts = frameworkScripts.map((v) => v.replace("https://preview.babylonjs.com", "https://babylonsnapshots.z22.web.core.windows.net/" + snapshot));
+    } else if(version) {
+        frameworkScripts = frameworkScripts.map((v) => v.replace("https://preview.babylonjs.com", "https://cdn.babylonjs.com/v" + version));
     } else if (window.location.href.includes("debug.html")) {
-        versions = versions.map((v) => {
+        frameworkScripts = frameworkScripts.map((v) => {
             if (!v.includes("https://preview.babylonjs.com") && !v.includes("https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js")) {
                 return v;
             }
@@ -171,7 +182,7 @@ let checkBabylonVersionAsync = function () {
     }
 
     return new Promise((resolve) => {
-        loadInSequence(versions, 0, resolve);
+        loadInSequence(frameworkScripts, 0, resolve);
     });
 };
 
