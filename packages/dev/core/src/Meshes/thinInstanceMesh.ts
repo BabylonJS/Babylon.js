@@ -60,7 +60,7 @@ declare module "./mesh" {
          * @param kind name of the attribute. Use "matrix" to setup the buffer of matrices
          * @param buffer buffer to set
          * @param stride size in floats of each value of the buffer
-         * @param staticBuffer indicates that the buffer is static, so that you won't change it after it is set (better performances - false by default)
+         * @param staticBuffer indicates that the buffer is static, so that you won't change it after it is set (better performances - true by default)
          */
         thinInstanceSetBuffer(kind: string, buffer: Nullable<Float32Array>, stride?: number, staticBuffer?: boolean): void;
 
@@ -216,7 +216,7 @@ Object.defineProperty(Mesh.prototype, "thinInstanceCount", {
     configurable: true,
 });
 
-Mesh.prototype._thinInstanceCreateMatrixBuffer = function (kind: string, buffer: Float32Array, staticBuffer: boolean = false): Buffer {
+Mesh.prototype._thinInstanceCreateMatrixBuffer = function (kind: string, buffer: Float32Array, staticBuffer: boolean = true): Buffer {
     // preserve backward compatibility
     if (kind === VertexBuffer.ColorKind) {
         kind = VertexBuffer.ColorInstanceKind;
@@ -231,7 +231,7 @@ Mesh.prototype._thinInstanceCreateMatrixBuffer = function (kind: string, buffer:
     return matrixBuffer;
 };
 
-Mesh.prototype.thinInstanceSetBuffer = function (kind: string, buffer: Nullable<Float32Array>, stride: number = 0, staticBuffer: boolean = false): void {
+Mesh.prototype.thinInstanceSetBuffer = function (kind: string, buffer: Nullable<Float32Array>, stride: number = 0, staticBuffer: boolean = true): void {
     stride = stride || 16;
 
     if (kind === "matrix") {
