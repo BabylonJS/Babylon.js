@@ -258,7 +258,7 @@ class Playground {
         }
 
         let version = "";
-        if(window.location.search.indexOf("version=") !== -1) {
+        if (window.location.search.indexOf("version=") !== -1) {
             version = window.location.search.split("version=")[1];
             // cleanup, just in case
             version = version.split("&")[0];
