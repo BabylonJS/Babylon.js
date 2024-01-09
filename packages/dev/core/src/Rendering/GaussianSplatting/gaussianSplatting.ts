@@ -1,4 +1,4 @@
-import { Constants } from "../../Engines/constants"
+import { Constants } from "../../Engines/constants";
 import { Effect } from "../../Materials/effect";
 import { RawTexture } from "../..//Materials";
 import { ShaderMaterial } from "../../Materials/shaderMaterial";
@@ -332,13 +332,43 @@ export class GaussianSplatting {
             let textureSize = this._getTextureSize(this.vertexCount);
             material.setVector2("dataTextureSize", textureSize);
 
-            let convATexture = new RawTexture(this._covA, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGB, this.scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
+            let convATexture = new RawTexture(
+                this._covA,
+                textureSize.x,
+                textureSize.y,
+                Constants.TEXTUREFORMAT_RGB,
+                this.scene,
+                false,
+                false,
+                Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+                Constants.TEXTURETYPE_FLOAT
+            );
             material.setTexture("covariancesATexture", convATexture);
 
-            let convBTexture = new RawTexture(this._covB, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGB, this.scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
+            let convBTexture = new RawTexture(
+                this._covB,
+                textureSize.x,
+                textureSize.y,
+                Constants.TEXTUREFORMAT_RGB,
+                this.scene,
+                false,
+                false,
+                Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+                Constants.TEXTURETYPE_FLOAT
+            );
             material.setTexture("covariancesBTexture", convBTexture);
 
-            let centersTexture = new RawTexture(this._positions, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGB, this.scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
+            let centersTexture = new RawTexture(
+                this._positions,
+                textureSize.x,
+                textureSize.y,
+                Constants.TEXTUREFORMAT_RGB,
+                this.scene,
+                false,
+                false,
+                Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+                Constants.TEXTURETYPE_FLOAT
+            );
             material.setTexture("centersTexture", centersTexture);
 
             let colorArray = new Float32Array(textureSize.x * textureSize.y * 4);
@@ -348,7 +378,17 @@ export class GaussianSplatting {
                 colorArray[i * 4 + 2] = this._uBuffer[32 * i + 24 + 2] / 255;
                 colorArray[i * 4 + 3] = this._uBuffer[32 * i + 24 + 3] / 255;
             }
-            let colorsTexture = new RawTexture(colorArray, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA, this.scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT); // todo: 24
+            let colorsTexture = new RawTexture(
+                colorArray,
+                textureSize.x,
+                textureSize.y,
+                Constants.TEXTUREFORMAT_RGBA,
+                this.scene,
+                false,
+                false,
+                Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+                Constants.TEXTURETYPE_FLOAT
+            );
             material.setTexture("colorsTexture", colorsTexture);
         }
 
@@ -361,7 +401,7 @@ export class GaussianSplatting {
         );
 
         /// set positions only once, no need to update on view changed
-        this._worker?.postMessage({ positions: this._positions.slice(0, this._vertexCount * 3) }, [ this._positions.buffer ]);
+        this._worker?.postMessage({ positions: this._positions.slice(0, this._vertexCount * 3) }, [this._positions.buffer]);
         this._positions = new Float32Array(0);
 
         this._worker.onmessage = (e) => {
@@ -424,8 +464,9 @@ export class GaussianSplatting {
         while (dim * dim < length) {
             dim *= 2;
         }
-        let width = dim, height = dim;
-        if (dim * dim / 2 >= length) {
+        let width = dim,
+            height = dim;
+        if ((dim * dim) / 2 >= length) {
             height /= 2;
         }
         if (width > maxTextureSize) {
