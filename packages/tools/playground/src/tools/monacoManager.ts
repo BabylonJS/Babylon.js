@@ -249,11 +249,21 @@ class Playground {
         let snapshot = "";
         // see if a snapshot should be used
         if (window.location.search.indexOf("snapshot=") !== -1) {
-            snapshot = window.location.search.split("=")[1];
+            snapshot = window.location.search.split("snapshot=")[1];
             // cleanup, just in case
             snapshot = snapshot.split("&")[0];
             for (let index = 0; index < declarations.length; index++) {
                 declarations[index] = declarations[index].replace("https://preview.babylonjs.com", "https://babylonsnapshots.z22.web.core.windows.net/" + snapshot);
+            }
+        }
+
+        let version = "";
+        if (window.location.search.indexOf("version=") !== -1) {
+            version = window.location.search.split("version=")[1];
+            // cleanup, just in case
+            version = version.split("&")[0];
+            for (let index = 0; index < declarations.length; index++) {
+                declarations[index] = declarations[index].replace("https://preview.babylonjs.com", "https://cdn.babylonjs.com/v" + version);
             }
         }
 
