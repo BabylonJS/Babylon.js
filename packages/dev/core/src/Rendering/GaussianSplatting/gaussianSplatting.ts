@@ -325,70 +325,34 @@ export class GaussianSplatting {
         this.mesh.forcedInstanceCount = this.vertexCount;
         this.mesh.thinInstanceSetBuffer("splatIndex", splatIndex, 1, false);
 
+        const createTextureFromData = (data: Float32Array, width: number, height: number, format: number) => {
+            return new RawTexture(data, width, height, format, this.scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
+        };
+
         /// create textures for gaussian info
         if (this._material.name == "GaussianSplattingShader") {
-            let material = this.mesh.material as ShaderMaterial;
+            const material = this.mesh.material as ShaderMaterial;
 
-            let textureSize = this._getTextureSize(this.vertexCount);
+            const textureSize = this._getTextureSize(this.vertexCount);
             material.setVector2("dataTextureSize", textureSize);
 
-            let convATexture = new RawTexture(
-                this._covA,
-                textureSize.x,
-                textureSize.y,
-                Constants.TEXTUREFORMAT_RGB,
-                this.scene,
-                false,
-                false,
-                Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
-                Constants.TEXTURETYPE_FLOAT
-            );
+            const convATexture = createTextureFromData(this._covA, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGB);
             material.setTexture("covariancesATexture", convATexture);
 
-            let convBTexture = new RawTexture(
-                this._covB,
-                textureSize.x,
-                textureSize.y,
-                Constants.TEXTUREFORMAT_RGB,
-                this.scene,
-                false,
-                false,
-                Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
-                Constants.TEXTURETYPE_FLOAT
-            );
+            const convBTexture = createTextureFromData(this._covB, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGB);
             material.setTexture("covariancesBTexture", convBTexture);
 
-            let centersTexture = new RawTexture(
-                this._positions,
-                textureSize.x,
-                textureSize.y,
-                Constants.TEXTUREFORMAT_RGB,
-                this.scene,
-                false,
-                false,
-                Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
-                Constants.TEXTURETYPE_FLOAT
-            );
+            const centersTexture = createTextureFromData(this._positions, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGB);
             material.setTexture("centersTexture", centersTexture);
 
-            let colorArray = new Float32Array(textureSize.x * textureSize.y * 4);
+            const colorArray = new Float32Array(textureSize.x * textureSize.y * 4);
             for (let i = 0; i < this.vertexCount; ++i) {
                 colorArray[i * 4 + 0] = this._uBuffer[32 * i + 24 + 0] / 255;
                 colorArray[i * 4 + 1] = this._uBuffer[32 * i + 24 + 1] / 255;
                 colorArray[i * 4 + 2] = this._uBuffer[32 * i + 24 + 2] / 255;
                 colorArray[i * 4 + 3] = this._uBuffer[32 * i + 24 + 3] / 255;
             }
-            let colorsTexture = new RawTexture(
-                colorArray,
-                textureSize.x,
-                textureSize.y,
-                Constants.TEXTUREFORMAT_RGBA,
-                this.scene,
-                false,
-                false,
-                Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
-                Constants.TEXTURETYPE_FLOAT
-            );
+            const colorsTexture = createTextureFromData(colorArray, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
             material.setTexture("colorsTexture", colorsTexture);
         }
 
