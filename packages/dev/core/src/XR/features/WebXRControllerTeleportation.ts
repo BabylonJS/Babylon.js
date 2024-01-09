@@ -247,6 +247,16 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
     public onAfterCameraTeleportRotation = new Observable<Quaternion>();
 
     /**
+     * Observable raised before camera teleportation
+     */
+    public onBeforeCameraTeleport: Observable<Vector3>;
+
+    /**
+     *  Observable raised after camera teleportation
+     */
+    public onAfterCameraTeleport: Observable<Vector3>;
+
+    /**
      * Is rotation enabled when moving forward?
      * Disabling this feature will prevent the user from deciding the direction when teleporting
      */
@@ -296,6 +306,10 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         this._blockedRayColor = this._options.blockedRayColor || new Color4(1, 0, 0, 0.75);
 
         this._setTargetMeshVisibility(false);
+
+        // set the observables
+        this.onBeforeCameraTeleport = _options.xrInput.xrCamera.onBeforeCameraTeleport;
+        this.onAfterCameraTeleport = _options.xrInput.xrCamera.onAfterCameraTeleport;
     }
 
     /**
