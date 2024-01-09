@@ -1,4 +1,4 @@
-import { Engine } from "../../Engines"
+import { Constants } from "../../Engines/constants"
 import { Effect } from "../../Materials/effect";
 import { RawTexture } from "../..//Materials";
 import { ShaderMaterial } from "../../Materials/shaderMaterial";
@@ -243,7 +243,7 @@ export class GaussianSplatting {
         this._vertexCount = binaryData.length / rowLength;
         const vertexCount = this._vertexCount;
 
-        let textureSize = this.getTextureSize(vertexCount);
+        let textureSize = this._getTextureSize(vertexCount);
         let textureLength = textureSize.x * textureSize.y;
         this._positions = new Float32Array(3 * textureLength);
         this._covA = new Float32Array(3 * textureLength);
@@ -329,16 +329,16 @@ export class GaussianSplatting {
         if (this._material.name == "GaussianSplattingShader") {
             let material = this.mesh.material as ShaderMaterial;
 
-            let textureSize = this.getTextureSize(this.vertexCount);
+            let textureSize = this._getTextureSize(this.vertexCount);
             material.setVector2("dataTextureSize", textureSize);
 
-            let convATexture = new RawTexture(this._covA, textureSize.x, textureSize.y, Engine.TEXTUREFORMAT_RGB, this.scene, false, false, Engine.TEXTURE_BILINEAR_SAMPLINGMODE, Engine.TEXTURETYPE_FLOAT); // floating issue
+            let convATexture = new RawTexture(this._covA, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGB, this.scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT); // floating issue
             material.setTexture("covariancesATexture", convATexture);
 
-            let convBTexture = new RawTexture(this._covB, textureSize.x, textureSize.y, Engine.TEXTUREFORMAT_RGB, this.scene, false, false, Engine.TEXTURE_BILINEAR_SAMPLINGMODE, Engine.TEXTURETYPE_FLOAT);
+            let convBTexture = new RawTexture(this._covB, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGB, this.scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
             material.setTexture("covariancesBTexture", convBTexture);
 
-            let centersTexture = new RawTexture(this._positions, textureSize.x, textureSize.y, Engine.TEXTUREFORMAT_RGB, this.scene, false, false, Engine.TEXTURE_BILINEAR_SAMPLINGMODE, Engine.TEXTURETYPE_FLOAT);
+            let centersTexture = new RawTexture(this._positions, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGB, this.scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
             material.setTexture("centersTexture", centersTexture);
 
             let colorArray = new Float32Array(textureSize.x * textureSize.y * 4);
@@ -348,7 +348,7 @@ export class GaussianSplatting {
                 colorArray[i * 4 + 2] = this._uBuffer[32 * i + 24 + 2] / 255;
                 colorArray[i * 4 + 3] = this._uBuffer[32 * i + 24 + 3] / 255;
             }
-            let colorsTexture = new RawTexture(colorArray, textureSize.x, textureSize.y, Engine.TEXTUREFORMAT_RGBA, this.scene, false, false, Engine.TEXTURE_BILINEAR_SAMPLINGMODE, Engine.TEXTURETYPE_FLOAT); // todo: 24
+            let colorsTexture = new RawTexture(colorArray, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA, this.scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT); // todo: 24
             material.setTexture("colorsTexture", colorsTexture);
         }
 
@@ -417,7 +417,7 @@ export class GaussianSplatting {
         this.mesh = null;
     }
 
-    private getTextureSize(length: number): Vector2 {
+    private _getTextureSize(length: number): Vector2 {
         let dim = 2;
         while (dim * dim < length) {
             dim *= 2;
