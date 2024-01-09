@@ -9,6 +9,7 @@ import type { Observer } from "../../Misc/observable";
 import { Tools } from "../../Misc/tools";
 import type { Scene } from "../../scene";
 import type { Nullable } from "../../types";
+import { Logger } from "../../Misc/logger";
 
 /**
  * @experimental
@@ -243,8 +244,8 @@ export class GaussianSplatting {
         this._vertexCount = binaryData.length / rowLength;
         const vertexCount = this._vertexCount;
 
-        let textureSize = this._getTextureSize(vertexCount);
-        let textureLength = textureSize.x * textureSize.y;
+        const textureSize = this._getTextureSize(vertexCount);
+        const textureLength = textureSize.x * textureSize.y;
         this._positions = new Float32Array(3 * textureLength);
         this._covA = new Float32Array(3 * textureLength);
         this._covB = new Float32Array(3 * textureLength);
@@ -310,7 +311,6 @@ export class GaussianSplatting {
             this.dispose();
         }
         this._setData(new Uint8Array(data as any));
-        const matricesData = new Float32Array(this.vertexCount * 1); // matrix is only used to allocate instances
         const splatIndex = new Float32Array(this.vertexCount * 1);
 
         const updateInstances = (indexMix: Uint32Array) => {
@@ -322,7 +322,7 @@ export class GaussianSplatting {
 
         // update so this.mesh is valid when exiting this function
         this.mesh = this._getMesh(this.scene);
-        this.mesh.thinInstanceSetBuffer("matrix", matricesData, 1, true);
+        this.mesh.forcedInstanceCount = this.vertexCount;
         this.mesh.thinInstanceSetBuffer("splatIndex", splatIndex, 1, false);
 
         /// create textures for gaussian info
@@ -332,7 +332,7 @@ export class GaussianSplatting {
             let textureSize = this._getTextureSize(this.vertexCount);
             material.setVector2("dataTextureSize", textureSize);
 
-            let convATexture = new RawTexture(this._covA, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGB, this.scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT); // floating issue
+            let convATexture = new RawTexture(this._covA, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGB, this.scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
             material.setTexture("covariancesATexture", convATexture);
 
             let convBTexture = new RawTexture(this._covB, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGB, this.scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
@@ -361,7 +361,8 @@ export class GaussianSplatting {
         );
 
         /// set positions only once, no need to update on view changed
-        this._worker?.postMessage({ positions: this._positions.slice(0, this._vertexCount * 3) });
+        this._worker?.postMessage({ positions: this._positions.slice(0, this._vertexCount * 3) }, [ this._positions.buffer ]);
+        this._positions = new Float32Array(0);
 
         this._worker.onmessage = (e) => {
             const indexMix = new Uint32Array(e.data.depthMix.buffer);
@@ -418,15 +419,19 @@ export class GaussianSplatting {
     }
 
     private _getTextureSize(length: number): Vector2 {
+        const maxTextureSize = this.scene.getEngine().getCaps().maxTextureSize;
         let dim = 2;
         while (dim * dim < length) {
             dim *= 2;
         }
-        if (dim * dim / 2 > length) {
-            return new Vector2(dim, dim / 2);
+        let width = dim, height = dim;
+        if (dim * dim / 2 >= length) {
+            height /= 2;
         }
-        else {
-            return new Vector2(dim, dim);
+        if (width > maxTextureSize) {
+            Logger.Warn("GaussianSplatting texture size: (" + width + ", " + height + "), maxTextureSize: " + maxTextureSize);
+            width = height = maxTextureSize;
         }
+        return new Vector2(width, height);
     }
 }
