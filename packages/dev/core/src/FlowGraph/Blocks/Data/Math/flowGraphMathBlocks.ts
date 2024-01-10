@@ -1,11 +1,12 @@
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
-import { RichTypeAny, RichTypeBoolean, RichTypeNumber, RichTypeVector2, RichTypeVector3 } from "../../../flowGraphRichTypes";
+import { RichTypeAny, RichTypeBoolean, RichTypeFlowGraphInteger, RichTypeMatrix, RichTypeNumber, RichTypeVector2, RichTypeVector3 } from "../../../flowGraphRichTypes";
 import { FlowGraphBinaryOperationBlock } from "../flowGraphBinaryOperationBlock";
 import { FlowGraphConstantOperationBlock } from "../flowGraphConstantOperationBlock";
 import { Matrix, Vector2, Vector3, Vector4 } from "../../../../Maths/math.vector";
 import { FlowGraphUnaryOperationBlock } from "../flowGraphUnaryOperationBlock";
 import { FlowGraphTernaryOperationBlock } from "../flowGraphTernaryOperationBlock";
+import { FlowGraphInteger } from "core/FlowGraph/flowGraphInteger";
 
 /**
  * @internal
@@ -30,6 +31,20 @@ function _areSameVectorClass(className: string, className2: string) {
 }
 
 /**
+ * @internal
+ * @param className
+ * @param className2
+ * @returns
+ */
+function _areSameMatrixClass(className: string, className2: string) {
+    return className === "Matrix" && className2 === "Matrix";
+}
+
+function _areSameIntegerClass(className: string, className2: string) {
+    return className === "FlowGraphInteger" && className2 === "FlowGraphInteger";
+}
+
+/**
  * @experimental
  * Polymorphic add block.
  */
@@ -41,7 +56,7 @@ export class FlowGraphAddBlock extends FlowGraphBinaryOperationBlock<any, any, a
     private _polymorphicAdd(a: any, b: any) {
         const aClassName = _getClassNameOf(a);
         const bClassName = _getClassNameOf(b);
-        if (_areSameVectorClass(aClassName, bClassName)) {
+        if (_areSameVectorClass(aClassName, bClassName) || _areSameMatrixClass(aClassName, bClassName) || _areSameIntegerClass(aClassName, bClassName)) {
             return a.add(b);
         } else {
             return a + b;
@@ -68,8 +83,10 @@ export class FlowGraphSubtractBlock extends FlowGraphBinaryOperationBlock<any, a
     private _polymorphicAdd(a: any, b: any) {
         const aClassName = _getClassNameOf(a);
         const bClassName = _getClassNameOf(b);
-        if (_areSameVectorClass(aClassName, bClassName)) {
+        if (_areSameVectorClass(aClassName, bClassName) || _areSameIntegerClass(aClassName, bClassName)) {
             return a.subtract(b);
+        } else if (_areSameMatrixClass(aClassName, bClassName)) {
+            return a.add(b.scale(-1));
         } else {
             return a - b;
         }
@@ -83,6 +100,11 @@ export class FlowGraphSubtractBlock extends FlowGraphBinaryOperationBlock<any, a
 }
 RegisterClass(FlowGraphSubtractBlock.ClassName, FlowGraphSubtractBlock);
 
+/**
+ * @experimental
+ * Polymorphic multiply block.
+ * In case of matrix, it is a component wise multiplication.
+ */
 export class FlowGraphMultiplyBlock extends FlowGraphBinaryOperationBlock<any, any, any> {
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(RichTypeAny, RichTypeAny, RichTypeAny, (a, b) => this._polymorphicMultiply(a, b), FlowGraphMultiplyBlock.ClassName, config);
@@ -91,8 +113,27 @@ export class FlowGraphMultiplyBlock extends FlowGraphBinaryOperationBlock<any, a
     private _polymorphicMultiply(a: any, b: any) {
         const aClassName = _getClassNameOf(a);
         const bClassName = _getClassNameOf(b);
-        if (_areSameVectorClass(aClassName, bClassName)) {
+        if (_areSameVectorClass(aClassName, bClassName) || _areSameIntegerClass(aClassName, bClassName)) {
             return a.multiply(b);
+        } else if (_areSameMatrixClass(aClassName, bClassName)) {
+            return Matrix.FromValues(
+                a.m[0] * b.m[0],
+                a.m[4] * b.m[4],
+                a.m[8] * b.m[8],
+                a.m[12] * b.m[12],
+                a.m[1] * b.m[1],
+                a.m[5] * b.m[5],
+                a.m[9] * b.m[9],
+                a.m[13] * b.m[13],
+                a.m[2] * b.m[2],
+                a.m[6] * b.m[6],
+                a.m[10] * b.m[10],
+                a.m[14] * b.m[14],
+                a.m[3] * b.m[3],
+                a.m[7] * b.m[7],
+                a.m[11] * b.m[11],
+                a.m[15] * b.m[15]
+            );
         } else {
             return a * b;
         }
@@ -110,8 +151,27 @@ export class FlowGraphDivideBlock extends FlowGraphBinaryOperationBlock<any, any
     private _polymorphicDivide(a: any, b: any) {
         const aClassName = _getClassNameOf(a);
         const bClassName = _getClassNameOf(b);
-        if (_areSameVectorClass(aClassName, bClassName)) {
+        if (_areSameVectorClass(aClassName, bClassName) || _areSameIntegerClass(aClassName, bClassName)) {
             return a.divide(b);
+        } else if (_areSameMatrixClass(aClassName, bClassName)) {
+            return Matrix.FromValues(
+                a.m[0] / b.m[0],
+                a.m[4] / b.m[4],
+                a.m[8] / b.m[8],
+                a.m[12] / b.m[12],
+                a.m[1] / b.m[1],
+                a.m[5] / b.m[5],
+                a.m[9] / b.m[9],
+                a.m[13] / b.m[13],
+                a.m[2] / b.m[2],
+                a.m[6] / b.m[6],
+                a.m[10] / b.m[10],
+                a.m[14] / b.m[14],
+                a.m[3] / b.m[3],
+                a.m[7] / b.m[7],
+                a.m[11] / b.m[11],
+                a.m[15] / b.m[15]
+            );
         } else {
             return a / b;
         }
@@ -192,12 +252,33 @@ RegisterClass(FlowGraphNaNBlock.ClassName, FlowGraphNaNBlock);
 function _componentWiseUnaryOperation(a: any, op: (a: any) => any) {
     const aClassName = _getClassNameOf(a);
     switch (aClassName) {
+        case "FlowGraphInteger":
+            return new FlowGraphInteger(op(a.value));
         case "Vector2":
             return new Vector2(op(a.x), op(a.y));
         case "Vector3":
             return new Vector3(op(a.x), op(a.y), op(a.z));
         case "Vector4":
             return new Vector4(op(a.x), op(a.y), op(a.z), op(a.w));
+        case "Matrix":
+            return Matrix.FromValues(
+                op(a.m[0]),
+                op(a.m[4]),
+                op(a.m[8]),
+                op(a.m[12]),
+                op(a.m[1]),
+                op(a.m[5]),
+                op(a.m[9]),
+                op(a.m[13]),
+                op(a.m[2]),
+                op(a.m[6]),
+                op(a.m[10]),
+                op(a.m[14]),
+                op(a.m[3]),
+                op(a.m[7]),
+                op(a.m[11]),
+                op(a.m[15])
+            );
         default:
             return op(a);
     }
@@ -297,12 +378,33 @@ RegisterClass(FlowGraphNegBlock.ClassName, FlowGraphNegBlock);
 function _componentWiseBinaryOperation(a: any, b: any, op: (a: any, b: any) => any) {
     const aClassName = _getClassNameOf(a);
     switch (aClassName) {
+        case "FlowGraphInteger":
+            return new FlowGraphInteger(op(a.value, b.value));
         case "Vector2":
             return new Vector2(op(a.x, b.x), op(a.y, b.y));
         case "Vector3":
             return new Vector3(op(a.x, b.x), op(a.y, b.y), op(a.z, b.z));
         case "Vector4":
             return new Vector4(op(a.x, b.x), op(a.y, b.y), op(a.z, b.z), op(a.w, b.w));
+        case "Matrix":
+            return Matrix.FromValues(
+                op(a.m[0], b.m[0]),
+                op(a.m[4], b.m[4]),
+                op(a.m[8], b.m[8]),
+                op(a.m[12], b.m[12]),
+                op(a.m[1], b.m[1]),
+                op(a.m[5], b.m[5]),
+                op(a.m[9], b.m[9]),
+                op(a.m[13], b.m[13]),
+                op(a.m[2], b.m[2]),
+                op(a.m[6], b.m[6]),
+                op(a.m[10], b.m[10]),
+                op(a.m[14], b.m[14]),
+                op(a.m[3], b.m[3]),
+                op(a.m[7], b.m[7]),
+                op(a.m[11], b.m[11]),
+                op(a.m[15], b.m[15])
+            );
         default:
             return op(a, b);
     }
@@ -348,18 +450,27 @@ export class FlowGraphMaxBlock extends FlowGraphBinaryOperationBlock<any, any, a
 RegisterClass(FlowGraphMaxBlock.ClassName, FlowGraphMaxBlock);
 
 function _clamp(a: number, b: number, c: number) {
-    return Math.min(Math.max(a, b), c);
+    return Math.min(Math.max(a, Math.min(b, c)), Math.max(b, c));
 }
 
 function _componentWiseTernaryOperation(a: any, b: any, c: any, op: (a: any, b: any, c: any) => any) {
     const aClassName = _getClassNameOf(a);
     switch (aClassName) {
+        case "FlowGraphInteger":
+            return new FlowGraphInteger(op(a.value, b.value, c.value));
         case "Vector2":
             return new Vector2(op(a.x, b.x, c.x), op(a.y, b.y, c.y));
         case "Vector3":
             return new Vector3(op(a.x, b.x, c.x), op(a.y, b.y, c.y), op(a.z, b.z, c.z));
         case "Vector4":
             return new Vector4(op(a.x, b.x, c.x), op(a.y, b.y, c.y), op(a.z, b.z, c.z), op(a.w, b.w, c.w));
+        case "Matrix":
+            return Matrix.FromValues(
+                op(a.m[0], b.m[0], c.m[0]), op(a.m[4], b.m[4], c.m[4]), op(a.m[8], b.m[8], c.m[8]), op(a.m[12], b.m[12], c.m[12]),
+                op(a.m[1], b.m[1], c.m[1]), op(a.m[5], b.m[5], c.m[5]), op(a.m[9], b.m[9], c.m[9]), op(a.m[13], b.m[13], c.m[13]),
+                op(a.m[2], b.m[2], c.m[2]), op(a.m[6], b.m[6], c.m[6]), op(a.m[10], b.m[10], c.m[10]), op(a.m[14], b.m[14], c.m[14]),
+                op(a.m[3], b.m[3], c.m[3]), op(a.m[7], b.m[7], c.m[7]), op(a.m[11], b.m[11], c.m[11]), op(a.m[15], b.m[15], c.m[15])
+            )
         default:
             return op(a, b, c);
     }
@@ -378,13 +489,17 @@ export class FlowGraphClampBlock extends FlowGraphTernaryOperationBlock<any, any
 }
 RegisterClass(FlowGraphClampBlock.ClassName, FlowGraphClampBlock);
 
+function _saturate(a: number) {
+    return Math.min(Math.max(a, 0), 1);
+}
+
 export class FlowGraphSaturateBlock extends FlowGraphUnaryOperationBlock<any, any> {
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(RichTypeAny, RichTypeAny, (a) => this._polymorphicSaturate(a), FlowGraphSaturateBlock.ClassName, config);
     }
 
     private _polymorphicSaturate(a: any) {
-        return _componentWiseUnaryOperation(a, (a) => _clamp(a, 0, 1));
+        return _componentWiseUnaryOperation(a, _saturate);
     }
 
     public static ClassName = "FGSaturateBlock";
@@ -933,3 +1048,190 @@ export class FlowGraphRotate3DBlock extends FlowGraphTernaryOperationBlock<Vecto
     public static ClassName = "FGRotate3DBlock";
 }
 RegisterClass(FlowGraphRotate3DBlock.ClassName, FlowGraphRotate3DBlock);
+
+/**
+ * @experimental
+ * Transposes a matrix.
+ */
+export class FlowGraphTransposeBlock extends FlowGraphUnaryOperationBlock<Matrix, Matrix> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeMatrix, RichTypeMatrix, (a) => Matrix.Transpose(a), FlowGraphTransposeBlock.ClassName, config);
+    }
+
+    public static ClassName = "FGTransposeBlock";
+}
+RegisterClass(FlowGraphTransposeBlock.ClassName, FlowGraphTransposeBlock);
+
+/**
+ * @experimental
+ * Gets the determinant of a matrix.
+ */
+export class FlowGraphDeterminantBlock extends FlowGraphUnaryOperationBlock<Matrix, number> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeMatrix, RichTypeNumber, (a) => a.determinant(), FlowGraphDeterminantBlock.ClassName, config);
+    }
+
+    public static ClassName = "FGDeterminantBlock";
+}
+RegisterClass(FlowGraphDeterminantBlock.ClassName, FlowGraphDeterminantBlock);
+
+/**
+ * @experimental
+ * Inverts a matrix.
+ */
+export class FlowGraphInvertMatrixBlock extends FlowGraphUnaryOperationBlock<Matrix, Matrix> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeMatrix, RichTypeMatrix, (a) => Matrix.Invert(a), FlowGraphInvertMatrixBlock.ClassName, config);
+    }
+
+    public static ClassName = "FGInvertMatrixBlock";
+}
+RegisterClass(FlowGraphInvertMatrixBlock.ClassName, FlowGraphInvertMatrixBlock);
+
+/**
+ * @experimental
+ * Multiplies two matrices.
+ */
+export class FlowGraphMatMulBlock extends FlowGraphBinaryOperationBlock<Matrix, Matrix, Matrix> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeMatrix, RichTypeMatrix, RichTypeMatrix, (a, b) => b.multiply(a), FlowGraphMatMulBlock.ClassName, config);
+    }
+
+    public static ClassName = "FGMatMulBlock";
+}
+RegisterClass(FlowGraphMatMulBlock.ClassName, FlowGraphMatMulBlock);
+
+/**
+ * @experimental
+ * Bitwise NOT operation
+ */
+export class FlowGraphBitwiseNotBlock extends FlowGraphUnaryOperationBlock<FlowGraphInteger, FlowGraphInteger> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, (a) => new FlowGraphInteger(~a.value), FlowGraphBitwiseNotBlock.ClassName, config);
+    }
+
+    public static ClassName = "FGBitwiseNotBlock";
+}
+RegisterClass(FlowGraphBitwiseNotBlock.ClassName, FlowGraphBitwiseNotBlock);
+
+/**
+ * @experimental
+ * Bitwise AND operation
+ */
+export class FlowGraphBitwiseAndBlock extends FlowGraphBinaryOperationBlock<FlowGraphInteger, FlowGraphInteger, FlowGraphInteger> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, (a, b) => new FlowGraphInteger(a.value & b.value), FlowGraphBitwiseAndBlock.ClassName, config);
+    }
+
+    public static ClassName = "FGBitwiseAndBlock";
+}
+RegisterClass(FlowGraphBitwiseAndBlock.ClassName, FlowGraphBitwiseAndBlock);
+
+/**
+ * @experimental
+ * Bitwise OR operation
+ */
+export class FlowGraphBitwiseOrBlock extends FlowGraphBinaryOperationBlock<FlowGraphInteger, FlowGraphInteger, FlowGraphInteger> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, (a, b) => new FlowGraphInteger(a.value | b.value), FlowGraphBitwiseOrBlock.ClassName, config);
+    }
+
+    public static ClassName = "FGBitwiseOrBlock";
+}
+RegisterClass(FlowGraphBitwiseOrBlock.ClassName, FlowGraphBitwiseOrBlock);
+
+/**
+ * @experimental
+ * Bitwise XOR operation
+ */
+export class FlowGraphBitwiseXorBlock extends FlowGraphBinaryOperationBlock<FlowGraphInteger, FlowGraphInteger, FlowGraphInteger> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, (a, b) => new FlowGraphInteger(a.value ^ b.value), FlowGraphBitwiseXorBlock.ClassName, config);
+    }
+
+    public static ClassName = "FGBitwiseXorBlock";
+}
+RegisterClass(FlowGraphBitwiseXorBlock.ClassName, FlowGraphBitwiseXorBlock);
+
+/**
+ * @experimental
+ * Bitwise left shift operation
+ */
+export class FlowGraphBitwiseLeftShiftBlock extends FlowGraphBinaryOperationBlock<FlowGraphInteger, FlowGraphInteger, FlowGraphInteger> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, (a, b) => new FlowGraphInteger(a.value << b.value), FlowGraphBitwiseLeftShiftBlock.ClassName, config);
+    }
+
+    public static ClassName = "FGBitwiseLeftShiftBlock";
+}
+RegisterClass(FlowGraphBitwiseLeftShiftBlock.ClassName, FlowGraphBitwiseLeftShiftBlock);
+
+/**
+ * @experimental
+ * Bitwise right shift operation
+ */
+export class FlowGraphBitwiseRightShiftBlock extends FlowGraphBinaryOperationBlock<FlowGraphInteger, FlowGraphInteger, FlowGraphInteger> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, (a, b) => new FlowGraphInteger(a.value >> b.value), FlowGraphBitwiseRightShiftBlock.ClassName, config);
+    }
+
+    public static ClassName = "FGBitwiseRightShiftBlock";
+}
+RegisterClass(FlowGraphBitwiseRightShiftBlock.ClassName, FlowGraphBitwiseRightShiftBlock);
+
+/**
+ * @experimental
+ * Count leading zeros operation
+ */
+export class FlowGraphCountLeadingZerosBlock extends FlowGraphUnaryOperationBlock<FlowGraphInteger, FlowGraphInteger> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, (a) => new FlowGraphInteger(Math.clz32(a.value)), FlowGraphCountLeadingZerosBlock.ClassName, config);
+    }
+
+    public static ClassName = "FGCountLeadingZerosBlock";
+}
+RegisterClass(FlowGraphCountLeadingZerosBlock.ClassName, FlowGraphCountLeadingZerosBlock);
+
+/**
+ * @experimental
+ * Count trailing zeros operation
+ */
+export class FlowGraphCountTrailingZerosBlock extends FlowGraphUnaryOperationBlock<FlowGraphInteger, FlowGraphInteger> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, (a) => new FlowGraphInteger(a.value ? (31 - Math.clz32(a.value & -a.value)) : 32), FlowGraphCountTrailingZerosBlock.ClassName, config);
+    }
+
+    public static ClassName = "FGCountTrailingZerosBlock";
+}
+RegisterClass(FlowGraphCountTrailingZerosBlock.ClassName, FlowGraphCountTrailingZerosBlock);
+
+/**
+ * Given a number (which is converted to a 32-bit integer), return the
+ * number of bits set to one on that number.
+ * @internal
+ * @param n
+ */
+function _countOnes(n: number) {
+    let result = 0;
+    while (n) {
+        // This zeroes out all bits except for the least significant one.
+        // So if the bit is set, it will be 1, otherwise it will be 0.
+        result += n & 1;
+        // This shifts n's bits to the right by one
+        n >>= 1;
+    }
+    return result;
+}
+
+/**
+ * @experimental
+ * Count one bits operation
+ */
+export class FlowGraphCountOneBitsBlock extends FlowGraphUnaryOperationBlock<FlowGraphInteger, FlowGraphInteger> {
+    constructor(config?: IFlowGraphBlockConfiguration) {
+        super(RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, (a) => new FlowGraphInteger(_countOnes(a.value)), FlowGraphCountOneBitsBlock.ClassName, config);
+    }
+
+    public static ClassName = "FGCountOneBitsBlock";
+}
+RegisterClass(FlowGraphCountOneBitsBlock.ClassName, FlowGraphCountOneBitsBlock);
