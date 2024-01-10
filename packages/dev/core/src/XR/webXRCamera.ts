@@ -28,11 +28,13 @@ export class WebXRCamera extends FreeCamera {
 
     /**
      * Observable raised before camera teleportation
+     * @deprecated use onBeforeCameraTeleport of the teleportation feature instead
      */
     public onBeforeCameraTeleport = new Observable<Vector3>();
 
     /**
      *  Observable raised after camera teleportation
+     * @deprecated use onAfterCameraTeleport of the teleportation feature instead
      */
     public onAfterCameraTeleport = new Observable<Vector3>();
 
@@ -41,6 +43,7 @@ export class WebXRCamera extends FreeCamera {
      * Notice - will also be triggered when tracking has started (at the beginning of the session)
      */
     public onTrackingStateChanged = new Observable<WebXRTrackingState>();
+
     /**
      * Should position compensation execute on first frame.
      * This is used when copying the position from a native (non XR) camera

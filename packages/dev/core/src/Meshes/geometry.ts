@@ -22,6 +22,7 @@ import { EngineStore } from "../Engines/engineStore";
 import { CompatibilityOptions } from "../Compat/compatibilityOptions";
 
 import type { Mesh } from "../Meshes/mesh";
+import type { Buffer } from "../Buffers/buffer";
 
 /**
  * Class used to store geometry data (vertex buffers + index buffer)
@@ -221,14 +222,18 @@ export class Geometry implements IGetSetVerticesData {
 
         // Index buffer
         if (this._meshes.length !== 0 && this._indices) {
-            this._indexBuffer = this._engine.createIndexBuffer(this._indices, this._updatable);
+            this._indexBuffer = this._engine.createIndexBuffer(this._indices, this._updatable, "Geometry_" + this.id + "_IndexBuffer");
         }
 
         // Vertex buffers
+        const buffers = new Set<Buffer>();
         for (const key in this._vertexBuffers) {
-            const vertexBuffer = <VertexBuffer>this._vertexBuffers[key];
-            vertexBuffer._rebuild();
+            buffers.add(this._vertexBuffers[key].getWrapperBuffer());
         }
+
+        buffers.forEach((buffer) => {
+            buffer._rebuild();
+        });
     }
 
     /**
@@ -298,12 +303,12 @@ export class Geometry implements IGetSetVerticesData {
         const numOfMeshes = meshes.length;
 
         if (kind === VertexBuffer.PositionKind) {
-            this._totalVertices = totalVertices ?? buffer.totalVertices;
+            this._totalVertices = totalVertices ?? buffer._maxVerticesCount;
 
-            this._updateExtend(buffer.getFloatData());
+            this._updateExtend(buffer.getFloatData(this._totalVertices));
             this._resetPointsArrayCache();
 
-            // this._extend can be empty if buffer.getFloatData() returned null
+            // this._extend can be empty if buffer.getFloatData(this._totalVertices) returned null
             const minimum = (this._extend && this._extend.minimum) || new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
             const maximum = (this._extend && this._extend.maximum) || new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
 
@@ -588,7 +593,7 @@ export class Geometry implements IGetSetVerticesData {
         this._indices = indices;
         this._indexBufferIsUpdatable = updatable;
         if (this._meshes.length !== 0 && this._indices) {
-            this._indexBuffer = this._engine.createIndexBuffer(this._indices, updatable);
+            this._indexBuffer = this._engine.createIndexBuffer(this._indices, updatable, "Geometry_" + this.id + "_IndexBuffer");
         }
 
         if (totalVertices != undefined) {
@@ -763,7 +768,7 @@ export class Geometry implements IGetSetVerticesData {
 
         // indexBuffer
         if (numOfMeshes === 1 && this._indices && this._indices.length > 0) {
-            this._indexBuffer = this._engine.createIndexBuffer(this._indices, this._updatable);
+            this._indexBuffer = this._engine.createIndexBuffer(this._indices, this._updatable, "Geometry_" + this.id + "_IndexBuffer");
         }
 
         // morphTargets

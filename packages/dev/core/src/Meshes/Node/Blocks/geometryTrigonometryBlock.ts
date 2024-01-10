@@ -19,6 +19,8 @@ export enum GeometryTrigonometryBlockOperations {
     Abs,
     /** Exp */
     Exp,
+    /** Exp2 */
+    Exp2,
     /** Round */
     Round,
     /** Floor */
@@ -49,6 +51,8 @@ export enum GeometryTrigonometryBlockOperations {
     ToDegrees,
     /** ToRadians */
     ToRadians,
+    /** Fract */
+    Fract,
 }
 
 /**
@@ -65,6 +69,7 @@ export class GeometryTrigonometryBlock extends NodeGeometryBlock {
             { label: "Sin", value: GeometryTrigonometryBlockOperations.Sin },
             { label: "Abs", value: GeometryTrigonometryBlockOperations.Abs },
             { label: "Exp", value: GeometryTrigonometryBlockOperations.Exp },
+            { label: "Exp2", value: GeometryTrigonometryBlockOperations.Exp2 },
             { label: "Round", value: GeometryTrigonometryBlockOperations.Round },
             { label: "Floor", value: GeometryTrigonometryBlockOperations.Floor },
             { label: "Ceiling", value: GeometryTrigonometryBlockOperations.Ceiling },
@@ -143,6 +148,10 @@ export class GeometryTrigonometryBlock extends NodeGeometryBlock {
                 func = (value: number) => Math.exp(value);
                 break;
             }
+            case GeometryTrigonometryBlockOperations.Exp2: {
+                func = (value: number) => Math.pow(2, value);
+                break;
+            }
             case GeometryTrigonometryBlockOperations.Round: {
                 func = (value: number) => Math.round(value);
                 break;
@@ -203,10 +212,20 @@ export class GeometryTrigonometryBlock extends NodeGeometryBlock {
                 func = (value: number) => (value * 180) / Math.PI;
                 break;
             }
+            case GeometryTrigonometryBlockOperations.Fract: {
+                func = (value: number) => {
+                    if (value >= 0) {
+                        return value - Math.floor(value);
+                    } else {
+                        return value - Math.ceil(value);
+                    }
+                };
+                break;
+            }
         }
         if (!func) {
-            this.input._storedFunction = null;
-            this.input._storedValue = null;
+            this.output._storedFunction = null;
+            this.output._storedValue = null;
             return;
         }
 

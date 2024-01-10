@@ -3,24 +3,27 @@ import type { Nullable } from "../../../types";
 import { Constants } from "../../constants";
 import type { DepthTextureCreationOptions } from "../../../Materials/Textures/textureCreationOptions";
 import { WebGPUEngine } from "../../webgpuEngine";
+import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
+import { WebGPUTextureHelper } from "../webgpuTextureHelper";
 
 import type { Scene } from "../../../scene";
 
 WebGPUEngine.prototype._createDepthStencilCubeTexture = function (size: number, options: DepthTextureCreationOptions): InternalTexture {
-    const internalTexture = new InternalTexture(this, InternalTextureSource.DepthStencil);
+    const internalTexture = new InternalTexture(this, options.generateStencil ? InternalTextureSource.DepthStencil : InternalTextureSource.Depth);
 
     internalTexture.isCube = true;
+    internalTexture.label = options.label;
 
     const internalOptions = {
         bilinearFiltering: false,
         comparisonFunction: 0,
         generateStencil: false,
         samples: 1,
+        depthTextureFormat: options.generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT,
         ...options,
     };
 
-    // TODO WEBGPU allow to choose the format?
-    internalTexture.format = internalOptions.generateStencil ? Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 : Constants.TEXTUREFORMAT_DEPTH32_FLOAT;
+    internalTexture.format = internalOptions.depthTextureFormat;
 
     this._setupDepthStencilTexture(
         internalTexture,
@@ -32,6 +35,11 @@ WebGPUEngine.prototype._createDepthStencilCubeTexture = function (size: number, 
     );
 
     this._textureHelper.createGPUTextureForInternalTexture(internalTexture);
+
+    // Now that the hardware texture is created, we can retrieve the GPU format and set the right type to the internal texture
+    const gpuTextureWrapper = internalTexture._hardwareTexture as WebGPUHardwareTexture;
+
+    internalTexture.type = WebGPUTextureHelper.GetTextureTypeFromFormat(gpuTextureWrapper.format);
 
     this._internalTexturesCache.push(internalTexture);
 

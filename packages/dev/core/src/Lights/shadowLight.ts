@@ -203,7 +203,7 @@ export abstract class ShadowLight extends Light implements IShadowLight {
     public customProjectionMatrixBuilder: (viewMatrix: Matrix, renderList: Array<AbstractMesh>, result: Matrix) => void;
 
     /**
-     * The transformed position. Position of the light in world space taking parenting in account.
+     * The transformed position. Position of the light in world space taking parenting in account. Needs to be computed by calling computeTransformedInformation.
      */
     public transformedPosition: Vector3;
 
@@ -256,7 +256,7 @@ export abstract class ShadowLight extends Light implements IShadowLight {
     }
 
     /**
-     * Returns the ShadowLight absolute position in the World.
+     * If computeTransformedInformation has been called, returns the ShadowLight absolute position in the world. Otherwise, returns the local position.
      * @returns the position vector in world space
      */
     public getAbsolutePosition(): Vector3 {

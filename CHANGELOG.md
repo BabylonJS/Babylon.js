@@ -1,5 +1,29 @@
 # Changelog
 
+## 6.37.1
+
+### Core
+
+- Camera framing behavior: Fix crash - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14670](https://github.com/BabylonJS/Babylon.js/pull/14670))
+- ArcRotateCamera: Allow to pass a transform node to setTarget / targetHost - by [Popov72](https://github.com/Popov72) ([#14666](https://github.com/BabylonJS/Babylon.js/pull/14666))
+
+## 6.37.0
+
+### Core
+
+- Add observers to WebXRCamera when a rotation is performed - by [yuripourre](https://github.com/yuripourre) ([#14660](https://github.com/BabylonJS/Babylon.js/pull/14660))
+- WebGPU: Manage context lost and restoration - by [Popov72](https://github.com/Popov72) ([#14655](https://github.com/BabylonJS/Babylon.js/pull/14655))
+- Fix arcrotate gamepad input - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#14665](https://github.com/BabylonJS/Babylon.js/pull/14665))
+- Flow Graph/Interactivity/Animation Pointer Object model - by [carolhmj](https://github.com/carolhmj) ([#14608](https://github.com/BabylonJS/Babylon.js/pull/14608))
+- Fix material plugin calls without register - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#14664](https://github.com/BabylonJS/Babylon.js/pull/14664))
+- fix(ShaderMaterial): correct serialization key spelling mistake - by [Starryi](https://github.com/Starryi) ([#14661](https://github.com/BabylonJS/Babylon.js/pull/14661))
+- DynamicTexture: add sanity check in dispose - by [Popov72](https://github.com/Popov72) ([#14657](https://github.com/BabylonJS/Babylon.js/pull/14657))
+- refactor(renderTargetTexture): optimized render - by [GuoBinyong](https://github.com/GuoBinyong) ([#14650](https://github.com/BabylonJS/Babylon.js/pull/14650))
+
+### Loaders
+
+- Flow Graph/Interactivity/Animation Pointer Object model - by [carolhmj](https://github.com/carolhmj) ([#14608](https://github.com/BabylonJS/Babylon.js/pull/14608))
+
 ## 6.36.1
 
 ### Core

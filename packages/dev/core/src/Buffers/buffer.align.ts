@@ -77,6 +77,10 @@ VertexBuffer.prototype.dispose = function (): void {
     this._isDisposed = true;
 };
 
+VertexBuffer.prototype.getWrapperBuffer = function (): Buffer {
+    return this._alignedBuffer || this._buffer;
+};
+
 VertexBuffer.prototype._alignBuffer = function (): void {
     const data = this._buffer.getData();
 
@@ -87,7 +91,7 @@ VertexBuffer.prototype._alignBuffer = function (): void {
     const typeByteLength = VertexBuffer.GetTypeByteLength(this.type);
     const alignedByteStride = (this.byteStride + 3) & ~3;
     const alignedSize = alignedByteStride / typeByteLength;
-    const totalVertices = this.totalVertices;
+    const totalVertices = this._maxVerticesCount;
     const totalByteLength = totalVertices * alignedByteStride;
     const totalLength = totalByteLength / typeByteLength;
 

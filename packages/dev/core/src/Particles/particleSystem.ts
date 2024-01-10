@@ -1990,11 +1990,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         this._spriteBuffer?._rebuild();
 
-        this._vertexBuffer?._rebuild();
-
-        for (const key in this._vertexBuffers) {
-            this._vertexBuffers[key]._rebuild();
-        }
+        this._createVertexBuffers();
 
         this.resetDrawCache();
     }

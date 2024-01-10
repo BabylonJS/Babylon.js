@@ -2,7 +2,6 @@ import { Color3, Color4 } from "../Maths/math.color";
 import { Matrix, Quaternion, Vector2, Vector3, Vector4 } from "../Maths/math.vector";
 import type { Scene } from "../scene";
 import { FlowGraphInteger } from "./flowGraphInteger";
-import { FlowGraphPath } from "./flowGraphPath";
 
 function isMeshClassName(className: string) {
     return (
@@ -79,8 +78,6 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
         finalValue = parseVector(className, intermediateValue.value);
     } else if (className === "Matrix") {
         finalValue = Matrix.FromArray(intermediateValue.value);
-    } else if (className === FlowGraphPath.ClassName) {
-        finalValue = FlowGraphPath.Parse(intermediateValue);
     } else if (className === FlowGraphInteger.ClassName) {
         finalValue = FlowGraphInteger.Parse(intermediateValue);
     } else if (intermediateValue && intermediateValue.value !== undefined) {
@@ -89,4 +86,17 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
         finalValue = intermediateValue;
     }
     return finalValue;
+}
+
+/**
+ * Given a name of a flow graph block class, return if this
+ * class needs to be created with a path converter. Used in
+ * parsing.
+ * @param className the name of the flow graph block class
+ * @returns a boolean indicating if the class needs a path converter
+ */
+export function needsPathConverter(className: string) {
+    // I am not using the ClassName property here because it was causing a circular dependency
+    // that jest didn't like!
+    return className === "FGSetPropertyBlock" || className === "FGGetPropertyBlock" || className === "FGPlayAnimationBlock" || className === "FGMeshPickEventBlock";
 }

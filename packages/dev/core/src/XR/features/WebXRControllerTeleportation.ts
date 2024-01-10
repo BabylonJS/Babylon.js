@@ -101,7 +101,7 @@ export interface IWebXRTeleportationOptions {
      */
     teleportationTargetMesh?: AbstractMesh;
     /**
-     * If main component is used (no thumbstick), how long should the "long press" take before teleport
+     * If main component is used (no thumbstick), how long in milliseconds should the "long press" take before teleport. Defaults to 3 seconds
      */
     timeToTeleport?: number;
     /**
@@ -237,6 +237,26 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
     private _rotationEnabled: boolean = true;
 
     /**
+     * Observable raised before camera rotation
+     */
+    public onBeforeCameraTeleportRotation = new Observable<Number>();
+
+    /**
+     *  Observable raised after camera rotation
+     */
+    public onAfterCameraTeleportRotation = new Observable<Quaternion>();
+
+    /**
+     * Observable raised before camera teleportation
+     */
+    public onBeforeCameraTeleport: Observable<Vector3>;
+
+    /**
+     *  Observable raised after camera teleportation
+     */
+    public onAfterCameraTeleport: Observable<Vector3>;
+
+    /**
      * Is rotation enabled when moving forward?
      * Disabling this feature will prevent the user from deciding the direction when teleporting
      */
@@ -286,6 +306,10 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         this._blockedRayColor = this._options.blockedRayColor || new Color4(1, 0, 0, 0.75);
 
         this._setTargetMeshVisibility(false);
+
+        // set the observables
+        this.onBeforeCameraTeleport = _options.xrInput.xrCamera.onBeforeCameraTeleport;
+        this.onAfterCameraTeleport = _options.xrInput.xrCamera.onAfterCameraTeleport;
     }
 
     /**
@@ -651,10 +675,12 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                                         // rotate in the right direction positive is right
                                         controllerData.teleportationState.rotating = true;
                                         const rotation = this.rotationAngle * (axesData.x > 0 ? 1 : -1) * (this._xrSessionManager.scene.useRightHandedSystem ? -1 : 1);
+                                        this.onBeforeCameraTeleportRotation.notifyObservers(rotation);
                                         Quaternion.FromEulerAngles(0, rotation, 0).multiplyToRef(
                                             this._options.xrInput.xrCamera.rotationQuaternion,
                                             this._options.xrInput.xrCamera.rotationQuaternion
                                         );
+                                        this.onAfterCameraTeleportRotation.notifyObservers(this._options.xrInput.xrCamera.rotationQuaternion);
                                     }
                                 } else {
                                     if (this._currentTeleportationControllerId === controllerData.xrController.uniqueId) {

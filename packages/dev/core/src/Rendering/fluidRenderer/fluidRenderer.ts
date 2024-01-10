@@ -9,6 +9,7 @@ import { SceneComponentConstants } from "core/sceneComponent";
 import type { SmartArrayNoDuplicate } from "core/Misc/smartArray";
 import type { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import { Constants } from "core/Engines/constants";
+import type { Buffer } from "core/Buffers/buffer";
 
 import type { FluidRenderingObject } from "./fluidRenderingObject";
 import { FluidRenderingObjectParticleSystem } from "./fluidRenderingObjectParticleSystem";
@@ -81,6 +82,10 @@ function IsParticleSystemObject(obj: FluidRenderingObject): obj is FluidRenderin
     return !!(obj as FluidRenderingObjectParticleSystem).particleSystem;
 }
 
+function IsCustomParticlesObject(obj: FluidRenderingObject): obj is FluidRenderingObjectCustomParticles {
+    return !!(obj as FluidRenderingObjectCustomParticles).addBuffers;
+}
+
 /**
  * Defines the fluid renderer scene component responsible to render objects as fluids
  */
@@ -128,13 +133,25 @@ export class FluidRendererSceneComponent implements ISceneComponent {
      * context lost for instance.
      */
     public rebuild(): void {
-        if (this.scene._fluidRenderer) {
-            // Release resources first
-            this.scene.disableFluidRenderer();
-
-            // Re-enable
-            this.scene.enableFluidRenderer();
+        const fluidRenderer = this.scene.fluidRenderer;
+        if (!fluidRenderer) {
+            return;
         }
+
+        const buffers = new Set<Buffer>();
+        for (let i = 0; i < fluidRenderer.renderObjects.length; ++i) {
+            const obj = fluidRenderer.renderObjects[i].object;
+            if (IsCustomParticlesObject(obj)) {
+                const vbuffers = obj.vertexBuffers;
+                for (const name in vbuffers) {
+                    buffers.add(vbuffers[name].getWrapperBuffer());
+                }
+            }
+        }
+
+        buffers.forEach((buffer) => {
+            buffer._rebuild();
+        });
     }
 
     /**

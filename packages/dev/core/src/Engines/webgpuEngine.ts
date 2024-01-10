@@ -23,6 +23,7 @@ import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptio
 import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingContext";
 import { Tools } from "../Misc/tools";
 import { WebGPUTextureHelper } from "./WebGPU/webgpuTextureHelper";
+import { WebGPUTextureManager } from "./WebGPU/webgpuTextureManager";
 import type { ISceneLike, ThinEngineOptions } from "./thinEngine";
 import { WebGPUBufferManager } from "./WebGPU/webgpuBufferManager";
 import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
@@ -63,6 +64,7 @@ import type { VideoTexture } from "../Materials/Textures/videoTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { RenderTargetWrapper } from "./renderTargetWrapper";
 import { WebGPUPerfCounter } from "./WebGPU/webgpuPerfCounter";
+import type { Scene } from "core/scene";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
@@ -178,8 +180,13 @@ export class WebGPUEngine extends Engine {
         wasmPath: `${Tools._DefaultCdnUrl}/glslang/glslang.wasm`,
     };
 
+    private static _InstanceId = 0;
+
     /** true to enable using TintWASM to convert Spir-V to WGSL */
     public static UseTWGSL = true;
+
+    /** A unique id to identify this instance */
+    public readonly uniqueId = -1;
 
     // Page Life cycle and constants
     private readonly _uploadEncoderDescriptor = { label: "upload" };
@@ -212,8 +219,10 @@ export class WebGPUEngine extends Engine {
     private _deviceLimits: GPUSupportedLimits;
     private _context: GPUCanvasContext;
     private _mainPassSampleCount: number;
+    private _glslangOptions?: GlslangOptions;
+    private _twgslOptions?: TwgslOptions;
     /** @internal */
-    public _textureHelper: WebGPUTextureHelper;
+    public _textureHelper: WebGPUTextureManager;
     /** @internal */
     public _bufferManager: WebGPUBufferManager;
     private _clearQuad: WebGPUClearQuad;
@@ -599,6 +608,9 @@ export class WebGPUEngine extends Engine {
      * @returns a promise notifying the readiness of the engine.
      */
     public initAsync(glslangOptions?: GlslangOptions, twgslOptions?: TwgslOptions): Promise<void> {
+        (this.uniqueId as number) = WebGPUEngine._InstanceId++;
+        this._glslangOptions = glslangOptions;
+        this._twgslOptions = twgslOptions;
         return this._initGlslang(glslangOptions ?? this._options?.glslangOptions)
             .then(
                 (glslang: any) => {
@@ -659,6 +671,8 @@ export class WebGPUEngine extends Engine {
                         }
                     }
 
+                    deviceDescriptor.label = `BabylonWebGPUDevice${this.uniqueId}`;
+
                     return this._adapter.requestDevice(deviceDescriptor);
                 }
             })
@@ -688,7 +702,24 @@ export class WebGPUEngine extends Engine {
                             this._contextWasLost = true;
                             Logger.Warn("WebGPU context lost. " + info);
                             this.onContextLostObservable.notifyObservers(this);
-                            this._restoreEngineAfterContextLost(() => this.initAsync());
+                            this._restoreEngineAfterContextLost(async () => {
+                                const snapshotRenderingMode = this.snapshotRenderingMode;
+                                const snapshotRendering = this.snapshotRendering;
+                                const disableCacheSamplers = this.disableCacheSamplers;
+                                const disableCacheRenderPipelines = this.disableCacheRenderPipelines;
+                                const disableCacheBindGroups = this.disableCacheBindGroups;
+                                const enableGPUTimingMeasurements = this.enableGPUTimingMeasurements;
+
+                                await this.initAsync(this._glslangOptions ?? this._options?.glslangOptions, this._twgslOptions ?? this._options?.twgslOptions);
+
+                                this.snapshotRenderingMode = snapshotRenderingMode;
+                                this.snapshotRendering = snapshotRendering;
+                                this.disableCacheSamplers = disableCacheSamplers;
+                                this.disableCacheRenderPipelines = disableCacheRenderPipelines;
+                                this.disableCacheBindGroups = disableCacheBindGroups;
+                                this.enableGPUTimingMeasurements = enableGPUTimingMeasurements;
+                                this._currentRenderPass = null;
+                            });
                         });
                     }
                 },
@@ -699,7 +730,7 @@ export class WebGPUEngine extends Engine {
             )
             .then(() => {
                 this._bufferManager = new WebGPUBufferManager(this, this._device);
-                this._textureHelper = new WebGPUTextureHelper(this._device, this._glslang, this._tintWASM, this._bufferManager, this._deviceEnabledExtensions);
+                this._textureHelper = new WebGPUTextureManager(this, this._device, this._glslang, this._tintWASM, this._bufferManager, this._deviceEnabledExtensions);
                 this._cacheSampler = new WebGPUCacheSampler(this._device);
                 this._cacheBindGroups = new WebGPUCacheBindGroups(this._device, this._cacheSampler, this);
                 this._timestampQuery = new WebGPUTimestampQuery(this, this._device, this._bufferManager);
@@ -730,7 +761,12 @@ export class WebGPUEngine extends Engine {
 
                 this._initializeLimits();
 
-                this._emptyVertexBuffer = new VertexBuffer(this, [0], "", false, false, 1, false, 0, 1);
+                this._emptyVertexBuffer = new VertexBuffer(this, [0], "", {
+                    stride: 1,
+                    offset: 0,
+                    size: 1,
+                    label: "EmptyVertexBuffer",
+                });
 
                 this._cacheRenderPipeline = new WebGPUCacheRenderPipelineTree(this._device, this._emptyVertexBuffer);
 
@@ -1000,6 +1036,55 @@ export class WebGPUEngine extends Engine {
             usage: WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.CopySrc,
             alphaMode: this.premultipliedAlpha ? WebGPUConstants.CanvasAlphaMode.Premultiplied : WebGPUConstants.CanvasAlphaMode.Opaque,
         });
+    }
+
+    protected _rebuildBuffers(): void {
+        super._rebuildBuffers();
+
+        for (const storageBuffer of this._storageBuffers) {
+            // The buffer can already be rebuilt by the call to _rebuildGeometries(), which recreates the storage buffers for the ComputeShaderParticleSystem
+            if ((storageBuffer.getBuffer() as WebGPUDataBuffer).engineId !== this.uniqueId) {
+                storageBuffer._rebuild();
+            }
+        }
+    }
+
+    protected _restoreEngineAfterContextLost(initEngine: () => void) {
+        WebGPUCacheRenderPipelineTree.ResetCache();
+        WebGPUCacheBindGroups.ResetCache();
+
+        // Clear the draw wrappers and material contexts
+        const cleanScenes = (scenes: Scene[]) => {
+            for (const scene of scenes) {
+                for (const mesh of scene.meshes) {
+                    const subMeshes = mesh.subMeshes;
+                    if (!subMeshes) {
+                        continue;
+                    }
+                    for (const subMesh of subMeshes) {
+                        subMesh._drawWrappers = [];
+                    }
+                }
+
+                for (const material of scene.materials) {
+                    material._materialContext?.reset();
+                }
+            }
+        };
+
+        cleanScenes(this.scenes);
+        cleanScenes(this._virtualScenes);
+
+        // The leftOver uniform buffers are removed from the list because they will be recreated when we rebuild the effects
+        const uboList: UniformBuffer[] = [];
+        for (const uniformBuffer of this._uniformBuffers) {
+            if (uniformBuffer.name.indexOf("leftOver") < 0) {
+                uboList.push(uniformBuffer);
+            }
+        }
+        this._uniformBuffers = uboList;
+
+        super._restoreEngineAfterContextLost(initEngine);
     }
 
     /**
@@ -1405,13 +1490,13 @@ export class WebGPUEngine extends Engine {
 
     /**
      * Creates a vertex buffer
-     * @param data the data for the vertex buffer
+     * @param data the data or the size for the vertex buffer
      * @param _updatable whether the buffer should be created as updatable
      * @param label defines the label of the buffer (for debug purpose)
      * @returns the new buffer
      */
-    public createVertexBuffer(data: DataArray, _updatable?: boolean, label?: string): DataBuffer {
-        let view: ArrayBufferView;
+    public createVertexBuffer(data: DataArray | number, _updatable?: boolean, label?: string): DataBuffer {
+        let view: ArrayBufferView | number;
 
         if (data instanceof Array) {
             view = new Float32Array(data);
@@ -1947,10 +2032,7 @@ export class WebGPUEngine extends Engine {
             return;
         }
 
-        let isNewEffect = true;
-
         if (!DrawWrapper.IsWrapper(effect)) {
-            isNewEffect = effect !== this._currentEffect;
             this._currentEffect = effect;
             this._currentMaterialContext = this._defaultMaterialContext;
             this._currentDrawContext = this._defaultDrawContext;
@@ -1974,7 +2056,6 @@ export class WebGPUEngine extends Engine {
             }
             return;
         } else {
-            isNewEffect = effect.effect !== this._currentEffect;
             this._currentEffect = effect.effect;
             this._currentMaterialContext = effect.materialContext as WebGPUMaterialContext;
             this._currentDrawContext = effect.drawContext as WebGPUDrawContext;
@@ -1987,15 +2068,13 @@ export class WebGPUEngine extends Engine {
 
         this._stencilStateComposer.stencilMaterial = undefined;
 
-        this._forceEnableEffect = isNewEffect || this._forceEnableEffect ? false : this._forceEnableEffect;
+        this._forceEnableEffect = false;
 
-        if (isNewEffect) {
-            if (this._currentEffect!.onBind) {
-                this._currentEffect!.onBind(this._currentEffect!);
-            }
-            if (this._currentEffect!._onBindObservable) {
-                this._currentEffect!._onBindObservable.notifyObservers(this._currentEffect!);
-            }
+        if (this._currentEffect!.onBind) {
+            this._currentEffect!.onBind(this._currentEffect!);
+        }
+        if (this._currentEffect!._onBindObservable) {
+            this._currentEffect!._onBindObservable.notifyObservers(this._currentEffect!);
         }
     }
 
@@ -2220,6 +2299,7 @@ export class WebGPUEngine extends Engine {
                 texture.height = imageBitmap.height;
                 texture.format = texture.format !== -1 ? texture.format : format ?? Constants.TEXTUREFORMAT_RGBA;
                 texture.type = texture.type !== -1 ? texture.type : Constants.TEXTURETYPE_UNSIGNED_BYTE;
+                texture._creationFlags = creationFlags ?? 0;
 
                 processFunction(texture.width, texture.height, imageBitmap, extension, texture, () => {});
 

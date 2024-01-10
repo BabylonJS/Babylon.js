@@ -92,6 +92,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     private readonly _rawTextureWidth = 256;
 
     private _platform: IGPUParticleSystemPlatform;
+    private _rebuildingAfterContextLost = false;
 
     /**
      * Gets a boolean indicating if the GPU particles can be rendered on current browser
@@ -115,7 +116,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     public onStoppedObservable = new Observable<IParticleSystem>();
 
     private _createIndexBuffer() {
-        this._linesIndexBufferUseInstancing = this._engine.createIndexBuffer(new Uint32Array([0, 1, 1, 3, 3, 2, 2, 0, 0, 3]));
+        this._linesIndexBufferUseInstancing = this._engine.createIndexBuffer(new Uint32Array([0, 1, 1, 3, 3, 2, 2, 0, 0, 3]), undefined, "GPUParticleSystemLinesIndexBuffer");
     }
 
     /**
@@ -174,7 +175,13 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @returns true if the system is ready
      */
     public isReady(): boolean {
-        if (!this.emitter || (this._imageProcessingConfiguration && !this._imageProcessingConfiguration.isReady()) || !this.particleTexture || !this.particleTexture.isReady()) {
+        if (
+            !this.emitter ||
+            (this._imageProcessingConfiguration && !this._imageProcessingConfiguration.isReady()) ||
+            !this.particleTexture ||
+            !this.particleTexture.isReady() ||
+            this._rebuildingAfterContextLost
+        ) {
             return false;
         }
 
@@ -1231,7 +1238,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
 
         if (this._platform.isUpdateBufferCreated() && this._cachedUpdateDefines === defines) {
-            return true;
+            return this._platform.isUpdateBufferReady();
         }
 
         this._cachedUpdateDefines = defines;
@@ -1583,7 +1590,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             return;
         }
 
-        if (!this._recreateUpdateEffect()) {
+        if (!this._recreateUpdateEffect() || this._rebuildingAfterContextLost) {
             return;
         }
 
@@ -1744,6 +1751,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
                 setTimeout(checkUpdateEffect, 10);
             } else {
                 this._initialize(true);
+                this._rebuildingAfterContextLost = false;
             }
         };
 
@@ -1751,6 +1759,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         this._cachedUpdateDefines = "";
         this._platform.contextLost();
+        this._rebuildingAfterContextLost = true;
 
         checkUpdateEffect();
     }

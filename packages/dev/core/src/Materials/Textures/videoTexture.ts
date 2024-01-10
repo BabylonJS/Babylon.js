@@ -213,6 +213,7 @@ export class VideoTexture extends Texture {
             this.video.setAttribute("playsinline", "");
             this.video.addEventListener("paused", this._updateInternalTexture);
             this.video.addEventListener("seeked", this._updateInternalTexture);
+            this.video.addEventListener("loadeddata", this._updateInternalTexture);
             this.video.addEventListener("emptied", this._reset);
 
             if (this._settings.autoPlay) {
@@ -447,6 +448,7 @@ export class VideoTexture extends Texture {
         if (!this._settings.independentVideoSource) {
             this.video.removeEventListener("paused", this._updateInternalTexture);
             this.video.removeEventListener("seeked", this._updateInternalTexture);
+            this.video.removeEventListener("loadeddata", this._updateInternalTexture);
             this.video.removeEventListener("emptied", this._reset);
             this.video.removeEventListener("resize", this._resizeInternalTexture);
             this.video.pause();

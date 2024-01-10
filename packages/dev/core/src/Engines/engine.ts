@@ -1197,16 +1197,26 @@ export class Engine extends ThinEngine {
         for (const scene of this.scenes) {
             scene.resetCachedMaterial();
             scene._rebuildGeometries();
-            scene._rebuildTextures();
         }
 
         for (const scene of this._virtualScenes) {
             scene.resetCachedMaterial();
             scene._rebuildGeometries();
-            scene._rebuildTextures();
         }
 
         super._rebuildBuffers();
+    }
+
+    protected _rebuildTextures(): void {
+        for (const scene of this.scenes) {
+            scene._rebuildTextures();
+        }
+
+        for (const scene of this._virtualScenes) {
+            scene._rebuildTextures();
+        }
+
+        super._rebuildTextures();
     }
 
     /** @internal */

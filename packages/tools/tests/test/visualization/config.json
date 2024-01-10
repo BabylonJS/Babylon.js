@@ -1130,7 +1130,7 @@
         },
         {
             "title": "Geometry buffer renderer",
-            "playgroundId": "#PIZ1GK#173",
+            "playgroundId": "#PIZ1GK#1620",
             "referenceImage": "geometrybufferrenderer.png",
             "renderCount": 10,
             "excludedEngines": ["webgl1"],
@@ -1418,14 +1418,14 @@
         {
             "title": "Thin instances + motion blur + manual",
             "renderCount": 30,
-            "playgroundId": "#HJGC2G#132",
+            "playgroundId": "#HJGC2G#245",
             "excludedEngines": ["webgl1"],
             "referenceImage": "thin-instances-mb-manual.png"
         },
         {
             "title": "Thin instances + dynamic buffer resize",
             "renderCount": 10,
-            "playgroundId": "#217750#33",
+            "playgroundId": "#217750#217",
             "excludedEngines": ["webgl1"],
             "referenceImage": "thin-instances-buffer-resize.png"
         },
@@ -1439,7 +1439,7 @@
         {
             "title": "Thin instances + render self motion blur",
             "renderCount": 10,
-            "playgroundId": "#217750#35",
+            "playgroundId": "#217750#218",
             "excludedEngines": ["webgl1"],
             "referenceImage": "thin-instances-renderself-mb.png"
         },

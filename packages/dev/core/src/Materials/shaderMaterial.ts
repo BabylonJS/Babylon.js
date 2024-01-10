@@ -1480,9 +1480,9 @@ export class ShaderMaterial extends PushMaterial {
         }
 
         // Floats
-        serializationObject.FloatArrays = {};
+        serializationObject.floatsArrays = {};
         for (name in this._floatsArrays) {
-            serializationObject.FloatArrays[name] = this._floatsArrays[name];
+            serializationObject.floatsArrays[name] = this._floatsArrays[name];
         }
 
         // Color3

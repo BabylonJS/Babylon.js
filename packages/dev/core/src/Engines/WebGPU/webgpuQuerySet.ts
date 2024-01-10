@@ -29,7 +29,7 @@ export class WebGPUQuerySet {
         this._canUseMultipleBuffers = canUseMultipleBuffers;
 
         this._querySet = device.createQuerySet({
-            label,
+            label: label ?? "QuerySet",
             type,
             count,
         });
@@ -81,6 +81,7 @@ export class WebGPUQuerySet {
         if (buffer === null) {
             return null;
         }
+        const engineId = this._engine.uniqueId;
 
         return buffer.mapAsync(WebGPUConstants.MapMode.Read).then(
             () => {
@@ -93,7 +94,8 @@ export class WebGPUQuerySet {
                 return arrayBuf;
             },
             (err) => {
-                if (this._engine.isDisposed) {
+                if (this._engine.isDisposed || this._engine.uniqueId !== engineId) {
+                    // Engine disposed or context loss/restoration
                     return null;
                 }
                 throw err;
@@ -106,6 +108,7 @@ export class WebGPUQuerySet {
         if (buffer === null) {
             return null;
         }
+        const engineId = this._engine.uniqueId;
 
         return buffer.mapAsync(WebGPUConstants.MapMode.Read).then(
             () => {
@@ -119,7 +122,8 @@ export class WebGPUQuerySet {
                 return value;
             },
             (err) => {
-                if (this._engine.isDisposed) {
+                if (this._engine.isDisposed || this._engine.uniqueId !== engineId) {
+                    // Engine disposed or context loss/restoration
                     return 0;
                 }
                 throw err;
@@ -132,6 +136,7 @@ export class WebGPUQuerySet {
         if (buffer === null) {
             return null;
         }
+        const engineId = this._engine.uniqueId;
 
         return buffer.mapAsync(WebGPUConstants.MapMode.Read).then(
             () => {
@@ -145,7 +150,8 @@ export class WebGPUQuerySet {
                 return value;
             },
             (err) => {
-                if (this._engine.isDisposed) {
+                if (this._engine.isDisposed || this._engine.uniqueId !== engineId) {
+                    // Engine disposed or context loss/restoration
                     return 0;
                 }
                 throw err;

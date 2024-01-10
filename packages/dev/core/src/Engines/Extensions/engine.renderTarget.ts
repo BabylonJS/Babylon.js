@@ -66,12 +66,14 @@ ThinEngine.prototype.createRenderTargetTexture = function (this: ThinEngine, siz
     let noColorAttachment = false;
     let colorAttachment: InternalTexture | undefined = undefined;
     let samples = 1;
+    let label: string | undefined = undefined;
     if (options !== undefined && typeof options === "object") {
         generateDepthBuffer = options.generateDepthBuffer ?? true;
         generateStencilBuffer = !!options.generateStencilBuffer;
         noColorAttachment = !!options.noColorAttachment;
         colorAttachment = options.colorAttachment;
         samples = options.samples ?? 1;
+        label = options.label;
     }
 
     const texture = colorAttachment || (noColorAttachment ? null : this._createInternalTexture(size, options, true, InternalTextureSource.RenderTarget));
@@ -93,6 +95,7 @@ ThinEngine.prototype.createRenderTargetTexture = function (this: ThinEngine, siz
 
     this._bindUnboundFramebuffer(currentFrameBuffer);
 
+    rtWrapper.label = label ?? "RenderTargetWrapper";
     rtWrapper._framebuffer = framebuffer;
     rtWrapper._generateDepthBuffer = generateDepthBuffer;
     rtWrapper._generateStencilBuffer = generateStencilBuffer;
@@ -107,17 +110,18 @@ ThinEngine.prototype.createRenderTargetTexture = function (this: ThinEngine, siz
 ThinEngine.prototype.createDepthStencilTexture = function (size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
     if (options.isCube) {
         const width = (<{ width: number; height: number }>size).width || <number>size;
-        return this._createDepthStencilCubeTexture(width, options, rtWrapper);
+        return this._createDepthStencilCubeTexture(width, options);
     } else {
         return this._createDepthStencilTexture(size, options, rtWrapper);
     }
 };
 
-ThinEngine.prototype._createDepthStencilTexture = function (size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
+ThinEngine.prototype._createDepthStencilTexture = function (size: TextureSize, options: DepthTextureCreationOptions): InternalTexture {
     const gl = this._gl;
     const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
     const target = layers !== 0 ? gl.TEXTURE_2D_ARRAY : gl.TEXTURE_2D;
     const internalTexture = new InternalTexture(this, InternalTextureSource.DepthStencil);
+    internalTexture.label = options.label;
     if (!this._caps.depthTextureExtension) {
         Logger.Error("Depth texture is not supported by your browser or hardware.");
         return internalTexture;
@@ -163,9 +167,6 @@ ThinEngine.prototype._createDepthStencilTexture = function (size: TextureSize, o
         internalTexture.format === Constants.TEXTUREFORMAT_DEPTH24_STENCIL8 ||
         internalTexture.format === Constants.TEXTUREFORMAT_DEPTH32FLOAT_STENCIL8;
 
-    rtWrapper._depthStencilTexture = internalTexture;
-    rtWrapper._depthStencilTextureWithStencil = hasStencil;
-
     let type: GLenum = gl.UNSIGNED_INT;
     if (internalTexture.format === Constants.TEXTUREFORMAT_DEPTH16) {
         type = gl.UNSIGNED_SHORT;
@@ -202,21 +203,6 @@ ThinEngine.prototype._createDepthStencilTexture = function (size: TextureSize, o
     this._bindTextureDirectly(target, null);
 
     this._internalTexturesCache.push(internalTexture);
-
-    // Dispose previous depth/stencil render buffers and clear the corresponding attachment.
-    // Next time this framebuffer is bound, the new depth/stencil texture will be attached.
-    const glRtWrapper = <WebGLRenderTargetWrapper>(rtWrapper as any);
-    if (glRtWrapper._depthStencilBuffer) {
-        const currentFrameBuffer = this._currentFramebuffer;
-        this._bindUnboundFramebuffer(glRtWrapper._framebuffer);
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, null);
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, null);
-        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT, gl.RENDERBUFFER, null);
-        this._bindUnboundFramebuffer(currentFrameBuffer);
-
-        gl.deleteRenderbuffer(glRtWrapper._depthStencilBuffer);
-        glRtWrapper._depthStencilBuffer = null;
-    }
 
     return internalTexture;
 };

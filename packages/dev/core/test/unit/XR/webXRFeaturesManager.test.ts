@@ -5,6 +5,7 @@
 import { NullEngine } from "core/Engines";
 import { Scene } from "core/scene";
 import { WebXRFeaturesManager, WebXRSessionManager, WebXRMotionControllerTeleportation, WebXRControllerMovement } from "core/XR";
+// eslint-disable-next-line import/no-internal-modules
 import "core/Animations/index";
 /**
  * WebXR Features Manager test suite.
@@ -53,7 +54,7 @@ describe("Babylon WebXR Features Manager", function () {
      */
     describe("Conflicting Features cannot be enabled simultaneously", () => {
         it("Cannot enable Movement feature while Teleportation feature is enabled", () => {
-            const teleportationFeature = subject.enableFeature(WebXRMotionControllerTeleportation.Name, undefined, { xrInput: {} });
+            const teleportationFeature = subject.enableFeature(WebXRMotionControllerTeleportation.Name, undefined, { xrInput: { xrCamera: {} } });
             expect(teleportationFeature).toBeDefined();
             expect(subject.getEnabledFeatures()).toStrictEqual([WebXRMotionControllerTeleportation.Name]);
 
