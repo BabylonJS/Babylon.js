@@ -10,6 +10,9 @@ import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
  * The variable block configuration.
  */
 export interface IFlowGraphSetVariableBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * The name of the variable to set.
+     */
     variableName: string;
 }
 

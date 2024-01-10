@@ -25,8 +25,22 @@ export interface IFlowGraphContextConfiguration {
     readonly coordinator: FlowGraphCoordinator;
 }
 
+/**
+ * @experimental
+ * Options for parsing a context.
+ */
 export interface IFlowGraphContextParseOptions {
+    /**
+     * A function that parses a value from a serialization object.
+     * @param key the key of the value
+     * @param serializationObject the object containing the value
+     * @param scene the current scene
+     * @returns
+     */
     readonly valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any;
+    /**
+     * The graph that the context is being parsed in.
+     */
     readonly graph: FlowGraph;
 }
 /**

@@ -10,6 +10,9 @@ import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
  * @experimental
  */
 export interface IFlowGraphDoNBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * The start index for the counter.
+     */
     startIndex: number;
 }
 /**
