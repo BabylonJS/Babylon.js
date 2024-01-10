@@ -14,14 +14,14 @@ import { FlowGraphInteger } from "core/FlowGraph/flowGraphInteger";
 describe("Babylon Interactivity", () => {
     let engine;
     let scene: Scene;
-    let log: jest.SpyInstance;
+    const log: jest.SpyInstance = jest.spyOn(Logger, "Log");
     let mockGltf: any;
 
     beforeEach(() => {
         engine = new NullEngine();
         scene = new Scene(engine);
         new ArcRotateCamera("", 0, 0, 0, new Vector3(0, 0, 0));
-        log = jest.spyOn(Logger, "Log");
+        log.mockClear();
     });
 
     it("should load a basic graph", () => {
@@ -68,6 +68,7 @@ describe("Babylon Interactivity", () => {
 
         coordinator.start();
 
+        log.mockClear();
         scene.onReadyObservable.notifyObservers(scene);
         expect(log.mock.calls[0][0].m).toEqual(new Float32Array([0, 4, 8, 12, 2, 6, 10, 14, 1, 5, 9, 13, 3, 7, 11, 15]));
     });
@@ -118,7 +119,7 @@ describe("Babylon Interactivity", () => {
         }
 
         for (let i = 1; i < 6; i++) {
-            expect(log).toHaveBeenCalledWith(i);
+            expect(log).toHaveBeenCalledWith(new FlowGraphInteger(i));
         }
 
         for (let i = 6; i < 11; i++) {

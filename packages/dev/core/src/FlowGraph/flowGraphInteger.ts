@@ -7,27 +7,29 @@ import { RegisterClass } from "../Misc/typeStore";
 export class FlowGraphInteger {
     /**
      * The value of the integer. Its type
-     * is a javascript number.
+     * is a javascript number. Shouldn't be
+     * directly modified - it is populated by
+     * the constructor.
      */
-    value: number;
+    readonly value: number;
 
     constructor(value: number) {
-        this.value = this.convertToInt(value);
+        this.value = this.toInt(value);
     }
 
     /**
      * Converts a float to an integer.
      * @param n the float to convert
-     * @returns
+     * @returns the result of n | 0 - converting it to a int
      */
-    public convertToInt(n: number): number {
+    public toInt(n: number): number {
         return n | 0;
     }
 
     /**
      * Adds two integers together.
      * @param other the other integer to add
-     * @returns
+     * @returns a FlowGraphInteger with the result of the addition
      */
     public add(other: FlowGraphInteger): FlowGraphInteger {
         return new FlowGraphInteger(this.value + other.value);
@@ -36,7 +38,7 @@ export class FlowGraphInteger {
     /**
      * Subtracts two integers.
      * @param other the other integer to subtract
-     * @returns
+     * @returns a FlowGraphInteger with the result of the subtraction
      */
     public subtract(other: FlowGraphInteger): FlowGraphInteger {
         return new FlowGraphInteger(this.value - other.value);
@@ -45,6 +47,7 @@ export class FlowGraphInteger {
     /**
      * Multiplies two integers.
      * @param other the other integer to multiply
+     * @returns a FlowGraphInteger with the result of the multiplication
      */
     public multiply(other: FlowGraphInteger): FlowGraphInteger {
         return new FlowGraphInteger(Math.imul(this.value, other.value));
@@ -53,7 +56,7 @@ export class FlowGraphInteger {
     /**
      * Divides two integers.
      * @param other the other integer to divide
-     * @returns
+     * @returns a FlowGraphInteger with the result of the division
      */
     public divide(other: FlowGraphInteger): FlowGraphInteger {
         return new FlowGraphInteger(this.value / other.value);

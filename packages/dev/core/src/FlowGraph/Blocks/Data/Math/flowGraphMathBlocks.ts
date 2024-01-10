@@ -10,8 +10,6 @@ import { FlowGraphInteger } from "../../../flowGraphInteger";
 
 /**
  * @internal
- * @param v
- * @returns
  */
 function _getClassNameOf(v: any) {
     if (v.getClassName) {
@@ -22,8 +20,6 @@ function _getClassNameOf(v: any) {
 
 /**
  * @internal
- * @param className
- * @param className2
  * @returns
  */
 function _areSameVectorClass(className: string, className2: string) {
@@ -32,8 +28,6 @@ function _areSameVectorClass(className: string, className2: string) {
 
 /**
  * @internal
- * @param className
- * @param className2
  * @returns
  */
 function _areSameMatrixClass(className: string, className2: string) {
@@ -42,8 +36,6 @@ function _areSameMatrixClass(className: string, className2: string) {
 
 /**
  * @internal
- * @param className
- * @param className2
  * @returns
  */
 function _areSameIntegerClass(className: string, className2: string) {
@@ -540,11 +532,23 @@ function _componentWiseTernaryOperation(a: any, b: any, c: any, op: (a: any, b: 
             return new Vector4(op(a.x, b.x, c.x), op(a.y, b.y, c.y), op(a.z, b.z, c.z), op(a.w, b.w, c.w));
         case "Matrix":
             return Matrix.FromValues(
-                op(a.m[0], b.m[0], c.m[0]), op(a.m[4], b.m[4], c.m[4]), op(a.m[8], b.m[8], c.m[8]), op(a.m[12], b.m[12], c.m[12]),
-                op(a.m[1], b.m[1], c.m[1]), op(a.m[5], b.m[5], c.m[5]), op(a.m[9], b.m[9], c.m[9]), op(a.m[13], b.m[13], c.m[13]),
-                op(a.m[2], b.m[2], c.m[2]), op(a.m[6], b.m[6], c.m[6]), op(a.m[10], b.m[10], c.m[10]), op(a.m[14], b.m[14], c.m[14]),
-                op(a.m[3], b.m[3], c.m[3]), op(a.m[7], b.m[7], c.m[7]), op(a.m[11], b.m[11], c.m[11]), op(a.m[15], b.m[15], c.m[15])
-            )
+                op(a.m[0], b.m[0], c.m[0]),
+                op(a.m[4], b.m[4], c.m[4]),
+                op(a.m[8], b.m[8], c.m[8]),
+                op(a.m[12], b.m[12], c.m[12]),
+                op(a.m[1], b.m[1], c.m[1]),
+                op(a.m[5], b.m[5], c.m[5]),
+                op(a.m[9], b.m[9], c.m[9]),
+                op(a.m[13], b.m[13], c.m[13]),
+                op(a.m[2], b.m[2], c.m[2]),
+                op(a.m[6], b.m[6], c.m[6]),
+                op(a.m[10], b.m[10], c.m[10]),
+                op(a.m[14], b.m[14], c.m[14]),
+                op(a.m[3], b.m[3], c.m[3]),
+                op(a.m[7], b.m[7], c.m[7]),
+                op(a.m[11], b.m[11], c.m[11]),
+                op(a.m[15], b.m[15], c.m[15])
+            );
         default:
             return op(a, b, c);
     }
@@ -1312,7 +1316,14 @@ RegisterClass(FlowGraphBitwiseNotBlock.ClassName, FlowGraphBitwiseNotBlock);
  */
 export class FlowGraphBitwiseAndBlock extends FlowGraphBinaryOperationBlock<FlowGraphInteger, FlowGraphInteger, FlowGraphInteger> {
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, (a, b) => new FlowGraphInteger(a.value & b.value), FlowGraphBitwiseAndBlock.ClassName, config);
+        super(
+            RichTypeFlowGraphInteger,
+            RichTypeFlowGraphInteger,
+            RichTypeFlowGraphInteger,
+            (a, b) => new FlowGraphInteger(a.value & b.value),
+            FlowGraphBitwiseAndBlock.ClassName,
+            config
+        );
     }
 
     public static ClassName = "FGBitwiseAndBlock";
@@ -1325,7 +1336,14 @@ RegisterClass(FlowGraphBitwiseAndBlock.ClassName, FlowGraphBitwiseAndBlock);
  */
 export class FlowGraphBitwiseOrBlock extends FlowGraphBinaryOperationBlock<FlowGraphInteger, FlowGraphInteger, FlowGraphInteger> {
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, (a, b) => new FlowGraphInteger(a.value | b.value), FlowGraphBitwiseOrBlock.ClassName, config);
+        super(
+            RichTypeFlowGraphInteger,
+            RichTypeFlowGraphInteger,
+            RichTypeFlowGraphInteger,
+            (a, b) => new FlowGraphInteger(a.value | b.value),
+            FlowGraphBitwiseOrBlock.ClassName,
+            config
+        );
     }
 
     public static ClassName = "FGBitwiseOrBlock";
@@ -1338,7 +1356,14 @@ RegisterClass(FlowGraphBitwiseOrBlock.ClassName, FlowGraphBitwiseOrBlock);
  */
 export class FlowGraphBitwiseXorBlock extends FlowGraphBinaryOperationBlock<FlowGraphInteger, FlowGraphInteger, FlowGraphInteger> {
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, (a, b) => new FlowGraphInteger(a.value ^ b.value), FlowGraphBitwiseXorBlock.ClassName, config);
+        super(
+            RichTypeFlowGraphInteger,
+            RichTypeFlowGraphInteger,
+            RichTypeFlowGraphInteger,
+            (a, b) => new FlowGraphInteger(a.value ^ b.value),
+            FlowGraphBitwiseXorBlock.ClassName,
+            config
+        );
     }
 
     public static ClassName = "FGBitwiseXorBlock";
@@ -1351,7 +1376,14 @@ RegisterClass(FlowGraphBitwiseXorBlock.ClassName, FlowGraphBitwiseXorBlock);
  */
 export class FlowGraphBitwiseLeftShiftBlock extends FlowGraphBinaryOperationBlock<FlowGraphInteger, FlowGraphInteger, FlowGraphInteger> {
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, (a, b) => new FlowGraphInteger(a.value << b.value), FlowGraphBitwiseLeftShiftBlock.ClassName, config);
+        super(
+            RichTypeFlowGraphInteger,
+            RichTypeFlowGraphInteger,
+            RichTypeFlowGraphInteger,
+            (a, b) => new FlowGraphInteger(a.value << b.value),
+            FlowGraphBitwiseLeftShiftBlock.ClassName,
+            config
+        );
     }
 
     public static ClassName = "FGBitwiseLeftShiftBlock";
@@ -1364,7 +1396,14 @@ RegisterClass(FlowGraphBitwiseLeftShiftBlock.ClassName, FlowGraphBitwiseLeftShif
  */
 export class FlowGraphBitwiseRightShiftBlock extends FlowGraphBinaryOperationBlock<FlowGraphInteger, FlowGraphInteger, FlowGraphInteger> {
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, (a, b) => new FlowGraphInteger(a.value >> b.value), FlowGraphBitwiseRightShiftBlock.ClassName, config);
+        super(
+            RichTypeFlowGraphInteger,
+            RichTypeFlowGraphInteger,
+            RichTypeFlowGraphInteger,
+            (a, b) => new FlowGraphInteger(a.value >> b.value),
+            FlowGraphBitwiseRightShiftBlock.ClassName,
+            config
+        );
     }
 
     public static ClassName = "FGBitwiseRightShiftBlock";
@@ -1390,7 +1429,13 @@ RegisterClass(FlowGraphCountLeadingZerosBlock.ClassName, FlowGraphCountLeadingZe
  */
 export class FlowGraphCountTrailingZerosBlock extends FlowGraphUnaryOperationBlock<FlowGraphInteger, FlowGraphInteger> {
     constructor(config?: IFlowGraphBlockConfiguration) {
-        super(RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, (a) => new FlowGraphInteger(a.value ? (31 - Math.clz32(a.value & -a.value)) : 32), FlowGraphCountTrailingZerosBlock.ClassName, config);
+        super(
+            RichTypeFlowGraphInteger,
+            RichTypeFlowGraphInteger,
+            (a) => new FlowGraphInteger(a.value ? 31 - Math.clz32(a.value & -a.value) : 32),
+            FlowGraphCountTrailingZerosBlock.ClassName,
+            config
+        );
     }
 
     public static ClassName = "FGCountTrailingZerosBlock";
