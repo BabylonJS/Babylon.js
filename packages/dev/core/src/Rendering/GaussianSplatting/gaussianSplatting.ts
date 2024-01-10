@@ -1,6 +1,6 @@
 import { Constants } from "../../Engines/constants";
 import { Effect } from "../../Materials/effect";
-import { RawTexture } from "../..//Materials";
+import { RawTexture } from "../../Materials/Textures/rawTexture";
 import { ShaderMaterial } from "../../Materials/shaderMaterial";
 import { Matrix, Quaternion, TmpVectors, Vector2, Vector3 } from "../../Maths/math.vector";
 import { Mesh } from "../../Meshes/mesh";
@@ -105,24 +105,32 @@ export class GaussianSplatting {
         uniform highp sampler2D colorsTexture;
         uniform vec2 dataTextureSize;
 
-        uniform mat4 projection, modelView;
+        uniform mat4 projection;
+        uniform mat4 modelView;
         uniform vec2 viewport;
 
         varying vec4 vColor;
         varying vec2 vPosition;
 
-        ivec2 getDataUV(uint index, vec2 textureSize) {
-            uint y = uint(floor(float(index) / textureSize.x));
-            uint x = index - uint(float(y) * textureSize.x);
-            return ivec2(x, y);
+        // webgl context does not offer function transpose
+        mat3 _transpose(mat3 matrix) {
+            return mat3(matrix[0][0], matrix[1][0], matrix[2][0],
+                matrix[0][1], matrix[1][1], matrix[2][1],
+                matrix[0][2], matrix[1][2], matrix[2][2]);
+        }
+
+        vec2 _getDataUV(float index, vec2 textureSize) {
+            float y = floor(index / textureSize.x);
+            float x = index - y * textureSize.x;
+            return vec2((x + 0.5) / dataTextureSize.x, (y + 0.5) / dataTextureSize.y);
         }
 
         void main () {
-        ivec2 splatUV = getDataUV(uint(splatIndex), dataTextureSize);
-        vec3 center = texelFetch(centersTexture, splatUV, 0).xyz;
-        vec4 color = texelFetch(colorsTexture, splatUV, 0);
-        vec3 covA = texelFetch(covariancesATexture, splatUV, 0).xyz;
-        vec3 covB = texelFetch(covariancesBTexture, splatUV, 0).xyz;
+        vec2 splatUV = _getDataUV(splatIndex, dataTextureSize);
+        vec3 center = texture2D(centersTexture, splatUV).xyz;
+        vec4 color = texture2D(colorsTexture, splatUV);
+        vec3 covA = texture2D(covariancesATexture, splatUV).xyz;
+        vec3 covB = texture2D(covariancesBTexture, splatUV).xyz;
 
         vec4 camspace = modelView * vec4(center, 1);
         vec4 pos2d = projection * camspace;
@@ -148,8 +156,8 @@ export class GaussianSplatting {
 
         mat3 invy = mat3(1,0,0, 0,-1,0,0,0,1);
 
-        mat3 T = invy * transpose(mat3(modelView)) * J;
-        mat3 cov2d = transpose(T) * Vrk * T;
+        mat3 T = invy * _transpose(mat3(modelView)) * J;
+        mat3 cov2d = _transpose(T) * Vrk * T;
 
         float mid = (cov2d[0][0] + cov2d[1][1]) / 2.0;
         float radius = length(vec2((cov2d[0][0] - cov2d[1][1]) / 2.0, cov2d[0][1]));
@@ -329,6 +337,19 @@ export class GaussianSplatting {
             return new RawTexture(data, width, height, format, this.scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
         };
 
+        // an additional convertion to avoid break the original data
+        const convertRgbToRgba = (rgb: Float32Array) => {
+            const count = rgb.length / 3;
+            const rgba = new Float32Array(count * 4);
+            for (let i = 0; i < count; ++i) {
+                rgba[i * 4 + 0] = rgb[i * 3 + 0];
+                rgba[i * 4 + 1] = rgb[i * 3 + 1];
+                rgba[i * 4 + 2] = rgb[i * 3 + 2];
+                rgba[i * 4 + 3] = 1.0;
+            }
+            return rgba;
+        };
+
         /// create textures for gaussian info
         if (this._material.name == "GaussianSplattingShader") {
             const material = this.mesh.material as ShaderMaterial;
@@ -336,13 +357,13 @@ export class GaussianSplatting {
             const textureSize = this._getTextureSize(this.vertexCount);
             material.setVector2("dataTextureSize", textureSize);
 
-            const convATexture = createTextureFromData(this._covA, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGB);
+            const convATexture = createTextureFromData(convertRgbToRgba(this._covA), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
             material.setTexture("covariancesATexture", convATexture);
 
-            const convBTexture = createTextureFromData(this._covB, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGB);
+            const convBTexture = createTextureFromData(convertRgbToRgba(this._covB), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
             material.setTexture("covariancesBTexture", convBTexture);
 
-            const centersTexture = createTextureFromData(this._positions, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGB);
+            const centersTexture = createTextureFromData(convertRgbToRgba(this._positions), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
             material.setTexture("centersTexture", centersTexture);
 
             const colorArray = new Float32Array(textureSize.x * textureSize.y * 4);
