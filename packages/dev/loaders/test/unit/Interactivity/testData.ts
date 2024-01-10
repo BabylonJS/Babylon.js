@@ -190,7 +190,7 @@ export const matrixMathExample = {
             flows: [
                 {
                     id: "out",
-                    node: 2,
+                    node: 3,
                     socket: "in",
                 },
             ],
@@ -211,11 +211,21 @@ export const matrixMathExample = {
             ],
         },
         {
+            type: "math/transpose",
+            values: [
+                {
+                    id: "a",
+                    node: 1,
+                    socket: "value",
+                },
+            ],
+        },
+        {
             type: "log",
             values: [
                 {
                     id: "message",
-                    node: 1,
+                    node: 2,
                     socket: "value",
                 },
             ],
