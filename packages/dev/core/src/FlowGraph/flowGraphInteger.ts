@@ -67,6 +67,15 @@ export class FlowGraphInteger {
         return FlowGraphInteger.ClassName;
     }
 
+    /**
+     * Compares two integers for equality.
+     * @param other the other integer to compare
+     * @returns
+     */
+    public equals(other: FlowGraphInteger): boolean {
+        return this.value === other.value;
+    }
+
     public static ClassName = "FlowGraphInteger";
 
     /**
