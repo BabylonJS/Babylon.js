@@ -112,21 +112,22 @@ export class GaussianSplatting {
         varying vec4 vColor;
         varying vec2 vPosition;
 
-        // webgl context does not offer function transpose
-        mat3 _transpose(mat3 matrix) {
+        #if !defined(WEBGL2) && !defined(WEBGPU) && !defined(NATIVE)
+        mat3 transpose(mat3 matrix) {
             return mat3(matrix[0][0], matrix[1][0], matrix[2][0],
                 matrix[0][1], matrix[1][1], matrix[2][1],
                 matrix[0][2], matrix[1][2], matrix[2][2]);
         }
+        #endif
 
-        vec2 _getDataUV(float index, vec2 textureSize) {
+        vec2 getDataUV(float index, vec2 textureSize) {
             float y = floor(index / textureSize.x);
             float x = index - y * textureSize.x;
             return vec2((x + 0.5) / dataTextureSize.x, (y + 0.5) / dataTextureSize.y);
         }
 
         void main () {
-        vec2 splatUV = _getDataUV(splatIndex, dataTextureSize);
+        vec2 splatUV = getDataUV(splatIndex, dataTextureSize);
         vec3 center = texture2D(centersTexture, splatUV).xyz;
         vec4 color = texture2D(colorsTexture, splatUV);
         vec3 covA = texture2D(covariancesATexture, splatUV).xyz;
@@ -156,8 +157,8 @@ export class GaussianSplatting {
 
         mat3 invy = mat3(1,0,0, 0,-1,0,0,0,1);
 
-        mat3 T = invy * _transpose(mat3(modelView)) * J;
-        mat3 cov2d = _transpose(T) * Vrk * T;
+        mat3 T = invy * transpose(mat3(modelView)) * J;
+        mat3 cov2d = transpose(T) * Vrk * T;
 
         float mid = (cov2d[0][0] + cov2d[1][1]) / 2.0;
         float radius = length(vec2((cov2d[0][0] - cov2d[1][1]) / 2.0, cov2d[0][1]));
@@ -337,7 +338,7 @@ export class GaussianSplatting {
             return new RawTexture(data, width, height, format, this.scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
         };
 
-        // an additional convertion to avoid break the original data
+        // additional conversion to avoid breaking the original data
         const convertRgbToRgba = (rgb: Float32Array) => {
             const count = rgb.length / 3;
             const rgba = new Float32Array(count * 4);
@@ -443,16 +444,25 @@ export class GaussianSplatting {
         this.mesh = null;
     }
 
+    /**
+     * Calculate the texture size of Gaussian Splatting data
+     * @param length number of splattings
+     * @returns texture size in Vector2
+     */
     private _getTextureSize(length: number): Vector2 {
-        const maxTextureSize = this.scene.getEngine().getCaps().maxTextureSize;
-        const width = maxTextureSize;
+        const engine = this.scene.getEngine();
+        const width = engine.getCaps().maxTextureSize;
         let height = 1;
-        while (width * height < length) {
-            height *= 2;
+        if (engine.webGLVersion === 1 && !engine.isWebGPU) {
+            while (width * height < length) {
+                height *= 2;
+            }
+        } else {
+            height = Math.ceil(length / width);
         }
-        if (height > maxTextureSize) {
-            Logger.Warn("GaussianSplatting texture size: (" + width + ", " + height + "), maxTextureSize: " + maxTextureSize);
-            height = maxTextureSize;
+        if (height > width) {
+            Logger.Warn("GaussianSplatting texture size: (" + width + ", " + height + "), maxTextureSize: " + width);
+            height = width;
         }
         return new Vector2(width, height);
     }
