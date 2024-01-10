@@ -273,7 +273,7 @@ describe("Flow Graph Execution Nodes", () => {
         const nodeIndexInput = setProperty.getDataInput("nodeIndex");
         expect(nodeIndexInput).toBeDefined();
 
-        nodeIndexInput!.setValue(1, flowGraphContext);
+        nodeIndexInput!.setValue(new FlowGraphInteger(1), flowGraphContext);
         setProperty.a.setValue(new Vector3(1, 2, 3), flowGraphContext);
 
         flowGraph.start();
