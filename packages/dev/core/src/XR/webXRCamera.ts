@@ -28,11 +28,13 @@ export class WebXRCamera extends FreeCamera {
 
     /**
      * Observable raised before camera teleportation
+     * @deprecated use onBeforeCameraTeleport of the teleportation feature instead
      */
     public onBeforeCameraTeleport = new Observable<Vector3>();
 
     /**
      *  Observable raised after camera teleportation
+     * @deprecated use onAfterCameraTeleport of the teleportation feature instead
      */
     public onAfterCameraTeleport = new Observable<Vector3>();
 

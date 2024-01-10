@@ -1418,7 +1418,7 @@
         {
             "title": "Thin instances + motion blur + manual",
             "renderCount": 30,
-            "playgroundId": "#HJGC2G#132",
+            "playgroundId": "#HJGC2G#245",
             "excludedEngines": ["webgl1"],
             "referenceImage": "thin-instances-mb-manual.png"
         },

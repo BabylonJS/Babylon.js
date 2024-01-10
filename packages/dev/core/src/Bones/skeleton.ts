@@ -180,14 +180,14 @@ export class Skeleton implements IAnimatable {
     public getTransformMatrices(mesh: AbstractMesh): Float32Array {
         if (this.needInitialSkinMatrix) {
             if (!mesh._bonesTransformMatrices) {
-                this.prepare();
+                this.prepare(true);
             }
 
             return mesh._bonesTransformMatrices!;
         }
 
         if (!this._transformMatrices || this._isDirty) {
-            this.prepare();
+            this.prepare(!this._transformMatrices);
         }
 
         return this._transformMatrices;
