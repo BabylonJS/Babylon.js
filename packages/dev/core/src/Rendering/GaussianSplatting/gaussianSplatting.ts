@@ -445,18 +445,14 @@ export class GaussianSplatting {
 
     private _getTextureSize(length: number): Vector2 {
         const maxTextureSize = this.scene.getEngine().getCaps().maxTextureSize;
-        let dim = 2;
-        while (dim * dim < length) {
-            dim *= 2;
+        const width = maxTextureSize;
+        let height = 1;
+        while (width * height < length) {
+            height *= 2;
         }
-        let width = dim,
-            height = dim;
-        if ((dim * dim) / 2 >= length) {
-            height /= 2;
-        }
-        if (width > maxTextureSize) {
+        if (height > maxTextureSize) {
             Logger.Warn("GaussianSplatting texture size: (" + width + ", " + height + "), maxTextureSize: " + maxTextureSize);
-            width = height = maxTextureSize;
+            height = maxTextureSize;
         }
         return new Vector2(width, height);
     }
