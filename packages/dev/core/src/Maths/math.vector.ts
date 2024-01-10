@@ -5977,7 +5977,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, MatrixLike {
      * @returns the matrix underlying array.
      */
     public asArray(): Tuple<number, 16> {
-        return [...this._m];
+        return this._m;
     }
 
     public fromArray(array: FloatArray, index: number = 0): this {
