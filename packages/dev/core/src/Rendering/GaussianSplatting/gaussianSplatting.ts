@@ -1,4 +1,6 @@
+import { Constants } from "../../Engines/constants";
 import { Effect } from "../../Materials/effect";
+import { RawTexture } from "../../Materials/Textures/rawTexture";
 import { ShaderMaterial } from "../../Materials/shaderMaterial";
 import { Matrix, Quaternion, TmpVectors, Vector2, Vector3 } from "../../Maths/math.vector";
 import { Mesh } from "../../Meshes/mesh";
@@ -7,6 +9,7 @@ import type { Observer } from "../../Misc/observable";
 import { Tools } from "../../Misc/tools";
 import type { Scene } from "../../scene";
 import type { Nullable } from "../../types";
+import { Logger } from "../../Misc/logger";
 
 /**
  * @experimental
@@ -59,8 +62,9 @@ export class GaussianSplatting {
                 fragment: "gaussianSplatting",
             },
             {
-                attributes: ["position"],
-                uniforms: ["projection", "modelView", "viewport"],
+                attributes: ["position", "splatIndex"],
+                uniforms: ["projection", "modelView", "viewport", "dataTextureSize"],
+                samplers: ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture"],
             }
         );
         shaderMaterial.backFaceCulling = false;
@@ -90,23 +94,44 @@ export class GaussianSplatting {
     protected _worker: Nullable<Worker> = null;
     protected static _VertexShaderSource = `
         precision mediump float;
+
+        attribute float splatIndex;
+
         attribute vec2 position;
 
-        attribute vec4 world0;
-        attribute vec4 world1;
-        attribute vec4 world2;
-        attribute vec4 world3;
+        uniform highp sampler2D covariancesATexture;
+        uniform highp sampler2D covariancesBTexture;
+        uniform highp sampler2D centersTexture;
+        uniform highp sampler2D colorsTexture;
+        uniform vec2 dataTextureSize;
 
-        uniform mat4 projection, modelView;
+        uniform mat4 projection;
+        uniform mat4 modelView;
         uniform vec2 viewport;
 
         varying vec4 vColor;
         varying vec2 vPosition;
+
+        #if !defined(WEBGL2) && !defined(WEBGPU) && !defined(NATIVE)
+        mat3 transpose(mat3 matrix) {
+            return mat3(matrix[0][0], matrix[1][0], matrix[2][0],
+                matrix[0][1], matrix[1][1], matrix[2][1],
+                matrix[0][2], matrix[1][2], matrix[2][2]);
+        }
+        #endif
+
+        vec2 getDataUV(float index, vec2 textureSize) {
+            float y = floor(index / textureSize.x);
+            float x = index - y * textureSize.x;
+            return vec2((x + 0.5) / dataTextureSize.x, (y + 0.5) / dataTextureSize.y);
+        }
+
         void main () {
-        vec3 center = world0.xyz;
-        vec4 color = world1;
-        vec3 covA = world2.xyz;
-        vec3 covB = world3.xyz;
+        vec2 splatUV = getDataUV(splatIndex, dataTextureSize);
+        vec3 center = texture2D(centersTexture, splatUV).xyz;
+        vec4 color = texture2D(colorsTexture, splatUV);
+        vec3 covA = texture2D(covariancesATexture, splatUV).xyz;
+        vec3 covB = texture2D(covariancesBTexture, splatUV).xyz;
 
         vec4 camspace = modelView * vec4(center, 1);
         vec4 pos2d = projection * camspace;
@@ -205,13 +230,21 @@ export class GaussianSplatting {
         };
 
         self.onmessage = (e: any) => {
-            viewProj = e.data.view;
-            const dot = lastProj[2] * viewProj[2] + lastProj[6] * viewProj[6] + lastProj[10] * viewProj[10];
-            if (Math.abs(dot - 1) < 0.01) {
-                return;
+            /// updated on init
+            if (e.data.positions) {
+                positions = e.data.positions;
             }
-            positions = e.data.positions;
-            throttledSort();
+            /// udpate on view changed
+            else if (e.data.view) {
+                viewProj = e.data.view;
+                const dot = lastProj[2] * viewProj[2] + lastProj[6] * viewProj[6] + lastProj[10] * viewProj[10];
+                if (Math.abs(dot - 1) < 0.01) {
+                    return;
+                }
+                if (positions) {
+                    throttledSort();
+                }
+            }
         };
     };
 
@@ -219,9 +252,12 @@ export class GaussianSplatting {
         const rowLength = 3 * 4 + 3 * 4 + 4 + 4;
         this._vertexCount = binaryData.length / rowLength;
         const vertexCount = this._vertexCount;
-        this._positions = new Float32Array(3 * vertexCount);
-        this._covA = new Float32Array(3 * vertexCount);
-        this._covB = new Float32Array(3 * vertexCount);
+
+        const textureSize = this._getTextureSize(vertexCount);
+        const textureLength = textureSize.x * textureSize.y;
+        this._positions = new Float32Array(3 * textureLength);
+        this._covA = new Float32Array(3 * textureLength);
+        this._covB = new Float32Array(3 * textureLength);
 
         const f_buffer = new Float32Array(binaryData.buffer);
         this._uBuffer = new Uint8Array(binaryData.buffer);
@@ -284,36 +320,63 @@ export class GaussianSplatting {
             this.dispose();
         }
         this._setData(new Uint8Array(data as any));
-        const matricesData = new Float32Array(this.vertexCount * 16);
+        const splatIndex = new Float32Array(this.vertexCount * 1);
 
         const updateInstances = (indexMix: Uint32Array) => {
             for (let j = 0; j < this.vertexCount; j++) {
-                const i = indexMix[2 * j];
-                const index = j * 16;
-                matricesData[index + 0] = this._positions[i * 3 + 0];
-                matricesData[index + 1] = this._positions[i * 3 + 1];
-                matricesData[index + 2] = this._positions[i * 3 + 2];
-
-                matricesData[index + 4] = this._uBuffer[32 * i + 24 + 0] / 255;
-                matricesData[index + 5] = this._uBuffer[32 * i + 24 + 1] / 255;
-                matricesData[index + 6] = this._uBuffer[32 * i + 24 + 2] / 255;
-                matricesData[index + 7] = this._uBuffer[32 * i + 24 + 3] / 255;
-
-                matricesData[index + 8] = this._covA[i * 3 + 0];
-                matricesData[index + 9] = this._covA[i * 3 + 1];
-                matricesData[index + 10] = this._covA[i * 3 + 2];
-
-                matricesData[index + 12] = this._covB[i * 3 + 0];
-                matricesData[index + 13] = this._covB[i * 3 + 1];
-                matricesData[index + 14] = this._covB[i * 3 + 2];
+                splatIndex[j] = indexMix[2 * j];
             }
-
-            this.mesh?.thinInstanceBufferUpdated("matrix");
+            this.mesh?.thinInstanceBufferUpdated("splatIndex"); // update splatIndex only
         };
 
         // update so this.mesh is valid when exiting this function
         this.mesh = this._getMesh(this.scene);
-        this.mesh.thinInstanceSetBuffer("matrix", matricesData, 16, false);
+        this.mesh.forcedInstanceCount = this.vertexCount;
+        this.mesh.thinInstanceSetBuffer("splatIndex", splatIndex, 1, false);
+
+        const createTextureFromData = (data: Float32Array, width: number, height: number, format: number) => {
+            return new RawTexture(data, width, height, format, this.scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
+        };
+
+        // additional conversion to avoid breaking the original data
+        const convertRgbToRgba = (rgb: Float32Array) => {
+            const count = rgb.length / 3;
+            const rgba = new Float32Array(count * 4);
+            for (let i = 0; i < count; ++i) {
+                rgba[i * 4 + 0] = rgb[i * 3 + 0];
+                rgba[i * 4 + 1] = rgb[i * 3 + 1];
+                rgba[i * 4 + 2] = rgb[i * 3 + 2];
+                rgba[i * 4 + 3] = 1.0;
+            }
+            return rgba;
+        };
+
+        /// create textures for gaussian info
+        if (this._material.name == "GaussianSplattingShader") {
+            const material = this.mesh.material as ShaderMaterial;
+
+            const textureSize = this._getTextureSize(this.vertexCount);
+            material.setVector2("dataTextureSize", textureSize);
+
+            const convATexture = createTextureFromData(convertRgbToRgba(this._covA), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+            material.setTexture("covariancesATexture", convATexture);
+
+            const convBTexture = createTextureFromData(convertRgbToRgba(this._covB), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+            material.setTexture("covariancesBTexture", convBTexture);
+
+            const centersTexture = createTextureFromData(convertRgbToRgba(this._positions), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+            material.setTexture("centersTexture", centersTexture);
+
+            const colorArray = new Float32Array(textureSize.x * textureSize.y * 4);
+            for (let i = 0; i < this.vertexCount; ++i) {
+                colorArray[i * 4 + 0] = this._uBuffer[32 * i + 24 + 0] / 255;
+                colorArray[i * 4 + 1] = this._uBuffer[32 * i + 24 + 1] / 255;
+                colorArray[i * 4 + 2] = this._uBuffer[32 * i + 24 + 2] / 255;
+                colorArray[i * 4 + 3] = this._uBuffer[32 * i + 24 + 3] / 255;
+            }
+            const colorsTexture = createTextureFromData(colorArray, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+            material.setTexture("colorsTexture", colorsTexture);
+        }
 
         this._worker = new Worker(
             URL.createObjectURL(
@@ -322,6 +385,10 @@ export class GaussianSplatting {
                 })
             )
         );
+
+        /// set positions only once, no need to update on view changed
+        this._worker?.postMessage({ positions: this._positions.slice(0, this._vertexCount * 3) }, [this._positions.buffer]);
+        this._positions = new Float32Array(0);
 
         this._worker.onmessage = (e) => {
             const indexMix = new Uint32Array(e.data.depthMix.buffer);
@@ -338,7 +405,7 @@ export class GaussianSplatting {
             binfo.reConstruct(this._minimum, this._maximum, meshWorldMatrix);
             binfo.isLocked = true;
             this._material.setMatrix("modelView", this._modelViewMatrix);
-            this._worker?.postMessage({ view: this._modelViewMatrix.m, positions: this._positions });
+            this._worker?.postMessage({ view: this._modelViewMatrix.m });
         });
         this._sceneDisposeObserver = this.scene.onDisposeObservable.add(() => {
             this.dispose();
@@ -375,5 +442,28 @@ export class GaussianSplatting {
         this._worker = null;
         this.mesh?.dispose();
         this.mesh = null;
+    }
+
+    /**
+     * Calculate the texture size of Gaussian Splatting data
+     * @param length number of splattings
+     * @returns texture size in Vector2
+     */
+    private _getTextureSize(length: number): Vector2 {
+        const engine = this.scene.getEngine();
+        const width = engine.getCaps().maxTextureSize;
+        let height = 1;
+        if (engine.webGLVersion === 1 && !engine.isWebGPU) {
+            while (width * height < length) {
+                height *= 2;
+            }
+        } else {
+            height = Math.ceil(length / width);
+        }
+        if (height > width) {
+            Logger.Warn("GaussianSplatting texture size: (" + width + ", " + height + "), maxTextureSize: " + width);
+            height = width;
+        }
+        return new Vector2(width, height);
     }
 }
