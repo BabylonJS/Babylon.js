@@ -13,6 +13,9 @@ NativeEngine._createNativeDataStream = function () {
     }
 };
 
+/**
+ * Validated Native Data Stream
+ */
 export class ValidatedNativeDataStream extends NativeDataStream {
     constructor() {
         super();

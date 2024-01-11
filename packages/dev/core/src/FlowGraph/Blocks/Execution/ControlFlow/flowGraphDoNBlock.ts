@@ -11,6 +11,9 @@ import { FlowGraphInteger } from "../../../flowGraphInteger";
  * @experimental
  */
 export interface IFlowGraphDoNBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * The start index for the counter.
+     */
     startIndex: FlowGraphInteger;
 }
 /**

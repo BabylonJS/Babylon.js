@@ -133,29 +133,89 @@ export interface DOMMatrix {
      * The following double-precision floating-point values represent the components of a matrix which are required in order to perform 2D rotations and translations.
      */
     a: number;
+    /**
+     * The following double-precision floating-point values represent the components of a matrix which are required in order to perform 2D rotations and translations.
+     */
     b: number;
+    /**
+     * The following double-precision floating-point values represent the components of a matrix which are required in order to perform 2D rotations and translations.
+     */
     c: number;
+    /**
+     * The following double-precision floating-point values represent the components of a matrix which are required in order to perform 2D rotations and translations.
+     */
     d: number;
+    /**
+     * The following double-precision floating-point values represent the components of a matrix which are required in order to perform 2D rotations and translations.
+     */
     e: number;
+    /**
+     * The following double-precision floating-point values represent the components of a matrix which are required in order to perform 2D rotations and translations.
+     */
     f: number;
     /**
      * The following are double-precision floating-point values representing each component of a 4×4 matrix, where m11 through m14 are the first column, m21 through m24 are the second column, and so forth.
      */
     m11: number;
+    /**
+     * The following are double-precision floating-point values representing each component of a 4×4 matrix, where m11 through m14 are the first column, m21 through m24 are the second column, and so forth.
+     */
     m12: number;
+    /**
+     * The following are double-precision floating-point values representing each component of a 4×4 matrix, where m11 through m14 are the first column, m21 through m24 are the second column, and so forth.
+     */
     m13: number;
+    /**
+     * The following are double-precision floating-point values representing each component of a 4×4 matrix, where m11 through m14 are the first column, m21 through m24 are the second column, and so forth.
+     */
     m14: number;
+    /**
+     * The following are double-precision floating-point values representing each component of a 4×4 matrix, where m11 through m14 are the first column, m21 through m24 are the second column, and so forth.
+     */
     m21: number;
+    /**
+     * The following are double-precision floating-point values representing each component of a 4×4 matrix, where m11 through m14 are the first column, m21 through m24 are the second column, and so forth.
+     */
     m22: number;
+    /**
+     * The following are double-precision floating-point values representing each component of a 4×4 matrix, where m11 through m14 are the first column, m21 through m24 are the second column, and so forth.
+     */
     m23: number;
+    /**
+     * The following are double-precision floating-point values representing each component of a 4×4 matrix, where m11 through m14 are the first column, m21 through m24 are the second column, and so forth.
+     */
     m24: number;
+    /**
+     * The following are double-precision floating-point values representing each component of a 4×4 matrix, where m11 through m14 are the first column, m21 through m24 are the second column, and so forth.
+     */
     m31: number;
+    /**
+     * The following are double-precision floating-point values representing each component of a 4×4 matrix, where m11 through m14 are the first column, m21 through m24 are the second column, and so forth.
+     */
     m32: number;
+    /**
+     * The following are double-precision floating-point values representing each component of a 4×4 matrix, where m11 through m14 are the first column, m21 through m24 are the second column, and so forth.
+     */
     m33: number;
+    /**
+     * The following are double-precision floating-point values representing each component of a 4×4 matrix, where m11 through m14 are the first column, m21 through m24 are the second column, and so forth.
+     */
     m34: number;
+    /**
+     * The following are double-precision floating-point values representing each component of a 4×4 matrix, where m11 through m14 are the first column, m21 through m24 are the second column, and so forth.
+     */
     m41: number;
+    /**
+     * The following are double-precision floating-point values representing each component of a 4×4 matrix, where m11 through m14 are the first column, m21 through m24 are the second column, and so forth.
+     */
     m42: number;
+    /**
+     * The following are double-precision floating-point values representing each component of a 4×4 matrix, where m11 through m14 are the first column, m21 through m24 are the second column, and so forth.
+     */
     m43: number;
+    /**
+     * The following are double-precision floating-point values representing each component of a 4×4 matrix, where m11 through m14 are the first column, m21 through m24 are the second column, and so forth.
+     */
     m44: number;
 }
 
