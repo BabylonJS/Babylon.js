@@ -207,7 +207,7 @@ export interface Vector2Like {
  * Class representing a vector containing 2 coordinates
  * Example Playground - Overview -  https://playground.babylonjs.com/#QYBWV4#9
  */
-export class Vector2 implements Vector<Tuple<number, 2>>, Vector2Like {
+export class Vector2 implements Vector2Like {
     private static _ZeroReadOnly = Vector2.Zero() as DeepImmutable<Vector2>;
 
     public declare readonly dimension: Readonly<[2]>;
@@ -1211,8 +1211,10 @@ export class Vector2 implements Vector<Tuple<number, 2>>, Vector2Like {
         return Vector2.Distance(p, proj);
     }
 }
-Object.defineProperty(Vector2.prototype, "dimension", { value: [2] });
-Object.defineProperty(Vector2.prototype, "rank", { value: 1 });
+Object.defineProperties(Vector2.prototype, {
+    dimension: { value: [2] },
+    rank: { value: 1 },
+});
 
 /**
  * @internal
@@ -3382,8 +3384,10 @@ export class Vector3 implements Vector<Tuple<number, 3>>, Vector3Like {
         return ref;
     }
 }
-Object.defineProperty(Vector3.prototype, "dimension", { value: [3] });
-Object.defineProperty(Vector3.prototype, "rank", { value: 1 });
+Object.defineProperties(Vector3.prototype, {
+    dimension: { value: [3] },
+    rank: { value: 1 },
+});
 
 /**
  * @internal
@@ -4355,8 +4359,10 @@ export class Vector4 implements Vector<Tuple<number, 4>>, Vector4Like {
         return left.dot(right);
     }
 }
-Object.defineProperty(Vector4.prototype, "dimension", { value: [4] });
-Object.defineProperty(Vector4.prototype, "rank", { value: 1 });
+Object.defineProperties(Vector4.prototype, {
+    dimension: { value: [4] },
+    rank: { value: 1 },
+});
 
 export interface QuaternionLike extends Vector3Like {
     w: number;
@@ -5735,8 +5741,10 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, QuaternionLike {
         return result;
     }
 }
-Object.defineProperty(Quaternion.prototype, "dimension", { value: [4] });
-Object.defineProperty(Quaternion.prototype, "rank", { value: 1 });
+Object.defineProperties(Quaternion.prototype, {
+    dimension: { value: [4] },
+    rank: { value: 1 },
+});
 
 /**
  * @internal
@@ -8576,8 +8584,10 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, MatrixLike {
         return result;
     }
 }
-Object.defineProperty(Matrix.prototype, "dimension", { value: [4, 4] });
-Object.defineProperty(Matrix.prototype, "rank", { value: 2 });
+Object.defineProperties(Matrix.prototype, {
+    dimension: { value: [4, 4] },
+    rank: { value: 2 },
+});
 
 /**
  * @internal

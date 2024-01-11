@@ -1007,8 +1007,10 @@ export class Color3 implements Tensor<Tuple<number, 3>>, Color3Like {
         return new Color3(Math.random(), Math.random(), Math.random());
     }
 }
-Object.defineProperty(Color3.prototype, "dimension", { value: [3] });
-Object.defineProperty(Color3.prototype, "rank", { value: 1 });
+Object.defineProperties(Color3.prototype, {
+    dimension: { value: [3] },
+    rank: { value: 1 },
+});
 
 /**
  * @internal
@@ -1885,8 +1887,10 @@ export class Color4 implements Tensor<Tuple<number, 4>>, Color4Like {
         return colors;
     }
 }
-Object.defineProperty(Color4.prototype, "dimension", { value: [4] });
-Object.defineProperty(Color4.prototype, "rank", { value: 1 });
+Object.defineProperties(Color4.prototype, {
+    dimension: { value: [4] },
+    rank: { value: 1 },
+});
 
 /**
  * @internal
