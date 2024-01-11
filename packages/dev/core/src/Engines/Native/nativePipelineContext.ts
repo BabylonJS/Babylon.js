@@ -3,7 +3,7 @@ import type { Effect } from "../../Materials/effect";
 import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IQuaternionLike } from "../../Maths/math.like";
 import type { IPipelineContext } from "../IPipelineContext";
 import type { NativeEngine } from "../nativeEngine";
-import { NativeProgram } from "./nativeInterfaces";
+import type { NativeProgram } from "./nativeInterfaces";
 
 export class NativePipelineContext implements IPipelineContext {
     public isCompiled: boolean = false;
