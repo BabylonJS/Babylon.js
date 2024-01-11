@@ -1,5 +1,5 @@
 {
-    "fromTag": "6.37.0",
+    "fromTag": "6.37.1",
     "changelog": {
         "6.37.1": [
             {
@@ -65,6 +65,349 @@
                 "tags": [
                     "enhancement",
                     "inputs"
+                ]
+            }
+        ],
+        "6.38.0": [
+            {
+                "pr": "14684",
+                "title": "improve speed of GaussianSplatting",
+                "description": "Current GaussianSplatting uses instances matrices to store gaussian info, this makes the large buffer of ThinInstances dynamic (issue discussed [here](https://forum.babylonjs.com/t/mesh-with-thin-instance-slower-than-with-full-vertices/46756)), which is the current bottleneck on large dataset (e.g. [truck with 2.5 million splats](https://projects.markkellogg.org/threejs/assets/data/truck/truck_high.ksplat)).\r\n\r\nIn this commit, following changes are made:\r\n1. Four sampler2D textures are used to store `covA`, `covB`, `centers`, and `colors`. These textures will not be changed after initialization.\r\n2. `splatIndex` attribute are used to store the sorting index of splats, and it is the only instance attribute to be changed after each sorting.\r\n3. positions are only post to worker once, only `_modelViewMatrix` is updated often\r\n\r\nWith the modification above, [large dataset](https://projects.markkellogg.org/threejs/assets/data/truck/truck_high.ksplat) could be rendered with fps 60, which is originally around 15.",
+                "author": {
+                    "name": "xiasun",
+                    "url": "https://github.com/xiasun"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/GaussianSplatting/gaussianSplatting.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14690",
+                "title": "Adding loadeddata event listener in videoTexture",
+                "description": "When in XR, due to interesting network conditions, the video, once updated, is stuck in a readyState === 1, and then stops updating.\nThis adds an extra update call when the video's readyState has changed (i.e. update the video texture, setting it ready, when the video is ready to be played). This solves ths issue, presented in this PG (enter XR, force keyboard event keydown \"p\"):\n\nhttps://playground.babylonjs.com/#YJLYCB#10",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/videoTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14688",
+                "title": "Port teleportation observable to feature",
+                "description": "See https://github.com/BabylonJS/Babylon.js/pull/14660#issuecomment-1880887068\nDeprecated the actual observables, created a reference where they should be used. \nThere was no proper way to do it the other way (which would be cleaner), because the feature is not guaranteed to have been initilized before the camera is constructed.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRControllerTeleportation.ts",
+                    "packages/dev/core/src/XR/webXRCamera.ts",
+                    "packages/dev/core/test/unit/XR/webXRFeaturesManager.test.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14685",
+                "title": "Fix camera gizmo set custom mesh",
+                "description": "since camera gizmo is composed of **cameraMesh** and **cameraLinesMesh**, using the setCustomMesh method will dispose both of the meshes. the override method will only dispose **cameraMesh** \r\n\r\nwhile on it, I added another optional color3 attribute for frustum lines to allow the user to set gizmo colors separately.",
+                "author": {
+                    "name": "SalmaBesbes",
+                    "url": "https://github.com/SalmaBesbes"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/cameraGizmo.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14689",
+                "title": "Add clarification about transformed position in shadowLight.",
+                "description": "Related forum post: https://forum.babylonjs.com/t/spotlight-absoluteposition/47055/2",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/shadowLight.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14687",
+                "title": "BoudingBoxGizmo Scale Boxes Fix",
+                "description": "There was a bug where if the active utility layers camera was a child of an object the calculations would use the local position instead of the desired global position.",
+                "author": {
+                    "name": "Pryme8",
+                    "url": "https://github.com/Pryme8"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14686",
+                "title": "Add GA to GUI",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/guiEditor/public/index.html"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14680",
+                "title": "RSM: add support for reflective shadow maps generation + GI based on RSM",
+                "description": "I wasn't sure where to add the files / how to name them (as well as the classes)...\r\nPlease let me know if I need to change anything in this regard.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/materialPluginManager.ts",
+                    "packages/dev/core/src/Rendering/GlobalIllumination/giRSM.ts",
+                    "packages/dev/core/src/Rendering/GlobalIllumination/giRSMManager.ts",
+                    "packages/dev/core/src/Rendering/GlobalIllumination/index.ts",
+                    "packages/dev/core/src/Rendering/index.ts",
+                    "packages/dev/core/src/Rendering/reflectiveShadowMap.ts",
+                    "packages/dev/core/src/Shaders/bilateralBlur.fragment.fx",
+                    "packages/dev/core/src/Shaders/bilateralBlurQuality.fragment.fx",
+                    "packages/dev/core/src/Shaders/rsmFullGlobalIllumination.fragment.fx",
+                    "packages/dev/core/src/Shaders/rsmGlobalIllumination.fragment.fx"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14683",
+                "title": "Update WebXRControllerTeleportation.ts",
+                "description": "Fixes https://github.com/BabylonJS/Documentation/issues/1036",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRControllerTeleportation.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14681",
+                "title": "Allow different versions in PG and Sandbox",
+                "description": "This PR will allow adding `version=6.22.0` to a PG or sandbox URL to force a specific babylon version\n\nNote that this works only from version 5.40 and up. For earlier versions we still have the version selector in the playground itself.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/public/index.js",
+                    "packages/tools/playground/src/tools/monacoManager.ts",
+                    "packages/tools/sandbox/public/index.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14679",
+                "title": "Thin instances: Change default value for the staticBuffer parameter",
+                "description": "See https://forum.babylonjs.com/t/mesh-with-thin-instance-slower-than-with-full-vertices/46756/7\r\n\r\nWhen `staticBuffer = false`, Angle (in DirectX mode only - OpenGL is fine) can rearrange the buffers under the hood and completely break performance...\r\n\r\nSo, even if it's a breaking change, it's probably best to have it `true` by default...",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/thinInstanceMesh.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "rendering engine",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "14682",
+                "title": "Skeleton: Fix empty transform matrices when cloning a mesh",
+                "description": "See https://forum.babylonjs.com/t/cloning-mesh-with-skeleton-that-has-needinitialskinmatrix-true-after-some-delay-fails/47054",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Bones/skeleton.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "bones"
+                ]
+            },
+            {
+                "pr": "14674",
+                "title": "WebGPU: manage context loss and restoration (part 2)",
+                "description": "Follow up to #14655 ",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/buffer.align.ts",
+                    "packages/dev/core/src/Buffers/buffer.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.cubeTexture.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGLRenderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.cubeTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureManager.ts",
+                    "packages/dev/core/src/Engines/renderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/Textures/baseTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/internalTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/multiRenderTarget.ts",
+                    "packages/dev/core/src/Meshes/geometry.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderer.ts",
+                    "packages/dev/core/src/Rendering/prePassRendererSceneComponent.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "enhancement",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "14678",
+                "title": "prevent internal misuse of VB",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/buffer.align.ts",
+                    "packages/dev/core/src/Buffers/buffer.ts",
+                    "packages/dev/core/src/Meshes/geometry.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14677",
+                "title": "Fix camera not being reattached after a two pointer SixDofDragBehavior",
+                "description": "Forum post: https://forum.babylonjs.com/t/unselected-meshes-move-alongside-the-selected-mesh/46627\r\n\r\nWhen there was more than one pointer activating the SixDofDragBehavior, the `_attachedToElement` property was being set to false, and the camera was not reattached because of it.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Meshes/baseSixDofDragBehavior.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "14676",
+                "title": "Force texture loading with bitmap when in offscreen canvas",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/crash-with-web-worker-since-release-6-34-2/46983",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
+            },
+            {
+                "pr": "14669",
+                "title": "Fix scaling problems in sixDofDragBehavior",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/unselected-meshes-move-alongside-the-selected-mesh/46627/11?u=carolhmj\r\n\r\nThe resetting/setting of the parent in `_sceneRenderObserver` seems to be causing some instability in the scale decomposition for nodes with parents and certain rotation/scales, so instead of doing this process (which is also more costly in performance terms), the idea is to do all the operations in the node's local space.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Meshes/sixDofDragBehavior.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "14673",
+                "title": "Expose _rootUrl of gltf loader as public get property",
+                "description": "See https://forum.babylonjs.com/t/expose-gltfloader-rooturl-property-for-extensions/46958",
+                "author": {
+                    "name": "tholub99",
+                    "url": "https://github.com/tholub99"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14672",
+                "title": "Nge add2",
+                "description": "Associated with #14595 ",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryClampBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryCrossBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryModBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryPowBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryTrigonometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14671",
+                "title": "Nge new blocks",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryArcTan2Block.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryLerpBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryNLerpBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometrySmoothStepBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryStepBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryTrigonometryBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
                 ]
             }
         ],
