@@ -294,6 +294,11 @@ export class Ragdoll {
     }
 
     private _init() {
+        // detach bones with link transform to let physics have control
+        this._skeleton.bones.forEach((bone) => {
+            bone.linkTransformNode(null);
+        });
+
         this._createColliders();
 
         // If this.defineRootBone() returns false... there is not root bone.

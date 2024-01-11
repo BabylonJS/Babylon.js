@@ -349,21 +349,8 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
         result.set(ret.x, ret.y, ret.z);
     }
 
-    /**
-     * Compute a navigation path from start to end. Returns an empty array if no path can be computed
-     * @param start world position
-     * @param end world position
-     * @returns array containing world position composing the path
-     */
-    computePath(start: Vector3, end: Vector3): Vector3[] {
+    private _convertNavPathPoints(navPath: any): Vector3[] {
         let pt: number;
-        this._tempVec1.x = start.x;
-        this._tempVec1.y = start.y;
-        this._tempVec1.z = start.z;
-        this._tempVec2.x = end.x;
-        this._tempVec2.y = end.y;
-        this._tempVec2.z = end.z;
-        const navPath = this.navMesh.computePath(this._tempVec1, this._tempVec2);
         const pointCount = navPath.getPointCount();
         const positions = [];
         for (pt = 0; pt < pointCount; pt++) {
@@ -373,6 +360,41 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
         return positions;
     }
 
+    /**
+     * Compute a navigation path from start to end. Returns an empty array if no path can be computed
+     * Path is straight.
+     * @param start world position
+     * @param end world position
+     * @returns array containing world position composing the path
+     */
+    computePath(start: Vector3, end: Vector3): Vector3[] {
+        this._tempVec1.x = start.x;
+        this._tempVec1.y = start.y;
+        this._tempVec1.z = start.z;
+        this._tempVec2.x = end.x;
+        this._tempVec2.y = end.y;
+        this._tempVec2.z = end.z;
+        const navPath = this.navMesh.computePath(this._tempVec1, this._tempVec2);
+        return this._convertNavPathPoints(navPath);
+    }
+
+    /**
+     * Compute a navigation path from start to end. Returns an empty array if no path can be computed.
+     * Path follows navigation mesh geometry.
+     * @param start world position
+     * @param end world position
+     * @returns array containing world position composing the path
+     */
+    computePathSmooth(start: Vector3, end: Vector3): Vector3[] {
+        this._tempVec1.x = start.x;
+        this._tempVec1.y = start.y;
+        this._tempVec1.z = start.z;
+        this._tempVec2.x = end.x;
+        this._tempVec2.y = end.y;
+        this._tempVec2.z = end.z;
+        const navPath = this.navMesh.computePathSmooth(this._tempVec1, this._tempVec2);
+        return this._convertNavPathPoints(navPath);
+    }
     /**
      * Create a new Crowd so you can add agents
      * @param maxAgents the maximum agent count in the crowd
@@ -500,6 +522,22 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      */
     public isSupported(): boolean {
         return this.bjsRECAST !== undefined;
+    }
+
+    /**
+     * Returns the seed used for randomized functions like `getRandomPointAround`
+     * @returns seed number
+     */
+    public getRandomSeed(): number {
+        return this.bjsRECAST._getRandomSeed();
+    }
+
+    /**
+     * Set the seed used for randomized functions like `getRandomPointAround`
+     * @param seed number used as seed for random functions
+     */
+    public setRandomSeed(seed: number): void {
+        this.bjsRECAST._setRandomSeed(seed);
     }
 }
 
