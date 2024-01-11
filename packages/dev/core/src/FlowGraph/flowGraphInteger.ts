@@ -14,7 +14,7 @@ export class FlowGraphInteger {
     readonly value: number;
 
     constructor(value: number) {
-        this.value = this.toInt(value);
+        this.value = this._toInt(value);
     }
 
     /**
@@ -22,7 +22,7 @@ export class FlowGraphInteger {
      * @param n the float to convert
      * @returns the result of n | 0 - converting it to a int
      */
-    public toInt(n: number): number {
+    private _toInt(n: number): number {
         return n | 0;
     }
 
