@@ -882,8 +882,6 @@ export class WebGPUEngine extends Engine {
             disableMorphTargetTexture: false,
         };
 
-        this._caps.parallelShaderCompile = null as any;
-
         this._features = {
             forceBitmapOverHTMLImageElement: true,
             supportRenderAndCopyToLodForFloatTextures: true,

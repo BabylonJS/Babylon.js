@@ -343,44 +343,6 @@ declare class GPUExternalTexture implements GPUObjectBase {
     label: string | undefined;
 }
 
-/** [MDN Reference](https://developer.mozilla.org/docs/Web/API/VideoFrame) */
-interface VideoFrame {
-    /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/VideoFrame/codedHeight) */
-    readonly codedHeight: number;
-    /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/VideoFrame/codedRect) */
-    readonly codedRect: DOMRectReadOnly | null;
-    /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/VideoFrame/codedWidth) */
-    readonly codedWidth: number;
-    /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/VideoFrame/colorSpace) */
-    readonly colorSpace: VideoColorSpace;
-    /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/VideoFrame/displayHeight) */
-    readonly displayHeight: number;
-    /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/VideoFrame/displayWidth) */
-    readonly displayWidth: number;
-    /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/VideoFrame/duration) */
-    readonly duration: number | null;
-    /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/VideoFrame/format) */
-    readonly format: VideoPixelFormat | null;
-    /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/VideoFrame/timestamp) */
-    readonly timestamp: number;
-    /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/VideoFrame/visibleRect) */
-    readonly visibleRect: DOMRectReadOnly | null;
-    /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/VideoFrame/allocationSize) */
-    allocationSize(options?: VideoFrameCopyToOptions): number;
-    /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/VideoFrame/clone) */
-    clone(): VideoFrame;
-    /** [MDN Reference](https://developer.mozilla.org/docs/Web/API/VideoFrame/close) */
-    close(): void;
-    copyTo(destination: BufferSource, options?: VideoFrameCopyToOptions): Promise<PlaneLayout[]>;
-}
-
-// eslint-disable-next-line no-var
-declare var VideoFrame: {
-    prototype: VideoFrame;
-    new (image: CanvasImageSource, init?: VideoFrameInit): VideoFrame;
-    new (data: BufferSource, init: VideoFrameBufferInit): VideoFrame;
-};
-
 interface GPUExternalTextureDescriptor extends GPUObjectDescriptorBase {
     source: HTMLVideoElement | VideoFrame;
     colorSpace?: PredefinedColorSpace /* default="srgb" */;
@@ -454,7 +416,7 @@ interface GPUTextureBindingLayout {
     multisampled?: boolean /* default=false */;
 }
 
-type GPUStorageTextureAccess = "write-only";
+type GPUStorageTextureAccess = "write-only" | "read-only" | "read-write";
 
 interface GPUStorageTextureBindingLayout {
     access?: GPUStorageTextureAccess /* default=write-only */;
@@ -503,10 +465,11 @@ declare class GPUShaderModule implements GPUObjectBase {
 interface GPUShaderModuleDescriptor extends GPUObjectDescriptorBase {
     code: string | Uint32Array;
     sourceMap?: object;
-    hints?: { [name: string]: GPUShaderModuleCompilationHint };
+    compilationHints?: GPUShaderModuleCompilationHint[] /* default=[] */;
 }
 
 interface GPUShaderModuleCompilationHint {
+    entryPoint: string | Uint32Array;
     layout: GPUPipelineLayout | GPUAutoLayoutMode;
 }
 
@@ -647,8 +610,8 @@ interface GPUDepthStencilState {
     depthWriteEnabled?: boolean /* default=false */;
     depthCompare?: GPUCompareFunction /* default="always" */;
 
-    stencilFront?: GPUStencilStateFace /* default={} */;
-    stencilBack?: GPUStencilStateFace /* default={} */;
+    stencilFront?: GPUStencilFaceState /* default={} */;
+    stencilBack?: GPUStencilFaceState /* default={} */;
 
     stencilReadMask?: GPUStencilValue /* default=0xFFFFFFFF */;
     stencilWriteMask?: GPUStencilValue /* default=0xFFFFFFFF */;
@@ -658,7 +621,7 @@ interface GPUDepthStencilState {
     depthBiasClamp?: number /* default=0 */;
 }
 
-interface GPUStencilStateFace {
+interface GPUStencilFaceState {
     compare?: GPUCompareFunction /* default="always" */;
     failOp?: GPUStencilOperation /* default="keep" */;
     depthFailOp?: GPUStencilOperation /* default="keep" */;
@@ -699,7 +662,8 @@ type GPUVertexFormat =
     | "sint32"
     | "sint32x2"
     | "sint32x3"
-    | "sint32x4";
+    | "sint32x4"
+    | "unorm10-10-10-2";
 
 type GPUVertexStepMode = "vertex" | "instance";
 
@@ -769,7 +733,7 @@ declare class GPUCommandEncoder implements GPUObjectBase, GPUCommandsMixin, GPUD
     copyTextureToTexture(source: GPUImageCopyTexture, destination: GPUImageCopyTexture, copySize: GPUExtent3D): void;
     clearBuffer(buffer: GPUBuffer, offset?: GPUSize64 /* default=0 */, size?: GPUSize64): void;
 
-    writeTimestamp?(querySet: GPUQuerySet, queryIndex: GPUSize32): void;
+    writeTimestamp?(querySet: GPUQuerySet, queryIndex: GPUSize32): void; // not in the spec anymore, but may come back later, so keep it here for now
 
     resolveQuerySet(querySet: GPUQuerySet, firstQuery: GPUSize32, queryCount: GPUSize32, destination: GPUBuffer, destinationOffset: GPUSize64): void;
 
@@ -877,6 +841,7 @@ interface GPURenderPassDescriptor extends GPUObjectDescriptorBase {
 
 interface GPURenderPassColorAttachment {
     view: GPUTextureView;
+    depthSlice?: GPUIntegerCoordinate;
     resolveTarget?: GPUTextureView;
 
     clearValue?: GPUColor;
