@@ -15,10 +15,26 @@ export enum FlowGraphConnectionType {
  * @experimental
  */
 export interface IConnectable {
+    /**
+     * A uniquely identifying string for the connection.
+     */
     uniqueId: string;
+    /**
+     * An array of the points that this point is connected to.
+     */
     _connectedPoint: Array<IConnectable>;
+    /**
+     * Returns if the connection can only be connected to one other point.
+     */
     _isSingularConnection(): boolean;
+    /**
+     * The type of the connection
+     */
     _connectionType: FlowGraphConnectionType;
+    /**
+     * Connect this point to another point.
+     * @param point the point to connect to.
+     */
     connectTo(point: IConnectable): void;
 }
 

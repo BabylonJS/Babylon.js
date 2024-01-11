@@ -10,6 +10,9 @@ import { RegisterClass } from "../../../Misc/typeStore";
  * The configuration of the FlowGraphGetVariableBlock.
  */
 export interface IFlowGraphGetVariableBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * The name of the variable to get.
+     */
     variableName: string;
 }
 

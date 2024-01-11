@@ -18,5 +18,10 @@ export interface IObjectInfo<T> {
  * it into an ObjectAccessorContainer.
  */
 export interface IPathToObjectConverter<T> {
+    /**
+     * Convert a path to an object that can be used to access properties of a base object
+     * @param path the path to convert
+     * @returns an object that can be used to access properties of a base object
+     */
     convert(path: string): IObjectInfo<T>;
 }
