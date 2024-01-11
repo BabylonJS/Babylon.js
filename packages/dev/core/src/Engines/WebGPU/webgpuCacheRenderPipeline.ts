@@ -1066,7 +1066,7 @@ export abstract class WebGPUCacheRenderPipeline {
             }
         }
 
-        const stencilFrontBack: GPUStencilStateFace = {
+        const stencilFrontBack: GPUStencilFaceState = {
             compare: WebGPUCacheRenderPipeline._GetCompareFunction(this._stencilEnabled ? this._stencilFrontCompare : 7 /* ALWAYS */),
             depthFailOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilEnabled ? this._stencilFrontDepthFailOp : 1 /* KEEP */),
             failOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilEnabled ? this._stencilFrontFailOp : 1 /* KEEP */),
