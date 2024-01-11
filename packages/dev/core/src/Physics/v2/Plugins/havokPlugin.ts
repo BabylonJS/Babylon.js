@@ -1200,12 +1200,13 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                         for (let x = 0; x < options.numHeightFieldSamplesX; x++) {
                             for (let z = 0; z < options.numHeightFieldSamplesZ; z++) {
                                 const hkBufferIndex = z * options.numHeightFieldSamplesX + x;
-                                heightBuffer[hkBufferIndex] = 0;
+                                const bjsBufferIndex = (options.numHeightFieldSamplesX - 1 - x) * options.numHeightFieldSamplesZ + z;
+                                heightBuffer[hkBufferIndex] = options.heightFieldData[bjsBufferIndex];
                             }
                         }
 
-                        const scaleX = options.heightFieldSizeX / options.numHeightFieldSamplesX;
-                        const scaleZ = options.heightFieldSizeZ / options.numHeightFieldSamplesZ;
+                        const scaleX = options.heightFieldSizeX / (options.numHeightFieldSamplesX - 1);
+                        const scaleZ = options.heightFieldSizeZ / (options.numHeightFieldSamplesZ - 1);
                         shape._pluginData = this._hknp.HP_Shape_CreateHeightField(
                             options.numHeightFieldSamplesX,
                             options.numHeightFieldSamplesZ,
