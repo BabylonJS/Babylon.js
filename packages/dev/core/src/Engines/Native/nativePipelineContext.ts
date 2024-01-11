@@ -3,15 +3,15 @@ import type { Effect } from "../../Materials/effect";
 import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IQuaternionLike } from "../../Maths/math.like";
 import type { IPipelineContext } from "../IPipelineContext";
 import type { NativeEngine } from "../nativeEngine";
+import { NativeProgram } from "./nativeInterfaces";
 
 export class NativePipelineContext implements IPipelineContext {
-    public isParallelCompiled: boolean = true;
     public isCompiled: boolean = false;
     public compilationError?: Error;
 
-    public get isAsync(): boolean {
-        return this.isParallelCompiled;
-    }
+    public readonly isAsync: boolean;
+
+    public program: NativeProgram;
 
     public get isReady(): boolean {
         if (this.compilationError) {
@@ -31,19 +31,13 @@ export class NativePipelineContext implements IPipelineContext {
         return null;
     }
 
-    // TODO: what should this do?
-    public _handlesSpectorRebuildCallback(onCompiled: (compiledObject: any) => void): void {
-        throw new Error("Not implemented");
-    }
-
-    public nativeProgram: any;
-
     private _engine: NativeEngine;
     private _valueCache: { [key: string]: any } = {};
     private _uniforms: { [key: string]: Nullable<WebGLUniformLocation> };
 
-    constructor(engine: NativeEngine) {
+    constructor(engine: NativeEngine, isAsync: boolean) {
         this._engine = engine;
+        this.isAsync = isAsync;
     }
 
     public _fillEffectInformation(

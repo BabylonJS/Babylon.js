@@ -278,6 +278,7 @@ export class NativeEngine extends Engine {
             textureMaxLevel: false,
             texture2DArrayMaxLayerCount: _native.Engine.CAPS_LIMITS_MAX_TEXTURE_LAYERS,
             disableMorphTargetTexture: false,
+            parallelShaderCompile: { COMPLETION_STATUS_KHR: 0 },
         };
 
         this._features = {
@@ -575,7 +576,7 @@ export class NativeEngine extends Engine {
 
     public getAttributes(pipelineContext: IPipelineContext, attributesNames: string[]): number[] {
         const nativePipelineContext = pipelineContext as NativePipelineContext;
-        return this._engine.getAttributes(nativePipelineContext.nativeProgram, attributesNames);
+        return this._engine.getAttributes(nativePipelineContext.program, attributesNames);
     }
 
     /**
@@ -635,7 +636,8 @@ export class NativeEngine extends Engine {
     }
 
     public createPipelineContext(): IPipelineContext {
-        return new NativePipelineContext(this);
+        const isAsync = !!(this._caps.parallelShaderCompile && this._engine.createProgramAsync);
+        return new NativePipelineContext(this, isAsync);
     }
 
     public createMaterialContext(): IMaterialContext | undefined {
@@ -646,6 +648,9 @@ export class NativeEngine extends Engine {
         return undefined;
     }
 
+    /**
+     * @internal
+     */
     public _preparePipelineContext(
         pipelineContext: IPipelineContext,
         vertexSourceCode: string,
@@ -656,17 +661,11 @@ export class NativeEngine extends Engine {
         _rebuildRebind: any,
         defines: Nullable<string>
     ) {
-        const nativePipelineContext = pipelineContext as NativePipelineContext;
-
         if (createAsRaw) {
-            nativePipelineContext.nativeProgram = this.createRawShaderProgram();
+            this.createRawShaderProgram();
         } else {
-            nativePipelineContext.nativeProgram = this.createShaderProgram(pipelineContext, vertexSourceCode, fragmentSourceCode, defines);
+            this.createShaderProgram(pipelineContext, vertexSourceCode, fragmentSourceCode, defines);
         }
-    }
-
-    public isAsync(pipelineContext: IPipelineContext): boolean {
-        return !!(pipelineContext.isAsync && this._engine.createProgramAsync);
     }
 
     /**
@@ -674,21 +673,18 @@ export class NativeEngine extends Engine {
      */
     public _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void) {
         const nativePipelineContext = pipelineContext as NativePipelineContext;
-
-        if (!this.isAsync(pipelineContext)) {
-            action();
-            return;
-        }
-
-        const oldHandler = nativePipelineContext.onCompiled;
-
-        if (oldHandler) {
-            nativePipelineContext.onCompiled = () => {
-                oldHandler!();
-                action();
-            };
+        if (nativePipelineContext.isAsync) {
+            if (nativePipelineContext.onCompiled) {
+                const oldHandler = nativePipelineContext.onCompiled;
+                nativePipelineContext.onCompiled = () => {
+                    oldHandler();
+                    action();
+                };
+            } else {
+                nativePipelineContext.onCompiled = action;
+            }
         } else {
-            nativePipelineContext.onCompiled = action;
+            action();
         }
     }
 
@@ -698,10 +694,6 @@ export class NativeEngine extends Engine {
 
     public createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>): WebGLProgram {
         const nativePipelineContext = pipelineContext as NativePipelineContext;
-
-        if (nativePipelineContext.nativeProgram) {
-            throw new Error("Tried to create a second program in the same NativePipelineContext");
-        }
 
         this.onBeforeShaderCompilationObservable.notifyObservers(this);
 
@@ -722,20 +714,21 @@ export class NativeEngine extends Engine {
             this.onAfterShaderCompilationObservable.notifyObservers(this);
         };
 
-        if (this.isAsync(pipelineContext)) {
-            return this._engine.createProgramAsync(vertexCode, fragmentCode, onSuccess, (error: Error) => {
+        if (pipelineContext.isAsync) {
+            nativePipelineContext.program = this._engine.createProgramAsync(vertexCode, fragmentCode, onSuccess, (error: Error) => {
                 nativePipelineContext.compilationError = error;
-            }) as WebGLProgram;
+            });
         } else {
             try {
-                const program = (nativePipelineContext.nativeProgram = this._engine.createProgram(vertexCode, fragmentCode));
+                nativePipelineContext.program = this._engine.createProgram(vertexCode, fragmentCode);
                 onSuccess();
-                return program as WebGLProgram;
-            } catch (e: any) {
+            } catch (e) {
                 const message = e?.message;
                 throw new Error("SHADER ERROR" + (typeof message === "string" ? "\n" + message : ""));
             }
         }
+
+        return nativePipelineContext.program as WebGLProgram;
     }
 
     /**
@@ -761,16 +754,16 @@ export class NativeEngine extends Engine {
 
     public _deletePipelineContext(pipelineContext: IPipelineContext): void {
         const nativePipelineContext = pipelineContext as NativePipelineContext;
-        if (nativePipelineContext && nativePipelineContext.nativeProgram) {
+        if (nativePipelineContext && nativePipelineContext.program) {
             this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DELETEPROGRAM);
-            this._commandBufferEncoder.encodeCommandArgAsNativeData(nativePipelineContext.nativeProgram);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(nativePipelineContext.program);
             this._commandBufferEncoder.finishEncodingCommand();
         }
     }
 
     public getUniforms(pipelineContext: IPipelineContext, uniformsNames: string[]): WebGLUniformLocation[] {
         const nativePipelineContext = pipelineContext as NativePipelineContext;
-        return this._engine.getUniforms(nativePipelineContext.nativeProgram, uniformsNames);
+        return this._engine.getUniforms(nativePipelineContext.program, uniformsNames);
     }
 
     public bindUniformBlock(pipelineContext: IPipelineContext, blockName: string, index: number): void {
@@ -780,7 +773,7 @@ export class NativeEngine extends Engine {
 
     public bindSamplers(effect: Effect): void {
         const nativePipelineContext = effect.getPipelineContext() as NativePipelineContext;
-        this._setProgram(nativePipelineContext.nativeProgram);
+        this._setProgram(nativePipelineContext.program as WebGLProgram);
 
         // TODO: share this with engine?
         const samplers = effect.getSamplers();
