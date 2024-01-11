@@ -66,6 +66,19 @@ import {
     FlowGraphCrossBlock,
     FlowGraphRotate2DBlock,
     FlowGraphRotate3DBlock,
+    FlowGraphTransposeBlock,
+    FlowGraphDeterminantBlock,
+    FlowGraphInvertMatrixBlock,
+    FlowGraphMatMulBlock,
+    FlowGraphBitwiseNotBlock,
+    FlowGraphBitwiseAndBlock,
+    FlowGraphBitwiseOrBlock,
+    FlowGraphBitwiseXorBlock,
+    FlowGraphBitwiseRightShiftBlock,
+    FlowGraphBitwiseLeftShiftBlock,
+    FlowGraphCountLeadingZerosBlock,
+    FlowGraphCountTrailingZerosBlock,
+    FlowGraphCountOneBitsBlock,
 } from "core/FlowGraph/Blocks/Data/Math/flowGraphMathBlocks";
 import { FlowGraphDoNBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphDoNBlock";
 import { FlowGraphGetVariableBlock } from "core/FlowGraph/Blocks/Data/flowGraphGetVariableBlock";
@@ -143,10 +156,25 @@ export const gltfToFlowGraphTypeMap: { [key: string]: string } = {
     "math/cross": FlowGraphCrossBlock.ClassName,
     "math/rotate2d": FlowGraphRotate2DBlock.ClassName,
     "math/rotate3d": FlowGraphRotate3DBlock.ClassName,
+    "math/transpose": FlowGraphTransposeBlock.ClassName,
+    "math/determinant": FlowGraphDeterminantBlock.ClassName,
+    "math/inverse": FlowGraphInvertMatrixBlock.ClassName,
+    "math/matmul": FlowGraphMatMulBlock.ClassName,
+    "math/not": FlowGraphBitwiseNotBlock.ClassName,
+    "math/and": FlowGraphBitwiseAndBlock.ClassName,
+    "math/or": FlowGraphBitwiseOrBlock.ClassName,
+    "math/xor": FlowGraphBitwiseXorBlock.ClassName,
+    "math/asr": FlowGraphBitwiseRightShiftBlock.ClassName,
+    "math/lsl": FlowGraphBitwiseLeftShiftBlock.ClassName,
+    "math/clz": FlowGraphCountLeadingZerosBlock.ClassName,
+    "math/ctz": FlowGraphCountTrailingZerosBlock.ClassName,
+    "math/popcnt": FlowGraphCountOneBitsBlock.ClassName,
 };
 
 export const gltfTypeToBabylonType: any = {
     float2: "Vector2",
     float3: "Vector3",
     float4: "Vector4",
+    float4x4: "Matrix",
+    int: "FlowGraphInteger",
 };

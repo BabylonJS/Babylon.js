@@ -1,6 +1,7 @@
 import { Color3, Color4 } from "../Maths/math.color";
-import { Quaternion, Vector2, Vector3, Vector4 } from "../Maths/math.vector";
+import { Matrix, Quaternion, Vector2, Vector3, Vector4 } from "../Maths/math.vector";
 import type { Scene } from "../scene";
+import { FlowGraphInteger } from "./flowGraphInteger";
 
 function isMeshClassName(className: string) {
     return (
@@ -75,6 +76,10 @@ export function defaultValueParseFunction(key: string, serializationObject: any,
         finalValue = scene.getMeshByName(intermediateValue.name);
     } else if (isVectorClassName(className)) {
         finalValue = parseVector(className, intermediateValue.value);
+    } else if (className === "Matrix") {
+        finalValue = Matrix.FromArray(intermediateValue.value);
+    } else if (className === FlowGraphInteger.ClassName) {
+        finalValue = FlowGraphInteger.Parse(intermediateValue);
     } else if (intermediateValue && intermediateValue.value !== undefined) {
         finalValue = intermediateValue.value;
     } else {

@@ -138,6 +138,106 @@ export const mathExample = {
     ],
 };
 
+export const intMathExample = {
+    nodes: [
+        {
+            type: "lifecycle/onStart",
+            flows: [
+                {
+                    id: "out",
+                    node: 2,
+                    socket: "in",
+                },
+            ],
+        },
+        {
+            type: "math/div",
+            values: [
+                {
+                    id: "a",
+                    value: 3,
+                    type: 0,
+                },
+                {
+                    id: "b",
+                    value: 2,
+                    type: 0,
+                },
+            ],
+        },
+        {
+            type: "log",
+            values: [
+                {
+                    id: "message",
+                    node: 1,
+                    socket: "value",
+                },
+            ],
+        },
+    ],
+    types: [
+        {
+            signature: "int",
+        },
+    ],
+};
+
+export const matrixMathExample = {
+    nodes: [
+        {
+            type: "lifecycle/onStart",
+            flows: [
+                {
+                    id: "out",
+                    node: 3,
+                    socket: "in",
+                },
+            ],
+        },
+        {
+            type: "math/matmul",
+            values: [
+                {
+                    id: "a",
+                    value: [1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1],
+                    type: 0,
+                },
+                {
+                    id: "b",
+                    value: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+                    type: 0,
+                },
+            ],
+        },
+        {
+            type: "math/transpose",
+            values: [
+                {
+                    id: "a",
+                    node: 1,
+                    socket: "value",
+                },
+            ],
+        },
+        {
+            type: "log",
+            values: [
+                {
+                    id: "message",
+                    node: 2,
+                    socket: "value",
+                },
+            ],
+        },
+    ],
+    types: [
+        {
+            signature: "float4x4",
+        },
+    ],
+};
+
 export const customEventExample = {
     nodes: [
         {
