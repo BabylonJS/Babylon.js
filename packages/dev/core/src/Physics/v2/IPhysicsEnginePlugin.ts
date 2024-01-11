@@ -218,6 +218,12 @@ export interface PhysicsShapeParameters {
      * Use children hierarchy
      */
     includeChildMeshes?: boolean;
+
+    heightFieldSizeX?: number;
+    heightFieldSizeZ?: number;
+    numHeightFieldSamplesX?: number;
+    numHeightFieldSamplesZ?: number;
+    heightFieldData?: Float32Array;
 }
 
 /**

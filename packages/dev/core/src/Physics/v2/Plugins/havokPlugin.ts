@@ -1189,6 +1189,36 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                     }
                 }
                 break;
+            case PhysicsShapeType.HEIGHTFIELD:
+                {
+                    if (options.numHeightFieldSamplesX && options.numHeightFieldSamplesZ && options.heightFieldSizeX && options.heightFieldSizeZ && options.heightFieldData) {
+                        const totalNumHeights = options.numHeightFieldSamplesX * options.numHeightFieldSamplesZ;
+                        const numBytes = totalNumHeights * 4;
+                        const bufferBegin = this._hknp._malloc(numBytes);
+
+                        const heightBuffer = new Float32Array(this._hknp.HEAPU8.buffer, bufferBegin, totalNumHeights);
+                        for (let x = 0; x < options.numHeightFieldSamplesX; x++) {
+                            for (let z = 0; z < options.numHeightFieldSamplesZ; z++) {
+                                const hkBufferIndex = z * options.numHeightFieldSamplesX + x;
+                                heightBuffer[hkBufferIndex] = 0;
+                            }
+                        }
+
+                        const scaleX = options.heightFieldSizeX / options.numHeightFieldSamplesX;
+                        const scaleZ = options.heightFieldSizeZ / options.numHeightFieldSamplesZ;
+                        shape._pluginData = this._hknp.HP_Shape_CreateHeightField(
+                            options.numHeightFieldSamplesX,
+                            options.numHeightFieldSamplesZ,
+                            [scaleX, 1, scaleZ],
+                            bufferBegin
+                        )[1];
+
+                        this._hknp._free(bufferBegin);
+                    } else {
+                        throw new Error("Missing required heightfield parameters");
+                    }
+                }
+                break;
             default:
                 throw new Error("Unsupported Shape Type.");
                 break;
