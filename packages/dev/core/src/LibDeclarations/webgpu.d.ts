@@ -465,7 +465,7 @@ declare class GPUShaderModule implements GPUObjectBase {
 interface GPUShaderModuleDescriptor extends GPUObjectDescriptorBase {
     code: string | Uint32Array;
     sourceMap?: object;
-    compilationHints?: GPUShaderModuleCompilationHint[]; /* default=[] */
+    compilationHints?: GPUShaderModuleCompilationHint[] /* default=[] */;
 }
 
 interface GPUShaderModuleCompilationHint {
