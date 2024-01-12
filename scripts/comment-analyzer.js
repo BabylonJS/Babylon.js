@@ -37,6 +37,12 @@ const kindToCheckFunction = {
     INTERFACE: (child, parent) => checkBaseComments("INTERFACE", child, parent),
 };
 
+const TestResultType = {
+    PASS: "PASS",
+    MISSING_COMMENT: "Missing comment",
+    MISSING_PARAM_COMMENT: "Missing param documentation",
+};
+
 function getKind(child) {
     const kind = KINDS[child.kind];
     if (kind === undefined) {
@@ -46,27 +52,48 @@ function getKind(child) {
 }
 
 function checkBaseComments(type, child, parent) {
-    const hasComment = traverseChildrenLookingForComments(child);
-    if (!hasComment) {
-        console.log(`${type} ${child.name} with parent ${parent.name} does not have a comment.`);
-    }
+    return traverseChildrenLookingForComments(child, parent);
+    // if (!hasComment) {
+    //     return `${type} ${child.name} in ${parent.name} is missing a comment`;
+    // }
 }
 
-function traverseChildrenLookingForComments(child) {
-    for (const prop in child) {
-        if (prop !== "children") {
-            if (prop === "comment") {
-                return true;
-            }
-            const value = child[prop];
-            if (typeof value === "object" && value !== null) {
-                if (traverseChildrenLookingForComments(value)) {
-                    return true;
+function traverseChildrenLookingForComments(child, parent, isSignature = false) {
+    const result = {
+        componentName: child.name,
+        componentType: getKind(child),
+        parentName: parent?.name,
+        fileName: child.sources[0]?.fileName,
+    };
+    if (child.comment) {
+        if (child.parameters) {
+            result.missingParamNames = result.missingParamNames || [];
+            for (const param of child.parameters) {
+                if (!param.comment) {
+                    result.missingParamNames.push(param.name);
+                    result.result = TestResultType.MISSING_PARAM_COMMENT;
                 }
             }
+            if (result.result === TestResultType.MISSING_PARAM_COMMENT) return result;
+        }
+        result.result = TestResultType.PASS;
+        return result;
+    } else if (child.signatures) {
+        const signatureResults = child.signatures
+            .map((sig) => traverseChildrenLookingForComments(sig, parent, true))
+            .flat()
+            .filter((sigResult) => {
+                return sigResult.result !== TestResultType.PASS;
+            });
+        if (signatureResults.length === 0) {
+            result.result = TestResultType.PASS;
+            return result;
+        } else {
+            return signatureResults[0];
         }
     }
-    return false;
+    result.result = TestResultType.MISSING_COMMENT;
+    return result;
 }
 
 function isVisible(child, parent) {
@@ -76,19 +103,19 @@ function isVisible(child, parent) {
 
 function checkPropertyComments(child, parent) {
     if (isVisible(child, parent)) {
-        const hasComment = traverseChildrenLookingForComments(child);
-        if (!hasComment) {
-            console.log(`Public Property ${child.name} with parent ${parent.name} does not have a comment.`);
-        }
+        return traverseChildrenLookingForComments(child, parent);
+        // if (!hasComment) {
+        //     return `Public Property ${child.name} in ${parent.name} is missing comment or parameters`;
+        // }
     }
 }
 
 function checkMethodComments(child, parent) {
     if (isVisible(child, parent)) {
-        const hasComment = traverseChildrenLookingForComments(child);
-        if (!hasComment) {
-            console.log(`Public Method ${child.name} with parent ${parent.name} does not have a comment.`);
-        }
+        return traverseChildrenLookingForComments(child, parent);
+        // if (!hasComment) {
+        //     return `Public Method ${child.name} in ${parent.name} is missing comment or parameters`;
+        // }
     }
 }
 
@@ -96,20 +123,30 @@ function sourceInNodeModules(child) {
     return child.sources && child.sources[0].fileName.includes("node_modules");
 }
 
+function addErrorToArray(error, errorArray) {
+    if (error) {
+        errorArray.push(error);
+    }
+    // console.log(error);
+}
+
 // Define a recursive function to iterate over the children
 function checkCommentsOnChild(child, parent, namesToCheck = []) {
+    const errors = [];
     // Check if the child is a declaration
     if ((namesToCheck.length === 0 || namesToCheck.includes(child.name)) && !sourceInNodeModules(child)) {
         const childKind = getKind(child);
         if (childKind in kindToCheckFunction) {
-            kindToCheckFunction[childKind](child, parent);
+            addErrorToArray(kindToCheckFunction[childKind](child, parent), errors);
         }
     }
 
     // If the child has its own children, recursively call this function on them
     if (child.children) {
-        child.children.forEach((grandchild) => checkCommentsOnChild(grandchild, child, namesToCheck));
+        child.children.forEach((grandchild) => addErrorToArray(checkCommentsOnChild(grandchild, child, namesToCheck), errors));
     }
+    // console.log(errors.flat().filter((e) => e.result !== TestResultType.PASS));
+    return errors.flat().filter((e) => e.result !== TestResultType.PASS);
 }
 
 /**
@@ -118,6 +155,6 @@ function checkCommentsOnChild(child, parent, namesToCheck = []) {
  */
 module.exports = {
     commentAnalyzer: function (data, namesToCheck = []) {
-        checkCommentsOnChild(data, null, namesToCheck);
+        return checkCommentsOnChild(data, null, namesToCheck);
     },
 };
