@@ -110,7 +110,13 @@ async function main() {
         fs.writeFileSync("junit.xml", xml);
         // if in CI, save to errors.txt
         if (process.env.CI) {
-            fs.writeFileSync("errors.txt", warnings.map((w) => `${w.filePath} ${generateMessageFromError(w.message)}`).join("\n"));
+            const messages = warnings.map((w) => `${w.filePath} ${generateMessageFromError(w.message)}`).join("\n");
+            fs.writeFileSync("errors.txt", messages);
+            // log to the console
+            console.log(`
+Found ${warnings.length} typedoc errors:
+
+${messages}`);
         }
         process.exit(1);
     }
