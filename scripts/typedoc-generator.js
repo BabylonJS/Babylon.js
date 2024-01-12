@@ -78,7 +78,7 @@ async function generateTypedocAndAnalyze(entryPoints, filesChanged) {
 async function main() {
     const full = process.argv.includes("--full");
     // const branch = (await runCommand("git rev-parse --abbrev-ref HEAD")).trim();
-    const filesChanged = (await runCommand("git diff --name-only master")).split("\n");
+    const filesChanged = (await runCommand(process.env.GIT_CHANGES_COMMAND || "git diff --name-only master")).split("\n");
     const files = glob.sync("packages/dev/**/src/**/*.ts").filter((f) => !f.endsWith("index.ts"));
     const dirList = files.filter((file) => {
         return file.endsWith(".ts");
