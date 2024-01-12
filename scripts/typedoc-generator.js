@@ -108,7 +108,10 @@ async function main() {
     </testsuite>
 </testsuites>`;
         fs.writeFileSync("junit.xml", xml);
-        // process.env.
+        // if in CI, save to errors.txt
+        if (process.env.CI) {
+            fs.writeFileSync("errors.txt", warnings.map((w) => `${w.filePath} ${generateMessageFromError(w.message)}`).join("\n"));
+        }
         process.exit(1);
     }
 }
