@@ -5,7 +5,7 @@
         "outDir": "./",
         "rootDir": "../../../lts/gui/src",
         "declaration": true,
-        "target": "ES2018",
+        "target": "ES2020",
         "importHelpers": true,
         "plugins": [
             {
