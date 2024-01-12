@@ -24,8 +24,17 @@ function runCommand(command) {
 const warnings = [];
 
 function warn(filePath, message) {
-    warnings.push(`${filePath}: ${message}`);
+    warnings.push({
+        filePath,
+        message,
+    });
     console.log(filePath, message);
+}
+
+function generateMessageFromError(error) {
+    return `(${error.fileName}) ${error.componentName} in ${error.parentName} is missing ${error.missingParamNames ? "Parameter definition" : "Comment"} [${
+        error.missingParamNames ? error.missingParamNames.join(", ") : ""
+    }]`;
 }
 
 async function generateTypedocAndAnalyze(entryPoints, filesChanged) {
@@ -86,6 +95,19 @@ async function main() {
 
     if (warnings.length > 0) {
         console.error(`Found ${warnings.length} warnings.`);
+        // generate junit.xml from the warnings
+        const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+    <testsuite name="Typedoc Warnings" tests="${warnings.length}">
+        ${warnings
+            .map(
+                (w) => `<testcase name="${w.filePath}" >
+        <failure message="${generateMessageFromError(w.message)}"></failure></testcase>`
+            )
+            .join("\n")}
+    </testsuite>
+</testsuites>`;
+        fs.writeFileSync("junit.xml", xml);
         // process.env.
         process.exit(1);
     }
