@@ -78,7 +78,7 @@ async function generateTypedocAndAnalyze(entryPoints, filesChanged) {
 async function main() {
     const full = process.argv.includes("--full");
     // const branch = (await runCommand("git rev-parse --abbrev-ref HEAD")).trim();
-    const filesChanged = (await runCommand("git diff --name-only master")).split("\n");
+    const filesChanged = (await runCommand(process.env.GIT_CHANGES_COMMAND || "git diff --name-only master")).split("\n");
     const files = glob.sync("packages/dev/**/src/**/*.ts").filter((f) => !f.endsWith("index.ts"));
     const dirList = files.filter((file) => {
         return file.endsWith(".ts");
@@ -108,7 +108,16 @@ async function main() {
     </testsuite>
 </testsuites>`;
         fs.writeFileSync("junit.xml", xml);
-        // process.env.
+        // if in CI, save to errors.txt
+        if (process.env.CI) {
+            const messages = warnings.map((w) => `${w.filePath} ${generateMessageFromError(w.message)}`).join("\n");
+            fs.writeFileSync("errors.txt", messages);
+            // log to the console
+            console.log(`
+Found ${warnings.length} typedoc errors:
+
+${messages}`);
+        }
         process.exit(1);
     }
 }
