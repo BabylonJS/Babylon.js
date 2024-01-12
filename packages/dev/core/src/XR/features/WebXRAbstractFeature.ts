@@ -40,6 +40,9 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
      */
     public onFeatureDetachObservable: Observable<IWebXRFeature> = new Observable();
 
+
+    
+
     /**
      * Construct a new (abstract) WebXR feature
      * @param _xrSessionManager the xr session manager for this feature
