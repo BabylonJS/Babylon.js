@@ -9,11 +9,11 @@ export interface IPipelineContext {
     /**
      * Gets a boolean indicating that this pipeline context is supporting asynchronous creating
      */
-    isAsync: boolean;
+    readonly isAsync: boolean;
     /**
      * Gets a boolean indicating that the context is ready to be used (like shaders / pipelines are compiled and ready for instance)
      */
-    isReady: boolean;
+    readonly isReady: boolean;
 
     /** @internal */
     _name?: string;
@@ -25,7 +25,7 @@ export interface IPipelineContext {
     _getFragmentShaderCode(): string | null;
 
     /** @internal */
-    _handlesSpectorRebuildCallback(onCompiled: (compiledObject: any) => void): void;
+    _handlesSpectorRebuildCallback?(onCompiled: (compiledObject: any) => void): void;
 
     /** @internal */
     _fillEffectInformation(
