@@ -388,6 +388,7 @@ export class PBRMaterial extends PBRBaseMaterial {
 
     /**
      * Specifies if the metallic texture contains the roughness information in its green channel.
+     * Needs useRoughnessFromMetallicTextureAlpha to be false.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
