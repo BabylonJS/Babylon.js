@@ -734,7 +734,7 @@ export class Effect implements IDisposable {
                 }
             }
 
-            this._pipelineContext!._handlesSpectorRebuildCallback(onCompiled);
+            this._pipelineContext!._handlesSpectorRebuildCallback?.(onCompiled);
         };
         this._fallbacks = null;
         this._prepareEffect();

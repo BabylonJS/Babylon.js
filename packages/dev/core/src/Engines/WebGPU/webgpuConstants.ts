@@ -269,6 +269,8 @@ export enum TextureSampleType {
 /** @internal */
 export enum StorageTextureAccess {
     WriteOnly = "write-only",
+    ReadOnly = "read-only",
+    ReadWrite = "read-write",
 }
 
 /** @internal */
