@@ -693,7 +693,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
 
     /**
      * Removes the internal pipeline assets and detaches the pipeline from the scene cameras
-     * @param disableGeometryBufferRenderer
+     * @param disableGeometryBufferRenderer if the geometry buffer renderer should be disabled
      */
     public dispose(disableGeometryBufferRenderer: boolean = false): void {
         this._disposeDepthRenderer();

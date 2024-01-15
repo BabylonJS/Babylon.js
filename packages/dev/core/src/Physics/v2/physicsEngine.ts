@@ -133,13 +133,14 @@ export class PhysicsEngine implements IPhysicsEngine {
 
     /**
      * Add a body as an active component of this engine
-     * @param body
+     * @param physicsBody The body to add
      */
     public addBody(physicsBody: PhysicsBody): void {
         this._physicsBodies.push(physicsBody);
     }
     /**
      * Removes a particular body from this engine
+     * @param physicsBody The body to remove from the simulation
      */
     public removeBody(physicsBody: PhysicsBody): void {
         const index = this._physicsBodies.indexOf(physicsBody);
@@ -178,6 +179,7 @@ export class PhysicsEngine implements IPhysicsEngine {
      * Does a raycast in the physics world
      * @param from when should the ray start?
      * @param to when should the ray end?
+     * @param query raycast query object
      * @returns PhysicsRaycastResult
      */
     public raycast(from: Vector3, to: Vector3, query?: IRaycastQuery): PhysicsRaycastResult {

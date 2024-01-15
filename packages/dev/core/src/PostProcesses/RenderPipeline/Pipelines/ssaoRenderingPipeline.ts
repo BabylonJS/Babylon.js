@@ -210,7 +210,7 @@ export class SSAORenderingPipeline extends PostProcessRenderPipeline {
 
     /**
      * Removes the internal pipeline assets and detaches the pipeline from the scene cameras
-     * @param disableDepthRender
+     * @param disableDepthRender - If the depth renderer should be disabled on the scene
      */
     public dispose(disableDepthRender: boolean = false): void {
         for (let i = 0; i < this._scene.cameras.length; i++) {
