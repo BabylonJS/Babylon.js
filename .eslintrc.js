@@ -168,6 +168,12 @@ const rules = {
             },
             {
                 selector: "memberLike",
+                modifiers: ["protected", "static"],
+                format: ["PascalCase", "UPPER_CASE"],
+                leadingUnderscore: "require",
+            },
+            {
+                selector: "memberLike",
                 modifiers: ["public"],
                 format: ["camelCase"],
                 leadingUnderscore: "allow",

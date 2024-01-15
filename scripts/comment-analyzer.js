@@ -58,6 +58,10 @@ function checkBaseComments(type, child, parent) {
     // }
 }
 
+function isInternal(child) {
+    return child.comment?.modifierTags?.find((tag) => tag === "@internal");
+}
+
 function traverseChildrenLookingForComments(child, parent, isSignature = false) {
     const result = {
         componentName: child.name,
@@ -65,6 +69,20 @@ function traverseChildrenLookingForComments(child, parent, isSignature = false) 
         parentName: parent?.name,
         fileName: child.sources[0]?.fileName,
     };
+    // underscored names are ignored
+    // if (child.name.startsWith("_")) {
+    //     result.result = TestResultType.PASS;
+    //     return result;
+    // }
+    if (isInternal(child)) {
+        result.result = TestResultType.PASS;
+        return result;
+    }
+    // check if parent is a class and this is a method
+    if (isInternal(parent) && (getKind(parent) === "CLASS" || getKind(parent) === "INTERFACE") && !child.comment) {
+        result.result = TestResultType.PASS;
+        return result;
+    }
     if (child.comment) {
         if (child.parameters) {
             result.missingParamNames = result.missingParamNames || [];
@@ -132,6 +150,7 @@ function addErrorToArray(error, errorArray) {
 
 // Define a recursive function to iterate over the children
 function checkCommentsOnChild(child, parent, namesToCheck = []) {
+    if (isInternal(child)) return [];
     const errors = [];
     // Check if the child is a declaration
     if ((namesToCheck.length === 0 || namesToCheck.includes(child.name)) && !sourceInNodeModules(child)) {

@@ -19,6 +19,9 @@ export interface IColor3Like {
     b: float;
 }
 
+/**
+ * @internal
+ */
 export interface IQuaternionLike {
     x: float;
     y: float;

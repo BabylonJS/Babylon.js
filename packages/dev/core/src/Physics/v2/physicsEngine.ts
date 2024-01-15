@@ -168,6 +168,7 @@ export class PhysicsEngine implements IPhysicsEngine {
      * @param from when should the ray start?
      * @param to when should the ray end?
      * @param result resulting PhysicsRaycastResult
+     * @param query raycast query object
      */
     public raycastToRef(from: Vector3, to: Vector3, result: PhysicsRaycastResult, query?: IRaycastQuery): void {
         this._physicsPlugin.raycast(from, to, result, query);

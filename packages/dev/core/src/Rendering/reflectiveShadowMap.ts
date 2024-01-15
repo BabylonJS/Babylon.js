@@ -349,6 +349,10 @@ export class RSMCreatePluginMaterial extends MaterialPluginBase {
 
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
 
+    /**
+     * Create a new RSMCreatePluginMaterial
+     * @param material Parent material of the plugin
+     */
     constructor(material: Material | StandardMaterial | PBRBaseMaterial) {
         super(material, RSMCreatePluginMaterial.Name, 300, new MaterialRSMCreateDefines());
 
