@@ -53,9 +53,6 @@ function getKind(child) {
 
 function checkBaseComments(type, child, parent) {
     return traverseChildrenLookingForComments(child, parent);
-    // if (!hasComment) {
-    //     return `${type} ${child.name} in ${parent.name} is missing a comment`;
-    // }
 }
 
 function isInternal(child) {
@@ -70,10 +67,10 @@ function traverseChildrenLookingForComments(child, parent, isSignature = false) 
         fileName: child.sources[0]?.fileName,
     };
     // underscored names are ignored
-    // if (child.name.startsWith("_")) {
-    //     result.result = TestResultType.PASS;
-    //     return result;
-    // }
+    if (child.name.startsWith("_")) {
+        result.result = TestResultType.PASS;
+        return result;
+    }
     if (isInternal(child)) {
         result.result = TestResultType.PASS;
         return result;
@@ -122,18 +119,12 @@ function isVisible(child, parent) {
 function checkPropertyComments(child, parent) {
     if (isVisible(child, parent)) {
         return traverseChildrenLookingForComments(child, parent);
-        // if (!hasComment) {
-        //     return `Public Property ${child.name} in ${parent.name} is missing comment or parameters`;
-        // }
     }
 }
 
 function checkMethodComments(child, parent) {
     if (isVisible(child, parent)) {
         return traverseChildrenLookingForComments(child, parent);
-        // if (!hasComment) {
-        //     return `Public Method ${child.name} in ${parent.name} is missing comment or parameters`;
-        // }
     }
 }
 

@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 const TypeDoc = require("typedoc");
 const fs = require("fs");
-const path = require("path");
 const glob = require("glob");
 const { commentAnalyzer } = require("./comment-analyzer");
 // const { run } = require("jest");
@@ -9,13 +8,11 @@ const exec = require("child_process").exec;
 
 function runCommand(command) {
     return new Promise((resolve, reject) => {
-        // console.log(command);
         exec(command, function (error, stdout, stderr) {
             if (error || typeof stderr !== "string") {
                 console.log(error);
                 return reject(error || stderr);
             }
-            // console.log(stderr || stdout);
             return resolve(stderr || stdout);
         });
     });
@@ -72,16 +69,13 @@ async function generateTypedocAndAnalyze(entryPoints, filesChanged) {
                     return;
                 }
             }
-            // if (entryPoints.includes(filePath)) {
             warn(filePath, msg);
-            // }
         });
     }
 }
 
 async function main() {
     const full = process.argv.includes("--full");
-    // const branch = (await runCommand("git rev-parse --abbrev-ref HEAD")).trim();
     const filesChanged = (await runCommand(process.env.GIT_CHANGES_COMMAND || "git diff --name-only master")).split("\n");
     const files = glob.sync("packages/dev/core/src/**/*.ts").filter((f) => !f.endsWith("index.ts") && !f.endsWith(".d.ts"));
     const dirList = files.filter((file) => {
