@@ -1054,7 +1054,7 @@ export class AssetContainer extends AbstractScene {
     /**
      * @since 6.26.0
      * Given a root asset, this method will traverse its hierarchy and add it, its children and any materials/skeletons/animation groups to the container.
-     * @param root
+     * @param root root node
      */
     public addAllAssetsToContainer(root: Node) {
         if (!root) {

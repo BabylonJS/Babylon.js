@@ -316,6 +316,7 @@ export abstract class GreasedLineBaseMesh extends Mesh {
     /**
      * Sets line points and rerenders the line.
      * @param points points table
+     * @param options optional options
      */
     public setPoints(points: number[][], options?: GreasedLineMeshOptions) {
         this._points = points;

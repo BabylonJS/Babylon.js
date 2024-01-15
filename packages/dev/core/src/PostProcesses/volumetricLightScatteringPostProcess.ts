@@ -290,7 +290,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
 
     /**
      * Disposes the internal assets and detaches the post-process from the camera
-     * @param camera
+     * @param camera The camera from which to detach the post-process
      */
     public dispose(camera: Camera): void {
         const rttIndex = camera.getScene().customRenderTargets.indexOf(this._volumetricLightScatteringRTT);

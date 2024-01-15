@@ -86,6 +86,8 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
     /**
      * Adds new points to the line. It doesn't rerenders the line if in lazy mode.
      * @param points points table
+     * @param options mesh options
+     * @param hasPathOptions defaults to false
      */
     public override addPoints(points: number[][], options: GreasedLineMeshOptions, hasPathOptions = false) {
         if (!options.ribbonOptions) {

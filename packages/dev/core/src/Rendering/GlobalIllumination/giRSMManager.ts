@@ -340,9 +340,10 @@ export class GIRSMManager {
     /**
      * Recreates the resources used by the manager.
      * You should normally not have to call this method manually, except if you change the useFullTexture property of a GIRSM, because the manager won't track this change.
+     * @param disposeGeometryBufferRenderer Defines if the geometry buffer renderer should be disposed and recreated. Default is false.
      */
-    public recreateResources(_disposeGeometryBufferRenderer = false) {
-        this._disposePostProcesses(_disposeGeometryBufferRenderer);
+    public recreateResources(disposeGeometryBufferRenderer = false) {
+        this._disposePostProcesses(disposeGeometryBufferRenderer);
         this._createPostProcesses();
         this._setPluginParameters();
     }

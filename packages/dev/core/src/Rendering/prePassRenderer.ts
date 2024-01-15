@@ -502,7 +502,7 @@ export class PrePassRenderer {
     /**
      * Sets an intermediary texture between prepass and postprocesses. This texture
      * will be used as input for post processes
-     * @param rt
+     * @param rt The render target texture to use
      * @returns true if there are postprocesses that will use this texture,
      * false if there is no postprocesses - and the function has no effect
      */
@@ -608,7 +608,7 @@ export class PrePassRenderer {
 
     /**
      * Retrieves an effect configuration by name
-     * @param name
+     * @param name the name of the effect configuration
      * @returns the effect configuration, or null if not present
      */
     public getEffectConfiguration(name: string): Nullable<PrePassEffectConfiguration> {
