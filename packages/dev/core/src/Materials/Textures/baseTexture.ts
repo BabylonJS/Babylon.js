@@ -228,6 +228,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         return this._texture.isCube;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected set isCube(value: boolean) {
         if (!this._texture) {
             this._isCube = value;
@@ -248,6 +249,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         return this._texture.is3D;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected set is3D(value: boolean) {
         if (!this._texture) {
             return;
@@ -268,6 +270,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         return this._texture.is2DArray;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected set is2DArray(value: boolean) {
         if (!this._texture) {
             return;

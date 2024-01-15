@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { GraphNode } from "./graphNode";
 import type { GraphCanvasComponent } from "./graphCanvas";
 import type { Nullable } from "core/types";

@@ -8,6 +8,7 @@ export class WebGLHardwareTexture implements HardwareTextureWrapper {
 
     // There can be multiple buffers for a single WebGL texture because different layers of a 2DArrayTexture / 3DTexture
     // or different faces of a cube texture can be bound to different render targets at the same time.
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private _MSAARenderBuffers: Nullable<WebGLRenderbuffer[]> = null;
 
     public get underlyingResource(): Nullable<WebGLTexture> {

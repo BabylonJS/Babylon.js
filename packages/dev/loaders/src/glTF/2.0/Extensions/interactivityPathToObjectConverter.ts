@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import type { IGLTF, INode } from "../glTFLoaderInterfaces";
 import { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
 import type { TransformNode } from "core/Meshes";

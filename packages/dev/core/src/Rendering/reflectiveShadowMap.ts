@@ -435,12 +435,14 @@ export class RSMCreatePluginMaterial extends MaterialPluginBase {
         return shaderType === "vertex"
             ? null
             : {
+                  // eslint-disable-next-line @typescript-eslint/naming-convention
                   CUSTOM_FRAGMENT_BEGIN: `
                 #ifdef RSMCREATE
                     #extension GL_EXT_draw_buffers : require
                 #endif
             `,
 
+                  // eslint-disable-next-line @typescript-eslint/naming-convention
                   CUSTOM_FRAGMENT_DEFINITIONS: `
                 #ifdef RSMCREATE
                     #ifdef RSMCREATE_PROJTEXTURE
@@ -451,6 +453,7 @@ export class RSMCreatePluginMaterial extends MaterialPluginBase {
                 #endif
             `,
 
+                  // eslint-disable-next-line @typescript-eslint/naming-convention
                   CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR: `
                 #ifdef RSMCREATE
                     vec3 rsmColor = ${this._varAlbedoName} * rsmLightColor;

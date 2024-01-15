@@ -1404,7 +1404,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         // Create plugins in targetMaterial in case they don't exist
         this._serializePlugins(serializationObject);
 
-        Material._parsePlugins(serializationObject, targetMaterial, this._scene, rootUrl);
+        Material._ParsePlugins(serializationObject, targetMaterial, this._scene, rootUrl);
 
         // Copy the properties of the current plugins to the cloned material's plugins
         if (this.pluginManager) {
@@ -1920,7 +1920,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         return material;
     }
 
-    protected static _parsePlugins(serializationObject: any, material: Material, scene: Scene, rootUrl: string) {
+    protected static _ParsePlugins(serializationObject: any, material: Material, scene: Scene, rootUrl: string) {
         if (!serializationObject.plugins) {
             return;
         }

@@ -20,22 +20,22 @@ export interface ICheckBoxLineComponentProps {
     large?: boolean;
 }
 
-import toggleOnIcon_40px from "../imgs/toggleOnIcon_40px.svg";
-import toggleOffIcon_40px from "../imgs/toggleOffIcon_40px.svg";
-import toggleOnIcon_30px from "../imgs/toggleOnIcon_30px.svg";
-import toggleMixedIcon_30px from "../imgs/toggleMixedIcon_30px.svg";
-import toggleOffIcon_30px from "../imgs/toggleOffIcon_30px.svg";
+import toggleOnIcon40px from "../imgs/toggleOnIcon_40px.svg";
+import toggleOffIcon40px from "../imgs/toggleOffIcon_40px.svg";
+import toggleOnIcon30px from "../imgs/toggleOnIcon_30px.svg";
+import toggleMixedIcon30px from "../imgs/toggleMixedIcon_30px.svg";
+import toggleOffIcon30px from "../imgs/toggleOffIcon_30px.svg";
 
 const Icons = {
     size30: {
-        on: toggleOnIcon_30px,
-        mixed: toggleMixedIcon_30px,
-        off: toggleOffIcon_30px,
+        on: toggleOnIcon30px,
+        mixed: toggleMixedIcon30px,
+        off: toggleOffIcon30px,
     },
     size40: {
-        on: toggleOnIcon_40px,
+        on: toggleOnIcon40px,
         mixed: "", // unneeded
-        off: toggleOffIcon_40px,
+        off: toggleOffIcon40px,
     },
 };
 

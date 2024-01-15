@@ -2012,7 +2012,7 @@ export class StandardMaterial extends PushMaterial {
             material.stencil.parse(source.stencil, scene, rootUrl);
         }
 
-        Material._parsePlugins(source, material, scene, rootUrl);
+        Material._ParsePlugins(source, material, scene, rootUrl);
 
         return material;
     }

@@ -22,6 +22,7 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
     /**
      * @internal
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public _MSAAFramebuffer: Nullable<WebGLFramebuffer> = null;
 
     // Multiview

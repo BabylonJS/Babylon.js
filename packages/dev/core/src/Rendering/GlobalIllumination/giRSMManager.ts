@@ -912,6 +912,7 @@ export class GIRSMRenderPluginMaterial extends MaterialPluginBase {
 
     public getCustomCode(shaderType: string) {
         const frag: { [name: string]: string } = {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             CUSTOM_FRAGMENT_DEFINITIONS: `
                 #ifdef RENDER_WITH_GIRSM
                     uniform sampler2D girsmTextureGIContrib;
@@ -923,6 +924,7 @@ export class GIRSMRenderPluginMaterial extends MaterialPluginBase {
                 #endif
             `,
 
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION: `
                 #ifdef RENDER_WITH_GIRSM
                     finalDiffuse += computeIndirect() * surfaceAlbedo.rgb;

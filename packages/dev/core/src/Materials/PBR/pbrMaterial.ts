@@ -813,7 +813,7 @@ export class PBRMaterial extends PBRBaseMaterial {
             material.stencil.parse(source.stencil, scene, rootUrl);
         }
 
-        Material._parsePlugins(source, material, scene, rootUrl);
+        Material._ParsePlugins(source, material, scene, rootUrl);
 
         // The code block below ensures backward compatibility with serialized materials before plugins are automatically serialized.
         if (source.clearCoat) {
