@@ -43,6 +43,9 @@ async function generateTypedocAndAnalyze(entryPoints, filesChanged) {
                 skipLibCheck: true,
                 paths: {
                     "core/*": ["packages/dev/core/src/*"],
+                    "loaders/*": ["packages/dev/loaders/src/*"],
+                    "materials/*": ["packages/dev/materials/src/*"],
+                    "gui/*": ["packages/dev/gui/src/*"],
                 },
             },
             // Not using ignoreExternals, as if a public class extending an internal one it will claim the comments are missing.
@@ -77,7 +80,7 @@ async function generateTypedocAndAnalyze(entryPoints, filesChanged) {
 async function main() {
     const full = process.argv.includes("--full");
     const filesChanged = (await runCommand(process.env.GIT_CHANGES_COMMAND || "git diff --name-only master")).split("\n");
-    const files = glob.sync("packages/dev/core/src/**/*.ts").filter((f) => !f.endsWith("index.ts") && !f.endsWith(".d.ts"));
+    const files = glob.sync("packages/dev/**/src/**/*.ts").filter((f) => !f.endsWith("index.ts") && !f.endsWith(".d.ts"));
     const dirList = files.filter((file) => {
         return file.endsWith(".ts");
     });
