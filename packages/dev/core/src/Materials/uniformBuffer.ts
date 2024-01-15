@@ -720,7 +720,7 @@ export class UniformBuffer {
         if (location === undefined) {
             if (this._buffer) {
                 // Cannot add an uniform if the buffer is already created
-                Logger.Error("Cannot add an uniform after UBO has been created.");
+                Logger.Error("Cannot add an uniform after UBO has been created. uniformName=" + uniformName);
                 return;
             }
             this.addUniform(uniformName, size);

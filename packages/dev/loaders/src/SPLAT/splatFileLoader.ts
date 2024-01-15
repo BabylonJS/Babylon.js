@@ -1,7 +1,7 @@
 import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderPlugin, ISceneLoaderAsyncResult, ISceneLoaderPluginExtensions } from "core/Loading/sceneLoader";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { Quaternion } from "core/Maths/math.vector";
-import { GaussianSplatting } from "core/Rendering/GaussianSplatting/gaussianSplatting";
+import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 import type { AssetContainer } from "core/assetContainer";
 import type { Scene } from "core/scene";
 
@@ -21,7 +21,9 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
      * force data to come in as an ArrayBuffer
      */
     public extensions: ISceneLoaderPluginExtensions = {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         ".splat": { isBinary: true },
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         ".ply": { isBinary: true },
     };
 
@@ -84,7 +86,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
             .split("\n")
             .filter((k) => k.startsWith("property "));
         for (const prop of filtered) {
-            const [_p, type, name] = prop.split(" ");
+            const [, type, name] = prop.split(" ");
             properties.push({ name, type, offset: rowOffset });
             if (!offsets[type]) throw new Error(`Unsupported property type: ${type}`);
             rowOffset += offsets[type];
@@ -193,34 +195,44 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
     /**
      * Imports  from the loaded gaussian splatting data and adds them to the scene
-     * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
+     * @param _meshesNames a string or array of strings of the mesh names that should be loaded from the file
      * @param scene the scene the meshes should be added to
      * @param data the gaussian splatting data to load
      * @param rootUrl root url to load from
      * @returns a promise containing the loaded meshes, particles, skeletons and animations
      */
     public importMeshAsync(_meshesNames: any, scene: Scene, data: any, rootUrl: string): Promise<ISceneLoaderAsyncResult> {
-        const gaussianSplatting = new GaussianSplatting("", scene);
-        return gaussianSplatting.loadFileAsync(rootUrl) as any;
+        const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene);
+        return gaussianSplatting.loadFileAsync(rootUrl).then(() => {
+            return {
+                meshes: [gaussianSplatting],
+                particleSystems: [],
+                skeletons: [],
+                animationGroups: [],
+                transformNodes: [],
+                geometries: [],
+                lights: [],
+            };
+        });
     }
 
     /**
      * Imports all objects from the loaded gaussian splatting data and adds them to the scene
      * @param scene the scene the objects should be added to
      * @param data the gaussian splatting data to load
-     * @param rootUrl root url to load from
+     * @param _rootUrl root url to load from
      * @returns a promise which completes when objects have been loaded to the scene
      */
     public loadAsync(scene: Scene, data: any, _rootUrl: string): Promise<void> {
-        const gaussianSplatting = new GaussianSplatting("GaussianSplatting", scene);
+        const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene);
         return gaussianSplatting.loadDataAsync(this._loadPLY(data));
     }
 
     /**
      * Load into an asset container.
-     * @param scene The scene to load into
-     * @param data The data to import
-     * @param rootUrl The root url for scene and resources
+     * @param _scene The scene to load into
+     * @param _data The data to import
+     * @param _rootUrl The root url for scene and resources
      * @returns The loaded asset container
      */
     public loadAssetContainerAsync(_scene: Scene, _data: string, _rootUrl: string): Promise<AssetContainer> {
