@@ -596,6 +596,7 @@ export class GLTFLoader implements IGLTFLoader {
         this._rootBabylonMesh.setEnabled(false);
 
         const rootNode: INode = {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             _babylonTransformNode: this._rootBabylonMesh,
             index: -1,
         };

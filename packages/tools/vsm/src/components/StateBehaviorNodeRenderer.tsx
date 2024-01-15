@@ -51,6 +51,7 @@ export const StateBehaviorNodeRenderer = (props: IStateBehaviorNodeRendererProps
                 deleteLine={() => {}}
                 deleteNode={() => {}}
                 selectNode={selectNode}
+                // eslint-disable-next-line @typescript-eslint/naming-convention
                 customComponents={{ SetPosition: SetPositionBlock }}
             />
         );

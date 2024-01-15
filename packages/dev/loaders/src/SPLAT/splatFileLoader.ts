@@ -21,7 +21,9 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
      * force data to come in as an ArrayBuffer
      */
     public extensions: ISceneLoaderPluginExtensions = {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         ".splat": { isBinary: true },
+        // eslint-disable-next-line @typescript-eslint/naming-convention
         ".ply": { isBinary: true },
     };
 
