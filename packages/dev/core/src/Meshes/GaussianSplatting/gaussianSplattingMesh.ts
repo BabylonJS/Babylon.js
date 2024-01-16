@@ -66,15 +66,6 @@ export class GaussianSplattingMesh extends Mesh {
         return this._vertexCount;
     }
 
-    /** Gets or sets current material */
-    public get material(): GaussianSplattingMaterial {
-        return this._internalAbstractMeshDataInfo._material as GaussianSplattingMaterial;
-    }
-
-    public set material(value: Nullable<GaussianSplattingMaterial>) {
-        super.material = value;
-    }
-
     /**
      * Triggers the draw call for the mesh. Usually, you don't need to call this method by your own because the mesh rendering is handled by the scene rendering manager
      * @param subMesh defines the subMesh to render
@@ -261,7 +252,7 @@ export class GaussianSplattingMesh extends Mesh {
             colorArray[i * 4 + 3] = uBuffer[32 * i + 24 + 3] / 255;
         }
 
-        const material = this.material;
+        const material = this.material as GaussianSplattingMaterial;
 
         material.covariancesATexture = createTextureFromData(convertRgbToRgba(covA), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
         material.covariancesBTexture = createTextureFromData(convertRgbToRgba(covB), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
