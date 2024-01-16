@@ -129,7 +129,7 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
 
     /**
      * Load the texture data
-     * @param url defines the url to load data from
+     * @param texture defines the source texture
      * @returns a promise fulfilled when image data is loaded
      */
     public extractFromTextureAsync(texture: Texture) {

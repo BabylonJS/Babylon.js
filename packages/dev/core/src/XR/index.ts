@@ -12,3 +12,4 @@ export * from "./webXRFeaturesManager";
 export * from "./features/index";
 export * from "./motionController/index";
 export * from "./native/index";
+export * from "./webXRRenderTargetTextureProvider";

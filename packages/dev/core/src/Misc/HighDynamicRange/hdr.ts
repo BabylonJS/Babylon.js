@@ -141,6 +141,7 @@ export class HDRTools {
      *
      * @param buffer The binary file stored in an array buffer.
      * @param size The expected size of the extracted cubemap.
+     * @param supersample enable supersampling the cubemap (default: false)
      * @returns The Cube Map information.
      */
     public static GetCubeMapTextureData(buffer: ArrayBuffer, size: number, supersample = false): CubeMapInfo {

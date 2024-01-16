@@ -33,6 +33,9 @@ export class WebRequest implements IWebRequest {
      */
     public static CustomRequestModifiers = new Array<(request: XMLHttpRequest, url: string) => void>();
 
+    /**
+     * If set to true, requests to Babylon.js CDN requests will not be modified
+     */
     public static SkipRequestModificationForBabylonCDN = true;
 
     /**

@@ -1863,9 +1863,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
     /**
      * Force shader compilation
-     * @param mesh
-     * @param onCompiled
-     * @param options
+     * @param mesh - Define the mesh we want to force the compilation for
+     * @param onCompiled - Define a callback triggered when the compilation completes
+     * @param options - Define the options used to create the compilation
      */
     public forceCompilation(mesh: AbstractMesh, onCompiled?: (material: Material) => void, options?: Partial<IMaterialCompilationOptions>): void {
         const localOptions = {

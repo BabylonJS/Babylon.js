@@ -947,6 +947,7 @@ export class NodeMaterial extends PushMaterial {
 
     /**
      * Sets the required values to the prepass renderer.
+     * @param prePassRenderer defines the prepass renderer to set.
      */
     public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
         const prePassTexturesRequired = this.prePassTextureInputs.concat(this.prePassTextureOutputs);
@@ -2058,7 +2059,7 @@ export class NodeMaterial extends PushMaterial {
 
     /**
      * Serializes this material in a JSON representation
-     * @param selectedBlocks
+     * @param selectedBlocks defines an optional list of blocks to serialize
      * @returns the serialized material object
      */
     public serialize(selectedBlocks?: NodeMaterialBlock[]): any {

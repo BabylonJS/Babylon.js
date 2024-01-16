@@ -112,9 +112,9 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
 
     /**
      * Parses a JSON object corresponding to the serialize function.
-     * @param source
-     * @param scene
-     * @param rootUrl
+     * @param source - JSON source object.
+     * @param scene - the scene to parse to.
+     * @param rootUrl - root url of the assets.
      */
     public static Parse(source: any, scene: Scene, rootUrl: string): PBRSpecularGlossinessMaterial {
         const material = SerializationHelper.Parse(() => new PBRSpecularGlossinessMaterial(source.name, scene), source, scene, rootUrl);

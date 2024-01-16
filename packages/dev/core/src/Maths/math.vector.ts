@@ -2644,7 +2644,7 @@ export class Vector3 {
      * Reflects a vector off the plane defined by a normalized normal to reference
      * @param inDirection defines the vector direction
      * @param normal defines the normal - Must be normalized
-     * @param result defines the Vector3 where to store the result
+     * @param ref defines the Vector3 where to store the result
      * @returns the resulting vector
      */
     public static ReflectToRef<T extends Vector3>(inDirection: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>, ref: T): T {

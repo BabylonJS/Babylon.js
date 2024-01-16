@@ -1,6 +1,7 @@
 export * from "./fogBlock";
 export * from "./lightBlock";
 export * from "./textureBlock";
+export * from "./reflectionTextureBaseBlock";
 export * from "./reflectionTextureBlock";
 export * from "./currentScreenBlock";
 export * from "./sceneDepthBlock";

@@ -694,6 +694,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Sets the event mask of a physics body.
      * @param body - The physics body to set the event mask for.
      * @param eventMask - The event mask to set.
+     * @param instanceIndex - The index of the instance to set the event mask for
      *
      * This function is useful for setting the event mask of a physics body, which is used to determine which events the body will respond to. This is important for ensuring that the physics engine is able to accurately simulate the behavior of the body in the game world.
      */
@@ -711,6 +712,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Retrieves the event mask of a physics body.
      *
      * @param body - The physics body to retrieve the event mask from.
+     * @param instanceIndex - The index of the instance to retrieve the event mask from.
      * @returns The event mask of the physics body.
      *
      */
@@ -763,6 +765,12 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         }
     }
 
+    /**
+     * sets the motion type of a physics body.
+     * @param body - The physics body to set the motion type for.
+     * @param motionType - The motion type to set.
+     * @param instanceIndex - The index of the instance to set the motion type for. If undefined, the motion type of all the bodies will be set.
+     */
     public setMotionType(body: PhysicsBody, motionType: PhysicsMotionType, instanceIndex?: number): void {
         this._applyToBodyOrInstances(
             body,
@@ -773,6 +781,11 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         );
     }
 
+    /**
+     * Gets the motion type of a physics body.
+     * @param body - The physics body to get the motion type from.
+     * @param instanceIndex - The index of the instance to get the motion type from. If not specified, the motion type of the first instance will be returned.
+     */
     public getMotionType(body: PhysicsBody, instanceIndex?: number): PhysicsMotionType {
         const pluginRef = this._getPluginReference(body, instanceIndex);
         const type = this._hknp.HP_Body_GetMotionType(pluginRef.hpBodyId)[1];
@@ -804,6 +817,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Computes the mass properties of a physics body, from it's shape
      *
      * @param body - The physics body to copmute the mass properties of
+     * @param instanceIndex - The index of the instance to compute the mass properties of.
      */
     public computeMassProperties(body: PhysicsBody, instanceIndex?: number): PhysicsMassProperties {
         const pluginRef = this._getPluginReference(body, instanceIndex);
@@ -833,7 +847,10 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         );
     }
     /**
-     *
+     * Gets the mass properties of a physics body.
+     * @param body - The physics body to get the mass properties from.
+     * @param instanceIndex - The index of the instance to get the mass properties from. If not specified, the mass properties of the first instance will be returned.
+     * @returns The mass properties of the physics body.
      */
     public getMassProperties(body: PhysicsBody, instanceIndex?: number): PhysicsMassProperties {
         const pluginRef = this._getPluginReference(body, instanceIndex);
@@ -845,6 +862,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Sets the linear damping of the given body.
      * @param body - The body to set the linear damping for.
      * @param damping - The linear damping to set.
+     * @param instanceIndex - The index of the instance to set the linear damping for. If not specified, the linear damping of the first instance will be set.
      *
      * This method is useful for controlling the linear damping of a body in a physics engine.
      * Linear damping is a force that opposes the motion of the body, and is proportional to the velocity of the body.
@@ -863,6 +881,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     /**
      * Gets the linear damping of the given body.
      * @param body - The body to get the linear damping from.
+     * @param instanceIndex - The index of the instance to get the linear damping from. If not specified, the linear damping of the first instance will be returned.
      * @returns The linear damping of the given body.
      *
      * This method is useful for getting the linear damping of a body in a physics engine.
@@ -878,6 +897,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Sets the angular damping of a physics body.
      * @param body - The physics body to set the angular damping for.
      * @param damping - The angular damping value to set.
+     * @param instanceIndex - The index of the instance to set the angular damping for. If not specified, the angular damping of the first instance will be set.
      *
      * This function is useful for controlling the angular velocity of a physics body.
      * By setting the angular damping, the body's angular velocity will be reduced over time, allowing for more realistic physics simulations.
@@ -895,6 +915,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     /**
      * Gets the angular damping of a physics body.
      * @param body - The physics body to get the angular damping from.
+     * @param instanceIndex - The index of the instance to get the angular damping from. If not specified, the angular damping of the first instance will be returned.
      * @returns The angular damping of the body.
      *
      * This function is useful for retrieving the angular damping of a physics body,
@@ -909,6 +930,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Sets the linear velocity of a physics body.
      * @param body - The physics body to set the linear velocity of.
      * @param linVel - The linear velocity to set.
+     * @param instanceIndex - The index of the instance to set the linear velocity of. If not specified, the linear velocity of the first instance will be set.
      *
      * This function is useful for setting the linear velocity of a physics body, which is necessary for simulating
      * motion in a physics engine. The linear velocity is the speed and direction of the body's movement.
@@ -927,6 +949,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Gets the linear velocity of a physics body and stores it in a given vector.
      * @param body - The physics body to get the linear velocity from.
      * @param linVel - The vector to store the linear velocity in.
+     * @param instanceIndex - The index of the instance to get the linear velocity from. If not specified, the linear velocity of the first instance will be returned.
      *
      * This function is useful for retrieving the linear velocity of a physics body,
      * which can be used to determine the speed and direction of the body. This
@@ -991,6 +1014,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      *
      * @param body - The physics body to set the angular velocity of.
      * @param angVel - The angular velocity to set.
+     * @param instanceIndex - The index of the instance to set the angular velocity of. If not specified, the angular velocity of the first instance will be set.
      *
      * This function is useful for setting the angular velocity of a physics body in a physics engine.
      * This allows for more realistic simulations of physical objects, as they can be given a rotational velocity.
@@ -1009,6 +1033,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Gets the angular velocity of a body.
      * @param body - The body to get the angular velocity from.
      * @param angVel - The vector3 to store the angular velocity.
+     * @param instanceIndex - The index of the instance to get the angular velocity from. If not specified, the angular velocity of the first instance will be returned.
      *
      * This method is useful for getting the angular velocity of a body in a physics engine. It
      * takes the body and a vector3 as parameters and stores the angular velocity of the body
@@ -1197,20 +1222,40 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         }
     }
 
+    /**
+     * Sets the shape filter membership mask of a body
+     * @param shape - The physics body to set the shape filter membership mask for.
+     * @param membershipMask - The shape filter membership mask to set.
+     */
     public setShapeFilterMembershipMask(shape: PhysicsShape, membershipMask: number): void {
         const collideWith = this._hknp.HP_Shape_GetFilterInfo(shape._pluginData)[1][1];
         this._hknp.HP_Shape_SetFilterInfo(shape._pluginData, [membershipMask, collideWith]);
     }
 
+    /**
+     * Gets the shape filter membership mask of a body
+     * @param shape - The physics body to get the shape filter membership mask from.
+     * @returns The shape filter membership mask of the given body.
+     */
     public getShapeFilterMembershipMask(shape: PhysicsShape): number {
         return this._hknp.HP_Shape_GetFilterInfo(shape._pluginData)[1][0];
     }
 
+    /**
+     * Sets the shape filter collide mask of a body
+     * @param shape - The physics body to set the shape filter collide mask for.
+     * @param collideMask - The shape filter collide mask to set.
+     */
     public setShapeFilterCollideMask(shape: PhysicsShape, collideMask: number): void {
         const membership = this._hknp.HP_Shape_GetFilterInfo(shape._pluginData)[1][0];
         this._hknp.HP_Shape_SetFilterInfo(shape._pluginData, [membership, collideMask]);
     }
 
+    /**
+     * Gets the shape filter collide mask of a body
+     * @param shape - The physics body to get the shape filter collide mask from.
+     * @returns The shape filter collide mask of the given body.
+     */
     public getShapeFilterCollideMask(shape: PhysicsShape): number {
         return this._hknp.HP_Shape_GetFilterInfo(shape._pluginData)[1][1];
     }
@@ -1893,7 +1938,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     /**
      * Enable collision to be reported for a body when a callback is setup on the world
      * @param body the physics body
-     * @param enabled
+     * @param enabled whether to enable or disable collision events
      */
     public setCollisionCallbackEnabled(body: PhysicsBody, enabled: boolean): void {
         // Register for collide events by default
@@ -1909,8 +1954,8 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
 
     /**
      * Enable collision ended to be reported for a body when a callback is setup on the world
-     * @param body
-     * @param enabled
+     * @param body the physics body
+     * @param enabled whether to enable or disable collision ended events
      */
     public setCollisionEndedCallbackEnabled(body: PhysicsBody, enabled: boolean): void {
         // Register to collide ended events

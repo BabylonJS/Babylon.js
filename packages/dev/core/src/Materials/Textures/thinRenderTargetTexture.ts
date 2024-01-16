@@ -75,7 +75,7 @@ export class ThinRenderTargetTexture extends ThinTexture implements IRenderTarge
 
     /**
      * Dispose the texture and release its associated resources.
-     * @param disposeOnlyFramebuffers
+     * @param disposeOnlyFramebuffers if set to true it will dispose only the frame buffers (default: false)
      */
     public dispose(disposeOnlyFramebuffers = false): void {
         this._renderTarget?.dispose(true);
