@@ -166,6 +166,9 @@ export class PhysicsShape {
      * @returns The material of the physics shape.
      */
     public get material(): PhysicsMaterial {
+        if (!this._material) {
+            this._material = this._physicsPlugin.getMaterial(this);
+        }
         return this._material;
     }
 
