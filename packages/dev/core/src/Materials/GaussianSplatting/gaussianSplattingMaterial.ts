@@ -21,6 +21,16 @@ import "../../Shaders/gaussianSplatting.vertex";
  * @internal
  */
 class GaussianSplattingMaterialDefines extends MaterialDefines {
+    public FOG = false;
+    public THIN_INSTANCES = true;
+    public LOGARITHMICDEPTH = false;
+    public CLIPPLANE = false;
+    public CLIPPLANE2 = false;
+    public CLIPPLANE3 = false;
+    public CLIPPLANE4 = false;
+    public CLIPPLANE5 = false;
+    public CLIPPLANE6 = false;
+
     /**
      * Constructor of the defines.
      */
@@ -152,7 +162,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
 
-            const uniforms = ["world", "vFogInfos", "vFogColor", "logarithmicDepthConstant", "dataTextureSize", "viewport"];
+            const uniforms = ["world", "vFogInfos", "vFogColor", "logarithmicDepthConstant", "vSplattingInfos"];
             const samplers = ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture"];
             const uniformBuffers = ["Material", "Scene", "Mesh"];
 
@@ -198,10 +208,8 @@ export class GaussianSplattingMaterial extends PushMaterial {
      * Used internally during the effect preparation.
      */
     public buildUniformLayout(): void {
-        // Order is important !
         const ubo = this._uniformBuffer;
-        ubo.addUniform("viewport", 2);
-        ubo.addUniform("dataTextureSize", 2);
+        ubo.addUniform("vSplattingInfos", 4);
 
         super.buildUniformLayout();
     }
@@ -241,8 +249,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
             const engine = scene.getEngine();
             const textureSize = this._covariancesATexture?.getSize() ?? { width: 0, height: 0 };
 
-            this._uniformBuffer.updateFloat2("viewport", engine.getRenderWidth(), engine.getRenderHeight());
-            this._uniformBuffer.updateFloat2("dataTextureSize", textureSize.width, textureSize.height);
+            this._uniformBuffer.updateFloat4("vSplattingInfos", engine.getRenderWidth(), engine.getRenderHeight(), textureSize.width, textureSize.height);
 
             effect.setTexture("covariancesATexture", this._covariancesATexture);
             effect.setTexture("covariancesBTexture", this._covariancesBTexture);

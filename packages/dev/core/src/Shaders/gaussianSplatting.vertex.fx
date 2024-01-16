@@ -1,8 +1,14 @@
 #include<__decl__gaussianSplattingVertex>
 
-// Attributes
-#define CUSTOM_VERTEX_BEGIN
+#ifdef LOGARITHMICDEPTH
+#extension GL_EXT_frag_depth : enable
+#endif
 
+#include<clipPlaneVertexDeclaration>
+#include<fogVertexDeclaration>
+#include<logDepthDeclaration>
+
+// Attributes
 attribute vec2 position;
 attribute float splatIndex;
 
@@ -27,18 +33,23 @@ mat3 transpose(mat3 matrix) {
 vec2 getDataUV(float index, vec2 textureSize) {
     float y = floor(index / textureSize.x);
     float x = index - y * textureSize.x;
-    return vec2((x + 0.5) / dataTextureSize.x, (y + 0.5) / dataTextureSize.y);
+    return vec2((x + 0.5) / textureSize.x, (y + 0.5) / textureSize.y);
 }
 
 void main () {
+    vec2 viewport = vSplattingInfos.xy;
+    vec2 dataTextureSize = vSplattingInfos.zw;
+
     vec2 splatUV = getDataUV(splatIndex, dataTextureSize);
     vec3 center = texture2D(centersTexture, splatUV).xyz;
     vec4 color = texture2D(colorsTexture, splatUV);
     vec3 covA = texture2D(covariancesATexture, splatUV).xyz;
     vec3 covB = texture2D(covariancesBTexture, splatUV).xyz;
 
+    vec4 worldPos = world * vec4(center, 1.0);
+
     mat4 modelView = view * world;
-    vec4 camspace = modelView * vec4(center, 1);
+    vec4 camspace = view * worldPos;
     vec4 pos2d = projection * camspace;
 
     float bounds = 1.2 * pos2d.w;
@@ -82,4 +93,8 @@ void main () {
         vCenter 
         + (position.x * majorAxis * 1. / viewport 
         + position.y * minorAxis * 1. / viewport) * pos2d.w, pos2d.zw);
+
+#include<clipPlaneVertex>
+#include<fogVertex>
+#include<logDepthVertex>
 }
