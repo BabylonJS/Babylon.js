@@ -12,7 +12,7 @@ import { RawTexture } from "core/Materials/Textures/rawTexture";
 import { Constants } from "core/Engines/constants";
 
 /**
- *
+ * Class used to render a gaussian splatting mesh
  */
 export class GaussianSplattingMesh extends Mesh {
     private _vertexCount = 0;
