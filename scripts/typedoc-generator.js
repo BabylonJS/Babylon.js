@@ -119,7 +119,7 @@ async function main() {
             fs.writeFileSync("errors.txt", messages);
             // log to the console
             console.log(`
-Found ${warnings.length} typedoc errors:
+Found ${Object.keys(warnings).length} typedoc errors:
 
 ${messages}`);
         }
