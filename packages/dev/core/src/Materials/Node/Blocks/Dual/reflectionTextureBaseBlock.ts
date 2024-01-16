@@ -168,6 +168,11 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         return this.texture;
     }
 
+    /**
+     * Auto configure the node based on the existing material
+     * @param material defines the material to configure
+     * @param additionalFilteringInfo defines additional info to be used when filtering inputs (we might want to skip some non relevant blocks)
+     */
     public autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.position.isConnected) {
             let positionInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "position" && additionalFilteringInfo(b));

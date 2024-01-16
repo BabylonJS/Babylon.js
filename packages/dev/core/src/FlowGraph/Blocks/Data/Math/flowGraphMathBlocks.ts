@@ -417,6 +417,10 @@ RegisterClass(FlowGraphFractBlock.ClassName, FlowGraphFractBlock);
  * Negation block.
  */
 export class FlowGraphNegBlock extends FlowGraphUnaryOperationBlock<any, any> {
+    /**
+     * construct a new negation block.
+     * @param config optional configuration
+     */
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(RichTypeAny, RichTypeAny, (a) => this._polymorphicNeg(a), FlowGraphNegBlock.ClassName, config);
     }
@@ -425,6 +429,9 @@ export class FlowGraphNegBlock extends FlowGraphUnaryOperationBlock<any, any> {
         return _componentWiseUnaryOperation(a, (a) => -a);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGNegBlock";
 }
 RegisterClass(FlowGraphNegBlock.ClassName, FlowGraphNegBlock);

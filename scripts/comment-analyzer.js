@@ -64,7 +64,8 @@ function traverseChildrenLookingForComments(child, parent, isSignature = false) 
         componentName: child.name,
         componentType: getKind(child),
         parentName: parent?.name,
-        fileName: child.sources[0]?.fileName,
+        fileName: child.sources[0]?.fileName + ":" + child.sources[0]?.line + ":" + child.sources[0]?.character,
+        url: child.sources[0]?.url,
     };
     // underscored names are ignored
     if (child.name.startsWith("_")) {
@@ -94,18 +95,14 @@ function traverseChildrenLookingForComments(child, parent, isSignature = false) 
         result.result = TestResultType.PASS;
         return result;
     } else if (child.signatures) {
-        const signatureResults = child.signatures
-            .map((sig) => traverseChildrenLookingForComments(sig, parent, true))
-            .flat()
-            .filter((sigResult) => {
-                return sigResult.result !== TestResultType.PASS;
-            });
-        if (signatureResults.length === 0) {
-            result.result = TestResultType.PASS;
-            return result;
-        } else {
-            return signatureResults[0];
-        }
+        const signatureResult = traverseChildrenLookingForComments(child.signatures[0], parent, true);
+        // const signatureResults = child.signatures[0]
+        //     .map((sig) => traverseChildrenLookingForComments(sig, parent, true))
+        //     .flat()
+        //     .filter((sigResult) => {
+        //         return sigResult.result !== TestResultType.PASS;
+        //     });
+        return signatureResult;
     }
     result.result = TestResultType.MISSING_COMMENT;
     return result;

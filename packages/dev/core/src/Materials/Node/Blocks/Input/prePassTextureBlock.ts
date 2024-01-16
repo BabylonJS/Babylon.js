@@ -60,7 +60,7 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
 
     /**
      * Returns the sampler name associated with the node connection point
-     * @param output
+     * @param output defines the connection point to get the associated sampler name
      * @returns
      */
     public getSamplerName(output: NodeMaterialConnectionPoint): string {

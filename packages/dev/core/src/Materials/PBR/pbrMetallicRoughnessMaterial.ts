@@ -115,9 +115,9 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
 
     /**
      * Parses a JSON object corresponding to the serialize function.
-     * @param source
-     * @param scene
-     * @param rootUrl
+     * @param source - JSON source object.
+     * @param scene - Defines the scene we are parsing for
+     * @param rootUrl - Defines the rootUrl of this parsed object
      */
     public static Parse(source: any, scene: Scene, rootUrl: string): PBRMetallicRoughnessMaterial {
         const material = SerializationHelper.Parse(() => new PBRMetallicRoughnessMaterial(source.name, scene), source, scene, rootUrl);

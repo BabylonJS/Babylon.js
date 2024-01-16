@@ -459,6 +459,7 @@ export class SerializationHelper {
      * Clones an object
      * @param creationFunction defines the function used to instanciate the new object
      * @param source defines the source object
+     * @param options defines the options to use
      * @returns the cloned object
      */
     public static Clone<T>(creationFunction: () => T, source: T, options: CopySourceOptions = {}): T {

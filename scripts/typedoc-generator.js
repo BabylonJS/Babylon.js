@@ -18,14 +18,13 @@ function runCommand(command) {
     });
 }
 
-const warnings = [];
+const warnings = {};
 
 function warn(filePath, message) {
-    warnings.push({
-        filePath,
-        message,
-    });
-    console.log(filePath, message);
+    if (!warnings[filePath]) {
+        warnings[filePath] = message;
+        console.log(filePath, message);
+    }
 }
 
 function generateMessageFromError(error) {
@@ -35,7 +34,7 @@ function generateMessageFromError(error) {
 }
 
 async function generateTypedocAndAnalyze(entryPoints, filesChanged) {
-    const app = await TypeDoc.Application.bootstrap(
+    const app = await TypeDoc.Application.bootstrapWithPlugins(
         {
             entryPoints,
             skipErrorChecking: true,
@@ -46,6 +45,7 @@ async function generateTypedocAndAnalyze(entryPoints, filesChanged) {
                     "loaders/*": ["packages/dev/loaders/src/*"],
                     "materials/*": ["packages/dev/materials/src/*"],
                     "gui/*": ["packages/dev/gui/src/*"],
+                    "serializers/*": ["packages/dev/serializers/src/*"],
                 },
             },
             // Not using ignoreExternals, as if a public class extending an internal one it will claim the comments are missing.
@@ -78,9 +78,11 @@ async function generateTypedocAndAnalyze(entryPoints, filesChanged) {
 }
 
 async function main() {
+    const packages = process.argv.includes("--packages") ? process.argv[process.argv.indexOf("--packages") + 1].split(",") : ["core", "loaders", "materials", "gui", "serializers"];
     const full = process.argv.includes("--full");
     const filesChanged = (await runCommand(process.env.GIT_CHANGES_COMMAND || "git diff --name-only master")).split("\n");
-    const files = glob.sync("packages/dev/**/src/**/*.ts").filter((f) => !f.endsWith("index.ts") && !f.endsWith(".d.ts"));
+    const files = glob.sync(`packages/dev/@(${packages.join("|")})/src/index.ts`).filter((f) => /*!f.endsWith("index.ts") && */ !f.endsWith(".d.ts"));
+    console.log(files);
     const dirList = files.filter((file) => {
         return file.endsWith(".ts");
     });
@@ -94,16 +96,16 @@ async function main() {
     console.log("Done. Removing tmp folder.");
     // fs.rmSync("tmp", { recursive: true, force: true });
 
-    if (warnings.length > 0) {
-        console.error(`Found ${warnings.length} warnings.`);
+    if (Object.keys(warnings).length > 0) {
+        console.error(`Found ${Object.keys(warnings).length} warnings.`);
         // generate junit.xml from the warnings
         const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <testsuites>
-    <testsuite name="Typedoc Warnings" tests="${warnings.length}">
-        ${warnings
+    <testsuite name="Typedoc Warnings" tests="${Object.keys(warnings).length}">
+        ${Object.keys(warnings)
             .map(
-                (w) => `<testcase name="${w.filePath}" >
-        <failure message="${generateMessageFromError(w.message)}"></failure></testcase>`
+                (w) => `<testcase name="${w}" >
+        <failure message="${generateMessageFromError(warnings[w])}"></failure></testcase>`
             )
             .join("\n")}
     </testsuite>
@@ -111,7 +113,9 @@ async function main() {
         fs.writeFileSync("junit.xml", xml);
         // if in CI, save to errors.txt
         if (process.env.CI) {
-            const messages = warnings.map((w) => `${w.filePath} ${generateMessageFromError(w.message)}`).join("\n");
+            const messages = Object.keys(warnings)
+                .map((w) => `${w} ${generateMessageFromError(Object.keys(warnings)[w])}`)
+                .join("\n");
             fs.writeFileSync("errors.txt", messages);
             // log to the console
             console.log(`

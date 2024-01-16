@@ -88,6 +88,7 @@ export class PhysicsRaycastResult {
      * Sets the hit data (normal & point in world space)
      * @param hitNormalWorld defines the normal in world space
      * @param hitPointWorld defines the point in world space
+     * @param triangleIndex defines the index of the triangle in case of mesh intersection
      */
     public setHitData(hitNormalWorld: IXYZ, hitPointWorld: IXYZ, triangleIndex?: number) {
         this._hasHit = true;
@@ -98,7 +99,7 @@ export class PhysicsRaycastResult {
 
     /**
      * Sets the distance from the start point to the hit point
-     * @param distance
+     * @param distance defines the distance to set
      */
     public setHitDistance(distance: number) {
         this._hitDistance = distance;

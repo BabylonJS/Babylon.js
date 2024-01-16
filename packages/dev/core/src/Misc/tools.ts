@@ -497,6 +497,7 @@ export class Tools {
     /**
      * Get a script URL including preprocessing
      * @param scriptUrl the script Url to process
+     * @param forceAbsoluteUrl force the script to be an absolute url (adding the current base url if necessary)
      * @returns a modified URL to use
      */
     public static GetBabylonScriptURL(scriptUrl: Nullable<string>, forceAbsoluteUrl?: boolean): string {
@@ -1159,6 +1160,9 @@ export class Tools {
         return DecodeBase64UrlToBinary(uri);
     }
 
+    /**
+     * Get the absolute URL of a given (relative) url.
+     */
     public static GetAbsoluteUrl: (url: string) => string =
         typeof document === "object"
             ? (url) => {

@@ -346,7 +346,7 @@ export class PhysicsViewer {
 
     /**
      * Shows a debug box corresponding to the inertia of a given body
-     * @param body
+     * @param body the physics body used to get the inertia
      */
     public showInertia(body: PhysicsBody): Nullable<AbstractMesh> {
         if (!this._scene) {
@@ -508,6 +508,10 @@ export class PhysicsViewer {
         }
     }
 
+    /**
+     * Hides a body's inertia from the viewer utility layer
+     * @param body the body to hide
+     */
     public hideInertia(body: Nullable<PhysicsBody>) {
         if (!body || !this._scene || !this._utilityLayer) {
             return;
