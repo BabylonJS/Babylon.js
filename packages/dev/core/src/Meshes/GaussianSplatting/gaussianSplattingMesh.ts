@@ -19,7 +19,7 @@ export class GaussianSplattingMesh extends Mesh {
     private _worker: Nullable<Worker> = null;
     private _frameIdLastUpdate = -1;
     private _modelViewMatrix = Matrix.Identity();
-    private _material: GaussianSplattingMaterial
+    private _material: GaussianSplattingMaterial;
 
     /**
      * Creates a new gaussian splatting mesh
@@ -134,55 +134,36 @@ export class GaussianSplattingMesh extends Mesh {
         let vertexCount = 0;
         let positions: Float32Array;
 
-        const runSort = (viewProj: number[]) => {
-            vertexCount = positions.length;
-            const depthMix = new BigInt64Array(vertexCount);
-            const indices = new Uint32Array(depthMix.buffer);
-            for (let j = 0; j < vertexCount; j++) {
-                indices[2 * j] = j;
-            }
-
-            const floatMix = new Float32Array(depthMix.buffer);
-            for (let j = 0; j < vertexCount; j++) {
-                floatMix[2 * j + 1] = 10000 - (viewProj[2] * positions[3 * j + 0] + viewProj[6] * positions[3 * j + 1] + viewProj[10] * positions[3 * j + 2]);
-            }
-            lastProj = viewProj;
-
-            depthMix.sort();
-
-            self.postMessage({ depthMix }, [depthMix.buffer]);
-        };
-
-        let sortRunning: boolean = false;
-        const throttledSort = () => {
-            if (!sortRunning) {
-                sortRunning = true;
-                const lastView = viewProj;
-                runSort(lastView);
-                setTimeout(() => {
-                    sortRunning = false;
-                    if (lastView !== viewProj) {
-                        throttledSort();
-                    }
-                }, 0);
-            }
-        };
-
         self.onmessage = (e: any) => {
-            /// updated on init
+            // updated on init
             if (e.data.positions) {
                 positions = e.data.positions;
+                vertexCount = e.data.vertexCount;
             }
-            /// udpate on view changed
+            // udpate on view changed
             else if (e.data.view) {
                 viewProj = e.data.view;
                 const dot = lastProj[2] * viewProj[2] + lastProj[6] * viewProj[6] + lastProj[10] * viewProj[10];
-                if (Math.abs(dot - 1) < 0.01) {
+                if (!positions || Math.abs(dot - 1) < 0.01) {
                     return;
                 }
-                if (positions) {
-                    throttledSort();
+
+                // Sort
+                const depthMix = new BigInt64Array(vertexCount);
+                const indices = new Uint32Array(depthMix.buffer);
+                for (let j = 0; j < vertexCount; j++) {
+                    indices[2 * j] = j;
                 }
+
+                const floatMix = new Float32Array(depthMix.buffer);
+                for (let j = 0; j < vertexCount; j++) {
+                    floatMix[2 * j + 1] = 10000 - (viewProj[2] * positions[3 * j + 0] + viewProj[6] * positions[3 * j + 1] + viewProj[10] * positions[3 * j + 2]);
+                }
+                lastProj = viewProj;
+
+                depthMix.sort();
+
+                self.postMessage({ depthMix }, [depthMix.buffer]);
             }
         };
     };
@@ -297,8 +278,7 @@ export class GaussianSplattingMesh extends Mesh {
             )
         );
 
-        /// set positions only once, no need to update on view changed
-        this._worker.postMessage({ positions : positions.slice(0, this._vertexCount * 3) }, [positions.buffer]);
+        this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
 
         this._worker.onmessage = (e) => {
             const indexMix = new Uint32Array(e.data.depthMix.buffer);
