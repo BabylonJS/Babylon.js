@@ -6,11 +6,12 @@ import type { Observable } from "core/Misc/observable";
 import { PhysicsShapeType } from "core/Physics/v2/IPhysicsEnginePlugin";
 import type { PhysicsBody } from "core/Physics/v2/physicsBody";
 import type { GlobalState } from "inspector/components/globalState";
-import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { PhysicsMassPropertiesGridComponent } from "./physicsMassPropertiesGridComponent";
+import { PhysicsMaterialGridComponent } from "./physicsMaterialGridComponent";
 
 export interface IPhysicsBodyGridComponentProps {
     lockObject: LockObject;
@@ -20,40 +21,20 @@ export interface IPhysicsBodyGridComponentProps {
 }
 
 export function PhysicsBodyGridComponent(props: IPhysicsBodyGridComponentProps) {
-    const massProperties = props.body.getMassProperties();
-    const material = props.body.shape?.material;
-
     return (
         <LineContainerComponent title="PHYSICS" closed={true} selection={props.globalState}>
-            <FloatLineComponent
+            <PhysicsMassPropertiesGridComponent
                 lockObject={props.lockObject}
-                label="Mass"
-                target={massProperties}
-                propertyName="mass"
                 onPropertyChangedObservable={props.onPropertyChangedObservable}
+                body={props.body}
+                globalState={props.globalState}
             />
-            <FloatLineComponent
+            <PhysicsMaterialGridComponent
                 lockObject={props.lockObject}
-                label="Dynamic Friction"
-                target={material}
-                propertyName="friction"
                 onPropertyChangedObservable={props.onPropertyChangedObservable}
+                body={props.body}
+                globalState={props.globalState}
             />
-            <FloatLineComponent
-                lockObject={props.lockObject}
-                label="Restitution"
-                target={material}
-                propertyName="restitution"
-                onPropertyChangedObservable={props.onPropertyChangedObservable}
-            />
-            <FloatLineComponent
-                lockObject={props.lockObject}
-                label="Static Friction"
-                target={material}
-                propertyName="staticFriction"
-                onPropertyChangedObservable={props.onPropertyChangedObservable}
-            />
-
             <TextLineComponent label="Type" value={_convertPhysicsShapeTypeToString(props.body.shape?.type)} />
         </LineContainerComponent>
     );

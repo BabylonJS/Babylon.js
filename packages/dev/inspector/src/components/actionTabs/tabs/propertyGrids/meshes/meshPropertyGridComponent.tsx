@@ -43,7 +43,7 @@ import "core/Physics/v1/physicsEngineComponent";
 
 import { ParentPropertyGridComponent } from "../parentPropertyGridComponent";
 import { Tools } from "core/Misc/tools";
-import { PhysicsBodyGridComponent } from "./physicsBodyGridComponent";
+import { PhysicsBodyGridComponent } from "./physics/physicsBodyGridComponent";
 
 interface IMeshPropertyGridComponentProps {
     globalState: GlobalState;

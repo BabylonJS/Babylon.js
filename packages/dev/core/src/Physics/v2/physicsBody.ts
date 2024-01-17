@@ -62,6 +62,8 @@ export class PhysicsBody {
 
     private _isDisposed = false;
 
+    private _shape: Nullable<PhysicsShape> | undefined;
+
     /**
      * Constructs a new physics body for the given node.
      * @param transformNode - The Transform Node to construct the physics body for. For better performance, it is advised that this node does not have a parent.
@@ -168,6 +170,7 @@ export class PhysicsBody {
      * The shape is used to calculate the body's mass, inertia, and other properties.
      */
     public set shape(shape: Nullable<PhysicsShape>) {
+        this._shape = shape;
         this._physicsPlugin.setShape(this, shape);
     }
 
@@ -180,8 +183,9 @@ export class PhysicsBody {
      * This method is useful for retrieving the physics shape associated with this object,
      * which can be used to apply physical forces to the object or to detect collisions.
      */
-    public get shape(): Nullable<PhysicsShape> {
-        return this._physicsPlugin.getShape(this);
+    public get shape(): Nullable<PhysicsShape> | undefined {
+        return this._shape;
+        // return this._physicsPlugin.getShape(this);
     }
 
     /**
