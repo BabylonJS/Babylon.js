@@ -44,6 +44,9 @@ export class FlowGraphThrottleBlock extends FlowGraphExecutionBlockWithOutSignal
             this.timeRemaining.setValue(remaining, context);
         }
     }
+    /**
+     * the class name of the block.
+     */
     public getClassName(): string {
         return "FGThrottleBlock";
     }

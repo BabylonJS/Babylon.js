@@ -44,6 +44,10 @@ export class FlowGraphConditionalDataBlock<T> extends FlowGraphBlock {
         this.output.setValue(this.condition.getValue(context) ? this.trueValue.getValue(context) : this.falseValue.getValue(context), context);
     }
 
+    /**
+     * Gets the class name of this block
+     * @returns the class name
+     */
     public getClassName(): string {
         return "FGConditionalDataBlock";
     }

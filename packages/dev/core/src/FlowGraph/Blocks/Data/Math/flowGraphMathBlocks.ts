@@ -61,10 +61,9 @@ export class FlowGraphAddBlock extends FlowGraphBinaryOperationBlock<any, any, a
         }
     }
 
-    public getClassName(): string {
-        return FlowGraphAddBlock.ClassName;
-    }
-
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGAddBlock";
 }
 RegisterClass(FlowGraphAddBlock.ClassName, FlowGraphAddBlock);
@@ -90,10 +89,9 @@ export class FlowGraphSubtractBlock extends FlowGraphBinaryOperationBlock<any, a
         }
     }
 
-    public getClassName(): string {
-        return FlowGraphSubtractBlock.ClassName;
-    }
-
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGSubBlock";
 }
 RegisterClass(FlowGraphSubtractBlock.ClassName, FlowGraphSubtractBlock);
@@ -137,6 +135,9 @@ export class FlowGraphMultiplyBlock extends FlowGraphBinaryOperationBlock<any, a
         }
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGMultiplyBlock";
 }
 RegisterClass(FlowGraphMultiplyBlock.ClassName, FlowGraphMultiplyBlock);
@@ -179,6 +180,9 @@ export class FlowGraphDivideBlock extends FlowGraphBinaryOperationBlock<any, any
         }
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGDivideBlock";
 }
 RegisterClass(FlowGraphDivideBlock.ClassName, FlowGraphDivideBlock);
@@ -192,6 +196,9 @@ export class FlowGraphRandomBlock extends FlowGraphConstantOperationBlock<number
         super(RichTypeNumber, () => Math.random(), FlowGraphRandomBlock.ClassName, config);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGRandomBlock";
 }
 RegisterClass(FlowGraphRandomBlock.ClassName, FlowGraphRandomBlock);
@@ -219,6 +226,9 @@ export class FlowGraphDotBlock extends FlowGraphBinaryOperationBlock<any, any, n
         }
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGDotBlock";
 }
 RegisterClass(FlowGraphDotBlock.ClassName, FlowGraphDotBlock);
@@ -232,6 +242,9 @@ export class FlowGraphEBlock extends FlowGraphConstantOperationBlock<number> {
         super(RichTypeNumber, () => Math.E, FlowGraphEBlock.ClassName, config);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGEBlock";
 }
 RegisterClass(FlowGraphEBlock.ClassName, FlowGraphEBlock);
@@ -245,6 +258,9 @@ export class FlowGraphPiBlock extends FlowGraphConstantOperationBlock<number> {
         super(RichTypeNumber, () => Math.PI, FlowGraphPiBlock.ClassName, config);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGPIBlock";
 }
 RegisterClass(FlowGraphPiBlock.ClassName, FlowGraphPiBlock);
@@ -258,6 +274,9 @@ export class FlowGraphInfBlock extends FlowGraphConstantOperationBlock<number> {
         super(RichTypeNumber, () => Number.POSITIVE_INFINITY, FlowGraphInfBlock.ClassName, config);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGInfBlock";
 }
 RegisterClass(FlowGraphInfBlock.ClassName, FlowGraphInfBlock);
@@ -271,6 +290,9 @@ export class FlowGraphNaNBlock extends FlowGraphConstantOperationBlock<number> {
         super(RichTypeNumber, () => Number.NaN, FlowGraphNaNBlock.ClassName, config);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGNaNBlock";
 }
 RegisterClass(FlowGraphNaNBlock.ClassName, FlowGraphNaNBlock);
@@ -323,6 +345,9 @@ export class FlowGraphAbsBlock extends FlowGraphUnaryOperationBlock<any, any> {
         return _componentWiseUnaryOperation(a, Math.abs);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGAbsBlock";
 }
 RegisterClass(FlowGraphAbsBlock.ClassName, FlowGraphAbsBlock);
@@ -340,6 +365,9 @@ export class FlowGraphSignBlock extends FlowGraphUnaryOperationBlock<any, any> {
         return _componentWiseUnaryOperation(a, Math.sign);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGSignBlock";
 }
 RegisterClass(FlowGraphSignBlock.ClassName, FlowGraphSignBlock);
@@ -357,6 +385,9 @@ export class FlowGraphTruncBlock extends FlowGraphUnaryOperationBlock<any, any> 
         return _componentWiseUnaryOperation(a, Math.trunc);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGTruncBlock";
 }
 RegisterClass(FlowGraphTruncBlock.ClassName, FlowGraphTruncBlock);
@@ -374,6 +405,9 @@ export class FlowGraphFloorBlock extends FlowGraphUnaryOperationBlock<any, any> 
         return _componentWiseUnaryOperation(a, Math.floor);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGFloorBlock";
 }
 RegisterClass(FlowGraphFloorBlock.ClassName, FlowGraphFloorBlock);
@@ -391,6 +425,9 @@ export class FlowGraphCeilBlock extends FlowGraphUnaryOperationBlock<any, any> {
         return _componentWiseUnaryOperation(a, Math.ceil);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGCeilBlock";
 }
 RegisterClass(FlowGraphCeilBlock.ClassName, FlowGraphCeilBlock);
@@ -408,6 +445,9 @@ export class FlowGraphFractBlock extends FlowGraphUnaryOperationBlock<any, any> 
         return _componentWiseUnaryOperation(a, (a) => a - Math.floor(a));
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGFractBlock";
 }
 RegisterClass(FlowGraphFractBlock.ClassName, FlowGraphFractBlock);
@@ -484,6 +524,9 @@ export class FlowGraphRemainderBlock extends FlowGraphBinaryOperationBlock<any, 
         return _componentWiseBinaryOperation(a, b, (a, b) => a % b);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGRemainderBlock";
 }
 RegisterClass(FlowGraphRemainderBlock.ClassName, FlowGraphRemainderBlock);
@@ -501,6 +544,9 @@ export class FlowGraphMinBlock extends FlowGraphBinaryOperationBlock<any, any, a
         return _componentWiseBinaryOperation(a, b, Math.min);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGMinBlock";
 }
 RegisterClass(FlowGraphMinBlock.ClassName, FlowGraphMinBlock);
@@ -518,6 +564,9 @@ export class FlowGraphMaxBlock extends FlowGraphBinaryOperationBlock<any, any, a
         return _componentWiseBinaryOperation(a, b, Math.max);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGMaxBlock";
 }
 RegisterClass(FlowGraphMaxBlock.ClassName, FlowGraphMaxBlock);
@@ -574,6 +623,9 @@ export class FlowGraphClampBlock extends FlowGraphTernaryOperationBlock<any, any
         return _componentWiseTernaryOperation(a, b, c, _clamp);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGClampBlock";
 }
 RegisterClass(FlowGraphClampBlock.ClassName, FlowGraphClampBlock);
@@ -595,6 +647,9 @@ export class FlowGraphSaturateBlock extends FlowGraphUnaryOperationBlock<any, an
         return _componentWiseUnaryOperation(a, _saturate);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGSaturateBlock";
 }
 RegisterClass(FlowGraphSaturateBlock.ClassName, FlowGraphSaturateBlock);
@@ -616,6 +671,9 @@ export class FlowGraphInterpolateBlock extends FlowGraphTernaryOperationBlock<an
         return _componentWiseTernaryOperation(a, b, c, this._interpolate);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGInterpolateBlock";
 }
 RegisterClass(FlowGraphInterpolateBlock.ClassName, FlowGraphInterpolateBlock);
@@ -639,6 +697,9 @@ export class FlowGraphEqBlock extends FlowGraphBinaryOperationBlock<any, any, bo
         }
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGEqBlock";
 }
 RegisterClass(FlowGraphEqBlock.ClassName, FlowGraphEqBlock);
@@ -672,6 +733,9 @@ export class FlowGraphLessThanBlock extends FlowGraphBinaryOperationBlock<any, a
         return _comparisonOperators(a, b, (a, b) => a < b);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGLessThanBlock";
 }
 RegisterClass(FlowGraphLessThanBlock.ClassName, FlowGraphLessThanBlock);
@@ -689,6 +753,9 @@ export class FlowGraphLessThanOrEqualBlock extends FlowGraphBinaryOperationBlock
         return _comparisonOperators(a, b, (a, b) => a <= b);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGLessThanOrEqualBlock";
 }
 
@@ -705,6 +772,9 @@ export class FlowGraphGreaterThanBlock extends FlowGraphBinaryOperationBlock<any
         return _comparisonOperators(a, b, (a, b) => a > b);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGGreaterThanBlock";
 }
 RegisterClass(FlowGraphGreaterThanBlock.ClassName, FlowGraphGreaterThanBlock);
@@ -722,6 +792,9 @@ export class FlowGraphGreaterThanOrEqualBlock extends FlowGraphBinaryOperationBl
         return _comparisonOperators(a, b, (a, b) => a >= b);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGGreaterThanOrEqualBlock";
 }
 RegisterClass(FlowGraphGreaterThanOrEqualBlock.ClassName, FlowGraphGreaterThanOrEqualBlock);
@@ -746,6 +819,9 @@ export class FlowGraphIsNanBlock extends FlowGraphUnaryOperationBlock<any, boole
         }
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGIsNanBlock";
 }
 RegisterClass(FlowGraphIsNanBlock.ClassName, FlowGraphIsNanBlock);
@@ -770,6 +846,9 @@ export class FlowGraphIsInfBlock extends FlowGraphUnaryOperationBlock<any, boole
         }
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGIsInfBlock";
 }
 
@@ -790,6 +869,9 @@ export class FlowGraphDegToRadBlock extends FlowGraphUnaryOperationBlock<any, an
         return _componentWiseUnaryOperation(a, this._degToRad);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGDegToRadBlock";
 }
 RegisterClass(FlowGraphDegToRadBlock.ClassName, FlowGraphDegToRadBlock);
@@ -811,6 +893,9 @@ export class FlowGraphRadToDegBlock extends FlowGraphUnaryOperationBlock<any, an
         return _componentWiseUnaryOperation(a, this._radToDeg);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGRadToDegBlock";
 }
 RegisterClass(FlowGraphRadToDegBlock.ClassName, FlowGraphRadToDegBlock);
@@ -828,6 +913,9 @@ export class FlowGraphSinBlock extends FlowGraphUnaryOperationBlock<any, any> {
         return _componentWiseUnaryOperation(a, Math.sin);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGSinBlock";
 }
 RegisterClass(FlowGraphSinBlock.ClassName, FlowGraphSinBlock);
@@ -845,6 +933,9 @@ export class FlowGraphCosBlock extends FlowGraphUnaryOperationBlock<any, any> {
         return _componentWiseUnaryOperation(a, Math.cos);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGCosBlock";
 }
 RegisterClass(FlowGraphCosBlock.ClassName, FlowGraphCosBlock);
@@ -862,6 +953,9 @@ export class FlowGraphTanBlock extends FlowGraphUnaryOperationBlock<any, any> {
         return _componentWiseUnaryOperation(a, Math.tan);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGTanBlock";
 }
 RegisterClass(FlowGraphTanBlock.ClassName, FlowGraphTanBlock);
@@ -879,6 +973,9 @@ export class FlowGraphAsinBlock extends FlowGraphUnaryOperationBlock<any, any> {
         return _componentWiseUnaryOperation(a, Math.asin);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGAsinBlock";
 }
 RegisterClass(FlowGraphAsinBlock.ClassName, FlowGraphAsinBlock);
@@ -896,6 +993,9 @@ export class FlowGraphAcosBlock extends FlowGraphUnaryOperationBlock<any, any> {
         return _componentWiseUnaryOperation(a, Math.acos);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGAcosBlock";
 }
 RegisterClass(FlowGraphAcosBlock.ClassName, FlowGraphAcosBlock);
@@ -913,6 +1013,9 @@ export class FlowGraphAtanBlock extends FlowGraphUnaryOperationBlock<any, any> {
         return _componentWiseUnaryOperation(a, Math.atan);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGAtanBlock";
 }
 RegisterClass(FlowGraphAtanBlock.ClassName, FlowGraphAtanBlock);
@@ -930,6 +1033,9 @@ export class FlowGraphAtan2Block extends FlowGraphBinaryOperationBlock<any, any,
         return _componentWiseBinaryOperation(a, b, Math.atan2);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGAtan2Block";
 }
 RegisterClass(FlowGraphAtan2Block.ClassName, FlowGraphAtan2Block);
@@ -947,6 +1053,9 @@ export class FlowGraphSinhBlock extends FlowGraphUnaryOperationBlock<any, any> {
         return _componentWiseUnaryOperation(a, Math.sinh);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGSinhBlock";
 }
 RegisterClass(FlowGraphSinhBlock.ClassName, FlowGraphSinhBlock);
@@ -964,6 +1073,9 @@ export class FlowGraphCoshBlock extends FlowGraphUnaryOperationBlock<any, any> {
         return _componentWiseUnaryOperation(a, Math.cosh);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGCoshBlock";
 }
 RegisterClass(FlowGraphCoshBlock.ClassName, FlowGraphCoshBlock);
@@ -981,6 +1093,9 @@ export class FlowGraphTanhBlock extends FlowGraphUnaryOperationBlock<any, any> {
         return _componentWiseUnaryOperation(a, Math.tanh);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGTanhBlock";
 }
 RegisterClass(FlowGraphTanhBlock.ClassName, FlowGraphTanhBlock);
@@ -998,6 +1113,9 @@ export class FlowGraphAsinhBlock extends FlowGraphUnaryOperationBlock<any, any> 
         return _componentWiseUnaryOperation(a, Math.asinh);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGAsinhBlock";
 }
 RegisterClass(FlowGraphAsinhBlock.ClassName, FlowGraphAsinhBlock);
@@ -1015,6 +1133,9 @@ export class FlowGraphAcoshBlock extends FlowGraphUnaryOperationBlock<any, any> 
         return _componentWiseUnaryOperation(a, Math.acosh);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGAcoshBlock";
 }
 RegisterClass(FlowGraphAcoshBlock.ClassName, FlowGraphAcoshBlock);
@@ -1032,6 +1153,9 @@ export class FlowGraphAtanhBlock extends FlowGraphUnaryOperationBlock<any, any> 
         return _componentWiseUnaryOperation(a, Math.atanh);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGAtanhBlock";
 }
 RegisterClass(FlowGraphAtanhBlock.ClassName, FlowGraphAtanhBlock);
@@ -1049,6 +1173,9 @@ export class FlowGraphExpBlock extends FlowGraphUnaryOperationBlock<any, any> {
         return _componentWiseUnaryOperation(a, Math.exp);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGExpBlock";
 }
 RegisterClass(FlowGraphExpBlock.ClassName, FlowGraphExpBlock);
@@ -1066,6 +1193,9 @@ export class FlowGraphLogBlock extends FlowGraphUnaryOperationBlock<any, any> {
         return _componentWiseUnaryOperation(a, Math.log);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGLogBlock";
 }
 RegisterClass(FlowGraphLogBlock.ClassName, FlowGraphLogBlock);
@@ -1083,6 +1213,9 @@ export class FlowGraphLog2Block extends FlowGraphUnaryOperationBlock<any, any> {
         return _componentWiseUnaryOperation(a, Math.log2);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGLog2Block";
 }
 RegisterClass(FlowGraphLog2Block.ClassName, FlowGraphLog2Block);
@@ -1100,6 +1233,9 @@ export class FlowGraphLog10Block extends FlowGraphUnaryOperationBlock<any, any> 
         return _componentWiseUnaryOperation(a, Math.log10);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGLog10Block";
 }
 RegisterClass(FlowGraphLog10Block.ClassName, FlowGraphLog10Block);
@@ -1117,6 +1253,9 @@ export class FlowGraphSqrtBlock extends FlowGraphUnaryOperationBlock<any, any> {
         return _componentWiseUnaryOperation(a, Math.sqrt);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGSqrtBlock";
 }
 RegisterClass(FlowGraphSqrtBlock.ClassName, FlowGraphSqrtBlock);
@@ -1134,6 +1273,9 @@ export class FlowGraphCubeRootBlock extends FlowGraphUnaryOperationBlock<any, an
         return _componentWiseUnaryOperation(a, Math.cbrt);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGCubeRootBlock";
 }
 RegisterClass(FlowGraphCubeRootBlock.ClassName, FlowGraphCubeRootBlock);
@@ -1151,6 +1293,9 @@ export class FlowGraphPowBlock extends FlowGraphBinaryOperationBlock<any, any, a
         return _componentWiseBinaryOperation(a, b, Math.pow);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGPowBlock";
 }
 RegisterClass(FlowGraphPowBlock.ClassName, FlowGraphPowBlock);
@@ -1176,6 +1321,9 @@ export class FlowGraphLengthBlock extends FlowGraphUnaryOperationBlock<any, numb
         }
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGLengthBlock";
 }
 RegisterClass(FlowGraphLengthBlock.ClassName, FlowGraphLengthBlock);
@@ -1201,6 +1349,9 @@ export class FlowGraphNormalizeBlock extends FlowGraphUnaryOperationBlock<any, a
         }
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGNormalizeBlock";
 }
 RegisterClass(FlowGraphNormalizeBlock.ClassName, FlowGraphNormalizeBlock);
@@ -1214,6 +1365,9 @@ export class FlowGraphCrossBlock extends FlowGraphBinaryOperationBlock<Vector3, 
         super(RichTypeVector3, RichTypeVector3, RichTypeVector3, (a, b) => Vector3.Cross(a, b), FlowGraphCrossBlock.ClassName, config);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGCrossBlock";
 }
 RegisterClass(FlowGraphCrossBlock.ClassName, FlowGraphCrossBlock);
@@ -1227,6 +1381,9 @@ export class FlowGraphRotate2DBlock extends FlowGraphBinaryOperationBlock<Vector
         super(RichTypeVector2, RichTypeNumber, RichTypeVector2, (a, b) => Vector2.Transform(a, Matrix.RotationZ(b)), FlowGraphRotate2DBlock.ClassName, config);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGRotate2DBlock";
 }
 RegisterClass(FlowGraphRotate2DBlock.ClassName, FlowGraphRotate2DBlock);
@@ -1248,6 +1405,9 @@ export class FlowGraphRotate3DBlock extends FlowGraphTernaryOperationBlock<Vecto
         );
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGRotate3DBlock";
 }
 RegisterClass(FlowGraphRotate3DBlock.ClassName, FlowGraphRotate3DBlock);
@@ -1261,6 +1421,9 @@ export class FlowGraphTransposeBlock extends FlowGraphUnaryOperationBlock<Matrix
         super(RichTypeMatrix, RichTypeMatrix, (a) => Matrix.Transpose(a), FlowGraphTransposeBlock.ClassName, config);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGTransposeBlock";
 }
 RegisterClass(FlowGraphTransposeBlock.ClassName, FlowGraphTransposeBlock);
@@ -1274,6 +1437,9 @@ export class FlowGraphDeterminantBlock extends FlowGraphUnaryOperationBlock<Matr
         super(RichTypeMatrix, RichTypeNumber, (a) => a.determinant(), FlowGraphDeterminantBlock.ClassName, config);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGDeterminantBlock";
 }
 RegisterClass(FlowGraphDeterminantBlock.ClassName, FlowGraphDeterminantBlock);
@@ -1287,6 +1453,9 @@ export class FlowGraphInvertMatrixBlock extends FlowGraphUnaryOperationBlock<Mat
         super(RichTypeMatrix, RichTypeMatrix, (a) => Matrix.Invert(a), FlowGraphInvertMatrixBlock.ClassName, config);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGInvertMatrixBlock";
 }
 RegisterClass(FlowGraphInvertMatrixBlock.ClassName, FlowGraphInvertMatrixBlock);
@@ -1300,6 +1469,9 @@ export class FlowGraphMatMulBlock extends FlowGraphBinaryOperationBlock<Matrix, 
         super(RichTypeMatrix, RichTypeMatrix, RichTypeMatrix, (a, b) => b.multiply(a), FlowGraphMatMulBlock.ClassName, config);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGMatMulBlock";
 }
 RegisterClass(FlowGraphMatMulBlock.ClassName, FlowGraphMatMulBlock);
@@ -1313,6 +1485,9 @@ export class FlowGraphBitwiseNotBlock extends FlowGraphUnaryOperationBlock<FlowG
         super(RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, (a) => new FlowGraphInteger(~a.value), FlowGraphBitwiseNotBlock.ClassName, config);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGBitwiseNotBlock";
 }
 RegisterClass(FlowGraphBitwiseNotBlock.ClassName, FlowGraphBitwiseNotBlock);
@@ -1333,6 +1508,9 @@ export class FlowGraphBitwiseAndBlock extends FlowGraphBinaryOperationBlock<Flow
         );
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGBitwiseAndBlock";
 }
 RegisterClass(FlowGraphBitwiseAndBlock.ClassName, FlowGraphBitwiseAndBlock);
@@ -1353,6 +1531,9 @@ export class FlowGraphBitwiseOrBlock extends FlowGraphBinaryOperationBlock<FlowG
         );
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGBitwiseOrBlock";
 }
 RegisterClass(FlowGraphBitwiseOrBlock.ClassName, FlowGraphBitwiseOrBlock);
@@ -1373,6 +1554,9 @@ export class FlowGraphBitwiseXorBlock extends FlowGraphBinaryOperationBlock<Flow
         );
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGBitwiseXorBlock";
 }
 RegisterClass(FlowGraphBitwiseXorBlock.ClassName, FlowGraphBitwiseXorBlock);
@@ -1393,6 +1577,9 @@ export class FlowGraphBitwiseLeftShiftBlock extends FlowGraphBinaryOperationBloc
         );
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGBitwiseLeftShiftBlock";
 }
 RegisterClass(FlowGraphBitwiseLeftShiftBlock.ClassName, FlowGraphBitwiseLeftShiftBlock);
@@ -1413,6 +1600,9 @@ export class FlowGraphBitwiseRightShiftBlock extends FlowGraphBinaryOperationBlo
         );
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGBitwiseRightShiftBlock";
 }
 RegisterClass(FlowGraphBitwiseRightShiftBlock.ClassName, FlowGraphBitwiseRightShiftBlock);
@@ -1426,6 +1616,9 @@ export class FlowGraphCountLeadingZerosBlock extends FlowGraphUnaryOperationBloc
         super(RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, (a) => new FlowGraphInteger(Math.clz32(a.value)), FlowGraphCountLeadingZerosBlock.ClassName, config);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGCountLeadingZerosBlock";
 }
 RegisterClass(FlowGraphCountLeadingZerosBlock.ClassName, FlowGraphCountLeadingZerosBlock);
@@ -1445,6 +1638,9 @@ export class FlowGraphCountTrailingZerosBlock extends FlowGraphUnaryOperationBlo
         );
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGCountTrailingZerosBlock";
 }
 RegisterClass(FlowGraphCountTrailingZerosBlock.ClassName, FlowGraphCountTrailingZerosBlock);
@@ -1476,6 +1672,9 @@ export class FlowGraphCountOneBitsBlock extends FlowGraphUnaryOperationBlock<Flo
         super(RichTypeFlowGraphInteger, RichTypeFlowGraphInteger, (a) => new FlowGraphInteger(_countOnes(a.value)), FlowGraphCountOneBitsBlock.ClassName, config);
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGCountOneBitsBlock";
 }
 RegisterClass(FlowGraphCountOneBitsBlock.ClassName, FlowGraphCountOneBitsBlock);

@@ -45,6 +45,9 @@ export class FlowGraphFlipFlopBlock extends FlowGraphExecutionBlock {
         }
     }
 
+    /**
+     * the class name of the block.
+     */
     public getClassName(): string {
         return "FGFlipFlopBlock";
     }

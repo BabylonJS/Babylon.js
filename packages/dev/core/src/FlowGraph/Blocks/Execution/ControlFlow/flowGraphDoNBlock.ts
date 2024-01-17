@@ -34,7 +34,12 @@ export class FlowGraphDoNBlock extends FlowGraphExecutionBlockWithOutSignal {
      */
     public readonly value: FlowGraphDataConnection<FlowGraphInteger>;
 
-    constructor(public config: IFlowGraphDoNBlockConfiguration = { startIndex: new FlowGraphInteger(0) }) {
+    constructor(
+        /**
+         * the configuration of the block
+         */
+        public config: IFlowGraphDoNBlockConfiguration = { startIndex: new FlowGraphInteger(0) }
+    ) {
         super(config);
         this.reset = this._registerSignalInput("reset");
         this.n = this.registerDataInput("n", RichTypeFlowGraphInteger);
@@ -53,10 +58,16 @@ export class FlowGraphDoNBlock extends FlowGraphExecutionBlockWithOutSignal {
         }
     }
 
+    /**
+     * the class name of the block.
+     */
     public getClassName(): string {
         return FlowGraphDoNBlock.ClassName;
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGDoNBlock";
 }
 RegisterClass(FlowGraphDoNBlock.ClassName, FlowGraphDoNBlock);
