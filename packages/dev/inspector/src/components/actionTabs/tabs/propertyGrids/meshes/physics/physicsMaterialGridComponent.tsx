@@ -6,14 +6,30 @@ import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedE
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
 /**
- * Component that displays the physic material properties of a physics body.
+ * Properties of the physics material grid component.
  */
 export interface IPhysicsMaterialGridComponentProps {
+    /**
+     * Lock object
+     */
     lockObject: LockObject;
+    /**
+     * Callback raised on the property changed event
+     */
     onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+    /**
+     * Physics body to edit
+     */
     body: PhysicsBody;
+    /**
+     * Global state
+     */
     globalState: GlobalState;
 }
+
+/**
+ * Component that displays the physic material properties of a physics body.
+ */
 export function PhysicsMaterialGridComponent(props: IPhysicsMaterialGridComponentProps) {
     const material = props.body.shape?.material;
     return (
@@ -24,6 +40,7 @@ export function PhysicsMaterialGridComponent(props: IPhysicsMaterialGridComponen
                 target={material}
                 propertyName="friction"
                 onPropertyChangedObservable={props.onPropertyChangedObservable}
+                disabled={true}
             />
             <FloatLineComponent
                 lockObject={props.lockObject}
@@ -31,6 +48,7 @@ export function PhysicsMaterialGridComponent(props: IPhysicsMaterialGridComponen
                 target={material}
                 propertyName="restitution"
                 onPropertyChangedObservable={props.onPropertyChangedObservable}
+                disabled={true}
             />
             <FloatLineComponent
                 lockObject={props.lockObject}
@@ -38,6 +56,7 @@ export function PhysicsMaterialGridComponent(props: IPhysicsMaterialGridComponen
                 target={material}
                 propertyName="staticFriction"
                 onPropertyChangedObservable={props.onPropertyChangedObservable}
+                disabled={true}
             />
         </>
     );

@@ -31,6 +31,7 @@ interface IFloatLineComponentProps {
     unit?: React.ReactNode;
     onDragStart?: (newValue: number) => void;
     onDragStop?: (newValue: number) => void;
+    disabled?: boolean;
 }
 
 export class FloatLineComponent extends React.Component<IFloatLineComponentProps, { value: string; dragging: boolean }> {
@@ -235,6 +236,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                                 placeholder={placeholder}
                                 onFocus={() => this.lock()}
                                 onChange={(evt) => this.updateValue(evt.target.value)}
+                                disabled={this.props.disabled}
                             />
                             {this.props.arrows && (
                                 <InputArrowsComponent

@@ -64,6 +64,8 @@ export class PhysicsBody {
 
     private _shape: Nullable<PhysicsShape> | undefined;
 
+    private _motionType: PhysicsMotionType;
+
     /**
      * Constructs a new physics body for the given node.
      * @param transformNode - The Transform Node to construct the physics body for. For better performance, it is advised that this node does not have a parent.
@@ -101,6 +103,8 @@ export class PhysicsBody {
         }
 
         this.startAsleep = startsAsleep;
+
+        this._motionType = motionType;
 
         // instances?
         const m = transformNode as Mesh;
@@ -163,15 +167,24 @@ export class PhysicsBody {
     }
 
     /**
+     * Get the motion type of the physics body. Can be STATIC, DYNAMIC, or ANIMATED.
+     */
+    public get motionType(): PhysicsMotionType {
+        return this._motionType;
+    }
+
+    /**
      * Sets the shape of the physics body.
      * @param shape - The shape of the physics body.
      *
      * This method is useful for setting the shape of the physics body, which is necessary for the physics engine to accurately simulate the body's behavior.
      * The shape is used to calculate the body's mass, inertia, and other properties.
      */
-    public set shape(shape: Nullable<PhysicsShape>) {
-        this._shape = shape;
-        this._physicsPlugin.setShape(this, shape);
+    public set shape(shape: Nullable<PhysicsShape> | undefined) {
+        if (shape) {
+            this._shape = shape;
+            this._physicsPlugin.setShape(this, shape);
+        }
     }
 
     /**
@@ -185,7 +198,6 @@ export class PhysicsBody {
      */
     public get shape(): Nullable<PhysicsShape> | undefined {
         return this._shape;
-        // return this._physicsPlugin.getShape(this);
     }
 
     /**
@@ -625,5 +637,6 @@ export class PhysicsBody {
         this._pluginData = null;
         this._pluginDataInstances.length = 0;
         this._isDisposed = true;
+        this.shape = null;
     }
 }
