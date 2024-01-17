@@ -10,6 +10,7 @@ import { Tools } from "../../Misc/tools";
 import type { Scene } from "../../scene";
 import type { Nullable } from "../../types";
 import { Logger } from "../../Misc/logger";
+import { Camera } from "../../Cameras/camera";
 
 /**
  * @experimental
@@ -63,7 +64,7 @@ export class GaussianSplatting {
             },
             {
                 attributes: ["position", "splatIndex"],
-                uniforms: ["projection", "modelView", "viewport", "dataTextureSize"],
+                uniforms: ["projection", "modelView", "viewport", "dataTextureSize", "focal"],
                 samplers: ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture"],
             }
         );
@@ -108,6 +109,7 @@ export class GaussianSplatting {
         uniform mat4 projection;
         uniform mat4 modelView;
         uniform vec2 viewport;
+        uniform vec2 focal;
 
         varying vec4 vColor;
         varying vec2 vPosition;
@@ -148,7 +150,7 @@ export class GaussianSplatting {
             covA.y, covB.x, covB.y,
             covA.z, covB.y, covB.z
         );
-        vec2 focal = vec2(1132., 1132.);
+
         mat3 J = mat3(
             focal.x / camspace.z, 0., -(focal.x * camspace.x) / (camspace.z * camspace.z), 
             0., focal.y / camspace.z, -(focal.y * camspace.y) / (camspace.z * camspace.z), 
@@ -313,6 +315,7 @@ export class GaussianSplatting {
         this._createMaterial(scene);
         this._worker?.terminate();
         this._worker = null;
+        this.updateFocal();
     }
 
     private _loadData(data: ArrayBuffer) {
@@ -465,5 +468,27 @@ export class GaussianSplatting {
             height = width;
         }
         return new Vector2(width, height);
+    }
+
+    /**
+     * Update focal info for Gaussian Splatting rendering
+     * Called on changes of camera fov, width, height ...
+     */
+    public updateFocal(): void {
+        const engine = this.scene.getEngine();
+        const camera = this.scene.activeCamera;
+        if (!camera) {
+            Logger.Warn("GaussianSplatting failed to update camera focal");
+            return;
+        }
+        const renderWidth = engine.getRenderWidth();
+        const renderHeight = engine.getRenderHeight();
+        let focal = 1000;
+        if (camera.fovMode == Camera.FOVMODE_VERTICAL_FIXED) {
+            focal = renderHeight / 2.0 / Math.tan(camera.fov / 2.0);
+        } else {
+            focal = renderWidth / 2.0 / Math.tan(camera.fov / 2.0);
+        }
+        this._material.setVector2("focal", new Vector2(focal, focal));
     }
 }
