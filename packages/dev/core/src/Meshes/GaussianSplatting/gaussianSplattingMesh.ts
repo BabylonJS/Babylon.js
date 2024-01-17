@@ -1,5 +1,7 @@
 import type { Scene } from "core/scene";
-import type { Nullable } from "core/types";
+import type { DeepImmutable, Nullable } from "core/types";
+import type { Effect } from "core/Materials/effect";
+import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { SubMesh } from "../subMesh";
 import type { AbstractMesh } from "../abstractMesh";
 import { Mesh } from "../mesh";
@@ -19,7 +21,14 @@ export class GaussianSplattingMesh extends Mesh {
     private _worker: Nullable<Worker> = null;
     private _frameIdLastUpdate = -1;
     private _modelViewMatrix = Matrix.Identity();
-    private _material: GaussianSplattingMaterial;
+    private _material: Nullable<GaussianSplattingMaterial> = null;
+    private _depthMix: BigInt64Array;
+    private _canPostToWorker = true;
+    private _lastProj: DeepImmutable<Float32Array | number[]>;
+    private _covariancesATexture: Nullable<BaseTexture> = null;
+    private _covariancesBTexture: Nullable<BaseTexture> = null;
+    private _centersTexture: Nullable<BaseTexture> = null;
+    private _colorsTexture: Nullable<BaseTexture> = null;
 
     /**
      * Creates a new gaussian splatting mesh
@@ -42,8 +51,7 @@ export class GaussianSplattingMesh extends Mesh {
         this.doNotSyncBoundingInfo = true;
         this.setEnabled(false);
 
-        this._material = new GaussianSplattingMaterial(name + "_material", this._scene);
-        this.material = this._material;
+        this._lastProj = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
         if (url) {
             this.loadFileAsync(url);
@@ -74,14 +82,43 @@ export class GaussianSplattingMesh extends Mesh {
      * @returns the current mesh
      */
     public render(subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
+        if (!this.material) {
+            this._material = new GaussianSplattingMaterial(name + "_material", this._scene);
+            this.material = this._material;
+        }
+
         const frameId = this.getScene().getFrameId();
-        if (frameId !== this._frameIdLastUpdate && this._worker && this._scene.activeCamera) {
-            this._frameIdLastUpdate = frameId;
+        if (frameId !== this._frameIdLastUpdate && this._worker && this._scene.activeCamera && this._canPostToWorker) {
             this.getWorldMatrix().multiplyToRef(this._scene.activeCamera.getViewMatrix(), this._modelViewMatrix);
-            this._worker.postMessage({ view: this._modelViewMatrix.m });
+
+            const dot = this._lastProj[2] * this._modelViewMatrix.m[2] + this._lastProj[6] * this._modelViewMatrix.m[6] + this._lastProj[10] * this._modelViewMatrix.m[10];
+            if (Math.abs(dot - 1) >= 0.01) {
+                this._frameIdLastUpdate = frameId;
+                this._canPostToWorker = false;
+                this._lastProj = this._modelViewMatrix.m.slice(0);
+                this._worker.postMessage({ view: this._modelViewMatrix.m, depthMix: this._depthMix }, [this._depthMix.buffer]);
+            }
         }
 
         return super.render(subMesh, enableAlphaMode, effectiveMeshReplacement);
+    }
+
+    /**
+     * @internal
+     */
+    public _bind(subMesh: SubMesh, effect: Effect, fillMode: number, allowInstancedRendering = true): Mesh {
+        if (this._covariancesATexture) {
+            const textureSize = this._covariancesATexture.getSize();
+
+            effect.setFloat2("dataTextureSize", textureSize.width, textureSize.height);
+
+            effect.setTexture("covariancesATexture", this._covariancesATexture);
+            effect.setTexture("covariancesBTexture", this._covariancesBTexture);
+            effect.setTexture("centersTexture", this._centersTexture);
+            effect.setTexture("colorsTexture", this._colorsTexture);
+        }
+
+        return super._bind(subMesh, effect, fillMode, allowInstancedRendering);
     }
 
     /**
@@ -110,8 +147,18 @@ export class GaussianSplattingMesh extends Mesh {
      * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
      */
     public dispose(doNotRecurse?: boolean): void {
-        this._material.dispose(false, true);
-        this.material = null;
+        this._covariancesATexture?.dispose();
+        this._covariancesBTexture?.dispose();
+        this._centersTexture?.dispose();
+        this._colorsTexture?.dispose();
+
+        this._covariancesATexture = null;
+        this._covariancesBTexture = null;
+        this._centersTexture = null;
+        this._colorsTexture = null;
+
+        this._material?.dispose(false, true);
+        this._material = null;
 
         this._worker?.terminate();
         this._worker = null;
@@ -120,10 +167,11 @@ export class GaussianSplattingMesh extends Mesh {
     }
 
     private static _CreateWorker = function (self: Worker) {
-        let viewProj: number[];
-        let lastProj: number[] = [];
         let vertexCount = 0;
         let positions: Float32Array;
+        let depthMix: BigInt64Array;
+        let indices: Uint32Array;
+        let floatMix: Float32Array;
 
         self.onmessage = (e: any) => {
             // updated on init
@@ -132,25 +180,25 @@ export class GaussianSplattingMesh extends Mesh {
                 vertexCount = e.data.vertexCount;
             }
             // udpate on view changed
-            else if (e.data.view) {
-                viewProj = e.data.view;
-                const dot = lastProj[2] * viewProj[2] + lastProj[6] * viewProj[6] + lastProj[10] * viewProj[10];
-                if (!positions || Math.abs(dot - 1) < 0.01) {
-                    return;
+            else {
+                const viewProj = e.data.view;
+                if (!positions || !viewProj) {
+                    // Sanity check, it shouldn't happen!
+                    throw new Error("positions or view is not defined!");
                 }
 
+                depthMix = e.data.depthMix;
+                indices = new Uint32Array(depthMix.buffer);
+                floatMix = new Float32Array(depthMix.buffer);
+
                 // Sort
-                const depthMix = new BigInt64Array(vertexCount);
-                const indices = new Uint32Array(depthMix.buffer);
                 for (let j = 0; j < vertexCount; j++) {
                     indices[2 * j] = j;
                 }
 
-                const floatMix = new Float32Array(depthMix.buffer);
                 for (let j = 0; j < vertexCount; j++) {
                     floatMix[2 * j + 1] = 10000 - (viewProj[2] * positions[3 * j + 0] + viewProj[6] * positions[3 * j + 1] + viewProj[10] * positions[3 * j + 2]);
                 }
-                lastProj = viewProj;
 
                 depthMix.sort();
 
@@ -252,12 +300,10 @@ export class GaussianSplattingMesh extends Mesh {
             colorArray[i * 4 + 3] = uBuffer[32 * i + 24 + 3] / 255;
         }
 
-        const material = this.material as GaussianSplattingMaterial;
-
-        material.covariancesATexture = createTextureFromData(convertRgbToRgba(covA), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
-        material.covariancesBTexture = createTextureFromData(convertRgbToRgba(covB), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
-        material.centersTexture = createTextureFromData(convertRgbToRgba(positions), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
-        material.colorsTexture = createTextureFromData(colorArray, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+        this._covariancesATexture = createTextureFromData(convertRgbToRgba(covA), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+        this._covariancesBTexture = createTextureFromData(convertRgbToRgba(covB), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+        this._centersTexture = createTextureFromData(convertRgbToRgba(positions), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+        this._colorsTexture = createTextureFromData(colorArray, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
 
         // Start the worker thread
         this._worker?.terminate();
@@ -269,14 +315,18 @@ export class GaussianSplattingMesh extends Mesh {
             )
         );
 
+        this._depthMix = new BigInt64Array(vertexCount);
+
         this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
 
         this._worker.onmessage = (e) => {
+            this._depthMix = e.data.depthMix;
             const indexMix = new Uint32Array(e.data.depthMix.buffer);
             for (let j = 0; j < this._vertexCount; j++) {
                 splatIndex[j] = indexMix[2 * j];
             }
             this.thinInstanceBufferUpdated("splatIndex");
+            this._canPostToWorker = true;
         };
     }
 

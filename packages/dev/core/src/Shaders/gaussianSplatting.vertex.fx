@@ -13,6 +13,9 @@ attribute vec2 position;
 attribute float splatIndex;
 
 // Uniforms
+uniform vec2 viewport;
+uniform vec2 dataTextureSize;
+
 uniform sampler2D covariancesATexture;
 uniform sampler2D covariancesBTexture;
 uniform sampler2D centersTexture;
@@ -37,9 +40,6 @@ vec2 getDataUV(float index, vec2 textureSize) {
 }
 
 void main () {
-    vec2 viewport = vSplattingInfos.xy;
-    vec2 dataTextureSize = vSplattingInfos.zw;
-
     vec2 splatUV = getDataUV(splatIndex, dataTextureSize);
     vec3 center = texture2D(centersTexture, splatUV).xyz;
     vec4 color = texture2D(colorsTexture, splatUV);

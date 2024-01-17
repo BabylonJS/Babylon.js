@@ -2,11 +2,9 @@ import type { SubMesh } from "../../Meshes/subMesh";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { Mesh } from "../../Meshes/mesh";
 import type { IEffectCreationOptions } from "../../Materials/effect";
-import type { BaseTexture } from "../../Materials/Textures/baseTexture";
-import type { Nullable } from "core/types";
 import type { Scene } from "../../scene";
 import type { Matrix } from "../../Maths/math.vector";
-import { SerializationHelper, expandToProperty, serializeAsTexture } from "../../Misc/decorators";
+import { SerializationHelper } from "../../Misc/decorators";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { MaterialHelper } from "../../Materials/materialHelper";
 import { MaterialDefines } from "../../Materials/materialDefines";
@@ -45,38 +43,6 @@ class GaussianSplattingMaterialDefines extends MaterialDefines {
  * @experimental
  */
 export class GaussianSplattingMaterial extends PushMaterial {
-    @serializeAsTexture("covariancesATexture")
-    private _covariancesATexture: Nullable<BaseTexture> = null;
-    /**
-     * Defines the texture with the covariance A data.
-     */
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public covariancesATexture: Nullable<BaseTexture>;
-
-    @serializeAsTexture("covariancesBTexture")
-    private _covariancesBTexture: Nullable<BaseTexture> = null;
-    /**
-     * Defines the texture with the covariance B data.
-     */
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public covariancesBTexture: Nullable<BaseTexture>;
-
-    @serializeAsTexture("centersTexture")
-    private _centersTexture: Nullable<BaseTexture> = null;
-    /**
-     * Defines the texture with the centers data.
-     */
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public centersTexture: Nullable<BaseTexture>;
-
-    @serializeAsTexture("colorsTexture")
-    private _colorsTexture: Nullable<BaseTexture> = null;
-    /**
-     * Defines the texture with the colors data.
-     */
-    @expandToProperty("_markAllSubMeshesAsTexturesDirty")
-    public colorsTexture: Nullable<BaseTexture>;
-
     /**
      * Instantiates a Gaussian Splatting Material in the given scene
      * @param name The friendly name of the material
@@ -120,10 +86,6 @@ export class GaussianSplattingMaterial extends PushMaterial {
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh): boolean {
         const useInstances = true;
 
-        if (!this._uniformBufferLayoutBuilt) {
-            this.buildUniformLayout();
-        }
-
         if (subMesh.effect && this.isFrozen) {
             if (subMesh.effect._wasPreviouslyReady && subMesh.effect._wasPreviouslyUsingInstances === useInstances) {
                 return true;
@@ -162,9 +124,9 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
 
-            const uniforms = ["world", "vFogInfos", "vFogColor", "logarithmicDepthConstant", "vSplattingInfos"];
+            const uniforms = ["world", "view", "projection", "vFogInfos", "vFogColor", "logarithmicDepthConstant", "viewport", "dataTextureSize"];
             const samplers = ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture"];
-            const uniformBuffers = ["Material", "Scene", "Mesh"];
+            const uniformBuffers = ["Scene", "Mesh"];
 
             MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
@@ -204,17 +166,6 @@ export class GaussianSplattingMaterial extends PushMaterial {
     }
 
     /**
-     * Builds the material UBO layouts.
-     * Used internally during the effect preparation.
-     */
-    public buildUniformLayout(): void {
-        const ubo = this._uniformBuffer;
-        ubo.addUniform("vSplattingInfos", 4);
-
-        super.buildUniformLayout();
-    }
-
-    /**
      * Binds the submesh to this material by preparing the effect and shader to draw
      * @param world defines the world transformation matrix
      * @param mesh defines the mesh containing the submesh
@@ -239,22 +190,15 @@ export class GaussianSplattingMaterial extends PushMaterial {
         mesh.transferToEffect(world);
 
         // Bind data
-        this._uniformBuffer.bindToEffect(effect, "Material");
-
         const mustRebind = effect._forceRebindOnNextCall || this._mustRebind(scene, effect, mesh.visibility);
 
         if (mustRebind) {
+            this.bindView(effect);
             this.bindViewProjection(effect);
 
             const engine = scene.getEngine();
-            const textureSize = this._covariancesATexture?.getSize() ?? { width: 0, height: 0 };
 
-            this._uniformBuffer.updateFloat4("vSplattingInfos", engine.getRenderWidth(), engine.getRenderHeight(), textureSize.width, textureSize.height);
-
-            effect.setTexture("covariancesATexture", this._covariancesATexture);
-            effect.setTexture("covariancesBTexture", this._covariancesBTexture);
-            effect.setTexture("centersTexture", this._centersTexture);
-            effect.setTexture("colorsTexture", this._colorsTexture);
+            this._activeEffect.setFloat2("viewport", engine.getRenderWidth(), engine.getRenderHeight());
 
             // Clip plane
             bindClipPlane(effect, this, scene);
@@ -271,83 +215,6 @@ export class GaussianSplattingMaterial extends PushMaterial {
         }
 
         this._afterBind(mesh, this._activeEffect);
-        this._uniformBuffer.update();
-    }
-
-    /**
-     * Gets the active textures from the material
-     * @returns an array of textures
-     */
-    public getActiveTextures(): BaseTexture[] {
-        const activeTextures = super.getActiveTextures();
-
-        if (this._covariancesATexture) {
-            activeTextures.push(this._covariancesATexture);
-        }
-
-        if (this._covariancesBTexture) {
-            activeTextures.push(this._covariancesBTexture);
-        }
-
-        if (this._centersTexture) {
-            activeTextures.push(this._centersTexture);
-        }
-
-        if (this._colorsTexture) {
-            activeTextures.push(this._colorsTexture);
-        }
-
-        return activeTextures;
-    }
-
-    /**
-     * Checks to see if a texture is used in the material.
-     * @param texture - Base texture to use.
-     * @returns - Boolean specifying if a texture is used in the material.
-     */
-    public hasTexture(texture: BaseTexture): boolean {
-        if (super.hasTexture(texture)) {
-            return true;
-        }
-
-        if (this._covariancesATexture === texture) {
-            return true;
-        }
-
-        if (this._covariancesBTexture === texture) {
-            return true;
-        }
-
-        if (this._centersTexture === texture) {
-            return true;
-        }
-
-        if (this._colorsTexture === texture) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Dispose the material.
-     * @param forceDisposeEffect specifies if effects should be forcefully disposed
-     * @param forceDisposeTextures specifies if textures should be forcefully disposed
-     */
-    public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
-        if (forceDisposeTextures) {
-            this._covariancesATexture?.dispose();
-            this._covariancesBTexture?.dispose();
-            this._centersTexture?.dispose();
-            this._colorsTexture?.dispose();
-
-            this._covariancesATexture = null;
-            this._covariancesBTexture = null;
-            this._centersTexture = null;
-            this._colorsTexture = null;
-        }
-
-        super.dispose(forceDisposeEffect);
     }
 
     /**
