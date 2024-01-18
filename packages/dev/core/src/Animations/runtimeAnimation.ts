@@ -650,7 +650,7 @@ export class RuntimeAnimation {
                 // Make sure current frame has passed event frame and that event frame is within the current range
                 // Also, handle both forward and reverse animations
                 if (
-                    (frameRange > 0 && currentFrame >= events[index].frame && events[index].frame >= from) ||
+                    (frameRange >= 0 && currentFrame >= events[index].frame && events[index].frame >= from) ||
                     (frameRange < 0 && currentFrame <= events[index].frame && events[index].frame <= from)
                 ) {
                     const event = events[index];
