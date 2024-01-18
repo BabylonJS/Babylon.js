@@ -128,11 +128,13 @@ export class WebXRCamera extends FreeCamera {
     /**
      * Return the user's height, unrelated to the current ground.
      * This will be the y position of this camera, when ground level is 0.
+     *
+     * Note - this value is multiplied by the worldScalingFactor (if set), so it will be in the same units as the scene.
      */
     public get realWorldHeight(): number {
         const basePose = this._xrSessionManager.currentFrame && this._xrSessionManager.currentFrame.getViewerPose(this._xrSessionManager.baseReferenceSpace);
         if (basePose && basePose.transform) {
-            return basePose.transform.position.y;
+            return basePose.transform.position.y * this._xrSessionManager.worldScalingFactor;
         } else {
             return 0;
         }
@@ -234,7 +236,7 @@ export class WebXRCamera extends FreeCamera {
                 return;
             }
             const pos = pose.transform.position;
-            this._referencedPosition.set(pos.x, pos.y, pos.z);
+            this._referencedPosition.set(pos.x, pos.y, pos.z).scaleInPlace(this._xrSessionManager.worldScalingFactor);
 
             this._referenceQuaternion.set(orientation.x, orientation.y, orientation.z, orientation.w);
             if (!this._scene.useRightHandedSystem) {
@@ -280,7 +282,7 @@ export class WebXRCamera extends FreeCamera {
 
             currentRig.parent = this.parent;
 
-            currentRig.position.set(pos.x, pos.y, pos.z);
+            currentRig.position.set(pos.x, pos.y, pos.z).scaleInPlace(this._xrSessionManager.worldScalingFactor);
             currentRig.rotationQuaternion.set(orientation.x, orientation.y, orientation.z, orientation.w);
             if (!this._scene.useRightHandedSystem) {
                 currentRig.position.z *= -1;
@@ -361,9 +363,9 @@ export class WebXRCamera extends FreeCamera {
             transformMat.decompose(undefined, this._referenceQuaternion, this._referencedPosition);
             const transform = new XRRigidTransform(
                 {
-                    x: this._referencedPosition.x,
-                    y: this._referencedPosition.y,
-                    z: this._referencedPosition.z,
+                    x: this._referencedPosition.x / this._xrSessionManager.worldScalingFactor,
+                    y: this._referencedPosition.y / this._xrSessionManager.worldScalingFactor,
+                    z: this._referencedPosition.z / this._xrSessionManager.worldScalingFactor,
                 },
                 {
                     x: this._referenceQuaternion.x,

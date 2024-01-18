@@ -92,7 +92,7 @@ export class WebXREyeTracking extends WebXRAbstractFeature {
         if (this._latestEyeSpace && this._gazeRay) {
             const pose = frame.getPose(this._latestEyeSpace, this._xrSessionManager.referenceSpace);
             if (pose) {
-                this._gazeRay.origin.set(pose.transform.position.x, pose.transform.position.y, pose.transform.position.z);
+                this._gazeRay.origin.set(pose.transform.position.x, pose.transform.position.y, pose.transform.position.z).scaleInPlace(this._xrSessionManager.worldScalingFactor);
                 const quat = pose.transform.orientation;
                 TmpVectors.Quaternion[0].set(quat.x, quat.y, quat.z, quat.w);
 
