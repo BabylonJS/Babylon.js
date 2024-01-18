@@ -1,6 +1,5 @@
 import type { Scene } from "core/scene";
 import type { DeepImmutable, Nullable } from "core/types";
-import type { Effect } from "core/Materials/effect";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { SubMesh } from "../subMesh";
 import type { AbstractMesh } from "../abstractMesh";
