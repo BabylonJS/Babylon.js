@@ -128,7 +128,7 @@ export class WebXRCamera extends FreeCamera {
     /**
      * Return the user's height, unrelated to the current ground.
      * This will be the y position of this camera, when ground level is 0.
-     * 
+     *
      * Note - this value is multiplied by the worldScalingFactor (if set), so it will be in the same units as the scene.
      */
     public get realWorldHeight(): number {
