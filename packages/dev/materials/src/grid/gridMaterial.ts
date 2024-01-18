@@ -106,6 +106,9 @@ export class GridMaterial extends PushMaterial {
 
     @serializeAsTexture("opacityTexture")
     private _opacityTexture: BaseTexture;
+    /**
+     * Texture to define opacity of the grid
+     */
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
     public opacityTexture: BaseTexture;
 

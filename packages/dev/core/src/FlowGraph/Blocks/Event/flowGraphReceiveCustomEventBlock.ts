@@ -35,12 +35,12 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
          */
         public config: IFlowGraphReceiveCustomEventBlockConfiguration
     ) {
-            super(config);
-            for (let i = 0; i < this.config.eventData.length; i++) {
-                const dataName = this.config.eventData[i];
-                this.registerDataOutput(dataName, RichTypeAny);
-            }
+        super(config);
+        for (let i = 0; i < this.config.eventData.length; i++) {
+            const dataName = this.config.eventData[i];
+            this.registerDataOutput(dataName, RichTypeAny);
         }
+    }
 
     public _preparePendingTasks(context: FlowGraphContext): void {
         const observable = context.configuration.coordinator.getCustomEventObservable(this.config.eventId);

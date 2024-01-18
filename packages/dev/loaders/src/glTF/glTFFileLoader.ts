@@ -303,7 +303,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
 
     /**
      * Function called before loading a url referenced by the asset.
-     * @param url
+     * @param url url referenced by the asset
      */
     public preprocessUrlAsync = (url: string) => Promise.resolve(url);
 

@@ -53,6 +53,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
      * Code from https://github.com/dylanebert/gsplat.js/blob/main/src/loaders/PLYLoader.ts Under MIT license
      * Loads a .ply from data array buffer
      * if data array buffer is not ply, returns the original buffer
+     * @param data the data to load
      */
     private _loadPLY(data: any): ArrayBuffer {
         const ubuf = new Uint8Array(data);
@@ -195,7 +196,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
     /**
      * Imports  from the loaded gaussian splatting data and adds them to the scene
-     * @param meshesNames a string or array of strings of the mesh names that should be loaded from the file
+     * @param _meshesNames a string or array of strings of the mesh names that should be loaded from the file
      * @param scene the scene the meshes should be added to
      * @param data the gaussian splatting data to load
      * @param rootUrl root url to load from
@@ -210,7 +211,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
      * Imports all objects from the loaded gaussian splatting data and adds them to the scene
      * @param scene the scene the objects should be added to
      * @param data the gaussian splatting data to load
-     * @param rootUrl root url to load from
+     * @param _rootUrl root url to load from
      * @returns a promise which completes when objects have been loaded to the scene
      */
     public loadAsync(scene: Scene, data: any, _rootUrl: string): Promise<void> {
@@ -220,9 +221,9 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
 
     /**
      * Load into an asset container.
-     * @param scene The scene to load into
-     * @param data The data to import
-     * @param rootUrl The root url for scene and resources
+     * @param _scene The scene to load into
+     * @param _data The data to import
+     * @param _rootUrl The root url for scene and resources
      * @returns The loaded asset container
      */
     public loadAssetContainerAsync(_scene: Scene, _data: string, _rootUrl: string): Promise<AssetContainer> {

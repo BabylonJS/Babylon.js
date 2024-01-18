@@ -37,6 +37,12 @@ export class KHR_materials_volume implements IGLTFExporterExtensionV2 {
         return this._wasUsed;
     }
 
+    /**
+     * After exporting a material, deal with additional textures
+     * @param context GLTF context of the material
+     * @param node exported GLTF node
+     * @param babylonMaterial corresponding babylon material
+     */
     public postExportMaterialAdditionalTextures?(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[] {
         const additionalTextures: BaseTexture[] = [];
 
@@ -74,6 +80,12 @@ export class KHR_materials_volume implements IGLTFExporterExtensionV2 {
         return mat.subSurface.thicknessTexture != null;
     }
 
+    /**
+     * After exporting a material
+     * @param context GLTF context of the material
+     * @param node exported GLTF node
+     * @param babylonMaterial corresponding babylon material
+     */
     public postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
         return new Promise((resolve) => {
             if (babylonMaterial instanceof PBRMaterial && this._isExtensionEnabled(babylonMaterial)) {
