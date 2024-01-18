@@ -35,4 +35,5 @@ export * from "./GreasedLine/greasedLineSimpleMaterial";
 export * from "./GreasedLine/greasedLineMaterialInterfaces";
 export * from "./GreasedLine/greasedLineMaterialDefaults";
 export * from "./meshDebugPluginMaterial";
+export * from "./GaussianSplatting/gaussianSplattingMaterial";
 import "./material.decalMap";

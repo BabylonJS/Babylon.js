@@ -32,3 +32,4 @@ import "./thinInstanceMesh";
 // eslint-disable-next-line no-duplicate-imports
 export * from "./thinInstanceMesh";
 export * from "./Node/index";
+export * from "./GaussianSplatting/gaussianSplattingMesh";
