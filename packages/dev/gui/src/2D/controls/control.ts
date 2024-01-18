@@ -326,6 +326,9 @@ export class Control implements IAnimatable {
 
     protected _accessibilityTag: Nullable<IAccessibilityTag> = null;
 
+    /**
+     * Observable that fires whenever the accessibility event of the control has changed
+     */
     public onAccessibilityTagChangedObservable = new Observable<Nullable<IAccessibilityTag>>();
 
     /**

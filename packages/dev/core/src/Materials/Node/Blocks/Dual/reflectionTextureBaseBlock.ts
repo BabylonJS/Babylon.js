@@ -20,6 +20,7 @@ import { CubeTexture } from "../../../Textures/cubeTexture";
 import { Texture } from "../../../Textures/texture";
 import { EngineStore } from "../../../../Engines/engineStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
+import type { SubMesh } from "../../../..//Meshes/subMesh";
 
 /**
  * Base block used to read a reflection texture from a sampler
@@ -240,7 +241,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         return true;
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
+    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, _subMesh?: SubMesh) {
         const texture = this._getTexture();
 
         if (!mesh || !texture) {

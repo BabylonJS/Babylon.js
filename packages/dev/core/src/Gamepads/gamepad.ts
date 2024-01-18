@@ -149,7 +149,7 @@ export class Gamepad {
 
     /**
      * Callback triggered when the left joystick has changed
-     * @param callback
+     * @param callback callback to trigger
      */
     public onleftstickchanged(callback: (values: StickValues) => void) {
         this._onleftstickchanged = callback;
@@ -157,7 +157,7 @@ export class Gamepad {
 
     /**
      * Callback triggered when the right joystick has changed
-     * @param callback
+     * @param callback callback to trigger
      */
     public onrightstickchanged(callback: (values: StickValues) => void) {
         this._onrightstickchanged = callback;

@@ -24,6 +24,9 @@ export class FilesInput {
         return true;
     };
 
+    /**
+     * If a loading UI should be displayed while loading a file
+     */
     public displayLoadingUI: boolean = true;
 
     /**

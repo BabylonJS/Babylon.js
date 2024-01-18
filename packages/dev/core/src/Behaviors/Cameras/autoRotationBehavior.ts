@@ -25,6 +25,9 @@ export class AutoRotationBehavior implements Behavior<ArcRotateCamera> {
     private _idleRotationWaitTime = 2000;
     private _idleRotationSpinupTime = 2000;
 
+    /**
+     * Target alpha
+     */
     public targetAlpha: Nullable<number> = null;
 
     /**

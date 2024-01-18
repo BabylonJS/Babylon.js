@@ -1099,9 +1099,9 @@ export class BackgroundMaterial extends PushMaterial {
     }
 
     /**
-     * Bind the material for a dedicated submeh (every used meshes will be considered opaque).
+     * Bind the material for a dedicated submesh (every used meshes will be considered opaque).
      * @param world The world matrix to bind.
-     * @param mesh
+     * @param mesh the mesh to bind for.
      * @param subMesh The submesh to bind for.
      */
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {

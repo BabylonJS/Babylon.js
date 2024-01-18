@@ -97,12 +97,12 @@ export class DecalMapConfiguration extends MaterialPluginBase {
         }
     }
 
-    /**
-     * Note that we override hardBindForSubMesh and not bindForSubMesh because the material can be shared by multiple meshes,
-     * in which case mustRebind could return false even though the decal map is different for each mesh: that's because the decal map
-     * is not part of the material but hosted by the decalMap of the mesh instead.
-     */
     public hardBindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, _engine: Engine, subMesh: SubMesh): void {
+        /**
+         * Note that we override hardBindForSubMesh and not bindForSubMesh because the material can be shared by multiple meshes,
+         * in which case mustRebind could return false even though the decal map is different for each mesh: that's because the decal map
+         * is not part of the material but hosted by the decalMap of the mesh instead.
+         */
         const decalMap = subMesh.getMesh().decalMap;
 
         if (!this._isEnabled || !decalMap?.texture || !MaterialFlags.DecalMapEnabled || !scene.texturesEnabled) {
