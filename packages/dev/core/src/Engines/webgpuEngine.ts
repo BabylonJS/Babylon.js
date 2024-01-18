@@ -566,7 +566,7 @@ export class WebGPUEngine extends Engine {
      * @param canvas Defines the canvas to use to display the result
      * @param options Defines the options passed to the engine to create the GPU context dependencies
      */
-    public constructor(canvas: HTMLCanvasElement, options: WebGPUEngineOptions = {}) {
+    public constructor(canvas: HTMLCanvasElement | OffscreenCanvas, options: WebGPUEngineOptions = {}) {
         super(null, options.antialias ?? true, options);
         this._name = "WebGPU";
 
@@ -584,14 +584,14 @@ export class WebGPUEngine extends Engine {
         this._isWebGPU = true;
         this._shaderPlatformName = "WEBGPU";
 
-        this._renderingCanvas = canvas;
+        this._renderingCanvas = canvas as HTMLCanvasElement;
         this._options = options;
 
         this._mainPassSampleCount = options.antialias ? this._defaultSampleCount : 1;
 
         this._setupMobileChecks();
 
-        this._sharedInit(canvas);
+        this._sharedInit(this._renderingCanvas);
 
         this._shaderProcessor = new WebGPUShaderProcessorGLSL();
         this._shaderProcessorWGSL = new WebGPUShaderProcessorWGSL();
@@ -667,6 +667,10 @@ export class WebGPUEngine extends Engine {
                     if (this._options.setMaximumLimits && !deviceDescriptor.requiredLimits) {
                         deviceDescriptor.requiredLimits = {};
                         for (const name in this._adapterSupportedLimits) {
+                            if (name === "minSubgroupSize" || name === "maxSubgroupSize") {
+                                // Chrome exposes these limits in "webgpu developer" mode, but these can't be set on the device.
+                                continue;
+                            }
                             deviceDescriptor.requiredLimits[name] = this._adapterSupportedLimits[name];
                         }
                     }
