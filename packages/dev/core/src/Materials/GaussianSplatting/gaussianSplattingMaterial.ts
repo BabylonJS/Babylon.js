@@ -4,6 +4,7 @@ import type { Mesh } from "../../Meshes/mesh";
 import type { IEffectCreationOptions } from "../../Materials/effect";
 import type { Scene } from "../../scene";
 import type { Matrix } from "../../Maths/math.vector";
+import type { GaussianSplattingMesh } from "core/Meshes";
 import { SerializationHelper } from "../../Misc/decorators";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { MaterialHelper } from "../../Materials/materialHelper";
@@ -200,6 +201,19 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
             this._activeEffect.setFloat2("viewport", engine.getRenderWidth(), engine.getRenderHeight());
 
+            const gsMesh = mesh as GaussianSplattingMesh;
+
+            if (gsMesh.covariancesATexture) {
+                const textureSize = gsMesh.covariancesATexture.getSize();
+    
+                effect.setFloat2("dataTextureSize", textureSize.width, textureSize.height);
+    
+                effect.setTexture("covariancesATexture", gsMesh.covariancesATexture);
+                effect.setTexture("covariancesBTexture", gsMesh.covariancesBTexture);
+                effect.setTexture("centersTexture", gsMesh.centersTexture);
+                effect.setTexture("colorsTexture", gsMesh.colorsTexture);
+            }
+    
             // Clip plane
             bindClipPlane(effect, this, scene);
         } else if (scene.getEngine()._features.needToAlwaysBindUniformBuffers) {

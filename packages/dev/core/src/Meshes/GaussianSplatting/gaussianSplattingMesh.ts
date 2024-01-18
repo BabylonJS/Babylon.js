@@ -31,6 +31,34 @@ export class GaussianSplattingMesh extends Mesh {
     private _colorsTexture: Nullable<BaseTexture> = null;
 
     /**
+     * Gets the covariancesA texture
+     */
+    public get covariancesATexture() {
+        return this._covariancesATexture;
+    }
+
+    /**
+     * Gets the covariancesB texture
+     */
+    public get covariancesBTexture() {
+        return this._covariancesBTexture;
+    }
+
+    /**
+     * Gets the centers texture
+     */
+    public get centersTexture() {
+        return this._centersTexture;
+    }
+
+    /**
+     * Gets the colors texture
+     */
+    public get colorsTexture() {
+        return this._colorsTexture;
+    }
+
+    /**
      * Creates a new gaussian splatting mesh
      * @param name defines the name of the mesh
      * @param url defines the url to load from (optional)
@@ -101,24 +129,6 @@ export class GaussianSplattingMesh extends Mesh {
         }
 
         return super.render(subMesh, enableAlphaMode, effectiveMeshReplacement);
-    }
-
-    /**
-     * @internal
-     */
-    public _bind(subMesh: SubMesh, effect: Effect, fillMode: number, allowInstancedRendering = true): Mesh {
-        if (this._covariancesATexture) {
-            const textureSize = this._covariancesATexture.getSize();
-
-            effect.setFloat2("dataTextureSize", textureSize.width, textureSize.height);
-
-            effect.setTexture("covariancesATexture", this._covariancesATexture);
-            effect.setTexture("covariancesBTexture", this._covariancesBTexture);
-            effect.setTexture("centersTexture", this._centersTexture);
-            effect.setTexture("colorsTexture", this._colorsTexture);
-        }
-
-        return super._bind(subMesh, effect, fillMode, allowInstancedRendering);
     }
 
     /**
