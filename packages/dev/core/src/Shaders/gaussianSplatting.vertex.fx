@@ -15,6 +15,7 @@ attribute float splatIndex;
 // Uniforms
 uniform vec2 viewport;
 uniform vec2 dataTextureSize;
+uniform vec2 focal;
 
 uniform sampler2D covariancesATexture;
 uniform sampler2D covariancesBTexture;
@@ -64,7 +65,7 @@ void main () {
         covA.y, covB.x, covB.y,
         covA.z, covB.y, covB.z
     );
-    vec2 focal = vec2(1132., 1132.);
+
     mat3 J = mat3(
         focal.x / camspace.z, 0., -(focal.x * camspace.x) / (camspace.z * camspace.z), 
         0., focal.y / camspace.z, -(focal.y * camspace.y) / (camspace.z * camspace.z), 

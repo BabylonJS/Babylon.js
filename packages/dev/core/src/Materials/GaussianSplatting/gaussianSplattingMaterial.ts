@@ -12,6 +12,7 @@ import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
 import { RegisterClass } from "../../Misc/typeStore";
 import { addClipPlaneUniforms, bindClipPlane } from "../clipPlaneMaterialHelper";
+import { Camera } from "core/Cameras/camera";
 
 import "../../Shaders/gaussianSplatting.fragment";
 import "../../Shaders/gaussianSplatting.vertex";
@@ -125,7 +126,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
 
-            const uniforms = ["world", "view", "projection", "vFogInfos", "vFogColor", "logarithmicDepthConstant", "viewport", "dataTextureSize"];
+            const uniforms = ["world", "view", "projection", "vFogInfos", "vFogColor", "logarithmicDepthConstant", "viewport", "dataTextureSize", "focal"];
             const samplers = ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture"];
             const uniformBuffers = ["Scene", "Mesh"];
 
@@ -198,22 +199,38 @@ export class GaussianSplattingMaterial extends PushMaterial {
             this.bindViewProjection(effect);
 
             const engine = scene.getEngine();
+            const camera = this.getScene().activeCamera;
 
-            this._activeEffect.setFloat2("viewport", engine.getRenderWidth(), engine.getRenderHeight());
+            const renderWidth = engine.getRenderWidth();
+            const renderHeight = engine.getRenderHeight();
+
+            this._activeEffect.setFloat2("viewport", renderWidth, renderHeight);
+
+            let focal = 1000;
+
+            if (camera) {
+                if (camera.fovMode == Camera.FOVMODE_VERTICAL_FIXED) {
+                    focal = renderHeight / 2.0 / Math.tan(camera.fov / 2.0);
+                } else {
+                    focal = renderWidth / 2.0 / Math.tan(camera.fov / 2.0);
+                }
+            }
+
+            this._activeEffect.setFloat2("focal", focal, focal);
 
             const gsMesh = mesh as GaussianSplattingMesh;
 
             if (gsMesh.covariancesATexture) {
                 const textureSize = gsMesh.covariancesATexture.getSize();
-    
+
                 effect.setFloat2("dataTextureSize", textureSize.width, textureSize.height);
-    
+
                 effect.setTexture("covariancesATexture", gsMesh.covariancesATexture);
                 effect.setTexture("covariancesBTexture", gsMesh.covariancesBTexture);
                 effect.setTexture("centersTexture", gsMesh.centersTexture);
                 effect.setTexture("colorsTexture", gsMesh.colorsTexture);
             }
-    
+
             // Clip plane
             bindClipPlane(effect, this, scene);
         } else if (scene.getEngine()._features.needToAlwaysBindUniformBuffers) {
