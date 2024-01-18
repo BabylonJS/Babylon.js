@@ -54,6 +54,7 @@ declare module "../Cameras/freeCameraInputsManager" {
 
 /**
  * Adds a gamepad to the free camera inputs manager
+ * @returns the FreeCameraInputsManager
  */
 FreeCameraInputsManager.prototype.addGamepad = function (): FreeCameraInputsManager {
     this.add(new FreeCameraGamepadInput());
@@ -75,6 +76,7 @@ declare module "../Cameras/arcRotateCameraInputsManager" {
 
 /**
  * Adds a gamepad to the arc rotate camera inputs manager
+ * @returns the camera inputs manager
  */
 ArcRotateCameraInputsManager.prototype.addGamepad = function (): ArcRotateCameraInputsManager {
     this.add(new ArcRotateCameraGamepadInput());

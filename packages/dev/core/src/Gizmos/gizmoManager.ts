@@ -163,8 +163,10 @@ export class GizmoManager implements IDisposable {
     }
 
     /**
+     * @internal
      * Subscribes to pointer down events, for attaching and detaching mesh
      * @param scene The scene layer the observer will be added to
+     * @returns the pointer observer
      */
     private _attachToMeshPointerObserver(scene: Scene): Observer<PointerInfo> {
         // Instantiate/dispose gizmos based on pointer actions

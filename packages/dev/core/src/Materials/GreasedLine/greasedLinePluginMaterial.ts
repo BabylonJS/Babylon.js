@@ -504,7 +504,6 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * @param colors color table RGBA
      * @param lazy if lazy, the colors are not updated
      * @param forceNewTexture force creation of a new texture
-     * @returns
      */
     public setColors(colors: Nullable<Color3[]>, lazy = false, forceNewTexture = false): void {
         const origColorsCount = this._colors?.length ?? 0;

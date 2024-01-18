@@ -67,7 +67,9 @@ export class NodeMaterialTeleportInBlock extends NodeMaterialBlock {
         return this._inputs[0];
     }
 
-    /** Gets a boolean indicating that this connection will be used in the fragment shader */
+    /**
+     * @returns a boolean indicating that this connection will be used in the fragment shader
+     */
     public isConnectedInFragmentShader() {
         return this.endpoints.some((e) => e.output.isConnectedInFragmentShader);
     }

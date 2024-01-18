@@ -951,7 +951,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     }
 
     /**
-     * Gets the name of the material class.
+     * @returns the name of the material class.
      */
     public getClassName(): string {
         return "PBRBaseMaterial";
@@ -969,7 +969,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     }
 
     /**
-     * Specifies whether or not this material should be rendered in alpha blend mode.
+     * @returns whether or not this material should be rendered in alpha blend mode.
      */
     public needAlphaBlending(): boolean {
         if (this._disableAlphaBlending) {
@@ -980,7 +980,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     }
 
     /**
-     * Specifies whether or not this material should be rendered in alpha test mode.
+     * @returns whether or not this material should be rendered in alpha test mode.
      */
     public needAlphaTesting(): boolean {
         if (this._forceAlphaTest) {
@@ -995,21 +995,21 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     }
 
     /**
-     * Specifies whether or not the alpha value of the albedo texture should be used for alpha blending.
+     * @returns whether or not the alpha value of the albedo texture should be used for alpha blending.
      */
     protected _shouldUseAlphaFromAlbedoTexture(): boolean {
         return this._albedoTexture != null && this._albedoTexture.hasAlpha && this._useAlphaFromAlbedoTexture && this._transparencyMode !== PBRBaseMaterial.PBRMATERIAL_OPAQUE;
     }
 
     /**
-     * Specifies whether or not there is a usable alpha channel for transparency.
+     * @returns whether or not there is a usable alpha channel for transparency.
      */
     protected _hasAlphaChannel(): boolean {
         return (this._albedoTexture != null && this._albedoTexture.hasAlpha) || this._opacityTexture != null;
     }
 
     /**
-     * Gets the texture used for the alpha test.
+     * @returns the texture used for the alpha test.
      */
     public getAlphaTestTexture(): Nullable<BaseTexture> {
         return this._albedoTexture;
@@ -2521,6 +2521,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * Sets the required values to the prepass renderer.
      * It can't be sets when subsurface scattering of this material is disabled.
      * When scene have ability to enable subsurface prepass effect, it will enable.
+     * @returns - If prepass is enabled or not.
      */
     public setPrePassRenderer(): boolean {
         if (!this.subSurface?.isScatteringEnabled) {

@@ -1864,6 +1864,7 @@ export class NativeEngine extends Engine {
         return internalTexture;
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Wraps an external web gl texture in a Babylon texture.
      * @returns the babylon internal texture

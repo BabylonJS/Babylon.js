@@ -364,7 +364,6 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      *
      * @param delta The time delta in seconds since the last step.
      * @param physicsBodies An array of physics bodies to be simulated.
-     * @returns void
      *
      * This method is useful for simulating the physics engine. It sets the physics body transformation,
      * steps the world, syncs the physics body, and notifies collisions. This allows for the physics engine
@@ -785,6 +784,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Gets the motion type of a physics body.
      * @param body - The physics body to get the motion type from.
      * @param instanceIndex - The index of the instance to get the motion type from. If not specified, the motion type of the first instance will be returned.
+     * @returns The motion type of the physics body.
      */
     public getMotionType(body: PhysicsBody, instanceIndex?: number): PhysicsMotionType {
         const pluginRef = this._getPluginReference(body, instanceIndex);
@@ -818,6 +818,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      *
      * @param body - The physics body to copmute the mass properties of
      * @param instanceIndex - The index of the instance to compute the mass properties of.
+     * @returns The mass properties of the physics body.
      */
     public computeMassProperties(body: PhysicsBody, instanceIndex?: number): PhysicsMassProperties {
         const pluginRef = this._getPluginReference(body, instanceIndex);
@@ -1417,7 +1418,6 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Releases a physics shape from the physics engine.
      *
      * @param shape - The physics shape to be released.
-     * @returns void
      *
      * This method is useful for releasing a physics shape from the physics engine, freeing up resources and preventing memory leaks.
      */
@@ -1655,7 +1655,6 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * @param constraint - The constraint to set the friction of.
      * @param axis - The axis of the constraint to set the friction of.
      * @param friction - The friction to set.
-     * @returns void
      *
      */
     public setAxisFriction(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, friction: number): void {
@@ -1771,7 +1770,6 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * @param constraint - The constraint to set the motor type of.
      * @param axis - The axis of the constraint to set the motor type of.
      * @param motorType - The motor type to set.
-     * @returns void
      *
      */
     public setAxisMotorType(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, motorType: PhysicsConstraintMotorType): void {
@@ -1909,6 +1907,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     /**
      * Return the collision observable for a particular physics body.
      * @param body the physics body
+     * @returns the collision observable for the body
      */
     public getCollisionObservable(body: PhysicsBody): Observable<IPhysicsCollisionEvent> {
         const bodyId = body._pluginData.hpBodyId[0];

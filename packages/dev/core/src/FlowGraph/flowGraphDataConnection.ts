@@ -33,6 +33,7 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
     /**
      * An output data block can connect to multiple input data blocks,
      * but an input data block can only connect to one output data block.
+     * @returns true if the connection is singular
      */
     public _isSingularConnection(): boolean {
         return this.connectionType === FlowGraphConnectionType.Input;
@@ -83,7 +84,7 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
     }
 
     /**
-     * the class name of the object.
+     * @returns class name of the object.
      */
     public getClassName(): string {
         return "FGDataConnection";

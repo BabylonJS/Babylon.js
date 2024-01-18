@@ -272,6 +272,7 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
     /**
      * Check if the pressed modifier keys (Alt/Ctrl/Shift) match those configured to
      * allow modification of the heightOffset value.
+     * @returns true if modifier keys match
      */
     private _modifierHeightOffset(): boolean {
         return (
@@ -284,6 +285,7 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
     /**
      * Check if the pressed modifier keys (Alt/Ctrl/Shift) match those configured to
      * allow modification of the rotationOffset value.
+     * @returns true if modifier keys match
      */
     private _modifierRotationOffset(): boolean {
         return (
@@ -296,6 +298,7 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
     /**
      * Check if the pressed modifier keys (Alt/Ctrl/Shift) match those configured to
      * allow modification of the radius value.
+     * @returns true if modifier keys match
      */
     private _modifierRadius(): boolean {
         return this.keysRadiusModifierAlt === this._altPressed && this.keysRadiusModifierCtrl === this._ctrlPressed && this.keysRadiusModifierShift === this._shiftPressed;

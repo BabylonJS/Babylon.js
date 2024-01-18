@@ -257,7 +257,9 @@ export class NodeMaterialBlock {
         return "NodeMaterialBlock";
     }
 
-    /** Gets a boolean indicating that this connection will be used in the fragment shader */
+    /** Gets a boolean indicating that this connection will be used in the fragment shader
+     * @returns true if connected in fragment shader
+     */
     public isConnectedInFragmentShader() {
         return this.outputs.some((o) => o.isConnectedInFragmentShader);
     }

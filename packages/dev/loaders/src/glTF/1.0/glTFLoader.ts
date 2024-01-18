@@ -351,7 +351,7 @@ const loadAnimations = (gltfRuntime: IGLTFRuntime) => {
 };
 
 /**
- * Returns the bones transformation matrix
+ * @returns the bones transformation matrix
  * @param node
  */
 const configureBoneTransformation = (node: IGLTFNode): Matrix => {

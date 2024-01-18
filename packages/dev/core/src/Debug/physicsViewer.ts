@@ -347,6 +347,7 @@ export class PhysicsViewer {
     /**
      * Shows a debug box corresponding to the inertia of a given body
      * @param body the physics body used to get the inertia
+     * @returns the debug mesh used to show the inertia, or null if the body is already shown
      */
     public showInertia(body: PhysicsBody): Nullable<AbstractMesh> {
         if (!this._scene) {

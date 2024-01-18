@@ -199,7 +199,10 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
         }
     }
 
-    /** Create Geometry for Gizmo */
+    /**
+     * @internal
+     * Create Geometry for Gizmo
+     */
     protected _createUniformScaleMesh(): AxisScaleGizmo {
         this._coloredMaterial = new StandardMaterial("", this.gizmoLayer.utilityLayerScene);
         this._coloredMaterial.diffuseColor = Color3.Gray();

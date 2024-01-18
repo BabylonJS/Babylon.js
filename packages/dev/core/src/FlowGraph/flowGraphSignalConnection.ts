@@ -11,8 +11,10 @@ import { RegisterClass } from "../Misc/typeStore";
  */
 export class FlowGraphSignalConnection extends FlowGraphConnection<FlowGraphExecutionBlock, FlowGraphSignalConnection> {
     /**
+     * @internal
      * A signal input can be connected to more than one signal output,
      * but a signal output can only connect to one signal input
+     * @returns true if the connection is singular
      */
     public _isSingularConnection(): boolean {
         return this.connectionType === FlowGraphConnectionType.Output;

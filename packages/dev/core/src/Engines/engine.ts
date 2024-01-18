@@ -357,6 +357,7 @@ export class Engine extends ThinEngine {
         }
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Method called to create the default loading screen.
      * This can be overridden in your own app.

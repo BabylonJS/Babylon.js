@@ -846,7 +846,7 @@ export abstract class Light extends Node implements ISortableLight {
     }
 
     /**
-     * Returns the Photometric Scale according to the light type and intensity mode.
+     * @returns the Photometric Scale according to the light type and intensity mode.
      */
     private _getPhotometricScale() {
         let photometricScale = 0.0;

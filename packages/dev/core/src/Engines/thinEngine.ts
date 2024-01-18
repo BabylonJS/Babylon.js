@@ -4521,6 +4521,7 @@ export class ThinEngine {
      */
     public _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<any>, internalFormat: number, onComplete: () => void): void {}
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Creates a raw texture
      * @param data defines the data to store in the texture
@@ -4552,6 +4553,7 @@ export class ThinEngine {
         throw _WarnImport("Engine.RawTexture");
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Creates a new raw cube texture
      * @param data defines the array of data to use to create each face
@@ -4577,6 +4579,7 @@ export class ThinEngine {
         throw _WarnImport("Engine.RawTexture");
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Creates a new raw 3D texture
      * @param data defines the data used to create the texture
@@ -4606,6 +4609,7 @@ export class ThinEngine {
         throw _WarnImport("Engine.RawTexture");
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Creates a new raw 2D array texture
      * @param data defines the data used to create the texture

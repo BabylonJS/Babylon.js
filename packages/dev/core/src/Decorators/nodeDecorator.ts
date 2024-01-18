@@ -70,10 +70,11 @@ export interface IPropertyDescriptionForEdition {
 
 /**
  * Decorator that flags a property in a node block as being editable
- * @param displayName
- * @param propertyType
- * @param groupName
- * @param options
+ * @param displayName the display name of the property
+ * @param propertyType the type of the property
+ * @param groupName the group name of the property
+ * @param options the options of the property
+ * @returns the decorator
  */
 export function editableInPropertyPage(
     displayName: string,

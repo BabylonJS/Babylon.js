@@ -73,6 +73,7 @@ class Vertex {
      * override this to interpolate additional properties.
      * @param other the vertex to interpolate against
      * @param t The factor used to linearly interpolate between the vertices
+     * @returns The new interpolated vertex
      */
     public interpolate(other: Vertex, t: number): Vertex {
         return new Vertex(
@@ -109,6 +110,7 @@ class CSGPlane {
      * @param a Point a
      * @param b Point b
      * @param c Point c
+     * @returns A new plane
      */
     public static FromPoints(a: Vector3, b: Vector3, c: Vector3): Nullable<CSGPlane> {
         const v0 = c.subtract(a);
@@ -259,6 +261,7 @@ class CSGPolygon {
 
     /**
      * Clones, or makes a deep copy, or the polygon
+     * @returns A new CSGPolygon
      */
     public clone(): CSGPolygon {
         const vertices = this.vertices.map((v) => v.clone());
@@ -599,6 +602,7 @@ export class CSG {
     /**
      * Construct a CSG solid from a list of `CSG.Polygon` instances.
      * @param polygons Polygons used to construct a CSG solid
+     * @returns A new CSG solid
      */
     private static _FromPolygons(polygons: CSGPolygon[]): CSG {
         const csg = new CSG();
