@@ -61,6 +61,10 @@ export class FlowGraphCoordinateTransformBlock extends FlowGraphBlock {
         Vector3.TransformCoordinatesToRef(inputCoordinatesValue, sourceToDestination, outputCoordinatesValue);
     }
 
+    /**
+     * Gets the class name of this block
+     * @returns the class name
+     */
     public getClassName(): string {
         return "FGCoordinateTransformBlock";
     }

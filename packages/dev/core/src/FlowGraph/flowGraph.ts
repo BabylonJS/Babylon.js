@@ -47,6 +47,9 @@ export interface IFlowGraphParams {
 export interface IFlowGraphParseOptions {
     /**
      * A function that parses complex values in a scene.
+     * @param key the key of the value
+     * @param serializationObject the object to read the value from
+     * @param scene the scene to read the value from
      */
     valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any;
     /**
@@ -101,6 +104,11 @@ export class FlowGraph {
         return context;
     }
 
+    /**
+     * Returns the execution context at a given index
+     * @param index the index of the context
+     * @returns the execution context at that index
+     */
     public getContext(index: number) {
         return this._executionContexts[index];
     }
@@ -108,7 +116,7 @@ export class FlowGraph {
     /**
      * Add an event block. When the graph is started, it will start listening to events
      * from the block and execute the graph when they are triggered.
-     * @param block
+     * @param block the event block to be added
      */
     public addEventBlock(block: FlowGraphEventBlock): void {
         this._eventBlocks.push(block);
@@ -232,9 +240,9 @@ export class FlowGraph {
 
     /**
      * Given a list of blocks, find an output data connection that has a specific unique id
-     * @param blocks
-     * @param uniqueId
-     * @returns
+     * @param blocks a list of flow graph blocks
+     * @param uniqueId the unique id of a connection
+     * @returns the connection that has this unique id. throws an error if none was found
      */
     public static GetDataOutConnectionByUniqueId(blocks: FlowGraphBlock[], uniqueId: string): FlowGraphDataConnection<any> {
         for (const block of blocks) {
@@ -249,9 +257,9 @@ export class FlowGraph {
 
     /**
      * Given a list of blocks, find an input signal connection that has a specific unique id
-     * @param blocks
-     * @param uniqueId
-     * @returns
+     * @param blocks a list of flow graph blocks
+     * @param uniqueId the unique id of a connection
+     * @returns the connection that has this unique id. throws an error if none was found
      */
     public static GetSignalInConnectionByUniqueId(blocks: FlowGraphBlock[], uniqueId: string): FlowGraphSignalConnection {
         for (const block of blocks) {
@@ -270,7 +278,7 @@ export class FlowGraph {
      * Parses a graph from a given serialization object
      * @param serializationObject the object where the values are written
      * @param options options for parsing the graph
-     * @returns
+     * @returns the parsed graph
      */
     public static Parse(serializationObject: ISerializedFlowGraph, options: IFlowGraphParseOptions): FlowGraph {
         const graph = options.coordinator.createGraph();

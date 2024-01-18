@@ -53,6 +53,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
      * Code from https://github.com/dylanebert/gsplat.js/blob/main/src/loaders/PLYLoader.ts Under MIT license
      * Loads a .ply from data array buffer
      * if data array buffer is not ply, returns the original buffer
+     * @param data the data to load
      */
     private _loadPLY(data: any): ArrayBuffer {
         const ubuf = new Uint8Array(data);

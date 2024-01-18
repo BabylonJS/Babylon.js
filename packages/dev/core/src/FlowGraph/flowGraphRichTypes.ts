@@ -9,15 +9,30 @@ import { FlowGraphInteger } from "./flowGraphInteger";
  */
 export class RichType<T> {
     constructor(
+        /**
+         * The name given to the type.
+         */
         public typeName: string,
+        /**
+         * The default value of the type.
+         */
         public defaultValue: T
     ) {}
 
+    /**
+     * Serializes this rich type into a serialization object.
+     * @param serializationObject the object to serialize to
+     */
     serialize(serializationObject: any) {
         serializationObject.typeName = this.typeName;
         serializationObject.defaultValue = this.defaultValue;
     }
 
+    /**
+     * Parses a rich type from a serialization object.
+     * @param serializationObject a serialization object
+     * @returns the parsed rich type
+     */
     static Parse(serializationObject: any): RichType<any> {
         return new RichType(serializationObject.typeName, serializationObject.defaultValue);
     }

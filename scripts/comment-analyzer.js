@@ -60,6 +60,9 @@ function isInternal(child) {
 }
 
 function traverseChildrenLookingForComments(child, parent, isSignature = false) {
+    if (!child) {
+        return;
+    }
     const result = {
         componentName: child.name,
         componentType: getKind(child),
@@ -94,8 +97,8 @@ function traverseChildrenLookingForComments(child, parent, isSignature = false) 
         }
         result.result = TestResultType.PASS;
         return result;
-    } else if (child.signatures) {
-        const signatureResult = traverseChildrenLookingForComments(child.signatures[0], parent, true);
+    } else if (child.signatures || child.type?.declaration?.signatures) {
+        const signatureResult = traverseChildrenLookingForComments(child.signatures?.length > 0 ? child.signatures[0] : child.type.declaration.signatures[0], parent, true);
         // const signatureResults = child.signatures[0]
         //     .map((sig) => traverseChildrenLookingForComments(sig, parent, true))
         //     .flat()

@@ -70,6 +70,9 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal 
         this._executeLoop(context);
     }
 
+    /**
+     * the class name of the block.
+     */
     public getClassName(): string {
         return "FGForLoopBlock";
     }

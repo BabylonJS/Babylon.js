@@ -39,6 +39,9 @@ export class FlowGraphCounterBlock extends FlowGraphExecutionBlockWithOutSignal 
         this.out._activateSignal(context);
     }
 
+    /**
+     * the class name of the block.
+     */
     public getClassName(): string {
         return "FGCounterBlock";
     }

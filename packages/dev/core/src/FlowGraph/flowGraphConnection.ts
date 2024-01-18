@@ -101,8 +101,8 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
     }
 
     /**
-     * Connects two points together.
-     * @param point
+     * Connects two connections together.
+     * @param point the connection to connect to.
      */
     public connectTo(point: ConnectedToT): void {
         if (this._connectionType === point._connectionType) {
@@ -117,6 +117,7 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
 
     /**
      * Saves the connection to a JSON object.
+     * @param serializationObject the object to serialize to.
      */
     public serialize(serializationObject: any = {}) {
         serializationObject.uniqueId = this.uniqueId;
@@ -129,13 +130,16 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
         }
     }
 
+    /**
+     * the class name of the connection.
+     */
     public getClassName(): string {
         return "FGConnection";
     }
 
     /**
      * Deserialize from a object into this
-     * @param serializationObject
+     * @param serializationObject the object to deserialize from.
      */
     deserialize(serializationObject: any) {
         this.uniqueId = serializationObject.uniqueId;
@@ -146,9 +150,9 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
 
     /**
      * Parses a connection from an object
-     * @param serializationObject
-     * @param ownerBlock
-     * @returns
+     * @param serializationObject the object to parse from.
+     * @param ownerBlock the block that owns the connection.
+     * @returns the parsed connection.
      */
     public static Parse(serializationObject: any = {}, ownerBlock: FlowGraphBlock) {
         const type = Tools.Instantiate(serializationObject.className);

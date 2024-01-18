@@ -289,7 +289,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
     /**
      * Called on pointer POINTERDOUBLETAP event.
      * Override this method to provide functionality on POINTERDOUBLETAP event.
-     * @param type
+     * @param type type of event
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public onDoubleTap(type: string) {}
@@ -327,7 +327,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
     /**
      * Called on JS contextmenu event.
      * Override this method to provide functionality.
-     * @param evt
+     * @param evt the event to be handled
      */
     public onContextMenu(evt: PointerEvent): void {
         evt.preventDefault();

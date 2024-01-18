@@ -35,7 +35,12 @@ export class FlowGraphGetPropertyBlock extends FlowGraphBlock {
      */
     public readonly templateComponent: FlowGraphPathConverterComponent;
 
-    public constructor(public config: IFlowGraphGetPropertyBlockConfiguration) {
+    public constructor(
+        /**
+         * the configuration of the block
+         */
+        public config: IFlowGraphGetPropertyBlockConfiguration
+    ) {
         super(config);
         this.value = this.registerDataOutput("value", RichTypeAny);
         this.templateComponent = new FlowGraphPathConverterComponent(config.path, this);
@@ -47,10 +52,18 @@ export class FlowGraphGetPropertyBlock extends FlowGraphBlock {
         this.value.setValue(value, context);
     }
 
+    /**
+     * Gets the class name of this block
+     * @returns the class name
+     */
     public getClassName(): string {
         return FlowGraphGetPropertyBlock.ClassName;
     }
 
+    /**
+     * Serializes this block
+     * @param serializationObject the object to serialize to
+     */
     public serialize(serializationObject: any = {}) {
         super.serialize(serializationObject);
         serializationObject.config.path = this.config.path;

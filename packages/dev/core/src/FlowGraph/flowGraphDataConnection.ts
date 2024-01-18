@@ -22,6 +22,9 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
         name: string,
         connectionType: FlowGraphConnectionType,
         ownerBlock: FlowGraphBlock,
+        /**
+         * the type of the data in this block
+         */
         public richType: RichType<T>
     ) {
         super(name, connectionType, ownerBlock);
@@ -44,6 +47,10 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
         context._setConnectionValue(this, value);
     }
 
+    /**
+     * Connect this point to another point.
+     * @param point the point to connect to.
+     */
     public connectTo(point: FlowGraphDataConnection<T>): void {
         super.connectTo(point);
     }
@@ -75,16 +82,29 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
         }
     }
 
+    /**
+     * the class name of the object.
+     */
     public getClassName(): string {
         return "FGDataConnection";
     }
 
+    /**
+     * Serializes this object.
+     * @param serializationObject the object to serialize to
+     */
     public serialize(serializationObject: any = {}) {
         super.serialize(serializationObject);
         serializationObject.richType = {};
         this.richType.serialize(serializationObject.richType);
     }
 
+    /**
+     * Parses a data connection from a serialized object.
+     * @param serializationObject the object to parse from
+     * @param ownerBlock the block that owns the connection
+     * @returns the parsed connection
+     */
     public static Parse(serializationObject: any, ownerBlock: FlowGraphBlock): FlowGraphDataConnection<any> {
         const obj = FlowGraphConnection.Parse(serializationObject, ownerBlock);
         obj.richType = RichType.Parse(serializationObject.richType);

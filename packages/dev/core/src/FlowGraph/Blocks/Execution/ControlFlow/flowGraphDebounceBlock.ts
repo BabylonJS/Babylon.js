@@ -48,6 +48,9 @@ export class FlowGraphDebounceBlock extends FlowGraphExecutionBlockWithOutSignal
         }
     }
 
+    /**
+     * the class name of the block.
+     */
     public getClassName(): string {
         return "FGDebounceBlock";
     }

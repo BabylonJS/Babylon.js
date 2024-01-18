@@ -25,12 +25,13 @@ export class FlowGraphSequenceBlock extends FlowGraphExecutionBlock {
      */
     public outFlows: FlowGraphSignalConnection[];
 
-    constructor(public config: IFlowGraphSequenceBlockConfiguration) {
+    constructor(
+        /**
+         * the configuration of the block
+         */
+        public config: IFlowGraphSequenceBlockConfiguration
+    ) {
         super(config);
-    }
-
-    public configure(): void {
-        super.configure();
         this.outFlows = [];
         for (let i = 0; i < this.config.numberOutputFlows; i++) {
             this.outFlows.push(this._registerSignalOutput(`${i}`));
@@ -43,10 +44,16 @@ export class FlowGraphSequenceBlock extends FlowGraphExecutionBlock {
         }
     }
 
+    /**
+     * the class name of the block.
+     */
     public getClassName(): string {
         return FlowGraphSequenceBlock.ClassName;
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGSequenceBlock";
 }
 RegisterClass(FlowGraphSequenceBlock.ClassName, FlowGraphSequenceBlock);

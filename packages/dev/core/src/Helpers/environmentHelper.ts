@@ -351,8 +351,8 @@ export class EnvironmentHelper {
     }
 
     /**
-     * Updates the background according to the new options
-     * @param options
+     * Updates the environment according to the new options
+     * @param options options to configure the helper (IEnvironmentHelperOptions)
      */
     public updateOptions(options: Partial<IEnvironmentHelperOptions>) {
         const newOptions = {

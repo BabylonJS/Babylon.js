@@ -451,7 +451,7 @@ export class CSG {
 
     /**
      * Convert a VertexData to CSG
-     * @param mesh defines the VertexData to convert to CSG
+     * @param data defines the VertexData to convert to CSG
      * @returns the new CSG
      */
     public static FromVertexData(data: VertexData): CSG {
@@ -768,6 +768,8 @@ export class CSG {
     /**
      * Build vertex data from CSG
      * Coordinates here are in world space
+     * @param onBeforePolygonProcessing called before each polygon is being processed
+     * @param onAfterPolygonProcessing called after each polygon has been processed
      * @returns the final vertex data
      */
     public toVertexData(onBeforePolygonProcessing: Nullable<(polygon: CSGPolygon) => void> = null, onAfterPolygonProcessing: Nullable<() => void> = null): VertexData {
