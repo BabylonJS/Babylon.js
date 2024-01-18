@@ -456,7 +456,6 @@ export class WebXRHand implements IDisposable {
             Matrix.FromArrayToRef(this._jointTransformMatrices, jointIdx * 16, this._tempJointMatrix);
             this._tempJointMatrix.decompose(undefined, jointTransform.rotationQuaternion!, jointTransform.position);
 
-
             // The radius we need to make the joint in order for it to roughly cover the joints of the user's real hand.
             const scaledJointRadius = this._jointRadii[jointIdx] * this._jointScaleFactor;
 
