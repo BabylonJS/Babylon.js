@@ -180,11 +180,9 @@ export class PhysicsBody {
      * This method is useful for setting the shape of the physics body, which is necessary for the physics engine to accurately simulate the body's behavior.
      * The shape is used to calculate the body's mass, inertia, and other properties.
      */
-    public set shape(shape: Nullable<PhysicsShape> = null) {
-        if (shape) {
-            this._shape = shape;
-            this._physicsPlugin.setShape(this, shape);
-        }
+    public set shape(shape: Nullable<PhysicsShape>) {
+        this._shape = shape;
+        this._physicsPlugin.setShape(this, shape);
     }
 
     /**

@@ -35,6 +35,7 @@ export interface IPhysicsBodyGridComponentProps {
 
 /**
  * Component that allows displaying and tweaking a physics body's properties.
+ * @param props the component props
  */
 export function PhysicsBodyGridComponent(props: IPhysicsBodyGridComponentProps) {
     const numInstances = props.body._pluginDataInstances?.length ?? 0;

@@ -1270,11 +1270,11 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
 
     /**
      * Gets the transform infos of a given transform node.
-     * @param node - The transform node.
-     * @returns An array containing the position and orientation of the node.
      * This code is useful for getting the position and orientation of a given transform node.
      * It first checks if the node has a rotation quaternion, and if not, it creates one from the node's rotation.
      * It then creates an array containing the position and orientation of the node and returns it.
+     * @param node - The transform node.
+     * @returns An array containing the position and orientation of the node.
      */
     private _getTransformInfos(node: TransformNode): any[] {
         if (node.parent) {
