@@ -107,6 +107,21 @@ export class GizmoManager implements IDisposable {
     }
 
     /**
+     * True when the mouse pointer is dragging a gizmo mesh
+     */
+    public get isDragging() {
+        let dragging = false;
+
+        [this.gizmos.positionGizmo, this.gizmos.rotationGizmo, this.gizmos.scaleGizmo, this.gizmos.boundingBoxGizmo].forEach((gizmo) => {
+            if (gizmo && gizmo.isDragging) {
+                dragging = true;
+            }
+        });
+
+        return dragging;
+    }
+
+    /**
      * Ratio for the scale of the gizmo (Default: 1)
      */
     public set scaleRatio(value: number) {
@@ -138,6 +153,21 @@ export class GizmoManager implements IDisposable {
     public get coordinatesMode(): GizmoCoordinatesMode {
         return this._coordinatesMode;
     }
+
+    /**
+     * The mesh the gizmo's is attached to
+     */
+    public get attachedMesh() {
+        return this._attachedMesh;
+    }
+
+    /**
+     * The node the gizmo's is attached to
+     */
+    public get attachedNode() {
+        return this._attachedNode;
+    }
+
     /**
      * Instantiates a gizmo manager
      * @param _scene the scene to overlay the gizmos on top of
@@ -370,6 +400,15 @@ export class GizmoManager implements IDisposable {
                 this._gizmoAxisCache.set(k, v);
             });
         }
+    }
+
+    /**
+     * Force release the drag action by code
+     */
+    public releaseDrag() {
+        [this.gizmos.positionGizmo, this.gizmos.rotationGizmo, this.gizmos.scaleGizmo, this.gizmos.boundingBoxGizmo].forEach((gizmo) => {
+            gizmo?.releaseDrag();
+        });
     }
 
     /**
