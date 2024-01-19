@@ -182,6 +182,7 @@ export class WebXRInputSource {
      * @param xrFrame xr frame to update the pose with
      * @param referenceSpace reference space to use
      * @param xrCamera the xr camera, used for parenting
+     * @param xrSessionManager the session manager used to get the world reference system
      */
     public updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace, xrCamera: WebXRCamera, xrSessionManager: WebXRSessionManager) {
         const pose = xrFrame.getPose(this.inputSource.targetRaySpace, referenceSpace);

@@ -389,6 +389,7 @@ export class WebXRHand implements IDisposable {
      * Sets the current hand mesh to render for the WebXRHand.
      * @param handMesh The rigged hand mesh that will be tracked to the user's hand.
      * @param rigMapping The mapping from XRHandJoint to bone names to use with the mesh.
+     * @param xrSessionManager The XRSessionManager used to initialize the hand mesh.
      */
     public setHandMesh(handMesh: AbstractMesh, rigMapping: Nullable<XRHandMeshRigMapping>, xrSessionManager?: WebXRSessionManager) {
         this._handMesh = handMesh;
@@ -419,7 +420,7 @@ export class WebXRHand implements IDisposable {
      * @param xrFrame The latest frame received from WebXR.
      * @param referenceSpace The current viewer reference space.
      */
-    public updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace, xrSessionManager: WebXRSessionManager) {
+    public updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace) {
         const hand = this.xrController.inputSource.hand;
         if (!hand) {
             return;
