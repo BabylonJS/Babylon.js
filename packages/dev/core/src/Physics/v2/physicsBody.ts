@@ -62,7 +62,7 @@ export class PhysicsBody {
 
     private _isDisposed = false;
 
-    private _shape: Nullable<PhysicsShape> | undefined;
+    private _shape: Nullable<PhysicsShape> = null;
 
     private _motionType: PhysicsMotionType;
 
