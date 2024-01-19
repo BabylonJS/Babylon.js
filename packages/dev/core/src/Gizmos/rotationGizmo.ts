@@ -21,6 +21,8 @@ import type { GizmoManager } from "./gizmoManager";
  * Interface for rotation gizmo
  */
 export interface IRotationGizmo extends IGizmo {
+    /** True when the mouse pointer is dragging a gizmo mesh */
+    readonly isDragging: boolean;
     /** Internal gizmo used for interactions on the x axis */
     xGizmo: IPlaneRotationGizmo;
     /** Internal gizmo used for interactions on the y axis */
@@ -171,6 +173,13 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
      */
     public get isHovered() {
         return this.xGizmo.isHovered || this.yGizmo.isHovered || this.zGizmo.isHovered;
+    }
+
+    /**
+     * True when the mouse pointer is dragging a gizmo mesh
+     */
+    public get isDragging() {
+        return this.xGizmo.dragBehavior.dragging || this.yGizmo.dragBehavior.dragging || this.zGizmo.dragBehavior.dragging;
     }
 
     /**

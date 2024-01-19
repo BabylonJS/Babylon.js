@@ -107,6 +107,21 @@ export class GizmoManager implements IDisposable {
     }
 
     /**
+     * True when the mouse pointer is dragging a gizmo mesh
+     */
+    public get isDragging() {
+        let dragging = false;
+
+        [this.gizmos.positionGizmo, this.gizmos.rotationGizmo, this.gizmos.scaleGizmo, this.gizmos.boundingBoxGizmo].forEach((gizmo) => {
+            if (gizmo && gizmo.isDragging) {
+                dragging = true;
+            }
+        });
+
+        return dragging;
+    }
+
+    /**
      * Ratio for the scale of the gizmo (Default: 1)
      */
     public set scaleRatio(value: number) {
