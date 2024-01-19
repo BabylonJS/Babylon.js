@@ -1732,7 +1732,9 @@ export class NodeMaterial extends PushMaterial {
         super.dispose(forceDisposeEffect, forceDisposeTextures, notBoundToMesh);
     }
 
-    /** Creates the node editor window. */
+    /** Creates the node editor window.
+     * @param additionalConfig Define the configuration of the editor
+     */
     private _createNodeEditor(additionalConfig?: any) {
         const nodeEditorConfig: any = {
             nodeMaterial: this,

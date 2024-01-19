@@ -28,6 +28,7 @@ export class PhysicsEngine implements IPhysicsEngine {
     public getPluginVersion(): number {
         return this._physicsPlugin.getPluginVersion();
     }
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Factory used to create the default physics plugin.
      * @returns The default physics plugin
@@ -149,8 +150,7 @@ export class PhysicsEngine implements IPhysicsEngine {
         }
     }
     /**
-     * Returns an array of bodies added to this engine
-
+     * @returns an array of bodies added to this engine
      */
     public getBodies(): Array<PhysicsBody> {
         return this._physicsBodies;

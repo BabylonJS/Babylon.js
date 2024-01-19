@@ -230,7 +230,7 @@ export function serializeAsMatrix(sourceName?: string) {
 /**
  * Decorator used to define property that can be serialized as reference to a camera
  * @param sourceName defines the name of the property to decorate
- * @returns PropertyDecorator
+ * @returns Property Decorator
  */
 export function serializeAsCameraReference(sourceName?: string) {
     return generateSerializableMember(11, sourceName); // camera reference member

@@ -39,6 +39,8 @@ export const MarkerArrowId = "arrow";
 /**
  * This component draws a SVG line between two points, with an optional marker
  * indicating direction
+ * @param props properties
+ * @returns graph line element
  */
 export const GraphLine: FC<IGraphLineProps> = (props: IGraphLineProps) => {
     const { id, x1, x2, y1, y2, selected, directional = true } = props;

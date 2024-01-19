@@ -1162,7 +1162,7 @@ export class Tools {
         return DecodeBase64UrlToBinary(uri);
     }
 
-    // eslint-disable-next-line jsdoc/require-returns-check
+    // eslint-disable-next-line jsdoc/require-returns-check, jsdoc/require-param
     /**
      * @returns the absolute URL of a given (relative) url
      */

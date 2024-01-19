@@ -263,6 +263,7 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
     }
     /**
      * Exposes the properties to the UI?
+     * @returns - boolean indicating if the block has properties or not
      */
     protected _dumpPropertiesCode() {
         const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.manhattanDistance = ${this.manhattanDistance};\n`;
@@ -271,6 +272,7 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
     }
     /**
      * Exposes the properties to the Serialize?
+     * @returns - a serialized object
      */
     public serialize(): any {
         const serializationObject = super.serialize();

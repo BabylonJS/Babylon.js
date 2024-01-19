@@ -30,6 +30,7 @@ export class FlowGraphCoordinateTransformBlock extends FlowGraphBlock {
 
     /**
      * Creates a new FlowGraphCoordinateTransformBlock
+     * @param config optional configuration for this block
      */
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);

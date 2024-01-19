@@ -55,6 +55,9 @@ export const removeLayoutRowAndRedistributePercentages = (layout: Layout, column
 
 /**
  * Add a percentage string to a number
+ * @param p1 the percentage string
+ * @param p2 the number
+ * @returns the sum of the percentage string and the number
  */
 export const addPercentageStringToNumber = (p1: string, p2: number): number => {
     // Convert both values to numbers
@@ -68,6 +71,7 @@ export const addPercentageStringToNumber = (p1: string, p2: number): number => {
 /**
  * Parses a percentage string into a number
  * @param p the percentage string
+ * @returns the parsed number
  */
 export const parsePercentage = (p: string): number => {
     return Number.parseFloat(p.replace("%", ""));

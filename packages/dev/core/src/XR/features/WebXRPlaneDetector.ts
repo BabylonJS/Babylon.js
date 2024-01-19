@@ -251,6 +251,7 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
     /**
      * avoiding using Array.find for global support.
      * @param xrPlane the plane to find in the array
+     * @returns the index of the plane in the array or -1 if not found
      */
     private _findIndexInPlaneArray(xrPlane: XRPlane) {
         for (let i = 0; i < this._detectedPlanes.length; ++i) {

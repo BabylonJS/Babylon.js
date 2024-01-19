@@ -597,7 +597,8 @@ export class Image extends Control {
 
     /**
      * Checks for svg document with icon id present
-     * @param value
+     * @param value the source svg
+     * @returns the svg
      */
     private _svgCheck(value: string): string {
         if (window.SVGSVGElement && value.search(/.svg#/gi) !== -1 && value.indexOf("#") === value.lastIndexOf("#")) {
