@@ -1095,7 +1095,7 @@ export class Camera extends Node {
      * @param transform Defines the transform to apply to the ray, by default the world matrix is used to create a workd space ray
      * @param origin Defines the start point of the ray which defaults to the camera position
      * @returns the forward ray
-    */
+     */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public getForwardRay(length = 100, transform?: Matrix, origin?: Vector3): Ray {
         throw _WarnImport("Ray");
