@@ -55,6 +55,10 @@ export interface IPositionGizmo extends IGizmo {
      * @param cache Gizmo axis definition used for reactive gizmo UI
      */
     addToAxisCache(mesh: Mesh, cache: GizmoAxisCache): void;
+    /**
+     * Force release the drag action by code
+     */
+    releaseDrag(): void;
 }
 
 /**
@@ -331,6 +335,17 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
      */
     public addToAxisCache(mesh: Mesh, cache: GizmoAxisCache) {
         this._gizmoAxisCache.set(mesh, cache);
+    }
+    /**
+     * Force release the drag action by code
+     */
+    public releaseDrag() {
+        this.xGizmo.dragBehavior.releaseDrag();
+        this.yGizmo.dragBehavior.releaseDrag();
+        this.zGizmo.dragBehavior.releaseDrag();
+        this.xPlaneGizmo.dragBehavior.releaseDrag();
+        this.yPlaneGizmo.dragBehavior.releaseDrag();
+        this.zPlaneGizmo.dragBehavior.releaseDrag();
     }
 
     /**

@@ -386,6 +386,15 @@ export class GizmoManager implements IDisposable {
     }
 
     /**
+     * Force release the drag action by code
+     */
+    public releaseDrag() {
+        [this.gizmos.positionGizmo, this.gizmos.rotationGizmo, this.gizmos.scaleGizmo, this.gizmos.boundingBoxGizmo].forEach((gizmo) => {
+            gizmo?.releaseDrag();
+        });
+    }
+
+    /**
      * Disposes of the gizmo manager
      */
     public dispose() {
