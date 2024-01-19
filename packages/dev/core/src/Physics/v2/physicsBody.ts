@@ -196,7 +196,7 @@ export class PhysicsBody {
      * This method is useful for retrieving the physics shape associated with this object,
      * which can be used to apply physical forces to the object or to detect collisions.
      */
-    public get shape(): Nullable<PhysicsShape> | undefined {
+    public get shape(): Nullable<PhysicsShape> {
         return this._shape;
     }
 
