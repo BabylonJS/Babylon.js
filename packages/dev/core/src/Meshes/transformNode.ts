@@ -220,7 +220,7 @@ export class TransformNode extends Node {
     }
 
     /**
-     * return true if pivot matrix must be cancelled in the world matrix. When this parameter is set to true (default), the inverse of the pivot matrix is also applied at the end to cancel the transformation effect.
+     * @returns true if pivot matrix must be cancelled in the world matrix. When this parameter is set to true (default), the inverse of the pivot matrix is also applied at the end to cancel the transformation effect.
      */
     public isUsingPostMultiplyPivotMatrix(): boolean {
         return this._postMultiplyPivotMatrix;

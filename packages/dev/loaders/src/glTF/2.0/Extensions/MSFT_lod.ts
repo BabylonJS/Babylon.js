@@ -347,7 +347,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
     }
 
     /**
-     * Gets an array of LOD properties from lowest to highest.
+     * @returns an array of LOD properties from lowest to highest.
      * @param context
      * @param property
      * @param array

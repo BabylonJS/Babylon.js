@@ -854,14 +854,14 @@ export class StandardMaterial extends PushMaterial {
     }
 
     /**
-     * Specifies whether or not the alpha value of the diffuse texture should be used for alpha blending.
+     * @returns whether or not the alpha value of the diffuse texture should be used for alpha blending.
      */
     protected _shouldUseAlphaFromDiffuseTexture(): boolean {
         return this._diffuseTexture != null && this._diffuseTexture.hasAlpha && this._useAlphaFromDiffuseTexture && this._transparencyMode !== Material.MATERIAL_OPAQUE;
     }
 
     /**
-     * Specifies whether or not there is a usable alpha channel for transparency.
+     * @returns whether or not there is a usable alpha channel for transparency.
      */
     protected _hasAlphaChannel(): boolean {
         return (this._diffuseTexture != null && this._diffuseTexture.hasAlpha) || this._opacityTexture != null;

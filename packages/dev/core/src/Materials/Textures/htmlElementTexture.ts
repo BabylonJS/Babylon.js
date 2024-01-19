@@ -128,7 +128,7 @@ export class HtmlElementTexture extends BaseTexture {
     }
 
     /**
-     * Returns the texture matrix used in most of the material.
+     * @returns the texture matrix used in most of the material.
      */
     public getTextureMatrix(): Matrix {
         return this._textureMatrix;

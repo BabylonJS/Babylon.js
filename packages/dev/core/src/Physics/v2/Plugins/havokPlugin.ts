@@ -144,6 +144,7 @@ class MeshAccumulator {
     /**
      * Allocate and populate the vertex positions inside the physics plugin.
      *
+     * @param plugin - The plugin to allocate the memory in.
      * @returns An array of floats, whose backing memory is inside the plugin. The array contains the
      * positions of the mesh vertices, where a position is defined by three floats. You must call
      * freeBuffer() on the returned array once you have finished with it, in order to free the
@@ -172,6 +173,7 @@ class MeshAccumulator {
     /**
      * Allocate and populate the triangle indices inside the physics plugin
      *
+     * @param plugin - The plugin to allocate the memory in.
      * @returns A new Int32Array, whose backing memory is inside the plugin. The array contains the indices
      * of the triangle positions, where a single triangle is defined by three indices. You must call
      * freeBuffer() on this array once you have finished with it, to free the memory inside the plugin..

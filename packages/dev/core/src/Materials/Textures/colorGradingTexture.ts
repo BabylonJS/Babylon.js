@@ -79,7 +79,7 @@ export class ColorGradingTexture extends BaseTexture {
     }
 
     /**
-     * Returns the texture matrix used in most of the material.
+     * @returns the texture matrix used in most of the material.
      * This is not used in color grading but keep for troubleshooting purpose (easily swap diffuse by colorgrading to look in).
      */
     public getTextureMatrix(): Matrix {
@@ -88,6 +88,7 @@ export class ColorGradingTexture extends BaseTexture {
 
     /**
      * Occurs when the file being loaded is a .3dl LUT file.
+     * @returns the 3D LUT texture
      */
     private _load3dlTexture() {
         const engine = this._getEngine()!;
@@ -249,6 +250,7 @@ export class ColorGradingTexture extends BaseTexture {
 
     /**
      * Clones the color grading texture.
+     * @returns the cloned texture
      */
     public clone(): ColorGradingTexture {
         const newTexture = new ColorGradingTexture(this.url, this.getScene() || this._getEngine()!);
@@ -293,6 +295,7 @@ export class ColorGradingTexture extends BaseTexture {
 
     /**
      * Serializes the LUT texture to json format.
+     * @returns The JSON representation of the texture
      */
     public serialize(): any {
         if (!this.name) {

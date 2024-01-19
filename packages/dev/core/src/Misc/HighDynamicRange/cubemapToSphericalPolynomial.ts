@@ -106,6 +106,7 @@ export class CubeMapToSphericalPolynomialTools {
      * See https://www.rorydriscoll.com/2012/01/15/cubemap-texel-solid-angle/
      * @param x
      * @param y
+     * @returns the area
      */
     private static _AreaElement(x: number, y: number): number {
         return Math.atan2(x * y, Math.sqrt(x * x + y * y + 1));

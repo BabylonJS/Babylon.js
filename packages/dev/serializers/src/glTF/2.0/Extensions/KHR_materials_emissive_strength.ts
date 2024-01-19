@@ -35,6 +35,7 @@ export class KHR_materials_emissive_strength implements IGLTFExporterExtensionV2
      * @param context GLTF context of the material
      * @param node exported GLTF node
      * @param babylonMaterial corresponding babylon material
+     * @returns promise, resolves with the material
      */
     public postExportMaterialAsync(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
         return new Promise((resolve) => {

@@ -225,7 +225,6 @@ export class TexturePacker {
     /**
      * Starts the package process
      * @param resolve The promises resolution function
-     * @returns TexturePacker
      */
     private _createFrames(resolve: () => void) {
         const dtSize = this._calculateSize();

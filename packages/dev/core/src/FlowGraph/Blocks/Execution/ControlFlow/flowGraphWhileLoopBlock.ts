@@ -55,7 +55,7 @@ export class FlowGraphWhileLoopBlock extends FlowGraphExecutionBlockWithOutSigna
     }
 
     /**
-     * the class name of the block.
+     * @returns class name of the block.
      */
     public getClassName(): string {
         return FlowGraphWhileLoopBlock.ClassName;

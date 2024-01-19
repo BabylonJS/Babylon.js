@@ -636,6 +636,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     /**
      * Generates a mapping from XRHandJoint to bone name for the default hand mesh.
      * @param handedness The handedness being mapped for.
+     * @returns A mapping from XRHandJoint to bone name.
      */
     private static _GenerateDefaultHandMeshRigMapping(handedness: XRHandedness): XRHandMeshRigMapping {
         const H = handedness == "right" ? "R" : "L";
@@ -695,6 +696,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     /**
      * Check if the needed objects are defined.
      * This does not mean that the feature is enabled, but that the objects needed are well defined.
+     * @returns true if the needed objects for this feature are defined
      */
     public isCompatible(): boolean {
         return typeof XRHand !== "undefined";

@@ -220,6 +220,7 @@ export class PBRCustomMaterial extends PBRMaterial {
      * @param defines list of defines
      * @param attributes list of attributes
      * @param options options to compile the shader
+     * @returns the shader name
      */
     public Builder(
         shaderName: string,
@@ -335,6 +336,7 @@ export class PBRCustomMaterial extends PBRMaterial {
      * @param name the name of the uniform to add
      * @param kind the type of the uniform to add
      * @param param the value of the uniform to add
+     * @returns the current material
      */
     public AddUniform(name: string, kind: string, param: any): PBRCustomMaterial {
         if (!this._customUniform) {
@@ -359,6 +361,7 @@ export class PBRCustomMaterial extends PBRMaterial {
     /**
      * Adds a custom attribute
      * @param name the name of the attribute
+     * @returns the current material
      */
     public AddAttribute(name: string): PBRCustomMaterial {
         if (!this._customAttributes) {
@@ -373,6 +376,7 @@ export class PBRCustomMaterial extends PBRMaterial {
     /**
      * Sets the code on Fragment_Begin portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Fragment_Begin(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Begin = shaderPart;
@@ -382,6 +386,7 @@ export class PBRCustomMaterial extends PBRMaterial {
     /**
      * Sets the code on Fragment_Definitions portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Fragment_Definitions(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Definitions = shaderPart;
@@ -391,6 +396,7 @@ export class PBRCustomMaterial extends PBRMaterial {
     /**
      * Sets the code on Fragment_MainBegin portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Fragment_MainBegin(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_MainBegin = shaderPart;
@@ -400,6 +406,7 @@ export class PBRCustomMaterial extends PBRMaterial {
     /**
      * Sets the code on Fragment_Custom_Albedo portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Fragment_Custom_Albedo(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Custom_Albedo = shaderPart.replace("result", "surfaceAlbedo");
@@ -409,6 +416,7 @@ export class PBRCustomMaterial extends PBRMaterial {
     /**
      * Sets the code on Fragment_Custom_Alpha portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Fragment_Custom_Alpha(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Custom_Alpha = shaderPart.replace("result", "alpha");
@@ -418,6 +426,7 @@ export class PBRCustomMaterial extends PBRMaterial {
     /**
      * Sets the code on Fragment_Before_Lights portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Fragment_Before_Lights(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Before_Lights = shaderPart;
@@ -427,6 +436,7 @@ export class PBRCustomMaterial extends PBRMaterial {
     /**
      * Sets the code on Fragment_Custom_MetallicRoughness portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Fragment_Custom_MetallicRoughness(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Custom_MetallicRoughness = shaderPart;
@@ -436,6 +446,7 @@ export class PBRCustomMaterial extends PBRMaterial {
     /**
      * Sets the code on Fragment_Custom_MicroSurface portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Fragment_Custom_MicroSurface(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Custom_MicroSurface = shaderPart;
@@ -445,6 +456,7 @@ export class PBRCustomMaterial extends PBRMaterial {
     /**
      * Sets the code on Fragment_Before_Fog portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Fragment_Before_Fog(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Before_Fog = shaderPart;
@@ -454,6 +466,7 @@ export class PBRCustomMaterial extends PBRMaterial {
     /**
      * Sets the code on Fragment_Before_FinalColorComposition portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Fragment_Before_FinalColorComposition(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Before_FinalColorComposition = shaderPart;
@@ -463,6 +476,7 @@ export class PBRCustomMaterial extends PBRMaterial {
     /**
      * Sets the code on Fragment_Before_FragColor portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Fragment_Before_FragColor(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Before_FragColor = shaderPart.replace("result", "color");
@@ -472,6 +486,7 @@ export class PBRCustomMaterial extends PBRMaterial {
     /**
      * Sets the code on Fragment_MainEnd portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Fragment_MainEnd(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_MainEnd = shaderPart;
@@ -481,6 +496,7 @@ export class PBRCustomMaterial extends PBRMaterial {
     /**
      * Sets the code on Vertex_Begin portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Vertex_Begin(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Vertex_Begin = shaderPart;
@@ -490,6 +506,7 @@ export class PBRCustomMaterial extends PBRMaterial {
     /**
      * Sets the code on Vertex_Definitions portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Vertex_Definitions(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Vertex_Definitions = shaderPart;
@@ -499,6 +516,7 @@ export class PBRCustomMaterial extends PBRMaterial {
     /**
      * Sets the code on Vertex_MainBegin portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Vertex_MainBegin(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Vertex_MainBegin = shaderPart;
@@ -508,6 +526,7 @@ export class PBRCustomMaterial extends PBRMaterial {
     /**
      * Sets the code on Vertex_Before_PositionUpdated portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Vertex_Before_PositionUpdated(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Vertex_Before_PositionUpdated = shaderPart.replace("result", "positionUpdated");
@@ -517,6 +536,7 @@ export class PBRCustomMaterial extends PBRMaterial {
     /**
      * Sets the code on Vertex_Before_NormalUpdated portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Vertex_Before_NormalUpdated(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Vertex_Before_NormalUpdated = shaderPart.replace("result", "normalUpdated");
@@ -526,6 +546,7 @@ export class PBRCustomMaterial extends PBRMaterial {
     /**
      * Sets the code on Vertex_After_WorldPosComputed portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Vertex_After_WorldPosComputed(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Vertex_After_WorldPosComputed = shaderPart;
@@ -535,6 +556,7 @@ export class PBRCustomMaterial extends PBRMaterial {
     /**
      * Sets the code on Vertex_MainEnd portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Vertex_MainEnd(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Vertex_MainEnd = shaderPart;

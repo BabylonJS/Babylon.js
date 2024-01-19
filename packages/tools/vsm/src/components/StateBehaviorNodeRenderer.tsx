@@ -10,6 +10,7 @@ export interface IStateBehaviorNodeRendererProps {}
 
 /**
  * This component displays the Actions of the currently selected state.
+ * @param props properties
  * @returns Node renderer element
  */
 export const StateBehaviorNodeRenderer = (props: IStateBehaviorNodeRendererProps) => {

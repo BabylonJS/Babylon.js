@@ -27,7 +27,7 @@ export class FlowGraphStopAnimationBlock extends FlowGraphExecutionBlockWithOutS
     }
 
     /**
-     * the class name of the block.
+     * @returns class name of the block.
      */
     public getClassName(): string {
         return "FGStopAnimationBlock";

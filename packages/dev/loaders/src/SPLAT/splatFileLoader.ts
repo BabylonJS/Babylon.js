@@ -54,6 +54,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
      * Loads a .ply from data array buffer
      * if data array buffer is not ply, returns the original buffer
      * @param data the data to load
+     * @returns the loaded buffer
      */
     private _loadPLY(data: any): ArrayBuffer {
         const ubuf = new Uint8Array(data);
@@ -202,19 +203,18 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
      * @param rootUrl root url to load from
      * @returns a promise containing the loaded meshes, particles, skeletons and animations
      */
-    public importMeshAsync(_meshesNames: any, scene: Scene, data: any, rootUrl: string): Promise<ISceneLoaderAsyncResult> {
+    public async importMeshAsync(_meshesNames: any, scene: Scene, data: any, rootUrl: string): Promise<ISceneLoaderAsyncResult> {
         const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene);
-        return gaussianSplatting.loadFileAsync(rootUrl).then(() => {
-            return {
-                meshes: [gaussianSplatting],
-                particleSystems: [],
-                skeletons: [],
-                animationGroups: [],
-                transformNodes: [],
-                geometries: [],
-                lights: [],
-            };
-        });
+        await gaussianSplatting.loadFileAsync(rootUrl);
+        return {
+            meshes: [gaussianSplatting],
+            particleSystems: [],
+            skeletons: [],
+            animationGroups: [],
+            transformNodes: [],
+            geometries: [],
+            lights: [],
+        };
     }
 
     /**
@@ -229,6 +229,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         return gaussianSplatting.loadDataAsync(this._loadPLY(data));
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Load into an asset container.
      * @param _scene The scene to load into

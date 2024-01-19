@@ -248,9 +248,6 @@ const rules = {
                 checkDestructuredRoots: false,
                 checkRestProperty: false,
                 enableFixer: false,
-                contexts: [
-                    // {"comment":"JsdocBlock:has(JsdocTag[tag=\"hidden\"])"}
-                ],
             },
         ],
         "jsdoc/require-param-name": "error",

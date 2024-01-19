@@ -144,6 +144,7 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
     /**
      * Check if the needed objects are defined.
      * This does not mean that the feature is enabled, but that the objects needed are well defined.
+     * @returns true if the initial compatibility test passed
      */
     public isCompatible(): boolean {
         return typeof XRPlane !== "undefined";

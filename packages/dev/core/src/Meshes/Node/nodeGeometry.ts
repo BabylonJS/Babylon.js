@@ -57,7 +57,7 @@ export class NodeGeometry {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private BJSNODEGEOMETRYEDITOR = this._getGlobalNodeGeometryEditor();
 
-    /** Get the inspector from bundle or global */
+    /** @returns the inspector from bundle or global */
     private _getGlobalNodeGeometryEditor(): any {
         // UMD Global name detection from Webpack Bundle UMD Name.
         if (typeof NODEGEOMETRYEDITOR !== "undefined") {
@@ -207,7 +207,10 @@ export class NodeGeometry {
         });
     }
 
-    /** Creates the node editor window. */
+    /**
+     * Creates the node editor window.
+     * @param additionalConfig Additional configuration for the NGE
+     */
     private _createNodeEditor(additionalConfig?: any) {
         const nodeEditorConfig: any = {
             nodeGeometry: this,
@@ -550,6 +553,7 @@ export class NodeGeometry {
     /**
      * Makes a duplicate of the current geometry.
      * @param name defines the name to use for the new geometry
+     * @returns the new geometry
      */
     public clone(name: string): NodeGeometry {
         const serializationObject = this.serialize();

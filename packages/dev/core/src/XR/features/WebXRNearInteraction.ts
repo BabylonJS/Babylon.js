@@ -322,7 +322,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
     /**
      * Filter used for near interaction pick and hover
-     * @param mesh
+     * @param mesh the mesh candidate to be pick-filtered
+     * @returns if the mesh should be included in the list of candidate meshes for near interaction
      */
     private _nearPickPredicate(mesh: AbstractMesh): boolean {
         return mesh.isEnabled() && mesh.isVisible && mesh.isPickable && mesh.isNearPickable;
@@ -330,7 +331,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
     /**
      * Filter used for near interaction grab
-     * @param mesh
+     * @param mesh the mesh candidate to be pick-filtered
+     * @returns if the mesh should be included in the list of candidate meshes for near interaction
      */
     private _nearGrabPredicate(mesh: AbstractMesh): boolean {
         return mesh.isEnabled() && mesh.isVisible && mesh.isPickable && mesh.isNearGrabbable;
@@ -338,7 +340,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
     /**
      * Filter used for any near interaction
-     * @param mesh
+     * @param mesh the mesh candidate to be pick-filtered
+     * @returns if the mesh should be included in the list of candidate meshes for near interaction
      */
     private _nearInteractionPredicate(mesh: AbstractMesh): boolean {
         return mesh.isEnabled() && mesh.isVisible && mesh.isPickable && (mesh.isNearPickable || mesh.isNearGrabbable);

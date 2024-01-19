@@ -36,6 +36,8 @@ export interface IFlexibleTabProps {
  * to activate or drag to reorder. It also listens for
  * drop events if the user wants to drop another tab
  * after it.
+ * @param props properties
+ * @returns FlexibleTab element
  */
 export const FlexibleTab: FC<IFlexibleTabProps> = (props) => {
     const [{ isDragging }, drag] = useDrag(

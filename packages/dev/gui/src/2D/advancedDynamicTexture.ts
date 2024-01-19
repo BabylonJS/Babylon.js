@@ -1542,7 +1542,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
 
     /**
-     * Returns true if all the GUI components are ready to render
+     * @returns true if all the GUI components are ready to render
      */
     public guiIsReady(): boolean {
         return this._rootContainer.isReady();

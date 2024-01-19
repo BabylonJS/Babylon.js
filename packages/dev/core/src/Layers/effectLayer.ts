@@ -1017,6 +1017,7 @@ export abstract class EffectLayer {
     /**
      * Defines whether the current material of the mesh should be use to render the effect.
      * @param mesh defines the current mesh to render
+     * @returns true if the mesh material should be use
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected _useMeshMaterial(mesh: AbstractMesh): boolean {

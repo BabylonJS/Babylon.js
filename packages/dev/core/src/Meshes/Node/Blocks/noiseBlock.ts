@@ -160,13 +160,15 @@ export class NoiseBlock extends NodeGeometryBlock {
 
     /**
      * Gets a perlin noise value
-     * @param octaves
-     * @param roughness
-     * @param position
+     * @param octaves number of octaves
+     * @param roughness roughness
+     * @param _position position vector
+     * @param offset offset vector
+     * @param scale scale value
      * @returns a value between 0 and 1
      * @see Based on https://github.com/blender/blender/blob/main/source/blender/blenlib/intern/noise.cc#L533
      */
-    noise(octaves: number, roughness: number, _position: Vector3, offset: Vector3, scale: number) {
+    public noise(octaves: number, roughness: number, _position: Vector3, offset: Vector3, scale: number) {
         const position = new Vector3(_position.x * scale + offset.x, _position.y * scale + offset.y, _position.z * scale + offset.z);
 
         let fscale = 1.0;

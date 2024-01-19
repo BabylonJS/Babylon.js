@@ -713,6 +713,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      * Softbody vertices (nodes) are in world space and to match this
      * The object's position and rotation is set to zero and so its vertices are also then set in world space
      * @param impostor to create the softbody for
+     * @returns the number of vertices added to the softbody
      */
     private _softVertexData(impostor: PhysicsImpostor): VertexData {
         const object = impostor.object;
@@ -766,6 +767,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     /**
      * Create an impostor's soft body
      * @param impostor to create the softbody for
+     * @returns the softbody
      */
     private _createSoftbody(impostor: PhysicsImpostor) {
         const object = impostor.object;
@@ -811,6 +813,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     /**
      * Create cloth for an impostor
      * @param impostor to create the softbody for
+     * @returns the cloth
      */
     private _createCloth(impostor: PhysicsImpostor) {
         const object = impostor.object;
@@ -855,6 +858,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     /**
      * Create rope for an impostor
      * @param impostor to create the softbody for
+     * @returns the rope
      */
     private _createRope(impostor: PhysicsImpostor) {
         let len: number;
@@ -911,6 +915,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     /**
      * Create a custom physics impostor shape using the plugin's onCreateCustomShape handler
      * @param impostor to create the custom physics shape for
+     * @returns the custom physics shape
      */
     private _createCustom(impostor: PhysicsImpostor): any {
         let returnValue: any = null;

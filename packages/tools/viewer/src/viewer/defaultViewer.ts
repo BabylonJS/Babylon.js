@@ -116,6 +116,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
 
     /**
      * This will be executed when the templates initialize.
+     * @returns a promise that will be resolved when the templates are loaded
      */
     protected _onTemplatesLoaded() {
         this.showLoadingScreen();
@@ -516,18 +517,21 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
      * overriding the AbstractViewer's loadModel.
      * The scene will automatically be cleared of the old models, if exist.
      * @param model the configuration object (or URL) to load.
+     * @returns a promise that will be resolved when the model is loaded
      */
-    public loadModel(model?: string | File | IModelConfiguration): Promise<ViewerModel> {
+    public async loadModel(model?: string | File | IModelConfiguration): Promise<ViewerModel> {
         if (!model) {
             model = this.configuration.model;
         }
         this.showLoadingScreen();
-        return super.loadModel(model!, true).catch((error) => {
+        try {
+            return await super.loadModel(model!, true);
+        } catch (error) {
             Logger.Log(error);
             this.hideLoadingScreen();
             this.showOverlayScreen("error");
-            return Promise.reject(error);
-        });
+            return await Promise.reject(error);
+        }
     }
 
     private _onModelLoaded = (model: ViewerModel) => {
@@ -550,6 +554,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
      * Show the overlay and the defined sub-screen.
      * Mainly used for help and errors
      * @param subScreen the name of the subScreen. Those can be defined in the configuration object
+     * @returns a promise that will be resolved when the overlay is shown
      */
     public showOverlayScreen(subScreen: string) {
         const template = this.templateManager.getTemplate("overlay");
@@ -578,6 +583,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
 
     /**
      * Hide the overlay screen.
+     * @returns a promise that will be resolved when the overlay is hidden
      */
     public hideOverlayScreen() {
         const template = this.templateManager.getTemplate("overlay");
@@ -608,6 +614,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
      * show the viewer (in case it was hidden)
      *
      * @param visibilityFunction an optional function to execute in order to show the container
+     * @returns a promise that will be resolved when the viewer is shown
      */
     public show(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template> {
         const template = this.templateManager.getTemplate("main");
@@ -622,6 +629,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
      * hide the viewer (in case it is visible)
      *
      * @param visibilityFunction an optional function to execute in order to hide the container
+     * @returns a promise that will be resolved when the viewer is hidden
      */
     public hide(visibilityFunction?: (template: Template) => Promise<Template>) {
         const template = this.templateManager.getTemplate("main");
@@ -635,6 +643,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
     /**
      * Show the loading screen.
      * The loading screen can be configured using the configuration object
+     * @returns a promise that will be resolved when the loading screen is shown
      */
     public showLoadingScreen() {
         const template = this.templateManager.getTemplate("loadingScreen");
@@ -662,6 +671,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
 
     /**
      * Hide the loading screen
+     * @returns a promise that will be resolved when the loading screen is hidden
      */
     public hideLoadingScreen() {
         const template = this.templateManager.getTemplate("loadingScreen");

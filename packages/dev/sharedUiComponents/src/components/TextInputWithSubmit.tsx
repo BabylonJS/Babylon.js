@@ -17,6 +17,8 @@ export interface ITextInputProps {
 
 /**
  * This component represents a text input that can be submitted or cancelled on buttons
+ * @param props properties
+ * @returns TextInputWithSubmit element
  */
 export const TextInputWithSubmit = (props: ITextInputProps) => {
     const [value, setValue] = useState("");
