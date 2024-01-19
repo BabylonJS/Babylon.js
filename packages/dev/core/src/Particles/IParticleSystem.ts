@@ -10,6 +10,7 @@ import type {
     SphereParticleEmitter,
     SphereDirectedParticleEmitter,
     CylinderParticleEmitter,
+    CylinderDirectedParticleEmitter,
     ConeParticleEmitter,
     // eslint-disable-next-line import/no-internal-modules
 } from "../Particles/EmitterTypes/index";
@@ -714,7 +715,7 @@ export interface IParticleSystem {
      * @param direction2 Particles are emitted between the direction1 and direction2 from within the cylinder
      * @returns the emitter
      */
-    createDirectedCylinderEmitter(radius: number, height: number, radiusRange: number, direction1: Vector3, direction2: Vector3): SphereDirectedParticleEmitter;
+    createDirectedCylinderEmitter(radius: number, height: number, radiusRange: number, direction1: Vector3, direction2: Vector3): CylinderDirectedParticleEmitter;
 
     /**
      * Creates a Cone Emitter for the particle system (emits from the cone to the particle position)
