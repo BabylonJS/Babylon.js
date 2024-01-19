@@ -153,6 +153,21 @@ export class GizmoManager implements IDisposable {
     public get coordinatesMode(): GizmoCoordinatesMode {
         return this._coordinatesMode;
     }
+
+    /**
+     * The mesh the gizmo's is attached to
+     */
+    public get attachedMesh() {
+        return this._attachedMesh;
+    }
+
+    /**
+     * The node the gizmo's is attached to
+     */
+    public get attachedNode() {
+        return this._attachedNode;
+    }
+
     /**
      * Instantiates a gizmo manager
      * @param _scene the scene to overlay the gizmos on top of
