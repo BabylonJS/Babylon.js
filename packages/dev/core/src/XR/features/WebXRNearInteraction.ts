@@ -455,7 +455,9 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                         const indexTipPose = _xrFrame.getJointPose!(xrIndexTip, this._xrSessionManager.referenceSpace);
                         if (indexTipPose && indexTipPose.transform) {
                             const axisRHSMultiplier = this._scene.useRightHandedSystem ? 1 : -1;
-                            TmpVectors.Vector3[0].set(indexTipPose.transform.position.x, indexTipPose.transform.position.y, indexTipPose.transform.position.z * axisRHSMultiplier);
+                            TmpVectors.Vector3[0]
+                                .set(indexTipPose.transform.position.x, indexTipPose.transform.position.y, indexTipPose.transform.position.z * axisRHSMultiplier)
+                                .scaleInPlace(this._xrSessionManager.worldScalingFactor);
                             TmpVectors.Quaternion[0].set(
                                 indexTipPose.transform.orientation.x,
                                 indexTipPose.transform.orientation.y,
