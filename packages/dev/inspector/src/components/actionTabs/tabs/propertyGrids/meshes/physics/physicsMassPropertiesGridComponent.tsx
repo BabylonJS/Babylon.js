@@ -34,6 +34,7 @@ export interface IPhysicsMassPropertiesGridComponentProps {
 /**
  * Component that displays the mass properties of a physics body.
  * @param props the component props
+ * @returns the component
  */
 export function PhysicsMassPropertiesGridComponent(props: IPhysicsMassPropertiesGridComponentProps) {
     const massProperties = props.body.getMassProperties(props.instanceIndex);

@@ -30,6 +30,7 @@ export interface IPhysicsMaterialGridComponentProps {
 /**
  * Component that displays the physic material properties of a physics body.
  * @param props the component props
+ * @returns the component
  */
 export function PhysicsMaterialGridComponent(props: IPhysicsMaterialGridComponentProps) {
     const material = props.body.shape?.material;

@@ -1235,6 +1235,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     /**
      * Gets the material associated with a physics shape.
      * @param shape - The shape to get the material from.
+     * @returns The material associated with the shape.
      */
     public getMaterial(shape: PhysicsShape): PhysicsMaterial {
         const hkMaterial = this._hknp.HP_Shape_GetMaterial(shape._pluginData)[1];
