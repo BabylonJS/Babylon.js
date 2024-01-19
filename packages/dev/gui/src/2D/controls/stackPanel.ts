@@ -248,8 +248,11 @@ export class StackPanel extends Container {
      * Serializes the current control
      * @param serializationObject defined the JSON serialized object
      */
-    public serialize(serializationObject: any) {
-        super.serialize(serializationObject);
+    public serialize(serializationObject: any, force: boolean) {
+        super.serialize(serializationObject, force);
+        if (!this.isSerializable && !force) {
+            return;
+        }
         serializationObject.manualWidth = this._manualWidth;
         serializationObject.manualHeight = this._manualHeight;
     }

@@ -643,8 +643,11 @@ export class Container extends Control {
      * Serializes the current control
      * @param serializationObject defined the JSON serialized object
      */
-    public serialize(serializationObject: any) {
-        super.serialize(serializationObject);
+    public serialize(serializationObject: any, force: boolean = false) {
+        super.serialize(serializationObject, force);
+        if (!this.isSerializable && !force) {
+            return;
+        }
 
         if (this.backgroundGradient) {
             serializationObject.backgroundGradient = {};
@@ -658,9 +661,11 @@ export class Container extends Control {
         serializationObject.children = [];
 
         for (const child of this.children) {
-            const childSerializationObject = {};
-            child.serialize(childSerializationObject);
-            serializationObject.children.push(childSerializationObject);
+            if (child.isSerializable || force) {
+                const childSerializationObject = {};
+                child.serialize(childSerializationObject);
+                serializationObject.children.push(childSerializationObject);
+            }
         }
     }
 
