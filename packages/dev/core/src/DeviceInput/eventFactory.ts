@@ -18,6 +18,7 @@ export class DeviceEventFactory {
      * @param currentState Current value for given input
      * @param deviceInputSystem Reference to DeviceInputSystem
      * @param elementToAttachTo HTMLElement to reference as target for inputs
+     * @param pointerId PointerId to use for pointer events
      * @returns IUIEvent object
      */
     public static CreateDeviceEvent(
@@ -53,6 +54,7 @@ export class DeviceEventFactory {
      * @param currentState Current value for given input
      * @param deviceInputSystem Reference to DeviceInputSystem
      * @param elementToAttachTo HTMLElement to reference as target for inputs
+     * @param pointerId PointerId to use for pointer events
      * @returns IUIEvent object (Pointer)
      */
     private static _CreatePointerEvent(

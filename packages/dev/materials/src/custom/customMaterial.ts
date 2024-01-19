@@ -218,6 +218,7 @@ export class CustomMaterial extends StandardMaterial {
      * @param samplers list of samplers
      * @param defines list of defines
      * @param attributes list of attributes
+     * @returns the shader name
      */
     public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[]): string {
         if (attributes && this._customAttributes && this._customAttributes.length > 0) {
@@ -305,6 +306,7 @@ export class CustomMaterial extends StandardMaterial {
      * @param name the name of the uniform to add
      * @param kind the type of the uniform to add
      * @param param the value of the uniform to add
+     * @returns the current material
      */
     public AddUniform(name: string, kind: string, param: any): CustomMaterial {
         if (!this._customUniform) {
@@ -329,6 +331,7 @@ export class CustomMaterial extends StandardMaterial {
     /**
      * Adds a custom attribute
      * @param name the name of the attribute
+     * @returns the current material
      */
     public AddAttribute(name: string): CustomMaterial {
         if (!this._customAttributes) {
@@ -343,6 +346,7 @@ export class CustomMaterial extends StandardMaterial {
     /**
      * Sets the code on Fragment_Begin portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Fragment_Begin(shaderPart: string): CustomMaterial {
         this.CustomParts.Fragment_Begin = shaderPart;
@@ -352,6 +356,7 @@ export class CustomMaterial extends StandardMaterial {
     /**
      * Sets the code on Fragment_Definitions portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Fragment_Definitions(shaderPart: string): CustomMaterial {
         this.CustomParts.Fragment_Definitions = shaderPart;
@@ -361,6 +366,7 @@ export class CustomMaterial extends StandardMaterial {
     /**
      * Sets the code on Fragment_MainBegin portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Fragment_MainBegin(shaderPart: string): CustomMaterial {
         this.CustomParts.Fragment_MainBegin = shaderPart;
@@ -370,6 +376,7 @@ export class CustomMaterial extends StandardMaterial {
     /**
      * Sets the code on Fragment_MainEnd portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Fragment_MainEnd(shaderPart: string): CustomMaterial {
         this.CustomParts.Fragment_MainEnd = shaderPart;
@@ -379,6 +386,7 @@ export class CustomMaterial extends StandardMaterial {
     /**
      * Sets the code on Fragment_Custom_Diffuse portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Fragment_Custom_Diffuse(shaderPart: string): CustomMaterial {
         this.CustomParts.Fragment_Custom_Diffuse = shaderPart.replace("result", "diffuseColor");
@@ -388,6 +396,7 @@ export class CustomMaterial extends StandardMaterial {
     /**
      * Sets the code on Fragment_Custom_Alpha portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Fragment_Custom_Alpha(shaderPart: string): CustomMaterial {
         this.CustomParts.Fragment_Custom_Alpha = shaderPart.replace("result", "alpha");
@@ -397,6 +406,7 @@ export class CustomMaterial extends StandardMaterial {
     /**
      * Sets the code on Fragment_Before_Lights portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Fragment_Before_Lights(shaderPart: string): CustomMaterial {
         this.CustomParts.Fragment_Before_Lights = shaderPart;
@@ -406,6 +416,7 @@ export class CustomMaterial extends StandardMaterial {
     /**
      * Sets the code on Fragment_Before_Fog portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Fragment_Before_Fog(shaderPart: string): CustomMaterial {
         this.CustomParts.Fragment_Before_Fog = shaderPart;
@@ -415,6 +426,7 @@ export class CustomMaterial extends StandardMaterial {
     /**
      * Sets the code on Fragment_Before_FragColor portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Fragment_Before_FragColor(shaderPart: string): CustomMaterial {
         this.CustomParts.Fragment_Before_FragColor = shaderPart.replace("result", "color");
@@ -424,6 +436,7 @@ export class CustomMaterial extends StandardMaterial {
     /**
      * Sets the code on Vertex_Begin portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Vertex_Begin(shaderPart: string): CustomMaterial {
         this.CustomParts.Vertex_Begin = shaderPart;
@@ -433,6 +446,7 @@ export class CustomMaterial extends StandardMaterial {
     /**
      * Sets the code on Vertex_Definitions portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Vertex_Definitions(shaderPart: string): CustomMaterial {
         this.CustomParts.Vertex_Definitions = shaderPart;
@@ -442,6 +456,7 @@ export class CustomMaterial extends StandardMaterial {
     /**
      * Sets the code on Vertex_MainBegin portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Vertex_MainBegin(shaderPart: string): CustomMaterial {
         this.CustomParts.Vertex_MainBegin = shaderPart;
@@ -451,6 +466,7 @@ export class CustomMaterial extends StandardMaterial {
     /**
      * Sets the code on Vertex_Before_PositionUpdated portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Vertex_Before_PositionUpdated(shaderPart: string): CustomMaterial {
         this.CustomParts.Vertex_Before_PositionUpdated = shaderPart.replace("result", "positionUpdated");
@@ -460,6 +476,7 @@ export class CustomMaterial extends StandardMaterial {
     /**
      * Sets the code on Vertex_Before_NormalUpdated portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Vertex_Before_NormalUpdated(shaderPart: string): CustomMaterial {
         this.CustomParts.Vertex_Before_NormalUpdated = shaderPart.replace("result", "normalUpdated");
@@ -469,6 +486,7 @@ export class CustomMaterial extends StandardMaterial {
     /**
      * Sets the code on Vertex_After_WorldPosComputed portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Vertex_After_WorldPosComputed(shaderPart: string): CustomMaterial {
         this.CustomParts.Vertex_After_WorldPosComputed = shaderPart;
@@ -478,6 +496,7 @@ export class CustomMaterial extends StandardMaterial {
     /**
      * Sets the code on Vertex_MainEnd portion
      * @param shaderPart the code string
+     * @returns the current material
      */
     public Vertex_MainEnd(shaderPart: string): CustomMaterial {
         this.CustomParts.Vertex_MainEnd = shaderPart;

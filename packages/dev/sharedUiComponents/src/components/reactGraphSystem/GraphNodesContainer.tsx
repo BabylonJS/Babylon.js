@@ -10,6 +10,8 @@ export interface IGraphContainerProps {
 
 /**
  * This component contains all the nodes and handles their dragging
+ * @param props properties
+ * @returns graph node container element
  */
 export const GraphNodesContainer: FC<IGraphContainerProps> = (props) => {
     const lastDragPos = useRef<Nullable<Vector2>>(null);

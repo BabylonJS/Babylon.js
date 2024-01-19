@@ -44,6 +44,7 @@ export abstract class BaseGradient {
      * If there are any changes or the context changed, regenerate the canvas gradient object. Else,
      * reuse the existing gradient.
      * @param context the context to create the gradient from
+     * @returns the canvas gradient
      */
     public getCanvasGradient(context: ICanvasRenderingContext) {
         if (this._gradientDirty || this._context !== context) {
@@ -90,7 +91,7 @@ export abstract class BaseGradient {
     }
 
     /**
-     * Type of the gradient
+     * @returns Type of the gradient
      */
     public getClassName() {
         return "BaseGradient";

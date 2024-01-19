@@ -81,7 +81,7 @@ export class InstancedMesh extends AbstractMesh {
     }
 
     /**
-     * Returns the string "InstancedMesh".
+     * @returns the string "InstancedMesh".
      */
     public getClassName(): string {
         return "InstancedMesh";
@@ -174,7 +174,7 @@ export class InstancedMesh extends AbstractMesh {
     }
 
     /**
-     * Returns the total number of vertices (integer).
+     * @returns the total number of vertices (integer).
      */
     public getTotalVertices(): number {
         return this._sourceMesh ? this._sourceMesh.getTotalVertices() : 0;
@@ -253,6 +253,7 @@ export class InstancedMesh extends AbstractMesh {
      * @param data defines the data source
      * @param updatable defines if the data must be flagged as updatable (false as default)
      * @param stride defines the vertex stride (optional)
+     * @returns the current mesh
      */
     public setVerticesData(kind: string, data: FloatArray, updatable?: boolean, stride?: number): AbstractMesh {
         if (this.sourceMesh) {
@@ -288,6 +289,7 @@ export class InstancedMesh extends AbstractMesh {
      * @param data defines the data source
      * @param updateExtends defines if extends info of the mesh must be updated (can be null). This is mostly useful for "position" kind
      * @param makeItUnique defines it the updated vertex buffer must be flagged as unique (false by default)
+     * @returns the source mesh
      */
     public updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): Mesh {
         if (this.sourceMesh) {
@@ -304,6 +306,7 @@ export class InstancedMesh extends AbstractMesh {
      * Returns the Mesh.
      * @param indices the source data
      * @param totalVertices defines the total number of vertices referenced by indices (could be null)
+     * @returns source mesh
      */
     public setIndices(indices: IndicesArray, totalVertices: Nullable<number> = null): Mesh {
         if (this.sourceMesh) {
@@ -334,7 +337,7 @@ export class InstancedMesh extends AbstractMesh {
     }
 
     /**
-     * Returns an array of indices (IndicesArray).
+     * @returns an array of indices (IndicesArray).
      */
     public getIndices(): Nullable<IndicesArray> {
         return this._sourceMesh.getIndices();
@@ -441,6 +444,7 @@ export class InstancedMesh extends AbstractMesh {
     /**
      * Returns the current associated LOD AbstractMesh.
      * @param camera defines the camera to use to pick the LOD level
+     * @returns a Mesh or `null` if no LOD is associated with the AbstractMesh
      */
     public getLOD(camera: Camera): AbstractMesh {
         if (!camera) {

@@ -131,7 +131,7 @@ export class FlowGraphConnection<BlockT, ConnectedToT extends IConnectable> impl
     }
 
     /**
-     * the class name of the connection.
+     * @returns class name of the connection.
      */
     public getClassName(): string {
         return "FGConnection";

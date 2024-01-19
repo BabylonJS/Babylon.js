@@ -88,7 +88,7 @@ function getDirectStore(target: any): any {
 }
 
 /**
- * Return the list of properties flagged as serializable
+ * @returns the list of properties flagged as serializable
  * @param target host object
  */
 function getMergedStore(target: any): any {
@@ -230,6 +230,7 @@ export function serializeAsMatrix(sourceName?: string) {
 /**
  * Decorator used to define property that can be serialized as reference to a camera
  * @param sourceName defines the name of the property to decorate
+ * @returns Property Decorator
  */
 export function serializeAsCameraReference(sourceName?: string) {
     return generateSerializableMember(11, sourceName); // camera reference member

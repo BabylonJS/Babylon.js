@@ -368,6 +368,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
     /**
      * avoiding using Array.find for global support.
      * @param xrAnchor the plane to find in the array
+     * @returns the index of the anchor in the array or -1 if not found
      */
     private _findIndexInAnchorArray(xrAnchor: XRAnchor) {
         for (let i = 0; i < this._trackedAnchors.length; ++i) {

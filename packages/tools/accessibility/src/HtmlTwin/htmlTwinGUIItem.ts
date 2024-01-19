@@ -24,6 +24,7 @@ export class HTMLTwinGUIItem extends HTMLTwinItem {
     /**
      * The text content displayed in HTML element.
      * @param options - Options to render HTML twin tree where this element is contained.
+     * @returns The text content displayed in HTML element.
      */
     public override getDescription(options: IHTMLTwinRendererOptions): string {
         let description = "";

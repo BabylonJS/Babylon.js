@@ -67,6 +67,7 @@ interface ITransmissionHelperOptions {
 class TransmissionHelper {
     /**
      * Creates the default options for the helper.
+     * @returns the default options
      */
     private static _GetDefaultOptions(): ITransmissionHelperOptions {
         return {
@@ -154,7 +155,7 @@ class TransmissionHelper {
     }
 
     /**
-     * Gets the opaque render target texture or null if not available.
+     * @returns the opaque render target texture or null if not available.
      */
     public getOpaqueTarget(): Nullable<Texture> {
         return this._opaqueRenderTarget;

@@ -144,6 +144,7 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
     /**
      * Check if the needed objects are defined.
      * This does not mean that the feature is enabled, but that the objects needed are well defined.
+     * @returns true if the initial compatibility test passed
      */
     public isCompatible(): boolean {
         return typeof XRPlane !== "undefined";
@@ -250,6 +251,7 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
     /**
      * avoiding using Array.find for global support.
      * @param xrPlane the plane to find in the array
+     * @returns the index of the plane in the array or -1 if not found
      */
     private _findIndexInPlaneArray(xrPlane: XRPlane) {
         for (let i = 0; i < this._detectedPlanes.length; ++i) {

@@ -22,6 +22,8 @@ export interface IFlexibleDragHandlerProps {
 
 /**
  * This component receives the drop events and updates the layout accordingly
+ * @param props properties
+ * @returns DragHandler element
  */
 export const FlexibleDragHandler: FC<IFlexibleDragHandlerProps> = (props) => {
     const { layout, setLayout } = useContext(LayoutContext);

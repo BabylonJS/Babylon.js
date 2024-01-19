@@ -470,6 +470,7 @@ class PhysicsRadialExplosionEvent {
      * Returns the force and contact point of the impostor or false, if the impostor is not affected by the force/impulse.
      * @param impostor A physics imposter
      * @param origin the origin of the explosion
+     * @param data the data of the hit
      * @returns A physics force and contact point, or null
      */
     public getImpostorHitData(impostor: PhysicsImpostor, origin: Vector3, data: PhysicsHitData): boolean {

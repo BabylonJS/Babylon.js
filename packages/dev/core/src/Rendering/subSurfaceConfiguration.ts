@@ -188,6 +188,7 @@ export class SubSurfaceConfiguration implements PrePassEffectConfiguration {
      * Returns the sampled radial distance, s.t. (u = 0 -> r = 0) and (u = 1 -> r = Inf).
      * @param u
      * @param rcpS
+     * @returns The sampled radial distance
      */
     private _sampleBurleyDiffusionProfile(u: number, rcpS: number) {
         u = 1 - u; // Convert CDF to CCDF

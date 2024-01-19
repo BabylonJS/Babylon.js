@@ -239,6 +239,7 @@ export class GlowLayer extends EffectLayer {
     }
 
     /**
+     * @internal
      * Create the merge effect. This is the shader use to blit the information back
      * to the main canvas at the end of the scene rendering.
      */
@@ -431,7 +432,7 @@ export class GlowLayer extends EffectLayer {
     }
 
     /**
-     * Returns whether or not the layer needs stencil enabled during the mesh rendering.
+     * @returns whether or not the layer needs stencil enabled during the mesh rendering.
      */
     public needStencil(): boolean {
         return false;
@@ -595,6 +596,7 @@ export class GlowLayer extends EffectLayer {
     /**
      * Defines whether the current material of the mesh should be use to render the effect.
      * @param mesh defines the current mesh to render
+     * @returns true if the material of the mesh should be use to render the effect
      */
     protected _useMeshMaterial(mesh: AbstractMesh): boolean {
         if (this._meshesUsingTheirOwnMaterials.length == 0) {

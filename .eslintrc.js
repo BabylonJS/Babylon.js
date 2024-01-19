@@ -239,21 +239,20 @@ const rules = {
         "jest/no-standalone-expect": ["error", { additionalTestBlockFunctions: ["afterEach"] }],
         "jest/valid-expect": "off",
         "babylonjs/syntax": "warn",
-        "jsdoc/check-param-names": ["warn", { checkRestProperty: false }],
+        "jsdoc/check-param-names": ["error", { checkRestProperty: false, checkDestructured: false }],
         "jsdoc/check-property-names": "error",
         "jsdoc/require-param": [
             "error",
             {
                 checkDestructured: false,
+                checkDestructuredRoots: false,
                 checkRestProperty: false,
-                contexts: [
-                    // {"comment":"JsdocBlock:has(JsdocTag[tag=\"hidden\"])"}
-                ],
+                enableFixer: false,
             },
         ],
         "jsdoc/require-param-name": "error",
-        // "jsdoc/require-returns": "warn",
-        // "jsdoc/require-returns-check": "error",
+        "jsdoc/require-returns": ["error", { checkGetters: false, checkConstructors: false }],
+        "jsdoc/require-returns-check": "error",
         "import/export": "warn",
         "no-useless-escape": "warn",
         "no-case-declarations": "warn",

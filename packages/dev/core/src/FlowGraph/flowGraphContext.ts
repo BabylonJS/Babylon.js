@@ -286,7 +286,7 @@ export class FlowGraphContext {
     }
 
     /**
-     * the class name of the object.
+     * @returns the class name of the object.
      */
     public getClassName() {
         return "FGContext";

@@ -389,6 +389,7 @@ export class WebXRHand implements IDisposable {
      * Sets the current hand mesh to render for the WebXRHand.
      * @param handMesh The rigged hand mesh that will be tracked to the user's hand.
      * @param rigMapping The mapping from XRHandJoint to bone names to use with the mesh.
+     * @param xrSessionManager The XRSessionManager used to initialize the hand mesh.
      */
     public setHandMesh(handMesh: AbstractMesh, rigMapping: Nullable<XRHandMeshRigMapping>, xrSessionManager?: WebXRSessionManager) {
         this._handMesh = handMesh;
@@ -419,7 +420,7 @@ export class WebXRHand implements IDisposable {
      * @param xrFrame The latest frame received from WebXR.
      * @param referenceSpace The current viewer reference space.
      */
-    public updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace, xrSessionManager: WebXRSessionManager) {
+    public updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace) {
         const hand = this.xrController.inputSource.hand;
         if (!hand) {
             return;
@@ -641,6 +642,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     /**
      * Generates a mapping from XRHandJoint to bone name for the default hand mesh.
      * @param handedness The handedness being mapped for.
+     * @returns A mapping from XRHandJoint to bone name.
      */
     private static _GenerateDefaultHandMeshRigMapping(handedness: XRHandedness): XRHandMeshRigMapping {
         const H = handedness == "right" ? "R" : "L";
@@ -700,6 +702,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     /**
      * Check if the needed objects are defined.
      * This does not mean that the feature is enabled, but that the objects needed are well defined.
+     * @returns true if the needed objects for this feature are defined
      */
     public isCompatible(): boolean {
         return typeof XRHand !== "undefined";
@@ -823,8 +826,8 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     }
 
     protected _onXRFrame(_xrFrame: XRFrame): void {
-        this._trackingHands.left?.updateFromXRFrame(_xrFrame, this._xrSessionManager.referenceSpace, this._xrSessionManager);
-        this._trackingHands.right?.updateFromXRFrame(_xrFrame, this._xrSessionManager.referenceSpace, this._xrSessionManager);
+        this._trackingHands.left?.updateFromXRFrame(_xrFrame, this._xrSessionManager.referenceSpace);
+        this._trackingHands.right?.updateFromXRFrame(_xrFrame, this._xrSessionManager.referenceSpace);
     }
 
     private _attachHand = (xrController: WebXRInputSource) => {

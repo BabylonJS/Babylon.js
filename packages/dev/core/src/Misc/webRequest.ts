@@ -197,7 +197,7 @@ export class WebRequest implements IWebRequest {
 
         this._requestURL = url;
 
-        return this._xhr.open(method, url, true);
+        this._xhr.open(method, url, true);
     }
 
     /**

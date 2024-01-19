@@ -146,6 +146,7 @@ export class WebXROculusTouchMotionController extends WebXRAbstractMotionControl
     /**
      * Is this the new type of oculus touch. At the moment both have the same profile and it is impossible to differentiate
      * between the touch and touch 2.
+     * @returns true if this is the new type of oculus touch controllers.
      */
     private _isQuest() {
         // this is SADLY the only way to currently check. Until proper profiles will be available.

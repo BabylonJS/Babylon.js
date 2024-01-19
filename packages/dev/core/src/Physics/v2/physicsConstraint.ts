@@ -267,8 +267,6 @@ export class Physics6DoFConstraint extends PhysicsConstraint {
      * Sets the motor type of the given axis of the constraint.
      * @param axis - The axis of the constraint.
      * @param motorType - The type of motor to use.
-     * @returns void
-     *
      */
     public setAxisMotorType(axis: PhysicsConstraintAxis, motorType: PhysicsConstraintMotorType): void {
         this._physicsPlugin.setAxisMotorType(this, axis, motorType);

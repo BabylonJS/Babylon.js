@@ -44,6 +44,7 @@ export class Button3D extends AbstractButton3D {
     /**
      * Creates a new button
      * @param name defines the control name
+     * @param options defines the options used to create the button
      */
     constructor(name?: string, options?: IButton3DCreationOptions) {
         super(name);

@@ -100,6 +100,7 @@ const rangeMargin = 0.1; // extra margin to expand the min/max range on the grap
  *
  * @param callback callback to call.
  * @param time time to wait between calls in ms.
+ * @returns a function that will call the callback after the time has passed.
  */
 function debounce(callback: (...args: any[]) => void, time: number) {
     let timerId: any;
@@ -114,6 +115,7 @@ function debounce(callback: (...args: any[]) => void, time: number) {
  *
  * @param callback callback to call.
  * @param time time to wait between calls in ms.
+ * @returns a function that will call the callback after the time has passed.
  */
 function throttle(callback: (...args: any[]) => void, time: number) {
     let lastCalledTime: number = 0;

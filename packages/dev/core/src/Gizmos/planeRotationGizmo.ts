@@ -428,10 +428,12 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
     }
 
     /**
+     * @internal
      * Create Geometry for Gizmo
      * @param parentMesh
      * @param thickness
      * @param tessellation
+     * @returns
      */
     protected _createGizmoMesh(parentMesh: AbstractMesh, thickness: number, tessellation: number) {
         const collider = CreateTorus(

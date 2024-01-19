@@ -269,7 +269,7 @@ export class GeometryBufferRenderer {
     }
 
     /**
-     * Gets a boolean indicating if objects positions are enabled for the G buffer.
+     * @returns a boolean indicating if objects positions are enabled for the G buffer.
      */
     public get enablePosition(): boolean {
         return this._enablePosition;
@@ -289,7 +289,7 @@ export class GeometryBufferRenderer {
     }
 
     /**
-     * Gets a boolean indicating if objects velocities are enabled for the G buffer.
+     * @returns a boolean indicating if objects velocities are enabled for the G buffer.
      */
     public get enableVelocity(): boolean {
         return this._enableVelocity;

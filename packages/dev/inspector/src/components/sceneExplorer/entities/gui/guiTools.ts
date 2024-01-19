@@ -8,7 +8,9 @@ declare let BABYLON: any;
 let editorUrl = `${Tools._DefaultCdnUrl}/v${Engine.Version}/guiEditor/babylon.guiEditor.js`;
 // eslint-disable-next-line @typescript-eslint/naming-convention
 let guiEditorContainer: { GUIEditor: typeof GUIEditor };
-/** Get the inspector from bundle or global */
+/** Get the inspector from bundle or global
+ * @internal
+ */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 function _getGlobalGUIEditor(): { GUIEditor: typeof GUIEditor } | undefined {
     // UMD Global name detection from Webpack Bundle UMD Name.

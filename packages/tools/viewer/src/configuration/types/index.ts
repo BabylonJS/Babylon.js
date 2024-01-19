@@ -14,6 +14,7 @@ import { deepmerge } from "../../helper/index";
  * "default, environmentMap" will first load the default configuration and will extend it using the environmentMap configuration.
  *
  * @param types a comma-separated string of the type(s) or configuration to load.
+ * @returns the configuration object
  */
 const getConfigurationType = function (types: string): ViewerConfiguration {
     let config: ViewerConfiguration = {};

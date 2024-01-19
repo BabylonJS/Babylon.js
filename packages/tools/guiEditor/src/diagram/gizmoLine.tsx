@@ -34,6 +34,9 @@ const TmpVectors = [new Vector2(), new Vector2(), new Vector2()];
 
 /**
  * This class represents the gizmo drawn on a line Control.
+ * It is used to scale and rotate the control around a pivot point
+ * @param props the properties of the gizmo
+ * @returns a gizmo line
  */
 export function GizmoLine(props: IGizmoLineProps) {
     const { control, globalState } = props;

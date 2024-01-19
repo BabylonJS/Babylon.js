@@ -499,6 +499,7 @@ export class GreasedLineTools {
      * @param colors Uint8Array of colors
      * @param colorsSampling sampling mode of the created texture
      * @param scene Scene
+     * @returns the colors texture
      */
     public static CreateColorsTexture(name: string, colors: Color3[], colorsSampling: number, scene: Scene) {
         const colorsArray = GreasedLineTools.Color3toRGBAUint8(colors);

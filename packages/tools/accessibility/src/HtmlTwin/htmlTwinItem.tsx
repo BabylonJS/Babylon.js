@@ -73,6 +73,11 @@ export class HTMLTwinItem {
      */
     public scene: Scene;
 
+    /**
+     * Constructor of HTMLTwinItem.
+     * @param entity - The corresponding BabylonJS entity. Can be a Node or a Control.
+     * @param scene - The BabylonJS scene that the corresponding BabylonJS entity is in.
+     */
     constructor(entity: AccessibilityEntity, scene: Scene) {
         this.entity = entity;
         this.scene = scene;
@@ -82,6 +87,7 @@ export class HTMLTwinItem {
      * The text content displayed in HTML element.
      * Returns the description in accessibilityTag, if defined (returns "" by default).
      * @param _options - The options to render the HTML twin tree where this item is contained. Not used in this class, but in its children.
+     * @returns the text content displayed in HTML element
      */
     public getDescription(_options: IHTMLTwinRendererOptions): string {
         return this.entity.accessibilityTag?.description ?? "";

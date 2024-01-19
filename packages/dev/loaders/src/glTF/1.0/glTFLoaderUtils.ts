@@ -76,6 +76,7 @@ export class GLTFUtils {
      * @param uniform the name of the shader's uniform
      * @param value the value of the uniform
      * @param type the uniform's type (EParameterType FLOAT, VEC2, VEC3 or VEC4)
+     * @returns true if set, else false
      */
     public static SetUniform(shaderMaterial: ShaderMaterial | Effect, uniform: string, value: any, type: number): boolean {
         switch (type) {
@@ -99,6 +100,7 @@ export class GLTFUtils {
     /**
      * Returns the wrap mode of the texture
      * @param mode the mode value
+     * @returns the wrap mode (TEXTURE_WRAP_ADDRESSMODE, MIRROR_ADDRESSMODE or CLAMP_ADDRESSMODE)
      */
     public static GetWrapMode(mode: number): number {
         switch (mode) {
@@ -116,6 +118,7 @@ export class GLTFUtils {
     /**
      * Returns the byte stride giving an accessor
      * @param accessor the GLTF accessor objet
+     * @returns the byte stride
      */
     public static GetByteStrideFromType(accessor: IGLTFAccessor): number {
         // Needs this function since "byteStride" isn't requiered in glTF format
@@ -193,6 +196,7 @@ export class GLTFUtils {
      * Returns a buffer from its accessor
      * @param gltfRuntime the GLTF runtime
      * @param accessor the GLTF accessor
+     * @returns an array buffer view
      */
     public static GetBufferFromAccessor(gltfRuntime: IGLTFRuntime, accessor: IGLTFAccessor): any {
         const bufferView: IGLTFBufferView = gltfRuntime.bufferViews[accessor.bufferView];
@@ -203,6 +207,7 @@ export class GLTFUtils {
     /**
      * Decodes a buffer view into a string
      * @param view the buffer view
+     * @returns a string
      */
     public static DecodeBufferToText(view: ArrayBufferView): string {
         let result = "";
@@ -219,6 +224,7 @@ export class GLTFUtils {
      * Returns the default material of gltf. Related to
      * https://github.com/KhronosGroup/glTF/tree/master/specification/1.0#appendix-a-default-material
      * @param scene the Babylon.js scene
+     * @returns the default Babylon material
      */
     public static GetDefaultMaterial(scene: Scene): ShaderMaterial {
         if (!GLTFUtils._DefaultMaterial) {

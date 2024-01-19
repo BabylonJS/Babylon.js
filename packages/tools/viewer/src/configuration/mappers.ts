@@ -32,6 +32,7 @@ class HTMLMapper implements IMapper {
     /**
      * Map a specific element and get configuration from it
      * @param element the HTML element to analyze.
+     * @returns a ViewerConfiguration object from the provided HTML Element
      */
     map(element: HTMLElement): ViewerConfiguration {
         const config = {};
@@ -157,6 +158,7 @@ export class MapperManager {
      * Get a specific configuration mapper.
      *
      * @param type the name of the mapper to load
+     * @returns the mapper
      */
     public getMapper(type: string) {
         if (!this._mappers[type]) {

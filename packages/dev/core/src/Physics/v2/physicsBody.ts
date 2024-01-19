@@ -223,6 +223,7 @@ export class PhysicsBody {
     /**
      * Gets the motion type of the physics body. Can be STATIC, DYNAMIC, or ANIMATED.
      * @param instanceIndex - If this body is instanced, the index of the instance to get the motion type for.
+     * @returns The motion type of the physics body.
      */
     public getMotionType(instanceIndex?: number): PhysicsMotionType {
         return this._physicsPlugin.getMotionType(this, instanceIndex);
@@ -235,6 +236,7 @@ export class PhysicsBody {
      * object in the physics engine, and computing values based on the shape will provide you with reasonable
      * initial values, which you can then customize.
      * @param instanceIndex - The index of the instance to compute the mass properties for.
+     * @returns The mass properties of the object.
      */
     public computeMassProperties(instanceIndex?: number): PhysicsMassProperties {
         return this._physicsPlugin.computeMassProperties(this, instanceIndex);
@@ -344,7 +346,7 @@ export class PhysicsBody {
      * This can be used to determine the speed and direction of the body, which can be used to calculate the motion of the body.
      */
     public getLinearVelocityToRef(linVel: Vector3, instanceIndex?: number): void {
-        return this._physicsPlugin.getLinearVelocityToRef(this, linVel, instanceIndex);
+        this._physicsPlugin.getLinearVelocityToRef(this, linVel, instanceIndex);
     }
 
     /**
@@ -383,7 +385,7 @@ export class PhysicsBody {
      * rotational speed. This information can be used to create realistic physics simulations.
      */
     public getAngularVelocityToRef(angVel: Vector3, instanceIndex?: number): void {
-        return this._physicsPlugin.getAngularVelocityToRef(this, angVel, instanceIndex);
+        this._physicsPlugin.getAngularVelocityToRef(this, angVel, instanceIndex);
     }
 
     /**

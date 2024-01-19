@@ -89,6 +89,8 @@ export function CreateResizedCopy(texture: Texture, width: number, height: numbe
  * @param type type of the output texture. If not provided, use the one from internalTexture
  * @param samplingMode sampling mode to use to sample the source texture. If not provided, use the one from internalTexture
  * @param format format of the output texture. If not provided, use the one from internalTexture
+ * @param width width of the output texture. If not provided, use the one from internalTexture
+ * @param height height of the output texture. If not provided, use the one from internalTexture
  * @returns a promise with the internalTexture having its texture replaced by the result of the processing
  */
 export function ApplyPostProcess(

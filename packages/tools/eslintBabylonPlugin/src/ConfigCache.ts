@@ -27,6 +27,7 @@ export class ConfigCache {
 
     /**
      * Node.js equivalent of performance.now().
+     * @returns A high-resolution timestamp in milliseconds.
      */
     private static _GetTimeInMs(): number {
         const [seconds, nanoseconds] = process.hrtime();

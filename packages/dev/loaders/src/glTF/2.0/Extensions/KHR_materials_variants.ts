@@ -113,7 +113,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
      * @param variantName The variant name(s) to select.
      */
     public selectVariant(rootMesh: Mesh, variantName: string | string[]): void {
-        return KHR_materials_variants.SelectVariant(rootMesh, variantName);
+        KHR_materials_variants.SelectVariant(rootMesh, variantName);
     }
 
     /**
@@ -138,7 +138,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
      * @param rootMesh The glTF root mesh
      */
     public reset(rootMesh: Mesh): void {
-        return KHR_materials_variants.Reset(rootMesh);
+        KHR_materials_variants.Reset(rootMesh);
     }
 
     /**

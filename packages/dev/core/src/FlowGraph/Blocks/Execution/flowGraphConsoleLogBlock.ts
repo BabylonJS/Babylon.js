@@ -32,7 +32,7 @@ export class FlowGraphConsoleLogBlock extends FlowGraphExecutionBlockWithOutSign
     }
 
     /**
-     * the class name of the block.
+     * @returns class name of the block.
      */
     public getClassName(): string {
         return FlowGraphConsoleLogBlock.ClassName;

@@ -797,6 +797,7 @@ export class Tools {
         throw _WarnImport("DumpTools");
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Dumps an array buffer
      * @param width defines the rendering width
@@ -873,7 +874,6 @@ export class Tools {
      * Download a Blob object
      * @param blob the Blob object
      * @param fileName the file name to download
-     * @returns
      */
     static DownloadBlob(blob: Blob, fileName?: string) {
         //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
@@ -1029,6 +1029,7 @@ export class Tools {
         throw _WarnImport("ScreenshotTools");
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Captures a screenshot of the current rendering
      * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
@@ -1091,6 +1092,7 @@ export class Tools {
         throw _WarnImport("ScreenshotTools");
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Generates an image screenshot from the specified camera.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
@@ -1160,8 +1162,9 @@ export class Tools {
         return DecodeBase64UrlToBinary(uri);
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check, jsdoc/require-param
     /**
-     * Get the absolute URL of a given (relative) url.
+     * @returns the absolute URL of a given (relative) url
      */
     public static GetAbsoluteUrl: (url: string) => string =
         typeof document === "object"
@@ -1472,6 +1475,7 @@ export class Tools {
  * This method is the only way to get it done in all cases, even if the .js file declaring the class is minified
  * @param name The name of the class, case should be preserved
  * @param module The name of the Module hosting the class, optional, but strongly recommended to specify if possible. Case should be preserved.
+ * @returns a decorator function to apply on the class definition.
  */
 export function className(name: string, module?: string): (target: Object) => void {
     return (target: Object) => {

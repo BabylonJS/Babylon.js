@@ -109,6 +109,7 @@ export const FileToolsOptions: {
     /**
      * Gets or sets a function used to pre-process url before using them to load assets
      * @param url
+     * @returns the processed url
      */
     PreprocessUrl: (url: string) => url,
 
@@ -121,6 +122,7 @@ export const FileToolsOptions: {
      * Gets or sets a function used to pre-process script url before using them to load.
      * Used for both JS and WASM
      * @param url defines the url to process
+     * @returns the processed url
      */
     ScriptPreprocessUrl: (url: string) => url,
 };

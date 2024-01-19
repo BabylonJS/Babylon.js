@@ -341,6 +341,7 @@ export class HighlightLayer extends EffectLayer {
     /**
      * Create the merge effect. This is the shader use to blit the information back
      * to the main canvas at the end of the scene rendering.
+     * @returns The effect created
      */
     protected _createMergeEffect(): Effect {
         // Effect
@@ -482,7 +483,7 @@ export class HighlightLayer extends EffectLayer {
     }
 
     /**
-     * Returns whether or not the layer needs stencil enabled during the mesh rendering.
+     * @returns whether or not the layer needs stencil enabled during the mesh rendering.
      */
     public needStencil(): boolean {
         return true;
@@ -553,7 +554,7 @@ export class HighlightLayer extends EffectLayer {
     }
 
     /**
-     * Returns true if the layer contains information to display, otherwise false.
+     * @returns true if the layer contains information to display, otherwise false.
      */
     public shouldRender(): boolean {
         if (super.shouldRender()) {

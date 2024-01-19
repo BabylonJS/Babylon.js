@@ -45,7 +45,7 @@ export class FlowGraphSendCustomEventBlock extends FlowGraphExecutionBlockWithOu
     }
 
     /**
-     * the class name of the block.
+     * @returns class name of the block.
      */
     public getClassName(): string {
         return FlowGraphSendCustomEventBlock.ClassName;

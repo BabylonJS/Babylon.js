@@ -421,7 +421,6 @@ export class WebGLPipelineContext implements IPipelineContext {
      * Sets an array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
      * @param uniformName Name of the variable.
      * @param array array to be set.
-     * @returns this effect.
      */
     public setArray3(uniformName: string, array: number[]): void {
         this._valueCache[uniformName] = null;
@@ -489,7 +488,6 @@ export class WebGLPipelineContext implements IPipelineContext {
      * Sets a float on a uniform variable.
      * @param uniformName Name of the variable.
      * @param value value to be set.
-     * @returns this effect.
      */
     public setFloat(uniformName: string, value: number): void {
         const cache = this._valueCache[uniformName];
@@ -590,7 +588,6 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param y Second float in float4.
      * @param z Third float in float4.
      * @param w Fourth float in float4.
-     * @returns this effect.
      */
     public setFloat4(uniformName: string, x: number, y: number, z: number, w: number): void {
         if (this._cacheFloat4(uniformName, x, y, z, w)) {

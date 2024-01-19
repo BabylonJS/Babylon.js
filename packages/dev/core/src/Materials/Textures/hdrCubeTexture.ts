@@ -111,8 +111,9 @@ export class HDRCubeTexture extends BaseTexture {
      * @param generateHarmonics Specifies whether you want to extract the polynomial harmonics during the generation process
      * @param gammaSpace Specifies if the texture will be use in gamma or linear space (the PBR material requires those texture in linear space, but the standard material would require them in Gamma space)
      * @param prefilterOnLoad Prefilters HDR texture to allow use of this texture as a PBR reflection texture.
-     * @param onLoad
-     * @param onError
+     * @param onLoad on success callback function
+     * @param onError on error callback function
+     * @param supersample Defines if texture must be supersampled (default: false)
      */
     constructor(
         url: string,

@@ -110,7 +110,7 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
     }
 
     /**
-     * Gets the class name
+     * @returns the class name
      */
     public getClassName(): string {
         return "FGExecutionBlock";

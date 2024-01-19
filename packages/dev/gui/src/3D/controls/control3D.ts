@@ -259,7 +259,7 @@ export class Control3D implements IDisposable, IBehaviorAware<Control3D> {
     }
 
     /**
-     * @internal*
+     * @internal
      */
     public _prepareNode(scene: Scene): void {
         if (!this._node) {

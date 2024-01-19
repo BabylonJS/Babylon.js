@@ -25,7 +25,7 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
     }
 
     /**
-     * Gets the name of the class
+     * @returns the name of the class
      */
     public getClassName(): string {
         return "FluidRenderingObjectParticleSystem";

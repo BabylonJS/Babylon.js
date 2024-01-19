@@ -16,7 +16,7 @@ export class FluidRenderingObjectCustomParticles extends FluidRenderingObject {
     private _vertexBuffers: { [key: string]: VertexBuffer };
 
     /**
-     * Gets the name of the class
+     * @returns the name of the class
      */
     public getClassName(): string {
         return "FluidRenderingObjectCustomParticles";

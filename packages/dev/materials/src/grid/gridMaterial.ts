@@ -124,7 +124,7 @@ export class GridMaterial extends PushMaterial {
     }
 
     /**
-     * Returns whether or not the grid requires alpha blending.
+     * @returns whether or not the grid requires alpha blending.
      */
     public needAlphaBlending(): boolean {
         return this.opacity < 1.0 || (this._opacityTexture && this._opacityTexture.isReady());

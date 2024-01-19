@@ -73,7 +73,9 @@ export class FlowGraphBlock {
      */
     public metadata: any;
 
-    /** Constructor is protected so only subclasses can be instantiated */
+    /** Constructor is protected so only subclasses can be instantiated
+     * @param config optional configuration for this block
+     */
     protected constructor(
         /**
          * the configuration of the block

@@ -81,7 +81,7 @@ export abstract class FluidRenderingObject {
     }
 
     /**
-     * Gets the name of the class
+     * @returns the name of the class
      */
     public getClassName(): string {
         return "FluidRenderingObject";

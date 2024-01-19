@@ -29,6 +29,9 @@ export class GLTFPathToObjectConverter<T> implements IPathToObjectConverter<T> {
      *  - "/materials/2/emissiveFactor"
      *  - "/materials/2/pbrMetallicRoughness/baseColorFactor"
      *  - "/materials/2/extensions/KHR_materials_emissive_strength/emissiveStrength"
+     *
+     * @param path The path to convert
+     * @returns The object and info associated with the path
      */
     public convert(path: string): IObjectInfo<T> {
         let objectTree: any = this._gltf;

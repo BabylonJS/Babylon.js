@@ -467,6 +467,7 @@ export class Camera extends Node {
 
     /**
      * Restores the camera state values if it has been stored. You must call storeState() first
+     * @returns true if restored and false otherwise
      */
     protected _restoreStateValues(): boolean {
         if (!this._stateStored) {
@@ -816,6 +817,7 @@ export class Camera extends Node {
 
     /**
      * Gets the current world matrix of the camera
+     * @returns the world matrix
      */
     public getWorldMatrix(): Matrix {
         if (this._isSynchronizedViewMatrix()) {
@@ -1086,6 +1088,7 @@ export class Camera extends Node {
         return target.isCompletelyInFrustum(this._frustumPlanes);
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Gets a ray in the forward direction from the camera.
      * @param length Defines the length of the ray to create
@@ -1098,6 +1101,7 @@ export class Camera extends Node {
         throw _WarnImport("Ray");
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Gets a ray in the forward direction from the camera.
      * @param refRay the ray to (re)use when setting the values
