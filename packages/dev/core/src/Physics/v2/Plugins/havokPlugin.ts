@@ -1281,6 +1281,22 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     }
 
     /**
+     * Gets the material associated with a physics shape.
+     * @param shape - The shape to get the material from.
+     * @returns The material associated with the shape.
+     */
+    public getMaterial(shape: PhysicsShape): PhysicsMaterial {
+        const hkMaterial = this._hknp.HP_Shape_GetMaterial(shape._pluginData)[1];
+        return {
+            staticFriction: hkMaterial[0],
+            friction: hkMaterial[1],
+            restitution: hkMaterial[2],
+            frictionCombine: this._nativeToMaterialCombine(hkMaterial[3]),
+            restitutionCombine: this._nativeToMaterialCombine(hkMaterial[4]),
+        };
+    }
+
+    /**
      * Sets the density of a physics shape.
      * @param shape - The physics shape to set the density of.
      * @param density - The density to set.
@@ -1303,11 +1319,11 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
 
     /**
      * Gets the transform infos of a given transform node.
-     * @param node - The transform node.
-     * @returns An array containing the position and orientation of the node.
      * This code is useful for getting the position and orientation of a given transform node.
      * It first checks if the node has a rotation quaternion, and if not, it creates one from the node's rotation.
      * It then creates an array containing the position and orientation of the node and returns it.
+     * @param node - The transform node.
+     * @returns An array containing the position and orientation of the node.
      */
     private _getTransformInfos(node: TransformNode): any[] {
         if (node.parent) {
@@ -2133,6 +2149,23 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 return this._hknp.MaterialCombine.ARITHMETIC_MEAN;
             case PhysicsMaterialCombineMode.MULTIPLY:
                 return this._hknp.MaterialCombine.MULTIPLY;
+        }
+    }
+
+    private _nativeToMaterialCombine(mat: any): PhysicsMaterialCombineMode {
+        switch (mat) {
+            case this._hknp.MaterialCombine.GEOMETRIC_MEAN:
+                return PhysicsMaterialCombineMode.GEOMETRIC_MEAN;
+            case this._hknp.MaterialCombine.MINIMUM:
+                return PhysicsMaterialCombineMode.MINIMUM;
+            case this._hknp.MaterialCombine.MAXIMUM:
+                return PhysicsMaterialCombineMode.MAXIMUM;
+            case this._hknp.MaterialCombine.ARITHMETIC_MEAN:
+                return PhysicsMaterialCombineMode.ARITHMETIC_MEAN;
+            case this._hknp.MaterialCombine.MULTIPLY:
+                return PhysicsMaterialCombineMode.MULTIPLY;
+            default:
+                throw new Error("Unrecognized material combine mode: " + mat);
         }
     }
 
