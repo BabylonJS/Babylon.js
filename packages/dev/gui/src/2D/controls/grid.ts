@@ -553,6 +553,7 @@ export class Grid extends Container {
     /**
      * Serializes the current control
      * @param serializationObject defined the JSON serialized object
+     * @param force force serialization even if isSerializable === false
      */
     public serialize(serializationObject: any, force: boolean) {
         super.serialize(serializationObject, force);

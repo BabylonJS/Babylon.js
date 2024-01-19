@@ -642,6 +642,7 @@ export class Container extends Control {
     /**
      * Serializes the current control
      * @param serializationObject defined the JSON serialized object
+     * @param force force serialization even if isSerializable === false
      */
     public serialize(serializationObject: any, force: boolean = false) {
         super.serialize(serializationObject, force);
