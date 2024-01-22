@@ -414,6 +414,7 @@ export class NodeMaterialBlock {
                 output.connectTo(input);
                 notFound = false;
             } else if (!output) {
+                // eslint-disable-next-line no-throw-literal
                 throw "Unable to find a compatible match";
             } else {
                 output = this.getSiblingOutput(output);

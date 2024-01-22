@@ -181,6 +181,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             optionCount++;
         }
         if (optionCount > 1) {
+            // eslint-disable-next-line no-throw-literal
             throw "Multiple drag modes specified in dragBehavior options. Only one expected";
         }
     }

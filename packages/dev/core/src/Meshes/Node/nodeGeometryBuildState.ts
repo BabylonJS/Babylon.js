@@ -272,6 +272,7 @@ export class NodeGeometryBuildState {
         }
 
         if (errorMessage) {
+            // eslint-disable-next-line no-throw-literal
             throw "Build of NodeGeometry failed:\n" + errorMessage;
         }
     }

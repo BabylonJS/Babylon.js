@@ -233,9 +233,11 @@ describe("InputManager", () => {
                     lazyPickCt++;
                     // Check that we have pickInfo, also indirectly used to check for double lazy picking
                     if (!eventData.pickInfo) {
+                        // eslint-disable-next-line no-throw-literal
                         throw "Error: pickInfo should not be null";
                     }
                 } else {
+                    // eslint-disable-next-line no-throw-literal
                     throw "Error: Tried to lazy pick twice";
                 }
             };
