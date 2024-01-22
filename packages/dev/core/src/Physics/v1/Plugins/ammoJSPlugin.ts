@@ -996,7 +996,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 const childImpostor = childMesh.getPhysicsImpostor();
                 if (childImpostor) {
                     if (childImpostor.type == PhysicsImpostor.MeshImpostor) {
-                        throw "A child MeshImpostor is not supported. Only primitive impostors are supported as children (eg. box or sphere)";
+                        throw new Error("A child MeshImpostor is not supported. Only primitive impostors are supported as children (eg. box or sphere)");
                     }
                     const shape = this._createShape(childImpostor);
 

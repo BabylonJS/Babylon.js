@@ -47,7 +47,7 @@ Scene.prototype.enableDepthRenderer = function (
 ): DepthRenderer {
     camera = camera || this.activeCamera;
     if (!camera) {
-        throw "No camera available to enable depth renderer";
+        throw new Error("No camera available to enable depth renderer");
     }
     if (!this._depthRenderer) {
         this._depthRenderer = {};

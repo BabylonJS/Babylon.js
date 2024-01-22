@@ -547,7 +547,7 @@ export class FurMaterial extends PushMaterial {
         let i;
 
         if (!(mat instanceof FurMaterial)) {
-            throw "The material of the source mesh must be a Fur Material";
+            throw new Error("The material of the source mesh must be a Fur Material");
         }
 
         for (i = 1; i < quality; i++) {

@@ -360,7 +360,7 @@ export abstract class WebGPUCacheRenderPipeline {
             // If we want more than 10 attachments we need to change this method (and the StatePosition enum) but 10 seems plenty: note that WebGPU only supports 8 at the time (2021/12/13)!
             // As we need ~39 different values we are using 6 bits to encode a texture format, meaning we can encode 5 texture formats in 32 bits
             // We are using 2x32 bit values to handle 10 textures
-            throw "Can't handle more than 10 attachments for a MRT in cache render pipeline!";
+            throw new Error("Can't handle more than 10 attachments for a MRT in cache render pipeline!");
         }
         (this.mrtTextureArray as any) = textureArray;
         (this.mrtTextureCount as any) = textureCount;
@@ -514,7 +514,7 @@ export abstract class WebGPUCacheRenderPipeline {
             case Constants.MATERIAL_LineLoopDrawMode:
                 // return this._gl.LINE_LOOP;
                 // TODO WEBGPU. Line Loop Mode Fallback at buffer load time.
-                throw "LineLoop is an unsupported fillmode in WebGPU";
+                throw new Error("LineLoop is an unsupported fillmode in WebGPU");
             case Constants.MATERIAL_LineStripDrawMode:
                 return WebGPUConstants.PrimitiveTopology.LineStrip;
             case Constants.MATERIAL_TriangleStripDrawMode:
@@ -522,7 +522,7 @@ export abstract class WebGPUCacheRenderPipeline {
             case Constants.MATERIAL_TriangleFanDrawMode:
                 // return this._gl.TRIANGLE_FAN;
                 // TODO WEBGPU. Triangle Fan Mode Fallback at buffer load time.
-                throw "TriangleFan is an unsupported fillmode in WebGPU";
+                throw new Error("TriangleFan is an unsupported fillmode in WebGPU");
             default:
                 return WebGPUConstants.PrimitiveTopology.TriangleList;
         }

@@ -90,7 +90,9 @@ export class MaterialPluginManager {
         }
 
         if (this._material._uniformBufferLayoutBuilt) {
-            throw `The plugin "${plugin.name}" can't be added to the material "${this._material.name}" because this material has already been used for rendering! Please add plugins to materials before any rendering with this material occurs.`;
+            throw new Error(
+                `The plugin "${plugin.name}" can't be added to the material "${this._material.name}" because this material has already been used for rendering! Please add plugins to materials before any rendering with this material occurs.`
+            );
         }
 
         const pluginClassName = plugin.getClassName();

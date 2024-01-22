@@ -37,7 +37,7 @@ export class FrontFacingBlock extends NodeMaterialBlock {
         super._buildBlock(state);
 
         if (state.target === NodeMaterialBlockTargets.Vertex) {
-            throw "FrontFacingBlock must only be used in a fragment shader";
+            throw new Error("FrontFacingBlock must only be used in a fragment shader");
         }
 
         const output = this._outputs[0];

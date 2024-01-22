@@ -233,10 +233,10 @@ describe("InputManager", () => {
                     lazyPickCt++;
                     // Check that we have pickInfo, also indirectly used to check for double lazy picking
                     if (!eventData.pickInfo) {
-                        throw "Error: pickInfo should not be null";
+                        throw new Error("Error: pickInfo should not be null");
                     }
                 } else {
-                    throw "Error: Tried to lazy pick twice";
+                    throw new Error("Error: Tried to lazy pick twice");
                 }
             };
             eventData._generatePickInfo = genFunc;
@@ -289,7 +289,7 @@ describe("InputManager", () => {
 
         expect(lazyPickCt).toBe(2);
         expect(lazyPickHitCt).toBe(1);
-        expect(pickSpy).toBeCalledTimes(6);
+        expect(pickSpy).toHaveBeenCalledTimes(6);
     });
 
     it("onPointerObservable returns correct PointerEventTypes", () => {
@@ -804,7 +804,7 @@ describe("InputManager", () => {
                     pickedTestMesh = pointerInfo.pickInfo.pickedMesh;
                 }
                 // We expect this to not be called at all as the picking should already be done by this point
-                expect(generateSpy).toBeCalledTimes(0);
+                expect(generateSpy).toHaveBeenCalledTimes(0);
             });
 
             // Set initial point

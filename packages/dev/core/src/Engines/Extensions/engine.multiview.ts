@@ -39,7 +39,7 @@ Engine.prototype.createMultiviewRenderTargetTexture = function (width: number, h
     const gl = this._gl;
 
     if (!this.getCaps().multiview) {
-        throw "Multiview is not supported";
+        throw new Error("Multiview is not supported");
     }
 
     const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, { width, height }) as WebGLRenderTargetWrapper;
@@ -100,7 +100,7 @@ Engine.prototype.bindMultiviewFramebuffer = function (_multiviewTexture: RenderT
             ext.framebufferTextureMultiviewOVR(gl.DRAW_FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, multiviewTexture._depthStencilTextureArray, 0, 0, 2);
         }
     } else {
-        throw "Invalid multiview frame buffer";
+        throw new Error("Invalid multiview frame buffer");
     }
 };
 

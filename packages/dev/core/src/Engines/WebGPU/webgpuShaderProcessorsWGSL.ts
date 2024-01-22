@@ -222,7 +222,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             textureInfo.sampleType = sampleType;
 
             if (textureDimension === undefined) {
-                throw `Can't get the texture dimension corresponding to the texture function "${textureFunc}"!`;
+                throw new Error(`Can't get the texture dimension corresponding to the texture function "${textureFunc}"!`);
             }
 
             for (let i = 0; i < arraySize; ++i) {

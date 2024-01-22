@@ -93,11 +93,11 @@ export class PanoramaToCubeMapTools {
      */
     public static ConvertPanoramaToCubemap(float32Array: Float32Array, inputWidth: number, inputHeight: number, size: number, supersample = false): CubeMapInfo {
         if (!float32Array) {
-            throw "ConvertPanoramaToCubemap: input cannot be null";
+            throw new Error("ConvertPanoramaToCubemap: input cannot be null");
         }
 
         if (float32Array.length != inputWidth * inputHeight * 3) {
-            throw "ConvertPanoramaToCubemap: input size is wrong";
+            throw new Error("ConvertPanoramaToCubemap: input size is wrong");
         }
 
         const textureFront = this.CreateCubemapTexture(size, this.FACE_FRONT, float32Array, inputWidth, inputHeight, supersample);

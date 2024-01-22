@@ -27,7 +27,7 @@ export class _TGATextureLoader implements IInternalTextureLoader {
      * Uploads the cube texture data to the WebGL texture. It has already been bound.
      */
     public loadCubeData(): void {
-        throw ".env not supported in Cube.";
+        throw new Error(".env not supported in Cube.");
     }
 
     /**

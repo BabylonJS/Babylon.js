@@ -122,7 +122,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
         const device = this._inputs[deviceType][deviceSlot];
 
         if (!device) {
-            throw `Unable to find device ${DeviceType[deviceType]}`;
+            throw new Error(`Unable to find device ${DeviceType[deviceType]}`);
         }
 
         if (deviceType >= DeviceType.DualShock && deviceType <= DeviceType.DualSense) {
@@ -131,7 +131,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
 
         const currentValue = device[inputIndex];
         if (currentValue === undefined) {
-            throw `Unable to find input ${inputIndex} for device ${DeviceType[deviceType]} in slot ${deviceSlot}`;
+            throw new Error(`Unable to find input ${inputIndex} for device ${DeviceType[deviceType]} in slot ${deviceSlot}`);
         }
 
         if (inputIndex === PointerInput.Move) {
@@ -302,7 +302,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
      */
     private _registerDevice(deviceType: DeviceType, deviceSlot: number, numberOfInputs: number): void {
         if (deviceSlot === undefined) {
-            throw `Unable to register device ${DeviceType[deviceType]} to undefined slot.`;
+            throw new Error(`Unable to register device ${DeviceType[deviceType]} to undefined slot.`);
         }
 
         if (!this._inputs[deviceType]) {

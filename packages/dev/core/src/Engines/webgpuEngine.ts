@@ -637,7 +637,7 @@ export class WebGPUEngine extends Engine {
             )
             .then((adapter: GPUAdapter | undefined) => {
                 if (!adapter) {
-                    throw "Could not retrieve a WebGPU adapter (adapter is null).";
+                    throw new Error("Could not retrieve a WebGPU adapter (adapter is null).");
                 } else {
                     this._adapter = adapter!;
                     this._adapterSupportedExtensions = [];
@@ -917,7 +917,7 @@ export class WebGPUEngine extends Engine {
 
     private _initializeContextAndSwapChain(): void {
         if (!this._renderingCanvas) {
-            throw "The rendering canvas has not been set!";
+            throw new Error("The rendering canvas has not been set!");
         }
         this._context = this._renderingCanvas.getContext("webgpu") as unknown as GPUCanvasContext;
         this._configureContext();
@@ -1648,14 +1648,14 @@ export class WebGPUEngine extends Engine {
      * @internal
      */
     public bindBuffersDirectly(): void {
-        throw "Not implemented on WebGPU";
+        throw new Error("Not implemented on WebGPU");
     }
 
     /**
      * @internal
      */
     public updateAndBindInstancesBuffer(): void {
-        throw "Not implemented on WebGPU";
+        throw new Error("Not implemented on WebGPU");
     }
 
     /**
@@ -1918,14 +1918,14 @@ export class WebGPUEngine extends Engine {
      * @internal
      */
     public createRawShaderProgram(): WebGLProgram {
-        throw "Not available on WebGPU";
+        throw new Error("Not available on WebGPU");
     }
 
     /**
      * @internal
      */
     public createShaderProgram(): WebGLProgram {
-        throw "Not available on WebGPU";
+        throw new Error("Not available on WebGPU");
     }
 
     /**
@@ -2054,7 +2054,7 @@ export class WebGPUEngine extends Engine {
         ) {
             if (!effect.effect && this.dbgShowEmptyEnableEffectCalls) {
                 Logger.Log(["drawWrapper=", effect]);
-                throw "Invalid call to enableEffect: the effect property is empty!";
+                throw new Error("Invalid call to enableEffect: the effect property is empty!");
             }
             return;
         } else {
@@ -2064,7 +2064,7 @@ export class WebGPUEngine extends Engine {
             this._counters.numEnableDrawWrapper++;
             if (!this._currentMaterialContext) {
                 Logger.Log(["drawWrapper=", effect]);
-                throw `Invalid call to enableEffect: the materialContext property is empty!`;
+                throw new Error(`Invalid call to enableEffect: the materialContext property is empty!`);
             }
         }
 
@@ -2750,7 +2750,7 @@ export class WebGPUEngine extends Engine {
         }
 
         if (image instanceof HTMLImageElement) {
-            throw "WebGPU engine: HTMLImageElement not supported in _uploadImageToTexture!";
+            throw new Error("WebGPU engine: HTMLImageElement not supported in _uploadImageToTexture!");
         }
 
         const bitmap = image as ImageBitmap; // in WebGPU we will always get an ImageBitmap, not an HTMLImageElement
@@ -3690,7 +3690,7 @@ export class WebGPUEngine extends Engine {
      * @internal
      */
     public _bindUnboundFramebuffer() {
-        throw "_bindUnboundFramebuffer is not implementedin WebGPU! You probably want to use restoreDefaultFramebuffer or unBindFramebuffer instead";
+        throw new Error("_bindUnboundFramebuffer is not implementedin WebGPU! You probably want to use restoreDefaultFramebuffer or unBindFramebuffer instead");
     }
 
     // TODO WEBGPU. All of the below should go once engine split with baseEngine.
@@ -3699,7 +3699,7 @@ export class WebGPUEngine extends Engine {
      * @internal
      */
     public _getSamplingParameters(): { min: number; mag: number } {
-        throw "_getSamplingParameters is not available in WebGPU";
+        throw new Error("_getSamplingParameters is not available in WebGPU");
     }
 
     /**

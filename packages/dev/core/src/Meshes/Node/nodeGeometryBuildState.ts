@@ -272,7 +272,7 @@ export class NodeGeometryBuildState {
         }
 
         if (errorMessage) {
-            throw "Build of NodeGeometry failed:\n" + errorMessage;
+            throw new Error("Build of NodeGeometry failed:\n" + errorMessage);
         }
     }
 

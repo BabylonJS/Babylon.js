@@ -41,7 +41,7 @@ export class DeviceEventFactory {
             case DeviceType.Touch:
                 return this._CreatePointerEvent(deviceType, deviceSlot, inputIndex, currentState, deviceInputSystem, elementToAttachTo, pointerId);
             default:
-                throw `Unable to generate event for device ${DeviceType[deviceType]}`;
+                throw new Error(`Unable to generate event for device ${DeviceType[deviceType]}`);
         }
     }
 

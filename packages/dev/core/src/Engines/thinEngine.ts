@@ -5218,7 +5218,7 @@ export class ThinEngine {
             if (texture && texture.isMultiview) {
                 //this._gl.bindTexture(target, texture ? texture._colorTextureArray : null);
                 Logger.Error(["_bindTextureDirectly called with a multiview texture!", target, texture]);
-                throw "_bindTextureDirectly called with a multiview texture!";
+                throw new Error("_bindTextureDirectly called with a multiview texture!");
             } else {
                 this._gl.bindTexture(target, texture?._hardwareTexture?.underlyingResource ?? null);
             }

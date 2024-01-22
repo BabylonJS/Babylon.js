@@ -161,7 +161,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             let defaultEngineZip = `var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: ${forceWebGL1}}); }`;
 
             if (useWebGPU) {
-                defaultEngineZip = `var createDefaultEngine = async function() { 
+                defaultEngineZip = `var createDefaultEngine = async function() {
                     var engine = new BABYLON.WebGPUEngine(canvas);
                     await engine.initAsync();
                     return engine;
@@ -246,7 +246,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                     }
 
                     window.engine = await asyncEngineCreation();`;
-                code += "\r\nif (!engine) throw 'engine should not be null.';";
+                code += "\r\nif (!engine) throw new Error('engine should not be null.');";
 
                 globalObject.startRenderLoop = (engine: Engine, canvas: HTMLCanvasElement) => {
                     engine.runRenderLoop(() => {

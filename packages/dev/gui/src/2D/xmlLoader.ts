@@ -112,11 +112,11 @@ export class XmlLoader {
             if (!this._nodes[id]) {
                 this._nodes[id] = guiNode;
             } else {
-                throw "XmlLoader Exception : Duplicate ID, every element should have an unique ID attribute";
+                throw new Error("XmlLoader Exception : Duplicate ID, every element should have an unique ID attribute");
             }
             return guiNode;
         } catch (exception) {
-            throw "XmlLoader Exception : Error parsing Control " + node.nodeName + "," + exception + ".";
+            throw new Error("XmlLoader Exception : Error parsing Control " + node.nodeName + "," + exception + ".");
         }
     }
 
@@ -137,13 +137,13 @@ export class XmlLoader {
                 continue;
             }
             if (rows[i].nodeName != "Row") {
-                throw "XmlLoader Exception : Expecting Row node, received " + rows[i].nodeName;
+                throw new Error("XmlLoader Exception : Expecting Row node, received " + rows[i].nodeName);
             }
             rowNumber += 1;
             columns = rows[i].children;
 
             if (!rows[i].attributes.getNamedItem("height")) {
-                throw "XmlLoader Exception : Height must be defined for grid rows";
+                throw new Error("XmlLoader Exception : Height must be defined for grid rows");
             }
             height = Number(rows[i].attributes.getNamedItem("height").nodeValue);
             isPixel = rows[i].attributes.getNamedItem("isPixel") ? JSON.parse(rows[i].attributes.getNamedItem("isPixel").nodeValue) : false;
@@ -154,16 +154,18 @@ export class XmlLoader {
                     continue;
                 }
                 if (columns[j].nodeName != "Column") {
-                    throw "XmlLoader Exception : Expecting Column node, received " + columns[j].nodeName;
+                    throw new Error("XmlLoader Exception : Expecting Column node, received " + columns[j].nodeName);
                 }
                 columnNumber += 1;
                 if (rowNumber > 0 && columnNumber > totalColumnsNumber) {
-                    throw "XmlLoader Exception : In the Grid element, the number of columns is defined in the first row, do not add more columns in the subsequent rows.";
+                    throw new Error(
+                        "XmlLoader Exception : In the Grid element, the number of columns is defined in the first row, do not add more columns in the subsequent rows."
+                    );
                 }
 
                 if (rowNumber == 0) {
                     if (!columns[j].attributes.getNamedItem("width")) {
-                        throw "XmlLoader Exception : Width must be defined for all the grid columns in the first row";
+                        throw new Error("XmlLoader Exception : Width must be defined for all the grid columns in the first row");
                     }
                     width = Number(columns[j].attributes.getNamedItem("width").nodeValue);
                     isPixel = columns[j].attributes.getNamedItem("isPixel") ? JSON.parse(columns[j].attributes.getNamedItem("isPixel").nodeValue) : false;
@@ -220,12 +222,12 @@ export class XmlLoader {
         const dataSource = node.attributes.getNamedItem("dataSource").value;
 
         if (!dataSource.includes(" in ")) {
-            throw "XmlLoader Exception : Malformed XML, Data Source must include an in";
+            throw new Error("XmlLoader Exception : Malformed XML, Data Source must include an in");
         } else {
             let isArray = true;
             const splittedSource = dataSource.split(" in ");
             if (splittedSource.length < 2) {
-                throw "XmlLoader Exception : Malformed XML, Data Source must have an iterator and a source";
+                throw new Error("XmlLoader Exception : Malformed XML, Data Source must have an iterator and a source");
             }
             let source = splittedSource[1];
             if (source.startsWith("{") && source.endsWith("}")) {

@@ -68,7 +68,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         super(name, scene, _options);
 
         if (!_options.ribbonOptions) {
-            throw "'GreasedLineMeshOptions.ribbonOptions' is not set.";
+            throw new Error("'GreasedLineMeshOptions.ribbonOptions' is not set.");
         }
 
         this._paths = [];
@@ -91,7 +91,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
      */
     public override addPoints(points: number[][], options: GreasedLineMeshOptions, hasPathOptions = false) {
         if (!options.ribbonOptions) {
-            throw "addPoints() on GreasedLineRibbonMesh instance requires 'GreasedLineMeshOptions.ribbonOptions'.";
+            throw new Error("addPoints() on GreasedLineRibbonMesh instance requires 'GreasedLineMeshOptions.ribbonOptions'.");
         }
 
         if (!hasPathOptions) {
@@ -166,7 +166,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
 
     protected _setPoints(points: number[][], _options: GreasedLineMeshOptions) {
         if (!this._options.ribbonOptions) {
-            throw "No 'GreasedLineMeshOptions.ribbonOptions' provided.";
+            throw new Error("No 'GreasedLineMeshOptions.ribbonOptions' provided.");
         }
         this._points = points;
         this._options.points = points;
@@ -184,7 +184,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
             } else {
                 if (pathOptions.ribbonOptions?.directionsAutoMode === GreasedLineRibbonAutoDirectionMode.AUTO_DIRECTIONS_NONE) {
                     if (!pathOptions.ribbonOptions!.directions) {
-                        throw "In GreasedLineRibbonAutoDirectionMode.AUTO_DIRECTIONS_NONE 'GreasedLineMeshOptions.ribbonOptions.directions' must be defined.";
+                        throw new Error("In GreasedLineRibbonAutoDirectionMode.AUTO_DIRECTIONS_NONE 'GreasedLineMeshOptions.ribbonOptions.directions' must be defined.");
                     }
                     directionPlanes = GreasedLineRibbonMesh._GetDirectionPlanesFromDirectionsOption(subPoints.length, pathOptions.ribbonOptions!.directions);
                 }
@@ -217,7 +217,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
     private static _CreateRibbonVertexData(pathArray: Vector3[][], options: GreasedLineMeshOptions) {
         const numOfPaths = pathArray.length;
         if (numOfPaths < 2) {
-            throw "Minimum of two paths are required to create a GreasedLineRibbonMesh.";
+            throw new Error("Minimum of two paths are required to create a GreasedLineRibbonMesh.");
         }
 
         const positions = [];
@@ -291,7 +291,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         const positions = ribbonVertexData.positions;
 
         if (!this._options.widths) {
-            throw "No 'GreasedLineMeshOptions.widths' table is specified.";
+            throw new Error("No 'GreasedLineMeshOptions.widths' table is specified.");
         }
 
         for (const p of positions) {
@@ -354,7 +354,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
 
     private static _ConvertToRibbonPath(points: number[], ribbonInfo: GreasedLineRibbonOptions, rightHandedSystem: boolean, directionPlane?: Vector3) {
         if (ribbonInfo.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS && !ribbonInfo.width) {
-            throw "'GreasedLineMeshOptions.ribbonOptiosn.width' must be specified in GreasedLineRibbonPointsMode.POINTS_MODE_POINTS.";
+            throw new Error("'GreasedLineMeshOptions.ribbonOptiosn.width' must be specified in GreasedLineRibbonPointsMode.POINTS_MODE_POINTS.");
         }
         const path1 = [];
         const path2 = [];

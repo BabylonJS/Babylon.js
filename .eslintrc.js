@@ -262,6 +262,7 @@ const rules = {
         "prefer-rest-params": "off",
         "no-fallthrough": "warn",
         "no-async-promise-executor": "warn",
+        "no-throw-literal": "error",
         // "prettier/prettier": "error" // add this if we want to use prettier error reporting.
     },
 };

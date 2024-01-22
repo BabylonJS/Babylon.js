@@ -513,7 +513,7 @@ export class SceneLoader {
         const directLoad = SceneLoader._GetDirectLoad(fileInfo.url);
 
         if (fileInfo.rawData && !pluginExtension) {
-            throw "When using ArrayBufferView to load data the file extension must be provided.";
+            throw new Error("When using ArrayBufferView to load data the file extension must be provided.");
         }
 
         const registeredPlugin = pluginExtension
@@ -523,7 +523,7 @@ export class SceneLoader {
               : SceneLoader._GetPluginForFilename(fileInfo.url);
 
         if (fileInfo.rawData && !registeredPlugin.isBinary) {
-            throw "Loading from ArrayBufferView can not be used with plugins that don't support binary loading.";
+            throw new Error("Loading from ArrayBufferView can not be used with plugins that don't support binary loading.");
         }
 
         let plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync;
@@ -535,7 +535,9 @@ export class SceneLoader {
         }
 
         if (!plugin) {
-            throw "The loader plugin corresponding to the file type you are trying to load has not been found. If using es6, please import the plugin you wish to use before.";
+            throw new Error(
+                "The loader plugin corresponding to the file type you are trying to load has not been found. If using es6, please import the plugin you wish to use before."
+            );
         }
 
         SceneLoader.OnPluginActivatedObservable.notifyObservers(plugin);
@@ -599,7 +601,7 @@ export class SceneLoader {
             };
 
             if (!plugin.loadFile && fileInfo.rawData) {
-                throw "Plugin does not support loading ArrayBufferView.";
+                throw new Error("Plugin does not support loading ArrayBufferView.");
             }
 
             request = plugin.loadFile

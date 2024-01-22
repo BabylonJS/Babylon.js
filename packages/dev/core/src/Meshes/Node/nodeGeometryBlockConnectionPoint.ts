@@ -332,7 +332,7 @@ export class NodeGeometryConnectionPoint {
      */
     public connectTo(connectionPoint: NodeGeometryConnectionPoint, ignoreConstraints = false): NodeGeometryConnectionPoint {
         if (!ignoreConstraints && !this.canConnectTo(connectionPoint)) {
-            throw "Cannot connect these two connectors.";
+            throw new Error("Cannot connect these two connectors.");
         }
 
         this._endpoints.push(connectionPoint);

@@ -1233,7 +1233,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      */
     public start(delay = this.startDelay): void {
         if (!this.targetStopDuration && this._hasTargetStopDurationDependantGradient()) {
-            throw "Particle system started with a targetStopDuration dependant gradient (eg. startSizeGradients) but no targetStopDuration set";
+            throw new Error("Particle system started with a targetStopDuration dependant gradient (eg. startSizeGradients) but no targetStopDuration set");
         }
         if (delay) {
             setTimeout(() => {

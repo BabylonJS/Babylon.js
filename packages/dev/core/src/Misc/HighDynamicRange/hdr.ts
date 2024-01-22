@@ -84,7 +84,7 @@ export class HDRTools {
 
         let line = this._ReadStringLine(uint8array, 0);
         if (line[0] != "#" || line[1] != "?") {
-            throw "Bad HDR Format.";
+            throw new Error("Bad HDR Format.");
         }
 
         let endOfHeader = false;
@@ -103,7 +103,7 @@ export class HDRTools {
         } while (!endOfHeader);
 
         if (!findFormat) {
-            throw "HDR Bad header format, unsupported FORMAT";
+            throw new Error("HDR Bad header format, unsupported FORMAT");
         }
 
         lineIndex += line.length + 1;
@@ -114,13 +114,13 @@ export class HDRTools {
 
         // TODO. Support +Y and -X if needed.
         if (!match || match.length < 3) {
-            throw "HDR Bad header format, no size";
+            throw new Error("HDR Bad header format, no size");
         }
         width = parseInt(match[2]);
         height = parseInt(match[1]);
 
         if (width < 8 || width > 0x7fff) {
-            throw "HDR Bad header format, unsupported size";
+            throw new Error("HDR Bad header format, unsupported size");
         }
 
         lineIndex += line.length + 1;
@@ -199,7 +199,7 @@ export class HDRTools {
             }
 
             if (((c << 8) | d) != scanline_width) {
-                throw "HDR Bad header format, wrong scan line width";
+                throw new Error("HDR Bad header format, wrong scan line width");
             }
 
             index = 0;
@@ -216,7 +216,7 @@ export class HDRTools {
                         // a run of the same value
                         count = a - 128;
                         if (count == 0 || count > endIndex - index) {
-                            throw "HDR Bad Format, bad scanline data (run)";
+                            throw new Error("HDR Bad Format, bad scanline data (run)");
                         }
 
                         while (count-- > 0) {
@@ -226,7 +226,7 @@ export class HDRTools {
                         // a non-run
                         count = a;
                         if (count == 0 || count > endIndex - index) {
-                            throw "HDR Bad Format, bad scanline data (non-run)";
+                            throw new Error("HDR Bad Format, bad scanline data (non-run)");
                         }
 
                         scanLineArray[index++] = b;

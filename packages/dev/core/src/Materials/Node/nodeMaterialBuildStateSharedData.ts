@@ -184,7 +184,7 @@ export class NodeMaterialBuildStateSharedData {
         }
 
         if (errorMessage) {
-            throw "Build of NodeMaterial failed:\n" + errorMessage;
+            throw new Error("Build of NodeMaterial failed:\n" + errorMessage);
         }
     }
 }

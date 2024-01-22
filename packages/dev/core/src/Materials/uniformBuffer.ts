@@ -413,7 +413,7 @@ export class UniformBuffer {
         // std140 FTW...
         if (arraySize > 0) {
             if (size instanceof Array) {
-                throw "addUniform should not be use with Array in UBO: " + name;
+                throw new Error("addUniform should not be use with Array in UBO: " + name);
             }
 
             this._fillAlignment(4);

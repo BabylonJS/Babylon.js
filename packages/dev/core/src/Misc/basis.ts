@@ -152,7 +152,7 @@ export const GetInternalFormatFromBasisFormat = (basisFormat: number, engine: En
     }
 
     if (format === undefined) {
-        throw "The chosen Basis transcoder format is not currently supported";
+        throw new Error("The chosen Basis transcoder format is not currently supported");
     }
 
     return format;

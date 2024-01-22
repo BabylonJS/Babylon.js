@@ -169,7 +169,7 @@ export class GUINodeTools {
                 element.height = "40px";
                 return element;
             default:
-                throw "Error: control type not recognized";
+                throw new Error("Error: control type not recognized");
         }
     }
 }

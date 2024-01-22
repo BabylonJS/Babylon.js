@@ -524,7 +524,7 @@ export class NodeMaterial extends PushMaterial {
      */
     public addOutputNode(node: NodeMaterialBlock) {
         if (node.target === null) {
-            throw "This node is not meant to be an output node. You may want to explicitly set its target value.";
+            throw new Error("This node is not meant to be an output node. You may want to explicitly set its target value.");
         }
 
         if ((node.target & NodeMaterialBlockTargets.Vertex) !== 0) {
@@ -650,7 +650,7 @@ export class NodeMaterial extends PushMaterial {
 
                 for (const other of this.attachedBlocks) {
                     if (other.getClassName() === className) {
-                        throw `Cannot have multiple blocks of type ${className} in the same NodeMaterial`;
+                        throw new Error(`Cannot have multiple blocks of type ${className} in the same NodeMaterial`);
                     }
                 }
             }
@@ -739,11 +739,11 @@ export class NodeMaterial extends PushMaterial {
         const allowEmptyVertexProgram = this._mode === NodeMaterialModes.Particle;
 
         if (this._vertexOutputNodes.length === 0 && !allowEmptyVertexProgram) {
-            throw "You must define at least one vertexOutputNode";
+            throw new Error("You must define at least one vertexOutputNode");
         }
 
         if (this._fragmentOutputNodes.length === 0) {
-            throw "You must define at least one fragmentOutputNode";
+            throw new Error("You must define at least one fragmentOutputNode");
         }
 
         // Compilation state

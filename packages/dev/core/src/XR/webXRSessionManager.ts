@@ -360,7 +360,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
                         },
                         (rejectionReason) => {
                             Logger.Error(rejectionReason);
-                            throw 'XR initialization failed: required "viewer" reference space type not supported.';
+                            throw new Error('XR initialization failed: required "viewer" reference space type not supported.');
                         }
                     );
                 }

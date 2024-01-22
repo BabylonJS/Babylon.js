@@ -482,7 +482,7 @@ export class NodeMaterialConnectionPoint {
      */
     public connectTo(connectionPoint: NodeMaterialConnectionPoint, ignoreConstraints = false): NodeMaterialConnectionPoint {
         if (!ignoreConstraints && !this.canConnectTo(connectionPoint)) {
-            throw "Cannot connect these two connectors.";
+            throw new Error("Cannot connect these two connectors.");
         }
 
         this._endpoints.push(connectionPoint);

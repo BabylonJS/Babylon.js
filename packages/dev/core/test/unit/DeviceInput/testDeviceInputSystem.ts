@@ -41,12 +41,12 @@ export class TestDeviceInputSystem implements ITestDeviceInputSystem {
         const device = this._inputs[deviceType][deviceSlot];
 
         if (!device) {
-            throw `Unable to find device ${DeviceType[deviceType]}`;
+            throw new Error(`Unable to find device ${DeviceType[deviceType]}`);
         }
 
         const currentValue = device[inputIndex];
         if (currentValue === undefined) {
-            throw `Unable to find input ${inputIndex} for device ${DeviceType[deviceType]} in slot ${deviceSlot}`;
+            throw new Error(`Unable to find input ${inputIndex} for device ${DeviceType[deviceType]} in slot ${deviceSlot}`);
         }
 
         return currentValue;
@@ -78,11 +78,11 @@ export class TestDeviceInputSystem implements ITestDeviceInputSystem {
 
     public changeInput(deviceType: DeviceType, deviceSlot: number, inputIndex: number, currentState: number, createEvent: boolean = true): void {
         if (!this._inputs[deviceType]) {
-            throw `Unable to find device type ${DeviceType[deviceType]}`;
+            throw new Error(`Unable to find device type ${DeviceType[deviceType]}`);
         }
 
         const device = this._inputs[deviceType][deviceSlot];
-        
+
             if (device) {
                 device[inputIndex] = currentState;
                 if (createEvent) {
@@ -90,7 +90,7 @@ export class TestDeviceInputSystem implements ITestDeviceInputSystem {
                 this._onInputChanged(deviceType, deviceSlot, evt);
                 }
             } else {
-                throw `Unable to find device type ${DeviceType[deviceType]}:${deviceSlot}`;
+                throw new Error(`Unable to find device type ${DeviceType[deviceType]}:${deviceSlot}`);
             }
     }
 

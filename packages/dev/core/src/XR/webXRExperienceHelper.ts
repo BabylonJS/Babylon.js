@@ -127,7 +127,7 @@ export class WebXRExperienceHelper implements IDisposable {
         sessionCreationOptions: XRSessionInit = {}
     ): Promise<WebXRSessionManager> {
         if (!this._supported) {
-            throw "WebXR not supported in this browser or environment";
+            throw new Error("WebXR not supported in this browser or environment");
         }
         this._setState(WebXRState.ENTERING_XR);
         if (referenceSpaceType !== "viewer" && referenceSpaceType !== "local") {

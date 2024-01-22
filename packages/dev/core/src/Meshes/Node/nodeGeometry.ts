@@ -229,7 +229,7 @@ export class NodeGeometry {
         this._buildWasSuccessful = false;
 
         if (!this.outputBlock) {
-            throw "You must define the outputBlock property before building the geometry";
+            throw new Error("You must define the outputBlock property before building the geometry");
         }
         const now = PrecisionDate.Now;
         // Initialize blocks

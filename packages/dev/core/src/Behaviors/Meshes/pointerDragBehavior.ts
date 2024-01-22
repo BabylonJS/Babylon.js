@@ -181,7 +181,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             optionCount++;
         }
         if (optionCount > 1) {
-            throw "Multiple drag modes specified in dragBehavior options. Only one expected";
+            throw new Error("Multiple drag modes specified in dragBehavior options. Only one expected");
         }
     }
 

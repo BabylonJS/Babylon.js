@@ -468,7 +468,7 @@ export class CSG {
         const vertColors = data.colors;
 
         if (!indices || !positions) {
-            throw "BABYLON.CSG: VertexData must at least contain positions and indices";
+            throw new Error("BABYLON.CSG: VertexData must at least contain positions and indices");
         }
 
         for (let i = 0; i < indices.length; i += 3) {
@@ -542,7 +542,7 @@ export class CSG {
                 invertWinding = mesh.material.sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation;
             }
         } else {
-            throw "BABYLON.CSG: Wrong Mesh type, must be BABYLON.Mesh";
+            throw new Error("BABYLON.CSG: Wrong Mesh type, must be BABYLON.Mesh");
         }
 
         const indices = <IndicesArray>mesh.getIndices(),

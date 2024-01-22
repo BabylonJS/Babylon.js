@@ -203,7 +203,7 @@ export class Gizmo implements IGizmo {
      */
     public setCustomMesh(mesh: Mesh) {
         if (mesh.getScene() != this.gizmoLayer.utilityLayerScene) {
-            throw "When setting a custom mesh on a gizmo, the custom meshes scene must be the same as the gizmos (eg. gizmo.gizmoLayer.utilityLayerScene)";
+            throw new Error("When setting a custom mesh on a gizmo, the custom meshes scene must be the same as the gizmos (eg. gizmo.gizmoLayer.utilityLayerScene)");
         }
         this._rootMesh.getChildMeshes().forEach((c) => {
             c.dispose();

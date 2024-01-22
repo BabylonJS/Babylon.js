@@ -65,7 +65,7 @@ export class PathCursor {
      */
     public move(step: number): PathCursor {
         if (Math.abs(step) > 1) {
-            throw "step size should be less than 1.";
+            throw new Error("step size should be less than 1.");
         }
 
         this.value += step;
