@@ -186,9 +186,13 @@ export class Button extends Rectangle {
     /**
      * Serializes the current button
      * @param serializationObject defines the JSON serialized object
+     * @param force force serialization even if isSerializable === false
      */
-    public serialize(serializationObject: any) {
-        super.serialize(serializationObject);
+    public serialize(serializationObject: any, force: boolean) {
+        super.serialize(serializationObject, force);
+        if (!this.isSerializable && !force) {
+            return;
+        }
 
         if (this._textBlock) {
             serializationObject.textBlockName = this._textBlock.name;

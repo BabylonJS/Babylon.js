@@ -43,6 +43,7 @@ import linkedMeshOffsetIcon from "shared-ui-components/imgs/linkedMeshOffsetIcon
 import visibleIcon from "../../../../imgs/visibilityActiveIcon.svg";
 import addIcon from "shared-ui-components/imgs/addGridElementDark.svg";
 import removeIcon from "shared-ui-components/imgs/deleteGridElementDark.svg";
+import adtIcon from "../../../../imgs/adtIcon.svg";
 
 import hAlignCenterIcon from "shared-ui-components/imgs/hAlignCenterIcon.svg";
 import hAlignLeftIcon from "shared-ui-components/imgs/hAlignLeftIcon.svg";
@@ -652,6 +653,11 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                         <hr className="ge" />
                     </>
                 )}
+                <TextLineComponent tooltip="" label="SERIALIZATION" value=" " color="grey"></TextLineComponent>
+                <div className="ge-divider">
+                    <IconComponent icon={adtIcon} label={"Serializable"} />
+                    <CheckBoxLineComponent label="ISSERIALIZABLE" target={proxy} propertyName="isSerializable" />
+                </div>
                 <TextLineComponent tooltip="" label="VISIBILITY" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
                     <IconComponent icon={visibleIcon} label={"Visible"} />
