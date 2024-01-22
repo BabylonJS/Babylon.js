@@ -1,190 +1,12 @@
 import { WebXRFeatureName, WebXRFeaturesManager } from "../webXRFeaturesManager";
 import type { WebXRSessionManager } from "../webXRSessionManager";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
-import type { Nullable } from "../../types";
-import { WebXRLayerRenderTargetTextureProvider } from "../webXRRenderTargetTextureProvider";
-import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
-import type { WebXRLayerType } from "../webXRLayerWrapper";
-import { WebXRLayerWrapper } from "../webXRLayerWrapper";
-import type { Viewport } from "../../Maths/math.viewport";
+import type { WebXRLayerWrapper } from "../webXRLayerWrapper";
 import { WebXRWebGLLayerWrapper } from "../webXRWebGLLayer";
-
-/**
- * Wraps xr composition layers.
- * @internal
- */
-export class WebXRCompositionLayerWrapper extends WebXRLayerWrapper {
-    constructor(
-        public getWidth: () => number,
-        public getHeight: () => number,
-        public readonly layer: XRCompositionLayer,
-        public readonly layerType: WebXRLayerType,
-        public readonly isMultiview: boolean,
-        public createRTTProvider: (xrSessionManager: WebXRSessionManager) => WebXRLayerRenderTargetTextureProvider
-    ) {
-        super(getWidth, getHeight, layer, layerType, createRTTProvider);
-    }
-}
-
-/**
- * Provides render target textures and other important rendering information for a given XRCompositionLayer.
- * @internal
- */
-class WebXRCompositionLayerRenderTargetTextureProvider extends WebXRLayerRenderTargetTextureProvider {
-    protected _lastSubImages = new Map<XREye, XRWebGLSubImage>();
-    private _compositionLayer: XRCompositionLayer;
-
-    constructor(
-        protected readonly _xrSessionManager: WebXRSessionManager,
-        protected readonly _xrWebGLBinding: XRWebGLBinding,
-        public readonly layerWrapper: WebXRCompositionLayerWrapper
-    ) {
-        super(_xrSessionManager.scene, layerWrapper);
-        this._compositionLayer = layerWrapper.layer;
-    }
-
-    protected _getRenderTargetForSubImage(subImage: XRWebGLSubImage, eye: XREye) {
-        const lastSubImage = this._lastSubImages.get(eye);
-        const eyeIndex = eye == "left" ? 0 : 1;
-
-        const colorTextureWidth = subImage.colorTextureWidth ?? subImage.textureWidth;
-        const colorTextureHeight = subImage.colorTextureHeight ?? subImage.textureHeight;
-
-        if (!this._renderTargetTextures[eyeIndex] || lastSubImage?.textureWidth !== colorTextureWidth || lastSubImage?.textureHeight !== colorTextureHeight) {
-            let depthStencilTexture;
-            const depthStencilTextureWidth = subImage.depthStencilTextureWidth ?? colorTextureWidth;
-            const depthStencilTextureHeight = subImage.depthStencilTextureHeight ?? colorTextureHeight;
-            if (colorTextureWidth === depthStencilTextureWidth || colorTextureHeight === depthStencilTextureHeight) {
-                depthStencilTexture = subImage.depthStencilTexture;
-            }
-
-            this._renderTargetTextures[eyeIndex] = this._createRenderTargetTexture(
-                colorTextureWidth,
-                colorTextureHeight,
-                null,
-                subImage.colorTexture,
-                depthStencilTexture,
-                this.layerWrapper.isMultiview
-            );
-
-            this._framebufferDimensions = {
-                framebufferWidth: colorTextureWidth,
-                framebufferHeight: colorTextureHeight,
-            };
-        }
-
-        this._lastSubImages.set(eye, subImage);
-        return this._renderTargetTextures[eyeIndex];
-    }
-    private _getSubImageForEye(eye: XREye): Nullable<XRWebGLSubImage> {
-        const currentFrame = this._xrSessionManager.currentFrame;
-        if (currentFrame) {
-            return this._xrWebGLBinding.getSubImage(this._compositionLayer, currentFrame, eye);
-        }
-        return null;
-    }
-    public getRenderTargetTextureForEye(eye: XREye): Nullable<RenderTargetTexture> {
-        const subImage = this._getSubImageForEye(eye);
-        if (subImage) {
-            return this._getRenderTargetForSubImage(subImage, eye);
-        }
-        return null;
-    }
-    public getRenderTargetTextureForView(view: XRView): Nullable<RenderTargetTexture> {
-        return this.getRenderTargetTextureForEye(view.eye);
-    }
-
-    protected _setViewportForSubImage(viewport: Viewport, subImage: XRWebGLSubImage) {
-        const textureWidth = subImage.colorTextureWidth ?? subImage.textureWidth;
-        const textureHeight = subImage.colorTextureWidth ?? subImage.textureHeight;
-        const xrViewport = subImage.viewport;
-        viewport.x = xrViewport.x / textureWidth;
-        viewport.y = xrViewport.y / textureHeight;
-        viewport.width = xrViewport.width / textureWidth;
-        viewport.height = xrViewport.height / textureHeight;
-    }
-
-    public trySetViewportForView(viewport: Viewport, view: XRView): boolean {
-        const subImage = this._lastSubImages.get(view.eye) || this._getSubImageForEye(view.eye);
-        if (subImage) {
-            this._setViewportForSubImage(viewport, subImage);
-            return true;
-        }
-        return false;
-    }
-}
-
-/**
- * Wraps xr projection layers.
- * @internal
- */
-export class WebXRProjectionLayerWrapper extends WebXRCompositionLayerWrapper {
-    constructor(
-        public readonly layer: XRProjectionLayer,
-        isMultiview: boolean,
-        xrGLBinding: XRWebGLBinding
-    ) {
-        super(
-            () => layer.textureWidth,
-            () => layer.textureHeight,
-            layer,
-            "XRProjectionLayer",
-            isMultiview,
-            (sessionManager) => new WebXRProjectionLayerRenderTargetTextureProvider(sessionManager, xrGLBinding, this)
-        );
-    }
-}
-
-/**
- * Provides render target textures and other important rendering information for a given XRProjectionLayer.
- * @internal
- */
-class WebXRProjectionLayerRenderTargetTextureProvider extends WebXRCompositionLayerRenderTargetTextureProvider {
-    private readonly _projectionLayer: XRProjectionLayer;
-
-    constructor(
-        _xrSessionManager: WebXRSessionManager,
-        _xrWebGLBinding: XRWebGLBinding,
-        public readonly layerWrapper: WebXRProjectionLayerWrapper
-    ) {
-        super(_xrSessionManager, _xrWebGLBinding, layerWrapper);
-        this._projectionLayer = layerWrapper.layer;
-    }
-
-    private _getSubImageForView(view: XRView): XRWebGLSubImage {
-        return this._xrWebGLBinding.getViewSubImage(this._projectionLayer, view);
-    }
-
-    public getRenderTargetTextureForView(view: XRView): Nullable<RenderTargetTexture> {
-        return this._getRenderTargetForSubImage(this._getSubImageForView(view), view.eye);
-    }
-
-    public getRenderTargetTextureForEye(eye: XREye): Nullable<RenderTargetTexture> {
-        const lastSubImage = this._lastSubImages.get(eye);
-        if (lastSubImage) {
-            return this._getRenderTargetForSubImage(lastSubImage, eye);
-        }
-        return null;
-    }
-
-    public trySetViewportForView(viewport: Viewport, view: XRView): boolean {
-        const subImage = this._lastSubImages.get(view.eye) || this._getSubImageForView(view);
-        if (subImage) {
-            this._setViewportForSubImage(viewport, subImage);
-            return true;
-        }
-        return false;
-    }
-}
+import { WebXRProjectionLayerWrapper, defaultXRProjectionLayerInit } from "./Layers/WebXRProjectionLayer";
+import { WebXRCompositionLayerRenderTargetTextureProvider, WebXRCompositionLayerWrapper } from "./Layers/WebXRCompositionLayer";
 
 const defaultXRWebGLLayerInit: XRWebGLLayerInit = {};
-
-const defaultXRProjectionLayerInit: XRProjectionLayerInit = {
-    textureType: "texture",
-    colorFormat: 0x1908 /* WebGLRenderingContext.RGBA */,
-    depthFormat: 0x88f0 /* WebGLRenderingContext.DEPTH24_STENCIL8 */,
-    scaleFactor: 1.0,
-};
 
 /**
  * Configuration options of the layers feature
@@ -195,6 +17,11 @@ export interface IWebXRLayersOptions {
      * Defaults to false.
      */
     preferMultiviewOnInit?: boolean;
+
+    /**
+     * Optional configuration for the base projection layer.
+     */
+    projectionLayerInit?: Partial<XRProjectionLayerInit>;
 }
 
 /**
@@ -218,6 +45,8 @@ export class WebXRLayers extends WebXRAbstractFeature {
 
     private _glContext: WebGLRenderingContext | WebGL2RenderingContext;
     private _xrWebGLBinding: XRWebGLBinding;
+    private _isMultiviewEnabled = false;
+    private _projectionLayerInitialized = false;
 
     constructor(
         _xrSessionManager: WebXRSessionManager,
@@ -243,12 +72,10 @@ export class WebXRLayers extends WebXRAbstractFeature {
         this._xrWebGLBinding = new XRWebGLBinding(this._xrSessionManager.session, this._glContext);
         this._existingLayers.length = 0;
 
-        const projectionLayerInit = { ...defaultXRProjectionLayerInit };
-        const projectionLayerMultiview = this._options.preferMultiviewOnInit && engine.getCaps().multiview;
-        if (projectionLayerMultiview) {
-            projectionLayerInit.textureType = "texture-array";
-        }
-        this.addXRSessionLayer(this.createProjectionLayer(projectionLayerInit, projectionLayerMultiview));
+        const projectionLayerInit = { ...defaultXRProjectionLayerInit, ...this._options.projectionLayerInit };
+        this._isMultiviewEnabled = this._options.preferMultiviewOnInit && engine.getCaps().multiview;
+        this.createProjectionLayer(projectionLayerInit /*, projectionLayerMultiview*/);
+        this._projectionLayerInitialized = true;
 
         return true;
     }
@@ -271,13 +98,11 @@ export class WebXRLayers extends WebXRAbstractFeature {
         return new WebXRWebGLLayerWrapper(layer);
     }
 
-    /**
-     * Creates a new XRProjectionLayer.
-     * @param params an object providing configuration options for the new XRProjectionLayer.
-     * @param multiview whether the projection layer should render with multiview.
-     * @returns the projection layer
-     */
-    public createProjectionLayer(params = defaultXRProjectionLayerInit, multiview = false): WebXRProjectionLayerWrapper {
+    private _validateLayerInit(params: XRProjectionLayerInit | XRQuadLayerInit, multiview = this._isMultiviewEnabled): void {
+        // check if we are in session
+        if (!this._xrSessionManager.inXRSession) {
+            throw new Error("Cannot create a layer outside of a WebXR session. Make sure the session has started before creating layers.");
+        }
         if (multiview && params.textureType !== "texture-array") {
             throw new Error("Projection layers can only be made multiview if they use texture arrays. Set the textureType parameter to 'texture-array'.");
         }
@@ -286,9 +111,58 @@ export class WebXRLayers extends WebXRAbstractFeature {
         if (!multiview && params.textureType === "texture-array") {
             throw new Error("We currently only support multiview rendering when the textureType parameter is set to 'texture-array'.");
         }
+    }
+
+    private _extendXRLayerInit(params: XRProjectionLayerInit | XRQuadLayerInit, multiview = this._isMultiviewEnabled): XRProjectionLayerInit | XRQuadLayerInit {
+        if (multiview) {
+            params.textureType = "texture-array";
+        }
+        return params;
+    }
+
+    /**
+     * Creates a new XRProjectionLayer.
+     * @param params an object providing configuration options for the new XRProjectionLayer.
+     * @param multiview whether the projection layer should render with multiview. Will be tru automatically if the extension initialized with multiview.
+     * @returns the projection layer
+     */
+    public createProjectionLayer(params = defaultXRProjectionLayerInit, multiview = this._isMultiviewEnabled): WebXRProjectionLayerWrapper {
+        this._extendXRLayerInit(params, multiview);
+        this._validateLayerInit(params, multiview);
 
         const projLayer = this._xrWebGLBinding.createProjectionLayer(params);
-        return new WebXRProjectionLayerWrapper(projLayer, multiview, this._xrWebGLBinding);
+        const layer = new WebXRProjectionLayerWrapper(projLayer, multiview, this._xrWebGLBinding);
+        this.addXRSessionLayer(layer);
+        return layer;
+    }
+
+    /**
+     * Creates a new XRQuadLayer.
+     * @param params an object providing configuration options for the new XRQuadLayer.
+     * @param multiview whether the quad layer should render with multiview. Will be tru automatically if the extension initialized with multiview.
+     * @returns the quad layer
+     */
+    public createQuadLayer(params: Partial<XRQuadLayerInit> = {}, multiview = this._isMultiviewEnabled): WebXRCompositionLayerWrapper {
+        this._extendXRLayerInit(params, multiview);
+        const engine = this._xrSessionManager.scene.getEngine();
+        const populatedParams: XRQuadLayerInit = {
+            space: this._xrSessionManager.referenceSpace,
+            viewPixelWidth: engine.framebufferDimensionsObject?.framebufferWidth ?? engine.getRenderWidth(),
+            viewPixelHeight: engine.framebufferDimensionsObject?.framebufferHeight ?? engine.getRenderHeight(),
+            ...params,
+        };
+        this._validateLayerInit(populatedParams, multiview);
+        const quadLayer = this._xrWebGLBinding.createQuadLayer(populatedParams);
+        const wrapper: WebXRCompositionLayerWrapper = new WebXRCompositionLayerWrapper(
+            () => quadLayer.width,
+            () => quadLayer.height,
+            quadLayer,
+            "XRQuadLayer",
+            multiview,
+            (sessionManager) => new WebXRCompositionLayerRenderTargetTextureProvider(sessionManager, this._xrWebGLBinding, wrapper)
+        );
+        this.addXRSessionLayer(wrapper);
+        return wrapper;
     }
 
     /**
@@ -315,7 +189,9 @@ export class WebXRLayers extends WebXRAbstractFeature {
         renderStateInit.baseLayer = undefined;
         renderStateInit.layers = wrappedLayers.map((wrappedLayer) => wrappedLayer.layer);
         this._xrSessionManager.updateRenderState(renderStateInit);
-        this._xrSessionManager._setBaseLayerWrapper(wrappedLayers.length > 0 ? wrappedLayers[0] : null);
+        if (!this._projectionLayerInitialized) {
+            this._xrSessionManager._setBaseLayerWrapper(wrappedLayers.length > 0 ? wrappedLayers[0] : null);
+        }
     }
 
     public isCompatible(): boolean {
