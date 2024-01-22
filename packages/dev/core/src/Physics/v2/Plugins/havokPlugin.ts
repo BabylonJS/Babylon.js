@@ -32,6 +32,9 @@ import { VertexBuffer } from "../../../Buffers/buffer";
 import { ArrayTools } from "../../../Misc/arrayTools";
 import { Observable } from "../../../Misc/observable";
 import type { Nullable } from "../../../types";
+import type { IPhysicsPointProximityQuery } from "../../physicsPointProximityQuery";
+import type { PhysicsCastResult } from "../../physicsCastResult";
+import type { IPhysicsShapeProximityQuery } from "../../physicsShapeProximityQuery";
 declare let HK: any;
 
 /**
@@ -287,6 +290,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     private _timeStep: number = 1 / 60;
     private _tmpVec3 = ArrayTools.BuildArray(3, Vector3.Zero);
     private _bodies = new Map<bigint, { body: PhysicsBody; index: number }>();
+    private _shapes = new Map<bigint, PhysicsShape>();
     private _bodyBuffer: number;
     private _bodyCollisionObservable = new Map<bigint, Observable<IPhysicsCollisionEvent>>();
     // Map from constraint id to the pair of bodies, where the first is the parent and the second is the child
@@ -1223,6 +1227,8 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 throw new Error("Unsupported Shape Type.");
                 break;
         }
+
+        this._shapes.set(shape._pluginData[0], shape);
     }
 
     /**
@@ -1886,6 +1892,32 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         constraint._pluginData.length = 0;
     }
 
+    private _populateHitData(hitData: any, result: PhysicsCastResult, transform?: Matrix): void {
+        const hitBody = this._bodies.get(hitData[0][0]);
+        result.body = hitBody?.body;
+        result.bodyIndex = hitBody?.index;
+        const hitShape = this._shapes.get(hitData[1][0]);
+        result.shape = hitShape;
+
+        const hitPos = hitData[3];
+        const hitNormal = hitData[4];
+        const hitTriangle = hitData[5];
+        // Transform to world space in case a transformation was provided
+        if (transform) {
+            Vector3.TransformCoordinatesFromFloatsToRef(hitPos[0], hitPos[1], hitPos[2], transform, TmpVectors.Vector3[0]);
+            Vector3.TransformNormalFromFloatsToRef(hitNormal[0], hitNormal[1], hitNormal[2], transform, TmpVectors.Vector3[1]);
+
+            hitPos[0] = TmpVectors.Vector3[0].x;
+            hitPos[1] = TmpVectors.Vector3[0].y;
+            hitPos[2] = TmpVectors.Vector3[0].z;
+
+            hitNormal[0] = TmpVectors.Vector3[1].x;
+            hitNormal[1] = TmpVectors.Vector3[1].y;
+            hitNormal[2] = TmpVectors.Vector3[1].z;
+        }
+        result.setHitData({ x: hitNormal[0], y: hitNormal[1], z: hitNormal[2] }, { x: hitPos[0], y: hitPos[1], z: hitPos[2] }, hitTriangle);
+    }
+
     /**
      * Performs a raycast from a given start point to a given end point and stores the result in a given PhysicsRaycastResult object.
      *
@@ -1909,16 +1941,60 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         this._hknp.HP_World_CastRayWithCollector(this.world, this._queryCollector, hkQuery);
 
         if (this._hknp.HP_QueryCollector_GetNumHits(this._queryCollector)[1] > 0) {
-            const hitData = this._hknp.HP_QueryCollector_GetCastRayResult(this._queryCollector, 0)[1];
+            const [, hitData] = this._hknp.HP_QueryCollector_GetCastRayResult(this._queryCollector, 0)[1];
 
-            const hitPos = hitData[1][3];
-            const hitNormal = hitData[1][4];
-            const hitTriangle = hitData[1][5];
-            result.setHitData({ x: hitNormal[0], y: hitNormal[1], z: hitNormal[2] }, { x: hitPos[0], y: hitPos[1], z: hitPos[2] }, hitTriangle);
+            this._populateHitData(hitData, result);
             result.calculateHitDistance();
-            const hitBody = this._bodies.get(hitData[1][0][0]);
-            result.body = hitBody?.body;
-            result.bodyIndex = hitBody?.index;
+        }
+    }
+
+    /**
+     * Given a point, returns the closest physics
+     * body to that point.
+     * @param query the query to perform
+     * @param result will store the result
+     */
+    public pointToClosestBody(query: IPhysicsPointProximityQuery, result: PhysicsCastResult): void {
+        const queryMembership = query?.collisionFilter?.membership ?? ~0;
+        const queryCollideWith = query?.collisionFilter?.collideWith ?? ~0;
+
+        result.reset();
+
+        const bodyToIgnore = query.ignoreBody ? [BigInt(query.ignoreBody._pluginData.hpBodyId[0])] : [BigInt(0)];
+
+        const hkQuery = [this._bVecToV3(query.position), query.maxDistance, [queryMembership, queryCollideWith], query.shouldHitTriggers, bodyToIgnore];
+        this._hknp.HP_World_PointProximityWithCollector(this.world, this._queryCollector, hkQuery);
+
+        if (this._hknp.HP_QueryCollector_GetNumHits(this._queryCollector)[1] > 0) {
+            const [distance, hitData] = this._hknp.HP_QueryCollector_GetPointProximityResult(this._queryCollector, 0)[1];
+
+            this._populateHitData(hitData, result);
+            result.setHitDistance(distance);
+        }
+    }
+
+    public shapeProximity(query: IPhysicsShapeProximityQuery, inputShapeResult: PhysicsCastResult, hitShapeResult: PhysicsCastResult): void {
+        inputShapeResult.reset();
+        hitShapeResult.reset();
+        const shapeId = query.shape._pluginData;
+        const bodyToIgnore = query.ignoreBody ? [BigInt(query.ignoreBody._pluginData.hpBodyId[0])] : [BigInt(0)];
+
+        const hkQuery = [shapeId, this._bVecToV3(query.position), this._bQuatToV4(query.rotation), query.maxDistance, query.shouldHitTriggers, bodyToIgnore];
+        this._hknp.HP_World_ShapeProximityWithCollector(this.world, this._queryCollector, hkQuery);
+
+        if (this._hknp.HP_QueryCollector_GetNumHits(this._queryCollector)[1] > 0) {
+            const [distance, hitInputData, hitShapeData] = this._hknp.HP_QueryCollector_GetShapeProximityResult(this._queryCollector, 0)[1];
+
+            // The input shape results are given in the local space of the input shape. We need to transform them to world space.
+            const transform = TmpVectors.Matrix[0];
+            query.rotation.toRotationMatrix(transform);
+            transform.setTranslationFromFloats(query.position.x, query.position.y, query.position.z);
+
+            this._populateHitData(hitInputData, inputShapeResult, transform);
+            this._populateHitData(hitShapeData, hitShapeResult);
+
+            inputShapeResult.setHitDistance(distance);
+            hitShapeResult.setHitDistance(distance);
         }
     }
 
