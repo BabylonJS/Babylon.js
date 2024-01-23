@@ -5,6 +5,6 @@ export * from "./physicsEngineComponent";
 export * from "./v1/physicsEngineComponent";
 export * from "./physicsHelper";
 export * from "./physicsRaycastResult";
-export * from "./physicsCastResult";
+export * from "./contactPoint";
 export * from "./physicsPointProximityQuery";
 export * from "./physicsShapeProximityQuery";

@@ -1,16 +1,17 @@
 import { Vector3 } from "../Maths/math.vector";
 import type { PhysicsShape } from "./v2";
 import type { PhysicsBody } from "./v2/physicsBody";
+
 /**
- * Base class holding the data for the result of a cast (raycast, shapecast, point proximity, etc...)
+ * Class representing a contact point produced in a cast
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
-export class PhysicsCastResult {
+export class ContactPoint {
     private _hasHit: boolean = false;
 
     protected _hitDistance: number = 0;
-    private _hitNormalWorld: Vector3 = Vector3.Zero();
-    protected _hitPointWorld: Vector3 = Vector3.Zero();
+    private _hitNormal: Vector3 = Vector3.Zero();
+    protected _hitPoint: Vector3 = Vector3.Zero();
     private _triangleIndex: number = -1;
 
     /**
@@ -44,15 +45,15 @@ export class PhysicsCastResult {
     /**
      * Gets the hit normal/direction in the world
      */
-    get hitNormalWorld(): Vector3 {
-        return this._hitNormalWorld;
+    get hitNormal(): Vector3 {
+        return this._hitNormal;
     }
 
     /**
      * Gets the hit point in the world
      */
-    get hitPointWorld(): Vector3 {
-        return this._hitPointWorld;
+    get hitPoint(): Vector3 {
+        return this._hitPoint;
     }
 
     /*
@@ -63,14 +64,15 @@ export class PhysicsCastResult {
     }
 
     /**
-     * Sets the hit data (normal & point in world space)
-     * @param hitNormalWorld defines the normal in world space
-     * @param hitPointWorld defines the point in world space
+     * Sets the hit data
+     * @param hitNormal defines the normal in world space
+     * @param hitPoint defines the point in world space
+     * @param triangleIndex defines the index of the triangle in case of mesh shape
      */
-    public setHitData(hitNormalWorld: IXYZ, hitPointWorld: IXYZ, triangleIndex?: number) {
+    public setHitData(hitNormal: IXYZ, hitPoint: IXYZ, triangleIndex?: number) {
         this._hasHit = true;
-        this._hitNormalWorld.set(hitNormalWorld.x, hitNormalWorld.y, hitNormalWorld.z);
-        this._hitPointWorld.set(hitPointWorld.x, hitPointWorld.y, hitPointWorld.z);
+        this._hitNormal.set(hitNormal.x, hitNormal.y, hitNormal.z);
+        this._hitPoint.set(hitPoint.x, hitPoint.y, hitPoint.z);
         this._triangleIndex = triangleIndex ?? -1;
     }
 
@@ -89,8 +91,8 @@ export class PhysicsCastResult {
         this._hasHit = false;
         this._hitDistance = 0;
 
-        this._hitNormalWorld.setAll(0);
-        this._hitPointWorld.setAll(0);
+        this._hitNormal.setAll(0);
+        this._hitPoint.setAll(0);
         this._triangleIndex = -1;
 
         this.body = undefined;

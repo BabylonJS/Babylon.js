@@ -33,7 +33,7 @@ import { ArrayTools } from "../../../Misc/arrayTools";
 import { Observable } from "../../../Misc/observable";
 import type { Nullable } from "../../../types";
 import type { IPhysicsPointProximityQuery } from "../../physicsPointProximityQuery";
-import type { PhysicsCastResult } from "../../physicsCastResult";
+import type { ContactPoint } from "../../contactPoint";
 import type { IPhysicsShapeProximityQuery } from "../../physicsShapeProximityQuery";
 declare let HK: any;
 
@@ -220,7 +220,7 @@ class ShapePath
 }
 */
 
-class ContactPoint {
+class CollisionContactPoint {
     public bodyId: bigint = BigInt(0); //0,2
     //public colliderId: number = 0; //2,4
     //public shapePath: ShapePath = new ShapePath(); //4,8
@@ -230,8 +230,8 @@ class ContactPoint {
 }
 
 class CollisionEvent {
-    public contactOnA: ContactPoint = new ContactPoint(); //1
-    public contactOnB: ContactPoint = new ContactPoint();
+    public contactOnA: CollisionContactPoint = new CollisionContactPoint(); //1
+    public contactOnB: CollisionContactPoint = new CollisionContactPoint();
     public impulseApplied: number = 0;
     public type: number = 0;
 
@@ -1892,7 +1892,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         constraint._pluginData.length = 0;
     }
 
-    private _populateHitData(hitData: any, result: PhysicsCastResult, transform?: Matrix): void {
+    private _populateHitData(hitData: any, result: ContactPoint | PhysicsRaycastResult): void {
         const hitBody = this._bodies.get(hitData[0][0]);
         result.body = hitBody?.body;
         result.bodyIndex = hitBody?.index;
@@ -1902,19 +1902,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         const hitPos = hitData[3];
         const hitNormal = hitData[4];
         const hitTriangle = hitData[5];
-        // Transform to world space in case a transformation was provided
-        if (transform) {
-            Vector3.TransformCoordinatesFromFloatsToRef(hitPos[0], hitPos[1], hitPos[2], transform, TmpVectors.Vector3[0]);
-            Vector3.TransformNormalFromFloatsToRef(hitNormal[0], hitNormal[1], hitNormal[2], transform, TmpVectors.Vector3[1]);
 
-            hitPos[0] = TmpVectors.Vector3[0].x;
-            hitPos[1] = TmpVectors.Vector3[0].y;
-            hitPos[2] = TmpVectors.Vector3[0].z;
-
-            hitNormal[0] = TmpVectors.Vector3[1].x;
-            hitNormal[1] = TmpVectors.Vector3[1].y;
-            hitNormal[2] = TmpVectors.Vector3[1].z;
-        }
         result.setHitData({ x: hitNormal[0], y: hitNormal[1], z: hitNormal[2] }, { x: hitPos[0], y: hitPos[1], z: hitPos[2] }, hitTriangle);
     }
 
@@ -1954,7 +1942,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * @param query the query to perform
      * @param result will store the result
      */
-    public pointToClosestBody(query: IPhysicsPointProximityQuery, result: PhysicsCastResult): void {
+    public pointToClosestBody(query: IPhysicsPointProximityQuery, result: ContactPoint): void {
         const queryMembership = query?.collisionFilter?.membership ?? ~0;
         const queryCollideWith = query?.collisionFilter?.collideWith ?? ~0;
 
@@ -1973,7 +1961,13 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         }
     }
 
-    public shapeProximity(query: IPhysicsShapeProximityQuery, inputShapeResult: PhysicsCastResult, hitShapeResult: PhysicsCastResult): void {
+    /**
+     * Given a shape in a specific position and orientation, returns the closest point to that shape.
+     * @param query the query to perform
+     * @param inputShapeResult contact point on input shape, in input shape space
+     * @param hitShapeResult contact point on hit shape, in world space
+     */
+    public shapeProximity(query: IPhysicsShapeProximityQuery, inputShapeResult: ContactPoint, hitShapeResult: ContactPoint): void {
         inputShapeResult.reset();
         hitShapeResult.reset();
         const shapeId = query.shape._pluginData;
@@ -1985,12 +1979,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         if (this._hknp.HP_QueryCollector_GetNumHits(this._queryCollector)[1] > 0) {
             const [distance, hitInputData, hitShapeData] = this._hknp.HP_QueryCollector_GetShapeProximityResult(this._queryCollector, 0)[1];
 
-            // The input shape results are given in the local space of the input shape. We need to transform them to world space.
-            const transform = TmpVectors.Matrix[0];
-            query.rotation.toRotationMatrix(transform);
-            transform.setTranslationFromFloats(query.position.x, query.position.y, query.position.z);
-
-            this._populateHitData(hitInputData, inputShapeResult, transform);
+            this._populateHitData(hitInputData, inputShapeResult);
             this._populateHitData(hitShapeData, hitShapeResult);
 
             inputShapeResult.setHitDistance(distance);
