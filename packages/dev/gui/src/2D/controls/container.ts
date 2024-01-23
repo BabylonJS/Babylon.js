@@ -38,6 +38,12 @@ export class Container extends Control {
     /** @internal */
     protected _intermediateTexture: Nullable<DynamicTexture> = null;
 
+    /**
+     * Gets or sets a boolean indicating that the container will let internal controls handle picking instead of doing it directly using its bounding info
+     */
+    @serialize()
+    public delegatePickingToChildren = false;
+
     /** Gets or sets boolean indicating if children should be rendered to an intermediate texture rather than directly to host, useful for alpha blending */
     @serialize()
     public get renderToIntermediateTexture(): boolean {
@@ -586,6 +592,21 @@ export class Container extends Control {
         // if clipChildren is off, we should still pass picking events to children even if we don't contain the pointer
         if (!contains && this.clipChildren) {
             return false;
+        }
+
+        if (this.delegatePickingToChildren) {
+            let contains = false;
+            for (let index = this._children.length - 1; index >= 0; index--) {
+                const child = this._children[index];
+                if (child.isEnabled && child.isHitTestVisible && child.isVisible && !child.notRenderable && child.contains(x, y)) {
+                    contains = true;
+                    break;
+                }
+            }
+
+            if (!contains) {
+                return false;
+            }
         }
 
         // Checking backwards to pick closest first
