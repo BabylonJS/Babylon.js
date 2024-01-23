@@ -39,7 +39,7 @@ export class Container extends Control {
     protected _intermediateTexture: Nullable<DynamicTexture> = null;
 
     /**
-     * Gets or sets a boolean indicating that the button will let internal controls handle picking instead of doing it directly using its bounding info
+     * Gets or sets a boolean indicating that the container will let internal controls handle picking instead of doing it directly using its bounding info
      */
     @serialize()
     public delegatePickingToChildren = false;
