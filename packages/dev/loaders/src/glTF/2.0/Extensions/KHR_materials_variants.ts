@@ -164,7 +164,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
         return KHR_materials_variants.GetLastSelectedVariant(rootMesh);
     }
 
-    private static _GetExtensionMetadata(rootMesh: Nullable<Mesh>): Nullable<IExtensionMetadata> {
+    private static _GetExtensionMetadata(rootMesh: Nullable<AbstractMesh>): Nullable<IExtensionMetadata> {
         return rootMesh?._internalMetadata?.gltf?.[NAME] || null;
     }
 

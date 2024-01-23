@@ -207,7 +207,7 @@ export class GLTFLoader implements IGLTFLoader {
     private _gltf: IGLTF;
     private _bin: Nullable<IDataBuffer> = null;
     private _babylonScene: Scene;
-    private _rootBabylonMesh: Nullable<Mesh> = null;
+    private _rootBabylonMesh: Nullable<AbstractMesh> = null;
     private _defaultBabylonMaterialData: { [drawMode: number]: Material } = {};
     private readonly _postSceneLoadActions = new Array<() => void>();
 
@@ -286,7 +286,7 @@ export class GLTFLoader implements IGLTFLoader {
     /**
      * The root Babylon mesh when loading the asset.
      */
-    public get rootBabylonMesh(): Nullable<Mesh> {
+    public get rootBabylonMesh(): Nullable<AbstractMesh> {
         return this._rootBabylonMesh;
     }
 
@@ -457,7 +457,7 @@ export class GLTFLoader implements IGLTFLoader {
                 }
 
                 const resultPromise = Promise.all(promises).then(() => {
-                    if (this._rootBabylonMesh) {
+                    if (this._rootBabylonMesh && this._rootBabylonMesh !== this._parent.customRootNode) {
                         this._rootBabylonMesh.setEnabled(true);
                     }
 
@@ -589,6 +589,14 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _createRootNode(): INode {
+        if (this._parent.customRootNode) {
+            this._rootBabylonMesh = this._parent.customRootNode;
+            return {
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                _babylonTransformNode: this._rootBabylonMesh,
+                index: -1,
+            };
+        }
         this._babylonScene._blockEntityCollection = !!this._assetContainer;
         this._rootBabylonMesh = new Mesh("__root__", this._babylonScene);
         this._rootBabylonMesh._parentContainer = this._assetContainer;
