@@ -2530,6 +2530,11 @@ export class NativeEngine extends Engine {
         return result;
     }
 
+    /**
+     * No equivalent for native. Do nothing.
+     */
+    public flushFramebuffer(): void {}
+
     public _readTexturePixels(
         texture: InternalTexture,
         width: number,
