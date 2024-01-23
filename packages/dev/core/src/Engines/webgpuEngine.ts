@@ -2071,6 +2071,7 @@ export class WebGPUEngine extends Engine {
             this._counters.numEnableDrawWrapper++;
             if (!this._currentMaterialContext) {
                 Logger.Log(["drawWrapper=", effect]);
+                // eslint-disable-next-line no-throw-literal
                 throw `Invalid call to enableEffect: the materialContext property is empty!`;
             }
         }

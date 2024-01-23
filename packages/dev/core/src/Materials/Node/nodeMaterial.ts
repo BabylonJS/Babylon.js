@@ -651,6 +651,7 @@ export class NodeMaterial extends PushMaterial {
 
                 for (const other of this.attachedBlocks) {
                     if (other.getClassName() === className) {
+                        // eslint-disable-next-line no-throw-literal
                         throw `Cannot have multiple blocks of type ${className} in the same NodeMaterial`;
                     }
                 }

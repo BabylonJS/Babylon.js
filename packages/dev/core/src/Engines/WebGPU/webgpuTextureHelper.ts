@@ -684,6 +684,7 @@ export class WebGPUTextureHelper {
                 return 4;
         }
 
+        // eslint-disable-next-line no-throw-literal
         throw `Unknown format ${format}!`;
     }
 
