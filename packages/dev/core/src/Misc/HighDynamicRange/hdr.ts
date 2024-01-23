@@ -84,6 +84,7 @@ export class HDRTools {
 
         let line = this._ReadStringLine(uint8array, 0);
         if (line[0] != "#" || line[1] != "?") {
+            // eslint-disable-next-line no-throw-literal
             throw "Bad HDR Format.";
         }
 
@@ -103,6 +104,7 @@ export class HDRTools {
         } while (!endOfHeader);
 
         if (!findFormat) {
+            // eslint-disable-next-line no-throw-literal
             throw "HDR Bad header format, unsupported FORMAT";
         }
 
@@ -114,12 +116,14 @@ export class HDRTools {
 
         // TODO. Support +Y and -X if needed.
         if (!match || match.length < 3) {
+            // eslint-disable-next-line no-throw-literal
             throw "HDR Bad header format, no size";
         }
         width = parseInt(match[2]);
         height = parseInt(match[1]);
 
         if (width < 8 || width > 0x7fff) {
+            // eslint-disable-next-line no-throw-literal
             throw "HDR Bad header format, unsupported size";
         }
 
@@ -199,6 +203,7 @@ export class HDRTools {
             }
 
             if (((c << 8) | d) != scanline_width) {
+                // eslint-disable-next-line no-throw-literal
                 throw "HDR Bad header format, wrong scan line width";
             }
 
@@ -216,6 +221,7 @@ export class HDRTools {
                         // a run of the same value
                         count = a - 128;
                         if (count == 0 || count > endIndex - index) {
+                            // eslint-disable-next-line no-throw-literal
                             throw "HDR Bad Format, bad scanline data (run)";
                         }
 
@@ -226,6 +232,7 @@ export class HDRTools {
                         // a non-run
                         count = a;
                         if (count == 0 || count > endIndex - index) {
+                            // eslint-disable-next-line no-throw-literal
                             throw "HDR Bad Format, bad scanline data (non-run)";
                         }
 

@@ -168,7 +168,7 @@ const copyVideoToTextureVertexSource = `
         @builtin(position) Position : vec4<f32>,
         @location(0) fragUV : vec2<f32>
     }
-  
+
     @vertex
     fn main(
         @builtin(vertex_index) VertexIndex : u32
@@ -1267,6 +1267,7 @@ export class WebGPUTextureManager {
                     );
                 } else {
                     // we should never take this code path
+                    // eslint-disable-next-line no-throw-literal
                     throw "updateTexture: Can't process the texture data because a GPUTexture was provided instead of an InternalTexture!";
                 }
             }

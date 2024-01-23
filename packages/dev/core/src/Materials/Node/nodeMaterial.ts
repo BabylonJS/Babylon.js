@@ -524,6 +524,7 @@ export class NodeMaterial extends PushMaterial {
      */
     public addOutputNode(node: NodeMaterialBlock) {
         if (node.target === null) {
+            // eslint-disable-next-line no-throw-literal
             throw "This node is not meant to be an output node. You may want to explicitly set its target value.";
         }
 
@@ -650,6 +651,7 @@ export class NodeMaterial extends PushMaterial {
 
                 for (const other of this.attachedBlocks) {
                     if (other.getClassName() === className) {
+                        // eslint-disable-next-line no-throw-literal
                         throw `Cannot have multiple blocks of type ${className} in the same NodeMaterial`;
                     }
                 }
@@ -739,10 +741,12 @@ export class NodeMaterial extends PushMaterial {
         const allowEmptyVertexProgram = this._mode === NodeMaterialModes.Particle;
 
         if (this._vertexOutputNodes.length === 0 && !allowEmptyVertexProgram) {
+            // eslint-disable-next-line no-throw-literal
             throw "You must define at least one vertexOutputNode";
         }
 
         if (this._fragmentOutputNodes.length === 0) {
+            // eslint-disable-next-line no-throw-literal
             throw "You must define at least one fragmentOutputNode";
         }
 

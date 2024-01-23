@@ -547,6 +547,7 @@ export class FurMaterial extends PushMaterial {
         let i;
 
         if (!(mat instanceof FurMaterial)) {
+            // eslint-disable-next-line no-throw-literal
             throw "The material of the source mesh must be a Fur Material";
         }
 

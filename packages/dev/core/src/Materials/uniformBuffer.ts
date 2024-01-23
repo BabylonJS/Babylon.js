@@ -413,6 +413,7 @@ export class UniformBuffer {
         // std140 FTW...
         if (arraySize > 0) {
             if (size instanceof Array) {
+                // eslint-disable-next-line no-throw-literal
                 throw "addUniform should not be use with Array in UBO: " + name;
             }
 

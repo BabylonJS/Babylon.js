@@ -39,6 +39,7 @@ Engine.prototype.createMultiviewRenderTargetTexture = function (width: number, h
     const gl = this._gl;
 
     if (!this.getCaps().multiview) {
+        // eslint-disable-next-line no-throw-literal
         throw "Multiview is not supported";
     }
 
@@ -100,6 +101,7 @@ Engine.prototype.bindMultiviewFramebuffer = function (_multiviewTexture: RenderT
             ext.framebufferTextureMultiviewOVR(gl.DRAW_FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, multiviewTexture._depthStencilTextureArray, 0, 0, 2);
         }
     } else {
+        // eslint-disable-next-line no-throw-literal
         throw "Invalid multiview frame buffer";
     }
 };

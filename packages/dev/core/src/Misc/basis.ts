@@ -152,6 +152,7 @@ export const GetInternalFormatFromBasisFormat = (basisFormat: number, engine: En
     }
 
     if (format === undefined) {
+        // eslint-disable-next-line no-throw-literal
         throw "The chosen Basis transcoder format is not currently supported";
     }
 
