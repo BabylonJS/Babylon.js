@@ -243,8 +243,8 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         return this._xrNavigator.xr.requestSession(xrSessionMode, xrSessionInit).then((session: XRSession) => {
             this.session = session;
             this._sessionMode = xrSessionMode;
-            this.onXRSessionInit.notifyObservers(session);
             this.inXRSession = true;
+            this.onXRSessionInit.notifyObservers(session);
 
             // handle when the session is ended (By calling session.end or device ends its own session eg. pressing home button on phone)
             this.session.addEventListener(
