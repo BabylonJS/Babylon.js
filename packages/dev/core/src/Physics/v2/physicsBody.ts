@@ -182,7 +182,9 @@ export class PhysicsBody {
      */
     public set shape(shape: Nullable<PhysicsShape>) {
         this._shape = shape;
-        this._physicsPlugin.setShape(this, shape);
+        if (shape) {
+            this._physicsPlugin.setShape(this, shape);
+        }
     }
 
     /**
