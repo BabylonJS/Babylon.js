@@ -8,6 +8,7 @@ import type { Node } from "core/node";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { INode, IMeshPrimitive, IMesh } from "../glTFLoaderInterfaces";
 import type { IKHRMaterialVariants_Mapping, IKHRMaterialVariants_Variant, IKHRMaterialVariants_Variants } from "babylonjs-gltf2interface";
+import type { TransformNode } from "core/Meshes/transformNode";
 
 const NAME = "KHR_materials_variants";
 
@@ -164,7 +165,7 @@ export class KHR_materials_variants implements IGLTFLoaderExtension {
         return KHR_materials_variants.GetLastSelectedVariant(rootMesh);
     }
 
-    private static _GetExtensionMetadata(rootMesh: Nullable<AbstractMesh>): Nullable<IExtensionMetadata> {
+    private static _GetExtensionMetadata(rootMesh: Nullable<TransformNode>): Nullable<IExtensionMetadata> {
         return rootMesh?._internalMetadata?.gltf?.[NAME] || null;
     }
 
