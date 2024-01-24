@@ -260,7 +260,7 @@ export class BlockTools {
                 const block = new GeometryInputBlock("UVs");
                 block.contextualValue = NodeGeometryContextualSources.UV;
                 return block;
-            }         
+            }
             case "VertexIDBlock": {
                 const block = new GeometryInputBlock("Vertex ID");
                 block.contextualValue = NodeGeometryContextualSources.VertexID;
