@@ -229,6 +229,7 @@ export class NodeGeometry {
         this._buildWasSuccessful = false;
 
         if (!this.outputBlock) {
+            // eslint-disable-next-line no-throw-literal
             throw "You must define the outputBlock property before building the geometry";
         }
         const now = PrecisionDate.Now;

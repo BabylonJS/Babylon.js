@@ -25,5 +25,6 @@ WebGPUEngine.prototype._readTexturePixels = function (
 };
 
 WebGPUEngine.prototype._readTexturePixelsSync = function (): ArrayBufferView {
+    // eslint-disable-next-line no-throw-literal
     throw "_readTexturePixelsSync is unsupported in WebGPU!";
 };

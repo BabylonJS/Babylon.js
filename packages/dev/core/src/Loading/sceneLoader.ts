@@ -513,6 +513,7 @@ export class SceneLoader {
         const directLoad = SceneLoader._GetDirectLoad(fileInfo.url);
 
         if (fileInfo.rawData && !pluginExtension) {
+            // eslint-disable-next-line no-throw-literal
             throw "When using ArrayBufferView to load data the file extension must be provided.";
         }
 
@@ -523,6 +524,7 @@ export class SceneLoader {
               : SceneLoader._GetPluginForFilename(fileInfo.url);
 
         if (fileInfo.rawData && !registeredPlugin.isBinary) {
+            // eslint-disable-next-line no-throw-literal
             throw "Loading from ArrayBufferView can not be used with plugins that don't support binary loading.";
         }
 
@@ -535,6 +537,7 @@ export class SceneLoader {
         }
 
         if (!plugin) {
+            // eslint-disable-next-line no-throw-literal
             throw "The loader plugin corresponding to the file type you are trying to load has not been found. If using es6, please import the plugin you wish to use before.";
         }
 
@@ -599,6 +602,7 @@ export class SceneLoader {
             };
 
             if (!plugin.loadFile && fileInfo.rawData) {
+                // eslint-disable-next-line no-throw-literal
                 throw "Plugin does not support loading ArrayBufferView.";
             }
 

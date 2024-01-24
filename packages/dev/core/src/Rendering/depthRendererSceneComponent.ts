@@ -47,6 +47,7 @@ Scene.prototype.enableDepthRenderer = function (
 ): DepthRenderer {
     camera = camera || this.activeCamera;
     if (!camera) {
+        // eslint-disable-next-line no-throw-literal
         throw "No camera available to enable depth renderer";
     }
     if (!this._depthRenderer) {

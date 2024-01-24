@@ -20,7 +20,7 @@ import { Texture } from "core/Materials/Textures/texture";
 import { TransformNode } from "core/Meshes/transformNode";
 import { Buffer, VertexBuffer } from "core/Buffers/buffer";
 import { Geometry } from "core/Meshes/geometry";
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
+import { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { InstancedMesh } from "core/Meshes/instancedMesh";
 import { Mesh } from "core/Meshes/mesh";
 import { MorphTarget } from "core/Morph/morphTarget";
@@ -207,7 +207,7 @@ export class GLTFLoader implements IGLTFLoader {
     private _gltf: IGLTF;
     private _bin: Nullable<IDataBuffer> = null;
     private _babylonScene: Scene;
-    private _rootBabylonMesh: Nullable<Mesh> = null;
+    private _rootBabylonMesh: Nullable<TransformNode> = null;
     private _defaultBabylonMaterialData: { [drawMode: number]: Material } = {};
     private readonly _postSceneLoadActions = new Array<() => void>();
 
@@ -284,9 +284,9 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     /**
-     * The root Babylon mesh when loading the asset.
+     * The root Babylon node when loading the asset.
      */
-    public get rootBabylonMesh(): Nullable<Mesh> {
+    public get rootBabylonMesh(): Nullable<TransformNode> {
         return this._rootBabylonMesh;
     }
 
@@ -457,7 +457,7 @@ export class GLTFLoader implements IGLTFLoader {
                 }
 
                 const resultPromise = Promise.all(promises).then(() => {
-                    if (this._rootBabylonMesh) {
+                    if (this._rootBabylonMesh && this._rootBabylonMesh !== this._parent.customRootNode) {
                         this._rootBabylonMesh.setEnabled(true);
                     }
 
@@ -589,8 +589,17 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _createRootNode(): INode {
+        if (this._parent.customRootNode !== undefined) {
+            this._rootBabylonMesh = this._parent.customRootNode;
+            return {
+                // eslint-disable-next-line @typescript-eslint/naming-convention
+                _babylonTransformNode: this._rootBabylonMesh === null ? undefined : this._rootBabylonMesh,
+                index: -1,
+            };
+        }
         this._babylonScene._blockEntityCollection = !!this._assetContainer;
-        this._rootBabylonMesh = new Mesh("__root__", this._babylonScene);
+        const rootMesh = new Mesh("__root__", this._babylonScene);
+        this._rootBabylonMesh = rootMesh;
         this._rootBabylonMesh._parentContainer = this._assetContainer;
         this._babylonScene._blockEntityCollection = false;
         this._rootBabylonMesh.setEnabled(false);
@@ -619,7 +628,7 @@ export class GLTFLoader implements IGLTFLoader {
             }
         }
 
-        this._parent.onMeshLoadedObservable.notifyObservers(this._rootBabylonMesh);
+        this._parent.onMeshLoadedObservable.notifyObservers(rootMesh);
         return rootNode;
     }
 
@@ -691,7 +700,7 @@ export class GLTFLoader implements IGLTFLoader {
         const meshes: AbstractMesh[] = [];
 
         // Root mesh is always first, if available.
-        if (this._rootBabylonMesh) {
+        if (this._rootBabylonMesh instanceof AbstractMesh) {
             meshes.push(this._rootBabylonMesh);
         }
 

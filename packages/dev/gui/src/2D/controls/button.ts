@@ -31,11 +31,6 @@ export class Button extends Rectangle {
      */
     public pointerUpAnimation: () => void;
 
-    /**
-     * Gets or sets a boolean indicating that the button will let internal controls handle picking instead of doing it directly using its bounding info
-     */
-    public delegatePickingToChildren = false;
-
     private _image: Nullable<Image>;
     /**
      * Returns the image part of the button (if any)
@@ -186,9 +181,13 @@ export class Button extends Rectangle {
     /**
      * Serializes the current button
      * @param serializationObject defines the JSON serialized object
+     * @param force force serialization even if isSerializable === false
      */
-    public serialize(serializationObject: any) {
-        super.serialize(serializationObject);
+    public serialize(serializationObject: any, force: boolean) {
+        super.serialize(serializationObject, force);
+        if (!this.isSerializable && !force) {
+            return;
+        }
 
         if (this._textBlock) {
             serializationObject.textBlockName = this._textBlock.name;

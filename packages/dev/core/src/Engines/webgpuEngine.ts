@@ -637,6 +637,7 @@ export class WebGPUEngine extends Engine {
             )
             .then((adapter: GPUAdapter | undefined) => {
                 if (!adapter) {
+                    // eslint-disable-next-line no-throw-literal
                     throw "Could not retrieve a WebGPU adapter (adapter is null).";
                 } else {
                     this._adapter = adapter!;
@@ -917,6 +918,7 @@ export class WebGPUEngine extends Engine {
 
     private _initializeContextAndSwapChain(): void {
         if (!this._renderingCanvas) {
+            // eslint-disable-next-line no-throw-literal
             throw "The rendering canvas has not been set!";
         }
         this._context = this._renderingCanvas.getContext("webgpu") as unknown as GPUCanvasContext;
@@ -1648,6 +1650,7 @@ export class WebGPUEngine extends Engine {
      * @internal
      */
     public bindBuffersDirectly(): void {
+        // eslint-disable-next-line no-throw-literal
         throw "Not implemented on WebGPU";
     }
 
@@ -1655,6 +1658,7 @@ export class WebGPUEngine extends Engine {
      * @internal
      */
     public updateAndBindInstancesBuffer(): void {
+        // eslint-disable-next-line no-throw-literal
         throw "Not implemented on WebGPU";
     }
 
@@ -1918,6 +1922,7 @@ export class WebGPUEngine extends Engine {
      * @internal
      */
     public createRawShaderProgram(): WebGLProgram {
+        // eslint-disable-next-line no-throw-literal
         throw "Not available on WebGPU";
     }
 
@@ -1925,6 +1930,7 @@ export class WebGPUEngine extends Engine {
      * @internal
      */
     public createShaderProgram(): WebGLProgram {
+        // eslint-disable-next-line no-throw-literal
         throw "Not available on WebGPU";
     }
 
@@ -2054,6 +2060,7 @@ export class WebGPUEngine extends Engine {
         ) {
             if (!effect.effect && this.dbgShowEmptyEnableEffectCalls) {
                 Logger.Log(["drawWrapper=", effect]);
+                // eslint-disable-next-line no-throw-literal
                 throw "Invalid call to enableEffect: the effect property is empty!";
             }
             return;
@@ -2064,6 +2071,7 @@ export class WebGPUEngine extends Engine {
             this._counters.numEnableDrawWrapper++;
             if (!this._currentMaterialContext) {
                 Logger.Log(["drawWrapper=", effect]);
+                // eslint-disable-next-line no-throw-literal
                 throw `Invalid call to enableEffect: the materialContext property is empty!`;
             }
         }
@@ -2750,6 +2758,7 @@ export class WebGPUEngine extends Engine {
         }
 
         if (image instanceof HTMLImageElement) {
+            // eslint-disable-next-line no-throw-literal
             throw "WebGPU engine: HTMLImageElement not supported in _uploadImageToTexture!";
         }
 
@@ -3690,6 +3699,7 @@ export class WebGPUEngine extends Engine {
      * @internal
      */
     public _bindUnboundFramebuffer() {
+        // eslint-disable-next-line no-throw-literal
         throw "_bindUnboundFramebuffer is not implementedin WebGPU! You probably want to use restoreDefaultFramebuffer or unBindFramebuffer instead";
     }
 
@@ -3699,6 +3709,7 @@ export class WebGPUEngine extends Engine {
      * @internal
      */
     public _getSamplingParameters(): { min: number; mag: number } {
+        // eslint-disable-next-line no-throw-literal
         throw "_getSamplingParameters is not available in WebGPU";
     }
 

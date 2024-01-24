@@ -11,7 +11,7 @@ import type { Effect } from "../Materials/effect";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { EngineStore } from "../Engines/engineStore";
-import type { IDisposable } from "../scene";
+import type { IDisposable, Scene } from "../scene";
 import type { IParticleEmitterType } from "../Particles/EmitterTypes/index";
 import {
     BoxParticleEmitter,
@@ -23,6 +23,7 @@ import {
     PointParticleEmitter,
     MeshParticleEmitter,
     CylinderDirectedParticleEmitter,
+    CustomParticleEmitter,
 } from "../Particles/EmitterTypes/index";
 import type { IParticleSystem } from "./IParticleSystem";
 import { BaseParticleSystem } from "./baseParticleSystem";
@@ -48,7 +49,6 @@ import { addClipPlaneUniforms, prepareStringDefinesForClipPlanes, bindClipPlane 
 
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
-import type { Scene } from "../scene";
 import type { Engine } from "../Engines/engine";
 
 /**
@@ -1233,6 +1233,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
      */
     public start(delay = this.startDelay): void {
         if (!this.targetStopDuration && this._hasTargetStopDurationDependantGradient()) {
+            // eslint-disable-next-line no-throw-literal
             throw "Particle system started with a targetStopDuration dependant gradient (eg. startSizeGradients) but no targetStopDuration set";
         }
         if (delay) {
@@ -2920,6 +2921,9 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
                     break;
                 case "MeshParticleEmitter":
                     emitterType = new MeshParticleEmitter();
+                    break;
+                case "CustomParticleEmitter":
+                    emitterType = new CustomParticleEmitter();
                     break;
                 case "BoxEmitter":
                 case "BoxParticleEmitter":

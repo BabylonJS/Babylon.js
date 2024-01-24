@@ -468,6 +468,7 @@ export class CSG {
         const vertColors = data.colors;
 
         if (!indices || !positions) {
+            // eslint-disable-next-line no-throw-literal
             throw "BABYLON.CSG: VertexData must at least contain positions and indices";
         }
 
@@ -542,6 +543,7 @@ export class CSG {
                 invertWinding = mesh.material.sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation;
             }
         } else {
+            // eslint-disable-next-line no-throw-literal
             throw "BABYLON.CSG: Wrong Mesh type, must be BABYLON.Mesh";
         }
 

@@ -112,11 +112,13 @@ export class VideoRecorder {
      */
     constructor(engine: Engine, options: Partial<VideoRecorderOptions> = {}) {
         if (!VideoRecorder.IsSupported(engine, options.canvas)) {
+            // eslint-disable-next-line no-throw-literal
             throw "Your browser does not support recording so far.";
         }
 
         const canvas = options.canvas ?? engine.getRenderingCanvas();
         if (!canvas) {
+            // eslint-disable-next-line no-throw-literal
             throw "The babylon engine must have a canvas to be recorded";
         }
 
@@ -167,10 +169,12 @@ export class VideoRecorder {
      */
     public startRecording(fileName: Nullable<string> = "babylonjs.webm", maxDuration = 7): Promise<Blob> {
         if (!this._canvas || !this._mediaRecorder) {
+            // eslint-disable-next-line no-throw-literal
             throw "Recorder has already been disposed";
         }
 
         if (this.isRecording) {
+            // eslint-disable-next-line no-throw-literal
             throw "Recording already in progress";
         }
 

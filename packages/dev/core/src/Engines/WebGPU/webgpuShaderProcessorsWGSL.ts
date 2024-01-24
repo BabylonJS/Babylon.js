@@ -222,6 +222,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             textureInfo.sampleType = sampleType;
 
             if (textureDimension === undefined) {
+                // eslint-disable-next-line no-throw-literal
                 throw `Can't get the texture dimension corresponding to the texture function "${textureFunc}"!`;
             }
 

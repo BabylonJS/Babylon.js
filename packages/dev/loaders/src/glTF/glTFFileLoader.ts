@@ -309,6 +309,12 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     public preprocessUrlAsync = (url: string) => Promise.resolve(url);
 
     /**
+     * Defines the node to use as the root of the hierarchy when loading the scene (default: undefined). If not defined, a root node will be automatically created.
+     * You can also pass null if you don't want a root node to be created.
+     */
+    public customRootNode?: Nullable<TransformNode>;
+
+    /**
      * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
      * Note that the observable is raised as soon as the mesh object is created, meaning some data may not have been setup yet for this mesh (vertex data, morph targets, material, ...)
      */
