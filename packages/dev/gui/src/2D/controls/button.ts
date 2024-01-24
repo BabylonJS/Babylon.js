@@ -31,11 +31,6 @@ export class Button extends Rectangle {
      */
     public pointerUpAnimation: () => void;
 
-    /**
-     * Gets or sets a boolean indicating that the button will let internal controls handle picking instead of doing it directly using its bounding info
-     */
-    public delegatePickingToChildren = false;
-
     private _image: Nullable<Image>;
     /**
      * Returns the image part of the button (if any)

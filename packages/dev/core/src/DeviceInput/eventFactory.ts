@@ -41,6 +41,7 @@ export class DeviceEventFactory {
             case DeviceType.Touch:
                 return this._CreatePointerEvent(deviceType, deviceSlot, inputIndex, currentState, deviceInputSystem, elementToAttachTo, pointerId);
             default:
+                // eslint-disable-next-line no-throw-literal
                 throw `Unable to generate event for device ${DeviceType[deviceType]}`;
         }
     }

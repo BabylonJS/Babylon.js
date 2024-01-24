@@ -2152,7 +2152,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         }
     }
 
-    private _nativeToMaterialCombine(mat: any): PhysicsMaterialCombineMode {
+    private _nativeToMaterialCombine(mat: any): PhysicsMaterialCombineMode | undefined {
         switch (mat) {
             case this._hknp.MaterialCombine.GEOMETRIC_MEAN:
                 return PhysicsMaterialCombineMode.GEOMETRIC_MEAN;
@@ -2165,7 +2165,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             case this._hknp.MaterialCombine.MULTIPLY:
                 return PhysicsMaterialCombineMode.MULTIPLY;
             default:
-                throw new Error("Unrecognized material combine mode: " + mat);
+                return undefined;
         }
     }
 

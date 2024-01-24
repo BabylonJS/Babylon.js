@@ -171,6 +171,7 @@ export class CameraGizmo extends Gizmo implements ICameraGizmo {
      */
     public setCustomMesh(mesh: Mesh) {
         if (mesh.getScene() != this.gizmoLayer.utilityLayerScene) {
+            // eslint-disable-next-line no-throw-literal
             throw "When setting a custom mesh on a gizmo, the custom meshes scene must be the same as the gizmos (eg. gizmo.gizmoLayer.utilityLayerScene)";
         }
         if (this._cameraMesh) {

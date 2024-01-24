@@ -1,7 +1,7 @@
 import * as path from "path";
 import * as fs from "fs";
 
-import { test, expect } from "@playwright/test";
+import { test, expect, Page } from "@playwright/test";
 import { getGlobalConfig } from "@tools/test-tools";
 
 export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFileName = "config", debug = false, debugWait = false, logToConsole = true, logToFile = false) => {
@@ -47,18 +47,30 @@ export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFile
         }
     }
 
-    test.beforeEach(async ({ page }) => {
-        page.setViewportSize({ width: 600, height: 400 });
-        page.setDefaultTimeout(0);
+    let page: Page;
+
+    // test.describe.configure({ mode: "serial" });
+
+    test.beforeAll(async ({ browser }) => {
+        page = await browser.newPage();
         await page.goto(getGlobalConfig({ root: config.root }).baseUrl + `/empty.html`, {
             // waitUntil: "load", // for chrome should be "networkidle0"
             timeout: 0,
         });
         await page.waitForSelector("#babylon-canvas", { timeout: 20000 });
+
         await page.waitForFunction(() => {
             return window.BABYLON;
         });
+        page.setDefaultTimeout(0);
+        page.setViewportSize({ width: 600, height: 400 });
+    });
 
+    test.afterAll(async () => {
+        await page.close();
+    });
+
+    test.beforeEach(async () => {
         await page.evaluate(() => {
             if (window.scene && window.scene.dispose) {
                 // run the dispose function here
@@ -79,7 +91,7 @@ export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFile
         log(rendererData.renderer);
     });
 
-    test.afterEach(async ({ page }) => {
+    test.afterEach(async () => {
         await page.evaluate(() => {
             window.engine && window.engine.dispose();
             window.scene = null;
@@ -94,7 +106,7 @@ export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFile
         if (testCase.excludedEngines && testCase.excludedEngines.indexOf(engineType) !== -1) {
             continue;
         }
-        test(testCase.title, async ({ page }) => {
+        test(testCase.title, async () => {
             //defensive
             const logCallback = (msg: any) => {
                 log(msg, testCase.title);
