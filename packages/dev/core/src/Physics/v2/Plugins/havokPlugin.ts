@@ -1943,7 +1943,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * @param query the query to perform. @see IPhysicsPointProximityQuery
      * @param result contact point on the hit shape, in world space
      */
-    public pointToClosestBody(query: IPhysicsPointProximityQuery, result: ContactPoint): void {
+    public pointProximity(query: IPhysicsPointProximityQuery, result: ContactPoint): void {
         const queryMembership = query?.collisionFilter?.membership ?? ~0;
         const queryCollideWith = query?.collisionFilter?.collideWith ?? ~0;
 
