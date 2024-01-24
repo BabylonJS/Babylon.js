@@ -239,8 +239,15 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         return texture;
     }
 
-    public postProcessor(code: string) {
-        return code;
+    public postProcessor(code: string, defines: string[]) {
+        const defineToValue: { [key: string]: string } = {};
+        for (const define of defines) {
+            const parts = define.split(/ +/);
+            defineToValue[parts[1]] = parts.length > 2 ? parts[2] : "";
+        }
+        return code.replace(/\$(\w+)\$/g, (_, p1) => {
+            return defineToValue[p1] ?? p1;
+        });
     }
 
     public finalizeShaders(vertexCode: string, fragmentCode: string): { vertexCode: string; fragmentCode: string } {
