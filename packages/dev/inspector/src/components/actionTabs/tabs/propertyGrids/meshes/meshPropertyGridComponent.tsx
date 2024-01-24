@@ -103,7 +103,6 @@ export class MeshPropertyGridComponent extends React.Component<
         const material = new StandardMaterial("wireframeOver", scene);
         material.reservedDataStore = { hidden: true };
         wireframeOver.material = material;
-        material.zOffset = 1;
         material.disableLighting = true;
         material.backFaceCulling = false;
         material.emissiveColor = Color3.White();
