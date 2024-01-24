@@ -139,6 +139,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         PowBlock: "Outputs the input value multiplied by itself the number of times equal to the power input (Exponent of power)",
         ClampBlock: "Outputs values above the maximum or below minimum as maximum or minimum values respectively",
         CrossBlock: "Outputs a vector that is perpendicular to two input vectors",
+        CurveBlock: "Apply a curve function",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -282,7 +283,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "FractBlock",
                 "PowBlock",
             ],
-            Math__Vector: ["TransformBlock", "VectorConverterBlock", "NormalizeBlock", "BoundingBlock", "CrossBlock"],
+            Math__Vector: ["TransformBlock", "VectorConverterBlock", "NormalizeBlock", "BoundingBlock", "CrossBlock", "CurveBlock"],
             Matrices: ["RotationXBlock", "RotationYBlock", "RotationZBlock", "ScalingBlock", "TranslationBlock", "AlignBlock", "MatrixComposeBlock"],
             Instances: [
                 "InstantiateOnVerticesBlock",

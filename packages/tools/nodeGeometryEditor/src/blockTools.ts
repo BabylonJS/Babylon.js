@@ -65,6 +65,7 @@ import { GeometryModBlock } from "core/Meshes/Node/Blocks/geometryModBlock";
 import { GeometryPowBlock } from "core/Meshes/Node/Blocks/geometryPowBlock";
 import { GeometryClampBlock } from "core/Meshes/Node/Blocks/geometryClampBlock";
 import { GeometryCrossBlock } from "core/Meshes/Node/Blocks/geometryCrossBlock";
+import { GeometryCurveBlock } from "core/Meshes/Node/Blocks/geometryCurveBlock";
 
 /**
  * Static class for BlockTools
@@ -72,6 +73,8 @@ import { GeometryCrossBlock } from "core/Meshes/Node/Blocks/geometryCrossBlock";
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "CurveBlock":
+                return new GeometryCurveBlock("Curve");
             case "CrossBlock":
                 return new GeometryCrossBlock("Cross");
             case "ClampBlock":
