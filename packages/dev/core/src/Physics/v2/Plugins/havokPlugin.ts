@@ -35,6 +35,7 @@ import type { Nullable } from "../../../types";
 import type { IPhysicsPointProximityQuery } from "../../physicsPointProximityQuery";
 import type { ContactPoint } from "../../contactPoint";
 import type { IPhysicsShapeProximityQuery } from "../../physicsShapeProximityQuery";
+import type { IPhysicsShapeCastQuery } from "../../physicsShapeCastQuery";
 declare let HK: any;
 
 /**
@@ -1939,8 +1940,8 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     /**
      * Given a point, returns the closest physics
      * body to that point.
-     * @param query the query to perform
-     * @param result will store the result
+     * @param query the query to perform. @see IPhysicsPointProximityQuery
+     * @param result contact point on the hit shape, in world space
      */
     public pointToClosestBody(query: IPhysicsPointProximityQuery, result: ContactPoint): void {
         const queryMembership = query?.collisionFilter?.membership ?? ~0;
@@ -1963,7 +1964,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
 
     /**
      * Given a shape in a specific position and orientation, returns the closest point to that shape.
-     * @param query the query to perform
+     * @param query the query to perform. @see IPhysicsShapeProximityQuery
      * @param inputShapeResult contact point on input shape, in input shape space
      * @param hitShapeResult contact point on hit shape, in world space
      */
@@ -1984,6 +1985,35 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
 
             inputShapeResult.setHitDistance(distance);
             hitShapeResult.setHitDistance(distance);
+        }
+    }
+
+    /**
+     * Given a shape in a specific orientation, cast it from the start to end position specified by the query, and return the first hit.
+     * @param query the query to perform. @see IPhysicsShapeCastQuery
+     * @param inputShapeResult contact point on input shape, in input shape space
+     * @param hitShapeResult contact point on hit shape, in world space
+     */
+    public shapeCast(query: IPhysicsShapeCastQuery, inputShapeResult: ContactPoint, hitShapeResult: ContactPoint): void {
+        inputShapeResult.reset();
+        hitShapeResult.reset();
+
+        const shapeId = query.shape._pluginData;
+        const bodyToIgnore = query.ignoreBody ? [BigInt(query.ignoreBody._pluginData.hpBodyId[0])] : [BigInt(0)];
+
+        const hkQuery = [shapeId, this._bQuatToV4(query.rotation), this._bVecToV3(query.startPosition), this._bVecToV3(query.endPosition), query.shouldHitTriggers, bodyToIgnore];
+        this._hknp.HP_World_ShapeCastWithCollector(this.world, this._queryCollector, hkQuery);
+
+        if (this._hknp.HP_QueryCollector_GetNumHits(this._queryCollector)[1] > 0) {
+            const [fractionAlongRay, hitInputData, hitShapeData] = this._hknp.HP_QueryCollector_GetShapeCastResult(this._queryCollector, 0)[1];
+
+            this._populateHitData(hitInputData, inputShapeResult);
+            this._populateHitData(hitShapeData, hitShapeResult);
+
+            // Question: the result of the shape cast is the fraction along the ray where the hit happened. Can we use hitDistance for this,
+            // or do we need a separate property?
+            inputShapeResult.setHitDistance(fractionAlongRay);
+            hitShapeResult.setHitDistance(fractionAlongRay);
         }
     }
 

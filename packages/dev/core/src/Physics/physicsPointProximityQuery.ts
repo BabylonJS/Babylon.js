@@ -3,7 +3,7 @@ import type { IRaycastQuery } from "./physicsRaycastResult";
 import type { PhysicsBody } from "./v2";
 
 /**
- * Interface for point query parameters.
+ * Interface for point proximity query.
  */
 export interface IPhysicsPointProximityQuery {
     /**

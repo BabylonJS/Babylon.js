@@ -3,25 +3,25 @@ import type { PhysicsShape } from "./v2/physicsShape";
 import type { PhysicsBody } from "./v2/physicsBody";
 
 /**
- * Query for shape proximity.
+ * Shape cast query
  */
-export interface IPhysicsShapeProximityQuery {
+export interface IPhysicsShapeCastQuery {
     /**
-     * The shape to test proximity against
+     * The shape to query with
      */
     shape: PhysicsShape;
     /**
-     * The position of shape
-     */
-    position: Vector3;
-    /**
-     * The rotation of shape
+     * The rotation of the shape
      */
     rotation: Quaternion;
     /**
-     * Maximum distance to check for collisions. Can be set to 0 to check for overlaps.
+     * The start position of the query
      */
-    maxDistance: number;
+    startPosition: Vector3;
+    /**
+     * The end position of the query
+     */
+    endPosition: Vector3;
     /**
      * Should trigger collisions be considered in the query?
      */
