@@ -256,36 +256,11 @@ export class BlockTools {
                 block.contextualValue = NodeGeometryContextualSources.Tangents;
                 return block;
             }
-            case "UV1sBlock": {
-                const block = new GeometryInputBlock("UV1s");
+            case "UVsBlock": {
+                const block = new GeometryInputBlock("UVs");
                 block.contextualValue = NodeGeometryContextualSources.UV;
                 return block;
-            }
-            case "UV2sBlock": {
-                const block = new GeometryInputBlock("UV2s");
-                block.contextualValue = NodeGeometryContextualSources.UV2;
-                return block;
-            }
-            case "UV3sBlock": {
-                const block = new GeometryInputBlock("UV3s");
-                block.contextualValue = NodeGeometryContextualSources.UV3;
-                return block;
-            }
-            case "UV4sBlock": {
-                const block = new GeometryInputBlock("UV4s");
-                block.contextualValue = NodeGeometryContextualSources.UV4;
-                return block;
-            }
-            case "UV5sBlock": {
-                const block = new GeometryInputBlock("UV5s");
-                block.contextualValue = NodeGeometryContextualSources.UV5;
-                return block;
-            }
-            case "UV6sBlock": {
-                const block = new GeometryInputBlock("UV6s");
-                block.contextualValue = NodeGeometryContextualSources.UV6;
-                return block;
-            }
+            }         
             case "VertexIDBlock": {
                 const block = new GeometryInputBlock("Vertex ID");
                 block.contextualValue = NodeGeometryContextualSources.VertexID;
