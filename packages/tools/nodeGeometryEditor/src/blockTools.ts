@@ -66,6 +66,7 @@ import { GeometryPowBlock } from "core/Meshes/Node/Blocks/geometryPowBlock";
 import { GeometryClampBlock } from "core/Meshes/Node/Blocks/geometryClampBlock";
 import { GeometryCrossBlock } from "core/Meshes/Node/Blocks/geometryCrossBlock";
 import { GeometryCurveBlock } from "core/Meshes/Node/Blocks/geometryCurveBlock";
+import { GeometryDesaturateBlock } from "core/Meshes/Node/Blocks/geometryDesaturateBlock";
 
 /**
  * Static class for BlockTools
@@ -73,6 +74,8 @@ import { GeometryCurveBlock } from "core/Meshes/Node/Blocks/geometryCurveBlock";
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "DesaturateBlock":
+                return new GeometryDesaturateBlock("Desaturate");
             case "CurveBlock":
                 return new GeometryCurveBlock("Curve");
             case "CrossBlock":

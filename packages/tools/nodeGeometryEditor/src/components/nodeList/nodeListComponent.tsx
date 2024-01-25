@@ -135,6 +135,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         ClampBlock: "Outputs values above the maximum or below minimum as maximum or minimum values respectively",
         CrossBlock: "Outputs a vector that is perpendicular to two input vectors",
         CurveBlock: "Apply a curve function",
+        DesaturateBlock: "Convert a color input into a grayscale representation.",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -222,6 +223,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
             Sources: ["BoxBlock", "PlaneBlock", "SphereBlock", "TorusBlock", "CylinderBlock", "CapsuleBlock", "DiscBlock", "IcoSphereBlock", "MeshBlock", "GridBlock", "NullBlock"],
             Inputs: ["Float", "Vector2", "Vector3", "Vector4", "Int"],
             Interpolation: ["LerpBlock", "NLerpBlock", "SmoothStepBlock", "StepBlock"],
+            Color_Management: ["DesaturateBlock"],
             Contextual: [
                 "PositionsBlock",
                 "NormalsBlock",
