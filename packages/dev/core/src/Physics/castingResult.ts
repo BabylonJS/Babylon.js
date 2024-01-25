@@ -3,14 +3,11 @@ import type { PhysicsShape } from "./v2";
 import type { PhysicsBody } from "./v2/physicsBody";
 
 /**
- * Class representing a contact point produced in a cast
- * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
+ * Base class for results of casts.
  */
-export class ContactPoint {
+export class CastingResult {
     private _hasHit: boolean = false;
-
-    protected _hitDistance: number = 0;
-    private _hitNormal: Vector3 = Vector3.Zero();
+    protected _hitNormal: Vector3 = Vector3.Zero();
     protected _hitPoint: Vector3 = Vector3.Zero();
     private _triangleIndex: number = -1;
 
@@ -29,31 +26,22 @@ export class ContactPoint {
     public shape?: PhysicsShape;
 
     /**
-     * Gets if there was a hit
+     * Gets the hit point.
      */
-    get hasHit(): boolean {
-        return this._hasHit;
+    get hitPoint(): Vector3 {
+        return this._hitPoint;
     }
-
     /**
-     * Gets the distance from the hit
-     */
-    get hitDistance(): number {
-        return this._hitDistance;
-    }
-
-    /**
-     * Gets the hit normal/direction in the world
+     * Gets the hit normal.
      */
     get hitNormal(): Vector3 {
         return this._hitNormal;
     }
-
     /**
-     * Gets the hit point in the world
+     * Gets if there was a hit
      */
-    get hitPoint(): Vector3 {
-        return this._hitPoint;
+    get hasHit(): boolean {
+        return this._hasHit;
     }
 
     /*
@@ -77,19 +65,10 @@ export class ContactPoint {
     }
 
     /**
-     * Sets the distance from the start point to the hit point
-     * @param distance
-     */
-    public setHitDistance(distance: number) {
-        this._hitDistance = distance;
-    }
-
-    /**
      * Resets all the values to default
      */
     public reset() {
         this._hasHit = false;
-        this._hitDistance = 0;
 
         this._hitNormal.setAll(0);
         this._hitPoint.setAll(0);

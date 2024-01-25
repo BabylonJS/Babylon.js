@@ -5,7 +5,7 @@ import type { PhysicsBody } from "./v2/physicsBody";
 /**
  * Query for shape proximity.
  */
-export interface IPhysicsShapeProximityQuery {
+export interface IPhysicsShapeProximityCastQuery {
     /**
      * The shape to test proximity against
      */
