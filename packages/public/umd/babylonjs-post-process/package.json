@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-post-process",
-    "version": "6.39.0",
+    "version": "6.40.0",
     "main": "babylonjs.postProcess.min.js",
     "types": "babylonjs.postProcess.module.d.ts",
     "files": [
@@ -15,7 +15,7 @@
         "test:escheck": "es-check es6 ./babylonjs.postProcess.js"
     },
     "dependencies": {
-        "babylonjs": "^6.39.0"
+        "babylonjs": "^6.40.0"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",

@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/materials",
-    "version": "6.39.0",
+    "version": "6.40.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -18,7 +18,7 @@
         "postcompile": "build-tools -c add-js-to-es6"
     },
     "devDependencies": {
-        "@babylonjs/core": "^6.39.0",
+        "@babylonjs/core": "^6.40.0",
         "@dev/build-tools": "^1.0.0",
         "@lts/materials": "^1.0.0"
     },

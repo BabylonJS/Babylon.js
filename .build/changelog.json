@@ -1,5 +1,5 @@
 {
-    "fromTag": "6.38.1",
+    "fromTag": "6.39.0",
     "changelog": {
         "6.39.0": [
             {
@@ -175,6 +175,633 @@
                     "scripts/typedoc-generator.js"
                 ],
                 "tags": []
+            }
+        ],
+        "6.40.0": [
+            {
+                "pr": "14737",
+                "title": "Add nodes to Node Geometry to augment TextureFetch",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14735",
+                "title": "Remove zOffset from inspector wireframe mesh",
+                "description": "As discussed in forum topic\r\nhttps://forum.babylonjs.com/t/zoffset-and-wireframe-meshes/47392",
+                "author": {
+                    "name": "Michalzr",
+                    "url": "https://github.com/Michalzr"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/meshPropertyGridComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14734",
+                "title": "Morph targets: Pass the number of active targets to the shader as a uniform",
+                "description": "See https://forum.babylonjs.com/t/babylon-blendshapes-animation-player-fps-drops-and-glitch/41884/13.\r\n\r\nThis PR allows to set a maximum number of active targets, to avoid a shader recompilation each time the number of active targets changes. If non-zero, we compile the shader with `NUM_MORPH_INFLUENCERS=this value`, and `NUM_MORPH_INFLUENCERS` is used as the upper bound of a loop over the targets. We use a uniform variable to break from the loop when we reach the number of active targets.\r\n\r\nNote that for WebGPU / WGSL, up to now, we didn't have a mean to make preprocessing variable replacements (we didn't need it)! When defining something like `#define TEST 23`, `TEST` could be used in a `#if` / `#ifdef` / `#elif` statement, but not as a replacement like in `int test = TEST;`. It works in WebGL because such replacements are automatically handled by the GLSL parser/compiler (there's no specific code in Babylon to do it).\r\n\r\nSo, I added this feature in WebGPU, but the replacement variable name should be enclosed inside $...$ (I can change the enclosing character!). I did it this way because I think this code would be too time consuming:\r\n```typescript\r\nconst defineToValue: { [key: string]: string } = {};\r\n// fill defineToValue with the replacement variables\r\ncode.replace(/(\\w+)/g, (_, p1) => {\r\n    return defineToValue[p1] ?? p1;\r\n});\r\n```\r\nThis would mean hundred or thousand (or more!) of replacements (because `(\\w+)` will match a lot of time) + the possibility of wrong replacements (in case a replacement variable is a subset of a string).",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    ".vscode/settings.json",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts",
+                    "packages/dev/core/src/Materials/materialHelper.ts",
+                    "packages/dev/core/src/Morph/morphTargetManager.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/morphTargetsVertex.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/morphTargetsVertexDeclaration.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/morphTargetsVertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/morphTargetsVertexDeclaration.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14733",
+                "title": "glTF loader: allow no root node",
+                "description": "Follow up to #14730 ",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_variants.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts",
+                    "packages/dev/loaders/src/glTF/glTFFileLoader.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "glTF"
+                ]
+            },
+            {
+                "pr": "14732",
+                "title": "Better feature handling",
+                "description": "A feature that is a native WebXR feature will not attach if the session was not enabled with it, or that the session doesn't support it.\n\nIn addition, a warning will be shown if the feature was initialized after the session has started.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRAbstractFeature.ts",
+                    "packages/dev/core/src/XR/webXRSessionManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14731",
+                "title": "small fixes to physics",
+                "description": "Forum: https://forum.babylonjs.com/t/help-with-disposing-and-havok/47467",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts"
+                ],
+                "tags": [
+                    "physics",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14730",
+                "title": "glTF loader: Add an option to pass a custom root node",
+                "description": "Test PG: https://playground.babylonjs.com/#I3UH7N#1",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_variants.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts",
+                    "packages/dev/loaders/src/glTF/glTFFileLoader.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "glTF"
+                ]
+            },
+            {
+                "pr": "14726",
+                "title": "Move delegate picking to children to container",
+                "description": "Closes [#13692](https://github.com/BabylonJS/Babylon.js/issues/13692)\r\n\r\nWith the property moved to the Container class, other types of container besides Button can have this behavior. \r\nPG #94FPZ3#3 shows an example with Rectangle, Button and StackPanel\r\nPG #DLI9YW shows an example with Grid\r\n\r\nAlso added the property to GUI Editor for easier editing.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/button.ts",
+                    "packages/dev/gui/src/2D/controls/container.ts",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/containerPropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "14728",
+                "title": "Add no-throw-literal eslint rule.",
+                "description": "Existing instances that would fail this rule are ignored so back-compat is kept. This could be changed for the 7.0 release.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    ".eslintrc.js",
+                    "packages/dev/core/src/Animations/pathCursor.ts",
+                    "packages/dev/core/src/Behaviors/Meshes/pointerDragBehavior.ts",
+                    "packages/dev/core/src/DeviceInput/eventFactory.ts",
+                    "packages/dev/core/src/DeviceInput/webDeviceInputSystem.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.multiview.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.readTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheRenderPipeline.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessingContext.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureHelper.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureManager.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Gizmos/cameraGizmo.ts",
+                    "packages/dev/core/src/Gizmos/gizmo.ts",
+                    "packages/dev/core/src/Loading/sceneLoader.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragCoordBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/frontFacingBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/screenSizeBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlockConnectionPoint.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildStateSharedData.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/envTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/hdrTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/tgaTextureLoader.ts",
+                    "packages/dev/core/src/Materials/materialPluginManager.ts",
+                    "packages/dev/core/src/Materials/uniformBuffer.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineRibbonMesh.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlockConnectionPoint.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBuildState.ts",
+                    "packages/dev/core/src/Meshes/csg.ts",
+                    "packages/dev/core/src/Misc/HighDynamicRange/hdr.ts",
+                    "packages/dev/core/src/Misc/HighDynamicRange/panoramaToCubemap.ts",
+                    "packages/dev/core/src/Misc/basis.ts",
+                    "packages/dev/core/src/Misc/videoRecorder.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts",
+                    "packages/dev/core/src/Physics/v1/Plugins/ammoJSPlugin.ts",
+                    "packages/dev/core/src/Rendering/depthRendererSceneComponent.ts",
+                    "packages/dev/core/src/XR/webXRExperienceHelper.ts",
+                    "packages/dev/core/src/XR/webXRSessionManager.ts",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.inputManager.test.ts",
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts",
+                    "packages/dev/gui/src/2D/xmlLoader.ts",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/gui/guiTools.ts",
+                    "packages/dev/materials/src/fur/furMaterial.ts",
+                    "packages/tools/guiEditor/src/guiNodeTools.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14727",
+                "title": "Run playwright tests on the same page instance",
+                "description": "This will speed up running tests, especially on CI.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/tests/test/playwright/visualizationPlaywright.utils.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14729",
+                "title": "Flush for Native does nothing",
+                "description": null,
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": [
+                    "native"
+                ]
+            },
+            {
+                "pr": "14724",
+                "title": "Fix audio engine unlock issue",
+                "description": "When sound playback fails, the `Sound` class assumes the browser's audio context is suspended and waiting for user interaction, so it locks the audio engine and shows the unmute button. In the case of streaming sounds, playback fails in Chrome with `DOMException: The play method is not allowed by the user agent` ... **but the audio context is not suspended**. Since the audio engine assumes the audio context is `suspended`, the current `AudioEngine.unlock()` implementation fails when the audio context state is actually `running`.\r\n\r\nThis change fixes the `AudioEngine.unlock()` issue by setting `AudioEngine.unlocked` to `true` and notifying `onAudioUnlockedObservable` observers when the audio context state is `running`.\r\n\r\nTested on playground https://playground.babylonjs.com/#BB4105#1.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/audioEngine.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "14723",
+                "title": "Particle systems: Fix serialization and parsing of CustomParticleEmitter",
+                "description": "See https://forum.babylonjs.com/t/get-typeerror-when-apply-custom-emitter-to-a-sub-emitter/47370",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/EmitterTypes/customParticleEmitter.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "particles"
+                ]
+            },
+            {
+                "pr": "14722",
+                "title": "Add isSerializable flag to GUI controls",
+                "description": "Closes https://github.com/BabylonJS/ThePirateCove/issues/475\r\n\r\nThis PR adds a isSerializable property to GUI Controls which is true by default. When it is set to false, the control (and any of its children) will not be serialized. This facilitates scenarios of mixing and editing GUI Editor controls and code-created controls. It also adds a corresponding switch on the editor, so it can be changed easily.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/package.json",
+                    "packages/dev/gui/src/2D/controls/button.ts",
+                    "packages/dev/gui/src/2D/controls/container.ts",
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/dev/gui/src/2D/controls/focusableButton.ts",
+                    "packages/dev/gui/src/2D/controls/grid.ts",
+                    "packages/dev/gui/src/2D/controls/stackPanel.ts",
+                    "packages/dev/gui/test/unit/serialization.test.ts",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "gui"
+                ]
+            },
+            {
+                "pr": "14721",
+                "title": "Particle systems: When using the cylinder-directed particle emitter, fix the start direction when in local space",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/EmitterTypes/cylinderParticleEmitter.ts",
+                    "packages/dev/core/src/Particles/IParticleSystem.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "particles"
+                ]
+            },
+            {
+                "pr": "14718",
+                "title": "Basic inspector for V2 physics",
+                "description": "Related to [#13711](https://github.com/BabylonJS/Babylon.js/issues/13711)\r\nThis adds a basic interface for physics properties on the inspector, following the same style as V1 physics. One possible evolution would be to display physics bodies and shapes in their own entity tree, instead of being a property of the mesh.\r\n<img width=\"776\" alt=\"image\" src=\"https://github.com/BabylonJS/Babylon.js/assets/6002144/f712e0fe-5869-4dae-adde-68caecea5a5c\">\r\n\r\nWhen the body is instanced, it is possible to select an instance through the first line:\r\n<img width=\"792\" alt=\"image\" src=\"https://github.com/BabylonJS/Babylon.js/assets/6002144/776e9e64-9430-48ab-b2a6-48b799ebaa90\">\r\n\r\nOnly the mass is editable, because friction/restitution are properties of a shape, which can be shared between different bodies, so changing it could affect other bodies.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts",
+                    "packages/dev/core/src/Physics/v2/physicsShape.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/meshPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/physics/physicsBodyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/physics/physicsMassPropertiesGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/physics/physicsMaterialGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/floatLineComponent.tsx"
+                ],
+                "tags": [
+                    "physics",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14720",
+                "title": "Gizmo manager enhancement",
+                "description": "been working with gizmo manager for a quite a while and it's super painful to check if we're dragging a gizmo (gizmo axis or bounding box sphere/cubes) so I added a isDragging variable for that. \r\n\r\nwhile on it, a releaseDrag method both on each gizmo (position, rotation, scale,boundingBox) and on gizmo manager can be quite handy and will save the developers so much time. \r\n\r\nalso, we can attach mesh/node but if we want to get that specific mesh/node we have to check which gizmo is enabled and get the data from there. so I added getters for the attachedMesh and attachedNode.",
+                "author": {
+                    "name": "SalmaBesbes",
+                    "url": "https://github.com/SalmaBesbes"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts",
+                    "packages/dev/core/src/Gizmos/gizmoManager.ts",
+                    "packages/dev/core/src/Gizmos/positionGizmo.ts",
+                    "packages/dev/core/src/Gizmos/rotationGizmo.ts",
+                    "packages/dev/core/src/Gizmos/scaleGizmo.ts"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "14719",
+                "title": "Linting - require returns, params",
+                "description": "It is now an error (lint error) not to define a return ",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".eslintrc.js",
+                    "packages/dev/buildTools/src/buildShaders.ts",
+                    "packages/dev/buildTools/src/pathTransform.ts",
+                    "packages/dev/core/src/Actions/action.ts",
+                    "packages/dev/core/src/Actions/condition.ts",
+                    "packages/dev/core/src/Behaviors/Meshes/pointerDragBehavior.ts",
+                    "packages/dev/core/src/Bones/bone.ts",
+                    "packages/dev/core/src/Cameras/Inputs/followCameraKeyboardMoveInput.ts",
+                    "packages/dev/core/src/Cameras/camera.ts",
+                    "packages/dev/core/src/Cameras/followCamera.ts",
+                    "packages/dev/core/src/Debug/debugLayer.ts",
+                    "packages/dev/core/src/Debug/physicsViewer.ts",
+                    "packages/dev/core/src/Decorators/nodeDecorator.ts",
+                    "packages/dev/core/src/DeviceInput/eventFactory.ts",
+                    "packages/dev/core/src/Engines/Native/nativePipelineContext.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGLPipelineContext.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheBindGroups.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuPipelineContext.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphCoordinateTransformBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphMeshPickEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphReceiveCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphSceneReadyEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphSceneTickEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPauseAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPlayAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphStopAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphBranchBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphCounterBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphDebounceBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphDoNBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphFlipFlopBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphForLoopBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphMultiGateBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphSequenceBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphSwitchBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphThrottleBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphTimerBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphWaitAllBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphWhileLoopBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphConsoleLogBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSendCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetPropertyBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetVariableBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphConnection.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphContext.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphDataConnection.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphExecutionBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphSignalConnection.ts",
+                    "packages/dev/core/src/Gamepads/gamepadSceneComponent.ts",
+                    "packages/dev/core/src/Gizmos/axisScaleGizmo.ts",
+                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts",
+                    "packages/dev/core/src/Gizmos/gizmoManager.ts",
+                    "packages/dev/core/src/Gizmos/lightGizmo.ts",
+                    "packages/dev/core/src/Gizmos/planeRotationGizmo.ts",
+                    "packages/dev/core/src/Gizmos/scaleGizmo.ts",
+                    "packages/dev/core/src/Helpers/environmentHelper.ts",
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Layers/glowLayer.ts",
+                    "packages/dev/core/src/Layers/highlightLayer.ts",
+                    "packages/dev/core/src/Lights/light.ts",
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLinePluginMaterial.ts",
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLineSimpleMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Teleport/teleportInBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/triPlanarBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/worleyNoise3DBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlock.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrMetallicRoughnessMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrSpecularGlossinessMaterial.ts",
+                    "packages/dev/core/src/Materials/Textures/Packer/packer.ts",
+                    "packages/dev/core/src/Materials/Textures/colorGradingTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/equiRectangularCubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/hdrCubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/htmlElementTexture.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Maths/math.path.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/src/Meshes/Builders/hemisphereBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/textBuilder.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/noiseBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Meshes/csg.ts",
+                    "packages/dev/core/src/Meshes/instancedMesh.ts",
+                    "packages/dev/core/src/Meshes/linesMesh.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Meshes/mesh.vertexData.ts",
+                    "packages/dev/core/src/Meshes/transformNode.ts",
+                    "packages/dev/core/src/Misc/HighDynamicRange/cubemapToSphericalPolynomial.ts",
+                    "packages/dev/core/src/Misc/assetsManager.ts",
+                    "packages/dev/core/src/Misc/decorators.ts",
+                    "packages/dev/core/src/Misc/fileTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14716",
+                "title": "WebXR world scaling factor",
+                "description": "Fixes #12441\n\nThe webxr session manager now has a world scaling factor that allows to set the units in which your world is defined. i.e., if, in your world, 1 unit is 1 cm, you would define the factor to be 100. the native XR component will still maintain the 1 unit 1 meter relation, but the data from and to XR are scaled correctly according to the scale factor.\n\nControllers and hands are scaled as well. So is the teleportation ring.\n\nNote - any other values should be scaled by the dev itself. For example, the ray's distance will be in world scale. Another example - to define gestures for the hands components you would need to use the components' absolute position and scale the distances accordingly.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRControllerTeleportation.ts",
+                    "packages/dev/core/src/XR/features/WebXREyeTracking.ts",
+                    "packages/dev/core/src/XR/features/WebXRHandTracking.ts",
+                    "packages/dev/core/src/XR/features/WebXRHitTest.ts",
+                    "packages/dev/core/src/XR/features/WebXRNearInteraction.ts",
+                    "packages/dev/core/src/XR/webXRCamera.ts",
+                    "packages/dev/core/src/XR/webXRInput.ts",
+                    "packages/dev/core/src/XR/webXRInputSource.ts",
+                    "packages/dev/core/src/XR/webXRSessionManager.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14717",
+                "title": "Add typedoc missing comments",
+                "description": "This PR adds missing comments detected by our typedoc script. It also marks the method ReviewUniform in the CustomMaterial class as `@internal`. And it adds an extra check to the typedoc script to detect some comments that weren't picked up.",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Actions/directActions.ts",
+                    "packages/dev/core/src/Behaviors/Cameras/autoRotationBehavior.ts",
+                    "packages/dev/core/src/Cameras/Inputs/BaseCameraPointersInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/arcRotateCameraPointersInput.ts",
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts",
+                    "packages/dev/core/src/Engines/Native/nativeDataStream.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphMathBlocks.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphBinaryOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphConditionalDataBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphConstantBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphConstantOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphCoordinateTransformBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphGetPropertyBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphGetVariableBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphTernaryOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphUnaryOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphMeshPickEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphReceiveCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphSceneReadyEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphSceneTickEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPauseAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPlayAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphStopAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphBranchBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphCounterBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphDebounceBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphDoNBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphFlipFlopBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphForLoopBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphMultiGateBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphSequenceBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphSwitchBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphThrottleBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphTimerBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphWaitAllBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphWhileLoopBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphConsoleLogBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSendCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetPropertyBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetVariableBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraph.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphConnection.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphContext.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphCoordinator.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphDataConnection.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphExecutionBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphRichTypes.ts",
+                    "packages/dev/core/src/Gamepads/gamepad.ts",
+                    "packages/dev/core/src/Helpers/environmentHelper.ts",
+                    "packages/dev/core/src/Materials/Background/backgroundMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBaseBlock.ts",
+                    "packages/dev/core/src/Materials/material.decalMapConfiguration.ts",
+                    "packages/dev/core/src/Meshes/csg.ts",
+                    "packages/dev/core/src/Misc/filesInput.ts",
+                    "packages/dev/core/src/Particles/solidParticleSystem.ts",
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/dev/gui/src/2D/controls/gradient/BaseGradient.ts",
+                    "packages/dev/gui/src/3D/controls/touchHolographicMenu.ts",
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts",
+                    "packages/dev/loaders/src/glTF/glTFFileLoader.ts",
+                    "packages/dev/materials/src/custom/customMaterial.ts",
+                    "packages/dev/materials/src/custom/pbrCustomMaterial.ts",
+                    "packages/dev/materials/src/grid/gridMaterial.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/EXT_mesh_gpu_instancing.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_dispersion.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_emissive_strength.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_ior.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_specular.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_transmission.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_volume.ts",
+                    "scripts/comment-analyzer.js"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14714",
+                "title": "WebGPU: Allow to pass an offscreen canvas to the constructor",
+                "description": "See https://forum.babylonjs.com/t/babylon-webgpuengine-and-offscreencanvas-roadmap-for-support/47312",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/webgpuEngine.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "14715",
+                "title": "fix animation events not firing for 1 key animations",
+                "description": "Forum issue: https://forum.babylonjs.com/t/animation-event-not-being-executed-when-animation-has-only-single-key-frame/47262",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/runtimeAnimation.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "14711",
+                "title": "Gaussian Splatting: add a gaussian splatting mesh and material",
+                "description": "Replaces #14585",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GaussianSplatting/gaussianSplattingMaterial.ts",
+                    "packages/dev/core/src/Materials/index.ts",
+                    "packages/dev/core/src/Materials/uniformBuffer.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
+                    "packages/dev/core/src/Meshes/index.ts",
+                    "packages/dev/core/src/Rendering/GaussianSplatting/gaussianSplatting.ts",
+                    "packages/dev/core/src/Rendering/GaussianSplatting/index.ts",
+                    "packages/dev/core/src/Rendering/index.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/gaussianSplattingUboDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/gaussianSplattingVertexDeclaration.fx",
+                    "packages/dev/core/src/Shaders/gaussianSplatting.fragment.fx",
+                    "packages/dev/core/src/Shaders/gaussianSplatting.vertex.fx",
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts"
+                ],
+                "tags": [
+                    "materials",
+                    "new feature"
+                ]
             }
         ],
         "6.38.1": [
