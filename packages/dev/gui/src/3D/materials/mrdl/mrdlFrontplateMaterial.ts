@@ -293,8 +293,10 @@ export class MRDLFrontplateMaterial extends PushMaterial {
 
     // Methods
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh): boolean {
+        const drawWrapper = subMesh._drawWrapper;
+
         if (this.isFrozen) {
-            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
+            if (drawWrapper.effect && drawWrapper._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -446,7 +448,7 @@ export class MRDLFrontplateMaterial extends PushMaterial {
         }
 
         defines._renderId = scene.getRenderId();
-        subMesh.effect._wasPreviouslyReady = true;
+        drawWrapper._wasPreviouslyReady = true;
 
         return true;
     }
@@ -531,7 +533,7 @@ export class MRDLFrontplateMaterial extends PushMaterial {
         // "Antialiasing"
         //define SMOOTH_EDGES true;
 
-        this._afterBind(mesh, this._activeEffect);
+        this._afterBind(mesh, this._activeEffect, subMesh);
     }
 
     /**

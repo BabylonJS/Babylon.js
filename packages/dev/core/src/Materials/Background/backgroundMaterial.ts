@@ -709,8 +709,10 @@ export class BackgroundMaterial extends PushMaterial {
      * @returns true if all the dependencies are ready (Textures, Effects...)
      */
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {
-        if (subMesh.effect && this.isFrozen) {
-            if (subMesh.effect._wasPreviouslyReady && subMesh.effect._wasPreviouslyUsingInstances === useInstances) {
+        const drawWrapper = subMesh._drawWrapper;
+
+        if (drawWrapper.effect && this.isFrozen) {
+            if (drawWrapper._wasPreviouslyReady && drawWrapper._wasPreviouslyUsingInstances === useInstances) {
                 return true;
             }
         }
@@ -1004,8 +1006,8 @@ export class BackgroundMaterial extends PushMaterial {
         }
 
         defines._renderId = scene.getRenderId();
-        subMesh.effect._wasPreviouslyReady = true;
-        subMesh.effect._wasPreviouslyUsingInstances = useInstances;
+        drawWrapper._wasPreviouslyReady = true;
+        drawWrapper._wasPreviouslyUsingInstances = useInstances;
 
         this._checkScenePerformancePriority();
 
@@ -1124,14 +1126,14 @@ export class BackgroundMaterial extends PushMaterial {
         // Bones
         MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
 
-        const mustRebind = this._mustRebind(scene, effect, mesh.visibility);
+        const mustRebind = this._mustRebind(scene, effect, subMesh, mesh.visibility);
         if (mustRebind) {
             this._uniformBuffer.bindToEffect(effect, "Material");
 
             this.bindViewProjection(effect);
 
             const reflectionTexture = this._reflectionTexture;
-            if (!this._uniformBuffer.useUbo || !this.isFrozen || !this._uniformBuffer.isSync) {
+            if (!this._uniformBuffer.useUbo || !this.isFrozen || !this._uniformBuffer.isSync || subMesh._drawWrapper._forceRebindOnNextCall) {
                 // Texture uniforms
                 if (scene.texturesEnabled) {
                     if (this._diffuseTexture && MaterialFlags.DiffuseTextureEnabled) {
@@ -1237,7 +1239,7 @@ export class BackgroundMaterial extends PushMaterial {
             }
         }
 
-        this._afterBind(mesh, this._activeEffect);
+        this._afterBind(mesh, this._activeEffect, subMesh);
 
         this._uniformBuffer.update();
     }
