@@ -193,7 +193,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
             // Check for Unity Toolkit
             if ((location.href.indexOf("UnityToolkit") !== -1 || Utilities.ReadBoolFromStore("unity-toolkit", false)) && !this._unityToolkitWasLoaded) {
-                await this._loadScriptAsync("/libs/babylon.manager.js");
+                await this._loadScriptAsync("https://raw.githubusercontent.com/BabylonJS/UnityExporter/master/Redist/Runtime/babylon.toolkit.js");
                 this._unityToolkitWasLoaded = true;
             }
 
