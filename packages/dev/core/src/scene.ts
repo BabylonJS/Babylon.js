@@ -4177,7 +4177,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             const rtt = camera.outputRenderTarget;
             if (rtt.onClearObservable.hasObservers()) {
                 rtt.onClearObservable.notifyObservers(this._engine);
-            } else if (!rtt.skipInitialClear) {
+            } else if (!rtt.skipInitialClear && !camera.isRightCamera) {
                 if (this.autoClear) {
                     this._engine.clear(rtt.clearColor || this.clearColor, !rtt._cleared, true, true);
                 }

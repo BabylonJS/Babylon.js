@@ -1,4 +1,5 @@
-import type { RenderTargetTexture } from "core/Materials";
+import type { InternalTexture } from "core/Materials/Textures/internalTexture";
+import type { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import type { Viewport } from "core/Maths/math.viewport";
 import type { WebXRLayerType } from "core/XR/webXRLayerWrapper";
 import { WebXRLayerWrapper } from "core/XR/webXRLayerWrapper";
@@ -17,7 +18,8 @@ export class WebXRCompositionLayerWrapper extends WebXRLayerWrapper {
         public readonly layer: XRCompositionLayer,
         public readonly layerType: WebXRLayerType,
         public readonly isMultiview: boolean,
-        public createRTTProvider: (xrSessionManager: WebXRSessionManager) => WebXRLayerRenderTargetTextureProvider
+        public createRTTProvider: (xrSessionManager: WebXRSessionManager) => WebXRLayerRenderTargetTextureProvider,
+        public _originalInternalTexture: Nullable<InternalTexture> = null
     ) {
         super(getWidth, getHeight, layer, layerType, createRTTProvider);
     }
@@ -73,17 +75,17 @@ export class WebXRCompositionLayerRenderTargetTextureProvider extends WebXRLayer
         this._lastSubImages.set(eye, subImage);
         return this._renderTargetTextures[eyeIndex];
     }
-    private _getSubImageForEye(eye: XREye): Nullable<XRWebGLSubImage> {
+    private _getSubImageForEye(eye?: XREye): Nullable<XRWebGLSubImage> {
         const currentFrame = this._xrSessionManager.currentFrame;
         if (currentFrame) {
             return this._xrWebGLBinding.getSubImage(this._compositionLayer, currentFrame, eye);
         }
         return null;
     }
-    public getRenderTargetTextureForEye(eye: XREye): Nullable<RenderTargetTexture> {
+    public getRenderTargetTextureForEye(eye?: XREye): Nullable<RenderTargetTexture> {
         const subImage = this._getSubImageForEye(eye);
         if (subImage) {
-            return this._getRenderTargetForSubImage(subImage, eye);
+            return this._getRenderTargetForSubImage(subImage, eye || "left");
         }
         return null;
     }
@@ -93,7 +95,7 @@ export class WebXRCompositionLayerRenderTargetTextureProvider extends WebXRLayer
 
     protected _setViewportForSubImage(viewport: Viewport, subImage: XRWebGLSubImage) {
         const textureWidth = subImage.colorTextureWidth ?? subImage.textureWidth;
-        const textureHeight = subImage.colorTextureWidth ?? subImage.textureHeight;
+        const textureHeight = subImage.colorTextureHeight ?? subImage.textureHeight;
         const xrViewport = subImage.viewport;
         viewport.x = xrViewport.x / textureWidth;
         viewport.y = xrViewport.y / textureHeight;

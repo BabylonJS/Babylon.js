@@ -108,11 +108,7 @@ export abstract class WebXRLayerRenderTargetTextureProvider implements IWebXRRen
         }
 
         renderTargetTexture.disableRescaling();
-        // Firefox reality fails if skipInitialClear is set to true, so make sure only modern XR implementations set it.
-        if (typeof XRWebGLBinding !== "undefined") {
-            // WebXR pre-clears textures
-            renderTargetTexture.skipInitialClear = true;
-        }
+        // renderTargetTexture.skipInitialClear = true;
 
         this._renderTargetTextures.push(renderTargetTexture);
 

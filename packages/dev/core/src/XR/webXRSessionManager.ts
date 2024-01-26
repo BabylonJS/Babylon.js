@@ -59,6 +59,11 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * Fires when the xr session is initialized: right after requestSession was called and returned with a successful result
      */
     public onXRSessionInit: Observable<XRSession> = new Observable<XRSession>();
+
+    /**
+     * Fires when the xr reference space has been initialized
+     */
+    public onXRReferenceSpaceInitialized: Observable<XRReferenceSpace> = new Observable<XRReferenceSpace>();
     /**
      * Underlying xr session
      */
@@ -164,12 +169,14 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * Stops the xrSession and restores the render loop
      * @returns Promise which resolves after it exits XR
      */
-    public exitXRAsync() {
+    public async exitXRAsync() {
         if (this.session && this.inXRSession) {
             this.inXRSession = false;
-            return this.session.end().catch(() => {
+            try {
+                return await this.session.end();
+            } catch {
                 Logger.Warn("Could not end XR session.");
-            });
+            }
         }
         return Promise.resolve();
     }
@@ -376,6 +383,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
             .then((referenceSpace) => {
                 // initialize the base and offset (currently the same)
                 this.referenceSpace = this.baseReferenceSpace = referenceSpace;
+                this.onXRReferenceSpaceInitialized.notifyObservers(referenceSpace);
                 return this.referenceSpace;
             });
     }
@@ -385,7 +393,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * Note that this is deprecated in favor of WebXRSessionManager.updateRenderState().
      * @param state state to set
      * @returns a promise that resolves once the render state has been updated
-     * @deprecated
+     * @deprecated Use updateRenderState() instead.
      */
     public updateRenderStateAsync(state: XRRenderState): Promise<void> {
         return Promise.resolve(this.session.updateRenderState(state));

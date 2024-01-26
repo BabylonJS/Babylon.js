@@ -38,7 +38,7 @@ import type { StandardMaterial } from "core/Materials/standardMaterial";
  * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui
  */
 export class AdvancedDynamicTexture extends DynamicTexture {
-    /** Define the Uurl to load snippets */
+    /** Define the url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
 
     /** Indicates if some optimizations can be performed in GUI GPU management (the downside is additional memory/GPU texture memory used) */
