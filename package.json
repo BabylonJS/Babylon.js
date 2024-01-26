@@ -29,7 +29,7 @@
     "es-check": "^7.1.1",
     "eslint": "^8.11.0",
     "eslint-config-prettier": "~9.0.0",
-    "eslint-formatter-azure-devops": "^0.2.0",
+    "eslint-formatter-azure-devops": "^1.2.0",
     "eslint-plugin-import": "~2.26.0",
     "eslint-plugin-jest": "~27.4.3",
     "eslint-plugin-jsdoc": "~46.2.6",
