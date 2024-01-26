@@ -21,7 +21,7 @@ export default defineConfig({
     /* Opt out of parallel tests on CI. */
     workers: numberOfWorkers,
     /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-    reporter: process.env.CI ? "dot" : "html",
+    reporter: process.env.CI ? [["line"], ["junit", { outputFile: "junit.xml" }]] : [["list"], ["html"]],
     /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
     use: {
         /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
