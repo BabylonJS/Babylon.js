@@ -2,6 +2,7 @@ import * as React from "react";
 import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
 import type { IInspectableOptions } from "core/Misc/iInspectable";
+import type { Nullable } from "core/types";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const Null_Value = Number.MAX_SAFE_INTEGER;
@@ -80,7 +81,13 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
     }
 
     updateValue(valueString: string) {
-        const value = this.props.valuesAreStrings ? valueString : parseInt(valueString);
+        let value: Nullable<number | string> = valueString;
+        if (!this.props.valuesAreStrings) {
+            value = parseInt(valueString);
+            if (isNaN(value)) {
+                value = "NaN";
+            }
+        }
         this._localChange = true;
 
         const store = this.props.extractValue ? this.props.extractValue(this.props.target) : this.props.target[this.props.propertyName];

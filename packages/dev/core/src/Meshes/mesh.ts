@@ -445,7 +445,21 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * Use this property to change the original side orientation defined at construction time
      */
-    public overrideMaterialSideOrientation: Nullable<number> = null;
+    public sideOrientation: Nullable<number> = null;
+
+    /**
+     * @deprecated Please use materialSideOrientation instead
+     */
+    public get overrideMaterialSideOrientation(): Nullable<number> {
+        return this.sideOrientation;
+    }
+
+    /**
+     * @deprecated Please use materialSideOrientation instead
+     */
+    public set overrideMaterialSideOrientation(value: Nullable<number>) {
+        this.sideOrientation = value;
+    }
 
     /**
      * Use this property to override the Material's fillMode value
@@ -753,6 +767,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 }
             }
         };
+
+        if (this._scene.useRightHandedSystem) {
+            this.sideOrientation = Material.ClockWiseSideOrientation;
+        } else {
+            this.sideOrientation = Material.CounterClockWiseSideOrientation;
+        }
 
         this.onMeshReadyObservable = new Observable(this._internalMeshDataInfo._onMeshReadyObserverAdded);
 
@@ -2383,12 +2403,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (
             !instanceDataStorage.isFrozen &&
             (this._internalMeshDataInfo._effectiveMaterial.backFaceCulling ||
-                this.overrideMaterialSideOrientation !== null ||
+                this.sideOrientation !== null ||
                 (this._internalMeshDataInfo._effectiveMaterial as any).twoSidedLighting)
         ) {
             // Note: if two sided lighting is enabled, we need to ensure that the normal will point in the right direction even if the determinant of the world matrix is negative
             const mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
-            sideOrientation = this.overrideMaterialSideOrientation;
+            sideOrientation = this.sideOrientation;
             if (sideOrientation == null) {
                 sideOrientation = this._internalMeshDataInfo._effectiveMaterial.sideOrientation;
             }
@@ -3076,8 +3096,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Decide if normals should be flipped
         const flipNormalGeneration =
-            this.overrideMaterialSideOrientation ===
-            (this._scene.useRightHandedSystem ? Constants.MATERIAL_CounterClockWiseSideOrientation : Constants.MATERIAL_ClockWiseSideOrientation);
+            this.sideOrientation === (this._scene.useRightHandedSystem ? Constants.MATERIAL_CounterClockWiseSideOrientation : Constants.MATERIAL_ClockWiseSideOrientation);
 
         // Generate new normals
         for (let index = 0; index < indices.length; index += 3) {
@@ -3657,7 +3676,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         serializationObject.checkCollisions = this.checkCollisions;
         serializationObject.isBlocker = this.isBlocker;
-        serializationObject.overrideMaterialSideOrientation = this.overrideMaterialSideOrientation;
+        serializationObject.materialSideOrientation = this.sideOrientation;
 
         // Parent
         if (this.parent) {
@@ -4034,8 +4053,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         mesh.checkCollisions = parsedMesh.checkCollisions;
 
+        // Kept for backwards compatibility
         if (parsedMesh.overrideMaterialSideOrientation !== undefined) {
-            mesh.overrideMaterialSideOrientation = parsedMesh.overrideMaterialSideOrientation;
+            mesh.sideOrientation = parsedMesh.overrideMaterialSideOrientation;
+        }
+
+        if (parsedMesh.materialSideOrientation !== undefined) {
+            mesh.sideOrientation = parsedMesh.overrideMaterialSideOrientation;
         }
 
         if (parsedMesh.isBlocker !== undefined) {
@@ -4630,7 +4654,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const materialIndexArray: Array<number> = new Array<number>();
         // Merge
         const indiceArray: Array<number> = new Array<number>();
-        const currentOverrideMaterialSideOrientation = meshes[0].overrideMaterialSideOrientation;
+        const currentOverrideMaterialSideOrientation = meshes[0].sideOrientation;
 
         for (index = 0; index < meshes.length; index++) {
             const mesh = meshes[index];
@@ -4639,8 +4663,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 return null;
             }
 
-            if (currentOverrideMaterialSideOrientation !== mesh.overrideMaterialSideOrientation) {
-                Logger.Warn("Cannot merge meshes with different overrideMaterialSideOrientation values.");
+            if (currentOverrideMaterialSideOrientation !== mesh.sideOrientation) {
+                Logger.Warn("Cannot merge meshes with different sideOrientation values.");
                 return null;
             }
 
@@ -4725,7 +4749,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Setting properties
         meshSubclass.checkCollisions = source.checkCollisions;
-        meshSubclass.overrideMaterialSideOrientation = source.overrideMaterialSideOrientation;
+        meshSubclass.sideOrientation = source.sideOrientation;
 
         // Cleaning
         if (disposeSource) {
@@ -4797,7 +4821,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** @internal */
     public _shouldConvertRHS() {
-        return this.overrideMaterialSideOrientation === Material.CounterClockWiseSideOrientation;
+        return this.sideOrientation === Material.CounterClockWiseSideOrientation;
     }
 
     /** @internal */

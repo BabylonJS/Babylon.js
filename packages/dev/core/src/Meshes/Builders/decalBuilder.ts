@@ -75,7 +75,7 @@ export function CreateDecal(
 ): Mesh {
     const hasSkeleton = !!sourceMesh.skeleton;
     const useLocalComputation = options.localMode || hasSkeleton;
-    const meshHasOverridenMaterial = (sourceMesh as Mesh).overrideMaterialSideOrientation !== null && (sourceMesh as Mesh).overrideMaterialSideOrientation !== undefined;
+    const meshHasOverridenMaterial = (sourceMesh as Mesh).sideOrientation !== null && (sourceMesh as Mesh).sideOrientation !== undefined;
 
     const indices = <IndicesArray>sourceMesh.getIndices();
     const positions = hasSkeleton ? sourceMesh.getPositionData(true, true) : sourceMesh.getVerticesData(VertexBuffer.PositionKind);

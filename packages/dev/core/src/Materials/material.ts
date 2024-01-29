@@ -411,10 +411,10 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     }
 
     /**
-     * Stores the value for side orientation
+     * Stores the value for side orientation. If null, use the mesh's `sideOrientation` instead.
      */
     @serialize()
-    public sideOrientation: number;
+    public sideOrientation: Nullable<number> = null;
 
     /**
      * Callback triggered when the material is compiled
@@ -932,12 +932,6 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         this._drawWrapper = new DrawWrapper(this._scene.getEngine(), false);
         this._drawWrapper.materialContext = this._materialContext;
 
-        if (this._scene.useRightHandedSystem) {
-            this.sideOrientation = Material.ClockWiseSideOrientation;
-        } else {
-            this.sideOrientation = Material.CounterClockWiseSideOrientation;
-        }
-
         this._uniformBuffer = new UniformBuffer(this._scene.getEngine(), undefined, undefined, name);
         this._useUBO = this.getScene().getEngine().supportsUniformBuffers;
 
@@ -1189,7 +1183,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     public _preBind(effect?: Effect | DrawWrapper, overrideOrientation: Nullable<number> = null): boolean {
         const engine = this._scene.getEngine();
 
-        const orientation = overrideOrientation == null ? this.sideOrientation : overrideOrientation;
+        const orientation = this.sideOrientation == null ? overrideOrientation : this.sideOrientation;
         const reverse = orientation === Material.ClockWiseSideOrientation;
 
         engine.enableEffect(effect ? effect : this._getDrawWrapper());

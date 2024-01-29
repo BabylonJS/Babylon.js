@@ -44,6 +44,7 @@ import "core/Physics/v1/physicsEngineComponent";
 import { ParentPropertyGridComponent } from "../parentPropertyGridComponent";
 import { Tools } from "core/Misc/tools";
 import { PhysicsBodyGridComponent } from "./physics/physicsBodyGridComponent";
+import { Material } from "core/Materials/material";
 
 interface IMeshPropertyGridComponentProps {
     globalState: GlobalState;
@@ -474,6 +475,21 @@ export class MeshPropertyGridComponent extends React.Component<
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
                     )}
+                    <OptionsLineComponent
+                        label="Orientation"
+                        target={mesh}
+                        propertyName="sideOrientation"
+                        options={[
+                            { label: "None", value: "" },
+                            { label: "Clockwise", value: Material.ClockWiseSideOrientation },
+                            { label: "CounterClockwise", value: Material.CounterClockWiseSideOrientation },
+                        ]}
+                        allowNullValue={true}
+                        onSelect={(value) => {
+                            const parsedValue = isNaN(value as number) ? null : (value as number);
+                            mesh.sideOrientation = parsedValue;
+                        }}
+                    />
                     {mesh.isAnInstance && <TextLineComponent label="Source" value={(mesh as any).sourceMesh.name} onLink={() => this.onSourceMeshLink()} />}
                     <ButtonLineComponent
                         label="Dispose"

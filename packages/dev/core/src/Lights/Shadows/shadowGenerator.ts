@@ -1173,7 +1173,7 @@ export class ShadowGenerator implements IShadowGenerator {
 
         // Culling
         const detNeg = effectiveMesh._getWorldMatrixDeterminant() < 0;
-        let sideOrientation = renderingMesh.overrideMaterialSideOrientation ?? material.sideOrientation;
+        let sideOrientation = material.sideOrientation ?? renderingMesh.sideOrientation;
         if (detNeg) {
             sideOrientation =
                 sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation ? Constants.MATERIAL_CounterClockWiseSideOrientation : Constants.MATERIAL_ClockWiseSideOrientation;
