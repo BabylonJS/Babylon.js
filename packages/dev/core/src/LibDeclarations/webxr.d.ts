@@ -1222,7 +1222,7 @@ interface XRMesh {
     meshSpace: XRSpace;
     vertices: Float32Array;
     indices: Uint32Array;
-    lastChangedTime: number;
+    lastChangedTime: DOMHighResTimeStamp;
 }
 
 type XRMeshSet = Set<XRMesh>;
