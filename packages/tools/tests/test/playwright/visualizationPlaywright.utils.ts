@@ -1,7 +1,7 @@
 import * as path from "path";
 import * as fs from "fs";
 
-import { test, expect, Page } from "@playwright/test";
+import { test, expect, Page, ConsoleMessage, BrowserContext } from "@playwright/test";
 import { getGlobalConfig } from "@tools/test-tools";
 
 export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFileName = "config", debug = false, debugWait = false, logToConsole = true, logToFile = false) => {
@@ -37,6 +37,11 @@ export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFile
         return !(externallyExcluded || test.excludeFromAutomaticTesting || (test.excludedEngines && test.excludedEngines.includes(engineType)));
     });
 
+    let page: Page;
+    let context: BrowserContext;
+
+    let recreatePage = true;
+
     function log(msg: any, title?: string) {
         const titleToLog = title ? `[${title}]` : "";
         if (logToConsole) {
@@ -46,31 +51,48 @@ export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFile
             fs.appendFileSync(logPath, titleToLog + " " + msg + "\n", "utf8");
         }
     }
-
-    let page: Page;
-
     // test.describe.configure({ mode: "serial" });
 
     test.beforeAll(async ({ browser }) => {
-        page = await browser.newPage();
-        await page.goto(getGlobalConfig({ root: config.root }).baseUrl + `/empty.html`, {
-            // waitUntil: "load", // for chrome should be "networkidle0"
-            timeout: 0,
-        });
-        await page.waitForSelector("#babylon-canvas", { timeout: 20000 });
-
-        await page.waitForFunction(() => {
-            return window.BABYLON;
-        });
-        page.setDefaultTimeout(0);
-        page.setViewportSize({ width: 600, height: 400 });
+        // page = await browser.newPage();
+        //     await page.goto(getGlobalConfig({ root: config.root }).baseUrl + `/empty.html`, {
+        //         // waitUntil: "load", // for chrome should be "networkidle0"
+        //         timeout: 0,
+        //     });
+        //     await page.waitForSelector("#babylon-canvas", { timeout: 20000 });
+        //     await page.waitForFunction(() => {
+        //         return window.BABYLON;
+        //     });
+        //     page.setDefaultTimeout(0);
+        //     page.setViewportSize({ width: 600, height: 400 });
     });
 
     test.afterAll(async () => {
         await page.close();
     });
 
-    test.beforeEach(async () => {
+    test.beforeEach(async ({ browser }) => {
+        if (recreatePage) {
+            console.log("Recreating browser context and page");
+            browser.removeAllListeners();
+            if (context) {
+                await context.close();
+            }
+            context = await browser.newContext();
+            page = await context.newPage();
+            await page.goto(getGlobalConfig({ root: config.root }).baseUrl + `/empty.html`, {
+                // waitUntil: "load", // for chrome should be "networkidle0"
+                timeout: 0,
+            });
+            await page.waitForSelector("#babylon-canvas", { timeout: 20000 });
+
+            await page.waitForFunction(() => {
+                return window.BABYLON;
+            });
+            page.setDefaultTimeout(0);
+            page.setViewportSize({ width: 600, height: 400 });
+            recreatePage = false;
+        }
         await page.evaluate(() => {
             if (window.scene && window.scene.dispose) {
                 // run the dispose function here
@@ -108,8 +130,12 @@ export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFile
         }
         test(testCase.title, async () => {
             //defensive
-            const logCallback = (msg: any) => {
+            const logCallback = (msg: ConsoleMessage) => {
                 log(msg, testCase.title);
+                const strMsg = msg.text();
+                if (strMsg.includes && (strMsg as string).includes("WebGL warning")) {
+                    recreatePage = true;
+                }
             };
             page.on("console", logCallback);
             console.log("Running test: " + testCase.title, ". Meta: ", testCase.playgroundId || testCase.scriptToRun || testCase.sceneFilename);
