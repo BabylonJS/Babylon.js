@@ -1,7 +1,7 @@
 import * as path from "path";
 import * as fs from "fs";
 
-import { test, expect, Page, ConsoleMessage, BrowserContext } from "@playwright/test";
+import { test, expect, Page, ConsoleMessage } from "@playwright/test";
 import { getGlobalConfig } from "@tools/test-tools";
 
 export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFileName = "config", debug = false, debugWait = false, logToConsole = true, logToFile = false) => {
@@ -38,7 +38,6 @@ export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFile
     });
 
     let page: Page;
-    let context: BrowserContext;
 
     let recreatePage = true;
 
@@ -75,11 +74,7 @@ export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFile
         if (recreatePage) {
             console.log("Recreating browser context and page");
             browser.removeAllListeners();
-            if (context) {
-                await context.close();
-            }
-            context = await browser.newContext();
-            page = await context.newPage();
+            page = await browser.newPage();
             await page.goto(getGlobalConfig({ root: config.root }).baseUrl + `/empty.html`, {
                 // waitUntil: "load", // for chrome should be "networkidle0"
                 timeout: 0,
