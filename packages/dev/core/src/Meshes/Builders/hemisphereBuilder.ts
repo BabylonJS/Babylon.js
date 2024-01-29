@@ -7,9 +7,6 @@ import { CreateDisc } from "./discBuilder";
  * Creates a hemisphere mesh
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
- * @param options.segments
- * @param options.diameter
- * @param options.sideOrientation
  * @param scene defines the hosting scene
  * @returns the hemisphere mesh
  */

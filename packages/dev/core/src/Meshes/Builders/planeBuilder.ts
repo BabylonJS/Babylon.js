@@ -15,12 +15,6 @@ import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
  * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
  * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
  * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
- * @param options.size
- * @param options.width
- * @param options.height
- * @param options.sideOrientation
- * @param options.frontUVs
- * @param options.backUVs
  * @returns the VertexData of the box
  */
 export function CreatePlaneVertexData(options: { size?: number; width?: number; height?: number; sideOrientation?: number; frontUVs?: Vector4; backUVs?: Vector4 }): VertexData {
@@ -86,14 +80,6 @@ export function CreatePlaneVertexData(options: { size?: number; width?: number; 
  * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
- * @param options.size
- * @param options.width
- * @param options.height
- * @param options.sideOrientation
- * @param options.frontUVs
- * @param options.backUVs
- * @param options.updatable
- * @param options.sourcePlane
  * @param scene defines the hosting scene
  * @returns the plane mesh
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#plane
