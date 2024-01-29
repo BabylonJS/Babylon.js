@@ -268,6 +268,8 @@ export class VertexData {
             case VertexBuffer.MatricesWeightsExtraKind:
                 this.matricesWeightsExtra = data;
                 break;
+            default:
+                Logger.Error(`Unknown vertex data kind '${kind}'`);
         }
     }
 

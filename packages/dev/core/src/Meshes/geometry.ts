@@ -1181,6 +1181,20 @@ export class Geometry implements IGetSetVerticesData {
 
         serializationObject.indices = this._toNumberArray(this.getIndices());
 
+        // Serialize custom vertex data
+        serializationObject.customData = [];
+        const allKinds = this.getVerticesDataKinds();
+        for (const kind of allKinds) {
+            if (VertexBuffer.KnownKinds.indexOf(kind) !== -1) {
+                continue;
+            }
+
+            const buffer = this.getVertexBuffer(kind);
+            if (buffer) {
+                serializationObject.customData.push(buffer.serialize({}, this._toNumberArray));
+            }
+        }
+
         return serializationObject;
     }
 
@@ -1457,6 +1471,12 @@ export class Geometry implements IGetSetVerticesData {
             }
 
             mesh.setIndices(parsedGeometry.indices, null);
+
+            if (parsedGeometry.customData) {
+                for (const data of parsedGeometry.customData) {
+                    mesh.setVerticesData(data.kind, data.data, data.updatable, data.stride);
+                }
+            }
         }
 
         // SubMeshes
@@ -1575,6 +1595,16 @@ export class Geometry implements IGetSetVerticesData {
             Tags.AddTagsTo(geometry, parsedVertexData.tags);
         }
 
+        const importVertexData = () => {
+            VertexData.ImportVertexData(parsedVertexData, geometry);
+            // ImportVertexData does not import custom data to the geometry so we do this manually
+            if (parsedVertexData.customData) {
+                for (const data of parsedVertexData.customData) {
+                    geometry.setVerticesData(data.kind, data.data, data.updatable, data.stride);
+                }
+            }
+        };
+
         if (parsedVertexData.delayLoadingFile) {
             geometry.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
             geometry.delayLoadingFile = rootUrl + parsedVertexData.delayLoadingFile;
@@ -1617,9 +1647,9 @@ export class Geometry implements IGetSetVerticesData {
                 geometry._delayInfo.push(VertexBuffer.MatricesWeightsKind);
             }
 
-            geometry._delayLoadingFunction = VertexData.ImportVertexData;
+            geometry._delayLoadingFunction = importVertexData;
         } else {
-            VertexData.ImportVertexData(parsedVertexData, geometry);
+            importVertexData();
         }
 
         scene.pushGeometry(geometry, true);

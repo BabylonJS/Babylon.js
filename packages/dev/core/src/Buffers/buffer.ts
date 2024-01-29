@@ -748,6 +748,21 @@ export class VertexBuffer {
     }
 
     /**
+     * Serializes the vertex buffer
+     * @param serializationObject the object to serialize in
+     * @param toArrayFn optional function to convert data to a array
+     * @returns the serialized object
+     */
+    public serialize(serializationObject: any = {}, toArrayFn?: (data: any) => any) {
+        serializationObject.kind = this._kind;
+        serializationObject.data = toArrayFn ? toArrayFn(this.getData()) : this.getData();
+        serializationObject.updatable = this._buffer.isUpdatable();
+        serializationObject.stride = this.byteStride / VertexBuffer.GetTypeByteLength(this.type);
+
+        return serializationObject;
+    }
+
+    /**
      * Enumerates each value of this vertex buffer as numbers.
      * @param count the number of values to enumerate
      * @param callback the callback function called for each value
@@ -820,6 +835,26 @@ export class VertexBuffer {
      * Additional matrix weights (for bones)
      */
     public static readonly MatricesWeightsExtraKind = "matricesWeightsExtra";
+    /**
+     * List of all known kinds
+     */
+    public static KnownKinds = [
+        this.PositionKind,
+        this.NormalKind,
+        this.TangentKind,
+        this.UVKind,
+        this.UV2Kind,
+        this.UV3Kind,
+        this.UV4Kind,
+        this.UV5Kind,
+        this.UV6Kind,
+        this.ColorKind,
+        this.ColorInstanceKind,
+        this.MatricesIndicesKind,
+        this.MatricesWeightsKind,
+        this.MatricesIndicesExtraKind,
+        this.MatricesWeightsExtraKind,
+    ];
 
     /**
      * Deduces the stride given a kind.

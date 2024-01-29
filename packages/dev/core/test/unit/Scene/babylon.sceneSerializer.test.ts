@@ -3,6 +3,7 @@ import { FreeCamera } from "core/Cameras";
 import type { Engine } from "core/Engines";
 import { NullEngine } from "core/Engines";
 import { HemisphericLight } from "core/Lights";
+import { SceneLoader } from "core/Loading";
 import { Vector2, Vector3 } from "core/Maths";
 import { TransformNode } from "core/Meshes";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
@@ -30,7 +31,8 @@ describe("Babylon scene serializer", () => {
         it("should serialize an empty scene", () => {
             const result = SceneSerializer.Serialize(scene);
 
-            expect(result).toBeTruthy();
+            // Scene is not empty, it has at least some properties such as clearColor
+            expect(result).not.toEqual({});
         });
 
         it("should serialize a scene with different elements", () => {
@@ -77,7 +79,7 @@ describe("Babylon scene serializer", () => {
             scene.actionManager.registerAction(new IncrementValueAction(ActionManager.OnEveryFrameTrigger, scene.metadata, "counter", 1));
             const result = SceneSerializer.Serialize(scene);
 
-            expect(result).toBeTruthy();
+            expect(result).not.toEqual({});
 
             expect(result.geometries.vertexData.length).toBe(2);
 
@@ -117,7 +119,7 @@ describe("Babylon scene serializer", () => {
             const mesh = MeshBuilder.CreateGround("ground1", { width: 6, height: 6, subdivisions: 2 }, scene);
 
             const result = SceneSerializer.SerializeMesh(mesh);
-            expect(result).toBeTruthy();
+            expect(result).not.toEqual({});
             expect(result.meshes.length).toBe(1);
             expect(result.meshes[0].name).toBe("ground1");
             expect(result.geometries.vertexData.length).toBe(1);
@@ -133,7 +135,7 @@ describe("Babylon scene serializer", () => {
             child.parent = parent;
 
             const resultWithParentAndChild = SceneSerializer.SerializeMesh(parent, true, true);
-            expect(resultWithParentAndChild).toBeTruthy();
+            expect(resultWithParentAndChild).not.toEqual({});
             expect(resultWithParentAndChild.meshes.length).toBe(2);
             expect(resultWithParentAndChild.transformNodes.length).toBe(1);
             expect(resultWithParentAndChild.meshes[0].name).toBe("parent");
@@ -143,14 +145,13 @@ describe("Babylon scene serializer", () => {
             expect(resultWithParentAndChild.meshes[0].parentId).toBe(resultWithParentAndChild.transformNodes[0].uniqueId);
 
             const resultWithoutParent = SceneSerializer.SerializeMesh(parent, false, true);
-            console.log(resultWithoutParent);
-            expect(resultWithoutParent).toBeTruthy();
+            expect(resultWithoutParent).not.toEqual({});
             expect(resultWithoutParent.meshes.length).toBe(2);
             expect(resultWithoutParent.transformNodes.length).toBe(0);
             expect(resultWithoutParent.meshes[1].parentId).toBe(resultWithoutParent.meshes[0].uniqueId);
 
             const resultWithoutChild = SceneSerializer.SerializeMesh(parent, true, false);
-            expect(resultWithoutChild).toBeTruthy();
+            expect(resultWithoutChild).not.toEqual({});
             expect(resultWithoutChild.meshes.length).toBe(1);
             expect(resultWithoutChild.transformNodes.length).toBe(1);
             expect(resultWithoutChild.meshes[0].name).toBe("parent");
@@ -158,9 +159,40 @@ describe("Babylon scene serializer", () => {
             expect(resultWithoutChild.meshes[0].parentId).toBe(resultWithoutChild.transformNodes[0].uniqueId);
 
             const resultWithoutParentAndChild = SceneSerializer.SerializeMesh(parent, false, false);
-            expect(resultWithoutParentAndChild).toBeTruthy();
+            expect(resultWithoutParentAndChild).not.toEqual({});
             expect(resultWithoutParentAndChild.meshes.length).toBe(1);
             expect(resultWithoutParentAndChild.transformNodes.length).toBe(0);
+        });
+
+        it("should serialize a mesh with custom vertex buffers", async () => {
+            const mesh = MeshBuilder.CreateGround("ground", { subdivisions: 0 });
+
+            const nVerts = 4;
+            const customVertexData = new Float32Array(nVerts * 3);
+            for (let i = 0; i < nVerts; i++) {
+                customVertexData[i * 3] = i;
+                customVertexData[i * 3 + 1] = i;
+                customVertexData[i * 3 + 2] = i;
+            }
+            mesh.setVerticesData("custom", customVertexData, false, 3);
+
+            const serialized = SceneSerializer.SerializeMesh(mesh);
+
+            expect(serialized).not.toEqual({});
+            expect(serialized.geometries.vertexData.length).toBe(1);
+            const vertexData = serialized.geometries.vertexData[0];
+            expect(vertexData.customData).toBeDefined();
+            expect(vertexData.customData.length).toBe(1);
+            const customData = vertexData.customData[0];
+            expect(customData.kind).toBe("custom");
+            expect(customData.data).toEqual([0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3]);
+            expect(customData.stride).toBe(3);
+            expect(customData.updatable).toBe(false);
+
+            const result = await SceneLoader.ImportMeshAsync("", "data:" + JSON.stringify(serialized), "", scene);
+            expect(result.meshes.length).toBe(1);
+            const importedMesh = result.meshes[0];
+            expect(importedMesh.getVerticesData("custom")).toEqual([0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3]);
         });
     });
 });
