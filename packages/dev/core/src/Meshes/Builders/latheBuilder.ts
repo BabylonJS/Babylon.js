@@ -21,18 +21,6 @@ import type { Nullable } from "../../types";
  * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
- * @param options.shape
- * @param options.radius
- * @param options.tessellation
- * @param options.clip
- * @param options.arc
- * @param options.closed
- * @param options.updatable
- * @param options.sideOrientation
- * @param options.frontUVs
- * @param options.backUVs
- * @param options.cap
- * @param options.invertUV
  * @param scene defines the hosting scene
  * @returns the lathe mesh
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param#lathe

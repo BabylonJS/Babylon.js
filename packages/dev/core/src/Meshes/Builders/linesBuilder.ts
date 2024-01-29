@@ -16,8 +16,6 @@ import type { Material } from "../../Materials/material";
  * @param options an object used to set the following optional parameters for the LineSystem, required but can be empty
  *  - lines an array of lines, each line being an array of successive Vector3
  *  - colors an array of line colors, each of the line colors being an array of successive Color4, one per line point
- * @param options.lines
- * @param options.colors
  * @returns the VertexData of the LineSystem
  */
 export function CreateLineSystemVertexData(options: { lines: Vector3[][]; colors?: Nullable<Color4[][]> }): VertexData {
@@ -61,10 +59,6 @@ export function CreateLineSystemVertexData(options: { lines: Vector3[][]; colors
  *  - dashSize the size of the dashes relative to the dash number, optional, default 3
  *  - gapSize the size of the gap between two successive dashes relative to the dash number, optional, default 1
  *  - dashNb the intended total number of dashes, optional, default 200
- * @param options.points
- * @param options.dashSize
- * @param options.gapSize
- * @param options.dashNb
  * @returns the VertexData for the DashedLines
  */
 export function CreateDashedLinesVertexData(options: { points: Vector3[]; dashSize?: number; gapSize?: number; dashNb?: number }): VertexData {
@@ -126,12 +120,6 @@ export function CreateDashedLinesVertexData(options: { points: Vector3[]; dashSi
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param#line-system
  * @param name defines the name of the new line system
  * @param options defines the options used to create the line system
- * @param options.lines
- * @param options.updatable
- * @param options.instance
- * @param options.colors
- * @param options.useVertexAlpha
- * @param options.material
  * @param scene defines the hosting scene
  * @returns a new line system mesh
  */
@@ -200,12 +188,6 @@ export function CreateLineSystem(
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param#lines
  * @param name defines the name of the new line system
  * @param options defines the options used to create the line system
- * @param options.points
- * @param options.updatable
- * @param options.instance
- * @param options.colors
- * @param options.useVertexAlpha
- * @param options.material
  * @param scene defines the hosting scene
  * @returns a new line mesh
  */
@@ -238,14 +220,6 @@ export function CreateLines(
  * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
- * @param options.points
- * @param options.dashSize
- * @param options.gapSize
- * @param options.dashNb
- * @param options.updatable
- * @param options.instance
- * @param options.useVertexAlpha
- * @param options.material
  * @param scene defines the hosting scene
  * @returns the dashed line mesh
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param#dashed-lines

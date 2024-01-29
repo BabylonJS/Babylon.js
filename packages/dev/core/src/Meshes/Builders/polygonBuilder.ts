@@ -139,17 +139,6 @@ export function CreatePolygonVertexData(polygon: Mesh, sideOrientation: number, 
  * * Remember you can only change the shape positions, not their number when updating a polygon
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
- * @param options.shape
- * @param options.holes
- * @param options.depth
- * @param options.smoothingThreshold
- * @param options.faceUV
- * @param options.faceColors
- * @param options.updatable
- * @param options.sideOrientation
- * @param options.frontUVs
- * @param options.backUVs
- * @param options.wrap
  * @param scene defines the hosting scene
  * @param earcutInjection can be used to inject your own earcut reference
  * @returns the polygon mesh
@@ -211,16 +200,6 @@ export function CreatePolygon(
  * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/using/texturePerBoxFace
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
- * @param options.shape
- * @param options.holes
- * @param options.depth
- * @param options.faceUV
- * @param options.faceColors
- * @param options.updatable
- * @param options.sideOrientation
- * @param options.frontUVs
- * @param options.backUVs
- * @param options.wrap
  * @param scene defines the hosting scene
  * @param earcutInjection can be used to inject your own earcut reference
  * @returns the polygon mesh
