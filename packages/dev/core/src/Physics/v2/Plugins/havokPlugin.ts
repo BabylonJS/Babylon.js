@@ -32,6 +32,11 @@ import { VertexBuffer } from "../../../Buffers/buffer";
 import { ArrayTools } from "../../../Misc/arrayTools";
 import { Observable } from "../../../Misc/observable";
 import type { Nullable } from "../../../types";
+import type { IPhysicsPointProximityQuery } from "../../physicsPointProximityQuery";
+import type { ProximityCastResult } from "../../proximityCastResult";
+import type { IPhysicsShapeProximityCastQuery } from "../../physicsShapeProximityCastQuery";
+import type { IPhysicsShapeCastQuery } from "../../physicsShapeCastQuery";
+import type { ShapeCastResult } from "../../shapeCastResult";
 declare let HK: any;
 
 /**
@@ -217,7 +222,7 @@ class ShapePath
 }
 */
 
-class ContactPoint {
+class CollisionContactPoint {
     public bodyId: bigint = BigInt(0); //0,2
     //public colliderId: number = 0; //2,4
     //public shapePath: ShapePath = new ShapePath(); //4,8
@@ -227,8 +232,8 @@ class ContactPoint {
 }
 
 class CollisionEvent {
-    public contactOnA: ContactPoint = new ContactPoint(); //1
-    public contactOnB: ContactPoint = new ContactPoint();
+    public contactOnA: CollisionContactPoint = new CollisionContactPoint(); //1
+    public contactOnB: CollisionContactPoint = new CollisionContactPoint();
     public impulseApplied: number = 0;
     public type: number = 0;
 
@@ -287,6 +292,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     private _timeStep: number = 1 / 60;
     private _tmpVec3 = ArrayTools.BuildArray(3, Vector3.Zero);
     private _bodies = new Map<bigint, { body: PhysicsBody; index: number }>();
+    private _shapes = new Map<bigint, PhysicsShape>();
     private _bodyBuffer: number;
     private _bodyCollisionObservable = new Map<bigint, Observable<IPhysicsCollisionEvent>>();
     // Map from constraint id to the pair of bodies, where the first is the parent and the second is the child
@@ -1223,6 +1229,8 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 throw new Error("Unsupported Shape Type.");
                 break;
         }
+
+        this._shapes.set(shape._pluginData[0], shape);
     }
 
     /**
@@ -1886,6 +1894,20 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         constraint._pluginData.length = 0;
     }
 
+    private _populateHitData(hitData: any, result: ProximityCastResult | PhysicsRaycastResult | ShapeCastResult): void {
+        const hitBody = this._bodies.get(hitData[0][0]);
+        result.body = hitBody?.body;
+        result.bodyIndex = hitBody?.index;
+        const hitShape = this._shapes.get(hitData[1][0]);
+        result.shape = hitShape;
+
+        const hitPos = hitData[3];
+        const hitNormal = hitData[4];
+        const hitTriangle = hitData[5];
+
+        result.setHitData({ x: hitNormal[0], y: hitNormal[1], z: hitNormal[2] }, { x: hitPos[0], y: hitPos[1], z: hitPos[2] }, hitTriangle);
+    }
+
     /**
      * Performs a raycast from a given start point to a given end point and stores the result in a given PhysicsRaycastResult object.
      *
@@ -1909,16 +1931,88 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         this._hknp.HP_World_CastRayWithCollector(this.world, this._queryCollector, hkQuery);
 
         if (this._hknp.HP_QueryCollector_GetNumHits(this._queryCollector)[1] > 0) {
-            const hitData = this._hknp.HP_QueryCollector_GetCastRayResult(this._queryCollector, 0)[1];
+            const [, hitData] = this._hknp.HP_QueryCollector_GetCastRayResult(this._queryCollector, 0)[1];
 
-            const hitPos = hitData[1][3];
-            const hitNormal = hitData[1][4];
-            const hitTriangle = hitData[1][5];
-            result.setHitData({ x: hitNormal[0], y: hitNormal[1], z: hitNormal[2] }, { x: hitPos[0], y: hitPos[1], z: hitPos[2] }, hitTriangle);
+            this._populateHitData(hitData, result);
             result.calculateHitDistance();
-            const hitBody = this._bodies.get(hitData[1][0][0]);
-            result.body = hitBody?.body;
-            result.bodyIndex = hitBody?.index;
+        }
+    }
+
+    /**
+     * Given a point, returns the closest physics
+     * body to that point.
+     * @param query the query to perform. @see IPhysicsPointProximityQuery
+     * @param result contact point on the hit shape, in world space
+     */
+    public pointProximity(query: IPhysicsPointProximityQuery, result: ProximityCastResult): void {
+        const queryMembership = query?.collisionFilter?.membership ?? ~0;
+        const queryCollideWith = query?.collisionFilter?.collideWith ?? ~0;
+
+        result.reset();
+
+        const bodyToIgnore = query.ignoreBody ? [BigInt(query.ignoreBody._pluginData.hpBodyId[0])] : [BigInt(0)];
+
+        const hkQuery = [this._bVecToV3(query.position), query.maxDistance, [queryMembership, queryCollideWith], query.shouldHitTriggers, bodyToIgnore];
+        this._hknp.HP_World_PointProximityWithCollector(this.world, this._queryCollector, hkQuery);
+
+        if (this._hknp.HP_QueryCollector_GetNumHits(this._queryCollector)[1] > 0) {
+            const [distance, hitData] = this._hknp.HP_QueryCollector_GetPointProximityResult(this._queryCollector, 0)[1];
+
+            this._populateHitData(hitData, result);
+            result.setHitDistance(distance);
+        }
+    }
+
+    /**
+     * Given a shape in a specific position and orientation, returns the closest point to that shape.
+     * @param query the query to perform. @see IPhysicsShapeProximityCastQuery
+     * @param inputShapeResult contact point on input shape, in input shape space
+     * @param hitShapeResult contact point on hit shape, in world space
+     */
+    public shapeProximity(query: IPhysicsShapeProximityCastQuery, inputShapeResult: ProximityCastResult, hitShapeResult: ProximityCastResult): void {
+        inputShapeResult.reset();
+        hitShapeResult.reset();
+        const shapeId = query.shape._pluginData;
+        const bodyToIgnore = query.ignoreBody ? [BigInt(query.ignoreBody._pluginData.hpBodyId[0])] : [BigInt(0)];
+
+        const hkQuery = [shapeId, this._bVecToV3(query.position), this._bQuatToV4(query.rotation), query.maxDistance, query.shouldHitTriggers, bodyToIgnore];
+        this._hknp.HP_World_ShapeProximityWithCollector(this.world, this._queryCollector, hkQuery);
+
+        if (this._hknp.HP_QueryCollector_GetNumHits(this._queryCollector)[1] > 0) {
+            const [distance, hitInputData, hitShapeData] = this._hknp.HP_QueryCollector_GetShapeProximityResult(this._queryCollector, 0)[1];
+
+            this._populateHitData(hitInputData, inputShapeResult);
+            this._populateHitData(hitShapeData, hitShapeResult);
+
+            inputShapeResult.setHitDistance(distance);
+            hitShapeResult.setHitDistance(distance);
+        }
+    }
+
+    /**
+     * Given a shape in a specific orientation, cast it from the start to end position specified by the query, and return the first hit.
+     * @param query the query to perform. @see IPhysicsShapeCastQuery
+     * @param inputShapeResult contact point on input shape, in input shape space
+     * @param hitShapeResult contact point on hit shape, in world space
+     */
+    public shapeCast(query: IPhysicsShapeCastQuery, inputShapeResult: ShapeCastResult, hitShapeResult: ShapeCastResult): void {
+        inputShapeResult.reset();
+        hitShapeResult.reset();
+
+        const shapeId = query.shape._pluginData;
+        const bodyToIgnore = query.ignoreBody ? [BigInt(query.ignoreBody._pluginData.hpBodyId[0])] : [BigInt(0)];
+
+        const hkQuery = [shapeId, this._bQuatToV4(query.rotation), this._bVecToV3(query.startPosition), this._bVecToV3(query.endPosition), query.shouldHitTriggers, bodyToIgnore];
+        this._hknp.HP_World_ShapeCastWithCollector(this.world, this._queryCollector, hkQuery);
+
+        if (this._hknp.HP_QueryCollector_GetNumHits(this._queryCollector)[1] > 0) {
+            const [fractionAlongRay, hitInputData, hitShapeData] = this._hknp.HP_QueryCollector_GetShapeCastResult(this._queryCollector, 0)[1];
+
+            this._populateHitData(hitInputData, inputShapeResult);
+            this._populateHitData(hitShapeData, hitShapeResult);
+
+            inputShapeResult.setHitFraction(fractionAlongRay);
+            hitShapeResult.setHitFraction(fractionAlongRay);
         }
     }
 
