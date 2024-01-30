@@ -244,7 +244,6 @@ export function CreateGroundFromHeightMapVertexData(options: {
             }
             if (populateBuffer) {
                 // set the height buffer information in row major order.
-                console.log("setting height buffer", "[", row, col, "]", position.x, position.y, position.z);
                 options.heightBuffer[row * (options.subdivisions + 1) + col] = position.y;
             }
 
