@@ -1,6 +1,7 @@
 import type { InternalTexture } from "core/Materials/Textures/internalTexture";
 import type { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import type { Viewport } from "core/Maths/math.viewport";
+import { Observable } from "core/Misc/observable";
 import type { WebXRLayerType } from "core/XR/webXRLayerWrapper";
 import { WebXRLayerWrapper } from "core/XR/webXRLayerWrapper";
 import { WebXRLayerRenderTargetTextureProvider } from "core/XR/webXRRenderTargetTextureProvider";
@@ -32,6 +33,10 @@ export class WebXRCompositionLayerWrapper extends WebXRLayerWrapper {
 export class WebXRCompositionLayerRenderTargetTextureProvider extends WebXRLayerRenderTargetTextureProvider {
     protected _lastSubImages = new Map<XREye, XRWebGLSubImage>();
     private _compositionLayer: XRCompositionLayer;
+    /**
+     * Fires every time a new render target texture is created (either for eye, for view, or for the entire frame)
+     */
+    public onRenderTargetTextureCreatedObservable = new Observable<{ texture: RenderTargetTexture; eye?: XREye }>();
 
     constructor(
         protected readonly _xrSessionManager: WebXRSessionManager,
@@ -42,9 +47,9 @@ export class WebXRCompositionLayerRenderTargetTextureProvider extends WebXRLayer
         this._compositionLayer = layerWrapper.layer;
     }
 
-    protected _getRenderTargetForSubImage(subImage: XRWebGLSubImage, eye: XREye) {
+    protected _getRenderTargetForSubImage(subImage: XRWebGLSubImage, eye: XREye = "none") {
         const lastSubImage = this._lastSubImages.get(eye);
-        const eyeIndex = eye == "left" ? 0 : 1;
+        const eyeIndex = eye == "right" ? 1 : 0;
 
         const colorTextureWidth = subImage.colorTextureWidth ?? subImage.textureWidth;
         const colorTextureHeight = subImage.colorTextureHeight ?? subImage.textureHeight;
@@ -70,6 +75,7 @@ export class WebXRCompositionLayerRenderTargetTextureProvider extends WebXRLayer
                 framebufferWidth: colorTextureWidth,
                 framebufferHeight: colorTextureHeight,
             };
+            this.onRenderTargetTextureCreatedObservable.notifyObservers({ texture: this._renderTargetTextures[eyeIndex], eye });
         }
 
         this._lastSubImages.set(eye, subImage);
@@ -85,12 +91,12 @@ export class WebXRCompositionLayerRenderTargetTextureProvider extends WebXRLayer
     public getRenderTargetTextureForEye(eye?: XREye): Nullable<RenderTargetTexture> {
         const subImage = this._getSubImageForEye(eye);
         if (subImage) {
-            return this._getRenderTargetForSubImage(subImage, eye || "left");
+            return this._getRenderTargetForSubImage(subImage, eye);
         }
         return null;
     }
-    public getRenderTargetTextureForView(view: XRView): Nullable<RenderTargetTexture> {
-        return this.getRenderTargetTextureForEye(view.eye);
+    public getRenderTargetTextureForView(view?: XRView): Nullable<RenderTargetTexture> {
+        return this.getRenderTargetTextureForEye(view?.eye);
     }
 
     protected _setViewportForSubImage(viewport: Viewport, subImage: XRWebGLSubImage) {
