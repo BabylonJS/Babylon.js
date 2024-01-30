@@ -250,7 +250,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
      * @param flareSystem the flare system to add
      * @returns a composition layer containing the flare system
      */
-    public addLensFlareSystem(flareSystem: LensFlareSystem): WebXRCompositionLayerWrapper {
+    protected _addLensFlareSystem(flareSystem: LensFlareSystem): WebXRCompositionLayerWrapper {
         const wrapper = this._createQuadLayer({
             params: {
                 space: this._xrSessionManager.viewerReferenceSpace,

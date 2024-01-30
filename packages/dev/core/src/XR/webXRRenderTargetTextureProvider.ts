@@ -108,7 +108,6 @@ export abstract class WebXRLayerRenderTargetTextureProvider implements IWebXRRen
         }
 
         renderTargetTexture.disableRescaling();
-        // renderTargetTexture.skipInitialClear = true;
 
         this._renderTargetTextures.push(renderTargetTexture);
 

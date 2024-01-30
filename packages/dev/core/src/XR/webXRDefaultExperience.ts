@@ -232,7 +232,7 @@ export class WebXRDefaultExperience {
                     result.baseExperience.featuresManager.enableFeature(WebXRHandTracking.Name, options.useStablePlugins ? "stable" : "latest", <IWebXRHandTrackingOptions>{
                         xrInput: result.input,
                         ...options.handSupportOptions,
-                    });
+                    }, undefined, false);
                 }
 
                 // Create the WebXR output target
