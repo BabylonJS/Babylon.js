@@ -91,6 +91,9 @@ export class WebXRLayers extends WebXRAbstractFeature {
         if (!super.detach()) {
             return false;
         }
+        this._existingLayers.forEach((layer) => {
+            layer.dispose();
+        });
         this._existingLayers.length = 0;
         return true;
     }
@@ -221,56 +224,21 @@ export class WebXRLayers extends WebXRAbstractFeature {
             throw new Error("Could not find the babylon layer for the texture");
         }
         rttProvider.onRenderTargetTextureCreatedObservable.add((data) => {
-            data.texture.clearColor = new Color4(1, 0, 0, 0.3);
+            data.texture.clearColor = new Color4(0, 0, 0, 0);
             babylonLayer.renderTargetTextures.push(data.texture);
             babylonLayer.renderOnlyInRenderTargetTextures = true;
-            this._xrSessionManager.scene.onBeforeCameraRenderObservable.add(() => {
+            // for stereo (not for gui) it should be onBeforeCameraRenderObservable
+            this._xrSessionManager.scene.onBeforeRenderObservable.add(() => {
                 data.texture.render();
             });
-            // remove the lens flare system from the scene
-            this._xrSessionManager.onXRSessionInit.add(() => {
-                babylonLayer.renderTargetTextures.push(data.texture);
-                babylonLayer.renderOnlyInRenderTargetTextures = true;
-            });
+            babylonLayer.renderTargetTextures.push(data.texture);
+            babylonLayer.renderOnlyInRenderTargetTextures = true;
             // add it back when the session ends
-            this._xrSessionManager.onXRSessionEnded.add(() => {
+            this._xrSessionManager.onXRSessionEnded.addOnce(() => {
                 babylonLayer.renderTargetTextures.splice(babylonLayer.renderTargetTextures.indexOf(data.texture), 1);
                 babylonLayer.renderOnlyInRenderTargetTextures = false;
             });
         });
-
-
-        // // create an invisible plane for interaction when entering XR
-        // const camera: WebXRCamera = this._xrSessionManager.scene.cameras.find((camera) => camera.rigCameras.length)! as WebXRCamera;
-        // camera.onXRCameraInitializedObservable.add(() => {
-        //     // const fov = (Math.atan2(1, camera.getProjectionMatrix().m[5]) * 2 * 180) / Math.PI;
-        //     // const distanceToPlane = distance;
-        //     // const height = Math.tan(fov) * distanceToPlane * 2;
-        //     // const width = height * (layer.width / layer.height);
-        //     const scene = this._xrSessionManager.scene;
-        //     const plane = MeshBuilder.CreatePlane(
-        //         "plane",
-        //         {
-        //             width: 1,
-        //             height: 1,
-        //         },
-        //         scene
-        //     );
-        //     scene.onBeforeCameraRenderObservable.add(() => {
-        //         const camFov = Math.atan2(1, scene.activeCamera!.getProjectionMatrix().m[5]);
-        //         const fov_y = distance * Math.tan(camFov / 2);
-        //         const ratio = scene.getEngine().getAspectRatio(scene.activeCamera!); //; ((scene.getEngine().getRenderWidth() / 2) / scene.getEngine().getRenderHeight());
-
-        //         plane.scaling.x = fov_y * ratio;
-        //         plane.scaling.y = fov_y;
-        //     });
-        //     // plane.scaling.set(width, height, 1);
-        //     plane.position.z = distance;
-        //     plane.parent = camera;
-        //     plane.isPickable = true;
-        //     (texture as any).attachToMesh?.(plane);
-        // });
-
         return wrapper;
     }
 
@@ -292,7 +260,9 @@ export class WebXRLayers extends WebXRAbstractFeature {
         });
 
         const layer = wrapper.layer as XRQuadLayer;
-        const distance = 0.1;
+        layer.width = 2;
+        layer.height = 1;
+        const distance = 10;
         const pos = { x: 0, y: 0, z: -distance };
         const orient = { x: 0, y: 0, z: 0, w: 1 };
         layer.transform = new XRRigidTransform(pos, orient);
@@ -308,8 +278,11 @@ export class WebXRLayers extends WebXRAbstractFeature {
             data.texture.customRenderFunction = () => {
                 flareSystem.render();
             };
+
             // add to the scene's render targets
-            // this._xrSessionManager.scene.customRenderTargets.push(data.texture);
+            // this._xrSessionManager.scene.onBeforeCameraRenderObservable.add(() => {
+            //     data.texture.render();
+            // });
         });
         // remove the lens flare system from the scene
         this._xrSessionManager.onXRSessionInit.add(() => {
@@ -371,14 +344,6 @@ export class WebXRLayers extends WebXRAbstractFeature {
         for (let i = 0; i < layers.length; ++i) {
             const layer = layers[i];
             if (layer.layerType !== "XRProjectionLayer") {
-                const texture = this._compositionLayerTextureMapping.get(layer.layer as XRCompositionLayer);
-                // get the layer that hosts this texture
-                const babylonLayer = this._xrSessionManager.scene.layers.find((babylonLayer) => {
-                    return babylonLayer.texture === texture;
-                });
-                if (!babylonLayer) {
-                    continue;
-                }
                 // get the rtt provider
                 const rttProvider = this._layerToRTTProviderMapping.get(layer.layer as XRCompositionLayer);
                 if (!rttProvider) {
