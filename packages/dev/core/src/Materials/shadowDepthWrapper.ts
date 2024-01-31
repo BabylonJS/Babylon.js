@@ -11,7 +11,6 @@ import type { ShadowGenerator } from "../Lights/Shadows/shadowGenerator";
 import { RandomGUID } from "../Misc/guid";
 import { DrawWrapper } from "./drawWrapper";
 import { EngineStore } from "../Engines/engineStore";
-import type { ShaderMaterial } from "./shaderMaterial";
 import { ShaderLanguage } from "./shaderLanguage";
 
 /**
@@ -242,7 +241,6 @@ export class ShadowDepthWrapper {
             fragmentCode = origEffect.fragmentSourceCodeBeforeMigration;
 
         if (!this.doNotInjectCode) {
-            const shaderLanguage = (this._baseMaterial as ShaderMaterial).options?.shaderLanguage ?? ShaderLanguage.GLSL;
             // Declare the shadow map includes
             const vertexNormalBiasCode =
                     this._options && this._options.remappedVariables
@@ -260,7 +258,7 @@ export class ShadowDepthWrapper {
                 vertexExtraDeclartion = `#include<shadowMapVertexExtraDeclaration>`;
 
             // vertex code
-            if (shaderLanguage === ShaderLanguage.GLSL) {
+            if (origEffect.shaderLanguage === ShaderLanguage.GLSL) {
                 vertexCode = vertexCode.replace(/void\s+?main/g, `\n${vertexExtraDeclartion}\nvoid main`);
             } else {
                 vertexCode = vertexCode.replace(/@vertex/g, `\n${vertexExtraDeclartion}\n@vertex`);
@@ -315,7 +313,7 @@ export class ShadowDepthWrapper {
                 samplers: origEffect.getSamplers(),
                 defines: join + "\n" + origEffect.defines.replace("#define SHADOWS", "").replace(/#define SHADOW\d/g, ""),
                 indexParameters: origEffect.getIndexParameters(),
-                shaderLanguage: (this._baseMaterial as ShaderMaterial).options?.shaderLanguage ?? ShaderLanguage.GLSL,
+                shaderLanguage: origEffect.shaderLanguage,
             },
             engine
         );

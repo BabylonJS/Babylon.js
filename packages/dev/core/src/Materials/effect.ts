@@ -213,6 +213,10 @@ export class Effect implements IDisposable {
     private _processCodeAfterIncludes: ShaderCustomProcessingFunction | undefined = undefined;
     private _processFinalCode: Nullable<ShaderCustomProcessingFunction> = null;
 
+    public get shaderLanguage() {
+        return this._shaderLanguage;
+    }
+
     /**
      * Instantiates an effect.
      * An effect can be used to create/manage/execute vertex and fragment shaders.
