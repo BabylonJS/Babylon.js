@@ -89,7 +89,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         return new Promise((resolve) => {
             const script = document.createElement("script");
             script.setAttribute("type", "text/javascript");
-            script.src = url;
+            script.setAttribute("src", url);
             script.onload = () => {
                 resolve();
             };
