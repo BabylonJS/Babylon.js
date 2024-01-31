@@ -3,6 +3,7 @@ import type { ThinEngine } from "../Engines/thinEngine";
 import { DataBuffer } from "./dataBuffer";
 import type { Mesh } from "../Meshes/mesh";
 import { Logger } from "../Misc/logger";
+import { RandomGUID } from "../Misc/guid";
 
 /**
  * Class used to store data that will be store in GPU memory
@@ -18,6 +19,14 @@ export class Buffer {
     private _isAlreadyOwned = false;
     private _isDisposed = false;
     private _label?: string;
+    private _id: string;
+
+    /**
+     * Gets the id of the buffer
+     */
+    public get id(): string {
+        return this._id;
+    }
 
     /**
      * Gets a boolean indicating if the Buffer is disposed
@@ -65,6 +74,7 @@ export class Buffer {
         this._instanced = instanced;
         this._divisor = divisor || 1;
         this._label = label;
+        this._id = RandomGUID();
 
         if (data instanceof DataBuffer) {
             this._data = null;
@@ -80,6 +90,19 @@ export class Buffer {
             // by default
             this.create();
         }
+    }
+
+    /**
+     * Serializes the vertex buffer
+     * @param serializationObject the object to serialize in
+     * @param toArrayFn optional function to convert data to a array
+     * @returns the serialized object
+     */
+    public serialize(serializationObject: any = {}, toArrayFn?: (data: any) => any) {
+        serializationObject.data = toArrayFn ? toArrayFn(this.getData()) : this.getData();
+        serializationObject.updatable = this._updatable;
+        serializationObject.byteStride = this.byteStride;
+        return serializationObject;
     }
 
     /**
@@ -274,6 +297,10 @@ export class Buffer {
             this._data = null;
             this._buffer = null;
         }
+    }
+
+    public static Parse(bufferData: any, engine: ThinEngine) {
+        return new Buffer(engine, bufferData.data, bufferData.updatable, bufferData.byteStride, true, false, true);
     }
 }
 
@@ -745,21 +772,6 @@ export class VertexBuffer {
         }
 
         this._isDisposed = true;
-    }
-
-    /**
-     * Serializes the vertex buffer
-     * @param serializationObject the object to serialize in
-     * @param toArrayFn optional function to convert data to a array
-     * @returns the serialized object
-     */
-    public serialize(serializationObject: any = {}, toArrayFn?: (data: any) => any) {
-        serializationObject.kind = this._kind;
-        serializationObject.data = toArrayFn ? toArrayFn(this.getData()) : this.getData();
-        serializationObject.updatable = this._buffer.isUpdatable();
-        serializationObject.stride = this.byteStride / VertexBuffer.GetTypeByteLength(this.type);
-
-        return serializationObject;
     }
 
     /**

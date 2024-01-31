@@ -1089,110 +1089,93 @@ export class Geometry implements IGetSetVerticesData {
 
     /**
      * Serialize all vertices data into a JSON object
+     * @param serializationBuffers an object where to store the buffers
      * @returns a JSON representation of the current geometry data
      */
-    public serializeVerticeData(): any {
+    public serializeVerticeData(serializationBuffers: any): any {
         const serializationObject = this.serialize();
 
-        if (this.isVerticesDataPresent(VertexBuffer.PositionKind)) {
-            serializationObject.positions = this._toNumberArray(this.getVerticesData(VertexBuffer.PositionKind));
-            if (this.isVertexBufferUpdatable(VertexBuffer.PositionKind)) {
-                serializationObject.positions._updatable = true;
+        const serializeData = (kind: string, kindName: string, object: any) => {
+            if (this.isVerticesDataPresent(kind)) {
+                const vertexBuffer = this.getVertexBuffer(kind)!;
+                const buffer = vertexBuffer.getWrapperBuffer();
+                if (!buffer) {
+                    Tools.Warn("Geometry.serializeVerticeData: buffer is not available for vertex data: " + kind);
+                    return;
+                }
+                if (serializationBuffers[buffer.id] === undefined) {
+                    serializationBuffers[buffer.id] = buffer.serialize({}, this._toNumberArray);
+                }
+                object[kindName] = {
+                    bufferId: buffer.id,
+                    byteOffset: vertexBuffer.byteOffset,
+                    byteStride: vertexBuffer.byteStride,
+                    isUpdatable: vertexBuffer.isUpdatable(),
+                    attributeSize: vertexBuffer.byteStride / 4, // size of float
+                    kind,
+                };
             }
+        };
+        if (this.isVerticesDataPresent(VertexBuffer.PositionKind)) {
+            serializeData(VertexBuffer.PositionKind, "positions", serializationObject);
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-            serializationObject.normals = this._toNumberArray(this.getVerticesData(VertexBuffer.NormalKind));
-            if (this.isVertexBufferUpdatable(VertexBuffer.NormalKind)) {
-                serializationObject.normals._updatable = true;
-            }
+            serializeData(VertexBuffer.NormalKind, "normals", serializationObject);
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.TangentKind)) {
-            serializationObject.tangents = this._toNumberArray(this.getVerticesData(VertexBuffer.TangentKind));
-            if (this.isVertexBufferUpdatable(VertexBuffer.TangentKind)) {
-                serializationObject.tangents._updatable = true;
-            }
+            serializeData(VertexBuffer.TangentKind, "tangents", serializationObject);
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.UVKind)) {
-            serializationObject.uvs = this._toNumberArray(this.getVerticesData(VertexBuffer.UVKind));
-            if (this.isVertexBufferUpdatable(VertexBuffer.UVKind)) {
-                serializationObject.uvs._updatable = true;
-            }
+            serializeData(VertexBuffer.UVKind, "uvs", serializationObject);
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-            serializationObject.uvs2 = this._toNumberArray(this.getVerticesData(VertexBuffer.UV2Kind));
-            if (this.isVertexBufferUpdatable(VertexBuffer.UV2Kind)) {
-                serializationObject.uvs2._updatable = true;
-            }
+            serializeData(VertexBuffer.UV2Kind, "uvs2", serializationObject);
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.UV3Kind)) {
-            serializationObject.uvs3 = this._toNumberArray(this.getVerticesData(VertexBuffer.UV3Kind));
-            if (this.isVertexBufferUpdatable(VertexBuffer.UV3Kind)) {
-                serializationObject.uvs3._updatable = true;
-            }
+            serializeData(VertexBuffer.UV3Kind, "uvs3", serializationObject);
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.UV4Kind)) {
-            serializationObject.uvs4 = this._toNumberArray(this.getVerticesData(VertexBuffer.UV4Kind));
-            if (this.isVertexBufferUpdatable(VertexBuffer.UV4Kind)) {
-                serializationObject.uvs4._updatable = true;
-            }
+            serializeData(VertexBuffer.UV4Kind, "uvs4", serializationObject);
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.UV5Kind)) {
-            serializationObject.uvs5 = this._toNumberArray(this.getVerticesData(VertexBuffer.UV5Kind));
-            if (this.isVertexBufferUpdatable(VertexBuffer.UV5Kind)) {
-                serializationObject.uvs5._updatable = true;
-            }
+            serializeData(VertexBuffer.UV5Kind, "uvs5", serializationObject);
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.UV6Kind)) {
-            serializationObject.uvs6 = this._toNumberArray(this.getVerticesData(VertexBuffer.UV6Kind));
-            if (this.isVertexBufferUpdatable(VertexBuffer.UV6Kind)) {
-                serializationObject.uvs6._updatable = true;
-            }
+            serializeData(VertexBuffer.UV6Kind, "uvs6", serializationObject);
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.ColorKind)) {
-            serializationObject.colors = this._toNumberArray(this.getVerticesData(VertexBuffer.ColorKind));
-            if (this.isVertexBufferUpdatable(VertexBuffer.ColorKind)) {
-                serializationObject.colors._updatable = true;
-            }
+            serializeData(VertexBuffer.ColorKind, "colors", serializationObject);
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind)) {
-            serializationObject.matricesIndices = this._toNumberArray(this.getVerticesData(VertexBuffer.MatricesIndicesKind));
+            serializeData(VertexBuffer.MatricesIndicesKind, "matricesIndices", serializationObject);
             serializationObject.matricesIndices._isExpanded = true;
-            if (this.isVertexBufferUpdatable(VertexBuffer.MatricesIndicesKind)) {
-                serializationObject.matricesIndices._updatable = true;
-            }
         }
 
         if (this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
-            serializationObject.matricesWeights = this._toNumberArray(this.getVerticesData(VertexBuffer.MatricesWeightsKind));
-            if (this.isVertexBufferUpdatable(VertexBuffer.MatricesWeightsKind)) {
-                serializationObject.matricesWeights._updatable = true;
-            }
+            serializeData(VertexBuffer.MatricesWeightsKind, "matricesWeights", serializationObject);
         }
 
         serializationObject.indices = this._toNumberArray(this.getIndices());
 
         // Serialize custom vertex data
-        serializationObject.customData = [];
+        serializationObject.customData = {};
         const allKinds = this.getVerticesDataKinds();
         for (const kind of allKinds) {
             if (VertexBuffer.KnownKinds.indexOf(kind) !== -1) {
                 continue;
             }
 
-            const buffer = this.getVertexBuffer(kind);
-            if (buffer) {
-                serializationObject.customData.push(buffer.serialize({}, this._toNumberArray));
-            }
+            serializeData(kind, kind, serializationObject.customData);
         }
 
         return serializationObject;
@@ -1585,9 +1568,10 @@ export class Geometry implements IGetSetVerticesData {
      * @param parsedVertexData defines the persisted data
      * @param scene defines the hosting scene
      * @param rootUrl defines the root url to use to load assets (like delayed data)
+     * @param parsedBuffersMap a map from buffer id to buffer
      * @returns the new geometry object
      */
-    public static Parse(parsedVertexData: any, scene: Scene, rootUrl: string): Nullable<Geometry> {
+    public static Parse(parsedVertexData: any, scene: Scene, rootUrl: string, parsedBuffersMap: Map<string, Buffer>): Nullable<Geometry> {
         const geometry = new Geometry(parsedVertexData.id, scene, undefined, parsedVertexData.updatable);
         geometry._loadedUniqueId = parsedVertexData.uniqueId;
 
@@ -1596,11 +1580,18 @@ export class Geometry implements IGetSetVerticesData {
         }
 
         const importVertexData = () => {
-            VertexData.ImportVertexData(parsedVertexData, geometry);
+            VertexData.ImportVertexData(parsedVertexData, geometry, parsedBuffersMap);
             // ImportVertexData does not import custom data to the geometry so we do this manually
             if (parsedVertexData.customData) {
-                for (const data of parsedVertexData.customData) {
-                    geometry.setVerticesData(data.kind, data.data, data.updatable, data.stride);
+                for (const kindId of Object.keys(parsedVertexData.customData)) {
+                    const data = parsedVertexData.customData[kindId];
+                    const bufferId = data.bufferId;
+                    const buffer = parsedBuffersMap.get(bufferId);
+                    if (buffer && buffer.getData()) {
+                        // const data = buffer.getData();
+                        geometry.setVerticesBuffer(buffer.createVertexBuffer(data.kind, data.byteOffset, data.attributeSize, data.byteStride, undefined, true));
+                        // geometry.setVerticesData(data.kind, buffer.getData()!, data.updatable, data.stride);
+                    }
                 }
             }
         };

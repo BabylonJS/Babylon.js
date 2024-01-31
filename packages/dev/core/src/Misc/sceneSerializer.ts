@@ -14,12 +14,12 @@ import type { Camera } from "../Cameras/camera";
 import { Logger } from "core/Misc/logger";
 
 let serializedGeometries: Geometry[] = [];
-const SerializeGeometry = (geometry: Geometry, serializationGeometries: any): any => {
+const SerializeGeometry = (geometry: Geometry, serializationGeometries: any, serializationBuffers: any): any => {
     if (geometry.doNotSerialize) {
         return;
     }
 
-    serializationGeometries.vertexData.push(geometry.serializeVerticeData());
+    serializationGeometries.vertexData.push(geometry.serializeVerticeData(serializationBuffers));
 
     (<any>serializedGeometries)[geometry.id] = true;
 };
@@ -32,7 +32,7 @@ const SerializeMesh = (mesh: Mesh, serializationScene: any): any => {
     if (geometry) {
         if (!mesh.getScene().getGeometryById(geometry.id)) {
             // Geometry was in the memory but not added to the scene, nevertheless it's better to serialize to be able to reload the mesh with its geometry
-            SerializeGeometry(geometry, serializationScene.geometries);
+            SerializeGeometry(geometry, serializationScene.geometries, serializationScene.buffers);
         }
     }
 
@@ -90,8 +90,11 @@ const FinalizeSingleNode = (node: Node, serializationObject: any) => {
                     serializationObject.geometries.torusKnots = [];
                     serializationObject.geometries.vertexData = [];
                 }
+                if (!serializationObject.buffers) {
+                    serializationObject.buffers = {};
+                }
 
-                SerializeGeometry(geometry, serializationObject.geometries);
+                SerializeGeometry(geometry, serializationObject.geometries, serializationObject.buffers);
             }
             // Skeletons
             if (mesh.skeleton && !mesh.skeleton.doNotSerialize) {
@@ -299,13 +302,15 @@ export class SceneSerializer {
         serializationObject.geometries.torusKnots = [];
         serializationObject.geometries.vertexData = [];
 
+        serializationObject.buffers = {};
+
         serializedGeometries = [];
         const geometries = scene.getGeometries();
         for (index = 0; index < geometries.length; index++) {
             const geometry = geometries[index];
 
             if (geometry.isReady()) {
-                SerializeGeometry(geometry, serializationObject.geometries);
+                SerializeGeometry(geometry, serializationObject.geometries, serializationObject.buffers);
             }
         }
 

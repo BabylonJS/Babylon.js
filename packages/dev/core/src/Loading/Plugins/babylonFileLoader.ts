@@ -30,6 +30,7 @@ import { ReflectionProbe } from "../../Probes/reflectionProbe";
 import { GetClass } from "../../Misc/typeStore";
 import { Tools } from "../../Misc/tools";
 import { PostProcess } from "../../PostProcesses/postProcess";
+import { Buffer } from "../../Buffers/buffer";
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention, no-var
@@ -336,6 +337,18 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
             }
         }
 
+        const parsedBuffersMap = new Map<string, Buffer>();
+        // Buffers
+        const buffers = parsedData.buffers;
+        if (buffers !== undefined && buffers !== null) {
+            for (const bufferDataId of Object.keys(buffers)) {
+                const bufferData = buffers[bufferDataId];
+                const buffer = Buffer.Parse(bufferData, scene.getEngine());
+                parsedBuffersMap.set(bufferDataId, buffer);
+                log += "\n\tBuffer " + buffer.toString();
+            }
+        }
+
         // Geometries
         const geometries = parsedData.geometries;
         if (geometries !== undefined && geometries !== null) {
@@ -346,7 +359,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
             if (vertexData !== undefined && vertexData !== null) {
                 for (index = 0, cache = vertexData.length; index < cache; index++) {
                     const parsedVertexData = vertexData[index];
-                    addedGeometry.push(Geometry.Parse(parsedVertexData, scene, rootUrl));
+                    addedGeometry.push(Geometry.Parse(parsedVertexData, scene, rootUrl, parsedBuffersMap));
                 }
             }
 
@@ -635,6 +648,17 @@ SceneLoader.RegisterPlugin({
                     parsedTransformNode._waitingParsedUniqueId = null;
                 }
             }
+
+            const parsedIdToBufferMap = new Map<string, Buffer>();
+            // Buffers
+            if (parsedData.buffers !== undefined && parsedData.buffers !== null) {
+                for (const bufferDataId of Object.keys(parsedData.buffers)) {
+                    const bufferData = parsedData.buffers[bufferDataId];
+                    const buffer = Buffer.Parse(bufferData, scene.getEngine());
+                    parsedIdToBufferMap.set(bufferDataId, buffer);
+                    log += "\n\tBuffer " + buffer.toString();
+                }
+            }
             if (parsedData.meshes !== undefined && parsedData.meshes !== null) {
                 const loadedSkeletonsIds = [];
                 const loadedMaterialsIds: string[] = [];
@@ -663,7 +687,7 @@ SceneLoader.RegisterPlugin({
                                             if (parsedGeometryData.id === parsedMesh.geometryId) {
                                                 switch (geometryType) {
                                                     case "vertexData":
-                                                        Geometry.Parse(parsedGeometryData, scene, rootUrl);
+                                                        Geometry.Parse(parsedGeometryData, scene, rootUrl, parsedIdToBufferMap);
                                                         break;
                                                 }
                                                 found = true;

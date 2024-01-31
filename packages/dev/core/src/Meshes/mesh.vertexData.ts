@@ -3,6 +3,7 @@
 import type { Nullable, FloatArray, IndicesArray, DeepImmutable } from "../types";
 import type { Matrix, Vector2 } from "../Maths/math.vector";
 import { Vector3, Vector4, TmpVectors } from "../Maths/math.vector";
+import type { Buffer } from "../Buffers/buffer";
 import { VertexBuffer } from "../Buffers/buffer";
 import { _WarnImport } from "../Misc/devTools";
 import type { Color3 } from "../Maths/math.color";
@@ -1254,8 +1255,9 @@ export class VertexData {
      * @returns a copy of the current data
      */
     public clone() {
-        const serializationObject = this.serialize();
-        return VertexData.Parse(serializationObject);
+        // TODO
+        // const serializationObject = this.serialize();
+        // return VertexData.Parse(serializationObject);
     }
 
     /**
@@ -2209,82 +2211,36 @@ export class VertexData {
     /**
      * Creates a VertexData from serialized data
      * @param parsedVertexData the parsed data from an imported file
+     * @param parsedBufferMap a map from buffer id to buffer
      * @returns a VertexData
      */
-    public static Parse(parsedVertexData: any) {
+    public static Parse(parsedVertexData: any, parsedBufferMap: Map<string, Buffer>): VertexData {
         const vertexData = new VertexData();
 
+        const parseData = (dataName: string, vertexKind: string, dataTransformFn?: (data: any) => any) => {
+            const data = parsedVertexData[dataName];
+            if (data) {
+                const buffer = parsedBufferMap.get(data.bufferId);
+                let dataToSet = buffer ? buffer.getData() : data;
+                if (dataTransformFn) {
+                    dataToSet = dataTransformFn(dataToSet);
+                }
+                vertexData.set(dataToSet, vertexKind);
+            }
+        };
         // positions
-        const positions = parsedVertexData.positions;
-        if (positions) {
-            vertexData.set(positions, VertexBuffer.PositionKind);
-        }
-
-        // normals
-        const normals = parsedVertexData.normals;
-        if (normals) {
-            vertexData.set(normals, VertexBuffer.NormalKind);
-        }
-
-        // tangents
-        const tangents = parsedVertexData.tangents;
-        if (tangents) {
-            vertexData.set(tangents, VertexBuffer.TangentKind);
-        }
-
-        // uvs
-        const uvs = parsedVertexData.uvs;
-        if (uvs) {
-            vertexData.set(uvs, VertexBuffer.UVKind);
-        }
-
-        // uv2s
-        const uvs2 = parsedVertexData.uvs2;
-        if (uvs2) {
-            vertexData.set(uvs2, VertexBuffer.UV2Kind);
-        }
-
-        // uv3s
-        const uvs3 = parsedVertexData.uvs3;
-        if (uvs3) {
-            vertexData.set(uvs3, VertexBuffer.UV3Kind);
-        }
-
-        // uv4s
-        const uvs4 = parsedVertexData.uvs4;
-        if (uvs4) {
-            vertexData.set(uvs4, VertexBuffer.UV4Kind);
-        }
-
-        // uv5s
-        const uvs5 = parsedVertexData.uvs5;
-        if (uvs5) {
-            vertexData.set(uvs5, VertexBuffer.UV5Kind);
-        }
-
-        // uv6s
-        const uvs6 = parsedVertexData.uvs6;
-        if (uvs6) {
-            vertexData.set(uvs6, VertexBuffer.UV6Kind);
-        }
-
-        // colors
-        const colors = parsedVertexData.colors;
-        if (colors) {
-            vertexData.set(Color4.CheckColors4(colors, positions.length / 3), VertexBuffer.ColorKind);
-        }
-
-        // matricesIndices
-        const matricesIndices = parsedVertexData.matricesIndices;
-        if (matricesIndices) {
-            vertexData.set(matricesIndices, VertexBuffer.MatricesIndicesKind);
-        }
-
-        // matricesWeights
-        const matricesWeights = parsedVertexData.matricesWeights;
-        if (matricesWeights) {
-            vertexData.set(matricesWeights, VertexBuffer.MatricesWeightsKind);
-        }
+        parseData("positions", VertexBuffer.PositionKind);
+        parseData("normals", VertexBuffer.NormalKind);
+        parseData("tangents", VertexBuffer.TangentKind);
+        parseData("uvs", VertexBuffer.UVKind);
+        parseData("uvs2", VertexBuffer.UV2Kind);
+        parseData("uvs3", VertexBuffer.UV3Kind);
+        parseData("uvs4", VertexBuffer.UV4Kind);
+        parseData("uvs5", VertexBuffer.UV5Kind);
+        parseData("uvs6", VertexBuffer.UV6Kind);
+        parseData("colors", VertexBuffer.ColorKind, (colors: any) => Color4.CheckColors4(colors, parsedVertexData.positions.length / 3));
+        parseData("matricesIndices", VertexBuffer.MatricesIndicesKind);
+        parseData("matricesWeights", VertexBuffer.MatricesWeightsKind);
 
         // indices
         const indices = parsedVertexData.indices;
@@ -2314,9 +2270,10 @@ export class VertexData {
      * Applies VertexData created from the imported parameters to the geometry
      * @param parsedVertexData the parsed data from an imported file
      * @param geometry the geometry to apply the VertexData to
+     * @param parsedBufferMap a map from buffer id to buffer
      */
-    public static ImportVertexData(parsedVertexData: any, geometry: Geometry) {
-        const vertexData = VertexData.Parse(parsedVertexData);
+    public static ImportVertexData(parsedVertexData: any, geometry: Geometry, parsedBufferMap: Map<string, Buffer>) {
+        const vertexData = VertexData.Parse(parsedVertexData, parsedBufferMap);
 
         geometry.setAllVerticesData(vertexData, parsedVertexData.updatable);
     }
