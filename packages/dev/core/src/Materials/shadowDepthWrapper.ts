@@ -315,7 +315,7 @@ export class ShadowDepthWrapper {
                 samplers: origEffect.getSamplers(),
                 defines: join + "\n" + origEffect.defines.replace("#define SHADOWS", "").replace(/#define SHADOW\d/g, ""),
                 indexParameters: origEffect.getIndexParameters(),
-                shaderLanguage: (this._baseMaterial as any).options.shaderLanguage,
+                shaderLanguage: (this._baseMaterial as ShaderMaterial).options?.shaderLanguage ?? ShaderLanguage.GLSL,
             },
             engine
         );
