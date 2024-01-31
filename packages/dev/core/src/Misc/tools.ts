@@ -597,7 +597,7 @@ export class Tools {
      * @param scriptUrl defines the url of the script to laod
      * @returns a promise request object
      */
-    public static LoadScriptAsync(scriptUrl: string): Promise<void> {
+    public static LoadScriptAsync(scriptUrl: string, scriptId?: string): Promise<void> {
         return new Promise((resolve, reject) => {
             this.LoadScript(
                 scriptUrl,
@@ -606,7 +606,8 @@ export class Tools {
                 },
                 (message, exception) => {
                     reject(exception || new Error(message));
-                }
+                },
+                scriptId
             );
         });
     }

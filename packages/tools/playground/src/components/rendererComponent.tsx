@@ -88,6 +88,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     private async _loadScriptAsync(url: string): Promise<void> {
         return new Promise((resolve) => {
             const script = document.createElement("script");
+            script.setAttribute("type", "text/javascript");
             script.src = url;
             script.onload = () => {
                 resolve();
@@ -193,10 +194,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
             // Check for Unity Toolkit
             if ((location.href.indexOf("UnityToolkit") !== -1 || Utilities.ReadBoolFromStore("unity-toolkit", false)) && !this._unityToolkitWasLoaded) {
-                // BUG: Something in this._loadScriptAsync vs BABYLON.Tools.LoadScriptAsync is causing runtime fails in following scripts
-                // They both load fine from the playground using BABYLON.Tools.LoadScriptAsync for now. Need to debug diffrence in two loaders
-                // await this._loadScriptAsync("https://cdn.jsdelivr.net/gh/BabylonJS/UnityExporter@master/Redist/Runtime/babylon.toolkit.js");
-                // await this._loadScriptAsync("https://cdn.jsdelivr.net/gh/BabylonJS/UnityExporter@master/Redist/Runtime/unity.playground.js");
+                await this._loadScriptAsync("https://cdn.jsdelivr.net/gh/BabylonJS/UnityExporter@master/Redist/Runtime/babylon.toolkit.js");
                 this._unityToolkitWasLoaded = true;
             }
 
