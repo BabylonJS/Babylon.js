@@ -389,9 +389,9 @@ export class WebXRHand implements IDisposable {
      * Sets the current hand mesh to render for the WebXRHand.
      * @param handMesh The rigged hand mesh that will be tracked to the user's hand.
      * @param rigMapping The mapping from XRHandJoint to bone names to use with the mesh.
-     * @param xrSessionManager The XRSessionManager used to initialize the hand mesh.
+     * @param _xrSessionManager The XRSessionManager used to initialize the hand mesh.
      */
-    public setHandMesh(handMesh: AbstractMesh, rigMapping: Nullable<XRHandMeshRigMapping>, xrSessionManager?: WebXRSessionManager) {
+    public setHandMesh(handMesh: AbstractMesh, rigMapping: Nullable<XRHandMeshRigMapping>, _xrSessionManager?: WebXRSessionManager) {
         this._handMesh = handMesh;
 
         // Avoid any strange frustum culling. We will manually control visibility via attach and detach.
@@ -399,9 +399,6 @@ export class WebXRHand implements IDisposable {
         handMesh.getChildMeshes().forEach((mesh) => {
             mesh.alwaysSelectAsActiveMesh = true;
         });
-        if (xrSessionManager) {
-            handMesh.scaling.setAll(xrSessionManager.worldScalingFactor);
-        }
 
         // Link the bones in the hand mesh to the transform nodes that will be bound to the WebXR tracked joints.
         if (this._handMesh.skeleton) {
@@ -809,6 +806,8 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                 // Apply meshes to existing hands if already tracking.
                 this._trackingHands.left?.setHandMesh(this._handResources.handMeshes.left, this._handResources.rigMappings.left, this._xrSessionManager);
                 this._trackingHands.right?.setHandMesh(this._handResources.handMeshes.right, this._handResources.rigMappings.right, this._xrSessionManager);
+                this._handResources.handMeshes.left.scaling.setAll(this._xrSessionManager.worldScalingFactor);
+                this._handResources.handMeshes.right.scaling.setAll(this._xrSessionManager.worldScalingFactor);
             });
             this._xrSessionManager.onWorldScaleFactorChangedObservable.add((scalingFactors) => {
                 if (this._handResources.handMeshes) {
