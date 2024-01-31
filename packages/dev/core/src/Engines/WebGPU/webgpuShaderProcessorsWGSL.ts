@@ -104,6 +104,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
     }
 
     public preProcessShaderCode(code: string): string {
+        // Same check as in webgpuShaderProcessorsGLSL to avoid same ubDelcaration to be injected twice.
         const ubDeclaration = `struct ${WebGPUShaderProcessor.InternalsUBOName} {\n  yFactor_: f32,\n  textureOutputHeight_: f32,\n};\nvar<uniform> ${internalsVarName} : ${WebGPUShaderProcessor.InternalsUBOName};\n`;
         const alreadyInjected = code.indexOf(ubDeclaration) !== -1;
         return alreadyInjected ? code : ubDeclaration + RemoveComments(code);
