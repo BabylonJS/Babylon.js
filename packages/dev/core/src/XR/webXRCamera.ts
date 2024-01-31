@@ -84,6 +84,13 @@ export class WebXRCamera extends FreeCamera {
             this._referenceQuaternion.copyFromFloats(0, 0, 0, 1);
             // first frame - camera's y position should be 0 for the correct offset
             this._firstFrame = this.compensateOnFirstFrame;
+            this._xrSessionManager.onWorldScaleFactorChangedObservable.add(() => {
+                // only run if in session
+                if (!this._xrSessionManager.currentFrame) {
+                    return;
+                }
+                this._updateDepthNearFar();
+            });
         });
 
         // Check transformation changes on each frame. Callback is added to be first so that the transformation will be
@@ -201,6 +208,19 @@ export class WebXRCamera extends FreeCamera {
         this._lastXRViewerPose = undefined;
     }
 
+    private _updateDepthNearFar() {
+        const far = (this.maxZ || 10000) * this._xrSessionManager.worldScalingFactor;
+        const xrRenderState: XRRenderStateInit = {
+            // if maxZ is 0 it should be "Infinity", but it doesn't work with the WebXR API. Setting to a large number.
+            depthFar: far,
+            depthNear: this.minZ,
+        };
+
+        this._xrSessionManager.updateRenderState(xrRenderState);
+        this._cache.minZ = this.minZ;
+        this._cache.maxZ = far;
+    }
+
     private _rotate180 = new Quaternion(0, 1, 0, 0);
 
     private _updateFromXRSession() {
@@ -217,15 +237,7 @@ export class WebXRCamera extends FreeCamera {
 
         // check min/max Z and update if not the same as in cache
         if (this.minZ !== this._cache.minZ || this.maxZ !== this._cache.maxZ) {
-            const xrRenderState: XRRenderStateInit = {
-                // if maxZ is 0 it should be "Infinity", but it doesn't work with the WebXR API. Setting to a large number.
-                depthFar: this.maxZ || 10000,
-                depthNear: this.minZ,
-            };
-
-            this._xrSessionManager.updateRenderState(xrRenderState);
-            this._cache.minZ = this.minZ;
-            this._cache.maxZ = this.maxZ;
+            this._updateDepthNearFar();
         }
 
         if (pose.transform) {
