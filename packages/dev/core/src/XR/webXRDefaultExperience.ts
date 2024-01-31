@@ -229,10 +229,16 @@ export class WebXRDefaultExperience {
 
                 if (!options.disableHandTracking) {
                     // Add default hand tracking
-                    result.baseExperience.featuresManager.enableFeature(WebXRHandTracking.Name, options.useStablePlugins ? "stable" : "latest", <IWebXRHandTrackingOptions>{
-                        xrInput: result.input,
-                        ...options.handSupportOptions,
-                    }, undefined, false);
+                    result.baseExperience.featuresManager.enableFeature(
+                        WebXRHandTracking.Name,
+                        options.useStablePlugins ? "stable" : "latest",
+                        <IWebXRHandTrackingOptions>{
+                            xrInput: result.input,
+                            ...options.handSupportOptions,
+                        },
+                        undefined,
+                        false
+                    );
                 }
 
                 // Create the WebXR output target
