@@ -11,7 +11,7 @@ import type { ShadowGenerator } from "../Lights/Shadows/shadowGenerator";
 import { RandomGUID } from "../Misc/guid";
 import { DrawWrapper } from "./drawWrapper";
 import { EngineStore } from "../Engines/engineStore";
-import { ShaderMaterial } from "./shaderMaterial";
+import type { ShaderMaterial } from "./shaderMaterial";
 import { ShaderLanguage } from "./shaderLanguage";
 
 /**
