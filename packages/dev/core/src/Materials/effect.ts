@@ -141,25 +141,6 @@ export class Effect implements IDisposable {
     /** @internal */
     public _onBindObservable: Nullable<Observable<Effect>> = null;
 
-    /**
-     * @internal
-     * Specifies if the effect was previously ready
-     */
-    public _wasPreviouslyReady = false;
-
-    /**
-     * @internal
-     * Forces the code from bindForSubMesh to be fully run the next time it is called
-     * It is used in frozen mode to make sure the effect is properly rebound when a new effect is created
-     */
-    public _forceRebindOnNextCall = false;
-
-    /**
-     * @internal
-     * Specifies if the effect was previously using instances
-     */
-    public _wasPreviouslyUsingInstances: Nullable<boolean> = null;
-
     private _isDisposed = false;
 
     /**

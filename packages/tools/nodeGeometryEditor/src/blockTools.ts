@@ -65,6 +65,8 @@ import { GeometryModBlock } from "core/Meshes/Node/Blocks/geometryModBlock";
 import { GeometryPowBlock } from "core/Meshes/Node/Blocks/geometryPowBlock";
 import { GeometryClampBlock } from "core/Meshes/Node/Blocks/geometryClampBlock";
 import { GeometryCrossBlock } from "core/Meshes/Node/Blocks/geometryCrossBlock";
+import { GeometryCurveBlock } from "core/Meshes/Node/Blocks/geometryCurveBlock";
+import { GeometryDesaturateBlock } from "core/Meshes/Node/Blocks/geometryDesaturateBlock";
 
 /**
  * Static class for BlockTools
@@ -72,6 +74,10 @@ import { GeometryCrossBlock } from "core/Meshes/Node/Blocks/geometryCrossBlock";
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "DesaturateBlock":
+                return new GeometryDesaturateBlock("Desaturate");
+            case "CurveBlock":
+                return new GeometryCurveBlock("Curve");
             case "CrossBlock":
                 return new GeometryCrossBlock("Cross");
             case "ClampBlock":
@@ -253,34 +259,9 @@ export class BlockTools {
                 block.contextualValue = NodeGeometryContextualSources.Tangents;
                 return block;
             }
-            case "UV1sBlock": {
-                const block = new GeometryInputBlock("UV1s");
+            case "UVsBlock": {
+                const block = new GeometryInputBlock("UVs");
                 block.contextualValue = NodeGeometryContextualSources.UV;
-                return block;
-            }
-            case "UV2sBlock": {
-                const block = new GeometryInputBlock("UV2s");
-                block.contextualValue = NodeGeometryContextualSources.UV2;
-                return block;
-            }
-            case "UV3sBlock": {
-                const block = new GeometryInputBlock("UV3s");
-                block.contextualValue = NodeGeometryContextualSources.UV3;
-                return block;
-            }
-            case "UV4sBlock": {
-                const block = new GeometryInputBlock("UV4s");
-                block.contextualValue = NodeGeometryContextualSources.UV4;
-                return block;
-            }
-            case "UV5sBlock": {
-                const block = new GeometryInputBlock("UV5s");
-                block.contextualValue = NodeGeometryContextualSources.UV5;
-                return block;
-            }
-            case "UV6sBlock": {
-                const block = new GeometryInputBlock("UV6s");
-                block.contextualValue = NodeGeometryContextualSources.UV6;
                 return block;
             }
             case "VertexIDBlock": {

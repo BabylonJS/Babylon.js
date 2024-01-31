@@ -108,6 +108,29 @@ export class MorphTargetManager implements IDisposable {
         }
     }
 
+    private _numMaxInfluencers = 0;
+
+    /**
+     * Gets or sets the maximum number of influencers (targets) (default value: 0).
+     * Setting a value for this property can lead to a smoother experience, as only one shader will be compiled, which will use this value as the maximum number of influencers.
+     * If you leave the value at 0 (default), a new shader will be compiled every time the number of active influencers changes. This can cause problems, as compiling a shader takes time.
+     * If you assign a non-zero value to this property, you need to ensure that this value is greater than the maximum number of (active) influencers you'll need for this morph manager.
+     * Otherwise, the number of active influencers will be truncated at the value you set for this property, which can lead to unexpected results.
+     * Note that this property has no effect if "useTextureToStoreTargets" is false.
+     */
+    public get numMaxInfluencers(): number {
+        return this._numMaxInfluencers;
+    }
+
+    public set numMaxInfluencers(value: number) {
+        if (this._numMaxInfluencers === value) {
+            return;
+        }
+
+        this._numMaxInfluencers = value;
+        this._syncActiveTargets(true);
+    }
+
     /**
      * Gets the unique ID of this manager
      */
@@ -252,6 +275,7 @@ export class MorphTargetManager implements IDisposable {
         effect.setFloat3("morphTargetTextureInfo", this._textureVertexStride, this._textureWidth, this._textureHeight);
         effect.setFloatArray("morphTargetTextureIndices", this._morphTargetTextureIndices);
         effect.setTexture("morphTargets", this._targetStoreTexture);
+        effect.setInt("morphTargetCount", this.numInfluencers);
     }
 
     /**
@@ -365,7 +389,7 @@ export class MorphTargetManager implements IDisposable {
             return;
         }
 
-        if (this.isUsingTextureForTargets && this._vertexCount) {
+        if (this.isUsingTextureForTargets && (this._vertexCount || this.numMaxInfluencers > 0)) {
             this._textureVertexStride = 1;
 
             if (this._supportsNormals) {
@@ -380,7 +404,7 @@ export class MorphTargetManager implements IDisposable {
                 this._textureVertexStride++;
             }
 
-            this._textureWidth = this._vertexCount * this._textureVertexStride;
+            this._textureWidth = this._vertexCount * this._textureVertexStride || 1;
             this._textureHeight = 1;
 
             const maxTextureSize = this._scene.getEngine().getCaps().maxTextureSize;

@@ -227,14 +227,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@6.39.0";
+        return "babylonjs@6.40.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "6.39.0";
+        return "6.40.0";
     }
 
     /**
@@ -1126,7 +1126,6 @@ export class ThinEngine {
             const effect = <Effect>this._compiledEffects[key];
 
             effect._pipelineContext = null; // because _prepareEffect will try to dispose this pipeline before recreating it and that would lead to webgl errors
-            effect._wasPreviouslyReady = false;
             effect._prepareEffect();
         }
 

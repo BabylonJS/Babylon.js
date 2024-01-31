@@ -789,7 +789,7 @@ export class PhysicsViewer {
         vertexData.applyToMesh(mesh);
         if (body._pluginDataInstances) {
             const instanceBuffer = new Float32Array(body._pluginDataInstances.length * 16);
-            mesh.thinInstanceSetBuffer("matrix", instanceBuffer, 16);
+            mesh.thinInstanceSetBuffer("matrix", instanceBuffer, 16, false);
         }
         mesh.material = this._getDebugMaterial(utilityLayerScene);
         return mesh;
@@ -838,7 +838,7 @@ export class PhysicsViewer {
                 this._getMeshDebugInertiaMatrixToRef(props, matrixRef);
                 matrixRef.copyToArray(instanceBuffer, i * 16);
             }
-            inertiaBoxMesh.thinInstanceSetBuffer("matrix", instanceBuffer, 16);
+            inertiaBoxMesh.thinInstanceSetBuffer("matrix", instanceBuffer, 16, false);
         } else {
             const props = body.getMassProperties();
             this._getMeshDebugInertiaMatrixToRef(props, matrixRef);

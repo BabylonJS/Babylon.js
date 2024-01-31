@@ -21,16 +21,6 @@ import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
  * * invertUV swaps in the U and V coordinates when applying a texture, optional, default false
  * * uvs a linear array, of length 2 * number of vertices, of custom UV values, optional
  * * colors a linear array, of length 4 * number of vertices, of custom color values, optional
- * @param options.pathArray
- * @param options.closeArray
- * @param options.closePath
- * @param options.offset
- * @param options.sideOrientation
- * @param options.frontUVs
- * @param options.backUVs
- * @param options.invertUV
- * @param options.uvs
- * @param options.colors
  * @returns the VertexData of the ribbon
  */
 export function CreateRibbonVertexData(options: {
@@ -295,18 +285,6 @@ export function CreateRibbonVertexData(options: {
  * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
- * @param options.pathArray
- * @param options.closeArray
- * @param options.closePath
- * @param options.offset
- * @param options.updatable
- * @param options.sideOrientation
- * @param options.frontUVs
- * @param options.backUVs
- * @param options.instance
- * @param options.invertUV
- * @param options.uvs
- * @param options.colors
  * @param scene defines the hosting scene
  * @returns the ribbon mesh
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param/ribbon_extra

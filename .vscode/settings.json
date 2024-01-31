@@ -9,6 +9,7 @@
         "**/.rollup.cache": true,
         "**/packages/dev/**/Shaders/**/*.ts": true,
         "**/packages/dev/**/shaders/**/*.ts": true,
+        "**/packages/dev/**/ShadersWGSL/**/*.ts": true,
         "**/*.fragment.ts": true,
         "**/*.vertex.ts": true,
         "**/*.compute.ts": true,

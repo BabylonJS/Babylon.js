@@ -10,6 +10,7 @@ import { ShaderCodeInliner } from "core/Engines/Processors/shaderCodeInliner";
 import type { ICustomShaderNameResolveOptions } from "core/Materials/material";
 import { Color3, Color4 } from "core/Maths/math.color";
 import type { Nullable } from "core/types";
+import type { SubMesh } from "core/Meshes/subMesh";
 
 /**
  * Albedo parts of the shader
@@ -321,13 +322,13 @@ export class PBRCustomMaterial extends PBRMaterial {
         this._createdShaderName = "custompbr_" + PBRCustomMaterial.ShaderIndexer;
     }
 
-    protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null): void {
+    protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null, subMesh?: SubMesh): void {
         if (!effect) {
             return;
         }
         this.AttachAfterBind(mesh, effect);
         try {
-            super._afterBind(mesh, effect);
+            super._afterBind(mesh, effect, subMesh);
         } catch (e) {}
     }
 

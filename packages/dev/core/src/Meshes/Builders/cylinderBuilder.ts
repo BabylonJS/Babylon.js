@@ -24,21 +24,6 @@ import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
  * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
  * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
  * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
- * @param options.height
- * @param options.diameterTop
- * @param options.diameterBottom
- * @param options.diameter
- * @param options.tessellation
- * @param options.subdivisions
- * @param options.arc
- * @param options.faceColors
- * @param options.faceUV
- * @param options.hasRings
- * @param options.enclose
- * @param options.cap
- * @param options.sideOrientation
- * @param options.frontUVs
- * @param options.backUVs
  * @returns the VertexData of the cylinder, cone or prism
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -338,22 +323,6 @@ export function CreateCylinderVertexData(options: {
  * * The mesh can be set to updatable with the boolean parameter `updatable` (default false) if its internal geometry is supposed to change once created.
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
- * @param options.height
- * @param options.diameterTop
- * @param options.diameterBottom
- * @param options.diameter
- * @param options.tessellation
- * @param options.subdivisions
- * @param options.arc
- * @param options.faceColors
- * @param options.faceUV
- * @param options.updatable
- * @param options.hasRings
- * @param options.enclose
- * @param options.cap
- * @param options.sideOrientation
- * @param options.frontUVs
- * @param options.backUVs
  * @param scene defines the hosting scene
  * @returns the cylinder mesh
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#cylinder-or-cone

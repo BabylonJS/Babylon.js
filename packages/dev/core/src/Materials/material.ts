@@ -1168,13 +1168,16 @@ export class Material implements IAnimatable, IClipPlanesHolder {
                     continue;
                 }
 
-                if (!subMesh.effect) {
-                    continue;
+                for (const drawWrapper of subMesh._drawWrappers) {
+                    if (!drawWrapper) {
+                        continue;
+                    }
+                    if (this._materialContext === drawWrapper.materialContext) {
+                        drawWrapper._wasPreviouslyReady = false;
+                        drawWrapper._wasPreviouslyUsingInstances = null;
+                        drawWrapper._forceRebindOnNextCall = forceMaterialDirty;
+                    }
                 }
-
-                subMesh.effect._wasPreviouslyReady = false;
-                subMesh.effect._wasPreviouslyUsingInstances = null;
-                subMesh.effect._forceRebindOnNextCall = forceMaterialDirty;
             }
         }
 
@@ -1235,14 +1238,11 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * @param subMesh defines the submesh to bind the material to
      */
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        const effect = subMesh.effect;
-        if (!effect) {
-            return;
-        }
+        const drawWrapper = subMesh._drawWrapper;
 
         this._eventInfo.subMesh = subMesh;
         this._callbackPluginEventBindForSubMesh(this._eventInfo);
-        effect._forceRebindOnNextCall = false;
+        drawWrapper._forceRebindOnNextCall = false;
     }
 
     /**
@@ -1293,9 +1293,10 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     /**
      * Processes to execute after binding the material to a mesh
      * @param mesh defines the rendered mesh
-     * @param effect
+     * @param effect defines the effect used to bind the material
+     * @param _subMesh defines the subMesh that the material has been bound for
      */
-    protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null): void {
+    protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null, _subMesh?: SubMesh): void {
         this._scene._cachedMaterial = this;
         if (this._needToBindSceneUbo) {
             if (effect) {

@@ -13,5 +13,7 @@
 		#ifdef MORPHTARGETS_UV
 		attribute uv_{X} : vec2<f32>;
 		#endif
+	#elif {X} == 0
+		uniform morphTargetCount: i32;
 	#endif
 #endif
