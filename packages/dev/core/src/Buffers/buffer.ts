@@ -847,26 +847,6 @@ export class VertexBuffer {
      * Additional matrix weights (for bones)
      */
     public static readonly MatricesWeightsExtraKind = "matricesWeightsExtra";
-    /**
-     * List of all known kinds
-     */
-    public static KnownKinds = [
-        this.PositionKind,
-        this.NormalKind,
-        this.TangentKind,
-        this.UVKind,
-        this.UV2Kind,
-        this.UV3Kind,
-        this.UV4Kind,
-        this.UV5Kind,
-        this.UV6Kind,
-        this.ColorKind,
-        this.ColorInstanceKind,
-        this.MatricesIndicesKind,
-        this.MatricesWeightsKind,
-        this.MatricesIndicesExtraKind,
-        this.MatricesWeightsExtraKind,
-    ];
 
     /**
      * Deduces the stride given a kind.

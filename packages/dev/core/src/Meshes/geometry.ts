@@ -1088,6 +1088,27 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     /**
+     * Map from common vertex buffer kinds to the names which they are serialized with in the geometry JSON data
+     */
+    public static KindNameToSerialize: { [vertexBufferKind: string]: string } = {
+        [VertexBuffer.PositionKind]: "positions",
+        [VertexBuffer.NormalKind]: "normals",
+        [VertexBuffer.TangentKind]: "tangents",
+        [VertexBuffer.UVKind]: "uvs",
+        [VertexBuffer.UV2Kind]: "uvs2",
+        [VertexBuffer.UV3Kind]: "uvs3",
+        [VertexBuffer.UV4Kind]: "uvs4",
+        [VertexBuffer.UV5Kind]: "uvs5",
+        [VertexBuffer.UV6Kind]: "uvs6",
+        [VertexBuffer.ColorKind]: "colors",
+        [VertexBuffer.ColorInstanceKind]: "instanceColors",
+        [VertexBuffer.MatricesIndicesKind]: "matricesIndices",
+        [VertexBuffer.MatricesWeightsKind]: "matricesWeights",
+        [VertexBuffer.MatricesIndicesExtraKind]: "matricesIndicesExtra",
+        [VertexBuffer.MatricesWeightsExtraKind]: "matricesWeightsExtra",
+    };
+
+    /**
      * Serialize all vertices data into a JSON object
      * @param serializationBuffers an object where to store the buffers
      * @returns a JSON representation of the current geometry data
@@ -1101,7 +1122,7 @@ export class Geometry implements IGetSetVerticesData {
                 const buffer = vertexBuffer.getWrapperBuffer();
                 if (!buffer) {
                     Tools.Warn("Geometry.serializeVerticeData: buffer is not available for vertex data: " + kind);
-                    return;
+                    return false;
                 }
                 if (serializationBuffers[buffer.id] === undefined) {
                     serializationBuffers[buffer.id] = buffer.serialize({}, this._toNumberArray);
@@ -1114,64 +1135,27 @@ export class Geometry implements IGetSetVerticesData {
                     attributeSize: vertexBuffer.byteStride / 4, // size of float
                     kind,
                 };
+                return true;
             }
+            return false;
         };
-        if (this.isVerticesDataPresent(VertexBuffer.PositionKind)) {
-            serializeData(VertexBuffer.PositionKind, "positions", serializationObject);
-        }
 
-        if (this.isVerticesDataPresent(VertexBuffer.NormalKind)) {
-            serializeData(VertexBuffer.NormalKind, "normals", serializationObject);
-        }
-
-        if (this.isVerticesDataPresent(VertexBuffer.TangentKind)) {
-            serializeData(VertexBuffer.TangentKind, "tangents", serializationObject);
-        }
-
-        if (this.isVerticesDataPresent(VertexBuffer.UVKind)) {
-            serializeData(VertexBuffer.UVKind, "uvs", serializationObject);
-        }
-
-        if (this.isVerticesDataPresent(VertexBuffer.UV2Kind)) {
-            serializeData(VertexBuffer.UV2Kind, "uvs2", serializationObject);
-        }
-
-        if (this.isVerticesDataPresent(VertexBuffer.UV3Kind)) {
-            serializeData(VertexBuffer.UV3Kind, "uvs3", serializationObject);
-        }
-
-        if (this.isVerticesDataPresent(VertexBuffer.UV4Kind)) {
-            serializeData(VertexBuffer.UV4Kind, "uvs4", serializationObject);
-        }
-
-        if (this.isVerticesDataPresent(VertexBuffer.UV5Kind)) {
-            serializeData(VertexBuffer.UV5Kind, "uvs5", serializationObject);
-        }
-
-        if (this.isVerticesDataPresent(VertexBuffer.UV6Kind)) {
-            serializeData(VertexBuffer.UV6Kind, "uvs6", serializationObject);
-        }
-
-        if (this.isVerticesDataPresent(VertexBuffer.ColorKind)) {
-            serializeData(VertexBuffer.ColorKind, "colors", serializationObject);
-        }
-
-        if (this.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind)) {
-            serializeData(VertexBuffer.MatricesIndicesKind, "matricesIndices", serializationObject);
-            serializationObject.matricesIndices._isExpanded = true;
-        }
-
-        if (this.isVerticesDataPresent(VertexBuffer.MatricesWeightsKind)) {
-            serializeData(VertexBuffer.MatricesWeightsKind, "matricesWeights", serializationObject);
+        for (const kind of Object.keys(Geometry.KindNameToSerialize)) {
+            const kindName = Geometry.KindNameToSerialize[kind];
+            const wasSerialized = serializeData(kind, kindName, serializationObject);
+            if (kind === VertexBuffer.MatricesIndicesKind && wasSerialized) {
+                serializationObject[kindName]._isExpanded = true;
+            }
         }
 
         serializationObject.indices = this._toNumberArray(this.getIndices());
 
-        // Serialize custom vertex data
+        // Serialize custom geometry data
         serializationObject.customData = {};
         const allKinds = this.getVerticesDataKinds();
         for (const kind of allKinds) {
-            if (VertexBuffer.KnownKinds.indexOf(kind) !== -1) {
+            // Skip the kinds we already serialized
+            if (Geometry.KindNameToSerialize[kind]) {
                 continue;
             }
 
@@ -1580,17 +1564,39 @@ export class Geometry implements IGetSetVerticesData {
         }
 
         const importVertexData = () => {
-            VertexData.ImportVertexData(parsedVertexData, geometry, parsedBuffersMap);
-            // ImportVertexData does not import custom data to the geometry so we do this manually
+            for (const kind of Object.keys(Geometry.KindNameToSerialize)) {
+                const kindName = Geometry.KindNameToSerialize[kind];
+                if (parsedVertexData[kindName]) {
+                    const bufferId = parsedVertexData[kindName].bufferId;
+                    const buffer = parsedBuffersMap.get(bufferId);
+                    if (buffer && buffer.getData()) {
+                        geometry.setVerticesBuffer(
+                            buffer.createVertexBuffer(
+                                kind,
+                                parsedVertexData[kindName].byteOffset,
+                                parsedVertexData[kindName].attributeSize,
+                                parsedVertexData[kindName].byteStride,
+                                undefined,
+                                true
+                            )
+                        );
+                    } else if (Array.isArray(parsedVertexData[kindName])) {
+                        // Best effort to support old format
+                        geometry.setVerticesData(kind, parsedVertexData[kindName]);
+                    } else {
+                        Tools.Warn("Geometry.Parse: No data for vertex buffer " + kind + " in geometry " + geometry.id);
+                    }
+                }
+            }
+            geometry.setIndices(parsedVertexData.indices);
+
             if (parsedVertexData.customData) {
                 for (const kindId of Object.keys(parsedVertexData.customData)) {
                     const data = parsedVertexData.customData[kindId];
                     const bufferId = data.bufferId;
                     const buffer = parsedBuffersMap.get(bufferId);
                     if (buffer && buffer.getData()) {
-                        // const data = buffer.getData();
                         geometry.setVerticesBuffer(buffer.createVertexBuffer(data.kind, data.byteOffset, data.attributeSize, data.byteStride, undefined, true));
-                        // geometry.setVerticesData(data.kind, buffer.getData()!, data.updatable, data.stride);
                     }
                 }
             }

@@ -1,11 +1,12 @@
 import { ActionManager, IncrementValueAction } from "core/Actions";
+import { VertexBuffer } from "core/Buffers";
 import { FreeCamera } from "core/Cameras";
 import type { Engine } from "core/Engines";
 import { NullEngine } from "core/Engines";
 import { HemisphericLight } from "core/Lights";
 import { SceneLoader } from "core/Loading";
 import { Vector2, Vector3 } from "core/Maths";
-import { TransformNode } from "core/Meshes";
+import { Mesh, TransformNode } from "core/Meshes";
 import { MeshBuilder } from "core/Meshes/meshBuilder";
 import { SceneSerializer } from "core/Misc/sceneSerializer";
 import { ParticleHelper } from "core/Particles";
@@ -112,11 +113,50 @@ describe("Babylon scene serializer", () => {
 
             expect(result.actions.children.length).toBe(1);
         });
+
+        it("should serialize shared buffers only once", async () => {
+            const mesh1 = new Mesh("mesh1", scene);
+            mesh1.setVerticesData(VertexBuffer.PositionKind, new Float32Array([0, 0, 0, 1, 1, 1, 2, 2, 2]), false, 3);
+            mesh1.setVerticesData(VertexBuffer.NormalKind, new Float32Array([0, 0, 0, 1, 1, 1, 2, 2, 2]), false, 3);
+            mesh1.setIndices([0, 1, 2]);
+            mesh1.setVerticesData(VertexBuffer.UVKind, new Float32Array([0, 0, 1, 1, 2, 2]), false, 2);
+
+            const positionBuffer = mesh1.getVertexBuffer(VertexBuffer.PositionKind);
+            const normalBuffer = mesh1.getVertexBuffer(VertexBuffer.NormalKind);
+            const indices = mesh1.getIndices();
+
+            // Mesh2 shares positions and normals buffer, but not uv!
+            const mesh2 = new Mesh("mesh2", scene);
+            mesh2.setVerticesBuffer(positionBuffer!);
+            mesh2.setVerticesBuffer(normalBuffer!);
+            mesh2.setIndices(indices!);
+            mesh2.setVerticesData(VertexBuffer.UVKind, new Float32Array([5, 5, 6, 6, 7, 7]), false, 2);
+
+            const serialized = SceneSerializer.Serialize(scene);
+
+            // serialize 2 common position and normals and 2 unique uvs
+            expect(Object.keys(serialized.buffers).length).toBe(4);
+
+            // dispose mesh1 and mesh2
+            mesh1.dispose();
+            mesh2.dispose();
+
+            const result = await SceneLoader.AppendAsync("", "data:" + JSON.stringify(serialized), scene);
+            expect(result.meshes.length).toBe(2);
+            const importedMesh1 = result.meshes[0] as Mesh;
+            const importedMesh2 = result.meshes[1] as Mesh;
+
+            // expect shared buffers to be the same
+            expect(importedMesh1.getVertexBuffer(VertexBuffer.PositionKind)?.getWrapperBuffer()).toBe(importedMesh2.getVertexBuffer(VertexBuffer.PositionKind)?.getWrapperBuffer());
+            expect(importedMesh1.getVertexBuffer(VertexBuffer.NormalKind)?.getWrapperBuffer()).toBe(importedMesh2.getVertexBuffer(VertexBuffer.NormalKind)?.getWrapperBuffer());
+            // expect unique buffers to be different
+            expect(importedMesh1.getVertexBuffer(VertexBuffer.UVKind)?.getWrapperBuffer()).not.toBe(importedMesh2.getVertexBuffer(VertexBuffer.UVKind)?.getWrapperBuffer());
+        });
     });
 
     describe("#meshSerialize", () => {
         it("should serialize a single mesh", () => {
-            const mesh = MeshBuilder.CreateGround("ground1", { width: 6, height: 6, subdivisions: 2 }, scene);
+            const mesh = MeshBuilder.CreateGround("ground1", {}, scene);
 
             const result = SceneSerializer.SerializeMesh(mesh);
             expect(result).not.toEqual({});
@@ -182,12 +222,7 @@ describe("Babylon scene serializer", () => {
             expect(serialized.geometries.vertexData.length).toBe(1);
             const vertexData = serialized.geometries.vertexData[0];
             expect(vertexData.customData).toBeDefined();
-            expect(vertexData.customData.length).toBe(1);
-            const customData = vertexData.customData[0];
-            expect(customData.kind).toBe("custom");
-            expect(customData.data).toEqual([0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3]);
-            expect(customData.stride).toBe(3);
-            expect(customData.updatable).toBe(false);
+            expect(Object.keys(vertexData.customData).length).toBe(1);
 
             const result = await SceneLoader.ImportMeshAsync("", "data:" + JSON.stringify(serialized), "", scene);
             expect(result.meshes.length).toBe(1);
