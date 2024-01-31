@@ -213,7 +213,10 @@ export class Effect implements IDisposable {
     private _processCodeAfterIncludes: ShaderCustomProcessingFunction | undefined = undefined;
     private _processFinalCode: Nullable<ShaderCustomProcessingFunction> = null;
 
-    public get shaderLanguage() {
+    /**
+     * Gets the shader language type used to write vertex and fragment source code.
+     */
+    public get shaderLanguage(): ShaderLanguage {
         return this._shaderLanguage;
     }
 
