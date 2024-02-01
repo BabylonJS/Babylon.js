@@ -49,6 +49,7 @@ type ControllerData = {
     // event support
     eventListeners?: { [event in XREventType]?: (event: XRInputSourceEvent) => void };
     pickedPointVisualCue: AbstractMesh;
+    _worldScaleObserver?: Nullable<Observer<{ previousScaleFactor: number; newScaleFactor: number }>>;
 };
 
 // Tracks the interaction animation state when using a motion controller with a near interaction orb
@@ -167,18 +168,20 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             pickedPointVisualCue: selectionMesh,
         };
 
-        this._xrSessionManager.onWorldScaleFactorChangedObservable.add((values) => {
-            if (values.newScaleFactor !== values.previousScaleFactor) {
-                this._controllers[xrController.uniqueId].touchCollisionMesh.dispose();
-                this._controllers[xrController.uniqueId].pickedPointVisualCue.dispose();
+        this._controllers[xrController.uniqueId]._worldScaleObserver =
+            this._controllers[xrController.uniqueId]._worldScaleObserver ||
+            this._xrSessionManager.onWorldScaleFactorChangedObservable.add((values) => {
+                if (values.newScaleFactor !== values.previousScaleFactor) {
+                    this._controllers[xrController.uniqueId].touchCollisionMesh.dispose();
+                    this._controllers[xrController.uniqueId].pickedPointVisualCue.dispose();
 
-                const { touchCollisionMesh, touchCollisionMeshFunction, hydrateCollisionMeshFunction } = this._generateNewTouchPointMesh();
-                this._controllers[xrController.uniqueId].touchCollisionMesh = touchCollisionMesh;
-                this._controllers[xrController.uniqueId].touchCollisionMeshFunction = touchCollisionMeshFunction;
-                this._controllers[xrController.uniqueId].hydrateCollisionMeshFunction = hydrateCollisionMeshFunction;
-                this._controllers[xrController.uniqueId].pickedPointVisualCue = this._generateVisualCue();
-            }
-        });
+                    const { touchCollisionMesh, touchCollisionMeshFunction, hydrateCollisionMeshFunction } = this._generateNewTouchPointMesh();
+                    this._controllers[xrController.uniqueId].touchCollisionMesh = touchCollisionMesh;
+                    this._controllers[xrController.uniqueId].touchCollisionMeshFunction = touchCollisionMeshFunction;
+                    this._controllers[xrController.uniqueId].hydrateCollisionMeshFunction = hydrateCollisionMeshFunction;
+                    this._controllers[xrController.uniqueId].pickedPointVisualCue = this._generateVisualCue();
+                }
+            });
 
         if (this._attachedController) {
             if (
@@ -797,6 +800,11 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             };
             this._scene.simulatePointerUp(new PickingInfo(), pointerEventInit);
         });
+
+        // remove world scale observer
+        if (controllerData._worldScaleObserver) {
+            this._xrSessionManager.onWorldScaleFactorChangedObservable.remove(controllerData._worldScaleObserver);
+        }
 
         // remove from the map
         delete this._controllers[xrControllerUniqueId];

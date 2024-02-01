@@ -174,6 +174,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
     private _tmpRay = new Ray(new Vector3(), new Vector3());
     private _tmpVector = new Vector3();
     private _tmpQuaternion = new Quaternion();
+    private _worldScaleObserver?: Nullable<Observer<{ previousScaleFactor: number; newScaleFactor: number }>> = null;
 
     /**
      * Skip the next teleportation. This can be controlled by the user to prevent the user from teleportation
@@ -312,9 +313,8 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         this.onAfterCameraTeleport = _options.xrInput.xrCamera.onAfterCameraTeleport;
 
         this.parabolicCheckRadius *= this._xrSessionManager.worldScalingFactor;
-        _xrSessionManager.onWorldScaleFactorChangedObservable.add((values) => {
+        this._worldScaleObserver = _xrSessionManager.onWorldScaleFactorChangedObservable.add((values) => {
             this.parabolicCheckRadius = (this.parabolicCheckRadius / values.previousScaleFactor) * values.newScaleFactor;
-
             this._options.teleportationTargetMesh?.scaling.scaleInPlace(values.newScaleFactor / values.previousScaleFactor);
         });
     }
@@ -396,6 +396,9 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
     public dispose(): void {
         super.dispose();
         this._options.teleportationTargetMesh && this._options.teleportationTargetMesh.dispose(false, true);
+        if (this._worldScaleObserver) {
+            this._xrSessionManager.onWorldScaleFactorChangedObservable.remove(this._worldScaleObserver);
+        }
     }
 
     /**
