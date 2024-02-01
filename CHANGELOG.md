@@ -1,5 +1,30 @@
 # Changelog
 
+## 6.41.0
+
+### Core
+
+- Fix a few issues with world scale in XR - by [RaananW](https://github.com/RaananW) ([#14756](https://github.com/BabylonJS/Babylon.js/pull/14756))
+- Materials: Improve management of frozen materials - by [Popov72](https://github.com/Popov72) ([#14741](https://github.com/BabylonJS/Babylon.js/pull/14741))
+- Remove unneeded doc keys - by [RaananW](https://github.com/RaananW) ([#14748](https://github.com/BabylonJS/Babylon.js/pull/14748))
+- Point Proximity, Shape Proximity and Shape Cast in Havok - [_New Feature_] by [carolhmj](https://github.com/carolhmj) ([#14736](https://github.com/BabylonJS/Babylon.js/pull/14736))
+- Update dependencies and use latest azure reporter - by [RaananW](https://github.com/RaananW) ([#14745](https://github.com/BabylonJS/Babylon.js/pull/14745))
+- Animations: Fix broken loop when speedRatio is negative - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14740](https://github.com/BabylonJS/Babylon.js/pull/14740))
+
+### GUI
+
+- Materials: Improve management of frozen materials - by [Popov72](https://github.com/Popov72) ([#14741](https://github.com/BabylonJS/Babylon.js/pull/14741))
+- If checkbox's default color is not set, use white. - by [carolhmj](https://github.com/carolhmj) ([#14742](https://github.com/BabylonJS/Babylon.js/pull/14742))
+
+### Materials
+
+- Materials: Improve management of frozen materials - by [Popov72](https://github.com/Popov72) ([#14741](https://github.com/BabylonJS/Babylon.js/pull/14741))
+
+### Playground
+
+- Unity Toolkit Playground Content - by [MackeyK24](https://github.com/MackeyK24) ([#14751](https://github.com/BabylonJS/Babylon.js/pull/14751))
+- Unity Playground Update - by [MackeyK24](https://github.com/MackeyK24) ([#14746](https://github.com/BabylonJS/Babylon.js/pull/14746))
+
 ## 6.40.0
 
 ### Core
