@@ -594,7 +594,8 @@ export class Tools {
     /**
      * Load an asynchronous script (identified by an url). When the url returns, the
      * content of this file is added into a new script element, attached to the DOM (body element)
-     * @param scriptUrl defines the url of the script to laod
+     * @param scriptUrl defines the url of the script to load
+     * @param scriptId defines the id of the script element
      * @returns a promise request object
      */
     public static LoadScriptAsync(scriptUrl: string, scriptId?: string): Promise<void> {
