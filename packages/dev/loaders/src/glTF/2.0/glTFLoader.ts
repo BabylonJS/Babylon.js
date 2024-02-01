@@ -2012,7 +2012,7 @@ export class GLTFLoader implements IGLTFLoader {
 
         const engine = this._babylonScene.getEngine();
 
-        if (accessor.sparse) {
+        if (accessor.sparse || accessor.bufferView == undefined) {
             accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync(context, accessor).then((data) => {
                 return new VertexBuffer(engine, data, kind, false);
             });
