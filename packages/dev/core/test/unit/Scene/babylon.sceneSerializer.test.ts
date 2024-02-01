@@ -121,14 +121,17 @@ describe("Babylon scene serializer", () => {
             mesh1.setIndices([0, 1, 2]);
             mesh1.setVerticesData(VertexBuffer.UVKind, new Float32Array([0, 0, 1, 1, 2, 2]), false, 2);
 
-            const positionBuffer = mesh1.getVertexBuffer(VertexBuffer.PositionKind);
-            const normalBuffer = mesh1.getVertexBuffer(VertexBuffer.NormalKind);
+            const positionVertexBuffer = mesh1.getVertexBuffer(VertexBuffer.PositionKind);
+            const normalBuffer = mesh1.getVertexBuffer(VertexBuffer.NormalKind)?.getWrapperBuffer();
+            const normalVertexBuffer = normalBuffer?.createVertexBuffer(VertexBuffer.NormalKind, 0, 3);
             const indices = mesh1.getIndices();
 
-            // Mesh2 shares positions and normals buffer, but not uv!
+            // Mesh1 and Mesh2 share the same position vertex buffer
+            // They have different normal vertex buffers, but both use the same underlying Buffer
+            // And the uvs are completely distinct
             const mesh2 = new Mesh("mesh2", scene);
-            mesh2.setVerticesBuffer(positionBuffer!);
-            mesh2.setVerticesBuffer(normalBuffer!);
+            mesh2.setVerticesBuffer(positionVertexBuffer!);
+            mesh2.setVerticesBuffer(normalVertexBuffer!);
             mesh2.setIndices(indices!);
             mesh2.setVerticesData(VertexBuffer.UVKind, new Float32Array([5, 5, 6, 6, 7, 7]), false, 2);
 
@@ -136,6 +139,8 @@ describe("Babylon scene serializer", () => {
 
             // serialize 2 common position and normals and 2 unique uvs
             expect(Object.keys(serialized.buffers).length).toBe(4);
+            // 1 common position, 2 unique normals and 2 unique uvs vertex buffers
+            expect(Object.keys(serialized.vertexBuffers).length).toBe(5);
 
             // dispose mesh1 and mesh2
             mesh1.dispose();
@@ -146,10 +151,14 @@ describe("Babylon scene serializer", () => {
             const importedMesh1 = result.meshes[0] as Mesh;
             const importedMesh2 = result.meshes[1] as Mesh;
 
-            // expect shared buffers to be the same
+            // positions have same vertex and underlying buffer
+            expect(importedMesh1.getVertexBuffer(VertexBuffer.PositionKind)).toBe(importedMesh2.getVertexBuffer(VertexBuffer.PositionKind));
             expect(importedMesh1.getVertexBuffer(VertexBuffer.PositionKind)?.getWrapperBuffer()).toBe(importedMesh2.getVertexBuffer(VertexBuffer.PositionKind)?.getWrapperBuffer());
+            // normals have different vertex buffers but same underlying buffer
+            expect(importedMesh1.getVertexBuffer(VertexBuffer.NormalKind)).not.toBe(importedMesh2.getVertexBuffer(VertexBuffer.NormalKind));
             expect(importedMesh1.getVertexBuffer(VertexBuffer.NormalKind)?.getWrapperBuffer()).toBe(importedMesh2.getVertexBuffer(VertexBuffer.NormalKind)?.getWrapperBuffer());
-            // expect unique buffers to be different
+            // uvs have different vertex and underlying buffers
+            expect(importedMesh1.getVertexBuffer(VertexBuffer.UVKind)).not.toBe(importedMesh2.getVertexBuffer(VertexBuffer.UVKind));
             expect(importedMesh1.getVertexBuffer(VertexBuffer.UVKind)?.getWrapperBuffer()).not.toBe(importedMesh2.getVertexBuffer(VertexBuffer.UVKind)?.getWrapperBuffer());
         });
     });

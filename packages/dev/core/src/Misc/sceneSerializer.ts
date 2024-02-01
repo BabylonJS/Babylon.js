@@ -14,12 +14,12 @@ import type { Camera } from "../Cameras/camera";
 import { Logger } from "core/Misc/logger";
 
 let serializedGeometries: Geometry[] = [];
-const SerializeGeometry = (geometry: Geometry, serializationGeometries: any, serializationBuffers: any): any => {
+const SerializeGeometry = (geometry: Geometry, serializationGeometries: any, serializationBuffers: any, serializationVertexBuffers: any): any => {
     if (geometry.doNotSerialize) {
         return;
     }
 
-    serializationGeometries.vertexData.push(geometry.serializeVerticeData(serializationBuffers));
+    serializationGeometries.vertexData.push(geometry.serializeVerticeData(serializationBuffers, serializationVertexBuffers));
 
     (<any>serializedGeometries)[geometry.id] = true;
 };
@@ -32,7 +32,7 @@ const SerializeMesh = (mesh: Mesh, serializationScene: any): any => {
     if (geometry) {
         if (!mesh.getScene().getGeometryById(geometry.id)) {
             // Geometry was in the memory but not added to the scene, nevertheless it's better to serialize to be able to reload the mesh with its geometry
-            SerializeGeometry(geometry, serializationScene.geometries, serializationScene.buffers);
+            SerializeGeometry(geometry, serializationScene.geometries, serializationScene.buffers, serializationScene.vertexBuffers);
         }
     }
 
@@ -94,7 +94,7 @@ const FinalizeSingleNode = (node: Node, serializationObject: any) => {
                     serializationObject.buffers = {};
                 }
 
-                SerializeGeometry(geometry, serializationObject.geometries, serializationObject.buffers);
+                SerializeGeometry(geometry, serializationObject.geometries, serializationObject.buffers, serializationObject.vertexBuffers);
             }
             // Skeletons
             if (mesh.skeleton && !mesh.skeleton.doNotSerialize) {
@@ -303,6 +303,7 @@ export class SceneSerializer {
         serializationObject.geometries.vertexData = [];
 
         serializationObject.buffers = {};
+        serializationObject.vertexBuffers = {};
 
         serializedGeometries = [];
         const geometries = scene.getGeometries();
@@ -310,7 +311,7 @@ export class SceneSerializer {
             const geometry = geometries[index];
 
             if (geometry.isReady()) {
-                SerializeGeometry(geometry, serializationObject.geometries, serializationObject.buffers);
+                SerializeGeometry(geometry, serializationObject.geometries, serializationObject.buffers, serializationObject.vertexBuffers);
             }
         }
 
@@ -427,6 +428,9 @@ export class SceneSerializer {
                 }
             }
         }
+
+        serializationObject.buffers = {};
+        serializationObject.vertexBuffers = {};
 
         toSerialize.forEach((mesh: Node) => {
             FinalizeSingleNode(mesh, serializationObject);

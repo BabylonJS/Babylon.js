@@ -4,6 +4,7 @@ import { DataBuffer } from "./dataBuffer";
 import type { Mesh } from "../Meshes/mesh";
 import { Logger } from "../Misc/logger";
 import { RandomGUID } from "../Misc/guid";
+import { Tools } from "core/Misc/tools";
 
 /**
  * Class used to store data that will be store in GPU memory
@@ -93,13 +94,12 @@ export class Buffer {
     }
 
     /**
-     * Serializes the vertex buffer
+     * Serializes the buffer
      * @param serializationObject the object to serialize in
-     * @param toArrayFn optional function to convert data to a array
      * @returns the serialized object
      */
-    public serialize(serializationObject: any = {}, toArrayFn?: (data: any) => any) {
-        serializationObject.data = toArrayFn ? toArrayFn(this.getData()) : this.getData();
+    public serialize(serializationObject: any = {}) {
+        serializationObject.data = Tools.ToNumberArray(this.getData());
         serializationObject.updatable = this._updatable;
         serializationObject.byteStride = this.byteStride;
         return serializationObject;
@@ -299,8 +299,14 @@ export class Buffer {
         }
     }
 
+    /**
+     * Parses a buffer from a serialized data
+     * @param bufferData the data of the buffer
+     * @param engine the engine to create the buffer on
+     * @returns a new buffer
+     */
     public static Parse(bufferData: any, engine: ThinEngine) {
-        return new Buffer(engine, bufferData.data, bufferData.updatable, bufferData.byteStride, true, false, true);
+        return new Buffer(engine, bufferData.data, bufferData.updatable, bufferData.byteStride, undefined, undefined, true);
     }
 }
 
@@ -475,6 +481,11 @@ export class VertexBuffer {
     public readonly engine: ThinEngine;
 
     /**
+     * The id of the Vertex Buffer
+     */
+    public id: string;
+
+    /**
      * Gets the max possible amount of vertices stored within the current vertex buffer.
      * We do not have the end offset or count so this will be too big for concatenated vertex buffers.
      * @internal
@@ -611,6 +622,40 @@ export class VertexBuffer {
 
         this._alignBuffer();
         this._computeHashCode();
+
+        this.id = RandomGUID();
+    }
+
+    /**
+     * Serializes this Vertex Buffer
+     * @param serializationObject object to write serialization to
+     * @param serializationBuffers an object where to store the underlying Buffer
+     * @returns the serialized object
+     */
+    public serialize(serializationObject: any = {}, serializationBuffers: any) {
+        serializationObject.kind = this._kind;
+        serializationObject.byteOffset = this.byteOffset;
+        serializationObject.byteStride = this.byteStride;
+        serializationObject.normalized = this.normalized;
+        serializationObject.id = this.id;
+
+        const buffer = this.getWrapperBuffer();
+        if (buffer) {
+            serializationObject.bufferId = buffer.id;
+            if (!serializationBuffers[buffer.id]) {
+                serializationBuffers[buffer.id] = buffer.serialize();
+            }
+        }
+        return serializationObject;
+    }
+
+    public static Parse(engine: ThinEngine, buffer: Buffer, serializedVertexBuffer: any) {
+        return new VertexBuffer(engine, buffer, serializedVertexBuffer.kind, {
+            offset: serializedVertexBuffer.byteOffset,
+            stride: serializedVertexBuffer.byteStride,
+            normalized: serializedVertexBuffer.normalized,
+            useBytes: true,
+        });
     }
 
     private _computeHashCode(): void {

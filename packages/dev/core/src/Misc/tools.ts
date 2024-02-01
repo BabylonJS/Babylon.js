@@ -1467,6 +1467,19 @@ export class Tools {
 
         return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     }
+
+    /**
+     * Utility function to convert an array buffer to a plain array
+     * @param origin the original array
+     * @returns a plain number array
+     */
+    public static ToNumberArray(origin: Nullable<ArrayBuffer | ArrayBufferView | number[]>): number[] {
+        if (Array.isArray(origin)) {
+            return origin;
+        } else {
+            return Array.prototype.slice.call(origin);
+        }
+    }
 }
 
 /**

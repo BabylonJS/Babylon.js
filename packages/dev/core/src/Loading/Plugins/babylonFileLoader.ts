@@ -30,7 +30,7 @@ import { ReflectionProbe } from "../../Probes/reflectionProbe";
 import { GetClass } from "../../Misc/typeStore";
 import { Tools } from "../../Misc/tools";
 import { PostProcess } from "../../PostProcesses/postProcess";
-import { Buffer } from "../../Buffers/buffer";
+import { Buffer, VertexBuffer } from "../../Buffers/buffer";
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention, no-var
@@ -345,7 +345,25 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
                 const bufferData = buffers[bufferDataId];
                 const buffer = Buffer.Parse(bufferData, scene.getEngine());
                 parsedBuffersMap.set(bufferDataId, buffer);
-                log += "\n\tBuffer " + buffer.toString();
+                log += "\n\tBuffer " + bufferDataId;
+            }
+        }
+
+        const parsedVertexBuffersMap = new Map<string, VertexBuffer>();
+        // Vertex buffers
+        const vertexBuffers = parsedData.vertexBuffers;
+        if (vertexBuffers !== undefined && vertexBuffers !== null) {
+            for (const vertexBufferId of Object.keys(vertexBuffers)) {
+                const vertexBufferData = vertexBuffers[vertexBufferId];
+                const buffer = parsedBuffersMap.get(vertexBufferData.bufferId);
+                if (buffer) {
+                    const vertexBuffer = VertexBuffer.Parse(scene.getEngine(), buffer, vertexBufferData);
+                    parsedVertexBuffersMap.set(vertexBufferId, vertexBuffer);
+                    log += "\n\tVertex buffer " + vertexBufferId;
+                } else {
+                    Tools.Warn("Buffer " + vertexBufferData.bufferId + " contained in vertex buffer " + vertexBufferId + " not found");
+                    log += "\n\tBuffer " + vertexBufferData.bufferId + " contained in vertex buffer " + vertexBufferId + " not found";
+                }
             }
         }
 
@@ -359,7 +377,7 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
             if (vertexData !== undefined && vertexData !== null) {
                 for (index = 0, cache = vertexData.length; index < cache; index++) {
                     const parsedVertexData = vertexData[index];
-                    addedGeometry.push(Geometry.Parse(parsedVertexData, scene, rootUrl, parsedBuffersMap));
+                    addedGeometry.push(Geometry.Parse(parsedVertexData, scene, rootUrl, parsedVertexBuffersMap));
                 }
             }
 
@@ -659,6 +677,24 @@ SceneLoader.RegisterPlugin({
                     log += "\n\tBuffer " + buffer.toString();
                 }
             }
+
+            const parsedIdToVertexBufferMap = new Map<string, VertexBuffer>();
+            // Vertex buffers
+            if (parsedData.vertexBuffers !== undefined && parsedData.vertexBuffers !== null) {
+                for (const vertexBufferDataId of Object.keys(parsedData.vertexBuffers)) {
+                    const vertexBufferData = parsedData.vertexBuffers[vertexBufferDataId];
+                    const buffer = parsedIdToBufferMap.get(vertexBufferData.bufferId);
+                    if (buffer) {
+                        const vertexBuffer = VertexBuffer.Parse(scene.getEngine(), buffer, vertexBufferData);
+                        parsedIdToVertexBufferMap.set(vertexBufferDataId, vertexBuffer);
+                        log += "\n\tVertex buffer " + vertexBuffer.toString();
+                    } else {
+                        Tools.Warn("Buffer " + vertexBufferData.bufferId + " contained in vertex buffer " + vertexBufferDataId + " not found");
+                        log += "\n\tBuffer " + vertexBufferData.bufferId + " contained in vertex buffer " + vertexBufferDataId + " not found";
+                    }
+                }
+            }
+
             if (parsedData.meshes !== undefined && parsedData.meshes !== null) {
                 const loadedSkeletonsIds = [];
                 const loadedMaterialsIds: string[] = [];
@@ -687,7 +723,7 @@ SceneLoader.RegisterPlugin({
                                             if (parsedGeometryData.id === parsedMesh.geometryId) {
                                                 switch (geometryType) {
                                                     case "vertexData":
-                                                        Geometry.Parse(parsedGeometryData, scene, rootUrl, parsedIdToBufferMap);
+                                                        Geometry.Parse(parsedGeometryData, scene, rootUrl, parsedIdToVertexBufferMap);
                                                         break;
                                                 }
                                                 found = true;

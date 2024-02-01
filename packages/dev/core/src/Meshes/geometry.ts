@@ -1111,24 +1111,24 @@ export class Geometry implements IGetSetVerticesData {
     /**
      * Serialize all vertices data into a JSON object
      * @param serializationBuffers an object where to store the buffers
+     * @param serializationVertexBuffers an object where to store the vertex buffers
      * @returns a JSON representation of the current geometry data
      */
-    public serializeVerticeData(serializationBuffers: any): any {
+    public serializeVerticeData(serializationBuffers: any, serializationVertexBuffers: any): any {
         const serializationObject = this.serialize();
 
         const serializeData = (kind: string, kindName: string, object: any) => {
             if (this.isVerticesDataPresent(kind)) {
                 const vertexBuffer = this.getVertexBuffer(kind)!;
-                const buffer = vertexBuffer.getWrapperBuffer();
-                if (!buffer) {
-                    Tools.Warn("Geometry.serializeVerticeData: buffer is not available for vertex data: " + kind);
+                if (!vertexBuffer) {
+                    Tools.Warn("Geometry.serializeVerticeData: vertex buffer is not available for vertex data: " + kind);
                     return false;
                 }
-                if (serializationBuffers[buffer.id] === undefined) {
-                    serializationBuffers[buffer.id] = buffer.serialize({}, this._toNumberArray);
+                if (serializationVertexBuffers[vertexBuffer.id] === undefined) {
+                    serializationVertexBuffers[vertexBuffer.id] = vertexBuffer.serialize(undefined, serializationBuffers);
                 }
                 object[kindName] = {
-                    bufferId: buffer.id,
+                    vertexBufferId: vertexBuffer.id,
                     byteOffset: vertexBuffer.byteOffset,
                     byteStride: vertexBuffer.byteStride,
                     isUpdatable: vertexBuffer.isUpdatable(),
@@ -1552,10 +1552,10 @@ export class Geometry implements IGetSetVerticesData {
      * @param parsedVertexData defines the persisted data
      * @param scene defines the hosting scene
      * @param rootUrl defines the root url to use to load assets (like delayed data)
-     * @param parsedBuffersMap a map from buffer id to buffer
+     * @param parsedVertexBuffersMap a map from vertex buffer id to vertex buffer
      * @returns the new geometry object
      */
-    public static Parse(parsedVertexData: any, scene: Scene, rootUrl: string, parsedBuffersMap: Map<string, Buffer>): Nullable<Geometry> {
+    public static Parse(parsedVertexData: any, scene: Scene, rootUrl: string, parsedVertexBuffersMap: Map<string, VertexBuffer>): Nullable<Geometry> {
         const geometry = new Geometry(parsedVertexData.id, scene, undefined, parsedVertexData.updatable);
         geometry._loadedUniqueId = parsedVertexData.uniqueId;
 
@@ -1567,19 +1567,10 @@ export class Geometry implements IGetSetVerticesData {
             for (const kind of Object.keys(Geometry.KindNameToSerialize)) {
                 const kindName = Geometry.KindNameToSerialize[kind];
                 if (parsedVertexData[kindName]) {
-                    const bufferId = parsedVertexData[kindName].bufferId;
-                    const buffer = parsedBuffersMap.get(bufferId);
-                    if (buffer && buffer.getData()) {
-                        geometry.setVerticesBuffer(
-                            buffer.createVertexBuffer(
-                                kind,
-                                parsedVertexData[kindName].byteOffset,
-                                parsedVertexData[kindName].attributeSize,
-                                parsedVertexData[kindName].byteStride,
-                                undefined,
-                                true
-                            )
-                        );
+                    const vertexBufferId = parsedVertexData[kindName].vertexBufferId;
+                    const vertexBuffer = parsedVertexBuffersMap.get(vertexBufferId);
+                    if (vertexBuffer) {
+                        geometry.setVerticesBuffer(vertexBuffer);
                     } else if (Array.isArray(parsedVertexData[kindName])) {
                         // Best effort to support old format
                         geometry.setVerticesData(kind, parsedVertexData[kindName]);
@@ -1593,10 +1584,12 @@ export class Geometry implements IGetSetVerticesData {
             if (parsedVertexData.customData) {
                 for (const kindId of Object.keys(parsedVertexData.customData)) {
                     const data = parsedVertexData.customData[kindId];
-                    const bufferId = data.bufferId;
-                    const buffer = parsedBuffersMap.get(bufferId);
-                    if (buffer && buffer.getData()) {
-                        geometry.setVerticesBuffer(buffer.createVertexBuffer(data.kind, data.byteOffset, data.attributeSize, data.byteStride, undefined, true));
+                    const vertexBufferId = data.vertexBufferId;
+                    const vertexBuffer = parsedVertexBuffersMap.get(vertexBufferId);
+                    if (vertexBuffer) {
+                        geometry.setVerticesBuffer(vertexBuffer);
+                    } else {
+                        Tools.Warn("Geometry.Parse: No data for custom vertex buffer " + kindId + " in geometry " + geometry.id);
                     }
                 }
             }
