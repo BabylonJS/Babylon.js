@@ -10,6 +10,7 @@ import type { Nullable } from "../../types";
 import { PhysicsImpostor } from "../../Physics/v1/physicsImpostor";
 
 import type { IDisposable, Scene } from "../../scene";
+import type { Observer } from "../../Misc/observable";
 import { Observable } from "../../Misc/observable";
 import type { InstancedMesh } from "../../Meshes/instancedMesh";
 import type { ISceneLoaderAsyncResult } from "../../Loading/sceneLoader";
@@ -687,6 +688,8 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         rigMappings: Nullable<{ left: XRHandMeshRigMapping; right: XRHandMeshRigMapping }>;
     } = { jointMeshes: null, handMeshes: null, rigMappings: null };
 
+    private _worldScaleObserver?: Nullable<Observer<{ previousScaleFactor: number; newScaleFactor: number }>> = null;
+
     /**
      * This observable will notify registered observers when a new hand object was added and initialized
      */
@@ -809,7 +812,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                 this._handResources.handMeshes.left.scaling.setAll(this._xrSessionManager.worldScalingFactor);
                 this._handResources.handMeshes.right.scaling.setAll(this._xrSessionManager.worldScalingFactor);
             });
-            this._xrSessionManager.onWorldScaleFactorChangedObservable.add((scalingFactors) => {
+            this._worldScaleObserver = this._xrSessionManager.onWorldScaleFactorChangedObservable.add((scalingFactors) => {
                 if (this._handResources.handMeshes) {
                     this._handResources.handMeshes.left.scaling.scaleInPlace(scalingFactors.newScaleFactor / scalingFactors.previousScaleFactor);
                     this._handResources.handMeshes.right.scaling.scaleInPlace(scalingFactors.newScaleFactor / scalingFactors.previousScaleFactor);
@@ -880,6 +883,11 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         }
 
         Object.keys(this._attachedHands).forEach((uniqueId) => this._detachHandById(uniqueId));
+
+        // remove world scale observer
+        if (this._worldScaleObserver) {
+            this._xrSessionManager.onWorldScaleFactorChangedObservable.remove(this._worldScaleObserver);
+        }
 
         return true;
     }
