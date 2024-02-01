@@ -4,6 +4,7 @@ import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import type { WebXRSessionManager } from "../webXRSessionManager";
 import { Logger } from "core/Misc/logger";
+import { Tools } from "core/Misc/tools";
 
 /**
  * This is the base class for all WebXR features.
@@ -38,7 +39,7 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
 
     public set xrNativeFeatureName(name: string) {
         // check if feature was initialized while in session but needs to be initialized before the session starts
-        if (!this._xrSessionManager.isNative && name && this._xrSessionManager.inXRSession && this._xrSessionManager.session.enabledFeatures.indexOf(name) === -1) {
+        if (!this._xrSessionManager.isNative && name && this._xrSessionManager.inXRSession && this._xrSessionManager.enabledFeatures?.indexOf(name) === -1) {
             Logger.Warn(`The feature ${name} needs to be enabled before starting the XR session. Note - It is still possible it is not supported.`);
         }
         this._xrNativeFeatureName = name;
@@ -95,7 +96,10 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
 
         // if this is a native WebXR feature, check if it is enabled on the session
         // For now only check if not using babylon native
-        if (!this._xrSessionManager.isNative && this.xrNativeFeatureName && this._xrSessionManager.session.enabledFeatures.indexOf(this.xrNativeFeatureName) === -1) {
+        // vision OS doesn't support the enabledFeatures array, so just warn instead of failing
+        if (!this._xrSessionManager.enabledFeatures) {
+            Tools.Warn("session.enabledFeatures is not available on this device. It is possible that this feature is not supported.");
+        } else if (!this._xrSessionManager.isNative && this.xrNativeFeatureName && this._xrSessionManager.enabledFeatures.indexOf(this.xrNativeFeatureName) === -1) {
             return false;
         }
 
