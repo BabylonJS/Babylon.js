@@ -207,7 +207,7 @@ export function CreateGroundFromHeightMapVertexData(options: {
         options.minHeight = temp;
     }
 
-    const populateBuffer = options.heightBuffer.length > 0;
+    const populateBuffer = !!options.heightBuffer;
 
     // Vertices
     for (row = 0; row <= options.subdivisions; row++) {
@@ -405,7 +405,7 @@ export function CreateGroundFromHeightMap(
         colorFilter?: Color3;
         alphaFilter?: number;
         updatable?: boolean;
-        onReady?: (mesh: GroundMesh, heightBuffer: Float32Array) => void;
+        onReady?: (mesh: GroundMesh, heightBuffer?: Float32Array) => void;
         onError?: (message?: string, exception?: any) => void;
         passHeightBufferInCallback?: boolean;
     } = {},
@@ -435,7 +435,7 @@ export function CreateGroundFromHeightMap(
 
     ground._setReady(false);
 
-    let heightBuffer: Float32Array = new Float32Array(0);
+    let heightBuffer: Float32Array;
     if (options.passHeightBufferInCallback) {
         heightBuffer = new Float32Array((subdivisions + 1) * (subdivisions + 1));
     }
@@ -452,7 +452,7 @@ export function CreateGroundFromHeightMap(
             bufferWidth: bufferWidth,
             bufferHeight: bufferHeight,
             alphaFilter: alphaFilter,
-            heightBuffer: heightBuffer,
+            heightBuffer,
         });
 
         vertexData.applyToMesh(ground, updatable);
