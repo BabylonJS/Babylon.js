@@ -4,7 +4,6 @@ import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import type { WebXRSessionManager } from "../webXRSessionManager";
 import { Logger } from "core/Misc/logger";
-import { Tools } from "core/Misc/tools";
 
 /**
  * This is the base class for all WebXR features.
@@ -98,7 +97,7 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
         // For now only check if not using babylon native
         // vision OS doesn't support the enabledFeatures array, so just warn instead of failing
         if (!this._xrSessionManager.enabledFeatures) {
-            Tools.Warn("session.enabledFeatures is not available on this device. It is possible that this feature is not supported.");
+            Logger.Warn("session.enabledFeatures is not available on this device. It is possible that this feature is not supported.");
         } else if (!this._xrSessionManager.isNative && this.xrNativeFeatureName && this._xrSessionManager.enabledFeatures.indexOf(this.xrNativeFeatureName) === -1) {
             return false;
         }
