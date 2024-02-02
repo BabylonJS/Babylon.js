@@ -1134,20 +1134,18 @@ export class NodeMaterial extends PushMaterial {
         const result = this._processDefines(dummyMesh, defines);
         Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString);
 
-        let effect = this.getScene()
-            .getEngine()
-            .createEffect(
-                {
-                    vertexElement: tempName,
-                    fragmentElement: tempName,
-                },
-                [VertexBuffer.PositionKind],
-                this._fragmentCompilationState.uniforms,
-                this._fragmentCompilationState.samplers,
-                defines.toString(),
-                result?.fallbacks,
-                undefined
-            );
+        let effect = this.getScene().getEngine().createEffect(
+            {
+                vertexElement: tempName,
+                fragmentElement: tempName,
+            },
+            [VertexBuffer.PositionKind],
+            this._fragmentCompilationState.uniforms,
+            this._fragmentCompilationState.samplers,
+            defines.toString(),
+            result?.fallbacks,
+            undefined
+        );
 
         proceduralTexture.nodeMaterialSource = this;
         proceduralTexture._setEffect(effect);
@@ -1171,20 +1169,18 @@ export class NodeMaterial extends PushMaterial {
                 Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString);
 
                 TimingTools.SetImmediate(() => {
-                    effect = this.getScene()
-                        .getEngine()
-                        .createEffect(
-                            {
-                                vertexElement: tempName,
-                                fragmentElement: tempName,
-                            },
-                            [VertexBuffer.PositionKind],
-                            this._fragmentCompilationState.uniforms,
-                            this._fragmentCompilationState.samplers,
-                            defines.toString(),
-                            result?.fallbacks,
-                            undefined
-                        );
+                    effect = this.getScene().getEngine().createEffect(
+                        {
+                            vertexElement: tempName,
+                            fragmentElement: tempName,
+                        },
+                        [VertexBuffer.PositionKind],
+                        this._fragmentCompilationState.uniforms,
+                        this._fragmentCompilationState.samplers,
+                        defines.toString(),
+                        result?.fallbacks,
+                        undefined
+                    );
 
                     proceduralTexture._setEffect(effect);
                 });
@@ -1469,8 +1465,10 @@ export class NodeMaterial extends PushMaterial {
             }
         }
 
-        if (subMesh.effect && this.isFrozen) {
-            if (subMesh.effect._wasPreviouslyReady && subMesh.effect._wasPreviouslyUsingInstances === useInstances) {
+        const drawWrapper = subMesh._drawWrapper;
+
+        if (drawWrapper.effect && this.isFrozen) {
+            if (drawWrapper._wasPreviouslyReady && drawWrapper._wasPreviouslyUsingInstances === useInstances) {
                 return true;
             }
         }
@@ -1550,8 +1548,8 @@ export class NodeMaterial extends PushMaterial {
         }
 
         defines._renderId = scene.getRenderId();
-        subMesh.effect._wasPreviouslyReady = true;
-        subMesh.effect._wasPreviouslyUsingInstances = useInstances;
+        drawWrapper._wasPreviouslyReady = true;
+        drawWrapper._wasPreviouslyUsingInstances = useInstances;
 
         this._checkScenePerformancePriority();
 
@@ -1609,7 +1607,7 @@ export class NodeMaterial extends PushMaterial {
         // Matrices
         this.bindOnlyWorldMatrix(world);
 
-        const mustRebind = this._mustRebind(scene, effect, mesh.visibility);
+        const mustRebind = this._mustRebind(scene, effect, subMesh, mesh.visibility);
         const sharedData = this._sharedData;
 
         if (mustRebind) {
@@ -1632,7 +1630,7 @@ export class NodeMaterial extends PushMaterial {
             }
         }
 
-        this._afterBind(mesh, this._activeEffect);
+        this._afterBind(mesh, this._activeEffect, subMesh);
     }
 
     /**

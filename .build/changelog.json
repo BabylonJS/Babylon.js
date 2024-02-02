@@ -1,180 +1,239 @@
 {
-    "fromTag": "6.39.0",
+    "fromTag": "6.40.0",
     "changelog": {
-        "6.39.0": [
+        "6.41.0": [
             {
-                "pr": "14712",
-                "title": "Further updates to typedoc script and missing docs",
-                "description": "* It is now possible to filter according to package\n* Fixed most issues in code\n* It is now exporting line and character on top of the filename\n* No more duplications\n* Fixed a small issue with overloaded functions",
+                "pr": "14756",
+                "title": "Fix a few issues with world scale in XR",
+                "description": "* Hands scale wasn't aplied if the hand was not in the frustum\n* Near interaction meshes were not scaled correctly\n* camera maxZ was not scaled with the world scale.",
                 "author": {
                     "name": "RaananW",
                     "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    "packages/dev/core/src/Cameras/Inputs/BaseCameraPointersInput.ts",
-                    "packages/dev/core/src/Cameras/Inputs/freeCameraMouseInput.ts",
-                    "packages/dev/core/src/Cameras/VR/vrExperienceHelper.ts",
-                    "packages/dev/core/src/Culling/Octrees/octree.ts",
-                    "packages/dev/core/src/Debug/physicsViewer.ts",
-                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphMathBlocks.ts",
-                    "packages/dev/core/src/Gizmos/gizmo.ts",
-                    "packages/dev/core/src/Loading/sceneLoader.ts",
-                    "packages/dev/core/src/Materials/GreasedLine/greasedLineMaterialInterfaces.ts",
-                    "packages/dev/core/src/Materials/GreasedLine/greasedLinePluginMaterial.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/Dual/index.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBaseBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/Input/prePassTextureBlock.ts",
-                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
-                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
-                    "packages/dev/core/src/Materials/PBR/pbrMetallicRoughnessMaterial.ts",
-                    "packages/dev/core/src/Materials/PBR/pbrSpecularGlossinessMaterial.ts",
-                    "packages/dev/core/src/Materials/Textures/Procedurals/noiseProceduralTexture.ts",
-                    "packages/dev/core/src/Materials/Textures/multiRenderTarget.ts",
-                    "packages/dev/core/src/Materials/Textures/thinRenderTargetTexture.ts",
-                    "packages/dev/core/src/Maths/math.polar.ts",
-                    "packages/dev/core/src/Maths/math.vector.ts",
-                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineBaseMesh.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/Textures/geometryTextureBlock.ts",
-                    "packages/dev/core/src/Meshes/instancedMesh.ts",
-                    "packages/dev/core/src/Meshes/linesMesh.ts",
-                    "packages/dev/core/src/Misc/HighDynamicRange/hdr.ts",
-                    "packages/dev/core/src/Misc/HighDynamicRange/panoramaToCubemap.ts",
-                    "packages/dev/core/src/Misc/decorators.ts",
-                    "packages/dev/core/src/Misc/greasedLineTools.ts",
-                    "packages/dev/core/src/Misc/tools.ts",
-                    "packages/dev/core/src/Misc/webRequest.ts",
-                    "packages/dev/core/src/Physics/physicsRaycastResult.ts",
-                    "packages/dev/core/src/Physics/v1/physicsImpostor.ts",
-                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
-                    "packages/dev/core/src/Physics/v2/physicsBody.ts",
-                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline.ts",
-                    "packages/dev/core/src/XR/index.ts",
-                    "scripts/comment-analyzer.js",
-                    "scripts/typedoc-generator.js"
+                    "packages/dev/core/src/XR/features/WebXRHandTracking.ts",
+                    "packages/dev/core/src/XR/features/WebXRNearInteraction.ts",
+                    "packages/dev/core/src/XR/webXRCamera.ts"
                 ],
-                "tags": [
-                    "skip changelog"
-                ]
+                "tags": []
             },
             {
-                "pr": "14710",
-                "title": "TransformNode: Serialize animations",
-                "description": "See https://forum.babylonjs.com/t/unable-to-save-the-animations-property-of-the-transformnode/47245",
+                "pr": "14751",
+                "title": "Unity Toolkit Playground Content",
+                "description": null,
+                "author": {
+                    "name": "MackeyK24",
+                    "url": "https://github.com/MackeyK24"
+                },
+                "files": [
+                    "packages/tools/playground/src/components/rendererComponent.tsx",
+                    "packages/tools/playground/src/tools/monacoManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14741",
+                "title": "Materials: Improve management of frozen materials",
+                "description": "Closes #13776 \r\n\r\nBasically, I did what I explained in #13376:\r\n> The problem is that _wasPreviouslyReady, _wasPreviouslyUsingInstances and _forceRebindOnNextCall which are currently stored on the effect should be stored on the DrawWrapper instead (that's because an effect can be shared by multiple submeshes).\r\n\r\nI will also update the docs shortly.",
                 "author": {
                     "name": "Popov72",
                     "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/Meshes/transformNode.ts"
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Materials/Background/backgroundMaterial.ts",
+                    "packages/dev/core/src/Materials/GaussianSplatting/gaussianSplattingMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/drawWrapper.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Materials/effectRenderer.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Materials/pushMaterial.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/gui/src/3D/materials/fluent/fluentMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/fluentBackplate/fluentBackplateMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/fluentButton/fluentButtonMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlBackglowMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlBackplateMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlFrontplateMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlInnerquadMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlSliderBarMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlSliderThumbMaterial.ts",
+                    "packages/dev/materials/src/cell/cellMaterial.ts",
+                    "packages/dev/materials/src/custom/customMaterial.ts",
+                    "packages/dev/materials/src/custom/pbrCustomMaterial.ts",
+                    "packages/dev/materials/src/fire/fireMaterial.ts",
+                    "packages/dev/materials/src/fur/furMaterial.ts",
+                    "packages/dev/materials/src/gradient/gradientMaterial.ts",
+                    "packages/dev/materials/src/grid/gridMaterial.ts",
+                    "packages/dev/materials/src/lava/lavaMaterial.ts",
+                    "packages/dev/materials/src/mix/mixMaterial.ts",
+                    "packages/dev/materials/src/normal/normalMaterial.ts",
+                    "packages/dev/materials/src/shadowOnly/shadowOnlyMaterial.ts",
+                    "packages/dev/materials/src/simple/simpleMaterial.ts",
+                    "packages/dev/materials/src/sky/skyMaterial.ts",
+                    "packages/dev/materials/src/terrain/terrainMaterial.ts",
+                    "packages/dev/materials/src/triPlanar/triPlanarMaterial.ts",
+                    "packages/dev/materials/src/water/waterMaterial.ts"
                 ],
                 "tags": [
                     "enhancement",
-                    "animations"
+                    "materials"
                 ]
             },
             {
-                "pr": "14709",
-                "title": "Error on Naming Convention using eslint",
-                "description": "Moved to typescript only, fixed/ignored a few issues found",
+                "pr": "14748",
+                "title": "Remove unneeded doc keys",
+                "description": "Those were added by an auto-fix command (which was removed by then).",
                 "author": {
                     "name": "RaananW",
                     "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    ".eslintrc.js",
-                    "packages/dev/buildTools/src/webpackTools.ts",
-                    "packages/dev/core/src/Engines/Native/nativeRenderTargetWrapper.ts",
-                    "packages/dev/core/src/Engines/WebGL/webGLHardwareTexture.ts",
-                    "packages/dev/core/src/Engines/WebGL/webGLRenderTargetWrapper.ts",
-                    "packages/dev/core/src/Engines/WebGPU/webgpuTintWASM.ts",
-                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphCachedOperationBlock.ts",
-                    "packages/dev/core/src/LibDeclarations/webxr.d.ts",
-                    "packages/dev/core/src/Materials/PBR/pbrMaterial.ts",
-                    "packages/dev/core/src/Materials/Textures/baseTexture.ts",
-                    "packages/dev/core/src/Materials/Textures/thinTexture.ts",
-                    "packages/dev/core/src/Materials/material.ts",
-                    "packages/dev/core/src/Materials/standardMaterial.ts",
-                    "packages/dev/core/src/Physics/physicsHelper.ts",
-                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
-                    "packages/dev/core/src/Rendering/GlobalIllumination/giRSMManager.ts",
-                    "packages/dev/core/src/Rendering/reflectiveShadowMap.ts",
-                    "packages/dev/gui/src/2D/controls/inputText.ts",
-                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/textures/propertiesBar.tsx",
-                    "packages/dev/inspector/src/components/sceneExplorer/entities/gui/guiTools.ts",
-                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts",
-                    "packages/dev/loaders/src/glTF/2.0/Extensions/interactivityPathToObjectConverter.ts",
-                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts",
-                    "packages/dev/sharedUiComponents/src/components/MessageDialog.tsx",
-                    "packages/dev/sharedUiComponents/src/components/Toggle.tsx",
-                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/NodeRenderer.tsx",
-                    "packages/dev/sharedUiComponents/src/lines/checkBoxLineComponent.tsx",
-                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphFrame.ts",
-                    "packages/tools/eslintBabylonPlugin/src/ConfigCache.ts",
-                    "packages/tools/eslintBabylonPlugin/src/index.ts",
-                    "packages/tools/guiEditor/src/diagram/gizmoScalePoint.tsx",
-                    "packages/tools/vsm/src/components/StateBehaviorNodeRenderer.tsx"
+                    "packages/dev/core/src/Meshes/Builders/boxBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/cylinderBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/decalBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/discBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/geodesicBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/hemisphereBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/icoSphereBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/latheBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/linesBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/planeBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/polygonBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/polyhedronBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/ribbonBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/shapeBuilder.ts",
+                    "packages/dev/core/src/Meshes/Builders/sphereBuilder.ts"
                 ],
                 "tags": []
             },
             {
-                "pr": "14708",
-                "title": "Fix parent transformations being applied to position/rotation deltas …",
-                "description": "…on sixDofDragBehavior\r\n\r\nRelated forum issue: https://forum.babylonjs.com/t/strange-sixddrag-behavior-when-the-parent-is-normalized-to-unit-cube/47171",
+                "pr": "14736",
+                "title": "Point Proximity, Shape Proximity and Shape Cast in Havok",
+                "description": "This PR wraps these three Havok functionalities into methods on the plugin.\r\n\r\nPoint Proximity takes a IPointProximityQuery and stores its results in a ContactPoint representing the closest point on a body.\r\nShape Proximity takes a IShapeProximityQuery and stores its results in two ContactPoints, representing the hit point in shape space and world space.\r\nShape Cast takes a IShapeCastQuery and stores its results in two ContactPoints, representing the hit point in shape space and world space.\r\n\r\nI'd love feedback here if the API and naming looks all right 🙂 One thing I'm not sure of is the `hitDistance` name in the ContactPoint class. For point prox and shape prox, it does really represent the distance to the hit point, but in the case of the shape cast, it is a fraction along the cast ray. So the name doesn't really describe it, but I'm not sure if it warrants a new class just to have a different name, or if there's a better name that works with both notions. I initially wanted to reuse the PhysicsRaycastResult class, but that also didn't work because that class has `hitPoint*World*` and one of the hit points is not in world space for shape prox/shape cast.\r\n\r\nHere's some Playground examples:\r\nPoint Proximity: #I6AR8X#21\r\nShape Proximity: #1VT1BK#11\r\nShape Cast: #1VT1BK#12\r\n\r\n",
                 "author": {
                     "name": "carolhmj",
                     "url": "https://github.com/carolhmj"
                 },
                 "files": [
-                    "packages/dev/core/src/Behaviors/Meshes/sixDofDragBehavior.ts"
+                    "packages/dev/core/src/Debug/physicsViewer.ts",
+                    "packages/dev/core/src/Physics/castingResult.ts",
+                    "packages/dev/core/src/Physics/index.ts",
+                    "packages/dev/core/src/Physics/physicsPointProximityQuery.ts",
+                    "packages/dev/core/src/Physics/physicsRaycastResult.ts",
+                    "packages/dev/core/src/Physics/physicsShapeCastQuery.ts",
+                    "packages/dev/core/src/Physics/physicsShapeProximityCastQuery.ts",
+                    "packages/dev/core/src/Physics/proximityCastResult.ts",
+                    "packages/dev/core/src/Physics/shapeCastResult.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/tools/babylonServer/public/havok/HavokPhysics.wasm"
                 ],
                 "tags": [
-                    "bug"
+                    "physics",
+                    "new feature"
                 ]
             },
             {
-                "pr": "14707",
-                "title": "add canvas option for VideoRecorder",
-                "description": "by default VideoRecoder records the rendering canvas we get from the engine, this optional prop will be useful in case we have multiple canvases ",
+                "pr": "14746",
+                "title": "Unity Playground Update",
+                "description": "Update playground cdn locations.\r\nUpdate playground sample scenes.",
                 "author": {
-                    "name": "SalmaBesbes",
-                    "url": "https://github.com/SalmaBesbes"
+                    "name": "MackeyK24",
+                    "url": "https://github.com/MackeyK24"
                 },
                 "files": [
-                    "packages/dev/core/src/Misc/videoRecorder.ts"
+                    "packages/tools/playground/src/components/rendererComponent.tsx",
+                    "packages/tools/playground/src/tools/monacoManager.ts"
                 ],
                 "tags": []
             },
             {
-                "pr": "14706",
-                "title": "Some fixes for the doc checks",
-                "description": "Slight improvement for the doc checker\n\n* Make sure it parses paths correctly\n* avoid using exclude internal. Reason here is that if the omment is on the internal parent class, it will be marked as not found\n* Avoid cleanup\n\nAlso changed a few sources to fix some missing docs",
+                "pr": "14745",
+                "title": "Update dependencies and use latest azure reporter",
+                "description": null,
                 "author": {
                     "name": "RaananW",
                     "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    ".eslintrc.js",
-                    "packages/dev/core/src/Materials/Textures/texture.ts",
-                    "packages/dev/core/src/Maths/math.like.ts",
-                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineBaseMesh.ts",
-                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineRibbonMesh.ts",
-                    "packages/dev/core/src/Meshes/geodesicMesh.ts",
-                    "packages/dev/core/src/Physics/v2/physicsEngine.ts",
-                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline.ts",
-                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline.ts",
-                    "packages/dev/core/src/PostProcesses/volumetricLightScatteringPostProcess.ts",
-                    "packages/dev/core/src/Rendering/GlobalIllumination/giRSMManager.ts",
-                    "packages/dev/core/src/Rendering/prePassRenderer.ts",
-                    "packages/dev/core/src/Rendering/reflectiveShadowMap.ts",
-                    "packages/dev/core/src/Rendering/renderingManager.ts",
-                    "packages/dev/core/src/XR/features/WebXRAbstractFeature.ts",
-                    "packages/dev/core/src/XR/features/WebXRDepthSensing.ts",
-                    "packages/dev/core/src/XR/features/WebXRSpaceWarp.ts",
-                    "packages/dev/core/src/assetContainer.ts",
-                    "scripts/comment-analyzer.js",
-                    "scripts/typedoc-generator.js"
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
                 ],
                 "tags": []
+            },
+            {
+                "pr": "14742",
+                "title": "If checkbox's default color is not set, use white.",
+                "description": "This helps avoid confusion with the default transparent color, which doesn't show if the box is checked or not.\r\n\r\nForum topic: https://forum.babylonjs.com/t/checkbox-look-the-same-regardles-checked-value/47481",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/checkbox.ts"
+                ],
+                "tags": [
+                    "gui"
+                ]
+            },
+            {
+                "pr": "14743",
+                "title": "Add nodes to Node Geometry to augment TextureFetch",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryDesaturateBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "14740",
+                "title": "Animations: Fix broken loop when speedRatio is negative",
+                "description": "See https://forum.babylonjs.com/t/animationgroup-play-backwards-issue/47502/5 and https://forum.babylonjs.com/t/gltf-animation-loops-when-i-click-how-to-stop-the-loop/38477.\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/runtimeAnimation.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "14738",
+                "title": "Babylon Toolkit For Unity",
+                "description": "Babylon Toolkit Unity Exporter Playground Update",
+                "author": {
+                    "name": "MackeyK24",
+                    "url": "https://github.com/MackeyK24"
+                },
+                "files": [
+                    "packages/tools/playground/public/libs/babylon.manager.d.ts",
+                    "packages/tools/playground/public/libs/babylon.manager.js",
+                    "packages/tools/playground/src/components/rendererComponent.tsx",
+                    "packages/tools/playground/src/tools/monacoManager.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
             }
         ],
         "6.40.0": [
@@ -802,6 +861,182 @@
                     "materials",
                     "new feature"
                 ]
+            }
+        ],
+        "6.39.0": [
+            {
+                "pr": "14712",
+                "title": "Further updates to typedoc script and missing docs",
+                "description": "* It is now possible to filter according to package\n* Fixed most issues in code\n* It is now exporting line and character on top of the filename\n* No more duplications\n* Fixed a small issue with overloaded functions",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/BaseCameraPointersInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraMouseInput.ts",
+                    "packages/dev/core/src/Cameras/VR/vrExperienceHelper.ts",
+                    "packages/dev/core/src/Culling/Octrees/octree.ts",
+                    "packages/dev/core/src/Debug/physicsViewer.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/Math/flowGraphMathBlocks.ts",
+                    "packages/dev/core/src/Gizmos/gizmo.ts",
+                    "packages/dev/core/src/Loading/sceneLoader.ts",
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLineMaterialInterfaces.ts",
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLinePluginMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/index.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBaseBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/prePassTextureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrMetallicRoughnessMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrSpecularGlossinessMaterial.ts",
+                    "packages/dev/core/src/Materials/Textures/Procedurals/noiseProceduralTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/multiRenderTarget.ts",
+                    "packages/dev/core/src/Materials/Textures/thinRenderTargetTexture.ts",
+                    "packages/dev/core/src/Maths/math.polar.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineBaseMesh.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/Textures/geometryTextureBlock.ts",
+                    "packages/dev/core/src/Meshes/instancedMesh.ts",
+                    "packages/dev/core/src/Meshes/linesMesh.ts",
+                    "packages/dev/core/src/Misc/HighDynamicRange/hdr.ts",
+                    "packages/dev/core/src/Misc/HighDynamicRange/panoramaToCubemap.ts",
+                    "packages/dev/core/src/Misc/decorators.ts",
+                    "packages/dev/core/src/Misc/greasedLineTools.ts",
+                    "packages/dev/core/src/Misc/tools.ts",
+                    "packages/dev/core/src/Misc/webRequest.ts",
+                    "packages/dev/core/src/Physics/physicsRaycastResult.ts",
+                    "packages/dev/core/src/Physics/v1/physicsImpostor.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline.ts",
+                    "packages/dev/core/src/XR/index.ts",
+                    "scripts/comment-analyzer.js",
+                    "scripts/typedoc-generator.js"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14710",
+                "title": "TransformNode: Serialize animations",
+                "description": "See https://forum.babylonjs.com/t/unable-to-save-the-animations-property-of-the-transformnode/47245",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/transformNode.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "14709",
+                "title": "Error on Naming Convention using eslint",
+                "description": "Moved to typescript only, fixed/ignored a few issues found",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".eslintrc.js",
+                    "packages/dev/buildTools/src/webpackTools.ts",
+                    "packages/dev/core/src/Engines/Native/nativeRenderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGLHardwareTexture.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGLRenderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTintWASM.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphCachedOperationBlock.ts",
+                    "packages/dev/core/src/LibDeclarations/webxr.d.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrMaterial.ts",
+                    "packages/dev/core/src/Materials/Textures/baseTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/thinTexture.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Physics/physicsHelper.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Rendering/GlobalIllumination/giRSMManager.ts",
+                    "packages/dev/core/src/Rendering/reflectiveShadowMap.ts",
+                    "packages/dev/gui/src/2D/controls/inputText.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/textures/propertiesBar.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/gui/guiTools.ts",
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/interactivityPathToObjectConverter.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts",
+                    "packages/dev/sharedUiComponents/src/components/MessageDialog.tsx",
+                    "packages/dev/sharedUiComponents/src/components/Toggle.tsx",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/NodeRenderer.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/checkBoxLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphFrame.ts",
+                    "packages/tools/eslintBabylonPlugin/src/ConfigCache.ts",
+                    "packages/tools/eslintBabylonPlugin/src/index.ts",
+                    "packages/tools/guiEditor/src/diagram/gizmoScalePoint.tsx",
+                    "packages/tools/vsm/src/components/StateBehaviorNodeRenderer.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14708",
+                "title": "Fix parent transformations being applied to position/rotation deltas …",
+                "description": "…on sixDofDragBehavior\r\n\r\nRelated forum issue: https://forum.babylonjs.com/t/strange-sixddrag-behavior-when-the-parent-is-normalized-to-unit-cube/47171",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Meshes/sixDofDragBehavior.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "14707",
+                "title": "add canvas option for VideoRecorder",
+                "description": "by default VideoRecoder records the rendering canvas we get from the engine, this optional prop will be useful in case we have multiple canvases ",
+                "author": {
+                    "name": "SalmaBesbes",
+                    "url": "https://github.com/SalmaBesbes"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/videoRecorder.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14706",
+                "title": "Some fixes for the doc checks",
+                "description": "Slight improvement for the doc checker\n\n* Make sure it parses paths correctly\n* avoid using exclude internal. Reason here is that if the omment is on the internal parent class, it will be marked as not found\n* Avoid cleanup\n\nAlso changed a few sources to fix some missing docs",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".eslintrc.js",
+                    "packages/dev/core/src/Materials/Textures/texture.ts",
+                    "packages/dev/core/src/Maths/math.like.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineBaseMesh.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineRibbonMesh.ts",
+                    "packages/dev/core/src/Meshes/geodesicMesh.ts",
+                    "packages/dev/core/src/Physics/v2/physicsEngine.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssaoRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/volumetricLightScatteringPostProcess.ts",
+                    "packages/dev/core/src/Rendering/GlobalIllumination/giRSMManager.ts",
+                    "packages/dev/core/src/Rendering/prePassRenderer.ts",
+                    "packages/dev/core/src/Rendering/reflectiveShadowMap.ts",
+                    "packages/dev/core/src/Rendering/renderingManager.ts",
+                    "packages/dev/core/src/XR/features/WebXRAbstractFeature.ts",
+                    "packages/dev/core/src/XR/features/WebXRDepthSensing.ts",
+                    "packages/dev/core/src/XR/features/WebXRSpaceWarp.ts",
+                    "packages/dev/core/src/assetContainer.ts",
+                    "scripts/comment-analyzer.js",
+                    "scripts/typedoc-generator.js"
+                ],
+                "tags": []
             }
         ],
         "6.38.1": [

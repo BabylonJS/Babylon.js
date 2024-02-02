@@ -336,7 +336,6 @@ export class EffectWrapper {
 
             this._onContextRestoredObserver = creationOptions.engine.onContextRestoredObservable.add(() => {
                 this.effect._pipelineContext = null; // because _prepareEffect will try to dispose this pipeline before recreating it and that would lead to webgl errors
-                this.effect._wasPreviouslyReady = false;
                 this.effect._prepareEffect();
             });
         }

@@ -2340,8 +2340,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             this._internalMeshDataInfo._effectiveMaterial = material;
         } else if (
-            (material._storeEffectOnSubMeshes && !subMesh.effect?._wasPreviouslyReady) ||
-            (!material._storeEffectOnSubMeshes && !material.getEffect()?._wasPreviouslyReady)
+            (material._storeEffectOnSubMeshes && !subMesh._drawWrapper?._wasPreviouslyReady) ||
+            (!material._storeEffectOnSubMeshes && !material._getDrawWrapper()._wasPreviouslyReady)
         ) {
             if (oldCamera) {
                 oldCamera.maxZ = oldCameraMaxZ;

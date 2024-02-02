@@ -77,16 +77,18 @@ export class PushMaterial extends Material {
         this.bindForSubMesh(world, mesh, mesh.subMeshes[0]);
     }
 
-    protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null): void {
-        super._afterBind(mesh, effect);
+    protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null, subMesh?: SubMesh): void {
+        super._afterBind(mesh, effect, subMesh);
         this.getScene()._cachedEffect = effect;
-        if (effect) {
-            effect._forceRebindOnNextCall = false;
+        if (subMesh) {
+            subMesh._drawWrapper._forceRebindOnNextCall = false;
+        } else {
+            this._drawWrapper._forceRebindOnNextCall = false;
         }
     }
 
-    protected _mustRebind(scene: Scene, effect: Effect, visibility: number = 1) {
-        return scene.isCachedMaterialInvalid(this, effect, visibility);
+    protected _mustRebind(scene: Scene, effect: Effect, subMesh: SubMesh, visibility = 1): boolean {
+        return subMesh._drawWrapper._forceRebindOnNextCall || scene.isCachedMaterialInvalid(this, effect, visibility);
     }
 
     public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean) {

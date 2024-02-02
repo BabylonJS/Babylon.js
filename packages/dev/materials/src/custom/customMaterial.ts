@@ -8,6 +8,7 @@ import type { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
 import { Color3, Color4 } from "core/Maths/math.color";
 import type { Nullable } from "core/types";
+import type { SubMesh } from "core/Meshes/subMesh";
 
 /**
  * Structure of a custom shader
@@ -291,13 +292,13 @@ export class CustomMaterial extends StandardMaterial {
         this._createdShaderName = "custom_" + CustomMaterial.ShaderIndexer;
     }
 
-    protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null): void {
+    protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null, subMesh?: SubMesh): void {
         if (!effect) {
             return;
         }
         this.AttachAfterBind(mesh, effect);
         try {
-            super._afterBind(mesh, effect);
+            super._afterBind(mesh, effect, subMesh);
         } catch (e) {}
     }
 

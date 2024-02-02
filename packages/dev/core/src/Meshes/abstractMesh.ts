@@ -977,6 +977,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         for (const subMesh of this.subMeshes) {
             subMesh._rebuild();
         }
+
+        this.resetDrawCache();
     }
 
     /** @internal */

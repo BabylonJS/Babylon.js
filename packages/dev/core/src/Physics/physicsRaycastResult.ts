@@ -1,5 +1,5 @@
 import { Vector3 } from "../Maths/math.vector";
-import type { PhysicsBody } from "./v2/physicsBody";
+import { CastingResult } from "./castingResult";
 
 /**
  * Interface for query parameters in the raycast function.
@@ -16,31 +16,10 @@ export interface IRaycastQuery {
  * Holds the data for the raycast result
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
-export class PhysicsRaycastResult {
-    private _hasHit: boolean = false;
-
+export class PhysicsRaycastResult extends CastingResult {
     private _hitDistance: number = 0;
-    private _hitNormalWorld: Vector3 = Vector3.Zero();
-    private _hitPointWorld: Vector3 = Vector3.Zero();
     private _rayFromWorld: Vector3 = Vector3.Zero();
     private _rayToWorld: Vector3 = Vector3.Zero();
-    private _triangleIndex: number = -1;
-
-    /**
-     * The Physics body that the ray hit
-     */
-    public body?: PhysicsBody;
-    /**
-     * The body Index in case the Physics body is using instances
-     */
-    public bodyIndex?: number;
-
-    /**
-     * Gets if there was a hit
-     */
-    get hasHit(): boolean {
-        return this._hasHit;
-    }
 
     /**
      * Gets the distance from the hit
@@ -53,14 +32,14 @@ export class PhysicsRaycastResult {
      * Gets the hit normal/direction in the world
      */
     get hitNormalWorld(): Vector3 {
-        return this._hitNormalWorld;
+        return this._hitNormal;
     }
 
     /**
      * Gets the hit point in the world
      */
     get hitPointWorld(): Vector3 {
-        return this._hitPointWorld;
+        return this._hitPoint;
     }
 
     /**
@@ -77,26 +56,6 @@ export class PhysicsRaycastResult {
         return this._rayToWorld;
     }
 
-    /*
-     * The index of the original triangle which was hit. Will be -1 if contact point is not on a mesh shape
-     */
-    get triangleIndex(): number {
-        return this._triangleIndex;
-    }
-
-    /**
-     * Sets the hit data (normal & point in world space)
-     * @param hitNormalWorld defines the normal in world space
-     * @param hitPointWorld defines the point in world space
-     * @param triangleIndex defines the index of the triangle in case of mesh intersection
-     */
-    public setHitData(hitNormalWorld: IXYZ, hitPointWorld: IXYZ, triangleIndex?: number) {
-        this._hasHit = true;
-        this._hitNormalWorld.set(hitNormalWorld.x, hitNormalWorld.y, hitNormalWorld.z);
-        this._hitPointWorld.set(hitPointWorld.x, hitPointWorld.y, hitPointWorld.z);
-        this._triangleIndex = triangleIndex ?? -1;
-    }
-
     /**
      * Sets the distance from the start point to the hit point
      * @param distance defines the distance to set
@@ -109,7 +68,7 @@ export class PhysicsRaycastResult {
      * Calculates the distance manually
      */
     public calculateHitDistance() {
-        this._hitDistance = Vector3.Distance(this._rayFromWorld, this._hitPointWorld);
+        this._hitDistance = Vector3.Distance(this._rayFromWorld, this._hitPoint);
     }
 
     /**
@@ -118,37 +77,10 @@ export class PhysicsRaycastResult {
      * @param to The to point on world space
      */
     public reset(from: Vector3 = Vector3.Zero(), to: Vector3 = Vector3.Zero()) {
+        super.reset();
         this._rayFromWorld.copyFrom(from);
         this._rayToWorld.copyFrom(to);
 
-        this._hasHit = false;
         this._hitDistance = 0;
-
-        this._hitNormalWorld.setAll(0);
-        this._hitPointWorld.setAll(0);
-        this._triangleIndex = -1;
-
-        this.body = undefined;
-        this.bodyIndex = undefined;
     }
-}
-
-/**
- * Interface for the size containing width and height
- */
-interface IXYZ {
-    /**
-     * X
-     */
-    x: number;
-
-    /**
-     * Y
-     */
-    y: number;
-
-    /**
-     * Z
-     */
-    z: number;
 }
