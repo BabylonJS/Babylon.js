@@ -189,7 +189,7 @@ export function CreateGroundFromHeightMapVertexData(options: {
     bufferWidth: number;
     bufferHeight: number;
     alphaFilter: number;
-    heightBuffer: Float32Array;
+    heightBuffer?: Float32Array;
 }): VertexData {
     const indices = [];
     const positions = [];
@@ -206,8 +206,6 @@ export function CreateGroundFromHeightMapVertexData(options: {
         options.maxHeight = options.minHeight;
         options.minHeight = temp;
     }
-
-    const populateBuffer = !!options.heightBuffer;
 
     // Vertices
     for (row = 0; row <= options.subdivisions; row++) {
@@ -242,7 +240,7 @@ export function CreateGroundFromHeightMapVertexData(options: {
             } else {
                 position.y = options.minHeight - Epsilon; // We can't have a height below minHeight, normally.
             }
-            if (populateBuffer) {
+            if (options.heightBuffer) {
                 // set the height buffer information in row major order.
                 options.heightBuffer[row * (options.subdivisions + 1) + col] = position.y;
             }
