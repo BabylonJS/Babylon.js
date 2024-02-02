@@ -137,7 +137,7 @@ export class GaussianSplattingMesh extends Mesh {
      * @param data the .ply data to load
      * @returns the loaded splat buffer
      */
-    public static ConvertPLYToSplat(data: any): ArrayBuffer {
+    public static ConvertPLYToSplat(data: ArrayBuffer): ArrayBuffer {
         const ubuf = new Uint8Array(data);
         const header = new TextDecoder().decode(ubuf.slice(0, 1024 * 10));
         const headerEnd = "end_header\n";
