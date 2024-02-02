@@ -214,6 +214,13 @@ export class Effect implements IDisposable {
     private _processFinalCode: Nullable<ShaderCustomProcessingFunction> = null;
 
     /**
+     * Gets the shader language type used to write vertex and fragment source code.
+     */
+    public get shaderLanguage(): ShaderLanguage {
+        return this._shaderLanguage;
+    }
+
+    /**
      * Instantiates an effect.
      * An effect can be used to create/manage/execute vertex and fragment shaders.
      * @param baseName Name of the effect.

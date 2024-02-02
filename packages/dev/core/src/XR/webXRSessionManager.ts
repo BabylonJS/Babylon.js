@@ -161,6 +161,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         this.onXRSessionEnded.clear();
         this.onXRReferenceSpaceChanged.clear();
         this.onXRSessionInit.clear();
+        this.onWorldScaleFactorChangedObservable.clear();
         this._engine?.onDisposeObservable.remove(this._onEngineDisposedObserver);
         this._engine = null;
     }
