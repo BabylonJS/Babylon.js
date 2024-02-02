@@ -192,11 +192,18 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 havokInit = "globalThis.HK = await HavokPhysics();";
             }
 
+            const unityToolkit =
+                !this._unityToolkitWasLoaded &&
+                (code.includes("UNITY.SceneManager.InitializePlayground") ||
+                    code.includes("SM.InitializePlayground") ||
+                    location.href.indexOf("UnityToolkit") !== -1 ||
+                    Utilities.ReadBoolFromStore("unity-toolkit", false));
             // Check for Unity Toolkit
-            if ((location.href.indexOf("UnityToolkit") !== -1 || Utilities.ReadBoolFromStore("unity-toolkit", false)) && !this._unityToolkitWasLoaded) {
+            if (unityToolkit) {
                 await this._loadScriptAsync("https://cdn.jsdelivr.net/gh/BabylonJS/UnityExporter@master/Redist/Runtime/babylon.toolkit.js");
                 this._unityToolkitWasLoaded = true;
             }
+            Utilities.StoreBoolToStore("unity-toolkit-used", unityToolkit);
 
             let createEngineFunction = "createDefaultEngine";
             let createSceneFunction = "";
