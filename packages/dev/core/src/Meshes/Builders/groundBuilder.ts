@@ -175,6 +175,7 @@ export function CreateTiledGroundVertexData(options: {
  * @param options.bufferWidth the width of image
  * @param options.bufferHeight the height of image
  * @param options.alphaFilter Remove any data where the alpha channel is below this value, defaults 0 (all data visible)
+ * @param options.heightBuffer a array of floats where the height data can be saved, if its length is greater than zero.
  * @returns the VertexData of the Ground designed from a heightmap
  */
 export function CreateGroundFromHeightMapVertexData(options: {
@@ -188,6 +189,7 @@ export function CreateGroundFromHeightMapVertexData(options: {
     bufferWidth: number;
     bufferHeight: number;
     alphaFilter: number;
+    heightBuffer?: Float32Array;
 }): VertexData {
     const indices = [];
     const positions = [];
@@ -217,7 +219,6 @@ export function CreateGroundFromHeightMapVertexData(options: {
             // Compute height
             const heightMapX = (((position.x + options.width / 2) / options.width) * (options.bufferWidth - 1)) | 0;
             const heightMapY = ((1.0 - (position.z + options.height / 2) / options.height) * (options.bufferHeight - 1)) | 0;
-
             const pos = (heightMapX + heightMapY * options.bufferWidth) * 4;
             let r = options.buffer[pos] / 255.0;
             let g = options.buffer[pos + 1] / 255.0;
@@ -238,6 +239,10 @@ export function CreateGroundFromHeightMapVertexData(options: {
                 position.y = options.minHeight + (options.maxHeight - options.minHeight) * gradient;
             } else {
                 position.y = options.minHeight - Epsilon; // We can't have a height below minHeight, normally.
+            }
+            if (options.heightBuffer) {
+                // set the height buffer information in row major order.
+                options.heightBuffer[row * (options.subdivisions + 1) + col] = position.y;
             }
 
             // Add  vertex
@@ -380,6 +385,7 @@ export function CreateTiledGround(
  * @param options.updatable defines if the mesh must be flagged as updatable
  * @param options.onReady is a javascript callback function that will be called once the mesh is just built (the height map download can last some time)
  * @param options.onError is a javascript callback function that will be called if there is an error
+ * @param options.passHeightBufferInCallback a boolean that indicates if the calculated height data will be passed in the onReady callback. Useful if you need the height data for physics, for example.
  * @param scene defines the hosting scene
  * @returns the ground mesh
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set/height_map
@@ -397,8 +403,9 @@ export function CreateGroundFromHeightMap(
         colorFilter?: Color3;
         alphaFilter?: number;
         updatable?: boolean;
-        onReady?: (mesh: GroundMesh) => void;
+        onReady?: (mesh: GroundMesh, heightBuffer?: Float32Array) => void;
         onError?: (message?: string, exception?: any) => void;
+        passHeightBufferInCallback?: boolean;
     } = {},
     scene: Nullable<Scene> = null
 ): GroundMesh {
@@ -426,6 +433,11 @@ export function CreateGroundFromHeightMap(
 
     ground._setReady(false);
 
+    let heightBuffer: Float32Array;
+    if (options.passHeightBufferInCallback) {
+        heightBuffer = new Float32Array((subdivisions + 1) * (subdivisions + 1));
+    }
+
     const onBufferLoaded = (buffer: Uint8Array, bufferWidth: number, bufferHeight: number) => {
         const vertexData = CreateGroundFromHeightMapVertexData({
             width: width,
@@ -438,13 +450,14 @@ export function CreateGroundFromHeightMap(
             bufferWidth: bufferWidth,
             bufferHeight: bufferHeight,
             alphaFilter: alphaFilter,
+            heightBuffer,
         });
 
         vertexData.applyToMesh(ground, updatable);
 
         //execute ready callback, if set
         if (onReady) {
-            onReady(ground);
+            onReady(ground, heightBuffer);
         }
 
         ground._setReady(true);
