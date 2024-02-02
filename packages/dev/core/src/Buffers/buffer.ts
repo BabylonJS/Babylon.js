@@ -26,6 +26,9 @@ export class Buffer {
      * Gets the id of the buffer
      */
     public get id(): string {
+        if (!this._id) {
+            this._id = RandomGUID();
+        }
         return this._id;
     }
 
@@ -75,7 +78,6 @@ export class Buffer {
         this._instanced = instanced;
         this._divisor = divisor || 1;
         this._label = label;
-        this._id = RandomGUID();
 
         if (data instanceof DataBuffer) {
             this._data = null;
@@ -480,10 +482,17 @@ export class VertexBuffer {
      */
     public readonly engine: ThinEngine;
 
+    private _id: string;
+
     /**
      * The id of the Vertex Buffer
      */
-    public id: string;
+    public get id(): string {
+        if (!this._id) {
+            this._id = RandomGUID();
+        }
+        return this._id;
+    }
 
     /**
      * Gets the max possible amount of vertices stored within the current vertex buffer.
@@ -622,8 +631,6 @@ export class VertexBuffer {
 
         this._alignBuffer();
         this._computeHashCode();
-
-        this.id = RandomGUID();
     }
 
     /**
