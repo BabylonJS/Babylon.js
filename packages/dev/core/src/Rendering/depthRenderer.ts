@@ -407,9 +407,8 @@ export class DepthRenderer {
         const morphTargetManager = (mesh as Mesh).morphTargetManager;
         let numMorphInfluencers = 0;
         if (morphTargetManager) {
-            if (morphTargetManager.numInfluencers > 0) {
-                numMorphInfluencers = morphTargetManager.numInfluencers;
-
+            numMorphInfluencers = morphTargetManager.numMaxInfluencers || morphTargetManager.numInfluencers;
+            if (numMorphInfluencers > 0) {
                 defines.push("#define MORPHTARGETS");
                 defines.push("#define NUM_MORPH_INFLUENCERS " + numMorphInfluencers);
 
@@ -468,6 +467,7 @@ export class DepthRenderer {
                 "diffuseMatrix",
                 "depthValues",
                 "morphTargetInfluences",
+                "morphTargetCount",
                 "morphTargetTextureInfo",
                 "morphTargetTextureIndices",
             ];
