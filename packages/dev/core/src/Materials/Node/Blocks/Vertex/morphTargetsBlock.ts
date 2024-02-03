@@ -201,7 +201,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         if (manager?.isUsingTextureForTargets) {
             injectionCode += "for (int i = 0; i < NUM_MORPH_INFLUENCERS; i++) {\n";
             injectionCode += "if (i >= morphTargetCount) break;\n";
-            
+
             injectionCode += `vertexID = float(gl_VertexID) * morphTargetTextureInfo.x;\n`;
             injectionCode += `${positionOutput.associatedVariableName} += (readVector3FromRawSampler(i, vertexID) - ${position.associatedVariableName}) * morphTargetInfluences[i];\n`;
             injectionCode += `vertexID += 1.0;\n`;

@@ -307,7 +307,6 @@ export class OutlineRenderer implements ISceneComponent {
         if (morphTargetManager) {
             numMorphInfluencers = morphTargetManager.numMaxInfluencers || morphTargetManager.numInfluencers;
             if (numMorphInfluencers > 0) {
-
                 defines.push("#define MORPHTARGETS");
                 defines.push("#define NUM_MORPH_INFLUENCERS " + numMorphInfluencers);
 
