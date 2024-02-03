@@ -152,7 +152,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         if ((<Mesh>mesh).morphTargetManager) {
             const morphTargetManager = (<Mesh>mesh).morphTargetManager;
 
-            if (morphTargetManager?.isUsingTextureForTargets && morphTargetManager.numInfluencers !== defines["NUM_MORPH_INFLUENCERS"]) {
+            if (morphTargetManager?.isUsingTextureForTargets && (morphTargetManager.numMaxInfluencers || morphTargetManager.numInfluencers) !== defines["NUM_MORPH_INFLUENCERS"]) {
                 defines.markAsAttributesDirty();
             }
         }

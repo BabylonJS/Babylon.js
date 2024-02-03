@@ -659,9 +659,9 @@ export abstract class EffectLayer {
         const manager = (<Mesh>mesh).morphTargetManager;
         let morphInfluencers = 0;
         if (manager) {
-            if (manager.numInfluencers > 0) {
+            morphInfluencers = manager.numMaxInfluencers || manager.numInfluencers;
+            if (morphInfluencers > 0) {
                 defines.push("#define MORPHTARGETS");
-                morphInfluencers = manager.numInfluencers;
                 defines.push("#define NUM_MORPH_INFLUENCERS " + morphInfluencers);
                 if (manager.isUsingTextureForTargets) {
                     defines.push("#define MORPHTARGETS_TEXTURE");
@@ -695,6 +695,7 @@ export abstract class EffectLayer {
                 "viewProjection",
                 "glowColor",
                 "morphTargetInfluences",
+                "morphTargetCount",
                 "boneTextureWidth",
                 "diffuseMatrix",
                 "emissiveMatrix",
