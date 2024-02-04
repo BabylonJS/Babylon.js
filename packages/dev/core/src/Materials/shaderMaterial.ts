@@ -754,7 +754,7 @@ export class ShaderMaterial extends PushMaterial {
             const uv = manager.supportsUVs && defines.indexOf("#define UV1") !== -1;
             const tangent = manager.supportsTangents && defines.indexOf("#define TANGENT") !== -1;
             const normal = manager.supportsNormals && defines.indexOf("#define NORMAL") !== -1;
-            numInfluencers = manager.numInfluencers;
+            numInfluencers = manager.numMaxInfluencers || manager.numInfluencers;
             if (uv) {
                 defines.push("#define MORPHTARGETS_UV");
             }
@@ -797,6 +797,7 @@ export class ShaderMaterial extends PushMaterial {
             if (numInfluencers > 0) {
                 uniforms = uniforms.slice();
                 uniforms.push("morphTargetInfluences");
+                uniforms.push("morphTargetCount");
                 uniforms.push("morphTargetTextureInfo");
                 uniforms.push("morphTargetTextureIndices");
             }
