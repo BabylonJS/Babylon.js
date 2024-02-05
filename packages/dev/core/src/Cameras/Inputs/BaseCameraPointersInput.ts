@@ -289,30 +289,30 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
     /**
      * Called on pointer POINTERDOUBLETAP event.
      * Override this method to provide functionality on POINTERDOUBLETAP event.
-     * @param type
+     * @param type type of event
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public onDoubleTap(type: string) {}
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     /**
      * Called on pointer POINTERMOVE event if only a single touch is active.
      * Override this method to provide functionality.
-     * @param point
-     * @param offsetX
-     * @param offsetY
+     * @param point The current position of the pointer
+     * @param offsetX The offsetX of the pointer when the event occurred
+     * @param offsetY The offsetY of the pointer when the event occurred
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public onTouch(point: Nullable<PointerTouch>, offsetX: number, offsetY: number): void {}
 
     /**
      * Called on pointer POINTERMOVE event if multiple touches are active.
      * Override this method to provide functionality.
-     * @param _pointA
-     * @param _pointB
-     * @param previousPinchSquaredDistance
-     * @param pinchSquaredDistance
-     * @param previousMultiTouchPanPosition
-     * @param multiTouchPanPosition
+     * @param _pointA First point in the pair
+     * @param _pointB Second point in the pair
+     * @param previousPinchSquaredDistance Sqr Distance between the points the last time this event was fired (by this input)
+     * @param pinchSquaredDistance Sqr Distance between the points this time
+     * @param previousMultiTouchPanPosition Previous center point between the points
+     * @param multiTouchPanPosition Current center point between the points
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public onMultiTouch(
@@ -327,7 +327,7 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
     /**
      * Called on JS contextmenu event.
      * Override this method to provide functionality.
-     * @param evt
+     * @param evt the event to be handled
      */
     public onContextMenu(evt: PointerEvent): void {
         evt.preventDefault();

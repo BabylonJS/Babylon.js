@@ -1084,6 +1084,7 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     /** @internal */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private set isTextHighlightOn(value: boolean) {
         if (this._isTextHighlightOn === value) {
             return;
@@ -1095,6 +1096,7 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     /** @internal */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private get isTextHighlightOn(): boolean {
         return this._isTextHighlightOn;
     }

@@ -20,6 +20,8 @@ export interface IFlexibleDropZoneProps {
 /**
  * This component contains the drag and drop zone for the resize bars that
  * allow redefining width and height of layout elements
+ * @param props properties
+ * @returns drop zone element
  */
 export const FlexibleDropZone: FC<IFlexibleDropZoneProps> = (props) => {
     return (

@@ -143,8 +143,8 @@ export class Octree<T> {
 
     /**
      * Adds a mesh into the octree block if it intersects the block
-     * @param entry
-     * @param block
+     * @param entry defines the mesh to try to add to the block
+     * @param block defines the block where the mesh should be added
      */
     public static CreationFuncForMeshes = (entry: AbstractMesh, block: OctreeBlock<AbstractMesh>): void => {
         const boundingInfo = entry.getBoundingInfo();
@@ -155,8 +155,8 @@ export class Octree<T> {
 
     /**
      * Adds a submesh into the octree block if it intersects the block
-     * @param entry
-     * @param block
+     * @param entry defines the submesh to try to add to the block
+     * @param block defines the block where the submesh should be added
      */
     public static CreationFuncForSubMeshes = (entry: SubMesh, block: OctreeBlock<SubMesh>): void => {
         const boundingInfo = entry.getBoundingInfo();

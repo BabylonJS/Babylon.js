@@ -25,7 +25,12 @@ export interface IFlowGraphMeshPickEventBlockConfiguration extends IFlowGraphBlo
  * A block that activates when a mesh is picked.
  */
 export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
-    public constructor(public config: IFlowGraphMeshPickEventBlockConfiguration) {
+    public constructor(
+        /**
+         * the configuration of the block
+         */
+        public config: IFlowGraphMeshPickEventBlockConfiguration
+    ) {
         super(config);
     }
 
@@ -83,10 +88,17 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
         context._deleteExecutionVariable(this, "meshDisposeObserver");
     }
 
+    /**
+     * @returns class name of the block.
+     */
     public getClassName(): string {
         return FlowGraphMeshPickEventBlock.ClassName;
     }
 
+    /**
+     * Serializes the block to a JSON object.
+     * @param serializationObject the object to serialize to.
+     */
     public serialize(serializationObject?: any): void {
         super.serialize(serializationObject);
         serializationObject.config.path = this.config.path;

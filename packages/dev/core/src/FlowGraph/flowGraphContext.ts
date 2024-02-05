@@ -25,8 +25,22 @@ export interface IFlowGraphContextConfiguration {
     readonly coordinator: FlowGraphCoordinator;
 }
 
+/**
+ * @experimental
+ * Options for parsing a context.
+ */
 export interface IFlowGraphContextParseOptions {
+    /**
+     * A function that parses a value from a serialization object.
+     * @param key the key of the value
+     * @param serializationObject the object containing the value
+     * @param scene the current scene
+     * @returns
+     */
     readonly valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any;
+    /**
+     * The graph that the context is being parsed in.
+     */
     readonly graph: FlowGraph;
 }
 /**
@@ -78,8 +92,8 @@ export class FlowGraphContext {
 
     /**
      * Check if a user-defined variable is defined.
-     * @param name
-     * @returns
+     * @param name the name of the variable
+     * @returns true if the variable is defined
      */
     public hasVariable(name: string) {
         return name in this._userVariables;
@@ -87,8 +101,8 @@ export class FlowGraphContext {
 
     /**
      * Set a user-defined variable.
-     * @param name
-     * @param value
+     * @param name the name of the variable
+     * @param value the value of the variable
      */
     public setVariable(name: string, value: any) {
         this._userVariables[name] = value;
@@ -96,8 +110,8 @@ export class FlowGraphContext {
 
     /**
      * Get a user-defined variable.
-     * @param name
-     * @returns
+     * @param name the name of the variable
+     * @returns the value of the variable
      */
     public getVariable(name: string): any {
         return this._userVariables[name];
@@ -271,6 +285,9 @@ export class FlowGraphContext {
         }
     }
 
+    /**
+     * @returns the class name of the object.
+     */
     public getClassName() {
         return "FGContext";
     }
@@ -278,8 +295,7 @@ export class FlowGraphContext {
     /**
      * Parses a context
      * @param serializationObject the object containing the context serialization values
-     * @param graph the graph to which the context should belong
-     * @param valueParseFunction a function to parse complex values
+     * @param options the options for parsing the context
      * @returns
      */
     public static Parse(serializationObject: ISerializedFlowGraphContext, options: IFlowGraphContextParseOptions): FlowGraphContext {

@@ -10,6 +10,9 @@ import { RegisterClass } from "../../../Misc/typeStore";
  * The configuration of the FlowGraphGetVariableBlock.
  */
 export interface IFlowGraphGetVariableBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * The name of the variable to get.
+     */
     variableName: string;
 }
 
@@ -25,7 +28,7 @@ export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
 
     /**
      * Construct a FlowGraphGetVariableBlock.
-     * @param params optional construction parameters
+     * @param config construction parameters
      */
     constructor(public config: IFlowGraphGetVariableBlockConfiguration) {
         super(config);
@@ -44,15 +47,26 @@ export class FlowGraphGetVariableBlock<T> extends FlowGraphBlock {
         }
     }
 
+    /**
+     * Gets the class name of this block
+     * @returns the class name
+     */
     public getClassName(): string {
         return FlowGraphGetVariableBlock.ClassName;
     }
 
+    /**
+     * Serializes this block
+     * @param serializationObject the object to serialize to
+     */
     public serialize(serializationObject?: any): void {
         super.serialize(serializationObject);
         serializationObject.config.variableName = this.config.variableName;
     }
 
+    /**
+     * Class name of the block.
+     */
     public static ClassName = "FGGetVariableBlock";
 }
 RegisterClass(FlowGraphGetVariableBlock.ClassName, FlowGraphGetVariableBlock);

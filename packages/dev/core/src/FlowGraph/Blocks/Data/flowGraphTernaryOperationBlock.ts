@@ -8,8 +8,17 @@ import { FlowGraphCachedOperationBlock } from "./flowGraphCachedOperationBlock";
  * The base block for all ternary operation blocks.
  */
 export class FlowGraphTernaryOperationBlock<T1, T2, T3, ResultT> extends FlowGraphCachedOperationBlock<ResultT> {
+    /**
+     * First input of this block
+     */
     a: FlowGraphDataConnection<T1>;
+    /**
+     * Second input of this block
+     */
     b: FlowGraphDataConnection<T2>;
+    /**
+     * Third input of this block
+     */
     c: FlowGraphDataConnection<T3>;
 
     constructor(
@@ -27,10 +36,19 @@ export class FlowGraphTernaryOperationBlock<T1, T2, T3, ResultT> extends FlowGra
         this.c = this.registerDataInput("c", t3Type);
     }
 
+    /**
+     * the operation performed by this block
+     * @param context the graph context
+     * @returns the result of the operation
+     */
     public override _doOperation(context: FlowGraphContext): ResultT {
         return this._operation(this.a.getValue(context), this.b.getValue(context), this.c.getValue(context));
     }
 
+    /**
+     * Gets the class name of this block
+     * @returns the class name
+     */
     public getClassName(): string {
         return this._className;
     }

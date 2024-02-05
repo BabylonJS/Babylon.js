@@ -12,28 +12,29 @@ interface ICachedConfig {
 
 // How often to check for modified input files.  If a file's modification timestamp has changed, then we will
 // evict the cache entry immediately.
-const CACHE_CHECK_INTERVAL_MS: number = 3 * 1000;
+const cacheCheckIntervalMs: number = 3 * 1000;
 
 // Evict old entries from the cache after this much time, regardless of whether the file was detected as being
 // modified or not.
-const CACHE_EXPIRE_MS: number = 20 * 1000;
+const cacheExpireMs: number = 20 * 1000;
 
 // If this many objects accumulate in the cache, then it is cleared to avoid a memory leak.
-const CACHE_MAX_SIZE: number = 100;
+const cacheMaxSize: number = 100;
 
 export class ConfigCache {
     // findConfigPathForFolder() result --> loaded tsdoc.json configuration
-    private static _cachedConfigs: Map<string, ICachedConfig> = new Map<string, ICachedConfig>();
+    private static _CachedConfigs: Map<string, ICachedConfig> = new Map<string, ICachedConfig>();
 
     /**
      * Node.js equivalent of performance.now().
+     * @returns A high-resolution timestamp in milliseconds.
      */
-    private static _getTimeInMs(): number {
+    private static _GetTimeInMs(): number {
         const [seconds, nanoseconds] = process.hrtime();
         return seconds * 1000 + nanoseconds / 1000000;
     }
 
-    public static getForSourceFile(sourceFilePath: string): TSDocConfigFile {
+    public static GetForSourceFile(sourceFilePath: string): TSDocConfigFile {
         const sourceFileFolder: string = path.dirname(path.resolve(sourceFilePath));
 
         // First, determine the file to be loaded. If not found, the configFilePath will be an empty string.
@@ -48,12 +49,12 @@ export class ConfigCache {
         const cacheKey: string = configFilePath || sourceFileFolder + "/";
         Debug.Log(`Cache key: "${cacheKey}"`);
 
-        const nowMs: number = ConfigCache._getTimeInMs();
+        const nowMs: number = ConfigCache._GetTimeInMs();
 
         let cachedConfig: ICachedConfig | undefined = undefined;
 
         // Do we have a cached object?
-        cachedConfig = ConfigCache._cachedConfigs.get(cacheKey);
+        cachedConfig = ConfigCache._CachedConfigs.get(cacheKey);
 
         if (cachedConfig) {
             Debug.Log("Cache hit");
@@ -62,27 +63,27 @@ export class ConfigCache {
             const loadAgeMs: number = nowMs - cachedConfig.loadTimeMs;
             const lastCheckAgeMs: number = nowMs - cachedConfig.lastCheckTimeMs;
 
-            if (loadAgeMs > CACHE_EXPIRE_MS || loadAgeMs < 0) {
+            if (loadAgeMs > cacheExpireMs || loadAgeMs < 0) {
                 Debug.Log("Evicting because item is expired");
                 cachedConfig = undefined;
-                ConfigCache._cachedConfigs.delete(cacheKey);
-            } else if (lastCheckAgeMs > CACHE_CHECK_INTERVAL_MS || lastCheckAgeMs < 0) {
+                ConfigCache._CachedConfigs.delete(cacheKey);
+            } else if (lastCheckAgeMs > cacheCheckIntervalMs || lastCheckAgeMs < 0) {
                 Debug.Log("Checking for modifications");
                 cachedConfig.lastCheckTimeMs = nowMs;
                 if (cachedConfig.configFile.checkForModifiedFiles()) {
                     // Invalidate the cache because it failed to load completely
                     Debug.Log("Evicting because item was modified");
                     cachedConfig = undefined;
-                    ConfigCache._cachedConfigs.delete(cacheKey);
+                    ConfigCache._CachedConfigs.delete(cacheKey);
                 }
             }
         }
 
         // Load the object
         if (!cachedConfig) {
-            if (ConfigCache._cachedConfigs.size > CACHE_MAX_SIZE) {
+            if (ConfigCache._CachedConfigs.size > cacheMaxSize) {
                 Debug.Log("Clearing cache");
-                ConfigCache._cachedConfigs.clear(); // avoid a memory leak
+                ConfigCache._CachedConfigs.clear(); // avoid a memory leak
             }
 
             const configFile: TSDocConfigFile = TSDocConfigFile.loadFile(configFilePath);
@@ -99,7 +100,7 @@ export class ConfigCache {
                 loadTimeMs: nowMs,
             };
 
-            ConfigCache._cachedConfigs.set(cacheKey, cachedConfig);
+            ConfigCache._CachedConfigs.set(cacheKey, cachedConfig);
         }
 
         return cachedConfig.configFile;

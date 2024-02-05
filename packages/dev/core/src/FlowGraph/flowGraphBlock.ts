@@ -16,6 +16,10 @@ import type { IPathToObjectConverter } from "../ObjectModel/objectModelInterface
 export interface IFlowGraphBlockParseOptions {
     /**
      * A function that parses a value from a serialization object.
+     * @param key the key of the property
+     * @param serializationObject the serialization object where the property is located
+     * @param scene the scene that the block is being parsed in
+     * @returns the parsed value
      */
     valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any;
     /**
@@ -69,13 +73,15 @@ export class FlowGraphBlock {
      */
     public metadata: any;
 
-    /** Constructor is protected so only subclasses can be instantiated */
-    protected constructor(public config?: IFlowGraphBlockConfiguration) {
-        this.configure();
-    }
-
-    public configure() {
-        // overriden in child classes, uses config
+    /** Constructor is protected so only subclasses can be instantiated
+     * @param config optional configuration for this block
+     */
+    protected constructor(
+        /**
+         * the configuration of the block
+         */
+        public config?: IFlowGraphBlockConfiguration
+    ) {
         this.name = this.config?.name ?? this.getClassName();
         this.dataInputs = [];
         this.dataOutputs = [];
@@ -88,26 +94,53 @@ export class FlowGraphBlock {
         // empty by default, overriden in data blocks
     }
 
-    public registerDataInput<T>(name: string, className: RichType<T>): FlowGraphDataConnection<T> {
-        const input = new FlowGraphDataConnection(name, FlowGraphConnectionType.Input, this, className);
+    /**
+     * Registers a data input on the block.
+     * @param name the name of the input
+     * @param richType the type of the input
+     * @returns the created connection
+     */
+    public registerDataInput<T>(name: string, richType: RichType<T>): FlowGraphDataConnection<T> {
+        const input = new FlowGraphDataConnection(name, FlowGraphConnectionType.Input, this, richType);
         this.dataInputs.push(input);
         return input;
     }
 
-    public registerDataOutput<T>(name: string, className: RichType<T>): FlowGraphDataConnection<T> {
-        const output = new FlowGraphDataConnection(name, FlowGraphConnectionType.Output, this, className);
+    /**
+     * Registers a data output on the block.
+     * @param name the name of the input
+     * @param richType the type of the input
+     * @returns the created connection
+     */
+    public registerDataOutput<T>(name: string, richType: RichType<T>): FlowGraphDataConnection<T> {
+        const output = new FlowGraphDataConnection(name, FlowGraphConnectionType.Output, this, richType);
         this.dataOutputs.push(output);
         return output;
     }
 
+    /**
+     * Given the name of a data input, returns the connection if it exists
+     * @param name the name of the input
+     * @returns the connection if it exists, undefined otherwise
+     */
     public getDataInput(name: string): FlowGraphDataConnection<any> | undefined {
         return this.dataInputs.find((i) => i.name === name);
     }
 
+    /**
+     * Given the name of a data output, returns the connection if it exists
+     * @param name the name of the output
+     * @returns the connection if it exists, undefined otherwise
+     */
     public getDataOutput(name: string): FlowGraphDataConnection<any> | undefined {
         return this.dataOutputs.find((i) => i.name === name);
     }
 
+    /**
+     * Serializes this block
+     * @param serializationObject the object to serialize to
+     * @param _valueSerializeFunction a function that serializes a specific value
+     */
     public serialize(serializationObject: any = {}, _valueSerializeFunction: (key: string, value: any, serializationObject: any) => any = defaultValueSerializationFunction) {
         serializationObject.uniqueId = this.uniqueId;
         serializationObject.config = {};
@@ -129,10 +162,20 @@ export class FlowGraphBlock {
         }
     }
 
+    /**
+     * Gets the class name of this block
+     * @returns the class name
+     */
     public getClassName() {
         return "FGBlock";
     }
 
+    /**
+     * Parses a block from a serialization object
+     * @param serializationObject the object to parse from
+     * @param parseOptions options for parsing the block
+     * @returns the parsed block
+     */
     public static Parse(serializationObject: ISerializedFlowGraphBlock, parseOptions: IFlowGraphBlockParseOptions): FlowGraphBlock {
         const classType = Tools.Instantiate(serializationObject.className);
         const parsedConfig: any = {};

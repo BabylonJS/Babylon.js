@@ -6,15 +6,15 @@ import { Vector2, Vector3 } from "./math.vector";
  * Class used to store (r, theta) vector representation
  */
 export class Polar {
-    public radius: number;
-    public theta: number;
-
     /**
      * Creates a new Polar object
      * @param radius the radius of the vector
      * @param theta the angle of the vector
      */
-    constructor(radius: number, theta: number) {
+    constructor(
+        public radius: number,
+        public theta: number
+    ) {
         this.radius = radius;
         this.theta = theta;
     }
@@ -37,7 +37,7 @@ export class Polar {
 
     /**
      * Converts the current polar to an array
-     * @reutrns the current polar as an array
+     * @returns the current polar as an array
      */
     public asArray() {
         return [this.radius, this.theta];
@@ -357,16 +357,17 @@ export class Polar {
  * Class used for (radius, theta, phi) vector representation.
  */
 export class Spherical {
-    public radius: number;
-    public theta: number;
-    public phi: number;
-
     /**
+     * Creates a new Spherical object from the given spherical coordinates
      * @param radius spherical radius
      * @param theta angle from positive y axis to radial line from 0 to PI (vertical)
      * @param phi angle from positive x axis measured anticlockwise from -PI to PI (horizontal)
      */
-    constructor(radius: number, theta: number, phi: number) {
+    constructor(
+        public radius: number,
+        public theta: number,
+        public phi: number
+    ) {
         this.radius = radius;
         this.theta = theta;
         this.phi = phi;
@@ -390,7 +391,7 @@ export class Spherical {
 
     /**
      * Converts the current spherical to an array
-     * @reutrns the current spherical as an array
+     * @returns the current spherical as an array
      */
     public asArray() {
         return [this.radius, this.theta, this.phi];

@@ -222,8 +222,8 @@ export class MaterialHelper {
             defines["MORPHTARGETS_UV"] = manager.supportsUVs && defines["UV1"];
             defines["MORPHTARGETS_TANGENT"] = manager.supportsTangents && defines["TANGENT"];
             defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"];
-            defines["MORPHTARGETS"] = manager.numInfluencers > 0;
-            defines["NUM_MORPH_INFLUENCERS"] = manager.numInfluencers;
+            defines["NUM_MORPH_INFLUENCERS"] = manager.numMaxInfluencers || manager.numInfluencers;
+            defines["MORPHTARGETS"] = defines["NUM_MORPH_INFLUENCERS"] > 0;
 
             defines["MORPHTARGETS_TEXTURE"] = manager.isUsingTextureForTargets;
         } else {
@@ -700,6 +700,7 @@ export class MaterialHelper {
 
         if (defines["NUM_MORPH_INFLUENCERS"]) {
             uniformsList.push("morphTargetInfluences");
+            uniformsList.push("morphTargetCount");
         }
 
         if (defines["BAKED_VERTEX_ANIMATION_TEXTURE"]) {
@@ -815,7 +816,7 @@ export class MaterialHelper {
     /**
      * Prepares the list of attributes required for baked vertex animations according to the effect defines.
      * @param attribs The current list of supported attribs
-     * @param mesh The mesh to prepare the morph targets attributes for
+     * @param mesh The mesh to prepare for baked vertex animations
      * @param defines The current Defines of the effect
      */
     public static PrepareAttributesForBakedVertexAnimation(attribs: string[], mesh: AbstractMesh, defines: any): void {

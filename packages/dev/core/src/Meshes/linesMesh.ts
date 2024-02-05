@@ -127,7 +127,7 @@ export class LinesMesh extends Mesh {
     }
 
     /**
-     * Returns the string "LineMesh"
+     * @returns the string "LineMesh"
      */
     public getClassName(): string {
         return "LinesMesh";
@@ -221,9 +221,10 @@ export class LinesMesh extends Mesh {
 
     /**
      * Returns a new LineMesh object cloned from the current one.
-     * @param name
-     * @param newParent
-     * @param doNotCloneChildren
+     * @param name defines the cloned mesh name
+     * @param newParent defines the new mesh parent
+     * @param doNotCloneChildren if set to true, none of the mesh children are cloned (false by default)
+     * @returns the new mesh
      */
     public clone(name: string, newParent: Nullable<Node> = null, doNotCloneChildren?: boolean): LinesMesh {
         return new LinesMesh(name, this.getScene(), newParent, this, doNotCloneChildren);
@@ -292,7 +293,7 @@ export class InstancedLinesMesh extends InstancedMesh {
     }
 
     /**
-     * Returns the string "InstancedLinesMesh".
+     * @returns the string "InstancedLinesMesh".
      */
     public getClassName(): string {
         return "InstancedLinesMesh";

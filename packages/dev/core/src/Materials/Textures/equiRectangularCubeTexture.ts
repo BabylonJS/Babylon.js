@@ -47,6 +47,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
      * (the PBR material requires those textures in linear space, but the standard material would require them in Gamma space)
      * @param onLoad — defines a callback called when texture is loaded
      * @param onError — defines a callback called if there is an error
+     * @param supersample — defines if texture must be supersampled (default: false)
      */
     constructor(
         url: string,

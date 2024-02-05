@@ -84,6 +84,13 @@ export class WebXRCamera extends FreeCamera {
             this._referenceQuaternion.copyFromFloats(0, 0, 0, 1);
             // first frame - camera's y position should be 0 for the correct offset
             this._firstFrame = this.compensateOnFirstFrame;
+            this._xrSessionManager.onWorldScaleFactorChangedObservable.add(() => {
+                // only run if in session
+                if (!this._xrSessionManager.currentFrame) {
+                    return;
+                }
+                this._updateDepthNearFar();
+            });
         });
 
         // Check transformation changes on each frame. Callback is added to be first so that the transformation will be
@@ -128,11 +135,13 @@ export class WebXRCamera extends FreeCamera {
     /**
      * Return the user's height, unrelated to the current ground.
      * This will be the y position of this camera, when ground level is 0.
+     *
+     * Note - this value is multiplied by the worldScalingFactor (if set), so it will be in the same units as the scene.
      */
     public get realWorldHeight(): number {
         const basePose = this._xrSessionManager.currentFrame && this._xrSessionManager.currentFrame.getViewerPose(this._xrSessionManager.baseReferenceSpace);
         if (basePose && basePose.transform) {
-            return basePose.transform.position.y;
+            return basePose.transform.position.y * this._xrSessionManager.worldScalingFactor;
         } else {
             return 0;
         }
@@ -199,6 +208,19 @@ export class WebXRCamera extends FreeCamera {
         this._lastXRViewerPose = undefined;
     }
 
+    private _updateDepthNearFar() {
+        const far = (this.maxZ || 10000) * this._xrSessionManager.worldScalingFactor;
+        const xrRenderState: XRRenderStateInit = {
+            // if maxZ is 0 it should be "Infinity", but it doesn't work with the WebXR API. Setting to a large number.
+            depthFar: far,
+            depthNear: this.minZ,
+        };
+
+        this._xrSessionManager.updateRenderState(xrRenderState);
+        this._cache.minZ = this.minZ;
+        this._cache.maxZ = far;
+    }
+
     private _rotate180 = new Quaternion(0, 1, 0, 0);
 
     private _updateFromXRSession() {
@@ -215,15 +237,7 @@ export class WebXRCamera extends FreeCamera {
 
         // check min/max Z and update if not the same as in cache
         if (this.minZ !== this._cache.minZ || this.maxZ !== this._cache.maxZ) {
-            const xrRenderState: XRRenderStateInit = {
-                // if maxZ is 0 it should be "Infinity", but it doesn't work with the WebXR API. Setting to a large number.
-                depthFar: this.maxZ || 10000,
-                depthNear: this.minZ,
-            };
-
-            this._xrSessionManager.updateRenderState(xrRenderState);
-            this._cache.minZ = this.minZ;
-            this._cache.maxZ = this.maxZ;
+            this._updateDepthNearFar();
         }
 
         if (pose.transform) {
@@ -234,7 +248,7 @@ export class WebXRCamera extends FreeCamera {
                 return;
             }
             const pos = pose.transform.position;
-            this._referencedPosition.set(pos.x, pos.y, pos.z);
+            this._referencedPosition.set(pos.x, pos.y, pos.z).scaleInPlace(this._xrSessionManager.worldScalingFactor);
 
             this._referenceQuaternion.set(orientation.x, orientation.y, orientation.z, orientation.w);
             if (!this._scene.useRightHandedSystem) {
@@ -280,7 +294,7 @@ export class WebXRCamera extends FreeCamera {
 
             currentRig.parent = this.parent;
 
-            currentRig.position.set(pos.x, pos.y, pos.z);
+            currentRig.position.set(pos.x, pos.y, pos.z).scaleInPlace(this._xrSessionManager.worldScalingFactor);
             currentRig.rotationQuaternion.set(orientation.x, orientation.y, orientation.z, orientation.w);
             if (!this._scene.useRightHandedSystem) {
                 currentRig.position.z *= -1;
@@ -361,9 +375,9 @@ export class WebXRCamera extends FreeCamera {
             transformMat.decompose(undefined, this._referenceQuaternion, this._referencedPosition);
             const transform = new XRRigidTransform(
                 {
-                    x: this._referencedPosition.x,
-                    y: this._referencedPosition.y,
-                    z: this._referencedPosition.z,
+                    x: this._referencedPosition.x / this._xrSessionManager.worldScalingFactor,
+                    y: this._referencedPosition.y / this._xrSessionManager.worldScalingFactor,
+                    z: this._referencedPosition.z / this._xrSessionManager.worldScalingFactor,
                 },
                 {
                     x: this._referenceQuaternion.x,

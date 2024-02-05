@@ -51,6 +51,8 @@ export interface IBoundingBoxGizmo extends IGizmo {
      * The distance away from the object which the draggable meshes should appear world sized when fixedDragMeshScreenSize is set to true
      */
     fixedDragMeshScreenSizeDistanceFactor: number;
+    /** True when a rotation sphere or scale box or a attached mesh is dragged */
+    readonly isDragging: boolean;
     /** Fired when a rotation sphere or scale box is dragged */
     onDragStartObservable: Observable<{}>;
     /** Fired when a scale box is dragged */
@@ -89,6 +91,10 @@ export interface IBoundingBoxGizmo extends IGizmo {
     setEnabledScaling(enable: boolean, homogeneousScaling?: boolean): void;
     /** Enables a pointer drag behavior on the bounding box of the gizmo */
     enableDragBehavior(): void;
+    /**
+     * Force release the drag action by code
+     */
+    releaseDrag(): void;
 
     /** Default material used to render when gizmo is not disabled or hovered */
     coloredMaterial: StandardMaterial;
@@ -112,6 +118,12 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
     protected _renderObserver: Nullable<Observer<Scene>> = null;
     protected _pointerObserver: Nullable<Observer<PointerInfo>> = null;
     protected _scaleDragSpeed = 0.2;
+    protected _rotateSpheresDragBehavior: PointerDragBehavior;
+    protected _scaleBoxesDragBehavior: PointerDragBehavior;
+    /**
+     * boolean updated when a rotation sphere or scale box is dragged
+     */
+    protected _dragging = false;
 
     private _tmpQuaternion = new Quaternion();
     private _tmpVector = new Vector3(0, 0, 0);
@@ -272,6 +284,11 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
         return this._pointerDragBehavior;
     }
 
+    /** True when a rotation sphere or scale box or a attached mesh is dragged */
+    public get isDragging() {
+        return this._dragging || this._pointerDragBehavior.dragging;
+    }
+
     /**
      * Sets the color of the bounding box gizmo
      * @param color the color to set
@@ -408,19 +425,19 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
             sphere.isNearGrabbable = true;
 
             // Drag behavior
-            const _dragBehavior = new PointerDragBehavior({});
-            _dragBehavior.moveAttached = false;
-            _dragBehavior.updateDragPlane = false;
-            sphere.addBehavior(_dragBehavior);
+            this._rotateSpheresDragBehavior = new PointerDragBehavior({});
+            this._rotateSpheresDragBehavior.moveAttached = false;
+            this._rotateSpheresDragBehavior.updateDragPlane = false;
+            sphere.addBehavior(this._rotateSpheresDragBehavior);
             const startingTurnDirection = new Vector3(1, 0, 0);
             let totalTurnAmountOfDrag = 0;
             let previousProjectDist = 0;
-            _dragBehavior.onDragStartObservable.add(() => {
+            this._rotateSpheresDragBehavior.onDragStartObservable.add(() => {
                 startingTurnDirection.copyFrom(sphere.forward);
                 totalTurnAmountOfDrag = 0;
                 previousProjectDist = 0;
             });
-            _dragBehavior.onDragObservable.add((event) => {
+            this._rotateSpheresDragBehavior.onDragObservable.add((event) => {
                 this.onRotationSphereDragObservable.notifyObservers({});
                 if (this.attachedMesh) {
                     const originalParent = this.attachedMesh.parent;
@@ -498,12 +515,14 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
             });
 
             // Selection/deselection
-            _dragBehavior.onDragStartObservable.add(() => {
+            this._rotateSpheresDragBehavior.onDragStartObservable.add(() => {
                 this.onDragStartObservable.notifyObservers({});
+                this._dragging = true;
                 this._selectNode(sphere);
             });
-            _dragBehavior.onDragEndObservable.add((event) => {
+            this._rotateSpheresDragBehavior.onDragEndObservable.add((event) => {
                 this.onRotationSphereDragEndObservable.notifyObservers({});
+                this._dragging = false;
                 this._selectNode(null);
                 this._updateDummy();
                 this._unhoverMeshOnTouchUp(event.pointerInfo, sphere);
@@ -532,13 +551,13 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
 
                     // Dragging logic
                     const dragAxis = new Vector3(i - 1, j - 1, k - 1).normalize();
-                    const _dragBehavior = new PointerDragBehavior({ dragAxis: dragAxis });
-                    _dragBehavior.updateDragPlane = false;
-                    _dragBehavior.moveAttached = false;
+                    this._scaleBoxesDragBehavior = new PointerDragBehavior({ dragAxis: dragAxis });
+                    this._scaleBoxesDragBehavior.updateDragPlane = false;
+                    this._scaleBoxesDragBehavior.moveAttached = false;
                     let totalRelativeDragDistance = 0;
                     let previousScale = 0;
-                    box.addBehavior(_dragBehavior);
-                    _dragBehavior.onDragObservable.add((event) => {
+                    box.addBehavior(this._scaleBoxesDragBehavior);
+                    this._scaleBoxesDragBehavior.onDragObservable.add((event) => {
                         this.onScaleBoxDragObservable.notifyObservers({});
                         if (this.attachedMesh) {
                             const originalParent = this.attachedMesh.parent;
@@ -619,16 +638,18 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                     });
 
                     // Selection/deselection
-                    _dragBehavior.onDragStartObservable.add(() => {
+                    this._scaleBoxesDragBehavior.onDragStartObservable.add(() => {
                         this.onDragStartObservable.notifyObservers({});
+                        this._dragging = true;
                         this._selectNode(box);
                         totalRelativeDragDistance = 0;
                         previousScale = 0;
                         this._incrementalStartupValue.copyFrom(this.attachedMesh!.scaling);
                         this._incrementalAnchorStartupValue.copyFrom(this._anchorMesh!.scaling);
                     });
-                    _dragBehavior.onDragEndObservable.add((event) => {
+                    this._scaleBoxesDragBehavior.onDragEndObservable.add((event) => {
                         this.onScaleBoxDragEndObservable.notifyObservers({});
+                        this._dragging = false;
                         this._selectNode(null);
                         this._updateDummy();
                         this._unhoverMeshOnTouchUp(event.pointerInfo, box);
@@ -722,6 +743,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
 
     /**
      * returns an array containing all boxes used for scaling (in increasing x, y and z orders)
+     * @returns array of scaling boxes
      */
     public getScaleBoxes() {
         return this._scaleBoxesParent.getChildMeshes();
@@ -917,6 +939,15 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
         this._dragMesh.rotationQuaternion = new Quaternion();
         this._pointerDragBehavior.useObjectOrientationForDragging = false;
         this._dragMesh.addBehavior(this._pointerDragBehavior);
+    }
+
+    /**
+     * Force release the drag action by code
+     */
+    public releaseDrag() {
+        this._scaleBoxesDragBehavior.releaseDrag();
+        this._rotateSpheresDragBehavior.releaseDrag();
+        this._pointerDragBehavior.releaseDrag();
     }
 
     /**

@@ -21,6 +21,8 @@ export interface IFlexibleGridLayoutProps {
 /**
  * This component represents a grid layout that can be resized and rearranged
  * by the user.
+ * @param props properties
+ * @returns layout element
  */
 export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
     const [layout, setLayout] = useState(props.layoutDefinition);

@@ -147,7 +147,6 @@ export class PostProcess {
      * Registers a shader code processing with a post process name.
      * @param postProcessName name of the post process. Use null for the fallback shader code processing. This is the shader code processing that will be used in case no specific shader code processing has been associated to a post process name
      * @param customShaderCodeProcessing shader code processing to associate to the post process name
-     * @returns
      */
     public static RegisterShaderCodeProcessing(postProcessName: Nullable<string>, customShaderCodeProcessing?: PostProcessCustomShaderCodeProcessing) {
         if (!customShaderCodeProcessing) {

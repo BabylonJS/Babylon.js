@@ -106,7 +106,10 @@ export interface IGizmo extends IDisposable {
      * When set null, default value will be used (Quaternion(0, 0, 0, 1))
      */
     customRotationQuaternion: Nullable<Quaternion>;
-    /** Disposes and replaces the current meshes in the gizmo with the specified mesh */
+    /**
+     * Disposes and replaces the current meshes in the gizmo with the specified mesh
+     * @param mesh The mesh to replace the default mesh of the gizmo
+     */
     setCustomMesh(mesh: Mesh): void;
 }
 /**
@@ -200,6 +203,7 @@ export class Gizmo implements IGizmo {
      */
     public setCustomMesh(mesh: Mesh) {
         if (mesh.getScene() != this.gizmoLayer.utilityLayerScene) {
+            // eslint-disable-next-line no-throw-literal
             throw "When setting a custom mesh on a gizmo, the custom meshes scene must be the same as the gizmos (eg. gizmo.gizmoLayer.utilityLayerScene)";
         }
         this._rootMesh.getChildMeshes().forEach((c) => {

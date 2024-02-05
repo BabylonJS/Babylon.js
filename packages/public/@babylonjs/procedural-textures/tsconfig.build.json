@@ -6,7 +6,7 @@
         "rootDir": "../../../dev/proceduralTextures/src",
         "declaration": true,
         "importHelpers": true,
-        "target": "ES2018",
+        "target": "ES2020",
         "plugins": [
             {
                 "transform": "@dev/build-tools/dist/pathTransform.js",

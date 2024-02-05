@@ -165,8 +165,8 @@ export class TouchHolographicMenu extends VolumeBasedPanel {
     /**
      * This method should not be used directly. It is inherited from `Container3D`.
      * Please use `addButton` instead.
-     * @param _control
-     * @returns
+     * @param _control the control to add
+     * @returns the current container
      */
     public addControl(_control: Control3D): Container3D {
         Logger.Warn("TouchHolographicMenu can only contain buttons. Please use the method `addButton` instead.");

@@ -303,7 +303,8 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
 
     /**
      * returns the class name of a list of controls if they share a class, or an empty string if not
-     * @param nodes
+     * @param nodes the list of controls to check
+     * @returns the class name of a list of controls if they share a class, or an empty string if not
      */
     getControlsCommonClassName(nodes: Control[]) {
         if (nodes.length === 0) return "";

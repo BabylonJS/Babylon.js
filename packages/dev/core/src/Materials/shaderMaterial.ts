@@ -656,15 +656,9 @@ export class ShaderMaterial extends PushMaterial {
         const storeEffectOnSubMeshes = subMesh && this._storeEffectOnSubMeshes;
 
         if (this.isFrozen) {
-            if (storeEffectOnSubMeshes) {
-                if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
-                    return true;
-                }
-            } else {
-                const effect = this._drawWrapper.effect;
-                if (effect && effect._wasPreviouslyReady && effect._wasPreviouslyUsingInstances === useInstances) {
-                    return true;
-                }
+            const drawWrapper = storeEffectOnSubMeshes ? subMesh._drawWrapper : this._drawWrapper;
+            if (drawWrapper.effect && drawWrapper._wasPreviouslyReady && drawWrapper._wasPreviouslyUsingInstances === useInstances) {
+                return true;
             }
         }
 
@@ -760,7 +754,7 @@ export class ShaderMaterial extends PushMaterial {
             const uv = manager.supportsUVs && defines.indexOf("#define UV1") !== -1;
             const tangent = manager.supportsTangents && defines.indexOf("#define TANGENT") !== -1;
             const normal = manager.supportsNormals && defines.indexOf("#define NORMAL") !== -1;
-            numInfluencers = manager.numInfluencers;
+            numInfluencers = manager.numMaxInfluencers || manager.numInfluencers;
             if (uv) {
                 defines.push("#define MORPHTARGETS_UV");
             }
@@ -803,6 +797,7 @@ export class ShaderMaterial extends PushMaterial {
             if (numInfluencers > 0) {
                 uniforms = uniforms.slice();
                 uniforms.push("morphTargetInfluences");
+                uniforms.push("morphTargetCount");
                 uniforms.push("morphTargetTextureInfo");
                 uniforms.push("morphTargetTextureIndices");
             }
@@ -868,7 +863,7 @@ export class ShaderMaterial extends PushMaterial {
             shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines, attribs);
         }
 
-        const drawWrapper = storeEffectOnSubMeshes ? subMesh._getDrawWrapper() : this._drawWrapper;
+        const drawWrapper = storeEffectOnSubMeshes ? subMesh._getDrawWrapper(undefined, true) : this._drawWrapper;
         const previousEffect = drawWrapper?.effect ?? null;
         const previousDefines = drawWrapper?.defines ?? null;
         const join = defines.join("\n");
@@ -905,7 +900,7 @@ export class ShaderMaterial extends PushMaterial {
             }
         }
 
-        effect!._wasPreviouslyUsingInstances = !!useInstances;
+        drawWrapper!._wasPreviouslyUsingInstances = !!useInstances;
 
         if (!effect?.isReady() ?? true) {
             return false;
@@ -915,7 +910,7 @@ export class ShaderMaterial extends PushMaterial {
             scene.resetCachedMaterial();
         }
 
-        effect._wasPreviouslyReady = true;
+        drawWrapper!._wasPreviouslyReady = true;
 
         return true;
     }
@@ -1004,7 +999,7 @@ export class ShaderMaterial extends PushMaterial {
             }
         }
 
-        const mustRebind = mesh && storeEffectOnSubMeshes ? this._mustRebind(scene, effect, mesh.visibility) : scene.getCachedMaterial() !== this;
+        const mustRebind = mesh && storeEffectOnSubMeshes ? this._mustRebind(scene, effect, subMesh, mesh.visibility) : scene.getCachedMaterial() !== this;
 
         if (effect && mustRebind) {
             if (!useSceneUBO && this._options.uniforms.indexOf("view") !== -1) {
@@ -1183,11 +1178,12 @@ export class ShaderMaterial extends PushMaterial {
             const bvaManager = (<Mesh>mesh).bakedVertexAnimationManager;
 
             if (bvaManager && bvaManager.isEnabled) {
-                mesh.bakedVertexAnimationManager?.bind(effect, !!effect._wasPreviouslyUsingInstances);
+                const drawWrapper = storeEffectOnSubMeshes ? subMesh._drawWrapper : this._drawWrapper;
+                mesh.bakedVertexAnimationManager?.bind(effect, !!drawWrapper._wasPreviouslyUsingInstances);
             }
         }
 
-        this._afterBind(mesh, effect);
+        this._afterBind(mesh, effect, subMesh);
     }
 
     /**

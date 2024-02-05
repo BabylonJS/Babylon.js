@@ -382,7 +382,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
 
     /**
      * Removes the internal pipeline assets and detaches the pipeline from the scene cameras
-     * @param disableGeometryBufferRenderer
+     * @param disableGeometryBufferRenderer Set to true if you want to disable the Geometry Buffer renderer
      */
     public dispose(disableGeometryBufferRenderer: boolean = false): void {
         for (let i = 0; i < this._scene.cameras.length; i++) {

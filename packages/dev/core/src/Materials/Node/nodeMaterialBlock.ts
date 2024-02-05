@@ -257,7 +257,9 @@ export class NodeMaterialBlock {
         return "NodeMaterialBlock";
     }
 
-    /** Gets a boolean indicating that this connection will be used in the fragment shader */
+    /** Gets a boolean indicating that this connection will be used in the fragment shader
+     * @returns true if connected in fragment shader
+     */
     public isConnectedInFragmentShader() {
         return this.outputs.some((o) => o.isConnectedInFragmentShader);
     }
@@ -412,6 +414,7 @@ export class NodeMaterialBlock {
                 output.connectTo(input);
                 notFound = false;
             } else if (!output) {
+                // eslint-disable-next-line no-throw-literal
                 throw "Unable to find a compatible match";
             } else {
                 output = this.getSiblingOutput(output);

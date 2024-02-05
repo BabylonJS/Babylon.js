@@ -208,6 +208,7 @@ export abstract class GreasedLineBaseMesh extends Mesh {
     /**
      * Adds new points to the line. It doesn't rerenders the line if in lazy mode.
      * @param points points table
+     * @param options optional options
      */
     public addPoints(points: number[][], options?: GreasedLineMeshOptions) {
         for (const p of points) {
@@ -316,6 +317,7 @@ export abstract class GreasedLineBaseMesh extends Mesh {
     /**
      * Sets line points and rerenders the line.
      * @param points points table
+     * @param options optional options
      */
     public setPoints(points: number[][], options?: GreasedLineMeshOptions) {
         this._points = points;

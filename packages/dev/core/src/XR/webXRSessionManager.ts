@@ -77,6 +77,32 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      */
     public inXRSession: boolean = false;
 
+    private _worldScalingFactor: number = 1;
+
+    /**
+     * Observable raised when the world scale has changed
+     */
+    public onWorldScaleFactorChangedObservable: Observable<{
+        previousScaleFactor: number;
+        newScaleFactor: number;
+    }> = new Observable(undefined, true);
+
+    /**
+     * Scale factor to apply to all XR-related elements (camera, controllers)
+     */
+    public get worldScalingFactor(): number {
+        return this._worldScalingFactor;
+    }
+
+    public set worldScalingFactor(value: number) {
+        const oldValue = this._worldScalingFactor;
+        this._worldScalingFactor = value;
+        this.onWorldScaleFactorChangedObservable.notifyObservers({
+            previousScaleFactor: oldValue,
+            newScaleFactor: value,
+        });
+    }
+
     /**
      * Constructs a WebXRSessionManager, this must be initialized within a user action before usage
      * @param scene The scene which the session should be created for
@@ -130,6 +156,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         this.onXRSessionEnded.clear();
         this.onXRReferenceSpaceChanged.clear();
         this.onXRSessionInit.clear();
+        this.onWorldScaleFactorChangedObservable.clear();
         this._engine?.onDisposeObservable.remove(this._onEngineDisposedObserver);
         this._engine = null;
     }
@@ -217,8 +244,8 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         return this._xrNavigator.xr.requestSession(xrSessionMode, xrSessionInit).then((session: XRSession) => {
             this.session = session;
             this._sessionMode = xrSessionMode;
-            this.onXRSessionInit.notifyObservers(session);
             this.inXRSession = true;
+            this.onXRSessionInit.notifyObservers(session);
 
             // handle when the session is ended (By calling session.end or device ends its own session eg. pressing home button on phone)
             this.session.addEventListener(
@@ -334,6 +361,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
                         },
                         (rejectionReason) => {
                             Logger.Error(rejectionReason);
+                            // eslint-disable-next-line no-throw-literal
                             throw 'XR initialization failed: required "viewer" reference space type not supported.';
                         }
                     );

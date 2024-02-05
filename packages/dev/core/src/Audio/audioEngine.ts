@@ -152,6 +152,13 @@ export class AudioEngine implements IAudioEngine {
     public unlock() {
         if (this._audioContext?.state === "running") {
             this._hideMuteButton();
+
+            if (!this.unlocked) {
+                // Notify users that the audio stack is unlocked/unmuted
+                this.unlocked = true;
+                this.onAudioUnlockedObservable.notifyObservers(this);
+            }
+
             return;
         }
 

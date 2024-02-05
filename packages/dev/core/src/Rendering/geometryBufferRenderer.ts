@@ -49,6 +49,7 @@ const uniforms = [
     "vTangentSpaceParams",
     "vBumpInfos",
     "morphTargetInfluences",
+    "morphTargetCount",
     "morphTargetTextureInfo",
     "morphTargetTextureIndices",
     "boneTextureWidth",
@@ -269,7 +270,7 @@ export class GeometryBufferRenderer {
     }
 
     /**
-     * Gets a boolean indicating if objects positions are enabled for the G buffer.
+     * @returns a boolean indicating if objects positions are enabled for the G buffer.
      */
     public get enablePosition(): boolean {
         return this._enablePosition;
@@ -289,7 +290,7 @@ export class GeometryBufferRenderer {
     }
 
     /**
-     * Gets a boolean indicating if objects velocities are enabled for the G buffer.
+     * @returns a boolean indicating if objects velocities are enabled for the G buffer.
      */
     public get enableVelocity(): boolean {
         return this._enableVelocity;
@@ -613,9 +614,8 @@ export class GeometryBufferRenderer {
         const morphTargetManager = (mesh as Mesh).morphTargetManager;
         let numMorphInfluencers = 0;
         if (morphTargetManager) {
-            if (morphTargetManager.numInfluencers > 0) {
-                numMorphInfluencers = morphTargetManager.numInfluencers;
-
+            numMorphInfluencers = morphTargetManager.numMaxInfluencers || morphTargetManager.numInfluencers;
+            if (numMorphInfluencers > 0) {
                 defines.push("#define MORPHTARGETS");
                 defines.push("#define NUM_MORPH_INFLUENCERS " + numMorphInfluencers);
                 if (morphTargetManager.isUsingTextureForTargets) {

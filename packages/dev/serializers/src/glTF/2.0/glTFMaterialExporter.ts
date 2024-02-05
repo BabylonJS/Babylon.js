@@ -124,6 +124,7 @@ export class _GLTFMaterialExporter {
      * @param color1 first color to compare to
      * @param color2 second color to compare to
      * @param epsilon threshold value
+     * @returns boolean specifying if the colors are approximately equal in value
      */
     private static _FuzzyEquals(color1: Color3, color2: Color3, epsilon: number): boolean {
         return Scalar.WithinEpsilon(color1.r, color2.r, epsilon) && Scalar.WithinEpsilon(color1.g, color2.g, epsilon) && Scalar.WithinEpsilon(color1.b, color2.b, epsilon);
@@ -134,6 +135,7 @@ export class _GLTFMaterialExporter {
      * @param exportMaterials
      * @param mimeType texture mime type
      * @param hasTextureCoords specifies if texture coordinates are present on the material
+     * @returns promise that resolves after all materials have been converted
      */
     public _convertMaterialsToGLTFAsync(exportMaterials: Set<Material>, mimeType: ImageMimeType, hasTextureCoords: boolean) {
         const promises: Promise<IMaterial>[] = [];
@@ -308,6 +310,7 @@ export class _GLTFMaterialExporter {
      * @param babylonStandardMaterial BJS Standard Material
      * @param mimeType mime type to use for the textures
      * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
+     * @returns promise, resolved with the material
      */
     public _convertStandardMaterialAsync(babylonStandardMaterial: StandardMaterial, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<IMaterial> {
         const materialMap = this._exporter._materialMap;
@@ -886,7 +889,7 @@ export class _GLTFMaterialExporter {
      * Convert a PBRMaterial (Specular/Glossiness) to Metallic Roughness factors
      * @param babylonPBRMaterial BJS PBR Metallic Roughness Material
      * @param mimeType mime type to use for the textures
-     * @param glTFPbrMetallicRoughness glTF PBR Metallic Roughness interface
+     * @param pbrMetallicRoughness glTF PBR Metallic Roughness interface
      * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
      * @returns glTF PBR Metallic Roughness factors
      */
@@ -934,6 +937,7 @@ export class _GLTFMaterialExporter {
      * @param babylonPBRMaterial BJS PBR Base Material
      * @param mimeType mime type to use for the textures
      * @param hasTextureCoords specifies if texture coordinates are present on the submesh to determine if textures should be applied
+     * @returns async glTF Material representation
      */
     public _convertPBRMaterialAsync(babylonPBRMaterial: PBRBaseMaterial, mimeType: ImageMimeType, hasTextureCoords: boolean): Promise<IMaterial> {
         const glTFPbrMetallicRoughness: IMaterialPbrMetallicRoughness = {};

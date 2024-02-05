@@ -28,6 +28,7 @@ export class PhysicsEngine implements IPhysicsEngine {
     public getPluginVersion(): number {
         return this._physicsPlugin.getPluginVersion();
     }
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Factory used to create the default physics plugin.
      * @returns The default physics plugin
@@ -133,13 +134,14 @@ export class PhysicsEngine implements IPhysicsEngine {
 
     /**
      * Add a body as an active component of this engine
-     * @param body
+     * @param physicsBody The body to add
      */
     public addBody(physicsBody: PhysicsBody): void {
         this._physicsBodies.push(physicsBody);
     }
     /**
      * Removes a particular body from this engine
+     * @param physicsBody The body to remove from the simulation
      */
     public removeBody(physicsBody: PhysicsBody): void {
         const index = this._physicsBodies.indexOf(physicsBody);
@@ -148,8 +150,7 @@ export class PhysicsEngine implements IPhysicsEngine {
         }
     }
     /**
-     * Returns an array of bodies added to this engine
-
+     * @returns an array of bodies added to this engine
      */
     public getBodies(): Array<PhysicsBody> {
         return this._physicsBodies;
@@ -168,6 +169,7 @@ export class PhysicsEngine implements IPhysicsEngine {
      * @param from when should the ray start?
      * @param to when should the ray end?
      * @param result resulting PhysicsRaycastResult
+     * @param query raycast query object
      */
     public raycastToRef(from: Vector3, to: Vector3, result: PhysicsRaycastResult, query?: IRaycastQuery): void {
         this._physicsPlugin.raycast(from, to, result, query);
@@ -177,6 +179,7 @@ export class PhysicsEngine implements IPhysicsEngine {
      * Does a raycast in the physics world
      * @param from when should the ray start?
      * @param to when should the ray end?
+     * @param query raycast query object
      * @returns PhysicsRaycastResult
      */
     public raycast(from: Vector3, to: Vector3, query?: IRaycastQuery): PhysicsRaycastResult {

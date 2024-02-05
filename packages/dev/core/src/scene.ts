@@ -162,6 +162,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     public static MaxDeltaTime = 1000.0;
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Factory used to create the default material.
      * @param scene The scene to create the material for
@@ -171,6 +172,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         throw _WarnImport("StandardMaterial");
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Factory used to create the a collision coordinator.
      * @returns The collision coordinator
@@ -4431,6 +4433,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     /**
      * User updatable function that will return a deterministic frame time when engine is in deterministic lock step mode
+     * @returns the frame time
      */
     public getDeterministicFrameTime: () => number = () => {
         return this._engine.getTimeStep();
@@ -5018,6 +5021,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     // Picking
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Creates a ray that can be used to pick in the scene
      * @param x defines the x coordinate of the origin (on-screen)
@@ -5031,6 +5035,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         throw _WarnImport("Ray");
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Creates a ray that can be used to pick in the scene
      * @param x defines the x coordinate of the origin (on-screen)
@@ -5054,6 +5059,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         throw _WarnImport("Ray");
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Creates a ray that can be used to pick in the scene
      * @param x defines the x coordinate of the origin (on-screen)
@@ -5065,6 +5071,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         throw _WarnImport("Ray");
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Creates a ray that can be used to pick in the scene
      * @param x defines the x coordinate of the origin (on-screen)
@@ -5127,6 +5134,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return new PickingInfo();
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Use the given ray to pick a mesh in the scene. A mesh triangle can be picked both from its front and back sides,
      * irrespective of orientation.
@@ -5140,6 +5148,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         throw _WarnImport("Ray");
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Launch a ray to try to pick a mesh in the scene. A mesh triangle can be picked both from its front and back sides,
      * irrespective of orientation.
@@ -5154,6 +5163,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         throw _WarnImport("Ray");
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Launch a ray to try to pick a mesh in the scene
      * @param ray Ray to use
@@ -5533,6 +5543,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      */
     protected _perfCollector: Nullable<PerformanceViewerCollector> = null;
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * This method gets the performance collector belonging to the scene, which is generally shared with the inspector.
      * @returns the perf collector belonging to the scene.

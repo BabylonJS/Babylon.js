@@ -33,6 +33,7 @@ export class PhysicsEngine implements IPhysicsEngine {
         return this._physicsPlugin.getPluginVersion();
     }
     /**
+     * @virtual
      * Factory used to create the default physics plugin.
      * @returns The default physics plugin
      */
@@ -266,6 +267,7 @@ export class PhysicsEngine implements IPhysicsEngine {
      * @param from when should the ray start?
      * @param to when should the ray end?
      * @param result resulting PhysicsRaycastResult
+     * @returns true if the ray hits an impostor, else false
      */
     public raycastToRef(from: Vector3, to: Vector3, result: PhysicsRaycastResult) {
         return this._physicsPlugin.raycastToRef(from, to, result);

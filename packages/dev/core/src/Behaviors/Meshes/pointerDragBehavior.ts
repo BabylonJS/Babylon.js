@@ -181,6 +181,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
             optionCount++;
         }
         if (optionCount > 1) {
+            // eslint-disable-next-line no-throw-literal
             throw "Multiple drag modes specified in dragBehavior options. Only one expected";
         }
     }
@@ -189,6 +190,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
      * Predicate to determine if it is valid to move the object to a new position when it is moved.
      * In the case of rotation gizmo, target contains the angle.
      * @param target destination position or desired angle delta
+     * @returns boolean for whether or not it is valid to move
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public validateDrag = (target: Vector3) => {

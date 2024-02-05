@@ -412,6 +412,7 @@ export class UniformBuffer {
         // std140 FTW...
         if (arraySize > 0) {
             if (size instanceof Array) {
+                // eslint-disable-next-line no-throw-literal
                 throw "addUniform should not be use with Array in UBO: " + name;
             }
 
@@ -719,7 +720,7 @@ export class UniformBuffer {
         if (location === undefined) {
             if (this._buffer) {
                 // Cannot add an uniform if the buffer is already created
-                Logger.Error("Cannot add an uniform after UBO has been created.");
+                Logger.Error("Cannot add an uniform after UBO has been created. uniformName=" + uniformName);
                 return;
             }
             this.addUniform(uniformName, size);

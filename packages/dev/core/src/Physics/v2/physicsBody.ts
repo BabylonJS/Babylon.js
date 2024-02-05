@@ -62,6 +62,10 @@ export class PhysicsBody {
 
     private _isDisposed = false;
 
+    private _shape: Nullable<PhysicsShape> = null;
+
+    private _motionType: PhysicsMotionType;
+
     /**
      * Constructs a new physics body for the given node.
      * @param transformNode - The Transform Node to construct the physics body for. For better performance, it is advised that this node does not have a parent.
@@ -99,6 +103,8 @@ export class PhysicsBody {
         }
 
         this.startAsleep = startsAsleep;
+
+        this._motionType = motionType;
 
         // instances?
         const m = transformNode as Mesh;
@@ -161,6 +167,13 @@ export class PhysicsBody {
     }
 
     /**
+     * Get the motion type of the physics body. Can be STATIC, DYNAMIC, or ANIMATED.
+     */
+    public get motionType(): PhysicsMotionType {
+        return this._motionType;
+    }
+
+    /**
      * Sets the shape of the physics body.
      * @param shape - The shape of the physics body.
      *
@@ -168,7 +181,10 @@ export class PhysicsBody {
      * The shape is used to calculate the body's mass, inertia, and other properties.
      */
     public set shape(shape: Nullable<PhysicsShape>) {
-        this._physicsPlugin.setShape(this, shape);
+        this._shape = shape;
+        if (shape) {
+            this._physicsPlugin.setShape(this, shape);
+        }
     }
 
     /**
@@ -181,13 +197,14 @@ export class PhysicsBody {
      * which can be used to apply physical forces to the object or to detect collisions.
      */
     public get shape(): Nullable<PhysicsShape> {
-        return this._physicsPlugin.getShape(this);
+        return this._shape;
     }
 
     /**
      * Sets the event mask for the physics engine.
      *
      * @param eventMask - A bitmask that determines which events will be sent to the physics engine.
+     * @param instanceIndex - If this body is instanced, the index of the instance to set the event mask for.
      *
      * This method is useful for setting the event mask for the physics engine, which determines which events
      * will be sent to the physics engine. This allows the user to control which events the physics engine will respond to.
@@ -198,7 +215,7 @@ export class PhysicsBody {
 
     /**
      * Gets the event mask of the physics engine.
-     *
+     * @param instanceIndex - If this body is instanced, the index of the instance to get the event mask for.
      * @returns The event mask of the physics engine.
      *
      * This method is useful for getting the event mask of the physics engine,
@@ -212,6 +229,8 @@ export class PhysicsBody {
 
     /**
      * Sets the motion type of the physics body. Can be STATIC, DYNAMIC, or ANIMATED.
+     * @param motionType - The motion type to set.
+     * @param instanceIndex - If this body is instanced, the index of the instance to set the motion type for.
      */
     public setMotionType(motionType: PhysicsMotionType, instanceIndex?: number) {
         this._physicsPlugin.setMotionType(this, motionType, instanceIndex);
@@ -219,6 +238,8 @@ export class PhysicsBody {
 
     /**
      * Gets the motion type of the physics body. Can be STATIC, DYNAMIC, or ANIMATED.
+     * @param instanceIndex - If this body is instanced, the index of the instance to get the motion type for.
+     * @returns The motion type of the physics body.
      */
     public getMotionType(instanceIndex?: number): PhysicsMotionType {
         return this._physicsPlugin.getMotionType(this, instanceIndex);
@@ -229,7 +250,9 @@ export class PhysicsBody {
      * This method is useful for computing the initial mass properties of a physics object, such as its mass,
      * inertia, and center of mass; these values are important for accurately simulating the physics of the
      * object in the physics engine, and computing values based on the shape will provide you with reasonable
-     * intial values, which you can then customize.
+     * initial values, which you can then customize.
+     * @param instanceIndex - The index of the instance to compute the mass properties for.
+     * @returns The mass properties of the object.
      */
     public computeMassProperties(instanceIndex?: number): PhysicsMassProperties {
         return this._physicsPlugin.computeMassProperties(this, instanceIndex);
@@ -250,7 +273,7 @@ export class PhysicsBody {
 
     /**
      * Retrieves the mass properties of the object.
-     *
+     * @param instanceIndex - If this body is instanced, the index of the instance to get the mass properties for.
      * @returns The mass properties of the object.
      *
      * This method is useful for physics simulations, as it allows the user to
@@ -266,6 +289,7 @@ export class PhysicsBody {
      * Sets the linear damping of the physics body.
      *
      * @param damping - The linear damping value.
+     * @param instanceIndex - If this body is instanced, the index of the instance to set the linear damping for.
      *
      * This method is useful for controlling the linear damping of the physics body,
      * which is the rate at which the body's velocity decreases over time. This is useful for simulating
@@ -277,6 +301,7 @@ export class PhysicsBody {
 
     /**
      * Gets the linear damping of the physics body.
+     * @param instanceIndex - If this body is instanced, the index of the instance to get the linear damping for.
      * @returns The linear damping of the physics body.
      *
      * This method is useful for retrieving the linear damping of the physics body, which is the amount of
@@ -290,6 +315,7 @@ export class PhysicsBody {
     /**
      * Sets the angular damping of the physics body.
      * @param damping The angular damping of the body.
+     * @param instanceIndex - If this body is instanced, the index of the instance to set the angular damping for.
      *
      * This method is useful for controlling the angular velocity of a physics body.
      * By setting the damping, the body's angular velocity will be reduced over time, simulating the effect of friction.
@@ -301,6 +327,7 @@ export class PhysicsBody {
 
     /**
      * Gets the angular damping of the physics body.
+     * @param instanceIndex - If this body is instanced, the index of the instance to get the angular damping for.
      *
      * @returns The angular damping of the physics body.
      *
@@ -315,6 +342,7 @@ export class PhysicsBody {
     /**
      * Sets the linear velocity of the physics object.
      * @param linVel - The linear velocity to set.
+     * @param instanceIndex - If this body is instanced, the index of the instance to set the linear velocity for.
      *
      * This method is useful for setting the linear velocity of a physics object,
      * which is necessary for simulating realistic physics in a game engine.
@@ -328,16 +356,18 @@ export class PhysicsBody {
     /**
      * Gets the linear velocity of the physics body and stores it in the given vector3.
      * @param linVel - The vector3 to store the linear velocity in.
+     * @param instanceIndex - If this body is instanced, the index of the instance to get the linear velocity for.
      *
      * This method is useful for getting the linear velocity of a physics body in a physics engine.
      * This can be used to determine the speed and direction of the body, which can be used to calculate the motion of the body.
      */
     public getLinearVelocityToRef(linVel: Vector3, instanceIndex?: number): void {
-        return this._physicsPlugin.getLinearVelocityToRef(this, linVel, instanceIndex);
+        this._physicsPlugin.getLinearVelocityToRef(this, linVel, instanceIndex);
     }
 
     /**
      * Gets the linear velocity of the physics body as a new vector3.
+     * @param instanceIndex - If this body is instanced, the index of the instance to get the linear velocity for.
      * @returns The linear velocity of the physics body.
      *
      * This method is useful for getting the linear velocity of a physics body in a physics engine.
@@ -352,6 +382,7 @@ export class PhysicsBody {
     /**
      * Sets the angular velocity of the physics object.
      * @param angVel - The angular velocity to set.
+     * @param instanceIndex - If this body is instanced, the index of the instance to set the angular velocity for.
      *
      * This method is useful for setting the angular velocity of a physics object, which is necessary for
      * simulating realistic physics behavior. The angular velocity is used to determine the rate of rotation of the object,
@@ -364,16 +395,18 @@ export class PhysicsBody {
     /**
      * Gets the angular velocity of the physics body and stores it in the given vector3.
      * @param angVel - The vector3 to store the angular velocity in.
+     * @param instanceIndex - If this body is instanced, the index of the instance to get the angular velocity for.
      *
      * This method is useful for getting the angular velocity of a physics body, which can be used to determine the body's
      * rotational speed. This information can be used to create realistic physics simulations.
      */
     public getAngularVelocityToRef(angVel: Vector3, instanceIndex?: number): void {
-        return this._physicsPlugin.getAngularVelocityToRef(this, angVel, instanceIndex);
+        this._physicsPlugin.getAngularVelocityToRef(this, angVel, instanceIndex);
     }
 
     /**
      * Gets the angular velocity of the physics body as a new vector3.
+     * @param instanceIndex - If this body is instanced, the index of the instance to get the angular velocity for.
      * @returns The angular velocity of the physics body.
      *
      * This method is useful for getting the angular velocity of a physics body, which can be used to determine the body's
@@ -449,12 +482,16 @@ export class PhysicsBody {
         this._physicsPlugin.setCollisionCallbackEnabled(this, enabled);
     }
 
+    /**
+     * Enable or disable collision ended callback for this PhysicsBody.
+     * @param enabled true if PhysicsBody's collision ended will rise a collision event and notifies the observable
+     */
     public setCollisionEndedCallbackEnabled(enabled: boolean): void {
         this._collisionEndedCBEnabled = enabled;
         this._physicsPlugin.setCollisionEndedCallbackEnabled(this, enabled);
     }
 
-    /*
+    /**
      * Get the center of the object in world space.
      * @param instanceIndex - If this body is instanced, the index of the instance to get the center for.
      * @returns geometric center of the associated mesh
@@ -464,7 +501,7 @@ export class PhysicsBody {
         return this.getObjectCenterWorldToRef(ref, instanceIndex);
     }
 
-    /*
+    /**
      * Get the center of the object in world space.
      * @param ref - The vector3 to store the result in.
      * @param instanceIndex - If this body is instanced, the index of the instance to get the center for.
@@ -621,5 +658,6 @@ export class PhysicsBody {
         this._pluginData = null;
         this._pluginDataInstances.length = 0;
         this._isDisposed = true;
+        this.shape = null;
     }
 }

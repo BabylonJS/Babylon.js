@@ -1550,7 +1550,7 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * Example Playground https://playground.babylonjs.com/#R1F8YU#230
      * Example Playground https://playground.babylonjs.com/#R1F8YU#231
      * @param result defines the Vector3 object where to store the resultant normal
-     * returns the result
+     * @returns the result
      */
     public getNormalToRef(result: Vector3): Vector3 {
         /**
@@ -2255,6 +2255,7 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * @param vector1 End vector
      * @param slerp amount (will be clamped between 0 and 1)
      * @param result The slerped vector
+     * @returns The slerped vector
      */
     public static SlerpToRef<T extends Vector3 = Vector3>(vector0: Vector3, vector1: Vector3, slerp: number, result: T): T {
         slerp = Scalar.Clamp(slerp, 0, 1);
@@ -2300,6 +2301,7 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * @param deltaTime current interpolation frame
      * @param lerpTime total interpolation time
      * @param result the smoothed vector
+     * @returns the smoothed vector
      */
     public static SmoothToRef<T extends Vector3 = Vector3>(source: Vector3, goal: Vector3, deltaTime: number, lerpTime: number, result: T): T {
         Vector3.SlerpToRef(source, goal, lerpTime === 0 ? 1 : deltaTime / lerpTime, result);
@@ -2350,6 +2352,7 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * @param offset defines the offset in the source array
      * @param result defines the Vector3 where to store the result
      * @deprecated Please use FromArrayToRef instead.
+     * @returns result input
      */
     public static FromFloatArrayToRef<T extends Vector3>(array: DeepImmutable<Float32Array>, offset: number, result: T): T {
         return Vector3.FromArrayToRef<T>(array, offset, result);
@@ -2362,6 +2365,7 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * @param y defines the y coordinate of the source
      * @param z defines the z coordinate of the source
      * @param result defines the Vector3 where to store the result
+     * @returns the result vector
      */
     public static FromFloatsToRef<T extends Vector3 = Vector3>(x: number, y: number, z: number, result: T): T {
         result.copyFromFloats(x, y, z);
@@ -2965,7 +2969,7 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * Reflects a vector off the plane defined by a normalized normal to reference
      * @param inDirection defines the vector direction
      * @param normal defines the normal - Must be normalized
-     * @param result defines the Vector3 where to store the result
+     * @param ref defines the Vector3 where to store the result
      * @returns the resulting vector
      */
     public static ReflectToRef<T extends Vector3>(inDirection: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>, ref: T): T {
@@ -5190,6 +5194,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
      * @param deltaTime current interpolation frame
      * @param lerpTime total interpolation time
      * @param result the smoothed quaternion
+     * @returns the smoothed quaternion
      */
     public static SmoothToRef<T extends Quaternion>(source: Quaternion, goal: Quaternion, deltaTime: number, lerpTime: number, result: T): T {
         let slerp = lerpTime === 0 ? 1 : deltaTime / lerpTime;
@@ -6931,6 +6936,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
      * Writes to the given matrix a normal matrix, computed from this one (using values from identity matrix for fourth row and column).
      * Example Playground - https://playground.babylonjs.com/#AV9X17#17
      * @param ref matrix to store the result
+     * @returns the reference matrix
      */
     public toNormalMatrix<T extends Matrix>(ref: T): T {
         const tmp = MathTmp.Matrix[0];
@@ -6973,6 +6979,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
 
     /**
      * Toggles model matrix from being right handed to left handed in place and vice versa
+     * @returns the current updated matrix
      */
     public toggleModelMatrixHandInPlace(): this {
         const m = this._m;
@@ -6987,6 +6994,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
 
     /**
      * Toggles projection matrix from being right handed to left handed in place and vice versa
+     * @returns the current updated matrix
      */
     public toggleProjectionMatrixHandInPlace(): this {
         const m = this._m;
@@ -7071,7 +7079,6 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
      * @param initialM43 defines 3rd value of 4th row
      * @param initialM44 defines 4th value of 4th row
      * @param result defines the target matrix
-     * @returns result input
      */
     public static FromValuesToRef(
         initialM11: number,
@@ -8041,8 +8048,8 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
      * @param top defines the viewport top coordinate
      * @param znear defines the near clip plane
      * @param zfar defines the far clip plane
-     * @param angle Angle (along X/Y Plane) to apply shear
      * @param length Length of the shear
+     * @param angle Angle (along X/Y Plane) to apply shear
      * @param distance Distance from shear point
      * @param result defines the target matrix
      * @param halfZRange true to generate NDC coordinates between 0 and 1 instead of -1 and 1 (default: false)

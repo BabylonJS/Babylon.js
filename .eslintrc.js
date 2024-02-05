@@ -66,6 +66,106 @@ const rules = {
                         publicOnly: true,
                     },
                 ],
+                "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+                "@typescript-eslint/consistent-type-imports": ["error", { disallowTypeAnnotations: false, fixStyle: "separate-type-imports" }],
+                "@typescript-eslint/no-this-alias": "error",
+                "@typescript-eslint/naming-convention": [
+                    "error",
+                    {
+                        selector: "default",
+                        format: ["camelCase"],
+                    },
+                    {
+                        selector: "import",
+                        format: ["camelCase", "PascalCase"],
+                    },
+                    {
+                        selector: "variable",
+                        format: ["camelCase", "UPPER_CASE", "snake_case"],
+                        leadingUnderscore: "allow",
+                    },
+                    {
+                        selector: "parameter",
+                        format: ["camelCase"],
+                        leadingUnderscore: "allow",
+                    },
+                    {
+                        selector: "objectLiteralProperty",
+                        format: ["camelCase", "snake_case", "UPPER_CASE"],
+                        leadingUnderscore: "allow",
+                    },
+                    {
+                        selector: "enumMember",
+                        format: ["PascalCase", "UPPER_CASE"],
+                    },
+                    {
+                        selector: "memberLike",
+                        modifiers: ["public", "static"],
+                        format: ["PascalCase", "UPPER_CASE"],
+                        leadingUnderscore: "allow",
+                    },
+                    {
+                        selector: "memberLike",
+                        modifiers: ["private", "static"],
+                        format: ["PascalCase", "UPPER_CASE"],
+                        leadingUnderscore: "require",
+                    },
+                    {
+                        selector: "memberLike",
+                        modifiers: ["protected", "static"],
+                        format: ["PascalCase", "UPPER_CASE"],
+                        leadingUnderscore: "require",
+                    },
+                    {
+                        selector: "memberLike",
+                        modifiers: ["public"],
+                        format: ["camelCase", "UPPER_CASE"],
+                        leadingUnderscore: "allow",
+                    },
+                    {
+                        selector: "memberLike",
+                        modifiers: ["private"],
+                        format: ["camelCase"],
+                        leadingUnderscore: "require",
+                    },
+                    {
+                        selector: "memberLike",
+                        modifiers: ["protected"],
+                        format: ["camelCase"],
+                        leadingUnderscore: "require",
+                    },
+                    {
+                        selector: "typeLike",
+                        format: ["PascalCase"],
+                    },
+                    {
+                        selector: "variable",
+                        modifiers: ["const", "global"],
+                        format: ["PascalCase", "camelCase"],
+                        leadingUnderscore: "allow",
+                    },
+                    {
+                        selector: "function",
+                        format: ["PascalCase", "camelCase"],
+                        leadingUnderscore: "allow",
+                    },
+                    {
+                        selector: "function",
+                        modifiers: ["exported", "global"],
+                        format: ["PascalCase", "camelCase"],
+                        leadingUnderscore: "allow",
+                    },
+                    {
+                        selector: "interface",
+                        format: ["PascalCase"],
+                        leadingUnderscore: "allow",
+                    },
+                    {
+                        selector: "class",
+                        format: ["PascalCase"],
+                        leadingUnderscore: "allow",
+                    },
+                ],
             },
         },
     ],
@@ -131,94 +231,6 @@ const rules = {
         // }],
         // "no-duplicate-imports": ["error", { "includeExports": true }],
         // should be error, no?
-        "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
-        "@typescript-eslint/consistent-type-imports": ["error", { disallowTypeAnnotations: false, fixStyle: "separate-type-imports" }],
-        "@typescript-eslint/no-this-alias": "error",
-        "@typescript-eslint/naming-convention": [
-            "warn",
-            {
-                selector: "default",
-                format: ["camelCase"],
-            },
-            {
-                selector: "variable",
-                format: ["camelCase", "UPPER_CASE", "snake_case"],
-                leadingUnderscore: "allow",
-            },
-            {
-                selector: "parameter",
-                format: ["camelCase"],
-                leadingUnderscore: "allow",
-            },
-            {
-                selector: "enumMember",
-                format: ["PascalCase", "UPPER_CASE"],
-            },
-            {
-                selector: "memberLike",
-                modifiers: ["public", "static"],
-                format: ["PascalCase", "UPPER_CASE"],
-                leadingUnderscore: "allow",
-            },
-            {
-                selector: "memberLike",
-                modifiers: ["private", "static"],
-                format: ["PascalCase", "UPPER_CASE"],
-                leadingUnderscore: "require",
-            },
-            {
-                selector: "memberLike",
-                modifiers: ["public"],
-                format: ["camelCase"],
-                leadingUnderscore: "allow",
-            },
-            {
-                selector: "memberLike",
-                modifiers: ["private"],
-                format: ["camelCase"],
-                leadingUnderscore: "require",
-            },
-            {
-                selector: "memberLike",
-                modifiers: ["protected"],
-                format: ["camelCase"],
-                leadingUnderscore: "require",
-            },
-            {
-                selector: "typeLike",
-                format: ["PascalCase"],
-            },
-            {
-                selector: "variable",
-                format: ["camelCase", "UPPER_CASE"],
-            },
-            {
-                selector: "variable",
-                modifiers: ["const", "global"],
-                format: ["PascalCase", "camelCase"],
-                leadingUnderscore: "allow",
-            },
-            {
-                selector: "function",
-                format: ["PascalCase", "camelCase"],
-                leadingUnderscore: "allow",
-            },
-            {
-                selector: "function",
-                modifiers: ["exported", "global"],
-                format: ["PascalCase", "camelCase"],
-                leadingUnderscore: "allow",
-            },
-            {
-                selector: "interface",
-                format: ["PascalCase"],
-            },
-            {
-                selector: "class",
-                format: ["PascalCase"],
-                leadingUnderscore: "allow",
-            },
-        ],
         "no-unused-vars": "off",
         "no-empty": ["error", { allowEmptyCatch: true }],
         "space-infix-ops": "error",
@@ -227,21 +239,20 @@ const rules = {
         "jest/no-standalone-expect": ["error", { additionalTestBlockFunctions: ["afterEach"] }],
         "jest/valid-expect": "off",
         "babylonjs/syntax": "warn",
-        "jsdoc/check-param-names": ["warn", { checkRestProperty: false }],
+        "jsdoc/check-param-names": ["error", { checkRestProperty: false, checkDestructured: false }],
         "jsdoc/check-property-names": "error",
         "jsdoc/require-param": [
             "error",
             {
                 checkDestructured: false,
+                checkDestructuredRoots: false,
                 checkRestProperty: false,
-                contexts: [
-                    // {"comment":"JsdocBlock:has(JsdocTag[tag=\"hidden\"])"}
-                ],
+                enableFixer: false,
             },
         ],
         "jsdoc/require-param-name": "error",
-        // "jsdoc/require-returns": "warn",
-        // "jsdoc/require-returns-check": "error",
+        "jsdoc/require-returns": ["error", { checkGetters: false, checkConstructors: false }],
+        "jsdoc/require-returns-check": "error",
         "import/export": "warn",
         "no-useless-escape": "warn",
         "no-case-declarations": "warn",
@@ -251,6 +262,7 @@ const rules = {
         "prefer-rest-params": "off",
         "no-fallthrough": "warn",
         "no-async-promise-executor": "warn",
+        "no-throw-literal": "error",
         // "prettier/prettier": "error" // add this if we want to use prettier error reporting.
     },
 };

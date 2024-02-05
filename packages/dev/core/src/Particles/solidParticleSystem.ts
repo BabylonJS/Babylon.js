@@ -1619,8 +1619,8 @@ export class SolidParticleSystem implements IDisposable {
     /**
      * Populates the passed array "ref" with the particles having the passed shapeId.
      * @param shapeId the shape identifier
+     * @param ref array to populate
      * @returns the SPS
-     * @param ref
      */
     public getParticlesByShapeIdToRef(shapeId: number, ref: SolidParticle[]): SolidParticleSystem {
         ref.length = 0;

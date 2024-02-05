@@ -99,7 +99,7 @@ export class FocusableButton extends Button implements IFocusableControl {
     }
 
     /** @internal */
-    public displose() {
+    public dispose() {
         super.dispose();
 
         this.onBlurObservable.clear();

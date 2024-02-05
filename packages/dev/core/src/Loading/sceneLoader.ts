@@ -147,10 +147,12 @@ export interface ISceneLoaderPluginBase {
      * The callback called when loading from a url.
      * @param scene scene loading this url
      * @param fileOrUrl file or url to load
+     * @param rootUrl root url to use to load assets
      * @param onSuccess callback called when the file successfully loads
      * @param onProgress callback called while file is loading (if the server supports this mode)
      * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
      * @param onError callback called when the file fails to load
+     * @param name defines the name of the file when loading a binary file
      * @returns a file request object
      */
     loadFile?(
@@ -511,6 +513,7 @@ export class SceneLoader {
         const directLoad = SceneLoader._GetDirectLoad(fileInfo.url);
 
         if (fileInfo.rawData && !pluginExtension) {
+            // eslint-disable-next-line no-throw-literal
             throw "When using ArrayBufferView to load data the file extension must be provided.";
         }
 
@@ -521,6 +524,7 @@ export class SceneLoader {
               : SceneLoader._GetPluginForFilename(fileInfo.url);
 
         if (fileInfo.rawData && !registeredPlugin.isBinary) {
+            // eslint-disable-next-line no-throw-literal
             throw "Loading from ArrayBufferView can not be used with plugins that don't support binary loading.";
         }
 
@@ -533,6 +537,7 @@ export class SceneLoader {
         }
 
         if (!plugin) {
+            // eslint-disable-next-line no-throw-literal
             throw "The loader plugin corresponding to the file type you are trying to load has not been found. If using es6, please import the plugin you wish to use before.";
         }
 
@@ -597,6 +602,7 @@ export class SceneLoader {
             };
 
             if (!plugin.loadFile && fileInfo.rawData) {
+                // eslint-disable-next-line no-throw-literal
                 throw "Plugin does not support loading ArrayBufferView.";
             }
 
@@ -724,6 +730,7 @@ export class SceneLoader {
      * @param onProgress a callback with a progress event for each file being loaded
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
      * @param pluginExtension the extension used to determine the plugin
+     * @param name defines the name of the file, if the data is binary
      * @returns The loaded plugin
      */
     public static ImportMesh(
@@ -848,6 +855,7 @@ export class SceneLoader {
      * @param scene the instance of BABYLON.Scene to append to
      * @param onProgress a callback with a progress event for each file being loaded
      * @param pluginExtension the extension used to determine the plugin
+     * @param name defines the name of the file
      * @returns The loaded list of imported meshes, particle systems, skeletons, and animation groups
      */
     public static ImportMeshAsync(
@@ -895,6 +903,7 @@ export class SceneLoader {
      * @param onProgress a callback with a progress event for each file being loaded
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
      * @param pluginExtension the extension used to determine the plugin
+     * @param name defines the filename, if the data is binary
      * @returns The loaded plugin
      */
     public static Load(
@@ -922,6 +931,7 @@ export class SceneLoader {
      * @param engine is the instance of BABYLON.Engine to use to create the scene
      * @param onProgress a callback with a progress event for each file being loaded
      * @param pluginExtension the extension used to determine the plugin
+     * @param name defines the filename, if the data is binary
      * @returns The loaded scene
      */
     public static LoadAsync(
@@ -959,6 +969,7 @@ export class SceneLoader {
      * @param onProgress a callback with a progress event for each file being loaded
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
      * @param pluginExtension the extension used to determine the plugin
+     * @param name defines the name of the file, if the data is binary
      * @returns The loaded plugin
      */
     public static Append(
@@ -1072,6 +1083,7 @@ export class SceneLoader {
      * @param scene is the instance of BABYLON.Scene to append to
      * @param onProgress a callback with a progress event for each file being loaded
      * @param pluginExtension the extension used to determine the plugin
+     * @param name defines the name of the file, if the data is binary
      * @returns The given scene
      */
     public static AppendAsync(
@@ -1109,6 +1121,7 @@ export class SceneLoader {
      * @param onProgress a callback with a progress event for each file being loaded
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
      * @param pluginExtension the extension used to determine the plugin
+     * @param name defines the filename, if the data is binary
      * @returns The loaded plugin
      */
     public static LoadAssetContainer(

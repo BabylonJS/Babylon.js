@@ -9,6 +9,7 @@ import clipContentsIcon from "shared-ui-components/imgs/clipContentsIcon.svg";
 import clipChildrenIcon from "shared-ui-components/imgs/clipChildrenIcon.svg";
 import autoStretchWidthIcon from "shared-ui-components/imgs/autoStretchWidthIcon.svg";
 import autoStretchHeightIcon from "shared-ui-components/imgs/autoStretchHeightIcon.svg";
+import adtIcon from "../../../../imgs/adtIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
 
 interface IContainerPropertyGridComponentProps {
@@ -37,6 +38,10 @@ export class ContainerPropertyGridComponent extends React.Component<IContainerPr
                 <div className="ge-divider">
                     <IconComponent icon={autoStretchHeightIcon} label={"Makes the container's height automatically adapt to its children"} />
                     <CheckBoxLineComponent label="ADAPT HEIGHT TO CHILDREN" target={proxy} propertyName="adaptHeightToChildren" />
+                </div>
+                <div className="ge-divider">
+                    <IconComponent icon={adtIcon} label={"Delegates picking to children controls"} />
+                    <CheckBoxLineComponent label="DELEGATE PICKING TO CHILDREN" target={proxy} propertyName="delegatePickingToChildren" />
                 </div>
             </>
         );

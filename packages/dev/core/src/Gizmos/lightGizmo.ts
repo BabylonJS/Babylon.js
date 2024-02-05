@@ -225,6 +225,7 @@ export class LightGizmo extends Gizmo implements ILightGizmo {
      * Creates the lines for a light mesh
      * @param levels
      * @param scene
+     * @returns the light lines mesh
      */
     private static _CreateLightLines = (levels: number, scene: Scene) => {
         const distFromSphere = 1.2;

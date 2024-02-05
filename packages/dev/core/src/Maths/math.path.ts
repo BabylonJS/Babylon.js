@@ -924,7 +924,8 @@ export class Path3D {
      * @param subPosition
      * @param point the interpolated point
      * @param parentIndex the index of an existing curve point that is on, or else positionally the first behind, the interpolated point
-     * @param interpolateTNB
+     * @param interpolateTNB whether to compute the interpolated tangent, normal and binormal
+     * @returns the (updated) point at data
      */
     private _setPointAtData(position: number, subPosition: number, point: Vector3, parentIndex: number, interpolateTNB: boolean) {
         this._pointAtData.point = point;

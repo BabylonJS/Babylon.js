@@ -134,8 +134,10 @@ export class FluentMaterial extends PushMaterial {
     }
 
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh): boolean {
+        const drawWrapper = subMesh._drawWrapper;
+
         if (this.isFrozen) {
-            if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
+            if (drawWrapper.effect && drawWrapper._wasPreviouslyReady) {
                 return true;
             }
         }
@@ -234,7 +236,7 @@ export class FluentMaterial extends PushMaterial {
         }
 
         defines._renderId = scene.getRenderId();
-        subMesh.effect._wasPreviouslyReady = true;
+        drawWrapper._wasPreviouslyReady = true;
 
         return true;
     }
@@ -257,7 +259,7 @@ export class FluentMaterial extends PushMaterial {
         this.bindOnlyWorldMatrix(world);
         this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
-        if (this._mustRebind(scene, effect)) {
+        if (this._mustRebind(scene, effect, subMesh)) {
             this._activeEffect.setColor4("albedoColor", this.albedoColor, this.alpha);
 
             if (defines.INNERGLOW) {
@@ -286,7 +288,7 @@ export class FluentMaterial extends PushMaterial {
             }
         }
 
-        this._afterBind(mesh, this._activeEffect);
+        this._afterBind(mesh, this._activeEffect, subMesh);
     }
 
     public getActiveTextures(): BaseTexture[] {

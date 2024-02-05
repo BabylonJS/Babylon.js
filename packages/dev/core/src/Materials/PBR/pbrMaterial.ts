@@ -388,6 +388,7 @@ export class PBRMaterial extends PBRBaseMaterial {
 
     /**
      * Specifies if the metallic texture contains the roughness information in its green channel.
+     * Needs useRoughnessFromMetallicTextureAlpha to be false.
      */
     @serialize()
     @expandToProperty("_markAllSubMeshesAsTexturesDirty")
@@ -761,7 +762,7 @@ export class PBRMaterial extends PBRBaseMaterial {
     }
 
     /**
-     * Returns the name of this material class.
+     * @returns the name of this material class.
      */
     public getClassName(): string {
         return "PBRMaterial";
@@ -772,6 +773,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      * @param name - name to use for the new material.
      * @param cloneTexturesOnlyOnce - if a texture is used in more than one channel (e.g diffuse and opacity), only clone it once and reuse it on the other channels. Default false.
      * @param rootUrl defines the root URL to use to load textures
+     * @returns cloned material instance
      */
     public clone(name: string, cloneTexturesOnlyOnce: boolean = true, rootUrl = ""): PBRMaterial {
         const clone = SerializationHelper.Clone(() => new PBRMaterial(name, this.getScene()), this, { cloneTexturesOnlyOnce });
@@ -812,7 +814,7 @@ export class PBRMaterial extends PBRBaseMaterial {
             material.stencil.parse(source.stencil, scene, rootUrl);
         }
 
-        Material._parsePlugins(source, material, scene, rootUrl);
+        Material._ParsePlugins(source, material, scene, rootUrl);
 
         // The code block below ensures backward compatibility with serialized materials before plugins are automatically serialized.
         if (source.clearCoat) {

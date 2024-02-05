@@ -80,6 +80,7 @@ export class WebGPUCacheBindGroups {
      * @param webgpuPipelineContext
      * @param drawContext
      * @param materialContext
+     * @returns a bind group array
      */
     public getBindGroups(webgpuPipelineContext: WebGPUPipelineContext, drawContext: WebGPUDrawContext, materialContext: WebGPUMaterialContext): GPUBindGroup[] {
         let bindGroups: GPUBindGroup[] | undefined = undefined;

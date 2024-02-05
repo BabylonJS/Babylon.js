@@ -497,6 +497,7 @@ export class Tools {
     /**
      * Get a script URL including preprocessing
      * @param scriptUrl the script Url to process
+     * @param forceAbsoluteUrl force the script to be an absolute url (adding the current base url if necessary)
      * @returns a modified URL to use
      */
     public static GetBabylonScriptURL(scriptUrl: Nullable<string>, forceAbsoluteUrl?: boolean): string {
@@ -593,10 +594,11 @@ export class Tools {
     /**
      * Load an asynchronous script (identified by an url). When the url returns, the
      * content of this file is added into a new script element, attached to the DOM (body element)
-     * @param scriptUrl defines the url of the script to laod
+     * @param scriptUrl defines the url of the script to load
+     * @param scriptId defines the id of the script element
      * @returns a promise request object
      */
-    public static LoadScriptAsync(scriptUrl: string): Promise<void> {
+    public static LoadScriptAsync(scriptUrl: string, scriptId?: string): Promise<void> {
         return new Promise((resolve, reject) => {
             this.LoadScript(
                 scriptUrl,
@@ -605,7 +607,8 @@ export class Tools {
                 },
                 (message, exception) => {
                     reject(exception || new Error(message));
-                }
+                },
+                scriptId
             );
         });
     }
@@ -796,6 +799,7 @@ export class Tools {
         throw _WarnImport("DumpTools");
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Dumps an array buffer
      * @param width defines the rendering width
@@ -872,7 +876,6 @@ export class Tools {
      * Download a Blob object
      * @param blob the Blob object
      * @param fileName the file name to download
-     * @returns
      */
     static DownloadBlob(blob: Blob, fileName?: string) {
         //Creating a link if the browser have the download attribute on the a tag, to automatically start download generated image.
@@ -1028,6 +1031,7 @@ export class Tools {
         throw _WarnImport("ScreenshotTools");
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Captures a screenshot of the current rendering
      * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
@@ -1090,6 +1094,7 @@ export class Tools {
         throw _WarnImport("ScreenshotTools");
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Generates an image screenshot from the specified camera.
      * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/renderToPNG
@@ -1159,6 +1164,10 @@ export class Tools {
         return DecodeBase64UrlToBinary(uri);
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check, jsdoc/require-param
+    /**
+     * @returns the absolute URL of a given (relative) url
+     */
     public static GetAbsoluteUrl: (url: string) => string =
         typeof document === "object"
             ? (url) => {
@@ -1468,6 +1477,7 @@ export class Tools {
  * This method is the only way to get it done in all cases, even if the .js file declaring the class is minified
  * @param name The name of the class, case should be preserved
  * @param module The name of the Module hosting the class, optional, but strongly recommended to specify if possible. Case should be preserved.
+ * @returns a decorator function to apply on the class definition.
  */
 export function className(name: string, module?: string): (target: Object) => void {
     return (target: Object) => {

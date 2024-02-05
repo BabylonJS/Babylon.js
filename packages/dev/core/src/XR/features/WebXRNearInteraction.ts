@@ -49,6 +49,7 @@ type ControllerData = {
     // event support
     eventListeners?: { [event in XREventType]?: (event: XRInputSourceEvent) => void };
     pickedPointVisualCue: AbstractMesh;
+    _worldScaleObserver?: Nullable<Observer<{ previousScaleFactor: number; newScaleFactor: number }>>;
 };
 
 // Tracks the interaction animation state when using a motion controller with a near interaction orb
@@ -166,6 +167,21 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             id: WebXRNearInteraction._IdCounter++,
             pickedPointVisualCue: selectionMesh,
         };
+
+        this._controllers[xrController.uniqueId]._worldScaleObserver =
+            this._controllers[xrController.uniqueId]._worldScaleObserver ||
+            this._xrSessionManager.onWorldScaleFactorChangedObservable.add((values) => {
+                if (values.newScaleFactor !== values.previousScaleFactor) {
+                    this._controllers[xrController.uniqueId].touchCollisionMesh.dispose();
+                    this._controllers[xrController.uniqueId].pickedPointVisualCue.dispose();
+
+                    const { touchCollisionMesh, touchCollisionMeshFunction, hydrateCollisionMeshFunction } = this._generateNewTouchPointMesh();
+                    this._controllers[xrController.uniqueId].touchCollisionMesh = touchCollisionMesh;
+                    this._controllers[xrController.uniqueId].touchCollisionMeshFunction = touchCollisionMeshFunction;
+                    this._controllers[xrController.uniqueId].hydrateCollisionMeshFunction = hydrateCollisionMeshFunction;
+                    this._controllers[xrController.uniqueId].pickedPointVisualCue = this._generateVisualCue();
+                }
+            });
 
         if (this._attachedController) {
             if (
@@ -322,7 +338,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
     /**
      * Filter used for near interaction pick and hover
-     * @param mesh
+     * @param mesh the mesh candidate to be pick-filtered
+     * @returns if the mesh should be included in the list of candidate meshes for near interaction
      */
     private _nearPickPredicate(mesh: AbstractMesh): boolean {
         return mesh.isEnabled() && mesh.isVisible && mesh.isPickable && mesh.isNearPickable;
@@ -330,7 +347,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
     /**
      * Filter used for near interaction grab
-     * @param mesh
+     * @param mesh the mesh candidate to be pick-filtered
+     * @returns if the mesh should be included in the list of candidate meshes for near interaction
      */
     private _nearGrabPredicate(mesh: AbstractMesh): boolean {
         return mesh.isEnabled() && mesh.isVisible && mesh.isPickable && mesh.isNearGrabbable;
@@ -338,7 +356,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
     /**
      * Filter used for any near interaction
-     * @param mesh
+     * @param mesh the mesh candidate to be pick-filtered
+     * @returns if the mesh should be included in the list of candidate meshes for near interaction
      */
     private _nearInteractionPredicate(mesh: AbstractMesh): boolean {
         return mesh.isEnabled() && mesh.isVisible && mesh.isPickable && (mesh.isNearPickable || mesh.isNearGrabbable);
@@ -423,8 +442,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             controllerData.grabRay.origin.addInPlace(this._tmpRay.direction.scale(0.05));
         }
 
-        controllerData.grabRay.length = this._nearGrabLengthScale * this._hoverRadius;
-        controllerData.touchCollisionMesh.position.copyFrom(controllerData.grabRay.origin);
+        controllerData.grabRay.length = this._nearGrabLengthScale * this._hoverRadius * this._xrSessionManager.worldScalingFactor;
+        controllerData.touchCollisionMesh.position.copyFrom(controllerData.grabRay.origin).scaleInPlace(this._xrSessionManager.worldScalingFactor);
     }
 
     protected _onXRFrame(_xrFrame: XRFrame) {
@@ -515,11 +534,19 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 // near interaction hover
                 let utilitySceneHoverPick = null;
                 if (this._options.useUtilityLayer && this._utilityLayerScene) {
-                    utilitySceneHoverPick = this._pickWithSphere(controllerData, this._hoverRadius, this._utilityLayerScene, (mesh: AbstractMesh) =>
-                        this._nearInteractionPredicate(mesh)
+                    utilitySceneHoverPick = this._pickWithSphere(
+                        controllerData,
+                        this._hoverRadius * this._xrSessionManager.worldScalingFactor,
+                        this._utilityLayerScene,
+                        (mesh: AbstractMesh) => this._nearInteractionPredicate(mesh)
                     );
                 }
-                const originalSceneHoverPick = this._pickWithSphere(controllerData, this._hoverRadius, this._scene, (mesh: AbstractMesh) => this._nearInteractionPredicate(mesh));
+                const originalSceneHoverPick = this._pickWithSphere(
+                    controllerData,
+                    this._hoverRadius * this._xrSessionManager.worldScalingFactor,
+                    this._scene,
+                    (mesh: AbstractMesh) => this._nearInteractionPredicate(mesh)
+                );
 
                 const hoverPickInfo = accuratePickInfo(originalSceneHoverPick, utilitySceneHoverPick);
                 if (hoverPickInfo && hoverPickInfo.hit) {
@@ -532,7 +559,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 // near interaction pick
                 if (controllerData.hoverInteraction) {
                     let utilitySceneNearPick = null;
-                    const radius = handData ? this._pickRadius : this._controllerPickRadius;
+                    const radius = (handData ? this._pickRadius : this._controllerPickRadius) * this._xrSessionManager.worldScalingFactor;
                     if (this._options.useUtilityLayer && this._utilityLayerScene) {
                         utilitySceneNearPick = this._pickWithSphere(controllerData, radius, this._utilityLayerScene, (mesh: AbstractMesh) => this._nearPickPredicate(mesh));
                     }
@@ -588,7 +615,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         const selectionMesh = CreateSphere(
             "nearInteraction",
             {
-                diameter: 0.0035 * 3,
+                diameter: 0.0035 * 3 * this._xrSessionManager.worldScalingFactor,
             },
             sceneToRenderTo
         );
@@ -774,6 +801,11 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             this._scene.simulatePointerUp(new PickingInfo(), pointerEventInit);
         });
 
+        // remove world scale observer
+        if (controllerData._worldScaleObserver) {
+            this._xrSessionManager.onWorldScaleFactorChangedObservable.remove(controllerData._worldScaleObserver);
+        }
+
         // remove from the map
         delete this._controllers[xrControllerUniqueId];
         if (this._attachedController === xrControllerUniqueId) {
@@ -788,10 +820,11 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
     }
 
     private _generateNewTouchPointMesh() {
+        const worldScale = this._xrSessionManager.worldScalingFactor;
         // populate information for near hover, pick and pinch
         const meshCreationScene = this._options.useUtilityLayer ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene : this._scene;
 
-        const touchCollisionMesh = CreateSphere("PickSphere", { diameter: 1 }, meshCreationScene);
+        const touchCollisionMesh = CreateSphere("PickSphere", { diameter: 1 * worldScale }, meshCreationScene);
         touchCollisionMesh.isVisible = false;
 
         // Generate the material for the touch mesh visuals
@@ -809,15 +842,15 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         // Adjust the visual size based off of the size of the touch collision orb.
         // Having the size perfectly match for hover gives a more accurate tell for when the user will start interacting with the target
         // Sizes for other states are somewhat arbitrary, as they are based on what feels nice during an interaction
-        const hoverSizeVec = new Vector3(this._controllerPickRadius, this._controllerPickRadius, this._controllerPickRadius);
+        const hoverSizeVec = new Vector3(this._controllerPickRadius, this._controllerPickRadius, this._controllerPickRadius).scaleInPlace(worldScale);
         const touchSize = this._controllerPickRadius * (4 / 3);
-        const touchSizeVec = new Vector3(touchSize, touchSize, touchSize);
+        const touchSizeVec = new Vector3(touchSize, touchSize, touchSize).scaleInPlace(worldScale);
         const hydrateTransitionSize = this._controllerPickRadius * (7 / 6);
-        const hydrateTransitionSizeVec = new Vector3(hydrateTransitionSize, hydrateTransitionSize, hydrateTransitionSize);
+        const hydrateTransitionSizeVec = new Vector3(hydrateTransitionSize, hydrateTransitionSize, hydrateTransitionSize).scaleInPlace(worldScale);
         const touchHoverTransitionSize = this._controllerPickRadius * (4 / 5);
-        const touchHoverTransitionSizeVec = new Vector3(touchHoverTransitionSize, touchHoverTransitionSize, touchHoverTransitionSize);
+        const touchHoverTransitionSizeVec = new Vector3(touchHoverTransitionSize, touchHoverTransitionSize, touchHoverTransitionSize).scaleInPlace(worldScale);
         const hoverTouchTransitionSize = this._controllerPickRadius * (3 / 2);
-        const hoverTouchTransitionSizeVec = new Vector3(hoverTouchTransitionSize, hoverTouchTransitionSize, hoverTouchTransitionSize);
+        const hoverTouchTransitionSizeVec = new Vector3(hoverTouchTransitionSize, hoverTouchTransitionSize, hoverTouchTransitionSize).scaleInPlace(worldScale);
 
         const touchKeys = [
             { frame: 0, value: hoverSizeVec },

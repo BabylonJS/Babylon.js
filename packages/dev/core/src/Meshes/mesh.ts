@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/require-returns-check */
 import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
 import { Tools, AsyncLoop } from "../Misc/tools";
@@ -2339,8 +2340,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             this._internalMeshDataInfo._effectiveMaterial = material;
         } else if (
-            (material._storeEffectOnSubMeshes && !subMesh.effect?._wasPreviouslyReady) ||
-            (!material._storeEffectOnSubMeshes && !material.getEffect()?._wasPreviouslyReady)
+            (material._storeEffectOnSubMeshes && !subMesh._drawWrapper?._wasPreviouslyReady) ||
+            (!material._storeEffectOnSubMeshes && !material._getDrawWrapper()._wasPreviouslyReady)
         ) {
             if (oldCamera) {
                 oldCamera.maxZ = oldCameraMaxZ;
@@ -3617,6 +3618,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * Serialize current mesh
      * @param serializationObject defines the object which will receive the serialization data
+     * @returns the serialized object
      */
     public serialize(serializationObject: any = {}): any {
         serializationObject.name = this.name;

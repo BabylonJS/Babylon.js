@@ -141,9 +141,9 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
 
     /**
      * Called on pointer POINTERMOVE event if only a single touch is active.
-     * @param point
-     * @param offsetX
-     * @param offsetY
+     * @param point current touch point
+     * @param offsetX offset on X
+     * @param offsetY offset on Y
      */
     public onTouch(point: Nullable<PointerTouch>, offsetX: number, offsetY: number): void {
         if (this.panningSensibility !== 0 && ((this._ctrlKey && this.camera._useCtrlForPanning) || this._isPanClick)) {
@@ -166,12 +166,12 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
 
     /**
      * Called on pointer POINTERMOVE event if multiple touches are active.
-     * @param pointA
-     * @param pointB
-     * @param previousPinchSquaredDistance
-     * @param pinchSquaredDistance
-     * @param previousMultiTouchPanPosition
-     * @param multiTouchPanPosition
+     * @param pointA point A
+     * @param pointB point B
+     * @param previousPinchSquaredDistance distance between points in previous pinch
+     * @param pinchSquaredDistance distance between points in current pinch
+     * @param previousMultiTouchPanPosition multi-touch position in previous step
+     * @param multiTouchPanPosition multi-touch position in current step
      */
     public onMultiTouch(
         pointA: Nullable<PointerTouch>,

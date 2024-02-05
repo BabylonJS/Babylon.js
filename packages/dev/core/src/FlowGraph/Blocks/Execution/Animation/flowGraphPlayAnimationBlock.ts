@@ -61,7 +61,12 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      */
     public readonly runningAnimatable: FlowGraphDataConnection<Animatable>;
 
-    public constructor(public config: IFlowGraphPlayAnimationBlockConfiguration) {
+    public constructor(
+        /**
+         * the configuration of the block
+         */
+        public config: IFlowGraphPlayAnimationBlockConfiguration
+    ) {
         super(config);
 
         this.templateTargetComponent = new FlowGraphPathConverterComponent(config.targetPath, this);
@@ -141,10 +146,17 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
         context._deleteExecutionVariable(this, "runningAnimatables");
     }
 
+    /**
+     * @returns class name of the block.
+     */
     public getClassName(): string {
         return FlowGraphPlayAnimationBlock.ClassName;
     }
 
+    /**
+     * Serializes the block to a JSON object.
+     * @param serializationObject the object to serialize to.
+     */
     public serialize(serializationObject: any = {}) {
         super.serialize(serializationObject);
         serializationObject.config.targetPath = this.config.targetPath;

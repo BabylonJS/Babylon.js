@@ -166,6 +166,9 @@ export class PhysicsShape {
      * @returns The material of the physics shape.
      */
     public get material(): PhysicsMaterial {
+        if (!this._material) {
+            this._material = this._physicsPlugin.getMaterial(this);
+        }
         return this._material;
     }
 
@@ -312,6 +315,7 @@ export class PhysicsShapeCapsule extends PhysicsShape {
      * Derive an approximate capsule from the mesh. Note, this is
      * not the optimal bounding capsule.
      * @param mesh Node from which to derive a cylinder shape
+     * @returns Physics Shape Capsule
      */
     static FromMesh(mesh: AbstractMesh): PhysicsShapeCapsule {
         const boundsLocal = mesh.getBoundingInfo();
@@ -342,6 +346,7 @@ export class PhysicsShapeCylinder extends PhysicsShape {
      * Derive an approximate cylinder from the mesh. Note, this is
      * not the optimal bounding cylinder.
      * @param mesh Node from which to derive a cylinder shape
+     * @returns Physics Shape Cylinder
      */
     static FromMesh(mesh: AbstractMesh): PhysicsShapeCylinder {
         const boundsLocal = mesh.getBoundingInfo();

@@ -14,6 +14,7 @@ export { TelemetryLoaderPlugin, ILoaderPlugin, MSFTLodLoaderPlugin, ApplyMateria
  * The plugin will be cached and will be reused if called for again.
  *
  * @param name the name of the plugin
+ * @returns the plugin
  */
 export function getLoaderPluginByName(name: string) {
     if (!pluginCache[name]) {

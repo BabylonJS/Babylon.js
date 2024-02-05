@@ -135,8 +135,10 @@ export class TriPlanarMaterial extends PushMaterial {
 
     // Methods
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
+        const drawWrapper = subMesh._drawWrapper;
+
         if (this.isFrozen) {
-            if (subMesh.effect && subMesh.effect._wasPreviouslyReady && subMesh.effect._wasPreviouslyUsingInstances === useInstances) {
+            if (drawWrapper.effect && drawWrapper._wasPreviouslyReady && drawWrapper._wasPreviouslyUsingInstances === useInstances) {
                 return true;
             }
         }
@@ -289,8 +291,8 @@ export class TriPlanarMaterial extends PushMaterial {
         }
 
         defines._renderId = scene.getRenderId();
-        subMesh.effect._wasPreviouslyReady = true;
-        subMesh.effect._wasPreviouslyUsingInstances = !!useInstances;
+        drawWrapper._wasPreviouslyReady = true;
+        drawWrapper._wasPreviouslyUsingInstances = !!useInstances;
 
         return true;
     }
@@ -318,7 +320,7 @@ export class TriPlanarMaterial extends PushMaterial {
 
         this._activeEffect.setFloat("tileSize", this.tileSize);
 
-        if (scene.getCachedMaterial() !== this) {
+        if (this._mustRebind(scene, effect, subMesh)) {
             // Textures
             if (this.diffuseTextureX) {
                 this._activeEffect.setTexture("diffuseSamplerX", this.diffuseTextureX);
@@ -372,7 +374,7 @@ export class TriPlanarMaterial extends PushMaterial {
         // Fog
         MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
 
-        this._afterBind(mesh, this._activeEffect);
+        this._afterBind(mesh, this._activeEffect, subMesh);
     }
 
     public getAnimatables(): IAnimatable[] {

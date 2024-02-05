@@ -71,7 +71,7 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
     }
 
     /**
-     * Return the current class name of the material.
+     * @returns the current class name of the material.
      */
     public getClassName(): string {
         return "PBRMetallicRoughnessMaterial";
@@ -80,6 +80,7 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
     /**
      * Makes a duplicate of the current material.
      * @param name - name to use for the new material.
+     * @returns cloned material instance
      */
     public clone(name: string): PBRMetallicRoughnessMaterial {
         const clone = SerializationHelper.Clone(() => new PBRMetallicRoughnessMaterial(name, this.getScene()), this);
@@ -98,6 +99,7 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
 
     /**
      * Serialize the material to a parsable JSON object.
+     * @returns the JSON object
      */
     public serialize(): any {
         const serializationObject = SerializationHelper.Serialize(this);
@@ -115,9 +117,10 @@ export class PBRMetallicRoughnessMaterial extends PBRBaseSimpleMaterial {
 
     /**
      * Parses a JSON object corresponding to the serialize function.
-     * @param source
-     * @param scene
-     * @param rootUrl
+     * @param source - JSON source object.
+     * @param scene - Defines the scene we are parsing for
+     * @param rootUrl - Defines the rootUrl of this parsed object
+     * @returns a new PBRMetalRoughnessMaterial
      */
     public static Parse(source: any, scene: Scene, rootUrl: string): PBRMetallicRoughnessMaterial {
         const material = SerializationHelper.Parse(() => new PBRMetallicRoughnessMaterial(source.name, scene), source, scene, rootUrl);

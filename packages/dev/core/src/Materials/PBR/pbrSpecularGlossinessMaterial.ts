@@ -68,7 +68,7 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
     }
 
     /**
-     * Return the current class name of the material.
+     * @returns the current class name of the material.
      */
     public getClassName(): string {
         return "PBRSpecularGlossinessMaterial";
@@ -77,6 +77,7 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
     /**
      * Makes a duplicate of the current material.
      * @param name - name to use for the new material.
+     * @returns cloned material instance
      */
     public clone(name: string): PBRSpecularGlossinessMaterial {
         const clone = SerializationHelper.Clone(() => new PBRSpecularGlossinessMaterial(name, this.getScene()), this);
@@ -95,6 +96,7 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
 
     /**
      * Serialize the material to a parsable JSON object.
+     * @returns the JSON object
      */
     public serialize(): any {
         const serializationObject = SerializationHelper.Serialize(this);
@@ -112,9 +114,10 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
 
     /**
      * Parses a JSON object corresponding to the serialize function.
-     * @param source
-     * @param scene
-     * @param rootUrl
+     * @param source - JSON source object.
+     * @param scene - the scene to parse to.
+     * @param rootUrl - root url of the assets.
+     * @returns a new PBRSpecularGlossinessMaterial.
      */
     public static Parse(source: any, scene: Scene, rootUrl: string): PBRSpecularGlossinessMaterial {
         const material = SerializationHelper.Parse(() => new PBRSpecularGlossinessMaterial(source.name, scene), source, scene, rootUrl);

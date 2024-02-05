@@ -66,6 +66,7 @@ export class TemplateManager {
     /**
      * Initialize the template(s) for the viewer. Called bay the Viewer class
      * @param templates the templates to be used to initialize the main template
+     * @returns a promise that will be fulfilled when the template is loaded
      */
     public initTemplate(templates: { [key: string]: ITemplateConfiguration }) {
         const internalInit = (dependencyMap: any, name: string, parentTemplate?: Template) => {
@@ -115,7 +116,8 @@ export class TemplateManager {
      * It will compile each template, check if its children exist in the configuration and will add them if they do.
      * It is expected that the main template will be called main!
      *
-     * @param templates
+     * @param templates the templates to be used to initialize the main template
+     * @returns a promise that will be fulfilled when the template is loaded
      */
     private _buildHTMLTree(templates: { [key: string]: ITemplateConfiguration }): Promise<object> {
         const promises: Array<Promise<Template | boolean>> = Object.keys(templates).map((name) => {
@@ -159,6 +161,7 @@ export class TemplateManager {
     /**
      * Get the canvas in the template tree.
      * There must be one and only one canvas inthe template.
+     * @returns the canvas element or null if not found
      */
     public getCanvas(): HTMLCanvasElement | null {
         return this.containerElement.querySelector("canvas");
@@ -167,6 +170,7 @@ export class TemplateManager {
     /**
      * Get a specific template from the template tree
      * @param name the name of the template to load
+     * @returns the template or undefined if not found
      */
     public getTemplate(name: string): Template | undefined {
         return this._templates[name];
@@ -399,6 +403,7 @@ export class Template {
     /**
      * A template can be a parent element for other templates or HTML elements.
      * This function will deliver all child HTML elements of this template.
+     * @returns an array of strings, each string is the name of the child element
      */
     public getChildElements(): Array<string> {
         const childrenArray: string[] = [];
@@ -470,6 +475,7 @@ export class Template {
      * Since it is a promise async operations are more than possible.
      * See the default viewer for an opacity example.
      * @param visibilityFunction The function to execute to show the template.
+     * @returns a promise that will be fulfilled when the template is shown
      */
     public show(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template> {
         if (this._isHiding) {
@@ -504,6 +510,7 @@ export class Template {
      * Since it is a promise async operations are more than possible.
      * See the default viewer for an opacity example.
      * @param visibilityFunction The function to execute to show the template.
+     * @returns a promise that will be fulfilled when the template is hidden
      */
     public hide(visibilityFunction?: (template: Template) => Promise<Template>): Promise<Template> {
         if (this._isShowing) {

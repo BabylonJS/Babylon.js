@@ -29,13 +29,15 @@ export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal 
     public readonly inFlows: FlowGraphSignalConnection[] = [];
     private _cachedActivationState: boolean[] = [];
 
-    constructor(public config: IFlowGraphWaitAllBlockConfiguration) {
+    constructor(
+        /**
+         * the configuration of the block
+         */
+        public config: IFlowGraphWaitAllBlockConfiguration
+    ) {
         super(config);
 
         this.reset = this._registerSignalInput("reset");
-    }
-
-    configure(): void {
         // The first inFlow is the default input signal all execution blocks have
         for (let i = 1; i < this.config.numberInputFlows; i++) {
             this.inFlows.push(this._registerSignalInput(`in${i}`));
@@ -83,10 +85,17 @@ export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal 
         }
     }
 
+    /**
+     * @returns class name of the block.
+     */
     public getClassName(): string {
         return "FGWaitAllBlock";
     }
 
+    /**
+     * Serializes this block into a object
+     * @param serializationObject the object to serialize to
+     */
     public serialize(serializationObject?: any): void {
         super.serialize(serializationObject);
         serializationObject.config.numberInputFlows = this.config.numberInputFlows;

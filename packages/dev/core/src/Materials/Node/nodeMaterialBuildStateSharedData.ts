@@ -184,6 +184,7 @@ export class NodeMaterialBuildStateSharedData {
         }
 
         if (errorMessage) {
+            // eslint-disable-next-line no-throw-literal
             throw "Build of NodeMaterial failed:\n" + errorMessage;
         }
     }

@@ -10,6 +10,9 @@ import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
  * The variable block configuration.
  */
 export interface IFlowGraphSetVariableBlockConfiguration extends IFlowGraphBlockConfiguration {
+    /**
+     * The name of the variable to set.
+     */
     variableName: string;
 }
 
@@ -23,7 +26,12 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOut
      */
     public readonly input: FlowGraphDataConnection<T>;
 
-    constructor(public config: IFlowGraphSetVariableBlockConfiguration) {
+    constructor(
+        /**
+         * the configuration of the block
+         */
+        public config: IFlowGraphSetVariableBlockConfiguration
+    ) {
         super(config);
 
         this.input = this.registerDataInput(config.variableName, RichTypeAny);
@@ -36,10 +44,16 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOut
         this.out._activateSignal(context);
     }
 
+    /**
+     * @returns class name of the block.
+     */
     public getClassName(): string {
         return FlowGraphSetVariableBlock.ClassName;
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGSetVariableBlock";
 }
 RegisterClass(FlowGraphSetVariableBlock.ClassName, FlowGraphSetVariableBlock);

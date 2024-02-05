@@ -142,10 +142,12 @@ export class ReflectiveShadowMap {
                 this._addMeshToMRT(mesh);
             });
         }
+        this._recomputeLightTransformationMatrix();
     }
 
     /**
      * Recomputes the light transformation matrix. Call this method if you manually changed the light position / direction / etc. and you want to update the RSM textures accordingly.
+     * You should also call this method if you add/remove meshes to/from the render list.
      */
     public updateLightParameters() {
         this._recomputeLightTransformationMatrix();
@@ -349,6 +351,10 @@ export class RSMCreatePluginMaterial extends MaterialPluginBase {
 
     private _internalMarkAllSubMeshesAsTexturesDirty: () => void;
 
+    /**
+     * Create a new RSMCreatePluginMaterial
+     * @param material Parent material of the plugin
+     */
     constructor(material: Material | StandardMaterial | PBRBaseMaterial) {
         super(material, RSMCreatePluginMaterial.Name, 300, new MaterialRSMCreateDefines());
 
@@ -431,12 +437,14 @@ export class RSMCreatePluginMaterial extends MaterialPluginBase {
         return shaderType === "vertex"
             ? null
             : {
+                  // eslint-disable-next-line @typescript-eslint/naming-convention
                   CUSTOM_FRAGMENT_BEGIN: `
                 #ifdef RSMCREATE
                     #extension GL_EXT_draw_buffers : require
                 #endif
             `,
 
+                  // eslint-disable-next-line @typescript-eslint/naming-convention
                   CUSTOM_FRAGMENT_DEFINITIONS: `
                 #ifdef RSMCREATE
                     #ifdef RSMCREATE_PROJTEXTURE
@@ -447,6 +455,7 @@ export class RSMCreatePluginMaterial extends MaterialPluginBase {
                 #endif
             `,
 
+                  // eslint-disable-next-line @typescript-eslint/naming-convention
                   CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR: `
                 #ifdef RSMCREATE
                     vec3 rsmColor = ${this._varAlbedoName} * rsmLightColor;

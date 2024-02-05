@@ -38,6 +38,9 @@ export interface IVector4Like extends IVector3Like {
     w: number;
 }
 
+/**
+ * @internal
+ */
 export interface IQuaternionLike extends IVector3Like {
     w: number;
 }

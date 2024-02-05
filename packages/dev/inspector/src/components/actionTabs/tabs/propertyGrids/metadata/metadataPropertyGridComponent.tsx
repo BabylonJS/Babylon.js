@@ -23,7 +23,7 @@ enum MetadataTypes {
     JSON = "JSON",
 }
 
-/** @ignorenaming */
+/** Metadata Grid Component */
 export class MetadataGridComponent extends React.Component<
     IMetadataComponentProps,
     {
@@ -37,7 +37,9 @@ export class MetadataGridComponent extends React.Component<
     }
 > {
     private readonly _textAreaHost: React.RefObject<HTMLDivElement>;
-    /** @ignorenaming */
+    /**
+     * @param props - component props
+     */
     constructor(props: IMetadataComponentProps) {
         super(props);
         this.state = {
@@ -61,7 +63,9 @@ export class MetadataGridComponent extends React.Component<
         }
     }
 
-    /** @ignorenaming */
+    /**
+     * @param prevProps - previous component props
+     */
     componentDidUpdate(prevProps: Readonly<IMetadataComponentProps>): void {
         if (this.props.entity) {
             if (!prevProps.entity || prevProps.entity.id !== this.props.entity.id) {
@@ -93,7 +97,9 @@ export class MetadataGridComponent extends React.Component<
         }
     }
 
-    /** @ignorenaming */
+    /**
+     * @param disabled - is disabled
+     */
     setTextAreaDisabled(disabled: boolean) {
         try {
             if (this._textAreaHost.current) {
@@ -105,7 +111,9 @@ export class MetadataGridComponent extends React.Component<
         }
     }
 
-    /** textarea style */
+    /**
+     * @returns class name
+     */
     getClassName(): string {
         switch (this.state.metadataPropType) {
             case MetadataTypes.STRING:
@@ -135,12 +143,18 @@ export class MetadataGridComponent extends React.Component<
         return MetadataTypes.UNDEFINED;
     }
 
-    /** @ignorenaming */
+    /**
+     * @param input - any input
+     * @returns is string
+     */
     isString(input: any): boolean {
         return typeof input === "string" || input instanceof String;
     }
 
-    /** @ignorenaming */
+    /**
+     * @param object - any object
+     * @returns is parsable
+     */
     parsableJson(object: Object): boolean {
         if (!object) return false;
         try {
@@ -150,7 +164,10 @@ export class MetadataGridComponent extends React.Component<
         }
     }
 
-    /** @ignorenaming */
+    /**
+     * @param string - any string
+     * @returns parsable string
+     */
     parsableString(string: string): JSON | null {
         try {
             this.setState({ statusMessage: null });
@@ -161,7 +178,11 @@ export class MetadataGridComponent extends React.Component<
         }
     }
 
-    /** @ignorenaming */
+    /**
+     * @param validJson - a valid json
+     * @param metadata - any metadata
+     * @returns parsed metadata
+     */
     parseMetaObject(validJson: boolean, metadata: any) {
         if (validJson) return JSON.stringify(metadata, undefined, this.state.prettyJson ? 2 : undefined);
         if (this.isString(metadata)) return metadata;
@@ -284,7 +305,9 @@ export class MetadataGridComponent extends React.Component<
         }
     }
 
-    /** @ignorenaming */
+    /** render
+     * @returns the component
+     */
     render() {
         const protectObj = this.state.preventObjCorruption && this.state.metadataPropType === MetadataTypes.OBJECT;
         return (

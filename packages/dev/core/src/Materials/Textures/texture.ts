@@ -115,6 +115,9 @@ export class Texture extends BaseTexture {
         throw _WarnImport("RenderTargetTexture");
     };
 
+    /**
+     * @internal
+     */
     public static _CreateVideoTexture(
         name: Nullable<string>,
         src: string | string[] | HTMLVideoElement,
@@ -672,7 +675,7 @@ export class Texture extends BaseTexture {
 
     /**
      * Get the current texture matrix which includes the requested offsetting, tiling and rotation components.
-     * @param uBase
+     * @param uBase The horizontal base offset multiplier (1 by default)
      * @returns the transform matrix of the texture.
      */
     public getTextureMatrix(uBase = 1): Matrix {

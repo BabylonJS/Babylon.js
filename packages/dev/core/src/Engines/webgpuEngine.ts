@@ -566,7 +566,7 @@ export class WebGPUEngine extends Engine {
      * @param canvas Defines the canvas to use to display the result
      * @param options Defines the options passed to the engine to create the GPU context dependencies
      */
-    public constructor(canvas: HTMLCanvasElement, options: WebGPUEngineOptions = {}) {
+    public constructor(canvas: HTMLCanvasElement | OffscreenCanvas, options: WebGPUEngineOptions = {}) {
         super(null, options.antialias ?? true, options);
         this._name = "WebGPU";
 
@@ -584,14 +584,14 @@ export class WebGPUEngine extends Engine {
         this._isWebGPU = true;
         this._shaderPlatformName = "WEBGPU";
 
-        this._renderingCanvas = canvas;
+        this._renderingCanvas = canvas as HTMLCanvasElement;
         this._options = options;
 
         this._mainPassSampleCount = options.antialias ? this._defaultSampleCount : 1;
 
         this._setupMobileChecks();
 
-        this._sharedInit(canvas);
+        this._sharedInit(this._renderingCanvas);
 
         this._shaderProcessor = new WebGPUShaderProcessorGLSL();
         this._shaderProcessorWGSL = new WebGPUShaderProcessorWGSL();
@@ -637,6 +637,7 @@ export class WebGPUEngine extends Engine {
             )
             .then((adapter: GPUAdapter | undefined) => {
                 if (!adapter) {
+                    // eslint-disable-next-line no-throw-literal
                     throw "Could not retrieve a WebGPU adapter (adapter is null).";
                 } else {
                     this._adapter = adapter!;
@@ -667,6 +668,10 @@ export class WebGPUEngine extends Engine {
                     if (this._options.setMaximumLimits && !deviceDescriptor.requiredLimits) {
                         deviceDescriptor.requiredLimits = {};
                         for (const name in this._adapterSupportedLimits) {
+                            if (name === "minSubgroupSize" || name === "maxSubgroupSize") {
+                                // Chrome exposes these limits in "webgpu developer" mode, but these can't be set on the device.
+                                continue;
+                            }
                             deviceDescriptor.requiredLimits[name] = this._adapterSupportedLimits[name];
                         }
                     }
@@ -882,8 +887,6 @@ export class WebGPUEngine extends Engine {
             disableMorphTargetTexture: false,
         };
 
-        this._caps.parallelShaderCompile = null as any;
-
         this._features = {
             forceBitmapOverHTMLImageElement: true,
             supportRenderAndCopyToLodForFloatTextures: true,
@@ -915,6 +918,7 @@ export class WebGPUEngine extends Engine {
 
     private _initializeContextAndSwapChain(): void {
         if (!this._renderingCanvas) {
+            // eslint-disable-next-line no-throw-literal
             throw "The rendering canvas has not been set!";
         }
         this._context = this._renderingCanvas.getContext("webgpu") as unknown as GPUCanvasContext;
@@ -1646,6 +1650,7 @@ export class WebGPUEngine extends Engine {
      * @internal
      */
     public bindBuffersDirectly(): void {
+        // eslint-disable-next-line no-throw-literal
         throw "Not implemented on WebGPU";
     }
 
@@ -1653,6 +1658,7 @@ export class WebGPUEngine extends Engine {
      * @internal
      */
     public updateAndBindInstancesBuffer(): void {
+        // eslint-disable-next-line no-throw-literal
         throw "Not implemented on WebGPU";
     }
 
@@ -1916,6 +1922,7 @@ export class WebGPUEngine extends Engine {
      * @internal
      */
     public createRawShaderProgram(): WebGLProgram {
+        // eslint-disable-next-line no-throw-literal
         throw "Not available on WebGPU";
     }
 
@@ -1923,6 +1930,7 @@ export class WebGPUEngine extends Engine {
      * @internal
      */
     public createShaderProgram(): WebGLProgram {
+        // eslint-disable-next-line no-throw-literal
         throw "Not available on WebGPU";
     }
 
@@ -2052,6 +2060,7 @@ export class WebGPUEngine extends Engine {
         ) {
             if (!effect.effect && this.dbgShowEmptyEnableEffectCalls) {
                 Logger.Log(["drawWrapper=", effect]);
+                // eslint-disable-next-line no-throw-literal
                 throw "Invalid call to enableEffect: the effect property is empty!";
             }
             return;
@@ -2062,6 +2071,7 @@ export class WebGPUEngine extends Engine {
             this._counters.numEnableDrawWrapper++;
             if (!this._currentMaterialContext) {
                 Logger.Log(["drawWrapper=", effect]);
+                // eslint-disable-next-line no-throw-literal
                 throw `Invalid call to enableEffect: the materialContext property is empty!`;
             }
         }
@@ -2363,6 +2373,7 @@ export class WebGPUEngine extends Engine {
         return internalTexture;
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Wraps an external web gl texture in a Babylon texture.
      * @returns the babylon internal texture
@@ -2747,6 +2758,7 @@ export class WebGPUEngine extends Engine {
         }
 
         if (image instanceof HTMLImageElement) {
+            // eslint-disable-next-line no-throw-literal
             throw "WebGPU engine: HTMLImageElement not supported in _uploadImageToTexture!";
         }
 
@@ -3687,6 +3699,7 @@ export class WebGPUEngine extends Engine {
      * @internal
      */
     public _bindUnboundFramebuffer() {
+        // eslint-disable-next-line no-throw-literal
         throw "_bindUnboundFramebuffer is not implementedin WebGPU! You probably want to use restoreDefaultFramebuffer or unBindFramebuffer instead";
     }
 
@@ -3696,6 +3709,7 @@ export class WebGPUEngine extends Engine {
      * @internal
      */
     public _getSamplingParameters(): { min: number; mag: number } {
+        // eslint-disable-next-line no-throw-literal
         throw "_getSamplingParameters is not available in WebGPU";
     }
 

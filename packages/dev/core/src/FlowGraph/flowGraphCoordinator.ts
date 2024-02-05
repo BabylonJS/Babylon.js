@@ -23,6 +23,9 @@ export interface IFlowGraphCoordinatorConfiguration {
 export interface FlowGraphCoordinatorParseOptions {
     /**
      * A function that will be called to parse the value of a property.
+     * @param key the key of the property
+     * @param serializationObject the serialization object where the property is located
+     * @param scene the scene that the block is being parsed in
      */
     valueParseFunction?: (key: string, serializationObject: any, scene: Scene) => any;
     /**
@@ -49,7 +52,12 @@ export class FlowGraphCoordinator {
 
     private _customEventsMap: Map<string, Observable<any>> = new Map();
 
-    public constructor(public config: IFlowGraphCoordinatorConfiguration) {
+    public constructor(
+        /**
+         * the configuration of the block
+         */
+        public config: IFlowGraphCoordinatorConfiguration
+    ) {
         // When the scene is disposed, dispose all graphs currently running on it.
         this.config.scene.onDisposeObservable.add(() => {
             this.dispose();
@@ -104,6 +112,11 @@ export class FlowGraphCoordinator {
         }
     }
 
+    /**
+     * Serializes this coordinator to a JSON object.
+     * @param serializationObject the object to serialize to
+     * @param valueSerializeFunction the function to use to serialize the value
+     */
     public serialize(serializationObject: any, valueSerializeFunction?: (key: string, value: any, serializationObject: any) => void) {
         serializationObject._flowGraphs = [];
         this._flowGraphs.forEach((graph) => {
@@ -113,6 +126,12 @@ export class FlowGraphCoordinator {
         });
     }
 
+    /**
+     * Parses a serialized coordinator.
+     * @param serializedObject the object to parse
+     * @param options the options to use when parsing
+     * @returns the parsed coordinator
+     */
     public static Parse(serializedObject: any, options: FlowGraphCoordinatorParseOptions) {
         const valueParseFunction = options.valueParseFunction ?? defaultValueParseFunction;
         const coordinator = new FlowGraphCoordinator({ scene: options.scene });
@@ -129,7 +148,8 @@ export class FlowGraphCoordinator {
         return this._flowGraphs;
     }
 
-    /* Get an observable that will be notified when the event with the given id is fired.
+    /**
+     * Get an observable that will be notified when the event with the given id is fired.
      * @param id the id of the event
      * @returns the observable for the event
      */

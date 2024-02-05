@@ -10,46 +10,95 @@ import { ShaderCodeInliner } from "core/Engines/Processors/shaderCodeInliner";
 import type { ICustomShaderNameResolveOptions } from "core/Materials/material";
 import { Color3, Color4 } from "core/Maths/math.color";
 import type { Nullable } from "core/types";
+import type { SubMesh } from "core/Meshes/subMesh";
 
+/**
+ * Albedo parts of the shader
+ */
 export class ShaderAlbedoParts {
     constructor() {}
 
+    /**
+     * Beginning of the fragment shader
+     */
     public Fragment_Begin: string;
+    /**
+     * Fragment definitions
+     */
     public Fragment_Definitions: string;
+    /**
+     * Beginning of the main function
+     */
     public Fragment_MainBegin: string;
+    /**
+     * End of main function
+     */
     public Fragment_MainEnd: string;
 
-    // albedoColor
+    /**
+     * Albedo color
+     */
     public Fragment_Custom_Albedo: string;
-    // lights
+    /**
+     * Lights
+     */
     public Fragment_Before_Lights: string;
-    // roughness
+    /**
+     * Metallic and roughness
+     */
     public Fragment_Custom_MetallicRoughness: string;
-    // microsurface
+    /**
+     * Microsurface
+     */
     public Fragment_Custom_MicroSurface: string;
-    // fog
+    /**
+     * Fog computations
+     */
     public Fragment_Before_Fog: string;
-    // alpha
+    /**
+     * Alpha
+     */
     public Fragment_Custom_Alpha: string;
-    // color composition
+    /**
+     * Color composition
+     */
     public Fragment_Before_FinalColorComposition: string;
-    // frag color
+    /**
+     * Fragment color
+     */
     public Fragment_Before_FragColor: string;
 
+    /**
+     * Beginning of vertex shader
+     */
     public Vertex_Begin: string;
+    /**
+     * Vertex definitions
+     */
     public Vertex_Definitions: string;
+    /**
+     * Vertex main begin
+     */
     public Vertex_MainBegin: string;
 
-    // positionUpdated
+    /**
+     * Vertex before position updated
+     */
     public Vertex_Before_PositionUpdated: string;
 
-    // normalUpdated
+    /**
+     * Vertex before normal updated
+     */
     public Vertex_Before_NormalUpdated: string;
 
-    // worldPosComputed
+    /**
+     * Vertex after world pos computed
+     */
     public Vertex_After_WorldPosComputed: string;
 
-    // mainEnd
+    /**
+     * Vertex main end
+     */
     public Vertex_MainEnd: string;
 }
 
@@ -59,18 +108,53 @@ export class ShaderAlbedoParts {
 export const ShaderAlebdoParts = ShaderAlbedoParts;
 
 export class PBRCustomMaterial extends PBRMaterial {
+    /**
+     * Index for each created shader
+     */
     public static ShaderIndexer = 1;
+    /**
+     * Custom shader structure
+     */
     public CustomParts: ShaderAlbedoParts;
+    /**
+     * Name of the shader
+     */
     _createdShaderName: string;
+    /**
+     * List of custom uniforms
+     */
     _customUniform: string[];
+    /**
+     * Names of the new uniforms
+     */
     _newUniforms: string[];
+    /**
+     * Instances of the new uniform objects
+     */
     _newUniformInstances: { [name: string]: any };
+    /**
+     * Instances of the new sampler objects
+     */
     _newSamplerInstances: { [name: string]: Texture };
+    /**
+     * List of the custom attributes
+     */
     _customAttributes: string[];
 
+    /**
+     * Fragment shader string
+     */
     public FragmentShader: string;
+    /**
+     * Vertex shader string
+     */
     public VertexShader: string;
 
+    /**
+     * Runs after the material is bound to a mesh
+     * @param mesh mesh bound
+     * @param effect bound effect used to render
+     */
     public AttachAfterBind(mesh: Mesh | undefined, effect: Effect) {
         if (this._newUniformInstances) {
             for (const el in this._newUniformInstances) {
@@ -107,6 +191,9 @@ export class PBRCustomMaterial extends PBRMaterial {
         }
     }
 
+    /**
+     * @internal
+     */
     public ReviewUniform(name: string, arr: string[]): string[] {
         if (name == "uniform" && this._newUniforms) {
             for (let ind = 0; ind < this._newUniforms.length; ind++) {
@@ -125,6 +212,17 @@ export class PBRCustomMaterial extends PBRMaterial {
         return arr;
     }
 
+    /**
+     * Builds the material
+     * @param shaderName name of the shader
+     * @param uniforms list of uniforms
+     * @param uniformBuffers list of uniform buffers
+     * @param samplers list of samplers
+     * @param defines list of defines
+     * @param attributes list of attributes
+     * @param options options to compile the shader
+     * @returns the shader name
+     */
     public Builder(
         shaderName: string,
         uniforms: string[],
@@ -224,16 +322,23 @@ export class PBRCustomMaterial extends PBRMaterial {
         this._createdShaderName = "custompbr_" + PBRCustomMaterial.ShaderIndexer;
     }
 
-    protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null): void {
+    protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null, subMesh?: SubMesh): void {
         if (!effect) {
             return;
         }
         this.AttachAfterBind(mesh, effect);
         try {
-            super._afterBind(mesh, effect);
+            super._afterBind(mesh, effect, subMesh);
         } catch (e) {}
     }
 
+    /**
+     * Adds a new uniform to the shader
+     * @param name the name of the uniform to add
+     * @param kind the type of the uniform to add
+     * @param param the value of the uniform to add
+     * @returns the current material
+     */
     public AddUniform(name: string, kind: string, param: any): PBRCustomMaterial {
         if (!this._customUniform) {
             this._customUniform = new Array();
@@ -254,6 +359,11 @@ export class PBRCustomMaterial extends PBRMaterial {
         return this;
     }
 
+    /**
+     * Adds a custom attribute
+     * @param name the name of the attribute
+     * @returns the current material
+     */
     public AddAttribute(name: string): PBRCustomMaterial {
         if (!this._customAttributes) {
             this._customAttributes = [];
@@ -264,96 +374,191 @@ export class PBRCustomMaterial extends PBRMaterial {
         return this;
     }
 
+    /**
+     * Sets the code on Fragment_Begin portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Fragment_Begin(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Begin = shaderPart;
         return this;
     }
 
+    /**
+     * Sets the code on Fragment_Definitions portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Fragment_Definitions(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Definitions = shaderPart;
         return this;
     }
 
+    /**
+     * Sets the code on Fragment_MainBegin portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Fragment_MainBegin(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_MainBegin = shaderPart;
         return this;
     }
 
+    /**
+     * Sets the code on Fragment_Custom_Albedo portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Fragment_Custom_Albedo(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Custom_Albedo = shaderPart.replace("result", "surfaceAlbedo");
         return this;
     }
 
+    /**
+     * Sets the code on Fragment_Custom_Alpha portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Fragment_Custom_Alpha(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Custom_Alpha = shaderPart.replace("result", "alpha");
         return this;
     }
 
+    /**
+     * Sets the code on Fragment_Before_Lights portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Fragment_Before_Lights(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Before_Lights = shaderPart;
         return this;
     }
 
+    /**
+     * Sets the code on Fragment_Custom_MetallicRoughness portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Fragment_Custom_MetallicRoughness(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Custom_MetallicRoughness = shaderPart;
         return this;
     }
 
+    /**
+     * Sets the code on Fragment_Custom_MicroSurface portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Fragment_Custom_MicroSurface(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Custom_MicroSurface = shaderPart;
         return this;
     }
 
+    /**
+     * Sets the code on Fragment_Before_Fog portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Fragment_Before_Fog(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Before_Fog = shaderPart;
         return this;
     }
 
+    /**
+     * Sets the code on Fragment_Before_FinalColorComposition portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Fragment_Before_FinalColorComposition(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Before_FinalColorComposition = shaderPart;
         return this;
     }
 
+    /**
+     * Sets the code on Fragment_Before_FragColor portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Fragment_Before_FragColor(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_Before_FragColor = shaderPart.replace("result", "color");
         return this;
     }
 
+    /**
+     * Sets the code on Fragment_MainEnd portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Fragment_MainEnd(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Fragment_MainEnd = shaderPart;
         return this;
     }
 
+    /**
+     * Sets the code on Vertex_Begin portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Vertex_Begin(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Vertex_Begin = shaderPart;
         return this;
     }
 
+    /**
+     * Sets the code on Vertex_Definitions portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Vertex_Definitions(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Vertex_Definitions = shaderPart;
         return this;
     }
 
+    /**
+     * Sets the code on Vertex_MainBegin portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Vertex_MainBegin(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Vertex_MainBegin = shaderPart;
         return this;
     }
 
+    /**
+     * Sets the code on Vertex_Before_PositionUpdated portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Vertex_Before_PositionUpdated(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Vertex_Before_PositionUpdated = shaderPart.replace("result", "positionUpdated");
         return this;
     }
 
+    /**
+     * Sets the code on Vertex_Before_NormalUpdated portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Vertex_Before_NormalUpdated(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Vertex_Before_NormalUpdated = shaderPart.replace("result", "normalUpdated");
         return this;
     }
 
+    /**
+     * Sets the code on Vertex_After_WorldPosComputed portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Vertex_After_WorldPosComputed(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Vertex_After_WorldPosComputed = shaderPart;
         return this;
     }
 
+    /**
+     * Sets the code on Vertex_MainEnd portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Vertex_MainEnd(shaderPart: string): PBRCustomMaterial {
         this.CustomParts.Vertex_MainEnd = shaderPart;
         return this;

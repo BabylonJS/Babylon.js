@@ -17,6 +17,7 @@ import {
     FlowGraphTimerBlock,
 } from "core/FlowGraph";
 import { FlowGraphBranchBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphBranchBlock";
+import { FlowGraphInteger } from "core/FlowGraph/flowGraphInteger";
 import { FlowGraphPathConverter } from "core/FlowGraph/flowGraphPathConverter";
 import { Vector3 } from "core/Maths/math.vector";
 import { Mesh } from "core/Meshes";
@@ -38,7 +39,7 @@ describe("Flow Graph Execution Nodes", () => {
             deterministicLockstep: false,
             lockstepMaxSteps: 1,
         });
-        
+
         Logger.Log = jest.fn();
         scene = new Scene(engine);
         flowGraphCoordinator = new FlowGraphCoordinator({ scene });
@@ -83,7 +84,7 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.start();
 
         const numCalls = 5;
-        doN.n.setValue(numCalls, flowGraphContext);
+        doN.n.setValue(new FlowGraphInteger(numCalls), flowGraphContext);
 
         const extraCalls = 2;
 
@@ -272,7 +273,7 @@ describe("Flow Graph Execution Nodes", () => {
         const nodeIndexInput = setProperty.getDataInput("nodeIndex");
         expect(nodeIndexInput).toBeDefined();
 
-        nodeIndexInput!.setValue(1, flowGraphContext);
+        nodeIndexInput!.setValue(new FlowGraphInteger(1), flowGraphContext);
         setProperty.a.setValue(new Vector3(1, 2, 3), flowGraphContext);
 
         flowGraph.start();

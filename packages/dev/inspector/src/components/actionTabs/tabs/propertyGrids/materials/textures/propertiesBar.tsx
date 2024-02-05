@@ -27,15 +27,15 @@ interface IPixelDataProps {
     data: number | undefined;
 }
 
-import _resetButton from "./assets/reset.svg";
-import _uploadButton from "./assets/upload.svg";
-import _saveButton from "./assets/save.svg";
-import _babylonLogo from "./assets/babylonLogo.svg";
+import resetButton from "./assets/reset.svg";
+import uploadButton from "./assets/upload.svg";
+import saveButton from "./assets/save.svg";
+import babylonLogo from "./assets/babylonLogo.svg";
 
-import _resizeButton from "./assets/resizeTool.svg";
+import resizeButton from "./assets/resizeTool.svg";
 
-import _mipUp from "./assets/mipUp.svg";
-import _mipDown from "./assets/mipDown.svg";
+import mipUp from "./assets/mipUp.svg";
+import mipDown from "./assets/mipDown.svg";
 
 import posX from "./assets/posX.svg";
 import negX from "./assets/negX.svg";
@@ -90,7 +90,7 @@ export class PropertiesBar extends React.PureComponent<IPropertiesBarProps, IPro
         return (
             <div id="properties">
                 <div className="tab" id="logo-tab">
-                    <img className="icon" src={_babylonLogo} />
+                    <img className="icon" src={babylonLogo} />
                 </div>
                 <div id="left">
                     <div className="tab" id="dimensions-tab">
@@ -124,7 +124,7 @@ export class PropertiesBar extends React.PureComponent<IPropertiesBarProps, IPro
                                     className="icon button"
                                     title="Resize"
                                     alt="Resize"
-                                    src={_resizeButton}
+                                    src={resizeButton}
                                     onClick={() => resizeTexture(this.state.width, this.state.height)}
                                 />
                             )}
@@ -149,13 +149,13 @@ export class PropertiesBar extends React.PureComponent<IPropertiesBarProps, IPro
                     )}
                     {mipsEnabled && (
                         <div className="tab" id="mip-tab">
-                            <img title="Mip Preview Up" className="icon button" src={_mipUp} onClick={() => mipLevel > 0 && setMipLevel(mipLevel - 1)} />
-                            <img title="Mip Preview Down" className="icon button" src={_mipDown} onClick={() => mipLevel < maxLevels && setMipLevel(mipLevel + 1)} />
+                            <img title="Mip Preview Up" className="icon button" src={mipUp} onClick={() => mipLevel > 0 && setMipLevel(mipLevel - 1)} />
+                            <img title="Mip Preview Down" className="icon button" src={mipDown} onClick={() => mipLevel < maxLevels && setMipLevel(mipLevel + 1)} />
                         </div>
                     )}
                 </div>
                 <div className="tab" id="right-tab">
-                    <img title="Reset" className="icon button" src={_resetButton} onClick={() => resetTexture()} />
+                    <img title="Reset" className="icon button" src={resetButton} onClick={() => resetTexture()} />
                     <label>
                         <input
                             accept=".jpg, .png, .tga, .dds, .env"
@@ -169,9 +169,9 @@ export class PropertiesBar extends React.PureComponent<IPropertiesBarProps, IPro
                                 evt.target.value = "";
                             }}
                         />
-                        <img title="Upload" className="icon button" src={_uploadButton} />
+                        <img title="Upload" className="icon button" src={uploadButton} />
                     </label>
-                    <img title="Save" className="icon button" src={_saveButton} onClick={() => saveTexture()} />
+                    <img title="Save" className="icon button" src={saveButton} onClick={() => saveTexture()} />
                 </div>
             </div>
         );

@@ -22,12 +22,13 @@ export interface IFlowGraphSendCustomEventBlockConfiguration extends IFlowGraphB
  * @experimental
  */
 export class FlowGraphSendCustomEventBlock extends FlowGraphExecutionBlockWithOutSignal {
-    public constructor(public config: IFlowGraphSendCustomEventBlockConfiguration) {
+    public constructor(
+        /**
+         * the configuration of the block
+         */
+        public config: IFlowGraphSendCustomEventBlockConfiguration
+    ) {
         super(config);
-    }
-
-    public configure(): void {
-        super.configure();
         for (let i = 0; i < this.config.eventData.length; i++) {
             const dataName = this.config.eventData[i];
             this.registerDataInput(dataName, RichTypeAny);
@@ -43,10 +44,16 @@ export class FlowGraphSendCustomEventBlock extends FlowGraphExecutionBlockWithOu
         this.out._activateSignal(context);
     }
 
+    /**
+     * @returns class name of the block.
+     */
     public getClassName(): string {
         return FlowGraphSendCustomEventBlock.ClassName;
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGSendCustomEventBlock";
 }
 RegisterClass("FGSendCustomEventBlock", FlowGraphSendCustomEventBlock);

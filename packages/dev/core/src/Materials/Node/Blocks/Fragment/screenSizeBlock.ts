@@ -80,6 +80,7 @@ export class ScreenSizeBlock extends NodeMaterialBlock {
         this._scene = state.sharedData.scene;
 
         if (state.target === NodeMaterialBlockTargets.Vertex) {
+            // eslint-disable-next-line no-throw-literal
             throw "ScreenSizeBlock must only be used in a fragment shader";
         }
 

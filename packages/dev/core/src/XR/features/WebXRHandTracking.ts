@@ -10,6 +10,7 @@ import type { Nullable } from "../../types";
 import { PhysicsImpostor } from "../../Physics/v1/physicsImpostor";
 
 import type { IDisposable, Scene } from "../../scene";
+import type { Observer } from "../../Misc/observable";
 import { Observable } from "../../Misc/observable";
 import type { InstancedMesh } from "../../Meshes/instancedMesh";
 import type { ISceneLoaderAsyncResult } from "../../Loading/sceneLoader";
@@ -389,13 +390,16 @@ export class WebXRHand implements IDisposable {
      * Sets the current hand mesh to render for the WebXRHand.
      * @param handMesh The rigged hand mesh that will be tracked to the user's hand.
      * @param rigMapping The mapping from XRHandJoint to bone names to use with the mesh.
+     * @param _xrSessionManager The XRSessionManager used to initialize the hand mesh.
      */
-    public setHandMesh(handMesh: AbstractMesh, rigMapping: Nullable<XRHandMeshRigMapping>) {
+    public setHandMesh(handMesh: AbstractMesh, rigMapping: Nullable<XRHandMeshRigMapping>, _xrSessionManager?: WebXRSessionManager) {
         this._handMesh = handMesh;
 
         // Avoid any strange frustum culling. We will manually control visibility via attach and detach.
         handMesh.alwaysSelectAsActiveMesh = true;
-        handMesh.getChildMeshes().forEach((mesh) => (mesh.alwaysSelectAsActiveMesh = true));
+        handMesh.getChildMeshes().forEach((mesh) => {
+            mesh.alwaysSelectAsActiveMesh = true;
+        });
 
         // Link the bones in the hand mesh to the transform nodes that will be bound to the WebXR tracked joints.
         if (this._handMesh.skeleton) {
@@ -636,6 +640,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     /**
      * Generates a mapping from XRHandJoint to bone name for the default hand mesh.
      * @param handedness The handedness being mapped for.
+     * @returns A mapping from XRHandJoint to bone name.
      */
     private static _GenerateDefaultHandMeshRigMapping(handedness: XRHandedness): XRHandMeshRigMapping {
         const H = handedness == "right" ? "R" : "L";
@@ -683,6 +688,8 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         rigMappings: Nullable<{ left: XRHandMeshRigMapping; right: XRHandMeshRigMapping }>;
     } = { jointMeshes: null, handMeshes: null, rigMappings: null };
 
+    private _worldScaleObserver?: Nullable<Observer<{ previousScaleFactor: number; newScaleFactor: number }>> = null;
+
     /**
      * This observable will notify registered observers when a new hand object was added and initialized
      */
@@ -695,6 +702,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     /**
      * Check if the needed objects are defined.
      * This does not mean that the feature is enabled, but that the objects needed are well defined.
+     * @returns true if the needed objects for this feature are defined
      */
     public isCompatible(): boolean {
         return typeof XRHand !== "undefined";
@@ -799,8 +807,16 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                 };
 
                 // Apply meshes to existing hands if already tracking.
-                this._trackingHands.left?.setHandMesh(this._handResources.handMeshes.left, this._handResources.rigMappings.left);
-                this._trackingHands.right?.setHandMesh(this._handResources.handMeshes.right, this._handResources.rigMappings.right);
+                this._trackingHands.left?.setHandMesh(this._handResources.handMeshes.left, this._handResources.rigMappings.left, this._xrSessionManager);
+                this._trackingHands.right?.setHandMesh(this._handResources.handMeshes.right, this._handResources.rigMappings.right, this._xrSessionManager);
+                this._handResources.handMeshes.left.scaling.setAll(this._xrSessionManager.worldScalingFactor);
+                this._handResources.handMeshes.right.scaling.setAll(this._xrSessionManager.worldScalingFactor);
+            });
+            this._worldScaleObserver = this._xrSessionManager.onWorldScaleFactorChangedObservable.add((scalingFactors) => {
+                if (this._handResources.handMeshes) {
+                    this._handResources.handMeshes.left.scaling.scaleInPlace(scalingFactors.newScaleFactor / scalingFactors.previousScaleFactor);
+                    this._handResources.handMeshes.right.scaling.scaleInPlace(scalingFactors.newScaleFactor / scalingFactors.previousScaleFactor);
+                }
             });
         }
 
@@ -867,6 +883,11 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         }
 
         Object.keys(this._attachedHands).forEach((uniqueId) => this._detachHandById(uniqueId));
+
+        // remove world scale observer
+        if (this._worldScaleObserver) {
+            this._xrSessionManager.onWorldScaleFactorChangedObservable.remove(this._worldScaleObserver);
+        }
 
         return true;
     }

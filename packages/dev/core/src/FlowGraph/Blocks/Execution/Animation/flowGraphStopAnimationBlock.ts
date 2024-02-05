@@ -11,7 +11,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
  */
 export class FlowGraphStopAnimationBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
-     *
+     * Input connection: The animation to stop.
      */
     public readonly animationToStop: FlowGraphDataConnection<Animatable>;
 
@@ -26,6 +26,9 @@ export class FlowGraphStopAnimationBlock extends FlowGraphExecutionBlockWithOutS
         this.out._activateSignal(context);
     }
 
+    /**
+     * @returns class name of the block.
+     */
     public getClassName(): string {
         return "FGStopAnimationBlock";
     }

@@ -32,6 +32,11 @@ import { VertexBuffer } from "../../../Buffers/buffer";
 import { ArrayTools } from "../../../Misc/arrayTools";
 import { Observable } from "../../../Misc/observable";
 import type { Nullable } from "../../../types";
+import type { IPhysicsPointProximityQuery } from "../../physicsPointProximityQuery";
+import type { ProximityCastResult } from "../../proximityCastResult";
+import type { IPhysicsShapeProximityCastQuery } from "../../physicsShapeProximityCastQuery";
+import type { IPhysicsShapeCastQuery } from "../../physicsShapeCastQuery";
+import type { ShapeCastResult } from "../../shapeCastResult";
 declare let HK: any;
 
 /**
@@ -144,6 +149,7 @@ class MeshAccumulator {
     /**
      * Allocate and populate the vertex positions inside the physics plugin.
      *
+     * @param plugin - The plugin to allocate the memory in.
      * @returns An array of floats, whose backing memory is inside the plugin. The array contains the
      * positions of the mesh vertices, where a position is defined by three floats. You must call
      * freeBuffer() on the returned array once you have finished with it, in order to free the
@@ -172,6 +178,7 @@ class MeshAccumulator {
     /**
      * Allocate and populate the triangle indices inside the physics plugin
      *
+     * @param plugin - The plugin to allocate the memory in.
      * @returns A new Int32Array, whose backing memory is inside the plugin. The array contains the indices
      * of the triangle positions, where a single triangle is defined by three indices. You must call
      * freeBuffer() on this array once you have finished with it, to free the memory inside the plugin..
@@ -215,7 +222,7 @@ class ShapePath
 }
 */
 
-class ContactPoint {
+class CollisionContactPoint {
     public bodyId: bigint = BigInt(0); //0,2
     //public colliderId: number = 0; //2,4
     //public shapePath: ShapePath = new ShapePath(); //4,8
@@ -225,11 +232,12 @@ class ContactPoint {
 }
 
 class CollisionEvent {
-    public contactOnA: ContactPoint = new ContactPoint(); //1
-    public contactOnB: ContactPoint = new ContactPoint();
+    public contactOnA: CollisionContactPoint = new CollisionContactPoint(); //1
+    public contactOnB: CollisionContactPoint = new CollisionContactPoint();
     public impulseApplied: number = 0;
     public type: number = 0;
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     static readToRef(buffer: any, offset: number, eventOut: CollisionEvent) {
         const intBuf = new Int32Array(buffer, offset);
         const floatBuf = new Float32Array(buffer, offset);
@@ -251,6 +259,7 @@ class TriggerEvent {
     public bodyIdB: bigint = BigInt(0);
     public type: number = 0;
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     static readToRef(buffer: any, offset: number, eventOut: TriggerEvent) {
         const intBuf = new Int32Array(buffer, offset);
         eventOut.type = intBuf[0];
@@ -283,6 +292,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     private _timeStep: number = 1 / 60;
     private _tmpVec3 = ArrayTools.BuildArray(3, Vector3.Zero);
     private _bodies = new Map<bigint, { body: PhysicsBody; index: number }>();
+    private _shapes = new Map<bigint, PhysicsShape>();
     private _bodyBuffer: number;
     private _bodyCollisionObservable = new Map<bigint, Observable<IPhysicsCollisionEvent>>();
     // Map from constraint id to the pair of bodies, where the first is the parent and the second is the child
@@ -362,7 +372,6 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      *
      * @param delta The time delta in seconds since the last step.
      * @param physicsBodies An array of physics bodies to be simulated.
-     * @returns void
      *
      * This method is useful for simulating the physics engine. It sets the physics body transformation,
      * steps the world, syncs the physics body, and notifies collisions. This allows for the physics engine
@@ -692,6 +701,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Sets the event mask of a physics body.
      * @param body - The physics body to set the event mask for.
      * @param eventMask - The event mask to set.
+     * @param instanceIndex - The index of the instance to set the event mask for
      *
      * This function is useful for setting the event mask of a physics body, which is used to determine which events the body will respond to. This is important for ensuring that the physics engine is able to accurately simulate the behavior of the body in the game world.
      */
@@ -709,6 +719,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Retrieves the event mask of a physics body.
      *
      * @param body - The physics body to retrieve the event mask from.
+     * @param instanceIndex - The index of the instance to retrieve the event mask from.
      * @returns The event mask of the physics body.
      *
      */
@@ -761,6 +772,12 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         }
     }
 
+    /**
+     * sets the motion type of a physics body.
+     * @param body - The physics body to set the motion type for.
+     * @param motionType - The motion type to set.
+     * @param instanceIndex - The index of the instance to set the motion type for. If undefined, the motion type of all the bodies will be set.
+     */
     public setMotionType(body: PhysicsBody, motionType: PhysicsMotionType, instanceIndex?: number): void {
         this._applyToBodyOrInstances(
             body,
@@ -771,6 +788,12 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         );
     }
 
+    /**
+     * Gets the motion type of a physics body.
+     * @param body - The physics body to get the motion type from.
+     * @param instanceIndex - The index of the instance to get the motion type from. If not specified, the motion type of the first instance will be returned.
+     * @returns The motion type of the physics body.
+     */
     public getMotionType(body: PhysicsBody, instanceIndex?: number): PhysicsMotionType {
         const pluginRef = this._getPluginReference(body, instanceIndex);
         const type = this._hknp.HP_Body_GetMotionType(pluginRef.hpBodyId)[1];
@@ -802,6 +825,8 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Computes the mass properties of a physics body, from it's shape
      *
      * @param body - The physics body to copmute the mass properties of
+     * @param instanceIndex - The index of the instance to compute the mass properties of.
+     * @returns The mass properties of the physics body.
      */
     public computeMassProperties(body: PhysicsBody, instanceIndex?: number): PhysicsMassProperties {
         const pluginRef = this._getPluginReference(body, instanceIndex);
@@ -831,7 +856,10 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         );
     }
     /**
-     *
+     * Gets the mass properties of a physics body.
+     * @param body - The physics body to get the mass properties from.
+     * @param instanceIndex - The index of the instance to get the mass properties from. If not specified, the mass properties of the first instance will be returned.
+     * @returns The mass properties of the physics body.
      */
     public getMassProperties(body: PhysicsBody, instanceIndex?: number): PhysicsMassProperties {
         const pluginRef = this._getPluginReference(body, instanceIndex);
@@ -843,6 +871,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Sets the linear damping of the given body.
      * @param body - The body to set the linear damping for.
      * @param damping - The linear damping to set.
+     * @param instanceIndex - The index of the instance to set the linear damping for. If not specified, the linear damping of the first instance will be set.
      *
      * This method is useful for controlling the linear damping of a body in a physics engine.
      * Linear damping is a force that opposes the motion of the body, and is proportional to the velocity of the body.
@@ -861,6 +890,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     /**
      * Gets the linear damping of the given body.
      * @param body - The body to get the linear damping from.
+     * @param instanceIndex - The index of the instance to get the linear damping from. If not specified, the linear damping of the first instance will be returned.
      * @returns The linear damping of the given body.
      *
      * This method is useful for getting the linear damping of a body in a physics engine.
@@ -876,6 +906,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Sets the angular damping of a physics body.
      * @param body - The physics body to set the angular damping for.
      * @param damping - The angular damping value to set.
+     * @param instanceIndex - The index of the instance to set the angular damping for. If not specified, the angular damping of the first instance will be set.
      *
      * This function is useful for controlling the angular velocity of a physics body.
      * By setting the angular damping, the body's angular velocity will be reduced over time, allowing for more realistic physics simulations.
@@ -893,6 +924,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     /**
      * Gets the angular damping of a physics body.
      * @param body - The physics body to get the angular damping from.
+     * @param instanceIndex - The index of the instance to get the angular damping from. If not specified, the angular damping of the first instance will be returned.
      * @returns The angular damping of the body.
      *
      * This function is useful for retrieving the angular damping of a physics body,
@@ -907,6 +939,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Sets the linear velocity of a physics body.
      * @param body - The physics body to set the linear velocity of.
      * @param linVel - The linear velocity to set.
+     * @param instanceIndex - The index of the instance to set the linear velocity of. If not specified, the linear velocity of the first instance will be set.
      *
      * This function is useful for setting the linear velocity of a physics body, which is necessary for simulating
      * motion in a physics engine. The linear velocity is the speed and direction of the body's movement.
@@ -925,6 +958,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Gets the linear velocity of a physics body and stores it in a given vector.
      * @param body - The physics body to get the linear velocity from.
      * @param linVel - The vector to store the linear velocity in.
+     * @param instanceIndex - The index of the instance to get the linear velocity from. If not specified, the linear velocity of the first instance will be returned.
      *
      * This function is useful for retrieving the linear velocity of a physics body,
      * which can be used to determine the speed and direction of the body. This
@@ -989,6 +1023,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      *
      * @param body - The physics body to set the angular velocity of.
      * @param angVel - The angular velocity to set.
+     * @param instanceIndex - The index of the instance to set the angular velocity of. If not specified, the angular velocity of the first instance will be set.
      *
      * This function is useful for setting the angular velocity of a physics body in a physics engine.
      * This allows for more realistic simulations of physical objects, as they can be given a rotational velocity.
@@ -1007,6 +1042,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Gets the angular velocity of a body.
      * @param body - The body to get the angular velocity from.
      * @param angVel - The vector3 to store the angular velocity.
+     * @param instanceIndex - The index of the instance to get the angular velocity from. If not specified, the angular velocity of the first instance will be returned.
      *
      * This method is useful for getting the angular velocity of a body in a physics engine. It
      * takes the body and a vector3 as parameters and stores the angular velocity of the body
@@ -1189,26 +1225,79 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                     }
                 }
                 break;
+            case PhysicsShapeType.HEIGHTFIELD:
+                {
+                    if (options.numHeightFieldSamplesX && options.numHeightFieldSamplesZ && options.heightFieldSizeX && options.heightFieldSizeZ && options.heightFieldData) {
+                        const totalNumHeights = options.numHeightFieldSamplesX * options.numHeightFieldSamplesZ;
+                        const numBytes = totalNumHeights * 4;
+                        const bufferBegin = this._hknp._malloc(numBytes);
+
+                        const heightBuffer = new Float32Array(this._hknp.HEAPU8.buffer, bufferBegin, totalNumHeights);
+                        for (let x = 0; x < options.numHeightFieldSamplesX; x++) {
+                            for (let z = 0; z < options.numHeightFieldSamplesZ; z++) {
+                                const hkBufferIndex = z * options.numHeightFieldSamplesX + x;
+                                const bjsBufferIndex = (options.numHeightFieldSamplesX - 1 - x) * options.numHeightFieldSamplesZ + z;
+                                heightBuffer[hkBufferIndex] = options.heightFieldData[bjsBufferIndex];
+                            }
+                        }
+
+                        const scaleX = options.heightFieldSizeX / (options.numHeightFieldSamplesX - 1);
+                        const scaleZ = options.heightFieldSizeZ / (options.numHeightFieldSamplesZ - 1);
+                        shape._pluginData = this._hknp.HP_Shape_CreateHeightField(
+                            options.numHeightFieldSamplesX,
+                            options.numHeightFieldSamplesZ,
+                            [scaleX, 1, scaleZ],
+                            bufferBegin
+                        )[1];
+
+                        this._hknp._free(bufferBegin);
+                    } else {
+                        throw new Error("Missing required heightfield parameters");
+                    }
+                }
+                break;
             default:
                 throw new Error("Unsupported Shape Type.");
                 break;
         }
+
+        this._shapes.set(shape._pluginData[0], shape);
     }
 
+    /**
+     * Sets the shape filter membership mask of a body
+     * @param shape - The physics body to set the shape filter membership mask for.
+     * @param membershipMask - The shape filter membership mask to set.
+     */
     public setShapeFilterMembershipMask(shape: PhysicsShape, membershipMask: number): void {
         const collideWith = this._hknp.HP_Shape_GetFilterInfo(shape._pluginData)[1][1];
         this._hknp.HP_Shape_SetFilterInfo(shape._pluginData, [membershipMask, collideWith]);
     }
 
+    /**
+     * Gets the shape filter membership mask of a body
+     * @param shape - The physics body to get the shape filter membership mask from.
+     * @returns The shape filter membership mask of the given body.
+     */
     public getShapeFilterMembershipMask(shape: PhysicsShape): number {
         return this._hknp.HP_Shape_GetFilterInfo(shape._pluginData)[1][0];
     }
 
+    /**
+     * Sets the shape filter collide mask of a body
+     * @param shape - The physics body to set the shape filter collide mask for.
+     * @param collideMask - The shape filter collide mask to set.
+     */
     public setShapeFilterCollideMask(shape: PhysicsShape, collideMask: number): void {
         const membership = this._hknp.HP_Shape_GetFilterInfo(shape._pluginData)[1][0];
         this._hknp.HP_Shape_SetFilterInfo(shape._pluginData, [membership, collideMask]);
     }
 
+    /**
+     * Gets the shape filter collide mask of a body
+     * @param shape - The physics body to get the shape filter collide mask from.
+     * @returns The shape filter collide mask of the given body.
+     */
     public getShapeFilterCollideMask(shape: PhysicsShape): number {
         return this._hknp.HP_Shape_GetFilterInfo(shape._pluginData)[1][1];
     }
@@ -1228,6 +1317,22 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
 
         const hpMaterial = [staticFriction, dynamicFriction, restitution, this._materialCombineToNative(frictionCombine), this._materialCombineToNative(restitutionCombine)];
         this._hknp.HP_Shape_SetMaterial(shape._pluginData, hpMaterial);
+    }
+
+    /**
+     * Gets the material associated with a physics shape.
+     * @param shape - The shape to get the material from.
+     * @returns The material associated with the shape.
+     */
+    public getMaterial(shape: PhysicsShape): PhysicsMaterial {
+        const hkMaterial = this._hknp.HP_Shape_GetMaterial(shape._pluginData)[1];
+        return {
+            staticFriction: hkMaterial[0],
+            friction: hkMaterial[1],
+            restitution: hkMaterial[2],
+            frictionCombine: this._nativeToMaterialCombine(hkMaterial[3]),
+            restitutionCombine: this._nativeToMaterialCombine(hkMaterial[4]),
+        };
     }
 
     /**
@@ -1253,11 +1358,11 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
 
     /**
      * Gets the transform infos of a given transform node.
-     * @param node - The transform node.
-     * @returns An array containing the position and orientation of the node.
      * This code is useful for getting the position and orientation of a given transform node.
      * It first checks if the node has a rotation quaternion, and if not, it creates one from the node's rotation.
      * It then creates an array containing the position and orientation of the node and returns it.
+     * @param node - The transform node.
+     * @returns An array containing the position and orientation of the node.
      */
     private _getTransformInfos(node: TransformNode): any[] {
         if (node.parent) {
@@ -1370,7 +1475,6 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Releases a physics shape from the physics engine.
      *
      * @param shape - The physics shape to be released.
-     * @returns void
      *
      * This method is useful for releasing a physics shape from the physics engine, freeing up resources and preventing memory leaks.
      */
@@ -1608,7 +1712,6 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * @param constraint - The constraint to set the friction of.
      * @param axis - The axis of the constraint to set the friction of.
      * @param friction - The friction to set.
-     * @returns void
      *
      */
     public setAxisFriction(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, friction: number): void {
@@ -1724,7 +1827,6 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * @param constraint - The constraint to set the motor type of.
      * @param axis - The axis of the constraint to set the motor type of.
      * @param motorType - The motor type to set.
-     * @returns void
      *
      */
     public setAxisMotorType(constraint: PhysicsConstraint, axis: PhysicsConstraintAxis, motorType: PhysicsConstraintMotorType): void {
@@ -1823,6 +1925,20 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         constraint._pluginData.length = 0;
     }
 
+    private _populateHitData(hitData: any, result: ProximityCastResult | PhysicsRaycastResult | ShapeCastResult): void {
+        const hitBody = this._bodies.get(hitData[0][0]);
+        result.body = hitBody?.body;
+        result.bodyIndex = hitBody?.index;
+        const hitShape = this._shapes.get(hitData[1][0]);
+        result.shape = hitShape;
+
+        const hitPos = hitData[3];
+        const hitNormal = hitData[4];
+        const hitTriangle = hitData[5];
+
+        result.setHitData({ x: hitNormal[0], y: hitNormal[1], z: hitNormal[2] }, { x: hitPos[0], y: hitPos[1], z: hitPos[2] }, hitTriangle);
+    }
+
     /**
      * Performs a raycast from a given start point to a given end point and stores the result in a given PhysicsRaycastResult object.
      *
@@ -1846,22 +1962,95 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         this._hknp.HP_World_CastRayWithCollector(this.world, this._queryCollector, hkQuery);
 
         if (this._hknp.HP_QueryCollector_GetNumHits(this._queryCollector)[1] > 0) {
-            const hitData = this._hknp.HP_QueryCollector_GetCastRayResult(this._queryCollector, 0)[1];
+            const [, hitData] = this._hknp.HP_QueryCollector_GetCastRayResult(this._queryCollector, 0)[1];
 
-            const hitPos = hitData[1][3];
-            const hitNormal = hitData[1][4];
-            const hitTriangle = hitData[1][5];
-            result.setHitData({ x: hitNormal[0], y: hitNormal[1], z: hitNormal[2] }, { x: hitPos[0], y: hitPos[1], z: hitPos[2] }, hitTriangle);
+            this._populateHitData(hitData, result);
             result.calculateHitDistance();
-            const hitBody = this._bodies.get(hitData[1][0][0]);
-            result.body = hitBody?.body;
-            result.bodyIndex = hitBody?.index;
+        }
+    }
+
+    /**
+     * Given a point, returns the closest physics
+     * body to that point.
+     * @param query the query to perform. @see IPhysicsPointProximityQuery
+     * @param result contact point on the hit shape, in world space
+     */
+    public pointProximity(query: IPhysicsPointProximityQuery, result: ProximityCastResult): void {
+        const queryMembership = query?.collisionFilter?.membership ?? ~0;
+        const queryCollideWith = query?.collisionFilter?.collideWith ?? ~0;
+
+        result.reset();
+
+        const bodyToIgnore = query.ignoreBody ? [BigInt(query.ignoreBody._pluginData.hpBodyId[0])] : [BigInt(0)];
+
+        const hkQuery = [this._bVecToV3(query.position), query.maxDistance, [queryMembership, queryCollideWith], query.shouldHitTriggers, bodyToIgnore];
+        this._hknp.HP_World_PointProximityWithCollector(this.world, this._queryCollector, hkQuery);
+
+        if (this._hknp.HP_QueryCollector_GetNumHits(this._queryCollector)[1] > 0) {
+            const [distance, hitData] = this._hknp.HP_QueryCollector_GetPointProximityResult(this._queryCollector, 0)[1];
+
+            this._populateHitData(hitData, result);
+            result.setHitDistance(distance);
+        }
+    }
+
+    /**
+     * Given a shape in a specific position and orientation, returns the closest point to that shape.
+     * @param query the query to perform. @see IPhysicsShapeProximityCastQuery
+     * @param inputShapeResult contact point on input shape, in input shape space
+     * @param hitShapeResult contact point on hit shape, in world space
+     */
+    public shapeProximity(query: IPhysicsShapeProximityCastQuery, inputShapeResult: ProximityCastResult, hitShapeResult: ProximityCastResult): void {
+        inputShapeResult.reset();
+        hitShapeResult.reset();
+        const shapeId = query.shape._pluginData;
+        const bodyToIgnore = query.ignoreBody ? [BigInt(query.ignoreBody._pluginData.hpBodyId[0])] : [BigInt(0)];
+
+        const hkQuery = [shapeId, this._bVecToV3(query.position), this._bQuatToV4(query.rotation), query.maxDistance, query.shouldHitTriggers, bodyToIgnore];
+        this._hknp.HP_World_ShapeProximityWithCollector(this.world, this._queryCollector, hkQuery);
+
+        if (this._hknp.HP_QueryCollector_GetNumHits(this._queryCollector)[1] > 0) {
+            const [distance, hitInputData, hitShapeData] = this._hknp.HP_QueryCollector_GetShapeProximityResult(this._queryCollector, 0)[1];
+
+            this._populateHitData(hitInputData, inputShapeResult);
+            this._populateHitData(hitShapeData, hitShapeResult);
+
+            inputShapeResult.setHitDistance(distance);
+            hitShapeResult.setHitDistance(distance);
+        }
+    }
+
+    /**
+     * Given a shape in a specific orientation, cast it from the start to end position specified by the query, and return the first hit.
+     * @param query the query to perform. @see IPhysicsShapeCastQuery
+     * @param inputShapeResult contact point on input shape, in input shape space
+     * @param hitShapeResult contact point on hit shape, in world space
+     */
+    public shapeCast(query: IPhysicsShapeCastQuery, inputShapeResult: ShapeCastResult, hitShapeResult: ShapeCastResult): void {
+        inputShapeResult.reset();
+        hitShapeResult.reset();
+
+        const shapeId = query.shape._pluginData;
+        const bodyToIgnore = query.ignoreBody ? [BigInt(query.ignoreBody._pluginData.hpBodyId[0])] : [BigInt(0)];
+
+        const hkQuery = [shapeId, this._bQuatToV4(query.rotation), this._bVecToV3(query.startPosition), this._bVecToV3(query.endPosition), query.shouldHitTriggers, bodyToIgnore];
+        this._hknp.HP_World_ShapeCastWithCollector(this.world, this._queryCollector, hkQuery);
+
+        if (this._hknp.HP_QueryCollector_GetNumHits(this._queryCollector)[1] > 0) {
+            const [fractionAlongRay, hitInputData, hitShapeData] = this._hknp.HP_QueryCollector_GetShapeCastResult(this._queryCollector, 0)[1];
+
+            this._populateHitData(hitInputData, inputShapeResult);
+            this._populateHitData(hitShapeData, hitShapeResult);
+
+            inputShapeResult.setHitFraction(fractionAlongRay);
+            hitShapeResult.setHitFraction(fractionAlongRay);
         }
     }
 
     /**
      * Return the collision observable for a particular physics body.
      * @param body the physics body
+     * @returns the collision observable for the body
      */
     public getCollisionObservable(body: PhysicsBody): Observable<IPhysicsCollisionEvent> {
         const bodyId = body._pluginData.hpBodyId[0];
@@ -1891,7 +2080,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     /**
      * Enable collision to be reported for a body when a callback is setup on the world
      * @param body the physics body
-     * @param enabled
+     * @param enabled whether to enable or disable collision events
      */
     public setCollisionCallbackEnabled(body: PhysicsBody, enabled: boolean): void {
         // Register for collide events by default
@@ -1907,8 +2096,8 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
 
     /**
      * Enable collision ended to be reported for a body when a callback is setup on the world
-     * @param body
-     * @param enabled
+     * @param body the physics body
+     * @param enabled whether to enable or disable collision ended events
      */
     public setCollisionEndedCallbackEnabled(body: PhysicsBody, enabled: boolean): void {
         // Register to collide ended events
@@ -2085,6 +2274,23 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 return this._hknp.MaterialCombine.ARITHMETIC_MEAN;
             case PhysicsMaterialCombineMode.MULTIPLY:
                 return this._hknp.MaterialCombine.MULTIPLY;
+        }
+    }
+
+    private _nativeToMaterialCombine(mat: any): PhysicsMaterialCombineMode | undefined {
+        switch (mat) {
+            case this._hknp.MaterialCombine.GEOMETRIC_MEAN:
+                return PhysicsMaterialCombineMode.GEOMETRIC_MEAN;
+            case this._hknp.MaterialCombine.MINIMUM:
+                return PhysicsMaterialCombineMode.MINIMUM;
+            case this._hknp.MaterialCombine.MAXIMUM:
+                return PhysicsMaterialCombineMode.MAXIMUM;
+            case this._hknp.MaterialCombine.ARITHMETIC_MEAN:
+                return PhysicsMaterialCombineMode.ARITHMETIC_MEAN;
+            case this._hknp.MaterialCombine.MULTIPLY:
+                return PhysicsMaterialCombineMode.MULTIPLY;
+            default:
+                return undefined;
         }
     }
 

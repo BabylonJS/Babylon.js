@@ -228,14 +228,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@6.37.1";
+        return "babylonjs@6.41.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "6.37.1";
+        return "6.41.0";
     }
 
     /**
@@ -1127,7 +1127,6 @@ export class ThinEngine {
             const effect = <Effect>this._compiledEffects[key];
 
             effect._pipelineContext = null; // because _prepareEffect will try to dispose this pipeline before recreating it and that would lead to webgl errors
-            effect._wasPreviouslyReady = false;
             effect._prepareEffect();
         }
 
@@ -4522,6 +4521,7 @@ export class ThinEngine {
      */
     public _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<any>, internalFormat: number, onComplete: () => void): void {}
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Creates a raw texture
      * @param data defines the data to store in the texture
@@ -4553,6 +4553,7 @@ export class ThinEngine {
         throw _WarnImport("Engine.RawTexture");
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Creates a new raw cube texture
      * @param data defines the array of data to use to create each face
@@ -4578,6 +4579,7 @@ export class ThinEngine {
         throw _WarnImport("Engine.RawTexture");
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Creates a new raw 3D texture
      * @param data defines the data used to create the texture
@@ -4607,6 +4609,7 @@ export class ThinEngine {
         throw _WarnImport("Engine.RawTexture");
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Creates a new raw 2D array texture
      * @param data defines the data used to create the texture
@@ -5215,6 +5218,7 @@ export class ThinEngine {
             if (texture && texture.isMultiview) {
                 //this._gl.bindTexture(target, texture ? texture._colorTextureArray : null);
                 Logger.Error(["_bindTextureDirectly called with a multiview texture!", target, texture]);
+                // eslint-disable-next-line no-throw-literal
                 throw "_bindTextureDirectly called with a multiview texture!";
             } else {
                 this._gl.bindTexture(target, texture?._hardwareTexture?.underlyingResource ?? null);

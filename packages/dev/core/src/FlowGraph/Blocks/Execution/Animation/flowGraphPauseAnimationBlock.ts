@@ -7,11 +7,11 @@ import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 /**
  * @experimental
- * Block that stops a running animation
+ * Block that pauses a running animation
  */
 export class FlowGraphPauseAnimationBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
-     *
+     * Input connection: The animation to pause.
      */
     public readonly animationToPause: FlowGraphDataConnection<Animatable>;
 
@@ -26,6 +26,9 @@ export class FlowGraphPauseAnimationBlock extends FlowGraphExecutionBlockWithOut
         this.out._activateSignal(context);
     }
 
+    /**
+     * @returns class name of the block.
+     */
     public getClassName(): string {
         return "FGPauseAnimationBlock";
     }

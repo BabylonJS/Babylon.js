@@ -11,6 +11,7 @@ import type { ShadowGenerator } from "../Lights/Shadows/shadowGenerator";
 import { RandomGUID } from "../Misc/guid";
 import { DrawWrapper } from "./drawWrapper";
 import { EngineStore } from "../Engines/engineStore";
+import { ShaderLanguage } from "./shaderLanguage";
 
 /**
  * Options to be used when creating a shadow depth material
@@ -240,22 +241,28 @@ export class ShadowDepthWrapper {
             fragmentCode = origEffect.fragmentSourceCodeBeforeMigration;
 
         if (!this.doNotInjectCode) {
-            // vertex code
+            // Declare the shadow map includes
             const vertexNormalBiasCode =
                     this._options && this._options.remappedVariables
                         ? `#include<shadowMapVertexNormalBias>(${this._options.remappedVariables.join(",")})`
-                        : Effect.IncludesShadersStore["shadowMapVertexNormalBias"],
+                        : `#include<shadowMapVertexNormalBias>`,
                 vertexMetricCode =
                     this._options && this._options.remappedVariables
                         ? `#include<shadowMapVertexMetric>(${this._options.remappedVariables.join(",")})`
-                        : Effect.IncludesShadersStore["shadowMapVertexMetric"],
+                        : `#include<shadowMapVertexMetric>`,
                 fragmentSoftTransparentShadow =
                     this._options && this._options.remappedVariables
                         ? `#include<shadowMapFragmentSoftTransparentShadow>(${this._options.remappedVariables.join(",")})`
-                        : Effect.IncludesShadersStore["shadowMapFragmentSoftTransparentShadow"],
-                fragmentBlockCode = Effect.IncludesShadersStore["shadowMapFragment"];
+                        : `#include<shadowMapFragmentSoftTransparentShadow>`,
+                fragmentBlockCode = `#include<shadowMapFragment>`,
+                vertexExtraDeclartion = `#include<shadowMapVertexExtraDeclaration>`;
 
-            vertexCode = vertexCode.replace(/void\s+?main/g, Effect.IncludesShadersStore["shadowMapVertexExtraDeclaration"] + "\nvoid main");
+            // vertex code
+            if (origEffect.shaderLanguage === ShaderLanguage.GLSL) {
+                vertexCode = vertexCode.replace(/void\s+?main/g, `\n${vertexExtraDeclartion}\nvoid main`);
+            } else {
+                vertexCode = vertexCode.replace(/@vertex/g, `\n${vertexExtraDeclartion}\n@vertex`);
+            }
             vertexCode = vertexCode.replace(/#define SHADOWDEPTH_NORMALBIAS|#define CUSTOM_VERTEX_UPDATE_WORLDPOS/g, vertexNormalBiasCode);
 
             if (vertexCode.indexOf("#define SHADOWDEPTH_METRIC") !== -1) {
@@ -306,6 +313,7 @@ export class ShadowDepthWrapper {
                 samplers: origEffect.getSamplers(),
                 defines: join + "\n" + origEffect.defines.replace("#define SHADOWS", "").replace(/#define SHADOW\d/g, ""),
                 indexParameters: origEffect.getIndexParameters(),
+                shaderLanguage: origEffect.shaderLanguage,
             },
             engine
         );

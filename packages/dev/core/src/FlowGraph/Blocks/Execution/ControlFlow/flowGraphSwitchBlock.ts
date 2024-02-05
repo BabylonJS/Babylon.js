@@ -30,14 +30,15 @@ export class FlowGraphSwitchBlock<T> extends FlowGraphExecutionBlock {
      */
     public outputFlows: FlowGraphSignalConnection[];
 
-    constructor(public config: IFlowGraphSwitchBlockConfiguration<T>) {
+    constructor(
+        /**
+         * the configuration of the block
+         */
+        public config: IFlowGraphSwitchBlockConfiguration<T>
+    ) {
         super(config);
 
         this.selection = this.registerDataInput("selection", RichTypeAny);
-    }
-
-    public configure(): void {
-        super.configure();
         this.outputFlows = [];
         for (let i = 0; i <= this.config.cases.length; i++) {
             this.outputFlows.push(this._registerSignalOutput(`out${i}`));
@@ -58,10 +59,17 @@ export class FlowGraphSwitchBlock<T> extends FlowGraphExecutionBlock {
         this.outputFlows[this.outputFlows.length - 1]._activateSignal(context);
     }
 
+    /**
+     * @returns class name of the block.
+     */
     public getClassName(): string {
         return "FGSwitchBlock";
     }
 
+    /**
+     * Serialize the block to a JSON representation.
+     * @param serializationObject the object to serialize to.
+     */
     public serialize(serializationObject?: any): void {
         super.serialize(serializationObject);
         serializationObject.cases = this.config.cases;

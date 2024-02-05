@@ -131,6 +131,8 @@ export class CustomParticleEmitter implements IParticleEmitterType {
         const serializationObject: any = {};
 
         serializationObject.type = this.getClassName();
+        serializationObject.particlePositionGenerator = this.particlePositionGenerator;
+        serializationObject.particleDestinationGenerator = this.particleDestinationGenerator;
 
         return serializationObject;
     }
@@ -139,6 +141,13 @@ export class CustomParticleEmitter implements IParticleEmitterType {
      * Parse properties from a JSON object
      * @param serializationObject defines the JSON object
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public parse(serializationObject: any): void {}
+    public parse(serializationObject: any): void {
+        if (serializationObject.particlePositionGenerator) {
+            this.particlePositionGenerator = serializationObject.particlePositionGenerator;
+        }
+
+        if (serializationObject.particleDestinationGenerator) {
+            this.particleDestinationGenerator = serializationObject.particleDestinationGenerator;
+        }
+    }
 }

@@ -854,14 +854,14 @@ export class StandardMaterial extends PushMaterial {
     }
 
     /**
-     * Specifies whether or not the alpha value of the diffuse texture should be used for alpha blending.
+     * @returns whether or not the alpha value of the diffuse texture should be used for alpha blending.
      */
     protected _shouldUseAlphaFromDiffuseTexture(): boolean {
         return this._diffuseTexture != null && this._diffuseTexture.hasAlpha && this._useAlphaFromDiffuseTexture && this._transparencyMode !== Material.MATERIAL_OPAQUE;
     }
 
     /**
-     * Specifies whether or not there is a usable alpha channel for transparency.
+     * @returns whether or not there is a usable alpha channel for transparency.
      */
     protected _hasAlphaChannel(): boolean {
         return (this._diffuseTexture != null && this._diffuseTexture.hasAlpha) || this._opacityTexture != null;
@@ -888,8 +888,10 @@ export class StandardMaterial extends PushMaterial {
             this.buildUniformLayout();
         }
 
-        if (subMesh.effect && this.isFrozen) {
-            if (subMesh.effect._wasPreviouslyReady && subMesh.effect._wasPreviouslyUsingInstances === useInstances) {
+        const drawWrapper = subMesh._drawWrapper;
+
+        if (drawWrapper.effect && this.isFrozen) {
+            if (drawWrapper._wasPreviouslyReady && drawWrapper._wasPreviouslyUsingInstances === useInstances) {
                 return true;
             }
         }
@@ -1469,8 +1471,8 @@ export class StandardMaterial extends PushMaterial {
         }
 
         defines._renderId = scene.getRenderId();
-        subMesh.effect._wasPreviouslyReady = forceWasNotReadyPreviously ? false : true;
-        subMesh.effect._wasPreviouslyUsingInstances = useInstances;
+        drawWrapper._wasPreviouslyReady = forceWasNotReadyPreviously ? false : true;
+        drawWrapper._wasPreviouslyUsingInstances = useInstances;
 
         this._checkScenePerformancePriority();
 
@@ -1566,14 +1568,14 @@ export class StandardMaterial extends PushMaterial {
             this.bindOnlyNormalMatrix(this._normalMatrix);
         }
 
-        const mustRebind = effect._forceRebindOnNextCall || this._mustRebind(scene, effect, mesh.visibility);
+        const mustRebind = this._mustRebind(scene, effect, subMesh, mesh.visibility);
 
         // Bones
         MaterialHelper.BindBonesParameters(mesh, effect);
         const ubo = this._uniformBuffer;
         if (mustRebind) {
             this.bindViewProjection(effect);
-            if (!ubo.useUbo || !this.isFrozen || !ubo.isSync || effect._forceRebindOnNextCall) {
+            if (!ubo.useUbo || !this.isFrozen || !ubo.isSync || subMesh._drawWrapper._forceRebindOnNextCall) {
                 if (StandardMaterial.FresnelEnabled && defines.FRESNEL) {
                     // Fresnel
                     if (this.diffuseFresnelParameters && this.diffuseFresnelParameters.isEnabled) {
@@ -1808,7 +1810,7 @@ export class StandardMaterial extends PushMaterial {
             }
         }
 
-        this._afterBind(mesh, this._activeEffect);
+        this._afterBind(mesh, this._activeEffect, subMesh);
         ubo.update();
     }
 
@@ -2012,7 +2014,7 @@ export class StandardMaterial extends PushMaterial {
             material.stencil.parse(source.stencil, scene, rootUrl);
         }
 
-        Material._parsePlugins(source, material, scene, rootUrl);
+        Material._ParsePlugins(source, material, scene, rootUrl);
 
         return material;
     }

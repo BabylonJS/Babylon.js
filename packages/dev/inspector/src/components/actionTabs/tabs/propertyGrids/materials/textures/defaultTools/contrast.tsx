@@ -25,6 +25,7 @@ class ContrastTool implements IToolType {
     /**
      * Maps slider values to post processing values using an exponential regression
      * @param sliderValue
+     * @returns exposure value
      */
     computeExposure(sliderValue: number) {
         if (sliderValue <= 0) {
@@ -36,6 +37,7 @@ class ContrastTool implements IToolType {
     /**
      * Maps slider values to post processing values using an exponential regression
      * @param sliderValue
+     * @returns contrast value
      */
     computeContrast(sliderValue: number) {
         if (sliderValue <= 0) {

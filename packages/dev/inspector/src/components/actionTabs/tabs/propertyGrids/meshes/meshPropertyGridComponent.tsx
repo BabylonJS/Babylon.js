@@ -43,6 +43,7 @@ import "core/Physics/v1/physicsEngineComponent";
 
 import { ParentPropertyGridComponent } from "../parentPropertyGridComponent";
 import { Tools } from "core/Misc/tools";
+import { PhysicsBodyGridComponent } from "./physics/physicsBodyGridComponent";
 
 interface IMeshPropertyGridComponentProps {
     globalState: GlobalState;
@@ -102,7 +103,6 @@ export class MeshPropertyGridComponent extends React.Component<
         const material = new StandardMaterial("wireframeOver", scene);
         material.reservedDataStore = { hidden: true };
         wireframeOver.material = material;
-        material.zOffset = 1;
         material.disableLighting = true;
         material.backFaceCulling = false;
         material.emissiveColor = Color3.White();
@@ -677,6 +677,14 @@ export class MeshPropertyGridComponent extends React.Component<
                         />
                         <TextLineComponent label="Type" value={this.convertPhysicsTypeToString()} />
                     </LineContainerComponent>
+                )}
+                {mesh.physicsBody && (
+                    <PhysicsBodyGridComponent
+                        lockObject={this.props.lockObject}
+                        globalState={this.props.globalState}
+                        body={mesh.physicsBody}
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                 )}
                 <LineContainerComponent title="OCCLUSIONS" closed={true} selection={this.props.globalState}>
                     <OptionsLineComponent

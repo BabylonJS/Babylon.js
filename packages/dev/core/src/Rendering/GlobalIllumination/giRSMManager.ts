@@ -340,9 +340,10 @@ export class GIRSMManager {
     /**
      * Recreates the resources used by the manager.
      * You should normally not have to call this method manually, except if you change the useFullTexture property of a GIRSM, because the manager won't track this change.
+     * @param disposeGeometryBufferRenderer Defines if the geometry buffer renderer should be disposed and recreated. Default is false.
      */
-    public recreateResources(_disposeGeometryBufferRenderer = false) {
-        this._disposePostProcesses(_disposeGeometryBufferRenderer);
+    public recreateResources(disposeGeometryBufferRenderer = false) {
+        this._disposePostProcesses(disposeGeometryBufferRenderer);
         this._createPostProcesses();
         this._setPluginParameters();
     }
@@ -911,6 +912,7 @@ export class GIRSMRenderPluginMaterial extends MaterialPluginBase {
 
     public getCustomCode(shaderType: string) {
         const frag: { [name: string]: string } = {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             CUSTOM_FRAGMENT_DEFINITIONS: `
                 #ifdef RENDER_WITH_GIRSM
                     uniform sampler2D girsmTextureGIContrib;
@@ -922,6 +924,7 @@ export class GIRSMRenderPluginMaterial extends MaterialPluginBase {
                 #endif
             `,
 
+            // eslint-disable-next-line @typescript-eslint/naming-convention
             CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION: `
                 #ifdef RENDER_WITH_GIRSM
                     finalDiffuse += computeIndirect() * surfaceAlbedo.rgb;

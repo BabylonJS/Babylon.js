@@ -7,7 +7,9 @@ import type { NativeFramebuffer } from "./nativeInterfaces";
 export class NativeRenderTargetWrapper extends RenderTargetWrapper {
     public override readonly _engine: NativeEngine;
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private __framebuffer: Nullable<NativeFramebuffer> = null;
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     private __framebufferDepthStencil: Nullable<NativeFramebuffer> = null;
 
     public get _framebuffer(): Nullable<NativeFramebuffer> {

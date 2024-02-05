@@ -1443,6 +1443,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private static _CreateMaterial(mesh: AbstractMesh, uniqueId: string, texture: AdvancedDynamicTexture, onlyAlphaTesting: boolean): void {
         const internalClassType = GetClass("BABYLON.StandardMaterial");
         if (!internalClassType) {
+            // eslint-disable-next-line no-throw-literal
             throw "StandardMaterial needs to be imported before as it contains a side-effect required by your code.";
         }
 
@@ -1542,7 +1543,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     }
 
     /**
-     * Returns true if all the GUI components are ready to render
+     * @returns true if all the GUI components are ready to render
      */
     public guiIsReady(): boolean {
         return this._rootContainer.isReady();

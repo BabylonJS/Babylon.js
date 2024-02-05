@@ -351,7 +351,7 @@ const loadAnimations = (gltfRuntime: IGLTFRuntime) => {
 };
 
 /**
- * Returns the bones transformation matrix
+ * @returns the bones transformation matrix
  * @param node
  */
 const configureBoneTransformation = (node: IGLTFNode): Matrix => {
@@ -376,6 +376,7 @@ const configureBoneTransformation = (node: IGLTFNode): Matrix => {
  * @param skins
  * @param jointName
  * @param newSkeleton
+ * @returns the parent bone
  */
 const getParentBone = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, jointName: string, newSkeleton: Skeleton): Nullable<Bone> => {
     // Try to find
@@ -417,6 +418,7 @@ const getParentBone = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, jointName: 
  * Returns the appropriate root node
  * @param nodesToRoot
  * @param id
+ * @returns the root node
  */
 const getNodeToRoot = (nodesToRoot: INodeToRoot[], id: string): Nullable<Bone> => {
     for (let i = 0; i < nodesToRoot.length; i++) {
@@ -437,6 +439,7 @@ const getNodeToRoot = (nodesToRoot: INodeToRoot[], id: string): Nullable<Bone> =
  * Returns the node with the joint name
  * @param gltfRuntime
  * @param jointName
+ * @returns the node with the joint name
  */
 const getJointNode = (gltfRuntime: IGLTFRuntime, jointName: string): Nullable<IJointNode> => {
     const nodes = gltfRuntime.nodes;
@@ -465,6 +468,7 @@ const getJointNode = (gltfRuntime: IGLTFRuntime, jointName: string): Nullable<IJ
  * Checks if a nodes is in joints
  * @param skins
  * @param id
+ * @returns true if the node is in joints, else false
  */
 const nodeIsInJoints = (skins: IGLTFSkins, id: string): boolean => {
     for (let i = 0; i < skins.jointNames.length; i++) {
@@ -529,6 +533,7 @@ const getNodesToRoot = (gltfRuntime: IGLTFRuntime, newSkeleton: Skeleton, skins:
  * @param skins
  * @param mesh
  * @param newSkeleton
+ * @returns the bone name
  */
 const importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh, newSkeleton: Skeleton | undefined): Skeleton => {
     if (!newSkeleton) {
@@ -660,6 +665,7 @@ const importSkeleton = (gltfRuntime: IGLTFRuntime, skins: IGLTFSkins, mesh: Mesh
  * @param meshes
  * @param id
  * @param newMesh
+ * @returns the new mesh
  */
 const importMesh = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, meshes: string[], id: string, newMesh: Mesh): Mesh => {
     if (!newMesh) {
@@ -879,6 +885,7 @@ const configureNodeFromMatrix = (newNode: Mesh, node: IGLTFNode) => {
  * @param gltfRuntime
  * @param node
  * @param id
+ * @returns the newly imported node
  */
 const importNode = (gltfRuntime: IGLTFRuntime, node: IGLTFNode, id: string): Nullable<Node> => {
     let lastNode: Nullable<Node> = null;
@@ -1235,6 +1242,7 @@ const prepareShaderMaterialUniforms = (
  * @param program
  * @param shaderMaterial
  * @param onError
+ * @returns callback when shader is compiled
  */
 const onShaderCompileError = (program: IGLTFProgram, shaderMaterial: ShaderMaterial, onError: (message: string) => void) => {
     return (effect: Effect, error: string) => {
@@ -1251,6 +1259,7 @@ const onShaderCompileError = (program: IGLTFProgram, shaderMaterial: ShaderMater
  * @param material
  * @param unTreatedUniforms
  * @param onSuccess
+ * @returns callback when shader is compiled
  */
 const onShaderCompileSuccess = (
     gltfRuntime: IGLTFRuntime,
@@ -1273,6 +1282,8 @@ const onShaderCompileSuccess = (
  * Returns the appropriate uniform if already handled by babylon
  * @param tokenizer
  * @param technique
+ * @param unTreatedUniforms
+ * @returns the name of the uniform handled by babylon
  */
 const parseShaderUniforms = (tokenizer: Tokenizer, technique: IGLTFTechnique, unTreatedUniforms: { [key: string]: IGLTFTechniqueParameter }): string => {
     for (const unif in technique.uniforms) {
@@ -2080,6 +2091,7 @@ export abstract class GLTFLoaderExtension {
      * @param rootUrl
      * @param onSuccess
      * @param onError
+     * @returns true to stop further extensions from loading the runtime
      */
     public loadRuntimeAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess?: (gltfRuntime: IGLTFRuntime) => void, onError?: (message: string) => void): boolean {
         return false;
@@ -2091,6 +2103,7 @@ export abstract class GLTFLoaderExtension {
      * @param gltfRuntime
      * @param onSuccess
      * @param onError
+     * @returns true to stop further extensions from creating the runtime
      */
     public loadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime, onSuccess: () => void, onError?: (message: string) => void): boolean {
         return false;
@@ -2104,6 +2117,7 @@ export abstract class GLTFLoaderExtension {
      * @param onSuccess
      * @param onError
      * @param onProgress
+     * @returns true to stop further extensions from loading this buffer
      */
     public loadBufferAsync(
         gltfRuntime: IGLTFRuntime,
@@ -2122,6 +2136,7 @@ export abstract class GLTFLoaderExtension {
      * @param id
      * @param onSuccess
      * @param onError
+     * @returns true to stop further extensions from loading this texture data
      */
     public loadTextureBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: (message: string) => void): boolean {
         return false;
@@ -2135,6 +2150,7 @@ export abstract class GLTFLoaderExtension {
      * @param buffer
      * @param onSuccess
      * @param onError
+     * @returns true to stop further extensions from loading this texture
      */
     public createTextureAsync(gltfRuntime: IGLTFRuntime, id: string, buffer: ArrayBufferView, onSuccess: (texture: Texture) => void, onError: (message: string) => void): boolean {
         return false;
@@ -2147,6 +2163,7 @@ export abstract class GLTFLoaderExtension {
      * @param id
      * @param onSuccess
      * @param onError
+     * @returns true to stop further extensions from loading this shader data
      */
     public loadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderString: string) => void, onError: (message: string) => void): boolean {
         return false;
@@ -2159,6 +2176,7 @@ export abstract class GLTFLoaderExtension {
      * @param id
      * @param onSuccess
      * @param onError
+     * @returns true to stop further extensions from loading this material
      */
     public loadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: (message: string) => void): boolean {
         return false;

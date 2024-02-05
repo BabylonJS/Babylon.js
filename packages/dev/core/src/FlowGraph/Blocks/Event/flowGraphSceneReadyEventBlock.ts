@@ -29,10 +29,16 @@ export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
         context._deleteExecutionVariable(this, "sceneReadyObserver");
     }
 
+    /**
+     * @returns class name of the block.
+     */
     public getClassName() {
         return FlowGraphSceneReadyEventBlock.ClassName;
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGSceneReadyEventBlock";
 }
 RegisterClass("FGSceneReadyEventBlock", FlowGraphSceneReadyEventBlock);

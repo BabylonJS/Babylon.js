@@ -49,6 +49,7 @@ export class ViewerManager {
     /**
      * Get a viewer by its baseId (if the container element has an ID, it is the this is. if not, a random id was assigned)
      * @param id the id of the HTMl element (or the viewer's, if none provided)
+     * @returns the viewer associated with the given id (if found)
      */
     public getViewerById(id: string): AbstractViewer {
         return this._viewers[id];
@@ -57,6 +58,7 @@ export class ViewerManager {
     /**
      * Get a viewer using a container element
      * @param element the HTML element to search viewers associated with
+     * @returns the viewer associated with the given element (if found)
      */
     public getViewerByHTMLElement(element: HTMLElement) {
         for (const id in this._viewers) {
@@ -73,6 +75,7 @@ export class ViewerManager {
      * Since viewer initialization and template injection is asynchronous, using the promise will guaranty that
      * you will get the viewer after everything was already configured.
      * @param id the viewer id to find
+     * @returns a promise that will resolve to the viewer
      */
     public getViewerPromiseById(id: string): Promise<AbstractViewer> {
         return new Promise((resolve) => {

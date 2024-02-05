@@ -73,12 +73,22 @@ export interface INavigationEnginePlugin {
     moveAlongToRef(position: Vector3, destination: Vector3, result: Vector3): void;
 
     /**
-     * Compute a navigation path from start to end. Returns an empty array if no path can be computed
+     * Compute a navigation path from start to end. Returns an empty array if no path can be computed.
+     * Path is straight.
      * @param start world position
      * @param end world position
      * @returns array containing world position composing the path
      */
     computePath(start: Vector3, end: Vector3): Vector3[];
+
+    /**
+     * Compute a navigation path from start to end. Returns an empty array if no path can be computed.
+     * Path follows navigation mesh geometry.
+     * @param start world position
+     * @param end world position
+     * @returns array containing world position composing the path
+     */
+    computePathSmooth(start: Vector3, end: Vector3): Vector3[];
 
     /**
      * If this plugin is supported

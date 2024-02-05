@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { useState, useEffect } from "react";
 import * as React from "react";
 import { ClassNames } from "./classNames";

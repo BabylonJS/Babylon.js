@@ -278,8 +278,9 @@ class Playground {
         declarations.push("https://assets.babylonjs.com/generated/Assets.d.ts");
 
         // Check for Unity Toolkit
-        if (location.href.indexOf("UnityToolkit") !== -1 || Utilities.ReadBoolFromStore("unity-toolkit", false)) {
-            declarations.push("https://playground.babylonjs.com/libs/babylon.manager.d.ts");
+        if (location.href.indexOf("UnityToolkit") !== -1 || Utilities.ReadBoolFromStore("unity-toolkit", false) || Utilities.ReadBoolFromStore("unity-toolkit-used", false)) {
+            declarations.push("https://cdn.jsdelivr.net/gh/BabylonJS/UnityExporter@master/Redist/Runtime/babylon.toolkit.d.ts");
+            declarations.push("https://cdn.jsdelivr.net/gh/BabylonJS/UnityExporter@master/Redist/Runtime/unity.playground.d.ts");
         }
 
         const timestamp = typeof globalThis !== "undefined" && (globalThis as any).__babylonSnapshotTimestamp__ ? (globalThis as any).__babylonSnapshotTimestamp__ : 0;

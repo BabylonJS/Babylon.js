@@ -368,7 +368,7 @@ export class _GLTFAnimation {
     }
 
     /**
-     * @ignore
+     * @internal
      * Create node and morph animations from the animation groups
      * @param babylonScene
      * @param glTFAnimations
@@ -828,7 +828,6 @@ export class _GLTFAnimation {
      * @param babylonTransformNode BabylonJS mesh
      * @param animation BabylonJS animation
      * @param animationChannelTargetPath The target animation channel
-     * @param frameDelta The difference between the last and first frame of the animation
      * @param inputs Array to store the key frame times
      * @param outputs Array to store the key frame data
      * @param useQuaternion Specifies if quaternions are used in the animation
@@ -928,6 +927,7 @@ export class _GLTFAnimation {
     }
 
     /**
+     * @internal
      * Determine the interpolation based on the key frames
      * @param keyFrames
      * @param animationChannelTargetPath
@@ -987,13 +987,11 @@ export class _GLTFAnimation {
     /**
      * Adds an input tangent or output tangent to the output data
      * If an input tangent or output tangent is missing, it uses the zero vector or zero quaternion
-     * @param babylonTransformNode
      * @param tangentType Specifies which type of tangent to handle (inTangent or outTangent)
      * @param outputs The animation data by keyframe
      * @param animationChannelTargetPath The target animation channel
      * @param interpolation The interpolation type
      * @param keyFrame The key frame with the animation data
-     * @param frameDelta Time difference between two frames used to scale the tangent by the frame delta
      * @param useQuaternion Specifies if quaternions are used
      */
     private static _AddSplineTangent(

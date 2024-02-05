@@ -430,7 +430,7 @@ export class HolographicSlate extends ContentDisplay3D {
     }
 
     /**
-     * @internal*
+     * @internal
      */
     public _prepareNode(scene: Scene): void {
         super._prepareNode(scene);

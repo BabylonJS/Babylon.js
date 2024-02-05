@@ -30,7 +30,12 @@ export class FlowGraphWhileLoopBlock extends FlowGraphExecutionBlockWithOutSigna
      */
     public readonly loopBody: FlowGraphSignalConnection;
 
-    constructor(public config?: IFlowGraphWhileLoopBlockConfiguration) {
+    constructor(
+        /**
+         * the configuration of the block
+         */
+        public config?: IFlowGraphWhileLoopBlockConfiguration
+    ) {
         super(config);
 
         this.condition = this.registerDataInput("condition", RichTypeBoolean);
@@ -49,12 +54,22 @@ export class FlowGraphWhileLoopBlock extends FlowGraphExecutionBlockWithOutSigna
         this.out._activateSignal(context);
     }
 
+    /**
+     * @returns class name of the block.
+     */
     public getClassName(): string {
         return FlowGraphWhileLoopBlock.ClassName;
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGWhileLoopBlock";
 
+    /**
+     * Serializes the block to a JSON object.
+     * @param serializationObject the object to serialize to.
+     */
     public serialize(serializationObject?: any): void {
         super.serialize(serializationObject);
         serializationObject.isDo = this.config?.isDo;

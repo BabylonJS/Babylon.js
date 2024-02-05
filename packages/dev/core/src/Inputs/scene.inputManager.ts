@@ -289,7 +289,7 @@ export class InputManager {
         if (pickResult) {
             pi.originalPickingInfo = pickResult;
             pi.ray = pickResult.ray;
-            if (pickResult.originMesh) {
+            if (evt.pointerType === "xr-near" && pickResult.originMesh) {
                 pi.nearInteractionPickingInfo = pickResult;
             }
         }

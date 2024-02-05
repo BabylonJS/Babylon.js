@@ -1255,6 +1255,8 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * @override
      * Override Camera.createRigCamera
+     * @param name the name of the camera
+     * @param cameraIndex the index of the camera in the rig cameras array
      */
     public createRigCamera(name: string, cameraIndex: number): Camera {
         let alphaShift: number = 0;

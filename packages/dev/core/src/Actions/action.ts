@@ -233,7 +233,9 @@ export class Action implements IAction {
      * @returns the serialized object
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public serialize(parent: any): any {}
+    public serialize(parent: any): any {
+        return null;
+    }
 
     /**
      * Internal only called by serialize

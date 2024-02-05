@@ -346,7 +346,8 @@ export class PhysicsViewer {
 
     /**
      * Shows a debug box corresponding to the inertia of a given body
-     * @param body
+     * @param body the physics body used to get the inertia
+     * @returns the debug mesh used to show the inertia, or null if the body is already shown
      */
     public showInertia(body: PhysicsBody): Nullable<AbstractMesh> {
         if (!this._scene) {
@@ -508,6 +509,10 @@ export class PhysicsViewer {
         }
     }
 
+    /**
+     * Hides a body's inertia from the viewer utility layer
+     * @param body the body to hide
+     */
     public hideInertia(body: Nullable<PhysicsBody>) {
         if (!body || !this._scene || !this._utilityLayer) {
             return;
@@ -784,7 +789,7 @@ export class PhysicsViewer {
         vertexData.applyToMesh(mesh);
         if (body._pluginDataInstances) {
             const instanceBuffer = new Float32Array(body._pluginDataInstances.length * 16);
-            mesh.thinInstanceSetBuffer("matrix", instanceBuffer, 16);
+            mesh.thinInstanceSetBuffer("matrix", instanceBuffer, 16, false);
         }
         mesh.material = this._getDebugMaterial(utilityLayerScene);
         return mesh;
@@ -833,7 +838,7 @@ export class PhysicsViewer {
                 this._getMeshDebugInertiaMatrixToRef(props, matrixRef);
                 matrixRef.copyToArray(instanceBuffer, i * 16);
             }
-            inertiaBoxMesh.thinInstanceSetBuffer("matrix", instanceBuffer, 16);
+            inertiaBoxMesh.thinInstanceSetBuffer("matrix", instanceBuffer, 16, false);
         } else {
             const props = body.getMassProperties();
             this._getMeshDebugInertiaMatrixToRef(props, matrixRef);

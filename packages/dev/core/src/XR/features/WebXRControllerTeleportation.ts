@@ -174,6 +174,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
     private _tmpRay = new Ray(new Vector3(), new Vector3());
     private _tmpVector = new Vector3();
     private _tmpQuaternion = new Quaternion();
+    private _worldScaleObserver?: Nullable<Observer<{ previousScaleFactor: number; newScaleFactor: number }>> = null;
 
     /**
      * Skip the next teleportation. This can be controlled by the user to prevent the user from teleportation
@@ -310,6 +311,12 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         // set the observables
         this.onBeforeCameraTeleport = _options.xrInput.xrCamera.onBeforeCameraTeleport;
         this.onAfterCameraTeleport = _options.xrInput.xrCamera.onAfterCameraTeleport;
+
+        this.parabolicCheckRadius *= this._xrSessionManager.worldScalingFactor;
+        this._worldScaleObserver = _xrSessionManager.onWorldScaleFactorChangedObservable.add((values) => {
+            this.parabolicCheckRadius = (this.parabolicCheckRadius / values.previousScaleFactor) * values.newScaleFactor;
+            this._options.teleportationTargetMesh?.scaling.scaleInPlace(values.newScaleFactor / values.previousScaleFactor);
+        });
     }
 
     /**
@@ -389,6 +396,9 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
     public dispose(): void {
         super.dispose();
         this._options.teleportationTargetMesh && this._options.teleportationTargetMesh.dispose(false, true);
+        if (this._worldScaleObserver) {
+            this._xrSessionManager.onWorldScaleFactorChangedObservable.remove(this._worldScaleObserver);
+        }
     }
 
     /**
@@ -847,6 +857,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         }
 
         this._options.teleportationTargetMesh = teleportationTarget;
+        this._options.teleportationTargetMesh.scaling.setAll(this._xrSessionManager.worldScalingFactor);
         // hide the teleportation target mesh right after creating it.
         this._setTargetMeshVisibility(false);
     }
@@ -982,14 +993,14 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         // do the movement forward here
         if (this._options.teleportationTargetMesh && this._options.teleportationTargetMesh.isVisible) {
             const height = this._options.xrInput.xrCamera.realWorldHeight;
-            this._options.xrInput.xrCamera.onBeforeCameraTeleport.notifyObservers(this._options.xrInput.xrCamera.position);
+            this.onBeforeCameraTeleport.notifyObservers(this._options.xrInput.xrCamera.position);
             this._options.xrInput.xrCamera.position.copyFrom(this._options.teleportationTargetMesh.position);
             this._options.xrInput.xrCamera.position.y += height;
             Quaternion.FromEulerAngles(0, controllerData.teleportationState.currentRotation - (this._xrSessionManager.scene.useRightHandedSystem ? Math.PI : 0), 0).multiplyToRef(
                 this._options.xrInput.xrCamera.rotationQuaternion,
                 this._options.xrInput.xrCamera.rotationQuaternion
             );
-            this._options.xrInput.xrCamera.onAfterCameraTeleport.notifyObservers(this._options.xrInput.xrCamera.position);
+            this.onAfterCameraTeleport.notifyObservers(this._options.xrInput.xrCamera.position);
         }
     }
 }

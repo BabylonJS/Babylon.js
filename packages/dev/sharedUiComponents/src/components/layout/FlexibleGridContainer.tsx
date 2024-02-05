@@ -13,6 +13,7 @@ export interface IFlexibleGridContainerProps {}
 
 /**
  * Component responsible for mapping the layout to the actual components
+ * @returns GridContainer element
  */
 export const FlexibleGridContainer: FC<IFlexibleGridContainerProps> = () => {
     const context = useContext(LayoutContext);

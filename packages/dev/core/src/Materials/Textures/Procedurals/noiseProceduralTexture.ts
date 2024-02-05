@@ -60,7 +60,7 @@ export class NoiseProceduralTexture extends ProceduralTexture {
 
     /**
      * Generate the current state of the procedural texture
-     * @param useCameraPostProcess
+     * @param useCameraPostProcess Define if camera post process should be applied to the texture
      */
     public render(useCameraPostProcess?: boolean) {
         this._updateShaderUniforms();

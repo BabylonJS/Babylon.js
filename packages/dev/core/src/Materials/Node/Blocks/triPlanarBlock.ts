@@ -175,6 +175,7 @@ export class TriPlanarBlock extends NodeMaterialBlock {
     /**
      * Create a new TriPlanarBlock
      * @param name defines the block name
+     * @param hideSourceZ defines a boolean indicating that normal Z should not be used (false by default)
      */
     public constructor(name: string, hideSourceZ = false) {
         super(name, NodeMaterialBlockTargets.Neutral);

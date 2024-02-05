@@ -73,6 +73,7 @@ class Vertex {
      * override this to interpolate additional properties.
      * @param other the vertex to interpolate against
      * @param t The factor used to linearly interpolate between the vertices
+     * @returns The new interpolated vertex
      */
     public interpolate(other: Vertex, t: number): Vertex {
         return new Vertex(
@@ -109,6 +110,7 @@ class CSGPlane {
      * @param a Point a
      * @param b Point b
      * @param c Point c
+     * @returns A new plane
      */
     public static FromPoints(a: Vector3, b: Vector3, c: Vector3): Nullable<CSGPlane> {
         const v0 = c.subtract(a);
@@ -259,6 +261,7 @@ class CSGPolygon {
 
     /**
      * Clones, or makes a deep copy, or the polygon
+     * @returns A new CSGPolygon
      */
     public clone(): CSGPolygon {
         const vertices = this.vertices.map((v) => v.clone());
@@ -451,7 +454,7 @@ export class CSG {
 
     /**
      * Convert a VertexData to CSG
-     * @param mesh defines the VertexData to convert to CSG
+     * @param data defines the VertexData to convert to CSG
      * @returns the new CSG
      */
     public static FromVertexData(data: VertexData): CSG {
@@ -465,6 +468,7 @@ export class CSG {
         const vertColors = data.colors;
 
         if (!indices || !positions) {
+            // eslint-disable-next-line no-throw-literal
             throw "BABYLON.CSG: VertexData must at least contain positions and indices";
         }
 
@@ -539,6 +543,7 @@ export class CSG {
                 invertWinding = mesh.material.sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation;
             }
         } else {
+            // eslint-disable-next-line no-throw-literal
             throw "BABYLON.CSG: Wrong Mesh type, must be BABYLON.Mesh";
         }
 
@@ -599,6 +604,7 @@ export class CSG {
     /**
      * Construct a CSG solid from a list of `CSG.Polygon` instances.
      * @param polygons Polygons used to construct a CSG solid
+     * @returns A new CSG solid
      */
     private static _FromPolygons(polygons: CSGPolygon[]): CSG {
         const csg = new CSG();
@@ -768,6 +774,8 @@ export class CSG {
     /**
      * Build vertex data from CSG
      * Coordinates here are in world space
+     * @param onBeforePolygonProcessing called before each polygon is being processed
+     * @param onAfterPolygonProcessing called after each polygon has been processed
      * @returns the final vertex data
      */
     public toVertexData(onBeforePolygonProcessing: Nullable<(polygon: CSGPolygon) => void> = null, onAfterPolygonProcessing: Nullable<() => void> = null): VertexData {

@@ -88,8 +88,10 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
                 // If the node has a parent, transform the delta to local space, so it can be added to the
                 // position in local space
                 if (ownerNode.parent) {
-                    const parentWorld = ownerNode.parent.getWorldMatrix();
-                    Vector3.TransformNormalToRef(deltaToAdd, parentWorld, deltaToAddTransformed);
+                    const parentRotationMatrixInverse = TmpVectors.Matrix[0];
+                    (ownerNode.parent as TransformNode).absoluteRotationQuaternion.toRotationMatrix(parentRotationMatrixInverse);
+                    parentRotationMatrixInverse.invert();
+                    Vector3.TransformNormalToRef(deltaToAdd, parentRotationMatrixInverse, deltaToAddTransformed);
                 }
                 ownerNode.position.addInPlace(deltaToAddTransformed);
 
@@ -99,15 +101,11 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
                 if (!ownerNode.parent || ((ownerNode.parent as TransformNode).scaling && !(ownerNode.parent as TransformNode).scaling.isNonUniformWithinEpsilon(0.001))) {
                     const rotationToApply = TmpVectors.Quaternion[0];
                     rotationToApply.copyFrom(this._targetOrientation);
-                    // If the node has a parent, transform the rotation to local space so it can be applied
-                    // to the node's own rotation
                     if (ownerNode.parent) {
-                        const parentWorld = ownerNode.parent?.getWorldMatrix();
-                        const rotation = TmpVectors.Matrix[0];
-                        this._targetOrientation.toRotationMatrix(rotation);
-                        const rotationTransformed = TmpVectors.Matrix[1];
-                        parentWorld?.multiplyToRef(rotation, rotationTransformed);
-                        Quaternion.FromRotationMatrixToRef(rotationTransformed, rotationToApply);
+                        const parentRotationInverse = TmpVectors.Quaternion[0];
+                        parentRotationInverse.copyFrom((ownerNode.parent as TransformNode).absoluteRotationQuaternion);
+                        parentRotationInverse.invertInPlace();
+                        parentRotationInverse.multiplyToRef(this._targetOrientation, rotationToApply);
                     }
                     Quaternion.SlerpToRef(ownerNode.rotationQuaternion!, rotationToApply, this.dragDeltaRatio, ownerNode.rotationQuaternion!);
                 }
@@ -193,18 +191,16 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
 
     protected _targetDragStart() {
         const pointerCount = this.currentDraggingPointerIds.length;
-        const oldParent = this._ownerNode.parent;
 
         if (!this._ownerNode.rotationQuaternion) {
             this._ownerNode.rotationQuaternion = Quaternion.RotationYawPitchRoll(this._ownerNode.rotation.y, this._ownerNode.rotation.x, this._ownerNode.rotation.z);
         }
         const worldPivot = this._ownerNode.getAbsolutePivotPoint();
-        this._ownerNode.setParent(null);
 
         if (pointerCount === 1) {
-            this._targetPosition.copyFrom(this._ownerNode.position);
-            this._targetOrientation.copyFrom(this._ownerNode.rotationQuaternion);
-            this._targetScaling.copyFrom(this._ownerNode.scaling);
+            this._targetPosition.copyFrom(this._ownerNode.absolutePosition);
+            this._targetOrientation.copyFrom(this._ownerNode.absoluteRotationQuaternion);
+            this._targetScaling.copyFrom(this._ownerNode.absoluteScaling);
 
             if (this.faceCameraOnDragStart && this._scene.activeCamera) {
                 const toCamera = TmpVectors.Vector3[0];
@@ -225,14 +221,12 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
             this._startingScaling.copyFrom(this._targetScaling);
         } else if (pointerCount === 2) {
             this._virtualTransformNode.setPivotPoint(new Vector3(0, 0, 0), Space.LOCAL);
-            this._virtualTransformNode.position.copyFrom(this._ownerNode.position);
-            this._virtualTransformNode.scaling.copyFrom(this._ownerNode.scaling);
-            this._virtualTransformNode.rotationQuaternion!.copyFrom(this._ownerNode.rotationQuaternion);
+            this._virtualTransformNode.position.copyFrom(this._ownerNode.absolutePosition);
+            this._virtualTransformNode.scaling.copyFrom(this._ownerNode.absoluteScaling);
+            this._virtualTransformNode.rotationQuaternion!.copyFrom(this._ownerNode.absoluteRotationQuaternion);
             this._virtualTransformNode.setPivotPoint(worldPivot, Space.WORLD);
             this._resetVirtualMeshesPosition();
         }
-
-        this._ownerNode.setParent(oldParent);
     }
 
     protected _targetDrag(worldDeltaPosition: Vector3, worldDeltaRotation: Quaternion) {

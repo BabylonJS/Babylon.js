@@ -16,10 +16,19 @@ export class FlowGraphConstantOperationBlock<ResultT> extends FlowGraphCachedOpe
         super(richType, config);
     }
 
+    /**
+     * the operation performed by this block
+     * @param _context the graph context
+     * @returns the result of the operation
+     */
     public override _doOperation(_context: FlowGraphContext): ResultT {
         return this._operation();
     }
 
+    /**
+     * Gets the class name of this block
+     * @returns the class name
+     */
     public getClassName(): string {
         return this._className;
     }

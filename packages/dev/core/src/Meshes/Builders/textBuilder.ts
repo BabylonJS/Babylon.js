@@ -54,28 +54,49 @@ class ShapePath {
     private _currentPath: Path2;
     private _resolution: number;
 
-    /** Create the ShapePath used to support glyphs */
+    /** Create the ShapePath used to support glyphs
+     * @param resolution defines the resolution used to determine the number of points per curve (default is 4)
+     */
     constructor(resolution: number) {
         this._resolution = resolution;
     }
 
-    /** Move the virtual cursor to a coordinate */
+    /** Move the virtual cursor to a coordinate
+     * @param x defines the x coordinate
+     * @param y defines the y coordinate
+     */
     moveTo(x: number, y: number) {
         this._currentPath = new Path2(x, y);
         this._tempPaths.push(this._currentPath);
     }
 
-    /** Draw a line from the virtual cursor to a given coordinate */
+    /** Draw a line from the virtual cursor to a given coordinate
+     * @param x defines the x coordinate
+     * @param y defines the y coordinate
+     */
     lineTo(x: number, y: number) {
         this._currentPath.addLineTo(x, y);
     }
 
-    /** Create a quadratic curve from the virtual cursor to a given coordinate */
+    /** Create a quadratic curve from the virtual cursor to a given coordinate
+     * @param cpx defines the x coordinate of the control point
+     * @param cpy defines the y coordinate of the control point
+     * @param x defines the x coordinate of the end point
+     * @param y defines the y coordinate of the end point
+     */
     quadraticCurveTo(cpx: number, cpy: number, x: number, y: number) {
         this._currentPath.addQuadraticCurveTo(cpx, cpy, x, y, this._resolution);
     }
 
-    /** Create a bezier curve from the virtual cursor to a given coordinate */
+    /**
+     * Create a bezier curve from the virtual cursor to a given coordinate
+     * @param cpx1 defines the x coordinate of the first control point
+     * @param cpy1 defines the y coordinate of the first control point
+     * @param cpx2 defines the x coordinate of the second control point
+     * @param cpy2 defines the y coordinate of the second control point
+     * @param x defines the x coordinate of the end point
+     * @param y defines the y coordinate of the end point
+     */
     bezierCurveTo(cpx1: number, cpy1: number, cpx2: number, cpy2: number, x: number, y: number) {
         this._currentPath.addBezierCurveTo(cpx1, cpy1, cpx2, cpy2, x, y, this._resolution);
     }

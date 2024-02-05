@@ -70,3 +70,5 @@ export * from "./Blocks/geometryModBlock";
 export * from "./Blocks/geometryPowBlock";
 export * from "./Blocks/geometryClampBlock";
 export * from "./Blocks/geometryCrossBlock";
+export * from "./Blocks/geometryCurveBlock";
+export * from "./Blocks/geometryDesaturateBlock";

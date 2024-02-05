@@ -197,7 +197,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
     /**
      * Called on JS contextmenu event.
      * Override this method to provide functionality.
-     * @param evt
+     * @param evt the context menu event
      */
     public onContextMenu(evt: PointerEvent): void {
         evt.preventDefault();

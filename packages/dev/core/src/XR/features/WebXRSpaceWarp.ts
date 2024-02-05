@@ -76,9 +76,6 @@ export class XRSpaceWarpRenderTarget extends RenderTargetTexture {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public render(useCameraPostProcess: boolean = false, dumpForDebug: boolean = false): void {
         // Swap to use velocity material
         this._originalPairing.length = 0;
@@ -117,9 +114,6 @@ export class XRSpaceWarpRenderTarget extends RenderTargetTexture {
         return 2;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public dispose(): void {
         super.dispose();
         this._velocityMaterial.dispose();
@@ -217,9 +211,6 @@ export class WebXRSpaceWarpRenderTargetTextureProvider implements IWebXRRenderTa
         return renderTargetTexture;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public trySetViewportForView(viewport: Viewport, view: XRView): boolean {
         const subImage = this._lastSubImages.get(view) || this._getSubImageForView(view);
         if (subImage) {
@@ -242,16 +233,10 @@ export class WebXRSpaceWarpRenderTargetTextureProvider implements IWebXRRenderTa
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public getRenderTargetTextureForEye(_eye: XREye): Nullable<RenderTargetTexture> {
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public getRenderTargetTextureForView(view: XRView): Nullable<RenderTargetTexture> {
         const subImage = this._getSubImageForView(view);
         if (subImage) {
@@ -260,9 +245,6 @@ export class WebXRSpaceWarpRenderTargetTextureProvider implements IWebXRRenderTa
         return null;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public dispose() {
         this._renderTargetTextures.forEach((rtt) => rtt.dispose());
         this._renderTargetTextures.clear();
@@ -336,21 +318,12 @@ export class WebXRSpaceWarp extends WebXRAbstractFeature {
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public dependsOn: string[] = [WebXRFeatureName.LAYERS];
 
-    /**
-     * {@inheritdoc}
-     */
     public isCompatible(): boolean {
         return this._xrSessionManager.scene.getEngine().getCaps().colorBufferHalfFloat || false;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public dispose(): void {
         super.dispose();
     }

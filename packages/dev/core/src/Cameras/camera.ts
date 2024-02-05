@@ -401,6 +401,15 @@ export class Camera extends Node {
      */
     public renderPassId: number;
 
+    private _hasMoved = false;
+
+    /**
+     * Gets a flag indicating that the camera has moved in some way since the last call to Camera.update()
+     */
+    public get hasMoved() {
+        return this._hasMoved;
+    }
+
     /** @internal */
     public _cameraRigParams: any;
     /** @internal */
@@ -467,6 +476,7 @@ export class Camera extends Node {
 
     /**
      * Restores the camera state values if it has been stored. You must call storeState() first
+     * @returns true if restored and false otherwise
      */
     protected _restoreStateValues(): boolean {
         if (!this._stateStored) {
@@ -696,6 +706,7 @@ export class Camera extends Node {
      * Update the camera state according to the different inputs gathered during the frame.
      */
     public update(): void {
+        this._hasMoved = false;
         this._checkInputs();
         if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
             this._updateRigCameras();
@@ -816,6 +827,7 @@ export class Camera extends Node {
 
     /**
      * Gets the current world matrix of the camera
+     * @returns the world matrix
      */
     public getWorldMatrix(): Matrix {
         if (this._isSynchronizedViewMatrix()) {
@@ -842,6 +854,8 @@ export class Camera extends Node {
         if (!force && this._isSynchronizedViewMatrix()) {
             return this._computedViewMatrix;
         }
+
+        this._hasMoved = true;
 
         this.updateCache();
         this._computedViewMatrix = this._getViewMatrix();
@@ -1086,6 +1100,7 @@ export class Camera extends Node {
         return target.isCompletelyInFrustum(this._frustumPlanes);
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Gets a ray in the forward direction from the camera.
      * @param length Defines the length of the ray to create
@@ -1098,6 +1113,7 @@ export class Camera extends Node {
         throw _WarnImport("Ray");
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Gets a ray in the forward direction from the camera.
      * @param refRay the ray to (re)use when setting the values

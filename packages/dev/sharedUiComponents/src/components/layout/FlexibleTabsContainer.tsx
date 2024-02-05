@@ -35,6 +35,8 @@ export interface IFlexibleTabsContainerProps {
 /**
  * This component contains a set of tabs of which only one is visible at a time.
  * The tabs can also be dragged from and to different containers.
+ * @param props properties
+ * @returns tabs container element
  */
 export const FlexibleTabsContainer: FC<IFlexibleTabsContainerProps> = (props) => {
     const { layout, setLayout } = useContext(LayoutContext);

@@ -1,16 +1,20 @@
 import type { FlowGraphContext } from "../../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
-import { RichTypeNumber } from "../../../flowGraphRichTypes";
+import { RichTypeFlowGraphInteger } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphExecutionBlockWithOutSignal";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
+import { FlowGraphInteger } from "../../../flowGraphInteger";
 
 /**
  * @experimental
  */
 export interface IFlowGraphDoNBlockConfiguration extends IFlowGraphBlockConfiguration {
-    startIndex: number;
+    /**
+     * The start index for the counter.
+     */
+    startIndex: FlowGraphInteger;
 }
 /**
  * A block that executes a branch a set number of times.
@@ -24,17 +28,22 @@ export class FlowGraphDoNBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
      * Input connection: The maximum number of times the block can be executed.
      */
-    public readonly n: FlowGraphDataConnection<number>;
+    public readonly n: FlowGraphDataConnection<FlowGraphInteger>;
     /**
      * Output connection: The number of times the block has been executed.
      */
-    public readonly value: FlowGraphDataConnection<number>;
+    public readonly value: FlowGraphDataConnection<FlowGraphInteger>;
 
-    constructor(public config: IFlowGraphDoNBlockConfiguration = { startIndex: 0 }) {
+    constructor(
+        /**
+         * the configuration of the block
+         */
+        public config: IFlowGraphDoNBlockConfiguration = { startIndex: new FlowGraphInteger(0) }
+    ) {
         super(config);
         this.reset = this._registerSignalInput("reset");
-        this.n = this.registerDataInput("n", RichTypeNumber);
-        this.value = this.registerDataOutput("value", RichTypeNumber);
+        this.n = this.registerDataInput("n", RichTypeFlowGraphInteger);
+        this.value = this.registerDataOutput("value", RichTypeFlowGraphInteger);
     }
 
     public _execute(context: FlowGraphContext, callingSignal: FlowGraphSignalConnection): void {
@@ -42,17 +51,23 @@ export class FlowGraphDoNBlock extends FlowGraphExecutionBlockWithOutSignal {
             this.value.setValue(this.config.startIndex, context);
         } else {
             const currentCountValue = this.value.getValue(context);
-            if (currentCountValue < this.n.getValue(context)) {
-                this.value.setValue(currentCountValue + 1, context);
+            if (currentCountValue.value < this.n.getValue(context).value) {
+                this.value.setValue(new FlowGraphInteger(currentCountValue.value + 1), context);
                 this.out._activateSignal(context);
             }
         }
     }
 
+    /**
+     * @returns class name of the block.
+     */
     public getClassName(): string {
         return FlowGraphDoNBlock.ClassName;
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGDoNBlock";
 }
 RegisterClass(FlowGraphDoNBlock.ClassName, FlowGraphDoNBlock);

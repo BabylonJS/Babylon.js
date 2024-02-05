@@ -58,13 +58,6 @@ class DecalVertex {
  * @param name defines the name of the mesh
  * @param sourceMesh defines the mesh where the decal must be applied
  * @param options defines the options used to create the mesh
- * @param options.position
- * @param options.normal
- * @param options.size
- * @param options.angle
- * @param options.captureUVS
- * @param options.cullBackFaces
- * @param options.localMode
  * @returns the decal mesh
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/decals
  */
