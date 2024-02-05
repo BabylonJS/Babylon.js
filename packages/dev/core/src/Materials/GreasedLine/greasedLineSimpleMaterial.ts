@@ -107,8 +107,8 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
         this.width = options.width
             ? options.width
             : options.sizeAttenuation && options.cameraFacing
-            ? GreasedLineMaterialDefaults.DEFAULT_WIDTH_ATTENUATED
-            : GreasedLineMaterialDefaults.DEFAULT_WIDTH;
+              ? GreasedLineMaterialDefaults.DEFAULT_WIDTH_ATTENUATED
+              : GreasedLineMaterialDefaults.DEFAULT_WIDTH;
         this.sizeAttenuation = options.sizeAttenuation ?? false;
         this.color = options.color ?? Color3.White();
         this.useColors = options.useColors ?? false;

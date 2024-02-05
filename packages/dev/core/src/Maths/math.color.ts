@@ -4,6 +4,7 @@ import { ToLinearSpace, ToGammaSpace, Epsilon } from "./math.constants";
 import { ArrayTools } from "../Misc/arrayTools";
 import { RegisterClass } from "../Misc/typeStore";
 import type { Tensor } from "./tensor";
+import type { IColor3Like, IColor4Like } from "./math.like";
 
 function colorChannelToLinearSpace(color: number): number {
     return Math.pow(color, ToLinearSpace);
@@ -28,18 +29,9 @@ function colorChannelToGammaSpaceExact(color: number): number {
 }
 
 /**
- * @internal
- */
-export interface Color3Like {
-    r: number;
-    g: number;
-    b: number;
-}
-
-/**
  * Class used to hold a RGB color
  */
-export class Color3 implements Tensor<Tuple<number, 3>>, Color3Like {
+export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
     public declare readonly dimension: [3];
     public declare readonly rank: 1;
 
@@ -1013,16 +1005,9 @@ Object.defineProperties(Color3.prototype, {
 });
 
 /**
- * @internal
- */
-export interface Color4Like extends Color3Like {
-    a: number;
-}
-
-/**
  * Class used to hold a RBGA color
  */
-export class Color4 implements Tensor<Tuple<number, 4>>, Color4Like {
+export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
     public declare readonly dimension: [4];
     public declare readonly rank: 1;
 

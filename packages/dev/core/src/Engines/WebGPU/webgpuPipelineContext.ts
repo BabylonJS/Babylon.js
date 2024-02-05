@@ -6,8 +6,8 @@ import type { WebGPUEngine } from "../webgpuEngine";
 import type { Effect } from "../../Materials/effect";
 import type { WebGPUShaderProcessingContext } from "./webgpuShaderProcessingContext";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
-import type { MatrixLike, Vector2Like, Vector3Like, Vector4Like, QuaternionLike } from "../../Maths/math.vector";
-import type { Color3Like, Color4Like } from "../../Maths/math.color";
+import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IQuaternionLike } from "../../Maths/math.like";
+import type { IColor3Like, IColor4Like } from "../../Maths/math.like";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 
 /** @internal */
@@ -398,7 +398,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param uniformName Name of the variable.
      * @param matrix matrix to be set.
      */
-    public setMatrix(uniformName: string, matrix: MatrixLike): void {
+    public setMatrix(uniformName: string, matrix: IMatrixLike): void {
         if (!this.uniformBuffer || !this._leftOverUniformsByName[uniformName]) {
             return;
         }
@@ -447,7 +447,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param uniformName Name of the variable.
      * @param vector2 vector2 to be set.
      */
-    public setVector2(uniformName: string, vector2: Vector2Like): void {
+    public setVector2(uniformName: string, vector2: IVector2Like): void {
         this.setFloat2(uniformName, vector2.x, vector2.y);
     }
 
@@ -469,7 +469,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param uniformName Name of the variable.
      * @param vector3 Value to be set.
      */
-    public setVector3(uniformName: string, vector3: Vector3Like): void {
+    public setVector3(uniformName: string, vector3: IVector3Like): void {
         this.setFloat3(uniformName, vector3.x, vector3.y, vector3.z);
     }
 
@@ -492,7 +492,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param uniformName Name of the variable.
      * @param vector4 Value to be set.
      */
-    public setVector4(uniformName: string, vector4: Vector4Like): void {
+    public setVector4(uniformName: string, vector4: IVector4Like): void {
         this.setFloat4(uniformName, vector4.x, vector4.y, vector4.z, vector4.w);
     }
 
@@ -501,7 +501,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param uniformName Name of the variable.
      * @param quaternion Value to be set.
      */
-    public setQuaternion(uniformName: string, quaternion: QuaternionLike): void {
+    public setQuaternion(uniformName: string, quaternion: IQuaternionLike): void {
         this.setFloat4(uniformName, quaternion.x, quaternion.y, quaternion.z, quaternion.w);
     }
 
@@ -526,7 +526,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param uniformName Name of the variable.
      * @param color3 Value to be set.
      */
-    public setColor3(uniformName: string, color3: Color3Like): void {
+    public setColor3(uniformName: string, color3: IColor3Like): void {
         this.setFloat3(uniformName, color3.r, color3.g, color3.b);
     }
 
@@ -536,7 +536,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param color3 Value to be set.
      * @param alpha Alpha value to be set.
      */
-    public setColor4(uniformName: string, color3: Color3Like, alpha: number): void {
+    public setColor4(uniformName: string, color3: IColor3Like, alpha: number): void {
         this.setFloat4(uniformName, color3.r, color3.g, color3.b, alpha);
     }
 
@@ -545,7 +545,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
      * @param uniformName defines the name of the variable
      * @param color4 defines the value to be set
      */
-    public setDirectColor4(uniformName: string, color4: Color4Like): void {
+    public setDirectColor4(uniformName: string, color4: IColor4Like): void {
         this.setFloat4(uniformName, color4.r, color4.g, color4.b, color4.a);
     }
 

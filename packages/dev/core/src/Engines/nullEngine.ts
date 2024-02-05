@@ -9,7 +9,7 @@ import type { Effect } from "../Materials/effect";
 import { Constants } from "./constants";
 import type { IPipelineContext } from "./IPipelineContext";
 import { DataBuffer } from "../Buffers/dataBuffer";
-import type { Color4Like } from "../Maths/math.color";
+import type { IColor4Like } from "../Maths/math.like";
 import type { ViewportLike } from "../Maths/math.viewport";
 import type { ISceneLike } from "./thinEngine";
 import { PerformanceConfigurator } from "./performanceConfigurator";
@@ -232,7 +232,7 @@ export class NullEngine extends Engine {
      * @param depth defines if the depth buffer must be cleared
      * @param stencil defines if the stencil buffer must be cleared
      */
-    public clear(color: Color4Like, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {}
+    public clear(color: IColor4Like, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {}
 
     /**
      * Gets the current render width

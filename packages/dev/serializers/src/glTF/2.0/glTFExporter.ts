@@ -1302,8 +1302,8 @@ export class _Exporter {
             babylonTransformNode instanceof Mesh
                 ? (babylonTransformNode as Mesh)
                 : babylonTransformNode instanceof InstancedMesh
-                ? (babylonTransformNode as InstancedMesh).sourceMesh
-                : null;
+                  ? (babylonTransformNode as InstancedMesh).sourceMesh
+                  : null;
 
         if (bufferMesh) {
             const vertexBuffer = bufferMesh.getVertexBuffer(kind, true);

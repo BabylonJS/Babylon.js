@@ -28,7 +28,7 @@ import type { ISceneLike, ThinEngineOptions } from "./thinEngine";
 import { WebGPUBufferManager } from "./WebGPU/webgpuBufferManager";
 import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import { WebGPUHardwareTexture } from "./WebGPU/webgpuHardwareTexture";
-import type { Color4Like } from "../Maths/math.color";
+import type { IColor4Like } from "../Maths/math.like";
 import { UniformBuffer } from "../Materials/uniformBuffer";
 import { WebGPUCacheSampler } from "./WebGPU/webgpuCacheSampler";
 import type { WebGPUCacheRenderPipeline } from "./WebGPU/webgpuCacheRenderPipeline";
@@ -1414,7 +1414,7 @@ export class WebGPUEngine extends Engine {
      * @param depth defines if the depth buffer must be cleared
      * @param stencil defines if the stencil buffer must be cleared
      */
-    public clear(color: Nullable<Color4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+    public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
         // Some PGs are using color3...
         if (color && color.a === undefined) {
             color.a = 1;
@@ -1456,7 +1456,7 @@ export class WebGPUEngine extends Engine {
         }
     }
 
-    private _clearFullQuad(clearColor?: Nullable<Color4Like>, clearDepth?: boolean, clearStencil?: boolean): void {
+    private _clearFullQuad(clearColor?: Nullable<IColor4Like>, clearDepth?: boolean, clearStencil?: boolean): void {
         const renderPass = !this.compatibilityMode ? null : this._getCurrentRenderPass();
 
         this._clearQuad.setColorFormat(this._colorFormat);
@@ -2897,7 +2897,7 @@ export class WebGPUEngine extends Engine {
     private _startRenderTargetRenderPass(
         renderTargetWrapper: RenderTargetWrapper,
         setClearStates: boolean,
-        clearColor: Nullable<Color4Like>,
+        clearColor: Nullable<IColor4Like>,
         clearDepth: boolean,
         clearStencil: boolean
     ) {
@@ -3013,8 +3013,8 @@ export class WebGPUEngine extends Engine {
                           stencilLoadOp: !depthTextureHasStencil
                               ? undefined
                               : rtWrapper._depthStencilTextureWithStencil && mustClearStencil
-                              ? WebGPUConstants.LoadOp.Clear
-                              : WebGPUConstants.LoadOp.Load,
+                                ? WebGPUConstants.LoadOp.Clear
+                                : WebGPUConstants.LoadOp.Load,
                           stencilStoreOp: !depthTextureHasStencil ? undefined : WebGPUConstants.StoreOp.Store,
                       }
                     : undefined,
@@ -3057,7 +3057,7 @@ export class WebGPUEngine extends Engine {
         }
     }
 
-    private _startMainRenderPass(setClearStates: boolean, clearColor?: Nullable<Color4Like>, clearDepth?: boolean, clearStencil?: boolean): void {
+    private _startMainRenderPass(setClearStates: boolean, clearColor?: Nullable<IColor4Like>, clearDepth?: boolean, clearStencil?: boolean): void {
         this._endCurrentRenderPass();
 
         if (this.useReverseDepthBuffer) {
@@ -3080,8 +3080,8 @@ export class WebGPUEngine extends Engine {
         this._mainRenderPassWrapper.renderPassDescriptor!.depthStencilAttachment!.stencilLoadOp = !this.isStencilEnable
             ? undefined
             : mustClearStencil
-            ? WebGPUConstants.LoadOp.Clear
-            : WebGPUConstants.LoadOp.Load;
+              ? WebGPUConstants.LoadOp.Clear
+              : WebGPUConstants.LoadOp.Load;
         this._mainRenderPassWrapper.renderPassDescriptor!.occlusionQuerySet = this._occlusionQuery?.hasQueries ? this._occlusionQuery.querySet : undefined;
 
         const swapChainTexture = this._context.getCurrentTexture();

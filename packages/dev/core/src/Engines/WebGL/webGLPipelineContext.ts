@@ -1,8 +1,8 @@
 import type { IPipelineContext } from "../IPipelineContext";
 import type { Nullable } from "../../types";
 import type { Effect } from "../../Materials/effect";
-import type { MatrixLike, Vector2Like, Vector3Like, Vector4Like, QuaternionLike } from "../../Maths/math.vector";
-import type { Color3Like, Color4Like } from "../../Maths/math.color";
+import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IQuaternionLike } from "../../Maths/math.like";
+import type { IColor3Like, IColor4Like } from "../../Maths/math.like";
 import type { ThinEngine } from "../thinEngine";
 
 /** @internal */
@@ -100,7 +100,7 @@ export class WebGLPipelineContext implements IPipelineContext {
     /**
      * @internal
      */
-    public _cacheMatrix(uniformName: string, matrix: MatrixLike): boolean {
+    public _cacheMatrix(uniformName: string, matrix: IMatrixLike): boolean {
         const cache = this._valueCache[uniformName];
         const flag = matrix.updateFlag;
         if (cache !== undefined && cache === flag) {
@@ -458,7 +458,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param uniformName Name of the variable.
      * @param matrix matrix to be set.
      */
-    public setMatrix(uniformName: string, matrix: MatrixLike): void {
+    public setMatrix(uniformName: string, matrix: IMatrixLike): void {
         if (this._cacheMatrix(uniformName, matrix)) {
             if (!this.engine.setMatrices(this._uniforms[uniformName], matrix.asArray() as Float32Array)) {
                 this._valueCache[uniformName] = null;
@@ -508,7 +508,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param uniformName Name of the variable.
      * @param vector2 vector2 to be set.
      */
-    public setVector2(uniformName: string, vector2: Vector2Like): void {
+    public setVector2(uniformName: string, vector2: IVector2Like): void {
         if (this._cacheFloat2(uniformName, vector2.x, vector2.y)) {
             if (!this.engine.setFloat2(this._uniforms[uniformName], vector2.x, vector2.y)) {
                 this._valueCache[uniformName] = null;
@@ -535,7 +535,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param uniformName Name of the variable.
      * @param vector3 Value to be set.
      */
-    public setVector3(uniformName: string, vector3: Vector3Like): void {
+    public setVector3(uniformName: string, vector3: IVector3Like): void {
         if (this._cacheFloat3(uniformName, vector3.x, vector3.y, vector3.z)) {
             if (!this.engine.setFloat3(this._uniforms[uniformName], vector3.x, vector3.y, vector3.z)) {
                 this._valueCache[uniformName] = null;
@@ -563,7 +563,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param uniformName Name of the variable.
      * @param vector4 Value to be set.
      */
-    public setVector4(uniformName: string, vector4: Vector4Like): void {
+    public setVector4(uniformName: string, vector4: IVector4Like): void {
         if (this._cacheFloat4(uniformName, vector4.x, vector4.y, vector4.z, vector4.w)) {
             if (!this.engine.setFloat4(this._uniforms[uniformName], vector4.x, vector4.y, vector4.z, vector4.w)) {
                 this._valueCache[uniformName] = null;
@@ -576,7 +576,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param uniformName Name of the variable.
      * @param quaternion Value to be set.
      */
-    public setQuaternion(uniformName: string, quaternion: QuaternionLike): void {
+    public setQuaternion(uniformName: string, quaternion: IQuaternionLike): void {
         if (this._cacheFloat4(uniformName, quaternion.x, quaternion.y, quaternion.z, quaternion.w)) {
             if (!this.engine.setFloat4(this._uniforms[uniformName], quaternion.x, quaternion.y, quaternion.z, quaternion.w)) {
                 this._valueCache[uniformName] = null;
@@ -606,7 +606,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param uniformName Name of the variable.
      * @param color3 Value to be set.
      */
-    public setColor3(uniformName: string, color3: Color3Like): void {
+    public setColor3(uniformName: string, color3: IColor3Like): void {
         if (this._cacheFloat3(uniformName, color3.r, color3.g, color3.b)) {
             if (!this.engine.setFloat3(this._uniforms[uniformName], color3.r, color3.g, color3.b)) {
                 this._valueCache[uniformName] = null;
@@ -620,7 +620,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param color3 Value to be set.
      * @param alpha Alpha value to be set.
      */
-    public setColor4(uniformName: string, color3: Color3Like, alpha: number): void {
+    public setColor4(uniformName: string, color3: IColor3Like, alpha: number): void {
         if (this._cacheFloat4(uniformName, color3.r, color3.g, color3.b, alpha)) {
             if (!this.engine.setFloat4(this._uniforms[uniformName], color3.r, color3.g, color3.b, alpha)) {
                 this._valueCache[uniformName] = null;
@@ -633,7 +633,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      * @param uniformName defines the name of the variable
      * @param color4 defines the value to be set
      */
-    public setDirectColor4(uniformName: string, color4: Color4Like): void {
+    public setDirectColor4(uniformName: string, color4: IColor4Like): void {
         if (this._cacheFloat4(uniformName, color4.r, color4.g, color4.b, color4.a)) {
             if (!this.engine.setFloat4(this._uniforms[uniformName], color4.r, color4.g, color4.b, color4.a)) {
                 this._valueCache[uniformName] = null;

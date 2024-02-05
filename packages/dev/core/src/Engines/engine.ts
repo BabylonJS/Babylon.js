@@ -13,7 +13,7 @@ import type { ICustomAnimationFrameRequester } from "../Misc/customAnimationFram
 import type { EngineOptions } from "./thinEngine";
 import { ThinEngine } from "./thinEngine";
 import { Constants } from "./constants";
-import type { Color4Like } from "../Maths/math.color";
+import type { IColor4Like } from "../Maths/math.like";
 import type { ViewportLike } from "../Maths/math.viewport";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { PerformanceMonitor } from "../Misc/performanceMonitor";
@@ -1051,7 +1051,7 @@ export class Engine extends ThinEngine {
      * @param height defines the height of the clear rectangle
      * @param clearColor defines the clear color
      */
-    public scissorClear(x: number, y: number, width: number, height: number, clearColor: Color4Like): void {
+    public scissorClear(x: number, y: number, width: number, height: number, clearColor: IColor4Like): void {
         this.enableScissor(x, y, width, height);
         this.clear(clearColor, true, true, true);
         this.disableScissor();

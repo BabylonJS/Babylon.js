@@ -16,7 +16,7 @@ import { StencilState } from "../States/stencilState";
 import { AlphaState } from "../States/alphaCullingState";
 import { Constants } from "./constants";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import type { Color4Like } from "../Maths/math.color";
+import type { IColor4Like } from "../Maths/math.like";
 import type { ViewportLike } from "../Maths/math.viewport";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import type { IFileRequest } from "../Misc/fileRequest";
@@ -1733,7 +1733,7 @@ export class ThinEngine {
      * @param depth defines if the depth buffer must be cleared
      * @param stencil defines if the stencil buffer must be cleared
      */
-    public clear(color: Nullable<Color4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+    public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
         const useStencilGlobalOnly = this.stencilStateComposer.useStencilGlobalOnly;
         this.stencilStateComposer.useStencilGlobalOnly = true; // make sure the stencil mask is coming from the global stencil and not from a material (effect) which would currently be in effect
 

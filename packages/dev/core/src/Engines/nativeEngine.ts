@@ -18,7 +18,7 @@ import { CreateImageDataArrayBufferViews, GetEnvInfo, UploadEnvSpherical } from 
 import type { Scene } from "../scene";
 import type { RenderTargetCreationOptions, TextureSize, DepthTextureCreationOptions, InternalTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
 import type { IPipelineContext } from "./IPipelineContext";
-import type { Color3Like, Color4Like } from "../Maths/math.color";
+import type { IColor3Like, IColor4Like } from "../Maths/math.like";
 import type { ViewportLike } from "../Maths/math.viewport";
 import { Logger } from "../Misc/logger";
 import { Constants } from "./constants";
@@ -454,7 +454,7 @@ export class NativeEngine extends Engine {
         return null;
     }
 
-    public clear(color: Nullable<Color4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
+    public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {
         if (this.useReverseDepthBuffer) {
             throw new Error("reverse depth buffer is not currently implemented");
         }
@@ -1464,7 +1464,7 @@ export class NativeEngine extends Engine {
         return true;
     }
 
-    public setColor3(uniform: WebGLUniformLocation, color3: Color3Like): boolean {
+    public setColor3(uniform: WebGLUniformLocation, color3: IColor3Like): boolean {
         if (!uniform) {
             return false;
         }
@@ -1473,7 +1473,7 @@ export class NativeEngine extends Engine {
         return true;
     }
 
-    public setColor4(uniform: WebGLUniformLocation, color3: Color3Like, alpha: number): boolean {
+    public setColor4(uniform: WebGLUniformLocation, color3: IColor3Like, alpha: number): boolean {
         if (!uniform) {
             return false;
         }
