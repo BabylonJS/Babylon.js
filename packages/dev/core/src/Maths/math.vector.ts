@@ -5941,8 +5941,8 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
     /**
      * Returns the matrix as a Float32Array or Array<number>
      * Example Playground - https://playground.babylonjs.com/#AV9X17#49
-	 * @param array Array 
-	 * @param index Index
+     * @param array Array
+     * @param index Index
      * @returns the matrix underlying array
      */
     public toArray(array: FloatArray, index: number = 0): this {

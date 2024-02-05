@@ -308,10 +308,10 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
 
     /**
      * Alias for equalsToFloats
-	 * @param r red color component
-	 * @param g green color component
-	 * @param b blue color component
-	 * @returns boolean
+     * @param r red color component
+     * @param g green color component
+     * @param b blue color component
+     * @returns boolean
      */
     public equalsFloats(r: number, g: number, b: number): boolean {
         return this.equalsToFloats(r, g, b);
