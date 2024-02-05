@@ -21,8 +21,14 @@ const _ExtractAsInt = (value: number) => {
  * Reprents a vector of any dimension
  */
 export declare abstract class Vector<N extends number[] = number[]> extends Tensor<N> {
+    /**
+     * @see Tensor.dimension
+     */
     public readonly dimension: Readonly<Dimension<N>>;
 
+    /**
+     * @see Tensor.rank
+     */
     public readonly rank: 1;
 
     /**
@@ -203,7 +209,14 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
 export class Vector2 implements IVector2Like {
     private static _ZeroReadOnly = Vector2.Zero() as DeepImmutable<Vector2>;
 
+    /**
+     * @see Tensor.dimension
+     */
     public declare readonly dimension: Readonly<[2]>;
+
+    /**
+     * @see Tensor.rank
+     */
     public declare readonly rank: 1;
 
     /**
@@ -1228,7 +1241,14 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
     private static _ZeroReadOnly = Vector3.Zero() as DeepImmutable<Vector3>;
     private static _OneReadOnly = Vector3.One() as DeepImmutable<Vector3>;
 
+    /**
+     * @see Tensor.dimension
+     */
     public declare readonly dimension: Readonly<[3]>;
+
+    /**
+     * @see Tensor.rank
+     */
     public declare readonly rank: 1;
 
     /** @internal */
@@ -2526,7 +2546,7 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * @param transformation defines the transformation matrix
      * @returns the transformed Vector3
      */
-    public static TransformCoordinates<T extends Vector3>(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>): Vector3 {
+    public static TransformCoordinates(vector: DeepImmutable<Vector3>, transformation: DeepImmutable<Matrix>): Vector3 {
         const result = Vector3.Zero();
         Vector3.TransformCoordinatesToRef(vector, transformation, result);
         return result;
@@ -2961,7 +2981,7 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * @param normal defines the normal - Must be normalized
      * @returns the resulting vector
      */
-    public static Reflect<T extends Vector3>(inDirection: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): Vector3 {
+    public static Reflect(inDirection: DeepImmutable<Vector3>, normal: DeepImmutable<Vector3>): Vector3 {
         return this.ReflectToRef(inDirection, normal, new Vector3());
     }
 
@@ -3385,7 +3405,14 @@ Object.defineProperties(Vector3.prototype, {
 export class Vector4 implements Vector<Tuple<number, 4>>, IVector4Like {
     private static _ZeroReadOnly = Vector4.Zero() as DeepImmutable<Vector4>;
 
+    /**
+     * @see Tensor.dimension
+     */
     public declare readonly dimension: Readonly<[4]>;
+
+    /**
+     * @see Tensor.rank
+     */
     public declare readonly rank: 1;
 
     /**
@@ -4409,7 +4436,14 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
         this._isDirty = true;
     }
 
+    /**
+     * @see Tensor.dimension
+     */
     public declare readonly dimension: Readonly<[4]>;
+
+    /**
+     * @see Tensor.rank
+     */
     public declare readonly rank: 1;
 
     /**
@@ -5749,7 +5783,14 @@ Object.defineProperties(Quaternion.prototype, {
  * Example Playground - Overview Projection - https://playground.babylonjs.com/#AV9X17#2
  */
 export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
+    /**
+     * @see Tensor.dimension
+     */
     public declare readonly dimension: Readonly<[4, 4]>;
+
+    /**
+     * @see Tensor.rank
+     */
     public declare readonly rank: 2;
 
     /**
@@ -6395,6 +6436,11 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
         return this;
     }
 
+    /**
+     * Multiples the current matrix by the given floats and stores them in the given ref
+     * @param args The floats and ref
+     * @returns The updated ref
+     */
     public multiplyByFloatsToRef<T extends this>(...args: [...Tuple<number, 16>, T]): T {
         const result = args.pop() as T,
             m = this._m,
@@ -8570,8 +8616,13 @@ Object.defineProperties(Matrix.prototype, {
  * Same as Tmp but not exported to keep it only for math functions to avoid conflicts
  */
 class MathTmp {
+    // Temporary Vector3s
     public static Vector3 = ArrayTools.BuildTuple(11, Vector3.Zero);
+
+    // Temporary Matricies
     public static Matrix = ArrayTools.BuildTuple(2, Matrix.Identity);
+
+    // Temporary Quaternions
     public static Quaternion = ArrayTools.BuildTuple(3, Quaternion.Zero);
 }
 
@@ -8579,11 +8630,20 @@ class MathTmp {
  * @internal
  */
 export class TmpVectors {
-    public static Vector2 = ArrayTools.BuildTuple(3, Vector2.Zero); // 3 temp Vector2 at once should be enough
-    public static Vector3 = ArrayTools.BuildTuple(13, Vector3.Zero); // 13 temp Vector3 at once should be enough
-    public static Vector4 = ArrayTools.BuildTuple(3, Vector4.Zero); // 3 temp Vector4 at once should be enough
-    public static Quaternion = ArrayTools.BuildTuple(2, Quaternion.Zero); // 2 temp Quaternion at once should be enough
-    public static Matrix = ArrayTools.BuildTuple(8, Matrix.Identity); // 8 temp Matrices at once should be enough
+    /** 3 temp Vector2 at once should be enough */
+    public static Vector2 = ArrayTools.BuildTuple(3, Vector2.Zero);
+
+    /** 13 temp Vector3 at once should be enough */
+    public static Vector3 = ArrayTools.BuildTuple(13, Vector3.Zero);
+
+    /** 3 temp Vector4 at once should be enough */
+    public static Vector4 = ArrayTools.BuildTuple(3, Vector4.Zero);
+
+    /** 2 temp Quaternion at once should be enough */
+    public static Quaternion = ArrayTools.BuildTuple(2, Quaternion.Zero);
+
+    /** 8 temp Matrices at once should be enough */
+    public static Matrix = ArrayTools.BuildTuple(8, Matrix.Identity);
 }
 
 RegisterClass("BABYLON.Vector2", Vector2);
