@@ -401,6 +401,15 @@ export class Camera extends Node {
      */
     public renderPassId: number;
 
+    private _hasMoved = false;
+
+    /**
+     * Gets a flag indicating that the camera has moved in some way since the last call to Camera.update()
+     */
+    public get hasMoved() {
+        return this._hasMoved;
+    }
+
     /** @internal */
     public _cameraRigParams: any;
     /** @internal */
@@ -697,6 +706,7 @@ export class Camera extends Node {
      * Update the camera state according to the different inputs gathered during the frame.
      */
     public update(): void {
+        this._hasMoved = false;
         this._checkInputs();
         if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
             this._updateRigCameras();
@@ -844,6 +854,8 @@ export class Camera extends Node {
         if (!force && this._isSynchronizedViewMatrix()) {
             return this._computedViewMatrix;
         }
+
+        this._hasMoved = true;
 
         this.updateCache();
         this._computedViewMatrix = this._getViewMatrix();
