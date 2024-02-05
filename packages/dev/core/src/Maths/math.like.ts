@@ -1,48 +1,48 @@
-import type { DeepImmutable } from "../types";
+import type { DeepImmutable, float } from "../types";
 
 /**
  * @internal
  */
 export interface IColor3Like {
-    r: number;
-    g: number;
-    b: number;
+    r: float;
+    g: float;
+    b: float;
 }
 
 /**
  * @internal
  */
 export interface IColor4Like extends IColor3Like {
-    a: number;
+    a: float;
 }
 
 /**
  * @internal
  */
 export interface IVector2Like {
-    x: number;
-    y: number;
+    x: float;
+    y: float;
 }
 
 /**
  * @internal
  */
 export interface IVector3Like extends IVector2Like {
-    z: number;
+    z: float;
 }
 
 /**
  * @internal
  */
 export interface IVector4Like extends IVector3Like {
-    w: number;
+    w: float;
 }
 
 /**
  * @internal
  */
 export interface IQuaternionLike extends IVector3Like {
-    w: number;
+    w: float;
 }
 
 /**
@@ -50,7 +50,7 @@ export interface IQuaternionLike extends IVector3Like {
  */
 export interface IPlaneLike {
     normal: IVector3Like;
-    d: number;
+    d: float;
     normalize(): void;
 }
 
@@ -58,7 +58,7 @@ export interface IPlaneLike {
  * @internal
  */
 export interface IMatrixLike {
-    asArray(): DeepImmutable<Float32Array | Array<number>>;
+    asArray(): DeepImmutable<Float32Array | Array<float>>;
     updateFlag: number;
 }
 
