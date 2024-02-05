@@ -1,12 +1,12 @@
 import { Logger } from "../Misc/logger";
 import type { Nullable, FloatArray } from "../types";
+import type { IMatrixLike, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from "core/Maths/math.like";
 import type { Effect } from "./effect";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import type { ThinEngine } from "../Engines/thinEngine";
 import type { InternalTexture } from "./Textures/internalTexture";
 import { Tools } from "../Misc/tools";
-import type { IMatrixLike, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from "core/Maths/math.like";
 import "../Engines/Extensions/engine.uniformBuffer";
 
 /**

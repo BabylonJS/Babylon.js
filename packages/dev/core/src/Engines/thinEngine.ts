@@ -16,7 +16,7 @@ import { StencilState } from "../States/stencilState";
 import { AlphaState } from "../States/alphaCullingState";
 import { Constants } from "./constants";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import type { IColor4Like, IViewportLike } from "../Maths/math.like";
+import type { IViewportLike, IColor4Like } from "../Maths/math.like";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import type { IFileRequest } from "../Misc/fileRequest";
 import { Logger } from "../Misc/logger";

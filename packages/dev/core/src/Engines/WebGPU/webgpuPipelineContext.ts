@@ -6,8 +6,7 @@ import type { WebGPUEngine } from "../webgpuEngine";
 import type { Effect } from "../../Materials/effect";
 import type { WebGPUShaderProcessingContext } from "./webgpuShaderProcessingContext";
 import { UniformBuffer } from "../../Materials/uniformBuffer";
-import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IQuaternionLike } from "../../Maths/math.like";
-import type { IColor3Like, IColor4Like } from "../../Maths/math.like";
+import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IQuaternionLike } from "../../Maths/math.like";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 
 /** @internal */

@@ -13,7 +13,7 @@ import type { ICustomAnimationFrameRequester } from "../Misc/customAnimationFram
 import type { EngineOptions } from "./thinEngine";
 import { ThinEngine } from "./thinEngine";
 import { Constants } from "./constants";
-import type { IColor4Like, IViewportLike } from "../Maths/math.like";
+import type { IViewportLike, IColor4Like } from "../Maths/math.like";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { PerformanceMonitor } from "../Misc/performanceMonitor";
 import type { DataBuffer } from "../Buffers/dataBuffer";
