@@ -61,3 +61,13 @@ export interface IMatrixLike {
     asArray(): DeepImmutable<Float32Array | Array<number>>;
     updateFlag: number;
 }
+
+/**
+ * @internal
+ */
+export interface IViewportLike {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+}

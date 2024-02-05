@@ -9,8 +9,7 @@ import type { Effect } from "../Materials/effect";
 import { Constants } from "./constants";
 import type { IPipelineContext } from "./IPipelineContext";
 import { DataBuffer } from "../Buffers/dataBuffer";
-import type { IColor4Like } from "../Maths/math.like";
-import type { ViewportLike } from "../Maths/math.viewport";
+import type { IColor4Like, IViewportLike } from "../Maths/math.like";
 import type { ISceneLike } from "./thinEngine";
 import { PerformanceConfigurator } from "./performanceConfigurator";
 import { DrawWrapper } from "../Materials/drawWrapper";
@@ -266,7 +265,7 @@ export class NullEngine extends Engine {
      * @param requiredWidth defines the width required for rendering. If not provided the rendering canvas' width is used
      * @param requiredHeight defines the height required for rendering. If not provided the rendering canvas' height is used
      */
-    public setViewport(viewport: ViewportLike, requiredWidth?: number, requiredHeight?: number): void {
+    public setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void {
         this._cachedViewport = viewport;
     }
 

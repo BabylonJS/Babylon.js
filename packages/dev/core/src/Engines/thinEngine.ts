@@ -16,8 +16,7 @@ import { StencilState } from "../States/stencilState";
 import { AlphaState } from "../States/alphaCullingState";
 import { Constants } from "./constants";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import type { IColor4Like } from "../Maths/math.like";
-import type { ViewportLike } from "../Maths/math.viewport";
+import type { IColor4Like, IViewportLike } from "../Maths/math.like";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import type { IFileRequest } from "../Misc/fileRequest";
 import { Logger } from "../Misc/logger";
@@ -544,7 +543,7 @@ export class ThinEngine {
     protected _compiledEffects: { [key: string]: Effect } = {};
     private _vertexAttribArraysEnabled: boolean[] = [];
     /** @internal */
-    protected _cachedViewport: Nullable<ViewportLike>;
+    protected _cachedViewport: Nullable<IViewportLike>;
     private _cachedVertexArrayObject: Nullable<WebGLVertexArrayObject>;
     /** @internal */
     protected _cachedVertexBuffers: any;
@@ -626,7 +625,7 @@ export class ThinEngine {
     /**
      * Gets the current viewport
      */
-    public get currentViewport(): Nullable<ViewportLike> {
+    public get currentViewport(): Nullable<IViewportLike> {
         return this._cachedViewport;
     }
 
@@ -1814,7 +1813,7 @@ export class ThinEngine {
      * @param requiredWidth defines the width required for rendering. If not provided the rendering canvas' width is used
      * @param requiredHeight defines the height required for rendering. If not provided the rendering canvas' height is used
      */
-    public setViewport(viewport: ViewportLike, requiredWidth?: number, requiredHeight?: number): void {
+    public setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void {
         const width = requiredWidth || this.getRenderWidth();
         const height = requiredHeight || this.getRenderHeight();
         const x = viewport.x || 0;

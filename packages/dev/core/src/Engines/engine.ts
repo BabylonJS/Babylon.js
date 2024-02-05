@@ -13,8 +13,7 @@ import type { ICustomAnimationFrameRequester } from "../Misc/customAnimationFram
 import type { EngineOptions } from "./thinEngine";
 import { ThinEngine } from "./thinEngine";
 import { Constants } from "./constants";
-import type { IColor4Like } from "../Maths/math.like";
-import type { ViewportLike } from "../Maths/math.viewport";
+import type { IColor4Like, IViewportLike } from "../Maths/math.like";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { PerformanceMonitor } from "../Misc/performanceMonitor";
 import type { DataBuffer } from "../Buffers/dataBuffer";
@@ -39,7 +38,7 @@ interface IViewportOwnerLike {
     /**
      * Gets or sets the viewport
      */
-    viewport: ViewportLike;
+    viewport: IViewportLike;
 }
 
 /**
@@ -1035,7 +1034,7 @@ export class Engine extends ThinEngine {
      * @param height defines the height of the viewport (in screen space)
      * @returns the current viewport Object (if any) that is being replaced by this call. You can restore this viewport later on to go back to the original state
      */
-    public setDirectViewport(x: number, y: number, width: number, height: number): Nullable<ViewportLike> {
+    public setDirectViewport(x: number, y: number, width: number, height: number): Nullable<IViewportLike> {
         const currentViewport = this._cachedViewport;
         this._cachedViewport = null;
 

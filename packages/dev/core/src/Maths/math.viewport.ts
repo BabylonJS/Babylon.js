@@ -1,17 +1,9 @@
-/**
- * @internal
- */
-export interface ViewportLike {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-}
+import type { IViewportLike } from "./math.like";
 
 /**
  * Class used to represent a viewport on screen
  */
-export class Viewport implements ViewportLike {
+export class Viewport implements IViewportLike {
     /**
      * Creates a Viewport object located at (x, y) and sized (width, height)
      * @param x defines viewport left coordinate
