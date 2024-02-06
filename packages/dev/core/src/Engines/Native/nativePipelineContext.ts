@@ -1,7 +1,6 @@
 import type { Nullable } from "../../types";
 import type { Effect } from "../../Materials/effect";
-import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IQuaternionLike } from "../../Maths/math.like";
-import type { IColor3Like, IColor4Like } from "../../Maths/math.like";
+import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IQuaternionLike } from "../../Maths/math.like";
 import type { IPipelineContext } from "../IPipelineContext";
 import type { NativeEngine } from "../nativeEngine";
 import type { NativeProgram } from "./nativeInterfaces";
