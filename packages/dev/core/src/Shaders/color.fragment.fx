@@ -7,6 +7,7 @@ uniform vec4 color;
 #endif
 
 #include<clipPlaneFragmentDeclaration>
+#include<fogFragmentDeclaration>
 
 
 #define CUSTOM_FRAGMENT_DEFINITIONS
@@ -22,6 +23,8 @@ void main(void) {
 #else
 	gl_FragColor = color;
 #endif
+
+#include<fogFragment>(color,gl_FragColor)
 
 #define CUSTOM_FRAGMENT_MAIN_END
 }
