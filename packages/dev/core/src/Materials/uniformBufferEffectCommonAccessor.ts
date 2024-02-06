@@ -1,4 +1,4 @@
-import type { IMatrixLike, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from "../Maths/math.like";
+import type { IColor3Like, IColor4Like, IMatrixLike, IVector3Like, IVector4Like } from "../Maths/math.like";
 import type { Effect } from "./effect";
 import type { UniformBuffer } from "./uniformBuffer";
 

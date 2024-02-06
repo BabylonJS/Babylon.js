@@ -1,6 +1,6 @@
 import { Logger } from "../Misc/logger";
 import type { Nullable, FloatArray } from "../types";
-import type { IMatrixLike, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from "core/Maths/math.like";
+import type { IMatrixLike, IVector3Like, IVector4Like, IColor3Like, IColor4Like } from "../Maths/math.like";
 import type { Effect } from "./effect";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { DataBuffer } from "../Buffers/dataBuffer";
