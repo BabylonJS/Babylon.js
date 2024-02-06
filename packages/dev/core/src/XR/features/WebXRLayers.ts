@@ -224,6 +224,9 @@ export class WebXRLayers extends WebXRAbstractFeature {
             throw new Error("Could not find the babylon layer for the texture");
         }
         rttProvider.onRenderTargetTextureCreatedObservable.add((data) => {
+            if (data.eye && data.eye === "right") {
+                return;
+            }
             data.texture.clearColor = new Color4(0, 0, 0, 0);
             babylonLayer.renderTargetTextures.push(data.texture);
             babylonLayer.renderOnlyInRenderTargetTextures = true;
@@ -349,7 +352,20 @@ export class WebXRLayers extends WebXRAbstractFeature {
                 if (!rttProvider) {
                     continue;
                 }
-                rttProvider.getRenderTargetTextureForView();
+                if (this._isMultiviewEnabled) {
+                    // get the views, if we are in multiview
+                    const pose = _xrFrame.getViewerPose(this._xrSessionManager.referenceSpace);
+                    if (!pose) {
+                        continue;
+                    }
+                    const views = pose.views;
+                    for (let j = 0; j < views.length; ++j) {
+                        const view = views[j];
+                        rttProvider.getRenderTargetTextureForView(view);
+                    }
+                } else {
+                    rttProvider.getRenderTargetTextureForView();
+                }
             }
         }
     }
